@@ -100,7 +100,7 @@
     <string name="import_publication_success">Publication added to your library</string>
     <string name="import_publication_unable_add_pub_database">Unable to add publication to the database</string>
 
-    <string name="publication_error_unsupported_asset">Publication format is not supported</string>
+    <string name="publication_error_unsupported_asset">Asset format is not supported</string>
     <string name="publication_error_not_found">Publication has not been found.</string>
     <string name="publication_error_unavailable">Publication is temporarily unavailable.</string>
     <string name="publication_error_incorrect_credentials">Provided credentials were incorrect</string>

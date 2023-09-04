@@ -13,6 +13,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
+import org.readium.r2.lcp.LcpException
 import org.readium.r2.lcp.LcpService
 import org.readium.r2.shared.asset.AssetRetriever
 import org.readium.r2.shared.publication.Publication
@@ -27,23 +28,24 @@ import org.readium.r2.streamer.PublicationFactory
 import org.readium.r2.testapp.data.BookRepository
 import org.readium.r2.testapp.data.DownloadRepository
 import org.readium.r2.testapp.data.model.Book
-import org.readium.r2.testapp.utils.extensions.copyToTempFile
 import org.readium.r2.testapp.utils.tryOrLog
 import timber.log.Timber
 
 class Bookshelf(
-    private val context: Context,
+    context: Context,
     private val bookRepository: BookRepository,
     downloadRepository: DownloadRepository,
-    private val storageDir: File,
+    storageDir: File,
     private val coverStorage: CoverStorage,
     private val publicationFactory: PublicationFactory,
     private val assetRetriever: AssetRetriever,
     private val protectionRetriever: ContentProtectionSchemeRetriever,
     formatRegistry: FormatRegistry,
-    lcpService: Try<LcpService, Exception>,
+    lcpService: Try<LcpService, LcpException>,
     downloadManager: DownloadManager
 ) {
+    val channel: Channel<Event> =
+        Channel(Channel.UNLIMITED)
 
     sealed class Event {
         data object ImportPublicationSuccess :
@@ -57,11 +59,9 @@ class Bookshelf(
     private val coroutineScope: CoroutineScope =
         MainScope()
 
-    val channel: Channel<Event> =
-        Channel(Channel.BUFFERED)
-
     private val publicationRetriever: PublicationRetriever =
         PublicationRetriever(
+            context,
             storageDir,
             assetRetriever,
             formatRegistry,
@@ -72,58 +72,47 @@ class Bookshelf(
         )
 
     private inner class PublicationRetrieverListener : PublicationRetriever.Listener {
-        override fun onImportSucceeded(publication: File, coverUrl: String?) {
+        override fun onSuccess(publication: File, coverUrl: String?) {
             coroutineScope.launch {
                 val url = publication.toUrl()
                 addBookFeedback(url, coverUrl)
             }
         }
 
-        override fun onImportError(error: ImportError) {
+        override fun onError(error: ImportError) {
             coroutineScope.launch {
                 channel.send(Event.ImportPublicationError(error))
             }
         }
     }
 
-    suspend fun importPublicationToAppStorage(
-        contentUri: Uri
+    fun importPublicationFromStorage(
+        uri: Uri
     ) {
-        val tempFile = contentUri.copyToTempFile(context, storageDir)
-            .getOrElse {
-                channel.send(Event.ImportPublicationError(ImportError.ImportBookFailed(it)))
-                return
-            }
-
-        publicationRetriever.importFromAppStorage(tempFile)
+        publicationRetriever.retrieveFromStorage(uri)
     }
 
-    suspend fun downloadPublicationFromOpds(
+    fun importPublicationFromOpds(
         publication: Publication
     ) {
-        publicationRetriever.downloadFromOpds(publication)
+        publicationRetriever.retrieveFromOpds(publication)
     }
 
-    suspend fun addPublicationFromTheWeb(
+    fun addPublicationFromWeb(
         url: Url
     ) {
-        addBookFeedback(url)
+        coroutineScope.launch {
+            addBookFeedback(url)
+        }
     }
 
-    suspend fun addPublicationFromSharedStorage(
+    fun addPublicationFromStorage(
         url: Url
     ) {
-        addBookFeedback(url)
+        coroutineScope.launch {
+            addBookFeedback(url)
+        }
     }
-
-    private fun mediaTypeNotSupportedError(): ImportError =
-        ImportError.PublicationError(
-            PublicationError.UnsupportedPublication(
-                Publication.OpeningException.UnsupportedAsset(
-                    "Unsupported media type"
-                )
-            )
-        )
 
     private suspend fun addBookFeedback(
         url: Url,
@@ -140,7 +129,9 @@ class Bookshelf(
     ): Try<Unit, ImportError> {
         val asset =
             assetRetriever.retrieve(url)
-                ?: return Try.failure(mediaTypeNotSupportedError())
+                ?: return Try.failure(
+                    ImportError.PublicationError(PublicationError.UnsupportedAsset())
+                )
 
         val drmScheme =
             protectionRetriever.retrieve(asset)
@@ -153,7 +144,7 @@ class Bookshelf(
             val coverFile =
                 coverStorage.storeCover(publication, coverUrl)
                     .getOrElse {
-                        return Try.failure(ImportError.ImportBookFailed(it))
+                        return Try.failure(ImportError.StorageError(it))
                     }
 
             val id = bookRepository.insertBook(
@@ -166,7 +157,7 @@ class Bookshelf(
             )
             if (id == -1L) {
                 coverFile.delete()
-                return Try.failure(ImportError.ImportDatabaseFailed())
+                return Try.failure(ImportError.DatabaseError())
             }
         }
             .onFailure {

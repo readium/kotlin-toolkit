@@ -135,7 +135,7 @@ class ReaderRepository(
                 openImage(bookId, publication, initialLocator)
             else ->
                 Try.failure(
-                    OpeningError.PublicationError(PublicationError.UnsupportedPublication())
+                    OpeningError.PublicationError(PublicationError.UnsupportedAsset())
                 )
         }
 
@@ -155,14 +155,14 @@ class ReaderRepository(
             publication,
             ExoPlayerEngineProvider(application)
         ) ?: return Try.failure(
-            OpeningError.PublicationError(PublicationError.UnsupportedPublication())
+            OpeningError.PublicationError(PublicationError.UnsupportedAsset())
         )
 
         val navigator = navigatorFactory.createNavigator(
             initialLocator,
             initialPreferences
         ) ?: return Try.failure(
-            OpeningError.PublicationError(PublicationError.UnsupportedPublication())
+            OpeningError.PublicationError(PublicationError.UnsupportedAsset())
         )
 
         mediaServiceFacade.openSession(bookId, navigator)

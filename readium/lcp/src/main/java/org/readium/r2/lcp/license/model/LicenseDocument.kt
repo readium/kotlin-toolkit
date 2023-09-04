@@ -70,6 +70,13 @@ public class LicenseDocument internal constructor(public val json: JSONObject) {
         if (link(Rel.Hint) == null || link(Rel.Publication) == null) {
             throw LcpException.Parsing.LicenseDocument
         }
+
+        // Check that the acquisition link has a valid URL.
+        try {
+            link(Rel.Publication)!!.url
+        } catch (e: Exception) {
+            throw LcpException.Parsing.Url(rel = LicenseDocument.Rel.Publication.value)
+        }
     }
 
     public constructor(data: ByteArray) : this(

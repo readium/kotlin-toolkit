@@ -14,6 +14,7 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
 import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.toUrl
 import org.readium.r2.testapp.data.model.Book
 import org.readium.r2.testapp.reader.ReaderActivityContract
 import org.readium.r2.testapp.utils.EventChannel
@@ -31,22 +32,16 @@ class BookshelfViewModel(application: Application) : AndroidViewModel(applicatio
             app.bookshelf.deleteBook(book)
         }
 
-    fun copyPublicationToAppStorage(uri: Uri) {
-        viewModelScope.launch {
-            app.bookshelf.importPublicationToAppStorage(uri)
-        }
+    fun importPublicationFromStorage(uri: Uri) {
+        app.bookshelf.importPublicationFromStorage(uri)
     }
 
-    fun addPublicationFromSharedStorage(uri: Uri) {
-        viewModelScope.launch {
-            app.bookshelf.addPublicationFromSharedStorage(Url(uri.toString())!!)
-        }
+    fun addPublicationFromStorage(uri: Uri) {
+        app.bookshelf.addPublicationFromStorage(uri.toUrl()!!)
     }
 
-    fun addPublicationFromTheWeb(url: Url) {
-        viewModelScope.launch {
-            app.bookshelf.addPublicationFromTheWeb(url)
-        }
+    fun addPublicationFromWeb(url: Url) {
+        app.bookshelf.addPublicationFromWeb(url)
     }
 
     fun openPublication(

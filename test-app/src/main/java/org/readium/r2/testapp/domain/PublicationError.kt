@@ -25,7 +25,7 @@ sealed class PublicationError(@StringRes userMessageId: Int) : UserException(use
         R.string.publication_error_scheme_not_supported
     )
 
-    class UnsupportedPublication(val error: Error? = null) : PublicationError(
+    class UnsupportedAsset(val error: Error? = null) : PublicationError(
         R.string.publication_error_unsupported_asset
     )
 
@@ -62,13 +62,13 @@ sealed class PublicationError(@StringRes userMessageId: Int) : UserException(use
                 is Publication.OpeningException.Unexpected ->
                     Unexpected(error)
                 is Publication.OpeningException.UnsupportedAsset ->
-                    SchemeNotSupported(error)
+                    UnsupportedAsset(error)
             }
 
         operator fun invoke(error: AssetRetriever.Error): PublicationError =
             when (error) {
                 is AssetRetriever.Error.ArchiveFormatNotSupported ->
-                    UnsupportedPublication(error)
+                    UnsupportedAsset(error)
                 is AssetRetriever.Error.Forbidden ->
                     Forbidden(error)
                 is AssetRetriever.Error.NotFound ->

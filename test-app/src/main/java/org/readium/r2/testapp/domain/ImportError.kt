@@ -8,7 +8,6 @@ package org.readium.r2.testapp.domain
 
 import androidx.annotation.StringRes
 import org.readium.r2.shared.UserException
-import org.readium.r2.shared.asset.AssetRetriever
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.util.downloads.DownloadManager
 import org.readium.r2.testapp.R
@@ -35,14 +34,6 @@ sealed class ImportError(
         companion object {
 
             operator fun invoke(
-                error: AssetRetriever.Error
-            ): ImportError = PublicationError(
-                org.readium.r2.testapp.domain.PublicationError(
-                    error
-                )
-            )
-
-            operator fun invoke(
                 error: Publication.OpeningException
             ): ImportError = PublicationError(
                 org.readium.r2.testapp.domain.PublicationError(
@@ -52,7 +43,7 @@ sealed class ImportError(
         }
     }
 
-    class ImportBookFailed(
+    class StorageError(
         override val cause: Throwable
     ) : ImportError(R.string.import_publication_unexpected_io_exception)
 
@@ -64,6 +55,6 @@ sealed class ImportError(
         override val cause: Throwable
     ) : ImportError(R.string.import_publication_no_acquisition)
 
-    class ImportDatabaseFailed :
+    class DatabaseError :
         ImportError(R.string.import_publication_unable_add_pub_database)
 }

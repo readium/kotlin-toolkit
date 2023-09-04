@@ -11,7 +11,6 @@ import java.io.File
 import org.readium.r2.lcp.license.container.createLicenseContainer
 import org.readium.r2.lcp.license.model.LicenseDocument
 import org.readium.r2.shared.extensions.tryOrLog
-import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.downloads.DownloadManager
 import org.readium.r2.shared.util.mediatype.FormatRegistry
@@ -156,36 +155,18 @@ public class LcpPublicationRetriever(
     }
 
     public fun retrieve(
-        license: ByteArray,
+        license: LicenseDocument,
         downloadTitle: String,
         downloadDescription: String? = null,
         listener: Listener
-    ): Try<RequestId, LcpException> {
-        return try {
-            val licenseDocument = LicenseDocument(license)
-            val requestId = fetchPublication(
-                licenseDocument,
-                downloadTitle,
-                downloadDescription
-            )
-            register(requestId, listener)
-            Try.success(requestId)
-        } catch (e: Exception) {
-            Try.failure(LcpException.wrap(e))
-        }
-    }
-
-    public fun retrieve(
-        license: File,
-        downloadTitle: String,
-        downloadDescription: String,
-        listener: Listener
-    ): Try<RequestId, LcpException> {
-        return try {
-            retrieve(license.readBytes(), downloadTitle, downloadDescription, listener)
-        } catch (e: Exception) {
-            Try.failure(LcpException.wrap(e))
-        }
+    ): RequestId {
+        val requestId = fetchPublication(
+            license,
+            downloadTitle,
+            downloadDescription
+        )
+        register(requestId, listener)
+        return requestId
     }
 
     public fun cancel(requestId: RequestId) {
@@ -198,13 +179,12 @@ public class LcpPublicationRetriever(
         downloadTitle: String,
         downloadDescription: String?
     ): RequestId {
-        val link = license.link(LicenseDocument.Rel.Publication)
-        val url = link?.url
-            ?: throw LcpException.Parsing.Url(rel = LicenseDocument.Rel.Publication.value)
+        val link = license.link(LicenseDocument.Rel.Publication)!!
+        val url = Url(link.url)
 
         val requestId = downloadManager.submit(
             request = DownloadManager.Request(
-                url = Url(url),
+                url = url,
                 title = downloadTitle,
                 description = downloadDescription,
                 headers = emptyMap()

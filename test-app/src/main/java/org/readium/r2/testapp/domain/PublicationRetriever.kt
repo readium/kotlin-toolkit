@@ -1,13 +1,14 @@
 /*
- * Copyright 2021 Readium Foundation. All rights reserved.
+ * Copyright 2023 Readium Foundation. All rights reserved.
  * Use of this source code is governed by the BSD-style license
  * available in the top-level LICENSE file of the project.
  */
 
 package org.readium.r2.testapp.domain
 
+import android.content.Context
+import android.net.Uri
 import java.io.File
-import java.net.URL
 import java.util.UUID
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.MainScope
@@ -15,6 +16,7 @@ import kotlinx.coroutines.launch
 import org.readium.r2.lcp.LcpException
 import org.readium.r2.lcp.LcpPublicationRetriever
 import org.readium.r2.lcp.LcpService
+import org.readium.r2.lcp.license.model.LicenseDocument
 import org.readium.r2.shared.asset.Asset
 import org.readium.r2.shared.asset.AssetRetriever
 import org.readium.r2.shared.publication.Publication
@@ -26,25 +28,27 @@ import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.mediatype.FormatRegistry
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.testapp.data.DownloadRepository
+import org.readium.r2.testapp.utils.extensions.copyToTempFile
 import org.readium.r2.testapp.utils.extensions.moveTo
 import org.readium.r2.testapp.utils.tryOrNull
 import timber.log.Timber
 
 class PublicationRetriever(
+    private val context: Context,
     private val storageDir: File,
     private val assetRetriever: AssetRetriever,
     private val formatRegistry: FormatRegistry,
     private val downloadRepository: DownloadRepository,
     private val downloadManager: DownloadManager,
-    private val lcpPublicationRetriever: Try<LcpPublicationRetriever, Exception>,
+    private val lcpPublicationRetriever: Try<LcpPublicationRetriever, LcpException>,
     private val listener: Listener
 ) {
 
     interface Listener {
 
-        fun onImportSucceeded(publication: File, coverUrl: String?)
+        fun onSuccess(publication: File, coverUrl: String?)
 
-        fun onImportError(error: ImportError)
+        fun onError(error: ImportError)
     }
 
     private val coroutineScope: CoroutineScope =
@@ -55,7 +59,7 @@ class PublicationRetriever(
             coroutineScope.launch {
                 val coverUrl = downloadRepository.getOpdsDownloadCover(requestId.value)
                 downloadRepository.removeOpdsDownload(requestId.value)
-                importFromAppStorage(file, coverUrl)
+                retrieveFromStorage(file, coverUrl)
             }
         }
 
@@ -72,7 +76,7 @@ class PublicationRetriever(
         ) {
             coroutineScope.launch {
                 downloadRepository.removeOpdsDownload(requestId.value)
-                listener.onImportError(ImportError.DownloadFailed(error))
+                listener.onError(ImportError.DownloadFailed(error))
             }
         }
     }
@@ -85,7 +89,7 @@ class PublicationRetriever(
             coroutineScope.launch {
                 val coverUrl = downloadRepository.getLcpDownloadCover(requestId.value)
                 downloadRepository.removeLcpDownload(requestId.value)
-                importFromAppStorage(acquiredPublication.localFile, coverUrl)
+                retrieveFromStorage(acquiredPublication.localFile, coverUrl)
             }
         }
 
@@ -102,7 +106,7 @@ class PublicationRetriever(
         ) {
             coroutineScope.launch {
                 downloadRepository.removeLcpDownload(requestId.value)
-                listener.onImportError(ImportError.LcpAcquisitionFailed(error))
+                listener.onError(ImportError.LcpAcquisitionFailed(error))
             }
         }
     }
@@ -133,59 +137,66 @@ class PublicationRetriever(
         }
     }
 
-    fun downloadFromOpds(publication: Publication) {
-        val publicationUrl = getDownloadURL(publication)
-            .getOrElse {
-                listener.onImportError(ImportError.OpdsError(it))
-                return
-            }.toString()
-
-        val coverUrl = publication
-            .images.firstOrNull()?.href
-
+    fun retrieveFromStorage(
+        uri: Uri
+    ) {
         coroutineScope.launch {
-            downloadAsync(publication.metadata.title, publicationUrl, coverUrl)
+            val tempFile = uri.copyToTempFile(context, storageDir)
+                .getOrElse {
+                    listener.onError(ImportError.StorageError(it))
+                    return@launch
+                }
+
+            retrieveFromStorage(tempFile)
         }
     }
 
-    private suspend fun downloadAsync(
-        publicationTitle: String?,
-        publicationUrl: String,
-        coverUrl: String?
-    ) {
-        val requestId = downloadManager.submit(
-            request = DownloadManager.Request(
-                Url(publicationUrl)!!,
-                title = publicationTitle ?: "Untitled publication",
-                description = "Downloading",
-                headers = emptyMap()
-            ),
-            listener = downloadListener
-        )
-        downloadRepository.insertOpdsDownload(
-            id = requestId.value,
-            cover = coverUrl
-        )
+    fun retrieveFromOpds(publication: Publication) {
+        coroutineScope.launch {
+            val publicationUrl = publication.acquisitionUrl()
+                .getOrElse {
+                    listener.onError(ImportError.OpdsError(it))
+                    return@launch
+                }.toString()
+
+            val coverUrl = publication
+                .images.firstOrNull()?.href
+
+            val requestId = downloadManager.submit(
+                request = DownloadManager.Request(
+                    Url(publicationUrl)!!,
+                    title = publication.metadata.title ?: "Untitled publication",
+                    description = "Downloading",
+                    headers = emptyMap()
+                ),
+                listener = downloadListener
+            )
+            downloadRepository.insertOpdsDownload(
+                id = requestId.value,
+                cover = coverUrl
+            )
+        }
     }
 
-    private fun getDownloadURL(publication: Publication): Try<URL, Exception> =
-        publication.links
+    private fun Publication.acquisitionUrl(): Try<Url, Exception> {
+        val acquisitionLink = links
             .firstOrNull { it.mediaType?.isPublication == true || it.mediaType == MediaType.LCP_LICENSE_DOCUMENT }
-            ?.let {
-                try {
-                    Try.success(URL(it.href))
-                } catch (e: Exception) {
-                    Try.failure(e)
-                }
-            } ?: Try.failure(Exception("No supported link to acquire publication."))
+            ?: return Try.failure(Exception("No supported link to acquire publication."))
 
-    suspend fun importFromAppStorage(
+        return Url(acquisitionLink.href)
+            ?.let { Try.success(it) }
+            ?: Try.failure(Exception("Invalid acquisition url."))
+    }
+
+    private suspend fun retrieveFromStorage(
         tempFile: File,
         coverUrl: String? = null
     ) {
         val sourceAsset = assetRetriever.retrieve(tempFile)
             ?: run {
-                listener.onImportError(mediaTypeNotSupportedError())
+                listener.onError(
+                    ImportError.PublicationError(PublicationError.UnsupportedAsset())
+                )
                 return
             }
 
@@ -193,9 +204,9 @@ class PublicationRetriever(
             sourceAsset is Asset.Resource &&
             sourceAsset.mediaType.matches(MediaType.LCP_LICENSE_DOCUMENT)
         ) {
-            acquireLcpPublication(sourceAsset, coverUrl)
+            acquireLcpPublication(sourceAsset, tempFile, coverUrl)
                 .getOrElse {
-                    listener.onImportError(ImportError.ImportBookFailed(it))
+                    listener.onError(ImportError.StorageError(it))
                     return
                 }
             return
@@ -210,40 +221,41 @@ class PublicationRetriever(
         } catch (e: Exception) {
             Timber.d(e)
             tryOrNull { libraryFile.delete() }
-            listener.onImportError(ImportError.ImportBookFailed(e))
+            listener.onError(ImportError.StorageError(e))
             return
         }
 
-        listener.onImportSucceeded(libraryFile, coverUrl)
+        listener.onSuccess(libraryFile, coverUrl)
     }
-
-    private fun mediaTypeNotSupportedError(): ImportError.PublicationError =
-        ImportError.PublicationError(
-            PublicationError.UnsupportedPublication(
-                Publication.OpeningException.UnsupportedAsset(
-                    "Unsupported media type"
-                )
-            )
-        )
 
     private suspend fun acquireLcpPublication(
         licenceAsset: Asset.Resource,
+        licenceFile: File,
         coverUrl: String?
-    ): Try<Unit, Exception> {
+    ): Try<Unit, ImportError> {
         val lcpRetriever = lcpPublicationRetriever
-            .getOrElse { return Try.failure(it) }
+            .getOrElse { return Try.failure(ImportError.LcpAcquisitionFailed(it)) }
 
         val license = licenceAsset.resource.read()
-            .getOrElse { return Try.failure(it) }
+            .getOrElse { return Try.failure(ImportError.StorageError(it)) }
+            .let {
+                try {
+                    LicenseDocument(it)
+                } catch (e: LcpException) {
+                    return Try.failure(
+                        ImportError.PublicationError(ImportError.LcpAcquisitionFailed(e))
+                    )
+                }
+            }
+
+        tryOrNull { licenceFile.delete() }
 
         val requestId = lcpRetriever.retrieve(
             license,
             "Fulfilling Lcp publication",
             null,
             lcpRetrieverListener
-        ).getOrElse {
-            return Try.failure(it)
-        }
+        )
 
         downloadRepository.insertLcpDownload(requestId.value, coverUrl)
 

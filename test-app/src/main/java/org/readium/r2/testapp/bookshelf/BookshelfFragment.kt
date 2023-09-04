@@ -67,7 +67,7 @@ class BookshelfFragment : Fragment() {
         appStoragePickerLauncher =
             registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
                 uri?.let {
-                    bookshelfViewModel.copyPublicationToAppStorage(it)
+                    bookshelfViewModel.importPublicationFromStorage(it)
                 }
             }
 
@@ -76,7 +76,7 @@ class BookshelfFragment : Fragment() {
                 uri?.let {
                     val takeFlags: Int = Intent.FLAG_GRANT_READ_URI_PERMISSION
                     requireContext().contentResolver.takePersistableUriPermission(uri, takeFlags)
-                    bookshelfViewModel.addPublicationFromSharedStorage(it)
+                    bookshelfViewModel.addPublicationFromStorage(it)
                 }
             }
 
@@ -132,7 +132,7 @@ class BookshelfFragment : Fragment() {
                     return@setPositiveButton
                 }
 
-                bookshelfViewModel.addPublicationFromTheWeb(url)
+                bookshelfViewModel.addPublicationFromWeb(url)
             }
             .show()
     }
