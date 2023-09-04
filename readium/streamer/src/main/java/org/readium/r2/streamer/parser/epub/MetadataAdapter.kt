@@ -372,7 +372,7 @@ private class OtherMetadataAdapter {
                 .associate { Pair(it.property, it.toMap()) }
             val mappedLinkChildren = children
                 .filterIsInstance(MetadataItem.Link::class.java)
-                .flatMap { link -> link.rels.map { rel -> Pair(rel, link.href) } }
+                .flatMap { link -> link.rels.map { rel -> Pair(rel, link.href()) } }
                 .toMap()
             mappedMetaChildren + mappedLinkChildren + Pair("@value", value)
         }

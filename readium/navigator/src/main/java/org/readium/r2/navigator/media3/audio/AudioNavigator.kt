@@ -21,6 +21,7 @@ import org.readium.r2.navigator.media3.api.Media3Adapter
 import org.readium.r2.navigator.media3.api.MediaNavigator
 import org.readium.r2.navigator.media3.api.TimeBasedMediaNavigator
 import org.readium.r2.navigator.preferences.Configurable
+import org.readium.r2.shared.DelicateReadiumApi
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.extensions.mapStateIn
 import org.readium.r2.shared.publication.Link
@@ -30,7 +31,7 @@ import org.readium.r2.shared.util.Url
 import timber.log.Timber
 
 @ExperimentalReadiumApi
-@OptIn(ExperimentalTime::class)
+@OptIn(ExperimentalTime::class, DelicateReadiumApi::class)
 public class AudioNavigator<S : Configurable.Settings, P : Configurable.Preferences<P>> private constructor(
     override val publication: Publication,
     private val audioEngine: AudioEngine<S, P>,

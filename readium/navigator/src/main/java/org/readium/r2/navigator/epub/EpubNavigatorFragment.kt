@@ -577,6 +577,7 @@ public class EpubNavigatorFragment internal constructor(
         notifyCurrentLocation()
     }
 
+    @OptIn(DelicateReadiumApi::class)
     override fun go(locator: Locator, animated: Boolean, completion: () -> Unit): Boolean {
         @Suppress("NAME_SHADOWING")
         val locator = publication.normalizeLocator(locator)
@@ -727,6 +728,7 @@ public class EpubNavigatorFragment internal constructor(
         viewModel.removeDecorationListener(listener)
     }
 
+    @OptIn(DelicateReadiumApi::class)
     override suspend fun applyDecorations(decorations: List<Decoration>, group: String) {
         @Suppress("NAME_SHADOWING")
         val decorations = decorations

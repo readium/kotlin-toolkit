@@ -28,6 +28,7 @@ import org.readium.r2.navigator.media.extensions.isPlaying
 import org.readium.r2.navigator.media.extensions.publicationId
 import org.readium.r2.navigator.media.extensions.resourceHref
 import org.readium.r2.navigator.media.extensions.toPlaybackState
+import org.readium.r2.shared.DelicateReadiumApi
 import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
@@ -184,6 +185,7 @@ public class MediaSessionNavigator(
         return locator
     }
 
+    @OptIn(DelicateReadiumApi::class)
     override fun go(locator: Locator, animated: Boolean, completion: () -> Unit): Boolean {
         if (!isActive) return false
 

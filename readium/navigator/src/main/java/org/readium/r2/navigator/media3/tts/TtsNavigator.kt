@@ -20,6 +20,7 @@ import org.readium.r2.navigator.media3.api.MediaNavigator
 import org.readium.r2.navigator.media3.api.TextAwareMediaNavigator
 import org.readium.r2.navigator.media3.tts.session.TtsSessionAdapter
 import org.readium.r2.navigator.preferences.Configurable
+import org.readium.r2.shared.DelicateReadiumApi
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.extensions.combineStateIn
 import org.readium.r2.shared.extensions.mapStateIn
@@ -36,6 +37,7 @@ import org.readium.r2.shared.util.tokenizer.TextTokenizer
  * A navigator to read aloud a [Publication] with a TTS engine.
  */
 @ExperimentalReadiumApi
+@OptIn(DelicateReadiumApi::class)
 public class TtsNavigator<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
     E : TtsEngine.Error, V : TtsEngine.Voice> private constructor(
     coroutineScope: CoroutineScope,

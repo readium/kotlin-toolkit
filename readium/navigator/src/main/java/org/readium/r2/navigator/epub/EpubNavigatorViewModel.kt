@@ -148,7 +148,7 @@ internal class EpubNavigatorViewModel(
         if (link != null) {
             for ((group, decorations) in decorations) {
                 val changes = decorations
-                    .filter { it.locator.href == link.href }
+                    .filter { it.locator.href == link.href() }
                     .map { DecorationChange.Added(it) }
 
                 val groupScript = changes.javascriptForGroup(group, decorationTemplates) ?: continue
