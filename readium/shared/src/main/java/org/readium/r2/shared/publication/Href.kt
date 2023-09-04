@@ -44,11 +44,29 @@ public sealed class Href : Parcelable {
  * A static hypertext reference to a publication resource.
  */
 @Parcelize
-public data class UrlHref(val url: Url) : Href() {
-    override fun toString(): String = url.toString()
-
+public class UrlHref(public val url: Url) : Href() {
     override fun toUrl(base: Url?, parameters: Map<String, String>): Url =
         base?.resolve(url) ?: url
+
+    override fun toString(): String = url.toString()
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other is Url) {
+            throw IllegalArgumentException(
+                "You cannot compare an Href to a Url. Use `href.toUrl() == url` instead."
+            )
+        }
+        if (javaClass != other?.javaClass) return false
+
+        other as UrlHref
+
+        if (url != other.url) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int = url.hashCode()
 }
 
 /**
@@ -57,9 +75,7 @@ public data class UrlHref(val url: Url) : Href() {
  * @param template The URL template, as defined in RFC 6570.
  */
 @Parcelize
-public data class TemplatedHref(val template: String) : Href() {
-
-    override fun toString(): String = template
+public class TemplatedHref(public val template: String) : Href() {
 
     override fun toUrl(base: Url?, parameters: Map<String, String>): Url? =
         Url(URITemplate(template).expand(parameters))
@@ -70,6 +86,26 @@ public data class TemplatedHref(val template: String) : Href() {
      */
     public val parameters: List<String> get() =
         URITemplate(template).parameters
+
+    override fun toString(): String = template
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other is Url) {
+            throw IllegalArgumentException(
+                "You cannot compare an Href to a Url. Use `href.toUrl() == url` instead."
+            )
+        }
+        if (javaClass != other?.javaClass) return false
+
+        other as TemplatedHref
+
+        if (template != other.template) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int = template.hashCode()
 }
 
 /**

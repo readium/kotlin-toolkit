@@ -6,7 +6,10 @@
 
 package org.readium.r2.shared.publication
 
+import kotlin.test.assertFailsWith
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotEquals
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.readium.r2.shared.util.Url
@@ -77,5 +80,34 @@ class HrefTest {
     fun getToString() {
         assertEquals("folder/chapter.xhtml", UrlHref(Url("folder/chapter.xhtml")!!).toString())
         assertEquals("url{?x,hello,y}name", TemplatedHref("url{?x,hello,y}name").toString())
+    }
+
+    @Test
+    fun equality() {
+        val url1 = Url("folder/chapter1.xhtml")!!
+        val url2 = Url("folder/chapter2.xhtml")!!
+        assertEquals(UrlHref(url1), UrlHref(url1))
+        assertNotEquals(UrlHref(url1), UrlHref(url2))
+
+        assertEquals(TemplatedHref("template1"), TemplatedHref("template1"))
+        assertNotEquals(TemplatedHref("template1"), TemplatedHref("template2"))
+    }
+
+    @Test
+    fun cannotCompareToUrl() {
+        val url = Url("folder/chapter.xhtml")!!
+
+        assertFailsWith(IllegalArgumentException::class) {
+            assertFalse(UrlHref(url) as Href == url)
+        }
+        assertFailsWith(IllegalArgumentException::class) {
+            assertFalse(TemplatedHref("") as Href == url)
+        }
+        assertFailsWith(IllegalArgumentException::class) {
+            assertFalse(url == UrlHref(url) as Href)
+        }
+        assertFailsWith(IllegalArgumentException::class) {
+            assertFalse(url == TemplatedHref("") as Href)
+        }
     }
 }
