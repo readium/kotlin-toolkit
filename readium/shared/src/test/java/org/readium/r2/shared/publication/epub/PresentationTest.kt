@@ -12,10 +12,10 @@ package org.readium.r2.shared.publication.epub
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.readium.r2.shared.publication.Href
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Properties
 import org.readium.r2.shared.publication.presentation.Presentation
-import org.readium.r2.shared.urlHref
 import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
@@ -62,7 +62,7 @@ class PresentationTest {
     }
 
     private fun createLink(layout: EpubLayout?) = Link(
-        href = urlHref("res"),
+        href = Href("res")!!,
         properties = Properties(
             otherProperties = layout?.let { mapOf("layout" to layout.value) }
                 ?: emptyMap()

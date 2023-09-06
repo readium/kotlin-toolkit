@@ -125,7 +125,9 @@ public class Publication(
      * `self` relation.
      */
     public val baseUrl: Url?
-        get() = links.firstWithRel("self")?.href?.invoke()
+        get() = links.firstWithRel("self")?.href
+            ?.takeUnless { it.isTemplated }
+            ?.toUrl()
 
     /**
      * Returns the URL to the resource represented by the given [link], relative to the
@@ -133,7 +135,7 @@ public class Publication(
      *
      * If the link HREF is a template, the [parameters] are used to expand it according to RFC 6570.
      */
-    public fun url(link: Link, parameters: Map<String, String> = emptyMap()): Url? =
+    public fun url(link: Link, parameters: Map<String, String> = emptyMap()): Url =
         link.href(baseUrl, parameters = parameters)
 
     /**
@@ -173,23 +175,28 @@ public class Publication(
     /**
      * Returns the resource targeted by the given non-templated [link].
      */
-    public fun get(link: Link): Resource {
-        val url = requireNotNull(link.href()) {
-            "You must expand templated links before calling [Publication.get]"
-        }
+    public fun get(link: Link): Resource =
+        get(link.href(), link.mediaType)
 
-        services.services.forEach { service -> service.get(link)?.let { return it } }
+    /**
+     * Returns the resource targeted by the given [href].
+     */
+    public fun get(href: Url): Resource =
+        get(href, linkWithHref(href)?.mediaType)
 
-        return container.get(url)
+    private fun get(href: Url, mediaType: MediaType?): Resource {
+        services.services.forEach { service -> service.get(href)?.let { return it } }
+
+        return container.get(href)
             .fallback { error ->
                 if (error is Resource.Exception.NotFound) {
                     // Try again after removing query and fragment.
-                    container.get(url.removeQuery().removeFragment())
+                    container.get(href.removeQuery().removeFragment())
                 } else {
                     null
                 }
             }
-            .withMediaType(link.mediaType)
+            .withMediaType(mediaType)
     }
 
     /**
@@ -369,7 +376,7 @@ public class Publication(
          * @return The [Resource] containing the response, or null if the service doesn't
          * recognize this request.
          */
-        public fun get(link: Link): Resource? = null
+        public fun get(href: Url): Resource? = null
 
         /**
          * Closes any opened file handles, removes temporary files, etc.

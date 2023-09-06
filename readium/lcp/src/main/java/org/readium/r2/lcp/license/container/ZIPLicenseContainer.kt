@@ -21,7 +21,7 @@ import org.zeroturnaround.zip.ZipUtil
  */
 internal class ZIPLicenseContainer(
     private val zip: File,
-    private val pathInZIP: String
+    private val pathInZIP: Url
 ) : LicenseContainer {
 
     override fun read(): ByteArray {
@@ -31,31 +31,32 @@ internal class ZIPLicenseContainer(
             throw LcpException.Container.OpenFailed
         }
         val entry = try {
-            archive.getEntry(pathInZIP)
+            archive.getEntry(pathInZIP.toString())
         } catch (e: Exception) {
-            throw LcpException.Container.FileNotFound(Url.fromDecodedPath(pathInZIP))
+            throw LcpException.Container.FileNotFound(pathInZIP)
         }
 
         return try {
             archive.getInputStream(entry).readBytes()
         } catch (e: Exception) {
-            throw LcpException.Container.ReadFailed(Url.fromDecodedPath(pathInZIP))
+            throw LcpException.Container.ReadFailed(pathInZIP)
         }
     }
 
     override fun write(license: LicenseDocument) {
         try {
+            val path = pathInZIP.toString()
             val tmpZip = File("${zip.path}.tmp")
             tmpZip.delete()
             zip.copyTo(tmpZip)
             zip.delete()
-            if (ZipUtil.containsEntry(tmpZip, pathInZIP)) {
-                ZipUtil.removeEntry(tmpZip, pathInZIP)
+            if (ZipUtil.containsEntry(tmpZip, path)) {
+                ZipUtil.removeEntry(tmpZip, path)
             }
-            ZipUtil.addEntry(tmpZip, pathInZIP, license.data, zip)
+            ZipUtil.addEntry(tmpZip, path, license.data, zip)
             tmpZip.delete()
         } catch (e: Exception) {
-            throw LcpException.Container.WriteFailed(Url.fromDecodedPath(pathInZIP))
+            throw LcpException.Container.WriteFailed(pathInZIP)
         }
     }
 }

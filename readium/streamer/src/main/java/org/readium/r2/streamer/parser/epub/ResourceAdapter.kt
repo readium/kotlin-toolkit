@@ -7,9 +7,9 @@
 package org.readium.r2.streamer.parser.epub
 
 import org.readium.r2.shared.extensions.toMap
+import org.readium.r2.shared.publication.Href
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Properties
-import org.readium.r2.shared.publication.UrlHref
 import org.readium.r2.shared.publication.encryption.Encryption
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
@@ -72,7 +72,7 @@ internal class ResourceAdapter(
         val (rels, properties) = computePropertiesAndRels(item, itemrefByIdref[item.id])
 
         return Link(
-            href = UrlHref(item.href),
+            href = Href(item.href),
             mediaType = mediaTypeRetriever.retrieve(item.mediaType),
             duration = durationById[item.id],
             rels = rels,

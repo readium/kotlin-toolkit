@@ -27,7 +27,6 @@ import org.readium.r2.shared.publication.allAreHtml
 import org.readium.r2.shared.publication.services.isRestricted
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Try
-import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.testapp.PublicationError
 import org.readium.r2.testapp.Readium
@@ -97,7 +96,7 @@ class ReaderRepository(
         val book = checkNotNull(bookRepository.get(bookId)) { "Cannot find book in database." }
 
         val asset = readium.assetRetriever.retrieve(
-            Url(book.href) as AbsoluteUrl,
+            AbsoluteUrl(book.href)!!,
             book.mediaType,
             book.assetType
         ).getOrElse { return Try.failure(OpeningError.PublicationError(it)) }

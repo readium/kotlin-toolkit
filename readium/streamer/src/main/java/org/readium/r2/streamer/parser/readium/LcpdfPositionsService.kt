@@ -71,17 +71,18 @@ internal class LcpdfPositionsService(
         totalPageCount: Int,
         startPosition: Int
     ): List<Locator> {
-        val url = link.href()
-        if (url == null || pageCount <= 0 || totalPageCount <= 0) {
+        if (pageCount <= 0 || totalPageCount <= 0) {
             return emptyList()
         }
+
+        val href = link.href()
 
         // FIXME: Use the [tableOfContents] to generate the titles
         return (1..pageCount).map { position ->
             val progression = (position - 1) / pageCount.toDouble()
             val totalProgression = (startPosition + position - 1) / totalPageCount.toDouble()
             Locator(
-                href = url,
+                href = href,
                 mediaType = link.mediaType ?: MediaType.PDF,
                 locations = Locator.Locations(
                     fragments = listOf("page=$position"),
@@ -93,15 +94,12 @@ internal class LcpdfPositionsService(
         }
     }
 
-    private suspend fun openPdfAt(link: Link): PdfDocument? {
-        val url = link.href() ?: return null
-
-        return tryOrLog {
+    private suspend fun openPdfAt(link: Link): PdfDocument? =
+        tryOrLog {
             pdfFactory
                 .cachedIn(context.services)
-                .open(context.container.get(url), password = null)
+                .open(context.container.get(link.href()), password = null)
         }
-    }
 
     companion object {
 

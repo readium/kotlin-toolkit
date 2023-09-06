@@ -17,7 +17,6 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.readium.r2.shared.assertJSONEquals
 import org.readium.r2.shared.toJSON
-import org.readium.r2.shared.urlHref
 import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
@@ -45,8 +44,8 @@ class SubjectTest {
                 scheme = "http://scheme",
                 code = "CODE",
                 links = listOf(
-                    Link(href = urlHref("pub1")),
-                    Link(href = urlHref("pub2"))
+                    Link(href = Href("pub1")!!),
+                    Link(href = Href("pub2")!!)
                 )
             ),
             Subject.fromJSON(
@@ -182,8 +181,8 @@ class SubjectTest {
                 scheme = "http://scheme",
                 code = "CODE",
                 links = listOf(
-                    Link(href = urlHref("pub1")),
-                    Link(href = urlHref("pub2"))
+                    Link(href = Href("pub1")!!),
+                    Link(href = Href("pub2")!!)
                 )
             ).toJSON()
         )

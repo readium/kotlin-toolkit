@@ -100,22 +100,20 @@ internal data class ReadiumCss(
 
     private val stylesheetsFolder by lazy {
         assetsBaseHref.resolve(
-            Url.fromDecodedPath(
-                "readium/readium-css/${layout.stylesheets.folder?.plus("/") ?: ""}"
-            )
+            Url("readium/readium-css/${layout.stylesheets.folder?.plus("/") ?: ""}")!!
         )
     }
 
     private val beforeCss by lazy {
-        stylesheetsFolder.resolve(Url.fromDecodedPath("ReadiumCSS-before.css"))
+        stylesheetsFolder.resolve(Url("ReadiumCSS-before.css")!!)
     }
 
     private val afterCss by lazy {
-        stylesheetsFolder.resolve(Url.fromDecodedPath("ReadiumCSS-after.css"))
+        stylesheetsFolder.resolve(Url("ReadiumCSS-after.css")!!)
     }
 
     private val defaultCss by lazy {
-        stylesheetsFolder.resolve(Url.fromDecodedPath("ReadiumCSS-default.css"))
+        stylesheetsFolder.resolve(Url("ReadiumCSS-default.css")!!)
     }
 
     /**

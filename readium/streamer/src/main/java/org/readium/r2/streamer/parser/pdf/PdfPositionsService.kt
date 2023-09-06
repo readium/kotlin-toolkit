@@ -38,14 +38,13 @@ internal class PdfPositionsService(
             return@lazy listOf(emptyList<Locator>())
         }
 
-        val url = link.href()
-            ?: return@lazy listOf(emptyList<Locator>())
+        val href = link.href()
 
         return@lazy listOf(
             (1..pageCount).map { position ->
                 val progression = (position - 1) / pageCount.toDouble()
                 Locator(
-                    href = url,
+                    href = href,
                     mediaType = link.mediaType ?: MediaType.PDF,
                     locations = Locator.Locations(
                         fragments = listOf("page=$position"),

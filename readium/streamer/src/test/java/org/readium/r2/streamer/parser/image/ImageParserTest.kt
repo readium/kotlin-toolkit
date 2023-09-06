@@ -78,9 +78,9 @@ class ImageParserTest {
     fun `readingOrder is sorted alphabetically`() {
         val builder = parser.parseBlocking(cbzAsset)
         assertNotNull(builder)
-        val base = Url.fromDecodedPath("Cory Doctorow's Futuristic Tales of the Here and Now/")
+        val base = Url.fromDecodedPath("Cory Doctorow's Futuristic Tales of the Here and Now/")!!
         val readingOrder = builder!!.manifest.readingOrder
-            .map { base.relativize(it.href()!!).toString() }
+            .map { base.relativize(it.href()).toString() }
         assertThat(readingOrder)
             .containsExactly("a-fc.jpg", "x-002.jpg", "x-003.jpg", "x-004.jpg")
     }

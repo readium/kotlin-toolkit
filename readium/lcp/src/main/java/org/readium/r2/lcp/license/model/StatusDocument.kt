@@ -111,7 +111,6 @@ public class StatusDocument(public val data: ByteArray) {
             ?: throw LcpException.Parsing.Url(rel = rel.value)
 
         return link.href(parameters = parameters)
-            ?: throw LcpException.Parsing.Url(rel = rel.value)
     }
 
     public fun events(type: Event.EventType): List<Event> =

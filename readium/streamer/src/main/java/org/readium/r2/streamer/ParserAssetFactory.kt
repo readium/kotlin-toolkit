@@ -99,7 +99,7 @@ internal class ParserAssetFactory(
         val container =
             RoutingContainer(
                 local = ResourceContainer(
-                    url = Url.fromDecodedPath("manifest.json"),
+                    url = Url("manifest.json")!!,
                     asset.resource
                 ),
                 remote = HttpContainer(httpClient, baseUrl)
@@ -122,7 +122,7 @@ internal class ParserAssetFactory(
         // "publication.extension".
         val extension = formatRegistry.fileExtension(asset.mediaType)?.addPrefix(".") ?: ""
         val container = ResourceContainer(
-            Url.fromDecodedPath("publication$extension"),
+            Url("publication$extension")!!,
             asset.resource
         )
 

@@ -115,9 +115,8 @@ public class StringSearchService(
 
                 val link = manifest.readingOrder[index]
                 val text =
-                    link.href()
-                        ?.let { container.get(it) }
-                        ?.let { extractorFactory.createExtractor(it)?.extractText(it)?.getOrThrow() }
+                    container.get(link.href())
+                        .let { extractorFactory.createExtractor(it)?.extractText(it)?.getOrThrow() }
                 if (text == null) {
                     Timber.w("Cannot extract text from resource: ${link.href}")
                     return next()
@@ -143,7 +142,7 @@ public class StringSearchService(
                 return emptyList()
             }
 
-            val resourceTitle = link.href()?.let { manifest.tableOfContents.titleMatching(it) }
+            val resourceTitle = manifest.tableOfContents.titleMatching(link.href())
             var resourceLocator = manifest.locatorFromLink(link) ?: return emptyList()
             resourceLocator = resourceLocator.copy(title = resourceTitle ?: resourceLocator.title)
             val locators = mutableListOf<Locator>()
@@ -353,7 +352,7 @@ private fun List<Link>.titleMatching(href: Url): String? {
 }
 
 private fun Link.titleMatching(targetHref: Url): String? {
-    if (href()?.removeFragment() == targetHref) {
+    if (href().removeFragment() == targetHref) {
         return title
     }
     return children.titleMatching(targetHref)

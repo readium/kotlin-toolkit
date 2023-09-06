@@ -14,9 +14,9 @@ import org.junit.Assert.assertNull
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.readium.r2.shared.opds.*
+import org.readium.r2.shared.publication.Href
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Properties
-import org.readium.r2.shared.urlHref
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.robolectric.RobolectricTestRunner
 
@@ -112,7 +112,7 @@ class PropertiesTest {
     @Test fun `get Properties {authenticate} when available`() {
         assertEquals(
             Link(
-                href = urlHref("https://example.com/authentication.json"),
+                href = Href("https://example.com/authentication.json")!!,
                 mediaType = MediaType("application/opds-authentication+json")!!
             ),
             Properties(

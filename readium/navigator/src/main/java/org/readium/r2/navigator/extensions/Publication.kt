@@ -13,7 +13,6 @@ import kotlinx.coroutines.runBlocking
 import org.readium.r2.shared.DelicateReadiumApi
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.publication.UrlHref
 import org.readium.r2.shared.publication.services.positions
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Url
@@ -33,7 +32,7 @@ internal val Publication.positionsByResource: Map<Url, List<Locator>>
  */
 @DelicateReadiumApi
 public fun Publication.normalizeLocator(locator: Locator): Locator {
-    val self = (linkWithRel("self")?.href as? UrlHref)?.url as? AbsoluteUrl
+    val self = (baseUrl as? AbsoluteUrl)
 
     return if (self == null) { // Packaged publication
         locator.copy(

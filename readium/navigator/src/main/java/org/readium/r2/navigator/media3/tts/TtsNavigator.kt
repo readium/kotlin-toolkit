@@ -27,7 +27,6 @@ import org.readium.r2.shared.extensions.mapStateIn
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.publication.UrlHref
 import org.readium.r2.shared.publication.services.content.ContentService
 import org.readium.r2.shared.util.Language
 import org.readium.r2.shared.util.Url
@@ -290,7 +289,7 @@ public class TtsNavigator<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
 
     private fun TtsPlayer.Utterance.toPosition(): Location {
         val currentLink = publication.readingOrder[position.resourceIndex]
-        val url = (currentLink.href as UrlHref).url
+        val url = currentLink.href()
 
         val utteranceLocator = publication
             .locatorFromLink(currentLink)!!

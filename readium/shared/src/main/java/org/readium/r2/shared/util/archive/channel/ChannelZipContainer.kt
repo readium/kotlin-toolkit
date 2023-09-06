@@ -147,8 +147,9 @@ internal class ChannelZipContainer(
     override suspend fun entries(): Set<Container.Entry> =
         archive.entries.toList()
             .filterNot { it.isDirectory }
-            .map {
-                Entry(Url.fromDecodedPath(it.name), it)
+            .mapNotNull { entry ->
+                Url.fromDecodedPath(entry.name)
+                    ?.let { url -> Entry(url, entry) }
             }
             .toSet()
 

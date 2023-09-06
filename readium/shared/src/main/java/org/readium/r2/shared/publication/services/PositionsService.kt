@@ -53,8 +53,8 @@ public interface PositionsService : Publication.Service {
 
     override val links: List<Link> get() = listOf(positionsLink)
 
-    override fun get(link: Link): Resource? {
-        if (link.href != positionsLink.href) {
+    override fun get(href: Url): Resource? {
+        if (href != positionsLink.href()) {
             return null
         }
 
@@ -120,11 +120,9 @@ public class PerResourcePositionsService(
         val pageCount = readingOrder.size
 
         return readingOrder.mapIndexed { index, link ->
-            val url = link.href() ?: return@mapIndexed emptyList()
-
             listOf(
                 Locator(
-                    href = url,
+                    href = link.href(),
                     mediaType = link.mediaType ?: fallbackMediaType,
                     title = link.title,
                     locations = Locator.Locations(
@@ -173,7 +171,7 @@ internal class WebPositionsService(
 
     private suspend fun computePositions(): List<Locator> =
         links.firstOrNull()
-            ?.let { get(it) }
+            ?.let { get(it.href()) }
             ?.readAsString()
             ?.getOrNull()
             ?.toJsonOrNull()

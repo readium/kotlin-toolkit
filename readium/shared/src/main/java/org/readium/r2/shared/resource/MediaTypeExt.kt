@@ -20,5 +20,7 @@ public class ContainerMediaTypeSnifferContent(
         container.entries()?.map { it.url.path }?.toSet()
 
     override suspend fun read(path: String, range: LongRange?): ByteArray? =
-        container.get(Url.fromDecodedPath(path)).read(range).getOrNull()
+        Url.fromDecodedPath(path)?.let { url ->
+            container.get(url).read(range).getOrNull()
+        }
 }

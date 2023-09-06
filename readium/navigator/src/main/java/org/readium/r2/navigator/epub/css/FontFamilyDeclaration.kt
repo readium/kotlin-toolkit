@@ -134,7 +134,10 @@ public data class MutableFontFaceDeclaration internal constructor(
      * using `<link rel="preload">`.
      */
     public fun addSource(path: String, preload: Boolean = false) {
-        addSource(Url.fromDecodedPath(path), preload = preload)
+        val url = requireNotNull(Url.fromDecodedPath(path)) {
+            "Invalid font path: $path"
+        }
+        addSource(url, preload = preload)
     }
 
     /**

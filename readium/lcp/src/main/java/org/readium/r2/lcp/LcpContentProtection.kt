@@ -10,6 +10,7 @@ import org.readium.r2.lcp.auth.LcpPassphraseAuthentication
 import org.readium.r2.lcp.license.model.LicenseDocument
 import org.readium.r2.shared.asset.Asset
 import org.readium.r2.shared.asset.AssetRetriever
+import org.readium.r2.shared.asset.AssetType
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.encryption.encryption
 import org.readium.r2.shared.publication.flatten
@@ -23,6 +24,7 @@ import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.ThrowableError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.flatMap
 import org.readium.r2.shared.util.getOrElse
 
 internal class LcpContentProtection(
@@ -106,8 +108,7 @@ internal class LcpContentProtection(
                 decryptor.encryptionData = (manifest.readingOrder + manifest.resources + manifest.links)
                     .flatten()
                     .mapNotNull {
-                        val url = it.href() ?: return@mapNotNull null
-                        it.properties.encryption?.let { enc -> url to enc }
+                        it.properties.encryption?.let { enc -> it.href() to enc }
                     }
                     .toMap()
 
@@ -155,10 +156,22 @@ internal class LcpContentProtection(
                 )
             )
 
-        val asset = (assetRetriever.retrieve(url) as? Asset.Container)
-            ?: return Try.failure(Publication.OpeningException.ParsingFailed())
+        val asset =
+            if (link.mediaType != null) {
+                assetRetriever.retrieve(
+                    url,
+                    mediaType = link.mediaType,
+                    assetType = AssetType.Archive
+                )
+                    .map { it as Asset.Container }
+                    .mapFailure { Publication.OpeningException.ParsingFailed(it) }
+            } else {
+                (assetRetriever.retrieve(url) as? Asset.Container)
+                    ?.let { Try.success(it) }
+                    ?: Try.failure(Publication.OpeningException.ParsingFailed())
+            }
 
-        return createResultAsset(asset, license)
+        return asset.flatMap { createResultAsset(it, license) }
     }
 
     private fun ResourceFactory.Error.wrap(): Publication.OpeningException =

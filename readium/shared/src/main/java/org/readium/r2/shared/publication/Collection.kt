@@ -9,16 +9,8 @@
 
 package org.readium.r2.shared.publication
 
-import org.readium.r2.shared.ExperimentalReadiumApi
-
 /**
  * Collection type used for collection/series metadata.
  * For convenience, the JSON schema reuse the Contributor's definition.
  */
 public typealias Collection = Contributor
-
-@ExperimentalReadiumApi
-public fun Map<String, List<Collection>>.copy(transformer: ManifestTransformer): Map<String, List<Collection>> =
-    mapValues { (_, value) ->
-        value.map { it.copy(transformer) }
-    }

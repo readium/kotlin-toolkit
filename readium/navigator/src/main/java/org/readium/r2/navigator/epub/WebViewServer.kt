@@ -16,9 +16,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.readium.r2.navigator.epub.css.ReadiumCss
 import org.readium.r2.shared.ExperimentalReadiumApi
+import org.readium.r2.shared.publication.Href
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.publication.UrlHref
 import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.resource.ResourceInputStream
 import org.readium.r2.shared.resource.StringResource
@@ -41,11 +41,11 @@ internal class WebViewServer(
     private val disableSelectionWhenProtected: Boolean
 ) {
     companion object {
-        val publicationBaseHref = Url("https://readium/publication/") as AbsoluteUrl
-        val assetsBaseHref = Url("https://readium/assets/") as AbsoluteUrl
+        val publicationBaseHref = AbsoluteUrl("https://readium/publication/")!!
+        val assetsBaseHref = AbsoluteUrl("https://readium/assets/")!!
 
-        fun assetUrl(path: String): Url =
-            assetsBaseHref.resolve(Url.fromDecodedPath(path))
+        fun assetUrl(path: String): Url? =
+            Url.fromDecodedPath(path)?.let { assetsBaseHref.resolve(it) }
     }
 
     private val assetManager: AssetManager = application.assets
@@ -62,8 +62,11 @@ internal class WebViewServer(
 
         return when {
             path.startsWith("/publication/") -> {
+                val href = Url.fromDecodedPath(path.removePrefix("/publication/"))
+                    ?: return null
+
                 servePublicationResource(
-                    href = Url.fromDecodedPath(path.removePrefix("/publication/")),
+                    href = href,
                     range = HttpHeaders(request.requestHeaders).range,
                     css = css
                 )
@@ -83,12 +86,12 @@ internal class WebViewServer(
     private fun servePublicationResource(href: Url, range: HttpRange?, css: ReadiumCss): WebResourceResponse {
         val link = publication.linkWithHref(href)
             // Query parameters must be kept as they might be relevant for the fetcher.
-            ?.copy(href = UrlHref(href))
+            ?.copy(href = Href(href))
             ?: Link(href = href)
 
         // Drop anchor because it is meant to be interpreted by the client.
         val linkWithoutAnchor = link.copy(
-            href = UrlHref(href.removeFragment())
+            href = Href(href.removeFragment())
         )
 
         var resource = publication.get(linkWithoutAnchor)

@@ -14,7 +14,6 @@ import kotlinx.parcelize.Parcelize
 import kotlinx.parcelize.WriteWith
 import org.json.JSONArray
 import org.json.JSONObject
-import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.JSONable
 import org.readium.r2.shared.extensions.JSONParceler
 import org.readium.r2.shared.extensions.mapNotNull
@@ -45,13 +44,6 @@ public data class PublicationCollection(
         putIfNotEmpty("links", links)
         subcollections.appendToJSONObject(this)
     }
-
-    @ExperimentalReadiumApi
-    public fun copy(transformer: ManifestTransformer): PublicationCollection =
-        copy(
-            links = links.copy(transformer),
-            subcollections = subcollections.copy(transformer)
-        )
 
     public companion object {
 
@@ -169,12 +161,6 @@ internal fun Map<String, List<PublicationCollection>>.appendToJSONObject(jsonObj
                 it.putIfNotEmpty(role, collections)
             }
         }
-    }
-
-@ExperimentalReadiumApi
-public fun Map<String, List<PublicationCollection>>.copy(transformer: ManifestTransformer): Map<String, List<PublicationCollection>> =
-    mapValues { (_, value) ->
-        value.map { it.copy(transformer) }
     }
 
 @Deprecated(

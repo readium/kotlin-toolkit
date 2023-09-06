@@ -48,12 +48,12 @@ internal fun Resource.injectHtml(
             content = css.injectHtml(content)
             injectables.add(
                 script(
-                    baseHref.resolve(Url.fromDecodedPath("readium/scripts/readium-reflowable.js"))
+                    baseHref.resolve(Url("readium/scripts/readium-reflowable.js")!!)
                 )
             )
         } else {
             injectables.add(
-                script(baseHref.resolve(Url.fromDecodedPath("readium/scripts/readium-fixed.js")))
+                script(baseHref.resolve(Url("readium/scripts/readium-fixed.js")!!))
             )
         }
 

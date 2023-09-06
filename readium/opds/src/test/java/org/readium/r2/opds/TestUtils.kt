@@ -14,9 +14,6 @@ import java.net.URL
 import org.json.JSONArray
 import org.json.JSONObject
 import org.junit.Assert
-import org.readium.r2.shared.publication.Href
-import org.readium.r2.shared.publication.UrlHref
-import org.readium.r2.shared.util.Url
 
 /**
  * Asserts that two [JSONObject] are equal.
@@ -48,6 +45,3 @@ class Fixtures(val path: String? = null) {
     fun bytesAt(resourcePath: String): ByteArray =
         fileAt(resourcePath).readBytes()
 }
-
-fun urlHref(url: String): Href =
-    UrlHref(Url(url)!!)

@@ -43,7 +43,7 @@ public class ReadiumWebPubParser(
         }
 
         val manifestJson = asset.container
-            .get(Url.fromDecodedPath("manifest.json"))
+            .get(Url("manifest.json")!!)
             .readAsJson()
             .getOrElse { return Try.failure(PublicationParser.Error.IO(it)) }
 

@@ -15,7 +15,6 @@ import org.junit.Assert.assertNull
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.readium.r2.shared.assertJSONEquals
-import org.readium.r2.shared.urlHref
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.robolectric.RobolectricTestRunner
@@ -369,12 +368,12 @@ class LocatorCollectionTest {
                 links = listOf(
                     Link(
                         rels = setOf("self"),
-                        href = urlHref("/978-1503222687/search?query=apple"),
+                        href = Href("/978-1503222687/search?query=apple")!!,
                         mediaType = MediaType("application/vnd.readium.locators+json")!!
                     ),
                     Link(
                         rels = setOf("next"),
-                        href = urlHref("/978-1503222687/search?query=apple&page=2"),
+                        href = Href("/978-1503222687/search?query=apple&page=2")!!,
                         mediaType = MediaType("application/vnd.readium.locators+json")!!
                     )
                 ),
@@ -537,12 +536,12 @@ class LocatorCollectionTest {
                 links = listOf(
                     Link(
                         rels = setOf("self"),
-                        href = urlHref("/978-1503222687/search?query=apple"),
+                        href = Href("/978-1503222687/search?query=apple")!!,
                         mediaType = MediaType("application/vnd.readium.locators+json")!!
                     ),
                     Link(
                         rels = setOf("next"),
-                        href = urlHref("/978-1503222687/search?query=apple&page=2"),
+                        href = Href("/978-1503222687/search?query=apple&page=2")!!,
                         mediaType = MediaType("application/vnd.readium.locators+json")!!
                     )
                 ),

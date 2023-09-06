@@ -17,11 +17,11 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.readium.r2.shared.extensions.mapNotNull
 import org.readium.r2.shared.extensions.optNullableInt
+import org.readium.r2.shared.publication.Href
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.resource.readAsString
-import org.readium.r2.shared.urlHref
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.robolectric.RobolectricTestRunner
@@ -78,7 +78,7 @@ class PositionsServiceTest {
             override suspend fun positionsByReadingOrder(): List<List<Locator>> = positions
         }
 
-        val json = service.get(Link(urlHref("/~readium/positions")))
+        val json = service.get(Url("/~readium/positions")!!)
             ?.let { runBlocking { it.readAsString() } }
             ?.getOrNull()
             ?.let { JSONObject(it) }
@@ -124,7 +124,7 @@ class PerResourcePositionsServiceTest {
     @Test
     fun `Positions from a {readingOrder} with one resource`() {
         val service = PerResourcePositionsService(
-            readingOrder = listOf(Link(href = urlHref("res"), mediaType = MediaType.PNG)),
+            readingOrder = listOf(Link(href = Href("res")!!, mediaType = MediaType.PNG)),
             fallbackMediaType = MediaType.BINARY
         )
 
@@ -147,9 +147,9 @@ class PerResourcePositionsServiceTest {
     fun `Positions from a {readingOrder} with a few resources`() {
         val service = PerResourcePositionsService(
             readingOrder = listOf(
-                Link(href = urlHref("res")),
-                Link(href = urlHref("chap1"), mediaType = MediaType.PNG),
-                Link(href = urlHref("chap2"), mediaType = MediaType.PNG, title = "Chapter 2")
+                Link(href = Href("res")!!),
+                Link(href = Href("chap1")!!, mediaType = MediaType.PNG),
+                Link(href = Href("chap2")!!, mediaType = MediaType.PNG, title = "Chapter 2")
             ),
             fallbackMediaType = MediaType.BINARY
         )
@@ -190,7 +190,7 @@ class PerResourcePositionsServiceTest {
     fun `{type} fallbacks on the given media type`() {
         val services = PerResourcePositionsService(
             readingOrder = listOf(
-                Link(href = urlHref("res"))
+                Link(href = Href("res")!!)
             ),
             fallbackMediaType = MediaType("image/*")!!
         )

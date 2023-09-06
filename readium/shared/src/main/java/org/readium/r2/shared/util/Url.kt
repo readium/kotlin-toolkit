@@ -30,32 +30,24 @@ public sealed class Url : Parcelable {
     public companion object {
 
         /**
-         * Creates a [Url] from its encoded string representation.
+         * Creates a [RelativeUrl] from a percent-decoded path.
          */
-        public operator fun invoke(url: String): Url? =
-            tryOrNull {
-                if (url.isBlank()) {
-                    return null
-                }
-                invoke(Uri.parse(url))
-            }
+        public fun fromDecodedPath(path: String): RelativeUrl? =
+            RelativeUrl(path.percentEncodedPath())
 
         /**
-         * Creates a [Url] from a percent-decoded path.
+         * Creates a [Url] from its encoded string representation.
          */
-        public fun fromDecodedPath(path: String): RelativeUrl =
-            Url(path.percentEncodedPath()) as RelativeUrl
+        public operator fun invoke(url: String): Url? {
+            if (url.isBlank()) return null
+            return invoke(Uri.parse(url))
+        }
 
         internal operator fun invoke(uri: Uri): Url? =
-            tryOrNull {
-                require(uri.isHierarchical)
-                requireNotNull(uri.path)
-
-                if (uri.isAbsolute) {
-                    AbsoluteUrl(uri)
-                } else {
-                    RelativeUrl(uri)
-                }
+            if (uri.isAbsolute) {
+                AbsoluteUrl(uri)
+            } else {
+                RelativeUrl(uri)
             }
     }
 
@@ -227,10 +219,25 @@ public sealed class Url : Parcelable {
  * Represents an absolute Uniform Resource Locator.
  */
 @Parcelize
-public class AbsoluteUrl internal constructor(override val uri: Uri) : Url() {
+public class AbsoluteUrl private constructor(override val uri: Uri) : Url() {
 
-    init {
-        require(uri.isAbsolute)
+    public companion object {
+
+        /**
+         * Creates an [AbsoluteUrl] from its encoded string representation.
+         */
+        public operator fun invoke(url: String): AbsoluteUrl? {
+            if (url.isBlank()) return null
+            return invoke(Uri.parse(url))
+        }
+
+        internal operator fun invoke(uri: Uri): AbsoluteUrl? =
+            tryOrNull {
+                require(uri.isAbsolute)
+                require(uri.isHierarchical)
+                requireNotNull(uri.path)
+                AbsoluteUrl(uri)
+            }
     }
 
     public override fun resolve(url: Url): AbsoluteUrl =
@@ -271,26 +278,57 @@ public class AbsoluteUrl internal constructor(override val uri: Uri) : Url() {
  * Represents a relative Uniform Resource Locator.
  */
 @Parcelize
-public class RelativeUrl internal constructor(override val uri: Uri) : Url() {
-    init {
-        require(uri.isRelative)
+public class RelativeUrl private constructor(override val uri: Uri) : Url() {
+
+    public companion object {
+
+        /**
+         * Creates a [RelativeUrl] from its encoded string representation.
+         */
+        public operator fun invoke(url: String): RelativeUrl? {
+            if (url.isBlank()) return null
+            return invoke(Uri.parse(url))
+        }
+
+        internal operator fun invoke(uri: Uri): RelativeUrl? =
+            tryOrNull {
+                require(uri.isRelative)
+                require(uri.isHierarchical)
+                requireNotNull(uri.path)
+                RelativeUrl(uri)
+            }
     }
 }
 
 public fun File.toUrl(): AbsoluteUrl =
-    Url(Uri.fromFile(this)) as AbsoluteUrl
+    checkNotNull(AbsoluteUrl(Uri.fromFile(this)))
 
 public fun Uri.toUrl(): Url? =
     Url(this)
 
+public fun Uri.toAbsoluteUrl(): AbsoluteUrl? =
+    AbsoluteUrl(this)
+
+public fun Uri.toRelativeUrl(): RelativeUrl? =
+    RelativeUrl(this)
+
 public fun Url.toUri(): Uri =
     uri
 
-private fun Url.toURI(): URI =
+internal fun Url.toURI(): URI =
     URI(toString())
 
 public fun URL.toUrl(): Url? =
-    Url(Uri.parse(toString()).addFileAuthority())
+    Url(toUri())
+
+public fun URL.toAbsoluteUrl(): AbsoluteUrl? =
+    AbsoluteUrl(toUri())
+
+public fun URL.toRelativeUrl(): RelativeUrl? =
+    RelativeUrl(toUri())
+
+private fun URL.toUri(): Uri =
+    Uri.parse(toString()).addFileAuthority()
 
 public fun URI.toUrl(): Url? =
     Url(Uri.parse(toString()).addFileAuthority())

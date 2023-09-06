@@ -11,7 +11,6 @@ package org.readium.r2.shared.publication
 
 import org.json.JSONArray
 import org.json.JSONObject
-import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.JSONable
 import org.readium.r2.shared.extensions.optStringsFromArrayOrSingle
 import org.readium.r2.shared.extensions.putIfNotEmpty
@@ -107,7 +106,7 @@ public data class Manifest(
      * Returns null if the resource is not found in this manifest.
      */
     public fun locatorFromLink(link: Link): Locator? {
-        var url = link.href() ?: return null
+        var url = link.href()
         val fragment = url.fragment
         url = url.removeFragment()
 
@@ -218,30 +217,3 @@ public data class Manifest(
         }
     }
 }
-
-/**
- * Transforms a manifest's components.
- */
-@ExperimentalReadiumApi
-public interface ManifestTransformer {
-    public fun transform(manifest: Manifest): Manifest = manifest
-    public fun transform(metadata: Metadata): Metadata = metadata
-    public fun transform(link: Link): Link = link
-    public fun transform(href: Href): Href = href
-}
-
-/**
- * Creates a copy of the receiver [Manifest], applying the given [transformer] to each component.
- */
-@ExperimentalReadiumApi
-public fun Manifest.copy(transformer: ManifestTransformer): Manifest =
-    transformer.transform(
-        copy(
-            metadata = metadata.copy(transformer),
-            links = links.copy(transformer),
-            readingOrder = readingOrder.copy(transformer),
-            resources = resources.copy(transformer),
-            tableOfContents = tableOfContents.copy(transformer),
-            subcollections = subcollections.copy(transformer)
-        )
-    )

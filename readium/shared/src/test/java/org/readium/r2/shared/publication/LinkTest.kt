@@ -33,7 +33,7 @@ class LinkTest {
     @Test fun `parse full JSON`() {
         assertEquals(
             Link(
-                href = UrlHref(Url("http://href")!!),
+                href = Href("http://href")!!,
                 mediaType = MediaType.PDF,
                 title = "Link Title",
                 rels = setOf("publication", "cover"),
@@ -95,23 +95,23 @@ class LinkTest {
 
     @Test fun `parse JSON {templated} defaults to false`() {
         val link = Link.fromJSON(JSONObject("{'href': 'a'}"))!!
-        assertEquals(UrlHref(Url("a")!!), link.href)
+        assertFalse(link.href.isTemplated)
     }
 
     @Test fun `parse JSON {templated} as false when null`() {
         val link = Link.fromJSON(JSONObject("{'href': 'a', 'templated': null}"))!!
-        assertEquals(UrlHref(Url("a")!!), link.href)
+        assertFalse(link.href.isTemplated)
     }
 
     @Test fun `parse JSON {templated} when true`() {
         val link = Link.fromJSON(JSONObject("{'href': 'a', 'templated': true}"))!!
-        assertEquals(TemplatedHref("a"), link.href)
+        assertTrue(link.href.isTemplated)
     }
 
     @Test fun `parse JSON multiple languages`() {
         assertEquals(
             Link.fromJSON(JSONObject("{'href': 'a', 'language': ['fr', 'en']}")),
-            Link(href = UrlHref(Url("a")!!), languages = listOf("fr", "en"))
+            Link(href = Href("a")!!, languages = listOf("fr", "en"))
         )
     }
 
@@ -211,7 +211,7 @@ class LinkTest {
             }"""
             ),
             Link(
-                href = TemplatedHref("http://href"),
+                href = Href("http://href", templated = true)!!,
                 mediaType = MediaType.PDF,
                 title = "Link Title",
                 rels = setOf("publication", "cover"),
@@ -262,7 +262,7 @@ class LinkTest {
     @Test
     fun `Make a copy after adding the given {properties}`() {
         val link = Link(
-            href = TemplatedHref("http://href"),
+            href = Href("http://href", templated = true)!!,
             mediaType = MediaType.PDF,
             title = "Link Title",
             rels = setOf("publication", "cover"),

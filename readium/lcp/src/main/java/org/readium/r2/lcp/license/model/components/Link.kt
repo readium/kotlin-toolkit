@@ -18,9 +18,6 @@ import org.readium.r2.shared.extensions.optNullableInt
 import org.readium.r2.shared.extensions.optNullableString
 import org.readium.r2.shared.extensions.optStringsFromArrayOrSingle
 import org.readium.r2.shared.publication.Href
-import org.readium.r2.shared.publication.TemplatedHref
-import org.readium.r2.shared.publication.UrlHref
-import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 
@@ -39,17 +36,15 @@ public data class Link(
             json: JSONObject,
             mediaTypeRetriever: MediaTypeRetriever = MediaTypeRetriever()
         ): Link {
-            val href = json.optNullableString("href")
+            val hrefString = json.optNullableString("href")
                 ?: throw LcpException.Parsing.Link
-            val templated = json.optBoolean("templated", false)
+            val href = Href(
+                href = hrefString,
+                templated = json.optBoolean("templated", false)
+            ) ?: throw LcpException.Parsing.Link
 
             return Link(
-                href = if (templated) {
-                    TemplatedHref(href)
-                } else {
-                    Url(href)?.let { UrlHref(it) }
-                        ?: throw LcpException.Parsing.Link
-                },
+                href = href,
                 mediaType = json.optNullableString("type")
                     ?.let { mediaTypeRetriever.retrieve(it) },
                 title = json.optNullableString("title"),

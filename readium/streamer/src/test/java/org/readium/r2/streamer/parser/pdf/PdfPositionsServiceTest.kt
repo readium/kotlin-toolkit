@@ -12,11 +12,11 @@ import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.readium.r2.shared.publication.Href
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
-import org.readium.r2.streamer.urlHref
 import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
@@ -98,7 +98,7 @@ class PdfPositionsServiceTest {
     }
 
     private fun createService(
-        link: Link = Link(href = urlHref("publication.pdf")),
+        link: Link = Link(href = Href("publication.pdf")!!),
         pageCount: Int
     ) = PdfPositionsService(
         link = link,

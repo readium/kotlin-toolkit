@@ -163,9 +163,8 @@ public class PublicationContentIterator(
      */
     private suspend fun loadIteratorAt(index: Int, location: LocatorOrProgression): IndexedIterator? {
         val link = manifest.readingOrder[index]
-        val url = link.href() ?: return null
         val locator = location.toLocator(link) ?: return null
-        val resource = container.get(url)
+        val resource = container.get(link.href())
 
         return resourceContentIteratorFactories
             .firstNotNullOfOrNull { factory ->

@@ -13,6 +13,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.readium.r2.shared.parser.xml.XmlParser
+import org.readium.r2.shared.publication.Href
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Manifest
 import org.readium.r2.shared.publication.ReadingProgression
@@ -23,7 +24,6 @@ import org.readium.r2.shared.publication.presentation.*
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
-import org.readium.r2.streamer.urlHref
 import org.robolectric.RobolectricTestRunner
 
 fun parsePackageDocument(path: String): Manifest {
@@ -146,11 +146,11 @@ class LinkTest {
     fun `readingOrder is rightly computed`() {
         assertThat(resourcesPub.readingOrder).containsExactly(
             Link(
-                href = urlHref("titlepage.xhtml"),
+                href = Href("titlepage.xhtml")!!,
                 mediaType = MediaType.XHTML
             ),
             Link(
-                href = urlHref("OEBPS/chapter01.xhtml"),
+                href = Href("OEBPS/chapter01.xhtml")!!,
                 mediaType = MediaType.XHTML
             )
         )
@@ -160,42 +160,42 @@ class LinkTest {
     fun `resources are rightly computed`() {
         assertThat(resourcesPub.resources).containsExactlyInAnyOrder(
             Link(
-                href = urlHref("OEBPS/fonts/MinionPro.otf"),
+                href = Href("OEBPS/fonts/MinionPro.otf")!!,
                 mediaType = MediaType("application/vnd.ms-opentype")!!
             ),
             Link(
-                href = urlHref("OEBPS/nav.xhtml"),
+                href = Href("OEBPS/nav.xhtml")!!,
                 mediaType = MediaType.XHTML,
                 rels = setOf("contents")
             ),
             Link(
-                href = urlHref("style.css"),
+                href = Href("style.css")!!,
                 mediaType = MediaType.CSS
             ),
             Link(
-                href = urlHref("OEBPS/chapter01.smil"),
+                href = Href("OEBPS/chapter01.smil")!!,
                 mediaType = MediaType.SMIL
             ),
             Link(
-                href = urlHref("OEBPS/chapter02.smil"),
+                href = Href("OEBPS/chapter02.smil")!!,
                 mediaType = MediaType.SMIL,
                 duration = 1949.0
             ),
             Link(
-                href = urlHref("OEBPS/images/alice01a.png"),
+                href = Href("OEBPS/images/alice01a.png")!!,
                 mediaType = MediaType.PNG,
                 rels = setOf("cover")
             ),
             Link(
-                href = urlHref("OEBPS/images/alice02a.gif"),
+                href = Href("OEBPS/images/alice02a.gif")!!,
                 mediaType = MediaType.GIF
             ),
             Link(
-                href = urlHref("OEBPS/chapter02.xhtml"),
+                href = Href("OEBPS/chapter02.xhtml")!!,
                 mediaType = MediaType.XHTML
             ),
             Link(
-                href = urlHref("OEBPS/nomediatype.txt")
+                href = Href("OEBPS/nomediatype.txt")!!
             )
         )
     }
@@ -206,15 +206,15 @@ class LinkMiscTest {
     fun `Fallbacks are mapped to alternates`() {
         assertThat(parsePackageDocument("package/fallbacks.opf")).isEqualTo(
             Link(
-                href = urlHref("OEBPS/chap1_docbook.xml"),
+                href = Href("OEBPS/chap1_docbook.xml")!!,
                 mediaType = MediaType("application/docbook+xml")!!,
                 alternates = listOf(
                     Link(
-                        href = urlHref("OEBPS/chap1.xml"),
+                        href = Href("OEBPS/chap1.xml")!!,
                         mediaType = MediaType("application/z3998-auth+xml")!!,
                         alternates = listOf(
                             Link(
-                                href = urlHref("OEBPS/chap1.xhtml"),
+                                href = Href("OEBPS/chap1.xhtml")!!,
                                 mediaType = MediaType.XHTML
                             )
                         )

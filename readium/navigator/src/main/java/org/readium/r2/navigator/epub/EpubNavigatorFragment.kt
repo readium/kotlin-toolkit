@@ -82,7 +82,6 @@ import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.ReadingProgression as PublicationReadingProgression
-import org.readium.r2.shared.publication.UrlHref
 import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.publication.presentation.presentation
 import org.readium.r2.shared.publication.services.isRestricted
@@ -1043,7 +1042,7 @@ public class EpubNavigatorFragment internal constructor(
             }
 
             val currentLocator = Locator(
-                href = (link.href as UrlHref).url,
+                href = link.href(),
                 mediaType = link.mediaType ?: MediaType.XHTML,
                 title = tableOfContentsTitleByHref[link.href] ?: positionLocator?.title ?: link.title,
                 locations = (positionLocator?.locations ?: Locator.Locations()).copy(
@@ -1095,8 +1094,10 @@ public class EpubNavigatorFragment internal constructor(
 
         /**
          * Returns a URL to the application asset at [path], served in the web views.
+         *
+         * Returns null if the given [path] is not valid or an absolute URL.
          */
-        public fun assetUrl(path: String): Url =
+        public fun assetUrl(path: String): Url? =
             WebViewServer.assetUrl(path)
     }
 }

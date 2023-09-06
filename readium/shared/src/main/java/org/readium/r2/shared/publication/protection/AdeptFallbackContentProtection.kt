@@ -64,10 +64,10 @@ public class AdeptFallbackContentProtection : ContentProtection {
             return false
         }
 
-        val rightsXml = asset.container.get(Url.fromDecodedPath("META-INF/rights.xml"))
+        val rightsXml = asset.container.get(Url("META-INF/rights.xml")!!)
             .readAsXmlOrNull()
 
-        val encryptionXml = asset.container.get(Url.fromDecodedPath("META-INF/encryption.xml"))
+        val encryptionXml = asset.container.get(Url("META-INF/encryption.xml")!!)
             .readAsXmlOrNull()
 
         return encryptionXml != null && (

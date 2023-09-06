@@ -18,9 +18,8 @@ import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
 
-private const val LICENSE_IN_EPUB = "META-INF/license.lcpl"
-
-private const val LICENSE_IN_RPF = "license.lcpl"
+private val LICENSE_IN_EPUB = Url("META-INF/license.lcpl")!!
+private val LICENSE_IN_RPF = Url("license.lcpl")!!
 
 /**
  * Encapsulates the read/write access to the packaged License Document (eg. in an EPUB container,
@@ -64,10 +63,10 @@ internal fun createLicenseContainer(
     container: Container,
     mediaType: MediaType
 ): LicenseContainer {
-    val licensePath = when (mediaType) {
+    val licenseUrl = when (mediaType) {
         MediaType.EPUB -> LICENSE_IN_EPUB
         // Assuming it's a Readium WebPub package (e.g. audiobook, LCPDF, etc.) as a fallback
         else -> LICENSE_IN_RPF
     }
-    return ContainerLicenseContainer(container, Url.fromDecodedPath(licensePath))
+    return ContainerLicenseContainer(container, licenseUrl)
 }

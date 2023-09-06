@@ -33,11 +33,9 @@ internal class DirectoryContainer(
     }
 
     override suspend fun entries(): Set<Container.Entry> =
-        entries.map {
-            FileEntry(
-                url = Url.fromDecodedPath(it.relativeTo(root).path),
-                file = it
-            )
+        entries.mapNotNull { file ->
+            Url.fromDecodedPath(file.relativeTo(root).path)
+                ?.let { url -> FileEntry(url, file) }
         }.toSet()
 
     override fun get(url: Url): Container.Entry {

@@ -19,15 +19,13 @@ import kotlinx.coroutines.runBlocking
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.readium.r2.shared.publication.*
-import org.readium.r2.shared.publication.UrlHref
 import org.readium.r2.shared.readBlocking
 import org.readium.r2.shared.resource.FileResource
 import org.readium.r2.shared.resource.ResourceContainer
-import org.readium.r2.shared.urlHref
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
-import org.readium.r2.shared.util.toUrl
+import org.readium.r2.shared.util.toAbsoluteUrl
 import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
@@ -35,7 +33,7 @@ class CoverServiceTest {
 
     private val coverBytes: ByteArray
     private val coverBitmap: Bitmap
-    private val coverPath: Url
+    private val coverPath: AbsoluteUrl
     private val coverLink: Link
     private val publication: Publication
 
@@ -44,9 +42,9 @@ class CoverServiceTest {
         assertNotNull(cover)
         coverBytes = cover.readBytes()
         coverBitmap = BitmapFactory.decodeByteArray(coverBytes, 0, coverBytes.size)
-        coverPath = cover.toUrl() as AbsoluteUrl
+        coverPath = cover.toAbsoluteUrl()!!
         coverLink = Link(
-            href = UrlHref(coverPath),
+            href = Href(coverPath),
             mediaType = MediaType.JPEG,
             width = 598,
             height = 800
@@ -58,7 +56,7 @@ class CoverServiceTest {
                     localizedTitle = LocalizedString("title")
                 ),
                 resources = listOf(
-                    Link(href = UrlHref(coverPath), rels = setOf("cover"))
+                    Link(href = Href(coverPath), rels = setOf("cover"))
                 )
             ),
             container = ResourceContainer(
@@ -71,7 +69,7 @@ class CoverServiceTest {
     @Test
     fun `get works fine`() = runBlocking {
         val service = InMemoryCoverService(coverBitmap)
-        val res = service.get(Link(urlHref("/~readium/cover"), rels = setOf("cover")))
+        val res = service.get(Url("/~readium/cover")!!)
         assertNotNull(res)
 
         val bytes = res.readBlocking().getOrNull()

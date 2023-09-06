@@ -19,6 +19,8 @@ class UrlTest {
     fun createFromInvalidUrl() {
         assertNull(Url(""))
         assertNull(Url("     "))
+        assertNull(AbsoluteUrl(""))
+        assertNull(RelativeUrl(""))
     }
 
     @Test

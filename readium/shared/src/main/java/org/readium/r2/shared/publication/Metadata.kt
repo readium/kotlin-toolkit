@@ -13,7 +13,6 @@ import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
 import kotlinx.parcelize.WriteWith
 import org.json.JSONObject
-import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.JSONable
 import org.readium.r2.shared.extensions.JSONParceler
 import org.readium.r2.shared.extensions.iso8601ToDate
@@ -247,28 +246,6 @@ public data class Metadata(
      * `metadata["layout"] == metadata.otherMetadata["layout"]`
      */
     public operator fun get(key: String): Any? = otherMetadata[key]
-
-    @ExperimentalReadiumApi
-    public fun copy(transformer: ManifestTransformer): Metadata =
-        transformer.transform(
-            copy(
-                subjects = subjects.copy(transformer),
-                authors = authors.copy(transformer),
-                translators = translators.copy(transformer),
-                editors = editors.copy(transformer),
-                artists = artists.copy(transformer),
-                illustrators = illustrators.copy(transformer),
-                letterers = letterers.copy(transformer),
-                pencilers = pencilers.copy(transformer),
-                colorists = colorists.copy(transformer),
-                inkers = inkers.copy(transformer),
-                narrators = narrators.copy(transformer),
-                contributors = contributors.copy(transformer),
-                publishers = publishers.copy(transformer),
-                imprints = imprints.copy(transformer),
-                belongsTo = belongsTo.copy(transformer)
-            )
-        )
 
     public companion object {
 

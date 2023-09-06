@@ -18,7 +18,7 @@ import org.readium.r2.shared.util.use
 
 /** Returns the resource data as an XML Document at the given [path], or null. */
 internal suspend fun Container.readAsXmlOrNull(path: String): ElementNode? =
-    readAsXmlOrNull(Url.fromDecodedPath(path))
+    Url.fromDecodedPath(path)?.let { readAsXmlOrNull(it) }
 
 /** Returns the resource data as an XML Document at the given [url], or null. */
 internal suspend fun Container.readAsXmlOrNull(url: Url): ElementNode? =

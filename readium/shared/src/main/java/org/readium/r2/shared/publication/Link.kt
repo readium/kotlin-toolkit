@@ -14,7 +14,6 @@ import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
 import org.json.JSONArray
 import org.json.JSONObject
-import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.JSONable
 import org.readium.r2.shared.extensions.optNullableString
 import org.readium.r2.shared.extensions.optPositiveDouble
@@ -74,7 +73,7 @@ public data class Link(
         alternates: List<Link> = listOf(),
         children: List<Link> = listOf()
     ) : this(
-        href = UrlHref(href),
+        href = Href(href),
         mediaType = mediaType,
         title = title,
         rels = rels,
@@ -125,7 +124,7 @@ public data class Link(
     override fun toJSON(): JSONObject = JSONObject().apply {
         put("href", href.toString())
         put("type", mediaType?.toString())
-        put("templated", href is TemplatedHref)
+        put("templated", href.isTemplated)
         put("title", title)
         putIfNotEmpty("rel", rels)
         putIfNotEmpty("properties", properties)
@@ -144,16 +143,6 @@ public data class Link(
     public fun addProperties(properties: Map<String, Any>): Link =
         copy(properties = this.properties.add(properties))
 
-    @ExperimentalReadiumApi
-    public fun copy(transformer: ManifestTransformer): Link =
-        transformer.transform(
-            copy(
-                href = href.copy(transformer),
-                alternates = alternates.copy(transformer),
-                children = children.copy(transformer)
-            )
-        )
-
     public companion object {
 
         /**
@@ -166,23 +155,21 @@ public data class Link(
             mediaTypeRetriever: MediaTypeRetriever = MediaTypeRetriever(),
             warnings: WarningLogger? = null
         ): Link? {
-            val href = json?.optNullableString("href")
-            if (href == null) {
+            val hrefString = json?.optNullableString("href")
+            if (hrefString == null) {
                 warnings?.log(Link::class.java, "[href] is required", json)
                 return null
             }
-            val templated = json.optBoolean("templated", false)
+            val href = Href(
+                href = hrefString,
+                templated = json.optBoolean("templated", false)
+            ) ?: run {
+                warnings?.log(Link::class.java, "[href] is not a valid URL or URL template", json)
+                return null
+            }
 
             return Link(
-                href = if (templated) {
-                    TemplatedHref(href)
-                } else {
-                    Url(href)?.let { UrlHref(it) }
-                        ?: run {
-                            warnings?.log(Link::class.java, "[href] is not a valid URL", json)
-                            return null
-                        }
-                },
+                href = href,
                 mediaType = json.optNullableString("type")
                     ?.let { mediaTypeRetriever.retrieve(it) },
                 title = json.optNullableString("title"),
@@ -336,7 +323,3 @@ public fun List<Link>.flatten(): List<Link> {
 
     return flatMap { it.flatten() }
 }
-
-@ExperimentalReadiumApi
-public fun List<Link>.copy(transformer: ManifestTransformer): List<Link> =
-    map { it.copy(transformer) }

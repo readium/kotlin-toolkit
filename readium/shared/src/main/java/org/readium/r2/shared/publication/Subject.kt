@@ -13,7 +13,6 @@ import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
 import org.json.JSONArray
 import org.json.JSONObject
-import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.JSONable
 import org.readium.r2.shared.extensions.optNullableString
 import org.readium.r2.shared.extensions.parseObjects
@@ -66,12 +65,6 @@ public data class Subject(
         put("code", code)
         putIfNotEmpty("links", links)
     }
-
-    @ExperimentalReadiumApi
-    public fun copy(transformer: ManifestTransformer): Subject =
-        copy(
-            links = links.copy(transformer)
-        )
 
     public companion object {
 
@@ -140,7 +133,3 @@ public data class Subject(
         }
     }
 }
-
-@ExperimentalReadiumApi
-public fun List<Subject>.copy(transformer: ManifestTransformer): List<Subject> =
-    map { it.copy(transformer) }

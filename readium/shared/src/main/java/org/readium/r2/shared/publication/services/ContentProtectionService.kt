@@ -13,12 +13,12 @@ import java.util.Locale
 import org.json.JSONObject
 import org.readium.r2.shared.UserException
 import org.readium.r2.shared.extensions.putIfNotEmpty
+import org.readium.r2.shared.publication.Href
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.LocalizedString
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.PublicationServicesHolder
 import org.readium.r2.shared.publication.ServiceFactory
-import org.readium.r2.shared.publication.TemplatedHref
 import org.readium.r2.shared.publication.protection.ContentProtection
 import org.readium.r2.shared.resource.FailureResource
 import org.readium.r2.shared.resource.Resource
@@ -67,10 +67,9 @@ public interface ContentProtectionService : Publication.Service {
     override val links: List<Link>
         get() = RouteHandler.links
 
-    override fun get(link: Link): Resource? {
-        val url = link.href() ?: return null
-        val route = RouteHandler.route(url) ?: return null
-        return route.handleRequest(url, this)
+    override fun get(href: Url): Resource? {
+        val route = RouteHandler.route(href) ?: return null
+        return route.handleRequest(href, this)
     }
 
     /**
@@ -286,7 +285,7 @@ private sealed class RouteHandler {
         private val path = "/~readium/rights/copy"
 
         override val link: Link = Link(
-            href = TemplatedHref("$path{?text,peek}"),
+            href = Href("$path{?text,peek}", templated = true)!!,
             mediaType = mediaType
         )
 
@@ -324,7 +323,7 @@ private sealed class RouteHandler {
         private val path = "/~readium/rights/print"
 
         override val link = Link(
-            href = TemplatedHref("$path{?pageCount,peek}"),
+            href = Href("$path{?pageCount,peek}", templated = true)!!,
             mediaType = mediaType
         )
 

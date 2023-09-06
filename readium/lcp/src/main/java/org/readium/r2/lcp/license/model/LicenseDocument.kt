@@ -90,7 +90,6 @@ public class LicenseDocument(public val data: ByteArray) {
             ?: throw LcpException.Parsing.Url(rel = rel.value)
 
         return link.href(parameters = parameters)
-            ?: throw LcpException.Parsing.Url(rel = rel.value)
     }
 
     public val description: String

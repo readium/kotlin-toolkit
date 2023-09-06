@@ -92,7 +92,7 @@ public class EpubParser(
 
     private suspend fun getRootFilePath(container: Container): Try<Url, PublicationParser.Error> =
         container
-            .get(Url.fromDecodedPath("META-INF/container.xml"))
+            .get(Url("META-INF/container.xml")!!)
             .use { it.readAsXml() }
             .getOrElse { return Try.failure(PublicationParser.Error.IO(it)) }
             .getFirst("rootfiles", Namespaces.OPC)

@@ -29,9 +29,9 @@ import org.readium.r2.navigator.util.createViewModelFactory
 import org.readium.r2.shared.DelicateReadiumApi
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.extensions.mapStateIn
+import org.readium.r2.shared.publication.Href
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.publication.UrlHref
 import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.RelativeUrl
@@ -162,14 +162,14 @@ internal class EpubNavigatorViewModel(
     // Serving resources
 
     val baseUrl: AbsoluteUrl =
-        ((publication.linkWithRel("self")?.href as? UrlHref)?.url as? AbsoluteUrl)
+        (publication.baseUrl as? AbsoluteUrl)
             ?: WebViewServer.publicationBaseHref
 
     /**
      * Generates the URL to the given publication link.
      */
     fun urlTo(link: Link): AbsoluteUrl =
-        baseUrl.resolve((link.href as UrlHref).url)
+        baseUrl.resolve(link.href())
 
     /**
      * Intercepts and handles web view navigation to [url].
@@ -192,7 +192,7 @@ internal class EpubNavigatorViewModel(
 
         return publication.linkWithHref(href)
             // Query parameters must be kept as they might be relevant for the container.
-            ?.copy(href = UrlHref(href))
+            ?.copy(href = Href(href))
     }
 
     fun shouldInterceptRequest(request: WebResourceRequest): WebResourceResponse? =

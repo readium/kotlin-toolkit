@@ -11,7 +11,6 @@ package org.readium.r2.lcp.license
 
 import java.net.HttpURLConnection
 import java.util.*
-import kotlin.time.ExperimentalTime
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -27,14 +26,12 @@ import org.readium.r2.lcp.service.LicensesRepository
 import org.readium.r2.lcp.service.NetworkService
 import org.readium.r2.shared.extensions.toIso8601String
 import org.readium.r2.shared.extensions.tryOrNull
-import org.readium.r2.shared.publication.TemplatedHref
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.getOrThrow
 import org.readium.r2.shared.util.mediatype.MediaType
 import timber.log.Timber
 
-@OptIn(ExperimentalTime::class)
 internal class License(
     private var documents: ValidatedDocuments,
     private val validation: LicenseValidation,
@@ -164,7 +161,7 @@ internal class License(
         // Programmatically renew the loan with a PUT request.
         suspend fun renewProgrammatically(link: Link): ByteArray {
             val endDate =
-                if ((link.href as? TemplatedHref)?.parameters?.contains("end") == true) {
+                if (link.href.parameters?.contains("end") == true) {
                     listener.preferredEndDate(maxRenewDate)
                 } else {
                     null
@@ -191,10 +188,8 @@ internal class License(
 
         // Renew the loan by presenting a web page to the user.
         suspend fun renewWithWebPage(link: Link): ByteArray {
-            val url = link.href() ?: throw LcpException.LicenseInteractionNotAvailable
-
             // The reading app will open the URL in a web view and return when it is dismissed.
-            listener.openWebPage(url)
+            listener.openWebPage(link.href())
 
             val statusURL = tryOrNull {
                 license.url(
