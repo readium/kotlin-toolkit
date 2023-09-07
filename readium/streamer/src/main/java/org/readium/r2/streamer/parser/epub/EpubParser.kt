@@ -119,9 +119,8 @@ public class EpubParser(
         packageDocument.manifest
             .firstOrNull { it.properties.contains(Vocabularies.ITEM + "nav") }
             ?.let { navItem ->
-                val navPath = packageDocument.path.resolve(navItem.href)
-                container.readAsXmlOrNull(navPath)
-                    ?.let { NavigationDocumentParser.parse(it, navPath) }
+                container.readAsXmlOrNull(navItem.href)
+                    ?.let { NavigationDocumentParser.parse(it, navItem.href) }
             }
             ?.takeUnless { it.isEmpty() }
 
@@ -134,9 +133,8 @@ public class EpubParser(
             }
 
         return ncxItem
-            ?.let {
-                val ncxPath = packageDocument.path.resolve(it.href)
-                container.readAsXmlOrNull(ncxPath)?.let { NcxParser.parse(it, ncxPath) }
+            ?.let { item ->
+                container.readAsXmlOrNull(item.href)?.let { NcxParser.parse(it, item.href) }
             }
             ?.takeUnless { it.isEmpty() }
     }
