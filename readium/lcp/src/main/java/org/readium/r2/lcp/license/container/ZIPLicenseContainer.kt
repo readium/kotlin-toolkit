@@ -9,11 +9,11 @@
 
 package org.readium.r2.lcp.license.container
 
+import java.io.ByteArrayInputStream
 import java.io.File
 import java.util.zip.ZipFile
 import org.readium.r2.lcp.LcpException
 import org.readium.r2.lcp.license.model.LicenseDocument
-import org.zeroturnaround.zip.ZipUtil
 
 /**
  * Access to a License Document stored in a ZIP archive.
@@ -46,16 +46,19 @@ internal class ZIPLicenseContainer(
         try {
             val source = File(zip)
             val tmpZip = File("$zip.tmp")
-            tmpZip.delete()
-            source.copyTo(tmpZip)
-            source.delete()
-            if (ZipUtil.containsEntry(tmpZip, pathInZIP)) {
-                ZipUtil.removeEntry(tmpZip, pathInZIP)
-            }
-            ZipUtil.addEntry(tmpZip, pathInZIP, license.data, source)
-            tmpZip.delete()
+            val zipFile = ZipFile(source)
+            zipFile.addOrReplaceEntry(pathInZIP, ByteArrayInputStream(license.data), tmpZip)
+            zipFile.close()
+            tmpZip.moveTo(source)
         } catch (e: Exception) {
             throw LcpException.Container.WriteFailed(pathInZIP)
         }
+    }
+}
+
+private fun File.moveTo(target: File) {
+    if (!this.renameTo(target)) {
+        this.copyTo(target, overwrite = true)
+        this.delete()
     }
 }
