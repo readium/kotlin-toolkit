@@ -39,7 +39,7 @@ public class ForegroundDownloadManager(
         listener: DownloadManager.Listener
     ): DownloadManager.RequestId {
         val requestId = DownloadManager.RequestId(UUID.randomUUID().toString())
-        listeners.getOrPut(requestId) { mutableListOf() }.add(listener)
+        register(requestId, listener)
         jobs[requestId] = coroutineScope.launch { doRequest(request, requestId) }
         return requestId
     }
@@ -121,6 +121,7 @@ public class ForegroundDownloadManager(
         requestId: DownloadManager.RequestId,
         listener: DownloadManager.Listener
     ) {
+        listeners.getOrPut(requestId) { mutableListOf() }.add(listener)
     }
 
     public override fun close() {
