@@ -43,6 +43,10 @@ public class LcpPublicationRetriever(
             requestId: RequestId,
             error: LcpException
         )
+
+        public fun onAcquisitionCancelled(
+            requestId: RequestId
+        )
     }
 
     private inner class DownloadListener : DownloadManager.Listener {
@@ -130,6 +134,15 @@ public class LcpPublicationRetriever(
                 )
             }
 
+            listeners.remove(lcpRequestId)
+        }
+
+        override fun onDownloadCancelled(requestId: DownloadManager.RequestId) {
+            val lcpRequestId = RequestId(requestId.value)
+            val listenersForId = listeners[lcpRequestId].orEmpty()
+            listenersForId.forEach {
+                it.onAcquisitionCancelled(lcpRequestId)
+            }
             listeners.remove(lcpRequestId)
         }
     }

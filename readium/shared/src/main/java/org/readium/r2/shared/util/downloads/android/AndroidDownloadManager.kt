@@ -103,7 +103,9 @@ public class AndroidDownloadManager internal constructor(
     public override fun cancel(requestId: DownloadManager.RequestId) {
         val longId = requestId.value.toLong()
         downloadManager.remove(longId)
-        listeners[requestId]?.clear()
+        val listenersForId = listeners[requestId].orEmpty()
+        listenersForId.forEach { it.onDownloadCancelled(requestId) }
+        listeners.remove(requestId)
         if (!listeners.any { it.value.isNotEmpty() }) {
             maybeStopObservingProgress()
         }
@@ -170,6 +172,9 @@ public class AndroidDownloadManager internal constructor(
     }
 
     private fun notify(cursor: Cursor) = cursor.use {
+        val knownDownloads = mutableSetOf<DownloadManager.RequestId>()
+
+        // Notify about known downloads
         while (cursor.moveToNext()) {
             val facade = DownloadCursorFacade(cursor)
             val id = DownloadManager.RequestId(facade.id.toString())
@@ -177,7 +182,16 @@ public class AndroidDownloadManager internal constructor(
             if (listenersForId.isNotEmpty()) {
                 notifyDownload(id, facade, listenersForId)
             }
+            knownDownloads.add(id)
         }
+
+        // Missing downloads have been cancelled.
+        val unknownDownloads = listeners - knownDownloads
+        unknownDownloads.forEach { entry ->
+            entry.value.forEach { it.onDownloadCancelled(entry.key) }
+            listeners.remove(entry.key)
+        }
+        maybeStopObservingProgress()
     }
 
     private fun notifyDownload(

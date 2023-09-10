@@ -79,6 +79,13 @@ class PublicationRetriever(
                 listener.onError(ImportError.DownloadFailed(error))
             }
         }
+
+        override fun onDownloadCancelled(requestId: DownloadManager.RequestId) {
+            coroutineScope.launch {
+                Timber.v("Download ${requestId.value} has been cancelled.")
+                downloadRepository.removeOpdsDownload(requestId.value)
+            }
+        }
     }
 
     private inner class LcpRetrieverListener : LcpPublicationRetriever.Listener {
@@ -107,6 +114,13 @@ class PublicationRetriever(
             coroutineScope.launch {
                 downloadRepository.removeLcpDownload(requestId.value)
                 listener.onError(ImportError.LcpAcquisitionFailed(error))
+            }
+        }
+
+        override fun onAcquisitionCancelled(requestId: LcpPublicationRetriever.RequestId) {
+            coroutineScope.launch {
+                Timber.v("Acquisition ${requestId.value} has been cancelled.")
+                downloadRepository.removeLcpDownload(requestId.value)
             }
         }
     }

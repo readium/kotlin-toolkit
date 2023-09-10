@@ -78,6 +78,8 @@ public interface DownloadManager {
         public fun onDownloadProgressed(requestId: RequestId, downloaded: Long, expected: Long?)
 
         public fun onDownloadFailed(requestId: RequestId, error: Error)
+
+        public fun onDownloadCancelled(requestId: RequestId)
     }
 
     public fun submit(request: Request, listener: Listener): RequestId

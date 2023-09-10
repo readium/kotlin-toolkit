@@ -114,6 +114,8 @@ public class ForegroundDownloadManager(
 
     public override fun cancel(requestId: DownloadManager.RequestId) {
         jobs.remove(requestId)?.cancel()
+        val listenersForId = listeners[requestId].orEmpty()
+        listenersForId.forEach { it.onDownloadCancelled(requestId) }
         listeners.remove(requestId)
     }
 
