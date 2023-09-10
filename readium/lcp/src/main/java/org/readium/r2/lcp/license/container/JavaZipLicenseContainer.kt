@@ -18,10 +18,10 @@ import org.readium.r2.lcp.license.model.LicenseDocument
 /**
  * Access to a License Document stored in a ZIP archive.
  */
-internal class ZIPLicenseContainer(
+internal class JavaZipLicenseContainer(
     private val zip: String,
     private val pathInZIP: String
-) : LicenseContainer {
+) : WritableLicenseContainer {
 
     override fun read(): ByteArray {
         val archive = try {
@@ -30,7 +30,7 @@ internal class ZIPLicenseContainer(
             throw LcpException.Container.OpenFailed
         }
         val entry = try {
-            archive.getEntry(pathInZIP)
+            archive.getEntry(pathInZIP)!!
         } catch (e: Exception) {
             throw LcpException.Container.FileNotFound(pathInZIP)
         }
@@ -53,12 +53,5 @@ internal class ZIPLicenseContainer(
         } catch (e: Exception) {
             throw LcpException.Container.WriteFailed(pathInZIP)
         }
-    }
-}
-
-private fun File.moveTo(target: File) {
-    if (!this.renameTo(target)) {
-        this.copyTo(target, overwrite = true)
-        this.delete()
     }
 }

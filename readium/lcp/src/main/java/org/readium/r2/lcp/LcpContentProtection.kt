@@ -25,7 +25,6 @@ import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.flatMap
 import org.readium.r2.shared.util.getOrElse
-import org.readium.r2.shared.util.toFile
 
 internal class LcpContentProtection(
     private val lcpService: LcpService,
@@ -73,21 +72,7 @@ internal class LcpContentProtection(
             ?.let { LcpPassphraseAuthentication(it, fallback = this.authentication) }
             ?: this.authentication
 
-        val file = (asset as? Asset.Resource)?.resource?.source?.toFile()
-            ?: (asset as? Asset.Container)?.container?.source?.toFile()
-
-        return file
-            // This is less restrictive with regard to network availability.
-            ?.let {
-                lcpService.retrieveLicense(
-                    it,
-                    asset.mediaType,
-                    authentication,
-                    allowUserInteraction,
-                    sender
-                )
-            }
-            ?: lcpService.retrieveLicense(asset, authentication, allowUserInteraction, sender)
+        return lcpService.retrieveLicense(asset, authentication, allowUserInteraction, sender)
     }
 
     private fun createResultAsset(

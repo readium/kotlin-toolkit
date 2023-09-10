@@ -9,6 +9,8 @@
 
 package org.readium.r2.lcp.license.container
 
+import android.content.ContentResolver
+import android.content.Context
 import java.io.File
 import org.readium.r2.lcp.LcpException
 import org.readium.r2.lcp.license.model.LicenseDocument
@@ -16,7 +18,9 @@ import org.readium.r2.shared.asset.Asset
 import org.readium.r2.shared.extensions.addPrefix
 import org.readium.r2.shared.resource.Container
 import org.readium.r2.shared.resource.Resource
+import org.readium.r2.shared.util.isFile
 import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.shared.util.toFile
 
 private const val LICENSE_IN_EPUB = "META-INF/license.lcpl"
 
@@ -28,26 +32,30 @@ private const val LICENSE_IN_RPF = "license.lcpl"
  */
 internal interface LicenseContainer {
     fun read(): ByteArray
+}
+
+internal interface WritableLicenseContainer : LicenseContainer {
     fun write(license: LicenseDocument)
 }
 
 internal fun createLicenseContainer(
     file: File,
     mediaType: MediaType
-): LicenseContainer =
+): WritableLicenseContainer =
     when (mediaType) {
-        MediaType.EPUB -> ZIPLicenseContainer(file.path, LICENSE_IN_EPUB)
-        MediaType.LCP_LICENSE_DOCUMENT -> LCPLLicenseContainer(file.path)
+        MediaType.EPUB -> JavaZipLicenseContainer(file.path, LICENSE_IN_EPUB)
+        MediaType.LCP_LICENSE_DOCUMENT -> LcplLicenseContainer(file)
         // Assuming it's a Readium WebPub package (e.g. audiobook, LCPDF, etc.) as a fallback
-        else -> ZIPLicenseContainer(file.path, LICENSE_IN_RPF)
+        else -> JavaZipLicenseContainer(file.path, LICENSE_IN_RPF)
     }
 
 internal fun createLicenseContainer(
+    context: Context,
     asset: Asset
 ): LicenseContainer =
     when (asset) {
         is Asset.Resource -> createLicenseContainer(asset.resource, asset.mediaType)
-        is Asset.Container -> createLicenseContainer(asset.container, asset.mediaType)
+        is Asset.Container -> createLicenseContainer(context, asset.container, asset.mediaType)
     }
 
 internal fun createLicenseContainer(
@@ -57,17 +65,32 @@ internal fun createLicenseContainer(
     if (mediaType != MediaType.LCP_LICENSE_DOCUMENT) {
         throw LcpException.Container.OpenFailed
     }
-    return LcplResourceLicenseContainer(resource)
+
+    return when {
+        resource.source?.isFile() == true ->
+            LcplLicenseContainer(resource.source!!.toFile()!!)
+        else ->
+            LcplResourceLicenseContainer(resource)
+    }
 }
 
 internal fun createLicenseContainer(
+    context: Context,
     container: Container,
     mediaType: MediaType
 ): LicenseContainer {
     val licensePath = when (mediaType) {
-        MediaType.EPUB -> LICENSE_IN_EPUB.addPrefix("/")
+        MediaType.EPUB -> LICENSE_IN_EPUB
         // Assuming it's a Readium WebPub package (e.g. audiobook, LCPDF, etc.) as a fallback
-        else -> LICENSE_IN_RPF.addPrefix("/")
+        else -> LICENSE_IN_RPF
     }
-    return ContainerLicenseContainer(container, licensePath)
+
+    return when {
+        container.source?.isFile() == true ->
+            JavaZipLicenseContainer(container.source!!.path, licensePath)
+        container.source?.scheme == ContentResolver.SCHEME_CONTENT ->
+            SharedZipLicenseContainer(context, container, licensePath)
+        else ->
+            ContainerLicenseContainer(container, licensePath.addPrefix("/"))
+    }
 }
