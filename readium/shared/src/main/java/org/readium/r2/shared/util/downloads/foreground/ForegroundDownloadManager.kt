@@ -21,6 +21,11 @@ import org.readium.r2.shared.util.http.HttpClient
 import org.readium.r2.shared.util.http.HttpException
 import org.readium.r2.shared.util.http.HttpRequest
 
+/**
+ * A [DownloadManager] implementation using a [HttpClient].
+ *
+ * If the app is killed, downloads will stop and you won't be able to resume them later.
+ */
 public class ForegroundDownloadManager(
     private val httpClient: HttpClient
 ) : DownloadManager {

@@ -25,6 +25,9 @@ import org.readium.r2.shared.units.hz
 import org.readium.r2.shared.util.downloads.DownloadManager
 import org.readium.r2.shared.util.toUri
 
+/**
+ * A [DownloadManager] implementation using the Android download service.
+ */
 public class AndroidDownloadManager internal constructor(
     private val context: Context,
     private val destStorage: Storage,
@@ -33,6 +36,16 @@ public class AndroidDownloadManager internal constructor(
     private val allowDownloadsOverMetered: Boolean
 ) : DownloadManager {
 
+    /**
+     * Creates a new instance of [AndroidDownloadManager].
+     *
+     * @param context Android context
+     * @param destStorage Location where downloads should be stored
+     * @param refreshRate Frequency with which download status will be checked and
+     *   listeners notified
+     * @param allowDownloadsOverMetered If downloads must be paused when only metered connexions
+     *   are available
+     */
     public constructor(
         context: Context,
         destStorage: Storage = Storage.App,
@@ -47,7 +60,14 @@ public class AndroidDownloadManager internal constructor(
     )
 
     public enum class Storage {
+        /**
+         * App internal storage.
+         */
         App,
+
+        /**
+         * Shared storage, accessible by users.
+         */
         Shared;
     }
 

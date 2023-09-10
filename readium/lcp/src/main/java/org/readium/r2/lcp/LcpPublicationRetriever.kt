@@ -17,6 +17,9 @@ import org.readium.r2.shared.util.mediatype.FormatRegistry
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 
+/**
+ * Util to acquire a protected publication from standalone LCPL's bytes.
+ */
 public class LcpPublicationRetriever(
     context: Context,
     private val downloadManager: DownloadManager,

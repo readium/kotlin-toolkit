@@ -9,6 +9,9 @@ package org.readium.r2.shared.util.downloads
 import java.io.File
 import org.readium.r2.shared.util.Url
 
+/**
+ * Retrieves files through Http with various features depending on implementations.
+ */
 public interface DownloadManager {
 
     public data class Request(
@@ -73,20 +76,47 @@ public interface DownloadManager {
 
     public interface Listener {
 
+        /**
+         * Download with id [requestId] successfully completed and is available at [file].
+         */
         public fun onDownloadCompleted(requestId: RequestId, file: File)
 
+        /**
+         * [downloaded] / [expected] bytes have been downloaded for request with id [requestId].
+         */
         public fun onDownloadProgressed(requestId: RequestId, downloaded: Long, expected: Long?)
 
+        /**
+         * Download with id [requestId] failed with [error].
+         */
         public fun onDownloadFailed(requestId: RequestId, error: Error)
 
+        /**
+         * Download with id [requestId] has been cancelled.
+         */
         public fun onDownloadCancelled(requestId: RequestId)
     }
 
+    /**
+     * Submits a new request to this [DownloadManager]. [listener] will automatically be registered.
+     */
     public fun submit(request: Request, listener: Listener): RequestId
 
+    /**
+     * Registers a listener for the download with [requestId].
+     *
+     * If your [DownloadManager] supports background downloading, this should typically be used
+     * when you get back a new instance after the app restarted.
+     */
     public fun register(requestId: RequestId, listener: Listener)
 
+    /**
+     * Cancels the download with [requestId].
+     */
     public fun cancel(requestId: RequestId)
 
+    /**
+     * Releases any in-memory resource associated with this [DownloadManager].
+     */
     public fun close()
 }
