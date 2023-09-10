@@ -18,7 +18,7 @@ import org.readium.r2.lcp.license.model.LicenseDocument
 /**
  * Access to a License Document stored in a ZIP archive.
  */
-internal class JavaZipLicenseContainer(
+internal class FileZipLicenseContainer(
     private val zip: String,
     private val pathInZIP: String
 ) : WritableLicenseContainer {

@@ -19,7 +19,7 @@ import org.readium.r2.lcp.license.model.LicenseDocument
 import org.readium.r2.shared.resource.Container
 import org.readium.r2.shared.util.toUri
 
-internal class SharedZipLicenseContainer(
+internal class ContentZipLicenseContainer(
     context: Context,
     private val container: Container,
     private val pathInZip: String

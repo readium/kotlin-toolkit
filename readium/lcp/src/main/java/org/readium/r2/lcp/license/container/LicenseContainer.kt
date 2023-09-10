@@ -43,10 +43,10 @@ internal fun createLicenseContainer(
     mediaType: MediaType
 ): WritableLicenseContainer =
     when (mediaType) {
-        MediaType.EPUB -> JavaZipLicenseContainer(file.path, LICENSE_IN_EPUB)
+        MediaType.EPUB -> FileZipLicenseContainer(file.path, LICENSE_IN_EPUB)
         MediaType.LCP_LICENSE_DOCUMENT -> LcplLicenseContainer(file)
         // Assuming it's a Readium WebPub package (e.g. audiobook, LCPDF, etc.) as a fallback
-        else -> JavaZipLicenseContainer(file.path, LICENSE_IN_RPF)
+        else -> FileZipLicenseContainer(file.path, LICENSE_IN_RPF)
     }
 
 internal fun createLicenseContainer(
@@ -87,9 +87,9 @@ internal fun createLicenseContainer(
 
     return when {
         container.source?.isFile() == true ->
-            JavaZipLicenseContainer(container.source!!.path, licensePath)
+            FileZipLicenseContainer(container.source!!.path, licensePath)
         container.source?.scheme == ContentResolver.SCHEME_CONTENT ->
-            SharedZipLicenseContainer(context, container, licensePath)
+            ContentZipLicenseContainer(context, container, licensePath)
         else ->
             ContainerLicenseContainer(container, licensePath.addPrefix("/"))
     }

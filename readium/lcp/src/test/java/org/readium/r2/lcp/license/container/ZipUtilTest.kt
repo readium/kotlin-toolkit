@@ -15,10 +15,10 @@ import kotlin.test.Test
 import kotlin.test.assertContentEquals
 import kotlin.test.assertNotNull
 
-class JavaZipUtilTest {
+class ZipUtilTest {
 
     private val zipPath: String =
-        JavaZipUtilTest::class.java.getResource("futuristic_tales.cbz")!!.path
+        ZipUtilTest::class.java.getResource("futuristic_tales.cbz")!!.path
 
     private val zipFile: ZipFile =
         ZipFile(zipPath)
@@ -31,7 +31,7 @@ class JavaZipUtilTest {
     )
 
     private val aFcPath: String =
-        JavaZipUtilTest::class.java.getResource("a-fc.jpg")!!.path
+        ZipUtilTest::class.java.getResource("a-fc.jpg")!!.path
 
     private fun ZipFile.readEntry(name: String): ByteArray? {
         val entry = getEntry(name) ?: return null
