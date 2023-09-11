@@ -19,8 +19,13 @@ class UrlTest {
     fun createFromInvalidUrl() {
         assertNull(Url(""))
         assertNull(Url("     "))
-        assertNull(AbsoluteUrl(""))
-        assertNull(RelativeUrl(""))
+        assertNull(Url("invalid character"))
+
+        assertNull(AbsoluteUrl("  "))
+        assertNull(AbsoluteUrl("invalid character"))
+
+        assertNull(RelativeUrl("   "))
+        assertNull(RelativeUrl("invalid character"))
     }
 
     @Test

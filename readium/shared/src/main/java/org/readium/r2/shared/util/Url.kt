@@ -39,7 +39,7 @@ public sealed class Url : Parcelable {
          * Creates a [Url] from its encoded string representation.
          */
         public operator fun invoke(url: String): Url? {
-            if (url.isBlank()) return null
+            if (!url.isValidUrl()) return null
             return invoke(Uri.parse(url))
         }
 
@@ -227,7 +227,7 @@ public class AbsoluteUrl private constructor(override val uri: Uri) : Url() {
          * Creates an [AbsoluteUrl] from its encoded string representation.
          */
         public operator fun invoke(url: String): AbsoluteUrl? {
-            if (url.isBlank()) return null
+            if (!url.isValidUrl()) return null
             return invoke(Uri.parse(url))
         }
 
@@ -286,7 +286,7 @@ public class RelativeUrl private constructor(override val uri: Uri) : Url() {
          * Creates a [RelativeUrl] from its encoded string representation.
          */
         public operator fun invoke(url: String): RelativeUrl? {
-            if (url.isBlank()) return null
+            if (!url.isValidUrl()) return null
             return invoke(Uri.parse(url))
         }
 
@@ -345,3 +345,7 @@ private fun Uri.addFileAuthority(): Uri =
     } else {
         buildUpon().authority("").build()
     }
+
+private fun String.isValidUrl(): Boolean =
+    // Uri.parse doesn't really validate the URL, it could contain invalid characters.
+    isNotBlank() && tryOrNull { URI(this) } != null
