@@ -64,8 +64,11 @@ internal class LcpDownloadsRepository(
     }
 
     suspend fun retrieveLicense(id: String): JSONObject? {
-        coroutineScope.coroutineContext.job.children.forEach { it.join() }
-        return snapshot.await()[id]
+        val snapshot = snapshot.await()
+        while (coroutineScope.coroutineContext.job.children.toList().isNotEmpty()) {
+            coroutineScope.coroutineContext.job.children.forEach { it.join() }
+        }
+        return snapshot[id]
     }
 
     private suspend fun readSnapshot(): Map<String, JSONObject> {
