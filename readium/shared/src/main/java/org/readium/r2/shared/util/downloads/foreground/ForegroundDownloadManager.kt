@@ -132,5 +132,6 @@ public class ForegroundDownloadManager(
     }
 
     public override fun close() {
+        jobs.forEach { cancel(it.key) }
     }
 }

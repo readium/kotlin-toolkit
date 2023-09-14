@@ -9,38 +9,76 @@ package org.readium.r2.lcp
 import android.content.Context
 import java.io.File
 import java.util.LinkedList
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.async
+import kotlinx.coroutines.job
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.plus
+import kotlinx.coroutines.withContext
 import org.json.JSONObject
 
 internal class LcpDownloadsRepository(
     context: Context
 ) {
-    private val storageDir: File =
-        File(context.noBackupFilesDir, LcpDownloadsRepository::class.qualifiedName!!)
-            .also { if (!it.exists()) it.mkdirs() }
+    private val coroutineScope: CoroutineScope =
+        MainScope()
 
-    private val storageFile: File =
-        File(storageDir, "licenses.json")
-            .also { if (!it.exists()) { it.writeText("{}", Charsets.UTF_8) } }
+    private val storageDir: Deferred<File> =
+        coroutineScope.async {
+            withContext(Dispatchers.IO) {
+                File(context.noBackupFilesDir, LcpDownloadsRepository::class.qualifiedName!!)
+                    .also { if (!it.exists()) it.mkdirs() }
+            }
+        }
 
-    private val snapshot: MutableMap<String, JSONObject> =
-        storageFile.readText(Charsets.UTF_8).toData().toMutableMap()
+    private val storageFile: Deferred<File> =
+        coroutineScope.async {
+            withContext(Dispatchers.IO) {
+                File(storageDir.await(), "licenses.json")
+                    .also { if (!it.exists()) { it.writeText("{}", Charsets.UTF_8) } }
+            }
+        }
 
-    fun getIds(): List<String> {
-        return snapshot.keys.toList()
-    }
+    private val snapshot: Deferred<MutableMap<String, JSONObject>> =
+        coroutineScope.async {
+            readSnapshot().toMutableMap()
+        }
 
     fun addDownload(id: String, license: JSONObject) {
-        snapshot[id] = license
-        storageFile.writeText(snapshot.toJson(), Charsets.UTF_8)
+        coroutineScope.launch {
+            val snapshotCompleted = snapshot.await()
+            snapshotCompleted[id] = license
+            writeSnapshot(snapshotCompleted)
+        }
     }
 
     fun removeDownload(id: String) {
-        snapshot.remove(id)
-        storageFile.writeText(snapshot.toJson(), Charsets.UTF_8)
+        coroutineScope.launch {
+            val snapshotCompleted = snapshot.await()
+            snapshotCompleted.remove(id)
+            writeSnapshot(snapshotCompleted)
+        }
     }
 
-    fun retrieveLicense(id: String): JSONObject? {
-        return snapshot[id]
+    suspend fun retrieveLicense(id: String): JSONObject? {
+        coroutineScope.coroutineContext.job.children.forEach { it.join() }
+        return snapshot.await()[id]
+    }
+
+    private suspend fun readSnapshot(): Map<String, JSONObject> {
+        return withContext(Dispatchers.IO) {
+            storageFile.await().readText(Charsets.UTF_8).toData().toMutableMap()
+        }
+    }
+
+    private suspend fun writeSnapshot(snapshot: Map<String, JSONObject>) {
+        val storageFileCompleted = storageFile.await()
+        withContext(Dispatchers.IO) {
+            storageFileCompleted.writeText(snapshot.toJson(), Charsets.UTF_8)
+        }
     }
 
     private fun Map<String, JSONObject>.toJson(): String {

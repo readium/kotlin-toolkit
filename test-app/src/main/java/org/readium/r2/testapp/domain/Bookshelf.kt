@@ -31,6 +31,12 @@ import org.readium.r2.testapp.data.model.Book
 import org.readium.r2.testapp.utils.tryOrLog
 import timber.log.Timber
 
+/**
+ * The [Bookshelf] supports two different processes:
+ * - directly _adding_ the url to a remote asset or an asset from shared storage to the database
+ * - _importing_ an asset, that is downloading or copying the publication the asset points to to the app storage
+ *   before adding it to the database
+ */
 class Bookshelf(
     context: Context,
     private val bookRepository: BookRepository,

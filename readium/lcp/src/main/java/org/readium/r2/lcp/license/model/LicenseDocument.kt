@@ -102,6 +102,9 @@ public class LicenseDocument internal constructor(public val json: JSONObject) {
         }
     }
 
+    public val publicationLink: Link
+        get() = link(Rel.Publication)!!
+
     public fun link(rel: Rel, type: MediaType? = null): Link? =
         links.firstWithRel(rel.value, type)
 

@@ -8,6 +8,9 @@ package org.readium.r2.lcp
 
 import android.content.Context
 import java.io.File
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.launch
 import org.readium.r2.lcp.license.container.createLicenseContainer
 import org.readium.r2.lcp.license.model.LicenseDocument
 import org.readium.r2.shared.extensions.tryOrLog
@@ -25,6 +28,9 @@ public class LcpPublicationRetriever(
     private val downloadManager: DownloadManager,
     private val mediaTypeRetriever: MediaTypeRetriever
 ) {
+
+    private val coroutineScope: CoroutineScope =
+        MainScope()
 
     @JvmInline
     public value class RequestId(public val value: String)
@@ -58,52 +64,54 @@ public class LcpPublicationRetriever(
             requestId: DownloadManager.RequestId,
             file: File
         ) {
-            val lcpRequestId = RequestId(requestId.value)
-            val listenersForId = listeners[lcpRequestId].orEmpty()
+            coroutineScope.launch {
+                val lcpRequestId = RequestId(requestId.value)
+                val listenersForId = checkNotNull(listeners[lcpRequestId])
 
-            val license = downloadsRepository.retrieveLicense(requestId.value)
-                ?.let { LicenseDocument(it) }
-                ?: run {
-                    listenersForId.forEach {
-                        it.onAcquisitionFailed(
-                            lcpRequestId,
-                            LcpException.wrap(
-                                Exception("Couldn't retrieve license from local storage.")
+                val license = downloadsRepository.retrieveLicense(requestId.value)
+                    ?.let { LicenseDocument(it) }
+                    ?: run {
+                        listenersForId.forEach {
+                            it.onAcquisitionFailed(
+                                lcpRequestId,
+                                LcpException.wrap(
+                                    Exception("Couldn't retrieve license from local storage.")
+                                )
                             )
-                        )
+                        }
+                        return@launch
                     }
-                    return
+                downloadsRepository.removeDownload(requestId.value)
+
+                val mediaType = mediaTypeRetriever.retrieve(
+                    mediaType = license.publicationLink.type
+                )
+                    ?: MediaType.EPUB
+
+                try {
+                    // Saves the License Document into the downloaded publication
+                    val container = createLicenseContainer(file, mediaType)
+                    container.write(license)
+                } catch (e: Exception) {
+                    tryOrLog { file.delete() }
+                    listenersForId.forEach {
+                        it.onAcquisitionFailed(lcpRequestId, LcpException.wrap(e))
+                    }
+                    return@launch
                 }
-            downloadsRepository.removeDownload(requestId.value)
 
-            val link = license.link(LicenseDocument.Rel.Publication)!!
+                val acquiredPublication = LcpService.AcquiredPublication(
+                    localFile = file,
+                    suggestedFilename = "${license.id}.${formatRegistry.fileExtension(mediaType) ?: "epub"}",
+                    mediaType = mediaType,
+                    licenseDocument = license
+                )
 
-            val mediaType = mediaTypeRetriever.retrieve(mediaType = link.type)
-                ?: MediaType.EPUB
-
-            try {
-                // Saves the License Document into the downloaded publication
-                val container = createLicenseContainer(file, mediaType)
-                container.write(license)
-            } catch (e: Exception) {
-                tryOrLog { file.delete() }
                 listenersForId.forEach {
-                    it.onAcquisitionFailed(lcpRequestId, LcpException.wrap(e))
+                    it.onAcquisitionCompleted(lcpRequestId, acquiredPublication)
                 }
-                return
+                listeners.remove(lcpRequestId)
             }
-
-            val acquiredPublication = LcpService.AcquiredPublication(
-                localFile = file,
-                suggestedFilename = "${license.id}.${formatRegistry.fileExtension(mediaType) ?: "epub"}",
-                mediaType = mediaType,
-                licenseDocument = license
-            )
-
-            listenersForId.forEach {
-                it.onAcquisitionCompleted(lcpRequestId, acquiredPublication)
-            }
-            listeners.remove(lcpRequestId)
         }
 
         override fun onDownloadProgressed(
@@ -112,7 +120,7 @@ public class LcpPublicationRetriever(
             expected: Long?
         ) {
             val lcpRequestId = RequestId(requestId.value)
-            val listenersForId = listeners[lcpRequestId].orEmpty()
+            val listenersForId = checkNotNull(listeners[lcpRequestId])
 
             listenersForId.forEach {
                 it.onAcquisitionProgressed(
@@ -128,7 +136,9 @@ public class LcpPublicationRetriever(
             error: DownloadManager.Error
         ) {
             val lcpRequestId = RequestId(requestId.value)
-            val listenersForId = listeners[lcpRequestId].orEmpty()
+            val listenersForId = checkNotNull(listeners[lcpRequestId])
+
+            downloadsRepository.removeDownload(requestId.value)
 
             listenersForId.forEach {
                 it.onAcquisitionFailed(
@@ -142,7 +152,7 @@ public class LcpPublicationRetriever(
 
         override fun onDownloadCancelled(requestId: DownloadManager.RequestId) {
             val lcpRequestId = RequestId(requestId.value)
-            val listenersForId = listeners[lcpRequestId].orEmpty()
+            val listenersForId = checkNotNull(listeners[lcpRequestId])
             listenersForId.forEach {
                 it.onAcquisitionCancelled(lcpRequestId)
             }
@@ -166,8 +176,10 @@ public class LcpPublicationRetriever(
         requestId: RequestId,
         listener: Listener
     ) {
-        listeners.getOrPut(requestId) { mutableListOf() }.add(listener)
-        downloadManager.register(DownloadManager.RequestId(requestId.value), downloadListener)
+        listeners.getOrPut(requestId) {
+            downloadManager.register(DownloadManager.RequestId(requestId.value), downloadListener)
+            mutableListOf()
+        }.add(listener)
     }
 
     public fun retrieve(
@@ -195,8 +207,7 @@ public class LcpPublicationRetriever(
         downloadTitle: String,
         downloadDescription: String?
     ): RequestId {
-        val link = license.link(LicenseDocument.Rel.Publication)!!
-        val url = Url(link.url)
+        val url = Url(license.publicationLink.url)
 
         val requestId = downloadManager.submit(
             request = DownloadManager.Request(
