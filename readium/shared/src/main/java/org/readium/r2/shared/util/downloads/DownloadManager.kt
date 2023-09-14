@@ -8,9 +8,17 @@ package org.readium.r2.shared.util.downloads
 
 import java.io.File
 import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.downloads.android.AndroidDownloadManager
+import org.readium.r2.shared.util.downloads.foreground.ForegroundDownloadManager
 
 /**
- * Retrieves files through Http with various features depending on implementations.
+ * Manages a set of concurrent files downloaded through HTTP.
+ *
+ * Choose the implementation that best fits your needs:
+ * - [AndroidDownloadManager] for downloading files in the background with the Android system
+ * service, even if the app is stopped.
+ * - [ForegroundDownloadManager] for a simpler implementation based on HttpClient which cancels
+ * the on-going download when the app is closed.
  */
 public interface DownloadManager {
 
@@ -77,46 +85,52 @@ public interface DownloadManager {
     public interface Listener {
 
         /**
-         * Download with id [requestId] successfully completed and is available at [file].
+         * The download with ID [requestId] has been successfully completed and is now available at
+         * [file].
          */
         public fun onDownloadCompleted(requestId: RequestId, file: File)
 
         /**
-         * [downloaded] / [expected] bytes have been downloaded for request with id [requestId].
+         * The request with ID [requestId] has downloaded [downloaded] out of [expected] bytes.
          */
         public fun onDownloadProgressed(requestId: RequestId, downloaded: Long, expected: Long?)
 
         /**
-         * Download with id [requestId] failed with [error].
+         * The download with ID [requestId] failed due to [error].
          */
         public fun onDownloadFailed(requestId: RequestId, error: Error)
 
         /**
-         * Download with id [requestId] has been cancelled.
+         * The download with ID [requestId] has been cancelled.
          */
         public fun onDownloadCancelled(requestId: RequestId)
     }
 
     /**
-     * Submits a new request to this [DownloadManager]. [listener] will automatically be registered.
+     * Submits a new request to this [DownloadManager]. The given [listener] will automatically be
+     * registered.
+     *
+     * Returns the ID of the download request, which can be used to cancel it.
      */
     public fun submit(request: Request, listener: Listener): RequestId
 
     /**
-     * Registers a listener for the download with [requestId].
+     * Registers a listener for the download with the given [requestId].
      *
-     * If your [DownloadManager] supports background downloading, this should typically be used
-     * when you get back a new instance after the app restarted.
+     * If your [DownloadManager] supports background downloading, this should typically be used when
+     * you get create a new instance after the app restarted.
      */
     public fun register(requestId: RequestId, listener: Listener)
 
     /**
-     * Cancels the download with [requestId].
+     * Cancels the download with the given [requestId].
      */
     public fun cancel(requestId: RequestId)
 
     /**
      * Releases any in-memory resource associated with this [DownloadManager].
+     *
+     * If the pending downloads cannot continue in the background, they will be cancelled.
      */
     public fun close()
 }

@@ -53,11 +53,7 @@ public interface LcpService {
      * Acquires a protected publication from a standalone LCPL's bytes.
      *
      * You can cancel the on-going acquisition by cancelling its parent coroutine context.
-     *    @Deprecated(
-     "Use a LcpPublicationRetriever instead.",
-     ReplaceWith("publicationRetriever()"),
-     level = DeprecationLevel.ERROR
-     )
+     *
      * @param onProgress Callback to follow the acquisition progress from 0.0 to 1.0.
      */
     @Deprecated(
@@ -125,9 +121,8 @@ public interface LcpService {
     ): Try<LcpLicense, LcpException>
 
     /**
-     * Creates a [LcpPublicationRetriever] instance which can be used to acquire a protected
-     * publication from standalone LCPL's bytes.
-     *
+     * Creates an [LcpPublicationRetriever] instance which can be used to acquire a protected
+     * publication from an LCP License Document.
      */
     public fun publicationRetriever(): LcpPublicationRetriever
 
@@ -215,8 +210,8 @@ public interface LcpService {
     }
 
     @Deprecated(
-        "Use `acquirePublication()` with coroutines instead",
-        ReplaceWith("acquirePublication(lcpl)"),
+        "Use a LcpPublicationRetriever instead.",
+        ReplaceWith("publicationRetriever()"),
         level = DeprecationLevel.ERROR
     )
     @DelicateCoroutinesApi
