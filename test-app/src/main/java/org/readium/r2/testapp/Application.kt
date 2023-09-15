@@ -102,7 +102,10 @@ class Application : android.app.Application() {
                             OpdsPublicationRetriever(
                                 listener = opdsListener,
                                 downloadManager = readium.downloadManager,
-                                downloadRepository = DownloadRepository(Download.Type.OPDS, database.downloadsDao())
+                                downloadRepository = DownloadRepository(
+                                    Download.Type.OPDS,
+                                    database.downloadsDao()
+                                )
                             )
                         }
                     )

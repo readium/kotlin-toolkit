@@ -93,7 +93,7 @@ public class LcpPublicationRetriever(
      * Registers a listener for the acquisition with the given [requestId].
      *
      * If the [downloadManager] provided during construction supports background downloading, this
-     * should typically be used when you get create a new instance after the app restarted.
+     * should typically be used when you create a new instance after the app restarted.
      */
     public fun register(
         requestId: RequestId,

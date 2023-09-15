@@ -49,7 +49,7 @@ public class AndroidDownloadManager internal constructor(
     public constructor(
         context: Context,
         destStorage: Storage = Storage.App,
-        refreshRate: Hz = 0.1.hz,
+        refreshRate: Hz = 60.0.hz,
         allowDownloadsOverMetered: Boolean = true
     ) : this(
         context = context,
@@ -248,9 +248,8 @@ public class AndroidDownloadManager internal constructor(
                 maybeStopObservingProgress()
             }
             SystemDownloadManager.STATUS_RUNNING -> {
-                val expected = facade.expected?.takeIf { it > 0 }
                 listenersForId.forEach {
-                    it.onDownloadProgressed(id, facade.downloadedSoFar, expected)
+                    it.onDownloadProgressed(id, facade.downloadedSoFar, facade.expected)
                 }
             }
         }

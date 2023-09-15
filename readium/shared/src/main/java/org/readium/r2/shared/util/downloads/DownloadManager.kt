@@ -119,7 +119,7 @@ public interface DownloadManager {
      * Registers a listener for the download with the given [requestId].
      *
      * If your [DownloadManager] supports background downloading, this should typically be used when
-     * you get create a new instance after the app restarted.
+     * you create a new instance after the app restarted.
      */
     public fun register(requestId: RequestId, listener: Listener)
 

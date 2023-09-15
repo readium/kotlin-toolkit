@@ -34,6 +34,7 @@ internal class DownloadCursorFacade(
         .also { require(it != -1) }
         .takeUnless { cursor.isNull(it) }
         ?.let { cursor.getLong(it) }
+        ?.takeUnless { it == -1L }
 
     val downloadedSoFar: Long = cursor
         .getColumnIndex(DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR)
