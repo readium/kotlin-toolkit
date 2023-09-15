@@ -7,7 +7,6 @@
 package org.readium.r2.shared.publication.services.content.iterators
 
 import org.jsoup.Jsoup
-import org.jsoup.internal.StringUtil
 import org.jsoup.nodes.Element
 import org.jsoup.nodes.Node
 import org.jsoup.nodes.TextNode
@@ -36,8 +35,6 @@ import org.readium.r2.shared.util.Language
 import org.readium.r2.shared.util.getOrThrow
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.use
-
-// FIXME: Support custom skipped elements?
 
 /**
  * Iterates an HTML [resource], starting from the given [locator].
@@ -369,7 +366,7 @@ public class HtmlResourceContentIterator internal constructor(
         }
 
         private fun appendNormalisedText(text: String) {
-            StringUtil.appendNormalisedWhitespace(textAcc, text, lastCharIsWhitespace())
+            textAcc.appendNormalisedWhitespace(text, lastCharIsWhitespace())
         }
 
         private fun lastCharIsWhitespace(): Boolean =
@@ -483,3 +480,54 @@ private fun Node.srcRelativeToHref(baseHref: String): String? =
     attr("src")
         .takeIf { it.isNotBlank() }
         ?.let { Href(it, baseHref).string }
+
+/**
+ * After normalizing the whitespace within a string, appends it to a string builder.
+ *
+ * Largely inspired by JSoup's `StringUtil.appendNormalisedWhitespace`.
+ *
+ * Note that we don't use directly JSoup's method because we need to keep the non-breaking
+ * spaces in the text. Otherwise, they will be lost post-text tokenization and Hypothesis won't
+ * match the results.
+ *
+ * @param string String to normalize whitespace within.
+ * @param stripLeading Set to true if you wish to remove any leading whitespace.
+ */
+private fun StringBuilder.appendNormalisedWhitespace(
+    string: String,
+    stripLeading: Boolean
+) {
+    var lastWasWhite = false
+    var reachedNonWhite = false
+    val len = string.length
+    var c: Int
+    var i = 0
+    while (i < len) {
+        c = string.codePointAt(i)
+        if (isWhitespace(c)) {
+            if (stripLeading && !reachedNonWhite || lastWasWhite) {
+                i += Character.charCount(c)
+                continue
+            }
+            append(' ')
+            lastWasWhite = true
+        } else if (!isInvisibleChar(c)) {
+            appendCodePoint(c)
+            lastWasWhite = false
+            reachedNonWhite = true
+        }
+        i += Character.charCount(c)
+    }
+}
+
+/**
+ * Tests if a code point is "whitespace" as defined in the HTML spec.
+ */
+private fun isWhitespace(c: Int): Boolean {
+    return c == ' '.code || c == '\t'.code || c == '\n'.code || c == '\u000c'.code || c == '\r'.code
+}
+
+private fun isInvisibleChar(c: Int): Boolean {
+    return c == 8203 || c == 173 // zero width sp, soft hyphen
+    // previously also included zw non join, zw join - but removing those breaks semantic meaning of text
+}
