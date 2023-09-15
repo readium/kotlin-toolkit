@@ -48,7 +48,7 @@ class PublicationRetriever(
     interface Listener {
 
         fun onSuccess(publication: File, coverUrl: String?)
-
+        fun onProgressed(progress: Double)
         fun onError(error: ImportError)
     }
 
@@ -56,6 +56,10 @@ class PublicationRetriever(
         localPublicationRetriever.listener = object : Listener {
             override fun onSuccess(publication: File, coverUrl: String?) {
                 listener.onSuccess(publication, coverUrl)
+            }
+
+            override fun onProgressed(progress: Double) {
+                listener.onProgressed(progress)
             }
 
             override fun onError(error: ImportError) {
@@ -66,6 +70,10 @@ class PublicationRetriever(
         opdsPublicationRetriever.listener = object : Listener {
             override fun onSuccess(publication: File, coverUrl: String?) {
                 localPublicationRetriever.retrieve(publication, coverUrl)
+            }
+
+            override fun onProgressed(progress: Double) {
+                listener.onProgressed(progress)
             }
 
             override fun onError(error: ImportError) {
@@ -179,6 +187,10 @@ class LocalPublicationRetriever(
             }
         }
 
+        override fun onProgressed(progress: Double) {
+            listener.onProgressed(progress)
+        }
+
         override fun onError(error: ImportError) {
             listener.onError(error)
         }
@@ -253,7 +265,11 @@ class OpdsPublicationRetriever(
         DownloadListener()
 
     private inner class DownloadListener : DownloadManager.Listener {
-        override fun onDownloadCompleted(requestId: DownloadManager.RequestId, file: File) {
+        override fun onDownloadCompleted(
+            requestId: DownloadManager.RequestId,
+            file: File,
+            mediaType: MediaType?
+        ) {
             coroutineScope.launch {
                 val coverUrl = downloadRepository.getCover(requestId.value)
                 downloadRepository.remove(requestId.value)
@@ -266,6 +282,10 @@ class OpdsPublicationRetriever(
             downloaded: Long,
             expected: Long?
         ) {
+            coroutineScope.launch {
+                val progression = expected?.let { downloaded.toDouble() / expected } ?: return@launch
+                listener.onProgressed(progression)
+            }
         }
 
         override fun onDownloadFailed(
@@ -366,6 +386,10 @@ class LcpPublicationRetriever(
             downloaded: Long,
             expected: Long?
         ) {
+            coroutineScope.launch {
+                val progression = expected?.let { downloaded.toDouble() / expected } ?: return@launch
+                listener.onProgressed(progression)
+            }
         }
 
         override fun onAcquisitionFailed(

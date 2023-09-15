@@ -10,6 +10,7 @@ import java.io.File
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.downloads.android.AndroidDownloadManager
 import org.readium.r2.shared.util.downloads.foreground.ForegroundDownloadManager
+import org.readium.r2.shared.util.mediatype.MediaType
 
 /**
  * Manages a set of concurrent files downloaded through HTTP.
@@ -88,7 +89,7 @@ public interface DownloadManager {
          * The download with ID [requestId] has been successfully completed and is now available at
          * [file].
          */
-        public fun onDownloadCompleted(requestId: RequestId, file: File)
+        public fun onDownloadCompleted(requestId: RequestId, file: File, mediaType: MediaType?)
 
         /**
          * The request with ID [requestId] has downloaded [downloaded] out of [expected] bytes.

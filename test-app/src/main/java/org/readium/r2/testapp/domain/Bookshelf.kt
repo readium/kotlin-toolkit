@@ -22,6 +22,7 @@ import org.readium.r2.shared.util.toUrl
 import org.readium.r2.streamer.PublicationFactory
 import org.readium.r2.testapp.data.BookRepository
 import org.readium.r2.testapp.data.model.Book
+import org.readium.r2.testapp.utils.extensions.formatPercentage
 import org.readium.r2.testapp.utils.tryOrLog
 import timber.log.Timber
 
@@ -64,6 +65,10 @@ class Bookshelf(
                 val url = publication.toUrl()
                 addBookFeedback(url, coverUrl)
             }
+        }
+
+        override fun onProgressed(progress: Double) {
+            Timber.e("Downloaded ${progress.formatPercentage()}")
         }
 
         override fun onError(error: ImportError) {

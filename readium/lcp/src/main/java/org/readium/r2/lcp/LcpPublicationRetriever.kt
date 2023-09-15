@@ -181,7 +181,8 @@ public class LcpPublicationRetriever(
 
         override fun onDownloadCompleted(
             requestId: DownloadManager.RequestId,
-            file: File
+            file: File,
+            mediaType: MediaType?
         ) {
             coroutineScope.launch {
                 val lcpRequestId = RequestId(requestId.value)
@@ -202,14 +203,14 @@ public class LcpPublicationRetriever(
                     }
                 downloadsRepository.removeDownload(requestId.value)
 
-                val mediaType = mediaTypeRetriever.retrieve(
+                val mt = mediaTypeRetriever.retrieve(
                     mediaType = license.publicationLink.type
                 )
                     ?: MediaType.EPUB
 
                 try {
                     // Saves the License Document into the downloaded publication
-                    val container = createLicenseContainer(file, mediaType)
+                    val container = createLicenseContainer(file, mt)
                     container.write(license)
                 } catch (e: Exception) {
                     tryOrLog { file.delete() }
@@ -221,8 +222,8 @@ public class LcpPublicationRetriever(
 
                 val acquiredPublication = LcpService.AcquiredPublication(
                     localFile = file,
-                    suggestedFilename = "${license.id}.${formatRegistry.fileExtension(mediaType) ?: "epub"}",
-                    mediaType = mediaType,
+                    suggestedFilename = "${license.id}.${formatRegistry.fileExtension(mt) ?: "epub"}",
+                    mediaType = mt,
                     licenseDocument = license
                 )
 

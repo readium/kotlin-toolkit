@@ -236,7 +236,7 @@ public class AndroidDownloadManager internal constructor(
                 val newDest = File(destFile.parent, generateFileName(destFile.extension))
                 if (destFile.renameTo(newDest)) {
                     listenersForId.forEach {
-                        it.onDownloadCompleted(id, newDest)
+                        it.onDownloadCompleted(id, newDest, mediaType = null)
                     }
                 } else {
                     listenersForId.forEach {
