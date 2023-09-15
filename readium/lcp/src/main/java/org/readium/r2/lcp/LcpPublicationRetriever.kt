@@ -7,7 +7,6 @@
 package org.readium.r2.lcp
 
 import android.content.Context
-import java.io.File
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
@@ -181,8 +180,7 @@ public class LcpPublicationRetriever(
 
         override fun onDownloadCompleted(
             requestId: DownloadManager.RequestId,
-            file: File,
-            mediaType: MediaType?
+            download: DownloadManager.Download
         ) {
             coroutineScope.launch {
                 val lcpRequestId = RequestId(requestId.value)
@@ -204,16 +202,18 @@ public class LcpPublicationRetriever(
                 downloadsRepository.removeDownload(requestId.value)
 
                 val mt = mediaTypeRetriever.retrieve(
-                    mediaType = license.publicationLink.type
-                )
-                    ?: MediaType.EPUB
+                    mediaTypes = listOfNotNull(
+                        license.publicationLink.type,
+                        download.mediaType.toString()
+                    )
+                ) ?: MediaType.EPUB
 
                 try {
                     // Saves the License Document into the downloaded publication
-                    val container = createLicenseContainer(file, mt)
+                    val container = createLicenseContainer(download.file, mt)
                     container.write(license)
                 } catch (e: Exception) {
-                    tryOrLog { file.delete() }
+                    tryOrLog { download.file.delete() }
                     listenersForId.forEach {
                         it.onAcquisitionFailed(lcpRequestId, LcpException.wrap(e))
                     }
@@ -221,7 +221,7 @@ public class LcpPublicationRetriever(
                 }
 
                 val acquiredPublication = LcpService.AcquiredPublication(
-                    localFile = file,
+                    localFile = download.file,
                     suggestedFilename = "${license.id}.${formatRegistry.fileExtension(mt) ?: "epub"}",
                     mediaType = mt,
                     licenseDocument = license

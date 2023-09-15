@@ -69,6 +69,7 @@ class Readium(context: Context) {
 
     val downloadManager = AndroidDownloadManager(
         context = context,
+        mediaTypeRetriever = mediaTypeRetriever,
         destStorage = AndroidDownloadManager.Storage.App
     )
 

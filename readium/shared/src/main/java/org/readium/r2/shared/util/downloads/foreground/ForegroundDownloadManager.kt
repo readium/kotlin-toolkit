@@ -78,8 +78,10 @@ public class ForegroundDownloadManager(
                 forEachListener(id) {
                     onDownloadCompleted(
                         id,
-                        file = destination,
-                        mediaType = response.mediaType
+                        DownloadManager.Download(
+                            file = destination,
+                            mediaType = response.mediaType
+                        )
                     )
                 }
             }

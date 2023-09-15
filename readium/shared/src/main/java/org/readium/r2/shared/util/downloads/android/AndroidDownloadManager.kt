@@ -20,16 +20,22 @@ import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import org.readium.r2.shared.resource.FileResource
 import org.readium.r2.shared.units.Hz
 import org.readium.r2.shared.units.hz
+import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.downloads.DownloadManager
+import org.readium.r2.shared.util.getOrElse
+import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 import org.readium.r2.shared.util.toUri
+import org.readium.r2.shared.util.use
 
 /**
  * A [DownloadManager] implementation using the Android download service.
  */
 public class AndroidDownloadManager internal constructor(
     private val context: Context,
+    private val mediaTypeRetriever: MediaTypeRetriever,
     private val destStorage: Storage,
     private val dirType: String,
     private val refreshRate: Hz,
@@ -48,11 +54,13 @@ public class AndroidDownloadManager internal constructor(
      */
     public constructor(
         context: Context,
+        mediaTypeRetriever: MediaTypeRetriever,
         destStorage: Storage = Storage.App,
         refreshRate: Hz = 60.0.hz,
         allowDownloadsOverMetered: Boolean = true
     ) : this(
         context = context,
+        mediaTypeRetriever = mediaTypeRetriever,
         destStorage = destStorage,
         dirType = Environment.DIRECTORY_DOWNLOADS,
         refreshRate = refreshRate,
@@ -231,17 +239,13 @@ public class AndroidDownloadManager internal constructor(
             SystemDownloadManager.STATUS_PAUSED -> {}
             SystemDownloadManager.STATUS_PENDING -> {}
             SystemDownloadManager.STATUS_SUCCESSFUL -> {
-                val destUri = Uri.parse(facade.localUri!!)
-                val destFile = File(destUri.path!!)
-                val newDest = File(destFile.parent, generateFileName(destFile.extension))
-                if (destFile.renameTo(newDest)) {
-                    listenersForId.forEach {
-                        it.onDownloadCompleted(id, newDest, mediaType = null)
-                    }
-                } else {
-                    listenersForId.forEach {
-                        it.onDownloadFailed(id, DownloadManager.Error.FileError())
-                    }
+                coroutineScope.launch {
+                    prepareResult(Uri.parse(facade.localUri)!!)
+                        .onSuccess { download ->
+                            listenersForId.forEach { it.onDownloadCompleted(id, download) }
+                        }.onFailure { error ->
+                            listenersForId.forEach { it.onDownloadFailed(id, error) }
+                        }
                 }
                 downloadManager.remove(facade.id)
                 listeners.remove(id)
@@ -252,6 +256,23 @@ public class AndroidDownloadManager internal constructor(
                     it.onDownloadProgressed(id, facade.downloadedSoFar, facade.expected)
                 }
             }
+        }
+    }
+
+    private suspend fun prepareResult(destUri: Uri): Try<DownloadManager.Download, DownloadManager.Error> {
+        val destFile = File(destUri.path!!)
+        val mediaType = FileResource(destFile, mediaTypeRetriever).use {
+            it.mediaType().getOrElse { return Try.failure(DownloadManager.Error.FileError()) }
+        }
+        val newDest = File(destFile.parent, generateFileName(destFile.extension))
+        return if (destFile.renameTo(newDest)) {
+            val download = DownloadManager.Download(
+                file = newDest,
+                mediaType = mediaType
+            )
+            Try.success(download)
+        } else {
+            Try.failure(DownloadManager.Error.FileError())
         }
     }
 

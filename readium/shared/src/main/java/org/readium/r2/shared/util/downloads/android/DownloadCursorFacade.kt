@@ -41,6 +41,12 @@ internal class DownloadCursorFacade(
         .also { require(it != -1) }
         .let { cursor.getLong(it) }
 
+    val mediaType: String? = cursor
+        .getColumnIndex(DownloadManager.COLUMN_MEDIA_TYPE)
+        .also { require(it != -1) }
+        .takeUnless { cursor.isNull(it) }
+        ?.let { cursor.getString(it) }
+
     val reason: Int? = cursor
         .getColumnIndex(DownloadManager.COLUMN_REASON)
         .also { require(it != -1) }

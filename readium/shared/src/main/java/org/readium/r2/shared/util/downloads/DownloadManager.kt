@@ -30,6 +30,11 @@ public interface DownloadManager {
         val headers: Map<String, List<String>> = emptyMap()
     )
 
+    public data class Download(
+        val file: File,
+        val mediaType: MediaType
+    )
+
     @JvmInline
     public value class RequestId(public val value: String)
 
@@ -86,10 +91,9 @@ public interface DownloadManager {
     public interface Listener {
 
         /**
-         * The download with ID [requestId] has been successfully completed and is now available at
-         * [file].
+         * The download with ID [requestId] has been successfully completed.
          */
-        public fun onDownloadCompleted(requestId: RequestId, file: File, mediaType: MediaType?)
+        public fun onDownloadCompleted(requestId: RequestId, download: Download)
 
         /**
          * The request with ID [requestId] has downloaded [downloaded] out of [expected] bytes.

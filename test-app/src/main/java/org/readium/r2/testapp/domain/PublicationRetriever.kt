@@ -28,6 +28,7 @@ import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.mediatype.FormatRegistry
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.testapp.data.DownloadRepository
+import org.readium.r2.testapp.data.model.Download
 import org.readium.r2.testapp.utils.extensions.copyToTempFile
 import org.readium.r2.testapp.utils.extensions.moveTo
 import org.readium.r2.testapp.utils.tryOrNull
@@ -269,13 +270,12 @@ class OpdsPublicationRetriever(
     private inner class DownloadListener : DownloadManager.Listener {
         override fun onDownloadCompleted(
             requestId: DownloadManager.RequestId,
-            file: File,
-            mediaType: MediaType?
+            download: DownloadManager.Download
         ) {
             coroutineScope.launch {
                 val coverUrl = downloadRepository.getCover(requestId.value)
                 downloadRepository.remove(requestId.value)
-                listener.onSuccess(file, coverUrl)
+                listener.onSuccess(download.file, coverUrl)
             }
         }
 
