@@ -6,17 +6,28 @@
 
 package org.readium.r2.testapp
 
-import android.content.*
+import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
 import com.google.android.material.color.DynamicColors
 import java.io.File
-import java.util.*
-import kotlinx.coroutines.*
+import java.util.Properties
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.async
 import org.readium.r2.testapp.BuildConfig.DEBUG
-import org.readium.r2.testapp.bookshelf.BookRepository
-import org.readium.r2.testapp.db.BookDatabase
+import org.readium.r2.testapp.data.BookRepository
+import org.readium.r2.testapp.data.DownloadRepository
+import org.readium.r2.testapp.data.db.AppDatabase
+import org.readium.r2.testapp.data.model.Download
+import org.readium.r2.testapp.domain.Bookshelf
+import org.readium.r2.testapp.domain.CoverStorage
+import org.readium.r2.testapp.domain.LcpPublicationRetriever
+import org.readium.r2.testapp.domain.LocalPublicationRetriever
+import org.readium.r2.testapp.domain.OpdsPublicationRetriever
+import org.readium.r2.testapp.domain.PublicationRetriever
 import org.readium.r2.testapp.reader.ReaderRepository
 import timber.log.Timber
 
@@ -28,6 +39,9 @@ class Application : android.app.Application() {
     lateinit var storageDir: File
 
     lateinit var bookRepository: BookRepository
+        private set
+
+    lateinit var bookshelf: Bookshelf
         private set
 
     lateinit var readerRepository: Deferred<ReaderRepository>
@@ -48,23 +62,55 @@ class Application : android.app.Application() {
 
         storageDir = computeStorageDir()
 
-        /*
-         * Initializing repositories
-         */
-        bookRepository =
-            BookDatabase.getDatabase(this).booksDao()
-                .let { dao ->
-                    BookRepository(
-                        applicationContext,
-                        dao,
-                        storageDir,
-                        readium.lcpService,
-                        readium.publicationFactory,
-                        readium.assetRetriever,
-                        readium.protectionRetriever,
-                        readium.formatRegistry
+        val database = AppDatabase.getDatabase(this)
+
+        bookRepository = BookRepository(database.booksDao())
+
+        bookshelf =
+            Bookshelf(
+                bookRepository,
+                CoverStorage(storageDir),
+                readium.publicationFactory,
+                readium.assetRetriever,
+                readium.protectionRetriever,
+                createPublicationRetriever = { listener ->
+                    PublicationRetriever(
+                        listener = listener,
+                        createLocalPublicationRetriever = { localListener ->
+                            LocalPublicationRetriever(
+                                listener = localListener,
+                                context = applicationContext,
+                                storageDir = storageDir,
+                                assetRetriever = readium.assetRetriever,
+                                formatRegistry = readium.formatRegistry,
+                                createLcpPublicationRetriever = { lcpListener ->
+                                    readium.lcpService.getOrNull()?.publicationRetriever()
+                                        ?.let { retriever ->
+                                            LcpPublicationRetriever(
+                                                listener = lcpListener,
+                                                downloadRepository = DownloadRepository(
+                                                    Download.Type.LCP,
+                                                    database.downloadsDao()
+                                                ),
+                                                lcpPublicationRetriever = retriever
+                                            )
+                                        }
+                                }
+                            )
+                        },
+                        createOpdsPublicationRetriever = { opdsListener ->
+                            OpdsPublicationRetriever(
+                                listener = opdsListener,
+                                downloadManager = readium.downloadManager,
+                                downloadRepository = DownloadRepository(
+                                    Download.Type.OPDS,
+                                    database.downloadsDao()
+                                )
+                            )
+                        }
                     )
                 }
+            )
 
         readerRepository =
             coroutineScope.async {

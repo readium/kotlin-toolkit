@@ -19,6 +19,6 @@ internal class BytesLicenseContainer(private var bytes: ByteArray) : LicenseCont
     override fun read(): ByteArray = bytes
 
     override fun write(license: LicenseDocument) {
-        bytes = license.data
+        bytes = license.toByteArray()
     }
 }

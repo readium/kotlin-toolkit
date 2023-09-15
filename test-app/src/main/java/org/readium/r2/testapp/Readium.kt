@@ -8,10 +8,10 @@ package org.readium.r2.testapp
 
 import android.content.Context
 import org.readium.adapters.pdfium.document.PdfiumDocumentFactory
+import org.readium.r2.lcp.LcpException
 import org.readium.r2.lcp.LcpService
 import org.readium.r2.navigator.preferences.FontFamily
 import org.readium.r2.shared.ExperimentalReadiumApi
-import org.readium.r2.shared.UserException
 import org.readium.r2.shared.asset.AssetRetriever
 import org.readium.r2.shared.publication.protection.ContentProtectionSchemeRetriever
 import org.readium.r2.shared.resource.CompositeArchiveFactory
@@ -22,6 +22,7 @@ import org.readium.r2.shared.resource.DirectoryContainerFactory
 import org.readium.r2.shared.resource.FileResourceFactory
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.archive.channel.ChannelZipArchiveFactory
+import org.readium.r2.shared.util.downloads.android.AndroidDownloadManager
 import org.readium.r2.shared.util.http.DefaultHttpClient
 import org.readium.r2.shared.util.http.HttpResourceFactory
 import org.readium.r2.shared.util.mediatype.FormatRegistry
@@ -66,13 +67,23 @@ class Readium(context: Context) {
         context.contentResolver
     )
 
+    val downloadManager = AndroidDownloadManager(
+        context = context,
+        mediaTypeRetriever = mediaTypeRetriever,
+        destStorage = AndroidDownloadManager.Storage.App
+    )
+
     /**
      * The LCP service decrypts LCP-protected publication and acquire publications from a
      * license file.
      */
-    val lcpService = LcpService(context, assetRetriever, mediaTypeRetriever)
-        ?.let { Try.success(it) }
-        ?: Try.failure(UserException("liblcp is missing on the classpath"))
+    val lcpService = LcpService(
+        context,
+        assetRetriever,
+        mediaTypeRetriever,
+        downloadManager
+    )?.let { Try.success(it) }
+        ?: Try.failure(LcpException.Unknown(Exception("liblcp is missing on the classpath")))
 
     private val contentProtections = listOfNotNull(
         lcpService.getOrNull()?.contentProtection()

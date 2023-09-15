@@ -52,7 +52,7 @@ internal class ZIPLicenseContainer(
             if (ZipUtil.containsEntry(tmpZip, pathInZIP)) {
                 ZipUtil.removeEntry(tmpZip, pathInZIP)
             }
-            ZipUtil.addEntry(tmpZip, pathInZIP, license.data, source)
+            ZipUtil.addEntry(tmpZip, pathInZIP, license.toByteArray(), source)
             tmpZip.delete()
         } catch (e: Exception) {
             throw LcpException.Container.WriteFailed(pathInZIP)

@@ -4,7 +4,7 @@
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.r2.testapp.domain.model
+package org.readium.r2.testapp.data.model
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity

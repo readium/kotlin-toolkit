@@ -14,8 +14,8 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import org.readium.r2.testapp.R
+import org.readium.r2.testapp.data.model.Catalog
 import org.readium.r2.testapp.databinding.ItemRecycleButtonBinding
-import org.readium.r2.testapp.domain.model.Catalog
 
 class CatalogFeedListAdapter(private val onLongClick: (Catalog) -> Unit) :
     ListAdapter<Catalog, CatalogFeedListAdapter.ViewHolder>(CatalogListDiff()) {
