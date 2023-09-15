@@ -25,8 +25,6 @@ public interface DownloadManager {
 
     public data class Request(
         val url: Url,
-        val title: String,
-        val description: String? = null,
         val headers: Map<String, List<String>> = emptyMap()
     )
 

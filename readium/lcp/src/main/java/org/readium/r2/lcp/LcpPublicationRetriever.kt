@@ -75,15 +75,9 @@ public class LcpPublicationRetriever(
      */
     public fun retrieve(
         license: LicenseDocument,
-        downloadTitle: String,
-        downloadDescription: String? = null,
         listener: Listener
     ): RequestId {
-        val requestId = fetchPublication(
-            license,
-            downloadTitle,
-            downloadDescription
-        )
+        val requestId = fetchPublication(license)
         addListener(requestId, listener)
         return requestId
     }
@@ -156,17 +150,13 @@ public class LcpPublicationRetriever(
     }
 
     private fun fetchPublication(
-        license: LicenseDocument,
-        downloadTitle: String,
-        downloadDescription: String?
+        license: LicenseDocument
     ): RequestId {
         val url = Url(license.publicationLink.url)
 
         val requestId = downloadManager.submit(
             request = DownloadManager.Request(
                 url = url,
-                title = downloadTitle,
-                description = downloadDescription,
                 headers = emptyMap()
             ),
             listener = downloadListener

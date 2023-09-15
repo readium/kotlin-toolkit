@@ -28,7 +28,6 @@ import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.mediatype.FormatRegistry
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.testapp.data.DownloadRepository
-import org.readium.r2.testapp.data.model.Download
 import org.readium.r2.testapp.utils.extensions.copyToTempFile
 import org.readium.r2.testapp.utils.extensions.moveTo
 import org.readium.r2.testapp.utils.tryOrNull
@@ -241,8 +240,6 @@ class OpdsPublicationRetriever(
             val requestId = downloadManager.submit(
                 request = DownloadManager.Request(
                     publicationUrl,
-                    title = publication.metadata.title ?: "Untitled publication",
-                    description = "Downloading",
                     headers = emptyMap()
                 ),
                 listener = downloadListener
@@ -359,8 +356,6 @@ class LcpPublicationRetriever(
 
             val requestId = lcpPublicationRetriever.retrieve(
                 license,
-                "Fulfilling Lcp publication",
-                null,
                 lcpRetrieverListener
             )
 

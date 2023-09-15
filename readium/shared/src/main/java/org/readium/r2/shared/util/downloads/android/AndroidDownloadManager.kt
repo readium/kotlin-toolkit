@@ -111,9 +111,7 @@ public class AndroidDownloadManager internal constructor(
         val androidRequest = createRequest(
             uri = request.url.toUri(),
             filename = generateFileName(extension = request.url.extension),
-            headers = request.headers,
-            title = request.title,
-            description = request.description
+            headers = request.headers
         )
         val downloadId = downloadManager.enqueue(androidRequest)
         val requestId = DownloadManager.RequestId(downloadId.toString())
@@ -142,16 +140,12 @@ public class AndroidDownloadManager internal constructor(
     private fun createRequest(
         uri: Uri,
         filename: String,
-        headers: Map<String, List<String>>,
-        title: String,
-        description: String?
+        headers: Map<String, List<String>>
     ): SystemDownloadManager.Request =
         SystemDownloadManager.Request(uri)
-            .setNotificationVisibility(SystemDownloadManager.Request.VISIBILITY_VISIBLE)
+            .setNotificationVisibility(SystemDownloadManager.Request.VISIBILITY_HIDDEN)
             .setDestination(filename)
             .setHeaders(headers)
-            .setTitle(title)
-            .apply { description?.let { setDescription(it) } }
             .setAllowedOverMetered(allowDownloadsOverMetered)
 
     private fun SystemDownloadManager.Request.setHeaders(
