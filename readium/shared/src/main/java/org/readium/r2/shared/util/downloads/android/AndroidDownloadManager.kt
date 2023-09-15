@@ -45,6 +45,10 @@ public class AndroidDownloadManager internal constructor(
     /**
      * Creates a new instance of [AndroidDownloadManager].
      *
+     * Because of discrepancies across different devices, default notifications are disabled.
+     * If you want to use this [DownloadManager], you will need permission
+     * android.permission.DOWNLOAD_WITHOUT_NOTIFICATION.
+     *
      * @param context Android context
      * @param destStorage Location where downloads should be stored
      * @param refreshRate Frequency with which download status will be checked and

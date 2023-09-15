@@ -4,8 +4,4 @@
   available in the top-level LICENSE file of the project.
 -->
 
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
-
-    <uses-permission android:name="android.permission.DOWNLOAD_WITHOUT_NOTIFICATION" />
-
-</manifest>
+<manifest />
