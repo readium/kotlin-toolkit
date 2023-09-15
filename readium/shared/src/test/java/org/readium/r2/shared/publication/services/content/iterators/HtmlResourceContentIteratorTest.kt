@@ -554,7 +554,7 @@ class HtmlResourceContentIteratorTest {
                 TextElement(
                     locator = locator(
                         progression = 2 / 3.0,
-                        selector = "#c06-para-0019",
+                        selector = "#c06-li-0001 > aside",
                         before = "e just described is very much a waterfall process.\n                        \n                        ",
                         highlight = "Trailing text"
                     ),
@@ -563,11 +563,116 @@ class HtmlResourceContentIteratorTest {
                         Segment(
                             locator = locator(
                                 progression = 2 / 3.0,
-                                selector = "#c06-para-0019",
+                                selector = "#c06-li-0001 > aside",
                                 before = "e just described is very much a waterfall process.\n                        ",
                                 highlight = "Trailing text"
                             ),
                             text = "Trailing text",
+                            attributes = emptyList()
+                        )
+                    ),
+                    attributes = emptyList()
+                )
+            ),
+            iterator(html).elements()
+        )
+    }
+
+    @Test
+    fun `iterating over text nodes located around a nested block element`() = runTest {
+        val html = """
+            <?xml version="1.0" encoding="UTF-8"?>
+            <html xmlns="http://www.w3.org/1999/xhtml">
+            <body>
+                <div id="a">begin a <div id="b">in b</div> end a</div>
+                <div id="c">in c</div>
+            </body>
+            </html>
+            """
+
+        assertEquals(
+            listOf(
+                TextElement(
+                    locator = locator(
+                        progression = 0.0,
+                        selector = "#a",
+                        highlight = "begin a"
+                    ),
+                    role = TextElement.Role.Body,
+                    segments = listOf(
+                        Segment(
+                            locator = locator(
+                                progression = 0.0,
+                                selector = "#a",
+                                highlight = "begin a"
+                            ),
+                            text = "begin a",
+                            attributes = emptyList()
+                        )
+                    ),
+                    attributes = emptyList()
+                ),
+                TextElement(
+                    locator = locator(
+                        progression = 0.25,
+                        selector = "#b",
+                        before = "begin a ",
+                        highlight = "in b"
+                    ),
+                    role = TextElement.Role.Body,
+                    segments = listOf(
+                        Segment(
+                            locator = locator(
+                                progression = 0.25,
+                                selector = "#b",
+                                before = "begin a ",
+                                highlight = "in b"
+                            ),
+                            text = "in b",
+                            attributes = emptyList()
+                        )
+                    ),
+                    attributes = emptyList()
+                ),
+                TextElement(
+                    locator = locator(
+                        progression = 0.5,
+                        selector = "#a",
+                        before = "begin a in b  ",
+                        highlight = "end a"
+                    ),
+                    role = TextElement.Role.Body,
+                    segments = listOf(
+                        Segment(
+                            locator = locator(
+                                progression = 0.5,
+                                selector = "#a",
+                                before = "begin a in b ",
+                                highlight = "end a"
+                            ),
+                            text = "end a",
+                            attributes = emptyList()
+                        )
+                    ),
+                    attributes = emptyList()
+                ),
+                TextElement(
+                    locator = locator(
+                        progression = 0.75,
+                        selector = "#c",
+                        before = "begin a in b end a",
+                        highlight = "in c"
+                    ),
+                    role = TextElement.Role.Body,
+                    segments = listOf(
+                        Segment(
+                            locator = locator(
+                                progression = 0.75,
+                                selector = "#c",
+                                before = "begin a in b end a",
+                                highlight = "in c"
+                            ),
+                            text = "in c",
                             attributes = emptyList()
                         )
                     ),

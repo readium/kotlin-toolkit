@@ -246,16 +246,22 @@ public class HtmlResourceContentIterator internal constructor(
         /** Language of the current segment. */
         private var currentLanguage: String? = null
 
-        /** CSS selector of the current element. */
-        private var currentCssSelector: String? = null
-
         /** LIFO stack of the current element's block ancestors. */
-        private val breadcrumbs = mutableListOf<Element>()
+        private val breadcrumbs = mutableListOf<ParentElement>()
+
+        private data class ParentElement(
+            val element: Element,
+            val cssSelector: String
+        ) {
+            constructor(element: Element) : this(element, element.cssSelector())
+        }
 
         override fun head(node: Node, depth: Int) {
             if (node is Element) {
+                val parent = ParentElement(node)
                 if (node.isBlock) {
-                    breadcrumbs.add(node)
+                    flushText()
+                    breadcrumbs.add(parent)
                 }
 
                 val tag = node.normalName()
@@ -264,7 +270,7 @@ public class HtmlResourceContentIterator internal constructor(
                     baseLocator.copy(
                         locations = Locator.Locations(
                             otherLocations = buildMap {
-                                put("cssSelector", node.cssSelector() as Any)
+                                put("cssSelector", parent.cssSelector as Any)
                             }
                         )
                     )
@@ -339,7 +345,6 @@ public class HtmlResourceContentIterator internal constructor(
 
                     node.isBlock -> {
                         flushText()
-                        currentCssSelector = node.cssSelector()
                     }
                 }
             }
@@ -358,7 +363,7 @@ public class HtmlResourceContentIterator internal constructor(
                 appendNormalisedText(text)
             } else if (node is Element) {
                 if (node.isBlock) {
-                    assert(breadcrumbs.last() == node)
+                    assert(breadcrumbs.last().element == node)
                     flushText()
                     breadcrumbs.removeLast()
                 }
@@ -375,7 +380,9 @@ public class HtmlResourceContentIterator internal constructor(
         private fun flushText() {
             flushSegment()
 
-            if (startIndex == 0 && startElement != null && breadcrumbs.lastOrNull() == startElement) {
+            val parent = breadcrumbs.lastOrNull()
+
+            if (startIndex == 0 && startElement != null && parent?.element == startElement) {
                 startIndex = elements.size
             }
 
@@ -390,8 +397,8 @@ public class HtmlResourceContentIterator internal constructor(
                     locator = baseLocator.copy(
                         locations = Locator.Locations(
                             otherLocations = buildMap {
-                                currentCssSelector?.let {
-                                    put("cssSelector", it as Any)
+                                parent?.let {
+                                    put("cssSelector", it.cssSelector as Any)
                                 }
                             }
                         ),
@@ -423,13 +430,15 @@ public class HtmlResourceContentIterator internal constructor(
                     text = trimmedText + whitespaceSuffix
                 }
 
+                val parent = breadcrumbs.lastOrNull()
+
                 segmentsAcc.add(
                     TextElement.Segment(
                         locator = baseLocator.copy(
                             locations = Locator.Locations(
                                 otherLocations = buildMap {
-                                    currentCssSelector?.let {
-                                        put("cssSelector", it as Any)
+                                    parent?.let {
+                                        put("cssSelector", it.cssSelector as Any)
                                     }
                                 }
                             ),
