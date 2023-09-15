@@ -10,55 +10,28 @@ import org.readium.r2.testapp.data.db.DownloadsDao
 import org.readium.r2.testapp.data.model.Download
 
 class DownloadRepository(
+    private val type: Download.Type,
     private val downloadsDao: DownloadsDao
 ) {
 
-    suspend fun getLcpDownloads(): List<Download> {
-        return downloadsDao.getLcpDownloads()
-    }
+    suspend fun all(): List<Download> =
+        downloadsDao.getDownloads(type)
 
-    suspend fun getOpdsDownloads(): List<Download> {
-        return downloadsDao.getOpdsDownloads()
-    }
-
-    suspend fun insertLcpDownload(
+    suspend fun insert(
         id: String,
         cover: String?
     ) {
         downloadsDao.insert(
-            Download(id = id, type = Download.TYPE_LCP, extra = cover)
+            Download(id = id, type = type, cover = cover)
         )
     }
 
-    suspend fun insertOpdsDownload(
-        id: String,
-        cover: String?
-    ) {
-        downloadsDao.insert(
-            Download(id = id, type = Download.TYPE_OPDS, extra = cover)
-        )
-    }
-
-    suspend fun getLcpDownloadCover(
-        id: String
-    ): String? {
-        return downloadsDao.get(id, Download.TYPE_LCP)!!.extra
-    }
-    suspend fun getOpdsDownloadCover(
-        id: String
-    ): String? {
-        return downloadsDao.get(id, Download.TYPE_OPDS)!!.extra
-    }
-
-    suspend fun removeLcpDownload(
+    suspend fun remove(
         id: String
     ) {
-        downloadsDao.delete(id, Download.TYPE_LCP)
+        downloadsDao.delete(id, type)
     }
 
-    suspend fun removeOpdsDownload(
-        id: String
-    ) {
-        downloadsDao.delete(id, Download.TYPE_OPDS)
-    }
+    suspend fun getCover(id: String): String? =
+        downloadsDao.get(id, type)?.cover
 }

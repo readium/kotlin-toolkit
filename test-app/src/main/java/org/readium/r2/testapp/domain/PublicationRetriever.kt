@@ -14,7 +14,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import org.readium.r2.lcp.LcpException
-import org.readium.r2.lcp.LcpPublicationRetriever
+import org.readium.r2.lcp.LcpPublicationRetriever as ReadiumLcpPublicationRetriever
 import org.readium.r2.lcp.LcpService
 import org.readium.r2.lcp.license.model.LicenseDocument
 import org.readium.r2.shared.asset.Asset
@@ -33,16 +33,17 @@ import org.readium.r2.testapp.utils.extensions.moveTo
 import org.readium.r2.testapp.utils.tryOrNull
 import timber.log.Timber
 
+/**
+ * Retrieves a publication from a remote or local source and import it into the bookshelf storage.
+ *
+ * If the source file is a LCP license document, the protected publication will be downloaded.
+ */
 class PublicationRetriever(
-    private val context: Context,
-    private val storageDir: File,
-    private val assetRetriever: AssetRetriever,
-    private val formatRegistry: FormatRegistry,
-    private val downloadRepository: DownloadRepository,
-    private val downloadManager: DownloadManager,
-    private val lcpPublicationRetriever: Try<LcpPublicationRetriever, LcpException>,
-    private val listener: Listener
+    private val localPublicationRetriever: LocalPublicationRetriever,
+    private val opdsPublicationRetriever: OpdsPublicationRetriever
 ) {
+
+    lateinit var listener: Listener
 
     interface Listener {
 
@@ -51,109 +52,61 @@ class PublicationRetriever(
         fun onError(error: ImportError)
     }
 
+    init {
+        localPublicationRetriever.listener = object : Listener {
+            override fun onSuccess(publication: File, coverUrl: String?) {
+                listener.onSuccess(publication, coverUrl)
+            }
+
+            override fun onError(error: ImportError) {
+                listener.onError(error)
+            }
+        }
+
+        opdsPublicationRetriever.listener = object : Listener {
+            override fun onSuccess(publication: File, coverUrl: String?) {
+                localPublicationRetriever.retrieve(publication, coverUrl)
+            }
+
+            override fun onError(error: ImportError) {
+                listener.onError(error)
+            }
+        }
+    }
+
+    fun retrieveFromStorage(uri: Uri) {
+        localPublicationRetriever.retrieve(uri)
+    }
+
+    fun retrieveFromOpds(publication: Publication) {
+        opdsPublicationRetriever.retrieve(publication)
+    }
+}
+
+/**
+ * Retrieves a publication from a file (publication or LCP license document) stored on the device.
+ */
+class LocalPublicationRetriever(
+    private val context: Context,
+    private val storageDir: File,
+    private val assetRetriever: AssetRetriever,
+    private val formatRegistry: FormatRegistry,
+    private val lcpPublicationRetriever: LcpPublicationRetriever?
+) {
+
+    lateinit var listener: PublicationRetriever.Listener
+
     private val coroutineScope: CoroutineScope =
         MainScope()
 
-    private inner class DownloadListener : DownloadManager.Listener {
-        override fun onDownloadCompleted(requestId: DownloadManager.RequestId, file: File) {
-            coroutineScope.launch {
-                val coverUrl = downloadRepository.getOpdsDownloadCover(requestId.value)
-                downloadRepository.removeOpdsDownload(requestId.value)
-                retrieveFromStorage(file, coverUrl)
-            }
-        }
-
-        override fun onDownloadProgressed(
-            requestId: DownloadManager.RequestId,
-            downloaded: Long,
-            expected: Long?
-        ) {
-        }
-
-        override fun onDownloadFailed(
-            requestId: DownloadManager.RequestId,
-            error: DownloadManager.Error
-        ) {
-            coroutineScope.launch {
-                downloadRepository.removeOpdsDownload(requestId.value)
-                listener.onError(ImportError.DownloadFailed(error))
-            }
-        }
-
-        override fun onDownloadCancelled(requestId: DownloadManager.RequestId) {
-            coroutineScope.launch {
-                Timber.v("Download ${requestId.value} has been cancelled.")
-                downloadRepository.removeOpdsDownload(requestId.value)
-            }
-        }
-    }
-
-    private inner class LcpRetrieverListener : LcpPublicationRetriever.Listener {
-        override fun onAcquisitionCompleted(
-            requestId: LcpPublicationRetriever.RequestId,
-            acquiredPublication: LcpService.AcquiredPublication
-        ) {
-            coroutineScope.launch {
-                val coverUrl = downloadRepository.getLcpDownloadCover(requestId.value)
-                downloadRepository.removeLcpDownload(requestId.value)
-                retrieveFromStorage(acquiredPublication.localFile, coverUrl)
-            }
-        }
-
-        override fun onAcquisitionProgressed(
-            requestId: LcpPublicationRetriever.RequestId,
-            downloaded: Long,
-            expected: Long?
-        ) {
-        }
-
-        override fun onAcquisitionFailed(
-            requestId: LcpPublicationRetriever.RequestId,
-            error: LcpException
-        ) {
-            coroutineScope.launch {
-                downloadRepository.removeLcpDownload(requestId.value)
-                listener.onError(ImportError.LcpAcquisitionFailed(error))
-            }
-        }
-
-        override fun onAcquisitionCancelled(requestId: LcpPublicationRetriever.RequestId) {
-            coroutineScope.launch {
-                Timber.v("Acquisition ${requestId.value} has been cancelled.")
-                downloadRepository.removeLcpDownload(requestId.value)
-            }
-        }
-    }
-
-    private val downloadListener: DownloadListener =
-        DownloadListener()
-
-    private val lcpRetrieverListener: LcpRetrieverListener =
-        LcpRetrieverListener()
-
     init {
-        coroutineScope.launch {
-            for (download in downloadRepository.getOpdsDownloads()) {
-                downloadManager.register(
-                    DownloadManager.RequestId(download.id),
-                    downloadListener
-                )
-            }
-
-            lcpPublicationRetriever.map { publicationRetriever ->
-                for (download in downloadRepository.getLcpDownloads()) {
-                    publicationRetriever.register(
-                        LcpPublicationRetriever.RequestId(download.id),
-                        lcpRetrieverListener
-                    )
-                }
-            }
-        }
+        lcpPublicationRetriever?.listener = LcpListener()
     }
 
-    fun retrieveFromStorage(
-        uri: Uri
-    ) {
+    /**
+     * Retrieves the publication from the given local [uri].
+     */
+    fun retrieve(uri: Uri) {
         coroutineScope.launch {
             val tempFile = uri.copyToTempFile(context, storageDir)
                 .getOrElse {
@@ -165,41 +118,16 @@ class PublicationRetriever(
         }
     }
 
-    fun retrieveFromOpds(publication: Publication) {
+    /**
+     * Retrieves the publication stored at the given [tempFile].
+     */
+    fun retrieve(
+        tempFile: File,
+        coverUrl: String? = null
+    ) {
         coroutineScope.launch {
-            val publicationUrl = publication.acquisitionUrl()
-                .getOrElse {
-                    listener.onError(ImportError.OpdsError(it))
-                    return@launch
-                }.toString()
-
-            val coverUrl = publication
-                .images.firstOrNull()?.href
-
-            val requestId = downloadManager.submit(
-                request = DownloadManager.Request(
-                    Url(publicationUrl)!!,
-                    title = publication.metadata.title ?: "Untitled publication",
-                    description = "Downloading",
-                    headers = emptyMap()
-                ),
-                listener = downloadListener
-            )
-            downloadRepository.insertOpdsDownload(
-                id = requestId.value,
-                cover = coverUrl
-            )
+            retrieveFromStorage(tempFile, coverUrl)
         }
-    }
-
-    private fun Publication.acquisitionUrl(): Try<Url, Exception> {
-        val acquisitionLink = links
-            .firstOrNull { it.mediaType?.isPublication == true || it.mediaType == MediaType.LCP_LICENSE_DOCUMENT }
-            ?: return Try.failure(Exception("No supported link to acquire publication."))
-
-        return Url(acquisitionLink.href)
-            ?.let { Try.success(it) }
-            ?: Try.failure(Exception("Invalid acquisition url."))
     }
 
     private suspend fun retrieveFromStorage(
@@ -218,11 +146,13 @@ class PublicationRetriever(
             sourceAsset is Asset.Resource &&
             sourceAsset.mediaType.matches(MediaType.LCP_LICENSE_DOCUMENT)
         ) {
-            acquireLcpPublication(sourceAsset, tempFile, coverUrl)
-                .getOrElse {
-                    listener.onError(ImportError.StorageError(it))
-                    return
-                }
+            if (lcpPublicationRetriever == null) {
+                listener.onError(
+                    ImportError.PublicationError(PublicationError.UnsupportedAsset())
+                )
+            } else {
+                lcpPublicationRetriever.retrieve(sourceAsset, tempFile, coverUrl)
+            }
             return
         }
 
@@ -242,37 +172,217 @@ class PublicationRetriever(
         listener.onSuccess(libraryFile, coverUrl)
     }
 
-    private suspend fun acquireLcpPublication(
+    private inner class LcpListener : PublicationRetriever.Listener {
+        override fun onSuccess(publication: File, coverUrl: String?) {
+            coroutineScope.launch {
+                retrieve(publication, coverUrl)
+            }
+        }
+
+        override fun onError(error: ImportError) {
+            listener.onError(error)
+        }
+    }
+}
+
+/**
+ * Retrieves a publication from an OPDS entry.
+ */
+class OpdsPublicationRetriever(
+    private val downloadManager: DownloadManager,
+    private val downloadRepository: DownloadRepository
+) {
+
+    lateinit var listener: PublicationRetriever.Listener
+
+    private val coroutineScope: CoroutineScope =
+        MainScope()
+
+    init {
+        coroutineScope.launch {
+            for (download in downloadRepository.all()) {
+                downloadManager.register(
+                    DownloadManager.RequestId(download.id),
+                    downloadListener
+                )
+            }
+        }
+    }
+
+    /**
+     * Retrieves the file of the given OPDS [publication].
+     */
+    fun retrieve(publication: Publication) {
+        coroutineScope.launch {
+            val publicationUrl = publication.acquisitionUrl()
+                .getOrElse {
+                    listener.onError(ImportError.OpdsError(it))
+                    return@launch
+                }
+
+            val coverUrl = publication
+                .images.firstOrNull()?.href
+
+            val requestId = downloadManager.submit(
+                request = DownloadManager.Request(
+                    publicationUrl,
+                    title = publication.metadata.title ?: "Untitled publication",
+                    description = "Downloading",
+                    headers = emptyMap()
+                ),
+                listener = downloadListener
+            )
+            downloadRepository.insert(
+                id = requestId.value,
+                cover = coverUrl
+            )
+        }
+    }
+
+    private fun Publication.acquisitionUrl(): Try<Url, Exception> {
+        val acquisitionLink = links
+            .firstOrNull { it.mediaType?.isPublication == true || it.mediaType == MediaType.LCP_LICENSE_DOCUMENT }
+            ?: return Try.failure(Exception("No supported link to acquire publication."))
+
+        return Url(acquisitionLink.href)
+            ?.let { Try.success(it) }
+            ?: Try.failure(Exception("Invalid acquisition url."))
+    }
+
+    private val downloadListener: DownloadListener =
+        DownloadListener()
+
+    private inner class DownloadListener : DownloadManager.Listener {
+        override fun onDownloadCompleted(requestId: DownloadManager.RequestId, file: File) {
+            coroutineScope.launch {
+                val coverUrl = downloadRepository.getCover(requestId.value)
+                downloadRepository.remove(requestId.value)
+                listener.onSuccess(file, coverUrl)
+            }
+        }
+
+        override fun onDownloadProgressed(
+            requestId: DownloadManager.RequestId,
+            downloaded: Long,
+            expected: Long?
+        ) {
+        }
+
+        override fun onDownloadFailed(
+            requestId: DownloadManager.RequestId,
+            error: DownloadManager.Error
+        ) {
+            coroutineScope.launch {
+                downloadRepository.remove(requestId.value)
+                listener.onError(ImportError.DownloadFailed(error))
+            }
+        }
+
+        override fun onDownloadCancelled(requestId: DownloadManager.RequestId) {
+            coroutineScope.launch {
+                Timber.v("Download ${requestId.value} has been cancelled.")
+                downloadRepository.remove(requestId.value)
+            }
+        }
+    }
+}
+
+/**
+ * Retrieves a publication from an LCP license document.
+ */
+class LcpPublicationRetriever(
+    private val downloadRepository: DownloadRepository,
+    private val lcpPublicationRetriever: ReadiumLcpPublicationRetriever
+) {
+    lateinit var listener: PublicationRetriever.Listener
+
+    private val coroutineScope: CoroutineScope =
+        MainScope()
+
+    init {
+        coroutineScope.launch {
+            for (download in downloadRepository.all()) {
+                lcpPublicationRetriever.register(
+                    ReadiumLcpPublicationRetriever.RequestId(download.id),
+                    lcpRetrieverListener
+                )
+            }
+        }
+    }
+
+    /**
+     * Retrieves a publication protected with the given license.
+     */
+    fun retrieve(
         licenceAsset: Asset.Resource,
         licenceFile: File,
         coverUrl: String?
-    ): Try<Unit, ImportError> {
-        val lcpRetriever = lcpPublicationRetriever
-            .getOrElse { return Try.failure(ImportError.LcpAcquisitionFailed(it)) }
-
-        val license = licenceAsset.resource.read()
-            .getOrElse { return Try.failure(ImportError.StorageError(it)) }
-            .let {
-                try {
-                    LicenseDocument(it)
-                } catch (e: LcpException) {
-                    return Try.failure(
-                        ImportError.PublicationError(ImportError.LcpAcquisitionFailed(e))
-                    )
+    ) {
+        coroutineScope.launch {
+            val license = licenceAsset.resource.read()
+                .getOrElse {
+                    listener.onError(ImportError.StorageError(it))
+                    return@launch
                 }
+                .let {
+                    try {
+                        LicenseDocument(it)
+                    } catch (e: LcpException) {
+                        listener.onError(ImportError.LcpAcquisitionFailed(e))
+                        return@launch
+                    }
+                }
+
+            tryOrNull { licenceFile.delete() }
+
+            val requestId = lcpPublicationRetriever.retrieve(
+                license,
+                "Fulfilling Lcp publication",
+                null,
+                lcpRetrieverListener
+            )
+
+            downloadRepository.insert(requestId.value, coverUrl)
+        }
+    }
+
+    private val lcpRetrieverListener: LcpRetrieverListener =
+        LcpRetrieverListener()
+
+    private inner class LcpRetrieverListener : ReadiumLcpPublicationRetriever.Listener {
+        override fun onAcquisitionCompleted(
+            requestId: ReadiumLcpPublicationRetriever.RequestId,
+            acquiredPublication: LcpService.AcquiredPublication
+        ) {
+            coroutineScope.launch {
+                val coverUrl = downloadRepository.getCover(requestId.value)
+                downloadRepository.remove(requestId.value)
+                listener.onSuccess(acquiredPublication.localFile, coverUrl)
             }
+        }
 
-        tryOrNull { licenceFile.delete() }
+        override fun onAcquisitionProgressed(
+            requestId: ReadiumLcpPublicationRetriever.RequestId,
+            downloaded: Long,
+            expected: Long?
+        ) {
+        }
 
-        val requestId = lcpRetriever.retrieve(
-            license,
-            "Fulfilling Lcp publication",
-            null,
-            lcpRetrieverListener
-        )
+        override fun onAcquisitionFailed(
+            requestId: ReadiumLcpPublicationRetriever.RequestId,
+            error: LcpException
+        ) {
+            coroutineScope.launch {
+                downloadRepository.remove(requestId.value)
+                listener.onError(ImportError.LcpAcquisitionFailed(error))
+            }
+        }
 
-        downloadRepository.insertLcpDownload(requestId.value, coverUrl)
-
-        return Try.success(Unit)
+        override fun onAcquisitionCancelled(requestId: ReadiumLcpPublicationRetriever.RequestId) {
+            coroutineScope.launch {
+                Timber.v("Acquisition ${requestId.value} has been cancelled.")
+                downloadRepository.remove(requestId.value)
+            }
+        }
     }
 }

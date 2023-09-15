@@ -21,8 +21,13 @@ import org.readium.r2.testapp.BuildConfig.DEBUG
 import org.readium.r2.testapp.data.BookRepository
 import org.readium.r2.testapp.data.DownloadRepository
 import org.readium.r2.testapp.data.db.AppDatabase
+import org.readium.r2.testapp.data.model.Download
 import org.readium.r2.testapp.domain.Bookshelf
 import org.readium.r2.testapp.domain.CoverStorage
+import org.readium.r2.testapp.domain.LcpPublicationRetriever
+import org.readium.r2.testapp.domain.LocalPublicationRetriever
+import org.readium.r2.testapp.domain.OpdsPublicationRetriever
+import org.readium.r2.testapp.domain.PublicationRetriever
 import org.readium.r2.testapp.reader.ReaderRepository
 import timber.log.Timber
 
@@ -34,9 +39,6 @@ class Application : android.app.Application() {
     lateinit var storageDir: File
 
     lateinit var bookRepository: BookRepository
-        private set
-
-    lateinit var downloadRepository: DownloadRepository
         private set
 
     lateinit var bookshelf: Bookshelf
@@ -60,32 +62,41 @@ class Application : android.app.Application() {
 
         storageDir = computeStorageDir()
 
-        /*
-         * Initializing repositories
-         */
-        bookRepository =
-            AppDatabase.getDatabase(this).booksDao()
-                .let { dao -> BookRepository(dao) }
+        val database = AppDatabase.getDatabase(this)
 
-        downloadRepository =
-            AppDatabase.getDatabase(this).downloadsDao()
-                .let { dao -> DownloadRepository(dao) }
+        bookRepository = BookRepository(database.booksDao())
 
-        val coverStorage = CoverStorage(storageDir)
+        val publicationRetriever = PublicationRetriever(
+            localPublicationRetriever = LocalPublicationRetriever(
+                context = applicationContext,
+                storageDir = storageDir,
+                assetRetriever = readium.assetRetriever,
+                formatRegistry = readium.formatRegistry,
+                lcpPublicationRetriever =
+                readium.lcpService.getOrNull()?.publicationRetriever()?.let { retriever ->
+                    LcpPublicationRetriever(
+                        downloadRepository = DownloadRepository(
+                            Download.Type.LCP,
+                            database.downloadsDao()
+                        ),
+                        lcpPublicationRetriever = retriever
+                    )
+                }
+            ),
+            opdsPublicationRetriever = OpdsPublicationRetriever(
+                downloadManager = readium.downloadManager,
+                downloadRepository = DownloadRepository(Download.Type.OPDS, database.downloadsDao())
+            )
+        )
 
         bookshelf =
             Bookshelf(
-                applicationContext,
                 bookRepository,
-                downloadRepository,
-                storageDir,
-                coverStorage,
+                CoverStorage(storageDir),
                 readium.publicationFactory,
                 readium.assetRetriever,
                 readium.protectionRetriever,
-                readium.formatRegistry,
-                readium.lcpService,
-                readium.downloadManager
+                publicationRetriever
             )
 
         readerRepository =

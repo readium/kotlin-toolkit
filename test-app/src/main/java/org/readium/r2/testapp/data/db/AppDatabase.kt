@@ -22,7 +22,10 @@ import org.readium.r2.testapp.data.model.Highlight
     version = 1,
     exportSchema = false
 )
-@TypeConverters(HighlightConverters::class)
+@TypeConverters(
+    HighlightConverters::class,
+    Download.Type.Converter::class
+)
 abstract class AppDatabase : RoomDatabase() {
 
     abstract fun booksDao(): BooksDao

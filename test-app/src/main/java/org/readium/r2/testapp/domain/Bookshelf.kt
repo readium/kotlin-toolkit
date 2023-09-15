@@ -6,27 +6,21 @@
 
 package org.readium.r2.testapp.domain
 
-import android.content.Context
 import android.net.Uri
 import java.io.File
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
-import org.readium.r2.lcp.LcpException
-import org.readium.r2.lcp.LcpService
 import org.readium.r2.shared.asset.AssetRetriever
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.protection.ContentProtectionSchemeRetriever
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
-import org.readium.r2.shared.util.downloads.DownloadManager
 import org.readium.r2.shared.util.getOrElse
-import org.readium.r2.shared.util.mediatype.FormatRegistry
 import org.readium.r2.shared.util.toUrl
 import org.readium.r2.streamer.PublicationFactory
 import org.readium.r2.testapp.data.BookRepository
-import org.readium.r2.testapp.data.DownloadRepository
 import org.readium.r2.testapp.data.model.Book
 import org.readium.r2.testapp.utils.tryOrLog
 import timber.log.Timber
@@ -38,20 +32,19 @@ import timber.log.Timber
  *   before adding it to the database
  */
 class Bookshelf(
-    context: Context,
     private val bookRepository: BookRepository,
-    downloadRepository: DownloadRepository,
-    storageDir: File,
     private val coverStorage: CoverStorage,
     private val publicationFactory: PublicationFactory,
     private val assetRetriever: AssetRetriever,
     private val protectionRetriever: ContentProtectionSchemeRetriever,
-    formatRegistry: FormatRegistry,
-    lcpService: Try<LcpService, LcpException>,
-    downloadManager: DownloadManager
+    private val publicationRetriever: PublicationRetriever
 ) {
     val channel: Channel<Event> =
         Channel(Channel.UNLIMITED)
+
+    init {
+        publicationRetriever.listener = PublicationRetrieverListener()
+    }
 
     sealed class Event {
         data object ImportPublicationSuccess :
@@ -64,18 +57,6 @@ class Bookshelf(
 
     private val coroutineScope: CoroutineScope =
         MainScope()
-
-    private val publicationRetriever: PublicationRetriever =
-        PublicationRetriever(
-            context,
-            storageDir,
-            assetRetriever,
-            formatRegistry,
-            downloadRepository,
-            downloadManager,
-            lcpService.map { it.publicationRetriever() },
-            PublicationRetrieverListener()
-        )
 
     private inner class PublicationRetrieverListener : PublicationRetriever.Listener {
         override fun onSuccess(publication: File, coverUrl: String?) {
