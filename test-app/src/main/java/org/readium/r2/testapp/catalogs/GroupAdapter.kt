@@ -18,8 +18,8 @@ import androidx.recyclerview.widget.RecyclerView
 import org.readium.r2.shared.opds.Group
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.testapp.R
+import org.readium.r2.testapp.data.model.Catalog
 import org.readium.r2.testapp.databinding.ItemGroupViewBinding
-import org.readium.r2.testapp.domain.model.Catalog
 
 class GroupAdapter(
     val type: Int,

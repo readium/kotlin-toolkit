@@ -13,8 +13,6 @@ import android.content.Context
 import java.io.File
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.readium.r2.lcp.auth.LcpDialogAuthentication
 import org.readium.r2.lcp.license.model.LicenseDocument
@@ -32,6 +30,7 @@ import org.readium.r2.shared.asset.Asset
 import org.readium.r2.shared.asset.AssetRetriever
 import org.readium.r2.shared.publication.protection.ContentProtection
 import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.downloads.DownloadManager
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 
@@ -57,6 +56,11 @@ public interface LcpService {
      *
      * @param onProgress Callback to follow the acquisition progress from 0.0 to 1.0.
      */
+    @Deprecated(
+        "Use a LcpPublicationRetriever instead.",
+        ReplaceWith("publicationRetriever()"),
+        level = DeprecationLevel.ERROR
+    )
     public suspend fun acquirePublication(lcpl: ByteArray, onProgress: (Double) -> Unit = {}): Try<AcquiredPublication, LcpException>
 
     /**
@@ -66,14 +70,15 @@ public interface LcpService {
      *
      * @param onProgress Callback to follow the acquisition progress from 0.0 to 1.0.
      */
+    @Deprecated(
+        "Use a LcpPublicationRetriever instead.",
+        ReplaceWith("publicationRetriever()"),
+        level = DeprecationLevel.ERROR
+    )
     public suspend fun acquirePublication(lcpl: File, onProgress: (Double) -> Unit = {}): Try<AcquiredPublication, LcpException> = withContext(
         Dispatchers.IO
     ) {
-        try {
-            acquirePublication(lcpl.readBytes(), onProgress)
-        } catch (e: Exception) {
-            Try.failure(LcpException.wrap(e))
-        }
+        throw NotImplementedError()
     }
 
     /**
@@ -119,6 +124,12 @@ public interface LcpService {
     ): Try<LcpLicense, LcpException>
 
     /**
+     * Creates an [LcpPublicationRetriever] instance which can be used to acquire a protected
+     * publication from an LCP License Document.
+     */
+    public fun publicationRetriever(): LcpPublicationRetriever
+
+    /**
      * Creates a [ContentProtection] instance which can be used with a Streamer to unlock
      * LCP protected publications.
      *
@@ -160,7 +171,8 @@ public interface LcpService {
         public operator fun invoke(
             context: Context,
             assetRetriever: AssetRetriever,
-            mediaTypeRetriever: MediaTypeRetriever
+            mediaTypeRetriever: MediaTypeRetriever,
+            downloadManager: DownloadManager
         ): LcpService? {
             if (!LcpClient.isAvailable()) {
                 return null
@@ -185,7 +197,9 @@ public interface LcpService {
                 network = network,
                 passphrases = passphrases,
                 context = context,
-                assetRetriever = assetRetriever
+                assetRetriever = assetRetriever,
+                mediaTypeRetriever = mediaTypeRetriever,
+                downloadManager = downloadManager
             )
         }
 
@@ -199,8 +213,8 @@ public interface LcpService {
     }
 
     @Deprecated(
-        "Use `acquirePublication()` with coroutines instead",
-        ReplaceWith("acquirePublication(lcpl)"),
+        "Use a LcpPublicationRetriever instead.",
+        ReplaceWith("publicationRetriever()"),
         level = DeprecationLevel.ERROR
     )
     @DelicateCoroutinesApi
@@ -209,11 +223,7 @@ public interface LcpService {
         authentication: LcpAuthenticating?,
         completion: (AcquiredPublication?, LcpException?) -> Unit
     ) {
-        GlobalScope.launch {
-            acquirePublication(lcpl)
-                .onSuccess { completion(it, null) }
-                .onFailure { completion(null, it) }
-        }
+        throw NotImplementedError()
     }
 
     @Deprecated(

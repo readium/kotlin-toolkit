@@ -47,7 +47,11 @@ internal class FileZipLicenseContainer(
             val source = File(zip)
             val tmpZip = File("$zip.tmp")
             val zipFile = ZipFile(source)
-            zipFile.addOrReplaceEntry(pathInZIP, ByteArrayInputStream(license.data), tmpZip)
+            zipFile.addOrReplaceEntry(
+                pathInZIP,
+                ByteArrayInputStream(license.toByteArray()),
+                tmpZip
+            )
             zipFile.close()
             tmpZip.moveTo(source)
         } catch (e: Exception) {

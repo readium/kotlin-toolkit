@@ -27,7 +27,7 @@ internal class LcplLicenseContainer(private val licenseFile: File) : WritableLic
 
     override fun write(license: LicenseDocument) {
         try {
-            licenseFile.writeBytes(license.data)
+            licenseFile.writeBytes(license.toByteArray())
         } catch (e: Exception) {
             throw LcpException.Container.WriteFailed(licenseFile.path)
         }

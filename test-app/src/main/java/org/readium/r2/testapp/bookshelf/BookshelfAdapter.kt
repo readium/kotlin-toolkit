@@ -14,8 +14,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.squareup.picasso.Picasso
 import java.io.File
 import org.readium.r2.testapp.R
+import org.readium.r2.testapp.data.model.Book
 import org.readium.r2.testapp.databinding.ItemRecycleBookBinding
-import org.readium.r2.testapp.domain.model.Book
 import org.readium.r2.testapp.utils.singleClick
 
 class BookshelfAdapter(

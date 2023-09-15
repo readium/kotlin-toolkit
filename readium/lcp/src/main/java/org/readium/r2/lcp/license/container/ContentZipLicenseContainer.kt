@@ -44,7 +44,11 @@ internal class ContentZipLicenseContainer(
 
             val outStream = contentResolver.openOutputStream(zipUri, "wt")
                 ?: throw LcpException.Container.WriteFailed(pathInZip)
-            tmpZipFile.addOrReplaceEntry(pathInZip, ByteArrayInputStream(license.data), outStream)
+            tmpZipFile.addOrReplaceEntry(
+                pathInZip,
+                ByteArrayInputStream(license.toByteArray()),
+                outStream
+            )
 
             outStream.close()
             tmpZipFile.close()

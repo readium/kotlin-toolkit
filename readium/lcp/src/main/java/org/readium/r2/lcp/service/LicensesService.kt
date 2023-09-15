@@ -23,6 +23,7 @@ import org.readium.r2.lcp.LcpAuthenticating
 import org.readium.r2.lcp.LcpContentProtection
 import org.readium.r2.lcp.LcpException
 import org.readium.r2.lcp.LcpLicense
+import org.readium.r2.lcp.LcpPublicationRetriever
 import org.readium.r2.lcp.LcpService
 import org.readium.r2.lcp.license.License
 import org.readium.r2.lcp.license.LicenseValidation
@@ -36,8 +37,10 @@ import org.readium.r2.shared.extensions.tryOr
 import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.publication.protection.ContentProtection
 import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.downloads.DownloadManager
 import org.readium.r2.shared.util.mediatype.FormatRegistry
 import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 import timber.log.Timber
 
 internal class LicensesService(
@@ -47,7 +50,9 @@ internal class LicensesService(
     private val network: NetworkService,
     private val passphrases: PassphrasesService,
     private val context: Context,
-    private val assetRetriever: AssetRetriever
+    private val assetRetriever: AssetRetriever,
+    private val mediaTypeRetriever: MediaTypeRetriever,
+    private val downloadManager: DownloadManager
 ) : LcpService, CoroutineScope by MainScope() {
 
     override suspend fun isLcpProtected(file: File): Boolean {
@@ -72,6 +77,19 @@ internal class LicensesService(
     ): ContentProtection =
         LcpContentProtection(this, authentication, assetRetriever)
 
+    override fun publicationRetriever(): LcpPublicationRetriever {
+        return LcpPublicationRetriever(
+            context,
+            downloadManager,
+            mediaTypeRetriever
+        )
+    }
+
+    @Deprecated(
+        "Use a LcpPublicationRetriever instead.",
+        ReplaceWith("publicationRetriever()"),
+        level = DeprecationLevel.ERROR
+    )
     override suspend fun acquirePublication(lcpl: ByteArray, onProgress: (Double) -> Unit): Try<LcpService.AcquiredPublication, LcpException> =
         try {
             val licenseDocument = LicenseDocument(lcpl)
@@ -185,7 +203,7 @@ internal class LicensesService(
             } catch (error: Error) {
                 Timber.d("Failed to add the LCP License to the local database: $error")
             }
-            if (!licenseDocument.data.contentEquals(initialData)) {
+            if (!licenseDocument.toByteArray().contentEquals(initialData)) {
                 try {
                     (container as? WritableLicenseContainer)
                         ?.let { container.write(licenseDocument) }

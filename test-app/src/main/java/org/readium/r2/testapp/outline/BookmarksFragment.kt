@@ -23,9 +23,9 @@ import org.joda.time.DateTime
 import org.joda.time.format.DateTimeFormat
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.testapp.R
+import org.readium.r2.testapp.data.model.Bookmark
 import org.readium.r2.testapp.databinding.FragmentListviewBinding
 import org.readium.r2.testapp.databinding.ItemRecycleBookmarkBinding
-import org.readium.r2.testapp.domain.model.Bookmark
 import org.readium.r2.testapp.reader.ReaderViewModel
 import org.readium.r2.testapp.utils.extensions.outlineTitle
 import org.readium.r2.testapp.utils.viewLifecycle
