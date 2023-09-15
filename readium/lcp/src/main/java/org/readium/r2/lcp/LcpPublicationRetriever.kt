@@ -85,7 +85,7 @@ public class LcpPublicationRetriever(
             downloadTitle,
             downloadDescription
         )
-        register(requestId, listener)
+        addListener(requestId, listener)
         return requestId
     }
 
@@ -99,10 +99,16 @@ public class LcpPublicationRetriever(
         requestId: RequestId,
         listener: Listener
     ) {
-        listeners.getOrPut(requestId) {
-            downloadManager.register(DownloadManager.RequestId(requestId.value), downloadListener)
-            mutableListOf()
-        }.add(listener)
+        addListener(
+            requestId,
+            listener,
+            onFirstListenerAdded = {
+                downloadManager.register(
+                    DownloadManager.RequestId(requestId.value),
+                    downloadListener
+                )
+            }
+        )
     }
 
     /**
@@ -136,6 +142,19 @@ public class LcpPublicationRetriever(
 
     private val listeners: MutableMap<RequestId, MutableList<Listener>> =
         mutableMapOf()
+
+    private fun addListener(
+        requestId: RequestId,
+        listener: Listener,
+        onFirstListenerAdded: () -> Unit = {}
+    ) {
+        listeners
+            .getOrPut(requestId) {
+                onFirstListenerAdded()
+                mutableListOf()
+            }
+            .add(listener)
+    }
 
     private fun fetchPublication(
         license: LicenseDocument,

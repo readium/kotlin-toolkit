@@ -9,25 +9,21 @@ package org.readium.r2.lcp
 import android.content.Context
 import java.io.File
 import java.util.LinkedList
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.async
-import kotlinx.coroutines.job
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.plus
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
+import org.readium.r2.shared.util.CoroutineQueue
 
 internal class LcpDownloadsRepository(
     context: Context
 ) {
-    private val coroutineScope: CoroutineScope =
-        MainScope()
+    private val queue = CoroutineQueue()
 
     private val storageDir: Deferred<File> =
-        coroutineScope.async {
+        queue.scope.async {
             withContext(Dispatchers.IO) {
                 File(context.noBackupFilesDir, LcpDownloadsRepository::class.qualifiedName!!)
                     .also { if (!it.exists()) it.mkdirs() }
@@ -35,7 +31,7 @@ internal class LcpDownloadsRepository(
         }
 
     private val storageFile: Deferred<File> =
-        coroutineScope.async {
+        queue.scope.async {
             withContext(Dispatchers.IO) {
                 File(storageDir.await(), "licenses.json")
                     .also { if (!it.exists()) { it.writeText("{}", Charsets.UTF_8) } }
@@ -43,12 +39,12 @@ internal class LcpDownloadsRepository(
         }
 
     private val snapshot: Deferred<MutableMap<String, JSONObject>> =
-        coroutineScope.async {
+        queue.scope.async {
             readSnapshot().toMutableMap()
         }
 
     fun addDownload(id: String, license: JSONObject) {
-        coroutineScope.launch {
+        queue.scope.launch {
             val snapshotCompleted = snapshot.await()
             snapshotCompleted[id] = license
             writeSnapshot(snapshotCompleted)
@@ -56,20 +52,17 @@ internal class LcpDownloadsRepository(
     }
 
     fun removeDownload(id: String) {
-        coroutineScope.launch {
+        queue.launch {
             val snapshotCompleted = snapshot.await()
             snapshotCompleted.remove(id)
             writeSnapshot(snapshotCompleted)
         }
     }
 
-    suspend fun retrieveLicense(id: String): JSONObject? {
-        val snapshot = snapshot.await()
-        while (coroutineScope.coroutineContext.job.children.toList().isNotEmpty()) {
-            coroutineScope.coroutineContext.job.children.forEach { it.join() }
+    suspend fun retrieveLicense(id: String): JSONObject? =
+        queue.await {
+            snapshot.await()[id]
         }
-        return snapshot[id]
-    }
 
     private suspend fun readSnapshot(): Map<String, JSONObject> {
         return withContext(Dispatchers.IO) {

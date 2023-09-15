@@ -248,7 +248,7 @@ public class AndroidDownloadManager internal constructor(
                 maybeStopObservingProgress()
             }
             SystemDownloadManager.STATUS_RUNNING -> {
-                val expected = facade.expected
+                val expected = facade.expected?.takeIf { it > 0 }
                 listenersForId.forEach {
                     it.onDownloadProgressed(id, facade.downloadedSoFar, expected)
                 }
