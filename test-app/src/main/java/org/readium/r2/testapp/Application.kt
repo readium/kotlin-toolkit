@@ -66,29 +66,6 @@ class Application : android.app.Application() {
 
         bookRepository = BookRepository(database.booksDao())
 
-        val publicationRetriever = PublicationRetriever(
-            localPublicationRetriever = LocalPublicationRetriever(
-                context = applicationContext,
-                storageDir = storageDir,
-                assetRetriever = readium.assetRetriever,
-                formatRegistry = readium.formatRegistry,
-                lcpPublicationRetriever =
-                readium.lcpService.getOrNull()?.publicationRetriever()?.let { retriever ->
-                    LcpPublicationRetriever(
-                        downloadRepository = DownloadRepository(
-                            Download.Type.LCP,
-                            database.downloadsDao()
-                        ),
-                        lcpPublicationRetriever = retriever
-                    )
-                }
-            ),
-            opdsPublicationRetriever = OpdsPublicationRetriever(
-                downloadManager = readium.downloadManager,
-                downloadRepository = DownloadRepository(Download.Type.OPDS, database.downloadsDao())
-            )
-        )
-
         bookshelf =
             Bookshelf(
                 bookRepository,
@@ -96,7 +73,40 @@ class Application : android.app.Application() {
                 readium.publicationFactory,
                 readium.assetRetriever,
                 readium.protectionRetriever,
-                publicationRetriever
+                createPublicationRetriever = { listener ->
+                    PublicationRetriever(
+                        listener = listener,
+                        createLocalPublicationRetriever = { localListener ->
+                            LocalPublicationRetriever(
+                                listener = localListener,
+                                context = applicationContext,
+                                storageDir = storageDir,
+                                assetRetriever = readium.assetRetriever,
+                                formatRegistry = readium.formatRegistry,
+                                createLcpPublicationRetriever = { lcpListener ->
+                                    readium.lcpService.getOrNull()?.publicationRetriever()
+                                        ?.let { retriever ->
+                                            LcpPublicationRetriever(
+                                                listener = lcpListener,
+                                                downloadRepository = DownloadRepository(
+                                                    Download.Type.LCP,
+                                                    database.downloadsDao()
+                                                ),
+                                                lcpPublicationRetriever = retriever
+                                            )
+                                        }
+                                }
+                            )
+                        },
+                        createOpdsPublicationRetriever = { opdsListener ->
+                            OpdsPublicationRetriever(
+                                listener = opdsListener,
+                                downloadManager = readium.downloadManager,
+                                downloadRepository = DownloadRepository(Download.Type.OPDS, database.downloadsDao())
+                            )
+                        }
+                    )
+                }
             )
 
         readerRepository =

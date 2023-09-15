@@ -38,13 +38,15 @@ class Bookshelf(
     private val publicationFactory: PublicationFactory,
     private val assetRetriever: AssetRetriever,
     private val protectionRetriever: ContentProtectionSchemeRetriever,
-    private val publicationRetriever: PublicationRetriever
+    createPublicationRetriever: (PublicationRetriever.Listener) -> PublicationRetriever
 ) {
     val channel: Channel<Event> =
         Channel(Channel.UNLIMITED)
 
+    private val publicationRetriever: PublicationRetriever
+
     init {
-        publicationRetriever.listener = PublicationRetrieverListener()
+        publicationRetriever = createPublicationRetriever(PublicationRetrieverListener())
     }
 
     sealed class Event {

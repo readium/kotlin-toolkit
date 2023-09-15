@@ -39,11 +39,13 @@ import timber.log.Timber
  * If the source file is a LCP license document, the protected publication will be downloaded.
  */
 class PublicationRetriever(
-    private val localPublicationRetriever: LocalPublicationRetriever,
-    private val opdsPublicationRetriever: OpdsPublicationRetriever
+    private val listener: Listener,
+    createLocalPublicationRetriever: (Listener) -> LocalPublicationRetriever,
+    createOpdsPublicationRetriever: (Listener) -> OpdsPublicationRetriever
 ) {
 
-    lateinit var listener: Listener
+    private val localPublicationRetriever: LocalPublicationRetriever
+    private val opdsPublicationRetriever: OpdsPublicationRetriever
 
     interface Listener {
 
@@ -53,7 +55,7 @@ class PublicationRetriever(
     }
 
     init {
-        localPublicationRetriever.listener = object : Listener {
+        localPublicationRetriever = createLocalPublicationRetriever(object : Listener {
             override fun onSuccess(publication: File, coverUrl: String?) {
                 listener.onSuccess(publication, coverUrl)
             }
@@ -65,9 +67,9 @@ class PublicationRetriever(
             override fun onError(error: ImportError) {
                 listener.onError(error)
             }
-        }
+        })
 
-        opdsPublicationRetriever.listener = object : Listener {
+        opdsPublicationRetriever = createOpdsPublicationRetriever(object : Listener {
             override fun onSuccess(publication: File, coverUrl: String?) {
                 localPublicationRetriever.retrieve(publication, coverUrl)
             }
@@ -79,7 +81,7 @@ class PublicationRetriever(
             override fun onError(error: ImportError) {
                 listener.onError(error)
             }
-        }
+        })
     }
 
     fun retrieveFromStorage(uri: Uri) {
@@ -95,20 +97,21 @@ class PublicationRetriever(
  * Retrieves a publication from a file (publication or LCP license document) stored on the device.
  */
 class LocalPublicationRetriever(
+    private val listener: PublicationRetriever.Listener,
     private val context: Context,
     private val storageDir: File,
     private val assetRetriever: AssetRetriever,
     private val formatRegistry: FormatRegistry,
-    private val lcpPublicationRetriever: LcpPublicationRetriever?
+    createLcpPublicationRetriever: (PublicationRetriever.Listener) -> LcpPublicationRetriever?
 ) {
 
-    lateinit var listener: PublicationRetriever.Listener
+    private val lcpPublicationRetriever: LcpPublicationRetriever?
 
     private val coroutineScope: CoroutineScope =
         MainScope()
 
     init {
-        lcpPublicationRetriever?.listener = LcpListener()
+        lcpPublicationRetriever = createLcpPublicationRetriever(LcpListener())
     }
 
     /**
@@ -201,11 +204,10 @@ class LocalPublicationRetriever(
  * Retrieves a publication from an OPDS entry.
  */
 class OpdsPublicationRetriever(
+    private val listener: PublicationRetriever.Listener,
     private val downloadManager: DownloadManager,
     private val downloadRepository: DownloadRepository
 ) {
-
-    lateinit var listener: PublicationRetriever.Listener
 
     private val coroutineScope: CoroutineScope =
         MainScope()
@@ -311,10 +313,10 @@ class OpdsPublicationRetriever(
  * Retrieves a publication from an LCP license document.
  */
 class LcpPublicationRetriever(
+    private val listener: PublicationRetriever.Listener,
     private val downloadRepository: DownloadRepository,
     private val lcpPublicationRetriever: ReadiumLcpPublicationRetriever
 ) {
-    lateinit var listener: PublicationRetriever.Listener
 
     private val coroutineScope: CoroutineScope =
         MainScope()
