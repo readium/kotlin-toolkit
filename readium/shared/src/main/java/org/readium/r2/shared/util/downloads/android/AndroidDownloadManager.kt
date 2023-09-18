@@ -11,24 +11,28 @@ import android.content.Context
 import android.database.Cursor
 import android.net.Uri
 import android.os.Environment
+import androidx.core.net.toFile
 import java.io.File
 import java.util.UUID
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import org.readium.r2.shared.extensions.tryOr
 import org.readium.r2.shared.resource.FileResource
 import org.readium.r2.shared.units.Hz
 import org.readium.r2.shared.units.hz
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.downloads.DownloadManager
-import org.readium.r2.shared.util.getOrElse
+import org.readium.r2.shared.util.mediatype.FormatRegistry
+import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 import org.readium.r2.shared.util.toUri
-import org.readium.r2.shared.util.use
 
 /**
  * A [DownloadManager] implementation using the Android download service.
@@ -36,6 +40,7 @@ import org.readium.r2.shared.util.use
 public class AndroidDownloadManager internal constructor(
     private val context: Context,
     private val mediaTypeRetriever: MediaTypeRetriever,
+    private val formatRegistry: FormatRegistry,
     private val destStorage: Storage,
     private val dirType: String,
     private val refreshRate: Hz,
@@ -50,6 +55,9 @@ public class AndroidDownloadManager internal constructor(
      * android.permission.DOWNLOAD_WITHOUT_NOTIFICATION.
      *
      * @param context Android context
+     * @param mediaTypeRetriever Retrieves the media type of the download content, if the server
+     * communicates it.
+     * @param formatRegistry Associates a media type to its file extension.
      * @param destStorage Location where downloads should be stored
      * @param refreshRate Frequency with which download status will be checked and
      *   listeners notified
@@ -59,12 +67,14 @@ public class AndroidDownloadManager internal constructor(
     public constructor(
         context: Context,
         mediaTypeRetriever: MediaTypeRetriever,
+        formatRegistry: FormatRegistry = FormatRegistry(),
         destStorage: Storage = Storage.App,
         refreshRate: Hz = 60.0.hz,
         allowDownloadsOverMetered: Boolean = true
     ) : this(
         context = context,
         mediaTypeRetriever = mediaTypeRetriever,
+        formatRegistry = formatRegistry,
         destStorage = destStorage,
         dirType = Environment.DIRECTORY_DOWNLOADS,
         refreshRate = refreshRate,
@@ -127,7 +137,7 @@ public class AndroidDownloadManager internal constructor(
         val dottedExtension = extension
             ?.let { ".$it" }
             .orEmpty()
-        return "${UUID.randomUUID()}$dottedExtension}"
+        return "${UUID.randomUUID()}$dottedExtension"
     }
 
     public override fun cancel(requestId: DownloadManager.RequestId) {
@@ -197,7 +207,7 @@ public class AndroidDownloadManager internal constructor(
         }
     }
 
-    private fun notify(cursor: Cursor) = cursor.use {
+    private suspend fun notify(cursor: Cursor) = cursor.use {
         val knownDownloads = mutableSetOf<DownloadManager.RequestId>()
 
         // Notify about known downloads
@@ -220,7 +230,7 @@ public class AndroidDownloadManager internal constructor(
         maybeStopObservingProgress()
     }
 
-    private fun notifyDownload(
+    private suspend fun notifyDownload(
         id: DownloadManager.RequestId,
         facade: DownloadCursorFacade,
         listenersForId: List<DownloadManager.Listener>
@@ -237,14 +247,15 @@ public class AndroidDownloadManager internal constructor(
             SystemDownloadManager.STATUS_PAUSED -> {}
             SystemDownloadManager.STATUS_PENDING -> {}
             SystemDownloadManager.STATUS_SUCCESSFUL -> {
-                coroutineScope.launch {
-                    prepareResult(Uri.parse(facade.localUri)!!)
-                        .onSuccess { download ->
-                            listenersForId.forEach { it.onDownloadCompleted(id, download) }
-                        }.onFailure { error ->
-                            listenersForId.forEach { it.onDownloadFailed(id, error) }
-                        }
-                }
+                prepareResult(
+                    Uri.parse(facade.localUri!!)!!.toFile(),
+                    mediaTypeHint = facade.mediaType
+                )
+                    .onSuccess { download ->
+                        listenersForId.forEach { it.onDownloadCompleted(id, download) }
+                    }.onFailure { error ->
+                        listenersForId.forEach { it.onDownloadFailed(id, error) }
+                    }
                 downloadManager.remove(facade.id)
                 listeners.remove(id)
                 maybeStopObservingProgress()
@@ -257,22 +268,30 @@ public class AndroidDownloadManager internal constructor(
         }
     }
 
-    private suspend fun prepareResult(destUri: Uri): Try<DownloadManager.Download, DownloadManager.Error> {
-        val destFile = File(destUri.path!!)
-        val mediaType = FileResource(destFile, mediaTypeRetriever).use {
-            it.mediaType().getOrElse { return Try.failure(DownloadManager.Error.FileError()) }
+    private suspend fun prepareResult(destFile: File, mediaTypeHint: String?): Try<DownloadManager.Download, DownloadManager.Error> =
+        withContext(Dispatchers.IO) {
+            val mediaType = mediaTypeHint?.let { mediaTypeRetriever.retrieve(it) }
+                ?: FileResource(destFile, mediaTypeRetriever).mediaType().getOrNull()
+                ?: MediaType.BINARY
+
+            val extension = formatRegistry.fileExtension(mediaType)
+                ?: destFile.extension.takeUnless { it.isEmpty() }
+
+            val newDest = File(destFile.parent, generateFileName(extension))
+            val renamed = tryOr(false) { destFile.renameTo(newDest) }
+
+            if (renamed) {
+                val download = DownloadManager.Download(
+                    file = newDest,
+                    mediaType = mediaType
+                )
+                Try.success(download)
+            } else {
+                Try.failure(
+                    DownloadManager.Error.FileError("Failed to rename the downloaded file.")
+                )
+            }
         }
-        val newDest = File(destFile.parent, generateFileName(destFile.extension))
-        return if (destFile.renameTo(newDest)) {
-            val download = DownloadManager.Download(
-                file = newDest,
-                mediaType = mediaType
-            )
-            Try.success(download)
-        } else {
-            Try.failure(DownloadManager.Error.FileError())
-        }
-    }
 
     private fun mapErrorCode(code: Int): DownloadManager.Error =
         when (code) {
@@ -289,7 +308,7 @@ public class AndroidDownloadManager internal constructor(
             SystemDownloadManager.ERROR_DEVICE_NOT_FOUND ->
                 DownloadManager.Error.DeviceNotFound()
             SystemDownloadManager.ERROR_FILE_ERROR ->
-                DownloadManager.Error.FileError()
+                DownloadManager.Error.FileError("IO error on the local device.")
             SystemDownloadManager.ERROR_HTTP_DATA_ERROR ->
                 DownloadManager.Error.HttpData()
             SystemDownloadManager.ERROR_INSUFFICIENT_SPACE ->
