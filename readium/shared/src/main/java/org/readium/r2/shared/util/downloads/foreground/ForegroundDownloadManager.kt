@@ -172,6 +172,9 @@ public class ForegroundDownloadManager(
             HttpException.Kind.Forbidden ->
                 DownloadManager.Error.Forbidden(httpError)
 
+            HttpException.Kind.MethodNotAllowed ->
+                DownloadManager.Error.Unknown(httpError)
+
             HttpException.Kind.NotFound ->
                 DownloadManager.Error.NotFound(httpError)
 

@@ -3,6 +3,7 @@ package org.readium.r2.shared.util.http
 import java.io.InputStream
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.extensions.read
 import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.resource.Resource
@@ -14,6 +15,7 @@ import org.readium.r2.shared.util.io.CountingInputStream
 import org.readium.r2.shared.util.mediatype.MediaType
 
 /** Provides access to an external URL. */
+@OptIn(ExperimentalReadiumApi::class)
 public class HttpResource(
     private val client: HttpClient,
     override val source: Url,
@@ -64,10 +66,7 @@ public class HttpResource(
             return _headResponse
         }
 
-        _headResponse = client.fetch(
-            HttpRequest(source.toString(), method = HttpRequest.Method.HEAD)
-        )
-            .map { it.response }
+        _headResponse = client.head(HttpRequest(source.toString()))
             .mapFailure { Resource.Exception.wrapHttp(it) }
 
         return _headResponse
@@ -119,7 +118,7 @@ public class HttpResource(
 
     private fun Resource.Exception.Companion.wrapHttp(e: HttpException): Resource.Exception =
         when (e.kind) {
-            HttpException.Kind.MalformedRequest, HttpException.Kind.BadRequest ->
+            HttpException.Kind.MalformedRequest, HttpException.Kind.BadRequest, HttpException.Kind.MethodNotAllowed ->
                 Resource.Exception.BadRequest(cause = e)
             HttpException.Kind.Timeout, HttpException.Kind.Offline ->
                 Resource.Exception.Unavailable(e)

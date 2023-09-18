@@ -9,6 +9,7 @@ package org.readium.r2.shared.util.http
 import android.os.Bundle
 import java.io.ByteArrayInputStream
 import java.io.FileInputStream
+import java.io.InputStream
 import java.net.HttpURLConnection
 import java.net.URL
 import kotlin.time.Duration
@@ -168,7 +169,7 @@ public class DefaultHttpClient(
                         Try.success(
                             HttpStreamResponse(
                                 response = response,
-                                body = connection.inputStream
+                                body = HttpURLConnectionInputStream(connection)
                             )
                         )
                     }
@@ -283,4 +284,43 @@ public class DefaultHttpClient(
             @Suppress("SENSELESS_COMPARISON")
             key == null || value == null
         }
+}
+
+/**
+ * [HttpURLConnection]'s input stream which disconnects when closed.
+ */
+private class HttpURLConnectionInputStream(
+    private val connection: HttpURLConnection
+) : InputStream() {
+
+    private val inputStream = connection.inputStream
+
+    override fun close() {
+        super.close()
+        connection.disconnect()
+    }
+
+    override fun read(): Int =
+        inputStream.read()
+
+    override fun read(b: ByteArray): Int =
+        inputStream.read(b)
+
+    override fun read(b: ByteArray, off: Int, len: Int): Int =
+        inputStream.read(b, off, len)
+
+    override fun skip(n: Long): Long =
+        inputStream.skip(n)
+
+    override fun available(): Int =
+        inputStream.available()
+
+    override fun mark(readlimit: Int) =
+        inputStream.mark(readlimit)
+
+    override fun reset() =
+        inputStream.reset()
+
+    override fun markSupported(): Boolean =
+        inputStream.markSupported()
 }
