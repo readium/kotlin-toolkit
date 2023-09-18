@@ -14,11 +14,11 @@ import org.readium.r2.lcp.license.model.LicenseDocument
 /**
  * Access a License Document from its raw bytes.
  */
-internal class BytesLicenseContainer(private var bytes: ByteArray) : LicenseContainer {
+internal class BytesLicenseContainer(private var bytes: ByteArray) : WritableLicenseContainer {
 
     override fun read(): ByteArray = bytes
 
     override fun write(license: LicenseDocument) {
-        bytes = license.data
+        bytes = license.toByteArray()
     }
 }

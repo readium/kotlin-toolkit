@@ -138,14 +138,17 @@ public data class Locator(
         }
 
         public fun substring(range: IntRange): Text {
-            highlight ?: return this
-            return tryOr(this) {
-                copy(
-                    before = (before ?: "") + highlight.substring(0, range.first),
-                    highlight = highlight.substring(range),
-                    after = highlight.substring(range.last) + (after ?: "")
-                )
-            }
+            if (highlight.isNullOrBlank()) return this
+
+            val fixedRange = range.first.coerceIn(0, highlight.length)..range.last.coerceIn(
+                0,
+                highlight.length - 1
+            )
+            return copy(
+                before = (before ?: "") + highlight.substring(0, fixedRange.first),
+                highlight = highlight.substring(fixedRange),
+                after = highlight.substring((fixedRange.last + 1).coerceAtMost(highlight.length)) + (after ?: "")
+            )
         }
 
         public companion object {

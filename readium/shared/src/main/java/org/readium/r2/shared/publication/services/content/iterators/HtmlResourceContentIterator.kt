@@ -7,7 +7,6 @@
 package org.readium.r2.shared.publication.services.content.iterators
 
 import org.jsoup.Jsoup
-import org.jsoup.internal.StringUtil
 import org.jsoup.nodes.Element
 import org.jsoup.nodes.Node
 import org.jsoup.nodes.TextNode
@@ -36,8 +35,6 @@ import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.getOrThrow
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.use
-
-// FIXME: Support custom skipped elements?
 
 /**
  * Iterates an HTML [resource], starting from the given [locator].
@@ -249,16 +246,22 @@ public class HtmlResourceContentIterator internal constructor(
         /** Language of the current segment. */
         private var currentLanguage: String? = null
 
-        /** CSS selector of the current element. */
-        private var currentCssSelector: String? = null
-
         /** LIFO stack of the current element's block ancestors. */
-        private val breadcrumbs = mutableListOf<Element>()
+        private val breadcrumbs = mutableListOf<ParentElement>()
+
+        private data class ParentElement(
+            val element: Element,
+            val cssSelector: String
+        ) {
+            constructor(element: Element) : this(element, element.cssSelector())
+        }
 
         override fun head(node: Node, depth: Int) {
             if (node is Element) {
+                val parent = ParentElement(node)
                 if (node.isBlock) {
-                    breadcrumbs.add(node)
+                    flushText()
+                    breadcrumbs.add(parent)
                 }
 
                 val tag = node.normalName()
@@ -267,7 +270,7 @@ public class HtmlResourceContentIterator internal constructor(
                     baseLocator.copy(
                         locations = Locator.Locations(
                             otherLocations = buildMap {
-                                put("cssSelector", node.cssSelector() as Any)
+                                put("cssSelector", parent.cssSelector as Any)
                             }
                         )
                     )
@@ -342,7 +345,6 @@ public class HtmlResourceContentIterator internal constructor(
 
                     node.isBlock -> {
                         flushText()
-                        currentCssSelector = node.cssSelector()
                     }
                 }
             }
@@ -361,7 +363,7 @@ public class HtmlResourceContentIterator internal constructor(
                 appendNormalisedText(text)
             } else if (node is Element) {
                 if (node.isBlock) {
-                    assert(breadcrumbs.last() == node)
+                    assert(breadcrumbs.last().element == node)
                     flushText()
                     breadcrumbs.removeLast()
                 }
@@ -369,7 +371,7 @@ public class HtmlResourceContentIterator internal constructor(
         }
 
         private fun appendNormalisedText(text: String) {
-            StringUtil.appendNormalisedWhitespace(textAcc, text, lastCharIsWhitespace())
+            textAcc.appendNormalisedWhitespace(text, lastCharIsWhitespace())
         }
 
         private fun lastCharIsWhitespace(): Boolean =
@@ -378,7 +380,9 @@ public class HtmlResourceContentIterator internal constructor(
         private fun flushText() {
             flushSegment()
 
-            if (startIndex == 0 && startElement != null && breadcrumbs.lastOrNull() == startElement) {
+            val parent = breadcrumbs.lastOrNull()
+
+            if (startIndex == 0 && startElement != null && parent?.element == startElement) {
                 startIndex = elements.size
             }
 
@@ -393,8 +397,8 @@ public class HtmlResourceContentIterator internal constructor(
                     locator = baseLocator.copy(
                         locations = Locator.Locations(
                             otherLocations = buildMap {
-                                currentCssSelector?.let {
-                                    put("cssSelector", it as Any)
+                                parent?.let {
+                                    put("cssSelector", it.cssSelector as Any)
                                 }
                             }
                         ),
@@ -426,13 +430,15 @@ public class HtmlResourceContentIterator internal constructor(
                     text = trimmedText + whitespaceSuffix
                 }
 
+                val parent = breadcrumbs.lastOrNull()
+
                 segmentsAcc.add(
                     TextElement.Segment(
                         locator = baseLocator.copy(
                             locations = Locator.Locations(
                                 otherLocations = buildMap {
-                                    currentCssSelector?.let {
-                                        put("cssSelector", it as Any)
+                                    parent?.let {
+                                        put("cssSelector", it.cssSelector as Any)
                                     }
                                 }
                             ),
@@ -484,3 +490,54 @@ private fun Node.srcRelativeToHref(baseUrl: Url): Url? =
         .takeIf { it.isNotBlank() }
         ?.let { Url(it) }
         ?.let { baseUrl.resolve(it) }
+
+/**
+ * After normalizing the whitespace within a string, appends it to a string builder.
+ *
+ * Largely inspired by JSoup's `StringUtil.appendNormalisedWhitespace`.
+ *
+ * Note that we don't use directly JSoup's method because we need to keep the non-breaking
+ * spaces in the text. Otherwise, they will be lost post-text tokenization and Hypothesis won't
+ * match the results.
+ *
+ * @param string String to normalize whitespace within.
+ * @param stripLeading Set to true if you wish to remove any leading whitespace.
+ */
+private fun StringBuilder.appendNormalisedWhitespace(
+    string: String,
+    stripLeading: Boolean
+) {
+    var lastWasWhite = false
+    var reachedNonWhite = false
+    val len = string.length
+    var c: Int
+    var i = 0
+    while (i < len) {
+        c = string.codePointAt(i)
+        if (isWhitespace(c)) {
+            if (stripLeading && !reachedNonWhite || lastWasWhite) {
+                i += Character.charCount(c)
+                continue
+            }
+            append(' ')
+            lastWasWhite = true
+        } else if (!isInvisibleChar(c)) {
+            appendCodePoint(c)
+            lastWasWhite = false
+            reachedNonWhite = true
+        }
+        i += Character.charCount(c)
+    }
+}
+
+/**
+ * Tests if a code point is "whitespace" as defined in the HTML spec.
+ */
+private fun isWhitespace(c: Int): Boolean {
+    return c == ' '.code || c == '\t'.code || c == '\n'.code || c == '\u000c'.code || c == '\r'.code
+}
+
+private fun isInvisibleChar(c: Int): Boolean {
+    return c == 8203 || c == 173 // zero width sp, soft hyphen
+    // previously also included zw non join, zw join - but removing those breaks semantic meaning of text
+}

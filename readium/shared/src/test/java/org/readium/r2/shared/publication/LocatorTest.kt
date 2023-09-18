@@ -338,6 +338,131 @@ class LocatorTest {
             ).toJSON()
         )
     }
+
+    @Test fun `substring from a range`() {
+        val text = Locator.Text(
+            before = "before",
+            highlight = "highlight",
+            after = "after"
+        )
+
+        assertEquals(
+            Locator.Text(
+                before = "before",
+                highlight = "h",
+                after = "ighlightafter"
+            ),
+            text.substring(0..-1)
+        )
+
+        assertEquals(
+            Locator.Text(
+                before = "before",
+                highlight = "h",
+                after = "ighlightafter"
+            ),
+            text.substring(0..0)
+        )
+
+        assertEquals(
+            Locator.Text(
+                before = "beforehigh",
+                highlight = "lig",
+                after = "htafter"
+            ),
+            text.substring(4..6)
+        )
+
+        assertEquals(
+            Locator.Text(
+                before = "before",
+                highlight = "highlight",
+                after = "after"
+            ),
+            text.substring(0..8)
+        )
+
+        assertEquals(
+            Locator.Text(
+                before = "beforehighli",
+                highlight = "ght",
+                after = "after"
+            ),
+            text.substring(6..12)
+        )
+
+        assertEquals(
+            Locator.Text(
+                before = "beforehighligh",
+                highlight = "t",
+                after = "after"
+            ),
+            text.substring(8..12)
+        )
+
+        assertEquals(
+            Locator.Text(
+                before = "beforehighlight",
+                highlight = "",
+                after = "after"
+            ),
+            text.substring(9..12)
+        )
+    }
+
+    @Test fun `substring from a range with null components`() {
+        assertEquals(
+            Locator.Text(
+                before = "high",
+                highlight = "lig",
+                after = "htafter"
+            ),
+            Locator.Text(
+                before = null,
+                highlight = "highlight",
+                after = "after"
+            ).substring(4..6)
+        )
+
+        assertEquals(
+            Locator.Text(
+                before = "beforehigh",
+                highlight = "lig",
+                after = "ht"
+            ),
+            Locator.Text(
+                before = "before",
+                highlight = "highlight",
+                after = null
+            ).substring(4..6)
+        )
+
+        assertEquals(
+            Locator.Text(
+                before = "before",
+                highlight = null,
+                after = "after"
+            ),
+            Locator.Text(
+                before = "before",
+                highlight = null,
+                after = "after"
+            ).substring(4..6)
+        )
+
+        assertEquals(
+            Locator.Text(
+                before = "before",
+                highlight = "",
+                after = "after"
+            ),
+            Locator.Text(
+                before = "before",
+                highlight = "",
+                after = "after"
+            ).substring(4..6)
+        )
+    }
 }
 
 @RunWith(RobolectricTestRunner::class)

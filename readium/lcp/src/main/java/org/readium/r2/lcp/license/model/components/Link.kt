@@ -72,7 +72,7 @@ public data class Link(
     )
     public val rel: List<String> get() = throw NotImplementedError()
 
-    @Deprecated("Use `href()` instead", ReplaceWith("href()"), level = DeprecationLevel.ERROR)
+    @Deprecated("Use `href()` instead", ReplaceWith("this.href()"), level = DeprecationLevel.ERROR)
     public val url: URL get() = throw NotImplementedError()
 
     @Deprecated(

@@ -17,20 +17,20 @@ import org.readium.r2.shared.util.toUrl
 /**
  * Access a License Document stored in an LCP License Document file (LCPL).
  */
-internal class LCPLLicenseContainer(private val lcpl: File) : LicenseContainer {
+internal class LcplLicenseContainer(private val licenseFile: File) : WritableLicenseContainer {
 
     override fun read(): ByteArray =
         try {
-            lcpl.readBytes()
+            licenseFile.readBytes()
         } catch (e: Exception) {
             throw LcpException.Container.OpenFailed
         }
 
     override fun write(license: LicenseDocument) {
         try {
-            lcpl.writeBytes(license.data)
+            licenseFile.writeBytes(license.toByteArray())
         } catch (e: Exception) {
-            throw LcpException.Container.WriteFailed(lcpl.toUrl())
+            throw LcpException.Container.WriteFailed(licenseFile.toUrl())
         }
     }
 }

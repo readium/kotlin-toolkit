@@ -25,12 +25,11 @@ import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.allAreHtml
 import org.readium.r2.shared.publication.services.isRestricted
-import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.getOrElse
-import org.readium.r2.testapp.PublicationError
 import org.readium.r2.testapp.Readium
-import org.readium.r2.testapp.bookshelf.BookRepository
+import org.readium.r2.testapp.data.BookRepository
+import org.readium.r2.testapp.domain.PublicationError
 import org.readium.r2.testapp.reader.preferences.AndroidTtsPreferencesManagerFactory
 import org.readium.r2.testapp.reader.preferences.EpubPreferencesManagerFactory
 import org.readium.r2.testapp.reader.preferences.ExoPlayerPreferencesManagerFactory
@@ -70,11 +69,19 @@ class ReaderRepository(
 
                 operator fun invoke(
                     error: AssetRetriever.Error
-                ): OpeningError = PublicationError(org.readium.r2.testapp.PublicationError(error))
+                ): OpeningError = PublicationError(
+                    org.readium.r2.testapp.domain.PublicationError(
+                        error
+                    )
+                )
 
                 operator fun invoke(
                     error: Publication.OpeningException
-                ): OpeningError = PublicationError(org.readium.r2.testapp.PublicationError(error))
+                ): OpeningError = PublicationError(
+                    org.readium.r2.testapp.domain.PublicationError(
+                        error
+                    )
+                )
             }
         }
     }
@@ -96,7 +103,7 @@ class ReaderRepository(
         val book = checkNotNull(bookRepository.get(bookId)) { "Cannot find book in database." }
 
         val asset = readium.assetRetriever.retrieve(
-            AbsoluteUrl(book.href)!!,
+            book.url,
             book.mediaType,
             book.assetType
         ).getOrElse { return Try.failure(OpeningError.PublicationError(it)) }
@@ -127,7 +134,7 @@ class ReaderRepository(
                 openImage(bookId, publication, initialLocator)
             else ->
                 Try.failure(
-                    OpeningError.PublicationError(PublicationError.UnsupportedPublication())
+                    OpeningError.PublicationError(PublicationError.UnsupportedAsset())
                 )
         }
 
@@ -147,14 +154,14 @@ class ReaderRepository(
             publication,
             ExoPlayerEngineProvider(application)
         ) ?: return Try.failure(
-            OpeningError.PublicationError(PublicationError.UnsupportedPublication())
+            OpeningError.PublicationError(PublicationError.UnsupportedAsset())
         )
 
         val navigator = navigatorFactory.createNavigator(
             initialLocator,
             initialPreferences
         ) ?: return Try.failure(
-            OpeningError.PublicationError(PublicationError.UnsupportedPublication())
+            OpeningError.PublicationError(PublicationError.UnsupportedAsset())
         )
 
         mediaServiceFacade.openSession(bookId, navigator)

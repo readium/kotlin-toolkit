@@ -73,21 +73,7 @@ internal class LcpContentProtection(
             ?.let { LcpPassphraseAuthentication(it, fallback = this.authentication) }
             ?: this.authentication
 
-        val file = (asset as? Asset.Resource)?.resource?.source?.toFile()
-            ?: (asset as? Asset.Container)?.container?.source?.toFile()
-
-        return file
-            // This is less restrictive with regard to network availability.
-            ?.let {
-                lcpService.retrieveLicense(
-                    it,
-                    asset.mediaType,
-                    authentication,
-                    allowUserInteraction,
-                    sender
-                )
-            }
-            ?: lcpService.retrieveLicense(asset, authentication, allowUserInteraction, sender)
+        return lcpService.retrieveLicense(asset, authentication, allowUserInteraction, sender)
     }
 
     private fun createResultAsset(

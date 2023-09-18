@@ -67,7 +67,6 @@ dependencies {
         exclude(module = "support-v4")
     }
     implementation(libs.joda.time)
-    implementation("org.zeroturnaround:zt-zip:1.15")
     implementation(libs.androidx.browser)
 
     implementation(libs.bundles.room)
@@ -75,6 +74,7 @@ dependencies {
 
     // Tests
     testImplementation(libs.junit)
+    testImplementation(libs.kotlin.junit)
 
     androidTestImplementation(libs.androidx.ext.junit)
     androidTestImplementation(libs.androidx.expresso.core)

@@ -25,9 +25,9 @@ import org.joda.time.DateTime
 import org.joda.time.format.DateTimeFormat
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.testapp.R
+import org.readium.r2.testapp.data.model.Highlight
 import org.readium.r2.testapp.databinding.FragmentListviewBinding
 import org.readium.r2.testapp.databinding.ItemRecycleHighlightBinding
-import org.readium.r2.testapp.domain.model.Highlight
 import org.readium.r2.testapp.reader.ReaderViewModel
 import org.readium.r2.testapp.utils.viewLifecycle
 
