@@ -30,9 +30,11 @@ import org.readium.r2.shared.util.io.CountingInputStream
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.mediatype.MediaTypeHints
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
+import org.readium.r2.shared.util.toUrl
 
 internal class ChannelZipContainer(
     private val archive: ZipFile,
+    override val source: Url?,
     private val mediaTypeRetriever: MediaTypeRetriever
 ) : Container {
 
@@ -180,7 +182,7 @@ public class ChannelZipArchiveFactory(
             val resourceChannel = ResourceChannel(resource)
             val channel = wrapBaseChannel(resourceChannel)
             val zipFile = ZipFile(channel, true)
-            val channelZip = ChannelZipContainer(zipFile, mediaTypeRetriever)
+            val channelZip = ChannelZipContainer(zipFile, resource.source, mediaTypeRetriever)
             Try.success(channelZip)
         } catch (e: Resource.Exception) {
             Try.failure(ArchiveFactory.Error.ResourceReading(e))
@@ -192,7 +194,7 @@ public class ChannelZipArchiveFactory(
     internal fun openFile(file: File): Container {
         val fileChannel = FileChannelAdapter(file, "r")
         val channel = wrapBaseChannel(fileChannel)
-        return ChannelZipContainer(ZipFile(channel), mediaTypeRetriever)
+        return ChannelZipContainer(ZipFile(channel), file.toUrl(), mediaTypeRetriever)
     }
 
     private fun wrapBaseChannel(channel: SeekableByteChannel): SeekableByteChannel {

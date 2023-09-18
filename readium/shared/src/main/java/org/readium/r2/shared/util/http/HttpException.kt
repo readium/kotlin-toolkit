@@ -57,6 +57,9 @@ public class HttpException(
         /** (404) The requested resource could not be found. */
         NotFound(R.string.readium_shared_http_exception_not_found),
 
+        /** (405) Method not allowed. */
+        MethodNotAllowed(R.string.readium_shared_http_exception_method_not_allowed),
+
         /** (4xx) Other client errors */
         ClientError(R.string.readium_shared_http_exception_client_error),
 
@@ -82,7 +85,8 @@ public class HttpException(
                     401 -> Unauthorized
                     403 -> Forbidden
                     404 -> NotFound
-                    in 405..498 -> ClientError
+                    405 -> MethodNotAllowed
+                    in 406..498 -> ClientError
                     499 -> Cancelled
                     in 500..599 -> ServerError
                     else -> MalformedResponse

@@ -12,6 +12,7 @@ import java.nio.ByteBuffer
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
+import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.extensions.readSafe
 import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.util.Try
@@ -22,9 +23,11 @@ import org.readium.r2.shared.util.http.HttpClient
 import org.readium.r2.shared.util.http.HttpException
 import org.readium.r2.shared.util.http.HttpRequest
 import org.readium.r2.shared.util.http.HttpResponse
+import org.readium.r2.shared.util.http.head
 import org.readium.r2.shared.util.io.CountingInputStream
 import timber.log.Timber
 
+@OptIn(ExperimentalReadiumApi::class)
 internal class HttpChannel(
     private val url: String,
     private val client: HttpClient,
@@ -47,9 +50,7 @@ internal class HttpChannel(
             return _headResponse
         }
 
-        _headResponse = client.fetch(HttpRequest(url, method = HttpRequest.Method.HEAD))
-            .map { it.response }
-
+        _headResponse = client.head(HttpRequest(url))
         return _headResponse
     }
 

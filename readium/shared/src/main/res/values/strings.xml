@@ -32,6 +32,7 @@
     <string name="readium_shared_http.exception.unauthorized">Authentication required</string>
     <string name="readium_shared_http.exception.forbidden">You are not authorized</string>
     <string name="readium_shared_http.exception.not_found">Page not found</string>
+    <string name="readium_shared_http.exception.method_not_allowed">Method not allowed</string>
     <string name="readium_shared_http.exception.client_error">A client error occurred</string>
     <string name="readium_shared_http.exception.server_error">A server error occurred, please try again later</string>
     <string name="readium_shared_http.exception.offline">Your Internet connection appears to be offline</string>

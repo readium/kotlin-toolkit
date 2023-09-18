@@ -70,8 +70,9 @@ public interface DownloadManager {
         ) : Error("There is not enough space to complete the download.", cause)
 
         public class FileError(
+            message: String,
             cause: org.readium.r2.shared.util.Error? = null
-        ) : Error("IO error on the local device.", cause)
+        ) : Error(message, cause)
 
         public class HttpData(
             cause: org.readium.r2.shared.util.Error? = null

@@ -74,7 +74,7 @@ class BookshelfFragment : Fragment() {
         sharedStoragePickerLauncher =
             registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri: Uri? ->
                 uri?.let {
-                    val takeFlags: Int = Intent.FLAG_GRANT_READ_URI_PERMISSION
+                    val takeFlags: Int = Intent.FLAG_GRANT_WRITE_URI_PERMISSION
                     requireContext().contentResolver.takePersistableUriPermission(uri, takeFlags)
                     bookshelfViewModel.addPublicationFromStorage(it)
                 }

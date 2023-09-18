@@ -55,6 +55,9 @@ public class HttpRequest(
         allowUserInteraction = allowUserInteraction
     )
 
+    public fun copy(build: Builder.() -> Unit): HttpRequest =
+        buildUpon().apply(build).build()
+
     public companion object {
         public operator fun invoke(url: String, build: Builder.() -> Unit): HttpRequest =
             Builder(url).apply(build).build()

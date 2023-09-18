@@ -11,9 +11,11 @@ import java.nio.charset.Charset
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
+import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.flatMap
 import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.shared.util.tryRecover
 
 /**
  * An HTTP client performs HTTP requests.
@@ -28,70 +30,10 @@ public interface HttpClient {
      */
     public suspend fun stream(request: HttpRequest): HttpTry<HttpStreamResponse>
 
-    /**
-     * Fetches the resource from the given [request].
-     */
-    public suspend fun fetch(request: HttpRequest): HttpTry<HttpFetchResponse> =
-        stream(request)
-            .flatMap { response ->
-                try {
-                    val body = withContext(Dispatchers.IO) {
-                        response.body.use { it.readBytes() }
-                    }
-                    Try.success(HttpFetchResponse(response.response, body))
-                } catch (e: Exception) {
-                    Try.failure(HttpException.wrap(e))
-                }
-            }
-
     // Declare a companion object to allow reading apps to extend it. For example, by adding a
     // HttpClient.get(Context) constructor.
     public companion object
 }
-
-/**
- * Fetches the resource from the given [request] before decoding it with the provided [decoder].
- *
- * If the decoder fails, a MalformedResponse error is returned.
- */
-public suspend fun <T> HttpClient.fetchWithDecoder(
-    request: HttpRequest,
-    decoder: (HttpFetchResponse) -> T
-): HttpTry<T> =
-    fetch(request)
-        .flatMap {
-            try {
-                Try.success(decoder(it))
-            } catch (e: Exception) {
-                Try.failure(HttpException(kind = HttpException.Kind.MalformedResponse, cause = e))
-            }
-        }
-
-/**
- * Fetches the resource from the given [request] as a [String].
- */
-public suspend fun HttpClient.fetchString(request: HttpRequest, charset: Charset = Charsets.UTF_8): HttpTry<String> =
-    fetchWithDecoder(request) { response ->
-        String(response.body, charset)
-    }
-
-/**
- * Fetches the resource from the given [request] as a [JSONObject].
- */
-public suspend fun HttpClient.fetchJSONObject(request: HttpRequest): HttpTry<JSONObject> =
-    fetchWithDecoder(request) { response ->
-        JSONObject(String(response.body))
-    }
-
-public class HttpStreamResponse(
-    public val response: HttpResponse,
-    public val body: InputStream
-)
-
-public class HttpFetchResponse(
-    public val response: HttpResponse,
-    public val body: ByteArray
-)
 
 /**
  * Represents a successful HTTP response received from a server.
@@ -137,4 +79,104 @@ public data class HttpResponse(
      * resource.
      */
     val contentLength: Long? get() = httpHeaders.contentLength
+}
+
+/**
+ * HTTP response with streamable content.
+ *
+ * You MUST close the [body] to terminate the HTTP connection when you're done.
+ */
+public class HttpStreamResponse(
+    public val response: HttpResponse,
+    public val body: InputStream
+)
+
+/**
+ * Fetches the resource from the given [request].
+ */
+public suspend fun HttpClient.fetch(request: HttpRequest): HttpTry<HttpFetchResponse> =
+    stream(request)
+        .flatMap { response ->
+            try {
+                val body = withContext(Dispatchers.IO) {
+                    response.body.use { it.readBytes() }
+                }
+                Try.success(HttpFetchResponse(response.response, body))
+            } catch (e: Exception) {
+                Try.failure(HttpException.wrap(e))
+            }
+        }
+
+/**
+ * Fetches the resource from the given [request] before decoding it with the provided [decoder].
+ *
+ * If the decoder fails, a MalformedResponse error is returned.
+ */
+public suspend fun <T> HttpClient.fetchWithDecoder(
+    request: HttpRequest,
+    decoder: (HttpFetchResponse) -> T
+): HttpTry<T> =
+    fetch(request)
+        .flatMap {
+            try {
+                Try.success(decoder(it))
+            } catch (e: Exception) {
+                Try.failure(HttpException(kind = HttpException.Kind.MalformedResponse, cause = e))
+            }
+        }
+
+/**
+ * Fetches the resource from the given [request] as a [String].
+ */
+public suspend fun HttpClient.fetchString(request: HttpRequest, charset: Charset = Charsets.UTF_8): HttpTry<String> =
+    fetchWithDecoder(request) { response ->
+        String(response.body, charset)
+    }
+
+/**
+ * Fetches the resource from the given [request] as a [JSONObject].
+ */
+public suspend fun HttpClient.fetchJSONObject(request: HttpRequest): HttpTry<JSONObject> =
+    fetchWithDecoder(request) { response ->
+        JSONObject(String(response.body))
+    }
+
+/**
+ * HTTP response with the whole [body] as a [ByteArray].
+ */
+public class HttpFetchResponse(
+    public val response: HttpResponse,
+    public val body: ByteArray
+)
+
+/**
+ * Performs a HEAD request to retrieve only the response headers.
+ *
+ * This helpers falls back on a GET request with 0-length byte range if the server doesn't support
+ * HEAD requests.
+ */
+@ExperimentalReadiumApi
+public suspend fun HttpClient.head(request: HttpRequest): HttpTry<HttpResponse> {
+    suspend fun HttpRequest.response(): HttpTry<HttpResponse> =
+        stream(this)
+            .map { response ->
+                response.body.close()
+                response.response
+            }
+
+    return request
+        .copy { method = HttpRequest.Method.HEAD }
+        .response()
+        .tryRecover { exception ->
+            if (exception.kind != HttpException.Kind.MethodNotAllowed) {
+                return@tryRecover Try.failure(exception)
+            }
+
+            request
+                .copy {
+                    method = HttpRequest.Method.GET
+                    setRange(0L..0L)
+                }
+                .response()
+        }
 }
