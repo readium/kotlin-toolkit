@@ -9,7 +9,6 @@
 
 package org.readium.r2.shared.util
 
-import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.extensions.percentEncodedQuery
 
 /**
@@ -18,8 +17,7 @@ import org.readium.r2.shared.extensions.percentEncodedQuery
  * Only handles simple cases, fitting Readium's use cases.
  * See https://tools.ietf.org/html/rfc6570
  */
-@InternalReadiumApi
-public data class URITemplate(val uri: String) {
+internal data class URITemplate(val uri: String) {
 
     /**
      * List of URI template parameter keys, if the Link is templated.

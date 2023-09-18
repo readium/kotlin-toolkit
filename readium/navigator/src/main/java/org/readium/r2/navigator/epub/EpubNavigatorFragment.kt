@@ -87,12 +87,11 @@ import org.readium.r2.shared.publication.presentation.presentation
 import org.readium.r2.shared.publication.services.isRestricted
 import org.readium.r2.shared.publication.services.positionsByReadingOrder
 import org.readium.r2.shared.resource.Resource
-import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.launchWebBrowser
 import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.shared.util.toAbsoluteUrl
 import org.readium.r2.shared.util.toUri
-import org.readium.r2.shared.util.toUrl
 
 /**
  * Factory for a [JavascriptInterface] which will be injected in the web views.
@@ -814,7 +813,7 @@ public class EpubNavigatorFragment internal constructor(
          * Prevents opening external links in the web view and handles internal links.
          */
         override fun shouldOverrideUrlLoading(webView: WebView, request: WebResourceRequest): Boolean {
-            val url = (request.url.toUrl() as? AbsoluteUrl) ?: return false
+            val url = request.url.toAbsoluteUrl() ?: return false
             viewModel.navigateToUrl(url)
             return true
         }
@@ -967,13 +966,11 @@ public class EpubNavigatorFragment internal constructor(
         if (!::resourcePager.isInitialized) return null
 
         val resource = publication.readingOrder[resourcePager.currentItem]
-        return resource.href()?.let { href ->
-            currentReflowablePageFragment?.webView?.findFirstVisibleLocator()
-                ?.copy(
-                    href = href,
-                    mediaType = resource.mediaType ?: MediaType.XHTML
-                )
-        }
+        return currentReflowablePageFragment?.webView?.findFirstVisibleLocator()
+            ?.copy(
+                href = resource.href(),
+                mediaType = resource.mediaType ?: MediaType.XHTML
+            )
     }
 
     /**

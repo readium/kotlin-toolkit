@@ -24,7 +24,6 @@ import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Manifest
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.normalizeHrefsToBase
-import org.readium.r2.shared.publication.normalizeHrefsToSelfOrBase
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.http.DefaultHttpClient
@@ -276,7 +275,8 @@ public class OPDS2Parser {
 
         private fun parsePublication(json: JSONObject, baseUrl: Url): Publication? =
             Manifest.fromJSON(json, mediaTypeRetriever = mediaTypeRetriever)
-                ?.normalizeHrefsToSelfOrBase(baseUrl)
+                // Self link takes precedence over the given `baseUrl`.
+                ?.let { it.normalizeHrefsToBase(it.linkWithRel("self")?.href?.toUrl() ?: baseUrl) }
                 ?.let { Publication(it) }
 
         private fun parseLink(json: JSONObject, baseUrl: Url): Link? =

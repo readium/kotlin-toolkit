@@ -182,11 +182,8 @@ public class TtsNavigator<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
 
     override val readingOrder: ReadingOrder =
         ReadingOrder(
-            items = publication.readingOrder.mapNotNull {
-                ReadingOrder.Item(
-                    href = it.href() ?: return@mapNotNull null
-                )
-            }
+            items = publication.readingOrder
+                .map { ReadingOrder.Item(it.href()) }
         )
 
     override val playback: StateFlow<Playback> =

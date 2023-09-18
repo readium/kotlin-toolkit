@@ -152,20 +152,19 @@ public class Href private constructor(private val href: Url) : Parcelable {
  * Returns a copy of the receiver after normalizing its HREFs to the link with `rel="self"`.
  */
 @ExperimentalReadiumApi
-public fun Manifest.normalizeHrefsToSelf(): Manifest =
-    normalizeHrefsToSelfOrBase(null)
-
-/**
- * Returns a copy of the receiver after normalizing its HREFs to the link with `rel="self"`, or the
- * given [baseUrl] if not found.
- */
-@ExperimentalReadiumApi
-public fun Manifest.normalizeHrefsToSelfOrBase(baseUrl: SharedUrl?): Manifest {
+public fun Manifest.normalizeHrefsToSelf(): Manifest {
     val base = linkWithRel("self")?.href?.toUrl()
-        ?: baseUrl
         ?: return this
 
-    return copy(HrefNormalizer(base))
+    return normalizeHrefsToBase(base)
+}
+
+/**
+ * Returns a copy of the receiver after normalizing its HREFs to the given [baseUrl].
+ */
+@ExperimentalReadiumApi
+public fun Manifest.normalizeHrefsToBase(baseUrl: SharedUrl): Manifest {
+    return copy(HrefNormalizer(baseUrl))
 }
 
 /**
