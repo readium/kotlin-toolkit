@@ -1,0 +1,506 @@
+/* HTML5 Suggested rendering versus Firefox UA Stylesheet (version 53 — MacOS)
+
+   Source: https://www.w3.org/TR/html5/rendering.html */
+
+@namespace url(http://www.w3.org/1999/xhtml);
+
+/* 001 
+   Hidden elements */
+
+[hidden], head, link, meta, rp, script, style, title {
+  display: none;
+}
+
+noscript {
+  display: none !important;
+}
+
+source {
+  display: inline;
+}
+
+/* 002 
+   Page */
+
+html, body { 
+  display: block; 
+}
+
+/* 003 
+   Flow content */
+
+address, blockquote, div, figure, figcaption, footer, form,
+header, hr, legend, p, pre {
+  display: block;
+}
+
+blockquote, figure, p, pre {
+  margin-top: 1em; 
+  margin-bottom: 1em;
+}
+
+blockquote, figure { 
+  margin-left: 40px; 
+  margin-right: 40px; 
+}
+
+address { 
+  font-style: italic; 
+}
+
+pre {
+  font-family: -moz-fixed; 
+  white-space: pre;
+}
+
+/* 004
+   Phrasing content */
+
+cite, dfn, em, i, var { 
+  font-style: italic; 
+}
+
+b, strong { 
+  font-weight: bolder; 
+}
+
+code, kbd, samp, tt { 
+  font-family: -moz-fixed; 
+}
+
+big { 
+  font-size: larger; 
+}
+
+small { 
+  font-size: smaller; 
+}
+
+sub { 
+  vertical-align: sub; 
+}
+
+sup { 
+  vertical-align: super; 
+}
+
+sub, sup { 
+  line-height: normal; 
+  font-size: smaller; 
+}
+
+ruby { 
+  display: ruby; 
+}
+
+rb { 
+  display: ruby-base; 
+  white-space: nowrap; 
+}
+
+rt {
+  display: ruby-text;
+  white-space: nowrap;
+  font-size: 50%;
+  line-height: 1;
+  font-variant-east-asian: ruby;
+  text-emphasis: none;
+}
+
+rbc {
+
+}
+
+rtc { 
+  display: ruby-text-container;
+  white-space: nowrap;
+  font-size: 50%;
+  line-height: 1;
+  font-variant-east-asian: ruby;
+  text-emphasis: none;
+}
+
+ruby, rb, rt, rtc { 
+  unicode-bidi: isolate; 
+}
+
+:link { 
+  color: rgb(0, 0, 238); 
+}
+
+:visited { 
+  color: rgb(0, 0, 238); /* Visually different */
+}
+
+:link, :visited { 
+  text-decoration: underline; 
+}
+
+a:link[rel~=help], a:visited[rel~=help],
+area:link[rel~=help], area:visited[rel~=help] { 
+
+}
+
+:focus { 
+  outline: 1px dotted; 
+}
+
+mark { 
+  background: yellow; 
+  color: black; 
+}
+
+abbr[title], acronym[title] { 
+  text-decoration: dotted underline; 
+}
+
+ins, u { 
+  text-decoration: underline; 
+}
+
+del, s, strike { 
+  text-decoration: line-through; 
+}
+
+blink { 
+  text-decoration: none; 
+}
+
+q::before { 
+  content: open-quote; 
+}
+
+q::after { 
+  content: close-quote; 
+}
+
+br { 
+
+}
+
+nobr { 
+  white-space: nowrap; 
+}
+
+wbr { 
+
+}
+
+nobr wbr { 
+  white-space: inherit; 
+}
+
+/* 005
+   Bidirectional text */
+
+[dir]:dir(ltr), bdi:dir(ltr), input[type=tel]:dir(ltr) { 
+  direction: ltr; 
+}
+
+[dir]:dir(rtl), bdi:dir(rtl) { 
+  direction: rtl; 
+}
+
+html, body, 
+address, blockquote, div, figure, figcaption, footer, form,
+header, hr, legend, p, pre, article, aside, h1, h2, h3, h4, h5, h6, 
+main, nav, section, table, caption, colgroup, col, thead, tbody, 
+tfoot, tr, td, th, dd, dl, dt, ol, ul, li, bdi,
+fieldset, legend, [dir] {
+  unicode-bidi: isolate; 
+}
+
+bdo, bdo[dir] { 
+  unicode-bidi: isolate-override; 
+} 
+
+textarea[dir=auto i], pre[dir=auto i] {
+  unicode-bidi: plaintext;
+} 
+
+input[type=text][dir=auto i], input[type=search][dir=auto i],
+input[type=tel][dir=auto i], input[type=url][dir=auto i], input[type=email][dir=auto i] { 
+  unicode-bidi: isolate; 
+}
+
+/* 006
+   Quotes */
+
+/* 007
+   Section and headings */
+
+article, aside, h1, h2, h3, h4, h5, h6, hgroup, nav, section {
+  display: block;
+}
+
+h1 { 
+  margin-top: 0.67em; 
+  margin-bottom: 0.67em; 
+  font-size: 2.00em; 
+  font-weight: bold; 
+}
+
+h2 { 
+  margin-top: 0.83em; 
+  margin-bottom: 0.83em; 
+  font-size: 1.50em; 
+  font-weight: bold; 
+}
+
+h3 { 
+  margin-top: 1.00em; 
+  margin-bottom: 1.00em; 
+  font-size: 1.17em; 
+  font-weight: bold; 
+}
+
+h4 { 
+  margin-top: 1.33em; 
+  margin-bottom: 1.33em; 
+  font-size: 1.00em; 
+  font-weight: bold;
+}
+
+h5 { 
+  margin-top: 1.67em; 
+  margin-bottom: 1.67em; 
+  font-size: 0.83em; 
+  font-weight: bold; 
+}
+
+h6 { 
+  margin-top: 2.33em; 
+  margin-bottom: 2.33em; 
+  font-size: 0.67em; 
+  font-weight: bold; 
+}
+
+/* x = article, aside, nav or section */
+x h1 { 
+  margin-top: 0.83em; 
+  margin-bottom: 0.83em; 
+  font-size: 1.50em; 
+}
+
+x x h1 { 
+  margin-top: 1.00em; 
+  margin-bottom: 1.00em; 
+  font-size: 1.17em; 
+}
+
+x x x h1 { 
+  margin-top: 1.33em; 
+  margin-bottom: 1.33em; 
+  font-size: 1.00em; 
+}
+
+x x x x h1 { 
+  margin-top: 1.67em; 
+  margin-bottom: 1.67em; 
+  font-size: 0.83em; 
+}
+
+x x x x x h1 { 
+  margin-top: 2.33em; 
+  margin-bottom: 2.33em; 
+  font-size: 0.67em; 
+}
+
+/* 008
+   Lists */
+
+dd, dl, dt, ol, ul { 
+  display: block; 
+}
+
+li { 
+  display: list-item;
+  text-align: match-parent;
+}
+
+dl, ol, ul { 
+  margin-top: 1em; 
+  margin-bottom: 1em; 
+}
+
+dl dl, dl ol, dl ul,
+ol dl, ol ol, ol ul,
+ul dl, ul ol, ul ul {
+  margin-top: 0; 
+  margin-bottom: 0;
+}
+
+dd { 
+  margin-left: 40px; 
+}
+
+ol, ul { 
+  padding-left: 40px; 
+}
+
+ol { 
+  list-style-type: decimal; 
+}
+
+ul { 
+  list-style-type: disc; 
+}
+
+ol ul, ul ul {
+  list-style-type: circle;
+}
+
+ol ol ul, ol ul ul,
+ul ol ul, ul ul ul {
+  list-style-type: square;
+}
+
+/* 009
+   Tables */
+
+table { 
+  display: table; 
+}
+
+caption { 
+  display: table-caption;
+  text-align: center;
+}
+
+colgroup, colgroup[hidden] { 
+  display: table-column-group; 
+}
+
+col, col[hidden] { 
+  display: table-column; 
+}
+
+thead, thead[hidden] { 
+  display: table-header-group; 
+}
+
+tbody, tbody[hidden] { 
+  display: table-row-group; 
+}
+
+tfoot, tfoot[hidden] { 
+  display: table-footer-group; 
+}
+
+tr, tr[hidden] { 
+  display: table-row; 
+}
+
+td, th, td[hidden], th[hidden] { 
+  display: table-cell; 
+}
+
+colgroup[hidden], col[hidden], thead[hidden], tbody[hidden],
+tfoot[hidden], tr[hidden], td[hidden], th[hidden] {
+  visibility: visible;
+}
+
+table {
+  box-sizing: border-box;
+  border-spacing: 2px;
+  border-collapse: separate;
+  text-indent: 0;
+}
+
+td, th { 
+  padding: 1px; 
+}
+
+th { 
+  font-weight: bold;
+}
+
+thead, tbody, tfoot, table > tr { 
+  vertical-align: middle; 
+}
+
+tr, td, th { 
+  vertical-align: inherit; 
+}
+
+table, td, th { 
+
+}
+
+thead, tbody, tfoot, tr { 
+
+}
+
+/* 010
+   Form controls */
+
+input, select, option, optgroup, button, textarea, keygen {
+  text-indent: 0;
+}
+
+textarea { 
+  white-space: pre-wrap; 
+}
+
+input[type="radio"], input[type="checkbox"], input[type="reset"], input[type="button"],
+input[type="submit"], select, button {
+  box-sizing: border-box;
+}
+
+/* 011 
+   hr element */
+
+hr { 
+  color: gray; 
+  border-style: inset; 
+  border-width: 1px; 
+  margin: 0.5em auto;
+  box-sizing: border-box; 
+}
+
+/* 012 
+   Fieldset and legend */
+
+fieldset {
+  margin-left: 2px; 
+  margin-right: 2px;
+  border: 2px groove ThreeDLightShadow;
+  padding: 0.35em 0.625em 0.75em;
+  min-width: -moz-min-content;
+}
+
+legend {
+  padding-left: 2px; 
+  padding-right: 2px;
+  inline-size: -moz-fit-content;
+}
+
+/* 013 
+   Embedded content */
+
+iframe { 
+  border: 2px inset; 
+}
+
+video { 
+  object-fit: contain; 
+}
+
+canvas {
+  -moz-user-select: none;
+}
+
+audio[controls] {
+  writing-mode: horizontal-tb !important;
+}
+
+video[controls] {
+
+}
+
+/* 014 
+   Images */
+
+img {
+
+}

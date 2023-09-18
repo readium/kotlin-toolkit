@@ -1,0 +1,36 @@
+/* Readium CSS
+   Columns number pref
+
+   A submodule managing columns number for user settings
+   Part of “Chrome Advanced” class – no flag required.
+
+   Repo: https://github.com/readium/readium-css */
+
+/* Number of columns = 1 | 2 */
+/* We still need to see if we allow users to force number of columns for all configs, currently it behaves as an "auto" setting */
+
+/* apply col setting except for mobile portrait */
+@media screen and (--responsive-columns),
+screen and (--min-device-columns) and (--max-device-columns) and (orientation: landscape) {
+  :root[style*="--USER__colCount: 1"],
+  :root[style*="--USER__colCount:1"],
+  :root[style*="--USER__colCount: 2"],
+  :root[style*="--USER__colCount:2"] {
+    -webkit-column-count: var(--USER__colCount);
+    -moz-column-count: var(--USER__colCount);
+    column-count: var(--USER__colCount);
+  }
+
+  /* If one column, make sure we limit line-length */
+  :root[style*="--USER__colCount: 1"],
+  :root[style*="--USER__colCount:1"] {
+    --RS__maxLineLength: 40rem !important; /* This is the only way for the user setting to work in webkit… */
+    --RS__colWidth: 100vw;
+  }
+
+  /* If smartphone landscape, and 2 columns, col width the same as iPad landscape + desktop */
+  :root[style*="--USER__colCount: 2"],
+  :root[style*="--USER__colCount:2"] {
+    --RS__colWidth: auto; /* User explicitely tells he/she wants 2 columns, we reset floor value */
+  }
+}

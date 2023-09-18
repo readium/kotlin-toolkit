@@ -1,0 +1,208 @@
+{
+  "id": "ReadiumCSS",
+  "viewports": [
+    {
+      "label": "phone",
+      "width": 375,
+      "height": 667
+    },
+    {
+      "label": "tablet",
+      "width": 1024,
+      "height": 768
+    }
+  ],
+  "scenarios": [
+    {
+      "label": "Paged",
+      "url": "http://localhost:8000/tests/base.html",
+      "delay": 0,
+      "selectors": ["viewport"],
+      "misMatchThreshold" : 0.1
+    },
+    {
+      "label": "Paged rtl",
+      "url": "http://localhost:8000/tests/base-rtl.html",
+      "delay": 0,
+      "selectors": ["viewport"],
+      "misMatchThreshold" : 0.1
+    },
+    {
+      "label": "Paged vertical",
+      "url": "http://localhost:8000/tests/base-vertical.html",
+      "delay": 0,
+      "selectors": ["viewport"],
+      "misMatchThreshold" : 0.1
+    },
+    {
+      "label": "1 column pref",
+      "url": "http://localhost:8000/tests/cols-1.html",
+      "delay": 0,
+      "selectors": ["viewport"],
+      "misMatchThreshold" : 0.1
+    },
+    {
+      "label": "2 columns pref",
+      "url": "http://localhost:8000/tests/cols-2.html",
+      "delay": 0,
+      "selectors": ["viewport"],
+      "misMatchThreshold" : 0.1
+    },
+    {
+      "label": "Page margins pref",
+      "url": "http://localhost:8000/tests/margins.html",
+      "delay": 0,
+      "selectors": ["viewport"],
+      "misMatchThreshold" : 0.1
+    },
+    {
+      "label": "Scroll pref",
+      "url": "http://localhost:8000/tests/scroll.html",
+      "delay": 0,
+      "selectors": ["viewport"],
+      "misMatchThreshold" : 0.1
+    },
+    {
+      "label": "Scroll vertical pref",
+      "url": "http://localhost:8000/tests/scroll-vertical.html",
+      "delay": 0,
+      "selectors": ["viewport"],
+      "misMatchThreshold" : 0.1
+    },
+    {
+      "label": "Day mode pref",
+      "url": "http://localhost:8000/tests/day.html",
+      "delay": 0,
+      "selectors": ["document"],
+      "misMatchThreshold" : 0.1
+    },
+    {
+      "label": "Sepia mode pref",
+      "url": "http://localhost:8000/tests/sepia.html",
+      "delay": 0,
+      "selectors": ["document"],
+      "misMatchThreshold" : 0.1
+    },
+    {
+      "label": "Night mode pref",
+      "url": "http://localhost:8000/tests/night.html",
+      "delay": 0,
+      "selectors": ["document"],
+      "misMatchThreshold" : 0.1
+    },
+    {
+      "label": "Font family pref",
+      "url": "http://localhost:8000/tests/font-family.html",
+      "delay": 0,
+      "selectors": ["document"],
+      "misMatchThreshold" : 0.1
+    },
+    {
+      "label": "Font size pref",
+      "url": "http://localhost:8000/tests/font-size.html",
+      "delay": 0,
+      "selectors": ["document"],
+      "misMatchThreshold" : 0.1
+    },
+    {
+      "label": "Type scale pref",
+      "url": "http://localhost:8000/tests/type-scale.html",
+      "delay": 0,
+      "selectors": ["document"],
+      "misMatchThreshold" : 0.1
+    },
+    {
+      "label": "Text align pref",
+      "url": "http://localhost:8000/tests/text-align.html",
+      "delay": 0,
+      "selectors": ["document"],
+      "misMatchThreshold" : 0.1
+    },
+    {
+      "label": "Hyphens pref",
+      "url": "http://localhost:8000/tests/hyphens.html",
+      "delay": 0,
+      "selectors": ["document"],
+      "misMatchThreshold" : 0.1
+    },
+    {
+      "label": "Line height pref",
+      "url": "http://localhost:8000/tests/line-height.html",
+      "delay": 0,
+      "selectors": ["document"],
+      "misMatchThreshold" : 0.1
+    },
+    {
+      "label": "Para spacing pref",
+      "url": "http://localhost:8000/tests/para-spacing.html",
+      "delay": 0,
+      "selectors": ["document"],
+      "misMatchThreshold" : 0.1
+    },
+    {
+      "label": "Para spacing vertical pref",
+      "url": "http://localhost:8000/tests/para-spacing-vertical.html",
+      "delay": 0,
+      "selectors": ["document"],
+      "misMatchThreshold" : 0.1
+    },
+    {
+      "label": "Wordspacing pref",
+      "url": "http://localhost:8000/tests/word-spacing.html",
+      "delay": 0,
+      "selectors": ["document"],
+      "misMatchThreshold" : 0.1
+    },
+    {
+      "label": "Letterspacing pref",
+      "url": "http://localhost:8000/tests/letter-spacing.html",
+      "delay": 0,
+      "selectors": ["document"],
+      "misMatchThreshold" : 0.1
+    },
+    {
+      "label": "Ligatures pref",
+      "url": "http://localhost:8000/tests/arabic-ligatures.html",
+      "delay": 0,
+      "selectors": ["document"],
+      "misMatchThreshold" : 0.1
+    },
+    {
+      "label": "Accessibility font pref",
+      "url": "http://localhost:8000/tests/a11y-font.html",
+      "delay": 0,
+      "selectors": ["document"],
+      "misMatchThreshold" : 0.1
+    },
+    {
+      "label": "Accessibility normalize pref",
+      "url": "http://localhost:8000/tests/a11y-normalize.html",
+      "delay": 0,
+      "selectors": ["document"],
+      "misMatchThreshold" : 0.1
+    },
+    {
+      "label": "Accessibility custom pref",
+      "url": "http://localhost:8000/tests/a11y-custom.html",
+      "delay": 0,
+      "selectors": ["document"],
+      "misMatchThreshold" : 0.1
+    }
+  ],
+  "paths": {
+    "bitmaps_reference": "tests/backstop_data/bitmaps_reference",
+    "bitmaps_test": "tests/backstop_data/bitmaps_test",
+    "engine_scripts": "tests/backstop_data/engine_scripts",
+    "html_report": "tests/backstop_data/html_report",
+    "ci_report": "tests/backstop_data/ci_report"
+  },
+  "report": ["browser"],
+  "engine": "puppeteer",
+  "engineOptions": {
+    "args": ["--no-sandbox"]
+  },
+  "asyncCaptureLimit": 5,
+  "asyncCompareLimit": 50,
+  "debug": false,
+  "debugWindow": false
+}

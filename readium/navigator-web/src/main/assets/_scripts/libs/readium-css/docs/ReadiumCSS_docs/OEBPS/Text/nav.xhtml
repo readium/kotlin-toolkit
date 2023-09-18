@@ -1,0 +1,690 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" xml:lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="generator" content="pandoc"/>
+  <title>Readium CSS Implementers’ doc</title>
+  <link rel="stylesheet" type="text/css" href="../Styles/stylesheet.css"/>
+</head>
+
+<body xml:lang="en">
+  <nav epub:type="toc" id="toc">
+    <h1>Table of Contents</h1>
+    <ol>
+      <li>
+        <a href="../Text/title_page.xhtml">Readium CSS Implementers’ doc</a>
+      </li>
+      <li>
+        <a href="../Text/Section-001.xhtml">Readium CSS Fundamental Concepts</a>
+      <ol>
+        <li>
+          <a href="../Text/Section-001.xhtml#sigil_toc_id_1">1. We’re the User Agent</a>
+        </li>
+        <li>
+          <a href="../Text/Section-001.xhtml#sigil_toc_id_2">2. Aim at Interoperability</a>
+        </li>
+        <li>
+          <a href="../Text/Section-001.xhtml#sigil_toc_id_3">3. Leverage Modern CSS</a>
+        </li>
+        <li>
+          <a href="../Text/Section-001.xhtml#sigil_toc_id_4">4. Openness and Transparency</a>
+        </li>
+      </ol>
+      </li>
+      <li>
+        <a href="../Text/Section-002.xhtml">Quickstart</a>
+      <ol>
+        <li>
+          <a href="../Text/Section-002.xhtml#sigil_toc_id_163">Important info</a>
+        </li>
+        <li>
+          <a href="../Text/Section-002.xhtml#sigil_toc_id_164">How To</a>
+        </li>
+        <li>
+          <a href="../Text/Section-002.xhtml#sigil_toc_id_165">Customize</a>
+        </li>
+        <li>
+          <a href="../Text/Section-002.xhtml#sigil_toc_id_59">Build dist stylesheets</a>
+        </li>
+        <li>
+          <a href="../Text/Section-002.xhtml#sigil_toc_id_166">Manage User Settings</a>
+        </li>
+        <li>
+          <a href="../Text/Section-002.xhtml#sigil_toc_id_167">Create Themes</a>
+        </li>
+      </ol>
+      </li>
+      <li>
+        <a href="../Text/Section-003.xhtml">Inject and paginate EPUB contents</a>
+      <ol>
+        <li>
+          <a href="../Text/Section-003.xhtml#sigil_toc_id_8">Injection</a>
+        </li>
+        <li>
+          <a href="../Text/Section-003.xhtml#sigil_toc_id_9">Pagination</a>
+        </li>
+      </ol>
+      </li>
+      <li>
+        <a href="../Text/Section-004.xhtml">How the multicolumn layout works</a>
+      <ol>
+        <li>
+          <a href="../Text/Section-004.xhtml#sigil_toc_id_10">Introduction</a>
+        </li>
+        <li>
+          <a href="../Text/Section-004.xhtml#sigil_toc_id_11">The multi-column model</a>
+        </li>
+        <li>
+          <a href="../Text/Section-004.xhtml#sigil_toc_id_12">The number and width of columns</a>
+        </li>
+        <li>
+          <a href="../Text/Section-004.xhtml#sigil_toc_id_13">Column gaps and rules</a>
+        </li>
+        <li>
+          <a href="../Text/Section-004.xhtml#sigil_toc_id_14">Fragmentation (column break)</a>
+        </li>
+        <li>
+          <a href="../Text/Section-004.xhtml#sigil_toc_id_15">Column span</a>
+        </li>
+        <li>
+          <a href="../Text/Section-004.xhtml#sigil_toc_id_16">Filling columns</a>
+        </li>
+        <li>
+          <a href="../Text/Section-004.xhtml#sigil_toc_id_17">Overflow</a>
+        </li>
+        <li>
+          <a href="../Text/Section-004.xhtml#sigil_toc_id_55">Reflow</a>
+        </li>
+        <li>
+          <a href="../Text/Section-004.xhtml#sigil_toc_id_18">Notorious limitations</a>
+        </li>
+        <li>
+          <a href="../Text/Section-004.xhtml#sigil_toc_id_19">Notes</a>
+        </li>
+      </ol>
+      </li>
+      <li>
+        <a href="../Text/Section-005.xhtml">Reading Systems Requirements for reflowable text</a>
+      <ol>
+        <li>
+          <a href="../Text/Section-005.xhtml#sigil_toc_id_20">CSS Snapshot</a>
+        </li>
+        <li>
+          <a href="../Text/Section-005.xhtml#sigil_toc_id_21">Prefixed properties</a>
+        </li>
+        <li>
+          <a href="../Text/Section-005.xhtml#sigil_toc_id_22">HTML Suggested Rendering</a>
+        </li>
+        <li>
+          <a href="../Text/Section-005.xhtml#sigil_toc_id_23">Reading System Overrides</a>
+        </li>
+        <li>
+          <a href="../Text/Section-005.xhtml#sigil_toc_id_24">Notes</a>
+        </li>
+      </ol>
+      </li>
+      <li>
+        <a href="../Text/Section-006.xhtml">Order in which to append Readium CSS reflowable modules</a>
+      <ol>
+        <li>
+          <a href="../Text/Section-006.xhtml#sigil_toc_id_5">Dist stylesheets</a>
+        </li>
+        <li>
+          <a href="../Text/Section-006.xhtml#sigil_toc_id_6">Src modules</a>
+        </li>
+      </ol>
+      </li>
+      <li>
+        <a href="../Text/Section-007.xhtml">How to use CSS custom properties (a.k.a. variables)</a>
+      <ol>
+        <li>
+          <a href="../Text/Section-007.xhtml#sigil_toc_id_28">What are CSS variables?</a>
+        </li>
+        <li>
+          <a href="../Text/Section-007.xhtml#sigil_toc_id_29">Cascade and inheritance</a>
+        </li>
+        <li>
+          <a href="../Text/Section-007.xhtml#sigil_toc_id_30">Fallback</a>
+        </li>
+        <li>
+          <a href="../Text/Section-007.xhtml#sigil_toc_id_31">Using CSS variables in JavaScript</a>
+        </li>
+        <li>
+          <a href="../Text/Section-007.xhtml#sigil_toc_id_32">Interesting hacks</a>
+        </li>
+      </ol>
+      </li>
+      <li>
+        <a href="../Text/Section-008.xhtml">Defaults</a>
+      <ol>
+        <li>
+          <a href="../Text/Section-008.xhtml#sigil_toc_id_56">Base</a>
+        </li>
+        <li>
+          <a href="../Text/Section-008.xhtml#sigil_toc_id_57">Day Mode</a>
+        </li>
+        <li>
+          <a href="../Text/Section-008.xhtml#sigil_toc_id_58">Default</a>
+        </li>
+        <li>
+          <a href="../Text/Section-008.xhtml#sigil_toc_id_134">User highlights and media overlays</a>
+        </li>
+      </ol>
+      </li>
+      <li>
+        <a href="../Text/Section-009.xhtml">Typefaces and font-stacks</a>
+      <ol>
+        <li>
+          <a href="../Text/Section-009.xhtml#sigil_toc_id_124">Test files</a>
+        </li>
+        <li>
+          <a href="../Text/Section-009.xhtml#sigil_toc_id_65">Fundamentals</a>
+        </li>
+        <li>
+          <a href="../Text/Section-009.xhtml#sigil_toc_id_66">UI</a>
+        </li>
+        <li>
+          <a href="../Text/Section-009.xhtml#sigil_toc_id_67">Latin</a>
+        </li>
+        <li>
+          <a href="../Text/Section-009.xhtml#sigil_toc_id_68">Amharic (am)</a>
+        </li>
+        <li>
+          <a href="../Text/Section-009.xhtml#sigil_toc_id_69">Arabic (ar)</a>
+        </li>
+        <li>
+          <a href="../Text/Section-009.xhtml#sigil_toc_id_70">Bengali/Bangla (bn)</a>
+        </li>
+        <li>
+          <a href="../Text/Section-009.xhtml#sigil_toc_id_71">Tibetan (bo)</a>
+        </li>
+        <li>
+          <a href="../Text/Section-009.xhtml#sigil_toc_id_72">Cherokee (chr)</a>
+        </li>
+        <li>
+          <a href="../Text/Section-009.xhtml#sigil_toc_id_38">Persian (fa)</a>
+        </li>
+        <li>
+          <a href="../Text/Section-009.xhtml#sigil_toc_id_73">Gujarati (gu)</a>
+        </li>
+        <li>
+          <a href="../Text/Section-009.xhtml#sigil_toc_id_74">Hebrew (he)</a>
+        </li>
+        <li>
+          <a href="../Text/Section-009.xhtml#sigil_toc_id_75">Hindi (hi)</a>
+        </li>
+        <li>
+          <a href="../Text/Section-009.xhtml#sigil_toc_id_76">Armenian (hy)</a>
+        </li>
+        <li>
+          <a href="../Text/Section-009.xhtml#sigil_toc_id_77">Inuktitut (iu)</a>
+        </li>
+        <li>
+          <a href="../Text/Section-009.xhtml#sigil_toc_id_78">Japanese (ja)</a>
+        </li>
+        <li>
+          <a href="../Text/Section-009.xhtml#sigil_toc_id_79">Khmer (km)</a>
+        </li>
+        <li>
+          <a href="../Text/Section-009.xhtml#sigil_toc_id_80">Kannada (kn)</a>
+        </li>
+        <li>
+          <a href="../Text/Section-009.xhtml#sigil_toc_id_81">Korean (ko)</a>
+        </li>
+        <li>
+          <a href="../Text/Section-009.xhtml#sigil_toc_id_82">Lao (lo)</a>
+        </li>
+        <li>
+          <a href="../Text/Section-009.xhtml#sigil_toc_id_83">Malayalam (ml)</a>
+        </li>
+        <li>
+          <a href="../Text/Section-009.xhtml#sigil_toc_id_84">Oriya (or)</a>
+        </li>
+        <li>
+          <a href="../Text/Section-009.xhtml#sigil_toc_id_85">Punjabi (pa)</a>
+        </li>
+        <li>
+          <a href="../Text/Section-009.xhtml#sigil_toc_id_86">Sinhalese (si)</a>
+        </li>
+        <li>
+          <a href="../Text/Section-009.xhtml#sigil_toc_id_87">Tamil (ta)</a>
+        </li>
+        <li>
+          <a href="../Text/Section-009.xhtml#sigil_toc_id_88">Telugu (te)</a>
+        </li>
+        <li>
+          <a href="../Text/Section-009.xhtml#sigil_toc_id_89">Thai (th)</a>
+        </li>
+        <li>
+          <a href="../Text/Section-009.xhtml#sigil_toc_id_90">Chinese (zh-CN)</a>
+        </li>
+        <li>
+          <a href="../Text/Section-009.xhtml#sigil_toc_id_91">Chinese – Hong Kong (zh-HK)</a>
+        </li>
+        <li>
+          <a href="../Text/Section-009.xhtml#sigil_toc_id_92">Chinese – Taiwan (zh-TW)</a>
+        </li>
+        <li>
+          <a href="../Text/Section-009.xhtml#sigil_toc_id_93">Dyslexic</a>
+        </li>
+        <li>
+          <a href="../Text/Section-009.xhtml#sigil_toc_id_94">Math</a>
+        </li>
+        <li>
+          <a href="../Text/Section-009.xhtml#sigil_toc_id_130">EBPAJ patch for Japanese</a>
+        </li>
+      </ol>
+      </li>
+      <li>
+        <a href="../Text/Section-010.xhtml">Open Source and Libre Fonts We Can Recommend</a>
+      <ol>
+        <li>
+          <a href="../Text/Section-010.xhtml#sigil_toc_id_117">How were those fonts reviewed</a>
+        </li>
+        <li>
+          <a href="../Text/Section-010.xhtml#sigil_toc_id_118">Results</a>
+        </li>
+        <li>
+          <a href="../Text/Section-010.xhtml#sigil_toc_id_119">Recommended Typefaces</a>
+        </li>
+        <li>
+          <a href="../Text/Section-010.xhtml#sigil_toc_id_168">Recommended fonts for Accessibility</a>
+        </li>
+        <li>
+          <a href="../Text/Section-010.xhtml#sigil_toc_id_131">Recommended fonts for CJK</a>
+        </li>
+        <li>
+          <a href="../Text/Section-010.xhtml#sigil_toc_id_132">Recommended fonts for Hebrew</a>
+        </li>
+        <li>
+          <a href="../Text/Section-010.xhtml#sigil_toc_id_133">Recommended fonts for Arabic and Persian</a>
+        </li>
+        <li>
+          <a href="../Text/Section-010.xhtml#sigil_toc_id_140">Recommended fonts for Indic</a>
+        </li>
+      </ol>
+      </li>
+      <li>
+        <a href="../Text/Section-011.xhtml">User Overrides’ Classification</a>
+      <ol>
+        <li>
+          <a href="../Text/Section-011.xhtml#sigil_toc_id_139">Chrome</a>
+        </li>
+        <li>
+          <a href="../Text/Section-011.xhtml#sigil_toc_id_173">Chrome advanced</a>
+        </li>
+        <li>
+          <a href="../Text/Section-011.xhtml#sigil_toc_id_174">User overrides</a>
+        </li>
+        <li>
+          <a href="../Text/Section-011.xhtml#sigil_toc_id_175">User overrides advanced</a>
+        </li>
+      </ol>
+      </li>
+      <li>
+        <a href="../Text/Section-012.xhtml">User Settings, Reading Modes and Themes</a>
+      <ol>
+        <li>
+          <a href="../Text/Section-012.xhtml#sigil_toc_id_176">Mechanism for user settings</a>
+        </li>
+        <li>
+          <a href="../Text/Section-012.xhtml#sigil_toc_id_177">Flags</a>
+        </li>
+        <li>
+          <a href="../Text/Section-012.xhtml#sigil_toc_id_178">List of variables</a>
+        </li>
+        <li>
+          <a href="../Text/Section-012.xhtml#sigil_toc_id_179">Themes</a>
+        </li>
+        <li>
+          <a href="../Text/Section-012.xhtml#sigil_toc_id_180">Alternative options</a>
+        </li>
+        <li>
+          <a href="../Text/Section-012.xhtml#sigil_toc_id_181">User settings can be language-specific</a>
+        </li>
+      </ol>
+      </li>
+      <li>
+        <a href="../Text/Section-013.xhtml">Baseline for a11y-related user settings</a>
+      <ol>
+        <li>
+          <a href="../Text/Section-013.xhtml#sigil_toc_id_99">OS settings</a>
+        </li>
+        <li>
+          <a href="../Text/Section-013.xhtml#sigil_toc_id_100">Current a11y Features on the market</a>
+        </li>
+        <li>
+          <a href="../Text/Section-013.xhtml#sigil_toc_id_169">Vestibular disorders</a>
+        </li>
+        <li>
+          <a href="../Text/Section-013.xhtml#sigil_toc_id_142">Internationalization</a>
+        </li>
+      </ol>
+      </li>
+      <li>
+        <a href="../Text/Section-014.xhtml">Recommendations for User Settings Management</a>
+      <ol>
+        <li>
+          <a href="../Text/Section-014.xhtml#sigil_toc_id_41">Managing conflicts</a>
+        </li>
+        <li>
+          <a href="../Text/Section-014.xhtml#sigil_toc_id_42">!important</a>
+        </li>
+        <li>
+          <a href="../Text/Section-014.xhtml#sigil_toc_id_48">Number of columns</a>
+        </li>
+        <li>
+          <a href="../Text/Section-014.xhtml#sigil_toc_id_49">Page margins</a>
+        </li>
+        <li>
+          <a href="../Text/Section-014.xhtml#sigil_toc_id_50">Reading modes</a>
+        </li>
+        <li>
+          <a href="../Text/Section-014.xhtml#sigil_toc_id_43">Font family (typeface)</a>
+        </li>
+        <li>
+          <a href="../Text/Section-014.xhtml#sigil_toc_id_44">Font size</a>
+        </li>
+        <li>
+          <a href="../Text/Section-014.xhtml#sigil_toc_id_45">Line height (leading)</a>
+        </li>
+        <li>
+          <a href="../Text/Section-014.xhtml#sigil_toc_id_46">Text align (justification)</a>
+        </li>
+        <li>
+          <a href="../Text/Section-014.xhtml#sigil_toc_id_47">Hyphenation</a>
+        </li>
+        <li>
+          <a href="../Text/Section-014.xhtml#sigil_toc_id_7">Paragraphs’ formatting</a>
+        </li>
+        <li>
+          <a href="../Text/Section-014.xhtml#sigil_toc_id_25">Characters’ spacing</a>
+        </li>
+        <li>
+          <a href="../Text/Section-014.xhtml#sigil_toc_id_26">Ligatures (Arabic &amp; Persian scripts)</a>
+        </li>
+      </ol>
+      </li>
+      <li>
+        <a href="../Text/Section-015.xhtml">User preferences’ insights</a>
+      <ol>
+        <li>
+          <a href="../Text/Section-015.xhtml#sigil_toc_id_101">User Settings</a>
+        </li>
+        <li>
+          <a href="../Text/Section-015.xhtml#sigil_toc_id_102">Typography</a>
+        </li>
+      </ol>
+      </li>
+      <li>
+        <a href="../Text/Section-016.xhtml">Internationalization</a>
+      <ol>
+        <li>
+          <a href="../Text/Section-016.xhtml#sigil_toc_id_143">The current situation</a>
+        </li>
+        <li>
+          <a href="../Text/Section-016.xhtml#sigil_toc_id_144">Resources</a>
+        </li>
+        <li>
+          <a href="../Text/Section-016.xhtml#sigil_toc_id_145">What implementers need</a>
+        </li>
+        <li>
+          <a href="../Text/Section-016.xhtml#sigil_toc_id_146">How authors can help</a>
+        </li>
+        <li>
+          <a href="../Text/Section-016.xhtml#sigil_toc_id_147">Overarching issues</a>
+        </li>
+        <li>
+          <a href="../Text/Section-016.xhtml#sigil_toc_id_148">Out of scope</a>
+        </li>
+        <li>
+          <a href="../Text/Section-016.xhtml#sigil_toc_id_149">Glossary</a>
+        </li>
+      </ol>
+      </li>
+      <li>
+        <a href="../Text/Section-017.xhtml">Internationalization – A Typography Primer</a>
+      <ol>
+        <li>
+          <a href="../Text/Section-017.xhtml#sigil_toc_id_135">Abstract</a>
+        </li>
+        <li>
+          <a href="../Text/Section-017.xhtml#sigil_toc_id_151">Fonts</a>
+        </li>
+        <li>
+          <a href="../Text/Section-017.xhtml#sigil_toc_id_152">Text decoration</a>
+        </li>
+        <li>
+          <a href="../Text/Section-017.xhtml#sigil_toc_id_153">Emphasis</a>
+        </li>
+        <li>
+          <a href="../Text/Section-017.xhtml#sigil_toc_id_154">Line breaking</a>
+        </li>
+        <li>
+          <a href="../Text/Section-017.xhtml#sigil_toc_id_155">Hyphenation</a>
+        </li>
+        <li>
+          <a href="../Text/Section-017.xhtml#sigil_toc_id_156">Justification</a>
+        </li>
+        <li>
+          <a href="../Text/Section-017.xhtml#sigil_toc_id_157">Indents</a>
+        </li>
+        <li>
+          <a href="../Text/Section-017.xhtml#sigil_toc_id_158">Vertical text</a>
+        </li>
+      </ol>
+      </li>
+      <li>
+        <a href="../Text/Section-018.xhtml">Readium CSS Further Details: Explaining the CSS Voodoo</a>
+      <ol>
+        <li>
+          <a href="../Text/Section-018.xhtml#sigil_toc_id_51">The Internal Framework</a>
+        </li>
+        <li>
+          <a href="../Text/Section-018.xhtml#sigil_toc_id_52">Font Size Normalize and the Type Scale</a>
+        </li>
+        <li>
+          <a href="../Text/Section-018.xhtml#sigil_toc_id_35">Dynamic leading</a>
+        </li>
+        <li>
+          <a href="../Text/Section-018.xhtml#sigil_toc_id_53">Conditional Selectors for user settings</a>
+        </li>
+        <li>
+          <a href="../Text/Section-018.xhtml#sigil_toc_id_54">Themes</a>
+        </li>
+      </ol>
+      </li>
+      <li>
+        <a href="../Text/Section-019.xhtml">Readium CSS Variables API</a>
+      <ol>
+        <li>
+          <a href="../Text/Section-019.xhtml#sigil_toc_id_182">How to set and remove user preferences</a>
+        </li>
+        <li>
+          <a href="../Text/Section-019.xhtml#sigil_toc_id_183">Customizable medias</a>
+        </li>
+        <li>
+          <a href="../Text/Section-019.xhtml#sigil_toc_id_184">Customizable flags</a>
+        </li>
+        <li>
+          <a href="../Text/Section-019.xhtml#sigil_toc_id_185">Reading System Styles</a>
+        </li>
+        <li>
+          <a href="../Text/Section-019.xhtml#sigil_toc_id_186">Reading Modes</a>
+        </li>
+        <li>
+          <a href="../Text/Section-019.xhtml#sigil_toc_id_187">User Settings</a>
+        </li>
+      </ol>
+      </li>
+      <li>
+        <a href="../Text/Section-020.xhtml">List of proposals and specs impacting Readium CSS</a>
+      <ol>
+        <li>
+          <a href="../Text/Section-020.xhtml#sigil_toc_id_103">Media Queries Level 5</a>
+        </li>
+        <li>
+          <a href="../Text/Section-020.xhtml#sigil_toc_id_128">Logical Properties and Values</a>
+        </li>
+        <li>
+          <a href="../Text/Section-020.xhtml#sigil_toc_id_33">CSS Extensions</a>
+        </li>
+        <li>
+          <a href="../Text/Section-020.xhtml#sigil_toc_id_104">Calc notation: min() and max()</a>
+        </li>
+        <li>
+          <a href="../Text/Section-020.xhtml#sigil_toc_id_105">User Agent Properties</a>
+        </li>
+        <li>
+          <a href="../Text/Section-020.xhtml#sigil_toc_id_106">CSS Rhythmic Sizing</a>
+        </li>
+        <li>
+          <a href="../Text/Section-020.xhtml#sigil_toc_id_107">CSS Fonts Module Level 4</a>
+        </li>
+        <li>
+          <a href="../Text/Section-020.xhtml#sigil_toc_id_108">COGA Semantics to Enable Personalization</a>
+        </li>
+        <li>
+          <a href="../Text/Section-020.xhtml#sigil_toc_id_109">Multicol editing</a>
+        </li>
+        <li>
+          <a href="../Text/Section-020.xhtml#sigil_toc_id_110">W3C i18n</a>
+        </li>
+        <li>
+          <a href="../Text/Section-020.xhtml#sigil_toc_id_111">CSSOM (a.k.a. Houdini)</a>
+        </li>
+      </ol>
+      </li>
+      <li>
+        <a href="../Text/Section-021.xhtml">EPUB Compatibility</a>
+      <ol>
+        <li>
+          <a href="../Text/Section-021.xhtml#sigil_toc_id_39">Introduction</a>
+        </li>
+        <li>
+          <a href="../Text/Section-021.xhtml#sigil_toc_id_40">CSS At-rules</a>
+        </li>
+        <li>
+          <a href="../Text/Section-021.xhtml#sigil_toc_id_95">Non-standard Kindle Media queries</a>
+        </li>
+        <li>
+          <a href="../Text/Section-021.xhtml#sigil_toc_id_96">Interactive and Fixed-layout EPUB 2</a>
+        </li>
+        <li>
+          <a href="../Text/Section-021.xhtml#sigil_toc_id_97">Metadata</a>
+        </li>
+        <li>
+          <a href="../Text/Section-021.xhtml#sigil_toc_id_98">Attributes</a>
+        </li>
+        <li>
+          <a href="../Text/Section-021.xhtml#sigil_toc_id_129">Webkit’s CSS multi-column extensions</a>
+        </li>
+        <li>
+          <a href="../Text/Section-021.xhtml#sigil_toc_id_136">Non-standard CSS properties</a>
+        </li>
+        <li>
+          <a href="../Text/Section-021.xhtml#sigil_toc_id_137">EPUB properties</a>
+        </li>
+      </ol>
+      </li>
+      <li>
+        <a href="../Text/Section-022.xhtml">Install, test and build Readium CSS</a>
+      <ol>
+        <li>
+          <a href="../Text/Section-022.xhtml#sigil_toc_id_27">Install and init references for regression tests</a>
+        </li>
+        <li>
+          <a href="../Text/Section-022.xhtml#sigil_toc_id_36">Build</a>
+        </li>
+        <li>
+          <a href="../Text/Section-022.xhtml#sigil_toc_id_37">Test</a>
+        </li>
+      </ol>
+      </li>
+      <li>
+        <a href="../Text/Section-023.xhtml">Fixed-layouts’ Reading Systems Requirements</a>
+      <ol>
+        <li>
+          <a href="../Text/Section-023.xhtml#sigil_toc_id_60">Styling</a>
+        </li>
+        <li>
+          <a href="../Text/Section-023.xhtml#sigil_toc_id_61">Scaling</a>
+        </li>
+        <li>
+          <a href="../Text/Section-023.xhtml#sigil_toc_id_62">Notes</a>
+        </li>
+      </ol>
+      </li>
+      <li>
+        <a href="../Text/Section-024.xhtml">E-production feedback and requests</a>
+      <ol>
+        <li>
+          <a href="../Text/Section-024.xhtml#sigil_toc_id_112">CSS Authors’ typical profile</a>
+        </li>
+        <li>
+          <a href="../Text/Section-024.xhtml#sigil_toc_id_113">Workflow and authoring</a>
+        </li>
+        <li>
+          <a href="../Text/Section-024.xhtml#sigil_toc_id_114">Worries and issues</a>
+        </li>
+        <li>
+          <a href="../Text/Section-024.xhtml#sigil_toc_id_115">Popular requests</a>
+        </li>
+        <li>
+          <a href="../Text/Section-024.xhtml#sigil_toc_id_116">Interoperability issues reported</a>
+        </li>
+      </ol>
+      </li>
+      <li>
+        <a href="../Text/Section-025.xhtml">CSS Performance Hacks</a>
+      <ol>
+        <li>
+          <a href="../Text/Section-025.xhtml#sigil_toc_id_63">Will-change</a>
+        </li>
+        <li>
+          <a href="../Text/Section-025.xhtml#sigil_toc_id_64">CSS Containment</a>
+        </li>
+      </ol>
+      </li>
+      <li>
+        <a href="../Text/Section-026.xhtml">i18n glossary</a>
+      <ol>
+        <li>
+          <a href="../Text/Section-026.xhtml#sigil_toc_id_159">Arabic</a>
+        </li>
+        <li>
+          <a href="../Text/Section-026.xhtml#sigil_toc_id_160">Chinese</a>
+        </li>
+        <li>
+          <a href="../Text/Section-026.xhtml#sigil_toc_id_161">Indic</a>
+        </li>
+        <li>
+          <a href="../Text/Section-026.xhtml#sigil_toc_id_162">Japanese</a>
+        </li>
+      </ol>
+      </li>
+      <li>
+        <a href="../Text/Section-027.xhtml">Features that were considered but not implemented</a>
+      <ol>
+        <li>
+          <a href="../Text/Section-027.xhtml#sigil_toc_id_188">Alternate background colors for lines (A11Y)</a>
+        </li>
+        <li>
+          <a href="../Text/Section-027.xhtml#sigil_toc_id_189">Contrasting text against backgrounds in custom user themes</a>
+        </li>
+        <li>
+          <a href="../Text/Section-027.xhtml#sigil_toc_id_190">Handle day/night theme based on OSs’ light/dark mode</a>
+        </li>
+      </ol>
+      </li>
+    </ol>
+  </nav>
+<nav epub:type="landmarks" hidden="hidden">
+    <ol>
+      <li><a href="../Text/cover.xhtml" epub:type="cover">Cover</a></li>
+    </ol>
+  </nav>
+</body>
+</html>

@@ -71,6 +71,7 @@ dependencies {
     implementation(project(":readium:readium-streamer"))
     implementation(project(":readium:readium-navigator"))
     implementation(project(":readium:readium-navigator-media2"))
+    implementation(project(":readium:readium-navigator-web"))
     implementation(project(":readium:readium-opds"))
     implementation(project(":readium:readium-lcp"))
     // Only required if you want to support PDF files using PDFium.

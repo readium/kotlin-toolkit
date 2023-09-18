@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "target": "ES2017",
+    "module": "esnext",
+    "moduleResolution": "node",
+    "importHelpers": true,
+    "isolatedModules": true,
+    "strict": false,
+    "strictNullChecks": false,
+    "noEmit": true,
+    "jsx": "preserve",
+    "resolveJsonModule": true,
+    "baseUrl": ".",
+    "paths": {
+      "@readium/shared/*": ["libs/ts-toolkit/shared/*"],
+      "@readium/navigator/*": ["libs/ts-toolkit/navigator/*"],
+      "@readium/navigator-html-injectables/*": ["libs/ts-toolkit/navigator-html-injectables/*"],
+      "readium-css/*": ["libs/readium-css/*"]
+    }
+  }
+}

@@ -1,0 +1,244 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns:dc="http://purl.org/dc/terms/" xmlns:opds="http://opds-spec.org/2010/catalog" xml:lang="en" xmlns="http://www.w3.org/2005/Atom">
+  <id>urn:uuid:2FBCE724-ABA7-4AB1-AA5F-5EDD4088A56D</id>
+  <title>Readium CSS i18n Samples Catalog</title>
+  <updated>2018-02-09T13:55:00Z</updated>
+  <author>
+    <name>Jiminy Panoz</name>
+    <uri>https://github.com/readium/readium-css</uri>
+  </author>
+  <link type="application/atom+xml; profile=opds-catalog; kind=navigation" rel="self" href="root.atom" />
+  <link type="application/atom+xml; profile=opds-catalog; kind=navigation" rel="start" href="root.atom" />
+
+  <entry>
+    <title>Amharic</title>
+    <id>urn:uuid:fad2aa72-0702-47c7-ab3e-f639f21259bd</id>
+    <dc:language>am</dc:language>
+    <updated>2018-01-28T12:04:13Z</updated>
+    <link type="application/epub+zip" href="/epubs/amharic.epub" rel="http://opds-spec.org/acquisition/open-access"/>
+  </entry>
+
+  <entry>
+    <title>Arabic</title>
+    <id>urn:uuid:b624a36f-0415-46c1-b1b2-cd09d388b2d5</id>
+    <dc:language>ar</dc:language>
+    <updated>2018-01-28T12:04:13Z</updated>
+    <link type="application/epub+zip" href="/epubs/arabic.epub" rel="http://opds-spec.org/acquisition/open-access"/>
+  </entry>
+
+  <entry>
+    <title>Armenian</title>
+    <id>urn:uuid:e028d545-a76e-4fb3-80aa-8d364c6bc953</id>
+    <dc:language>hy</dc:language>
+    <updated>2018-01-28T12:04:13Z</updated>
+    <link type="application/epub+zip" href="/epubs/armenian.epub" rel="http://opds-spec.org/acquisition/open-access"/>
+  </entry>
+  
+  <entry>
+    <title>Bengali</title>
+    <id>urn:uuid:d616d5c1-c532-4143-8694-60fa8b4b1e39</id>
+    <dc:language>bn</dc:language>
+    <updated>2018-01-28T12:04:13Z</updated>
+    <link type="application/epub+zip" href="/epubs/bengali.epub" rel="http://opds-spec.org/acquisition/open-access"/>
+  </entry>
+
+  <entry>
+    <title>Cherokee</title>
+    <id>urn:uuid:b063825c-6338-4a8a-a4a6-f0ffea64aaf0</id>
+    <dc:language>chr</dc:language>
+    <updated>2018-01-28T12:04:13Z</updated>
+    <link type="application/epub+zip" href="/epubs/cherokee.epub" rel="http://opds-spec.org/acquisition/open-access"/>
+  </entry>
+
+  <entry>
+    <title>Chinese</title>
+    <id>urn:uuid:536a077c-23f5-48cc-abc2-41e2bcf9ff1c</id>
+    <dc:language>zh</dc:language>
+    <updated>2018-01-28T12:04:13Z</updated>
+    <link type="application/epub+zip" href="/epubs/chinese.epub" rel="http://opds-spec.org/acquisition/open-access"/>
+  </entry>
+
+  <entry>
+    <title>Gujarati</title>
+    <id>urn:uuid:254cf710-a129-4f00-ad49-f23b2d32f344</id>
+    <dc:language>gu</dc:language>
+    <updated>2018-01-28T12:04:13Z</updated>
+    <link type="application/epub+zip" href="/epubs/gujarati.epub" rel="http://opds-spec.org/acquisition/open-access"/>
+  </entry>
+
+  <entry>
+    <title>Hebrew</title>
+    <id>urn:uuid:162bacd7-f528-4499-90a3-90bc7207a91e</id>
+    <dc:language>he</dc:language>
+    <updated>2018-01-28T12:04:13Z</updated>
+    <link type="application/epub+zip" href="/epubs/hebrew.epub" rel="http://opds-spec.org/acquisition/open-access"/>
+  </entry>
+
+  <entry>
+    <title>Hindi</title>
+    <id>urn:uuid:5b0c49dc-d556-42ef-b8d7-41a6e76d4a73</id>
+    <dc:language>hi</dc:language>
+    <updated>2018-01-28T12:04:13Z</updated>
+    <link type="application/epub+zip" href="/epubs/hindi.epub" rel="http://opds-spec.org/acquisition/open-access"/>
+  </entry>
+
+  <entry>
+    <title>Inuktitut</title>
+    <id>urn:uuid:8939af13-30ad-4842-8afc-8267ff950d52</id>
+    <dc:language>iu</dc:language>
+    <updated>2018-01-28T12:04:13Z</updated>
+    <link type="application/epub+zip" href="/epubs/inuktitut.epub" rel="http://opds-spec.org/acquisition/open-access"/>
+  </entry>
+
+  <entry>
+    <title>Japanese Vertical</title>
+    <id>urn:uuid:21923999-a4cd-45a8-ad37-b5516ce4a907</id>
+    <dc:language>ja</dc:language>
+    <updated>2018-02-09T10:05:13Z</updated>
+    <link type="application/epub+zip" href="/epubs/japanese-vertical.epub" rel="http://opds-spec.org/acquisition/open-access"/>
+  </entry>
+
+  <entry>
+    <title>Japanese</title>
+    <id>urn:uuid:7d5c4135-ecd6-44fa-ba29-127fe727c7ba</id>
+    <dc:language>ja</dc:language>
+    <updated>2018-01-28T12:04:13Z</updated>
+    <link type="application/epub+zip" href="/epubs/japanese.epub" rel="http://opds-spec.org/acquisition/open-access"/>
+  </entry>
+
+  <entry>
+    <title>Kannada</title>
+    <id>urn:uuid:b1dbebe2-d711-4f93-b377-6025a2941ca0</id>
+    <dc:language>kn</dc:language>
+    <updated>2018-01-28T12:04:13Z</updated>
+    <link type="application/epub+zip" href="/epubs/kannada.epub" rel="http://opds-spec.org/acquisition/open-access"/>
+  </entry>
+
+  <entry>
+    <title>Khmer</title>
+    <id>urn:uuid:9e2cebd3-3d83-4a63-9656-0d083a5290d2</id>
+    <dc:language>km</dc:language>
+    <updated>2018-01-28T12:04:13Z</updated>
+    <link type="application/epub+zip" href="/epubs/khmer.epub" rel="http://opds-spec.org/acquisition/open-access"/>
+  </entry>
+
+  <entry>
+    <title>Korean</title>
+    <id>urn:uuid:cc4ab696-eb3c-4631-91ec-de4cbcfc334a</id>
+    <dc:language>ko</dc:language>
+    <updated>2018-01-28T12:04:13Z</updated>
+    <link type="application/epub+zip" href="/epubs/korean.epub" rel="http://opds-spec.org/acquisition/open-access"/>
+  </entry>
+
+  <entry>
+    <title>Lao</title>
+    <id>urn:uuid:3eb4b3c0-3c99-449c-a28b-dd3b71e90f01</id>
+    <dc:language>lo</dc:language>
+    <updated>2018-01-28T12:04:13Z</updated>
+    <link type="application/epub+zip" href="/epubs/lao.epub" rel="http://opds-spec.org/acquisition/open-access"/>
+  </entry>
+
+  <entry>
+    <title>Latin</title>
+    <id>urn:uuid:6c7ec6ca-bc9f-4298-8a5b-634686b54461</id>
+    <dc:language>en</dc:language>
+    <updated>2018-01-28T14:35:24Z</updated>
+    <link type="application/epub+zip" href="/epubs/latin.epub" rel="http://opds-spec.org/acquisition/open-access"/>
+  </entry>
+
+  <entry>
+    <title>Malayalam</title>
+    <id>urn:uuid:906ea3e7-e93a-42ca-97bd-a9b147efeba6</id>
+    <dc:language>ml</dc:language>
+    <updated>2018-01-28T12:04:13Z</updated>
+    <link type="application/epub+zip" href="/epubs/malayalam.epub" rel="http://opds-spec.org/acquisition/open-access"/>
+  </entry>
+
+  <entry>
+    <title>Mixed Directions</title>
+    <id>urn:uuid:ed7e8132-1a3b-4430-b497-85914f6c7091</id>
+    <dc:language>ar</dc:language>
+    <updated>2018-01-29T14:35:24Z</updated>
+    <link type="application/epub+zip" href="/epubs/mixed-directions.epub" rel="http://opds-spec.org/acquisition/open-access"/>
+  </entry>
+
+  <entry>
+    <title>Mixed Writing Modes</title>
+    <id>urn:uuid:42d499c1-d6f7-470a-b197-efd5dddbc1df</id>
+    <dc:language>ja</dc:language>
+    <updated>2018-01-29T15:08:09Z</updated>
+    <link type="application/epub+zip" href="/epubs/mixed-writing-modes.epub" rel="http://opds-spec.org/acquisition/open-access"/>
+  </entry>
+
+  <entry>
+    <title>Mongolian</title>
+    <id>urn:uuid:c3e170ea-e568-4a79-bc42-5a0eab616b92</id>
+    <dc:language>mn-Mong</dc:language>
+    <updated>2018-02-09T10:00:31Z</updated>
+    <link type="application/epub+zip" href="/epubs/mongolian.epub" rel="http://opds-spec.org/acquisition/open-access"/>
+  </entry>
+
+  <entry>
+    <title>Oriya</title>
+    <id>urn:uuid:19f1950a-9733-4466-90a3-b6036b9c4dee</id>
+    <dc:language>or</dc:language>
+    <updated>2018-01-28T12:04:13Z</updated>
+    <link type="application/epub+zip" href="/epubs/oriya.epub" rel="http://opds-spec.org/acquisition/open-access"/>
+  </entry>
+
+  <entry>
+    <title>Persian/Farsi</title>
+    <id>urn:uuid:193e365c-a3e3-46d7-af60-2e0f7f28f27a</id>
+    <dc:language>fa</dc:language>
+    <updated>2018-01-28T21:35:27Z</updated>
+    <link type="application/epub+zip" href="/epubs/persian.epub" rel="http://opds-spec.org/acquisition/open-access"/>
+  </entry>
+
+  <entry>
+    <title>Punjabi</title>
+    <id>urn:uuid:c327e303-cb17-41ee-92cf-74b6368290fd</id>
+    <dc:language>pa</dc:language>
+    <updated>2018-01-28T12:04:13Z</updated>
+    <link type="application/epub+zip" href="/epubs/punjabi.epub" rel="http://opds-spec.org/acquisition/open-access"/>
+  </entry>
+
+  <entry>
+    <title>Sinhalese</title>
+    <id>urn:uuid:9b486c46-f201-4869-9fcd-3f64fd1f0b05</id>
+    <dc:language>si</dc:language>
+    <updated>2018-01-28T12:04:13Z</updated>
+    <link type="application/epub+zip" href="/epubs/sinhalese.epub" rel="http://opds-spec.org/acquisition/open-access"/>
+  </entry>
+
+  <entry>
+    <title>Tamil</title>
+    <id>urn:uuid:402da56a-853a-4141-a260-f123688ccc85</id>
+    <dc:language>ta</dc:language>
+    <updated>2018-02-03T13:53:35Z</updated>
+    <link type="application/epub+zip" href="/epubs/tamil.epub" rel="http://opds-spec.org/acquisition/open-access"/>
+  </entry>
+
+  <entry>
+    <title>Telugu</title>
+    <id>urn:uuid:1537879e-015d-43f3-b665-e63c54ee492e</id>
+    <dc:language>te</dc:language>
+    <updated>2018-01-28T12:04:13Z</updated>
+    <link type="application/epub+zip" href="/epubs/telugu.epub" rel="http://opds-spec.org/acquisition/open-access"/>
+  </entry>
+
+  <entry>
+    <title>Thai</title>
+    <id>urn:uuid:ade7c200-09fd-42c7-a2ce-0b2c8724ce0b</id>
+    <dc:language>th</dc:language>
+    <updated>2018-01-28T12:04:13Z</updated>
+    <link type="application/epub+zip" href="/epubs/thai.epub" rel="http://opds-spec.org/acquisition/open-access"/>
+  </entry>
+
+  <entry>
+    <title>Tibetan</title>
+    <id>urn:uuid:b46b9a15-b900-45b2-96fb-cf299953e25c</id>
+    <dc:language>bo</dc:language>
+    <updated>2018-01-28T12:04:13Z</updated>
+    <link type="application/epub+zip" href="/epubs/tibetan.epub" rel="http://opds-spec.org/acquisition/open-access"/>
+  </entry>
+</feed>

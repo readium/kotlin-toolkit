@@ -1,0 +1,910 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" xml:lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="generator" content="pandoc"/>
+  <title>Readium CSS Implementers’ doc</title>
+  <link rel="stylesheet" type="text/css" href="../Styles/stylesheet.css"/>
+</head>
+
+<body xml:lang="en">
+  <section id="open-source-and-libre-fonts-we-can-recommend" class="level1">
+    <h1>Open Source and Libre Fonts We Can Recommend</h1>
+
+    <p>[Implementers’ doc] [WIP]</p>
+
+    <p>While we recommend using system fonts to get the best performance whenever possible, implementers might want to use Open Source Fonts to offer more choice to users. On the Android platform, for instance, system fonts are limited to one typeface per generic family (<code>serif</code>, <code>sans-serif</code>, <code>fantasy</code>, <code>monospace</code>, and <code>cursive</code>), which means implementers don’t get a lot of options out of the box.</p>
+
+    <p>Consequently, amongst the thousands of fonts available online, a pre-selection of 28 typefaces have been reviewed extensively. Those typefaces were selected based on multiple factors:</p>
+
+    <ol>
+      <li>they have enough styles (at least the 4 “core styles” i.e. <code>regular</code>, <code>italic</code>, <code>bold</code>, <code>bold italic</code>) so that implementers don’t break authors’ expectations;</li>
+
+      <li>they can be used in body copy;</li>
+
+      <li>they are designed with quality screen rendering in mind;</li>
+
+      <li>they can be free alternatives to system fonts available on other platforms;</li>
+
+      <li>they offer good-enough support for at least latin-based languages.</li>
+    </ol>
+
+    <p>Here’s the complete list of those 28 fonts:</p>
+
+    <ul>
+      <li>Alegreya</li>
+
+      <li>Bitter</li>
+
+      <li>Charis SIL</li>
+
+      <li>Clear Sans</li>
+
+      <li>Crimson Text</li>
+
+      <li>DejaVu Sans</li>
+
+      <li>Faustina</li>
+
+      <li>Fira Sans</li>
+
+      <li>Gandhi Sans</li>
+
+      <li>Gandhi Serif</li>
+
+      <li>Gentium Book Basic</li>
+
+      <li>Heuristica</li>
+
+      <li>IBM Plex Sans</li>
+
+      <li>IBM Plex Serif</li>
+
+      <li>Libre Franklin</li>
+
+      <li>Lora</li>
+
+      <li>Literata</li>
+
+      <li>Merriweather Sans</li>
+
+      <li>Merriweather Serif</li>
+
+      <li>Proza Libre</li>
+
+      <li>PT Sans</li>
+
+      <li>PT Serif</li>
+
+      <li>Rosario</li>
+
+      <li>Rubik</li>
+
+      <li>Source Sans Pro</li>
+
+      <li>Spectral</li>
+
+      <li>Volkhov</li>
+
+      <li>Vollkorn</li>
+    </ul>
+
+    <section id="how-were-those-fonts-reviewed" class="level2">
+      <h2 id="sigil_toc_id_117">How were those fonts reviewed</h2>
+
+      <p>Each of the 28 fonts has been undergoing tests in real rendering situations.</p>
+
+      <p>They were rendered on the Android, iOS, MacOS, and Windows platforms, using SD and HD displays when possible, in multiple browsers (IE11, Edge, Safari, Chrome, Firefox), and in different reading modes (day, sepia, night).</p>
+
+      <p>Then each font was:</p>
+
+      <ol>
+        <li>compared to its closest reference (system font);</li>
+
+        <li>tested against the latin, cyrillic and greek alphabets and languages;</li>
+
+        <li>tested against the small capitals and numeric OpenType features.</li>
+      </ol>
+
+      <p><strong>Note:</strong> For some reason, a lot of Google Fonts don’t have the “™” character. Font stacks should consequently be fine-tuned so that this character doesn’t disrupt the reading experience.</p>
+    </section>
+
+    <section id="results" class="level2">
+      <h2 id="sigil_toc_id_118">Results</h2>
+
+      <p>It is important to state that implementers can’t really go wrong with those 27 fonts.</p>
+
+      <p>We sometimes forget that users can’t necessarily afford bleeding-edge technology, which is why it was important to review those fonts in various conditions.</p>
+
+      <p>The 12 recommended fonts are simply providing the best rendering in the worst situations possible (Windows ClearType on a mediocre screen), and the best language support as well. If you don’t have to support Windows, for instance, then you can try fonts which are not recommended.</p>
+
+      <p>For your information, here are the results for Windows ClearType rendering at <code>1em</code> (or <code>100%</code>).</p>
+
+      <section id="buggy" class="level3">
+        <h3 class="sigil_not_in_toc">Buggy</h3>
+
+        <ul>
+          <li>IBM Plex Sans (will become excellent once hinting issues are fixed)</li>
+        </ul>
+      </section>
+
+      <section id="mediocre" class="level3">
+        <h3 class="sigil_not_in_toc">Mediocre</h3>
+
+        <ul>
+          <li>Alegreya</li>
+
+          <li>Crimson Text (but supports latin + cyrillic + greek)</li>
+
+          <li>Lora</li>
+
+          <li>Spectral (using weight +100 might help e.g. medium as regular and extrabold as bold)</li>
+        </ul>
+      </section>
+
+      <section id="average" class="level3">
+        <h3 class="sigil_not_in_toc">Average</h3>
+
+        <ul>
+          <li>DejaVu Sans</li>
+
+          <li>Faustina (Average+)</li>
+
+          <li>Gentium Book Basic</li>
+
+          <li>Heuristica</li>
+
+          <li>Volkhov</li>
+        </ul>
+      </section>
+
+      <section id="good" class="level3">
+        <h3 class="sigil_not_in_toc">Good</h3>
+
+        <ul>
+          <li>Bitter (the Google Fonts version was reviewed but the <a href="https://www.fontsquirrel.com/fonts/bitter">FontSquirrel version is more complete</a>)</li>
+
+          <li>Charis SIL</li>
+
+          <li>Gandhi Serif</li>
+
+          <li>Literata</li>
+
+          <li>PT Sans</li>
+
+          <li>PT Serif</li>
+
+          <li>Rubik</li>
+
+          <li>Source Sans Pro</li>
+
+          <li>Vollkorn</li>
+        </ul>
+      </section>
+
+      <section id="excellent" class="level3">
+        <h3 class="sigil_not_in_toc">Excellent</h3>
+
+        <ul>
+          <li>Clear Sans</li>
+
+          <li>Fira Sans</li>
+
+          <li>Gandhi Sans</li>
+
+          <li>IBM Plex Serif</li>
+
+          <li>Merriweather Sans</li>
+
+          <li>Merriweather Serif</li>
+
+          <li>Proza Libre</li>
+
+          <li>Rosario</li>
+        </ul>
+      </section>
+    </section>
+
+    <section id="recommended-typefaces" class="level2">
+      <h2 id="sigil_toc_id_119">Recommended Typefaces</h2>
+
+      <p>An extended selection of 13 typefaces are recommended to offer implementers some flexibility. With an extended solution, it is likely that all apps leveraging Readium CSS won’t end up using the same exact selection.</p>
+
+      <p><strong>Note: Supported Languages focus on diacritics. Support for languages using the latin alphabet, like English, is implied.</strong></p>
+
+      <section id="serif-fonts" class="level3">
+        <h3 class="sigil_not_in_toc">Serif fonts</h3>
+
+        <section id="charis-sil" class="level4">
+          <h4 class="sigil_not_in_toc">Charis SIL</h4>
+
+          <figure class="fullbleed">
+            <img src="../Images/charis-sil.png" alt="Charis SIL compared to Charter. The typeface appears a little bit bolder but shares Charter’s metrics. When comparing an entire paragraph, it is really hard to tell which is which as they originate from the same “master.”"/>
+          </figure>
+
+          <p>Global info:</p>
+
+          <ul>
+            <li>Source: <a href="https://software.sil.org/charis/">https://software.sil.org/charis/</a></li>
+
+            <li>Google Fonts: NO</li>
+
+            <li>Design: SIL International</li>
+
+            <li>License: SIL-OFL</li>
+          </ul>
+
+          <p>Technical details:</p>
+
+          <ul>
+            <li>Reference: Charter</li>
+
+            <li>Classification: Slab</li>
+
+            <li>Styles: 4</li>
+
+            <li>Metrics: 
+
+            <ul>
+              <li>Contrast: TBD</li>
+
+              <li>x-height: TBD</li>
+
+              <li>weight: TBD</li>
+
+              <li>width: TBD</li>
+            </ul></li>
+          </ul>
+
+          <p>Supported Languages: Albanian, Bosnian, Czech, Danish, Dutch, Estonian, Finnish, French, German, Hungarian, Italian, Latvian, Lithuanian, Norwegian, Polish, Portuguese, Romanian, Slovak, Slovenian, Spanish, Swedish, Turkish, Cyrillic.</p>
+
+          <p>OpenType Features: none.</p>
+        </section>
+
+        <section id="faustina" class="level4">
+          <h4 class="sigil_not_in_toc">Faustina</h4>
+
+          <figure class="fullbleed">
+            <img src="../Images/faustina.png" alt="Faustina compared to Charter. The typeface looks smaller and feels definitely condensed. When comparing an entire paragraph, the fact its x-height is larger becomes really visible as it allows for a shorter line-length while appearing larger in weight. Those specificities may help on narrow screens."/>
+          </figure>
+
+          <p>Global info:</p>
+
+          <ul>
+            <li>Source: <a href="https://github.com/Omnibus-Type/Faustina">https://github.com/Omnibus-Type/Faustina</a></li>
+
+            <li>Google Fonts: YES</li>
+
+            <li>Design: Omnibus Type</li>
+
+            <li>License: SIL-OFL</li>
+          </ul>
+
+          <p>Technical details:</p>
+
+          <ul>
+            <li>Reference: Bookerly</li>
+
+            <li>Classification: Slab</li>
+
+            <li>Styles: 8</li>
+
+            <li>Metrics: 
+
+            <ul>
+              <li>Contrast: 0.39</li>
+
+              <li>x-height: 0.76</li>
+
+              <li>weight: 0.06</li>
+
+              <li>width: 0.45</li>
+            </ul></li>
+          </ul>
+
+          <p>Supported Languages: Albanian, Bosnian, Czech, Danish, Dutch, Estonian, Finnish, French, German, Hungarian, Italian, Latvian, Lithuanian, Norwegian, Polish, Portuguese, Romanian, Slovak, Slovenian, Spanish, Swedish, Turkish.</p>
+
+          <p>OpenType Features: none.</p>
+        </section>
+
+        <section id="ibm-plex-serif" class="level4">
+          <h4 class="sigil_not_in_toc">IBM Plex Serif</h4>
+
+          <figure class="fullbleed">
+            <img src="../Images/plex-serif.png" alt="IBM Plex Serif compared to Charter. The typeface is definitely wider, larger and bolder. When comparing an entire paragraph, this become obvious in the sense fewer words fit on a line. This could become an advantage on larger screens, as the user won’t have to increase font-size."/>
+          </figure>
+
+          <p>Global info:</p>
+
+          <ul>
+            <li>Source: <a href="https://github.com/IBM/type">https://github.com/IBM/type</a></li>
+
+            <li>Google Fonts: Not Yet</li>
+
+            <li>Design: IBM</li>
+
+            <li>License: SIL-OFL</li>
+          </ul>
+
+          <p>Technical details:</p>
+
+          <ul>
+            <li>Reference: Georgia, Droid Serif</li>
+
+            <li>Classification: Modern</li>
+
+            <li>Styles: 6</li>
+
+            <li>Metrics: 
+
+            <ul>
+              <li>Contrast: TBD</li>
+
+              <li>x-height: TBD</li>
+
+              <li>weight: TBD</li>
+
+              <li>width: TBD</li>
+            </ul></li>
+          </ul>
+
+          <p>Supported Languages: Albanian, Bosnian, Czech, Danish, Dutch, Estonian, Finnish, French, German, Hungarian, Italian, Latvian, Lithuanian, Norwegian, Polish, Portuguese, Romanian, Slovak, Slovenian, Spanish, Swedish, Turkish.</p>
+
+          <p>OpenType Features: none.</p>
+        </section>
+
+        <section id="literata" class="level4">
+          <h4 class="sigil_not_in_toc">Literata</h4>
+
+          <figure class="fullbleed">
+            <img src="../Images/literata.png" alt="Literata compared to Georgia. The typeface is noticeably larger and bolder. When comparing an entire paragraph, this become obvious in the sense fewer words fit on a line. This could become an advantage on larger screens, as the user won’t have to increase font-size."/>
+          </figure>
+
+          <p>Global info:</p>
+
+          <ul>
+            <li>Source: <a href="https://github.com/googlefonts/literata">https://github.com/googlefonts/literata</a></li>
+
+            <li>Google Fonts: YES</li>
+
+            <li>Design: TypeTogether</li>
+
+            <li>License: SIL-OFL</li>
+          </ul>
+
+          <p>Technical details:</p>
+
+          <ul>
+            <li>Reference: Georgia, Droid Serif</li>
+
+            <li>Classification: Modern, Slab</li>
+
+            <li>Styles: 8</li>
+
+            <li>Metrics: 
+
+            <ul>
+              <li>Contrast: TBD</li>
+
+              <li>x-height: TBD</li>
+
+              <li>weight: TBD</li>
+
+              <li>width: TBD</li>
+            </ul></li>
+          </ul>
+
+          <p>Supported Languages: Albanian, Bosnian, Czech, Danish, Dutch, Estonian, Finnish, French, German, Hungarian, Italian, Latvian, Lithuanian, Norwegian, Polish, Portuguese, Romanian, Slovak, Slovenian, Spanish, Swedish, Turkish, Cyrillic, Greek.</p>
+
+          <p>OpenType Features: small caps, numeric figure values, numeric spacing values.</p>
+        </section>
+
+        <section id="merriweather" class="level4">
+          <h4 class="sigil_not_in_toc">Merriweather</h4>
+
+          <figure class="fullbleed">
+            <img src="../Images/merriweather.png" alt="Merriweather compared to Iowan Old Style. Although more condensed, the typeface has been designed for screens and offers a larger x-height and bolder strokes. This shows when comparing an entire paragraph, as fewer words fit on a line and an extra line is even created."/>
+          </figure>
+
+          <p>Global info:</p>
+
+          <ul>
+            <li>Source: <a href="https://fonts.google.com/specimen/Merriweather">https://fonts.google.com/specimen/Merriweather</a></li>
+
+            <li>Google Fonts: YES</li>
+
+            <li>Design: Sorkin Type Co</li>
+
+            <li>License: SIL-OFL</li>
+          </ul>
+
+          <p>Technical details:</p>
+
+          <ul>
+            <li>Reference: Iowan Old Style</li>
+
+            <li>Classification: Modern (but must be mapped to Iowan Old Style because of its metrics)</li>
+
+            <li>Styles: 8</li>
+
+            <li>Metrics: 
+
+            <ul>
+              <li>Contrast: 0.51</li>
+
+              <li>x-height: 0.75</li>
+
+              <li>weight: 0.08</li>
+
+              <li>width: 0.52</li>
+            </ul></li>
+          </ul>
+
+          <p>Supported Languages: Albanian, Bosnian, Czech, Danish, Dutch, Estonian, Finnish, French, German, Hungarian, Italian, Latvian, Lithuanian, Norwegian, Polish, Portuguese, Romanian, Slovak, Slovenian, Spanish, Swedish, Turkish, Cyrillic.</p>
+
+          <p>OpenType Features: none.</p>
+        </section>
+
+        <section id="pt-serif" class="level4">
+          <h4 class="sigil_not_in_toc">PT Serif</h4>
+
+          <figure class="fullbleed">
+            <img src="../Images/pt-serif.png" alt="PT Serif compared to Charter. The typeface looks slightly larger and makes for a sharper substitute. When comparing an entire paragraph, it is visibly larger but fits the same amount of words on each line."/>
+          </figure>
+
+          <p>Global info:</p>
+
+          <ul>
+            <li>Source: <a href="https://fonts.google.com/specimen/PT+Serif">https://fonts.google.com/specimen/PT+Serif</a></li>
+
+            <li>Google Fonts: YES</li>
+
+            <li>Design: ParaType</li>
+
+            <li>License: Paratype PT Serif Free Font License</li>
+          </ul>
+
+          <p>Technical details:</p>
+
+          <ul>
+            <li>Reference: Charter</li>
+
+            <li>Classification: Slab</li>
+
+            <li>Styles: 4 (+ 2 for captions)</li>
+
+            <li>Metrics: 
+
+            <ul>
+              <li>Contrast: 0.55</li>
+
+              <li>x-height: 0.71</li>
+
+              <li>weight: 0.06</li>
+
+              <li>width: 0.47</li>
+            </ul></li>
+          </ul>
+
+          <p>Supported Languages: Albanian, Bosnian, Czech, Danish, Dutch, Estonian, Finnish, French, German, Hungarian, Italian, Latvian, Lithuanian, Norwegian, Polish, Portuguese, Romanian, Slovak, Slovenian, Spanish, Swedish, Turkish, Cyrillic.</p>
+
+          <p>OpenType Features: none.</p>
+        </section>
+
+        <section id="vollkorn" class="level4">
+          <h4 class="sigil_not_in_toc">Vollkorn</h4>
+
+          <figure class="fullbleed">
+            <img src="../Images/vollkorn.png" alt="Vollkorn compared to Bembo (ET variant). The typeface is significantly larger and bolder; its vertical alignement is also a lot lower. When comparing an entire paragraph, those traits become obvious and offer a better design for reading on screens."/>
+          </figure>
+
+          <p>Global info:</p>
+
+          <ul>
+            <li>Source: <a href="http://vollkorn-typeface.com">http://vollkorn-typeface.com</a></li>
+
+            <li>Google Fonts: YES</li>
+
+            <li>Design: Friedrich Althausen</li>
+
+            <li>License: SIL-OFL</li>
+          </ul>
+
+          <p>Technical details:</p>
+
+          <ul>
+            <li>Reference: Athelas, Bembo</li>
+
+            <li>Classification: Modern</li>
+
+            <li>Styles: 8</li>
+
+            <li>Metrics: 
+
+            <ul>
+              <li>Contrast: 0.53</li>
+
+              <li>x-height: 0.68</li>
+
+              <li>weight: 0.06</li>
+
+              <li>width: 0.45</li>
+            </ul></li>
+          </ul>
+
+          <p>Supported Languages: Albanian, Bosnian, Czech, Danish, Dutch, Estonian, Finnish, French, German, Hungarian, Italian, Latvian, Lithuanian, Norwegian, Polish, Portuguese, Romanian, Slovak, Slovenian, Spanish, Swedish, Turkish, Cyrillic.</p>
+
+          <p>OpenType Features: small caps, numeric figure values, numeric spacing values (and more).</p>
+        </section>
+      </section>
+
+      <section id="sans-serif-fonts" class="level3">
+        <h3 class="sigil_not_in_toc">Sans-serif fonts</h3>
+
+        <section id="clear-sans" class="level4">
+          <h4 class="sigil_not_in_toc">Clear Sans</h4>
+
+          <figure class="fullbleed">
+            <img src="../Images/clear-sans.png" alt="Clear Sans compared to Trebuchet MS. The typeface appears a little bit smaller and the aperture of some glyphs like lowercase D appear more enclosed. When comparing an entire paragraph, it feels a little bit smaller but some letters like capital I are easier to differentiate, which is a plus for accessibility."/>
+          </figure>
+
+          <p>Global info:</p>
+
+          <ul>
+            <li>Source: <a href="https://01.org/clear-SANS">https://01.org/clear-SANS</a></li>
+
+            <li>Google Fonts: NO</li>
+
+            <li>Design: Intel</li>
+
+            <li>License: Apache 2.0</li>
+          </ul>
+
+          <p>Technical details:</p>
+
+          <ul>
+            <li>Reference: Trebuchet MS</li>
+
+            <li>Classification: Sans</li>
+
+            <li>Styles: 8</li>
+
+            <li>Metrics: 
+
+            <ul>
+              <li>Contrast: TBD</li>
+
+              <li>x-height: TBD</li>
+
+              <li>weight: TBD</li>
+
+              <li>width: TBD</li>
+            </ul></li>
+          </ul>
+
+          <p>Supported Languages: Albanian, Bosnian, Czech, Danish, Dutch, Estonian, Finnish, French, German, Hungarian, Italian, Latvian, Lithuanian, Norwegian, Polish, Portuguese, Romanian, Slovak, Slovenian, Spanish, Swedish, Turkish, Cyrillic, Greek.</p>
+
+          <p>OpenType Features: none.</p>
+        </section>
+
+        <section id="fira-sans" class="level4">
+          <h4 class="sigil_not_in_toc">Fira Sans</h4>
+
+          <figure class="fullbleed">
+            <img src="../Images/fira-sans.png" alt="Fira Sans compared to Arial. The typeface is decidedly more condensed, and its letter-spacing larger. When comparing an entire paragraph, the metrics of both fonts don’t look that much different, but Fira Sans brings the extra personality some users require in a bookish context."/>
+          </figure>
+
+          <p>Global info:</p>
+
+          <ul>
+            <li>Source: <a href="https://github.com/mozilla/Fira">https://github.com/mozilla/Fira</a></li>
+
+            <li>Google Fonts: YES</li>
+
+            <li>Design: Carrois Apostrophe for Mozilla</li>
+
+            <li>License: SIL-OFL</li>
+          </ul>
+
+          <p>Technical details:</p>
+
+          <ul>
+            <li>Reference: Seravek</li>
+
+            <li>Classification: Humanist</li>
+
+            <li>Styles: 18</li>
+
+            <li>Metrics: 
+
+            <ul>
+              <li>Contrast: 0.25</li>
+
+              <li>x-height: 0.76</li>
+
+              <li>weight: 0.07</li>
+
+              <li>width: 0.42</li>
+            </ul></li>
+          </ul>
+
+          <p>Supported Languages: Albanian, Bosnian, Czech, Danish, Dutch, Estonian, Finnish, French, German, Hungarian, Italian, Latvian, Lithuanian, Norwegian, Polish, Portuguese, Romanian, Slovak, Slovenian, Spanish, Swedish, Turkish, Cyrillic, Greek.</p>
+
+          <p>OpenType Features: none.</p>
+        </section>
+
+        <section id="libre-franklin" class="level4">
+          <h4 class="sigil_not_in_toc">Libre Franklin</h4>
+
+          <figure class="fullbleed">
+            <img src="../Images/libre-franklin.png" alt="Libre Franklin compared to San Fransisco, the Apple’s system typeface. Libre Franklin appears a little bit thinner and feels definitely larger. When comparing an entire paragraph, it shows, although it is capable of keeping the same amount of words on each line."/>
+          </figure>
+
+          <p>Global info:</p>
+
+          <ul>
+            <li>Source: <a href="https://github.com/impallari/Libre-Franklin">https://github.com/impallari/Libre-Franklin</a></li>
+
+            <li>Google Fonts: YES</li>
+
+            <li>Design: Impallari Type</li>
+
+            <li>License: SIL-OFL</li>
+          </ul>
+
+          <p>Technical details:</p>
+
+          <ul>
+            <li>Reference: Franklin Gothic</li>
+
+            <li>Classification: Sans</li>
+
+            <li>Styles: 18</li>
+
+            <li>Metrics: 
+
+            <ul>
+              <li>Contrast: 0.28</li>
+
+              <li>x-height: 0.71</li>
+
+              <li>weight: 0.07</li>
+
+              <li>width: 0.44</li>
+            </ul></li>
+          </ul>
+
+          <p>Supported Languages: Albanian, Bosnian, Czech, Danish, Dutch, Estonian, Finnish, French, German, Hungarian, Italian, Latvian, Lithuanian, Norwegian, Polish, Portuguese, Romanian, Slovak, Slovenian, Spanish, Swedish, Turkish.</p>
+
+          <p>OpenType Features: none.</p>
+        </section>
+
+        <section id="merriweather-sans" class="level4">
+          <h4 class="sigil_not_in_toc">Merriweather Sans</h4>
+
+          <figure class="fullbleed">
+            <img src="../Images/merriweather-sans.png" alt="Merriweather Sans compared to San Fransisco, the Apple’s system typeface. It appears bolder and feels decidedly larger. This is remarkable when comparing an entire paragraph, especially as its design is less neutral."/>
+          </figure>
+
+          <p>Global info:</p>
+
+          <ul>
+            <li>Source: <a href="https://fonts.google.com/specimen/Merriweather+Sans">https://fonts.google.com/specimen/Merriweather+Sans</a></li>
+
+            <li>Google Fonts: YES</li>
+
+            <li>Design: Sorkin Type Co</li>
+
+            <li>License: SIL-OFL</li>
+          </ul>
+
+          <p>Technical details:</p>
+
+          <ul>
+            <li>Reference: San Fransisco, Roboto</li>
+
+            <li>Classification: Sans</li>
+
+            <li>Styles: 8</li>
+
+            <li>Metrics: 
+
+            <ul>
+              <li>Contrast: 0.30</li>
+
+              <li>x-height: 0.75</li>
+
+              <li>weight: 0.08</li>
+
+              <li>width: 0.45</li>
+            </ul></li>
+          </ul>
+
+          <p>Supported Languages: Albanian, Bosnian, Czech, Danish, Dutch, Estonian, Finnish, French, German, Hungarian, Italian, Latvian, Lithuanian, Norwegian, Polish, Portuguese, Romanian, Slovak, Slovenian, Spanish, Swedish, Turkish.</p>
+
+          <p>OpenType Features: none.</p>
+        </section>
+
+        <section id="pt-sans" class="level4">
+          <h4 class="sigil_not_in_toc">PT Sans</h4>
+
+          <figure class="fullbleed">
+            <img src="../Images/pt-sans.png" alt="PT Sans compared to Seravek. The typeface appears more condensed. When comparing an entire paragraph, it also feels a little bit thinner but fits the same amount of words on each line and share some of Seravek’s traits."/>
+          </figure>
+
+          <p>Global info:</p>
+
+          <ul>
+            <li>Source: <a href="https://fonts.google.com/specimen/PT+Sans">https://fonts.google.com/specimen/PT+Sans</a></li>
+
+            <li>Google Fonts: YES</li>
+
+            <li>Design: ParaType</li>
+
+            <li>License: Paratype PT Sans Free Font License</li>
+          </ul>
+
+          <p>Technical details:</p>
+
+          <ul>
+            <li>Reference: Seravek</li>
+
+            <li>Classification: Humanist</li>
+
+            <li>Styles: 4 (+ 2 for captions + 2 for narrow)</li>
+
+            <li>Metrics: 
+
+            <ul>
+              <li>Contrast: 0.16</li>
+
+              <li>x-height: 0.71</li>
+
+              <li>weight: 0.06</li>
+
+              <li>width: 0.39</li>
+            </ul></li>
+          </ul>
+
+          <p>Supported Languages: Albanian, Bosnian, Czech, Danish, Dutch, Estonian, Finnish, French, German, Hungarian, Italian, Latvian, Lithuanian, Norwegian, Polish, Portuguese, Romanian, Slovak, Slovenian, Spanish, Swedish, Turkish, Cyrillic.</p>
+
+          <p>OpenType Features: none.</p>
+        </section>
+
+        <section id="source-sans-pro" class="level4">
+          <h4 class="sigil_not_in_toc">Source Sans Pro</h4>
+
+          <figure class="fullbleed">
+            <img src="../Images/source-sans-pro.png" alt="Source Sans Pro compared to Seravek. Its x-height is noticeably – but not remarkably – larger. When comparing an entire paragraph, both feel like they share some common traits, despite very visible differences in the drawing of their glyphs."/>
+          </figure>
+
+          <p>Global info:</p>
+
+          <ul>
+            <li>Source: <a href="https://github.com/adobe-fonts/source-sans-pro">https://github.com/adobe-fonts/source-sans-pro</a></li>
+
+            <li>Google Fonts: YES</li>
+
+            <li>Design: Adobe</li>
+
+            <li>License: SIL-OFL</li>
+          </ul>
+
+          <p>Technical details:</p>
+
+          <ul>
+            <li>Reference: Seravek</li>
+
+            <li>Classification: Humanist</li>
+
+            <li>Styles: 12</li>
+
+            <li>Metrics: 
+
+            <ul>
+              <li>Contrast: 0.20</li>
+
+              <li>x-height: 0.74</li>
+
+              <li>weight: 0.06</li>
+
+              <li>width: 0.39</li>
+            </ul></li>
+          </ul>
+
+          <p>Supported Languages: Albanian, Bosnian, Czech, Danish, Dutch, Estonian, Finnish, French, German, Hungarian, Italian, Latvian, Lithuanian, Norwegian, Polish, Portuguese, Romanian, Slovak, Slovenian, Spanish, Swedish, Turkish.</p>
+
+          <p>OpenType Features: numeric figure values.</p>
+        </section>
+      </section>
+
+      <section id="windows" class="level3">
+        <h3 class="sigil_not_in_toc">Windows</h3>
+
+        <p>Microsoft has been investing a lot of resources in designing fonts that render perfectly on this platform, especially with ClearType. Typefaces like Cambria, Constantia, Arial Nova, Georgia Pro, Sitka, Verdana Pro, and more, offer a large amount of styles, excellent language support, extensive support of Open Type features, and high quality rendering, even on mediocre screens.</p>
+
+        <p>As a consequence, we strongly recommend prioritizing such system fonts for the core selection and using Open Source fonts as extras. A list of system fonts available can be found in <a href="https://docs.microsoft.com/typography/">Microsoft Typography docs</a>.</p>
+      </section>
+    </section>
+
+    <section id="recommended-fonts-for-accessibility" class="level2">
+      <h2 id="sigil_toc_id_168">Recommended fonts for Accessibility</h2>
+
+      <p>ReadiumCSS is shipping with 2 a11y-related fonts to be found in the <code>dist/fonts</code> folder:</p>
+
+      <ul>
+        <li><a href="https://github.com/Orange-OpenSource/font-accessible-dfa">AccessibleDfA</a>, by Orange;</li>
+
+        <li><a href="https://github.com/iaolo/iA-Fonts/tree/master/iA%20Writer%20Duospace">IA Writer Duospace</a>, by iA;</li>
+      </ul>
+
+      <p>Those fonts should be applied by those exact names as we need very precise fallbacks for missing characters. We may create variables in the future, once those fonts have been properly reviewed and validated.</p>
+
+      <p>We can also recommend <a href="https://github.com/antijingoist/open-dyslexic">Open Dyslexic</a>, either in addition to or replacement of AccessibleDfa.</p>
+
+    </section>
+
+    <section id="recommended-fonts-for-cjk" class="level2">
+      <h2 id="sigil_toc_id_131">Recommended fonts for CJK</h2>
+
+      <p>In addition to <a href="https://www.google.com/get/noto/">Google Noto Fonts</a>, we can currently recommend:</p>
+
+      <ul>
+        <li><a href="https://github.com/adobe-fonts/source-han-sans">Adobe Source Han Sans</a>;</li>
+
+        <li><a href="https://source.typekit.com/source-han-serif/">Adobe Source Han Serif</a>;</li>
+
+        <li><a href="http://www.kopus.org/biz/electronic/font.aspx">KoPub fonts</a> for Korean.</li>
+      </ul>
+    </section>
+
+    <section id="recommended-fonts-for-hebrew" class="level2">
+      <h2 id="sigil_toc_id_132">Recommended fonts for Hebrew</h2>
+
+      <p>In addition to <a href="https://www.google.com/get/noto/">Google Noto Fonts</a>, we can currently recommend:</p>
+
+      <ul>
+        <li><a href="http://alef.hagilda.com">Alef</a>;</li>
+
+		<li><a href="https://github.com/meirsadan/david-libre">David Libre</a>;</li>
+
+        <li><a href="https://github.com/OdedEzer/heebo">Heebo</a>;</li>
+
+        <li><a href="https://github.com/meirsadan/rubik-hebrew">Rubik Hebrew</a>.</li>
+      </ul>
+    </section>
+
+    <section id="recommended-fonts-for-arabic" class="level2">
+      <h2 id="sigil_toc_id_133">Recommended fonts for Arabic and Persian</h2>
+
+      <p>In addition to <a href="https://www.google.com/get/noto/">Google Noto Fonts</a>, we can currently recommend:</p>
+
+      <ul>
+        <li><a href="https://github.com/alif-type/amiri">Amiri</a>;</li>
+
+		<li><a href="https://github.com/Tarobish/Mirza">Mirza</a>;</li>
+
+		<li><a href="https://software.sil.org/scheherazade/">Scheherazade</a>.</li>
+      </ul>
+    </section>
+
+    <section id="recommended-fonts-for-indic" class="level2">
+      <h2 id="sigil_toc_id_140">Recommended fonts for Indic</h2>
+
+      <p>In addition to <a href="https://www.google.com/get/noto/">Google Noto Fonts</a>, we can currently recommend:</p>
+
+      <ul>
+		<li><a href="https://github.com/VanillaandCream/Catamaran-Tamil">Catamaran</a> (Tamil script);</li>
+
+		<li><a href="https://github.com/itfoundry">Hind Family</a> (Bengali, Devanagari, Gujarati, Gurmukhi, Kannada, Malayalam, Sinhalese, Tamil, and Telugu scripts);</li>
+
+        <li><a href="https://github.com/EkType/Mukta">Mutka Family</a> (Devanagari, Gujarati, Gurmukhi and Tamil scripts);</li>
+
+		<li><a href="https://github.com/motaitalic/vesper-libre">Vesper Libre</a> (Devanagari script).</li>
+      </ul>
+    </section>
+  </section>
+</body>
+</html>

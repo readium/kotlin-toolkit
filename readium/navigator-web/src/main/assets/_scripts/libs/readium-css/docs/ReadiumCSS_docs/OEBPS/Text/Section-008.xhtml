@@ -1,0 +1,439 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" xml:lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="generator" content="pandoc"/>
+  <title>Readium CSS Implementers’ doc</title>
+  <link rel="stylesheet" type="text/css" href="../Styles/stylesheet.css"/>
+</head>
+
+<body xml:lang="en">
+  <section id="defaults" class="level1">
+    <h1>Defaults</h1>
+
+    <p>[Implementers’ doc] [Authors’ info]</p>
+
+    <p>Defaults is currently made of 5 stylesheets:</p>
+
+    <ul>
+      <li>1 base stylesheet for all ebooks;</li>
+
+      <li>1 default reading mode stylesheet for all ebooks (day mode);</li>
+
+      <li>1 default stylesheet for unstyled ebooks;</li>
+
+      <li>1 stylesheet for user highlights and media overlays;</li>
+
+      <li>1 stylesheet to deal with the OS’ a11y modes.</li>
+    </ul>
+
+    <p><strong>Note:</strong> The default stylesheet should not be appended if there are author styles in the EPUB file.</p>
+
+    <section id="base" class="level2">
+      <h2 id="sigil_toc_id_56">Base</h2>
+
+      <p>The base stylesheet deals with:</p>
+
+      <ol>
+        <li>default typography;</li>
+
+        <li>default font-family depending on the language.</li>
+      </ol>
+
+      <p>Those values are obviously customizable.</p>
+
+      <p>It should be appended before any author’s stylesheet.</p>
+
+      <section id="variables-you-can-set" class="level3">
+        <h3 class="sigil_not_in_toc">Variables you can set</h3>
+
+        <section id="default-font-stacks" class="level4">
+          <h4 class="sigil_not_in_toc">Default font-stacks</h4>
+
+		  <hr/>
+
+          <pre><code>--RS__oldStyleTf</code></pre>
+
+          <p>An old style serif font-stack relying on pre-installed fonts.</p>
+
+          <p>Default is <code>"Iowan Old Style", "Sitka Text", Palatino, "Book Antiqua", serif</code>.</p>
+
+		  <hr/>
+
+          <pre><code>--RS__modernTf</code></pre>
+
+          <p>A modern serif font-stack relying on pre-installed fonts.</p>
+
+          <p>Default is <code>Athelas, Constantia, Georgia, serif</code>.</p>
+
+		  <hr/>
+
+          <pre><code>--RS__sansTf</code></pre>
+
+          <p>A neutral sans-serif font-stack relying on pre-installed fonts.</p>
+
+          <p>Default is <code>-apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif</code>.</p>
+
+		  <hr/>
+
+          <pre><code>--RS__humanistTf </code></pre>
+
+          <p>A humanist sans-serif font-stack relying on pre-installed fonts.</p>
+
+          <p>Default is <code>Seravek, Calibri, Roboto, Arial, sans-serif</code>.</p>
+
+		  <hr/>
+
+          <pre><code>--RS__monospaceTf </code></pre>
+
+          <p>A monospace font-stack relying on pre-installed fonts.</p>
+
+          <p>Default is <code>"Andale Mono", Consolas, monospace</code>.</p>
+        </section>
+
+        <section id="default-font-stacks-for-japanese-publications" class="level4">
+          <h4 class="sigil_not_in_toc">Default font-stacks for Japanese publications</h4>
+
+          <p>We’ve been trying to follow the recommendations of the <a href="http://ebpaj.jp/counsel/guide">EBPAJ File Creation Guide</a> and provide specific font-stacks that can handle both horizontal and vertical writing.</p>
+
+          <p>Those font-stacks have been modeled after fonts the templates of this guide use as defaults, and extend support to the largest amount of platforms possible.</p>
+
+		  <hr/>
+
+          <pre><code>--RS__serif-ja</code></pre>
+
+          <p>A Mincho font-stack whose fonts with proportional latin characters are prioritized for horizontal writing.</p>
+
+          <p>Fonts are not necessarily pre-installed, which is the reason why this font-stack is extensive.</p>
+
+          <p>Default is <code>"ＭＳ Ｐ明朝", "MS PMincho", "Hiragino Mincho Pro", "ヒラギノ明朝 Pro W3", "游明朝", "YuMincho", "ＭＳ 明朝", "MS Mincho", "Hiragino Mincho ProN", serif</code>.</p>
+
+		  <hr/>
+
+          <pre><code>--RS__sans-serif-ja</code></pre>
+
+          <p>A Gothic font-stack whose fonts with proportional latin characters are prioritized for horizontal writing.</p>
+
+          <p>Fonts are not necessarily pre-installed, which is the reason why this font-stack is extensive.</p>
+
+          <p>Default is <code>"ＭＳ Ｐゴシック", "MS PGothic", "Hiragino Kaku Gothic Pro W3", "ヒラギノ角ゴ Pro W3", "Hiragino Sans GB", "ヒラギノ角ゴシック W3", "游ゴシック", "YuGothic", "ＭＳ ゴシック", "MS Gothic", "Hiragino Sans", sans-serif</code>.</p>
+
+		  <hr/>
+
+          <pre><code>--RS__serif-ja-v</code></pre>
+
+          <p>A Mincho font-stack whose fonts with fixed-width latin characters are prioritized for vertical writing.</p>
+
+          <p>Fonts are not necessarily pre-installed, which is the reason why this font-stack is extensive.</p>
+
+          <p>Default is <code>"ＭＳ 明朝", "MS Mincho", "Hiragino Mincho Pro", "ヒラギノ明朝 Pro W3", "游明朝", "YuMincho", "ＭＳ Ｐ明朝", "MS PMincho", "Hiragino Mincho ProN", serif</code>.</p>
+
+		  <hr/>
+
+          <pre><code>--RS__sans-serif-ja-v</code></pre>
+
+          <p>A Gothic font-stack whose fonts with fixed-width latin characters are prioritized for vertical writing.</p>
+
+          <p>Fonts are not necessarily pre-installed, which is the reason why this font-stack is extensive.</p>
+
+          <p>Default is <code>"ＭＳ ゴシック", "MS Gothic", "Hiragino Kaku Gothic Pro W3", "ヒラギノ角ゴ Pro W3", "Hiragino Sans GB", "ヒラギノ角ゴシック W3", "游ゴシック", "YuGothic", "ＭＳ Ｐゴシック", "MS PGothic", "Hiragino Sans", sans-serif</code>.</p>
+        </section>
+
+        <section id="absolute-defaults-for-all-ebooks" class="level4">
+          <h4 class="sigil_not_in_toc">Absolute defaults for all ebooks</h4>
+
+		  <hr/>
+
+          <pre><code>--RS__baseFontFamily</code></pre>
+
+          <p>The default typeface for body copy in case the ebook doesn’t have one declared.</p>
+
+          <p>Please note some languages have a specific font-stack (japanese, chinese, hindi, etc.)</p>
+
+		  <hr/>
+
+          <pre><code>--RS__baseLineHeight</code></pre>
+
+          <p>The default line-height for body copy in case the ebook doesn’t have one declared.</p>
+
+          <p>We’re using an algorithm to find the ideal <code>line-height</code> for the current font based on its metrics (see details in the next subsection below).</p>
+
+		  <hr/>
+
+		  <pre><code>--RS__lineHeightCompensation</code></pre>
+
+          <p>The compensation factor (integer) the dynamic leading pseudo-algorithm must apply, if used. Default is <code>1</code> i.e. no compensation.</p>
+
+		  <p>This variable is redefined by default, in languages and scripts which need compensation due to the characteristics of their average fonts’ metrics.</p>
+        </section>
+      </section>
+
+      <section id="dynamic-leading-line-height" class="level3">
+        <h3 class="sigil_not_in_toc">Dynamic leading (line-height)</h3>
+
+        <p>If we don’t provide a base <code>line-height</code> and the author hasn’t explicitely set one, then the <code>normal</code> value will be applied. On average, it is less than <code>1.2</code>, which makes leading quite solid and can quickly become a readability issue with some fonts, especially the ones with a large x-height.</p>
+
+        <p>Readium CSS consequently uses an algorithm to find the ideal leading for each font by default (with a fallback value accomodating every script/language it supports).</p>
+
+        <p>This algorithm tries to:</p>
+
+        <ol>
+          <li>automagically adjust the <code>line-height</code> to the current typeface;</li>
+
+          <li>adjust this ideal <code>line-height</code> it has just computed to the current <code>font-size</code> the user has set.</li>
+        </ol>
+
+        <pre><code>calc((1em + (2ex - 1ch) - ((1rem - 16px) * 0.1667)) * var(--RS__lineHeightCompensation))</code></pre>
+
+        <p>In which, <code>--RS__lineHeightCompensation</code> is a factor whose default is <code>1</code>. Indeed, the <code>line-height</code> is usually 15–20% larger in CJK than in other scripts/languages (factor of <code>1.167</code>), but it can also used for square-ish fonts, especially in Indic.</p>
+
+        <p>The results we could get for the vast majority of fonts can be described as good in terms of typographic color. Here is Iowan Old Style for instance.</p>
+
+        <figure>
+          <img src="../Images/dynamic-leading.jpg" alt="Comparison of the algorithm using four different font-sizes with the Iowan Old Style typeface. We can notice that the leading applied is solider as font-size increases, which results in a relatively even distribution of typographic color. This is confirmed by the computed values retrieved in the tool ReadiumCSS provides for testing."/>
+
+        </figure>
+
+        <p>This isn’t a perfect solution though, and this algorithm may be revisited in the future.</p>
+
+        <p>See <a href="../Text/Section-018.xhtml">Further Details</a> for an extensive explanation.</p>
+      </section>
+    </section>
+
+    <section id="day-mode" class="level2">
+      <h2 id="sigil_toc_id_57">Day Mode</h2>
+
+      <p>The <code>ReadiumCSS-day_mode.css</code> stylesheet serves as a default and handles <code>background-color</code> and <code>color</code> for <code>:root</code> and <code>::selection</code>.</p>
+
+      <section id="variables-you-can-set-1" class="level3">
+        <h3 class="sigil_not_in_toc">Variables you can set</h3>
+
+		<hr/>
+
+        <pre><code>--RS__backgroundColor</code></pre>
+
+        <p>The <code>background-color</code> for the entire viewport.</p>
+
+		<hr/>
+
+        <pre><code>--RS__textColor</code></pre>
+
+        <p>The <code>color</code> for body copy.</p>
+
+		<hr/>
+
+        <pre><code>--RS__selectionBackgroundColor</code></pre>
+
+        <p>The <code>background-color</code> for selected text.</p>
+
+        <p>It is worth noting it can be customized for each reading mode.</p>
+
+		<hr/>
+
+        <pre><code>--RS__selectionTextColor</code></pre>
+
+        <p>The <code>color</code> for selected text.</p>
+
+        <p>It is worth noting it can be customized for each reading mode.</p>
+      </section>
+    </section>
+
+    <section id="default" class="level2">
+      <h2 id="sigil_toc_id_58">Default</h2>
+
+      <p>The default stylesheet was designed for unstyled ebooks. It is based on HTML5 Suggested Rendering and can be customized.</p>
+
+      <p>Although it must not be used for styled ebooks, it should not impact the author’s styles if it is added before its stylesheet(s).</p>
+
+      <p>You can customize:</p>
+
+      <ul>
+        <li>the typeface for headings (body is in <code>base.css</code>);</li>
+
+        <li>the typeface for code;</li>
+
+        <li>the font-size for body copy;</li>
+
+        <li>the base line-height for all elements;</li>
+
+        <li>the vertical margins for block elements;</li>
+
+        <li>the vertical margins for paragraphs;</li>
+
+        <li>the text-indent for paragraphs;</li>
+
+        <li>the typescale;</li>
+
+        <li>the color for links (including visited);</li>
+
+        <li>a primary accent color (unused by default);</li>
+
+        <li>a secondary accent color (unused by default).</li>
+      </ul>
+
+      <p>It makes use of a typescale so that you can change it dynamically (depending on page size, font size, etc.) so that headings and other elements can be adjusted.</p>
+
+      <section id="variables-you-can-set-2" class="level3">
+        <h3 class="sigil_not_in_toc">Variables you can set</h3>
+
+        <section id="typefaces" class="level4">
+          <h4 class="sigil_not_in_toc">Typefaces</h4>
+
+		  <hr/>
+
+          <pre><code>--RS__compFontFamily</code></pre>
+
+          <p>The typeface for headings. The value can be another variable e.g. <code>var(-RS__humanistTf)</code>.</p>
+
+		  <hr/>
+
+          <pre><code>--RS__codeFontFamily</code></pre>
+
+          <p>The typeface for code snippets. The value can be another variable e.g. <code>var(-RS__monospaceTf)</code>.</p>
+        </section>
+
+        <section id="typography" class="level4">
+          <h4 class="sigil_not_in_toc">Typography</h4>
+
+		  <hr/>
+
+          <pre><code>--RS__typeScale</code></pre>
+
+          <p>The scale to be used for computing all elements’ <code>font-size</code>. Since those font sizes are computed dynamically, you can set a smaller type scale when the user sets one of the largest font sizes.</p>
+
+          <p>Possible values: <code>1</code> | <code>1.067</code> | <code>1.125</code> | <code>1.2</code> (suggested default) | <code>1.25</code> | <code>1.333</code> | <code>1.414</code> | <code>1.5</code> | <code>1.618</code></p>
+
+		  <hr/>
+
+          <pre><code>--RS__baseFontSize</code></pre>
+
+          <p>The default <code>font-size</code> for body copy. It will serve as a reference font all related computations.</p>
+
+		  <hr/>
+
+          <pre><code>--RS__baseLineHeight</code></pre>
+
+          <p>The default <code>line-height</code> for all elements.</p>
+        </section>
+
+        <section id="vertical-rhythm" class="level4">
+          <h4 class="sigil_not_in_toc">Vertical rhythm</h4>
+
+		  <hr/>
+
+          <pre><code>--RS__flowSpacing</code></pre>
+
+          <p>The default vertical margins for HTML5 flow content e.g. <code>pre</code>, <code>figure</code>, <code>blockquote</code>, etc.</p>
+
+		  <hr/>
+
+          <pre><code>--RS__paraSpacing</code></pre>
+
+          <p>The default vertical margins for paragraphs.</p>
+
+		  <hr/>
+
+          <pre><code>--RS__paraIndent</code></pre>
+
+          <p>The default <code>text-indent</code> for paragraphs.</p>
+        </section>
+
+        <section id="hyperlinks" class="level4">
+          <h4 class="sigil_not_in_toc">Hyperlinks</h4>
+
+		  <hr/>
+
+          <pre><code>--RS__linkColor</code></pre>
+
+          <p>The default <code>color</code> for hyperlinks.</p>
+
+		  <hr/>
+
+          <pre><code>--RS__visitedColor</code></pre>
+
+          <p>The default <code>color</code> for visited hyperlinks.</p>
+        </section>
+
+        <section id="accentuation-colors" class="level4">
+          <h4 class="sigil_not_in_toc">Accentuation colors</h4>
+
+		  <hr/>
+
+          <pre><code>--RS__primaryColor</code></pre>
+
+          <p>An optional primary accentuation <code>color</code> you could use for headings or any other element of your choice.</p>
+
+		  <hr/>
+
+          <pre><code>--RS__secondaryColor</code></pre>
+
+          <p>An optional secondary accentuation <code>color</code> you could use for any element of your choice.</p>
+        </section>
+      </section>
+    </section>
+
+    <section id="user-highlights-and-media-overlays" class="level2">
+      <h2 id="sigil_toc_id_134">User highlights and media overlays</h2>
+
+      <section id="highlights" class="level3">
+        <h3 class="sigil_not_in_toc">Highlights</h3>
+
+        <p>You can use classic [insert famous highlighters’ brand] colors in all their neon glory:</p>
+
+        <ul>
+          <li>yellow;</li>
+
+          <li>green;</li>
+
+          <li>orange;</li>
+
+          <li>pink.</li>
+        </ul>
+
+        <p>There’s no blue since it is too close to the default <code>::selection</code>.</p>
+
+        <p>Ideally, you should offer users the possibility to switch colors when highlighting as they might use a color pattern to manage different types of highlights/notes.</p>
+
+        <p>There’s a class syntax you can use to differentiate highlights: <code>.readiumCSS-{color}-highlight</code> e.g. <code>.readiumCSS-yellow-highlight</code> or <code>.readiumCSS-pink-highlight</code>.</p>
+
+        <p>Values are declared in <code>rgba</code> so that those colors don’t have to be redefined in night modes.</p>
+
+        <p>At first sight, contrast is OK for those colors in default and night mode, but it will obviously depend on the <code>background-color</code> and <code>color</code> values you’re using for themes.</p>
+      </section>
+
+      <section id="media-overlays" class="level3">
+        <h3 class="sigil_not_in_toc">Media Overlays</h3>
+
+        <p>We’re using the same one as Readium 1 for interop reasons.</p>
+
+        <pre><code>.readiumCSS-mo-active-default { 
+  background-color: yellow !important; 
+  color: black !important; 
+}</code></pre>
+
+        <p>It has been prefixed with <code>readiumCSS-</code> but you can get rid of it if needed.</p>
+      </section>
+
+      <section id="os-a11y-modes" class="level3">
+        <h3 class="sigil_not_in_toc">OS’ a11y modes</h3>
+
+        <p>This stylesheet is intended to deal with a11y settings users can set at the OS level, whenever possible:</p>
+
+        <ul>
+          <li>high-contrast mode;</li>
+
+          <li>inverted colors;</li>
+
+          <li>monochrome;</li>
+
+          <li>reduced motion.</li>
+        </ul>
+
+        <p>For <code>monochrome</code>, we’ll have to adjust reading modes (night, sepia, etc.) in their specific stylesheet; we’ll see if we can at least manage some more global settings in there.</p>
+      </section>
+    </section>
+  </section>
+</body>
+</html>

@@ -1,0 +1,45 @@
+{
+  "@context": "https://readium.org/webpub-manifest/context.jsonld",
+  
+  "metadata": {
+    "title": "Readium CSS Documentation",
+    "author": "Jiminy Panoz",
+    "identifier": "https://readium.org/readium-css/docs/",
+    "language": "en"
+  },
+
+  "links": [
+    {"rel": "self", "href": "https://readium.org/readium-css/docs/manifest.json", "type": "application/webpub+json"},
+    {"rel": "alternate", "href": "https://github.com/readium/readium-css/raw/master/docs/ReadiumCSS_docs.epub", "type": "application/epub+zip"}
+  ],
+  
+  "readingOrder": [
+    {"href": "https://readium.org/readium-css/docs/", "type": "text/html", "rel": "contents"}, 
+    {"href": "https://readium.org/readium-css/docs/CSS01-readiumcss_fundamentals.html", "type": "text/html", "title": "Readium CSS Fundamental Concepts"}, 
+    {"href": "https://readium.org/readium-css/docs/CSS02-quickstart.html", "type": "text/html", "title": "Quickstart"}, 
+    {"href": "https://readium.org/readium-css/docs/CSS03-injection_and_pagination.html", "type": "text/html", "title": "Inject and paginate EPUB contents"}, 
+    {"href": "https://readium.org/readium-css/docs/CSS04-multicolumn_layout.html", "type": "text/html", "title": "How the multicolumn layout works"}, 
+    {"href": "https://readium.org/readium-css/docs/CSS05-reflow_requirements.html", "type": "text/html", "title": "Reading Systems Requirements for reflowable text"}, 
+    {"href": "https://readium.org/readium-css/docs/CSS06-stylesheets_order.html", "type": "text/html", "title": "Order in which to append Readium CSS reflowable stylesheets"}, 
+    {"href": "https://readium.org/readium-css/docs/CSS07-variables.html", "type": "text/html", "title": "How to use CSS custom properties (a.k.a. variables)"}, 
+    {"href": "https://readium.org/readium-css/docs/CSS08-defaults.html", "type": "text/html", "title": "Defaults"}, 
+    {"href": "https://readium.org/readium-css/docs/CSS09-default_fonts.html", "type": "text/html", "title": "Typefaces and font-stacks"}, 
+    {"href": "https://readium.org/readium-css/docs/CSS10-libre_fonts.html", "type": "text/html", "title": "Open Source and Libre Fonts We Can Recommend"}, 
+    {"href": "https://readium.org/readium-css/docs/CSS11-overrides_classification.html", "type": "text/html", "title": "User Overrides’ Classification"}, 
+    {"href": "https://readium.org/readium-css/docs/CSS12-user_prefs.html", "type": "text/html", "title": "User Settings, Reading Modes and Themes"}, 
+    {"href": "https://readium.org/readium-css/docs/CSS13-a11y_settings_baseline.html", "type": "text/html", "title": "Baseline for a11y-related user settings"}, 
+    {"href": "https://readium.org/readium-css/docs/CSS14-user_settings_recs.html", "type": "text/html", "title": "Recommendations for User Settings Management"}, 
+    {"href": "https://readium.org/readium-css/docs/CSS15-user_pref_insights.html", "type": "text/html", "title": "User Preferences’ insights"}, 
+    {"href": "https://readium.org/readium-css/docs/CSS16-internationalization.html", "type": "text/html", "title": "Internationalization"}, 
+    {"href": "https://readium.org/readium-css/docs/CSS17-i18n_typography.html", "type": "text/html", "title": "Internationalization – A Typography Primer"}, 
+    {"href": "https://readium.org/readium-css/docs/CSS18-further_details.html", "type": "text/html", "title": "Readium CSS Further Details: Explaining the CSS Voodoo"}, 
+    {"href": "https://readium.org/readium-css/docs/CSS19-api.html", "type": "text/html", "title": "Readium CSS Variables API"}, 
+    {"href": "https://readium.org/readium-css/docs/CSS20-spec_impact.html", "type": "text/html", "title": "List of proposals and specs impacting Readium CSS"}, 
+    {"href": "https://readium.org/readium-css/docs/CSS21-epub_compat.html", "type": "text/html", "title": "EPUB Compatibility"}, 
+    {"href": "https://readium.org/readium-css/docs/CSS22-npm.html", "type": "text/html", "title": "Install, test and build Readium CSS"}, 
+    {"href": "https://readium.org/readium-css/docs/CSS23-fxl_requirements.html", "type": "text/html", "title": "Fixed-layouts’ Reading Systems Requirements"}, 
+    {"href": "https://readium.org/readium-css/docs/CSS24-eprdctn_requests.html", "type": "text/html", "title": "E-production feedback and requests"}, 
+    {"href": "https://readium.org/readium-css/docs/CSS25-performance_hacks.html", "type": "text/html", "title": "CSS Performance Hacks"}, 
+    {"href": "https://readium.org/readium-css/docs/CSS26-i18n_glossary.html", "type": "text/html", "title": "i18n glossary"}
+  ]
+}

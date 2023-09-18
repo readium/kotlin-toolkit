@@ -1,0 +1,114 @@
+/* Readium 1 
+
+   Notes
+  ---------------------------------------
+   Inline styles are used in practice, this stylesheet is a transcription of contents modification/
+   Variables used in this stylesheet are purely theoric, they represent dynamic values managed via JS. 
+
+   Source: https://github.com/readium/readium-shared-js/wiki/ContentModifications */
+
+
+/* Fixed Layout */
+
+/* Every page is a new iframe (FOR FIXED LAYOUT ONLY) */
+html {
+  position: absolute;
+  top: 0; 
+  left: var(--page-start-left); /* e.g. 0px, 512px */
+  min-width: var(--meta-content-width);
+  width: var(--meta-content-width); /* width from meta viewport */
+  min-height: var(--meta-content-height);
+  height: var(--meta-content-height); /* height from meta viewport */
+}
+
+body {
+  width: var(--meta-content-width);
+  height: var(--meta-content-height);
+}
+
+/* Zoom is applied to the root element a.k.a. html */
+:root {
+  transform: scale(var(--user-zoom)); /* Zoom level selected by the user */
+  transform-origin: 0px 0px 0px;
+  opacity: 1;
+}
+
+
+/* Reflow */
+
+/* Unlike fixed-layout, 1 page ≠ 1 iframe */
+html {
+  margin: 0px;
+  padding: 0px;
+  border: 0px;
+  font-size: 100%;
+  opacity: 1;
+  position: relative;
+  left: 0px;
+  top: 0px;
+  width: 1160px;
+  min-height: 806px;
+  height: 806px;
+  max-height: 806px;
+}
+
+/* If single page, add those styles */
+html {
+  column-count: auto;
+  column-width: 550px;
+}
+
+/* If spread, add those styles */
+html {
+  column-count: 2;
+  column-width: auto;
+  column-gap: 60px;
+}
+
+body {
+  margin: 0px;
+  padding: 0px;
+}
+
+.theme {
+  color: var(--user-theme-color); /* Text color for the theme selected by the user */
+  background: var(--user-theme-background); /* Background color for the theme selected by the user */
+}
+
+/* For those elements, the original font-size and line-height are cached, 
+   Font-sizes have a matching line-height to improve readability. */
+p, div, span, h1, h2, h3, h4, h5, h6, li, blockquote, td, pre {
+  font-size: var(--user-font-size); /* Font-size selected by the user */
+  line-height: var(--matching-line-height); /* Best line-height for this size */
+} 
+
+img {
+  width: auto;
+  max-width: 98%;
+  height: auto;
+  max-height: 98%;
+}
+
+
+/* Media overlays */
+
+.mo-active-default {
+  background-color: yellow !important;
+  color: black !important;
+  border-radius: 0.4em;
+}
+
+
+/* Annotation highlights */
+
+.rd-highlight.test-highlight {
+  position: absolute;
+  opacity: 0.2;
+  background-color: red;
+}
+
+.rd-highlight.hover-test-highlight {
+  position: absolute;
+  opacity: 0.4;
+  background-color: red;
+}

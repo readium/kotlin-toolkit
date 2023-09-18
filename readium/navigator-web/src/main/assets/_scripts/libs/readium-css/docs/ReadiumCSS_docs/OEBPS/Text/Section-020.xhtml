@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" xml:lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="generator" content="pandoc"/>
+  <title>Readium CSS Implementers’ doc</title>
+  <link rel="stylesheet" type="text/css" href="../Styles/stylesheet.css"/>
+</head>
+
+<body xml:lang="en">
+  <section id="list-of-proposals-and-specs-impacting-readium-css" class="level1">
+    <h1>List of proposals and specs impacting Readium CSS</h1>
+
+    <p>[Implementers’ doc]</p>
+
+    <p>Here is a list of all the specs and proposals which are likely to impact Readium CSS in the future. Some of them are still in their early days but you’ll probably have to review implementations once they are clearly defined and Readium CSS is updated accordingly.</p>
+
+    <p>The <a href="https://github.com/w3c/csswg-drafts/issues">W3C CSSWG-Drafts repo</a> is a good way to keep up.</p>
+
+    <p>Readium CSS’ fundamental approach has been reviewed and should be future proof, but you’ll have to keep the following in mind since EPUB 3.2 is now using CSS snapshots – those specs and proposals are very likely to be listed in future snapshots.</p>
+
+    <section id="media-queries-level-5" class="level2">
+      <h2 id="sigil_toc_id_103">Media Queries Level 5</h2>
+
+      <ul>
+        <li><a href="https://drafts.csswg.org/mediaqueries-5/">Source</a></li>
+
+        <li>Impact: Global (a11y)</li>
+
+        <li><a href="https://github.com/w3c/csswg-drafts/issues?utf8=✓&amp;q=is%3Aissue%20is%3Aopen%20%5Bmediaqueries%5D%20">CSSWG Issues</a></li>
+      </ul>
+    </section>
+
+	<section id="logical-properties-and-values" class="level2">
+	  <h2 id="sigil_toc_id_128">Logical Properties and Values</h2>
+
+      <ul>
+        <li><a href="https://drafts.csswg.org/css-logical/">Source</a></li>
+
+        <li>Impact: Global (esp. vertical writing and RTL)</li>
+
+        <li><a href="https://github.com/w3c/csswg-drafts/issues?utf8=✓&amp;q=%5Bcss-logical-1%5D">CSSWG Issues</a></li>
+      </ul>
+	</section>
+
+    <section id="css-extensions" class="level2">
+      <h2 id="sigil_toc_id_33">CSS Extensions</h2>
+
+      <ul>
+        <li><a href="https://drafts.csswg.org/css-extensions/">Source</a></li>
+
+        <li>Impact: Global (CSS architecture)</li>
+
+        <li><a href="https://github.com/w3c/csswg-drafts/issues?utf8=✓&amp;q=%5Bcss-extensions%5D">CSSWG issues</a></li>
+
+        <li>Note: this specification defines methods for extending several CSS features (custom selectors, custom properties, custom functions, custom combinators, custom @ rules).</li>
+      </ul>
+    </section>
+
+    <section id="calc-notation-min-and-max" class="level2">
+      <h2 id="sigil_toc_id_104">Calc notation: min() and max()</h2>
+
+      <ul>
+        <li><a href="https://drafts.csswg.org/css-values/#calc-notation">Source</a></li>
+
+        <li>Impact: Global</li>
+
+        <li>Note: this could help us define floor and ceiling values for a lot of configurations (e.g. have a ceiling for headings <code>font-size</code> when a large user <code>font-size</code> is set)</li>
+      </ul>
+    </section>
+
+    <section id="user-agent-properties" class="level2">
+      <h2 id="sigil_toc_id_105">User Agent Properties</h2>
+
+      <ul>
+        <li><a href="https://github.com/w3c/csswg-drafts/issues/1693">Source</a></li>
+
+        <li>Impact: Default, Themes, User Settings</li>
+      </ul>
+    </section>
+
+    <section id="css-rhythmic-sizing" class="level2">
+      <h2 id="sigil_toc_id_106">CSS Rhythmic Sizing</h2>
+
+      <ul>
+        <li><a href="https://www.w3.org/TR/css-rhythm-1/">Source</a></li>
+
+        <li>Impact: Pagination, User settings</li>
+
+        <li><a href="https://github.com/w3c/csswg-drafts/issues?utf8=✓&amp;q=is%3Aissue%20is%3Aopen%20%5Bcss-rhythm%5D">CSSWG Issues</a></li>
+      </ul>
+    </section>
+
+    <section id="css-fonts-module-level-4" class="level2">
+      <h2 id="sigil_toc_id_107">CSS Fonts Module Level 4</h2>
+
+      <ul>
+        <li><a href="https://www.w3.org/TR/css-fonts-4/">Source</a></li>
+
+        <li>Impact: Default (Variable fonts), User settings (<code>font-min|max-size</code>)</li>
+
+        <li><a href="https://github.com/w3c/csswg-drafts/issues?utf8=✓&amp;q=is%3Aissue%20is%3Aopen%20%5Bcss-fonts%5D%20">CSSWG Issues</a></li>
+      </ul>
+    </section>
+
+    <section id="coga-semantics-to-enable-personalization" class="level2">
+      <h2 id="sigil_toc_id_108">COGA Semantics to Enable Personalization</h2>
+
+      <ul>
+        <li><a href="https://w3c.github.io/personalization-semantics/">Source</a></li>
+
+        <li>Impact: Implementations, User settings (<a href="https://w3c.github.io/personalization-semantics/user-settings">related draft</a>)</li>
+
+        <li>Related TF: PWG Personalization Task Force</li>
+      </ul>
+    </section>
+
+    <section id="multicol-editing" class="level2">
+      <h2 id="sigil_toc_id_109">Multicol editing</h2>
+
+      <ul>
+        <li><a href="https://github.com/rachelandrew/multicol-wip">Source</a></li>
+
+        <li>Impact: Pagination</li>
+
+        <li><a href="https://github.com/w3c/csswg-drafts/issues?utf8=✓&amp;q=is%3Aissue%20is%3Aopen%20%5Bcss-multicol%5D">CSSWG Issues</a></li>
+      </ul>
+    </section>
+
+    <section id="w3c-i18n" class="level2">
+      <h2 id="sigil_toc_id_110">W3C i18n</h2>
+
+      <ul>
+        <li><a href="https://www.w3.org/standards/webdesign/i18n">Source</a></li>
+
+        <li>Impact: CJK &amp; RTL</li>
+      </ul>
+    </section>
+
+    <section id="cssom-a.k.a.-houdini" class="level2">
+      <h2 id="sigil_toc_id_111">CSSOM (a.k.a. Houdini)</h2>
+
+      <ul>
+        <li><a href="https://drafts.csswg.org/cssom/">Source</a></li>
+
+        <li>Impact: Implementations</li>
+
+        <li><a href="https://github.com/w3c/csswg-drafts/issues?utf8=✓&amp;q=is%3Aissue%20is%3Aopen%20%5Bcssom%5D">CSSWG Issues</a></li>
+      </ul>
+    </section>
+  </section>
+</body>
+</html>

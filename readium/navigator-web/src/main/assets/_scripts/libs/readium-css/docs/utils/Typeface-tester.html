@@ -1,0 +1,1237 @@
+<!doctype html>
+<html>
+
+<head>
+  <title>Typeface Tester</title>
+  <meta charset="UTF-8" />
+  <style type="text/css">
+     :root {
+      --default-font: serif;
+      --custom-font: ;
+      --comparator-position: ;
+
+      --background-color: ;
+      --text-color: ;
+    }
+
+    html {
+      background-color: var(--background-color);
+      color: var(--text-color);
+      transition: 750ms all ease-in-out;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+      padding: 3vmin;
+    }
+
+    h1 {
+      font-size: 3rem;
+      line-height: 1;
+      margin: 0;
+    }
+
+    .lead {
+      font-size: 1.5rem;
+      font-weight: 500;
+    }
+
+    .warning {
+      color: crimson;
+      font-weight: bold;
+      font-size: 1.25rem;
+      margin: 4rem 0;
+    }
+
+    h2 {
+      font-size: 2.5rem;
+      margin: 8rem 0 2rem 0;
+    }
+
+    h3 {
+      font-size: 2rem;
+      margin: 4rem 0 2rem 0;
+      font-weight: normal;
+    }
+
+    .download-link {
+      position: fixed;
+      bottom: 10px;
+      right: 10px;
+      border: 1px solid currentColor;
+      padding: 10px;
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .checker {
+      margin-left: 1rem;
+      vertical-align: middle;
+    }
+
+    .fonts-setting {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+    }
+
+    .metrics-comparator {
+      font-size: 4rem;
+      line-height: 1;
+      background-image: -webkit-linear-gradient(top, rgba(122, 122, 122, 0) 92%, rgba(122, 122, 122, 0.6) 100%);
+      background-image: linear-gradient(to bottom, rgba(122, 122, 122, 0) 92%, rgba(122, 122, 122, 0.6) 100%);
+      background-size: 100% 12px;
+      background-position: top var(--comparator-position, 0) left 0;
+      display: grid;
+      grid-template-columns: repeat(2, max-content);
+      grid-column-gap: 5vmin;
+      align-items: center;
+      height: 120px;
+      padding-left: 5vmin;
+      position: relative;
+    }
+
+    #baseline {
+      position: absolute;
+      top: 0;
+      right: 0;
+    }
+
+    .para-comparator {
+      font-size: 1rem;
+      line-height: 1.5;
+      background-image: -webkit-linear-gradient(top, rgba(122, 122, 122, 0) 92%, rgba(122, 122, 122, 0.6) 100%);
+      background-image: linear-gradient(to bottom, rgba(122, 122, 122, 0) 92%, rgba(122, 122, 122, 0.6) 100%);
+      background-size: 100% 1.5rem;
+      background-position: top 0 left 0;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      grid-column-gap: 5vmin;
+      align-items: bottom;
+      padding: 3rem 2.5vmin 1.5rem 2.5vmin;
+      margin: 2rem 0;
+    }
+
+    .para-comparator p {
+      margin: 0;
+    }
+
+    .default-typeface {
+      font-family: var(--default-font);
+    }
+
+    .custom-typeface {
+      font-family: var(--custom-font);
+    }
+
+    .char-grid {
+      font-family: var(--custom-font), monospace;
+      max-width: calc(36ch + (9 * 2px));
+      font-size: 2rem;
+      line-height: 4ch;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, 4ch);
+      text-align: center;
+      grid-gap: 2px;
+    }
+
+    .char-grid>span {
+      height: 4ch;
+      background-color: #EAEAEA;
+    }
+
+    html[style*="--background-color"] .char-grid>span {
+      background-color: #222222;
+    }
+
+    .smcp,
+    .lining-nums,
+    .oldstyle-nums,
+    table {
+      max-width: 50ch;
+      font-family: var(--custom-font);
+      font-size: 1.25rem;
+      line-height: 1.35;
+      margin: 2rem 0;
+    }
+
+    table {
+      border-collapse: collapse;
+    }
+
+    th {
+      text-align: left;
+    }
+
+    th,
+    td {
+      border-bottom: 1px solid gray;
+      padding: 10px 5px;
+      vertical-align: baseline;
+    }
+
+    td {
+      padding-left: 3rem;
+      font-size: 3rem;
+      text-align: right;
+    }
+
+    .smcp::first-line {
+      font-feature-settings: "kern", "smcp";
+    }
+
+    .lining-nums {
+      font-variant-numeric: lining-nums proportional-nums;
+    }
+
+    .oldstyle-nums {
+      font-variant-numeric: oldstyle-nums proportional-nums;
+    }
+
+    .proportional-nums {
+      font-variant-numeric: lining-nums proportional-nums;
+    }
+
+    .tabular-nums {
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+
+    .slashed-zero {
+      font-variant-numeric: lining-nums tabular-nums slashed-zero;
+    }
+
+    #how-to p {
+      line-height: 1.75;
+      max-width: 65rem;
+    }
+
+    code {
+      font-family: Consolas, "Andale Mono WT", "Andale Mono", "Lucida Console", "Lucida Sans Typewriter", "DejaVu Sans Mono", "Bitstream Vera Sans Mono", "Liberation Mono", "Nimbus Mono L", Monaco, "Courier New", Courier, monospace;
+      font-size: 1rem;
+      margin: 0 0.5rem;
+      padding: 0.25rem;
+      border: 1px solid;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+
+<body>
+<main>
+  <header>
+    <h1>Readium CSS’ Typeface Tester</h1>
+
+    <p class="lead">A webpage to help you pick fonts for your reading app or alternatives for your EPUB file.</p>
+
+    <p class="warning">⚠️ Please make sure to have the latest version of the browser you’re currently using. ⚠️</p>
+  </header>
+
+  <section id="how-to">
+    <h2>How-to</h2>
+    
+    <p>First pick a reference (default) font then a custom one in the inputs located in the top right corner so that you can compare them. Both can either be a font installed locally e.g. <code>Georgia</code> or a google font e.g. <code>google:Noto Serif</code> – there should be no space after the <code>google:</code> prefix and you must use the name of the font as seen on Google Fonts without quotes.</p>
+
+    <p>You can quickly compare their metrics (you can change the word and text by clicking the left sample in “Comparison”, typing your text then pressing return) to see if the custom font can be a proper alternative.</p>
+
+    <p>Then you can review language and OpenType Features support. You can validate support by clicking section headings then download a review as an HTML file (JavaScript required).</p>
+  </section>
+
+  <div class="fonts-setting">
+    <input id="default-font" type="text" placeholder="Default Font" autocomplete="off" autocorrect="off" autocapitalize="off"
+      spellcheck="false" />
+    <input id="custom-font" type="text" placeholder="Custom Font" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+    />
+    <label>
+      <input id="custom-mode" name="custom-mode" type="checkbox"/> Night Mode
+    </label>
+  </div>
+
+  <section id="comparison">
+    <h2>Comparison</h2>
+
+    <div class="metrics-comparator">
+      <input id="baseline" type="number" value="0" step="0.05" />
+
+      <div class="default-typeface" contenteditable="" id="edit-metrics">
+        Body
+      </div>
+
+      <div class="custom-typeface" id="clone-metrics">
+        Body
+      </div>
+    </div>
+
+    <div class="para-comparator">
+      <p class="default-typeface" contenteditable="" id="edit-para">Call me Ishmael. Some years ago – never mind how long precisely – having little or no money in my purse, and nothing particular to interest me on shore, I thought I would sail about a little and see the watery part of the world.</p>
+
+      <p class="custom-typeface" id="clone-para">Call me Ishmael. Some years ago – never mind how long precisely – having little or no money in my purse, and nothing particular to interest me on shore, I thought I would sail about a little and see the watery part of the world.</p>
+    </div>
+  </section>
+
+  <section id="latin">
+    <h2>Latin</h2>
+
+    <section id="alphabet">
+      <h3>Alphabet</h3>
+
+      <div class="char-grid">
+        <span>A</span>
+        <span>B</span>
+        <span>C</span>
+        <span>D</span>
+        <span>E</span>
+        <span>F</span>
+        <span>G</span>
+        <span>H</span>
+        <span>I</span>
+        <span>J</span>
+        <span>K</span>
+        <span>L</span>
+        <span>M</span>
+        <span>N</span>
+        <span>O</span>
+        <span>P</span>
+        <span>Q</span>
+        <span>R</span>
+        <span>S</span>
+        <span>T</span>
+        <span>U</span>
+        <span>V</span>
+        <span>W</span>
+        <span>X</span>
+        <span>Y</span>
+        <span>Z</span>
+        <span>a</span>
+        <span>b</span>
+        <span>c</span>
+        <span>d</span>
+        <span>e</span>
+        <span>f</span>
+        <span>g</span>
+        <span>h</span>
+        <span>i</span>
+        <span>j</span>
+        <span>k</span>
+        <span>l</span>
+        <span>m</span>
+        <span>n</span>
+        <span>o</span>
+        <span>p</span>
+        <span>q</span>
+        <span>r</span>
+        <span>s</span>
+        <span>t</span>
+        <span>u</span>
+        <span>v</span>
+        <span>w</span>
+        <span>x</span>
+        <span>y</span>
+        <span>z</span>
+        <span>0</span>
+        <span>1</span>
+        <span>2</span>
+        <span>3</span>
+        <span>4</span>
+        <span>5</span>
+        <span>6</span>
+        <span>7</span>
+        <span>8</span>
+        <span>9</span>
+      </div>
+    </section>
+
+    <section id="punctuation-and-misc">
+      <h3>Punctuation and Misc</h3>
+
+      <div class="char-grid">
+        <span>?</span>
+        <span>¿</span>
+        <span>!</span>
+        <span>¡</span>
+        <span>'</span>
+        <span>‘</span>
+        <span>’</span>
+        <span>"</span>
+        <span>“</span>
+        <span>”</span>
+        <span>„</span>
+        <span>«</span>
+        <span>»</span>
+        <span>°</span>
+        <span>…</span>
+        <span>&amp;</span>
+        <span>-</span>
+        <span>–</span>
+        <span>—</span>
+        <span>#</span>
+        <span>¶</span>
+        <span>†</span>
+        <span>‡</span>
+        <span>@</span>
+        <span>%</span>
+        <span>‰</span>
+        <span>|</span>
+        <span>/</span>
+        <span>\</span>
+        <span>~</span>
+        <span>*</span>
+        <span>(</span>
+        <span>)</span>
+        <span>[</span>
+        <span>]</span>
+        <span>{</span>
+        <span>}</span>
+        <span>•</span>
+        <span>+</span>
+        <span>×</span>
+        <span>÷</span>
+        <span>±</span>
+        <span>=</span>
+        <span>®</span>
+        <span>©</span>
+        <span>™</span>
+        <span>$</span>
+        <span>€</span>
+        <span>¥</span>
+        <span>£</span>
+      </div>
+    </section>
+  </section>
+
+  <section id="diacritics">
+    <h2>Diacritics</h2>
+
+    <section id="albanian" data-checker="on">
+      <h3>Albanian (sq)</h3>
+
+      <div class="char-grid">
+        <span>Ç</span>
+        <span>Ë</span>
+        <span>ç</span>
+        <span>ë</span>
+      </div>
+    </section>
+
+    <section id="bosnian" data-checker="on">
+      <h3>Bosnian (bs)</h3>
+
+      <div class="char-grid">
+        <span>Ć</span>
+        <span>Č</span>
+        <span>Đ</span>
+        <span>Š</span>
+        <span>Ž</span>
+        <span>ć</span>
+        <span>č</span>
+        <span>đ</span>
+        <span>š</span>
+        <span>ž</span>
+      </div>
+    </section>
+
+    <section id="czech" data-checker="on">
+      <h3>Czech (cs)</h3>
+
+      <div class="char-grid">
+        <span>Á</span>
+        <span>Č</span>
+        <span>Ď</span>
+        <span>É</span>
+        <span>Ě</span>
+        <span>Í</span>
+        <span>Ň</span>
+        <span>Ó</span>
+        <span>Ř</span>
+        <span>Š</span>
+        <span>Ť</span>
+        <span>Ú</span>
+        <span>Ů</span>
+        <span>Ž</span>
+        <span>á</span>
+        <span>č</span>
+        <span>ď</span>
+        <span>é</span>
+        <span>ě</span>
+        <span>í</span>
+        <span>ň</span>
+        <span>ó</span>
+        <span>ř</span>
+        <span>š</span>
+        <span>ť</span>
+        <span>ú</span>
+        <span>ů</span>
+        <span>ž</span>
+      </div>
+    </section>
+
+    <section id="danish" data-checker="on">
+      <h3>Danish (da)</h3>
+
+      <div class="char-grid">
+        <span>Å</span>
+        <span>Æ</span>
+        <span>É</span>
+        <span>Ø</span>
+        <span>å</span>
+        <span>æ</span>
+        <span>é</span>
+        <span>ø</span>
+      </div>
+    </section>
+
+    <section id="dutch" data-checker="on">
+      <h3>Dutch (nl)</h3>
+
+      <div class="char-grid">
+        <span>Ä</span>
+        <span>Ë</span>
+        <span>Ï</span>
+        <span>Ö</span>
+        <span>Ü</span>
+        <span>ä</span>
+        <span>ë</span>
+        <span>ï</span>
+        <span>ö</span>
+        <span>ü</span>
+      </div>
+    </section>
+
+    <section id="estonian" data-checker="on">
+      <h3>Estonian (et)</h3>
+
+      <div class="char-grid">
+        <span>Ä</span>
+        <span>Ö</span>
+        <span>Õ</span>
+        <span>Š</span>
+        <span>Ü</span>
+        <span>Ž</span>
+        <span>ä</span>
+        <span>ö</span>
+        <span>õ</span>
+        <span>š</span>
+        <span>ü</span>
+        <span>ž</span>
+      </div>
+    </section>
+
+    <section id="finnish" data-checker="on">
+      <h3>Finnish (fi)</h3>
+
+      <div class="char-grid">
+        <span>Ä</span>
+        <span>Ö</span>
+        <span>Š</span>
+        <span>Ž</span>
+        <span>ä</span>
+        <span>ö</span>
+        <span>š</span>
+        <span>ž</span>
+      </div>
+    </section>
+
+    <section id="french" data-checker="on">
+      <h3>French (fr)</h3>
+
+      <div class="char-grid">
+        <span>À</span>
+        <span>Â</span>
+        <span>Æ</span>
+        <span>Ç</span>
+        <span>É</span>
+        <span>È</span>
+        <span>Ê</span>
+        <span>Ë</span>
+        <span>Î</span>
+        <span>Ï</span>
+        <span>Ô</span>
+        <span>Œ</span>
+        <span>Ù</span>
+        <span>Û</span>
+        <span>Ü</span>
+        <span>Ÿ</span>
+        <span>à</span>
+        <span>â</span>
+        <span>æ</span>
+        <span>ç</span>
+        <span>é</span>
+        <span>è</span>
+        <span>ê</span>
+        <span>ë</span>
+        <span>î</span>
+        <span>ï</span>
+        <span>ô</span>
+        <span>œ</span>
+        <span>ù</span>
+        <span>û</span>
+        <span>ü</span>
+        <span>ÿ</span>
+      </div>
+    </section>
+
+    <section id="german" data-checker="on">
+      <h3>German (de)</h3>
+
+      <div class="char-grid">
+        <span>Ä</span>
+        <span>Ö</span>
+        <span>Ü</span>
+        <span>ä</span>
+        <span>ß</span>
+        <span>ö</span>
+        <span>ü</span>
+      </div>
+    </section>
+
+    <section id="hungarian" data-checker="on">
+      <h3>Hungarian (hu)</h3>
+
+      <div class="char-grid">
+        <span>Á</span>
+        <span>É</span>
+        <span>Í</span>
+        <span>Ó</span>
+        <span>Ö</span>
+        <span>Ő</span>
+        <span>Ú</span>
+        <span>Ü</span>
+        <span>Ű</span>
+        <span>á</span>
+        <span>é</span>
+        <span>í</span>
+        <span>ó</span>
+        <span>ö</span>
+        <span>ő</span>
+        <span>ú</span>
+        <span>ü</span>
+        <span>ű</span>
+      </div>
+    </section>
+
+    <section id="italian" data-checker="on">
+      <h3>Italian (it)</h3>
+
+      <div class="char-grid">
+        <span>À</span>
+        <span>É</span>
+        <span>È</span>
+        <span>Ì</span>
+        <span>Î</span>
+        <span>Ò</span>
+        <span>Ó</span>
+        <span>Ù</span>
+        <span>à</span>
+        <span>é</span>
+        <span>è</span>
+        <span>ì</span>
+        <span>î</span>
+        <span>ò</span>
+        <span>ó</span>
+        <span>ù</span>
+      </div>
+    </section>
+
+    <section id="latvian" data-checker="on">
+      <h3>Latvian (lv)</h3>
+
+      <div class="char-grid">
+        <span>Ā</span>
+        <span>Č</span>
+        <span>Ē</span>
+        <span>Ģ</span>
+        <span>Ī</span>
+        <span>Ķ</span>
+        <span>Ļ</span>
+        <span>Ņ</span>
+        <span>Š</span>
+        <span>Ū</span>
+        <span>Ž</span>
+        <span>ā</span>
+        <span>č</span>
+        <span>ē</span>
+        <span>ģ</span>
+        <span>ī</span>
+        <span>ķ</span>
+        <span>ļ</span>
+        <span>ņ</span>
+        <span>š</span>
+        <span>ū</span>
+        <span>ž</span>
+      </div>
+    </section>
+
+    <section id="lithuanian" data-checker="on">
+      <h3>Lithuanian (lt)</h3>
+
+      <div class="char-grid">
+        <span>Ą</span>
+        <span>Č</span>
+        <span>Ę</span>
+        <span>Ė</span>
+        <span>Į</span>
+        <span>Š</span>
+        <span>Ū</span>
+        <span>Ž</span>
+        <span>ą</span>
+        <span>č</span>
+        <span>ę</span>
+        <span>ė</span>
+        <span>į</span>
+        <span>š</span>
+        <span>ū</span>
+        <span>ž</span>
+      </div>
+    </section>
+
+    <section id="norwegian" data-checker="on">
+      <h3>Norwegian (no)</h3>
+
+      <div class="char-grid">
+        <span>Â</span>
+        <span>Å</span>
+        <span>Æ</span>
+        <span>É</span>
+        <span>È</span>
+        <span>Ê</span>
+        <span>Ò</span>
+        <span>Ó</span>
+        <span>Ô</span>
+        <span>Ø</span>
+        <span>â</span>
+        <span>å</span>
+        <span>æ</span>
+        <span>é</span>
+        <span>è</span>
+        <span>ê</span>
+        <span>ò</span>
+        <span>ó</span>
+        <span>ô</span>
+        <span>ø</span>
+      </div>
+    </section>
+
+    <section id="polish" data-checker="on">
+      <h3>Polish (pl)</h3>
+
+      <div class="char-grid">
+        <span>Ą</span>
+        <span>Ć</span>
+        <span>Ę</span>
+        <span>Ł</span>
+        <span>Ń</span>
+        <span>Ó</span>
+        <span>Ś</span>
+        <span>Ź</span>
+        <span>Ż</span>
+        <span>ą</span>
+        <span>ć</span>
+        <span>ę</span>
+        <span>ł</span>
+        <span>ń</span>
+        <span>ó</span>
+        <span>ś</span>
+        <span>ź</span>
+        <span>ż</span>
+      </div>
+    </section>
+
+    <section id="portuguese" data-checker="on">
+      <h3>Portuguese (pt)</h3>
+
+      <div class="char-grid">
+        <span>À</span>
+        <span>Á</span>
+        <span>Â</span>
+        <span>Ã</span>
+        <span>Ç</span>
+        <span>É</span>
+        <span>Ê</span>
+        <span>Í</span>
+        <span>Ó</span>
+        <span>Ô</span>
+        <span>Õ</span>
+        <span>Ú</span>
+        <span>à</span>
+        <span>á</span>
+        <span>â</span>
+        <span>ã</span>
+        <span>ç</span>
+        <span>é</span>
+        <span>ê</span>
+        <span>í</span>
+        <span>ó</span>
+        <span>ô</span>
+        <span>õ</span>
+        <span>ú</span>
+      </div>
+    </section>
+
+    <section id="romanian" data-checker="on">
+      <h3>Romanian (ro)</h3>
+
+      <div class="char-grid">
+        <span>Ă</span>
+        <span>Â</span>
+        <span>Î</span>
+        <span>Ș</span>
+        <span>Ț</span>
+        <span>ă</span>
+        <span>â</span>
+        <span>î</span>
+        <span>ș</span>
+        <span>ț</span>
+      </div>
+    </section>
+
+    <section id="slovak" data-checker="on">
+      <h3>Slovak</h3>
+
+      <div class="char-grid">
+        <span>Á</span>
+        <span>Ä</span>
+        <span>Č</span>
+        <span>Ď</span>
+        <span>É</span>
+        <span>Í</span>
+        <span>Ĺ</span>
+        <span>Ľ</span>
+        <span>Ň</span>
+        <span>Ó</span>
+        <span>Ô</span>
+        <span>Ŕ</span>
+        <span>Š</span>
+        <span>Ť</span>
+        <span>Ú</span>
+        <span>Ý</span>
+        <span>Ž</span>
+        <span>á</span>
+        <span>ä</span>
+        <span>č</span>
+        <span>ď</span>
+        <span>é</span>
+        <span>í</span>
+        <span>ĺ</span>
+        <span>ľ</span>
+        <span>ň</span>
+        <span>ó</span>
+        <span>ô</span>
+        <span>ŕ</span>
+        <span>š</span>
+        <span>ť</span>
+        <span>ú</span>
+        <span>ý</span>
+        <span>ž</span>
+      </div>
+    </section>
+
+    <section id="slovenian" data-checker="on">
+      <h3>Slovenian (sk)</h3>
+
+      <div class="char-grid">
+        <span>Ć</span>
+        <span>Č</span>
+        <span>Đ</span>
+        <span>Š</span>
+        <span>Ž</span>
+        <span>ć</span>
+        <span>č</span>
+        <span>đ</span>
+        <span>š</span>
+        <span>ž</span>
+      </div>
+    </section>
+
+    <section id="spanish" data-checker="on">
+      <h3>Spanish (es)</h3>
+
+      <div class="char-grid">
+        <span>Á</span>
+        <span>É</span>
+        <span>Í</span>
+        <span>Ï</span>
+        <span>Ñ</span>
+        <span>Ó</span>
+        <span>Ú</span>
+        <span>Ü</span>
+        <span>Ý</span>
+        <span>á</span>
+        <span>é</span>
+        <span>í</span>
+        <span>ï</span>
+        <span>ñ</span>
+        <span>ó</span>
+        <span>ú</span>
+        <span>ü</span>
+        <span>ý</span>
+      </div>
+    </section>
+
+    <section id="swedish" data-checker="on">
+      <h3>Swedish (sv)</h3>
+
+      <div class="char-grid">
+        <span>Å</span>
+        <span>Ä</span>
+        <span>É</span>
+        <span>Ö</span>
+        <span>å</span>
+        <span>ä</span>
+        <span>é</span>
+        <span>ö</span>
+      </div>
+    </section>
+
+    <section id="turkish" data-checker="on">
+      <h3>Turkish (tr)</h3>
+
+      <div class="char-grid">
+        <span>Â</span>
+        <span>Ç</span>
+        <span>Ğ</span>
+        <span>İ</span>
+        <span>Î</span>
+        <span>Ö</span>
+        <span>Ş</span>
+        <span>Û</span>
+        <span>Ü</span>
+        <span>â</span>
+        <span>ç</span>
+        <span>ğ</span>
+        <span>ı</span>
+        <span>î</span>
+        <span>ö</span>
+        <span>ş</span>
+        <span>û</span>
+        <span>ü</span>
+      </div>
+    </section>
+  </section>
+
+  <section id="non-latin">
+    <h2>Non-latin languages</h2>
+
+    <section id="russian" data-checker="on">
+      <h3>Russian (ru)</h3>
+
+      <div class="char-grid">
+        <span>А</span>
+        <span>Б</span>
+        <span>В</span>
+        <span>Г</span>
+        <span>Д</span>
+        <span>Е</span>
+        <span>Ё</span>
+        <span>Ж</span>
+        <span>З</span>
+        <span>И</span>
+        <span>Й</span>
+        <span>К</span>
+        <span>Л</span>
+        <span>М</span>
+        <span>Н</span>
+        <span>О</span>
+        <span>П</span>
+        <span>Р</span>
+        <span>С</span>
+        <span>Т</span>
+        <span>У</span>
+        <span>Ф</span>
+        <span>Х</span>
+        <span>Ц</span>
+        <span>Ч</span>
+        <span>Ш</span>
+        <span>Щ</span>
+        <span>Ъ</span>
+        <span>Ы</span>
+        <span>Ь</span>
+        <span>Э</span>
+        <span>Ю</span>
+        <span>Я</span>
+        <span>а</span>
+        <span>б</span>
+        <span>в</span>
+        <span>г</span>
+        <span>д</span>
+        <span>е</span>
+        <span>ё</span>
+        <span>ж</span>
+        <span>з</span>
+        <span>и</span>
+        <span>й</span>
+        <span>к</span>
+        <span>л</span>
+        <span>м</span>
+        <span>н</span>
+        <span>о</span>
+        <span>п</span>
+        <span>р</span>
+        <span>с</span>
+        <span>т</span>
+        <span>у</span>
+        <span>ф</span>
+        <span>х</span>
+        <span>ц</span>
+        <span>ч</span>
+        <span>ш</span>
+        <span>щ</span>
+        <span>ъ</span>
+        <span>ы</span>
+        <span>ь</span>
+        <span>э</span>
+        <span>ю</span>
+        <span>я</span>
+      </div>
+    </section>
+
+    <section id="greek" data-checker="on">
+      <h3>Greek (el)</h3>
+
+      <div class="char-grid">
+        <span>Α</span>
+        <span>Β</span>
+        <span>Γ</span>
+        <span>Δ</span>
+        <span>Ε</span>
+        <span>Ζ</span>
+        <span>Η</span>
+        <span>Θ</span>
+        <span>Ι</span>
+        <span>Κ</span>
+        <span>Λ</span>
+        <span>Μ</span>
+        <span>Ν</span>
+        <span>Ξ</span>
+        <span>Ο</span>
+        <span>Π</span>
+        <span>Ρ</span>
+        <span>Σ</span>
+        <span>Τ</span>
+        <span>Υ</span>
+        <span>Φ</span>
+        <span>Χ</span>
+        <span>Ψ</span>
+        <span>Ω</span>
+        <span>α</span>
+        <span>β</span>
+        <span>ϐ</span>
+        <span>γ</span>
+        <span>δ</span>
+        <span>ε</span>
+        <span>ζ</span>
+        <span>η</span>
+        <span>θ</span>
+        <span>ι</span>
+        <span>κ</span>
+        <span>λ</span>
+        <span>μ</span>
+        <span>ν</span>
+        <span>ξ</span>
+        <span>ο</span>
+        <span>π</span>
+        <span>ρ</span>
+        <span>σ</span>
+        <span>ς</span>
+        <span>τ</span>
+        <span>υ</span>
+        <span>φ</span>
+        <span>ϕ</span>
+        <span>χ</span>
+        <span>ψ</span>
+        <span>ω</span>
+      </div>
+    </section>
+  </section>
+
+  <section id="otf">
+    <h2>OpenType Features</h2>
+
+    <section id="small-caps" data-checker="on">
+      <h3>Small Capitals</h3>
+
+      <p class="smcp">If the first line of this paragraph is using proper small capitals and not fake ones, which should be pretty obvious
+        at first sight, then the font you’re testing support the OpenType Feature for small capitals.</p>
+    </section>
+
+    <section id="numerals">
+      <section id="numeric-figure-values" data-checker="on">
+        <h3>Numeric figure values</h3>
+
+        <p class="lining-nums">The following should be lining numerals i.e. all should be aligned on the baseline:
+        <br/> 9 8 7 6 5 4 3 2 1 0.</p>
+
+        <p class="oldstyle-nums">The following should be oldstyle numerals i.e. all should <strong>not</strong> be aligned on the baseline:
+        <br/> 9 8 7 6 5 4 3 2 1 0.</p>
+      </section>
+
+      <section id="numeric-spacing-values" data-checker="on">
+        <h3>Numeric Spacing Values</h3>
+        <table>
+          <tr>
+            <th class="proportional-nums">Proportional numerals</th>
+            <td>12459.00</td>
+          </tr>
+          <tr>
+            <th>Tabular numerals</th>
+            <td class="tabular-nums">12459.00</td>
+          </tr>
+          <tr>
+            <th>Slashed Zero</th>
+            <td class="slashed-zero">12459.00</td>
+          </tr>
+        </table>
+      </section>
+    </section>
+  </section>
+</main>
+
+  <script src="https://ajax.googleapis.com/ajax/libs/webfont/1.6.26/webfont.js"></script>
+
+  <script type="text/javascript">
+    var metrics = document.getElementById("edit-metrics"),
+        metricsClone = document.getElementById("clone-metrics"),
+        para = document.getElementById("edit-para"),
+        paraClone = document.getElementById("clone-para"),
+        baselineAdjust = document.getElementById("baseline"),
+        defaultFont = document.getElementById("default-font"),
+        customFont = document.getElementById("custom-font"),
+        customMode = document.getElementById("custom-mode"),
+        checkers = document.querySelectorAll("[data-checker]"),
+        downloadLink = document.createElement("a");
+        
+    var newCustom;
+
+    for (var i = 0; i < checkers.length; i++) {
+      let section = checkers[i],
+          heading = section.querySelector("h3"),
+          headingText = document.createTextNode(heading.textContent),
+          label = document.createElement("label"),
+          checkbox = document.createElement("input");
+      checkbox.type = "checkbox";
+      checkbox.id = section.id;
+      checkbox.className = "checker";
+      heading.innerHTML = "";
+      label.appendChild(headingText);
+      label.appendChild(checkbox);
+      heading.appendChild(label);
+    };
+
+    (function initDownload() {
+      downloadLink.className = "download-link";
+      downloadLink.innerHTML = "Download Review";
+      downloadLink.href = "#";
+      document.body.appendChild(downloadLink);
+    })();
+
+    metrics.addEventListener("keypress", function (e) {
+      if (e.keyCode == 13) { // Return key
+        e.preventDefault();
+        let newWord = metrics.textContent;
+        metricsClone.innerHTML = newWord;
+      }
+    }, false);
+
+    para.addEventListener("keypress", function (e) {
+      if (e.keyCode == 13) { // Return key
+        e.preventDefault();
+        let newPara = para.textContent;
+        paraClone.innerHTML = newPara;
+      }
+    }, false);
+
+    baselineAdjust.addEventListener("change", function (e) {
+      let newPos = baselineAdjust.value;
+      document.documentElement.style.setProperty("--comparator-position", newPos + "rem");
+    }, false);
+
+    defaultFont.addEventListener("change", function (e) {
+      let newDefault = defaultFont.value;
+      document.documentElement.style.setProperty("--default-font", newDefault);
+    }, false);
+
+    customFont.addEventListener("change", function (e) {
+      let previousLoader = document.getElementById("font-loader");
+      if (previousLoader) {
+        previousLoader.parentElement.removeChild(previousLoader);
+      }
+
+      var val = customFont.value,
+          loadFont = val.split(":");
+      
+      if (loadFont[0] === "google") {
+        var loader = document.createElement("script");
+        
+        newCustom = loadFont[1];
+        loader.id = "font-loader";
+        loader.innerHTML = "WebFont.load({ google:{families:['"+ loadFont[1] +"']}});";
+        document.body.appendChild(loader);
+      } else {
+        newCustom = customFont.value;
+      }
+
+      document.documentElement.style.setProperty("--custom-font", newCustom);
+
+      for (var i = 0; i < checkers.length; i++) {
+        let checkbox = checkers[i].getElementsByTagName("input")[0];
+        checkbox.checked = false;
+      }
+    }, false);
+
+    customMode.addEventListener("change", function (e) {
+      if (this.checked) {
+        document.documentElement.style.setProperty("--background-color", "#000000");
+        document.documentElement.style.setProperty("--text-color", "#FEFEFE");
+      } else {
+        document.documentElement.style.removeProperty("--background-color");
+        document.documentElement.style.removeProperty("--text-color");
+      }
+    }, false);
+
+    downloadLink.addEventListener("click", function(e) {
+      e.preventDefault();
+      download();
+    }, false);
+
+    function download() {
+      let title = customFont.value,
+          filename = title.split(" ").join("-").toLowerCase() + ".html",
+          text = "<!DOCTYPE html>\n"
+          + "<html>\n"
+          + "  <head>\n"
+          + "    <title>" + title + "</title>\n"
+          + "    <meta charset='UTF-8'/>\n"
+          + "    <style>\n"
+          + "      body {font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;} table {border-collapse: collapse} th {text-align: left;} th, td {border-bottom: 1px solid gray; padding: 10px 20px; vertical-align: baseline;}\n"
+          + "    </style>\n"
+          + "  </head>\n"
+          + "  <body>\n"
+          + "    <h1>" + newCustom + "</h1>\n"
+          + "    <table>\n";
+      for (var i = 0; i < checkers.length; i++) {
+        let checkbox = checkers[i].getElementsByTagName("input")[0],
+            checked = checkbox.checked,
+            tableHeader = checkbox.id.split("-").join(" ");
+        text += "      <tr>\n" 
+          + "        <th scope='row'>" + tableHeader + "</th>\n"
+          + "        <td>";
+        if (checked) {
+          text += "✓"
+        } else {
+          text += "✕";
+        }
+        text += "</td>\n"
+          + "      </tr>\n";
+      }
+      text += "    </table>\n"
+        + "  </body>\n"
+        + "</html>";
+      let element = document.createElement('a');
+      element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+      element.setAttribute('download', filename);
+      element.style.display = 'none';
+      document.body.appendChild(element);
+      element.click();
+      document.body.removeChild(element);
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,18 @@
+/* Readium CSS
+   Line height pref
+
+   A submodule managing line-height for user settings
+   Part of “User Overrides Advanced” class – “advanced settings” flag required.
+
+   Repo: https://github.com/readium/readium-css */
+
+:root:--advanced-settings[style*="--USER__lineHeight"] {
+  line-height: var(--USER__lineHeight) !important;
+}
+
+:root:--advanced-settings[style*="--USER__lineHeight"] body,
+:root:--advanced-settings[style*="--USER__lineHeight"] p,
+:root:--advanced-settings[style*="--USER__lineHeight"] li,
+:root:--advanced-settings[style*="--USER__lineHeight"] div {
+  line-height: inherit;
+}

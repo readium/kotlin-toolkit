@@ -11,6 +11,7 @@ package org.readium.r2.testapp.reader
 import org.readium.adapters.pdfium.navigator.PdfiumPreferences
 import org.readium.adapters.pdfium.navigator.PdfiumPreferencesEditor
 import org.readium.adapters.pdfium.navigator.PdfiumSettings
+import org.readium.navigator.web.WebNavigatorFactory
 import org.readium.r2.navigator.epub.EpubNavigatorFactory
 import org.readium.r2.navigator.epub.EpubPreferences
 import org.readium.r2.navigator.media3.exoplayer.ExoPlayerNavigator
@@ -50,6 +51,13 @@ class EpubReaderInitData(
     val navigatorFactory: EpubNavigatorFactory,
     ttsInitData: TtsInitData?
 ) : VisualReaderInitData(bookId, publication, initialLocation, ttsInitData)
+
+class WebReaderInitData(
+    bookId: Long,
+    publication: Publication,
+    initialLocation: Locator?,
+    val navigatorFactory: org.readium.navigator.web.WebNavigatorFactory
+) : VisualReaderInitData(bookId, publication, initialLocation, null)
 
 class PdfReaderInitData(
     bookId: Long,

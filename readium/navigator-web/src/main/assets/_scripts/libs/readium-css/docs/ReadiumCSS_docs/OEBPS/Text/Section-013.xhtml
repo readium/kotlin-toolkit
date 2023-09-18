@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" xml:lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="generator" content="pandoc"/>
+  <title>Readium CSS Implementers’ doc</title>
+  <link rel="stylesheet" type="text/css" href="../Styles/stylesheet.css"/>
+</head>
+
+<body xml:lang="en">
+  <section id="baseline-for-a11y-related-user-settings" class="level1">
+    <h1>Baseline for a11y-related user settings</h1>
+
+    <p>[Implementers’ doc] [Authors’ info]</p>
+
+    <p>Our current baseline for user settings includes:</p>
+
+    <ul>
+      <li>night/sepia modes, and custom <code>background-color</code> and <code>color</code>;</li>
+
+      <li><code>text-align</code> and <code>hyphens</code>;</li>
+
+      <li><code>font-size</code> and <code>line-height</code>;</li>
+
+      <li>a11y-related typefaces;</li>
+
+      <li><code>letter-</code> and <code>word-spacing</code>;</li>
+
+      <li>removing italics, subscrips and superscripts, and drop caps.</li>
+    </ul>
+
+    <p>We should probably consider additional options:</p>
+
+    <ul>
+      <li>forcing an outline for focused elements;</li>
+
+      <li>unfloating elements;</li>
+
+      <li>removing images.</li>
+    </ul>
+
+    <p>Please note some or all of those settings may be added in Readium CSS at some point.</p>
+
+    <p><strong>A few notes:</strong></p>
+
+    <p>The a11y-related typefaces are not necessarily typefaces which were specifically designed for a11y. A typeface a reader is used to, like Verdana, Trebuchet, etc., can be a11y-related as well. From research, the more varied typefaces available, the better. There is no silver bullet there, some people don’t like Open Dyslexic for instance, and prefer sans-serif typefaces they are used to.</p>
+
+    <p>Removing italics, subs and sups, drop caps and floated elements should probably be automatic if the typeface or theme selected was explicitly designed for dyslexia. Additionnaly, the <code>--USER__a11yNormalize: readium-a11y-on</code> flag is available and bring this feature to other typefaces.</p>
+
+    <section id="os-settings" class="level2">
+      <h2 id="sigil_toc_id_99">OS settings</h2>
+
+      <p>Some Operating Systems provide users with global settings. We must take those settings into account, which is the purpose of the “OS a11y” module. This module still needs some improvements.</p>
+
+      <p>We’ll have to make decisions about reading modes there: if the user sets the monochrome option, how are we supposed to deal with sepia and colors? If the user sets an inverted high-contrast mode, what happens in night mode? There can indeed be multiple users for the same computer, using the same account, and we should cover this case out of the box.</p>
+    </section>
+
+    <section id="current-a11y-features-on-the-market" class="level2">
+      <h2 id="sigil_toc_id_100">Current a11y Features on the market</h2>
+
+      <p>There are features you might want to add to your Reading System so that it can cover the needs of all readers.</p>
+
+      <p>Readium CSS can help but can’t manage all of those features. Indeed, CSS might fall short of your expectations, especially on reliability. In other words, CSS is not necessarily the best way to manage features which could be considered in its scope at first sight.</p>
+
+      <p>As a rule, CSS can be used for styling (colors, highlights, etc.) but can’t be used to target contents (text nodes) directly. As a consequence, you’ll need to add hooks in the DOM (extra markup, classes, attributes, etc.) for some features.</p>
+
+      <section id="dyslexia" class="level3">
+        <h3 class="sigil_not_in_toc">Dyslexia</h3>
+
+        <p>Luc Maumet (EDRLab) has conducted an analysis on the features available in dedicated software. Here are the features Readium CSS can manage and those it can’t.</p>
+
+        <section id="features-in-readium-css-scope" class="level4">
+          <h4 class="sigil_not_in_toc">Features in Readium CSS Scope</h4>
+
+          <ul>
+            <li>Create and personalize a profile (customizable theme which can be saved and retrieved)</li>
+
+            <li>Add space between words</li>
+
+            <li>Add space between letters</li>
+
+            <li>Change the typeface</li>
+
+            <li>Offer a dyslexia typeface</li>
+
+            <li>Change the font-size</li>
+
+            <li>Improve line-height</li>
+          </ul>
+        </section>
+
+        <section id="features-outscoping-readium-css" class="level4">
+          <h4 class="sigil_not_in_toc">Features outscoping Readium CSS</h4>
+
+          <ul>
+            <li>Alternate colors for words</li>
+
+            <li>Alternate colors for lines</li>
+
+            <li>Highlight a specific letter</li>
+
+            <li>Highlight uppercase letters</li>
+
+            <li>Highlight punctuation</li>
+
+            <li>Highlight syllabes</li>
+
+            <li>Highlight consonants and vowels with different colors</li>
+
+            <li>Text to Speech</li>
+
+            <li>Highlight a specific sound in the text</li>
+
+            <li>Export contents with the customized layout</li>
+          </ul>
+        </section>
+      </section>
+    </section>
+
+	<section id="vestibular-disorders" class="level2">
+	  <h2 id="sigil_toc_id_169">Vestibular disorders</h2>
+
+	  <p>There’s an a11y “issue” which is quite unknown, but may impact a lot of people, either temporarily or permanently: vestibular disorders.</p>
+
+	  <p>To put it simply, some interactions can make the user dizzy, uneasy, and in some cases ruin her/his entire day, because the user feels like they can’t keep balance when walking or even staying up, or feel vertigo. <a href="https://source.opennews.org/articles/motion-sick/">See this article</a> for further details and illustrations.</p>
+
+	  <p><strong>At the very minimum, allow the user to disable animations which may create effects (e.g.&#160;page-transition animation).</strong> But everything else will vary from implementation to implementation.</p>
+
+	  <p>On iOS/Mac, there’s a system setting which has been implemented and <a href="https://webkit.org/blog/7551/responsive-design-for-motion/">browsers increasingly support the prefers-reduced-motion media query</a> to design accordingly.</p>
+
+	  <p>There’s little we can do about interactive EPUB contents themselves, but we can at least promote what Mozilla got wonderfully right from the start to authors, i.e. <a href="http://devtoolschallenger.com">an overlay asking users to set their preference</a>.</p>
+</section>
+
+    <section id="internationalization" class="level2">
+      <h2 id="sigil_toc_id_142">Internationalization</h2>
+
+      <p>Very little information on a11y is currently available in the <a href="https://w3c.github.io/typography/">W3C Text Layout and Typography Requirements</a>.</p>
+
+      <p>All we know at the moment is that, in the Arabic and Farsi scripts, disabling ligatures might help for dyslexia.</p>
+    </section>
+  </section>
+</body>
+</html>

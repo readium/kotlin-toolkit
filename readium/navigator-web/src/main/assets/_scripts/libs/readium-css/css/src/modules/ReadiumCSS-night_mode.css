@@ -1,0 +1,72 @@
+/* Readium CSS
+   Night mode
+
+   A preset theme for night mode
+
+   Repo: https://github.com/readium/readium-css */
+
+
+/* CONFIG */
+
+/* [style*="--USER__appearance"] can be used to increase specificity but performance hit */
+:root:--night-mode {
+  --RS__backgroundColor: #000000;
+  --RS__textColor: #FEFEFE;
+
+  --RS__linkColor: #63caff;
+  --RS__visitedColor: #0099E5;
+
+  /* This can be customized but initial will re-use default value of the browser */
+  --RS__selectionBackgroundColor: #b4d8fe;
+  --RS__selectionTextColor: inherit;
+}
+
+/* we don’t need to redeclare bg-color and color for :root since we will inherit and update from day/default mode */
+
+:root:--night-mode *:not(a) {
+  background-color: transparent !important;
+  color: inherit !important;
+  border-color: currentColor !important;
+}
+
+:root:--night-mode svg text {
+  fill: currentColor !important;
+  stroke: none !important;
+}
+
+:root:--night-mode a:link,
+:root:--night-mode a:link * {
+  color: var(--RS__linkColor) !important;
+}
+
+:root:--night-mode a:visited,
+:root:--night-mode a:visited * {
+  color: var(--RS__visitedColor) !important;
+}
+
+/* For epub:type, in case the contents are served as text/html, namespaces won’t work hence why we’re using both syntax */
+
+:root:--night-mode img[class*="gaiji"],
+:root:--night-mode *[epub\:type~="titlepage"] img:only-child,
+:root:--night-mode *[epub|type~="titlepage"] img:only-child {
+  -webkit-filter: invert(100%);
+  filter: invert(100%);
+}
+
+/* Darken all images on user’s demand */
+:root:--night-mode:--darken-filter img {
+  -webkit-filter: brightness(80%);
+  filter: brightness(80%);
+}
+
+/* Invert all images on user’s demand */
+:root:--night-mode:--invert-filter img {
+  -webkit-filter: invert(100%);
+  filter: invert(100%);
+}
+
+/* Darken and invert on user’s demand */
+:root:--night-mode:--darken-filter:--invert-filter img {
+  -webkit-filter: brightness(80%) invert(100%);
+  filter: brightness(80%) invert(100%);
+}

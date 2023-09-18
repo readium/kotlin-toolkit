@@ -1,0 +1,962 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" xml:lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="generator" content="pandoc"/>
+  <title>Readium CSS Implementers’ doc</title>
+  <link rel="stylesheet" type="text/css" href="../Styles/stylesheet.css"/>
+</head>
+
+<body xml:lang="en">
+  <section id="default-fonts" class="level1">
+    <h1>Typefaces and font-stacks</h1>
+
+    <p>[Implementers’ doc] [Authors’ info]</p>
+
+    <p>In order to get the best performance and language support possible, we tried to design off-the-rack font-stacks using pre-installed system fonts.</p>
+
+    <p>Those font-stacks cover:</p>
+
+    <ul>
+      <li>MacOS &gt; 10.9;</li>
+
+      <li>iOS &gt; 9;</li>
+
+      <li>Windows &gt; 7;</li>
+
+      <li>Android &gt; 4.4.4.</li>
+    </ul>
+
+    <p>The unicode ranges to be found in this document are specifically scoped to their language and are provided in case you want to use other typefaces: it can help you check support and extended coverage, and subset if needed.</p>
+
+    <section id="test-files" class="level2">
+      <h2 id="sigil_toc_id_124">Test files</h2>
+
+      <p>Test files can be retrieved from <a href="https://raw.githubusercontent.com/readium/readium-css/develop/docs/i18n-samples/root.atom">the Readium CSS’ i18n-samples OPDS feed</a>.</p>
+    </section>
+
+    <section id="fundamentals" class="level2">
+      <h2 id="sigil_toc_id_65">Fundamentals</h2>
+
+      <p>UA defaults if no <code>font-family</code> is set usually are:</p>
+
+      <ul>
+        <li>Times (New Roman)</li>
+
+        <li>Droid Sans/Roboto on Android</li>
+      </ul>
+
+      <p>You could force Android using a serif font by declaring</p>
+
+      <pre><code>font-family: “Times New Roman”;</code></pre>
+
+      <p>But it will be resolved to Droid Serif.</p>
+
+      <p><a href="https://www.granneman.com/webdev/coding/css/fonts-and-formatting/web-browser-font-defaults/">For generic families</a> (sans-serif, serif, monospace), you’ll usually get:</p>
+
+      <ul>
+        <li>Arial/Helvetica/Roboto for sans-serif;</li>
+
+        <li>Times/Times New Roman/Droid Serif for serif;</li>
+
+        <li>Courier/Courier New/Droid Mono for monospace.</li>
+      </ul>
+
+      <p>Historically, monospaced fonts have had a font-size of <code>13.33px</code>. You’d better be cautious about that since a margin of <code>1em</code> will indeed be <code>13.33px</code> for <code>pre</code>.</p>
+
+      <p>Finally, rendering engines fall back on a glyph basis. If a glyph is not available in the preferred font, it will check if it is in the second one, and so on and so forth, for each glyph.</p>
+    </section>
+
+    <section id="ui" class="level2">
+      <h2 id="sigil_toc_id_66">UI</h2>
+
+      <p>If you want a <a href="https://css-tricks.com/snippets/css/system-font-stack/">system font stack</a>, it already exists.</p>
+
+      <pre><code>font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantrell, "Helvetica Neue", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";</code></pre>
+
+      <p>This is a modernized version taking popular Linux distros and emoji into account.</p>
+    </section>
+
+    <section id="latin" class="level2">
+      <h2 id="sigil_toc_id_67">Latin</h2>
+
+      <section id="old-style-serif" class="level3">
+        <h3 class="sigil_not_in_toc">Old Style (serif)</h3>
+
+        <pre><code>font-family: "Iowan Old Style", "Sitka Text", Palatino, "Book Antiqua", serif;</code></pre>
+
+        <p>Serif will resolve to Droid Serif on Android.</p>
+
+        <p>Open Type features available for those fonts are:</p>
+
+        <table>
+          <thead>
+            <tr class="header">
+              <th>
+                Typeface
+              </th>
+
+              <th style="text-align: center;">
+                Small-caps
+              </th>
+
+              <th style="text-align: center;">
+                Oldstyle nums
+              </th>
+
+              <th style="text-align: center;">
+                Linear nums
+              </th>
+
+              <th style="text-align: center;">
+                Proportional nums
+              </th>
+
+              <th style="text-align: center;">
+                Tabular nums
+              </th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr class="odd">
+              <td>
+                Iowan Old Style
+              </td>
+
+              <td style="text-align: center;">
+                YES
+              </td>
+
+              <td style="text-align: center;">
+                YES
+              </td>
+
+              <td style="text-align: center;">
+                YES
+              </td>
+
+              <td style="text-align: center;">
+                YES
+              </td>
+
+              <td style="text-align: center;">
+                YES
+              </td>
+            </tr>
+
+            <tr class="even">
+              <td>
+                Sitka Text
+              </td>
+
+              <td style="text-align: center;">
+                YES
+              </td>
+
+              <td style="text-align: center;">
+                YES
+              </td>
+
+              <td style="text-align: center;">
+                YES
+              </td>
+
+              <td style="text-align: center;">
+                YES
+              </td>
+
+              <td style="text-align: center;">
+                YES
+              </td>
+            </tr>
+
+            <tr class="odd">
+              <td>
+                Droid Serif
+              </td>
+
+              <td style="text-align: center;">
+                NO
+              </td>
+
+              <td style="text-align: center;">
+                NO
+              </td>
+
+              <td style="text-align: center;">
+                NO
+              </td>
+
+              <td style="text-align: center;">
+                NO
+              </td>
+
+              <td style="text-align: center;">
+                NO
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section id="modern-serif" class="level3">
+        <h3 class="sigil_not_in_toc">Modern (serif)</h3>
+
+        <pre><code>font-family: Athelas, Constantia, Georgia, serif;</code></pre>
+
+        <p>Serif will resolve to Droid Serif on Android.</p>
+
+        <p>Open Type features available for those fonts are:</p>
+
+        <table>
+          <thead>
+            <tr class="header">
+              <th>
+                Typeface
+              </th>
+
+              <th style="text-align: center;">
+                Small-caps
+              </th>
+
+              <th style="text-align: center;">
+                Oldstyle nums
+              </th>
+
+              <th style="text-align: center;">
+                Linear nums
+              </th>
+
+              <th style="text-align: center;">
+                Proportional nums
+              </th>
+
+              <th style="text-align: center;">
+                Tabular nums
+              </th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr class="odd">
+              <td>
+                Athelas
+              </td>
+
+              <td style="text-align: center;">
+                NO
+              </td>
+
+              <td style="text-align: center;">
+                NO
+              </td>
+
+              <td style="text-align: center;">
+                NO
+              </td>
+
+              <td style="text-align: center;">
+                NO
+              </td>
+
+              <td style="text-align: center;">
+                NO
+              </td>
+            </tr>
+
+            <tr class="even">
+              <td>
+                Constantia
+              </td>
+
+              <td style="text-align: center;">
+                YES
+              </td>
+
+              <td style="text-align: center;">
+                YES
+              </td>
+
+              <td style="text-align: center;">
+                YES
+              </td>
+
+              <td style="text-align: center;">
+                YES
+              </td>
+
+              <td style="text-align: center;">
+                YES
+              </td>
+            </tr>
+
+            <tr class="odd">
+              <td>
+                Droid Serif
+              </td>
+
+              <td style="text-align: center;">
+                NO
+              </td>
+
+              <td style="text-align: center;">
+                NO
+              </td>
+
+              <td style="text-align: center;">
+                NO
+              </td>
+
+              <td style="text-align: center;">
+                NO
+              </td>
+
+              <td style="text-align: center;">
+                NO
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section id="neutral-sans" class="level3">
+        <h3 class="sigil_not_in_toc">Neutral (sans)</h3>
+
+        <p>Same as UI font-stack or the following simplified version:</p>
+
+        <pre><code>font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, Noto, "Helvetica Neue", Arial, sans-serif;</code></pre>
+
+        <p>Open Type features available for those fonts are:</p>
+
+        <table>
+          <thead>
+            <tr class="header">
+              <th>
+                Typeface
+              </th>
+
+              <th style="text-align: center;">
+                Small-caps
+              </th>
+
+              <th style="text-align: center;">
+                Oldstyle nums
+              </th>
+
+              <th style="text-align: center;">
+                Linear nums
+              </th>
+
+              <th style="text-align: center;">
+                Proportional nums
+              </th>
+
+              <th style="text-align: center;">
+                Tabular nums
+              </th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr class="odd">
+              <td>
+                San Fransisco
+              </td>
+
+              <td style="text-align: center;">
+                YES
+              </td>
+
+              <td style="text-align: center;">
+                NO
+              </td>
+
+              <td style="text-align: center;">
+                NO
+              </td>
+
+              <td style="text-align: center;">
+                YES
+              </td>
+
+              <td style="text-align: center;">
+                YES
+              </td>
+            </tr>
+
+            <tr class="even">
+              <td>
+                Segoe UI
+              </td>
+
+              <td style="text-align: center;">
+                YES
+              </td>
+
+              <td style="text-align: center;">
+                YES
+              </td>
+
+              <td style="text-align: center;">
+                YES
+              </td>
+
+              <td style="text-align: center;">
+                YES
+              </td>
+
+              <td style="text-align: center;">
+                YES
+              </td>
+            </tr>
+
+            <tr class="odd">
+              <td>
+                Roboto
+              </td>
+
+              <td style="text-align: center;">
+                YES
+              </td>
+
+              <td style="text-align: center;">
+                YES
+              </td>
+
+              <td style="text-align: center;">
+                YES
+              </td>
+
+              <td style="text-align: center;">
+                YES
+              </td>
+
+              <td style="text-align: center;">
+                YES
+              </td>
+            </tr>
+
+            <tr class="even">
+              <td>
+                Helvetica Neue
+              </td>
+
+              <td style="text-align: center;">
+                NO
+              </td>
+
+              <td style="text-align: center;">
+                NO
+              </td>
+
+              <td style="text-align: center;">
+                NO
+              </td>
+
+              <td style="text-align: center;">
+                YES
+              </td>
+
+              <td style="text-align: center;">
+                YES
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section id="humanist-sans" class="level3">
+        <h3 class="sigil_not_in_toc">Humanist (sans)</h3>
+
+        <pre><code>font-family: Seravek, Calibri, Roboto, Arial, sans-serif;</code></pre>
+
+        <p>Sans-serif will resolve to Droid Sans or Roboto on Android.</p>
+
+        <p>Open Type features available for those fonts are:</p>
+
+        <table>
+          <thead>
+            <tr class="header">
+              <th>
+                Typeface
+              </th>
+
+              <th style="text-align: center;">
+                Small-caps
+              </th>
+
+              <th style="text-align: center;">
+                Oldstyle nums
+              </th>
+
+              <th style="text-align: center;">
+                Linear nums
+              </th>
+
+              <th style="text-align: center;">
+                Proportional nums
+              </th>
+
+              <th style="text-align: center;">
+                Tabular nums
+              </th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr class="odd">
+              <td>
+                Seravek
+              </td>
+
+              <td style="text-align: center;">
+                YES
+              </td>
+
+              <td style="text-align: center;">
+                YES
+              </td>
+
+              <td style="text-align: center;">
+                YES
+              </td>
+
+              <td style="text-align: center;">
+                YES
+              </td>
+
+              <td style="text-align: center;">
+                YES
+              </td>
+            </tr>
+
+            <tr class="even">
+              <td>
+                Calibri
+              </td>
+
+              <td style="text-align: center;">
+                YES
+              </td>
+
+              <td style="text-align: center;">
+                YES
+              </td>
+
+              <td style="text-align: center;">
+                YES
+              </td>
+
+              <td style="text-align: center;">
+                YES
+              </td>
+
+              <td style="text-align: center;">
+                YES
+              </td>
+            </tr>
+
+            <tr class="odd">
+              <td>
+                Roboto
+              </td>
+
+              <td style="text-align: center;">
+                YES
+              </td>
+
+              <td style="text-align: center;">
+                YES
+              </td>
+
+              <td style="text-align: center;">
+                YES
+              </td>
+
+              <td style="text-align: center;">
+                YES
+              </td>
+
+              <td style="text-align: center;">
+                YES
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section id="monospace" class="level3">
+        <h3 class="sigil_not_in_toc">Monospace</h3>
+
+        <pre><code>font-family: "Andale Mono", Consolas, monospace;</code></pre>
+
+        <p>Monospace will resolve to Droid Sans Mono on Android.</p>
+
+        <p>Apple is shipping a monospaced San Fransisco in High Sierra but it is still unclear how you can access it in CSS.</p>
+      </section>
+
+      <section id="unicode-ranges" class="level3">
+        <h3 class="sigil_not_in_toc">Unicode ranges</h3>
+
+        <p>Unicode ranges are:</p>
+
+        <pre><code>/* Basic Latin */ 
+unicode-range: U+0020-007F; 
+
+/* Latin-1 supplement */ 
+unicode-range: U+0080-00FF; 
+
+/* Latin extended A */ 
+unicode-range: U+0100-017F; 
+
+/* Latin extended B */ 
+unicode-range: U+0180-024F;</code></pre>
+
+        <p>In addition, you might want to cover Greek and Cyrillic.</p>
+
+        <pre><code>/* Greek and coptic */ 
+unicode-range: U+0370-03FF; 
+
+/* Cyrillic */ 
+unicode-range: U+0400-04FF; 
+
+/* Cyrillic Supplement */ 
+unicode-range: U+0500-052F;</code></pre>
+      </section>
+    </section>
+
+    <section id="amharic-am" class="level2">
+      <h2 id="sigil_toc_id_68">Amharic (am)</h2>
+
+      <pre><code>font-family: Kefa, Nyala, Roboto, Noto, "Noto Sans Ethiopic", serif;</code></pre>
+
+      <p><strong>Warning:</strong> no iOS.</p>
+
+      <pre><code>unicode-range: U+1200-137F, U+1380-139F;</code></pre>
+    </section>
+
+    <section id="arabic-ar" class="level2">
+      <h2 id="sigil_toc_id_69">Arabic (ar)</h2>
+
+      <pre><code>font-family: "Geeza Pro", "Arabic Typesetting", Roboto, Noto, "Noto Naskh Arabic", "Times New Roman", serif;</code></pre>
+
+      <pre><code>unicode-range: U+0600-06FF, U+0750-077F, U+08A0-08FF;</code></pre>
+    </section>
+
+    <section id="bengalibangla-bn" class="level2">
+      <h2 id="sigil_toc_id_70">Bengali/Bangla (bn)</h2>
+
+      <pre><code>font-family: "Kohinoor Bangla", "Bangla Sangam MN", Vrinda, Roboto, Noto, "Noto Sans Bengali", sans-serif;</code></pre>
+
+      <pre><code>unicode-range: U+0980-09FF;</code></pre>
+    </section>
+
+    <section id="tibetan-bo" class="level2">
+      <h2 id="sigil_toc_id_71">Tibetan (bo)</h2>
+
+      <pre><code>font-family: Kailasa, "Microsoft Himalaya", Roboto, Noto, "Noto Sans Tibetan", sans-serif;</code></pre>
+
+      <pre><code>unicode-range: U+0F00-0FFF;</code></pre>
+    </section>
+
+    <section id="cherokee-chr" class="level2">
+      <h2 id="sigil_toc_id_72">Cherokee (chr)</h2>
+
+      <pre><code>font-family: "Plantagenet Cherokee", Roboto, Noto, "Noto Sans Cherokee";</code></pre>
+
+      <p><strong>Warning:</strong> no iOS.</p>
+
+      <pre><code>unicode-range: U+13A0-13FF;</code></pre>
+    </section>
+
+    <section id="persian-fa" class="level2">
+      <h2 id="sigil_toc_id_38">Persian (fa)</h2>
+
+      <pre><code>font-family: "Geeza Pro", "Arabic Typesetting", Roboto, Noto, "Noto Naskh Arabic", "Times New Roman", serif;</code></pre>
+
+      <pre><code>unicode-range: U+0600-06FF, U+0750-077F, U+08A0-08FF;</code></pre>
+    </section>
+
+    <section id="gujarati-gu" class="level2">
+      <h2 id="sigil_toc_id_73">Gujarati (gu)</h2>
+
+      <pre><code>font-family: "Gujarati Sangam MN", "Nirmala UI", Shruti, Roboto, Noto, "Noto Sans Gujarati", sans-serif;</code></pre>
+
+      <pre><code>unicode-range: U+0A80-0AFF;</code></pre>
+    </section>
+
+    <section id="hebrew-he" class="level2">
+      <h2 id="sigil_toc_id_74">Hebrew (he)</h2>
+
+      <pre><code>font-family: "New Peninim MT", "Arial Hebrew", Gisha, "Times New Roman", Roboto, Noto, "Noto Sans Hebrew" sans-serif;</code></pre>
+
+      <pre><code>unicode-range: U+0590-05FF;</code></pre>
+    </section>
+
+    <section id="hindi-hi" class="level2">
+      <h2 id="sigil_toc_id_75">Hindi (hi)</h2>
+
+      <pre><code>font-family: "Kohinoor Devanagari", "Devanagari Sangam MN", Kokila, "Nirmala UI", Roboto, Noto, "Noto Sans Devanagari", sans-serif;</code></pre>
+
+      <pre><code>unicode-range: U+0900-097F, U+A8E0-A8FF;</code></pre>
+    </section>
+
+    <section id="armenian-hy" class="level2">
+      <h2 id="sigil_toc_id_76">Armenian (hy)</h2>
+
+      <pre><code>font-family: Mshtakan, Sylfaen, Roboto, Noto, "Noto Serif Armenian", serif;</code></pre>
+
+      <p><strong>Warning:</strong> no iOS.</p>
+
+      <pre><code>unicode-range: U+0530-058F;</code></pre>
+    </section>
+
+    <section id="inuktitut-iu" class="level2">
+      <h2 id="sigil_toc_id_77">Inuktitut (iu)</h2>
+
+      <pre><code>font-family: "Euphemia UCAS", Euphemia, Roboto, Noto, "Noto Sans Canadian Aboriginal", sans-serif;</code></pre>
+
+      <pre><code>unicode-range: U+1400-167F;</code></pre>
+    </section>
+
+    <section id="japanese-ja" class="level2">
+      <h2 id="sigil_toc_id_78">Japanese (ja)</h2>
+
+      <pre><code>font-family: "游ゴシック体", YuGothic, "ヒラギノ丸ゴ", "Hiragino Sans", "Yu Gothic UI", "Meiryo UI", "MS Gothic", Roboto, Noto, "Noto Sans CJK JP", sans-serif;</code></pre>
+
+      <pre><code>unicode-range: U+3000-303F, U+3040-309F, U+30A0-30FF, U+FF00-FFEF, U+4E00-9FAF;</code></pre>
+    </section>
+
+    <section id="khmer-km" class="level2">
+      <h2 id="sigil_toc_id_79">Khmer (km)</h2>
+
+      <pre><code>font-family: "Khmer Sangam MN", "Leelawadee UI", "Khmer UI", Roboto, Noto, "Noto Sans Khmer", sans-serif;</code></pre>
+
+      <pre><code>unicode-range: U+1780-17FF, U+19E0-19FF;</code></pre>
+    </section>
+
+    <section id="kannada-kn" class="level2">
+      <h2 id="sigil_toc_id_80">Kannada (kn)</h2>
+
+      <pre><code>font-family: "Kannada Sangam MN", "Nirmala UI", Tunga, Roboto, Noto, "Noto Sans Kannada", sans-serif;</code></pre>
+
+      <pre><code>unicode-range: U+0C80-0CFF;</code></pre>
+    </section>
+
+    <section id="korean-ko" class="level2">
+      <h2 id="sigil_toc_id_81">Korean (ko)</h2>
+
+      <pre><code>font-family: "Nanum Gothic", "Apple SD Gothic Neo", "Malgun Gothic", Roboto, Noto, "Noto Sans CJK KR", sans-serif;</code></pre>
+
+      <pre><code>unicode-range: U+1100-11FF, U+3130-318F, U+A960-A97F, U+AC00-D7AF, U+D7B0-D7FF;</code></pre>
+    </section>
+
+    <section id="lao-lo" class="level2">
+      <h2 id="sigil_toc_id_82">Lao (lo)</h2>
+
+      <pre><code>font-family: "Lao Sangam MN", "Leelawadee UI", "Lao UI", Roboto, Noto, "Noto Sans Lao", sans-serif;</code></pre>
+
+      <pre><code>unicode-range: U+0E80-0EFF;</code></pre>
+    </section>
+
+    <section id="malayalam-ml" class="level2">
+      <h2 id="sigil_toc_id_83">Malayalam (ml)</h2>
+
+      <pre><code>font-family: "Malayalam Sangam MN", "Nirmala UI", Kartika, Roboto, Noto, "Noto Sans Malayalam", sans-serif;</code></pre>
+
+      <pre><code>unicode-range: U+0D00-0D7F;</code></pre>
+    </section>
+
+    <section id="oriya-or" class="level2">
+      <h2 id="sigil_toc_id_84">Oriya (or)</h2>
+
+      <pre><code>font-family: "Oriya Sangam MN", "Nirmala UI", Kalinga, Roboto, Noto, "Noto Sans Oriya", sans-serif;</code></pre>
+
+      <pre><code>unicode-range: U+0B00-0B7F;</code></pre>
+    </section>
+
+    <section id="punjabi-pa" class="level2">
+      <h2 id="sigil_toc_id_85">Punjabi (pa)</h2>
+
+      <pre><code>font-family: "Gurmukhi MN", "Nirmala UI", Kartika, Roboto, Noto, "Noto Sans Gurmukhi", sans-serif;</code></pre>
+
+      <pre><code>unicode-range: U+0A00-0A7F;</code></pre>
+    </section>
+
+    <section id="sinhalese-si" class="level2">
+      <h2 id="sigil_toc_id_86">Sinhalese (si)</h2>
+
+      <pre><code>font-family: "Sinhala Sangam MN", "Nirmala UI", "Iskoola Pota", Roboto, Noto, "Noto Sans Sinhala", sans-serif;</code></pre>
+
+      <pre><code>unicode-range: U+0D80-0DFF;</code></pre>
+    </section>
+
+    <section id="tamil-ta" class="level2">
+      <h2 id="sigil_toc_id_87">Tamil (ta)</h2>
+
+      <pre><code>font-family: "Tamil Sangam MN", "Nirmala UI", Latha, Roboto, Noto, "Noto Sans Tamil", sans-serif;</code></pre>
+
+      <pre><code>unicode-range: U+0B80-0BFF;</code></pre>
+    </section>
+
+    <section id="telugu-te" class="level2">
+      <h2 id="sigil_toc_id_88">Telugu (te)</h2>
+
+      <pre><code>font-family: "Kohinoor Telugu", "Telugu Sangam MN", "Nirmala UI", Gautami, Roboto, Noto, "Noto Sans Telugu", sans-serif;</code></pre>
+
+      <pre><code>unicode-range: U+0C00-0C7F;</code></pre>
+    </section>
+
+    <section id="thai-th" class="level2">
+      <h2 id="sigil_toc_id_89">Thai (th)</h2>
+
+      <pre><code>font-family: "Thonburi", "Leelawadee UI", "Cordia New", Roboto, Noto, "Noto Sans Thai", sans-serif;</code></pre>
+
+      <pre><code>unicode-range: U+0E00-0E7F;</code></pre>
+    </section>
+
+    <section id="chinese-zh-cn" class="level2">
+      <h2 id="sigil_toc_id_90">Chinese (zh-CN)</h2>
+
+      <pre><code>font-family: "方体", "PingFang SC", "黑体", "Heiti SC", "Microsoft JhengHei UI", "Microsoft JhengHei", Roboto, Noto, "Noto Sans CJK SC", sans-serif;</code></pre>
+
+      <pre><code>unicode-range: U+3000-303F, U+3040-309F, U+30A0-30FF, U+FF00-FFEF, U+4E00-9FAF;</code></pre>
+    </section>
+
+    <section id="chinese-hong-kong-zh-hk" class="level2">
+      <h2 id="sigil_toc_id_91">Chinese – Hong Kong (zh-HK)</h2>
+
+      <pre><code>font-family: "方體", "PingFang HK", "方體", "PingFang TC", "黑體", "Heiti TC", "Microsoft JhengHei UI", "Microsoft JhengHei", Roboto, Noto, "Noto Sans CJK TC", sans-serif;</code></pre>
+    </section>
+
+    <section id="chinese-taiwan-zh-tw" class="level2">
+      <h2 id="sigil_toc_id_92">Chinese – Taiwan (zh-TW)</h2>
+
+      <pre><code>font-family: "方體", "PingFang TC", "黑體", "Heiti TC", "Microsoft JhengHei UI", "Microsoft JhengHei", Roboto, Noto, "Noto Sans CJK TC", sans-serif;</code></pre>
+    </section>
+
+    <section id="dyslexic" class="level2">
+      <h2 id="sigil_toc_id_93">Dyslexic</h2>
+
+      <p>This is a tricky topic, and it needs quite some expertise, so those won’t be recommendations <em>per se</em> but mere insights, since extended research is currently being done in this field. As a consequence, implementers willing to provide the best experience possible should try to keep up-to-date.</p>
+
+      <section id="typefaces-dont-work-in-a-vacuum" class="level3">
+        <h3 class="sigil_not_in_toc">Typefaces don’t work in a vacuum</h3>
+
+        <p><a href="http://bigelowandholmes.typepad.com/bigelow-holmes/2014/11/typography-dyslexia.html">From research conducted by Charles Bigelow</a> – who designed Lucida and Wingdings with Kris Holmes –, on a corpus of existing scientific research and books:</p>
+
+        <blockquote>
+          <p>In the scientific literature, I found no evidence that special dyslexia fonts confer statistically significant improvements in reading speed compared to standard, run-of-the-mill fonts. Some studies found that for certain subsets of reading errors, special dyslexia fonts do reduce error rates for dyslexic readers, yet for other subsets of errors, special dyslexic fonts were no better, or in some cases worse; hence, the findings on reading errors are mixed.</p>
+        </blockquote>
+
+        <p>Typography is indeed a system and other factors have to be taken into account:</p>
+
+        <blockquote>
+          <p>[…] the sizing, spacing, and arrangement of type, but not typeface design <em>per se</em> – a few scientific papers found that certain variations in typography offer statistically significant benefits to dyslexic readers.</p>
+        </blockquote>
+
+        <p>If needed, the sources of papers and studies available online at the time of this research are <a href="http://bigelowandholmes.typepad.com/bigelow-holmes/2014/11/web-links-urls-for-typography-dyslexia-post.html">listed in this companion article</a>.</p>
+      </section>
+
+      <section id="general-tips" class="level3">
+        <h3 class="sigil_not_in_toc">General tips</h3>
+
+        <p>It is important to emphasize that the user settings (and their values) implementers will offer users is as equally – if not more – important as the typefaces themselves.</p>
+
+        <p><a href="http://adrianroselli.com/2015/03/typefaces-for-dyslexia.html">A list of general tips:</a></p>
+
+        <ul>
+          <li>avoid justified text (<code>text-align</code> setting);</li>
+
+          <li>use generous line spacing/leading (<code>line-height</code> setting);</li>
+
+          <li>use generous letter spacing (<code>letter-spacing</code> setting);</li>
+
+          <li>avoid italics (<code>--USER__a11yNormalize</code> flag);</li>
+
+          <li>generally use sans serif faces (<code>font-family</code> setting);</li>
+
+          <li>use larger text (<code>font-size</code> setting);</li>
+
+          <li>use good contrast (<code>background-</code> and <code>color</code> settings, reading modes, themes);</li>
+
+          <li>use clear, concise writing.</li>
+        </ul>
+
+        <p><a href="https://www.w3.org/TR/WCAG21/">The WCAG 2.1 spec</a>, especially <a href="https://www.w3.org/TR/WCAG21/#adapting-text">the “Adapting text” section</a>, can serve as a starting point to choose the values you might at least offer to users for those settings.</p>
+
+        <p>We’ve been trying to define a baseline for a11y-related user settings, and you’ll find further information and extra features you might want to implement in the “<a href="../Text/Section-013.xhtml">Baseline for a11y-related user settings</a>” document (e.g. alternated colors for lines of text or words, etc.).</p>
+      </section>
+
+      <section id="on-typefaces-themselves" class="level3">
+        <h3 class="sigil_not_in_toc">On typefaces themselves</h3>
+
+        <p>Although typefaces specifically designed for dyslexia exist, users might prefer system fonts they are used to. <a href="http://dyslexiahelp.umich.edu/sites/default/files/good_fonts_for_dyslexia_study.pdf">The following system typefaces are almost always listed as good for dyslexia</a>:</p>
+
+        <ul>
+          <li>Arial/Helvetica</li>
+
+          <li>Trebuchet MS</li>
+
+          <li>Verdana</li>
+        </ul>
+
+        <p>Those fonts are available on both Windows and MacOS/iOS so it would be a good idea to have at least 2 of them available in the typeface user setting. We are recommending extra options in the <a href="../Text/Section-010.xhtml#recommended-fonts-for-accessibility">Open Source and Libre Fonts</a> though, in case you want to provide users with more specific fonts.</p>
+
+        <p>More importantly, preference is a key factor, and implementers might want to give access to user-installed fonts if the platform allows. When doing research, some participants indeed emphasized they installed a specific font for dyslexia, and they want to be able to use it in the reading app as well.</p>
+      </section>
+
+      <section id="conclusion" class="level3">
+        <h3 class="sigil_not_in_toc">Conclusion</h3>
+
+        <p>It’s not just about fonts, it’s about typography and user settings allowing its customization.</p>
+
+        <p>At the very minimum, you might want to provide:</p>
+
+        <ul>
+          <li>2–3 system fonts listed as good for dyslexia;</li>
+
+          <li>a font specifically designed for dyslexia;</li>
+
+          <li>a reliable <code>font-size</code> setting (i.e. that will work for all reflowable EPUB files);</li>
+
+          <li>a <code>line-height</code> setting;</li>
+
+          <li>a <code>text-align</code> setting;</li>
+
+          <li>a <code>letter-spacing</code> setting.</li>
+        </ul>
+
+        <p>It is noteworthy that everything extra will have to be implemented with great care: too many settings might create a cognitive overload for some users, so UX research should be conducted accordingly.</p>
+      </section>
+    </section>
+
+    <section id="math" class="level2">
+      <h2 id="sigil_toc_id_94">Math</h2>
+
+      <p>This is the font-stack used by Webkit, it tries to leverage fonts users might have installed via LaTeX.</p>
+
+      <pre><code>font-family: "Latin Modern Math", "STIX Two Math", "XITS Math", "STIX Math", "Libertinus Math", "TeX Gyre Termes Math", "TeX Gyre Bonum Math", "TeX Gyre Schola", "DejaVu Math TeX Gyre", "TeX Gyre Pagella Math", "Asana Math", "Cambria Math", "Lucida Bright Math", "Minion Math", STIXGeneral, STIXSizeOneSym, Symbol, "Times New Roman", serif;</code></pre>
+    </section>
+
+    <section id="ebpaj-patch-for-japanese" class="level2">
+      <h2 id="sigil_toc_id_130">EBPAJ patch for Japanese</h2>
+
+      <p>The EBPAJ template only references fonts from MS Windows so Readium CSS has to reference fonts from other platforms and override authors’ stylesheets. What this patch does is to keep the default value used in EBPAJ templates and provide fallbacks for all platforms.</p>
+
+      <p>Implementers might want to load this patch only if they find one of the following metadata items in the OPF package:</p>
+
+      <ul>
+        <li>version 1: <code>&lt;dc:description id="ebpaj-guide"&gt;ebpaj-guide-1.0&lt;/dc:description&gt;</code></li>
+
+        <li>version 1.1: <code>&lt;meta property="ebpaj:guide-version"&gt;1.1&lt;/meta&gt;</code></li>
+      </ul>
+
+      <p>Since <code>@font-face</code> must be used to align with EBPAJ’s specific implementation (rendering engines have to go through 9–11 <code>local</code> sources in the worst-case scenario), implementers should expect a performance debt.</p>
+    </section>
+  </section>
+</body>
+</html>

@@ -1,0 +1,785 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" xml:lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="generator" content="pandoc"/>
+  <title>Readium CSS Implementers’ doc</title>
+  <link rel="stylesheet" type="text/css" href="../Styles/stylesheet.css"/>
+</head>
+
+<body xml:lang="en">
+  <section id="readium-css-variables-api" class="level1">
+    <h1>Readium CSS Variables API</h1>
+
+    <p>[Implementers’ doc]</p>
+
+	<p>This document is meant to list all the customizable medias and flags (to be found in <code>ReadiumCSS-config.css</code>), as well as all the CSS variables for Reading System and User styles available in the <code>dist</code> stylesheets.</p>
+
+    <p>As a reminder, the priority is, in general:</p>
+
+    <pre><code>USER &gt; AUTHOR &gt; RS</code></pre>
+
+    <section id="how-to-set-and-remove-user-preferences" class="level2">
+      <h2 id="sigil_toc_id_182">How to set and remove user preferences</h2>
+
+      <section id="setting-a-user-preference" class="level3">
+        <h3 class="sigil_not_in_toc">Setting a user preference</h3>
+
+        <pre><code>var root = document.documentElement; root.style.setProperty("--USER__var", "value");</code></pre>
+
+        <p>You don’t need to remove the variable before setting another value, the new value will simply override the existing one.</p>
+      </section>
+
+      <section id="removing-a-user-preference" class="level3">
+        <h3 class="sigil_not_in_toc">Removing a user preference</h3>
+
+        <pre><code>var root = document.documentElement; root.style.removeProperty("--USER__var");</code></pre>
+      </section>
+    </section>
+
+    <section id="customizable-medias" class="level2">
+      <h2 id="sigil_toc_id_183">Customizable medias</h2>
+
+	  <p>You will find those customizable medias in <code>ReadiumCSS-config.css</code>. The values defined are used in media queries to control use of the auto pagination model.</p>
+
+      <hr/>
+
+      <pre><code>--responsive-columns</code></pre>
+
+      <p>Default is <code>60em</code></p>
+
+      <p>The <code>min-width</code> at which the auto pagination model must be used – will switch from 1 to 2 columns and vice versa.</p>
+
+      <hr/>
+
+      <pre><code>--min-device-columns</code></pre>
+
+      <p>Default is <code>36em</code></p>
+
+      <p>The minimum device width of the mobile device for which the auto pagination model must be used.</p>
+
+      <hr/>
+
+      <pre><code>--max-device-columns</code></pre>
+
+      <p>Default is <code>47em</code></p>
+
+      <p>The maximum device width of the mobile device for which the auto pagination model must be used.</p>
+
+      <hr/>
+
+      <p><strong>Warning:</strong> if you customize those medias, all ReadiumCSS <code>dist</code> stylesheets must be rebuilt.</p>
+    </section>
+
+    <section id="customizable-flags" class="level2">
+      <h2 id="sigil_toc_id_184">Customizable flags</h2>
+
+	  <p>You will find those customizable flags in <code>ReadiumCSS-config.css</code>, and can think of the preset values as boolean inline styles: if they are set on the <code>:root</code> element (i.e. <code>html</code>) then the flag is enabled. If another value is, or they are removed, then the flag is disabled.</p>
+
+      <p>Those custom selectors can only be customized before runtime. You could for example use a class or a custom attribute instead of an inline style. Check the <a href="../Text/Section-012.xhtml#sigil_toc_id_177">“User Settings”</a> and <a href="../Text/Section-002.xhtml">“Quickstart”</a> docs for further details.</p>
+
+	  <p><strong>Note:</strong> The preset is not a default implementers should use. Indeed, the initialization of those flags depends on your user settings’ management e.g. apply user settings to all EPUBs, only the ones that have already been customized, etc.</p>
+
+	  <hr/>
+
+      <pre><code>:--paged-view</code></pre>
+
+      <p>Preset: <code>--USER__view: readium-paged-on</code></p>
+
+      <p>Scope: <code>html</code></p>
+
+      <p>Override class: Chrome (should be applied by any means necessary)</p>
+
+      <hr/>
+
+      <pre><code>:--scroll-view</code></pre>
+
+      <p>Preset: <code>--USER__view: readium-scroll-on</code></p>
+
+      <p>Scope: <code>html</code></p>
+
+      <p>Override class: Chrome (should be applied by any means necessary)</p>
+
+      <hr/>
+
+      <pre><code>:--font-override</code></pre>
+
+      <p>Preset: <code>--USER__fontOverride: readium-font-on</code></p>
+
+      <p>Scope: <code>html</code></p>
+
+      <p>Override class: None. This flag is required to change the <code>font-family</code> user setting.</p>
+
+      <hr/>
+
+      <pre><code>:--advanced-settings</code></pre>
+
+      <p>Preset: <code>--USER__advancedSettings: readium-advanced-on</code></p>
+
+      <p>Scope: <code>html</code></p>
+
+      <p>Override class: None. This flag is required to apply the <code>font-family</code>, the <code>font-size</code> and/or advanced user settings.</p>
+
+      <hr/>
+
+      <pre><code>:--sepia-mode</code></pre>
+
+      <p>Preset: <code>--USER__appearance: readium-sepia-on</code></p>
+
+      <p>Scope: <code>html</code></p>
+
+      <p>Override class: Chrome (should be applied by any means necessary)</p>
+
+      <p>This flag applies the sepia reading mode.</p>
+
+      <hr/>
+
+      <pre><code>:--night-mode</code></pre>
+
+      <p>Preset: <code>--USER__appearance: readium-night-on</code></p>
+
+      <p>Scope: <code>html</code></p>
+
+      <p>Override class: Chrome (should be applied by any means necessary)</p>
+
+      <p>This flag applies the night reading mode.</p>
+
+      <hr/>
+
+      <pre><code>:--darken-filter</code></pre>
+
+      <p>Preset: <code>--USER__darkenImages: readium-darken-on</code></p>
+
+      <p>Scope: <code>html</code></p>
+
+      <p>Override class: Chrome advanced (optional but should be applied by any means necessary if provided to users)</p>
+
+      <p>This will only apply in night mode to darken images and impact <code>img</code>.</p>
+
+      <hr/>
+
+      <pre><code>:--invert-filter</code></pre>
+
+      <p>Preset: <code>--USER__invertImages: readium-invert-on</code></p>
+
+      <p>Scope: <code>html</code></p>
+
+      <p>Override class: Chrome advanced (optional but should be applied by any means necessary if provided to users)</p>
+
+      <p>This will only apply in night mode to invert images and impact <code>img</code>.</p>
+
+      <hr/>
+
+      <pre><code>:--a11y-normalize</code></pre>
+
+      <p>Preset: <code>--USER__a11yNormalize: readium-a11y-on</code></p>
+
+      <p>Scope: <code>html</code></p>
+
+      <p>Required flag: <code>:--fontOverride</code></p>
+
+      <p>Override class: User settings advanced (optional but should be applied by any means necessary if provided to users)</p>
+
+      <p>It impacts font style, weight and variant, text decoration, super and subscripts.</p>
+
+      <hr/>
+
+      <p><strong>Warning:</strong> if you customize those flags, all ReadiumCSS <code>dist</code> stylesheets must be rebuilt.</p>
+    </section>
+
+    <section id="reading-system-styles" class="level2">
+      <h2 id="sigil_toc_id_185">Reading System Styles</h2>
+
+      <p>Custom properties for the Reading System are prefixed with <code>--RS__</code>.</p>
+
+      <section id="pagination" class="level3">
+        <h3 class="sigil_not_in_toc">Pagination</h3>
+
+        <hr/>
+
+        <pre><code>--RS__colWidth</code></pre>
+
+        <p>The optimal column’s width. It serves as a floor in our design.</p>
+
+        <hr/>
+
+        <pre><code>--RS__colCount</code></pre>
+
+        <p>The optimal number of columns (depending on the columns’ width).</p>
+
+        <hr/>
+
+        <pre><code>--RS__colGap</code></pre>
+
+        <p>The gap between columns. It must be set in pixels so that it won’t resize with font size.</p>
+
+        <p>You must account for this gap when scrolling.</p>
+
+        <hr/>
+
+        <pre><code>--RS__pageGutter</code></pre>
+
+        <p>The horizontal page margins. It must be set in pixels so that it won’t resize with font size.</p>
+
+        <hr/>
+
+        <pre><code>--RS__maxLineLength</code></pre>
+
+        <p>The optimal line-length. It must be set in <code>rem</code> in order to take <code>:root</code>’s <code>font-size</code> as a reference, whichever the <code>body</code>’s <code>font-size</code> might be.</p>
+      </section>
+
+      <section id="safeguards" class="level3">
+        <h3 class="sigil_not_in_toc">Safeguards</h3>
+
+        <hr/>
+
+        <pre><code>--RS__maxMediaWidth</code></pre>
+
+        <p>The <code>max-width</code> for media elements i.e. <code>img</code>, <code>svg</code>, <code>audio</code> and <code>video</code>.</p>
+
+        <hr/>
+
+        <pre><code>--RS__maxMediaHeight</code></pre>
+
+        <p>The <code>max-height</code> for media elements i.e. <code>img</code>, <code>svg</code>, <code>audio</code> and <code>video</code>.</p>
+
+        <hr/>
+
+        <pre><code>--RS__boxSizingMedia</code></pre>
+
+        <p>The box model (<code>box-sizing</code>) you want to use for media elements.</p>
+
+        <hr/>
+
+        <pre><code>--RS__boxSizingTable</code></pre>
+
+        <p>The box model (<code>box-sizing</code>) you want to use for tables.</p>
+      </section>
+
+      <section id="default-font-stacks" class="level3">
+        <h3 class="sigil_not_in_toc">Default font-stacks</h3>
+
+        <hr/>
+
+        <pre><code>--RS__oldStyleTf</code></pre>
+
+        <p>An old style serif font-stack relying on pre-installed fonts.</p>
+
+        <p>Default is <code>"Iowan Old Style", "Sitka Text", Palatino, "Book Antiqua", serif</code>.</p>
+
+        <hr/>
+
+        <pre><code>--RS__modernTf</code></pre>
+
+        <p>A modern serif font-stack relying on pre-installed fonts.</p>
+
+        <p>Default is <code>Athelas, Constantia, Georgia, serif</code>.</p>
+
+        <hr/>
+
+        <pre><code>--RS__sansTf</code></pre>
+
+        <p>A neutral sans-serif font-stack relying on pre-installed fonts.</p>
+
+        <p>Default is <code>-apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif</code>.</p>
+
+        <hr/>
+
+        <pre><code>--RS__humanistTf </code></pre>
+
+        <p>A humanist sans-serif font-stack relying on pre-installed fonts.</p>
+
+        <p>Default is <code>Seravek, Calibri, Roboto, Arial, sans-serif</code>.</p>
+
+        <hr/>
+
+        <pre><code>--RS__monospaceTf </code></pre>
+
+        <p>A monospace font-stack relying on pre-installed fonts.</p>
+
+        <p>Default is <code>"Andale Mono", Consolas, monospace</code>.</p>
+      </section>
+
+      <section id="default-font-stacks-for-japanese-publications" class="level3">
+        <h3 class="sigil_not_in_toc">Default font-stacks for Japanese publications</h3>
+
+        <hr/>
+
+        <pre><code>--RS__serif-ja</code></pre>
+
+        <p>A Mincho font-stack whose fonts with proportional latin characters are prioritized for horizontal writing.</p>
+
+        <p>Default is <code>"ＭＳ Ｐ明朝", "MS PMincho", "Hiragino Mincho Pro", "ヒラギノ明朝 Pro W3", "游明朝", "YuMincho", "ＭＳ 明朝", "MS Mincho", "Hiragino Mincho ProN", serif</code>.</p>
+
+        <hr/>
+
+        <pre><code>--RS__sans-serif-ja</code></pre>
+
+        <p>A Gothic font-stack whose fonts with proportional latin characters are prioritized for horizontal writing.</p>
+
+        <p>Default is <code>"ＭＳ Ｐゴシック", "MS PGothic", "Hiragino Kaku Gothic Pro W3", "ヒラギノ角ゴ Pro W3", "Hiragino Sans GB", "ヒラギノ角ゴシック W3", "游ゴシック", "YuGothic", "ＭＳ ゴシック", "MS Gothic", "Hiragino Sans", sans-serif</code>.</p>
+
+        <hr/>
+
+        <pre><code>--RS__serif-ja-v</code></pre>
+
+        <p>A Mincho font-stack whose fonts with fixed-width latin characters are prioritized for vertical writing.</p>
+
+        <p>Default is <code>"ＭＳ 明朝", "MS Mincho", "Hiragino Mincho Pro", "ヒラギノ明朝 Pro W3", "游明朝", "YuMincho", "ＭＳ Ｐ明朝", "MS PMincho", "Hiragino Mincho ProN", serif</code>.</p>
+
+        <hr/>
+
+        <pre><code>--RS__sans-serif-ja-v</code></pre>
+
+        <p>A Gothic font-stack whose fonts with fixed-width latin characters are prioritized for vertical writing.</p>
+
+        <p>Default is <code>"ＭＳ ゴシック", "MS Gothic", "Hiragino Kaku Gothic Pro W3", "ヒラギノ角ゴ Pro W3", "Hiragino Sans GB", "ヒラギノ角ゴシック W3", "游ゴシック", "YuGothic", "ＭＳ Ｐゴシック", "MS PGothic", "Hiragino Sans", sans-serif</code>.</p>
+      </section>
+
+      <section id="base-styles-for-all-ebooks" class="level3">
+        <h3 class="sigil_not_in_toc">Base styles for all ebooks</h3>
+
+        <hr/>
+
+        <pre><code>--RS__baseFontFamily</code></pre>
+
+        <p>The default typeface for body copy in case the ebook doesn’t have one declared.</p>
+
+        <p>Please note some languages have a specific font-stack (japanese, chinese, hindi, etc.)</p>
+
+        <hr/>
+
+        <pre><code>--RS__baseLineHeight</code></pre>
+
+        <p>The default line-height for body copy in case the ebook doesn’t have one declared.</p>
+      </section>
+
+      <section id="default-colors-for-all-ebooks" class="level3">
+        <h3 class="sigil_not_in_toc">Default colors for all ebooks</h3>
+
+        <hr/>
+
+        <pre><code>--RS__textColor</code></pre>
+
+        <p>The default <code>color</code> for body copy’s text.</p>
+
+        <hr/>
+
+        <pre><code>--RS__backgroundColor</code></pre>
+
+        <p>The default <code>background-color</code> for pages.</p>
+
+        <hr/>
+
+        <pre><code>--RS__selectionBackgroundColor</code></pre>
+
+        <p>The <code>background-color</code> for selected text.</p>
+
+        <p>It is worth noting it can be customized for each reading mode.</p>
+
+        <hr/>
+
+        <pre><code>--RS__selectionTextColor</code></pre>
+
+        <p>The <code>color</code> for selected text.</p>
+
+        <p>It is worth noting it can be customized for each reading mode.</p>
+      </section>
+
+      <section id="default-styles-for-unstyled-publications" class="level3">
+        <h3 class="sigil_not_in_toc">Default styles for unstyled publications</h3>
+
+        <section id="typefaces" class="level4">
+          <h4 class="sigil_not_in_toc">Typefaces</h4>
+
+          <hr/>
+
+          <pre><code>--RS__compFontFamily</code></pre>
+
+          <p>The typeface for headings. The value can be another variable e.g. <code>var(-RS__humanistTf)</code>.</p>
+
+          <hr/>
+
+          <pre><code>--RS__codeFontFamily</code></pre>
+
+          <p>The typeface for code snippets. The value can be another variable e.g. <code>var(-RS__monospaceTf)</code>.</p>
+        </section>
+
+        <section id="typography" class="level4">
+          <h4 class="sigil_not_in_toc">Typography</h4>
+
+          <hr/>
+
+          <pre><code>--RS__typeScale</code></pre>
+
+          <p>The scale to be used for computing all elements’ <code>font-size</code>. Since those font sizes are computed dynamically, you can set a smaller type scale when the user sets one of the largest font sizes.</p>
+
+          <p>Possible values: <code>1</code> | <code>1.067</code> | <code>1.125</code> | <code>1.2</code> (suggested default) | <code>1.25</code> | <code>1.333</code> | <code>1.414</code> | <code>1.5</code> | <code>1.618</code></p>
+
+          <hr/>
+
+          <pre><code>--RS__baseFontSize</code></pre>
+
+          <p>The default <code>font-size</code> for body copy. It will serve as a reference font all related computations.</p>
+
+          <hr/>
+
+          <pre><code>--RS__baseLineHeight</code></pre>
+
+          <p>The default <code>line-height</code> for all elements.</p>
+        </section>
+
+        <section id="vertical-rhythm" class="level4">
+          <h4 class="sigil_not_in_toc">Vertical rhythm</h4>
+
+          <hr/>
+
+          <pre><code>--RS__flowSpacing</code></pre>
+
+          <p>The default vertical margins for HTML5 flow content e.g. <code>pre</code>, <code>figure</code>, <code>blockquote</code>, etc.</p>
+
+          <hr/>
+
+          <pre><code>--RS__paraSpacing</code></pre>
+
+          <p>The default vertical margins for paragraphs.</p>
+
+          <hr/>
+
+          <pre><code>--RS__paraIndent</code></pre>
+
+          <p>The default <code>text-indent</code> for paragraphs.</p>
+        </section>
+
+        <section id="hyperlinks" class="level4">
+          <h4 class="sigil_not_in_toc">Hyperlinks</h4>
+
+          <hr/>
+
+          <pre><code>--RS__linkColor</code></pre>
+
+          <p>The default <code>color</code> for hyperlinks.</p>
+
+          <hr/>
+
+          <pre><code>--RS__visitedColor</code></pre>
+
+          <p>The default <code>color</code> for visited hyperlinks.</p>
+        </section>
+
+        <section id="accentuation-colors" class="level4">
+          <h4 class="sigil_not_in_toc">Accentuation colors</h4>
+
+          <hr/>
+
+          <pre><code>--RS__primaryColor</code></pre>
+
+          <p>An optional primary accentuation <code>color</code> you could use for headings or any other element of your choice.</p>
+
+          <hr/>
+
+          <pre><code>--RS__secondaryColor</code></pre>
+
+          <p>An optional secondary accentuation <code>color</code> you could use for any element of your choice.</p>
+        </section>
+      </section>
+    </section>
+
+    <section id="reading-modes" class="level2">
+      <h2 id="sigil_toc_id_186">Reading Modes</h2>
+
+      <p>Custom properties for reading modes are prefixed with <code>--RS__</code>.</p>
+
+      <hr/>
+
+      <pre><code>--RS__backgroundColor</code></pre>
+
+      <p>The <code>background-color</code> which must be applied to the entire screen in the reading mode.</p>
+
+      <hr/>
+
+      <pre><code>--RS__textColor</code></pre>
+
+      <p>The <code>color</code> for text in the reading mode.</p>
+
+      <hr/>
+
+      <pre><code>--RS__linkColor</code></pre>
+
+      <p>The <code>color</code> for the links in the reading mode.</p>
+
+      <hr/>
+
+      <pre><code>--RS__visitedColor</code></pre>
+
+      <p>The <code>color</code> for visited links in the reading mode.</p>
+
+      <hr/>
+
+      <pre><code>--RS__selectionBackgroundColor</code></pre>
+
+      <p>The <code>background-color</code> for selected text in the reading mode.</p>
+
+      <hr/>
+
+      <pre><code>--RS__selectionTextColor</code></pre>
+
+      <p>The <code>color</code> for selected text in the reading mode.</p>
+    </section>
+
+    <section id="user-settings" class="level2">
+      <h2 id="sigil_toc_id_187">User Settings</h2>
+
+      <p>Custom properties for user settings are prefixed with <code>--USER__</code>.</p>
+
+      <hr/>
+
+      <pre><code>--USER__colCount</code></pre>
+
+      <p>The number of columns (<code>column-count</code>) the user wants displayed (one-page view or two-page spread).</p>
+
+      <p>Scope: <code>html</code></p>
+
+      <p>Possible values: <code>1</code> | <code>2</code> | <code>auto</code> (default)</p>
+
+      <p>Required flag: none</p>
+
+      <p>Override class: Chrome advanced (optional but should be applied by any means necessary if provided to users)</p>
+
+      <p>To reset, change the value to <code>auto</code>.</p>
+
+      <hr/>
+
+      <pre><code>--USER__pageMargins</code></pre>
+
+      <p>A factor applied to horizontal margins (<code>padding-left</code> and <code>padding-right</code>) the user wants to set.</p>
+
+      <p>Scope: <code>html</code></p>
+
+      <p>It impacts <code>body</code>.</p>
+
+      <p>Recommended values: a range from <code>0.5</code> to <code>2</code>. Increments are left to implementers’ judgment.</p>
+
+      <p>Required flag: none</p>
+
+      <p>Override class: Chrome advanced (optional but should be applied by any means necessary if provided to users)</p>
+
+      <p>To reset, change the value to <code>1</code>.</p>
+
+      <hr/>
+
+      <pre><code>--USER__backgroundColor</code></pre>
+
+      <p>The <code>background-color</code> for the whole screen.</p>
+
+      <p>Scope: <code>html</code></p>
+
+      <p>It impacts all elements in the DOM.</p>
+
+      <p>Possible values: Color HEX (e.g. <code>#FFFFFF</code>), <code>rgb(a)</code>, <code>hsl</code>.</p>
+
+      <p>Required flag: none</p>
+
+      <p>Override class: Chrome advanced (optional but should be applied by any means necessary if provided to users)</p>
+
+      <p>To reset, remove the CSS variable.</p>
+
+      <hr/>
+
+      <pre><code>--USER__textColor</code></pre>
+
+      <p>The <code>color</code> for textual contents.</p>
+
+      <p>Scope: <code>html</code></p>
+
+      <p>It impacts all elements but headings and <code>pre</code> in the DOM.</p>
+
+      <p>Possible values: Color HEX (e.g. <code>#FFFFFF</code>), <code>rgb(a)</code>, <code>hsl</code>.</p>
+
+      <p>Required flag: none</p>
+
+      <p>Override class: Chrome advanced (optional but should be applied by any means necessary if provided to users)</p>
+
+      <p>To reset, remove the CSS variable.</p>
+
+      <hr/>
+
+      <pre><code>--USER__textAlign</code></pre>
+
+      <p>The alignment (<code>text-align</code>) the user prefers.</p>
+
+      <p>Scope: <code>html</code></p>
+
+      <p>It impacts <code>body</code>, <code>li</code>, and <code>p</code> which are not children of <code>blockquote</code> and <code>figcaption</code>.</p>
+
+      <p>Possible values: <code>left</code> (LTR) or <code>right</code> (RTL) | <code>justify</code></p>
+
+      <p>Required flag: <code>:--advancedSettings</code></p>
+
+      <p>Override class: User settings advanced (optional but should be applied by any means necessary if provided to users)</p>
+
+      <p>Note: the value <code>start</code> can be used to let all rendering engines, excepted Trident (IE11) and EdgeHTML (Edge), automatically deal with <code>left</code> and <code>right</code> based on the direction (<code>dir</code> attribute) set for the document and its nested elements.</p>
+
+      <hr/>
+
+      <pre><code>--USER__bodyHyphens</code></pre>
+
+      <p>Enabling and disabling hyphenation.</p>
+
+      <p>Scope: <code>html</code></p>
+
+      <p>It impacts <code>body</code>, <code>p</code>, <code>li</code>, <code>div</code> and <code>dd</code>.</p>
+
+      <p>Possible Values: <code>auto</code> | <code>none</code></p>
+
+      <p>Required flag: <code>:--advancedSettings</code></p>
+
+      <p>Override class: User settings advanced (optional but should be applied by any means necessary if provided to users)</p>
+
+      <p><strong>Warning:</strong> for the time being, automatic hyphenation won’t work if you are using the Blink rendering engine (either via Chrome or a Webview) on ChromeOS, Linux and Windows. It indeed is not implemented yet and we recommend not trying to polyfill it using JavaScript as it will create a11y issues, especially with screen readers.</p>
+
+      <hr/>
+
+      <pre><code>--USER__fontFamily</code></pre>
+
+      <p>The typeface (<code>font-family</code>) the user wants to read with.</p>
+
+      <p>Scope: <code>html</code></p>
+
+      <p>It impacts <code>body</code>, <code>p</code>, <code>li</code>, <code>div</code>, <code>dt</code>, <code>dd</code> and phrasing elements which don’t have a <code>lang</code> or <code>xml:lang</code> attribute.</p>
+
+      <p>Required flag: <code>:--fontOverride</code></p>
+
+      <p>Override class: User settings (should be applied by any means necessary)</p>
+
+      <p>To reset, remove the required flag.</p>
+
+      <hr/>
+
+      <pre><code>--USER__fontSize</code></pre>
+
+      <p>Increasing and decreasing the root <code>font-size</code>. It will serve as a reference for the cascade.</p>
+
+      <p>Scope: <code>html</code></p>
+
+      <p>Possible values: <code>var(--RS__oldStyleTf)</code> | <code>var(--RS__modernTf)</code> | <code>var(--RS__sansTf)</code> | <code>var(--RS__humanistTf)</code> | <code>&lt;string&gt;</code></p>
+
+      <p>For Japanese, possible values become: <code>var(--RS__serif-ja)</code> (horizontal writing) | <code>var(--RS__sans-serif-ja)</code> (horizontal writing) | <code>var(--RS__serif-ja-v)</code> (vertical writing) | <code>var(--RS__sans-serif-ja-v)</code> (vertical writing) | <code>&lt;string&gt;</code></p>
+
+      <p>Required flag: <code>:--fontOverride</code></p>
+
+      <p>Override class: User settings (should be applied by any means necessary)</p>
+
+      <p>To reset, remove the required flag.</p>
+
+      <hr/>
+
+      <pre><code>--USER__typeScale</code></pre>
+
+      <p>The type scale the user wants to use for the publication.</p>
+
+      <p>Scope: <code>html</code></p>
+
+      <p>It requires the <code>ReadiumCSS-fs_normalize.css</code> stylesheet.</p>
+
+      <p>It impacts headings, <code>p</code>, <code>li</code>, <code>div</code>, <code>pre</code>, <code>dd</code>, <code>small</code>, <code>sub</code>, and <code>sup</code>.</p>
+
+      <p>Recommended values: a range from <code>75%</code> to <code>250%</code>. Increments are left to implementers’ judgment.</p>
+
+      <p>Required flag: <code>:--advancedSettings</code></p>
+
+      <p>Override class: User settings advanced (optional but should be applied by any means necessary if provided to users)</p>
+
+      <hr/>
+
+      <pre><code>--USER__lineHeight</code></pre>
+
+      <p>Increasing and decreasing leading (<code>line-height</code>).</p>
+
+      <p>Scope: <code>html</code></p>
+
+      <p>It impacts <code>body</code>, <code>p</code>, <code>li</code> and <code>div</code></p>
+
+      <p>Recommended values: a range from <code>1</code> to <code>2</code>. Increments are left to implementers’ judgment.</p>
+
+      <p>Required flag: <code>:--advancedSettings</code></p>
+
+      <p>Override class: User settings advanced (optional but should be applied by any means necessary if provided to users)</p>
+
+      <hr/>
+
+      <pre><code>--USER__paraSpacing</code></pre>
+
+      <p>The vertical margins (<code>margin-top</code> and <code>margin-bottom</code>) for paragraphs.</p>
+
+      <p>Scope: <code>p</code></p>
+
+      <p>Recommended values: a range from <code>0</code> to <code>2rem</code>. Increments are left to implementers’ judgment.</p>
+
+      <p>Required flag: <code>:--advancedSettings</code></p>
+
+      <p>Override class: User settings advanced (optional but should be applied by any means necessary if provided to users)</p>
+
+      <hr/>
+
+      <pre><code>--USER__paraIndent</code></pre>
+
+      <p>The <code>text-indent</code> for paragraphs.</p>
+
+      <p>Scope: <code>p</code></p>
+
+      <p>Recommended values: a range from <code>0</code> to <code>3rem</code>. Increments are left to implementers’ judgment.</p>
+
+      <p>Required flag: <code>:--advancedSettings</code></p>
+
+      <p>Override class: User settings advanced (optional but should be applied by any means necessary if provided to users)</p>
+
+      <hr/>
+
+      <pre><code>--USER__wordSpacing</code></pre>
+
+      <p>Increasing space between words (<code>word-spacing</code>, related to a11y).</p>
+
+      <p>Scope: <code>h1</code>, <code>h2</code>, <code>h3</code>, <code>h4</code>, <code>h5</code>, <code>h6</code>, <code>p</code>, <code>li</code>, <code>div</code></p>
+
+      <p>Recommended values: a range from <code>0</code> to <code>1rem</code>. Increments are left to implementers’ judgment.</p>
+
+      <p>Required flag: <code>:--advancedSettings</code></p>
+
+      <p>Override class: User settings advanced (optional but should be applied by any means necessary if provided to users)</p>
+
+      <hr/>
+
+      <pre><code>--USER__letterSpacing</code></pre>
+
+      <p>Increasing space between letters (<code>letter-spacing</code>, related to a11y).</p>
+
+      <p>Scope: <code>h1</code>, <code>h2</code>, <code>h3</code>, <code>h4</code>, <code>h5</code>, <code>h6</code>, <code>p</code>, <code>li</code>, <code>div</code></p>
+
+      <p>Recommended values: a range from <code>0</code> to <code>0.5rem</code>. Increments are left to implementers’ judgment.</p>
+
+      <p>Required flag: <code>:--advancedSettings</code></p>
+
+      <p>Override class: User settings advanced (optional but should be applied by any means necessary if provided to users)</p>
+
+      <hr/>
+
+      <pre><code>--USER__ligatures</code></pre>
+
+      <p>Enabling and disabling ligatures in Arabic (related to a11y).</p>
+
+      <p>Scope: <code>html</code></p>
+
+      <p>It impacts all text.</p>
+
+      <p>Possible values: <code>none</code> | <code>common-ligatures</code></p>
+
+      <p>Required flag: <code>:--advancedSettings</code></p>
+
+      <p>Override class: User settings advanced (optional but should be applied by any means necessary if provided to users)</p>
+    </section>
+  </section>
+</body>
+</html>

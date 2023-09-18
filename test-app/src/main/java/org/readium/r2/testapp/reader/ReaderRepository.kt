@@ -13,6 +13,7 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences as JetpackPreferences
 import org.json.JSONObject
 import org.readium.adapters.pdfium.navigator.PdfiumEngineProvider
+import org.readium.navigator.web.WebNavigatorFactory
 import org.readium.r2.navigator.epub.EpubNavigatorFactory
 import org.readium.r2.navigator.media3.audio.AudioNavigatorFactory
 import org.readium.r2.navigator.media3.exoplayer.ExoPlayerEngineProvider
@@ -24,6 +25,8 @@ import org.readium.r2.shared.asset.AssetRetriever
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.allAreHtml
+import org.readium.r2.shared.publication.epub.EpubLayout
+import org.readium.r2.shared.publication.presentation.presentation
 import org.readium.r2.shared.publication.services.isRestricted
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
@@ -127,7 +130,12 @@ class ReaderRepository(
         val readerInitData = when {
             publication.conformsTo(Publication.Profile.AUDIOBOOK) ->
                 openAudio(bookId, publication, initialLocator)
-            publication.conformsTo(Publication.Profile.EPUB) || publication.readingOrder.allAreHtml ->
+            publication.conformsTo(Publication.Profile.EPUB) ->
+                when (publication.metadata.presentation.layout) {
+                    EpubLayout.FIXED -> openWeb(bookId, publication, initialLocator)
+                    EpubLayout.REFLOWABLE, null -> openWeb(bookId, publication, initialLocator)
+                }
+            publication.readingOrder.allAreHtml ->
                 openEpub(bookId, publication, initialLocator)
             publication.conformsTo(Publication.Profile.PDF) ->
                 openPdf(bookId, publication, initialLocator)
@@ -193,6 +201,22 @@ class ReaderRepository(
             preferencesManager,
             navigatorFactory,
             ttsInitData
+        )
+        return Try.success(initData)
+    }
+
+    private suspend fun openWeb(
+        bookId: Long,
+        publication: Publication,
+        initialLocator: Locator?
+    ): Try<WebReaderInitData, OpeningError> {
+        val navigatorFactory = org.readium.navigator.web.WebNavigatorFactory(publication)
+
+        val initData = WebReaderInitData(
+            bookId,
+            publication,
+            initialLocator,
+            navigatorFactory
         )
         return Try.success(initData)
     }

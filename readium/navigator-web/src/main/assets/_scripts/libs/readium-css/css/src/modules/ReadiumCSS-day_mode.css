@@ -1,0 +1,35 @@
+/* Readium CSS
+   Day/Default mode
+
+   A preset theme for day mode, which is the default
+
+   Repo: https://github.com/readium/readium-css */
+
+
+/* CONFIG */
+
+:root {
+  --RS__backgroundColor: #FFFFFF;
+  --RS__textColor: #121212;
+
+  /* This can be customized but initial will re-use default value of the browser */
+  --RS__selectionBackgroundColor: #b4d8fe;
+  --RS__selectionTextColor: inherit;
+}
+
+:root {
+  background-color: var(--RS__backgroundColor) !important;
+  color: var(--RS__textColor) !important;
+}
+
+/* Note: Though `::selection` was present in drafts of CSS Selectors Level 3, it was removed during the Candidate Recommendation phase because its behavior was under-specified (especially with nested elements) and interoperability wasn’t achieved. Source: https://developer.mozilla.org/en-US/docs/Web/CSS/::selection */
+
+::-moz-selection {
+  background-color: var(--RS__selectionBackgroundColor);
+  color: var(--RS__selectionTextColor);
+}
+
+::selection {
+  background-color: var(--RS__selectionBackgroundColor);
+  color: var(--RS__selectionTextColor);
+}

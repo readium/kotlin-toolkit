@@ -1,0 +1,552 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" xml:lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="generator" content="pandoc"/>
+  <title>Readium CSS Implementers’ doc</title>
+  <link rel="stylesheet" type="text/css" href="../Styles/stylesheet.css"/>
+</head>
+
+<body xml:lang="en">
+  <section id="user-settings-reading-modes-and-themes" class="level1">
+    <h1>User Settings, Reading Modes and Themes</h1>
+
+    <p>[Implementers’ doc] [Authors’ info]</p>
+
+    <p>The idea is:</p>
+
+    <ol>
+      <li>appending/removing flags and CSS variables for user settings (inline style on <code>html</code>);</li>
+
+      <li>managing user settings entirely via CSS so that we don’t need to manipulate the DOM too much.</li>
+    </ol>
+
+    <p>There are alternatives approaches you can adopt if this one doesn’t fit.</p>
+
+    <p><strong>Note:</strong> Possible values are strict i.e. implementers can’t use any other value; recommended values are loose i.e. they are left to implementers’ judgment.</p>
+
+    <section id="mechanism-for-user-settings" class="level2">
+      <h2 id="sigil_toc_id_176">Mechanism for user settings</h2>
+
+      <p>The <code>ReadiumCSS-after.css</code> stylesheet, which contains user settings, can be appended before runtime; its declarations won’t be applied until user variables are set.</p>
+
+      <p>User settings require the following process:</p>
+
+      <ol>
+        <li>add the flag and its value to <code>html</code> when applicable (font override, font size and/or advanced setting);</li>
+
+        <li>add the setting-specific variable and its value to <code>html</code>;</li>
+
+        <li>styles are updated live.</li>
+      </ol>
+
+      <p>The selectors used in user settings are indeed “conditional”, styles are applied if the variable (or a specific value for reading modes) is set as an inline style in <code>html</code> (<code>:root</code>).</p>
+
+      <section id="setting-and-removing-a-variable" class="level3">
+        <h3 class="sigil_not_in_toc">Setting and removing a variable</h3>
+
+        <section id="setting" class="level4">
+          <h4 class="sigil_not_in_toc">Setting</h4>
+
+          <pre><code>var root = document.documentElement; 
+root.style.setProperty("name of var", "value");</code></pre>
+
+          <p>You don’t need to remove the variable before setting another value, the new value will simply override the existing one.</p>
+        </section>
+
+        <section id="removing" class="level4">
+          <h4 class="sigil_not_in_toc">Removing</h4>
+
+		  <p>You can either remove the style explicitly with <code>removeProperty()</code>:</p>
+
+          <pre><code>var root = document.documentElement; 
+root.style.removeProperty("name of var");</code></pre>
+
+		  <p>Or implicitly by using an empty string as a value with <code>setProperty()</code>:</p>
+
+          <pre><code>var root = document.documentElement; 
+root.style.setProperty("name of var", "");</code></pre>
+
+		  <p>Setting a property with an empty string as the value will indeed invoke <code>removeProperty()</code>, as defined in the <a href="https://drafts.csswg.org/cssom/#dom-cssstyledeclaration-setproperty">CSS Object Model Spec</a>.</p>
+        </section>
+      </section>
+    </section>
+
+    <section id="flags" class="level2">
+      <h2 id="sigil_toc_id_177">Flags</h2>
+
+      <p>Some variables behave like flags. You could also use custom <code>data-*</code> attributes or CSS classes to manage the following ones. See the <a href="../Text/Section-002.xhtml">“Quickstart” doc</a> for customization.</p>
+
+	  <p>By default, those flags are not set. Then their initialization depends on your user settings’ management e.g. apply user settings to all EPUBs, only the ones that have already been customized, etc.</p>
+
+      <section id="user-view" class="level3">
+        <h3 class="sigil_not_in_toc">User view</h3>
+
+        <p>Allows to switch between paged and scroll view.</p>
+
+        <pre><code>--USER__view</code></pre>
+
+        <p>Supported values: <code>readium-paged-on</code> | <code>readium-scroll-on</code></p>
+
+        <p>Override class: Chrome (should be applied by any means necessary)</p>
+
+		<p>If the flag is not set, ReadiumCSS will fall back to the paged view.</p>
+      </section>
+
+      <section id="font-family-override" class="level3">
+        <h3 class="sigil_not_in_toc">Font Family override</h3>
+
+        <p>Acts as an explicit switch to override the publisher’s <code>font-family</code>.</p>
+
+        <pre><code>--USER__fontOverride</code></pre>
+
+        <p>Supported value: <code>readium-font-on</code></p>
+
+        <p>Override class: None. This flag is required to change the <code>font-family</code> user setting.</p>
+
+        <p>To switch back to the publisher’s font, you can either set an empty string as a value or remove the property.</p>
+      </section>
+
+      <section id="advanced-settings" class="level3">
+        <h3 class="sigil_not_in_toc">Advanced Settings</h3>
+
+        <p>Acts as an explicit switch to override the publisher’s styles.</p>
+
+        <p>If you provide users with a “Publisher’s styles” toggle, it must be enabled and disabled accordingly.</p>
+
+        <pre><code>--USER__advancedSettings</code></pre>
+
+        <p>Supported value: <code>readium-advanced-on</code></p>
+
+        <p>Override class: None. This flag is required to apply the <code>font-family</code>, the <code>font-size</code> and/or advanced user settings.</p>
+
+        <p>To switch back to the publisher’s styles, you can either set an empty string as a value or remove the property. This will disable all advanced settings requiring the flag.</p>
+      </section>
+
+      <section id="reading-modes" class="level3">
+        <h3 class="sigil_not_in_toc">Reading Modes</h3>
+
+        <p>We currently have two reading modes for night and sepia.</p>
+
+        <pre><code>--USER__appearance</code></pre>
+
+        <p>Supported values: <code>readium-day-on</code> | <code>readium-sepia-on</code> | <code>readium-night-on</code></p>
+
+        <p>Override class: Chrome (should be applied by any means necessary)</p>
+
+		<p>If the flag is not set, ReadiumCSS will fall back to the day mode.</p>
+      </section>
+
+      <section id="filters" class="level3">
+        <h3 class="sigil_not_in_toc">Filters</h3>
+
+        <p>Please note night mode provides two extra specific variables:</p>
+
+        <pre><code>--USER__darkenFilter</code></pre>
+
+        <p>Supported value: <code>readium-darken-on</code></p>
+
+        <p>Override class: Chrome advanced (optional but should be applied by any means necessary if provided to users)</p>
+
+		<p>To disable the filter, you can either set an empty string as a value or remove the property.</p>
+
+        <pre><code>--USER__invertFilter</code></pre>
+
+        <p>Supported value: <code>readium-invert-on</code></p>
+
+        <p>Override class: Chrome advanced (optional but should be applied by any means necessary if provided to users)</p>
+
+		<p>To disable the filter, you can either set an empty string as a value or remove the property.</p>
+      </section>
+
+      <section id="accessibility-normalization" class="level3">
+        <h3 class="sigil_not_in_toc">Accessibility Normalization</h3>
+
+        <p>Users may want to normalize text (no bold, no italics, etc.) for accessibility reasons, using a non a11y-specific typeface.</p>
+
+        <pre><code>--USER__a11yNormalize</code></pre>
+
+        <p>Supported value: <code>readium-a11y-on</code></p>
+
+        <p>Required flag: <code>--USER__fontOverride: readium-font-on</code></p>
+
+        <p>Override class: User settings advanced (optional but should be applied by any means necessary if provided to users)</p>
+
+		<p>To disable the normalization, you can either set an empty string as a value or remove the property.</p>
+      </section>
+    </section>
+
+    <section id="list-of-variables" class="level2">
+      <h2 id="sigil_toc_id_178">List of variables</h2>
+
+      <section id="layout" class="level3">
+        <h3 class="sigil_not_in_toc">Layout</h3>
+
+        <p>The user can set the number of columns and page margins.</p>
+
+        <section id="number-of-columns" class="level4">
+          <h4 class="sigil_not_in_toc">Number of columns</h4>
+
+          <pre><code>--USER__colCount</code></pre>
+
+          <p>Possible values: <code>1</code> | <code>2</code> | <code>auto</code> (default)</p>
+
+          <p>Required flag: none</p>
+
+          <p>Override class: Chrome advanced (optional but should be applied by any means necessary if provided to users)</p>
+
+          <p>To reset, change the value to <code>auto</code>.</p>
+
+          <p>By default, this setting behaves as an <code>auto</code> value, it will switch to 1 or 2 columns depending on the minimum <code>width</code> available and <code>font-size</code>.</p>
+
+          <p>It is up to implementers to decide whether they want this setting to be available and override any configuration or only some (e.g. setting only available in landscape and/or larger screens).</p>
+        </section>
+
+        <section id="page-margins" class="level4">
+          <h4 class="sigil_not_in_toc">Page margins</h4>
+
+          <pre><code>--USER__pageMargins</code></pre>
+
+          <p>Recommended values: a range from <code>0.5</code> to <code>2</code>. Increments are left to implementers’ judgment.</p>
+
+          <p>Required flag: none</p>
+
+          <p>Override class: Chrome advanced (optional but should be applied by any means necessary if provided to users)</p>
+
+          <p>To reset, change the value to <code>1</code>.</p>
+
+          <p>The user margins are a factor of the reference we set.</p>
+
+          <p>This will probably be fine-tuned in the next version (beta).</p>
+        </section>
+      </section>
+
+      <section id="themes-background-and-text-colors" class="level3">
+        <h3 class="sigil_not_in_toc">Themes (background and text colors)</h3>
+
+        <p>The user can set a <code>background-color</code> and <code>color</code>.</p>
+
+        <p>The following two variables must be used together.</p>
+
+        <pre><code>--USER__backgroundColor --USER__textColor</code></pre>
+
+        <p>Possible values: Color HEX (e.g. <code>#FFFFFF</code>), <code>rgb(a)</code>, <code>hsl</code>.</p>
+
+        <p>Required flag: none</p>
+
+        <p>Override class: Chrome advanced (optional but should be applied by any means necessary if provided to users)</p>
+
+        <p>To reset, remove both variables.</p>
+      </section>
+
+      <section id="hyphenation-and-justification" class="level3">
+        <h3 class="sigil_not_in_toc">Hyphenation and justification</h3>
+
+        <p>The user can set <code>text-align</code> and <code>hyphens</code> for body copy contents.</p>
+
+        <section id="text-align" class="level4">
+          <h4 class="sigil_not_in_toc">Text align</h4>
+
+          <pre><code>--USER__textAlign</code></pre>
+
+          <p>Possible values: <code>left</code> (LTR) or <code>right</code> (RTL) | <code>justify</code></p>
+
+          <p>Required flag: <code>--USER__advancedSettings: readium-advanced-on</code></p>
+
+          <p>Override class: User settings advanced (optional but should be applied by any means necessary if provided to users)</p>
+
+          <p>Note: the value <code>start</code> can be used to let all rendering engines, excepted Trident (IE11) and EdgeHTML (Edge), automatically deal with <code>left</code> and <code>right</code> based on the direction (<code>dir</code> attribute) set for the document and its nested elements.</p>
+        </section>
+
+        <section id="hyphens" class="level4">
+          <h4 class="sigil_not_in_toc">Hyphens</h4>
+
+          <pre><code>--USER__bodyHyphens</code></pre>
+
+          <p>Possible Values: <code>auto</code> | <code>none</code></p>
+
+          <p>Required flag: <code>--USER__advancedSettings: readium-advanced-on</code></p>
+
+          <p>Override class: User settings advanced (optional but should be applied by any means necessary if provided to users)</p>
+
+          <p><strong>Warning:</strong> for the time being, automatic hyphenation won’t work if you are using the Blink rendering engine (either via Chrome or a Webview, including Electron’s) on ChromeOS, Linux and Windows. It indeed is not implemented yet and we recommend not trying to polyfill it using JavaScript as it will create a11y issues, especially with screen readers.</p>
+
+		  <p><strong>As a consequence, we strongly advise implementers against providing users with an hyphenation-specific setting if targeting this rendering engine.</strong></p>
+        </section>
+      </section>
+
+      <section id="typography" class="level3">
+        <h3 class="sigil_not_in_toc">Typography</h3>
+
+        <p>The user can set <code>font-family</code>, <code>font-size</code> and <code>line-height</code> for body copy contents.</p>
+
+        <section id="font-family" class="level4">
+          <h4 class="sigil_not_in_toc">Font family</h4>
+
+          <pre><code>--USER__fontFamily</code></pre>
+
+          <p>Possible values: <code>var(--RS__oldStyleTf)</code> | <code>var(--RS__modernTf)</code> | <code>var(--RS__sansTf)</code> | <code>var(--RS__humanistTf)</code> | <code>&lt;string&gt;</code></p>
+
+          <p>For Japanese, possible values become: <code>var(--RS__serif-ja)</code> (horizontal writing) | <code>var(--RS__sans-serif-ja)</code> (horizontal writing) | <code>var(--RS__serif-ja-v)</code> (vertical writing) | <code>var(--RS__sans-serif-ja-v)</code> (vertical writing) | <code>&lt;string&gt;</code></p>
+
+          <p>Required flag: <code>--USER__fontOverride: readium-font-on</code></p>
+
+          <p>Override class: User settings (should be applied by any means necessary)</p>
+
+          <p>To reset, remove the required flag.</p>
+        </section>
+
+        <section id="font-size" class="level4">
+          <h4 class="sigil_not_in_toc">Font size</h4>
+
+          <p>We have to normalize <code>font-size</code> for body copy elements so that it can work in pure CSS. In order to do so, we are using a normalize. The <code>--USER__advancedSettings: readium-advanced-on</code> inline style must be set for <code>html</code> in order for the font-size setting to work.</p>
+
+          <p>Although it might be an issue to authors at first sight, this approach is backed by actual data.</p>
+
+          <pre><code>--USER__fontSize</code></pre>
+
+          <p>Recommended values: a range from <code>75%</code> to <code>250%</code>. Increments are left to implementers’ judgment.</p>
+
+          <p>Required flag: <code>--USER__advancedSettings: readium-advanced-on</code></p>
+
+          <p>Override class: User settings (should be applied by any means necessary)</p>
+        </section>
+
+        <section id="type-scale" class="level4">
+          <h4 class="sigil_not_in_toc">Type scale</h4>
+
+          <p>If the <code>--USER__advancedSettings: readium-advanced-on</code> style is set for <code>html</code>, you can customize the <code>font-size</code> of all elements using a factor. This may come in handy on mobile devices, if the user sets a large font-size.</p>
+
+          <pre><code>--USER__typeScale</code></pre>
+
+          <p>Possible values: <code>1</code> | <code>1.067</code> | <code>1.125</code> | <code>1.2</code> (suggested default) | <code>1.25</code> | <code>1.333</code> | <code>1.414</code> | <code>1.5</code> | <code>1.618</code></p>
+
+          <p>Required flag: <code>--USER__advancedSettings: readium-advanced-on</code></p>
+
+          <p>Override class: User settings advanced (optional but should be applied by any means necessary if provided to users)</p>
+
+          <p>You can use different type scale values depending on the <code>font-size</code>. For instance, if the user sets a large one, you might want to decrease the type scale so that headings are not super large.</p>
+        </section>
+
+        <section id="line-height" class="level4">
+          <h4 class="sigil_not_in_toc">Line height</h4>
+
+          <pre><code>--USER__lineHeight</code></pre>
+
+          <p>Recommended values: a range from <code>1</code> to <code>2</code>. Increments are left to implementers’ judgment.</p>
+
+          <p>Required flag: <code>--USER__advancedSettings: readium-advanced-on</code></p>
+
+          <p>Override class: User settings advanced (optional but should be applied by any means necessary if provided to users)</p>
+        </section>
+      </section>
+
+      <section id="paragraphs-formatting" class="level3">
+        <h3 class="sigil_not_in_toc">Paragraphs’ formatting</h3>
+
+        <p>The user can set <code>margin-top</code>, <code>margin-bottom</code> and <code>text-indent</code> for paragraphs.</p>
+
+        <section id="paragraphs-spacing" class="level4">
+          <h4 class="sigil_not_in_toc">Paragraphs’ spacing</h4>
+
+          <pre><code>--USER__paraSpacing</code></pre>
+
+          <p>Recommended values: a range from <code>0</code> to <code>2rem</code>. Increments are left to implementers’ judgment.</p>
+
+          <p>Required flag: <code>--USER__advancedSettings: readium-advanced-on</code></p>
+
+          <p>Override class: User settings advanced (optional but should be applied by any means necessary if provided to users)</p>
+        </section>
+
+        <section id="paragraphs-indent" class="level4">
+          <h4 class="sigil_not_in_toc">Paragraphs’ indent</h4>
+
+          <pre><code>--USER__paraIndent</code></pre>
+
+          <p>Recommended values: a range from <code>0</code> to <code>3rem</code>. Increments are left to implementers’ judgment.</p>
+
+          <p>Required flag: <code>--USER__advancedSettings: readium-advanced-on</code></p>
+
+          <p>Override class: User settings advanced (optional but should be applied by any means necessary if provided to users)</p>
+        </section>
+      </section>
+
+      <section id="characters-spacing" class="level3">
+        <h3 class="sigil_not_in_toc">Characters’ spacing</h3>
+
+        <p>The user can set <code>word-spacing</code> and <code>letter-spacing</code> for headings and body copy contents.</p>
+
+        <section id="word-spacing" class="level4">
+          <h4 class="sigil_not_in_toc">Word spacing</h4>
+
+          <pre><code>--USER__wordSpacing</code></pre>
+
+          <p>Recommended values: a range from <code>0</code> to <code>1rem</code>. Increments are left to implementers’ judgment.</p>
+
+          <p>Required flag: <code>--USER__advancedSettings: readium-advanced-on</code></p>
+
+          <p>Override class: User settings advanced (optional but should be applied by any means necessary if provided to users)</p>
+        </section>
+
+        <section id="letter-spacing" class="level4">
+          <h4 class="sigil_not_in_toc">Letter spacing</h4>
+
+          <pre><code>--USER__letterSpacing</code></pre>
+
+          <p>Recommended values: a range from <code>0</code> to <code>0.5rem</code>. Increments are left to implementers’ judgment.</p>
+
+          <p>Required flag: <code>--USER__advancedSettings: readium-advanced-on</code></p>
+
+          <p>Override class: User settings advanced (optional but should be applied by any means necessary if provided to users)</p>
+        </section>
+
+        <section id="arabic-ligatures" class="level4">
+          <h4 class="sigil_not_in_toc">Arabic Ligatures</h4>
+
+          <pre><code>--USER__ligatures</code></pre>
+
+          <p>Possible values: <code>none</code> | <code>common-ligatures</code></p>
+
+          <p>Required flag: <code>--USER__advancedSettings: readium-advanced-on</code></p>
+
+          <p>Override class: User settings advanced (optional but should be applied by any means necessary if provided to users)</p>
+        </section>
+      </section>
+    </section>
+
+    <section id="themes" class="level2">
+      <h2 id="sigil_toc_id_179">Themes</h2>
+
+      <p>In this model, themes are just a set of user variables with specific values.</p>
+
+      <p>It becomes even easier to override them for the user as the values are already user settings.</p>
+
+      <p>In other words, think of preset and custom themes as a set of variables, which makes it easier to create, manipulate and cache them.</p>
+    </section>
+
+    <section id="alternative-options" class="level2">
+      <h2 id="sigil_toc_id_180">Alternative options</h2>
+
+      <p>There is not a lot of alternatives when it comes to managing user settings. Options include:</p>
+
+      <ul>
+        <li>appending/removing stylesheets (either <code>link</code> or <code>style</code> element) dynamically;</li>
+
+        <li>traversing the DOM and appending inline styles using JavaScript;</li>
+
+        <li>using classes or custom attributes for a limited subset of settings (e.g. reading modes);</li>
+
+        <li>leveraging native features web views have to offer.</li>
+      </ul>
+
+      <p>Please bear in mind Readium CSS provides a baseline, it resonably manages all those issues using CSS only. But if you want to offer users the most advanced experience there can be, you’ll end up with a mix of all those options.</p>
+
+      <p>For instance, you can’t really manage <code>text-align</code> perfectly if you don’t traverse the DOM to find elements for which the user setting should not apply, CSS has no way to retrieve those elements.</p>
+
+      <p>It is worth mentioning that at least some rendering engines are optimized to manage <strong>global</strong> CSS variables (i.e. the ones declared in <code>:root</code>) and reserve a special cache for faster lookup and updates. Changes should consequently be handled as inline styles in the <code>html</code> element if you want the best performance possible.</p>
+    </section>
+
+    <section id="user-settings-can-be-language-specific" class="level2">
+      <h2 id="sigil_toc_id_181">User settings can be language-specific</h2>
+
+      <p>It is important to note that the list of user settings you may provide users with can change depending on the primary language of the publication.</p>
+
+      <p>Indeed, it doesn’t make sense to have some user settings in some languages, and they would do more harm than good e.g. hyphens in CJK. Ideally, those settings should therefore be removed from the UI, or at least disabled, if needed.</p>
+
+      <section id="all-languages-other-than-latin" class="level3">
+        <h3 class="sigil_not_in_toc">All languages other than Latin</h3>
+
+        <p>Implementers will need to load different list of fonts based on the languages listed in <a href="../Text/Section-009.xhtml">Default Fonts</a>.</p>
+
+        <p>The most complex issue is finding fonts for those languages, especially as mobile systems often ship with the minimum amount of fonts possible to support Indic, Arabic, Hebrew, CJK, etc. And when the platform provides an extended selection, users often have to download them beforehand.</p>
+
+        <p>The following is provided as guidance only:</p>
+
+        <ol>
+          <li>the app should at least offer the publisher’s font and the default (<code>var(--RS__baseFontFamily)</code>) for the language – which should work automatically if the correct language is set for each document;</li>
+
+          <li>if implementers want to extend the list:</li>
+
+          <li>use pre-installed fonts if the system offers some;</li>
+
+          <li>use downloadable fonts if the system offers some;</li>
+
+          <li>carefully pick fonts supporting the language and the idiosyncrasies of its typography;</li>
+
+          <li>fall back to <a href="https://www.google.com/get/noto/">Google Noto Fonts</a>.</li>
+
+          <li>users probably have fonts already installed, re-use those fonts if possible (advanced setting in which they can access or declare those fonts).</li>
+        </ol>
+      </section>
+
+      <section id="right-to-left-scripts" class="level3">
+        <h3 class="sigil_not_in_toc">Right to left scripts</h3>
+
+        <p>User settings to disable are:</p>
+
+        <ul>
+		  <li><code>--USER__bodyHyphens</code>;</li>
+
+          <li><code>--USER__wordSpacing</code>;</li>
+
+          <li><code>--USER__letterSpacing</code>.</li>
+        </ul>
+
+        <p>User settings to add are:</p>
+
+        <ul>
+          <li><code>--USER__ligatures</code>.</li>
+        </ul>
+      </section>
+
+      <section id="cjk" class="level3">
+        <h3 class="sigil_not_in_toc">CJK</h3>
+
+        <p>For Chinese, Japanese, and Korean, implementers must manage both horizontal and vertical writing modes, since the pagination model differs.</p>
+
+        <section id="horizontal-writing-mode" class="level4">
+          <h4 class="sigil_not_in_toc">Horizontal writing mode</h4>
+
+          <p>User settings to disable are:</p>
+
+          <ul>
+            <li><code>--USER__textAlign</code>;</li>
+
+            <li><code>--USER__bodyHyphens</code>;</li>
+
+            <li><code>--USER__paraIndent</code>;</li>
+
+            <li><code>--USER__wordSpacing</code>;</li>
+
+            <li><code>--USER__letterSpacing</code>.</li>
+          </ul>
+        </section>
+
+        <section id="vertical-writing-mode" class="level4">
+          <h4 class="sigil_not_in_toc">Vertical writing mode</h4>
+
+          <p>This also impacts the Mongolian script.</p>
+
+          <p>User settings to disable are:</p>
+
+          <ul>
+            <li><code>--USER__colCount</code>;</li>
+
+            <li><code>--USER__textAlign</code>;</li>
+
+            <li><code>--USER__bodyHyphens</code>;</li>
+
+            <li><code>--USER__paraIndent</code>;</li>
+
+            <li><code>--USER__wordSpacing</code>;</li>
+
+            <li><code>--USER__letterSpacing</code>.</li>
+          </ul>
+        </section>
+      </section>
+    </section>
+  </section>
+</body>
+</html>

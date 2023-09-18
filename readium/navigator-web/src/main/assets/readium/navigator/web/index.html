@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Readium Web Navigator</title>
+  <script src="index.js"></script>
+  <style>
+      .readium-navigator-iframe {
+          width: 100%;
+          height: 100%;
+        }
+
+        @keyframes loading {
+          0% {
+            transform: rotate(0deg);
+          }
+          100% {
+            transform: rotate(360deg);
+          }
+        }
+
+        div:has(> .readium-navigator-iframe.blank)::after {
+          content: "";
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          margin-top: -30px;
+          margin-left: -30px;
+          width: 50px;
+          height: 50px;
+          border-radius: 50px;
+          border: 5px solid grey;
+          border-top-color: black;
+          animation: loading 2s linear infinite;
+        }
+    </style>
+</head>
+<body style="width:100%; height:100%;">
+  <div style="width:100%; height: 100%;" />
+</body>
+</html>

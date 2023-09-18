@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<package prefix="schema: http://schema.org/" unique-identifier="epub-id-1" version="3.0" xmlns="http://www.idpf.org/2007/opf">
+  <metadata xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:opf="http://www.idpf.org/2007/opf">
+    <dc:title>Readium CSS Implementers’ doc</dc:title>
+    <dc:creator id="cre">Readium</dc:creator>
+    <meta property="role" refines="#cre" scheme="marc:relators">aut</meta>
+    <dc:date id="epub-date">2017-08-24T14:12:26Z</dc:date>
+    <dc:language>en</dc:language>
+    <dc:identifier id="epub-id-1">urn:uuid:91cab77e-946f-4814-9e61-8494a5d5cb0f</dc:identifier>
+    <meta name="cover" content="cover_jpg"/>
+    <meta property="dcterms:modified">2020-04-30T19:10:46Z</meta>
+    <meta content="0.9.5" name="Sigil version"/>
+    <meta property="schema:accessibilityFeature">displayTransformability</meta>
+    <meta property="schema:accessibilityFeature">readingOrder</meta>
+    <meta property="schema:accessibilityFeature">structuralNavigation</meta>
+    <meta property="schema:accessibilityFeature">unlocked</meta>
+    <meta property="schema:accessibilityFeature">alternativeText</meta>
+    <meta property="schema:accessibilityHazard">noFlashing</meta>
+    <meta property="schema:accessibilityHazard">noSound</meta>
+    <meta property="schema:accessibilityHazard">noMotionSimulation</meta>
+    <meta property="schema:accessMode">textual</meta>
+    <meta property="schema:accessMode">visual</meta>
+    <meta property="schema:accessModeSufficient">textual,visual</meta>
+    <meta property="schema:accessModeSufficient">textual</meta>
+    <meta property="schema:accessibilitySummary">The publication should meet EPUB Accessibility 1.0 requirements and WCAG 2.0 Level AA.</meta>
+  </metadata>
+  <manifest>
+    <item href="toc.ncx" id="ncx" media-type="application/x-dtbncx+xml"/>
+    <item href="Styles/stylesheet.css" id="style" media-type="text/css"/>
+    <item href="Text/nav.xhtml" id="nav" media-type="application/xhtml+xml" properties="nav"/>
+    <item href="Text/cover.xhtml" id="cover_xhtml" media-type="application/xhtml+xml"/>
+    <item href="Text/title_page.xhtml" id="title_page_xhtml" media-type="application/xhtml+xml"/>
+    <item href="Text/Section-020.xhtml" id="Section-020.xhtml" media-type="application/xhtml+xml"/>
+    <item href="Text/Section-026.xhtml" id="Section-026.xhtml" media-type="application/xhtml+xml"/>
+    <item href="Images/cover.jpg" id="cover_jpg" media-type="image/jpeg" properties="cover-image"/>
+    <item href="Text/Section-001.xhtml" id="Section-001.xhtml" media-type="application/xhtml+xml"/>
+    <item href="Text/Section-002.xhtml" id="Section-002.xhtml" media-type="application/xhtml+xml"/>
+    <item href="Text/Section-003.xhtml" id="Section-003.xhtml" media-type="application/xhtml+xml"/>
+    <item href="Text/Section-004.xhtml" id="Section-004.xhtml" media-type="application/xhtml+xml"/>
+    <item href="Text/Section-005.xhtml" id="Section-005.xhtml" media-type="application/xhtml+xml"/>
+    <item href="Text/Section-006.xhtml" id="Section-006.xhtml" media-type="application/xhtml+xml"/>
+    <item href="Text/Section-007.xhtml" id="Section-007.xhtml" media-type="application/xhtml+xml"/>
+    <item href="Text/Section-008.xhtml" id="Section-008.xhtml" media-type="application/xhtml+xml"/>
+    <item href="Text/Section-013.xhtml" id="Section-013.xhtml" media-type="application/xhtml+xml"/>
+    <item href="Text/Section-017.xhtml" id="Section-017.xhtml" media-type="application/xhtml+xml"/>
+    <item href="Text/Section-018.xhtml" id="Section-018.xhtml" media-type="application/xhtml+xml"/>
+    <item href="Text/Section-022.xhtml" id="Section-022.xhtml" media-type="application/xhtml+xml"/>
+    <item href="Text/Section-024.xhtml" id="Section-024.xhtml" media-type="application/xhtml+xml"/>
+    <item href="Images/Page-Model.jpg" id="Page-Model.jpg" media-type="image/jpeg"/>
+    <item href="Images/spread-model.jpg" id="spread-model.jpg" media-type="image/jpeg"/>
+    <item href="Text/Section-009.xhtml" id="Section-009.xhtml" media-type="application/xhtml+xml"/>
+    <item href="Text/Section-011.xhtml" id="Section-011.xhtml" media-type="application/xhtml+xml"/>
+    <item href="Text/Section-012.xhtml" id="Section-012.xhtml" media-type="application/xhtml+xml"/>
+    <item href="Text/Section-014.xhtml" id="Section-014.xhtml" media-type="application/xhtml+xml"/>
+    <item href="Text/Section-019.xhtml" id="Section-019.xhtml" media-type="application/xhtml+xml"/>
+    <item href="Text/Section-023.xhtml" id="Section-023.xhtml" media-type="application/xhtml+xml"/>
+    <item href="Text/Section-010.xhtml" id="Section-010.xhtml" media-type="application/xhtml+xml"/>
+    <item href="Text/Section-021.xhtml" id="Section-021.xhtml" media-type="application/xhtml+xml"/>
+    <item href="Images/charis-sil.png" id="charis-sil.png" media-type="image/png"/>
+    <item href="Images/clear-sans.png" id="clear-sans.png" media-type="image/png"/>
+    <item href="Images/faustina.png" id="faustina.png" media-type="image/png"/>
+    <item href="Images/fira-sans.png" id="fira-sans.png" media-type="image/png"/>
+    <item href="Images/libre-franklin.png" id="libre-franklin.png" media-type="image/png"/>
+    <item href="Images/literata.png" id="literata.png" media-type="image/png"/>
+    <item href="Images/merriweather-sans.png" id="merriweather-sans.png" media-type="image/png"/>
+    <item href="Images/merriweather.png" id="merriweather.png" media-type="image/png"/>
+    <item href="Images/plex-serif.png" id="plex-serif.png" media-type="image/png"/>
+    <item href="Images/pt-sans.png" id="pt-sans.png" media-type="image/png"/>
+    <item href="Images/pt-serif.png" id="pt-serif.png" media-type="image/png"/>
+    <item href="Images/source-sans-pro.png" id="source-sans-pro.png" media-type="image/png"/>
+    <item href="Images/vollkorn.png" id="vollkorn.png" media-type="image/png"/>
+    <item href="Images/dynamic-leading.jpg" id="dynamic-leading.jpg" media-type="image/jpeg"/>
+    <item href="Images/Fragmented-Model.jpg" id="Fragmented-Model.jpg" media-type="image/jpeg"/>
+    <item href="Text/Section-015.xhtml" id="Section-015.xhtml" media-type="application/xhtml+xml"/>
+    <item href="Text/Section-025.xhtml" id="Section-025.xhtml" media-type="application/xhtml+xml"/>
+    <item href="Text/Section-016.xhtml" id="Section-016.xhtml" media-type="application/xhtml+xml"/>
+    <item href="Text/Section-027.xhtml" id="Section-027.xhtml" media-type="application/xhtml+xml"/>
+    <item href="Images/alt-lines.png" id="alt-lines.png" media-type="image/png"/>
+  </manifest>
+  <spine toc="ncx">
+    <itemref idref="cover_xhtml"/>
+    <itemref idref="title_page_xhtml"/>
+    <itemref idref="Section-001.xhtml"/>
+    <itemref idref="Section-002.xhtml"/>
+    <itemref idref="Section-003.xhtml"/>
+    <itemref idref="Section-004.xhtml"/>
+    <itemref idref="Section-005.xhtml"/>
+    <itemref idref="Section-006.xhtml"/>
+    <itemref idref="Section-007.xhtml"/>
+    <itemref idref="Section-008.xhtml"/>
+    <itemref idref="Section-009.xhtml"/>
+    <itemref idref="Section-010.xhtml"/>
+    <itemref idref="Section-011.xhtml"/>
+    <itemref idref="Section-012.xhtml"/>
+    <itemref idref="Section-013.xhtml"/>
+    <itemref idref="Section-014.xhtml"/>
+    <itemref idref="Section-015.xhtml"/>
+    <itemref idref="Section-016.xhtml"/>
+    <itemref idref="Section-017.xhtml"/>
+    <itemref idref="Section-018.xhtml"/>
+    <itemref idref="Section-019.xhtml"/>
+    <itemref idref="Section-020.xhtml"/>
+    <itemref idref="Section-021.xhtml"/>
+    <itemref idref="Section-022.xhtml"/>
+    <itemref idref="Section-023.xhtml"/>
+    <itemref idref="Section-024.xhtml"/>
+    <itemref idref="Section-025.xhtml"/>
+    <itemref idref="Section-026.xhtml"/>
+    <itemref idref="Section-027.xhtml"/>
+  </spine>
+  <guide>
+    <reference href="Text/cover.xhtml" title="Cover" type="cover"/>
+  </guide>
+</package>

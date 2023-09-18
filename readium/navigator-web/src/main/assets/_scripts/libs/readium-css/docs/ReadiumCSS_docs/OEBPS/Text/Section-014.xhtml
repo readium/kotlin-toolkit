@@ -1,0 +1,357 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" xml:lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="generator" content="pandoc"/>
+  <title>Readium CSS Implementers’ doc</title>
+  <link rel="stylesheet" type="text/css" href="../Styles/stylesheet.css"/>
+</head>
+
+<body xml:lang="en">
+  <section id="user-settings-recs" class="level1">
+      <h1>Recommendations for User Settings Management</h1>
+
+      <p>[Implementers’ doc] [Authors’ doc]</p>
+
+      <p>User settings are a complex issue as CSS authoring is liberal by nature.</p>
+
+      <p>In theory, this issue should be easily solvable using UA and user stylesheets as <a href="https://www.w3.org/TR/css3-cascade/#cascading">they turn precedence upside down for <code>!important</code></a>. In practice, we don’t have any universal mechanism to set a stylesheet as an UA or user stylesheet: all the stylesheets we manipulate are created equal in scope; they are considered authors’ stylesheets by the rendering engine.</p>
+
+      <p>The following list is the order of priority we should emulate:</p>
+
+      <ol>
+        <li>important user agent declarations;</li>
+
+        <li>important user declarations;</li>
+
+        <li>important author declarations;</li>
+
+        <li>normal author declarations;</li>
+
+        <li>normal user declarations;</li>
+
+        <li>normal user agent declarations.</li>
+      </ol>
+
+    <section id="managing-conflicts" class="level2">
+      <h2 id="sigil_toc_id_41">Managing conflicts</h2>
+
+      <p>We’re referring to the <a href="https://www.w3.org/TR/html-design-principles/#priority-of-constituencies">W3C’s priority of constituencies</a>. In other words:</p>
+
+      <pre><code>Users’ styles &gt; Authors’ styles &gt; Implementers’ styles</code></pre>
+
+      <p>Which is why conceptualizing this issue as intents may help.</p>
+
+      <p>Typography is not just a set of settings though, it’s a complex system in which some settings impact others. For instance, font-size impacts line-height and line-length, which impacts the number of columns.</p>
+
+      <p>It is up to implementers to pick their preferred approach (minimal set, presets, minimal set/presets with advanced settings, maximal set) since it is primarily an UX issue.</p>
+    </section>
+
+    <section id="important" class="level2">
+      <h2 id="sigil_toc_id_42">!important</h2>
+
+      <section id="users-intent" class="level3">
+        <h3 class="sigil_not_in_toc">User’s intent</h3>
+
+        <p>Does not apply as we basically manage important declarations for them.</p>
+      </section>
+
+      <section id="authors-intent" class="level3">
+        <h3 class="sigil_not_in_toc">Author’s intent</h3>
+
+        <p>In theory, using <code>!important</code> is a clear intent the author is willing to enforce some specific style.</p>
+      </section>
+
+      <section id="what-do-do" class="level3">
+        <h3 class="sigil_not_in_toc">What do do</h3>
+
+        <p>In practice, <code>!important</code> may be abused, it may be a quick fix to solve a cascading issue – and the author didn’t bother taking user settings into account –, it may be used to enforce some styles in Reading Systems overridding a lot of styles by default, etc.</p>
+
+        <p>This case is a complex one. We’re designing Readium CSS with the minimum amount of overrides possible but authors’ <code>!important</code> may conflict with some user settings. Please refer to the following cases.</p>
+      </section>
+    </section>
+
+    <section id="number-of-columns-1" class="level2">
+      <h2 id="sigil_toc_id_48">Number of columns</h2>
+
+      <section id="users-intent-6" class="level3">
+        <h3 class="sigil_not_in_toc">User’s intent</h3>
+
+        <p>The user intends to set a personnal preference. They may be used to reading newspapers, where the column length is quite small, but that can create extra issues on the implementers’ side.</p>
+      </section>
+
+      <section id="authors-intent-6" class="level3">
+        <h3 class="sigil_not_in_toc">Author’s intent</h3>
+
+        <p>Does not apply to authors.</p>
+      </section>
+
+      <section id="what-to-do-2" class="level3">
+        <h3 class="sigil_not_in_toc">What to do</h3>
+
+        <p>It depends on the implementers’ approach (presets with typographic rules as references Vs. the user can override on a setting-by-setting basis).</p>
+      </section>
+    </section>
+
+    <section id="margins" class="level2">
+      <h2 id="sigil_toc_id_49">Page margins</h2>
+
+      <section id="users-intent-7" class="level3">
+        <h3 class="sigil_not_in_toc">User’s intent</h3>
+
+        <p>The user intends to adjust line-length.</p>
+      </section>
+
+      <section id="authors-intent-7" class="level3">
+        <h3 class="sigil_not_in_toc">Author’s intent</h3>
+
+        <p>We have to override margins for pagination so the most important style is <code>max-width</code>, if set.</p>
+      </section>
+
+      <section id="what-to-do-3" class="level3">
+        <h3 class="sigil_not_in_toc">What to do</h3>
+
+        <p>The author intends to limit line-length, but it is unclear they are doing it because some Reading Systems don’t or because they want to enforce one specific (max) line-length.</p>
+      </section>
+    </section>
+
+    <section id="reading-modes-1" class="level2">
+      <h2 id="sigil_toc_id_50">Reading modes</h2>
+
+      <section id="users-intent-8" class="level3">
+        <h3 class="sigil_not_in_toc">User’s intent</h3>
+
+        <p>The user intends to improve visual comfort.</p>
+      </section>
+
+      <section id="authors-intent-8" class="level3">
+        <h3 class="sigil_not_in_toc">Author’s intent</h3>
+
+        <p>Does not apply to authors but it could if we create a public “API” for authors to express intents related to reading modes.</p>
+
+        <p>Since authors have filed very few use cases at the moment, this is highly conditional.</p>
+      </section>
+
+      <section id="what-to-do-4" class="level3">
+        <h3 class="sigil_not_in_toc">What to do</h3>
+
+        <p>Implementers should take two main variables into account: contrast and luminosity, which means they might want to invert some images or get rid of backgrounds in night mode.</p>
+
+        <p>Inverting images that should be inverted in night mode can’t be done well without an author’s intent though.</p>
+
+        <p>Please note Readium CSS provides two extra options to manage images in night mode:</p>
+
+        <ol>
+          <li>darken;</li>
+
+          <li>invert.</li>
+        </ol>
+
+        <p>Those are two opt-in mechanisms for users, ideally set on a book-by-book basis since they may work well with some publications but badly with others.</p>
+      </section>
+    </section>
+
+    <section id="font-family-typeface" class="level2">
+      <h2 id="sigil_toc_id_43">Font family (typeface)</h2>
+
+      <section id="users-intent-1" class="level3">
+        <h3 class="sigil_not_in_toc">User’s intent</h3>
+
+        <p>The user intends to at least override the typeface used for body copy.</p>
+
+        <p>For a11y-related typefaces (Open Dyslexic, bold style of sans-serif family), the user probably intends to replace headings, scripts and italics as well.</p>
+      </section>
+
+      <section id="authors-intent-1" class="level3">
+        <h3 class="sigil_not_in_toc">Author’s intent</h3>
+
+        <p>Declaring a <code>font-family</code> for <code>body</code>, <code>p</code> and <code>p.class</code> is so common that it should not be considered an intent <i>per se.</i> While <code>p.class</code> is debatable, it is so widespread in practice (some authoring tools output <code>font-family</code> for every paragraph style) that it can’t be considered an intent in pure CSS.  Implementers indeed have to validate it against the document’s <code>font-family</code> using JavaScript to make sure it shouldn’t be overridden.</p>
+
+        <p>A different <code>font-family</code> can be set for headings (<code>h1</code>, <code>h2</code>, <code>h3</code>, etc.), <code>blockquote</code>, <code>i</code>, <code>span</code>, etc.</p>
+      </section>
+
+      <section id="what-to-do" class="level3">
+        <h3 class="sigil_not_in_toc">What to do</h3>
+
+        <p>A different <code>font-family</code> for specific elements should be considered a proper intent: a font may indeed be used to make the structure clearer, achieve visual effects (e.g. manuscript letter) or make sure different languages are displayed correctly.</p>
+
+        <p>For a11y-related settings (e.g. Open Dyslexic), you should override those elements too, as not doing it will impact the reading experience negatively. Please make sure to provide a font-stack that covers a large amount of different languages though.</p>
+
+        <p>In any case, math and SVG contents should not be overridden.</p>
+      </section>
+    </section>
+
+    <section id="font-size" class="level2">
+      <h2 id="sigil_toc_id_44">Font size</h2>
+
+      <section id="users-intent-2" class="level3">
+        <h3 class="sigil_not_in_toc">User’s intent</h3>
+
+        <p>The user intends to adjust the font-size, either because it is too small or too large by default.</p>
+      </section>
+
+      <section id="authors-intent-2" class="level3">
+        <h3 class="sigil_not_in_toc">Author’s intent</h3>
+
+        <p>This may be considered an intent if a <code>font-family</code> is set for body copy.</p>
+      </section>
+
+      <section id="what-do-do-1" class="level3">
+        <h3 class="sigil_not_in_toc">What do do</h3>
+
+        <p>The author could be trying to compensate for a smaller or larger x-height.</p>
+
+        <p>You might want to normalize <code>font-size</code> (<em>à la iBooks</em>) if the user changes the typeface.</p>
+      </section>
+    </section>
+
+    <section id="line-height-leading" class="level2">
+      <h2 id="sigil_toc_id_45">Line height (leading)</h2>
+
+      <section id="users-intent-3" class="level3">
+        <h3 class="sigil_not_in_toc">User’s intent</h3>
+
+        <p>The user intends to adjust line height, either because it is too solid or too loose by default.</p>
+      </section>
+
+      <section id="authors-intent-3" class="level3">
+        <h3 class="sigil_not_in_toc">Author’s intent</h3>
+
+        <p>The author may be trying to enforce vertical rhythm but you really can’t tell if you don’t analyze the entire stylesheet.</p>
+      </section>
+
+      <section id="what-do-do-2" class="level3">
+        <h3 class="sigil_not_in_toc">What do do</h3>
+
+        <p>Common elements for the body copy should be overridden (paragraphs, lists…).</p>
+      </section>
+    </section>
+
+    <section id="text-align-justification" class="level2">
+      <h2 id="sigil_toc_id_46">Text align (justification)</h2>
+
+      <section id="users-intent-4" class="level3">
+        <h3 class="sigil_not_in_toc">User’s intent</h3>
+
+        <p>The user intends to set a personnal preference. Although it is a bad practice in typography, some may prefer justified text without hyphenation.</p>
+      </section>
+
+      <section id="authors-intent-4" class="level3">
+        <h3 class="sigil_not_in_toc">Author’s intent</h3>
+
+        <p>If set for body copy, this is a publisher’s or author’s preference.</p>
+
+        <p>If explicitly set to <code>right</code> and <code>center</code> for paragraphs, to which <code>left</code> is added for headings, it is a clear intent.</p>
+      </section>
+
+      <section id="what-do-do-3" class="level3">
+        <h3 class="sigil_not_in_toc">What do do</h3>
+
+        <p>Clear intents should not be overridden. This requires JavaScript though, and it could be easier to manage exceptions than all the elements which must be overridden (less DOM manipulation).</p>
+
+        <p>Elements such as headings, tables, pre, etc. should not be overridden: declaring <code>text-align: justify</code> for those elements would indeed degrade legibility.</p>
+      </section>
+    </section>
+
+    <section id="hyphenation" class="level2">
+      <h2 id="sigil_toc_id_47">Hyphenation</h2>
+
+      <section id="users-intent-5" class="level3">
+        <h3 class="sigil_not_in_toc">User’s intent</h3>
+
+        <p>The user intends to enable/disable justification, possibly depending on the default/author’s styles.</p>
+      </section>
+
+      <section id="authors-intent-5" class="level3">
+        <h3 class="sigil_not_in_toc">Author’s intent</h3>
+
+        <p>Since hyphenation works in combination with justification in proper typography, this should be considered a preference or the enforcement of a typographic rule.</p>
+      </section>
+
+      <section id="what-to-do-1" class="level3">
+        <h3 class="sigil_not_in_toc">What to do</h3>
+
+        <p>Typography-wise, it is OK to hyphenate body copy with <code>text-align: left</code>, it is critical to hyphenate body copy with <code>text-align: justify</code>.</p>
+
+        <p>We are taking care of elements which should not be hyphenated in the patch stylesheet so that you don’t have to.</p>
+      </section>
+    </section>
+
+    <section id="paragraphs-formatting" class="level2">
+      <h2 id="sigil_toc_id_7">Paragraphs’ formatting</h2>
+
+      <section id="users-intent-9" class="level3">
+        <h3 class="sigil_not_in_toc">User’s intent</h3>
+
+        <p>The user intends to change the paragraph styling i.e. <code>text-indent</code> and vertical margins. Problem is this can either be a preference or a specific need (e.g. dyslexia).</p>
+      </section>
+
+      <section id="authors-intent-9" class="level3">
+        <h3 class="sigil_not_in_toc">Author’s intent</h3>
+
+        <p>This is a publisher’s or author’s preference.</p>
+
+        <p>There indeed is two accepted options for styling paragraphs:</p>
+
+        <ol>
+          <li>vertical margins without indent;</li>
+
+          <li>indent without vertical margins.</li>
+        </ol>
+      </section>
+
+      <section id="what-to-do-5" class="level3">
+        <h3 class="sigil_not_in_toc">What to do</h3>
+
+        <p>Ideally, paragraphs’ formatting should be handled as a whole. There is nothing preventing implementers to provide users with both settings though.</p>
+      </section>
+    </section>
+
+    <section id="characters-spacing" class="level2">
+      <h2 id="sigil_toc_id_25">Characters’ spacing</h2>
+
+      <section id="users-intent-10" class="level3">
+        <h3 class="sigil_not_in_toc">User’s intent</h3>
+
+        <p>The user intents to customize <code>word-spacing</code> and/or <code>letter-spacing</code>, which can help for dyslexia for instance.</p>
+      </section>
+
+      <section id="authors-intent-10" class="level3">
+        <h3 class="sigil_not_in_toc">Author’s intent</h3>
+
+        <p>It is very rare authors’ will use those CSS properties for body copy. They may use it for headings though (small capitals, large font-size, etc.).</p>
+      </section>
+
+      <section id="what-to-do-6" class="level3">
+        <h3 class="sigil_not_in_toc">What to do</h3>
+
+        <p>In any case, implementers should force those settings for body copy.</p>
+      </section>
+    </section>
+
+    <section id="ligatures-arabic-persian-scripts" class="level2">
+      <h2 id="sigil_toc_id_26">Ligatures (Arabic &amp; Persian scripts)</h2>
+
+      <section id="users-intent-11" class="level3">
+        <h3 class="sigil_not_in_toc">User’s intent</h3>
+
+        <p>The user intends to disable ligatures. This setting applies to the Arabic and Persian scripts, and is believed to help dyslexic readers as <code>word-spacing</code> in Latin.</p>
+      </section>
+
+      <section id="authors-intent-11" class="level3">
+        <h3 class="sigil_not_in_toc">Author’s intent</h3>
+
+        <p>In those scripts, ligatures will be enabled by default. It’s neither an intent or preference, it is just the way it works.</p>
+      </section>
+
+      <section id="what-to-do-7" class="level3">
+        <h3 class="sigil_not_in_toc">What to do</h3>
+
+        <p>Implementers must enforce the user preference, as it is primarily related to a11y.</p>
+      </section>
+    </section>
+  </section>
+</body>
+</html>

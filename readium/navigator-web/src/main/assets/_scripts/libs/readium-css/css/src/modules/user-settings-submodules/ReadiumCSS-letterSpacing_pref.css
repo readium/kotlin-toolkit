@@ -1,0 +1,20 @@
+/* Readium CSS
+   Letter spacing pref
+
+   A submodule managing letter-spacing for user settings
+   Part of “User Overrides Advanced” class – “advanced settings” flag required.
+
+   Repo: https://github.com/readium/readium-css */
+
+:root:--advanced-settings[style*="--USER__letterSpacing"] h1,
+:root:--advanced-settings[style*="--USER__letterSpacing"] h2,
+:root:--advanced-settings[style*="--USER__letterSpacing"] h3,
+:root:--advanced-settings[style*="--USER__letterSpacing"] h4,
+:root:--advanced-settings[style*="--USER__letterSpacing"] h5,
+:root:--advanced-settings[style*="--USER__letterSpacing"] h6,
+:root:--advanced-settings[style*="--USER__letterSpacing"] p,
+:root:--advanced-settings[style*="--USER__letterSpacing"] li,
+:root:--advanced-settings[style*="--USER__letterSpacing"] div {
+  letter-spacing: var(--USER__letterSpacing);
+  font-variant: none;
+}

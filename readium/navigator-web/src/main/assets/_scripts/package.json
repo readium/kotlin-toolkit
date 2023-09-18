@@ -1,0 +1,40 @@
+{
+  "name": "@readium/kotlin-navigator-web",
+  "author": "Readium Foundation",
+  "version": "0.1.0",
+  "license": "BSD-3-Clause",
+  "description": "A set of scripts for the Web navigator",
+  "private": true,
+  "scripts": {
+    "build": "tsdx build",
+    "test": "tsdx test",
+    "bundle": "webpack",
+    "lint": "eslint src",
+    "checkformat": "prettier --check '**/*.js'",
+    "format": "prettier --list-different --write '**/*.js'"
+  },
+  "browserslist": [
+    "Android >= 4"
+  ],
+  "devDependencies": {
+    "@babel/core": "^7.18.0",
+    "@babel/preset-env": "^7.18.0",
+    "@babel/preset-typescript": "^7.22.15",
+    "babel-loader": "^8.2.3",
+    "babel-plugin-tsconfig-paths": "^1.0.3",
+    "eslint": "^7.29.0",
+    "prettier": "2.3.1",
+    "tsdx": "^0.14.1",
+    "webpack": "^5.88.2",
+    "webpack-cli": "^5.1.4"
+  },
+  "dependencies": {
+    "approx-string-match": "^1.1.0",
+    "core-js": "^3.32.2",
+    "css-selector-generator": "^3.6.0",
+    "hash.js": "^1.1.7",
+    "regenerator-runtime": "^0.14.0",
+    "string.prototype.matchall": "^4.0.5"
+  },
+  "packageManager": "yarn@3.6.3"
+}

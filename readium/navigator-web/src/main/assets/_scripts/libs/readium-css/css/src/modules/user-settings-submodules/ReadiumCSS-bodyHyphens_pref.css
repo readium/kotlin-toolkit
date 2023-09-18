@@ -1,0 +1,52 @@
+/* Readium CSS
+   Hyphenation pref
+
+   A submodule managing hyphens for user settings
+   Part of “User Overrides Advanced” class – “advanced settings” flag required.
+
+   Repo: https://github.com/readium/readium-css */
+
+/* Managing hyphenation automatically for text-align values */
+
+:root:--advanced-settings[style*="--USER__textAlign: justify"] body,
+:root:--advanced-settings[style*="--USER__textAlign:justify"] body {
+  -webkit-hyphens: auto;
+  -moz-hyphens: auto;
+  -ms-hyphens: auto;
+  -epub-hyphens: auto;
+  hyphens: auto;
+}
+
+:root:--advanced-settings[style*="--USER__textAlign: left"] body,
+:root:--advanced-settings[style*="--USER__textAlign:left"] body,
+:root:--advanced-settings[style*="--USER__textAlign: right"] body,
+:root:--advanced-settings[style*="--USER__textAlign:right"] body {
+  -webkit-hyphens: none;
+  -moz-hyphens: none;
+  -ms-hyphens: none;
+  -epub-hyphens: none;
+  hyphens: none;
+}
+
+/* Managing the user override */
+
+:root:--advanced-settings[style*="--USER__bodyHyphens"] {
+  -webkit-hyphens: var(--USER__bodyHyphens) !important;
+  -moz-hyphens: var(--USER__bodyHyphens) !important;
+  -ms-hyphens: var(--USER__bodyHyphens) !important;
+  -epub-hyphens: var(--USER__bodyHyphens) !important;
+  hyphens: var(--USER__bodyHyphens) !important;
+}
+
+/* Sorry, we can’t use `:matches`, `:-moz-any` or `:-webkit-any` because MS doesn’t support it yet */
+:root:--advanced-settings[style*="--USER__bodyHyphens"] body,
+:root:--advanced-settings[style*="--USER__bodyHyphens"] p,
+:root:--advanced-settings[style*="--USER__bodyHyphens"] li,
+:root:--advanced-settings[style*="--USER__bodyHyphens"] div,
+:root:--advanced-settings[style*="--USER__bodyHyphens"] dd {
+  -webkit-hyphens: inherit;
+  -moz-hyphens: inherit;
+  -ms-hyphens: inherit;
+  -epub-hyphens: inherit;
+  hyphens: inherit;
+}

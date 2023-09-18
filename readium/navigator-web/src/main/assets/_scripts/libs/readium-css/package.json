@@ -1,0 +1,51 @@
+{
+  "name": "readium-css",
+  "description": "A set of reference stylesheets for EPUB Reading Systems",
+  "version": "1.0.0-beta.1",
+  "homepage": "https://github.com/readium/readium-css",
+  "license": "BSD-3-Clause",
+  "keywords": [
+    "epub",
+    "epub3",
+    "epub-reader",
+    "ebook-reader",
+    "css"
+  ],
+  "author": {
+    "name": "readium",
+    "email": "readium-css@edrlab.org",
+    "url": "http://www.edrlab.org"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/readium/readium-css.git"
+  },
+  "bugs": {
+    "url": "https://github.com/readium/readium-css/issues"
+  },
+  "main": "css/ReadiumCSS-config.css",
+  "devDependencies": {
+    "backstopjs": "^4.5.0",
+    "express": "^4.17.1",
+    "postcss-alter-property-value": "^1.1.3",
+    "postcss-cli": "^7.1.0",
+    "postcss-css-variables": "^0.14.0",
+    "postcss-custom-media": "^7.0.8",
+    "postcss-custom-selectors": "^5.1.2",
+    "postcss-discard-comments": "^4.0.2",
+    "postcss-import": "^12.0.1",
+    "postcss-sorting": "^5.0.1",
+    "stylelint": "^13.2.1"
+  },
+  "scripts": {
+    "build": "npm run build:ltr && npm run build:rtl && npm run build:cjk && npm run build:vertical",
+    "build:ltr": "postcss css/src/ReadiumCSS-before.css -o css/dist/ReadiumCSS-before.css && postcss css/src/ReadiumCSS-default.css -o css/dist/ReadiumCSS-default.css && postcss css/src/ReadiumCSS-after.css -o css/dist/ReadiumCSS-after.css",
+    "build:rtl": "postcss css/src/ReadiumCSS-before-rtl.css -o css/dist/rtl/ReadiumCSS-before.css && postcss css/src/ReadiumCSS-default-rtl.css -o css/dist/rtl/ReadiumCSS-default.css && postcss css/src/ReadiumCSS-after-rtl.css -o css/dist/rtl/ReadiumCSS-after.css",
+    "build:cjk": "postcss css/src/ReadiumCSS-before-cjk-horizontal.css -o css/dist/cjk-horizontal/ReadiumCSS-before.css && postcss css/src/ReadiumCSS-default-cjk-horizontal.css -o css/dist/cjk-horizontal/ReadiumCSS-default.css && postcss css/src/ReadiumCSS-after-cjk-horizontal.css -o css/dist/cjk-horizontal/ReadiumCSS-after.css",
+    "build:vertical": "postcss css/src/ReadiumCSS-before-cjk-vertical.css -o css/dist/cjk-vertical/ReadiumCSS-before.css && postcss css/src/ReadiumCSS-default-cjk-vertical.css -o css/dist/cjk-vertical/ReadiumCSS-default.css && postcss css/src/ReadiumCSS-after-cjk-vertical.css -o css/dist/cjk-vertical/ReadiumCSS-after.css",
+    "start": "node \"./server.js\"",
+    "test": "npm start & backstop test && pkill -9 -f \"node ./server.js\" && echo '\nVisual Regression testing has been completed.\n'",
+    "test:ref": "npm start & backstop reference && pkill -9 -f \"node ./server.js\" && echo '\nVisual Regression references have been generated.\n'",
+    "test:approve": "backstop approve"
+  }
+}

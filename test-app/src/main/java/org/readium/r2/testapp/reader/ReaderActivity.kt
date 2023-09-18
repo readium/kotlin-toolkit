@@ -112,6 +112,7 @@ open class ReaderActivity : AppCompatActivity() {
     private fun createReaderFragment(readerData: ReaderInitData): BaseReaderFragment? {
         val readerClass: Class<out Fragment>? = when (readerData) {
             is EpubReaderInitData -> EpubReaderFragment::class.java
+            is WebReaderInitData -> WebReaderFragment::class.java
             is ImageReaderInitData -> ImageReaderFragment::class.java
             is MediaReaderInitData -> AudioReaderFragment::class.java
             is PdfReaderInitData -> PdfReaderFragment::class.java

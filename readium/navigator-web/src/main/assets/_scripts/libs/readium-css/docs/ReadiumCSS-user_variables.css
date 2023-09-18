@@ -1,0 +1,35 @@
+/* Readium CSS 
+   User settings
+
+   A reference for user settings variables
+   Don’t use this stylesheet
+
+   Repo: https://github.com/readium/readium-css */
+
+:root {
+  --USER__colCount: ;         /* 1, 2, auto */
+  --USER__pageMargins: ;      /* 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2 */
+
+  --USER__backgroundColor: ;  /* Custom color (not preset mode) */
+  --USER__textColor: ;        /* Custom color (not preset mode) */
+
+  --USER__textAlign: ;        /* left, justify */
+  --USER__bodyHyphens: ;      /* none, auto */
+
+  --USER__fontFamily: ;       /* font stacks e.g. var(--RS__oldStyleTf) */
+  --USER__fontSize: ;         /* 12 = 75%, 14 = 87.5%, 16 = 100%, 18 = 112.5%, 22 = 137.5%, 24 = 150%, 26 = 162.5%, 28 = 175%, 32 = 200%, 36 = 225%, 40 = 250% */
+  --USER__typeScale: ;        /* 1.067 | 1.125 | 1.2 | 1.25 | 1.333 | 1.414 | 1.5 | 1.618 */
+  --USER__lineHeight: ;       /* may depend on font size? */
+
+  --USER__paraSpacing: ;      /* 0, 0.375rem, 0.75rem, 1rem, 1.25rem, 1.5rem, 1.65rem, 1.75rem, 2rem */
+  --USER__paraIndent: ;       /* 0.5rem, 1rem, 1.25rem, 1.5rem, 2rem, 2.5rem, 3rem */
+  
+  --USER__wordSpacing: ;      /* (0.0675rem,) 0.125rem, (0.1875rem,) 0.25rem, (0.3125rem,) 0.375rem, (0.4375rem,) 0.5rem */
+  --USER__letterSpacing: ;    /* 0.0675rem, 0.125rem, 0.1875rem */
+
+  /* Night mode specific */
+  --USER__darkenImages: ;     /* any value */
+  --USER__invertImages: ;     /* any value */
+
+  --USER__ligatures: ;        /* none | common-ligatures */
+}

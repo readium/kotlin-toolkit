@@ -1,0 +1,11 @@
+/* Readium CSS
+   Font size pref
+
+   A submodule managing font-size for user settings
+   Part of “User Overrides” class – no flag required.
+
+   Repo: https://github.com/readium/readium-css */
+
+:root[style*="--USER__fontSize"] {
+  font-size: var(--USER__fontSize) !important;
+}

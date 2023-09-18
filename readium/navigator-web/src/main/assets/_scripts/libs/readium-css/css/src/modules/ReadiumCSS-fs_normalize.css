@@ -1,0 +1,72 @@
+/* Readium CSS
+   Font size normalize
+
+   A stylesheet to normalize font-size
+
+   Repo: https://github.com/readium/readium-css */
+
+
+/* STYLES */
+/* :root is used so that you can quickly add a class or attribute if you prefer e.g. `:root[data-rs-normalize]` */
+
+/* We create a default so that you don’t need to explicitly set one in the DOM.
+   Once the “Publisher’s styles” checkbox is unchecked, the normalize is applied automatically */
+:root:--advanced-settings {
+  --USER__typeScale: 1.2; /* This is the default type scale you’ll find in most publications */
+}
+
+:root:--advanced-settings p,
+:root:--advanced-settings li,
+:root:--advanced-settings div,
+:root:--advanced-settings pre,
+:root:--advanced-settings dd {
+  font-size: 1rem !important;
+}
+
+:root:--advanced-settings h1 {
+  /* Fallback if browser doesn’t support vars */
+  font-size: 1.75rem !important;
+  font-size: calc(((1rem * var(--USER__typeScale)) * var(--USER__typeScale)) * var(--USER__typeScale)) !important;
+}
+
+:root:--advanced-settings h2 {
+  /* Fallback if browser doesn’t support vars */
+  font-size: 1.5rem !important;
+  font-size: calc((1rem * var(--USER__typeScale)) * var(--USER__typeScale)) !important;
+}
+
+:root:--advanced-settings h3 {
+  /* Fallback if browser doesn’t support vars */
+  font-size: 1.25rem !important;
+  font-size: calc(1rem * var(--USER__typeScale)) !important;
+}
+
+:root:--advanced-settings h4,
+:root:--advanced-settings h5,
+:root:--advanced-settings h6 {
+  font-size: 1rem !important;
+}
+
+:root:--advanced-settings small {
+  font-size: smaller !important;
+}
+
+:root:--advanced-settings sub,
+:root:--advanced-settings sup {
+  font-size: 67.5% !important;
+}
+
+/* The following styles kick in if you define the typeScale variable in the DOM.
+   No need to repeat declarations which don’t make use of the variable */
+
+:root:--advanced-settings[style*="--USER__typeScale"] h1 {
+  font-size: calc(((1rem * var(--USER__typeScale)) * var(--USER__typeScale)) * var(--USER__typeScale)) !important;
+}
+
+:root:--advanced-settings[style*="--USER__typeScale"] h2 {
+  font-size: calc((1rem * var(--USER__typeScale)) * var(--USER__typeScale)) !important;
+}
+
+:root:--advanced-settings[style*="--USER__typeScale"] h3 {
+  font-size: calc(1rem * var(--USER__typeScale)) !important;
+}

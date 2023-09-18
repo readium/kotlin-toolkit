@@ -72,6 +72,10 @@ include(":readium:navigator-media2")
 project(":readium:navigator-media2")
     .name = "readium-navigator-media2"
 
+include(":readium:navigator-web")
+project(":readium:navigator-web")
+    .name = "readium-navigator-web"
+
 include(":readium:opds")
 project(":readium:opds")
     .name = "readium-opds"

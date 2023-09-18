@@ -1,0 +1,55 @@
+/* Readium CSS 
+   Config module
+
+   A file allowing implementers to customize flags for reading modes,
+   user settings, etc.
+
+   Repo: https://github.com/readium/readium-css */
+
+/* Custom medias
+   Syntax: @custom-media --variable (prop: value) */
+
+/* Responsive columns
+   The minimum width for which responsive columns (2 -> 1 and vice versa,
+   depending on the current font-size) must be enabled */
+@custom-media --responsive-columns (min-width: 60em);
+
+/* Mobile columns
+   The minimum and maximum width for mobile devices.
+   We’re forcing the landscape orientation by default,
+   and must still investigate large tablets (iPad Pro, Surface Pro 3, etc.). */
+@custom-media --min-device-columns (min-device-width: 36em);
+@custom-media --max-device-columns (max-device-width: 47em);
+
+/* Custom selectors
+   Syntax: @custom-selector :--variable selector
+   The selectors you will use for flags/switches
+   You can alternatively use classes or custom data-* attributes */
+
+/* User view = paged | scrolled */
+@custom-selector :--paged-view [style*="readium-paged-on"];
+@custom-selector :--scroll-view [style*="readium-scroll-on"];
+
+/* Font-family override */
+@custom-selector :--font-override [style*="readium-font-on"];
+
+/* Advanced settings */
+@custom-selector :--advanced-settings [style*="readium-advanced-on"];
+
+/* Reading Modes */
+@custom-selector :--sepia-mode [style*="readium-sepia-on"];
+@custom-selector :--night-mode [style*="readium-night-on"];
+
+/* Filters (images) */
+@custom-selector :--darken-filter [style*="readium-darken-on"];
+@custom-selector :--invert-filter [style*="readium-invert-on"];
+
+/* Accessibility normalization */
+@custom-selector :--a11y-normalize [style*="readium-a11y-on"];
+
+/* Accessibility font. You can add selectors, using “, ” as a separator, if you have multiple fonts */
+@custom-selector :--a11y-font [style*="AccessibleDfA"], [style*="IA Writer Duospace"];
+
+/* Direction i.e. ltr and rtl */
+@custom-selector :--ltr [dir="ltr"];
+@custom-selector :--rtl [dir="rtl"];

@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Dynamic Leading Tester</title>
+  <meta charset="UTF-8" />
+  <style type="text/css" id="styles">
+  :root {
+    --RS__lineHeightCompensation: 1;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  }
+
+  html, body {margin: 0; padding: 0;}
+
+  body {
+    padding: 3vmin 3vmin 0 3vmin;
+  }
+  
+  main {
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    min-height: 100vh;
+  }
+
+  main > * {
+    flex: 0 0 50%;
+  }
+
+  .text {
+    font-family: "Iowan Old Style";
+    max-width: 60ch;
+    margin: 0 auto;
+  }
+
+  p {
+    font-size: 1em;
+    line-height: calc((1em + (2ex - 1ch) - ((1rem - 16px) * 0.1667)) * var(--RS__lineHeightCompensation));
+    /* 1 line + (2 x-height - 1 character width) - ((current font-size - base font-size) * scale)
+       As a result, the line-height is based on the font proportions and the current font-size
+       i.e. the larger the font-size, the smaller the line-height */
+    margin: calc((1em + (2ex - 1ch) - ((1rem - 16px) * 0.1667)) * var(--RS__lineHeightCompensation)) 2%;
+  }
+
+  #console {
+    box-sizing: border-box;
+    border: 1px solid gray;
+    font-family: monospace, monospace;
+    font-size: 16px;
+    align-self: stretch;
+    overflow-y: auto;
+    max-height: 100vh;
+  }
+
+  #console span {
+    display: block;
+    margin: 16px 0;
+  }
+
+  #settings {
+    position: fixed;
+    top: 3vmin;
+    right: 3vmin;
+    text-align: right;
+  }
+
+  button {
+    padding: 0.5em 1em;
+    font-size: 16px;
+    font-weight: bold;
+    z-index: 10;
+  }
+
+  input {
+    display: block;
+    margin: 16px 0;
+  }
+
+  input:first-child {
+    margin-top: 0;
+  }
+
+  #intro {
+    max-width: 65rem;
+  }
+
+  code {
+    font-family: Consolas, "Andale Mono WT", "Andale Mono", "Lucida Console", "Lucida Sans Typewriter", "DejaVu Sans Mono", "Bitstream Vera Sans Mono", "Liberation Mono", "Nimbus Mono L", Monaco, "Courier New", Courier, monospace;
+    font-size: 1rem;
+  }
+</style>
+</head>
+<body>
+
+<h1>Dynamic Leading Tester</h1>
+
+<section id="intro">
+  <p>The aim of this “web app” is to find the ideal line-height for a specified font.</p>
+
+  <p>The formula used is <code>(1em + (2ex - 1ch) - ((1rem - 16px) * 0.1667)) * compensation factor</code> but isn’t obviously bulletproof; you should test different compensation factors and judge what the best result is visually.</p>
+
+  <p>In the top right inputs, first pick a font-family, then a font-size, then a compensation factor. Once you’re happy with the result, you can write values (i.e. computed styles) in a pseudo console if needed.</p>
+</section>
+
+<!-- Type a font family name or a font-size (e.g. 200%) and return -->
+
+<div id="settings">
+<input type="text" id="fontInput" placeholder="Font Family"/>
+<input type="text" id="fontSizer" placeholder="Font Size e.g. 200%"/>
+<input type="text" id="lhCompensator" placeholder="Compensation factor e.g. 1"/>
+<button type="button">Write values</button>
+</div>
+
+<main>
+  <div class="text">
+    <p>Do you see any Teletubbies in here? Do you see a slender plastic tag clipped to my shirt with my name printed on it? Do you see a little Asian child with a blank expression on his face sitting outside on a mechanical helicopter that shakes when you put quarters in it?</p>
+
+    <p>No? Well, that's what you see at a toy store. And you must think you're in a toy store, because you're here shopping for an infant named Jeb.</p>
+
+    <p>The path of the righteous man is beset on all sides by the iniquities of the selfish and the tyranny of evil men. Blessed is he who, in the name of charity and good will, shepherds the weak through the valley of darkness, for he is truly his brother's keeper and the finder of lost children. And I will strike down upon thee with great vengeance and furious anger those who would attempt to poison and destroy My brothers. And you will know My name is the Lord when I lay My vengeance upon thee.</p>
+  </div>
+
+<div id="console"></div>
+</main>
+<script type="text/javascript">
+var button = document.getElementsByTagName("button")[0],
+    textSample = document.getElementsByTagName("p")[0],
+    fontInput = document.getElementById("fontInput"),
+    fontSizer = document.getElementById("fontSizer"),
+    lhCompensator = document.getElementById("lhCompensator"),
+    logger = document.getElementById("console"),
+    style = document.getElementById("styles");
+    button.addEventListener("click", function(e) {
+      e.preventDefault();
+      var ff = window.getComputedStyle(textSample, null).getPropertyValue("font-family"),
+          fs = window.getComputedStyle(textSample, null).getPropertyValue("font-size"),
+          lh = window.getComputedStyle(textSample, null).getPropertyValue("line-height"),
+          ratio = parseFloat(lh) / parseFloat(fs);
+      logger.innerHTML += "<span>font-family: " + ff + ";<br/>font-size: " + fs + ";<br/>line-height: " + lh + ";<br/>ratio: " + ratio + ";</span>";
+    }, false);
+    fontInput.addEventListener("keyup", function(e) {
+		  if (e.keyCode == 13) {				// Return key
+			  newFont = fontInput.value;
+			  fontToTest = document.createTextNode("p { font-family: " + newFont + "; }");
+			  style.appendChild(fontToTest);
+		  }
+	  }, false);
+    fontSizer.addEventListener("keyup", function(e) {
+		  if (e.keyCode == 13) {				// Return key
+			  newSize = fontSizer.value;
+			  sizeToTest = document.createTextNode(":root { font-size: " + newSize + "; }");
+			  style.appendChild(sizeToTest);
+		  }
+	  }, false);
+    lhCompensator.addEventListener("keyup", function(e) {
+		  if (e.keyCode == 13) {				// Return key
+			  newFactor = lhCompensator.value;
+			  compensatorToTest = document.createTextNode(":root { --RS__lineHeightCompensation: " + newFactor + "; }");
+			  style.appendChild(compensatorToTest);
+		  }
+	  }, false);
+</script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+/* Readium CSS
+   Page margins pref
+
+   A submodule managing page margins for user settings
+   Part of “Chrome Advanced” class – no flag required.
+
+   Repo: https://github.com/readium/readium-css */
+
+/* Page Margins: the user margin is a factor of the page gutter e.g. 0.5, 0.75, 1, 1.25, 1.5, etc. */
+:root[style*="--USER__pageMargins"] body {
+  padding: calc(var(--RS__pageGutter) * var(--USER__pageMargins)) 0 !important;
+}

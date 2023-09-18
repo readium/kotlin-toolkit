@@ -1,0 +1,35 @@
+/* Readium CSS
+   Font Family pref
+
+   A submodule managing font-family for user settings
+   Part of “User Overrides” class – “font override” flag required.
+
+   Repo: https://github.com/readium/readium-css */
+
+:root:--font-override[style*="--USER__fontFamily"] {
+  font-family: var(--USER__fontFamily) !important;
+}
+
+:root:--font-override[style*="--USER__fontFamily"] body,
+:root:--font-override[style*="--USER__fontFamily"] p,
+:root:--font-override[style*="--USER__fontFamily"] li,
+:root:--font-override[style*="--USER__fontFamily"] div,
+:root:--font-override[style*="--USER__fontFamily"] dt,
+:root:--font-override[style*="--USER__fontFamily"] dd {
+  font-family: inherit !important;
+}
+
+:root:--font-override[style*="--USER__fontFamily"] i:not([lang]),
+:root:--font-override[style*="--USER__fontFamily"] i:not([xml\:lang]),
+:root:--font-override[style*="--USER__fontFamily"] em:not([lang]),
+:root:--font-override[style*="--USER__fontFamily"] em:not([xml\:lang]),
+:root:--font-override[style*="--USER__fontFamily"] cite:not([lang]),
+:root:--font-override[style*="--USER__fontFamily"] cite:not([xml\:lang]),
+:root:--font-override[style*="--USER__fontFamily"] b:not([lang]),
+:root:--font-override[style*="--USER__fontFamily"] b:not([xml\:lang]),
+:root:--font-override[style*="--USER__fontFamily"] strong:not([lang]),
+:root:--font-override[style*="--USER__fontFamily"] strong:not([xml\:lang]),
+:root:--font-override[style*="--USER__fontFamily"] span:not([lang]),
+:root:--font-override[style*="--USER__fontFamily"] span:not([xml\:lang]) {
+  font-family: inherit !important;
+}

@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" xml:lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="generator" content="pandoc"/>
+  <title>Readium CSS Implementers’ doc</title>
+  <link rel="stylesheet" type="text/css" href="../Styles/stylesheet.css"/>
+</head>
+
+<body xml:lang="en">
+  <section id="readium-css-fundamental-concepts" class="level1">
+    <h1>Readium CSS Fundamental Concepts</h1>
+
+    <p>[Implementers’ doc] [Authors’ info]</p>
+
+    <p>This document serves as an introduction, it explains the fundamental concepts used in designing Readium CSS.</p>
+
+    <section id="were-the-user-agent" class="level2">
+      <h2 id="sigil_toc_id_1">1. We’re the User Agent</h2>
+
+      <p><strong>In the context of EPUB, we must assume the role of the User Agent.</strong></p>
+
+      <p>Indeed, EPUB is not supported natively so we must build on top of web browsers’ rendering engine.</p>
+
+      <p>With such a role comes great responsibility: we must try to behave like browsers are behaving – i.e. be liberal in what we accept from authors –, and find a sensible balance between authors’ stylesheets and users’ overrides.</p>
+
+      <p>Authors and users have expectations though, and we had to take those into account. For instance, they are used to having EPUB contents laid out in a paged view, with reading modes (paper, sepia, night) and a minimal set of common settings.</p>
+
+      <p>By serving as a User Agent, we must make sure:</p>
+
+      <ol>
+        <li>authors’ EPUB contents are rendered as expected (e.g. their styles are scoped, we don’t override them unless strictly necessary, etc.);</li>
+
+        <li>we do serve as a user’s agent by providing a Graphical User Interface to writing a user stylesheet (i.e. user settings) and applying those styles as expected.</li>
+      </ol>
+    </section>
+
+    <section id="aim-at-interoperability" class="level2">
+      <h2 id="sigil_toc_id_2">2. Aim at Interoperability</h2>
+
+      <p>Interoperability is the logical result of the User Agent role we’re claiming.</p>
+
+      <p>We’ve done our utmost to follow EPUB and CSS recommendations to the letter, but it vastly depends on practical implementations. As a consequence, Readium CSS ships with its own recommendations, so that you don’t need to check every related specification yourself.</p>
+
+      <p>Besides, we’ve checked other major EPUB implementations to provide authors with the best interoperability possible. Indeed, they may design their stylesheet against those implementations so we gave priority to building a reliable environment.</p>
+
+      <p>We wanted to bring EPUB closer to the web though, and decided to leverage HTML5 Suggested Rendering and improve the current situation whenever possible.</p>
+    </section>
+
+    <section id="leverage-modern-css" class="level2">
+      <h2 id="sigil_toc_id_3">3. Leverage Modern CSS</h2>
+
+      <p>CSS has a lot to offer nowadays, and it can help solve complex issues in simpler ways.</p>
+
+      <p>Readium CSS has been be designed following 4 core principles:</p>
+
+      <ol>
+        <li><strong>Modularity:</strong> Readium CSS is not a monolithic stylesheet but a set of modules;</li>
+
+        <li><strong>Separation of Reading System’s Concerns:</strong> those modules are task-oriented e.g. paginate, apply default styles, intercept styles for reading modes or user settings, apply a reading mode or user setting, apply a theme, etc.;</li>
+
+        <li><strong>Daisy-chainability:</strong> those modules can be loaded and daisy-chained (cascade) depending on conditions;</li>
+
+        <li><strong>Customization:</strong> modules can be customized either before or during runtime (CSS variables), which implies themes can be generated within minutes.</li>
+      </ol>
+    </section>
+
+    <section id="openness-and-transparency" class="level2">
+      <h2 id="sigil_toc_id_4">4. Openness and Transparency</h2>
+
+      <p>This last principle is important since the relationship between authors and Reading Systems’ developers has not been really great so far.</p>
+
+      <p>Therefore, feedback has been collected, samples have been used all along development, and decisions impacting authors have been openly discussed. All of this has been publicly documented during research and development.</p>
+
+      <p>More importantly, we must clearly state what is UA styles and user styles, and why <code>!important</code> is used. This process has a significant impact when it comes to transparency since it affects the cascade itself (see user settings recommendations). Should an author file an issue scoped to your implementation, please take the time to explain why you decided to differ and use <code>!important</code>, especially as such a decision can likely be backed by users’ feedback in many cases.</p>
+    </section>
+  </section>
+</body>
+</html>

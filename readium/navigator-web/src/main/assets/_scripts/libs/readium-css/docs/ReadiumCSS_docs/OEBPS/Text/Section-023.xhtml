@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" xml:lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="generator" content="pandoc"/>
+  <title>Readium CSS Implementers’ doc</title>
+  <link rel="stylesheet" type="text/css" href="../Styles/stylesheet.css"/>
+</head>
+
+<body xml:lang="en">
+  <section id="fxl-requirements" class="level1">
+      <h1>Fixed-layouts’ Reading Systems Requirements</h1>
+
+      <p>[Implementers’ doc] [Authors’ doc]</p>
+
+      <p>Source: <a href="https://w3c.github.io/publ-epub-revision/epub32/spec/epub-contentdocs.html#sec-fixed-layouts">EPUB Content Documents 3.2</a></p>
+
+      <p>There’s a few criteria Reading Systems must meet in order to be conformant:</p>
+
+      <ul>
+        <li>it should allocate the full content display area (i.e. as much of the available Viewport area as possible) for the document;</li>
+
+        <li>it must use the dimensions expressed in the <code>viewport</code> meta tag to render XHTML Content Documents;</li>
+
+        <li>it must use the dimensions expressed in the <code>viewbox</code>, and/or <code>x</code>, <code>y</code>, <code>width</code> and <code>height</code> attributes in SVG to render SVG Content Documents.</li>
+      </ul>
+
+    <section id="styling" class="level2">
+      <h2 id="sigil_toc_id_60">Styling</h2>
+
+      <p>You should not inject additional content such as borders, margins, headers or footers into the viewport or the appplication area surrounding the viewport.</p>
+    </section>
+
+    <section id="scaling" class="level2">
+      <h2 id="sigil_toc_id_61">Scaling</h2>
+
+      <section id="xhtml-viewport-meta" class="level3">
+        <h3 class="sigil_not_in_toc">XHTML (viewport meta)</h3>
+
+        <p>When the aspect ratio does not match the aspect ratio of the Reading System, you may position the containing block inside the area to accommodate the user interface (letter-boxing).</p>
+
+        <p>Content positioned outside the containing block will not be visible.</p>
+      </section>
+
+      <section id="svg" class="level3">
+        <h3 class="sigil_not_in_toc">SVG</h3>
+
+        <p>SVG is a little bit more complex as there are different options to take into account.</p>
+
+        <section id="viewbox-attribute" class="level4">
+          <h4 class="sigil_not_in_toc">Viewbox attribute</h4>
+
+          <p>If the SVG only has a <code>viewbox</code> attribute, the coordinate system it defines is mapped to the viewport, keeping the aspect ratio.</p>
+        </section>
+
+        <section id="sizing-and-positioning-attributes" class="level4">
+          <h4 class="sigil_not_in_toc">Sizing and positioning attributes</h4>
+
+          <p>If the pixel values defined by <code>x</code>, <code>y</code>, <code>height</code> and <code>width</code> exceed the viewport’s pixel values, the graphic must not be rescaled (it must be clipped on the viewport boundaries).</p>
+        </section>
+
+        <section id="both" class="level4">
+          <h4 class="sigil_not_in_toc">Both</h4>
+
+          <p>The coordinate system defined by the <code>viewbox</code> is mapped to the viewport, keeping the aspect ratio.</p>
+        </section>
+      </section>
+    </section>
+
+    <section id="notes-3" class="level2">
+      <h2 id="sigil_toc_id_62">Notes</h2>
+
+      <p>The <code>rendition:spread portrait</code> and <code>rendition:viewport</code> <a href="https://w3c.github.io/publ-epub-revision/epub32/spec/epub-packages.html#sec-package-metadata-fxl">are deprecated in EPUB 3.2</a>.</p>
+
+      <p>Consequently, the <code>rendition:spread-portrait</code> spine override is deprecated as well.</p>
+    </section>
+  </section>
+</body>
+</html>

@@ -1,0 +1,27 @@
+/* Readium CSS
+   Scroll module
+
+   A set of styles to scroll ePublications
+   This module overrides pagination
+
+   Repo: https://github.com/readium/readium-css */
+
+:root:--scroll-view {
+  /* Reset html size so that the user can scroll */
+  min-width: 0 !important;
+  width: auto !important;
+  max-width: none !important;
+  min-height: 0 !important;
+  height: auto !important;
+  max-height: none !important;
+
+  /* Reset columns, auto + auto = columns can’t be created */
+  -webkit-columns: auto auto !important;
+  -moz-columns: auto auto !important;
+  columns: auto auto !important;
+}
+
+/* Make sure line-length is limited in all configs */
+:root:--scroll-view body {
+  --RS__maxLineLength: 40rem !important;
+}

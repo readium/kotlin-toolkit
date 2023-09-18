@@ -1,0 +1,483 @@
+/* HTML5 Suggested rendering versus UA Stylesheet 
+
+   Source: https://www.w3.org/TR/html5/rendering.html */
+
+@namespace url(http://www.w3.org/1999/xhtml);
+
+/* 001 
+   Hidden elements */
+
+[hidden], head, link, meta, rp, script, source, style, title, template {
+  display: ;
+}
+
+/* 002 
+   Page */
+
+html, body { 
+  display: ; 
+}
+
+/* 003 
+   Flow content */
+
+address, blockquote, div, figure, figcaption, footer, form,
+header, hr, legend, p, pre {
+  display: ;
+}
+
+blockquote, figure, p, pre {
+  margin-top: ; 
+  margin-bottom: ;
+}
+
+blockquote, figure { 
+  margin-left: ; 
+  margin-right: ; 
+}
+
+address { 
+  font-style: ; 
+}
+
+pre {
+  font-family: ; 
+  white-space: ;
+}
+
+/* 004
+   Phrasing content */
+
+cite, dfn, em, i, var { 
+  font-style: ; 
+}
+
+b, strong { 
+  font-weight: ; 
+}
+
+code, kbd, samp, tt { 
+  font-family: ; 
+}
+
+big { 
+  font-size: ; 
+}
+
+small { 
+  font-size: ; 
+}
+
+sub { 
+  vertical-align: ; 
+}
+
+sup { 
+  vertical-align: ; 
+}
+
+sub, sup { 
+  line-height: ; 
+  font-size: ; 
+}
+
+ruby { 
+  display: ; 
+}
+
+rb { 
+  display: ; 
+  white-space: ; 
+}
+
+rt {
+  display: ;
+  white-space: ;
+  font-size: ;
+  font-variant-east-asian: ;
+  text-emphasis: ;
+}
+
+rbc { 
+  display: ; 
+}
+
+rtc { 
+  display: ; 
+}
+
+ruby, rb, rt, rbc, rtc { 
+  unicode-bidi: ; 
+}
+
+:link { 
+  color: ; 
+}
+
+:visited { 
+  color: ; 
+}
+
+:link, :visited { 
+  text-decoration: ; 
+}
+
+a:link[rel~=help], a:visited[rel~=help],
+area:link[rel~=help], area:visited[rel~=help] { 
+  cursor: ; 
+}
+
+:focus { 
+  outline: ; 
+}
+
+mark { 
+  background: ; 
+  color: ; 
+}
+
+abbr[title], acronym[title] { 
+  text-decoration: ; 
+}
+
+ins, u { 
+  text-decoration: ; 
+}
+
+del, s, strike { 
+  text-decoration: ; 
+}
+
+blink { 
+  text-decoration: ; 
+}
+
+q::before { 
+  content: ; 
+}
+
+q::after { 
+  content: ; 
+}
+
+br { 
+  content: ; 
+  white-space: ; 
+}
+
+nobr { 
+  white-space: ; 
+}
+
+wbr { 
+  content: ; 
+}
+
+nobr wbr { 
+  white-space: ; 
+}
+
+/* 005
+   Bidirectional text */
+
+[dir]:dir(ltr), bdi:dir(ltr), input[type=tel]:dir(ltr) { 
+  direction: ; 
+}
+
+[dir]:dir(rtl), bdi:dir(rtl) { 
+  direction: ; 
+}
+
+address, blockquote, div, figure, figcaption, footer, form,
+header, hr, legend, p, pre, article, aside, h1, h2, h3, h4, h5, h6, 
+main, nav, section, table, caption, colgroup, col, thead, tbody, 
+tfoot, tr, td, th, dd, dl, dt, ol, ul, li, bdi, [dir=ltr i], [dir=rtl i], [dir=auto i] {
+  unicode-bidi: ; 
+}
+
+bdo, bdo[dir] { 
+  unicode-bidi: ; 
+} 
+
+textarea[dir=auto i], input[type=text][dir=auto i], input[type=search][dir=auto i],
+input[type=tel][dir=auto i], input[type=url][dir=auto i], input[type=email][dir=auto i],
+pre[dir=auto i] { 
+  unicode-bidi: ; 
+}
+
+/* 006
+   Quotes */
+
+/* 007
+   Section and headings */
+
+article, aside, h1, h2, h3, h4, h5, h6, hgroup, nav, section {
+  display: ;
+}
+
+h1 { 
+  margin-top: ; 
+  margin-bottom: ; 
+  font-size: ; 
+  font-weight: ; 
+}
+
+h2 { 
+  margin-top: ; 
+  margin-bottom: ; 
+  font-size: ; 
+  font-weight: ; 
+}
+
+h3 { 
+  margin-top: ; 
+  margin-bottom: ; 
+  font-size: ; 
+  font-weight: ; 
+}
+
+h4 { 
+  margin-top: ; 
+  margin-bottom: ; 
+  font-size: ; 
+  font-weight: ;
+}
+
+h5 { 
+  margin-top: ; 
+  margin-bottom: ; 
+  font-size: ; 
+  font-weight: ; 
+}
+
+h6 { 
+  margin-top: ; 
+  margin-bottom: ; 
+  font-size: ; 
+  font-weight: ; 
+}
+
+/* x = article, aside, nav or section */
+x h1 { 
+  margin-top: ; 
+  margin-bottom: ; 
+  font-size: ; 
+}
+
+x x h1 { 
+  margin-top: ; 
+  margin-bottom: ; 
+  font-size: ; 
+}
+
+x x x h1 { 
+  margin-top: ; 
+  margin-bottom: ; 
+  font-size: ; 
+}
+
+x x x x h1 { 
+  margin-top: ; 
+  margin-bottom: ; 
+  font-size: ; 
+}
+
+x x x x x h1 { 
+  margin-top: ; 
+  margin-bottom: ; 
+  font-size: ; 
+}
+
+/* 008
+   Lists */
+
+dd, dl, dt, ol, ul { 
+  display: ; 
+}
+
+li { 
+  display: ; 
+}
+
+dl, ol, ul { 
+  margin-top: ; 
+  margin-bottom: ; 
+}
+
+dl dl, dl ol, dl ul,
+ol dl, ol ol, ol ul,
+ul dl, ul ol, ul ul {
+  margin-top: ; 
+  margin-bottom: ;
+}
+
+dd { 
+  margin-left: ; 
+}
+
+ol, ul { 
+  padding-left: ; 
+}
+
+ol { 
+  list-style-type: ; 
+}
+
+ul { 
+  list-style-type: ; 
+}
+
+ol ul, ul ul {
+  list-style-type: ;
+}
+
+ol ol ul, ol ul ul,
+ul ol ul, ul ul ul {
+  list-style-type: ;
+}
+
+/* 009
+   Tables */
+
+table { 
+  display: ; 
+}
+
+caption { 
+  display: ; 
+}
+
+colgroup, colgroup[hidden] { 
+  display: ; 
+}
+
+col, col[hidden] { 
+  display: ; 
+}
+
+thead, thead[hidden] { 
+  display: ; 
+}
+
+tbody, tbody[hidden] { 
+  display: ; 
+}
+
+tfoot, tfoot[hidden] { 
+  display: ; 
+}
+
+tr, tr[hidden] { 
+  display: ; 
+}
+
+td, th, td[hidden], th[hidden] { 
+  display: ; 
+}
+
+colgroup[hidden], col[hidden], thead[hidden], tbody[hidden],
+tfoot[hidden], tr[hidden], td[hidden], th[hidden] {
+  visibility: ;
+}
+
+table {
+  box-sizing: ;
+  border-spacing: ;
+  border-collapse: ;
+  text-indent: ;
+}
+
+td, th { 
+  padding: ; 
+}
+
+th { 
+  font-weight: ; 
+}
+
+thead, tbody, tfoot, table > tr { 
+  vertical-align: ; 
+}
+
+tr, td, th { 
+  vertical-align: ; 
+}
+
+table, td, th { 
+  border-color: ; 
+}
+
+thead, tbody, tfoot, tr { 
+  border-color: ; 
+}
+
+/* 010
+   Form controls */
+
+input, select, option, optgroup, button, textarea, keygen {
+  text-indent: ;
+}
+
+textarea { 
+  white-space: ; 
+}
+
+input[type="radio"], input[type="checkbox"], input[type="reset"], input[type="button"],
+input[type="submit"], select, button {
+  box-sizing: ;
+}
+
+/* 011 
+   hr element */
+
+hr { 
+  color: ; 
+  border-style: ; 
+  border-width: ; 
+  margin: ; 
+}
+
+/* 012 
+   Fieldset and legend */
+
+fieldset {
+  margin-left: ; 
+  margin-right: ;
+  border: ;
+  padding: ;
+}
+
+legend {
+  padding-left: ; 
+  padding-right: ;
+}
+
+/* 013 
+   Embedded content */
+
+iframe { 
+  border: ; 
+}
+
+video { 
+  object-fit: ; 
+}
+
+canvas {
+
+}
+
+audio[controls] {
+
+}
+
+video[controls] {
+
+}
+
+/* 014 
+   Images */
+
+img {
+
+}

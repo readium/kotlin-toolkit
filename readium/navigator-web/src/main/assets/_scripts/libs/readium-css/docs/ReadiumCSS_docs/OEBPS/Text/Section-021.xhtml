@@ -1,0 +1,590 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" xml:lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="generator" content="pandoc"/>
+  <title>Readium CSS Implementers’ doc</title>
+  <link rel="stylesheet" type="text/css" href="../Styles/stylesheet.css"/>
+</head>
+
+<body xml:lang="en">
+  <section id="epub-compatibility" class="level1">
+    <h1>EPUB Compatibility</h1>
+
+    <p>[Implementers’ doc] [Authors’ info]</p>
+
+    <p>This document describes a collection of non-standard CSS properties, metadata, and attributes that implementers should take into account to support for compatibility with the <em>de facto</em> EPUB ecosystem.</p>
+
+    <p>It also lists important standard features that authors are accustomed to or might rely upon in the future.</p>
+
+    <section id="introduction" class="level2">
+      <h2 id="sigil_toc_id_39">Introduction</h2>
+
+      <p>There exists an increasingly large corpus of ebook content that depends on non-standard CSS properties, metadata and attributes. This document aims to describe the minimal set that Reading Systems might be willing to support for optimal ebook compatibility.</p>
+    </section>
+
+    <section id="css-at-rules" class="level2">
+      <h2 id="sigil_toc_id_40">CSS At-rules</h2>
+
+      <section id="page" class="level3">
+        <h3 class="sigil_not_in_toc">@page</h3>
+
+        <pre><code>@page</code></pre>
+
+        <p>The <code>@page</code> CSS at-rule is used to modify the page margins in Adobe’s “Legacy RMSDK” (the one managing EPUB 2 files).</p>
+
+        <p>Margins applied in this rule will apply to any “screen” in paged views, unlike the ones set for <code>html</code> or <code>body</code>. It could therefore be used to apply extra margins to the web view or iframe for instance.</p>
+
+        <p>The <code>@page</code> at-rule can be accessed via the CSS object model interface <code>CSSPageRule</code>.</p>
+
+        <p>MDN: <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/@page">https://developer.mozilla.org/en-US/docs/Web/CSS/@page</a></p>
+      </section>
+
+      <section id="supports" class="level3">
+        <h3 class="sigil_not_in_toc">@supports</h3>
+
+        <pre><code>@supports</code></pre>
+
+        <p>The <code>@supports</code> CSS at-rule lets authors specify declarations that depend on a browser’s support for one or more specific CSS features. This is called a <em>feature query.</em></p>
+
+        <p><strong>It is critical for the advancement of modern CSS that implementers try their best at supporting this rule,</strong> especially when pre-processing EPUB files before distribution. It indeed is one of the very few mechanisms allowing authors to do progressive enhancement (layout, typography, etc.), especially as it helps get around older Reading Systems which have no concept of fault tolerance, and will consequently ignore the entire stylesheet if they encounter some of those more modern properties.</p>
+
+        <p>The hard truth is that if authors feel this is not well-supported, they won’t use it. It will then be a lot more difficult to make progress happen.</p>
+
+        <p>MDN: <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/@supports">https://developer.mozilla.org/en-US/docs/Web/CSS/@supports</a></p>
+      </section>
+    </section>
+
+    <section id="non-standard-kindle-media-queries" class="level2">
+      <h2 id="sigil_toc_id_95">Non-standard Kindle Media queries</h2>
+
+      <p>Since 2012, Amazon has been providing authors with non-standard media queries so that they specific styles can be declared for the old format (Mobi7) and the latest ones (KF8 and above).</p>
+
+      <pre><code>@media amzn-kf8 
+@media amzn-mobi</code></pre>
+
+      <p><strong>Authors expect the styles in those declarations to be ignored by EPUB Reading Systems.</strong> Do not try to support them.</p>
+
+      <p>Docs: <a href="https://kindlegen.s3.amazonaws.com/AmazonKindlePublishingGuidelines.pdf">Kindle Publishing Guidelines</a></p>
+    </section>
+
+    <section id="interactive-and-fixed-layout-epub-2" class="level2">
+      <h2 id="sigil_toc_id_96">Interactive and Fixed-layout EPUB 2</h2>
+
+      <p>There exists a significant corpus of fixed-layout and/or interactive files which leveraged the display options created by iBooks and Kobo for EPUB 2.</p>
+
+      <section id="kobo" class="level3">
+        <h3 class="sigil_not_in_toc">Kobo</h3>
+
+        <p>To declare an EPUB as a FLEPUB (Fixed-Layout EPUB), a file named <code>com.kobobooks.display-options.xml</code> must be present inside the EPUB’s <code>META-INF</code> folder (where the <code>container.xml</code> resides).</p>
+
+        <p>The contents of this display options file seem to always be:</p>
+
+        <pre><code>&lt;?xml version="1.0" encoding="UTF-8"?&gt; 
+&lt;display_options&gt; 
+  &lt;platform name="*"&gt; 
+    &lt;option name="fixed-layout"&gt;true&lt;/option&gt; 
+  &lt;/platform&gt; 
+&lt;/display_options&gt;</code></pre>
+
+        <p>As of November 2011, FLEPUB supports embedded fonts, audio, JavaScript (partially), media overlays (smil). It doesn’t support video and SVG.</p>
+      </section>
+
+      <section id="apple" class="level3">
+        <h3 class="sigil_not_in_toc">Apple</h3>
+
+        <p>To declare an EPUB 2 file as fixed-layout or interactive, a file named <code>com.apple.ibooks.display-options.xml</code> must be present inside the EPUB’s <code>META-INF</code> folder (where the <code>container.xml</code> resides).</p>
+
+        <section id="display-options" class="level4">
+          <h4 class="sigil_not_in_toc">Display Options</h4>
+
+          <p>Supported display options are:</p>
+
+          <ul>
+            <li><code>platform</code>: <code>*</code>, <code>iphone</code>, or <code>ipad</code></li>
+
+            <li><code>specified-fonts</code>: <code>true</code> or <code>false</code></li>
+
+            <li><code>interactive</code>: <code>true</code> or <code>false</code></li>
+
+            <li><code>fixed-layout</code>: <code>true</code> or <code>false</code></li>
+
+            <li><code>open-to-spread</code>: <code>true</code> or <code>false</code></li>
+
+            <li><code>orientation-lock</code>: <code>landscape-only</code>, <code>portrait-only</code>, or <code>none</code> (default).</li>
+          </ul>
+        </section>
+
+        <section id="example" class="level4">
+          <h4 class="sigil_not_in_toc">Example</h4>
+
+          <pre><code>&lt;?xml version="1.0" encoding="UTF-8"?&gt; 
+&lt;display_options&gt; 
+  &lt;platform name="*"&gt; 
+    &lt;option name="specified-fonts"&gt;true&lt;/option&gt; 
+    &lt;option name="interactive"&gt;true&lt;/option&gt; 
+    &lt;option name="fixed-layout"&gt;true&lt;/option&gt; 
+    &lt;option name="open-to-spread"&gt;true&lt;/option&gt; 
+  &lt;/platform&gt; 
+  &lt;platform name="iphone"&gt; 
+    &lt;option name="orientation-lock"&gt;landscape-only&lt;/option&gt; 
+  &lt;/platform&gt; 
+&lt;/display_options&gt;</code></pre>
+        </section>
+      </section>
+    </section>
+
+    <section id="metadata" class="level2">
+      <h2 id="sigil_toc_id_97">Metadata</h2>
+
+      <section id="calibre" class="level3">
+        <h3 class="sigil_not_in_toc">Calibre</h3>
+
+        <p>Calibre is using specific metadata for sorting, series and rating.</p>
+
+        <p>This metadata has a <code>calibre:</code> prefix.</p>
+
+        <section id="title-sort" class="level4">
+          <h4 class="sigil_not_in_toc">Title sort</h4>
+
+          <pre><code>&lt;meta content="Title of the Book, The" name="calibre:title_sort" /&gt;</code></pre>
+
+          <p>This item allows Reading Systems to sort books in a non-stricly alphabetical way, by moving articles such as “The” and “An” to the end of the string.</p>
+        </section>
+
+        <section id="series" class="level4">
+          <h4 class="sigil_not_in_toc">Series</h4>
+
+          <pre><code>&lt;meta content="Title of the Series" name="calibre:series" /&gt;</code></pre>
+
+          <p>This item indicates the series the publication is part of.</p>
+        </section>
+
+        <section id="series-index" class="level4">
+          <h4 class="sigil_not_in_toc">Series index</h4>
+
+          <pre><code>&lt;meta content="1.0" name="calibre:series_index" /&gt;</code></pre>
+
+          <p>This item designates the position (index) of the publication in this series.</p>
+
+		  <p>It can be a floating point number with up to two digits of precision e.g. <code>1.01</code>, and zero and negative numbers are allowed.</p>
+        </section>
+
+        <section id="rating" class="level4">
+          <h4 class="sigil_not_in_toc">Rating</h4>
+
+          <pre><code>&lt;meta content="10.0" name="calibre:rating" /&gt;</code></pre>
+
+          <p>This item stores the rating (integer) the user has explicitely set for the publication. In Calibre, <code>0.0</code> is unrated, <code>2.0</code> is one star, and <code>10.0</code> is five stars.</p>
+        </section>
+      </section>
+
+      <section id="ibooks" class="level3">
+        <h3 class="sigil_not_in_toc">iBooks</h3>
+
+        <p>iBooks is using specific metadata for embedded fonts, versioning, gaiji, scroll axis, and the EPUB3 files created with iBooks Author.</p>
+
+        <p>This metadata has an <code>ibooks:</code> prefix.</p>
+
+        <p>Authors must add the following prefix attribute in their <code>&lt;package&gt;</code> first:</p>
+
+        <pre><code>prefix="ibooks: http://vocabulary.itunes.apple.com/rdf/ibooks/vocabulary-extensions-1.0/"</code></pre>
+
+        <p>Then, they can use the ibooks-specific metadata.</p>
+
+        <section id="book-versioning" class="level4">
+          <h4 class="sigil_not_in_toc">Book versioning</h4>
+
+          <pre><code>&lt;meta property="ibooks:version"&gt;1.0.0&lt;/meta&gt;</code></pre>
+
+          <p>When using book versioning, content providers are allowing iBooks customers who have downloaded the old version of the book to be notified that a new version is available for download. If the customer chooses to download it, the new version will replace the prior version on its devices.</p>
+
+          <p>Unfortunately, there is no way to retrieve the changelog for each version since this is managed at the iTunes level.</p>
+
+          <p>Docs: <a href="https://help.apple.com/itc/booksassetguide/?lang=en#/itc88a04b8d6">iBooks Asset Guide</a></p>
+        </section>
+
+        <section id="embedded-fonts" class="level4">
+          <h4 class="sigil_not_in_toc">Embedded fonts</h4>
+
+          <pre><code>&lt;meta property="ibooks:specified-fonts"&gt;true&lt;/meta&gt;</code></pre>
+
+          <p>Authors can use the <code>specified-fonts</code> attribute to indicate the EPUB files contains embedded fonts, or override a user’s justification and hyphenation preferences. In other words, it preserves the <code>font-family</code>, <code>text-align</code>, and <code>hyphens</code> declarations as specified in the CSS stylesheet, as long as the user does not choose a different typeface when reading the book.</p>
+
+          <p>Docs: <a href="https://help.apple.com/itc/booksassetguide/?lang=en#/itc2cf4d26eb">iBooks Asset Guide</a></p>
+        </section>
+
+        <section id="gaiji-and-image-sizing" class="level4">
+          <h4 class="sigil_not_in_toc">Gaiji and image sizing</h4>
+
+          <pre><code>&lt;meta property="ibooks:respect-image-size-class"&gt;className&lt;/meta&gt;</code></pre>
+
+          <p>Gaiji are small, inline images that represent characters that are not available in a character or font set. Gaiji are typically used for older symbols or characters in Japanese that have fallen out of use. Authors can define a custom class name for which iBooks will respect an image’s dimensions. Those inline images will then not be altered like other images, for which iBooks may force sizing.</p>
+
+          <p>Some authors may have used this metadata to force sizing for specific images, and not only gaiji. Moreover, some might use it to invert specific images like illustrations in night mode, since iBooks does it automatically in order for gaiji to be the same color as text’s.</p>
+
+          <p>Docs: <a href="https://help.apple.com/itc/booksassetguide/?lang=en#/itca71ad3c33">iBooks Asset Guide</a></p>
+        </section>
+
+        <section id="scroll-axis" class="level4">
+          <h4 class="sigil_not_in_toc">Scroll axis</h4>
+
+          <pre><code>&lt;meta property="ibooks:scroll-axis"&gt;vertical | horizontal | default&lt;/meta&gt;</code></pre>
+
+          <p>iBooks’ scroll theme scrolls vertically for books with horizontal text, and scrolls horizontally for books with vertical text. By default, Japanese and Chinese books will thus scroll horizontally, while all other languages scroll vertically. This meta allows authors to redefine the scroll direction.</p>
+
+          <p>Docs: <a href="https://help.apple.com/itc/booksassetguide/#/itccf6b30e09">iBooks Asset Guide</a></p>
+        </section>
+
+        <section id="ibooks-author-epub3-output" class="level4">
+          <h4 class="sigil_not_in_toc">iBooks Author EPUB3 output</h4>
+
+          <pre><code>&lt;meta property="ibooks:format"&gt;RMT&lt;/meta&gt;</code></pre>
+
+          <p>This meta is automatically added to EPUB3 files generated with iBooks Author. It is probably used to trigger another rendering engine which supports very specific <code>-ibooks-</code> prefixed CSS properties (i.e. <code>-ibooks-layout-hint</code>, <code>-ibooks-list-text-indent</code>, <code>-ibooks-strikethru-type</code>, <code>-ibooks-strikethru-width</code>, <code>-ibooks-underline-type</code>, <code>-ibooks-underline-width</code>, <code>-ibooks-stroke</code>, <code>-ibooks-popover-background</code>, and <code>-ibooks-popover-shadow</code>) and the <a href="https://www.w3.org/People/howcome/t/970224HTMLERB-CSS/WD-tabs-970117.html">Tab Stops for CSS</a>.</p>
+
+          <p>Moreover, this format is using interactive widgets which are managed at the Reading System level (the EPUB file contains <code>&lt;object&gt;</code> with a type of <code>application/x-ibooks+widget</code> and custom data-attributes for styling).</p>
+
+          <p>It could be used as a flag to indicate that the EPUB file was meant for iBooks and there will be rendering issues, especially interactive widgets since they won’t work as intended by the author.</p>
+        </section>
+      </section>
+
+      <section id="kindle" class="level3">
+        <h3 class="sigil_not_in_toc">Kindle</h3>
+
+        <p>Kindle is using specific metadata for the primary writing mode and Fixed Layout – for both rendition and enabling FXL-specific features.</p>
+
+        <p>This metadata has no prefix.</p>
+
+        <p>Docs: <a href="https://kindlegen.s3.amazonaws.com/AmazonKindlePublishingGuidelines.pdf">Kindle Publishing Guidelines</a></p>
+
+        <p><a href="http://www.fantasycastlebooks.com/Tutorials/kindle-tutorial-part6.html">Further details and undocumented metadata</a>.</p>
+
+        <section id="primary-writing-mode" class="level4">
+          <h4 class="sigil_not_in_toc">Primary writing mode</h4>
+
+          <pre><code>&lt;meta name="primary-writing-mode" content="horizontal-rl"/&gt;</code></pre>
+
+          <p>Values can be <code>horizontal-lr</code>, <code>horizontal-rl</code>, <code>vertical-lr</code>, or <code>vertical-rl</code>.</p>
+
+          <p>This is a recent addition to the set of Kindle-specific metadata, probably as part of an internationalization effort.</p>
+
+          <p>It indicates the writing mode that should be used for the entire publication, including the flow in which virtual panels and magnification regions must progress when swiped in Fixed Layout (manga/comics and children books).</p>
+        </section>
+
+        <section id="fixed-layout" class="level4">
+          <h4 class="sigil_not_in_toc">Fixed layout</h4>
+
+          <pre><code>&lt;meta name="fixed-layout" content="true"/&gt;</code></pre>
+
+          <p>This is an older version of</p>
+
+          <pre><code>&lt;meta property="rendition:layout"&gt;pre-paginated&lt;/meta&gt;</code></pre>
+
+          <p>It should therefore be considered an alias.</p>
+        </section>
+
+        <section id="original-resolution" class="level4">
+          <h4 class="sigil_not_in_toc">Original resolution</h4>
+
+          <pre><code>&lt;meta name="original-resolution" content="1024x600"/&gt;</code></pre>
+
+          <p>This indicates the original design resolution of the content.</p>
+        </section>
+
+        <section id="orientation-lock" class="level4">
+          <h4 class="sigil_not_in_toc">Orientation lock</h4>
+
+          <pre><code>&lt;meta name="orientation-lock" content="landscape"/&gt;</code></pre>
+
+          <p>This is an older version of</p>
+
+          <pre><code>&lt;meta property="rendition:orientation"&gt;landscape&lt;/meta&gt;</code></pre>
+
+          <p>It should therefore be considered an alias.</p>
+        </section>
+
+        <section id="book-type" class="level4">
+          <h4 class="sigil_not_in_toc">Book type</h4>
+
+          <pre><code>&lt;meta name="book-type" content="children"/&gt;</code></pre>
+
+          <p>Values can be <code>children</code> or <code>comic</code>.</p>
+
+          <p>This removes reader functionality which may not be relevant for those genres (e.g.&#160;search, share, etc.). For more details, <a href="http://www.fantasycastlebooks.com/Tutorials/kindle-fixed-layout-functionality.html">see this chart</a>.</p>
+        </section>
+
+        <section id="blank-pages" class="level4">
+          <h4 class="sigil_not_in_toc">Blank pages</h4>
+
+          <pre><code>&lt;itemref idref="blank-page" properties="layout-blank"/&gt;</code></pre>
+
+          <p>This property can be used to indicated a page is blank. If set, the page will be rendered in landscape mode (spread) but not in portrait mode (single page).</p>
+        </section>
+
+        <section id="region-magnification-deprecated" class="level4">
+          <h4 class="sigil_not_in_toc">Region magnification (deprecated)</h4>
+
+          <pre><code>&lt;meta name="regionMagnification" content="true"/&gt;</code></pre>
+
+          <p>This property was used to indicate the Region Magnification feature should be used for the Fixed-Layout book. It is now set automatically if the required markup is found in XHTML documents.</p>
+
+          <p>The Region Magnification feature allows users to zoom text (pop-up view) and comics’ panels, as well as navigating panel by panel. Authors must however provide specific markup (i.e.&#160;using a <code>app-amzn-magnify</code> class and storing <code>targetId</code>, <code>sourceId</code> and <code>ordinal</code> attributes in a JSON object as part of a <code>data-app-amzn-magnify</code> value).</p>
+
+          <p><strong>Note:</strong> authors may be using a JavaScript polyfill to re-use this markup in EPUB apps that support scripting. We recommend not trying to implement those features in your app unless JavaScript is strictly disabled for authoring purposes.</p>
+        </section>
+      </section>
+    </section>
+
+    <section id="attributes" class="level2">
+      <h2 id="sigil_toc_id_98">Attributes</h2>
+
+      <p>The iBooks Reading System is using a set of custom attributes to manage styling and features.</p>
+
+      <section id="ibooks-writing-mode" class="level3">
+        <h3 class="sigil_not_in_toc">iBooks writing mode</h3>
+
+        <pre><code>__ibooks_writing_mode</code></pre>
+
+        <p>Values can be the ones for the CSS property <code>writing-mode</code> i.e. <code>horizontal-tb</code>, <code>vertical-rl</code>, or <code>vertical-lr</code>.</p>
+
+        <p>This attribute is used to style pagination and scroll, the “page” dimensions, and vertical-alignment of some elements.</p>
+
+        <p>Authors’ usage of this attribute is unknown.</p>
+      </section>
+
+      <section id="ibooks-theme" class="level3">
+        <h3 class="sigil_not_in_toc">iBooks theme</h3>
+
+        <pre><code>__ibooks_internal_theme</code></pre>
+
+        <p>Values can be <code>BKWhiteStyleTheme</code>, <code>BKSepiaStyleTheme</code>, <code>BKGrayStyleTheme</code>, or <code>BKNightStyleTheme</code>.</p>
+
+        <p>This attribute is used to apply reading modes (<code>background-color</code>, <code>color</code> and <code>filter</code>).</p>
+
+        <p>A handful of authors have been using them as a replacement to alternate stylesheets in iBooks.</p>
+      </section>
+
+      <section id="ibooks-font-family-override" class="level3">
+        <h3 class="sigil_not_in_toc">iBooks font-family override</h3>
+
+        <pre><code>__ibooks_font_override</code></pre>
+
+        <p>Value can be <code>true</code>.</p>
+
+        <p>This attribute is used to indicate DOM elements for which the <code>font-family</code> must be changed when the user applies a typeface.</p>
+
+        <p>Authors’ usage of this attribute is unknown, but it may have set expectations and/or CSS hacks which aim is getting parts of the content not impacted by this user setting.</p>
+      </section>
+
+      <section id="ibooks-text-align-override" class="level3">
+        <h3 class="sigil_not_in_toc">iBooks text-align override</h3>
+
+        <pre><code>__ibooks_align_override</code></pre>
+
+        <p>Value can be <code>true</code>.</p>
+
+        <p>This attribute is used to indicate DOM elements for which <code>text-align</code> must be changed when the user sets justification preferences.</p>
+
+        <p>Authors’ usage of this attribute is unknown, but it may have set expectations (e.g.&#160;elements with <code>text-align: right</code> won’t be impacted).</p>
+      </section>
+
+      <section id="ibooks-respect-image-size-gaiji" class="level3">
+        <h3 class="sigil_not_in_toc">iBooks respect image size (gaiji)</h3>
+
+        <pre><code>__ibooks_respect_image_size</code></pre>
+
+        <p>Value can be <code>true</code>.</p>
+
+        <p>This attribute is used to style images which class have been explicitly set in the <code>ibooks:respect-image-size-class</code> meta.</p>
+
+        <p>Authors’ usage of this attribute is indirect since they set the class name for which this attribute must be added.</p>
+      </section>
+    </section>
+
+    <section id="webkits-css-multi-column-extensions" class="level2">
+      <h2 id="sigil_toc_id_129">Webkit’s CSS multi-column extensions</h2>
+
+      <p>Apple extended the CSS multi-column specification with non-standard CSS properties to handle RTL scripts and vertical writing modes in iBooks. They were primarily designed for the <code>setPagination</code> API in the iOS UIWebView but works as expected in Safari/iOS webviews.</p>
+
+      <section id="column-axis" class="level3">
+        <h3 class="sigil_not_in_toc">Column axis</h3>
+
+        <pre><code>-webkit-column-axis</code></pre>
+
+        <p>Value can be <code>auto</code>, <code>horizontal</code> or <code>vertical</code>.</p>
+
+        <p>This CSS property can be used on iOS/Safari to force the column axis whenever needed. It allows the Reading App to lay out columns on the <code>x-axis</code> (horizontal) when the document is in a <code>vertical-*</code> writing mode for instance, which permits a two-column spread view as expected in print – CSS multicol being automatically laid out on the <code>y-axis</code> in those writing modes.</p>
+
+        <p>This property was removed from Blink in 2014.</p>
+
+        <p>It is noteworthy that <code>columns</code>, <code>column-width</code>, and <code>column-count</code> will be ignored when using this non-standard <code>-webkit-column-axis</code> property, and the <code>width</code> and <code>height</code> of the root (<code>html</code>) element will be used to lay out columns. Moreover, <code>box-sizing</code> may not work as expected, and impact <code>padding</code> and <code>column-gap</code>.</p>
+
+        <p>You can check <a href="https://codepen.io/JayPanoz/pen/bYjEOE">this demo in Safari</a> to see the effect this CSS Property has.</p>
+      </section>
+
+      <section id="column-progression" class="level3">
+        <h3 class="sigil_not_in_toc">Column progression</h3>
+
+        <pre><code>-webkit-column-progression</code></pre>
+
+        <p>Value can be <code>normal</code> or <code>reversed</code>.</p>
+
+        <p>This CSS property can be used on iOS/Safari to force the column progression whenever needed. It allows the Reading App to reverse the column progression for LTR documents in a RTL publication, and vice versa.</p>
+
+        <p>This property was removed from Blink in 2014.</p>
+
+        <p>You can check <a href="https://codepen.io/JayPanoz/pen/bYjEOE">this demo in Safari</a> and uncomment the CSS property in <code>:root</code> to see the effect it has.</p>
+      </section>
+    </section>
+
+    <section id="non-standard-css-properties" class="level2">
+      <h2 id="sigil_toc_id_136">Non-standard CSS properties</h2>
+
+      <p>EPUB authors may have used the following non-standard properties to achieve specific styling or get around Reading Systems’ overrides.</p>
+
+      <section id="adobe-text-layout" class="level3">
+        <h3 class="sigil_not_in_toc">Adobe text layout</h3>
+
+        <pre><code>adobe-text-layout</code></pre>
+
+        <p>Values can be <code>optimizeSpeed</code> and (probably) <code>optimizeLegibility</code>, or <code>auto</code>.</p>
+
+        <p>Although this property and (especially) its values look closely related to <code>text-rendering</code> – so close that authors might have been using <code>text-rendering</code> instead –, it isn’t exactly the same.</p>
+
+        <p>At the time RMSDK 9.2 was released, this CSS property allowed authors to disable the typography enhancements, including hyphenation, by forcing the older text engine. It was thus primarily used to disable hyphenation, as some devices didn’t support <code>adobe-hyphenate</code> – and they could not disable hyphens for headings for instance.</p>
+
+        <p>Source: <a href="https://www.mobileread.com/forums/showpost.php?p=1513269&amp;postcount=8">MobileRead Forums</a></p>
+      </section>
+
+      <section id="overflow-scrolling" class="level3">
+        <h3 class="sigil_not_in_toc">Overflow scrolling</h3>
+
+        <pre><code>-webkit-overflow-scrolling</code></pre>
+
+        <p>Values can be <code>auto</code> or <code>touch</code>.</p>
+
+        <p>The <code>-webkit-overflow-scrolling</code> CSS property controls whether or not touch devices use momentum-based scrolling for a given element.</p>
+
+        <p>Some authors may have been using this CSS property to improve the scrolling of overflowing elements, especially in fixed-layout.</p>
+
+        <p>Docs: <a href="https://developer.apple.com/library/content/documentation/AppleApplications/Reference/SafariCSSRef/Articles/StandardCSSProperties.html#//apple_ref/doc/uid/TP30001266-SW26">Safari Docs</a></p>
+      </section>
+
+      <section id="non-breaking-space-mode" class="level3">
+        <h3 class="sigil_not_in_toc">Non-breaking space mode</h3>
+
+        <pre><code>-webkit-nbsp-mode</code></pre>
+
+        <p>Values can be <code>normal</code> or <code>space</code>.</p>
+
+        <p>The <code>-webkit-nbsp-mode</code> CSS property specifies the behavior of non-breaking spaces within an element.</p>
+
+        <p>This CSS property might pop up in files generated with the built-in MacOS’ (Cocoa) HTML generator.</p>
+
+        <p>Please note that although it might fix an issue in some languages like English, it might also create other issues in other languages, where non-breaking space shouldn’t be treated as a normal space (e.g.&#160;punctuation in French).</p>
+
+        <p>Docs: <a href="https://developer.apple.com/library/content/documentation/AppleApplications/Reference/SafariCSSRef/Articles/StandardCSSProperties.html#//apple_ref/doc/uid/TP30001266--webkit-nbsp-mode">Safari Docs</a></p>
+      </section>
+
+      <section id="text-fill" class="level3">
+        <h3 class="sigil_not_in_toc">Text fill</h3>
+
+        <pre><code>-webkit-text-fill-color</code></pre>
+
+        <p>The <code>-webkit-text-fill-color</code> property defines the foreground fill color of an element’s text content e.g.&#160;headings or links.</p>
+
+        <p>Authors may have used this property to force a color for text in night mode, especially when targeting iBooks.</p>
+      </section>
+
+      <section id="text-stroking" class="level3">
+        <h3 class="sigil_not_in_toc">Text stroking</h3>
+
+        <pre><code>-webkit-text-stroke 
+-webkit-text-stroke-color 
+-webkit-text-stroke-width</code></pre>
+
+        <p>The <code>-webkit-text-stroke-color</code> property specifies a stroke color for an element’s text, the <code>-webkit-text-stroke-width</code> property specifies the width of the stroke drawn at the edge of each glyph of an element’s text.</p>
+
+        <p>This can be used to achieve text with a stroked effect, or faux bolding, although this is pretty rare.</p>
+      </section>
+
+      <section id="background-color-and-gradients" class="level3">
+        <h3 class="sigil_not_in_toc">Background color and gradients</h3>
+
+        <pre><code>-webkit-linear-gradient()</code></pre>
+
+        <p>The <code>-webkit-linear-gradient()</code> function must be treated as an alias of <code>linear-gradient()</code>.</p>
+
+        <p>Some authors might have been using this to force a <code>background-color</code> in night mode. It would consequently be used in combination with <code>-webkit-text-fill-color</code> so that the text <code>color</code> is forced as well.</p>
+      </section>
+
+      <section id="mobile-text-size-adjustment" class="level3">
+        <h3 class="sigil_not_in_toc">Mobile Text Size Adjustment</h3>
+
+        <pre><code>-webkit-text-size-adjust</code></pre>
+
+        <p>The <code>-webkit-text-size-adjust</code> property allows control over the text inflation algorithm used on some mobile devices, many mobile browsers indeed apply a text inflation algorithm to make the text larger and more readable. By using this property, authors can simply opt out or modify this behavior.</p>
+
+        <p>Some web authors and/or authoring software might be using this property out of habit, but it actually breaks iBooks’ <code>font-size</code> user setting for instance. This should not be an issue in Readium CSS.</p>
+
+        <p>Docs: <a href="https://drafts.csswg.org/css-size-adjust-1/">CSS Mobile Text Size Adjustment Module Level 1</a></p>
+      </section>
+
+      <section id="text-decoration-styling" class="level3">
+        <h3 class="sigil_not_in_toc">Text decoration styling</h3>
+
+        <pre><code>-webkit-text-decoration-line 
+-webkit-text-decoration-color 
+-webkit-text-decoration-style</code></pre>
+
+        <p>The <code>-webkit-text-decoration-line</code> CSS property sets the kind of decoration that is used on text in an element, the <code>-webkit-text-decoration-color</code> CSS property sets the color of the decorative additions to text and the <code>-webkit-text-decoration-style</code> CSS property sets the style of the lines.</p>
+
+        <p>There are standard unprefixed properties for these but some authors may have been using the <code>-webkit-</code> ones only.</p>
+
+        <p>MDN: <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Text_Decoration">https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Text_Decoration</a></p>
+      </section>
+
+      <section id="hyphenation" class="level3">
+        <h3 class="sigil_not_in_toc">Hyphenation</h3>
+
+        <pre><code>adobe-hyphenate</code></pre>
+
+        <p>Values can be <code>none</code>, <code>explicit</code>, or <code>auto</code>.</p>
+
+        <p>This must be treated as an alias of <code>hyphens</code> (with <code>explicit</code> as an alias of <code>manual</code>).</p>
+
+        <p>A very large part of authors have been using this CSS property to control hyphenation. It should not be an issue as they probably at least used <code>-webkit-hyphens</code> and <code>-epub-hyphens</code> in addition to this <code>adobe-hyphenate</code> CSS property.</p>
+
+        <p>Source: <a href="https://www.mobileread.com/forums/showpost.php?p=1569362&amp;postcount=30">MobileRead Forums</a></p>
+      </section>
+
+      <section id="hyphenate-limit" class="level3">
+        <h3 class="sigil_not_in_toc">Hyphenate limit</h3>
+
+        <pre><code>-webkit-hyphenate-limit-before 
+-webkit-hyphenate-limit-after 
+-webkit-hyphenate-limit-lines</code></pre>
+
+        <p>The <code>-webkit-hyphenate-limit-before</code> CSS property indicates the minimum number of characters in a hyphenated word before the hyphenation character, the <code>-webkit-hyphenate-limit-after</code> CSS property indicates the minimum number of characters in a hyphenated word after the hyphenation character, and the <code>-webkit-hyphenate-limit-lines</code> CSS property indicates the maximum number of successive hyphenated lines in an element.</p>
+
+        <p>Those properties are standardized in CSS Text Module Level 4, but <code>-webkit-hyphenate-limit-before</code> and <code>-webkit-hyphenate-limit-after</code> have been replaced with the <code>hyphenate-limit-chars</code> CSS property.</p>
+
+        <p>Docs: <a href="https://www.w3.org/TR/css-text-4/#hyphenation">CSS Text Module Level 4</a></p>
+      </section>
+    </section>
+
+    <section id="epub-properties" class="level2">
+      <h2 id="sigil_toc_id_137">EPUB properties</h2>
+
+      <p>Some authors might have used <code>-epub-</code> prefixed properties only, thinking they were enough since those CSS properties were standardized. Authors are now strongly encouraged to use unprefixed properties in EPUB 3.2.</p>
+
+      <p>In the meantime, implementers may want to polyfill at least some of those properties, especially those related to vertical writing, as practical issues may arise due to the lack of file updates on the authoring side. <a href="https://w3c.github.io/publ-epub-revision/epub32/spec/epub-contentdocs.html#sec-css-prefixed">A mapping is available</a> in the EPUB 3.2 spec if needed.</p>
+
+      <p>A <a href="https://github.com/JayPanoz/postcss-epub-interceptor">PostCSS Plugin</a> has been specifically created to unprefix those properties and change their value whenever needed – PostCSS can indeed be browerified. Implementers’ best option is running this process once and for all before distribution or file opening.</p>
+    </section>
+  </section>
+</body>
+</html>

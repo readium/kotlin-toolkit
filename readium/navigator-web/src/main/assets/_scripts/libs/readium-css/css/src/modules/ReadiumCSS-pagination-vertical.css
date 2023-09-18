@@ -1,0 +1,149 @@
+/* Readium CSS
+   Pagination module for vertical writing
+
+   A set of styles to paginate ePublications in “writing-mode: vertical-*”
+
+   Repo: https://github.com/readium/readium-css */
+
+/* Config */
+
+/* We must simplify the pagination model for vertical writing, and can’t fake spreads. */
+
+/* Default for smartphone portrait (small screens) */
+:root {
+  /* The column will be the height of the web view/iframe */
+  --RS__colWidth: 100vh;
+
+  /* Since columns are laid out on the y-axis in vertical-*, we can only use 1 */
+  --RS__colCount: 1;
+
+  /* Gap between columns (in pixels so that it won’t resize with font-size) */
+  --RS__colGap: 0;
+
+  /* Optimal line-length (rem will take :root font-size into account, whatever the body’s font-size) */
+  --RS__maxLineLength: 40rem;
+
+  /* Default page vertical margins (in pixels so that it won’t resize with font-size) */
+  --RS__pageGutter: 20px; /* See if colGap and pageGutter can be the same var */
+}
+
+/* Reset page margins for Forward compatibility */
+@page {
+  margin: 0 !important;
+}
+
+/* :root selector has same specificity as a class i.e. 0010
+   We might have to change that to html / context
+   -> https://css-tricks.com/almanac/selectors/r/root/ */
+:root {
+  /* Prevents options pop-up when long tap in webkit */
+  -webkit-touch-callout: none;
+
+  /* Fix bug for older Chrome */
+  -webkit-perspective: 1;
+
+  /* Column size will depend on this if we want to make it responsive */
+  font-size: 100% !important;
+
+  /* In case you use left position to scroll, can be removed if using transform: translateX() */
+  position: relative;
+
+  /* Switch to newer box model (not inherited by authors’ styles) */
+  box-sizing: border-box;
+  min-width: 100%;
+  width: 100%;
+  max-width: 100%;
+  min-height: 100vh;
+  height: 100vh;
+  max-height: 100vh;
+  margin: 0 !important;
+  padding: 0 var(--RS__pageGutter) !important;
+
+  /* Init pagination */
+  /* TODO: document columns’ logic cos it might feel weird at first */
+  -webkit-column-count: var(--RS__colCount);
+  -moz-column-count: var(--RS__colCount);
+  column-count: var(--RS__colCount);
+
+  -webkit-column-width: var(--RS__colWidth);
+  -moz-column-width: var(--RS__colWidth);
+  column-width: var(--RS__colWidth);
+
+  -webkit-column-gap: var(--RS__colGap);
+  -moz-column-gap: var(--RS__colGap);
+  column-gap: var(--RS__colGap);
+
+  /* Default is balance and we want columns to be filled entirely (100vh) */
+  -moz-column-fill: auto;
+  column-fill: auto;
+
+  -webkit-text-size-adjust: 100%;
+
+  /* The reason why we don’t force -webkit-column-axis is that it switches the column-box model to a paged overflow model.
+     In other words, columns become useless, the sizing of the :root itself will be used for pagination */
+
+  /* Ensure the correct writing-mode is used */
+  -ms-writing-mode: tb-rl;
+  -webkit-writing-mode: vertical-rl;
+  writing-mode: vertical-rl;
+
+  hanging-punctuation: last allow-end;
+}
+
+:root:lang(mn-Mong) {
+  /* Ensure the correct writing-mode is used for mongolian if vertical */
+  -ms-writing-mode: tb;
+  -webkit-writing-mode: vertical-lr;
+  writing-mode: vertical-lr;
+}
+
+body {
+  /*  overflow: hidden; bugfix: contents won’t paginate in Firefox and one sample in Safari */
+  width: 100%;
+
+  /* Limit line-length but we have to reset when 2 columns and control the viewport.
+     By using max-width + margin auto, margins will shrink when font-size increases,
+     which is what would be expected in terms of typography. */
+  max-height: var(--RS__maxLineLength) !important;
+  margin: auto 0 !important;
+
+  /* We need a minimum padding on body so that descandants/ascendants in italic/script are not cut-off.
+     Drawback: we have to use border-box so that it doesn’t screw the box model,
+     which means it impacts colWidth and max-width */
+  box-sizing: border-box;
+  padding: var(--RS__pageGutter) 0 !important;
+}
+
+/* We’ll now redefine margins and columns depending on the minimum width available
+   The goal is having the simplest model possible and avoid targeting devices */
+
+/* Smartphone landscape */
+@media screen and (min-width: 35em) {
+  :root {
+    --RS__pageGutter: 30px;
+  }
+}
+
+/* Tablet portrait */
+@media screen and (min-width: 45em) {
+  :root {
+    --RS__pageGutter: 40px;
+  }
+}
+
+/* Desktop small + phablet + tablet landscape */
+@media screen and (min-width: 60em) {
+  :root {
+    --RS__pageGutter: 50px;
+  }
+}
+
+/* Desktop + tablet large */
+/* We get the previous settings, we just change the margins */
+@media screen and (min-width: 75em) {
+  :root {
+    --RS__pageGutter: 60px;
+  }
+}
+
+/* At this point (80em or so), constraining line length must be done at the web view/iframe level, or by limiting the size of :root itself */

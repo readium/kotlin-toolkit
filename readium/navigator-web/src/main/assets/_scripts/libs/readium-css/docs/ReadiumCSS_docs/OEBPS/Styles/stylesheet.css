@@ -1,0 +1,423 @@
+@namespace url(http://www.w3.org/1999/xhtml);
+@namespace epub url(http://www.idpf.org/2007/ops);
+@namespace m url(http://www.w3.org/1998/Math/MathML/);
+@namespace svg url(http://www.w3.org/2000/svg);
+
+/* It is extremely important that we set an example for EPUB authors to follow 
+   As a consequence, we’ll demonstrate how to do progressive enhancement so that 
+   this EPUB3 file works in EPUB2 Reading Systems and leverages modern Reading Systems */
+
+article, aside, figure, figcaption, header, nav, section {
+  display: block;
+}
+
+body {
+  orphans: 2;
+  widows: 2;
+}
+
+figcaption, th, td {
+  orphans: 1;
+  widows: 1;
+}
+
+h2, h3, h4, h5, h6, dt,
+hr, caption {
+  -webkit-column-break-after: avoid;
+  page-break-after: avoid;
+  break-after: avoid;
+}
+
+h1, h2, h3, h4, h5, h6, dt, 
+figure, tr, td {
+  -webkit-column-break-inside: avoid;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+
+body {
+  -webkit-hyphenate-character: "\002D";
+  -moz-hyphenate-character: "\002D";
+  -ms-hyphenate-character: "\002D";
+  hyphenate-character: "\002D";
+  -webkit-hyphenate-limit-lines: 3;
+  -ms-hyphenate-limit-lines: 3;
+  hyphenate-limit-lines: 3;
+}
+
+h1, h2, h3, h4, h5, h6, dt,
+figcaption, pre, caption, address,
+center {
+  -ms-hyphens: none;
+  -moz-hyphens: none;
+  -webkit-hyphens: none;
+  -epub-hyphens: none;
+  hyphens: none;
+}
+
+hr {
+  color: inherit;
+  border-color: currentColor;
+}
+
+table, th, td {
+  border-color: currentColor;
+}
+
+figure, blockquote {
+  margin: 1em 5%;
+}
+
+ul, ol {
+  margin-left: 0;
+  padding-left: 2em;
+}
+
+dd {
+  margin-left: 0;
+}
+
+pre {
+  white-space: pre-wrap;
+  -ms-tab-size: 2;
+  -moz-tab-size: 2;
+  -webkit-tab-size: 2;
+  tab-size: 2;
+  overflow-x: auto;
+}
+
+abbr[title], acronym[title] {
+  text-decoration: dotted underline;
+}
+
+a, h1, h2, h3, h4, h5, h6 {
+  word-wrap: break-word;
+}
+
+
+img, svg, audio, video {
+  box-sizing: border-box;
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: 95vh;
+  object-fit: contain;
+  -webkit-column-break-inside: avoid;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+
+table {
+  box-sizing: border-box;
+  overflow-x: auto;
+}
+
+body {
+  font-family: Seravek, Calibri, Roboto, Arial, sans-serif;
+}
+
+body {
+  font-size: 100%;
+  line-height: 1.5em;
+}
+
+/* Flow content */
+
+blockquote, figure, p, pre,
+aside, footer, form, hr {
+  margin-top: 1.5em;
+  margin-bottom: 1.5em;
+}
+
+pre {
+  padding-left: 5%;
+}
+
+p {
+  margin-top: 1.5em;
+  margin-bottom: 1.5em; 
+  text-indent: 0;
+}
+
+h1 + p, h2 + p, h3 + p, h4 + p, h5 + p, h6 + p,
+hr + p {
+  text-indent: 0;
+}
+
+sub, sup {
+  line-height: 1;
+  position: relative;
+}
+
+sub {
+  bottom: -0.2ex;
+}
+
+sup {
+  bottom: 0.5ex;
+}
+
+:link {
+  color: #0000EE;
+}
+
+:visited {
+  color: #551A8B;
+}
+
+h1 {
+  margin-top: 0;
+  margin-bottom: 2.0869565218em;
+  font-size: 1.4375em;
+}
+
+h2 {
+  margin-top: 2.2857142858em;
+  margin-bottom: 1.1428571429em;
+  font-size: 1.3125em;
+}
+
+h3 {
+  margin-top: 1.3333333333em;
+  margin-bottom: 1.3333333333em;
+  font-size: 1.125em;
+}
+
+h4 {
+  margin-top: 1.5em;
+  margin-bottom: 1.5em;
+  font-size: 1em;
+}
+
+h5 {
+  margin-top: 1.5em;
+  margin-bottom: 1.5em;
+  font-size: 1em;
+  font-weight: bold;
+  font-style: italic;
+}
+
+h6 {
+  margin-top: 1.5em;
+  margin-bottom: 0;
+  font-size: 1em;
+  font-weight: normal;
+  font-style: italic;
+}
+
+/* Lists */
+
+dl, ol, ul {
+  margin-top: 1.5em;
+  margin-bottom: 1.5em;
+}
+
+ol ul, ol ol,
+ul ol, ul ul {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+dl {
+  margin-left: 5%;
+}
+
+dt {
+  margin-top: 1.5em;
+  font-weight: bold;
+}
+
+bdo {
+  padding: 0 0.25em;
+}
+
+/* Table */
+
+table {
+  border: 1px solid currentColor;
+  border-collapse: collapse;
+  empty-cells: show;
+  margin: 1.5em 0;
+}
+
+thead, tbody, tfoot, table > tr {
+  vertical-align: top;
+}
+
+th {
+  text-align: left;
+}
+
+th, td {
+  border: 1px solid currentColor;
+  padding: 4px;
+}
+
+/* Extras */
+
+.fullbleed {
+  margin: 1.5em 0;
+  text-align: center;
+}
+
+/* Starting here, we’ll demonstrat the internal CSS framework that
+   Readium CSS provides implementers with for unstyled EPUBs, and
+   layout + typography options we’re able to offer to EPUB authors. */
+
+/* Open Type Features */
+
+body {
+  font-variant-numeric: oldstyle-nums proportional-nums;
+}
+
+h1, h2, h3, h4, h5, h6, dt {
+  font-variant-numeric: lining-nums proportional-nums;
+}
+
+table {
+  font-variant-numeric: lining-nums tabular-nums;
+}
+
+code, var {
+  font-variant-ligatures: none;
+  font-variant-numeric: lining-nums tabular-nums slashed-zero;
+}
+
+rt {
+  font-variant-east-asian: ruby;
+}
+
+.frac {
+  font-variant-numeric: diagonal-fractions;
+}
+
+/* We’re asking the rendering engine if it supports CSS custom properties by using a feature query.
+   @supports only checks if the syntax is correct for those CSS custom properties, not if they are valid.
+   We’ll be using the Readium CSS internal framework implementers can use for unstyled EPUBs. */
+
+@supports (--var: a) {
+  :root {
+    --Author-typeScale: 1.125;
+    --Author-baseFontSize: 100%;
+    --Author-baseLineHeight: 1.5rem;
+    --Author-flowSpacing: 1.5rem;
+    --Author-paraSpacing: 1.5rem;
+    --Author-paraIndent: 0;
+    --Author-linkColor: #0000EE;
+    --Author-visitedColor: #551A8B;
+  }
+
+  body {
+    font-size: var(--Author-baseFontSize);
+    line-height: var(--Author-baseLineHeight);
+  }
+
+  /* Flow content */
+
+  blockquote, figure, p, pre,
+  aside, footer, form, hr {
+    margin-top: var(--Author-flowSpacing);
+    margin-bottom: var(--Author-flowSpacing);
+  }
+
+  p {
+    margin-top: var(--Author-paraSpacing);
+    margin-bottom: var(--Author-paraSpacing); 
+    text-indent: var(--Author-paraIndent);
+  }
+
+  :link {
+    color: var(--Author-linkColor);
+  }
+
+  :visited {
+    color: var(--Author-visitedColor);
+  }
+
+  h1 {
+    margin-bottom: calc(var(--Author-flowSpacing) * 2);
+    font-size: calc(((var(--Author-baseFontSize) * var(--Author-typeScale)) * var(--Author-typeScale)) * var(--Author-typeScale));
+  }
+
+  h2 {
+    margin-top: calc(var(--Author-flowSpacing) * 2);
+    margin-bottom: var(--Author-flowSpacing);
+    font-size: calc((var(--Author-baseFontSize) * var(--Author-typeScale)) * var(--Author-typeScale));
+  }
+
+  h3 {
+    margin-top: var(--Author-flowSpacing);
+    margin-bottom: var(--Author-flowSpacing);
+    font-size: calc(var(--Author-baseFontSize) * var(--Author-typeScale));
+  }
+
+  h4 {
+    margin-top: var(--Author-flowSpacing);
+    margin-bottom: var(--Author-flowSpacing);
+    font-size: var(--Author-baseFontSize);
+  }
+
+  h5 {
+    margin-top: var(--Author-flowSpacing);
+    margin-bottom: var(--Author-flowSpacing);
+    font-size: var(--Author-baseFontSize);
+    font-style: normal;
+    font-variant: small-caps;
+  }
+
+  h6 {
+    margin-top: var(--Author-flowSpacing);
+    font-size: var(--Author-baseFontSize);
+    font-weight: bold;
+    font-style: normal;
+    text-transform: lowercase;
+    font-variant: small-caps;
+  }
+
+  /* Lists */
+
+  dl, ol, ul {
+    margin-top: var(--Author-flowSpacing);
+    margin-bottom: var(--Author-flowSpacing);
+  }
+
+  dt {
+    margin-top: var(--Author-flowSpacing);
+  }
+
+  /* Table */
+
+  table {
+    margin: var(--Author-flowSpacing) 0;
+  }
+
+  /* Demonstrates full-width by leveraging Readium CSS variables */
+  .fullbleed {
+	margin: var(--Author-flowSpacing) 0;
+	position: relative;
+	left: 0;
+	left: calc((var(--RS__pageGutter) * var(--USER__pageMargins, 1)) * -1);
+	width: 100%;
+	width: calc(100% + ((var(--RS__pageGutter) * var(--USER__pageMargins, 1)) * 2));
+  }
+}
+
+/* For demo’s sake, we’ll vertical-align the book’s title in the bottom-right corner of the screen.
+   This should be responsive as we don’t constrain the “page” sizing when the user sets a larger font-size. */
+
+/* We’re asking the rendering engine if it supports the flexbox layout module by using a feature query. */
+
+@supports ((display: flex) or (display: -webkit-flex)) {
+  .titlepage {
+    min-height: 98vh;
+    display: -webkit-flex;
+    display: flex;
+    -webkit-flex-direction: column;
+    flex-direction: column;
+  }
+  .titlepage h1 {
+    margin: auto 0 0 0;
+    -webkit-align-self: flex-end;
+	align-self: flex-end;
+  }
+}

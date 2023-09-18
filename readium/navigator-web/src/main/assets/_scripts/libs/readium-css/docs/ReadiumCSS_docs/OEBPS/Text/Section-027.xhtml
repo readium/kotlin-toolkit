@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" xml:lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="generator" content="pandoc"/>
+  <title>Readium CSS Implementers’ doc</title>
+  <link rel="stylesheet" type="text/css" href="../Styles/stylesheet.css"/>
+</head>
+
+<body xml:lang="en">
+  <section id="features-that-were-considered-but-not-implemented" class="level1">
+    <h1>Features that were considered but not implemented</h1>
+
+    <p>[Implementers’ doc] [WIP]</p>
+
+    <p>This document aims to list features that were considered but not implemented in ReadiumCSS, and clarify the reasons why they weren’t.</p>
+
+    <p>It is important to highlight that in most cases, features were not implemented because ReadiumCSS wasn’t the best way to handle them, not because they didn’t have strong use cases. If they were considered for implementation in the first place it is because they were useful, but ReadiumCSS couldn’t really implement them properly, or would have created issues for app developers, etc.</p>
+
+    <p>In other words, this document may also serve as a list of features you could choose to contribute in the various <a href="https://github.com/readium">Readium SDKs and test apps</a> if they aren’t already implemented.</p>
+
+    <section id="alternate-background-colors-for-lines-a11y" class="level2">
+      <h2 id="sigil_toc_id_188">Alternate background colors for lines (A11Y)</h2>
+
+      <p>Related issue: <a href="https://github.com/readium/readium-css/issues/39">#39</a></p>
+
+      <p>The idea was to add an alternate <code>background-color</code> to each line. Since CSS doesn’t have any concept of <code>nth-line</code>, you have to cheat and use a <code>linear-gradient</code> switching colors based on the current <code>line-height</code>.</p>
+
+      <p>Unfortunately, this doesn’t work well with fragmentation, and the linear gradient quickly becomes offset.</p>
+
+      <figure>
+        <img src="../Images/alt-lines.png" alt="In the paginated view, it’s nearly impossible to get alternate lines right."/>
+      </figure>
+
+      <p>In addition, CSS is too limited to handle more complex cases such as images and, more generally, more complex structures. So you need JS for a good enough implementation.</p>
+    </section>
+
+    <section id="contrasting-text-against-backgrounds-in-custom-user-themes" class="level2">
+      <h2 id="sigil_toc_id_189">Contrasting text against backgrounds in custom user themes</h2>
+
+      <p>Related issue: <a href="https://github.com/readium/readium-css/issues/74">#74</a></p>
+
+      <p>The idea was to handle the text color (using the <code>calc()</code> function) when the user picks a background color in custom themes. For instance, text would have been automatically inverted (white instead of black) with a dark background. Obviously, that wouldn’t have prevented the user from picking another text color.</p>
+
+      <p>However, implementing this feature in ReadiumCSS would have made it unpredictable for app developers. Indeed, it would have made it difficult for them to synchronize the User Interface, and label the correct text color as active.</p>
+
+      <p>This feature should therefore be implemented in the app, as part of the custom themes component.</p>
+    </section>
+
+    <section id="handle-daynight-theme-based-on-oss-lightdark-mode" class="level2">
+      <h2 id="sigil_toc_id_190">Handle day/night theme based on OSs’ light/dark mode</h2>
+
+      <p>Related issue: <a href="https://github.com/readium/readium-css/issues/75">#75</a></p>
+
+      <p>The idea was to switch day/night theme based on the mode the user set in the Operating System’s preferences – using the <code>prefers-color-scheme</code> media query.</p>
+
+      <p>Once again, implementing this feature in ReadiumCSS would have made it unpredictable for app developers. Without any control over the application of themes, it would have been impossible to sync both the app UI and EPUB theme – resulting in a visible flash of unsynced content –, made it more difficult to handle the theme the user has set, etc.</p>
+    </section>
+  </section>
+</body>
+</html>

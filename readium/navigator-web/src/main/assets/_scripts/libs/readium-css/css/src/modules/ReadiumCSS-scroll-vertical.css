@@ -1,0 +1,30 @@
+/* Readium CSS
+   Scroll module for vertical-writing
+
+   A set of styles to scroll ePublications in “writing-mode: vertical-*”
+   This module overrides pagination
+
+   Repo: https://github.com/readium/readium-css */
+
+:root:--scroll-view {
+  /* Reset html size so that the user can scroll */
+  min-width: 0 !important;
+  width: auto !important;
+  max-width: none !important;
+  max-height: 100vh !important;
+
+  /* Reset columns, auto + auto = columns can’t be created */
+  /* There is a weird gap in Safari/Webkit, as if overflow paged-x… */
+  -webkit-columns: auto auto !important;
+  -moz-columns: auto auto !important;
+  columns: auto auto !important;
+}
+
+/* Make sure line-length is limited in all configs */
+:root:--scroll-view body {
+  --RS__maxLineLength: 40.01rem !important; /* Fixes fragmentation update issues in Webkit i.e. value must be slightly different than the one for pagination */
+}
+
+/* Scroll mode horizontal */
+
+/* Do we add a top/bottom margin for body in vertical scroll or not? */

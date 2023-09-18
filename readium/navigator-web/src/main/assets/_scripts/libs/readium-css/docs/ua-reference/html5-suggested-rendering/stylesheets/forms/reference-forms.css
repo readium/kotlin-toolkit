@@ -1,0 +1,123 @@
+/* HTML5 Suggested rendering versus UA Stylesheet 
+
+   Source: https://www.w3.org/TR/html5/rendering.html */
+
+@namespace url(http://www.w3.org/1999/xhtml);
+
+/* 015 
+   Button */
+  
+button { 
+  binding: button;
+}
+
+/* 016 
+   Input as text entry */
+
+input { 
+  binding: input-textfield;
+}
+
+input[type=password i] { 
+  binding: input-password;
+}
+
+/* 017 
+   Input as domain specific widget */
+
+input[type=date i] { 
+  binding: input-date;
+}
+
+input[type=time i] { 
+  binding: input-time; 
+}
+
+input[type=number i] { 
+  binding: input-number; 
+}
+
+/* 018 
+   Input as range control */
+
+input[type=range i] { 
+  binding: input-range; 
+}
+
+/* 019 
+   Input as color well */
+
+input[type=color i] { 
+  binding: input-color; 
+}
+
+/* 020 
+   Input as checkbox and radio */
+
+input[type=checkbox i] { 
+  binding: input-checkbox; 
+}
+
+input[type=radio i] { 
+  binding: input-radio; 
+}
+
+/* 021 
+   Input as file upload */
+
+input[type=file i] { 
+  binding: input-file; 
+}
+
+/* 022 
+   Input as button */
+
+input[type=submit i], input[type=reset i], input[type=button i] {
+  binding: input-button;
+}
+
+/* 023 
+   Marquee */
+
+marquee { 
+  binding: marquee; 
+}
+
+/* 024 
+   Meter */
+
+meter { 
+  binding: meter; 
+}
+
+/* 025 
+   Progress */
+
+progress { 
+  binding: progress; 
+}
+
+/* 026 
+   Select */
+
+select { 
+  binding: select; 
+}
+
+/* 027 
+   Textarea */
+
+textarea { 
+  binding: textarea; 
+  white-space: pre-wrap; 
+}
+
+/* 028 
+   Keygen */
+
+keygen { 
+  binding: keygen; 
+}
+
+/* 029 
+   Frame and framesets */

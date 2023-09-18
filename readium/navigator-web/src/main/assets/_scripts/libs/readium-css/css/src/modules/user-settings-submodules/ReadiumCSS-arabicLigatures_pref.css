@@ -1,0 +1,15 @@
+/* Readium CSS
+   Ligatures pref
+
+   A submodule managing ligatures for user settings in the Arabic Script (can help with a11y)
+   Part of “User Overrides Advanced” class – “advanced settings” flag required.
+
+   Repo: https://github.com/readium/readium-css */
+
+:root:--advanced-settings[style*="--USER__arabicLigatures"] {
+  font-variant-ligatures: var(--USER__ligatures) !important;
+}
+
+:root:--advanced-settings[style*="--USER__arabicLigatures"] * {
+  font-variant-ligatures: inherit !important;
+}

@@ -1,0 +1,18 @@
+/* Readium CSS
+   Para indent pref
+
+   A submodule managing paragraphs’ text-indent for user settings
+   Part of “User Overrides Advanced” class – “advanced settings” flag required.
+
+   Repo: https://github.com/readium/readium-css */
+
+:root:--advanced-settings[style*="--USER__paraIndent"] p {
+  text-indent: var(--USER__paraIndent) !important;
+}
+
+/* If there are inline-block elements in paragraphs, text-indent will inherit so we must reset it */
+
+:root:--advanced-settings[style*="--USER__paraIndent"] p *,
+:root:--advanced-settings[style*="--USER__paraIndent"] p:first-letter {
+  text-indent: 0 !important;
+}

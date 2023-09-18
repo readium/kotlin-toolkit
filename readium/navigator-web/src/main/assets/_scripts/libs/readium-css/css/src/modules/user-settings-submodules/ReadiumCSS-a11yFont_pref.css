@@ -1,0 +1,59 @@
+/* Readium CSS
+   A11y font pref
+
+   A submodule managing a11y text normalization for user settings
+   Part of “User Overrides” class – “font override” flag required.
+
+   Repo: https://github.com/readium/readium-css */
+
+/* For AccessibleDfA, we need to normalize font-weight and font-style since only the normal style is available */
+
+:root:--font-override[style*="AccessibleDfA"] {
+  /* We won’t use the variable there since we need fallbacks for missing characters */
+  font-family: AccessibleDfA, Verdana, Tahoma, "Trebuchet MS", sans-serif !important;
+  --RS__lineHeightCompensation: 1.167;
+}
+
+:root:--font-override[style*="IA Writer Duospace"] {
+  /* We won’t use the variable there since we need fallbacks for missing characters */
+  font-family: "IA Writer Duospace", Menlo, "DejaVu Sans Mono", "Bitstream Vera Sans Mono", Courier, monospace !important;
+  --RS__lineHeightCompensation: 1.167;
+}
+
+:root:--font-override:--a11y-normalize {
+  font-family: var(--USER__fontFamily) !important;
+  --RS__lineHeightCompensation: 1.167;
+}
+
+/* Maybe users want a setting to normalize any font offered so there is a “a11y Normalize” flag for it */
+
+:root:--font-override:--a11y-font,
+:root:--font-override:--a11y-normalize {
+  font-weight: normal !important;
+  font-style: normal !important;
+}
+
+/* Targeting everything except code. Note that Open Dyslexic has a monospaced font for code */
+:root:--font-override:--a11y-font *:not(code):not(var):not(kbd):not(samp),
+:root:--font-override:--a11y-normalize *:not(code):not(var):not(kbd):not(samp) {
+  font-family: inherit !important;
+  font-weight: inherit !important;
+  font-style: inherit !important;
+}
+
+/* Normalizing text-decoration, subs and sups */
+:root:--font-override:--a11y-font *,
+:root:--font-override:--a11y-normalize * {
+  text-decoration: none !important;
+  font-variant-caps: normal !important;
+  font-variant-position: normal !important;
+  font-variant-numeric: normal !important;
+}
+
+:root:--font-override:--a11y-font sup,
+:root:--font-override:--a11y-normalize sup,
+:root:--font-override:--a11y-font sub,
+:root:--font-override:--a11y-normalize sub {
+  font-size: 1rem !important;
+  vertical-align: baseline !important;
+}

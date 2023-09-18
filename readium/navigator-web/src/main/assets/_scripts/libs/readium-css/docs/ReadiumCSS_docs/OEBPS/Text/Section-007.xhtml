@@ -1,0 +1,263 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" xml:lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="generator" content="pandoc"/>
+  <title>Readium CSS Implementers’ doc</title>
+  <link rel="stylesheet" type="text/css" href="../Styles/stylesheet.css"/>
+</head>
+
+<body xml:lang="en">
+  <section id="css-variables-how-to" class="level1">
+      <h1>How to use CSS custom properties (a.k.a. variables)</h1>
+
+      <p>[Implementers’ doc]</p>
+
+      <p>Note: CSS variables <strong>are not and won’t be supported in IE11.</strong> You can either create a static stylesheet for all UA browsers or decide to leverage them in most UA browsers + use a JS fallback for IE11 if you want to support this browser – you can test for CSS variables support in JS.</p>
+
+    <section id="what-are-css-variables" class="level2">
+      <h2 id="sigil_toc_id_28">What are CSS variables?</h2>
+
+      <p>CSS variables allow an author to assign arbitrary values to a property with an author-chosen name. This custom property must start with <code>--</code>. The <code>var()</code> function then allows the author to use those values elsewhere in the document.</p>
+
+      <pre><code>:root { 
+	--primaryColor: red; 
+}
+
+a { 
+	color: var(--primaryColor); 
+}
+
+button { 
+	color: white; 
+	background-color: var(--primaryColor); 
+}</code></pre>
+
+      <p>If you’re familiar with CSS pre-processors (LESS, SASS, Stylus, etc.), you’re probably using variables already. The major difference is that CSS variables are supported in the browser and, consequently, you can access and edit them in real-time using JavaScript.</p>
+
+      <hr/>
+
+      <p>Global references:</p>
+
+      <ul>
+        <li><a href="https://drafts.csswg.org/css-variables/">CSS Custom Properties spec</a></li>
+
+        <li><a href="http://caniuse.com/#feat=css-variables">Can I Use</a></li>
+
+        <li><a href="https://developers.google.com/web/updates/2016/02/css-variables-why-should-you-care">CSS Variables: Why should you care</a> — developers.google.com</li>
+
+        <li><a href="https://blogs.windows.com/msedgedev/2017/03/24/css-custom-properties/#fjMpiOekgjsGVp4S.97">CSS Custom Properties in Microsoft Edge</a></li>
+
+        <li><a href="https://www.npmjs.com/package/postcss-css-variables">PostCSS plugin to transform CSS variables into a static representation</a></li>
+
+        <li><a href="https://jsperf.com/css-variables-vs-inline-styles">JS Perf — CSS Variables vs. Inline Styles</a></li>
+
+        <li><a href="http://slides.com/gregoradams/css-variables-are-a-game-changer#/">CSS Variables are a game changer</a></li>
+      </ul>
+    </section>
+
+    <section id="cascade-and-inheritance" class="level2">
+      <h2 id="sigil_toc_id_29">Cascade and inheritance</h2>
+
+      <p>Custom properties follow standard cascading rules. In other words, you can define the same property at different levels of specificity.</p>
+
+      <pre><code>:root { 
+	--fontSize: 16px; 
+} 
+
+aside { 
+	--fontSize: 12px; 
+} 
+
+body, aside { 
+	font-size: var(--fontSize); 
+	/* Will be 16px for body and 12px for aside */ 
+}</code></pre>
+
+      <p>You can also use them in media queries.</p>
+
+      <pre><code>:root { 
+	--defaultFontSize: 16px; 
+} 
+
+@media screen and (max-width: 560px) { 
+	:root { 
+		--defaultFontSize: 14px; 
+	} 
+} 
+
+html { 
+	font-size: var(--defaultFontSize); 
+	/* Will be 14px if the viewport max-width &lt; 560px and 16px otherwise */ 
+}</code></pre>
+
+      <p>To sum things up, variables bring a lot of flexibility and customization to CSS. It can also simplify your stylesheets and make them much more maintainable.</p>
+    </section>
+
+    <section id="fallback" class="level2">
+      <h2 id="sigil_toc_id_30">Fallback</h2>
+
+      <p>In case you want to use them, you’ll have to hardcode values for IE11 (and Edge 14).</p>
+
+      <pre><code>:root {
+	--primaryColor: red; 
+} 
+
+a { 
+	color: red; /* Fallback */ 
+	color: var(--primaryColor); 
+} 
+
+button { 
+	color: white; 
+	background-color: red; /* Fallback */ 
+	background-color: var(--primaryColor); 
+}</code></pre>
+
+      <p>That could be managed via JavaScript though, so that you don’t need to maintain fallbacks in pure CSS.</p>
+
+      <p>It is important to note the <code>var()</code> function provides a fallback mechanism itself, in case your custom property is not set.</p>
+
+      <p>The function looks like this:</p>
+
+      <pre><code>var(&lt;custom-property-name&gt; [, &lt;declaration-value&gt; ]? )</code></pre>
+
+      <pre><code>:root {
+	/* No --primaryColor in there */ 
+} 
+
+a { 
+	color: var(--primaryColor, red); /* In which red is the fallback */ 
+} 
+
+button { 
+	color: white; 
+	background-color: var(--primaryColor, red); /* In which red is the fallback */ 
+}</code></pre>
+
+      <p>That could be useful for theming for instance, by setting default values as fallbacks then declaring custom properties using JavaScript.</p>
+
+      <p>Although browsers have been optimized to deal with CSS variables, please note performance might suffer in some browsers if you have a lot of variables with a fallback.</p>
+    </section>
+
+    <section id="using-css-variables-in-javascript" class="level2">
+      <h2 id="sigil_toc_id_31">Using CSS variables in JavaScript</h2>
+
+      <section id="feature-detect" class="level3">
+        <h3 class="sigil_not_in_toc">Feature detect</h3>
+
+        <p><a href="https://justmarkup.com/log/2016/02/theme-switcher-using-css-custom-properties/">As seen in this article by Michael Scharnagl</a>, if you want to test for support, you can do the following:</p>
+
+        <pre><code>if (window.CSS &amp;&amp; window.CSS.supports &amp;&amp; window.CSS.supports('--a', 0)) { 
+	// CSS custom properties supported. 
+} else { 
+	// CSS custom properties not supported 
+}</code></pre>
+
+        <p>Since CSS feature queries are not supported by IE11, the previous snippet will return false.</p>
+
+        <p>It will return true for browsers which support feature queries since <code>@supports</code> only checks if the syntax is correct (and don’t bother checking if the custom property exists).</p>
+      </section>
+
+      <section id="retrieve-values" class="level3">
+        <h3 class="sigil_not_in_toc">Retrieve values</h3>
+
+        <p>You can retrieve values by using <code>getPropertyValue("--name_of_the_variable")</code> (it is a computed style).</p>
+
+        <pre><code>var myColor = window.getComputedStyle(document.documentElement).getPropertyValue("--textColor");</code></pre>
+      </section>
+
+      <section id="set-values" class="level3">
+        <h3 class="sigil_not_in_toc">Set values</h3>
+
+        <p>You can set values by using <code>setProperty("--name_of_the_variable", "value")</code>.</p>
+
+        <pre><code>document.documentElement.style.setProperty("--textColor", "#000");</code></pre>
+
+        <p>If you’re appending a style element in the <code>head</code> of the document, you can also change the value in there, especially if you have a lot of elements to manage. For instance, if a <code>--maxImageHeight</code> variable is defined in the CSS for <code>img</code>, you could do the following:</p>
+
+        <pre><code>var newStyles = document.createElement('style'); 
+newStyles.id = "overrides"; 
+var docHeight = window.getComputedStyle(document.body).getPropertyValue("height") + "px"; 
+var newMaxImageHeight = document.createTextNode("img {--maxImageHeight: " + docHeight + ";}");
+newStyles.appendChild(newMaxImageHeight); 
+document.head.appendChild(newStyles);</code></pre>
+
+        <p>This will override the value in the original CSS since the <code>img</code> selector is more specific. It is important to notice you could hardcode styles here for browsers which don’t support variables (adding <code>max-height: docHeight</code> to the textNode you’re appending in the stylesheet).</p>
+      </section>
+    </section>
+
+    <section id="interesting-hacks" class="level2">
+      <h2 id="sigil_toc_id_32">Interesting hacks</h2>
+
+      <p>CSS variables offer a lot of flexibility.</p>
+
+      <section id="avoid-js-concatenation" class="level3">
+        <h3 class="sigil_not_in_toc">Avoid JS concatenation</h3>
+
+        <p><a href="https://eager.io/blog/communicating-between-javascript-and-css-with-css-variables/">As seen in this article by Zack Bloom</a>, if you want to avoid managing concatenation (value + unit) in JavaScript, you could use the <code>calc()</code> function in CSS.</p>
+
+        <pre><code>.element { 
+	height: calc(var(--element-height) * 1px); 
+}</code></pre>
+      </section>
+
+      <section id="testing-active-breakpoints" class="level3">
+        <h3 class="sigil_not_in_toc">Testing active breakpoints</h3>
+
+        <p>As seen in <a href="https://www.ericponto.com/blog/2014/09/17/share-css-variables-with-javascript/">this article by Eric Ponto</a>, you could create a <code>--breakpoint</code> variable to “emulate” something like container/element queries.</p>
+
+        <pre><code>body { 
+	--breakpoint: medium; 
+} 
+
+@media screen and (max-width: 30em) { 
+	body { 
+		--breakpoint: small; 
+	} 
+} 
+
+@media screen and (min-width: 50em) { 
+	body { 
+		--breakpoint: large; 
+	} 
+}</code></pre>
+
+        <p>Then create a function to return the breakpoint and append styles accordingly.</p>
+
+        <p>You could probably leverage such a hack to implement some kind of <code>column-width</code> media query in paged view, but it would require CSS authors to provide specific stylesheets with this non-standard media as a <code>link</code> attribute – otherwise, performance will be really really bad as you would have to hijack the entire stylesheet to retrieve media queries first.</p>
+      </section>
+
+      <section id="setting-another-variable-as-a-value" class="level3">
+        <h3 class="sigil_not_in_toc">Setting another variable as a value</h3>
+
+        <p><a href="https://developers.google.com/web/updates/2016/02/css-variables-why-should-you-care">As seen in the developers.google.com article</a>, you can set the value of the variable to refer to another variable at runtime by using the <code>var()</code> function in your call to <code>setProperty()</code>.</p>
+
+        <pre><code>document.documentElement.style.setProperty("--primary-color", "var(--secondary-color)");</code></pre>
+      </section>
+
+      <section id="abusing-css-variables-to-make-them-read-and-acted-on-by-javascript" class="level3">
+        <h3 class="sigil_not_in_toc">Abusing CSS variables to make them read and acted on by JavaScript</h3>
+
+        <p><a href="https://drafts.csswg.org/css-variables/#syntax">As seen in the spec itself (example 3)</a>, you could create values which sole purpose is to be read and acted on by JavaScript.</p>
+
+        <p>While the following variable would obviously be useless as a variable (invalid value):</p>
+
+        <pre><code>--foo: if(x &gt; 5) this.width = 10;</code></pre>
+
+        <p>You could use it in JavaScript since it’s still a valid custom property.</p>
+      </section>
+
+      <section id="user-themes" class="level3">
+        <h3 class="sigil_not_in_toc">User themes</h3>
+
+        <p>You could even go the extra mile and provide an “import theme” feature or implement custom styles inputs (color pickers, font family, etc.) in the UI so that users can create their own theme on the fly, then manage it more easily (storing the user theme as a style element with an id in <code>localStorage</code> for instance).</p>
+
+        <p><a href="https://css-tricks.com/css-custom-properties-theming/">See this CSS-Tricks’ article for use cases and demos</a>.</p>
+      </section>
+    </section>
+  </section>
+</body>
+</html>

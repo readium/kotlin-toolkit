@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" xml:lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="generator" content="pandoc"/>
+  <title>Readium CSS Implementers’ doc</title>
+  <link rel="stylesheet" type="text/css" href="../Styles/stylesheet.css"/>
+</head>
+
+<body xml:lang="en">
+  <section id="e-production-feedback-and-requests" class="level1">
+    <h1>E-production feedback and requests</h1>
+
+    <p>[Implementers’ info]</p>
+
+    <p>One important part of the Readium CSS project is collecting feedback and queries from the e-production community (CSS authors). This is a summary.</p>
+
+    <section id="css-authors-typical-profile" class="level2">
+      <h2 id="sigil_toc_id_112">CSS Authors’ typical profile</h2>
+
+      <p>The typical CSS author has been doing e-production for 3 years or more (76%), is primarily concerned about interoperability (80%) and feels like he/she gets at least CSS fundamentals (88%). Most of his/her queries are related to layouts you can do in print but you can’t in ebooks yet.</p>
+
+      <p>A few notes:</p>
+
+      <ul>
+        <li>interoperability implies Kindle, back to Mobi7 on the north-american market (Mobi7 is ± HTML 3.2);</li>
+
+        <li>specific versions of EPUB files for more advanced RS like iBooks or Readium exist, and this issue is partly related to distribution: authors don’t know the app the reader will use and don’t want risking rendering issues;</li>
+
+        <li>sometimes, specific versions mean authors (and/or software) will fall back to EPUB 2 files, in order to get around support uncertainty;</li>
+
+        <li>one key is probably progressive enhancement techniques, but that’s more of an education/evangelization issue and not in implementations’ scope <em>per se</em>.</li>
+      </ul>
+    </section>
+
+    <section id="workflow-and-authoring" class="level2">
+      <h2 id="sigil_toc_id_113">Workflow and authoring</h2>
+
+      <section id="workflow-is-still-print-centric" class="level3">
+        <h3 class="sigil_not_in_toc">Workflow is still print-centric</h3>
+
+        <p>From the feedback we could get, DTP software is still prevalent (more than <span class="frac">2/3</span> of answers), but automation is a thing (XML and even Node.js).</p>
+
+        <p>This means that should we provide new design options, change won’t happen overnight. Authors would have to add them to their workflow first (manual editing or automation upgrade), then authoring software would have to support them.</p>
+
+        <p>What’s interesting is that most authors would appreciate having such design options (more than 75%, on two polls), but if there isn’t any side-effects in other apps (cf. interoperability). Of course that would require production moving to EPUB 3 (<a href="http://epubsecrets.com/from-inside-the-epub-ingestion-factory.php">EPUB 2 still makes up roughly 70% of all incoming content @ Kobo for instance</a>).</p>
+
+        <p>So once again, we have an education/evangelization issue to deal with there.</p>
+      </section>
+
+      <section id="authoring-practices" class="level3">
+        <h3 class="sigil_not_in_toc">Authoring practices</h3>
+
+        <p>CSS authoring varies greatly.</p>
+
+        <p>Almost <span class="frac">2/3</span> of authors use a custom stylesheet that they adjust for every book, very few actually rely on the styles output by their DTP tools. As a consequence, there’s no consensus when it comes to the CSS selectors authors use. It can be:</p>
+
+        <ul>
+          <li><code>p</code></li>
+
+          <li><code>.class</code></li>
+
+          <li><code>p.class</code></li>
+
+          <li><code>div.class p.class</code></li>
+
+          <li><code>[epub|type="semantic-inflection"] p</code></li>
+
+          <li>greatly-specified selectors with or without combinators (from actual samples).</li>
+        </ul>
+
+        <p>Reasons include:</p>
+
+        <ul>
+          <li>ease of use;</li>
+
+          <li>complexity and variety of the publication’s contents;</li>
+
+          <li>semantics (especially with <code>epub:type</code>);</li>
+
+          <li>production being outsourced with no specification – i.e. this is how the contractor do things.</li>
+        </ul>
+
+        <p>If we want to solve the user settings issue well, we’ll probably have to find clever and inventive ways, selectors specificity being a dead-end in practice.</p>
+
+        <p>There’s <a href="https://github.com/w3c/csswg-drafts/issues/1693">a proposal for user agent properties</a> and <a href="https://w3c.github.io/personalization-semantics/">a draft for customization</a>, they have some potential for upcoming files if EPUB gets a “do not touch my CSS” flag at some point – what’s already distributed is probably lost. With user agent properties, <a href="https://gist.github.com/JayPanoz/c5bbf0bd7e53997d3a91d9c1be44a82f">authors could design user-centric stylesheets</a> so, in theory, RS could not override styles at all and just set values for those properties.</p>
+
+        <p>In the meantime, we have to “emulate” the cascade and resolve to <code>!important</code>. So that’s trying to make an unperfect mechanism into something more elegant, which requires a lot of fine-tuning.</p>
+      </section>
+    </section>
+
+    <section id="worries-and-issues" class="level2">
+      <h2 id="sigil_toc_id_114">Worries and issues</h2>
+
+      <section id="worries" class="level3">
+        <h3 class="sigil_not_in_toc">Worries</h3>
+
+        <p>What bothers authors the most:</p>
+
+        <ol>
+          <li>the app overriding styles without an explicit demand from the user (a.k.a. changing a setting);</li>
+
+          <li>the complete lack of control over page layout (margins, background, etc.);</li>
+
+          <li>user overrides which are all or nothing.</li>
+        </ol>
+
+        <p>Interestingly, reading modes’ adjustments and user settings exposure are not priorities – which doesn’t mean they aren’t concerns. There are two assumptions we could make:</p>
+
+        <ul>
+          <li>providing readers with images filters in night mode is probably the best first step we can make since a significant part of authors might not use extra markup to deal with it on an image-per-image basis (especially if no other RS supports it);</li>
+
+          <li>user settings exposure is probably one of the best practical ways to deal with non-binary user settings and overrides (cf. user agent properties proposal) so, once again, education/evangelization kicks in.</li>
+        </ul>
+      </section>
+
+      <section id="issues" class="level3">
+        <h3 class="sigil_not_in_toc">Issues</h3>
+
+        <p>Top issues are, in order of priority:</p>
+
+        <ol>
+          <li>images’ sizing e.g. author’s sizing is not respected, image is cut-off;</li>
+
+          <li>broken media queries (which makes responsive design impossible);</li>
+
+          <li>lack of support for modern CSS;</li>
+
+          <li>Math.</li>
+        </ol>
+
+        <p>This shouldn’t come as a surprise; those are long-standing issues in need of practical solutions (media queries don’t work in columned-content) and fixes (flexbox, grid, and modern layout specs have a lot of bugs in columns’ implementations). Our best bet there is collaborating with the <a href="https://github.com/rachelandrew/multicol-wip">CSS-multicol spec editors</a> since we’re probably one of the major use cases for this spec.</p>
+      </section>
+    </section>
+
+    <section id="popular-requests" class="level2">
+      <h2 id="sigil_toc_id_115">Popular requests</h2>
+
+      <p>Unsurprisingly, a lot of requests are about layouts possible in print but not (yet) in e-books:</p>
+
+      <ul>
+        <li>full bleed (container, image, background-color);</li>
+
+        <li>support for paged-media (running header/footer, float figures top/bottom, etc.);</li>
+
+        <li>vertical centering and alignment;</li>
+
+        <li>floated shapes (wrapping the image and not its bounding box);</li>
+
+        <li>option to put contents like page numbers, icons, etc. in the margins;</li>
+
+        <li>using a baseline grid;</li>
+
+        <li>forcing the chapter title as the running header;</li>
+
+        <li>proper support of page-breaks;</li>
+
+        <li>media queries for reading modes (sepia, night, etc.);</li>
+
+        <li>stylable popup footnotes.</li>
+      </ul>
+
+      <p>A few notes:</p>
+
+      <ul>
+        <li>in theory, putting contents in the margins and full-bleed are (almost) possible in Readium CSS: it depends on its implementation. Consequently, don’t be surprised if some authors make some experiments and raise issues;</li>
+
+        <li>some requests are already possible in some rendering engines: vertical-centering and alignment, floated shapes, and using a baseline grid is already possible on some platforms (depends on the web view/browser used) so it is more of an authors’ issue;</li>
+
+        <li>anything related to paged-media has had low traction at the browser vendors level so far, you’ll probably have to polyfill those features if you want to meet those expectations.</li>
+      </ul>
+    </section>
+
+    <section id="interoperability-issues-reported" class="level2">
+      <h2 id="sigil_toc_id_116">Interoperability issues reported</h2>
+
+      <p>We care deeply about interoperability. Although Readium CSS has been designed from scratch, a lot of research has been put into other Reading Systems in order to improve interop (and not introduce breaking changes/side-effects). To our knowledge, we’re even the first project openly tackling EPUB implementations’ interoperability. Indeed, one of our main goals is to provide authors with a solid bedrock so Readium CSS should not become an issue for them.</p>
+
+      <p>A few interop issues have been reported:</p>
+
+      <ul>
+        <li>page margins: some apps/devices have huge page margins, others don’t have any, it’s really hard for authors to know what they should be doing here (<code>margin: 0</code> or <code>margin: value</code>);</li>
+
+        <li>support of existing specifications is lacking (the issue being that some existing specs are really hard to implement well in practice);</li>
+
+        <li>images optimization (this could be related to <code>picture</code> and <code>srcset</code>);</li>
+
+        <li>font obfuscation isn’t implemented everywhere, which is a huge issue for fixed-layout.</li>
+      </ul>
+    </section>
+  </section>
+</body>
+</html>

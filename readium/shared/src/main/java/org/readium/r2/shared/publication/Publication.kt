@@ -78,7 +78,7 @@ public class Publication(
     public var cssStyle: String? = null
 ) : PublicationServicesHolder {
 
-    private val _manifest: Manifest
+    private var _manifest: Manifest
 
     private val services = ListPublicationServicesHolder()
 
@@ -226,10 +226,18 @@ public class Publication(
     /**
      * Sets the URL where this [Publication]'s RWPM manifest is served.
      */
-    @Deprecated(message = "Not used anymore.", level = DeprecationLevel.ERROR)
-    @Suppress("UNUSED_PARAMETER")
     public fun setSelfLink(href: String) {
-        throw NotImplementedError()
+        val selfLink = Link(
+            href = href,
+            mediaType = MediaType.READIUM_WEBPUB_MANIFEST,
+            rels = setOf("self")
+        )
+
+        val fixedLinks = _manifest.links
+            .filterNot { it.rels.contains("self") }
+            .plus(selfLink)
+
+        _manifest = _manifest.copy(links = fixedLinks)
     }
 
     /**

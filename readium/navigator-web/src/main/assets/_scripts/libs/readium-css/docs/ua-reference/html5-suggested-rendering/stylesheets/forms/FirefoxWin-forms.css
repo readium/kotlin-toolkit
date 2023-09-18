@@ -1,0 +1,267 @@
+/* HTML5 Suggested rendering versus Firefox UA Stylesheet (version 54 — Win10)
+
+   Source: https://www.w3.org/TR/html5/rendering.html */
+
+@namespace url(http://www.w3.org/1999/xhtml);
+
+/* 015 
+   Button */
+  
+button { 
+  -moz-appearance: button;
+  padding: 0 8px;
+  border: 2px outset ThreeDLightShadow;
+  background-color: ButtonFace;
+  cursor: default;
+  box-sizing: border-box;
+  -moz-user-select: none;
+  -moz-binding: none;
+  color: ButtonText;
+  font: -moz-button;
+  line-height: normal;
+  text-align: center;
+  text-shadow: none;
+  white-space: inherit;
+  text-indent: 0;
+  display: inline-block;
+}
+
+/* 016 
+   Input as text entry */
+
+input { 
+  -moz-appearance: textfield;
+  padding: 1px;
+  border: 2px inset ThreeDLightShadow;
+  background-color: -moz-Field;
+  color: -moz-FieldText;
+  font: -moz-field;
+  text-rendering: optimizeLegibility;
+  line-height: normal;
+  text-align: start;
+  text-transform: none;
+  word-spacing: normal;
+  letter-spacing: normal;
+  cursor: text;
+  text-indent: 0;
+  -moz-user-select: text;
+  text-shadow: none;
+  -moz-user-modify: read-write !important;
+}
+
+input[type=search i] {
+  box-sizing: border-box;
+}
+
+input[type=password i] { 
+
+}
+
+/* 017 
+   Input as domain specific widget */
+
+input[type=date i] { 
+
+}
+
+input[type=time i] { 
+
+}
+
+input[type=number i] { 
+  -moz-appearance: number-input;
+  -moz-binding: none;
+  inline-size: 20ch;
+}
+
+/* 018 
+   Input as range control */
+
+input[type=range i] {   
+  -moz-appearance: range;
+  display: inline-block;
+  inline-size: 12em;
+  block-size: 1.3em;
+  margin: 0 0.7em;
+  cursor: default;
+  background: none;
+  border: none;
+  -moz-binding: none;
+  -moz-user-select: none !important;
+}
+
+/* 019 
+   Input as color well */
+
+input[type=color i] {   
+  -moz-appearance: button;
+  padding: 0 8px;
+  border: 2px outset ThreeDLightShadow;
+  background-color: ButtonFace;
+  cursor: default;
+  box-sizing: border-box;
+  -moz-user-select: none;
+  -moz-binding: none;
+  inline-size: 64px;
+  block-size: 23px;
+}
+
+/* 020 
+   Input as checkbox and radio */
+
+input[type=checkbox i] {   
+  -moz-appearance: checkbox;
+  display: inline-block;
+  margin: 3px 3px 3px 4px;
+  box-sizing: border-box;
+  cursor: default;
+  padding: unset;
+  -moz-binding: unset;
+  border: unset;
+  background-color: unset;
+  color: unset;
+}
+
+input[type=radio i] {   
+  -moz-appearance: radio;
+  display: inline-box;
+  margin: 3px 3px 0 5px;
+  box-sizing: border-box;
+  cursor: default;
+  padding: unset;
+  -moz-binding: unset;
+  border: unset;
+  background-color: unset;
+  color: unset;
+}
+
+/* 021 
+   Input as file upload */
+
+input[type=file i] {   
+  display: inline-block;
+  white-space: nowrap;
+  overflow: hidden;
+  color: inherit;
+  -moz-appearance: none;
+  -moz-binding: none;
+  cursor: default;
+  border: none;
+  background-color: transparent;
+  padding: 0;
+}
+
+/* 022 
+   Input as button */
+
+input[type=submit i], input[type=reset i], input[type=button i] {
+  -moz-appearance: button;
+  padding: 0 8px;
+  border: 2px outset ThreeDLightShadow;
+  background-color: ButtonFace;
+  cursor: default;
+  box-sizing: border-box;
+  -moz-user-select: none;
+  -moz-binding: none;
+  color: ButtonText;
+  font: -moz-button;
+  line-height: normal;
+  white-space: pre;
+  text-align: center;
+  text-shadow: none;
+}
+
+/* 023 
+   Marquee */
+
+marquee { 
+
+}
+
+/* 024 
+   Meter */
+
+meter { 
+  -moz-appearance: meterbar;
+  display: inline-block;
+  vertical-align: -0.2em;
+  background: linear-gradient(#e6e6e6, #e6e6e6, #eeeeee 20%, #cccccc 45%, #cccccc 55%);
+}
+
+/* 025 
+   Progress */
+
+progress { 
+  -moz-appearance: progressbar;
+  display: inline-block;
+  vertical-align: -0.2em;
+  border: 2px solid;
+  -moz-border-top-colors: ThreeDShadow #e6E6E6;
+  -moz-border-right-colors: ThreeDHighlight #e6E6E6;
+  -moz-border-bottom-colors: ThreeDHighlight #e6E6E6;
+  -moz-border-left-colors: ThreeDShadow #e6E6E6;
+  background-color: #e6E6E6;
+}
+
+/* 026 
+   Select */
+
+select { 
+  -moz-appearance: menulist;
+  margin: 0;
+  border-color: ThreeDLightShadow;
+  background-color: -moz-Combobox;
+  color: -moz-ComboboxText;
+  font: -moz-list;
+  line-height: normal !important;
+  white-space: nowrap !important;
+  word-wrap: normal !important;
+  text-align: start;
+  cursor: default;
+  box-sizing: border-box;
+  -moz-user-select: none;
+  border-width: 2px;
+  border-style: inset;
+  text-indent: 0;
+  overflow: -moz-hidden-unscrollable;
+  text-shadow: none;
+  display: inline-block;
+  page-break-inside: avoid;
+}
+
+/* 027 
+   Textarea */
+
+textarea { 
+  white-space: pre-wrap; 
+  -moz-appearance: textfield-multiline;
+  margin: 1px 0;
+  border: 2px inset ThreeDLightShadow;
+  padding: 0 1px;
+  background-color: -moz-Field;
+  color: -moz-FieldText;
+  font: medium -moz-fixed;
+  text-rendering: optimizeLegibility;
+  text-align: start;
+  text-transform: none;
+  word-spacing: normal;
+  letter-spacing: normal;
+  vertical-align: text-bottom;
+  cursor: text;
+  resize: both;
+  text-indent: 0;
+  -moz-user-select: text;
+  text-shadow: none;
+  word-wrap: break-word;
+  -moz-user-modify: read-write !important;
+}
+
+/* 028 
+   Keygen */
+
+keygen { 
+  /* Converted to select > option */
+}
+
+/* 029 
+   Frame and framesets */

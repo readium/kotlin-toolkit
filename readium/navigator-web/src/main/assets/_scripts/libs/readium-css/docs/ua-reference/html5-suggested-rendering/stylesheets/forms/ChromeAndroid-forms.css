@@ -1,0 +1,276 @@
+/* HTML5 Suggested rendering versus Chrome UA Stylesheet (version 59 Android 6)
+
+   Source: https://www.w3.org/TR/html5/rendering.html */
+
+@namespace url(http://www.w3.org/1999/xhtml);
+
+/* 015 
+   Button */
+  
+button { 
+  -webkit-appearance: button;
+  -webkit-writing-mode: horizontal-tb;
+  text-rendering: auto;
+  letter-spacing: normal;
+  word-spacing: normal;
+  text-transform: none;
+  text-indent: 0px;
+  text-shadow: none;
+  display: inline-block;
+  margin: 0;
+  font: 13.3333px Arial;
+  align-items: flex-start;
+  text-align: center;
+  cursor: default;
+  color: buttontext;
+  box-sizing: border-box;
+  padding: 1px 6px;
+  border: 2px outset buttonface;
+  background-color: buttonface;
+  border-image: initial;
+}
+
+/* 016 
+   Input as text entry */
+
+input { 
+  -webkit-appearance: textfield;
+  -webkit-writing-mode: horizontal-tb;
+  text-rendering: auto;
+  color: initial;
+  letter-spacing: normal;
+  word-spacing: normal;
+  text-transform: none;
+  text-indent: 0px;
+  text-shadow: none;
+  display: inline-block;
+  text-align: start;
+  margin: 0;
+  font: 13.3333px Arial;
+  background-color: white;
+  -webkit-rtl-ordering: logical;
+  user-select: text;
+  cursor: auto;
+  padding: 1px 0;
+  border: 2px inset initial;
+  border-image: initial;
+}
+
+input[type=search i] {
+  -webkit-appearance: searchfield;
+  box-sizing: border-box;
+  padding: 1px;
+}
+
+input[type=password i] { 
+  -webkit-text-security: disc;
+}
+
+/* 017 
+   Input as domain specific widget */
+
+input[type=date i] { 
+  -webkit-appearance: menulist;
+  align-items: center;
+  background-color: buttonface;
+  display: -webkit-inline-flex;
+  width: 10em;
+  border: 1px solid rgb(169, 169, 169);
+  border-image: initial;
+  overflow: hidden;
+}
+
+input[type=time i] { 
+  -webkit-appearance: menulist;
+  align-items: center;
+  background-color: buttonface;
+  display: -webkit-inline-flex;
+  width: 10em;
+  border: 1px solid rgb(169, 169, 169);
+  border-image: initial;
+  overflow: hidden;
+}
+
+input[type=number i] { 
+
+}
+
+/* 018 
+   Input as range control */
+
+input[type=range i] {   
+  -webkit-appearance: slider-horizontal;
+  padding: initial;
+  border: initial;
+  margin: 2px;
+  color: rgb(157, 154, 142);
+}
+
+/* 019 
+   Input as color well */
+
+input[type=color i] {   
+  -webkit-appearance: square-button;
+  width: 44px;
+  height: 23px;
+  background-color: buttonface;
+  border: 1px solid rgb(169, 169, 169);
+  border-image: initial;
+  padding: 1px 2px;
+}
+
+/* 020 
+   Input as checkbox and radio */
+
+input[type=checkbox i] {   
+  -webkit-appearance: checkbox;
+  margin: 3px 3px 3px 4px;
+  padding: initial;
+  background-color: initial;
+  border: initial;
+  box-sizing: border-box;
+}
+
+input[type=radio i] { 
+  -webkit-appearance: radio;
+  margin: 3px 3px 0px 5px;
+  padding: initial;
+  background-color: initial;
+  border: initial;
+  box-sizing: border-box;
+}
+
+/* 021 
+   Input as file upload */
+
+input[type=file i] {   
+  -webkit-appearance: initial;
+  padding: initial;
+  background-color: initial;
+  border: initial;
+  align-items: baseline;
+  color: inherit;
+  text-align: start;
+}
+
+/* 022 
+   Input as button */
+
+input[type=submit i], input[type=reset i], input[type=button i] {
+  -webkit-appearance: push-button;
+  white-space: pre;
+  user-select: none;
+  align-items: flex-start;
+  text-align: center;
+  cursor: default;
+  color: buttontext;
+  padding: 1px 6px;
+  border: 2px outset buttonface;
+  background-color: buttonface;
+  border-image: initial;
+  box-sizing: border-box;
+}
+
+/* 023 
+   Marquee */
+
+marquee { 
+
+}
+
+/* 024 
+   Meter */
+
+meter { 
+  -webkit-appearance: meter;
+  -webkit-writing-mode: horizontal-tb;
+  box-sizing: border-box;
+  display: inline-block;
+  height: 1em;
+  width: 5em;
+  vertical-align: -0.2em;
+  -webkit-user-modify: read-only;
+}
+
+/* 025 
+   Progress */
+
+progress { 
+  -webkit-appearance: progress-bar;
+  -webkit-writing-mode: horizontal-tb;
+  box-sizing: border-box;
+  display: inline-block;
+  height: 1em;
+  width: 10em;
+  vertical-align: -0.2em;
+}
+
+/* 026 
+   Select */
+
+select { 
+  -webkit-appearance: menulist;
+  -webkit-writing-mode: horizontal-tb;
+  text-rendering: auto;
+  letter-spacing: normal;
+  word-spacing: normal;
+  text-transform: none;
+  text-indent: 0px;
+  text-shadow: none;
+  display: inline-block;
+  text-align: start;
+  margin: 0;
+  font: 13.3333px Arial;
+  border-radius: 0;
+  box-sizing: border-box;
+  border: 1px solid rgb(169, 169, 169);
+  color: black;
+  background-color: buttonface;
+  border-image: initial;
+  align-items: center;
+  white-space: pre;
+  -webkit-rtl-ordering: logical;
+  cursor: default;
+  overflow: visible !important;
+}
+
+/* 027 
+   Textarea */
+
+textarea { 
+  white-space: pre-wrap; 
+  -webkit-appearance: textarea;
+  -webkit-writing-mode: horizontal-tb;
+  text-rendering: auto;
+  color: initial;
+  letter-spacing: normal;
+  word-spacing: normal;
+  text-transform: none;
+  text-indent: 0px;
+  text-shadow: none;
+  display: inline-block;
+  text-align: start;
+  margin: 0em;
+  font: 13.3333px Arial;
+  font-family: monospace;
+  background-color: white;
+  -webkit-rtl-ordering: logical;
+  border: 1px solid rgb(169, 169, 169);
+  user-select: text;
+  flex-direction: column;
+  resize: auto;
+  cursor: auto;
+  padding: 2px;
+  word-wrap: break-word;
+}
+
+/* 028 
+   Keygen */
+
+/* Not implemented */
+keygen { 
+
+}
+
+/* 029 
+   Frame and framesets */

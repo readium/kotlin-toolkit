@@ -1,0 +1,47 @@
+/* Readium CSS
+   Sepia mode
+
+   A preset theme for sepia mode
+
+   Repo: https://github.com/readium/readium-css */
+
+
+/* CONFIG */
+
+:root:--sepia-mode {
+  --RS__backgroundColor: #faf4e8;
+  --RS__textColor: #121212;
+
+  --RS__linkColor: #0000EE;
+  --RS__visitedColor: #551A8B;
+
+  /* This can be customized but initial will re-use default value of the browser */
+  --RS__selectionBackgroundColor: #b4d8fe;
+  --RS__selectionTextColor: inherit;
+
+  --RS__maxLineLength: 40.01rem; /* Forcing a reflow in Blink/Webkit so that blend mode can work */
+}
+
+/* we don’t need to redeclare bg-color and color for :root since we will inherit and update from day/default mode */
+
+:root:--sepia-mode *:not(a) {
+  background-color: transparent !important;
+  color: inherit !important;
+}
+
+:root:--sepia-mode a:link,
+:root:--sepia-mode a:link * {
+  color: var(--RS__linkColor);
+}
+
+:root:--sepia-mode a:visited,
+:root:--sepia-mode a:visited * {
+  color: var(--RS__visitedColor);
+}
+
+:root:--sepia-mode svg,
+:root:--sepia-mode img {
+  /* Make sure the proper bg-color is used for the blend mode */
+  background-color: transparent !important;
+  mix-blend-mode: multiply;
+}

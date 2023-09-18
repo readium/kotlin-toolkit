@@ -1,0 +1,799 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" xml:lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="generator" content="pandoc"/>
+  <title>Readium CSS Implementers’ doc</title>
+  <link rel="stylesheet" type="text/css" href="../Styles/stylesheet.css"/>
+</head>
+
+<body xml:lang="en">
+  <section id="inject-and-paginate-contents" class="level1">
+      <h1>Inject and paginate EPUB contents</h1>
+
+      <p>[Implementers’ doc] [Authors’ info]</p>
+
+    <section id="injection" class="level2">
+      <h2 id="sigil_toc_id_8">Injection</h2>
+
+      <p>Depending on the platform and version you’re developing for, contents must be injected into:</p>
+
+      <ul>
+        <li>a web view;</li>
+
+        <li>a chrome view;</li>
+
+        <li>an iframe.</li>
+      </ul>
+
+      <p>Indeed, we must provide authors with a reliable context in which their styles and scripts are scoped.</p>
+
+      <section id="margins-and-dimensions" class="level3">
+        <h3 class="sigil_not_in_toc">Margins and dimensions</h3>
+
+        <p>Since we must take viewport units into account, especially <code>vh</code> (viewport height), at least the top and bottom margins must be set on this container, and not inside it.</p>
+
+        <p>You may also want to set left and right margins on this container so that all margins are equal in the two-column view.</p>
+
+        <p>Finally, on larger screens, you’ll have to set dimensions on this container so that it doesn’t become too large.</p>
+      </section>
+
+      <section id="background-color" class="level3">
+        <h3 class="sigil_not_in_toc">Background color</h3>
+
+        <p>Please note you must deal with the <code>background-color</code> outside this container, especially as the user can set reading modes (night, sepia, etc.). In other words, it must be synced with this user setting so that the entire screen is the same <code>background-color</code>.</p>
+
+        <p>As a friendly reminder, you can allow transparency for the iframe if you’re using one. That should help deal with <code>background-color</code> at the global level.</p>
+
+        <pre><code>&lt;iframe src="source.xhtml" allowtransparency="true"&gt;&lt;/iframe&gt;</code></pre>
+
+        <p>Then set the <code>--RS__backgroundColor</code> variable to <code>transparent</code> in <code>ReadiumCSS-base.css</code>, although you will have to modify the current user settings stylesheet so that it can work this way.</p>
+      </section>
+    </section>
+
+    <section id="pagination" class="level2">
+      <h2 id="sigil_toc_id_9">Pagination</h2>
+
+      <p>Contents are paginated using <a href="https://www.w3.org/TR/css3-multicol/">CSS multicolumns</a>, for several reasons:</p>
+
+      <ul>
+        <li><a href="http://caniuse.com/#feat=multicolumn">it’s been cross-platform for a long time</a>;</li>
+
+        <li>it’s responsive;</li>
+
+        <li>it’s tried and tested;</li>
+
+        <li>it brings some kind of interoperability since it has been used by a lot of Reading Systems and authors have been designing against them.</li>
+      </ul>
+
+      <section id="default" class="level3">
+        <h3 class="sigil_not_in_toc">Default</h3>
+
+        <p>Pagination is responsive by default, which means it is using relative values in order to adapt layout to the viewport and the current font size.</p>
+
+        <p>We’ve chosen this approach since it appears setting everything in pixels is more likely to create rounding errors and rendering issues (e.g. cut-off text) than letting the rendering engine deal with relative units on its own.</p>
+
+        <p>The responsive design provides other benefits. For instance, if the reader is using an iPad in landscape mode and sets a bigger font size, the two-column view will automatically switch to a single-page view if needed.</p>
+
+        <p>You can also limit line-length by setting a <code>max-width</code> for <code>body</code>.</p>
+
+        <p>Please note a user setting for the number of columns has been designed so that users can set the layout as they wish.</p>
+      </section>
+
+      <section id="the-rs-owns-root-and-part-of-body" class="level3">
+        <h3 class="sigil_not_in_toc">The RS owns :root and part of body</h3>
+
+        <p>Since we must inject contents and columns are implemented at the <code>:root</code> level (i.e. <code>html</code>), the Reading System owns the entire styling for this selector.</p>
+
+        <p>Font size is an important metric since the responsive design relies entirely on <code>rem</code> (root <code>em</code>) so this style must be enforced by any means necessary.</p>
+
+        <p>For <code>body</code>, we own:</p>
+
+        <ul>
+          <li><code>overflow</code>;</li>
+
+          <li>sizing: <code>(min-|max-)width</code>, <code>(min-|max-)height</code>, <code>box-sizing</code>;</li>
+
+          <li>spacing: <code>margin</code> and <code>padding</code>.</li>
+        </ul>
+
+        <p>You can control horizontal margins in several ways:</p>
+
+        <ol>
+          <li>using <code>column-gap</code> and <code>padding</code> for <code>:root</code>;</li>
+
+          <li>using <code>column-gap</code> and <code>margin</code> for the web view/chrome view/iframe;</li>
+
+          <li>using <code>padding</code> for <code>:root</code> and/or <code>body</code>.</li>
+        </ol>
+
+        <p>Please note that when using <code>padding</code>, you must take it into account when sizing <code>:root</code> and/or <code>body</code>. Their widths contain the padding set for the element.</p>
+
+      <section id="the-auto-pagination-model" class="level3">
+        <h3 class="sigil_not_in_toc">The auto pagination model</h3>
+
+        <p>By default, responsive columns are built into Readium CSS, which means the layout will automatically switch from a single page to a two-column spread depending on:</p>
+
+        <ol>
+          <li>the size of the viewport (by default, the minimum <code>width</code> is <code>60em</code> or the mobile device is in landscape orientation);</li>
+
+          <li>the <code>font-size</code> currently set by the user.</li>
+        </ol>
+
+        <p>The spread will consequently switch to a single page once the user sets a <code>font-size</code> which is too large for two columns.</p>
+
+        <p>The following illustrations are the two models you’ll have to deal with.</p>
+
+        <figure class="fullbleed">
+          <img src="../Images/Page-Model.jpg" alt="The single page model relies on the column width of the :root element. Line-length is constrained by the max-width of the body element, including its padding. Finally an auto margin centers the content."/>
+        </figure>
+
+        <p>A single page is just a column which can grow to the entire width of the web view/iframe since it is declared for <code>html</code>.</p>
+
+        <p>Page margins are part of <code>body</code>, hence <code>--RS__maxLineLength</code>. Contents are centered using the <code>auto</code> value for <code>body</code> margins.</p>
+
+        <figure class="fullbleed">
+          <img src="../Images/spread-model.jpg" alt="The two-column spread model is somehow simpler in the sense the column width is the minimum value that must be reached for this model to be applied. We are relying on left and right padding instead of column-gap for gutters."/>
+        </figure>
+
+        <p>In the spread model, i.e. two columns, the <code>--RS__colWidth</code> is a floor: once the minimum width available (viewport) can’t contain 2 columns (the value is computed from the <code>font-size</code> user setting), we switch to the single page model.</p>
+
+        <p>For instance, if <code>--RS__colWidth</code> is <code>20em</code> and the <code>font-size</code>, <code>100%</code> (<code>16px</code>), then the floor is <code>320px</code>. If 2 columns can fit in the viewport, the spread model is applied. If they can’t, the page model is applied. Hence, if the user sets the <code>font-size</code> at <code>200%</code> (<code>32px</code>), the floor is <code>640px</code>, which means the viewport should be at least <code>1240px</code>-wide to apply the spread model.</p>
+
+        <p>Since we still limit line-length in the spread model, you might want to limit the web view/iframe size so that you don’t end up with wide gaps on large screens (or add <code>padding</code> to <code>:root</code>, and take it into account when scrolling).</p>
+		</section>
+
+        <section id="variables-you-can-set" class="level4">
+          <h4 class="sigil_not_in_toc">Variables you can set</h4>
+
+          <p>Please note those variables’ value can be redefined using media queries. You don’t need to redeclare entire declarations.</p>
+
+		  <hr/>
+
+          <pre><code>--RS__colWidth</code></pre>
+
+          <p>The optimal column’s width. It serves as a floor in our design.</p>
+
+		  <p>It must not be set in <code>rem</code> as there is currently a bug with this unit in some implementations (the <code>em</code> unit is fine).</p>
+
+		  <hr/>
+
+          <pre><code>--RS__colCount</code></pre>
+
+          <p>The optimal number of columns (depending on the columns’ width).</p>
+
+		  <hr/>
+
+          <pre><code>--RS__colGap</code></pre>
+
+          <p>The gap between columns. It must be set in pixels so that it won’t resize with font size.</p>
+
+          <p>You must account for this gap when scrolling.</p>
+
+		  <hr/>
+
+          <pre><code>--RS__pageGutter</code></pre>
+
+          <p>The horizontal page margins. It must be set in pixels so that it won’t resize with font size.</p>
+
+		  <hr/>
+
+          <pre><code>--RS__maxLineLength</code></pre>
+
+          <p>The optimal line-length. It must be set in <code>rem</code> in order to take <code>:root</code>’s <code>font-size</code> as a reference, whichever the <code>body</code>’s <code>font-size</code> might be.</p>
+        </section>
+	  </section>
+
+      <section id="right-to-left-progression" class="level3">
+        <h3 class="sigil_not_in_toc">Right-to-left progression</h3>
+
+        <p>The auto pagination model will take care of itself if the correct <code>dir</code> attribute is set on <code>html</code> and <code>body</code>.</p>
+
+        <p>In other words, if <code>dir="rtl"</code> is set for both elements, the column-progression will be automatically reversed.</p>
+
+        <section id="when-to-use-the-right-to-left-progression" class="level4">
+          <h4 class="sigil_not_in_toc">When to use the Right-to-left progression</h4>
+
+          <p>What implementers need to do:</p>
+
+          <ol>
+            <li>check the <code>page-progression-direction</code> for the <code>spine</code> item;</li>
+
+            <li>check the language – do not forget there can be multiple <code>&lt;dc:language&gt;</code> items;</li>
+
+            <li>load specific styles for RTL scripts;</li>
+
+            <li>append <code>xml:lang</code> and/or <code>lang</code> attribute if it’s missing in XHTML documents;</li>
+
+            <li>append <code>dir="rtl"</code> attributes if they’re missing for both <code>html</code> and <code>body</code> in XHTML documents;</li>
+
+            <li>load specific fonts’ lists for user settings, based on the primary language of the publication;</li>
+
+            <li>add/remove specific user settings, based on the primary language of the publication;</li>
+
+            <li>Apply the correct <code>page-progression-direction</code> (in RTL, next resource is on the left, previous is on the right);</li>
+
+            <li>change the direction of the toc and at least some pieces of user settings (e.g. <code>text-align</code>).</li>
+          </ol>
+
+          <p>The current implementation is limited to the following combinations:</p>
+
+          <table>
+            <thead>
+              <tr class="header">
+                <th>
+                  Language
+                </th>
+
+                <th>
+                  IANA tag
+                </th>
+
+                <th>
+                  page-progression-direction
+                </th>
+
+                <th>
+                  dir attribute
+                </th>
+              </tr>
+            </thead>
+
+            <tbody>
+              <tr class="odd">
+                <td>
+                  Arabic
+                </td>
+
+                <td>
+                  ar
+                </td>
+
+                <td>
+                  RTL
+                </td>
+
+                <td>
+                  rtl
+                </td>
+              </tr>
+
+              <tr class="even">
+                <td>
+                  Farsi (Persian)
+                </td>
+
+                <td>
+                  fa
+                </td>
+
+                <td>
+                  RTL
+                </td>
+
+                <td>
+                  rtl
+                </td>
+              </tr>
+
+              <tr class="odd">
+                <td>
+                  Hebrew
+                </td>
+
+                <td>
+                  he
+                </td>
+
+                <td>
+                  RTL
+                </td>
+
+                <td>
+                  rtl
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <p><a href="https://www.iana.org/assignments/language-subtag-registry/language-subtag-registry">IANA Language Subtag registery</a>.</p>
+
+          <p>We may add others at some point in the future. Please feel free to report the languages or scripts missing in this mapping. Please bear in mind a list of default (preferably system) fonts will greatly help to add support for those languages and scripts. See <a href="../Text/Section-009.xhtml">Default Fonts</a>.</p>
+
+          <p>Test files can be retrieved from <a href="https://raw.githubusercontent.com/readium/readium-css/develop/docs/i18n-samples/root.atom">the Readium CSS’ i18n-samples OPDS feed</a>.</p>
+        </section>
+
+        <section id="be-cautious-the-direction-propagates" class="level4">
+          <h4 class="sigil_not_in_toc">Be cautious, the direction propagates</h4>
+
+          <p>As explicitly stated in <a href="https://www.w3.org/TR/css-writing-modes-3/#principal-flow">CSS Writing Modes Level 3</a>:</p>
+
+          <blockquote>
+            <p>As a special case for handling HTML documents, if the <code>:root</code> element has a <code>&lt;body&gt;</code> child element, the principal writing mode is instead taken from the values of <code>writing-mode</code> and <code>direction</code> on the first such child element instead of taken from the root element.</p>
+          </blockquote>
+
+          <p>What this means is that the <code>dir</code> attribute (or the <code>direction</code> CSS property) set for <code>body</code> will override the one set for <code>html</code>. Unlike most other CSS properties, which don’t impact the parent element, the <code>dir</code> attribute (or the <code>direction</code> CSS property) propagates in this very specific case:</p>
+
+          <pre><code>&lt;html dir="ltr"&gt; 
+  &lt;body dir="rtl"&gt; 
+    &lt;!-- dir="rtl" should be used. --&gt;</code></pre>
+
+          <pre><code>html { 
+  direction: ltr; 
+} 
+body { 
+  direction: rtl; 
+  /* rtl propagates to html and overrides ltr. 
+    You can think of it as a JS event bubbling up 
+    if that makes more sense. */ 
+}</code></pre>
+
+          <p>We MUST consequently force the direction for all documents in the publication, and can’t manage <code>ltr</code> documents in a <code>rtl</code> publication.</p>
+
+          <p>Note: While this isn’t necessarily the case in practice, in Blink, Gecko/Quantum and Webkit, and you can emulate a reversed column-progression for <code>ltr</code> documents in a <code>rtl</code> publication, this behavior may change in the future.</p>
+        </section>
+      </section>
+
+      <section id="the-pagination-model-for-vertical-writing-modes" class="level3">
+        <h3 class="sigil_not_in_toc">The pagination model for vertical writing modes</h3>
+
+        <p>When publications are in Chinese, Japanese, Korean, and Mongolian, and laid out with a <code>vertical-*</code> writing mode, we must switch to a different model since we can’t do a two-column spread.</p>
+
+        <p>Indeed, columns are automatically laid out on the <code>y-axis</code> (vertical) with such writing modes, and <a href="https://www.w3.org/TR/css-writing-modes-3/#changes-201512">the behavior of multi-column in orthogonal flows has been deferred to CSS Writing Modes Level 4</a>.</p>
+
+        <p>We consequently use a “Fragmented Model”, as it differs significantly from the “Pagination Model”, especially the column-axis.</p>
+
+        <figure class="fullbleed">
+          <img src="../Images/Fragmented-Model.jpg" alt="The fragmented Model is kind of a superset of the single page model in the vertical direction, with extra padding added to the root element for extra horizontal gutters."/>
+        </figure>
+
+        <p>One can think of the fragmented model as the single page model rotated 90% clockwise. The only difference is that <code>padding</code> is added to the <code>:root</code> (<code>html</code>) element so that text doesn’t run from edge to edge.</p>
+
+        <p>Other options have been explored, e.g. a pseudo-algorithm mimicking <code>margin: auto</code>, using the <code>calc()</code> function, but it proved complex to manage well and raised serious performance issues, especially when resizing the window of a browser with documents making heavy use of <code>text-direction</code> and <code>text-combine-upright</code>.</p>
+
+        <section id="when-to-use-the-fragmented-model" class="level4">
+          <h4 class="sigil_not_in_toc">When to use the fragmented model</h4>
+
+          <p>What implementers need to do:</p>
+
+          <ol>
+            <li>check the <code>page-progression-direction</code> for the <code>spine</code> item;</li>
+
+            <li>check the language – do not forget there can be multiple <code>&lt;dc:language&gt;</code> items;</li>
+
+            <li>load the specific styles for CJK if needed;</li>
+
+            <li>append <code>xml:lang</code> and/or <code>lang</code> attribute if it’s missing in XHTML documents;</li>
+
+            <li>load specific fonts’ lists for user settings, based on the primary language of the publication;</li>
+
+            <li>add/remove specific user settings, based on the primary language of the publication;</li>
+
+            <li>Apply the correct page-progression-direction (in RTL, next resource is on the left, previous is on the right).</li>
+          </ol>
+
+          <p>Here is the correct mapping for combinations resulting in the <code>vertical-*</code> writing mode:</p>
+
+          <table>
+            <thead>
+              <tr class="header">
+                <th>
+                  Language
+                </th>
+
+                <th>
+                  IANA tag
+                </th>
+
+                <th>
+                  page-progression-direction
+                </th>
+
+                <th>
+                  Writing-mode
+                </th>
+              </tr>
+            </thead>
+
+            <tbody>
+              <tr class="odd">
+                <td>
+                  Chinese
+                </td>
+
+                <td>
+                  zh
+                </td>
+
+                <td>
+                  RTL
+                </td>
+
+                <td>
+                  vertical-rl
+                </td>
+              </tr>
+
+              <tr class="even">
+                <td>
+                  Chinese (Traditional)
+                </td>
+
+                <td>
+                  zh-Hant
+                </td>
+
+                <td>
+                  RTL
+                </td>
+
+                <td>
+                  vertical-rl
+                </td>
+              </tr>
+
+              <tr class="odd">
+                <td>
+                  Chinese (Taiwan)
+                </td>
+
+                <td>
+                  zh-TW
+                </td>
+
+                <td>
+                  RTL
+                </td>
+
+                <td>
+                  vertical-rl
+                </td>
+              </tr>
+
+              <tr class="even">
+                <td>
+                  Chinese (Hong Kong)
+                </td>
+
+                <td>
+                  zh-HK
+                </td>
+
+                <td>
+                  RTL
+                </td>
+
+                <td>
+                  vertical-rl
+                </td>
+              </tr>
+
+              <tr class="odd">
+                <td>
+                  Korean
+                </td>
+
+                <td>
+                  ko
+                </td>
+
+                <td>
+                  RTL
+                </td>
+
+                <td>
+                  vertical-rl
+                </td>
+              </tr>
+
+              <tr class="even">
+                <td>
+                  Japanese
+                </td>
+
+                <td>
+                  ja
+                </td>
+
+                <td>
+                  RTL
+                </td>
+
+                <td>
+                  vertical-rl
+                </td>
+              </tr>
+
+              <tr class="odd">
+                <td>
+                  Mongolian
+                </td>
+
+                <td>
+                  mn-Mong
+                </td>
+
+                <td>
+                  LTR / Default / None
+                </td>
+
+                <td>
+                  vertical-lr
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <p><a href="https://www.iana.org/assignments/language-subtag-registry/language-subtag-registry">IANA Language Subtag registery</a>.</p>
+
+          <p>Test files can be retrieved from <a href="https://raw.githubusercontent.com/readium/readium-css/develop/docs/i18n-samples/root.atom">the Readium CSS’ i18n-samples OPDS feed</a>.</p>
+        </section>
+
+        <section id="when-not-to-use-the-fragmented-model" class="level4">
+          <h4 class="sigil_not_in_toc">When not to use the fragmented model</h4>
+
+          <p>If a publication doesn’t need to be laid out in a <code>vertical-*</code> writing mode, the auto pagination model can be used.</p>
+
+          <p>There are still specific styles for CJK Horizontal to load though.</p>
+
+          <p>Here is the correct mapping for combinations resulting in the <code>horizontal-tb</code> writing mode:</p>
+
+          <table>
+            <thead>
+              <tr class="header">
+                <th>
+                  Language
+                </th>
+
+                <th>
+                  IANA tag
+                </th>
+
+                <th>
+                  page-progression-direction
+                </th>
+
+                <th>
+                  Writing-mode
+                </th>
+              </tr>
+            </thead>
+
+            <tbody>
+              <tr class="odd">
+                <td>
+                  Chinese
+                </td>
+
+                <td>
+                  zh
+                </td>
+
+                <td>
+                  LTR / Default / None
+                </td>
+
+                <td>
+                  horizontal-tb
+                </td>
+              </tr>
+
+              <tr class="even">
+                <td>
+                  Chinese (Simplified)
+                </td>
+
+                <td>
+                  zh-Hans
+                </td>
+
+                <td>
+                  LTR / Default / None
+                </td>
+
+                <td>
+                  horizontal-tb
+                </td>
+              </tr>
+
+              <tr class="odd">
+                <td>
+                  Chinese (Taiwan)
+                </td>
+
+                <td>
+                  zh-TW
+                </td>
+
+                <td>
+                  LTR / Default / None
+                </td>
+
+                <td>
+                  horizontal-tb
+                </td>
+              </tr>
+
+              <tr class="even">
+                <td>
+                  Chinese (Hong Kong)
+                </td>
+
+                <td>
+                  zh-HK
+                </td>
+
+                <td>
+                  LTR / Default / None
+                </td>
+
+                <td>
+                  horizontal-tb
+                </td>
+              </tr>
+
+              <tr class="odd">
+                <td>
+                  Korean
+                </td>
+
+                <td>
+                  ko
+                </td>
+
+                <td>
+                  LTR / Default / None
+                </td>
+
+                <td>
+                  horizontal-tb
+                </td>
+              </tr>
+
+              <tr class="even">
+                <td>
+                  Japanese
+                </td>
+
+                <td>
+                  ja
+                </td>
+
+                <td>
+                  LTR / Default / None
+                </td>
+
+                <td>
+                  horizontal-tb
+                </td>
+              </tr>
+
+              <tr class="odd">
+                <td>
+                  Mongolian
+                </td>
+
+                <td>
+                  mn-Cyrl
+                </td>
+
+                <td>
+                  LTR / Default / None
+                </td>
+
+                <td>
+                  horizontal-tb
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <p><a href="https://www.iana.org/assignments/language-subtag-registry/language-subtag-registry">IANA Language Subtag registery</a>.</p>
+        </section>
+
+        <section id="be-cautious-the-writing-mode-css-property-propagates" class="level4">
+          <h4 class="sigil_not_in_toc">Be cautious, the writing-mode CSS property propagates</h4>
+
+          <p>As explicitly stated in <a href="https://www.w3.org/TR/css-writing-modes-3/#principal-flow">CSS Writing Modes Level 3</a>:</p>
+
+          <blockquote>
+            <p>As a special case for handling HTML documents, if the <code>:root</code> element has a <code>&lt;body&gt;</code> child element, the principal writing mode is instead taken from the values of <code>writing-mode</code> and <code>direction</code> on the first such child element instead of taken from the root element.</p>
+          </blockquote>
+
+          <p>What this means is that the <code>writing-mode</code> declared for <code>body</code> will override the one declared for <code>html</code>. Unlike most other CSS properties, which don’t impact the parent element, <code>writing-mode</code> propagates in this very specific case:</p>
+
+          <pre><code>html { 
+  writing-mode: horizontal-tb; 
+} 
+body { 
+  writing-mode: vertical-rl; 
+  /* vertical-rl propagates to html and overrides horizontal-tb. 
+     You can think of it as a JS event bubbling up 
+     if that makes more sense. */ 
+}</code></pre>
+
+          <p>We MUST consequently force the <code>writing-mode</code> for all documents in the publication, and can’t manage <code>horizontal-tb</code> documents in a <code>vertical-rl</code> publication.</p>
+        </section>
+      </section>
+
+      <section id="patch-and-safeguards" class="level3">
+        <h3 class="sigil_not_in_toc">Patch and safeguards</h3>
+
+        <p>We’ve designed two extras for pagination:</p>
+
+        <ol>
+          <li>a patch for HTML5 Suggested Rendering, which takes care of paged media;</li>
+
+          <li>safeguards, which make sure some elements will be managed as expected by authors in columns.</li>
+        </ol>
+
+        <section id="patch" class="level4">
+          <h4 class="sigil_not_in_toc">Patch</h4>
+
+          <p>The HTML5 patch deals with:</p>
+
+          <ul>
+            <li>fragmentation (<code>widows</code>, <code>orphans</code> and <code>page-break</code>);</li>
+
+            <li>hyphenation;</li>
+
+            <li>open type features;</li>
+
+            <li>horizontal margins (pixels have been converted to %);</li>
+
+            <li>normalization of <code>abbr</code> and <code>wbr</code>.</li>
+          </ul>
+
+          <p>You can use it with or without pagination, it should not make any difference.</p>
+        </section>
+
+        <section id="safeguards" class="level4">
+          <h4 class="sigil_not_in_toc">Safeguards</h4>
+
+          <p>Safeguards deal with:</p>
+
+          <ul>
+            <li>media sizing (e.g. <code>img</code>, <code>svg</code>, <code>audio</code>, <code>video</code>);</li>
+
+            <li>word wrap for long strings (headings and links);</li>
+
+            <li>large table’s overflow.</li>
+          </ul>
+
+          <p>Once again, you can use it with or without pagination, it should not make any difference.</p>
+
+          <section id="variables-you-can-set-1" class="level5">
+            <h5 class="sigil_not_in_toc">Variables you can set</h5>
+
+			<hr/>
+
+            <pre><code>--RS__maxMediaWidth</code></pre>
+
+            <p>The <code>max-width</code> for media elements i.e. <code>img</code>, <code>svg</code>, <code>audio</code> and <code>video</code>.</p>
+
+			<hr/>
+
+            <pre><code>--RS__maxMediaHeight</code></pre>
+
+            <p>The <code>max-height</code> for media elements i.e. <code>img</code>, <code>svg</code>, <code>audio</code> and <code>video</code>.</p>
+
+			<hr/>
+
+            <pre><code>--RS__boxSizingMedia</code></pre>
+
+            <p>The box model (<code>box-sizing</code>) you want to use for media elements.</p>
+
+			<hr/>
+
+            <pre><code>--RS__boxSizingTable</code></pre>
+
+            <p>The box model (<code>box-sizing</code>) you want to use for tables.</p>
+          </section>
+        </section>
+      </section>
+    </section>
+  </section>
+</body>
+</html>

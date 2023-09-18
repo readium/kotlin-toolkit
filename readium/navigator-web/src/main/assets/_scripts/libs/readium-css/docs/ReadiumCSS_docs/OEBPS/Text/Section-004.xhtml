@@ -1,0 +1,336 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" xml:lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="generator" content="pandoc"/>
+  <title>Readium CSS Implementers’ doc</title>
+  <link rel="stylesheet" type="text/css" href="../Styles/stylesheet.css"/>
+</head>
+
+<body xml:lang="en">
+  <section id="multicol-layout" class="level1">
+            <h1>How the multicolumn layout works</h1>
+
+            <p>[Implementers’ doc] [Authors’ doc]</p>
+
+            <p>Global References:</p>
+
+            <ul>
+              <li><a href="https://www.w3.org/TR/2017/WD-css-multicol-1-20171005/">W3C Spec</a></li>
+
+              <li><a href="https://www.w3.org/Search/Mail/Public/search?keywords=%5Bcss-multicol%5D">W3C Mailing List — css-multicol</a></li>
+            </ul>
+
+    <section id="introduction" class="level2">
+      <h2 id="sigil_toc_id_10">Introduction</h2>
+
+      <p>By using columns, content can flow from one column to another, and the number of columns can vary depending on the size of the viewport. The specification was originally designed to replace table-based multicolumn layout.</p>
+
+      <p>You can declare a multicolumn layout with one line of CSS:</p>
+
+      <pre><code>body { column-width: 15em; }</code></pre>
+
+      <p>Or</p>
+
+      <pre><code>body { column-count: 2; }</code></pre>
+
+      <p>Or</p>
+
+      <pre><code>body { columns: 2 15em; }</code></pre>
+    </section>
+
+    <section id="the-multi-column-model" class="level2">
+      <h2 id="sigil_toc_id_11">The multi-column model</h2>
+
+      <p><strong>Multi-column layout introduces a new type of container between the content box and the content: the column box.</strong> This is a significant departure from the traditional box model.</p>
+
+      <p>The content of a multicol element is flowed into column boxes, which are arranged into rows, like table cells (inline direction). Consequently:</p>
+
+      <ul>
+        <li>column width is the length of the column box in the inline direction;</li>
+
+        <li>column height is the height of the column box in the block direction;</li>
+
+        <li>all column boxes in a row have the same column width and column height;</li>
+
+        <li>adjacent column boxes are separated by a column gap, which may contain a column rule;</li>
+
+        <li>all column gaps (and column rules) in the same row are equal;</li>
+
+        <li>column rules only appear between columns that both have content.</li>
+      </ul>
+
+      <p>Critical shortcomings can be pointed out in the column box model:</p>
+
+      <ol>
+        <li>it is not possible to set properties/values on column boxes, which is why you can’t set the background of one specific column;</li>
+
+        <li>the column box has no concept of padding, margin or borders;</li>
+
+        <li>column boxes don’t establish containing blocks for elements with <code>position: fixed || absolute</code>;</li>
+
+		<li>multicol elements with column heights larger than the viewport may pose accessibility issues.</li>
+      </ol>
+
+      <p>However, floats inside multi-column layouts are positioned with regard to the column box where they appear.</p>
+
+      <p>Finally, since a multi-column element establishes a new block formatting context, a top margin set on the first child element will not collapse with the margins of the multicol element.</p>
+    </section>
+
+    <section id="the-number-and-width-of-columns" class="level2">
+      <h2 id="sigil_toc_id_12">The number and width of columns</h2>
+
+      <p>Basically, two properties determine the width of columns:</p>
+
+      <ul>
+        <li><code>column-count</code>;</li>
+
+        <li><code>column-width</code>.</li>
+      </ul>
+
+      <p>A third one, <code>columns</code>, is a shorthand which sets both.</p>
+
+      <section id="column-width" class="level3">
+        <h3 class="sigil_not_in_toc">Column width</h3>
+
+        <p>This property describes the width of columns in multicol elements.</p>
+
+        <p>Its values can be:</p>
+
+        <ul>
+          <li><code>auto</code>, which means the column width will be determined by other properties (<code>column-count</code> if set);</li>
+
+          <li><code>&lt;length&gt;</code>, which describes the optimal column width.</li>
+        </ul>
+
+        <p>The actual column width may be wider (to fill the available space), or narrower. But <strong>the column width can only be narrower if the available space is smaller that the specified column width.</strong></p>
+
+        <section id="notes" class="level4">
+          <h4 class="sigil_not_in_toc">Notes</h4>
+
+          <ul>
+            <li>To ensure that <code>column-width</code> can be used with vertical text, column width means the length of the line boxes inside the columns.</li>
+
+            <li>To set an exact column width, all length values (<code>width</code>, <code>column-width</code>, and <code>column-gap</code>) must be specified.</li>
+          </ul>
+        </section>
+      </section>
+
+      <section id="column-count" class="level3">
+        <h3 class="sigil_not_in_toc">Column count</h3>
+
+        <p>This property describes the number of columns of a multicol element.</p>
+
+        <p>Its values can be:</p>
+
+        <ul>
+          <li><code>auto</code>, which means the number of columns will be determined by other properties (<code>column-width</code> if set);</li>
+
+          <li><code>&lt;integer&gt;</code>, which describes the optimal number of columns into which the content of the element will be flowed.</li>
+        </ul>
+
+        <p>It is important to note that <strong>if both <code>column-width</code> and <code>column-count</code> have non-auto values, the integer value describes the maximum number of columns.</strong></p>
+      </section>
+
+      <section id="columns" class="level3">
+        <h3 class="sigil_not_in_toc">Columns</h3>
+
+        <p>This is the shorthand property for setting <code>column-width</code> and <code>column-count</code>. Omitted values are set to their initial values (<code>auto</code>).</p>
+      </section>
+
+      <section id="pseudo-algorithm" class="level3">
+        <h3 class="sigil_not_in_toc">Pseudo-algorithm</h3>
+
+        <p>The pseudo-algorithm below determines the used values for <code>column-count</code> (N) and <code>column-width</code> (W). There is one other variable in the pseudo-algorithm: the used width of the multi-column element (U).</p>
+
+        <p>The used width of the multi-column element (U) can depend on the element’s contents, in which case it also depends on the computed values of the <code>column-count</code> and <code>column-width</code> properties. The specification does not define how U is calculated.</p>
+
+        <pre><code>(01)  if ((column-width = auto) and (column-count = auto)) then
+(02)      exit; /* not a multicol element */
+(03)  if column-width = auto then
+(04)      N := column-count
+(05)  else if column-count = auto then
+(06)      N := max(1,
+(07)        floor((U + column-gap)/(column-width + column-gap)))
+(08)  else
+(09)      N := min(column-count, max(1,
+(10)        floor((U + column-gap)/(column-width + column-gap))))
+(11)  W := max(0, ((U + column-gap)/N - column-gap))</code></pre>
+
+        <p>What is important to understand there is that the <code>column-width</code> can either be a floor or a ceiling, depending on the value of <code>column-count</code>.</p>
+
+        <p>Let’s take some examples.</p>
+
+        <pre><code>/* Condition starting at line 3 applies */ 
+body { column-width: auto; column-count: 2; }</code></pre>
+
+        <p>The column width is not set, it entirely depends on <code>column-count</code> and <code>column-gap</code> (which suggested default is <code>1em</code>).</p>
+
+        <p>Columns theoretically have a floor (which is suggested to be <code>1px</code> or less) and a ceiling (line 11)</p>
+
+        <pre><code>/* Condition starting at line 5 applies */ 
+body { column-width: 300px; column-count: auto; }</code></pre>
+
+        <p>In this example, the number of columns is computed depending on the column width and gap.</p>
+
+        <p>In other words, the column width is a ceiling: it can’t be larger than <code>300px</code> but can shrink if the available width is less.</p>
+
+        <pre><code>/* Condition starting at line 8 applies */ 
+body { column-width: 300px; column-count: 2; }</code></pre>
+
+        <p>In this example, the column width is a floor: if 2 columns (2 × column width and the gap) can fit, <code>column-count</code> will be honored, else <code>column-width</code> grows to the width available. If there is additional width available when 2 columns fit, <code>column-width</code> will grow as well.</p>
+
+		<p>It’s worth noting that the used value for <code>column-count</code> is calculated without regard for explicit column breaks or constrained column heights, while the actual value takes these into consideration.</p>
+      </section>
+
+	  <section id="stacking-contexts" class="level3">
+		<h3 class="sigil_not_in_toc">Stacking contexts</h3>
+
+		<p>Column boxes do not establish new stacking contexts.</p>
+	  </section>
+    </section>
+
+    <section id="column-gaps-and-rules" class="level2">
+      <h2 id="sigil_toc_id_13">Column gaps and rules</h2>
+
+      <p>What is important is that column gaps take up space while column rules don’t.</p>
+
+      <ol>
+        <li>column gaps will push apart content in adjacent columns (within the same multicol element);</li>
+
+        <li>if there is a column rule between columns, it will appear in the middle of the gap.</li>
+      </ol>
+
+      <p>As regards column rules:</p>
+
+      <ul>
+        <li>they are painted just above the background of the multicol element so that child elements with <code>z-index</code> values to be on top of column rules;</li>
+
+        <li>they are only drawn between two columns that both have content.</li>
+      </ul>
+    </section>
+
+    <section id="fragmentation-column-break" class="level2">
+      <h2 id="sigil_toc_id_14">Fragmentation (column break)</h2>
+
+	  <p>This has been moved to the <a href="https://www.w3.org/TR/css-break-3/">CSS Fragmentation module</a>.</p>
+
+      <p>When a page or column break splits a box, the box’s margins, borders, and paddings have no visual effect where the split occurs. It is important to remark <code>outline</code> and <code>box-shadow</code> are not discussed at all in the spec.</p>
+
+      <p>In the previous spec, it was stated that “the margin immediately after a forced page or column break will be preserved” but that isn’t necessarily the case in practice, CSS authors often having to resolve to <code>padding-top</code> to force a margin after a page break.</p>
+
+      <p>From experience, avoiding a <code>break-inside</code> elements flowing in 2 or 3 columns can also be problematic (the element vertical alignment is completely off).</p>
+    </section>
+
+    <section id="column-span" class="level2">
+      <h2 id="sigil_toc_id_15">Column span</h2>
+
+      <p>You can only span all columns or none. It is not possible to declare an <code>&lt;integer&gt;</code>.</p>
+
+      <p>An element establishes a new block formatting context if its <code>column-span</code> is set to <code>all</code>. In other words, <code>column-span</code> kind of resets the flow to the first column.</p>
+
+      <p>We may not necessarily worry about this (in authors’ CSS) because the User Agent can treat it as <code>column-span: none</code> if it can’t find room to make the element spanning. Constraining the height of columns should be enough to prevent a column span, especially with overflow.</p>
+    </section>
+
+    <section id="filling-columns" class="level2">
+      <h2 id="sigil_toc_id_16">Filling columns</h2>
+
+      <p>By default, columns will be balanced (minimal variation in column length), they won’t be filled sequentially.</p>
+
+      <p>This default can be overridden with</p>
+
+      <pre><code>body { column-fill: auto; }</code></pre>
+
+      <p>It’s worth noting User Agents should try to honor <code>widows</code> and <code>orphans</code> in any case.</p>
+    </section>
+
+    <section id="overflow" class="level2">
+      <h2 id="sigil_toc_id_17">Overflow</h2>
+
+      <p>What is important to remark is that:</p>
+
+      <ul>
+        <li>content that extends into column gaps is not clipped to the column box;</li>
+
+        <li>a multicol element can have more columns that it has room for, additional column boxes are created in the inline direction (page or column break, constrained height, etc.);</li>
+
+        <li>columns that appear outside the multicol element are called overflow columns.</li>
+      </ul>
+    </section>
+
+    <section id="reflow" class="level2">
+      <h2 id="sigil_toc_id_55">Reflow</h2>
+
+      <p>CSS multicol relies on a complex (fragmentation) logic, and this logic varies for each browser.</p>
+
+      <p>In Blink and Webkit for instance, a reflow won’t happen for the document (<code>:root</code>) if we don’t force a reflow at the <code>body</code> level. As a consequence, we’re using the <code>--RS__maxLineLength</code> CSS variable to force this reflow and slightly alter its value whenever needed e.g. “pagination to scroll” in vertical writing, <code>mix-blend-mode</code> in sepia mode, “number of columns” user setting, etc.</p>
+
+      <p>This will recalc the <code>body</code>’s <code>max-width</code>, causing a reflow which will propagate to the column layout we set for <code>:root</code>.</p>
+    </section>
+
+    <section id="notorious-limitations" class="level2">
+      <h2 id="sigil_toc_id_18">Notorious limitations</h2>
+
+      <p>When the spec was published, the <em>Financial Times</em> immediately switched to <a href="https://labs.ft.com/articles/ft-columnflow/?mhq5j=e3">its own JavaScript implementation</a> for the following reasons:</p>
+
+      <ul>
+        <li>configurable column widths, gutters and margins;</li>
+
+        <li>better handling of <code>position: absolute || fixed</code>;</li>
+
+        <li>support of <code>column-span: &lt;integer&gt;</code>;</li>
+
+        <li>better fragmentation (column breaks);</li>
+
+        <li>grouping of columns into pages;</li>
+
+        <li>enforce a baseline grid;</li>
+
+        <li>better handling of <code>box-shadow</code> and <code>outline</code>.</li>
+      </ul>
+
+      <p>As far as we can tell, this implementation might create some issues, especially when it comes to a11y because it duplicates and hides part of elements to manage fragmentation.</p>
+    </section>
+
+    <section id="notes-1" class="level2">
+      <h2 id="sigil_toc_id_19">Notes</h2>
+
+      <p>It is our understanding the <a href="http://www.wiumlie.no/2011/reader/">Opera implementation of <code>overflow: -o-paged-x</code> in Presto</a> solved most of the spec’s limitations, as listed by the <em>Financial Times</em>:</p>
+
+      <ul>
+        <li><code>position: fixed || absolute</code>;</li>
+
+        <li>fragmentation;</li>
+
+        <li><code>column-span: integer</code>;</li>
+
+        <li>overflow, by switching to paged media;</li>
+
+        <li>implementing <a href="https://figures.spec.whatwg.org">CSS figures</a> as a bonus.</li>
+      </ul>
+
+      <p>It is important to note the spec <a href="https://www.w3.org/blog/CSS/2017/10/05/css-multi-column-layout-level-1-republished-as-a-working-draft/">has been republished as a Working Draft</a>. It is very unlikely a level 2 spec will tackle those problems in the short term.</p>
+
+      <p>From experience, we can also report there tends to be implementation-specific bugs with newer layout specs e.g. flexbox, grid, etc.</p>
+
+      <section id="missing-pieces" class="level3">
+        <h3 class="sigil_not_in_toc">Missing pieces</h3>
+
+        <p>There are several shortcomings we must deal with:</p>
+
+        <ul>
+          <li>the <code>column-gap</code> applies to adjacent column boxes, but there is nothing to set a <code>columns-start-margin</code> and <code>columns-end-margin</code>: this is particularly problematic when columns are set at the <code>:root</code> level and overflow;</li>
+
+          <li>there is no JavaScript API available, we don’t even know the number of columns which have been created and their real width;</li>
+
+          <li>since we can’t use <code>overflow: paged-x</code>, there is no way we can force the <code>scrollWidth</code> to be a multiple of the viewport, we must force the creation of an extra column if needed.</li>
+
+          <li>the lack of “column queries” makes it really difficult for authors to do responsive design.</li>
+        </ul>
+      </section>
+    </section>
+  </section>
+</body>
+</html>

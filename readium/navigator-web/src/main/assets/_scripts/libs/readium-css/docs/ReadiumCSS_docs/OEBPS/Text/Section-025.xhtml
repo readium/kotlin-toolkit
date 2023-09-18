@@ -1,0 +1,331 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" xml:lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="generator" content="pandoc"/>
+  <title>Readium CSS Implementers’ doc</title>
+  <link rel="stylesheet" type="text/css" href="../Styles/stylesheet.css"/>
+</head>
+
+<body xml:lang="en">
+  <section id="css-performance-hacks" class="level1">
+      <h1>CSS Performance Hacks</h1>
+
+      <p>[Implementers’ doc]</p>
+
+      <p>This document discusses the CSS specs implementers can use in case they have performance issues:</p>
+
+      <ol>
+        <li><code>will-change</code>;</li>
+
+        <li>CSS containment.</li>
+      </ol>
+
+      <p>At first sight, using those 2 specs can give tremendous results but you sometimes have to use them in clever ways: it’s not just about adding a line of CSS in your stylesheet.</p>
+
+    <section id="will-change" class="level2">
+      <h2 id="sigil_toc_id_63">Will-change</h2>
+
+      <section id="the-fundamental-rule-of-will-change" class="level3">
+        <h3 class="sigil_not_in_toc">The fundamental rule of will-change</h3>
+
+        <blockquote>
+          <p>Set will-change to the properties you’ll actually change, on the elements that are actually changing. And remove it when they stop.</p>
+        </blockquote>
+      </section>
+
+      <section id="abstract" class="level3">
+        <h3 class="sigil_not_in_toc">Abstract</h3>
+
+        <p>The <code>will-change</code> property allows an author to inform the UA ahead of time of what kinds of changes they are likely to make to an element. The UA can then try to optimize how they handle the element ahead of time, performing potentially-expensive work preparing for an animation before the animation actually begins.</p>
+
+        <p><strong>In other words, <code>will-change</code> is a UA hint,</strong> it doesn’t have any styling effect on the elements for which you’re using it. It’s worth noting it can have appearance effects though, if a new stacking context is created.</p>
+
+        <p>It is, in many ways, an official property for the infamous “translate-z hack.” Although it was meant for animation, it can also deal with more simple changes.</p>
+      </section>
+
+      <section id="usage" class="level3">
+        <h3 class="sigil_not_in_toc">Usage</h3>
+
+        <pre><code>will-change: &lt;animateable-feature&gt; = scroll-position || contents || &lt;custom-ident&gt;</code></pre>
+
+        <section id="scroll-position" class="level4">
+          <h4 class="sigil_not_in_toc">Scroll-position</h4>
+
+          <p>Indicates that the author expects to animate or change the scroll position of the element in the near future.</p>
+
+          <p>A browser might take this value as a signal to expand the range of content around the scroll window that is rendered, so that longer/faster scrolls can be done smoothly.</p>
+        </section>
+
+        <section id="contents" class="level4">
+          <h4 class="sigil_not_in_toc">Contents</h4>
+
+          <p>Indicates that the author expects to animate or change something about the element’s contents in the near future.</p>
+
+          <p>A browser might take this value as a signal to cache less aggressively on the element, or avoid caching at all and just continually re-render the element from scratch.</p>
+        </section>
+
+        <section id="custom-ident" class="level4">
+          <h4 class="sigil_not_in_toc">custom-ident</h4>
+
+          <p>Indicates that the author expects to animate or change the property with the given name on the element in the near future.</p>
+
+          <p>A browser might take a value of transform as a signal that it should go ahead and promote the element to its own layer immediately, before the element starts to be transformed, to avoid any delay involved in rerendering the old and new layers.</p>
+        </section>
+      </section>
+
+      <section id="drawbacks" class="level3">
+        <h3 class="sigil_not_in_toc">Drawbacks</h3>
+
+        <p>By using <code>will-change</code>, you’re basically telling the browser the element is a few moments away from changing, the browser consequently dedicates memory and resources to this element. <strong>If you use it for too many elements, it will thus degrade performance.</strong></p>
+
+        <p>This property should be considered a last resort, it was not meant for premature optimization. <strong>You should use it only if you have to deal with performance issues.</strong></p>
+      </section>
+
+      <section id="dos-and-donts" class="level3">
+        <h3 class="sigil_not_in_toc">Do’s and Dont’s</h3>
+
+        <section id="dos" class="level4">
+          <h4 class="sigil_not_in_toc">Do’s</h4>
+
+          <ul>
+            <li>Use <code>will-change</code> sparingly in stylesheets</li>
+
+            <li>Give <code>will-change</code> sufficient time to work</li>
+
+            <li>Use <code>&lt;custom-ident&gt;</code> to target super specific changes (<code>left</code>, <code>opacity</code>, etc.)</li>
+
+            <li>Use it in JavaScript if needed (add and remove hint)</li>
+
+            <li>Remove <code>will-change</code> after the changes are done</li>
+          </ul>
+        </section>
+
+        <section id="donts" class="level4">
+          <h4 class="sigil_not_in_toc">Dont’s</h4>
+
+          <ul>
+            <li>Don’t declare changes to too many properties</li>
+
+            <li>Don’t apply it to too many elements</li>
+
+            <li>Don’t waste resources on elements that have stopped changing</li>
+          </ul>
+        </section>
+      </section>
+
+      <section id="examples-1" class="level3">
+        <h3 class="sigil_not_in_toc">Examples</h3>
+
+        <section id="ui-elements" class="level4">
+          <h4 class="sigil_not_in_toc">UI elements</h4>
+
+          <p>Specifying <code>will-change</code> for a small number of persistent UI elements in a page which should react snappily to the user is appropriate:</p>
+
+          <pre><code>body &gt; .sidebar { 
+	will-change: transform; 
+	/* Will use 'transform' to slide it out when the user requests. */ 
+}</code></pre>
+
+          <p>Because this is limited to a small number of elements, the fact that the optimization is rarely actually used doesn’t hurt very much.</p>
+        </section>
+
+        <section id="user-click" class="level4">
+          <h4 class="sigil_not_in_toc">User click</h4>
+
+          <p>If an element is going to change when a user clicks on it, setting <code>will-change</code> on hover will usually give at least 200 milliseconds for the optimizations to be set up, as human reaction time is relatively slow.</p>
+
+          <pre><code>.element { 
+	transition: opacity 0.2s; 
+	opacity: 1; 
+} 
+
+.element:hover { 
+	will-change: opacity; 
+} 
+
+.element:active { 
+	opacity: 0.3; 
+}</code></pre>
+        </section>
+
+        <section id="adding-and-removing-the-hint-with-javascript" class="level4">
+          <h4 class="sigil_not_in_toc">Adding and removing the hint with JavaScript</h4>
+
+          <p>This is probably the way to go, should you try using <code>will-change</code> to optimize performance.</p>
+
+          <p>Here we have the hint added on <code>:hover</code>, then removed when the animation has ended.</p>
+
+          <pre><code>var el = document.getElementById('element'); 
+
+// Set will-change when the element is hovered 
+el.addEventListener('mouseenter', hintBrowser); 
+el.addEventListener('animationEnd', removeHint); 
+
+function hintBrowser() { 
+	// The optimizable properties that are going to change 
+	// in the animation's keyframes block 
+	this.style.willChange = 'transform, opacity'; 
+} 
+
+function removeHint() { 
+	this.style.willChange = 'auto'; 
+}</code></pre>
+        </section>
+      </section>
+
+      <section id="references" class="level3">
+        <h3 class="sigil_not_in_toc">References</h3>
+
+        <ul>
+          <li><a href="https://www.w3.org/TR/css-will-change-1/">CSS Will Change Module Level 1</a></li>
+
+          <li><a href="http://caniuse.com/#feat=will-change">Can I Use</a></li>
+
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/will-change">Mozilla Dev Network</a></li>
+
+          <li><a href="https://dev.opera.com/articles/css-will-change-property/">Everything you need to know about the CSS will-change property</a></li>
+
+          <li><a href="https://www.maxlaumeister.com/blog/css-will-change-property-a-performance-case-study/">CSS ‘will-change’ Property: A Performance Case Study</a></li>
+        </ul>
+      </section>
+    </section>
+
+    <section id="css-containment" class="level2">
+      <h2 id="sigil_toc_id_64">CSS Containment</h2>
+
+      <p><strong>Note: This is only implemented in Blink (Chrome + Opera). It is under consideration for Microsoft Edge.</strong></p>
+
+      <section id="abstract-1" class="level3">
+        <h3 class="sigil_not_in_toc">Abstract</h3>
+
+        <p>The <code>contain</code> property indicates that <strong>the element and its contents are, as much as possible, independent of the rest of the page.</strong></p>
+
+        <p>This allows the browser to recalculate layout, style, paint, size, or any combination of them for a limited area of the DOM and not the entire page. To put it simply, it lets developers limit the scope of the browser's styles, layout and paint work.</p>
+
+        <p>It was primarily meant for webpages which contain a lot of widgets that are all independent as it can be used to prevent one widget's CSS rules from changing other things on the page.</p>
+      </section>
+
+      <section id="usage-1" class="level3">
+        <h3 class="sigil_not_in_toc">Usage</h3>
+
+        <pre><code>contain: strict || content || size || layout || style || paint</code></pre>
+
+        <section id="strict" class="level4">
+          <h4 class="sigil_not_in_toc">Strict</h4>
+
+          <p>This is a shorthand for all values, it is equivalent to <code>contain: size layout style paint</code>.</p>
+        </section>
+
+        <section id="content" class="level4">
+          <h4 class="sigil_not_in_toc">Content</h4>
+
+          <p>This is a shorthand for all values but <code>size</code>, it is equivalent to <code>contain: layout style paint</code>.</p>
+        </section>
+
+        <section id="size" class="level4">
+          <h4 class="sigil_not_in_toc">Size</h4>
+
+          <p>It indicates that the element can be laid out without the need to examine its descendants.</p>
+        </section>
+
+        <section id="layout-1" class="level4">
+          <h4 class="sigil_not_in_toc">Layout</h4>
+
+          <p>It indicates that nothing outside can affect the element’s internal layout, and vice versa.</p>
+        </section>
+
+        <section id="style" class="level4">
+          <h4 class="sigil_not_in_toc">Style</h4>
+
+          <p>It indicates that, for properties which can have effects on more than just an element and its descendants, those effects don’t escape the containing element.</p>
+        </section>
+
+        <section id="paint" class="level4">
+          <h4 class="sigil_not_in_toc">Paint</h4>
+
+          <p>It indicates that the descendants of the element don’t display outside its bounds, so if an element is off-screen or otherwise not visible, its descendants are also guaranteed to be not visible.</p>
+        </section>
+      </section>
+
+      <section id="possible-optimizations" class="level3">
+        <h3 class="sigil_not_in_toc">Possible optimizations</h3>
+
+        <p>In theory, huge performance gains are possible, but it requires a solid knowledge of how browsers work and what causes reflow, relayout, repaint, etc. Judging by examples, I can see how it could be useful but we’ll probably have to find inventive and clever ways to leverage it since our scope is very often the root document.</p>
+
+        <p>If you need a refresher:</p>
+
+        <ul>
+          <li><a href="https://www.html5rocks.com/en/tutorials/internals/howbrowserswork/">How browsers work</a></li>
+
+          <li><a href="https://gist.github.com/paulirish/5d52fb081b3570c81e3a">What force layout/reflow</a></li>
+        </ul>
+
+        <section id="layout-2" class="level4">
+          <h4 class="sigil_not_in_toc">Layout</h4>
+
+          <ul>
+            <li>When laying out the page, the contents of separate containing elements can be laid out in parallel, as they’re guaranteed not to affect each other.</li>
+
+            <li>When laying out the page, if the containing element is off-screen or obscured and the layout of the visible parts of the screen do not depend on the size of the containing element (for example, if the containing element is near the end of a block container, and you’re viewing the beginning of the block container), the layout of the containing elements' contents can be delayed or done at a lower priority.</li>
+
+            <li>Layout is normally document-scoped so if you change an element's <code>left</code> property, every single element in the DOM might need to be checked. Enabling containment here can potentially reduce the number of elements to just a handful, rather than the whole document, saving the browser a ton of unnecessary work and significantly improving performance.</li>
+          </ul>
+        </section>
+
+        <section id="style-1" class="level4">
+          <h4 class="sigil_not_in_toc">Style</h4>
+
+          <ul>
+            <li>Whenever a property is changed on a descendant of the containing element, calculating what part of the DOM tree is “dirtied” and might need to have its style recalculated can stop at the containing element.</li>
+
+            <li>Containment here is purely about limiting the parts of the tree that are under consideration when styles are mutated, not when they are declared.</li>
+          </ul>
+        </section>
+
+        <section id="paint-1" class="level4">
+          <h4 class="sigil_not_in_toc">Paint</h4>
+
+          <ul>
+            <li>If the containing element is off-screen or obscured, the UA can directly skip trying to paint its contents, as they’re guaranteed to be off-screen/obscured as well.</li>
+
+            <li>Unless the clipped content is made accessible via a separate mechanism such as the overflow, resize, or text-overflow properties, the UA can reserve “canvas” space for the element exactly the element’s size.</li>
+
+            <li>Because they are guaranteed to be stacking contexts, scrolling elements can be painted into a single GPU layer.</li>
+
+            <li>It acts as a containing block for absolutely positioned and fixed position elements: any children are positioned based on the element, not the document.</li>
+
+            <li>It becomes a stacking context: things like <code>z-index</code> will have an effect on the element, and children will be stacked according to the new context.</li>
+
+            <li>It becomes a new formatting context: a block level element will be treated as a new, independent layout environment. Layout outside of the element won’t typically affect the containing element's children.</li>
+          </ul>
+        </section>
+
+        <section id="size-1" class="level4">
+          <h4 class="sigil_not_in_toc">Size</h4>
+
+          <ul>
+            <li>It ensures you don’t rely on child elements for sizing, but by itself it doesn’t offer much performance benefit.</li>
+          </ul>
+        </section>
+      </section>
+
+      <section id="references-1" class="level3">
+        <h3 class="sigil_not_in_toc">References</h3>
+
+        <ul>
+          <li><a href="https://www.w3.org/TR/css-contain-1/">CSS Containment Module Level 1</a></li>
+
+          <li><a href="http://caniuse.com/#feat=css-containment">Can I Use</a></li>
+
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/contain">Mozilla Dev Network</a></li>
+
+          <li><a href="https://developers.google.com/web/updates/2016/06/css-containment">CSS Containment in Chrome 52</a></li>
+        </ul>
+      </section>
+    </section>
+  </section>
+</body>
+</html>

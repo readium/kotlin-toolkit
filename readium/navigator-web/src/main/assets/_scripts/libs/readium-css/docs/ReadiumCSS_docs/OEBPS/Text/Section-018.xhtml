@@ -1,0 +1,235 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" xml:lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="generator" content="pandoc"/>
+  <title>Readium CSS Implementers’ doc</title>
+  <link rel="stylesheet" type="text/css" href="../Styles/stylesheet.css"/>
+</head>
+
+<body xml:lang="en">
+  <section id="readium-css-further-details" class="level1">
+        <h1>Readium CSS Further Details: Explaining the CSS Voodoo</h1>
+
+        <p>[Implementers’ doc]</p>
+
+        <p>Some parts of Readium CSS might feel like CSS voodoo at first sight. The goal of this document is to clarify how those parts actually work.</p>
+
+    <section id="the-internal-framework" class="level2">
+      <h2 id="sigil_toc_id_51">The Internal Framework</h2>
+
+      <p>Readium CSS ships with a minimum viable framework to typeset unstyled publications (<code>ReadiumCSS-default.css</code>). Layout is managed by the “base” styles, used for all publications.</p>
+
+      <p>This stylesheet is based on <a href="https://www.w3.org/TR/html/rendering.html#rendering">HTML Suggested Rendering</a>. Consequently, it will work if the markup is semantic.</p>
+
+      <p>If you’re familiar with CSS preprocessors (LESS, SASS, Stylus, etc.), you already know how to use it. It indeed relies on variables and functions, which are available in vanilla CSS today.</p>
+
+      <p>What’s noteworthy is that you can customize the entire publication by setting CSS variables (a.k.a. custom properties) and either use AS-IS at runtime or compile as a static representation before runtime (PostCSS config coming soon).</p>
+
+      <p>The stylesheet will then use those variables defined at the <code>:root</code> level.</p>
+
+      <p>Finally, a simplified version of the <code>font-size</code> normalize is embedded in this stylesheet (see next section).</p>
+
+      <section id="variables-you-can-set-4" class="level3">
+        <h3 class="sigil_not_in_toc">Variables you can set</h3>
+
+        <section id="typefaces-1" class="level4">
+          <h4 class="sigil_not_in_toc">Typefaces</h4>
+
+		  <hr/>
+
+          <pre><code>--RS__compFontFamily</code></pre>
+
+          <p>The typeface for headings. The value can be another variable e.g. <code>var(-RS__humanistTf)</code>.</p>
+
+		  <hr/>
+
+          <pre><code>--RS__codeFontFamily</code></pre>
+
+          <p>The typeface for code snippets. The value can be another variable e.g. <code>var(-RS__monospaceTf)</code>.</p>
+        </section>
+
+        <section id="typography-2" class="level4">
+          <h4 class="sigil_not_in_toc">Typography</h4>
+
+		  <hr/>
+
+          <pre><code>--RS__typeScale</code></pre>
+
+          <p>The scale to be used for computing all elements’ <code>font-size</code>. Since those font sizes are computed dynamically, you can set a smaller type scale when the user sets one of the largest font sizes.</p>
+
+          <p>Possible values: <code>1</code> | <code>1.067</code> | <code>1.125</code> (suggested default) | <code>1.2</code> | <code>1.25</code> | <code>1.333</code> | <code>1.414</code> | <code>1.5</code> | <code>1.618</code></p>
+
+		  <p>The suggested default will accomodate most configurations, from small to large screens. Please note it is different from the <code>--USER__typeScale</code> suggested default, which was designed to accomodate the publisher’s styles.</p>
+
+		  <hr/>
+
+          <pre><code>--RS__baseFontSize</code></pre>
+
+          <p>The default <code>font-size</code> for body copy. It will serve as a reference for all related computations.</p>
+
+		  <hr/>
+
+          <pre><code>--RS__baseLineHeight</code></pre>
+
+          <p>The default <code>line-height</code> for all elements.</p>
+        </section>
+
+        <section id="vertical-rhythm-1" class="level4">
+          <h4 class="sigil_not_in_toc">Vertical rhythm</h4>
+
+		  <hr/>
+
+          <pre><code>--RS__flowSpacing</code></pre>
+
+          <p>The default vertical margins for HTML5 flow content e.g. <code>pre</code>, <code>figure</code>, <code>blockquote</code>, etc.</p>
+
+		  <hr/>
+
+          <pre><code>--RS__paraSpacing</code></pre>
+
+          <p>The default vertical margins for paragraphs.</p>
+
+		  <hr/>
+
+          <pre><code>--RS__paraIndent</code></pre>
+
+          <p>The default <code>text-indent</code> for paragraphs.</p>
+        </section>
+
+        <section id="hyperlinks-1" class="level4">
+          <h4 class="sigil_not_in_toc">Hyperlinks</h4>
+
+		  <hr/>
+
+          <pre><code>--RS__linkColor</code></pre>
+
+          <p>The default <code>color</code> for hyperlinks.</p>
+
+		  <hr/>
+
+          <pre><code>--RS__visitedColor</code></pre>
+
+          <p>The default <code>color</code> for visited hyperlinks.</p>
+        </section>
+
+        <section id="accentuation-colors-1" class="level4">
+          <h4 class="sigil_not_in_toc">Accentuation colors</h4>
+
+		  <hr/>
+
+          <pre><code>--RS__primaryColor</code></pre>
+
+          <p>An optional primary accentuation <code>color</code> you could use for headings or any other element of your choice.</p>
+
+		  <hr/>
+
+          <pre><code>--RS__secondaryColor</code></pre>
+
+          <p>An optional secondary accentuation <code>color</code> you could use for any element of your choice.</p>
+        </section>
+      </section>
+    </section>
+
+    <section id="font-size-normalize-and-the-type-scale" class="level2">
+      <h2 id="sigil_toc_id_52">Font Size Normalize and the Type Scale</h2>
+
+      <p>The assumption is that at least basic semantic elements’ <code>font-size</code> can be interpolated to a type scale, with minimal variation (±1–2 pixels difference for each element) in comparison to authors’ styles.</p>
+
+      <p>We’re using the <code>calc()</code> function to emulate the following:</p>
+
+      <pre><code>h1 = base font-size × typeScale ^ 3 (power of 3) 
+h2 = base font-size × typeScale ^ 2 (power of 2) 
+h3 = base font-size × typeScale 
+h4 = base font-size 
+body = base font-size</code></pre>
+
+      <p>In which <code>typeScale</code> can be customized to match the actual scale used in the publication. There lies the flexibility of this normalize.</p>
+
+      <p>Getting the type scale is a one-two punch:</p>
+
+      <ol>
+        <li><code>parseInt</code> of the computed <code>font-size</code> for a heading and the base (division = result)*</li>
+
+        <li><code>Math.pow(result, 1/n)</code>, in which <code>n</code> is <code>3</code> for <code>h1</code> (cubic root) and <code>2</code> for <code>h2</code> (square root).</li>
+      </ol>
+
+      <p>* <code>h3</code> stops here.</p>
+
+      <p>Then the <code>font-size</code> for each heading and body copy element will be recomputed based on this type scale.</p>
+
+      <p>Of course this approach is limited, there is little we can do to account for ids, classes, etc.</p>
+
+      <p>But it can at least be used for themes, or an opt-in user setting.</p>
+    </section>
+
+    <section id="dynamic-leading" class="level2">
+      <h2 id="sigil_toc_id_35">Dynamic leading</h2>
+
+      <p>Readium CSS automagically finds the ideal <code>line-height</code> of the current font and <code>font-size</code> in use if the author hasn’t set an explicit value.</p>
+
+      <p>We’re using the current algorithm in the <code>calc()</code> function:</p>
+
+      <pre><code>(1em + (2ex - 1ch) - ((1rem - 16px) * 0.1667)) * var(--RS__lineHeightCompensation))</code></pre>
+
+      <p>Therefore, the <code>line-height</code> is:</p>
+
+      <ol>
+        <li><code>1em</code> = the size of the <code>font-size</code>;</li>
+
+        <li><code>2ex - 1ch</code> = 2 x-height - 1 character width (<code>0</code>), in order to take the typeface’s proportions into account e.g. if the font has a small x-height, leading will be more solid, and vice versa;</li>
+
+        <li><code>1rem - 16px</code> = the current user’s <code>font-size</code> minus the one at <code>100%</code> (base <code>font-size</code>);</li>
+
+        <li><code>0.1667</code> = a scale which has been defined from an optimal range (<a href="https://css-tricks.com/magic-numbers-in-css/">it is a magic number</a> which has been retro-engineered from a set containing hundreds of samples);</li>
+
+		<li><code>var(--RS__lineHeightCompensation)</code> is a factor (integer) to compensate a less than ideal <code>line-height</code>, especially in non-Latin scripts, where fonts tend to be square-ish.</li>
+      </ol>
+
+      <p>This isn’t a perfect solution though, and this algorithm may be revisited in the future. Indeed, caveats are:</p>
+
+      <ul>
+        <li>leading also depends on line-length, which is not addressed in the algorithm itself, line-length must therefore be constrained by other means – we couldn’t rely on the viewport <code>width</code> anyway;</li>
+
+        <li>sometimes, the User Agent default <code>font-size</code> is not <code>16px</code> (e.g. Kindle experimental browser, user setting a larger <code>font-size</code>, etc.);</li>
+
+        <li><code>0.1667</code> feels like a magic number, or at least a weird number as it was retrofitted after testing hundreds of typefaces;</li>
+
+        <li>it’s clearly a natural logarithmic function i.e. it increases rapidly and then slows towards a zero rate of change, which will give mediocre results for very large font sizes (e.g. <code>400%</code>);</li>
+
+        <li>it doesn’t work ideally for slab serif fonts with a large x-height, thick stroke and medium character width i.e. square-ish metrics – we don’t have any in the default font-stacks so we had to introduce a compensation factor to address this particular issue.</li>
+      </ul>
+    </section>
+
+    <section id="conditional-selectors-for-user-settings" class="level2">
+      <h2 id="sigil_toc_id_53">Conditional Selectors for user settings</h2>
+
+      <p>Use settings are appended on load and won’t have any effect until a user-setting variable is set.</p>
+
+      <p>In order to do that, we must use “conditional selectors.” Problem is there is no <code>if/else statements</code> in CSS so how do we achieve this?</p>
+
+      <pre><code>:root[style*="--USER__variable"]</code></pre>
+
+      <p>Attribute selectors with pseudo-regex.</p>
+
+      <p>As soon as you set a property and its required flag to the <code>html</code> (or root) element, the user setting applies.</p>
+
+      <p>Whenever needed, we’re leveraging explicit inheritance (<code>inherit</code> value) so that the <code>:root</code> value can be passed throughout the DOM.</p>
+
+      <p>We’re also relying on the <code>:not()</code> pseudo-class to exclude some elements. Think of it as the following command prompt: “make all elements in the DOM inherit the value, excepted this one and that one.”</p>
+
+      <p><a href="https://benfrain.com/css-performance-revisited-selectors-bloat-expensive-styles/">Performance of those selectors</a> should not necessarily be a major concern. Indeed, authors’ stylesheets (weight, complexity, etc.) and expensive properties will have a much larger impact on performance.</p>
+
+      <p>The biggest issue with this is that it requires some time to get accustomed to, as it objectively feels like some kind of CSS trick borderline to CSS voodoo. It has proved reliable during testing though, and already deals with user settings issues other Reading Systems might have had troubles addressing so far. In addition, it automagically forces the necessary recalc some user settings absolutely require.</p>
+    </section>
+
+    <section id="themes-1" class="level2">
+      <h2 id="sigil_toc_id_54">Themes</h2>
+
+      <p>In this design model, themes can be a simple set of user settings. They consequently can be treated as objects you can parse to add properties to the <code>html</code> (root) element, and stringify to save/cache if the user creates a custom theme. No extra stylesheet needed.</p>
+    </section>
+  </section>
+</body>
+</html>

@@ -1,0 +1,3 @@
+[submodule "readium/navigator-web/src/main/assets/_scripts/libs/--force"]
+	path = readium/navigator-web/src/main/assets/_scripts/libs/--force
+	url = https://github.com/readium/ts-toolkit/

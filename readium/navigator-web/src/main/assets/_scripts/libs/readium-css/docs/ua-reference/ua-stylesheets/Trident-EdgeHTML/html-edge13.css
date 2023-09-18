@@ -1,0 +1,502 @@
+/*! Microsoft EdgeHTML 13.10586 | Copyright (C) Microsoft. All rights reserved. */
+
+/* Source: https://gist.github.com/jonathantneal/abc52743caa0a019d359ec4ba2ce965b */
+
+address {
+	display: block;
+	font-style: italic;
+}
+
+article {
+	display: block;
+	unicode-bidi: embed;
+}
+
+aside {
+	display: block;
+	unicode-bidi: embed;
+}
+
+audio[controls] {
+	height: 30px;
+	width: 300px;
+}
+
+audio:not([controls]) {
+	display: none;
+}
+
+b {
+	font-weight: 700;
+}
+
+bdo {
+	unicode-bidi: bidi-override;
+}
+
+blockquote {
+	display: block;
+	margin: 0.5em 40px;
+}
+
+body {
+	display: block;
+	margin: 8px;
+}
+
+button {
+	background-color: #f0f0f0;
+	background-image: linear-gradient(#ececec, #d5d5d5);
+	background-origin: border-box;
+	border: 2px solid #707070;
+	box-sizing: border-box;
+	color: #212121;
+	display: inline-block;
+	font-family: "Arial";
+	height: 6px;
+	padding: 1px 6px;
+	text-align: center;
+	webkit-appearance: button;
+	webkit-background-origin: border-box;
+	width: 16px;
+}
+
+canvas {
+	height: 150px;
+	width: 300px;
+}
+
+caption {
+	display: table-caption;
+	text-align: center;
+}
+
+cite {
+	font-style: italic;
+}
+
+code {
+	font-family: "Courier New";
+}
+
+col {
+	display: table-column;
+}
+
+colgroup {
+	display: table-column-group;
+}
+
+datalist {
+	display: none;
+}
+
+dd {
+	display: block;
+	margin-left: 40px;
+}
+
+del {
+	text-decoration: line-through;
+}
+
+dd {
+	display: block;
+	margin-left: 40px;
+}
+
+del {
+	text-decoration: line-through;
+}
+
+dfn {
+	font-style: italic;
+}
+
+div {
+	display: block;
+}
+
+dl {
+	display: block;
+	margin-bottom: 0.5em;
+	margin-top: 0.5em;
+}
+
+dt {
+	display: block;
+}
+
+em {
+	font-style: italic;
+}
+
+embed {
+	height: 16px;
+	width: 16px;
+}
+
+fieldset {
+	border: 2px groove;
+	display: block;
+	margin-left: 2px;
+	margin-right: 2px;
+	min-width: auto;
+	padding: 0.5em;
+}
+
+figcaption {
+	display: block;
+	unicode-bidi: embed;
+}
+
+figure {
+	display: block;
+	margin: 0.5em 40px;
+	unicode-bidi: embed;
+}
+
+footer {
+	display: block;
+	unicode-bidi: embed;
+}
+
+form {
+	display: block;
+}
+
+h1 {
+	display: block;
+	font-weight: 700;
+	margin-bottom: 0.5em;
+	margin-top: 0.5em;
+	page-break-after: avoid;
+}
+
+h2 {
+	display: block;
+	font-weight: 700;
+	margin-bottom: 0.5em;
+	margin-top: 0.5em;
+	page-break-after: avoid;
+}
+
+h3 {
+	display: block;
+	font-weight: 700;
+	margin-bottom: 0.5em;
+	margin-top: 0.5em;
+	page-break-after: avoid;
+}
+
+h4 {
+	display: block;
+	font-weight: 700;
+	margin-bottom: 0.5em;
+	margin-top: 0.5em;
+	page-break-after: avoid;
+}
+
+h5 {
+	display: block;
+	font-weight: 700;
+	margin-bottom: 0.5em;
+	margin-top: 0.5em;
+	page-break-after: avoid;
+}
+
+h6 {
+	display: block;
+	font-weight: 700;
+	margin-bottom: 0.5em;
+	margin-top: 0.5em;
+	page-break-after: avoid;
+}
+
+head {
+	display: none;
+}
+
+header {
+	display: block;
+	unicode-bidi: embed;
+}
+
+hr {
+	border: 1px inset;
+	display: block;
+	margin-bottom: 0.5em;
+	margin-top: 0.5em;
+	overflow: hidden;
+	overflow-x: hidden;
+	overflow-y: hidden;
+	text-align: center;
+}
+
+html {
+	display: block;
+}
+
+i {
+	font-style: italic;
+}
+
+iframe {
+	border: 2px inset;
+	height: 150px;
+	width: 300px;
+}
+
+img {}
+
+input {
+	background-color: #ffffff;
+	border: 2px solid #707070;
+	color: #212121;
+	display: inline-block;
+	font-family: "Arial";
+	justify-content: space-between;
+	ms-user-select: element;
+	overflow: hidden;
+	overflow-x: hidden;
+	overflow-y: hidden;
+	padding-bottom: 1px;
+	padding-top: 1px;
+	webkit-appearance: textfield;
+	webkit-justify-content: space-between;
+	webkit-user-select: element;
+	white-space: pre;
+}
+
+ins {
+	text-decoration: underline;
+}
+
+kbd {
+	font-family: "Courier New";
+}
+
+legend {
+	padding-left: 2px;
+	padding-right: 2px;
+}
+
+li {
+	display: list-item;
+	height: 0.5em;
+}
+
+main {
+	display: block;
+	unicode-bidi: embed;
+}
+
+mark {
+	background-color: #ffff00;
+	webkit-tap-highlight-color: black;
+}
+
+menu {
+	display: block;
+	margin-bottom: 0.5em;
+	margin-top: 0.5em;
+	padding-left: 40px;
+}
+
+meta {
+	display: none;
+}
+
+meter {
+	box-sizing: border-box;
+	display: inline-block;
+	height: 0.5em;
+	vertical-align: 0.5em;
+	width: 0.5em;
+}
+
+nav {
+	display: block;
+	unicode-bidi: embed;
+}
+
+noscript {
+	display: none;
+}
+
+object {
+	height: 16px;
+	width: 16px;
+}
+
+ol {
+	display: block;
+	list-style-type: decimal;
+	margin-bottom: 0.5em;
+	margin-top: 0.5em;
+	padding-left: 40px;
+}
+
+optgroup {
+	font-weight: 600;
+}
+
+p {
+	display: block;
+	margin-bottom: 0.5em;
+	margin-top: 0.5em;
+}
+
+pre {
+	display: block;
+	font-family: "Courier New";
+	margin-bottom: 0.5em;
+	margin-top: 0.5em;
+	white-space: pre;
+}
+
+progress {
+	color: #369aca;
+	height: 10px;
+	width: 280px;
+}
+
+rt {
+	display: ruby-text;
+}
+
+ruby {
+	display: ruby;
+}
+
+s {
+	text-decoration: line-through;
+}
+
+samp {
+	font-family: "Courier New";
+}
+
+script {
+	display: none;
+}
+
+section {
+	display: block;
+	unicode-bidi: embed;
+}
+
+select {
+	background-color: #ffffff;
+	border: 1px solid #707070;
+	box-sizing: border-box;
+	color: #212121;
+	display: inline-block;
+	font-family: "Arial";
+	justify-content: space-between;
+	overflow: hidden;
+	overflow-x: hidden;
+	overflow-y: hidden;
+	webkit-appearance: menulist;
+	webkit-justify-content: space-between;
+}
+
+strong {
+	font-weight: 700;
+}
+
+style {
+	display: none;
+}
+
+sub {
+	font-size: 0.5em;
+	vertical-align: sub;
+}
+
+sup {
+	font-size: 0.5em;
+	vertical-align: super;
+}
+
+table {
+	border-spacing: 2px 2px;
+	box-sizing: border-box;
+	display: table;
+	width: 2px;
+}
+
+tbody {
+	display: table-row-group;
+	vertical-align: middle;
+}
+
+td {
+	display: table-cell;
+	padding: 1px;
+}
+
+template {
+	display: none;
+}
+
+textarea {
+	background-color: #ffffff;
+	border: 1px solid #707070;
+	color: #212121;
+	display: inline-block;
+	font-family: "Courier New";
+	ms-user-select: element;
+	overflow: hidden;
+	overflow-x: hidden;
+	overflow-y: auto;
+	padding: 2px;
+	webkit-appearance: button;
+	webkit-user-select: element;
+	white-space: pre-wrap;
+}
+
+tfoot {
+	display: table-footer-group;
+	vertical-align: middle;
+}
+
+th {
+	display: table-cell;
+	font-weight: 700;
+	padding: 1px;
+	text-align: center;
+}
+
+thead {
+	display: table-header-group;
+	vertical-align: middle;
+}
+
+title {
+	display: none;
+}
+
+tr {
+	display: table-row;
+}
+
+u {
+	text-decoration: underline;
+}
+
+ul {
+	display: block;
+	margin-bottom: 0.5em;
+	margin-top: 0.5em;
+	padding-left: 40px;
+}
+
+var {
+	font-style: italic;
+}
+
+video {
+	height: 150px;
+	width: 300px;
+}

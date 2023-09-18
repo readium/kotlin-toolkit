@@ -1,0 +1,252 @@
+/* HTML5 Suggested rendering versus Edge UA Stylesheet (version 40 — Win10)
+
+   Source: https://www.w3.org/TR/html5/rendering.html */
+
+@namespace url(http://www.w3.org/1999/xhtml);
+
+/* 015 
+   Button */
+  
+button { 
+  -webkit-appearance: button;
+  display: inline-block;
+  font-size: smaller;
+  font-family: MS Shell Dlg;
+  display: inline-block;
+  border: 2px solid rgb(112, 112, 112);
+  background-color: rgb(240, 240, 240);
+  background-image: linear-gradient(rgb(236, 236, 236), rgb(213, 213, 213));
+  color: rgb(33, 33, 33);
+  padding: 1px 6px;
+  text-align: center;
+  text-indent: 0px;
+  box-sizing: border-box;
+}
+
+/* 016 
+   Input as text entry */
+
+input {
+  -webkit-appearance: textfield;
+  display: inline-block;
+  -webkit-user-select: element;
+  font-size: smaller;
+  font-family: MS Shell Dlg;
+  border: 2px solid rgb(112, 112, 112);
+  background-color: rgb(255, 255, 255);
+  color: rgb(33, 33, 33);
+  padding: 1px 0;
+  text-align: left;
+  justify-content: space-between;
+  overflow: hidden;
+  text-indent: 0px;
+  white-space: pre;
+}
+
+input[type=search i] {
+  box-sizing: border-box;
+}
+
+input[type=password i] { 
+
+}
+
+/* 017 
+   Input as domain specific widget */
+
+input[type=date i] { 
+  font-family: monospace;
+  padding: 0 0 0 1px;
+  white-space: pre-wrap;
+}
+
+input[type=time i] { 
+  font-family: monospace;
+  padding: 0 0 0 1px;
+  white-space: pre-wrap;
+}
+
+input[type=number i] { 
+
+}
+
+/* 018 
+   Input as range control */
+
+input[type=range i] { 
+  -webkit-appearance: slider-horizontal;
+  font-size: medium;
+  font-family: Times New Roman;
+  border: none;
+  background-color: transparent;
+  padding: 0;
+  text-align: left;
+  margin: 2px;
+  overflow: visible;
+  justify-content: flex-start;
+}
+
+/* 019 
+   Input as color well */
+
+input[type=color i] {
+  -webkit-appearance: square-button;
+  font-family: monospace;
+  border: 1px solid rgb(112, 112, 112);
+  background-image: linear-gradient(rgb(236, 236, 236), rgb(213, 213, 213));
+  padding: 1px 2px;
+  -webkit-user-select: none;
+  justify-content: flex-start;
+  white-space: pre-wrap;
+}
+
+/* 020 
+   Input as checkbox and radio */
+
+input[type=checkbox i] {
+  -webkit-appearance: checkbox;
+  font-size: medium;
+  font-family: Times New Roman;
+  border: none;
+  background-color: transparent;
+  color: black;
+  width: 13px;
+  height: 13px;
+  margin: 3px 3px 3px 4px;
+  padding: 0;
+  justify-content: center;
+  overflow: visible;
+  white-space: normal;
+}
+
+input[type=radio i] {   
+  -webkit-appearence: radio;
+  font-size: medium;
+  font-family: Times New Roman;
+  border: none;
+  background-color: transparent;
+  color: black;
+  width: 13px;
+  height: 13px;
+  margin: 3px 3px 3px 4px;
+  padding: 0;
+  justify-content: center;
+  overflow: visible;
+  white-space: normal;
+  box-sizing: border-box;
+}
+
+/* 021 
+   Input as file upload */
+
+input[type=file i] {
+  -webkit-appearance: none;
+  background-color: rgb(240, 240, 240);
+  color: black;
+  border: none;
+  padding: 0;
+}
+
+/* 022 
+   Input as button */
+
+input[type=submit i], input[type=reset i], input[type=button i] {
+  -webkit-appearance: push-button;
+  background-color: rgb(240, 240, 240);
+  background-image: linear-gradient(rgb(236, 236, 236), rgb(213, 213, 213));
+  padding: 1px 6px;
+  text-align: center;
+  justify-content: flex-start;
+  box-sizing: border-box;
+}
+
+/* 023 
+   Marquee */
+
+marquee { 
+
+}
+
+/* 024 
+   Meter */
+
+meter {
+  -webkit-appearance: none;
+  -webkit-user-select: text;
+  display: inline-block;
+  font-size: medium;
+  font-family: Times New Roman;
+  border: none;
+  background-color: transparent;
+  box-sizing: border-box;
+  overflow: visible;
+  text-indent: 0;
+  vertical-align: -3.2px;
+  width: 80px;
+  height: 16px;
+}
+
+/* 025 
+   Progress */
+
+progress {
+  -webkit-appearance: none;
+  -webkit-user-select: text;
+  font-size: medium;
+  font-family: Times New Roman;
+  border: none;
+  background-color: rgb(213, 213, 213);
+  color: rgb(54, 154, 202);
+  overflow: visible;
+  white-space: normal;
+  text-indent: 0;
+  padding: 0;
+  width: 280px;
+  height: 10px;
+}
+
+/* 026 
+   Select */
+
+select { 
+  -webkit-appearance: menulist;
+  -webkit-user-select: none;
+  display: inline-block;
+  justify-content: space-between;
+  font-size: smaller;
+  font-family: MS Shell Dlg;
+  border: 1px solid rgb(112, 112, 112);
+  background-color: rgb(255, 255, 255);
+  color: rgb(33, 33, 33);
+  box-sizing: border-box;
+  overflow: hidden;
+  text-indent: 0;
+}
+
+/* 027 
+   Textarea */
+
+textarea { 
+  white-space: pre-wrap; 
+  -webkit-appearance: button;
+  -webkit-user-select: element;
+  display: inline-block;
+  font-family: monospace;
+  padding: 2px;
+  border: 1px solid rgb(112, 112, 112);
+  background-color: rgb(255, 255, 255);
+  color: rgb(33, 33, 33);
+  overflow: hidden;
+  text-indent: 0;
+}
+
+/* 028 
+   Keygen */
+
+/* Not implemented */
+keygen { 
+
+}
+
+/* 029 
+   Frame and framesets */

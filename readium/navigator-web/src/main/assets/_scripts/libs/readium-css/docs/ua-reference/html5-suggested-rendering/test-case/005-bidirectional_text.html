@@ -1,0 +1,127 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Bidirectional text</title>
+  </head>
+  <body>
+    <section id="left-to-right" dir="ltr">
+      <p>Test Paragraph with a <bdi dir="rtl">التنزيلات</bdi> inside.</p>
+
+      <p><bdo dir="rtl">Test Paragraph with a bdo tag.</bdo></p>
+    </section>
+
+    <section id="right-to-left" dir="rtl">
+      <p>يستخدم المشروع نظام إدارة الإصدارات <bdi dir="ltr">GIT</bdi> لتنظيم الكود المصدري، يمكن الحصول آخر الملفات التطويرية من صفحة إدارة الإصدارات.</p>
+
+      <p><bdo dir="ltr">يستخدم المشروع نظام إدارة الإصدارات لتنظيم الكود المصدري، يمكن الحصول آخر الملفات التطويرية من صفحة إدارة الإصدارات.</bdo></p>
+
+      <input type="tel" dir="ltr" />
+    </section>
+
+    <article>
+      <main>
+        <header>
+          <h1>Heading 1</h1>
+
+          <p>With a lede</p>
+
+          <nav>
+            <ul>
+              <li>List item</li>
+              <li>List item</li>
+            </ul>
+          </nav>
+        </header>
+
+        <blockquote>
+          <p>Blockquote</p>
+        </blockquote>
+
+        <h2>Heading 2</h2>
+
+        <dl>
+          <dt>Definition term</dt>
+          <dd>Definition</dd>
+        </dl>
+
+        <h3>Heading 3</h3>
+
+        <ol>
+          <li>List item</li>
+          <li>List item</li>
+        </ol>
+
+        <h4>Heading 4</h4>
+
+        <table>
+          <colgroup>
+            <col class="col1"> 
+            <col class="col2" span="2">
+          </colgroup>
+          <caption>Table caption</caption>
+          <thead>
+            <tr>
+              <th>Header 1</th>
+              <th>Header 2</th>
+              <th>Header 3</th>
+            </tr>
+          </thead>
+          <tfoot>
+            <tr>
+              <td>Footer 1</td>
+              <td>Footer 2</td>
+              <td>Footer 3</td>
+            </tr>
+          </tfoot>
+          <tbody>
+            <tr>
+              <td>Data 1</td>
+              <td>Data 2</td>
+              <td>Data 3</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h5>Heading 5</h5>
+
+        <pre>
+          Preformatted text
+        </pre>
+
+        <h6>Heading 6</h6>
+
+        <pre dir="auto">
+          Preformatted text with auto dir
+        </pre>
+
+        <hr />
+
+        <div>Division</div>
+
+        <aside>Aside</aside>
+
+        <form>
+          <fieldset>
+            <legend>Form with legend</legend>
+            <textarea dir="auto"></textarea>
+            <input type="text" dir="auto" />
+            <input type="search" dir="auto" />
+            <input type="tel" dir="auto" />
+            <input type="url" dir="auto" />
+            <input type="email" dir="auto" />
+          </fieldset>
+        </form>
+
+        <figure>
+          <img alt="" src="media/img.jpg" />
+          <figcaption>figcaption</figcaption>
+        </figure>
+
+        <footer>
+          footer
+          <address>Address</address>
+        </footer>
+      </main>
+    </article>
+  </body>
+</html>

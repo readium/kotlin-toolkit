@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" xml:lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="generator" content="pandoc"/>
+  <title>Readium CSS Implementers’ doc</title>
+  <link rel="stylesheet" type="text/css" href="../Styles/stylesheet.css"/>
+</head>
+
+<body xml:lang="en">
+  <section id="user-overrides-classification" class="level1">
+    <h1>User Overrides’ Classification</h1>
+
+    <p>[Implementers’ doc] [Authors’ info]</p>
+
+    <p>In order to help you manage user settings, we defined 4 types of overrides:</p>
+
+    <ol>
+      <li>chrome (UI);</li>
+
+      <li>chrome advanced;</li>
+
+      <li>user overrides;</li>
+
+      <li>user overrides advanced.</li>
+    </ol>
+
+    <p>Those types can help you decide which settings should be applied to every book, which should be implemented based on your UX approach or the first to be displayed in the customization panel, etc.</p>
+
+    <section id="chrome" class="level2">
+      <h2 id="sigil_toc_id_139">Chrome</h2>
+
+      <p>The following settings are required and should be applied by any means necessary:</p>
+
+      <ul>
+        <li>reading modes;</li>
+
+        <li>paged/scrolled view.</li>
+      </ul>
+    </section>
+
+    <section id="chrome-advanced" class="level2">
+      <h2 id="sigil_toc_id_173">Chrome advanced</h2>
+
+      <p>The following settings are optional but should be applied by any means necessary, without any flag, if they are provided to users:</p>
+
+      <ul>
+        <li>number of columns;</li>
+
+        <li>page margins;</li>
+
+        <li>custom reading modes (background and text color);</li>
+
+        <li>filters (darken and invert for night mode).</li>
+      </ul>
+    </section>
+
+    <section id="user-overrides" class="level2">
+      <h2 id="sigil_toc_id_174">User overrides</h2>
+
+      <p>The following settings are required and should be applied with their required flag by any means necessary:</p>
+
+      <ul>
+        <li>font-family (requires <code>:--font-overide</code> flag);</li>
+
+        <li>font-size (requires <code>:--advanced-settings</code> flag).</li>
+      </ul>
+    </section>
+
+    <section id="user-overrides-advanced" class="level2">
+      <h2 id="sigil_toc_id_175">User overrides advanced</h2>
+
+      <p>The following settings are optional but should be applied by any means necessary, with the <code>:--advanced-setting</code> flag, if they are provided to users:</p>
+
+      <ul>
+        <li>line-height;</li>
+
+        <li>text-align and hyphens (those two should probably work together);</li>
+
+        <li>paragraph spacing;</li>
+
+        <li>paragraph indent;</li>
+
+        <li>letter-spacing;</li>
+
+        <li>word-spacing;</li>
+
+        <li>arabic ligatures;</li>
+
+        <li>accessibility normalization;</li>
+
+        <li>type scale.</li>
+      </ul>
+
+      <p>Please note this classification might change and additional items be added in the future.</p>
+    </section>
+  </section>
+</body>
+</html>

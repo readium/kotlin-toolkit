@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" xml:lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="generator" content="pandoc"/>
+  <title>Readium CSS Implementers’ doc</title>
+  <link rel="stylesheet" type="text/css" href="../Styles/stylesheet.css"/>
+</head>
+
+<body xml:lang="en">
+  <section id="reflow-requirements" class="level1">
+        <h1>Reading Systems Requirements for reflowable text</h1>
+
+        <p>[Implementers’ doc] [Authors’ doc]</p>
+
+        <p>Source: <a href="https://w3c.github.io/publ-epub-revision/epub32/spec/epub-contentdocs.html#sec-css">EPUB Content Documents 3.2</a></p>
+
+        <p>There’s a few criteria Reading Systems must meet in order to be conformant:</p>
+
+        <ul>
+          <li>it must support the official definition of CSS as described in the <a href="https://www.w3.org/TR/CSS/">W3C CSS Snapshot</a>;</li>
+
+          <li>it must support all <code>-epub-</code> prefixed properties (<a href="https://w3c.github.io/publ-epub-revision/epub32/spec/epub-contentdocs.html#sec-css-prefixed">list</a>).</li>
+        </ul>
+
+        <p>In addition:</p>
+
+        <ul>
+          <li>it should support all applicable modules in CSS Snapshot which have reached at least Candidate Recommendation status and are widely implemented;</li>
+
+          <li>its user agent stylesheet should support <a href="https://www.w3.org/TR/html/rendering.html#rendering">HTML Suggested Rendering</a>;</li>
+
+          <li>it should respect authors CSS and user styles as defined in <a href="https://www.w3.org/TR/html/rendering.html#rendering">Reading System overrides</a>.</li>
+        </ul>
+
+    <section id="css-snapshot" class="level2">
+      <h2 id="sigil_toc_id_20">CSS Snapshot</h2>
+
+      <p>Since we’re relying on web browsers’ rendering engine and web views, this should not be an issue. Our main concern should be future-proofing Readium CSS to stay up-to-date with current/modern CSS authoring (cf. <a href="https://github.com/readium/readium-css/issues/12">issue #12</a>)</p>
+    </section>
+
+    <section id="prefixed-properties" class="level2">
+      <h2 id="sigil_toc_id_21">Prefixed properties</h2>
+
+      <p>Blink and Webkit rendering engines may support some but it is unclear how we can be 100% conformant there, as it would require parsing the CSS to replace <code>-epub-properties</code> with the standard ones if the author has not used them.</p>
+
+      <p>As a matter of fact,</p>
+
+      <blockquote>
+        <p>Authors are advised to use CSS-native solutions for the removed properties where and when they are available.</p>
+      </blockquote>
+
+      <p>and,</p>
+
+      <blockquote>
+        <p>Authors currently using these prefixed properties are advised to move to unprefixed versions as soon as support allows.</p>
+      </blockquote>
+
+      <p>Proposal: let the rendering engine/web view deal with this. We don’t have Houdini yet and <a href="https://philipwalton.com/articles/the-dark-side-of-polyfilling-css/">parsing CSS is a heavy process</a> altering performance pretty badly.</p>
+    </section>
+
+    <section id="html-suggested-rendering" class="level2">
+      <h2 id="sigil_toc_id_22">HTML Suggested Rendering</h2>
+
+      <p>We made sure we can rely on UA Stylesheets and have created a patch for paged views.</p>
+
+      <p>The patch deals with:</p>
+
+      <ul>
+        <li>fragmentation (widows, orphans, page breaks);</li>
+
+        <li>hyphenation;</li>
+
+        <li>open type features;</li>
+
+        <li>borders;</li>
+
+        <li>horizontal spacing;</li>
+
+        <li>little normalization between UA stylesheets.</li>
+      </ul>
+
+      <p>It doesn’t change the nature of HTML Suggested Rendering though, it only builds on it for EPUB rendering (adjustments).</p>
+    </section>
+
+    <section id="reading-system-overrides" class="level2">
+      <h2 id="sigil_toc_id_23">Reading System Overrides</h2>
+
+      <p>What’s important:</p>
+
+      <ul>
+        <li>users should be able to override authors’ styles as desired;</li>
+
+        <li>reading systems should not override authors’ styles unless strictly necessary, in a way that preserves the Cascade.</li>
+      </ul>
+
+      <p>We meet both requirements by default.</p>
+
+      <p>As regards the cascade, the following list is the priority order we should emulate:</p>
+
+      <ol>
+        <li>important user agent declarations;</li>
+
+        <li>important user declarations;</li>
+
+        <li>important author declarations;</li>
+
+        <li>normal author declarations;</li>
+
+        <li>normal user declarations;</li>
+
+        <li>normal user agent declarations.</li>
+      </ol>
+
+      <p>Most user declarations have to use <code>!important</code> to make sure they are applied, which is conformant. However, we try to manage “normal author declarations” by carefully targeting selectors for each user setting.</p>
+
+      <p>Few user agent declarations have to use <code>!important</code> as well, in order to make sure the EPUB file displays as expected (pagination, page margins, etc.). In other words, those overrides are strictly necessary.</p>
+
+      <p>Please make sure to check the “<a href="../Text/Section-014.xhtml">CSS User Setting Recommendations</a>” and “<a href="../Text/Section-006.xhtml">Stylesheets Order</a>” to manage overrides as best as possible.</p>
+    </section>
+
+    <section id="notes-2" class="level2">
+      <h2 id="sigil_toc_id_24">Notes</h2>
+
+      <p>A conformant author’s stylesheet must not:</p>
+
+      <ul>
+        <li>use the <code>direction</code> property;</li>
+
+        <li>use the <code>unicode-bidi</code> property.</li>
+      </ul>
+    </section>
+  </section>
+</body>
+</html>
