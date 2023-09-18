@@ -196,7 +196,9 @@ internal sealed class MetadataItem {
         val rels: Set<String>,
         val mediaType: MediaType?,
         val properties: List<String> = emptyList()
-    ) : MetadataItem()
+    ) : MetadataItem() {
+        fun url(): Url = href.resolve()
+    }
 
     data class Meta(
         override val id: String?,

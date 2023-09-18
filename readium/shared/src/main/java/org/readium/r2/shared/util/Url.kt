@@ -54,14 +54,13 @@ public sealed class Url : Parcelable {
     /**
      * Decoded path segments identifying a location.
      */
-    public val path: String
-        get() = uri.path!!
+    public abstract val path: String?
 
     /**
      * Decoded filename portion of the URL path.
      */
     public val filename: String?
-        get() = if (path.endsWith("/")) {
+        get() = if (path?.endsWith("/") == true) {
             null
         } else {
             uri.lastPathSegment
@@ -235,13 +234,16 @@ public class AbsoluteUrl private constructor(override val uri: Uri) : Url() {
             tryOrNull {
                 require(uri.isAbsolute)
                 require(uri.isHierarchical)
-                requireNotNull(uri.path)
+                require(!uri.path.isNullOrBlank())
                 AbsoluteUrl(uri)
             }
     }
 
     public override fun resolve(url: Url): AbsoluteUrl =
         super.resolve(url) as AbsoluteUrl
+
+    public override val path: String
+        get() = uri.path!!
 
     /**
      * Identifies the type of URL.
@@ -298,6 +300,9 @@ public class RelativeUrl private constructor(override val uri: Uri) : Url() {
                 RelativeUrl(uri)
             }
     }
+
+    override val path: String?
+        get() = uri.path?.takeUnless { it.isBlank() }
 }
 
 public fun File.toUrl(): AbsoluteUrl =

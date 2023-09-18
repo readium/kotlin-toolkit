@@ -83,6 +83,16 @@ public data class Link(
     )
 
     /**
+     * Returns the URL represented by this link's HREF, resolved to the given [base] URL.
+     *
+     * If the HREF is a template, the [parameters] are used to expand it according to RFC 6570.
+     */
+    public fun url(
+        base: Url? = null,
+        parameters: Map<String, String> = emptyMap()
+    ): Url = href.resolve(base, parameters)
+
+    /**
      * List of URI template parameter keys, if the [Link] is templated.
      */
     @IgnoredOnParcel
@@ -96,8 +106,8 @@ public data class Link(
      * See RFC 6570 on URI template.
      */
     @Deprecated(
-        "Use `href(parameters)` instead",
-        ReplaceWith("href(parameters = parameters)"),
+        "Use `url(parameters)` instead",
+        ReplaceWith("this.url(parameters = parameters)"),
         level = DeprecationLevel.ERROR
     )
     @Suppress("UNUSED_PARAMETER")
@@ -110,8 +120,8 @@ public data class Link(
      * If the link's [href] is already absolute, the [baseUrl] is ignored.
      */
     @Deprecated(
-        "Use `href.toUrl(baseUr)` instead",
-        ReplaceWith("href.toUrl(baseUrl)"),
+        "Use `url(baseUrl)` instead",
+        ReplaceWith("this.url(baseUrl)"),
         level = DeprecationLevel.ERROR
     )
     @Suppress("UNUSED_PARAMETER")
@@ -230,13 +240,13 @@ public data class Link(
  * Returns the first [Link] with the given [href], or null if not found.
  */
 public fun List<Link>.indexOfFirstWithHref(href: Url): Int? =
-    indexOfFirst { it.href() == href }
+    indexOfFirst { it.url() == href }
         .takeUnless { it == -1 }
 
 /**
  * Finds the first link matching the given HREF.
  */
-public fun List<Link>.firstWithHref(href: Url): Link? = firstOrNull { it.href() == href }
+public fun List<Link>.firstWithHref(href: Url): Link? = firstOrNull { it.url() == href }
 
 /**
  * Finds the first link with the given relation.

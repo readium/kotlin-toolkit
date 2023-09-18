@@ -588,7 +588,7 @@ public class EpubNavigatorFragment internal constructor(
             val page = resources.withIndex().firstOrNull { (_, res) ->
                 when (res) {
                     is PageResource.EpubReflowable ->
-                        res.link.href() == href
+                        res.link.url() == href
                     is PageResource.EpubFxl ->
                         res.leftUrl?.toString()?.endsWith(href.toString()) == true || res.rightUrl?.toString()?.endsWith(
                             href.toString()
@@ -944,7 +944,7 @@ public class EpubNavigatorFragment internal constructor(
         adapter.mFragments.forEach { _, fragment ->
             val pageFragment = fragment as? R2EpubPageFragment ?: return@forEach
             val link = pageFragment.link ?: return@forEach
-            if (link.href() == href) {
+            if (link.url() == href) {
                 return pageFragment
             }
         }
@@ -968,7 +968,7 @@ public class EpubNavigatorFragment internal constructor(
         val resource = publication.readingOrder[resourcePager.currentItem]
         return currentReflowablePageFragment?.webView?.findFirstVisibleLocator()
             ?.copy(
-                href = resource.href(),
+                href = resource.url(),
                 mediaType = resource.mediaType ?: MediaType.XHTML
             )
     }
@@ -1033,13 +1033,13 @@ public class EpubNavigatorFragment internal constructor(
                     "Expected EpubFxl or EpubReflowable page resources"
                 )
             }
-            val positionLocator = publication.positionsByResource[link.href()]?.let { positions ->
+            val positionLocator = publication.positionsByResource[link.url()]?.let { positions ->
                 val index = ceil(progression * (positions.size - 1)).toInt()
                 positions.getOrNull(index)
             }
 
             val currentLocator = Locator(
-                href = link.href(),
+                href = link.url(),
                 mediaType = link.mediaType ?: MediaType.XHTML,
                 title = tableOfContentsTitleByHref[link.href] ?: positionLocator?.title ?: link.title,
                 locations = (positionLocator?.locations ?: Locator.Locations()).copy(

@@ -127,7 +127,14 @@ public class Publication(
     public val baseUrl: Url?
         get() = links.firstWithRel("self")?.href
             ?.takeUnless { it.isTemplated }
-            ?.toUrl()
+            ?.resolve()
+
+    /**
+     * Returns the URL to the resource represented by the given [locator], relative to the
+     * publication's link with `self` relation.
+     */
+    public fun url(locator: Locator): Url =
+        baseUrl?.let { locator.href.resolve(it) } ?: locator.href
 
     /**
      * Returns the URL to the resource represented by the given [link], relative to the
@@ -136,7 +143,16 @@ public class Publication(
      * If the link HREF is a template, the [parameters] are used to expand it according to RFC 6570.
      */
     public fun url(link: Link, parameters: Map<String, String> = emptyMap()): Url =
-        link.href(baseUrl, parameters = parameters)
+        url(link.href, parameters)
+
+    /**
+     * Returns the URL to the resource represented by the given [href], relative to the
+     * publication's link with `self` relation.
+     *
+     * If the HREF is a template, the [parameters] are used to expand it according to RFC 6570.
+     */
+    public fun url(href: Href, parameters: Map<String, String> = emptyMap()): Url =
+        href.resolve(baseUrl, parameters = parameters)
 
     /**
      * Returns whether this publication conforms to the given Readium Web Publication Profile.
@@ -176,7 +192,7 @@ public class Publication(
      * Returns the resource targeted by the given non-templated [link].
      */
     public fun get(link: Link): Resource =
-        get(link.href(), link.mediaType)
+        get(link.url(), link.mediaType)
 
     /**
      * Returns the resource targeted by the given [href].

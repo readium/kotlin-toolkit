@@ -17,7 +17,7 @@ public class ContainerMediaTypeSnifferContent(
 ) : ContainerMediaTypeSnifferContent {
 
     override suspend fun entries(): Set<String>? =
-        container.entries()?.map { it.url.path }?.toSet()
+        container.entries()?.mapNotNull { it.url.path }?.toSet()
 
     override suspend fun read(path: String, range: LongRange?): ByteArray? =
         Url.fromDecodedPath(path)?.let { url ->

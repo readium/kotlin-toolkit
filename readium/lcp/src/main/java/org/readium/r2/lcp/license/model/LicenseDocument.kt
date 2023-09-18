@@ -73,7 +73,7 @@ public class LicenseDocument internal constructor(public val json: JSONObject) {
 
         // Check that the acquisition link has a valid URL.
         try {
-            link(Rel.Publication)!!.href()
+            link(Rel.Publication)!!.url()
         } catch (e: Exception) {
             throw LcpException.Parsing.Url(rel = LicenseDocument.Rel.Publication.value)
         }
@@ -120,7 +120,7 @@ public class LicenseDocument internal constructor(public val json: JSONObject) {
             ?: links.firstWithRelAndNoType(rel.value)
             ?: throw LcpException.Parsing.Url(rel = rel.value)
 
-        return link.href(parameters = parameters)
+        return link.url(parameters = parameters)
     }
 
     public val description: String

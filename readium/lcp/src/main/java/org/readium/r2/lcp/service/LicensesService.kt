@@ -248,7 +248,7 @@ internal class LicensesService(
 
     private suspend fun fetchPublication(license: LicenseDocument, onProgress: (Double) -> Unit): LcpService.AcquiredPublication {
         val link = license.link(LicenseDocument.Rel.Publication)
-        val url = link?.href?.toUrl()
+        val url = link?.href?.resolve()
             ?: throw LcpException.Parsing.Url(rel = LicenseDocument.Rel.Publication.value)
 
         val destination = withContext(Dispatchers.IO) {

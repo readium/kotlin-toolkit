@@ -154,7 +154,7 @@ public class LcpDialogAuthentication : LcpAuthenticating {
     private fun showHelpDialog(context: Context, links: List<Link>) {
         val titles = links.map {
             it.title ?: tryOr(context.getString(R.string.readium_lcp_dialog_support)) {
-                when ((it.href() as? AbsoluteUrl)?.scheme?.value) {
+                when ((it.url() as? AbsoluteUrl)?.scheme?.value) {
                     "http", "https" -> context.getString(R.string.readium_lcp_dialog_support_web)
                     "tel" -> context.getString(R.string.readium_lcp_dialog_support_phone)
                     "mailto" -> context.getString(R.string.readium_lcp_dialog_support_mail)
@@ -171,7 +171,7 @@ public class LcpDialogAuthentication : LcpAuthenticating {
     }
 
     private fun Context.startActivityForLink(link: Link) {
-        val url = tryOrNull { (link.href() as? AbsoluteUrl) } ?: return
+        val url = tryOrNull { (link.url() as? AbsoluteUrl) } ?: return
 
         val action = when (url.scheme.value) {
             "http", "https" -> Intent(Intent.ACTION_VIEW)

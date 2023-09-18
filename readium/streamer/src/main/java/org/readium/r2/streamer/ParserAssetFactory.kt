@@ -73,7 +73,7 @@ internal class ParserAssetFactory(
             .getOrElse { return Try.failure(it) }
 
         val baseUrl =
-            manifest.linkWithRel("self")?.href?.toUrl()
+            manifest.linkWithRel("self")?.href?.resolve()
                 ?: return Try.failure(
                     Publication.OpeningException.ParsingFailed(
                         MessageError("No self link in the manifest.")

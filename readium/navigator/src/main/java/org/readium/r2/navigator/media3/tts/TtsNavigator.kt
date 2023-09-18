@@ -183,7 +183,7 @@ public class TtsNavigator<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
     override val readingOrder: ReadingOrder =
         ReadingOrder(
             items = publication.readingOrder
-                .map { ReadingOrder.Item(it.href()) }
+                .map { ReadingOrder.Item(it.url()) }
         )
 
     override val playback: StateFlow<Playback> =
@@ -286,7 +286,7 @@ public class TtsNavigator<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
 
     private fun TtsPlayer.Utterance.toPosition(): Location {
         val currentLink = publication.readingOrder[position.resourceIndex]
-        val url = currentLink.href()
+        val url = currentLink.url()
 
         val utteranceLocator = publication
             .locatorFromLink(currentLink)!!

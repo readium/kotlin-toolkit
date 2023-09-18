@@ -66,7 +66,7 @@ public data class Manifest(
     public fun linkWithHref(href: Url): Link? {
         fun List<Link>.deepLinkWithHref(href: Url): Link? {
             for (l in this) {
-                if (l.href() == href) {
+                if (l.url() == href) {
                     return l
                 } else {
                     l.alternates.deepLinkWithHref(href)?.let { return it }
@@ -106,7 +106,7 @@ public data class Manifest(
      * Returns null if the resource is not found in this manifest.
      */
     public fun locatorFromLink(link: Link): Locator? {
-        var url = link.href()
+        var url = link.url()
         val fragment = url.fragment
         url = url.removeFragment()
 

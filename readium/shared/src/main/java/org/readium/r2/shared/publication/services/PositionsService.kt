@@ -54,7 +54,7 @@ public interface PositionsService : Publication.Service {
     override val links: List<Link> get() = listOf(positionsLink)
 
     override fun get(href: Url): Resource? {
-        if (href != positionsLink.href()) {
+        if (href != positionsLink.url()) {
             return null
         }
 
@@ -122,7 +122,7 @@ public class PerResourcePositionsService(
         return readingOrder.mapIndexed { index, link ->
             listOf(
                 Locator(
-                    href = link.href(),
+                    href = link.url(),
                     mediaType = link.mediaType ?: fallbackMediaType,
                     title = link.title,
                     locations = Locator.Locations(
@@ -166,12 +166,12 @@ internal class WebPositionsService(
 
     override suspend fun positionsByReadingOrder(): List<List<Locator>> {
         val locators = positions().groupBy(Locator::href)
-        return manifest.readingOrder.map { locators[it.href()].orEmpty() }
+        return manifest.readingOrder.map { locators[it.url()].orEmpty() }
     }
 
     private suspend fun computePositions(): List<Locator> =
         links.firstOrNull()
-            ?.let { get(it.href()) }
+            ?.let { get(it.url()) }
             ?.readAsString()
             ?.getOrNull()
             ?.toJsonOrNull()

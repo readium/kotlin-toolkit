@@ -39,8 +39,8 @@ internal class DirectoryContainer(
         }.toSet()
 
     override fun get(url: Url): Container.Entry {
-        val file = (url as? RelativeUrl)
-            ?.let { File(root, it.path) }
+        val file = (url as? RelativeUrl)?.path
+            ?.let { File(root, it) }
 
         return if (file == null || !root.isParentOf(file)) {
             FailureResource(Resource.Exception.NotFound()).toEntry(url)

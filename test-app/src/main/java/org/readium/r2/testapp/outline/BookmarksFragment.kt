@@ -152,12 +152,12 @@ class BookmarkAdapter(
 
     private fun getBookSpineItem(href: Url): String? {
         for (link in publication.tableOfContents) {
-            if (link.href() == href) {
+            if (link.url() == href) {
                 return link.outlineTitle
             }
         }
         for (link in publication.readingOrder) {
-            if (link.href() == href) {
+            if (link.url() == href) {
                 return link.outlineTitle
             }
         }

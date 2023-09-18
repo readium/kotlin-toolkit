@@ -257,7 +257,7 @@ class OpdsPublicationRetriever(
             .firstOrNull { it.mediaType?.isPublication == true || it.mediaType == MediaType.LCP_LICENSE_DOCUMENT }
             ?: return Try.failure(Exception("No supported link to acquire publication."))
 
-        return Try.success(acquisitionLink.href())
+        return Try.success(acquisitionLink.url())
     }
 
     private val downloadListener: DownloadListener =

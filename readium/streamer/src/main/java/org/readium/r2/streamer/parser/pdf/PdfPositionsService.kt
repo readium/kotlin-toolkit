@@ -38,7 +38,7 @@ internal class PdfPositionsService(
             return@lazy listOf(emptyList<Locator>())
         }
 
-        val href = link.href()
+        val href = link.url()
 
         return@lazy listOf(
             (1..pageCount).map { position ->

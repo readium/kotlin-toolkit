@@ -72,11 +72,16 @@ class UrlTest {
 
     @Test
     fun getPath() {
-        assertEquals("foo/bar", Url("foo/bar?query#fragment")?.path)
-        assertEquals("/foo/bar/", Url("http://example.com/foo/bar/")?.path)
-        assertEquals("/foo/bar", Url("http://example.com/foo/bar?query#fragment")?.path)
-        assertEquals("/foo/bar/", Url("file:///foo/bar/")?.path)
-        assertEquals("/foo/bar", Url("file:///foo/bar?query#fragment")?.path)
+        assertEquals("foo/bar", RelativeUrl("foo/bar?query#fragment")?.path)
+        assertEquals("/foo/bar/", AbsoluteUrl("http://example.com/foo/bar/")?.path)
+        assertEquals("/foo/bar", AbsoluteUrl("http://example.com/foo/bar?query#fragment")?.path)
+        assertEquals("/foo/bar/", AbsoluteUrl("file:///foo/bar/")?.path)
+        assertEquals("/foo/bar", AbsoluteUrl("file:///foo/bar?query#fragment")?.path)
+    }
+
+    @Test
+    fun getPathFromEmptyRelativeUrl() {
+        assertNull(RelativeUrl("#fragment")!!.path)
     }
 
     @Test

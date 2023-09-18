@@ -175,10 +175,8 @@ public class ExoMediaPlayer(
 
     private fun prepareTracklist() {
         player.setMediaItems(
-            publication.readingOrder.mapNotNull { link ->
-                link.href()?.toUri()?.let {
-                    MediaItem.fromUri(it)
-                }
+            publication.readingOrder.map { link ->
+                MediaItem.fromUri(link.url().toUri())
             }
         )
         player.prepare()

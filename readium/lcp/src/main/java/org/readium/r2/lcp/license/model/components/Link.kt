@@ -18,6 +18,7 @@ import org.readium.r2.shared.extensions.optNullableInt
 import org.readium.r2.shared.extensions.optNullableString
 import org.readium.r2.shared.extensions.optStringsFromArrayOrSingle
 import org.readium.r2.shared.publication.Href
+import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 
@@ -58,6 +59,15 @@ public data class Link(
         }
     }
 
+    /**
+     * Returns the URL represented by this link's HREF.
+     *
+     * If the HREF is a template, the [parameters] are used to expand it according to RFC 6570.
+     */
+    public fun url(
+        parameters: Map<String, String> = emptyMap()
+    ): Url = href.resolve(parameters = parameters)
+
     @Deprecated(
         "Use [mediaType.toString()] instead",
         ReplaceWith("mediaType.toString()"),
@@ -71,16 +81,4 @@ public data class Link(
         level = DeprecationLevel.ERROR
     )
     public val rel: List<String> get() = throw NotImplementedError()
-
-    @Deprecated("Use `href()` instead", ReplaceWith("this.href()"), level = DeprecationLevel.ERROR)
-    public val url: URL get() = throw NotImplementedError()
-
-    @Deprecated(
-        "Renamed `href(parameters)`",
-        ReplaceWith("href(parameters = parameters)"),
-        level = DeprecationLevel.ERROR
-    )
-    @Suppress("UNUSED_PARAMETER")
-    public fun url(parameters: URLParameters): URL =
-        throw NotImplementedError()
 }

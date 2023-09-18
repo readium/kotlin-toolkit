@@ -29,11 +29,11 @@ public data class MediaOverlayNode(
 ) : Serializable {
 
     val audioFile: String?
-        get() = audio?.removeFragment()?.path
+        get() = audio?.removeFragment()?.path!!
     val audioTime: String?
         get() = audio?.fragment
     val textFile: String
-        get() = text.removeFragment().path
+        get() = text.removeFragment().path!!
     val fragmentId: String?
         get() = text.fragment
     val clip: Clip

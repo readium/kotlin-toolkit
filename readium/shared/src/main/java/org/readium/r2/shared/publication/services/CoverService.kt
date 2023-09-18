@@ -101,7 +101,7 @@ public abstract class GeneratedCoverService : CoverService {
     abstract override suspend fun cover(): Bitmap
 
     override fun get(href: Url): Resource? {
-        if (href != coverLink.href()) {
+        if (href != coverLink.url()) {
             return null
         }
 

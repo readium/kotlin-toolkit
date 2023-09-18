@@ -24,13 +24,13 @@ class HrefTest {
     @Test
     fun `convert static Href to Url`() {
         val url = Url("folder/chapter.xhtml")!!
-        assertEquals(url, Href(url).toUrl())
+        assertEquals(url, Href(url).resolve())
         assertEquals(
             Url("http://readium/publication/folder/chapter.xhtml"),
-            Href(url).toUrl(base)
+            Href(url).resolve(base)
         )
         // Parameters are ignored.
-        assertEquals(url, Href(url).toUrl(parameters = mapOf("a" to "b")))
+        assertEquals(url, Href(url).resolve(parameters = mapOf("a" to "b")))
     }
 
     @Test
@@ -46,22 +46,22 @@ class HrefTest {
 
         assertEquals(
             Url("url?x=&hello=&y=name"),
-            template.toUrl()
+            template.resolve()
         )
 
         assertEquals(
             Url("http://readium/publication/url?x=&hello=&y=name"),
-            template.toUrl(base)
+            template.resolve(base)
         )
 
         assertEquals(
             Url("url?x=aaa&hello=Hello,%20world&y=bname"),
-            template.toUrl(parameters = parameters)
+            template.resolve(parameters = parameters)
         )
 
         assertEquals(
             Url("http://readium/publication/url?x=aaa&hello=Hello,%20world&y=bname"),
-            template.toUrl(base, parameters)
+            template.resolve(base, parameters)
         )
     }
 

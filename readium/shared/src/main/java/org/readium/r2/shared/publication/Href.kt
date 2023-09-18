@@ -12,11 +12,12 @@ import kotlinx.parcelize.Parcelize
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.URITemplate
 import org.readium.r2.shared.util.Url as SharedUrl
-import org.readium.r2.shared.util.toUrl
 import timber.log.Timber
 
 /**
  * An hypertext reference points to a resource in a [Publication].
+ *
+ * It is potentially templated, use [resolve] to get the actual URL.
  */
 @Parcelize
 public class Href private constructor(private val href: Url) : Parcelable {
@@ -42,18 +43,10 @@ public class Href private constructor(private val href: Url) : Parcelable {
      *
      * If the HREF is a template, the [parameters] are used to expand it according to RFC 6570.
      */
-    public fun toUrl(
+    public fun resolve(
         base: SharedUrl? = null,
         parameters: Map<String, String> = emptyMap()
-    ): SharedUrl = href.toUrl(base, parameters)
-
-    /**
-     * Syntactic sugar for [toUrl].
-     */
-    public operator fun invoke(
-        base: SharedUrl? = null,
-        parameters: Map<String, String> = emptyMap()
-    ): SharedUrl = href.toUrl(base, parameters)
+    ): SharedUrl = href.resolve(base, parameters)
 
     /**
      * Indicates whether this HREF is templated.
@@ -101,7 +94,7 @@ public class Href private constructor(private val href: Url) : Parcelable {
         href.hashCode()
 
     private sealed class Url : Parcelable {
-        abstract fun toUrl(base: SharedUrl?, parameters: Map<String, String>): SharedUrl
+        abstract fun resolve(base: SharedUrl?, parameters: Map<String, String>): SharedUrl
         abstract val parameters: List<String>?
     }
 
@@ -113,7 +106,7 @@ public class Href private constructor(private val href: Url) : Parcelable {
         @IgnoredOnParcel
         override val parameters: List<String>? = null
 
-        override fun toUrl(base: SharedUrl?, parameters: Map<String, String>): SharedUrl =
+        override fun resolve(base: SharedUrl?, parameters: Map<String, String>): SharedUrl =
             base?.resolve(url) ?: url
 
         override fun toString(): String = url.toString()
@@ -139,7 +132,7 @@ public class Href private constructor(private val href: Url) : Parcelable {
         override val parameters: List<String> =
             URITemplate(template).parameters
 
-        override fun toUrl(base: SharedUrl?, parameters: Map<String, String>): SharedUrl {
+        override fun resolve(base: SharedUrl?, parameters: Map<String, String>): SharedUrl {
             val url = checkNotNull(SharedUrl(URITemplate(template).expand(parameters)))
             return base?.resolve(url) ?: url
         }
@@ -153,7 +146,7 @@ public class Href private constructor(private val href: Url) : Parcelable {
  */
 @ExperimentalReadiumApi
 public fun Manifest.normalizeHrefsToSelf(): Manifest {
-    val base = linkWithRel("self")?.href?.toUrl()
+    val base = linkWithRel("self")?.href?.resolve()
         ?: return this
 
     return normalizeHrefsToBase(base)

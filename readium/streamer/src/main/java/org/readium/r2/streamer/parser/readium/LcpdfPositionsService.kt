@@ -75,7 +75,7 @@ internal class LcpdfPositionsService(
             return emptyList()
         }
 
-        val href = link.href()
+        val href = link.url()
 
         // FIXME: Use the [tableOfContents] to generate the titles
         return (1..pageCount).map { position ->
@@ -98,7 +98,7 @@ internal class LcpdfPositionsService(
         tryOrLog {
             pdfFactory
                 .cachedIn(context.services)
-                .open(context.container.get(link.href()), password = null)
+                .open(context.container.get(link.url()), password = null)
         }
 
     companion object {

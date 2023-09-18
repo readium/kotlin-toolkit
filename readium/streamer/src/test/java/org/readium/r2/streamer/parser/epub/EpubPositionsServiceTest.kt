@@ -488,7 +488,7 @@ class EpubPositionsServiceTest {
         container = object : Container {
 
             private fun find(relativePath: Url): ReadingOrderItem? =
-                readingOrder.find { it.link.href() == relativePath }
+                readingOrder.find { it.link.url() == relativePath }
 
             override suspend fun entries(): Set<Container.Entry>? = null
 

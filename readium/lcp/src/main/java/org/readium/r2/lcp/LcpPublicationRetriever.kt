@@ -152,7 +152,7 @@ public class LcpPublicationRetriever(
     private fun fetchPublication(
         license: LicenseDocument
     ): RequestId {
-        val url = license.publicationLink.href()
+        val url = license.publicationLink.url()
 
         val requestId = downloadManager.submit(
             request = DownloadManager.Request(

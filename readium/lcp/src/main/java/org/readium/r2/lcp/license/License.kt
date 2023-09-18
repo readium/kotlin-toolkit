@@ -172,7 +172,7 @@ internal class License(
                 parameters["end"] = endDate.toIso8601String()
             }
 
-            val url = link.href(parameters = parameters)
+            val url = link.url(parameters = parameters)
 
             return network.fetch(url.toString(), NetworkService.Method.PUT)
                 .getOrElse { error ->
@@ -189,7 +189,7 @@ internal class License(
         // Renew the loan by presenting a web page to the user.
         suspend fun renewWithWebPage(link: Link): ByteArray {
             // The reading app will open the URL in a web view and return when it is dismissed.
-            listener.openWebPage(link.href())
+            listener.openWebPage(link.url())
 
             val statusURL = tryOrNull {
                 license.url(

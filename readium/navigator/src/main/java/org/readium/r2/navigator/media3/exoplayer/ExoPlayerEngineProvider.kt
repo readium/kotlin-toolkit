@@ -47,9 +47,9 @@ public class ExoPlayerEngineProvider(
         val playlist = ExoPlayerEngine.Playlist(
             mediaMetadata = metadataFactory.publicationMetadata(),
             duration = publication.metadata.duration?.seconds,
-            items = publication.readingOrder.mapIndexedNotNull { index, link ->
+            items = publication.readingOrder.mapIndexed { index, link ->
                 ExoPlayerEngine.Playlist.Item(
-                    url = link.href() ?: return@mapIndexedNotNull null,
+                    url = link.url(),
                     mediaMetadata = metadataFactory.resourceMetadata(index),
                     duration = link.duration?.seconds
                 )
