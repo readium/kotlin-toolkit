@@ -36,5 +36,11 @@
     "regenerator-runtime": "^0.14.0",
     "string.prototype.matchall": "^4.0.5"
   },
-  "packageManager": "yarn@3.6.3"
+  "packageManager": "yarn@3.6.3",
+  "workspaces": [
+    "libs/readium-css",
+    "libs/ts-toolkit/shared",
+    "libs/ts-toolkit/navigator",
+    "libs/ts-toolkit/navigator-html-injectables"
+  ]
 }

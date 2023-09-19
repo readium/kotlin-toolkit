@@ -1,3 +1,6 @@
 [submodule "readium/navigator-web/src/main/assets/_scripts/libs/--force"]
 	path = readium/navigator-web/src/main/assets/_scripts/libs/--force
 	url = https://github.com/readium/ts-toolkit/
+[submodule "readium/navigator-web/src/main/assets/_scripts/libs/ts-toolkit"]
+	path = readium/navigator-web/src/main/assets/_scripts/libs/ts-toolkit
+	url = https://github.com/readium/ts-toolkit.git

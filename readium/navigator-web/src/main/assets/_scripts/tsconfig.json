@@ -15,7 +15,7 @@
       "@readium/shared/*": ["libs/ts-toolkit/shared/*"],
       "@readium/navigator/*": ["libs/ts-toolkit/navigator/*"],
       "@readium/navigator-html-injectables/*": ["libs/ts-toolkit/navigator-html-injectables/*"],
-      "readium-css/*": ["libs/readium-css/*"]
+      "readium-css/css/dist/*": ["libs/readium-css/css/dist/*"]
     }
   }
 }
