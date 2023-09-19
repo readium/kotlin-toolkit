@@ -156,7 +156,7 @@ class Bookshelf(
             }
         }
             .onFailure {
-                Timber.d("Cannot open publication: $it.")
+                Timber.e("Cannot open publication: $it.")
                 return Try.failure(
                     ImportError.PublicationError(PublicationError(it))
                 )

@@ -40,10 +40,10 @@ public class AdeptFallbackContentProtection : ContentProtection {
         credentials: String?,
         allowUserInteraction: Boolean,
         sender: Any?
-    ): Try<ContentProtection.Asset, Publication.OpeningException> {
+    ): Try<ContentProtection.Asset, Publication.OpenError> {
         if (asset !is Asset.Container) {
             return Try.failure(
-                Publication.OpeningException.UnsupportedAsset("A container asset was expected.")
+                Publication.OpenError.UnsupportedAsset("A container asset was expected.")
             )
         }
 

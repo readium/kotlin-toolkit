@@ -34,7 +34,7 @@ sealed class ImportError(
         companion object {
 
             operator fun invoke(
-                error: Publication.OpeningException
+                error: Publication.OpenError
             ): ImportError = PublicationError(
                 org.readium.r2.testapp.domain.PublicationError(
                     error

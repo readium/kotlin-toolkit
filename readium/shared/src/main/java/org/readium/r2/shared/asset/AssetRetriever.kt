@@ -23,7 +23,9 @@ import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.resource.ResourceFactory
 import org.readium.r2.shared.resource.ResourceMediaTypeSnifferContent
 import org.readium.r2.shared.util.AbsoluteUrl
+import org.readium.r2.shared.util.BaseError
 import org.readium.r2.shared.util.Either
+import org.readium.r2.shared.util.Error as SharedError
 import org.readium.r2.shared.util.ThrowableError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
@@ -59,98 +61,64 @@ public class AssetRetriever(
         }
     }
 
-    public sealed class Error : org.readium.r2.shared.util.Error {
+    public sealed class Error(message: String, cause: SharedError?) : BaseError(message, cause) {
 
         public class SchemeNotSupported(
             public val scheme: Url.Scheme,
-            override val cause: org.readium.r2.shared.util.Error?
-        ) : Error() {
+            cause: SharedError?
+        ) : Error("Scheme $scheme is not supported.", cause) {
 
             public constructor(scheme: Url.Scheme, exception: Exception) :
                 this(scheme, ThrowableError(exception))
-
-            override val message: String =
-                "Scheme $scheme is not supported."
         }
 
         public class NotFound(
             public val url: AbsoluteUrl,
-            override val cause: org.readium.r2.shared.util.Error?
-        ) : Error() {
+            cause: SharedError?
+        ) : Error("Asset could not be found at $url.", cause) {
 
             public constructor(url: AbsoluteUrl, exception: Exception) :
                 this(url, ThrowableError(exception))
-
-            override val message: String =
-                "Asset could not be found at $url."
         }
 
-        public class InvalidAsset(
-            override val cause: org.readium.r2.shared.util.Error?
-        ) : Error() {
+        public class InvalidAsset(cause: SharedError?) :
+            Error("Asset looks corrupted.", cause) {
 
             public constructor(exception: Exception) :
                 this(ThrowableError(exception))
-
-            override val message: String =
-                "Asset looks corrupted."
         }
 
-        public class ArchiveFormatNotSupported(
-            override val cause: org.readium.r2.shared.util.Error?
-        ) : Error() {
+        public class ArchiveFormatNotSupported(cause: SharedError?) :
+            Error("Archive factory does not support this kind of archive.", cause) {
 
             public constructor(exception: Exception) :
                 this(ThrowableError(exception))
-
-            override val message: String =
-                "Archive factory does not support this kind of archive."
         }
 
         public class Forbidden(
             public val url: AbsoluteUrl,
-            override val cause: org.readium.r2.shared.util.Error
-        ) : Error() {
+            cause: SharedError?
+        ) : Error("Access to asset at url $url is forbidden.", cause) {
 
             public constructor(url: AbsoluteUrl, exception: Exception) :
                 this(url, ThrowableError(exception))
-
-            override val message: String =
-                "Access to asset at url $url is forbidden."
         }
 
-        public class Unavailable(
-            override val cause: org.readium.r2.shared.util.Error
-        ) : Error() {
+        public class Unavailable(cause: SharedError) :
+            Error("Asset seems not to be available at the moment.", cause) {
 
             public constructor(exception: Exception) :
                 this(ThrowableError(exception))
-
-            override val message: String =
-                "Asset seems not to be available at the moment."
         }
 
-        public class OutOfMemory(
-            error: OutOfMemoryError
-        ) : Error() {
-
-            override val message: String =
-                "There is not enough memory on the device to load the asset."
-
-            override val cause: org.readium.r2.shared.util.Error =
+        public class OutOfMemory(error: OutOfMemoryError) :
+            Error(
+                "There is not enough memory on the device to load the asset.",
                 ThrowableError(error)
-        }
+            )
 
-        public class Unknown(
-            private val exception: Exception
-        ) : Error() {
-
-            override val message: String =
-                exception.message ?: "Something unexpected happened."
-
-            override val cause: org.readium.r2.shared.util.Error =
-                ThrowableError(exception)
-        }
+        public class Unknown(exception: Exception) :
+            Error("Something unexpected happened.", ThrowableError(exception))
     }
 
     /**

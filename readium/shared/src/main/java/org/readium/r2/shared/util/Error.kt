@@ -29,21 +29,35 @@ public interface Error {
  */
 public class ThrowableError(
     public val throwable: Throwable
-) : Error {
-
-    override val message: String =
-        throwable.message ?: "Exception"
-
-    override val cause: Error? =
-        null
-}
+) : BaseError(throwable.message ?: throwable.toString(), cause = null)
 
 /**
  * A basic [Error] implementation with a message.
  */
 public class MessageError(
     override val message: String
-) : Error {
+) : BaseError(message, cause = null)
 
+/**
+ * A basic implementation of [Error] able to print itself in a structured way.
+ */
+public abstract class BaseError(
+    override val message: String,
     override val cause: Error? = null
+) : Error {
+    override fun toString(): String {
+        var desc = "${javaClass.nameWithEnclosingClasses()}: $message"
+        if (cause != null) {
+            desc += "\n  ${cause.toString().prependIndent("  ")}"
+        }
+        return desc
+    }
+
+    private fun Class<*>.nameWithEnclosingClasses(): String {
+        var name = simpleName
+        enclosingClass?.let {
+            name = "${it.nameWithEnclosingClasses()}.$name"
+        }
+        return name
+    }
 }

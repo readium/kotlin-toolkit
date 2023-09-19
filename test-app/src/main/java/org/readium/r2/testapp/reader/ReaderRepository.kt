@@ -76,7 +76,7 @@ class ReaderRepository(
                 )
 
                 operator fun invoke(
-                    error: Publication.OpeningException
+                    error: Publication.OpenError
                 ): OpeningError = PublicationError(
                     org.readium.r2.testapp.domain.PublicationError(
                         error

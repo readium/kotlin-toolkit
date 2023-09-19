@@ -83,7 +83,7 @@ internal fun createLicenseContainer(
 
     return when {
         container.source?.isFile == true ->
-            FileZipLicenseContainer(container.source!!.path, licensePath)
+            FileZipLicenseContainer(container.source!!.path!!, licensePath)
         container.source?.isContent == true ->
             ContentZipLicenseContainer(context, container, licensePath)
         else ->

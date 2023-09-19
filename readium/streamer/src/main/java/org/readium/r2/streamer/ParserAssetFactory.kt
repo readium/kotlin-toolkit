@@ -37,7 +37,7 @@ internal class ParserAssetFactory(
 
     suspend fun createParserAsset(
         asset: Asset
-    ): Try<PublicationParser.Asset, Publication.OpeningException> {
+    ): Try<PublicationParser.Asset, Publication.OpenError> {
         return when (asset) {
             is Asset.Container ->
                 createParserAssetForContainer(asset)
@@ -48,7 +48,7 @@ internal class ParserAssetFactory(
 
     private fun createParserAssetForContainer(
         asset: Asset.Container
-    ): Try<PublicationParser.Asset, Publication.OpeningException> =
+    ): Try<PublicationParser.Asset, Publication.OpenError> =
         Try.success(
             PublicationParser.Asset(
                 mediaType = asset.mediaType,
@@ -58,7 +58,7 @@ internal class ParserAssetFactory(
 
     private suspend fun createParserAssetForResource(
         asset: Asset.Resource
-    ): Try<PublicationParser.Asset, Publication.OpeningException> =
+    ): Try<PublicationParser.Asset, Publication.OpenError> =
         if (asset.mediaType.isRwpm) {
             createParserAssetForManifest(asset)
         } else {
@@ -67,22 +67,22 @@ internal class ParserAssetFactory(
 
     private suspend fun createParserAssetForManifest(
         asset: Asset.Resource
-    ): Try<PublicationParser.Asset, Publication.OpeningException> {
+    ): Try<PublicationParser.Asset, Publication.OpenError> {
         val manifest = asset.resource.readAsRwpm()
-            .mapFailure { Publication.OpeningException.ParsingFailed(ThrowableError(it)) }
+            .mapFailure { Publication.OpenError.InvalidAsset(ThrowableError(it)) }
             .getOrElse { return Try.failure(it) }
 
         val baseUrl =
             manifest.linkWithRel("self")?.href?.resolve()
                 ?: return Try.failure(
-                    Publication.OpeningException.ParsingFailed(
+                    Publication.OpenError.InvalidAsset(
                         MessageError("No self link in the manifest.")
                     )
                 )
 
         if (baseUrl !is AbsoluteUrl) {
             return Try.failure(
-                Publication.OpeningException.ParsingFailed(
+                Publication.OpenError.InvalidAsset(
                     MessageError("Self link is not absolute.")
                 )
             )
@@ -90,7 +90,7 @@ internal class ParserAssetFactory(
 
         if (!baseUrl.isHttp) {
             return Try.failure(
-                Publication.OpeningException.UnsupportedAsset(
+                Publication.OpenError.UnsupportedAsset(
                     "Self link doesn't use the HTTP(S) scheme."
                 )
             )
@@ -115,7 +115,7 @@ internal class ParserAssetFactory(
 
     private fun createParserAssetForContent(
         asset: Asset.Resource
-    ): Try<PublicationParser.Asset, Publication.OpeningException> {
+    ): Try<PublicationParser.Asset, Publication.OpenError> {
         // Historically, the reading order of a standalone file contained a single link with the
         // HREF "/$assetName". This was fragile if the asset named changed, or was different on
         // other devices. To avoid this, we now use a single link with the HREF
