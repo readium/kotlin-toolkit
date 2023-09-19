@@ -137,11 +137,8 @@ public class FileResourceFactory(
 ) : ResourceFactory {
 
     override suspend fun create(url: AbsoluteUrl): Try<Resource, ResourceFactory.Error> {
-        if (!url.isFile) {
-            return Try.failure(ResourceFactory.Error.SchemeNotSupported(url.scheme))
-        }
-
-        val file = File(url.path)
+        val file = url.toFile()
+            ?: return Try.failure(ResourceFactory.Error.SchemeNotSupported(url.scheme))
 
         try {
             if (!file.isFile) {

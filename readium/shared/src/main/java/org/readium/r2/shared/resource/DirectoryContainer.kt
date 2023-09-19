@@ -57,11 +57,8 @@ public class DirectoryContainerFactory(
 ) : ContainerFactory {
 
     override suspend fun create(url: AbsoluteUrl): Try<Container, ContainerFactory.Error> {
-        if (!url.isFile) {
-            return Try.failure(ContainerFactory.Error.SchemeNotSupported(url.scheme))
-        }
-
-        val file = File(url.path)
+        val file = url.toFile()
+            ?: return Try.failure(ContainerFactory.Error.SchemeNotSupported(url.scheme))
 
         if (!tryOr(false) { file.isDirectory }) {
             return Try.failure(ContainerFactory.Error.NotAContainer(url))

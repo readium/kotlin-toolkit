@@ -92,7 +92,7 @@ class ImageParserTest {
         with(builder!!.manifest.readingOrder) {
             assertEquals(
                 Url.fromDecodedPath("Cory Doctorow's Futuristic Tales of the Here and Now/a-fc.jpg"),
-                firstWithRel("cover")?.href?.invoke()
+                firstWithRel("cover")?.url()
             )
         }
     }
