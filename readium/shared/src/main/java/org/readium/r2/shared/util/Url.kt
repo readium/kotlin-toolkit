@@ -174,11 +174,6 @@ public sealed class Url : Parcelable {
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
-        if (other is Href) {
-            throw IllegalArgumentException(
-                "You cannot compare a Url to an Href. Use `url == href.toUrl()` instead."
-            )
-        }
         if (javaClass != other?.javaClass) return false
 
         other as Url
