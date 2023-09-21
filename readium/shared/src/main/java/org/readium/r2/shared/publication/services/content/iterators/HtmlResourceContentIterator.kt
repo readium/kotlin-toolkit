@@ -30,8 +30,8 @@ import org.readium.r2.shared.publication.services.content.Content.VideoElement
 import org.readium.r2.shared.publication.services.positionsByReadingOrder
 import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.resource.readAsString
-import org.readium.r2.shared.util.Href
 import org.readium.r2.shared.util.Language
+import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.getOrThrow
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.use
@@ -284,11 +284,11 @@ public class HtmlResourceContentIterator internal constructor(
                     tag == "img" -> {
                         flushText()
 
-                        node.srcRelativeToHref(baseLocator.href)?.let { href ->
+                        node.srcRelativeToHref(baseLocator.href)?.let { url ->
                             elements.add(
                                 ImageElement(
                                     locator = elementLocator,
-                                    embeddedLink = Link(href = href),
+                                    embeddedLink = Link(href = url),
                                     caption = null, // FIXME: Get the caption from figcaption
                                     attributes = buildList {
                                         val alt = node.attr("alt").takeIf { it.isNotBlank() }
@@ -304,16 +304,16 @@ public class HtmlResourceContentIterator internal constructor(
                     tag == "audio" || tag == "video" -> {
                         flushText()
 
-                        val href = node.srcRelativeToHref(baseLocator.href)
+                        val url = node.srcRelativeToHref(baseLocator.href)
                         val link: Link? =
-                            if (href != null) {
-                                Link(href = href)
+                            if (url != null) {
+                                Link(href = url)
                             } else {
                                 val sources = node.select("source")
                                     .mapNotNull { source ->
-                                        source.srcRelativeToHref(baseLocator.href)?.let { href ->
+                                        source.srcRelativeToHref(baseLocator.href)?.let { url ->
                                             Link(
-                                                href = href,
+                                                href = url,
                                                 mediaType = MediaType(source.attr("type"))
                                             )
                                         }
@@ -485,10 +485,11 @@ private val Node.language: String? get() =
         ?: attr("lang").takeUnless { it.isBlank() }
         ?: parent()?.language
 
-private fun Node.srcRelativeToHref(baseHref: String): String? =
+private fun Node.srcRelativeToHref(baseUrl: Url): Url? =
     attr("src")
         .takeIf { it.isNotBlank() }
-        ?.let { Href(it, baseHref).string }
+        ?.let { Url(it) }
+        ?.let { baseUrl.resolve(it) }
 
 /**
  * After normalizing the whitespace within a string, appends it to a string builder.

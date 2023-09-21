@@ -69,7 +69,7 @@ class Application : android.app.Application() {
         bookshelf =
             Bookshelf(
                 bookRepository,
-                CoverStorage(storageDir),
+                CoverStorage(storageDir, httpClient = readium.httpClient),
                 readium.publicationFactory,
                 readium.assetRetriever,
                 readium.protectionRetriever,

@@ -354,7 +354,7 @@ public object WebPubMediaTypeSniffer : MediaTypeSniffer {
             }
 
         if (manifest != null) {
-            val isLcpProtected = content.contains("/license.lcpl")
+            val isLcpProtected = content.contains("license.lcpl")
 
             if (manifest.conformsTo(Publication.Profile.AUDIOBOOK)) {
                 return if (isLcpProtected) {
@@ -454,7 +454,7 @@ public object LpfMediaTypeSniffer : MediaTypeSniffer {
             return null
         }
 
-        if (content.contains("/index.html")) {
+        if (content.contains("index.html")) {
             return MediaType.LPF
         }
 

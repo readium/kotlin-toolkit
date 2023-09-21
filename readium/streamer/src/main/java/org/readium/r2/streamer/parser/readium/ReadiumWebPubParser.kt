@@ -9,9 +9,14 @@ package org.readium.r2.streamer.parser.readium
 import android.content.Context
 import org.readium.r2.shared.publication.Manifest
 import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.publication.services.*
+import org.readium.r2.shared.publication.services.InMemoryCacheService
+import org.readium.r2.shared.publication.services.PerResourcePositionsService
+import org.readium.r2.shared.publication.services.cacheServiceFactory
+import org.readium.r2.shared.publication.services.locatorServiceFactory
+import org.readium.r2.shared.publication.services.positionsServiceFactory
 import org.readium.r2.shared.resource.readAsJson
 import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.mediatype.MediaType
@@ -38,7 +43,7 @@ public class ReadiumWebPubParser(
         }
 
         val manifestJson = asset.container
-            .get("/manifest.json")
+            .get(Url("manifest.json")!!)
             .readAsJson()
             .getOrElse { return Try.failure(PublicationParser.Error.IO(it)) }
 
@@ -67,7 +72,9 @@ public class ReadiumWebPubParser(
                     positionsServiceFactory = pdfFactory?.let { LcpdfPositionsService.create(it) }
 
                 MediaType.DIVINA ->
-                    positionsServiceFactory = PerResourcePositionsService.createFactory("image/*")
+                    positionsServiceFactory = PerResourcePositionsService.createFactory(
+                        MediaType("image/*")!!
+                    )
 
                 MediaType.READIUM_AUDIOBOOK, MediaType.LCP_PROTECTED_AUDIOBOOK ->
                     locatorServiceFactory = AudioLocatorService.createFactory()

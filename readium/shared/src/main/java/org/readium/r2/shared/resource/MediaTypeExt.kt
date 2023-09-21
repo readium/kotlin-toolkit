@@ -1,5 +1,6 @@
 package org.readium.r2.shared.resource
 
+import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.ContainerMediaTypeSnifferContent
 import org.readium.r2.shared.util.mediatype.ResourceMediaTypeSnifferContent
 
@@ -16,8 +17,10 @@ public class ContainerMediaTypeSnifferContent(
 ) : ContainerMediaTypeSnifferContent {
 
     override suspend fun entries(): Set<String>? =
-        container.entries()?.map { it.path }?.toSet()
+        container.entries()?.mapNotNull { it.url.path }?.toSet()
 
     override suspend fun read(path: String, range: LongRange?): ByteArray? =
-        container.get(path).read(range).getOrNull()
+        Url.fromDecodedPath(path)?.let { url ->
+            container.get(url).read(range).getOrNull()
+        }
 }

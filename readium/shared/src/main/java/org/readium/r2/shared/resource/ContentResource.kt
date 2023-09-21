@@ -15,8 +15,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.extensions.*
+import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Try
-import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.toUri
 import org.readium.r2.shared.util.toUrl
@@ -28,8 +28,8 @@ public class ContentResourceFactory(
     private val contentResolver: ContentResolver
 ) : ResourceFactory {
 
-    override suspend fun create(url: Url): Try<Resource, ResourceFactory.Error> {
-        if (url.scheme != ContentResolver.SCHEME_CONTENT) {
+    override suspend fun create(url: AbsoluteUrl): Try<Resource, ResourceFactory.Error> {
+        if (!url.isContent) {
             return Try.failure(ResourceFactory.Error.SchemeNotSupported(url.scheme))
         }
 
@@ -49,7 +49,7 @@ public class ContentResource(
 
     private lateinit var _length: ResourceTry<Long>
 
-    override val source: Url? = uri.toUrl()
+    override val source: AbsoluteUrl? = uri.toUrl() as? AbsoluteUrl
 
     override suspend fun properties(): ResourceTry<Resource.Properties> =
         ResourceTry.success(Resource.Properties())

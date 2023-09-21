@@ -10,6 +10,7 @@ import kotlinx.coroutines.runBlocking
 import org.readium.r2.lcp.LcpException
 import org.readium.r2.shared.resource.Container
 import org.readium.r2.shared.resource.Resource
+import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.getOrThrow
 
 /**
@@ -17,20 +18,20 @@ import org.readium.r2.shared.util.getOrThrow
  */
 internal class ContainerLicenseContainer(
     private val container: Container,
-    private val entryPath: String
+    private val entryUrl: Url
 ) : LicenseContainer {
 
     override fun read(): ByteArray {
         return runBlocking {
             container
-                .get(entryPath)
+                .get(entryUrl)
                 .read()
                 .mapFailure {
                     when (it) {
-                        is Resource.Exception.NotFound -> LcpException.Container.FileNotFound(
-                            entryPath
-                        )
-                        else -> LcpException.Container.ReadFailed(entryPath)
+                        is Resource.Exception.NotFound ->
+                            LcpException.Container.FileNotFound(entryUrl)
+                        else ->
+                            LcpException.Container.ReadFailed(entryUrl)
                     }
                 }
                 .getOrThrow()

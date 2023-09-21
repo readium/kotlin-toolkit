@@ -43,12 +43,13 @@ import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
+import org.readium.r2.shared.util.Url
 
 @OptIn(ExperimentalReadiumApi::class)
 internal class R2EpubPageFragment : Fragment() {
 
-    private val resourceUrl: String?
-        get() = requireArguments().getString("url")
+    private val resourceUrl: Url?
+        get() = BundleCompat.getParcelable(requireArguments(), "url", Url::class.java)
 
     internal val link: Link?
         get() = BundleCompat.getParcelable(requireArguments(), "link", Link::class.java)
@@ -238,7 +239,7 @@ internal class R2EpubPageFragment : Fragment() {
         resourceUrl?.let {
             isLoading = true
             _isLoaded.value = false
-            webView.loadUrl(it)
+            webView.loadUrl(it.toString())
         }
 
         setupPadding()
@@ -435,14 +436,14 @@ internal class R2EpubPageFragment : Fragment() {
         private const val textZoomBundleKey = "org.readium.textZoom"
 
         fun newInstance(
-            url: String,
+            url: Url,
             link: Link? = null,
             initialLocator: Locator? = null,
             positionCount: Int = 0
         ): R2EpubPageFragment =
             R2EpubPageFragment().apply {
                 arguments = Bundle().apply {
-                    putString("url", url)
+                    putParcelable("url", url)
                     putParcelable("link", link)
                     putParcelable("initialLocator", initialLocator)
                     putLong("positionCount", positionCount.toLong())

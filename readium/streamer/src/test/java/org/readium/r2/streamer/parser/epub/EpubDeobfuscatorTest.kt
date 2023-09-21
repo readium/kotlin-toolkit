@@ -20,6 +20,7 @@ import org.readium.r2.shared.resource.flatMap
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.getOrThrow
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
+import org.readium.r2.shared.util.toAbsoluteUrl
 import org.readium.r2.streamer.readBlocking
 import org.robolectric.RobolectricTestRunner
 
@@ -31,7 +32,7 @@ class EpubDeobfuscatorTest {
     private val deobfuscationDir = requireNotNull(
         EpubDeobfuscatorTest::class.java
             .getResource("deobfuscation")
-            ?.let { Url(it) }
+            ?.toAbsoluteUrl()
     )
 
     private val container = runBlocking {
@@ -41,11 +42,11 @@ class EpubDeobfuscatorTest {
     }
 
     private val font = requireNotNull(
-        container.get("/cut-cut.woff").readBlocking().getOrNull()
+        container.get(Url("cut-cut.woff")!!).readBlocking().getOrNull()
     )
 
     private fun deobfuscate(path: String, algorithm: String?): Resource {
-        val resource = container.get(path)
+        val resource = container.get(Url(path)!!)
 
         val deobfuscator = EpubDeobfuscator(identifier) {
             if (resource.source == it) {

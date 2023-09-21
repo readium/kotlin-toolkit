@@ -11,7 +11,6 @@ package org.readium.r2.lcp.license
 
 import java.net.HttpURLConnection
 import java.util.*
-import kotlin.time.ExperimentalTime
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -33,7 +32,6 @@ import org.readium.r2.shared.util.getOrThrow
 import org.readium.r2.shared.util.mediatype.MediaType
 import timber.log.Timber
 
-@OptIn(ExperimentalTime::class)
 internal class License(
     private var documents: ValidatedDocuments,
     private val validation: LicenseValidation,
@@ -163,7 +161,7 @@ internal class License(
         // Programmatically renew the loan with a PUT request.
         suspend fun renewProgrammatically(link: Link): ByteArray {
             val endDate =
-                if (link.templateParameters.contains("end")) {
+                if (link.href.parameters?.contains("end") == true) {
                     listener.preferredEndDate(maxRenewDate)
                 } else {
                     null
@@ -174,7 +172,7 @@ internal class License(
                 parameters["end"] = endDate.toIso8601String()
             }
 
-            val url = link.url(parameters)
+            val url = link.url(parameters = parameters)
 
             return network.fetch(url.toString(), NetworkService.Method.PUT)
                 .getOrElse { error ->
@@ -191,7 +189,7 @@ internal class License(
         // Renew the loan by presenting a web page to the user.
         suspend fun renewWithWebPage(link: Link): ByteArray {
             // The reading app will open the URL in a web view and return when it is dismissed.
-            listener.openWebPage(link.url)
+            listener.openWebPage(link.url())
 
             val statusURL = tryOrNull {
                 license.url(
@@ -211,7 +209,7 @@ internal class License(
                 ?: throw LcpException.LicenseInteractionNotAvailable
 
             val data =
-                if (link.mediaType.isHtml) {
+                if (link.mediaType?.isHtml == true) {
                     renewWithWebPage(link)
                 } else {
                     renewProgrammatically(link)

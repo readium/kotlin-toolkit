@@ -10,6 +10,7 @@
 package org.readium.r2.shared
 
 import java.io.Serializable
+import org.readium.r2.shared.util.Url
 
 @InternalReadiumApi
 public data class Clip(
@@ -21,27 +22,27 @@ public data class Clip(
 
 @InternalReadiumApi
 public data class MediaOverlayNode(
-    val text: String, // an URI possibly finishing by a fragment (textFile#id)
-    val audio: String?, // an URI possibly finishing by a simple timer (audioFile#t=start,end)
+    val text: Url, // an URI possibly finishing by a fragment (textFile#id)
+    val audio: Url?, // an URI possibly finishing by a simple timer (audioFile#t=start,end)
     val children: List<MediaOverlayNode> = listOf(),
     val role: List<String> = listOf()
 ) : Serializable {
 
     val audioFile: String?
-        get() = audio?.split("#")?.first()
+        get() = audio?.removeFragment()?.path!!
     val audioTime: String?
-        get() = if (audio != null && '#' in audio) audio.split("#", limit = 2).last() else null
+        get() = audio?.fragment
     val textFile: String
-        get() = text.split("#").first()
+        get() = text.removeFragment().path!!
     val fragmentId: String?
-        get() = if ('#' in text) text.split('#', limit = 2).last() else null
+        get() = text.fragment
     val clip: Clip
         get() {
-            val audioString = this.audio ?: throw Exception("audio")
-            val audioFileString = audioString.split('#').first()
-            val times = audioString.split('#').last()
+            val audio = audio ?: throw Exception("audio")
+            val audioFile = audio.removeFragment().path
+            val times = audio.fragment ?: ""
             val (start, end) = parseTimer(times)
-            return Clip(audioFileString, fragmentId, start, end)
+            return Clip(audioFile, fragmentId, start, end)
         }
 
     private fun parseTimer(times: String): Pair<Double?, Double?> {

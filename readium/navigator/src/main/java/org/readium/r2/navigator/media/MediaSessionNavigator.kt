@@ -20,6 +20,7 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import org.readium.r2.navigator.ExperimentalAudiobook
 import org.readium.r2.navigator.MediaNavigator
+import org.readium.r2.navigator.extensions.normalizeLocator
 import org.readium.r2.navigator.extensions.sum
 import org.readium.r2.navigator.media.extensions.elapsedPosition
 import org.readium.r2.navigator.media.extensions.id
@@ -27,7 +28,10 @@ import org.readium.r2.navigator.media.extensions.isPlaying
 import org.readium.r2.navigator.media.extensions.publicationId
 import org.readium.r2.navigator.media.extensions.resourceHref
 import org.readium.r2.navigator.media.extensions.toPlaybackState
+import org.readium.r2.shared.DelicateReadiumApi
 import org.readium.r2.shared.publication.*
+import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.mediatype.MediaType
 import timber.log.Timber
 
 /**
@@ -153,7 +157,9 @@ public class MediaSessionNavigator(
 
     // Navigator
 
-    private val _currentLocator = MutableStateFlow(Locator(href = "#", type = ""))
+    private val _currentLocator = MutableStateFlow(
+        Locator(href = Url("#")!!, mediaType = MediaType.BINARY)
+    )
     override val currentLocator: StateFlow<Locator> get() = _currentLocator.asStateFlow()
 
     /**
@@ -179,8 +185,12 @@ public class MediaSessionNavigator(
         return locator
     }
 
+    @OptIn(DelicateReadiumApi::class)
     override fun go(locator: Locator, animated: Boolean, completion: () -> Unit): Boolean {
         if (!isActive) return false
+
+        @Suppress("NAME_SHADOWING")
+        val locator = publication.normalizeLocator(locator)
 
         listener?.onJumpToLocator(locator)
 

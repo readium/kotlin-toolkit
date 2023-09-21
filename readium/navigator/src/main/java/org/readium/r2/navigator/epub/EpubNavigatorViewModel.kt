@@ -11,7 +11,6 @@ package org.readium.r2.navigator.epub
 import android.app.Application
 import android.graphics.PointF
 import android.graphics.RectF
-import android.net.Uri
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import androidx.lifecycle.AndroidViewModel
@@ -29,12 +28,14 @@ import org.readium.r2.navigator.preferences.*
 import org.readium.r2.navigator.util.createViewModelFactory
 import org.readium.r2.shared.DelicateReadiumApi
 import org.readium.r2.shared.ExperimentalReadiumApi
-import org.readium.r2.shared.extensions.addPrefix
 import org.readium.r2.shared.extensions.mapStateIn
+import org.readium.r2.shared.publication.Href
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.epub.EpubLayout
-import org.readium.r2.shared.util.Href
+import org.readium.r2.shared.util.AbsoluteUrl
+import org.readium.r2.shared.util.RelativeUrl
+import org.readium.r2.shared.util.Url
 
 internal enum class DualPage {
     AUTO, OFF, ON
@@ -59,14 +60,14 @@ internal class EpubNavigatorViewModel(
         sealed class Scope {
             object CurrentResource : Scope()
             object LoadedResources : Scope()
-            data class Resource(val href: String) : Scope()
+            data class Resource(val href: Url) : Scope()
             data class WebView(val webView: R2BasicWebView) : Scope()
         }
     }
 
     sealed class Event {
         data class GoTo(val target: Link) : Event()
-        data class OpenExternalLink(val url: Uri) : Event()
+        data class OpenExternalLink(val url: Url) : Event()
 
         /** Refreshes all the resources in the view pager. */
         object InvalidateViewPager : Event()
@@ -147,7 +148,7 @@ internal class EpubNavigatorViewModel(
         if (link != null) {
             for ((group, decorations) in decorations) {
                 val changes = decorations
-                    .filter { it.locator.href == link.href }
+                    .filter { it.locator.href == link.url() }
                     .map { DecorationChange.Added(it) }
 
                 val groupScript = changes.javascriptForGroup(group, decorationTemplates) ?: continue
@@ -160,32 +161,21 @@ internal class EpubNavigatorViewModel(
 
     // Serving resources
 
-    val baseUrl: String =
-        publication.linkWithRel("self")?.href
+    val baseUrl: AbsoluteUrl =
+        (publication.baseUrl as? AbsoluteUrl)
             ?: WebViewServer.publicationBaseHref
 
     /**
      * Generates the URL to the given publication link.
      */
-    fun urlTo(link: Link): String =
-        with(link) {
-            // Already an absolute URL?
-            if (Uri.parse(href).scheme != null) {
-                href
-            } else {
-                Href(
-                    href = href.removePrefix("/"),
-                    baseHref = baseUrl
-                ).percentEncodedString
-            }
-        }
+    fun urlTo(link: Link): AbsoluteUrl =
+        baseUrl.resolve(link.url())
 
     /**
      * Intercepts and handles web view navigation to [url].
      */
-    fun navigateToUrl(url: Uri) = viewModelScope.launch {
-        val href = url.toString()
-        val link = internalLinkFromUrl(href)
+    fun navigateToUrl(url: AbsoluteUrl) = viewModelScope.launch {
+        val link = internalLinkFromUrl(url)
         if (link != null) {
             _events.send(Event.GoTo(link))
         } else {
@@ -196,13 +186,13 @@ internal class EpubNavigatorViewModel(
     /**
      * Gets the publication [Link] targeted by the given [url].
      */
-    fun internalLinkFromUrl(url: String): Link? {
-        if (!url.startsWith(baseUrl)) return null
+    fun internalLinkFromUrl(url: Url): Link? {
+        val href = (baseUrl.relativize(url) as? RelativeUrl)
+            ?: return null
 
-        val href = url.removePrefix(baseUrl).addPrefix("/")
         return publication.linkWithHref(href)
-            // Query parameters must be kept as they might be relevant for the fetcher.
-            ?.copy(href = href)
+            // Query parameters must be kept as they might be relevant for the container.
+            ?.copy(href = Href(href))
     }
 
     fun shouldInterceptRequest(request: WebResourceRequest): WebResourceResponse? =

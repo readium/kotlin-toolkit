@@ -7,13 +7,14 @@
  * LICENSE file present in the project repository where this source code is maintained.
  */
 
+@file:OptIn(ExperimentalReadiumApi::class)
+
 package org.readium.r2.opds
 
-import java.net.URL
 import org.joda.time.DateTime
 import org.json.JSONArray
 import org.json.JSONObject
-import org.readium.r2.shared.extensions.removeLastComponent
+import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.opds.Facet
 import org.readium.r2.shared.opds.Feed
 import org.readium.r2.shared.opds.Group
@@ -22,8 +23,9 @@ import org.readium.r2.shared.opds.ParseData
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Manifest
 import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.util.Href
+import org.readium.r2.shared.publication.normalizeHrefsToBase
 import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.http.DefaultHttpClient
 import org.readium.r2.shared.util.http.HttpClient
 import org.readium.r2.shared.util.http.HttpRequest
@@ -47,31 +49,29 @@ public class OPDS2Parser {
         public suspend fun parseUrlString(
             url: String,
             client: HttpClient = DefaultHttpClient(MediaTypeRetriever())
-        ): Try<ParseData, Exception> {
-            return client.fetchWithDecoder(HttpRequest(url)) {
-                this.parse(it.body, URL(url))
-            }
-        }
+        ): Try<ParseData, Exception> =
+            parseRequest(HttpRequest(url), client)
 
         public suspend fun parseRequest(
             request: HttpRequest,
             client: HttpClient = DefaultHttpClient(MediaTypeRetriever())
         ): Try<ParseData, Exception> {
             return client.fetchWithDecoder(request) {
-                this.parse(it.body, URL(request.url))
+                val url = Url(request.url) ?: throw Exception("Invalid URL")
+                this.parse(it.body, url)
             }
         }
 
-        public fun parse(jsonData: ByteArray, url: URL): ParseData {
+        public fun parse(jsonData: ByteArray, url: Url): ParseData {
             return if (isFeed(jsonData)) {
                 ParseData(parseFeed(jsonData, url), null, 2)
             } else {
                 ParseData(
                     null,
-                    Manifest.fromJSON(
+                    parsePublication(
                         JSONObject(String(jsonData)),
-                        mediaTypeRetriever = mediaTypeRetriever
-                    )?.let { Publication(it) },
+                        url
+                    ),
                     2
                 )
             }
@@ -87,7 +87,7 @@ public class OPDS2Parser {
                     )
             }
 
-        private fun parseFeed(jsonData: ByteArray, url: URL): Feed {
+        private fun parseFeed(jsonData: ByteArray, url: Url): Feed {
             val topLevelDict = JSONObject(String(jsonData))
             val metadataDict: JSONObject = topLevelDict.getJSONObject("metadata")
                 ?: throw Exception(OPDS2ParserError.MetadataNotFound.name)
@@ -193,7 +193,7 @@ public class OPDS2Parser {
                         ?: throw Exception(OPDS2ParserError.InvalidFacet.name)
                     for (k in 0 until links.length()) {
                         val linkDict = links.getJSONObject(k)
-                        parseLink(feed, linkDict)?.let {
+                        parseLink(linkDict, feed.href)?.let {
                             facet.links.add(it)
                         }
                     }
@@ -205,7 +205,7 @@ public class OPDS2Parser {
         private fun parseLinks(feed: Feed, links: JSONArray) {
             for (i in 0 until links.length()) {
                 val linkDict = links.getJSONObject(i)
-                parseLink(feed, linkDict)?.let {
+                parseLink(linkDict, feed.href)?.let {
                     feed.links.add(it)
                 }
             }
@@ -214,8 +214,8 @@ public class OPDS2Parser {
         private fun parsePublications(feed: Feed, publications: JSONArray) {
             for (i in 0 until publications.length()) {
                 val pubDict = publications.getJSONObject(i)
-                Manifest.fromJSON(pubDict, mediaTypeRetriever = mediaTypeRetriever)?.let { manifest ->
-                    feed.publications.add(Publication(manifest))
+                parsePublication(pubDict, feed.href)?.let {
+                    feed.publications.add(it)
                 }
             }
         }
@@ -223,7 +223,7 @@ public class OPDS2Parser {
         private fun parseNavigation(feed: Feed, navLinks: JSONArray) {
             for (i in 0 until navLinks.length()) {
                 val navDict = navLinks.getJSONObject(i)
-                parseLink(feed, navDict)?.let { link ->
+                parseLink(navDict, feed.href)?.let { link ->
                     feed.navigation.add(link)
                 }
             }
@@ -244,7 +244,7 @@ public class OPDS2Parser {
                         ?: throw Exception(OPDS2ParserError.InvalidGroup.name)
                     for (j in 0 until links.length()) {
                         val linkDict = links.getJSONObject(j)
-                        parseLink(feed, linkDict)?.let { link ->
+                        parseLink(linkDict, feed.href)?.let { link ->
                             group.links.add(link)
                         }
                     }
@@ -254,7 +254,7 @@ public class OPDS2Parser {
                         ?: throw Exception(OPDS2ParserError.InvalidGroup.name)
                     for (j in 0 until links.length()) {
                         val linkDict = links.getJSONObject(j)
-                        parseLink(feed, linkDict)?.let { link ->
+                        parseLink(linkDict, feed.href)?.let { link ->
                             group.navigation.add(link)
                         }
                     }
@@ -264,8 +264,8 @@ public class OPDS2Parser {
                         ?: throw Exception(OPDS2ParserError.InvalidGroup.name)
                     for (j in 0 until publications.length()) {
                         val pubDict = publications.getJSONObject(j)
-                        Manifest.fromJSON(pubDict, mediaTypeRetriever = mediaTypeRetriever)?.let { manifest ->
-                            group.publications.add(Publication(manifest))
+                        parsePublication(pubDict, feed.href)?.let {
+                            group.publications.add(it)
                         }
                     }
                 }
@@ -273,15 +273,15 @@ public class OPDS2Parser {
             }
         }
 
-        private fun parseLink(feed: Feed, json: JSONObject): Link? {
-            val baseUrl = feed.href.removeLastComponent()
-            return Link.fromJSON(json, mediaTypeRetriever, normalizeHref = {
-                Href(
-                    it,
-                    baseUrl.toString()
-                ).string
-            })
-        }
+        private fun parsePublication(json: JSONObject, baseUrl: Url): Publication? =
+            Manifest.fromJSON(json, mediaTypeRetriever = mediaTypeRetriever)
+                // Self link takes precedence over the given `baseUrl`.
+                ?.let { it.normalizeHrefsToBase(it.linkWithRel("self")?.href?.resolve() ?: baseUrl) }
+                ?.let { Publication(it) }
+
+        private fun parseLink(json: JSONObject, baseUrl: Url): Link? =
+            Link.fromJSON(json, mediaTypeRetriever)
+                ?.normalizeHrefsToBase(baseUrl)
 
         public var mediaTypeRetriever: MediaTypeRetriever = MediaTypeRetriever()
     }

@@ -13,14 +13,14 @@ import java.nio.channels.Channels
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.extensions.*
+import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Try
-import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.getOrThrow
-import org.readium.r2.shared.util.isFile
 import org.readium.r2.shared.util.isLazyInitialized
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.mediatype.MediaTypeHints
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
+import org.readium.r2.shared.util.toUrl
 
 /**
  * A [Resource] to access a [file].
@@ -45,7 +45,7 @@ public class FileResource private constructor(
         }
     }
 
-    override val source: Url? = Url("file://${file.path}")
+    override val source: AbsoluteUrl = file.toUrl()
 
     override suspend fun properties(): ResourceTry<Resource.Properties> =
         ResourceTry.success(Resource.Properties())
@@ -136,12 +136,9 @@ public class FileResourceFactory(
     private val mediaTypeRetriever: MediaTypeRetriever
 ) : ResourceFactory {
 
-    override suspend fun create(url: Url): Try<Resource, ResourceFactory.Error> {
-        if (!url.isFile()) {
-            return Try.failure(ResourceFactory.Error.SchemeNotSupported(url.scheme))
-        }
-
-        val file = File(url.path)
+    override suspend fun create(url: AbsoluteUrl): Try<Resource, ResourceFactory.Error> {
+        val file = url.toFile()
+            ?: return Try.failure(ResourceFactory.Error.SchemeNotSupported(url.scheme))
 
         try {
             if (!file.isFile) {

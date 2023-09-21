@@ -9,22 +9,18 @@
 
 package org.readium.r2.lcp.license.container
 
-import android.content.ContentResolver
 import android.content.Context
 import java.io.File
 import org.readium.r2.lcp.LcpException
 import org.readium.r2.lcp.license.model.LicenseDocument
 import org.readium.r2.shared.asset.Asset
-import org.readium.r2.shared.extensions.addPrefix
 import org.readium.r2.shared.resource.Container
 import org.readium.r2.shared.resource.Resource
-import org.readium.r2.shared.util.isFile
+import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
-import org.readium.r2.shared.util.toFile
 
-private const val LICENSE_IN_EPUB = "META-INF/license.lcpl"
-
-private const val LICENSE_IN_RPF = "license.lcpl"
+private val LICENSE_IN_EPUB = Url("META-INF/license.lcpl")!!
+private val LICENSE_IN_RPF = Url("license.lcpl")!!
 
 /**
  * Encapsulates the read/write access to the packaged License Document (eg. in an EPUB container,
@@ -67,7 +63,7 @@ internal fun createLicenseContainer(
     }
 
     return when {
-        resource.source?.isFile() == true ->
+        resource.source?.isFile == true ->
             LcplLicenseContainer(resource.source!!.toFile()!!)
         else ->
             LcplResourceLicenseContainer(resource)
@@ -86,11 +82,11 @@ internal fun createLicenseContainer(
     }
 
     return when {
-        container.source?.isFile() == true ->
-            FileZipLicenseContainer(container.source!!.path, licensePath)
-        container.source?.scheme == ContentResolver.SCHEME_CONTENT ->
+        container.source?.isFile == true ->
+            FileZipLicenseContainer(container.source!!.path!!, licensePath)
+        container.source?.isContent == true ->
             ContentZipLicenseContainer(context, container, licensePath)
         else ->
-            ContainerLicenseContainer(container, licensePath.addPrefix("/"))
+            ContainerLicenseContainer(container, licensePath)
     }
 }

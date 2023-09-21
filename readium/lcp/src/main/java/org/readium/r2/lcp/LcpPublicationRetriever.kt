@@ -13,10 +13,10 @@ import kotlinx.coroutines.launch
 import org.readium.r2.lcp.license.container.createLicenseContainer
 import org.readium.r2.lcp.license.model.LicenseDocument
 import org.readium.r2.shared.extensions.tryOrLog
-import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.downloads.DownloadManager
 import org.readium.r2.shared.util.mediatype.FormatRegistry
 import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.shared.util.mediatype.MediaTypeHints
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 
 /**
@@ -152,7 +152,7 @@ public class LcpPublicationRetriever(
     private fun fetchPublication(
         license: LicenseDocument
     ): RequestId {
-        val url = Url(license.publicationLink.url)
+        val url = license.publicationLink.url()
 
         val requestId = downloadManager.submit(
             request = DownloadManager.Request(
@@ -192,9 +192,11 @@ public class LcpPublicationRetriever(
                 downloadsRepository.removeDownload(requestId.value)
 
                 val mt = mediaTypeRetriever.retrieve(
-                    mediaTypes = listOfNotNull(
-                        license.publicationLink.type,
-                        download.mediaType.toString()
+                    MediaTypeHints(
+                        mediaTypes = listOfNotNull(
+                            license.publicationLink.mediaType,
+                            download.mediaType
+                        )
                     )
                 ) ?: MediaType.EPUB
 

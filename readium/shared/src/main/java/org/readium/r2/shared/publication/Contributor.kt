@@ -80,14 +80,11 @@ public data class Contributor(
          * Parses a [Contributor] from its RWPM JSON representation.
          *
          * A contributor can be parsed from a single string, or a full-fledged object.
-         * The [links]' href and their children's will be normalized recursively using the
-         * provided [normalizeHref] closure.
          * If the contributor can't be parsed, a warning will be logged with [warnings].
          */
         public fun fromJSON(
             json: Any?,
             mediaTypeRetriever: MediaTypeRetriever = MediaTypeRetriever(),
-            normalizeHref: LinkHrefNormalizer = LinkHrefNormalizerIdentity,
             warnings: WarningLogger? = null
         ): Contributor? {
             json ?: return null
@@ -112,7 +109,6 @@ public data class Contributor(
                 links = Link.fromJSONArray(
                     jsonObject.optJSONArray("links"),
                     mediaTypeRetriever,
-                    normalizeHref,
                     warnings
                 )
             )
@@ -121,14 +117,11 @@ public data class Contributor(
         /**
          * Creates a list of [Contributor] from its RWPM JSON representation.
          *
-         * The [links]' href and their children's will be normalized recursively using the
-         * provided [normalizeHref] closure.
          * If a contributor can't be parsed, a warning will be logged with [warnings].
          */
         public fun fromJSONArray(
             json: Any?,
             mediaTypeRetriever: MediaTypeRetriever = MediaTypeRetriever(),
-            normalizeHref: LinkHrefNormalizer = LinkHrefNormalizerIdentity,
             warnings: WarningLogger? = null
         ): List<Contributor> {
             return when (json) {
@@ -137,13 +130,12 @@ public data class Contributor(
                         fromJSON(
                             it,
                             mediaTypeRetriever,
-                            normalizeHref,
                             warnings
                         )
                     }
 
                 is JSONArray ->
-                    json.parseObjects { fromJSON(it, mediaTypeRetriever, normalizeHref, warnings) }
+                    json.parseObjects { fromJSON(it, mediaTypeRetriever, warnings) }
 
                 else -> emptyList()
             }

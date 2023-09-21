@@ -14,7 +14,6 @@ import kotlinx.coroutines.withContext
 import org.readium.r2.shared.util.MessageError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
-import org.readium.r2.shared.util.toFile
 
 public class DefaultArchiveFactory(
     private val mediaTypeRetriever: MediaTypeRetriever

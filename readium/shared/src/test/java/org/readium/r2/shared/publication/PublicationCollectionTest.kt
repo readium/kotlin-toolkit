@@ -23,7 +23,7 @@ class PublicationCollectionTest {
     @Test fun `parse minimal JSON`() {
         assertEquals(
             PublicationCollection(
-                links = listOf(Link(href = "/link"))
+                links = listOf(Link(href = Href("/link")!!))
             ),
             PublicationCollection.fromJSON(
                 JSONObject(
@@ -40,17 +40,22 @@ class PublicationCollectionTest {
         assertEquals(
             PublicationCollection(
                 metadata = mapOf("metadata1" to "value"),
-                links = listOf(Link(href = "/link")),
+                links = listOf(Link(href = Href("/link")!!)),
                 subcollections = mapOf(
-                    "sub1" to listOf(PublicationCollection(links = listOf(Link(href = "/sublink")))),
+                    "sub1" to listOf(
+                        PublicationCollection(links = listOf(Link(href = Href("/sublink")!!)))
+                    ),
                     "sub2" to listOf(
                         PublicationCollection(
-                            links = listOf(Link(href = "/sublink1"), Link(href = "/sublink2"))
+                            links = listOf(
+                                Link(href = Href("/sublink1")!!),
+                                Link(href = Href("/sublink2")!!)
+                            )
                         )
                     ),
                     "sub3" to listOf(
-                        PublicationCollection(links = listOf(Link(href = "/sublink3"))),
-                        PublicationCollection(links = listOf(Link(href = "/sublink4")))
+                        PublicationCollection(links = listOf(Link(href = Href("/sublink3")!!))),
+                        PublicationCollection(links = listOf(Link(href = Href("/sublink4")!!)))
                     )
                 )
             ),
@@ -97,15 +102,20 @@ class PublicationCollectionTest {
     @Test fun `parse multiple JSON collections`() {
         assertEquals(
             mapOf(
-                "sub1" to listOf(PublicationCollection(links = listOf(Link(href = "/sublink")))),
+                "sub1" to listOf(
+                    PublicationCollection(links = listOf(Link(href = Href("/sublink")!!)))
+                ),
                 "sub2" to listOf(
                     PublicationCollection(
-                        links = listOf(Link(href = "/sublink1"), Link(href = "/sublink2"))
+                        links = listOf(
+                            Link(href = Href("/sublink1")!!),
+                            Link(href = Href("/sublink2")!!)
+                        )
                     )
                 ),
                 "sub3" to listOf(
-                    PublicationCollection(links = listOf(Link(href = "/sublink3"))),
-                    PublicationCollection(links = listOf(Link(href = "/sublink4")))
+                    PublicationCollection(links = listOf(Link(href = Href("/sublink3")!!))),
+                    PublicationCollection(links = listOf(Link(href = Href("/sublink4")!!)))
                 )
             ),
             PublicationCollection.collectionsFromJSON(
@@ -146,7 +156,7 @@ class PublicationCollectionTest {
                 "links": [{"href": "/link", "templated": false}]
             }"""
             ),
-            PublicationCollection(links = listOf(Link(href = "/link"))).toJSON()
+            PublicationCollection(links = listOf(Link(href = Href("/link")!!))).toJSON()
         )
     }
 
@@ -191,17 +201,22 @@ class PublicationCollectionTest {
             ),
             PublicationCollection(
                 metadata = mapOf("metadata1" to "value"),
-                links = listOf(Link(href = "/link")),
+                links = listOf(Link(href = Href("/link")!!)),
                 subcollections = mapOf(
-                    "sub1" to listOf(PublicationCollection(links = listOf(Link(href = "/sublink")))),
+                    "sub1" to listOf(
+                        PublicationCollection(links = listOf(Link(href = Href("/sublink")!!)))
+                    ),
                     "sub2" to listOf(
                         PublicationCollection(
-                            links = listOf(Link(href = "/sublink1"), Link(href = "/sublink2"))
+                            links = listOf(
+                                Link(href = Href("/sublink1")!!),
+                                Link(href = Href("/sublink2")!!)
+                            )
                         )
                     ),
                     "sub3" to listOf(
-                        PublicationCollection(links = listOf(Link(href = "/sublink3"))),
-                        PublicationCollection(links = listOf(Link(href = "/sublink4")))
+                        PublicationCollection(links = listOf(Link(href = Href("/sublink3")!!))),
+                        PublicationCollection(links = listOf(Link(href = Href("/sublink4")!!)))
                     )
                 )
             ).toJSON()
@@ -242,15 +257,20 @@ class PublicationCollectionTest {
             }"""
             ),
             mapOf(
-                "sub1" to listOf(PublicationCollection(links = listOf(Link(href = "/sublink")))),
+                "sub1" to listOf(
+                    PublicationCollection(links = listOf(Link(href = Href("/sublink")!!)))
+                ),
                 "sub2" to listOf(
                     PublicationCollection(
-                        links = listOf(Link(href = "/sublink1"), Link(href = "/sublink2"))
+                        links = listOf(
+                            Link(href = Href("/sublink1")!!),
+                            Link(href = Href("/sublink2")!!)
+                        )
                     )
                 ),
                 "sub3" to listOf(
-                    PublicationCollection(links = listOf(Link(href = "/sublink3"))),
-                    PublicationCollection(links = listOf(Link(href = "/sublink4")))
+                    PublicationCollection(links = listOf(Link(href = Href("/sublink3")!!))),
+                    PublicationCollection(links = listOf(Link(href = Href("/sublink4")!!)))
                 )
             ).toJSONObject()
         )

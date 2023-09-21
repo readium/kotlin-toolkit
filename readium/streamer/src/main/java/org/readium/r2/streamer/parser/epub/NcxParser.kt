@@ -8,11 +8,11 @@ package org.readium.r2.streamer.parser.epub
 
 import org.readium.r2.shared.parser.xml.ElementNode
 import org.readium.r2.shared.publication.Link
-import org.readium.r2.shared.util.Href
+import org.readium.r2.shared.util.Url
 
 internal object NcxParser {
 
-    fun parse(document: ElementNode, filePath: String): Map<String, List<Link>> {
+    fun parse(document: ElementNode, filePath: Url): Map<String, List<Link>> {
         val toc = document.getFirst("navMap", Namespaces.NCX)
             ?.let { parseNavMapElement(it, filePath) }?.let { Pair("toc", it) }
         val pageList = document.getFirst("pageList", Namespaces.NCX)
@@ -20,21 +20,21 @@ internal object NcxParser {
         return listOfNotNull(toc, pageList).toMap()
     }
 
-    private fun parseNavMapElement(element: ElementNode, filePath: String): List<Link> =
+    private fun parseNavMapElement(element: ElementNode, filePath: Url): List<Link> =
         element.get("navPoint", Namespaces.NCX).mapNotNull { parseNavPointElement(it, filePath) }
 
-    private fun parsePageListElement(element: ElementNode, filePath: String): List<Link> =
+    private fun parsePageListElement(element: ElementNode, filePath: Url): List<Link> =
         element.get("pageTarget", Namespaces.NCX).mapNotNull {
             val href = extractHref(it, filePath)
             val title = extractTitle(it)
-            if (href.isNullOrBlank() || title.isNullOrBlank()) {
+            if (href == null || title.isNullOrBlank()) {
                 null
             } else {
                 Link(title = title, href = href)
             }
         }
 
-    private fun parseNavPointElement(element: ElementNode, filePath: String): Link? {
+    private fun parseNavPointElement(element: ElementNode, filePath: Url): Link? {
         val title = extractTitle(element)
         val href = extractHref(element, filePath)
         val children = element.get("navPoint", Namespaces.NCX).mapNotNull {
@@ -46,7 +46,11 @@ internal object NcxParser {
         return if (children.isEmpty() && (href == null || title == null)) {
             null
         } else {
-            Link(title = title, href = href ?: "#", children = children)
+            Link(
+                title = title,
+                href = href ?: Url("#")!!,
+                children = children
+            )
         }
     }
 
@@ -54,7 +58,9 @@ internal object NcxParser {
         element.getFirst("navLabel", Namespaces.NCX)?.getFirst("text", Namespaces.NCX)
             ?.text?.replace("\\s+".toRegex(), " ")?.trim()?.ifBlank { null }
 
-    private fun extractHref(element: ElementNode, filePath: String) =
+    private fun extractHref(element: ElementNode, filePath: Url) =
         element.getFirst("content", Namespaces.NCX)?.getAttr("src")
-            ?.ifBlank { null }?.let { Href(it, baseHref = filePath).string }
+            ?.ifBlank { null }
+            ?.let { Url(it) }
+            ?.let { filePath.resolve(it) }
 }

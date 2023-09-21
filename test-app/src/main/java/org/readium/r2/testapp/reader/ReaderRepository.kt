@@ -26,7 +26,6 @@ import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.allAreHtml
 import org.readium.r2.shared.publication.services.isRestricted
 import org.readium.r2.shared.util.Try
-import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.testapp.Readium
 import org.readium.r2.testapp.data.BookRepository
@@ -77,7 +76,7 @@ class ReaderRepository(
                 )
 
                 operator fun invoke(
-                    error: Publication.OpeningException
+                    error: Publication.OpenError
                 ): OpeningError = PublicationError(
                     org.readium.r2.testapp.domain.PublicationError(
                         error
@@ -104,7 +103,7 @@ class ReaderRepository(
         val book = checkNotNull(bookRepository.get(bookId)) { "Cannot find book in database." }
 
         val asset = readium.assetRetriever.retrieve(
-            Url(book.href)!!,
+            book.url,
             book.mediaType,
             book.assetType
         ).getOrElse { return Try.failure(OpeningError.PublicationError(it)) }

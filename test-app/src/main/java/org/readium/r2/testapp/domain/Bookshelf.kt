@@ -15,6 +15,7 @@ import kotlinx.coroutines.launch
 import org.readium.r2.shared.asset.AssetRetriever
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.protection.ContentProtectionSchemeRetriever
+import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.getOrElse
@@ -62,7 +63,7 @@ class Bookshelf(
         MainScope()
 
     private inner class PublicationRetrieverListener : PublicationRetriever.Listener {
-        override fun onSuccess(publication: File, coverUrl: String?) {
+        override fun onSuccess(publication: File, coverUrl: AbsoluteUrl?) {
             coroutineScope.launch {
                 val url = publication.toUrl()
                 addBookFeedback(url, coverUrl)
@@ -110,7 +111,7 @@ class Bookshelf(
 
     private suspend fun addBookFeedback(
         url: Url,
-        coverUrl: String? = null
+        coverUrl: AbsoluteUrl? = null
     ) {
         addBook(url, coverUrl)
             .onSuccess { channel.send(Event.ImportPublicationSuccess) }
@@ -119,7 +120,7 @@ class Bookshelf(
 
     private suspend fun addBook(
         url: Url,
-        coverUrl: String? = null
+        coverUrl: AbsoluteUrl? = null
     ): Try<Unit, ImportError> {
         val asset =
             assetRetriever.retrieve(url)
@@ -147,7 +148,7 @@ class Bookshelf(
                 asset.assetType,
                 drmScheme,
                 publication,
-                coverFile.path
+                coverFile
             )
             if (id == -1L) {
                 coverFile.delete()
@@ -155,7 +156,7 @@ class Bookshelf(
             }
         }
             .onFailure {
-                Timber.d("Cannot open publication: $it.")
+                Timber.e("Cannot open publication: $it.")
                 return Try.failure(
                     ImportError.PublicationError(PublicationError(it))
                 )
@@ -167,10 +168,7 @@ class Bookshelf(
     suspend fun deleteBook(book: Book) {
         val id = book.id!!
         bookRepository.deleteBook(id)
-        val url = Url(book.href)!!
-        if (url.scheme == "file") {
-            tryOrLog { File(url.path).delete() }
-        }
+        tryOrLog { book.url.toFile()?.delete() }
         tryOrLog { File(book.cover).delete() }
     }
 }

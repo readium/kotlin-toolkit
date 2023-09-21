@@ -12,12 +12,12 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.browser.customtabs.CustomTabsIntent
 import androidx.fragment.app.FragmentManager
 import com.google.android.material.datepicker.*
-import java.net.URL
 import java.util.*
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 import kotlinx.coroutines.suspendCancellableCoroutine
+import org.readium.r2.shared.util.Url
 
 /**
  * A default implementation of the [LcpLicense.RenewListener] using Chrome Custom Tabs for
@@ -73,7 +73,7 @@ public class MaterialRenewListener(
             .show(fragmentManager, "MaterialRenewListener.DatePicker")
     }
 
-    override suspend fun openWebPage(url: URL) {
+    override suspend fun openWebPage(url: Url) {
         suspendCoroutine { cont ->
             webPageContinuation = cont
 

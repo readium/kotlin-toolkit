@@ -22,6 +22,7 @@ import kotlin.math.roundToInt
 import org.joda.time.DateTime
 import org.joda.time.format.DateTimeFormat
 import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.util.Url
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.data.model.Bookmark
 import org.readium.r2.testapp.databinding.FragmentListviewBinding
@@ -118,7 +119,7 @@ class BookmarkAdapter(
     ) {
 
         fun bind(bookmark: Bookmark) {
-            val title = getBookSpineItem(bookmark.resourceHref)
+            val title = getBookSpineItem(Url(bookmark.resourceHref)!!)
                 ?: "*Title Missing*"
 
             binding.bookmarkChapter.text = title
@@ -149,14 +150,14 @@ class BookmarkAdapter(
         }
     }
 
-    private fun getBookSpineItem(href: String): String? {
+    private fun getBookSpineItem(href: Url): String? {
         for (link in publication.tableOfContents) {
-            if (link.href == href) {
+            if (link.url() == href) {
                 return link.outlineTitle
             }
         }
         for (link in publication.readingOrder) {
-            if (link.href == href) {
+            if (link.url() == href) {
                 return link.outlineTitle
             }
         }

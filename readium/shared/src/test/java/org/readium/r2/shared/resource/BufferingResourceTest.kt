@@ -8,7 +8,6 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.readium.r2.shared.Fixtures
 import org.readium.r2.shared.util.mediatype.MediaType
-import org.readium.r2.shared.util.toFile
 import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)

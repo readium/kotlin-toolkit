@@ -11,9 +11,15 @@ package org.readium.r2.streamer.parser.pdf
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Test
+import org.junit.runner.RunWith
+import org.readium.r2.shared.publication.Href
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
+import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.mediatype.MediaType
+import org.robolectric.RobolectricTestRunner
 
+@RunWith(RobolectricTestRunner::class)
 class PdfPositionsServiceTest {
 
     @Test
@@ -31,8 +37,8 @@ class PdfPositionsServiceTest {
             listOf(
                 listOf(
                     Locator(
-                        href = "/publication.pdf",
-                        type = "application/pdf",
+                        href = Url("publication.pdf")!!,
+                        mediaType = MediaType.PDF,
                         locations = Locator.Locations(
                             fragments = listOf("page=1"),
                             progression = 0.0,
@@ -56,8 +62,8 @@ class PdfPositionsServiceTest {
             listOf(
                 listOf(
                     Locator(
-                        href = "/publication.pdf",
-                        type = "application/pdf",
+                        href = Url("publication.pdf")!!,
+                        mediaType = MediaType.PDF,
                         locations = Locator.Locations(
                             fragments = listOf("page=1"),
                             progression = 0.0,
@@ -66,8 +72,8 @@ class PdfPositionsServiceTest {
                         )
                     ),
                     Locator(
-                        href = "/publication.pdf",
-                        type = "application/pdf",
+                        href = Url("publication.pdf")!!,
+                        mediaType = MediaType.PDF,
                         locations = Locator.Locations(
                             fragments = listOf("page=2"),
                             progression = 1.0 / 3.0,
@@ -76,8 +82,8 @@ class PdfPositionsServiceTest {
                         )
                     ),
                     Locator(
-                        href = "/publication.pdf",
-                        type = "application/pdf",
+                        href = Url("publication.pdf")!!,
+                        mediaType = MediaType.PDF,
                         locations = Locator.Locations(
                             fragments = listOf("page=3"),
                             progression = 2.0 / 3.0,
@@ -92,7 +98,7 @@ class PdfPositionsServiceTest {
     }
 
     private fun createService(
-        link: Link = Link(href = "/publication.pdf"),
+        link: Link = Link(href = Href("publication.pdf")!!),
         pageCount: Int
     ) = PdfPositionsService(
         link = link,

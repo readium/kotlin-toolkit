@@ -107,7 +107,7 @@ class CatalogFragment : Fragment() {
                                     item.setOnMenuItemClickListener {
                                         val catalog1 = Catalog(
                                             title = link.title!!,
-                                            href = link.href,
+                                            href = link.href.toString(),
                                             type = catalog.type
                                         )
                                         val bundle = bundleOf(CATALOGFEED to catalog1)

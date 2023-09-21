@@ -11,6 +11,7 @@ import androidx.annotation.StringRes
 import java.net.SocketTimeoutException
 import java.util.*
 import org.readium.r2.shared.UserException
+import org.readium.r2.shared.util.Url
 
 public sealed class LcpException(
     userMessageId: Int,
@@ -203,17 +204,17 @@ public sealed class LcpException(
         public object OpenFailed : Container(R.string.readium_lcp_exception_container_open_failed)
 
         /** The file at given relative path is not found in the Container. */
-        public class FileNotFound(public val path: String) : Container(
+        public class FileNotFound(public val url: Url) : Container(
             R.string.readium_lcp_exception_container_file_not_found
         )
 
         /** Can't read the file at given relative path in the Container. */
-        public class ReadFailed(public val path: String) : Container(
+        public class ReadFailed(public val url: Url?) : Container(
             R.string.readium_lcp_exception_container_read_failed
         )
 
         /** Can't write the file at given relative path in the Container. */
-        public class WriteFailed(public val path: String) : Container(
+        public class WriteFailed(public val url: Url?) : Container(
             R.string.readium_lcp_exception_container_write_failed
         )
     }

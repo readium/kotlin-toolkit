@@ -47,7 +47,7 @@ class NavigationAdapter(val type: Int) :
             binding.catalogListButton.text = link.title
             binding.catalogListButton.setOnClickListener {
                 val catalog1 = Catalog(
-                    href = link.href,
+                    href = link.href.toString(),
                     title = link.title!!,
                     type = type
                 )

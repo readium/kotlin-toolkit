@@ -4,27 +4,30 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import java.io.File
 import java.io.FileOutputStream
-import java.io.IOException
-import java.net.HttpURLConnection
-import java.net.URL
 import java.util.UUID
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.services.cover
+import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.http.HttpClient
+import org.readium.r2.shared.util.http.HttpException
+import org.readium.r2.shared.util.http.HttpRequest
+import org.readium.r2.shared.util.http.fetchWithDecoder
+import org.readium.r2.testapp.utils.tryOrLog
 
 class CoverStorage(
-    appStorageDir: File
+    appStorageDir: File,
+    private val httpClient: HttpClient
 ) {
 
     private val coverDir: File =
         File(appStorageDir, "covers/")
             .apply { if (!exists()) mkdirs() }
 
-    suspend fun storeCover(publication: Publication, overrideUrl: String?): Try<File, Exception> {
-        val coverBitmap: Bitmap? = overrideUrl
-            ?.let { getBitmapFromURL(it) }
+    suspend fun storeCover(publication: Publication, overrideUrl: AbsoluteUrl?): Try<File, Exception> {
+        val coverBitmap: Bitmap? = overrideUrl?.fetchBitmap()
             ?: publication.cover()
         return try {
             Try.success(storeCover(coverBitmap))
@@ -32,6 +35,27 @@ class CoverStorage(
             Try.failure(e)
         }
     }
+
+    private suspend fun AbsoluteUrl.fetchBitmap(): Bitmap? =
+        tryOrLog {
+            when {
+                isFile -> toFile()?.toBitmap()
+                isHttp -> httpClient.fetchBitmap(HttpRequest(toString())).getOrNull()
+                else -> null
+            }
+        }
+
+    private suspend fun File.toBitmap(): Bitmap? =
+        withContext(Dispatchers.IO) {
+            tryOrLog {
+                BitmapFactory.decodeFile(path)
+            }
+        }
+
+    private suspend fun HttpClient.fetchBitmap(request: HttpRequest): Try<Bitmap, HttpException> =
+        fetchWithDecoder(request) { response ->
+            BitmapFactory.decodeByteArray(response.body, 0, response.body.size)
+        }
 
     private suspend fun storeCover(cover: Bitmap?): File =
         withContext(Dispatchers.IO) {
@@ -42,20 +66,5 @@ class CoverStorage(
             fos.flush()
             fos.close()
             coverImageFile
-        }
-
-    private suspend fun getBitmapFromURL(src: String): Bitmap? =
-        withContext(Dispatchers.IO) {
-            try {
-                val url = URL(src)
-                val connection = url.openConnection() as HttpURLConnection
-                connection.doInput = true
-                connection.connect()
-                val input = connection.inputStream
-                BitmapFactory.decodeStream(input)
-            } catch (e: IOException) {
-                e.printStackTrace()
-                null
-            }
         }
 }

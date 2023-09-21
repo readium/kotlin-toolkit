@@ -21,8 +21,10 @@ import org.readium.r2.shared.publication.firstWithRel
 import org.readium.r2.shared.resource.DefaultArchiveFactory
 import org.readium.r2.shared.resource.FileResource
 import org.readium.r2.shared.resource.ResourceContainer
+import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
+import org.readium.r2.shared.util.toUrl
 import org.readium.r2.streamer.parseBlocking
 import org.readium.r2.streamer.parser.PublicationParser
 import org.robolectric.RobolectricTestRunner
@@ -33,8 +35,7 @@ class ImageParserTest {
     private val parser = ImageParser()
 
     private val cbzAsset = runBlocking {
-        val path = pathForResource("futuristic_tales.cbz")
-        val file = File(path)
+        val file = fileForResource("futuristic_tales.cbz")
         val resource = FileResource(file, mediaType = MediaType.CBZ)
         val archive = DefaultArchiveFactory(MediaTypeRetriever()).create(
             resource,
@@ -44,17 +45,17 @@ class ImageParserTest {
     }
 
     private val jpgAsset = runBlocking {
-        val path = pathForResource("futuristic_tales.jpg")
-        val resource = FileResource(File(path), mediaType = MediaType.JPEG)
+        val file = fileForResource("futuristic_tales.jpg")
+        val resource = FileResource(file, mediaType = MediaType.JPEG)
         PublicationParser.Asset(
             mediaType = MediaType.JPEG,
-            ResourceContainer(path, resource)
+            ResourceContainer(file.toUrl(), resource)
         )
     }
-    private fun pathForResource(resource: String): String {
+
+    private fun fileForResource(resource: String): File {
         val path = ImageParserTest::class.java.getResource(resource)?.path
-        assertNotNull(path)
-        return path!!
+        return File(requireNotNull(path))
     }
 
     @Test
@@ -77,10 +78,11 @@ class ImageParserTest {
     fun `readingOrder is sorted alphabetically`() {
         val builder = parser.parseBlocking(cbzAsset)
         assertNotNull(builder)
+        val base = Url.fromDecodedPath("Cory Doctorow's Futuristic Tales of the Here and Now/")!!
         val readingOrder = builder!!.manifest.readingOrder
-            .map { it.href.removePrefix("/Cory Doctorow's Futuristic Tales of the Here and Now") }
+            .map { base.relativize(it.url()).toString() }
         assertThat(readingOrder)
-            .containsExactly("/a-fc.jpg", "/x-002.jpg", "/x-003.jpg", "/x-004.jpg")
+            .containsExactly("a-fc.jpg", "x-002.jpg", "x-003.jpg", "x-004.jpg")
     }
 
     @Test
@@ -89,8 +91,8 @@ class ImageParserTest {
         assertNotNull(builder)
         with(builder!!.manifest.readingOrder) {
             assertEquals(
-                "/Cory Doctorow's Futuristic Tales of the Here and Now/a-fc.jpg",
-                firstWithRel("cover")?.href
+                Url.fromDecodedPath("Cory Doctorow's Futuristic Tales of the Here and Now/a-fc.jpg"),
+                firstWithRel("cover")?.url()
             )
         }
     }

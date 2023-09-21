@@ -45,23 +45,23 @@ sealed class PublicationError(@StringRes userMessageId: Int) : UserException(use
 
     companion object {
 
-        operator fun invoke(error: Publication.OpeningException): PublicationError =
+        operator fun invoke(error: Publication.OpenError): PublicationError =
             when (error) {
-                is Publication.OpeningException.Forbidden ->
+                is Publication.OpenError.Forbidden ->
                     Forbidden(error)
-                is Publication.OpeningException.IncorrectCredentials ->
+                is Publication.OpenError.IncorrectCredentials ->
                     IncorrectCredentials(error)
-                is Publication.OpeningException.NotFound ->
+                is Publication.OpenError.NotFound ->
                     NotFound(error)
-                is Publication.OpeningException.OutOfMemory ->
+                is Publication.OpenError.OutOfMemory ->
                     OutOfMemory(error)
-                is Publication.OpeningException.ParsingFailed ->
+                is Publication.OpenError.InvalidAsset ->
                     InvalidPublication(error)
-                is Publication.OpeningException.Unavailable ->
+                is Publication.OpenError.Unavailable ->
                     Unavailable(error)
-                is Publication.OpeningException.Unexpected ->
+                is Publication.OpenError.Unknown ->
                     Unexpected(error)
-                is Publication.OpeningException.UnsupportedAsset ->
+                is Publication.OpenError.UnsupportedAsset ->
                     UnsupportedAsset(error)
             }
 

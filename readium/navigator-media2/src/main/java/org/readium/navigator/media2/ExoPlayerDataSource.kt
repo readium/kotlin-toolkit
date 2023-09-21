@@ -22,6 +22,7 @@ import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.resource.buffered
 import org.readium.r2.shared.util.getOrThrow
+import org.readium.r2.shared.util.toUrl
 
 public sealed class ExoPlayerDataSourceException(message: String, cause: Throwable?) : IOException(
     message,
@@ -64,7 +65,8 @@ public class ExoPlayerDataSource internal constructor(private val publication: P
     private var openedResource: OpenedResource? = null
 
     override fun open(dataSpec: DataSpec): Long {
-        val link = publication.linkWithHref(dataSpec.uri.toString())
+        val link = dataSpec.uri.toUrl()
+            ?.let { publication.linkWithHref(it) }
             ?: throw ExoPlayerDataSourceException.NotFound(
                 "Can't find a [Link] for URI: ${dataSpec.uri}. Make sure you only request resources declared in the manifest."
             )

@@ -12,6 +12,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.readium.r2.shared.asset.Asset
+import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 import org.robolectric.RobolectricTestRunner
@@ -30,7 +31,7 @@ class LcpFallbackContentProtectionTest {
             supports(
                 mediaType = MediaType.EPUB,
                 resources = mapOf(
-                    "/META-INF/encryption.xml" to """<?xml version='1.0' encoding='utf-8'?><encryption xmlns="urn:oasis:names:tc:opendocument:xmlns:container" xmlns:enc="http://www.w3.org/2001/04/xmlenc#"></encryption>"""
+                    "META-INF/encryption.xml" to """<?xml version='1.0' encoding='utf-8'?><encryption xmlns="urn:oasis:names:tc:opendocument:xmlns:container" xmlns:enc="http://www.w3.org/2001/04/xmlenc#"></encryption>"""
                 )
             )
         )
@@ -42,7 +43,7 @@ class LcpFallbackContentProtectionTest {
             supports(
                 mediaType = MediaType.READIUM_WEBPUB,
                 resources = mapOf(
-                    "/license.lcpl" to "{}"
+                    "license.lcpl" to "{}"
                 )
             )
         )
@@ -54,7 +55,7 @@ class LcpFallbackContentProtectionTest {
             supports(
                 mediaType = MediaType.EPUB,
                 resources = mapOf(
-                    "/META-INF/license.lcpl" to "{}"
+                    "META-INF/license.lcpl" to "{}"
                 )
             )
         )
@@ -66,7 +67,7 @@ class LcpFallbackContentProtectionTest {
             supports(
                 mediaType = MediaType.EPUB,
                 resources = mapOf(
-                    "/META-INF/encryption.xml" to """<?xml version="1.0" encoding="UTF-8"?>
+                    "META-INF/encryption.xml" to """<?xml version="1.0" encoding="UTF-8"?>
 <encryption xmlns="urn:oasis:names:tc:opendocument:xmlns:container">
   <EncryptedData xmlns="http://www.w3.org/2001/04/xmlenc#">
     <EncryptionMethod xmlns="http://www.w3.org/2001/04/xmlenc#" Algorithm="http://www.w3.org/2001/04/xmlenc#aes256-cbc"></EncryptionMethod>
@@ -93,7 +94,7 @@ class LcpFallbackContentProtectionTest {
             Asset.Container(
                 mediaType = mediaType,
                 exploded = false,
-                container = TestContainer(resources)
+                container = TestContainer(resources.mapKeys { Url(it.key)!! })
             )
         )
     }

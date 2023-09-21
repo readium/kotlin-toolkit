@@ -12,6 +12,6 @@ import org.readium.r2.shared.util.mediatype.MediaType
 
 internal suspend fun Container.Entry.toLink(mediaType: MediaType? = null): Link =
     Link(
-        href = path,
+        href = url,
         mediaType = mediaType ?: mediaType().getOrNull()
     )

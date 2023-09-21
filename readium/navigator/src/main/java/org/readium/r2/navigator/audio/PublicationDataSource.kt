@@ -22,6 +22,7 @@ import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.resource.buffered
 import org.readium.r2.shared.util.getOrThrow
+import org.readium.r2.shared.util.toUrl
 
 internal sealed class PublicationDataSourceException(message: String, cause: Throwable?) : IOException(
     message,
@@ -64,7 +65,8 @@ internal class PublicationDataSource(private val publication: Publication) : Bas
     private var openedResource: OpenedResource? = null
 
     override fun open(dataSpec: DataSpec): Long {
-        val link = publication.linkWithHref(dataSpec.uri.toString())
+        val link = dataSpec.uri.toUrl()
+            ?.let { publication.linkWithHref(it) }
             ?: throw PublicationDataSourceException.NotFound(
                 "Can't find a [Link] for URI: ${dataSpec.uri}. Make sure you only request resources declared in the manifest."
             )

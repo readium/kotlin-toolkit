@@ -21,6 +21,7 @@ import org.readium.r2.shared.asset.Asset
 import org.readium.r2.shared.asset.AssetRetriever
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.opds.images
+import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.downloads.DownloadManager
@@ -49,14 +50,14 @@ class PublicationRetriever(
 
     interface Listener {
 
-        fun onSuccess(publication: File, coverUrl: String?)
+        fun onSuccess(publication: File, coverUrl: AbsoluteUrl?)
         fun onProgressed(progress: Double)
         fun onError(error: ImportError)
     }
 
     init {
         localPublicationRetriever = createLocalPublicationRetriever(object : Listener {
-            override fun onSuccess(publication: File, coverUrl: String?) {
+            override fun onSuccess(publication: File, coverUrl: AbsoluteUrl?) {
                 listener.onSuccess(publication, coverUrl)
             }
 
@@ -70,7 +71,7 @@ class PublicationRetriever(
         })
 
         opdsPublicationRetriever = createOpdsPublicationRetriever(object : Listener {
-            override fun onSuccess(publication: File, coverUrl: String?) {
+            override fun onSuccess(publication: File, coverUrl: AbsoluteUrl?) {
                 localPublicationRetriever.retrieve(publication, coverUrl)
             }
 
@@ -134,7 +135,7 @@ class LocalPublicationRetriever(
      */
     fun retrieve(
         tempFile: File,
-        coverUrl: String? = null
+        coverUrl: AbsoluteUrl? = null
     ) {
         coroutineScope.launch {
             retrieveFromStorage(tempFile, coverUrl)
@@ -143,7 +144,7 @@ class LocalPublicationRetriever(
 
     private suspend fun retrieveFromStorage(
         tempFile: File,
-        coverUrl: String? = null
+        coverUrl: AbsoluteUrl? = null
     ) {
         val sourceAsset = assetRetriever.retrieve(tempFile)
             ?: run {
@@ -184,7 +185,7 @@ class LocalPublicationRetriever(
     }
 
     private inner class LcpListener : PublicationRetriever.Listener {
-        override fun onSuccess(publication: File, coverUrl: String?) {
+        override fun onSuccess(publication: File, coverUrl: AbsoluteUrl?) {
             coroutineScope.launch {
                 retrieve(publication, coverUrl)
             }
@@ -234,8 +235,8 @@ class OpdsPublicationRetriever(
                     return@launch
                 }
 
-            val coverUrl = publication
-                .images.firstOrNull()?.href
+            val coverUrl = publication.images.firstOrNull()
+                ?.let { publication.url(it) }
 
             val requestId = downloadManager.submit(
                 request = DownloadManager.Request(
@@ -246,7 +247,7 @@ class OpdsPublicationRetriever(
             )
             downloadRepository.insert(
                 id = requestId.value,
-                cover = coverUrl
+                cover = coverUrl as? AbsoluteUrl
             )
         }
     }
@@ -256,9 +257,7 @@ class OpdsPublicationRetriever(
             .firstOrNull { it.mediaType?.isPublication == true || it.mediaType == MediaType.LCP_LICENSE_DOCUMENT }
             ?: return Try.failure(Exception("No supported link to acquire publication."))
 
-        return Url(acquisitionLink.href)
-            ?.let { Try.success(it) }
-            ?: Try.failure(Exception("Invalid acquisition url."))
+        return Try.success(acquisitionLink.url())
     }
 
     private val downloadListener: DownloadListener =
@@ -335,7 +334,7 @@ class LcpPublicationRetriever(
     fun retrieve(
         licenceAsset: Asset.Resource,
         licenceFile: File,
-        coverUrl: String?
+        coverUrl: AbsoluteUrl?
     ) {
         coroutineScope.launch {
             val license = licenceAsset.resource.read()

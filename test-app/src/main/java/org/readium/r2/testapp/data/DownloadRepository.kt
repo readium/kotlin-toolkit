@@ -6,6 +6,7 @@
 
 package org.readium.r2.testapp.data
 
+import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.testapp.data.db.DownloadsDao
 import org.readium.r2.testapp.data.model.Download
 
@@ -19,10 +20,10 @@ class DownloadRepository(
 
     suspend fun insert(
         id: String,
-        cover: String?
+        cover: AbsoluteUrl?
     ) {
         downloadsDao.insert(
-            Download(id = id, type = type, cover = cover)
+            Download(id = id, type = type, cover = cover?.toString())
         )
     }
 
@@ -32,6 +33,6 @@ class DownloadRepository(
         downloadsDao.delete(id, type)
     }
 
-    suspend fun getCover(id: String): String? =
-        downloadsDao.get(id, type)?.cover
+    suspend fun getCover(id: String): AbsoluteUrl? =
+        downloadsDao.get(id, type)?.cover?.let { AbsoluteUrl(it) }
 }

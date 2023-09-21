@@ -15,6 +15,7 @@ import org.readium.r2.shared.publication.services.contentProtectionServiceFactor
 import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.resource.readAsXml
 import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
 
 /**
@@ -39,10 +40,10 @@ public class AdeptFallbackContentProtection : ContentProtection {
         credentials: String?,
         allowUserInteraction: Boolean,
         sender: Any?
-    ): Try<ContentProtection.Asset, Publication.OpeningException> {
+    ): Try<ContentProtection.Asset, Publication.OpenError> {
         if (asset !is Asset.Container) {
             return Try.failure(
-                Publication.OpeningException.UnsupportedAsset("A container asset was expected.")
+                Publication.OpenError.UnsupportedAsset("A container asset was expected.")
             )
         }
 
@@ -62,8 +63,12 @@ public class AdeptFallbackContentProtection : ContentProtection {
         if (!asset.mediaType.matches(MediaType.EPUB)) {
             return false
         }
-        val rightsXml = asset.container.get("/META-INF/rights.xml").readAsXmlOrNull()
-        val encryptionXml = asset.container.get("/META-INF/encryption.xml").readAsXmlOrNull()
+
+        val rightsXml = asset.container.get(Url("META-INF/rights.xml")!!)
+            .readAsXmlOrNull()
+
+        val encryptionXml = asset.container.get(Url("META-INF/encryption.xml")!!)
+            .readAsXmlOrNull()
 
         return encryptionXml != null && (
             rightsXml?.namespace == "http://ns.adobe.com/adept" ||

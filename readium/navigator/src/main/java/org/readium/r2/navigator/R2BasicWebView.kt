@@ -48,8 +48,9 @@ import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.resource.readAsString
-import org.readium.r2.shared.util.Href
+import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.getOrThrow
+import org.readium.r2.shared.util.toUrl
 import org.readium.r2.shared.util.use
 import timber.log.Timber
 
@@ -87,7 +88,7 @@ internal open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebV
         fun shouldInterceptRequest(webView: WebView, request: WebResourceRequest): WebResourceResponse? = null
 
         @InternalReadiumApi
-        fun resourceAtUrl(url: String): Resource? = null
+        fun resourceAtUrl(url: Url): Resource? = null
 
         /**
          * Requests to load the next resource in the reading order.
@@ -114,7 +115,7 @@ internal open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebV
     var listener: Listener? = null
     internal var preferences: SharedPreferences? = null
 
-    var resourceUrl: String? = null
+    var resourceUrl: Url? = null
 
     internal val scrollModeFlow = MutableStateFlow(false)
 
@@ -338,14 +339,12 @@ internal open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebV
         val href = tryOrNull { Jsoup.parse(html) }
             ?.select("a[epub:type=noteref]")?.first()
             ?.attr("href")
+            ?.let { Url(it) }
             ?: return false
 
-        val id = href.substringAfter("#", missingDelimiterValue = "")
-            .takeIf { it.isNotBlank() }
-            ?: return false
+        val id = href.fragment ?: return false
 
-        val absoluteUrl = Href(href, baseHref = resourceUrl).percentEncodedString
-            .substringBefore("#")
+        val absoluteUrl = resourceUrl.resolve(href).removeFragment()
 
         val aside = runBlocking {
             tryOrLog {
@@ -596,7 +595,7 @@ internal open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebV
     }
 
     internal fun shouldOverrideUrlLoading(request: WebResourceRequest): Boolean {
-        if (resourceUrl == request.url?.toString()) return false
+        if (resourceUrl == request.url.toUrl()) return false
 
         return listener?.shouldOverrideUrlLoading(this, request) ?: false
     }

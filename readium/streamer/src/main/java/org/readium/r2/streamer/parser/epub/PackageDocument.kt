@@ -8,11 +8,11 @@ package org.readium.r2.streamer.parser.epub
 
 import org.readium.r2.shared.parser.xml.ElementNode
 import org.readium.r2.shared.publication.ReadingProgression
-import org.readium.r2.shared.util.Href
+import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 
 internal data class PackageDocument(
-    val path: String,
+    val path: Url,
     val epubVersion: Double,
     val uniqueIdentifierId: String?,
     val metadata: List<MetadataItem>,
@@ -21,7 +21,7 @@ internal data class PackageDocument(
 ) {
 
     companion object {
-        fun parse(document: ElementNode, filePath: String, mediaTypeRetriever: MediaTypeRetriever): PackageDocument? {
+        fun parse(document: ElementNode, filePath: Url, mediaTypeRetriever: MediaTypeRetriever): PackageDocument? {
             val packagePrefixes = document.getAttr("prefix")?.let { parsePrefixes(it) }.orEmpty()
             val prefixMap = PACKAGE_RESERVED_PREFIXES + packagePrefixes // prefix element overrides reserved prefixes
             val epubVersion = document.getAttr("version")?.toDoubleOrNull() ?: 1.2
@@ -46,7 +46,7 @@ internal data class PackageDocument(
 }
 
 internal data class Item(
-    val href: String,
+    val href: Url,
     val id: String?,
     val fallback: String?,
     val mediaOverlay: String?,
@@ -54,8 +54,10 @@ internal data class Item(
     val properties: List<String>
 ) {
     companion object {
-        fun parse(element: ElementNode, filePath: String, prefixMap: Map<String, String>): Item? {
-            val href = element.getAttr("href")?.let { Href(it, baseHref = filePath).string }
+        fun parse(element: ElementNode, filePath: Url, prefixMap: Map<String, String>): Item? {
+            val href = element.getAttr("href")
+                ?.let { Url(it) }
+                ?.let { filePath.resolve(it) }
                 ?: return null
             val propAttr = element.getAttr("properties").orEmpty()
             val properties = parseProperties(propAttr).map {

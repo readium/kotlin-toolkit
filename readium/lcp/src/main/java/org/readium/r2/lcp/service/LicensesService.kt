@@ -247,9 +247,7 @@ internal class LicensesService(
     }
 
     private suspend fun fetchPublication(license: LicenseDocument, onProgress: (Double) -> Unit): LcpService.AcquiredPublication {
-        val link = license.link(LicenseDocument.Rel.Publication)
-        val url = link?.url
-            ?: throw LcpException.Parsing.Url(rel = LicenseDocument.Rel.Publication.value)
+        val link = license.publicationLink
 
         val destination = withContext(Dispatchers.IO) {
             File.createTempFile("lcp-${System.currentTimeMillis()}", ".tmp")
@@ -257,11 +255,11 @@ internal class LicensesService(
         Timber.i("LCP destination $destination")
 
         val mediaType = network.download(
-            url,
+            link.url(),
             destination,
-            mediaType = link.type,
+            mediaType = link.mediaType,
             onProgress = onProgress
-        ) ?: link.mediaType
+        ) ?: link.mediaType ?: MediaType.EPUB
 
         try {
             // Saves the License Document into the downloaded publication

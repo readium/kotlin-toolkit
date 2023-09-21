@@ -9,7 +9,6 @@
 
 package org.readium.r2.lcp.license.model
 
-import java.net.URL
 import java.nio.charset.Charset
 import java.util.*
 import org.json.JSONObject
@@ -23,6 +22,7 @@ import org.readium.r2.lcp.license.model.components.lcp.User
 import org.readium.r2.lcp.service.URLParameters
 import org.readium.r2.shared.extensions.iso8601ToDate
 import org.readium.r2.shared.extensions.optNullableString
+import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
 
 public class LicenseDocument internal constructor(public val json: JSONObject) {
@@ -73,7 +73,7 @@ public class LicenseDocument internal constructor(public val json: JSONObject) {
 
         // Check that the acquisition link has a valid URL.
         try {
-            link(Rel.Publication)!!.url
+            link(Rel.Publication)!!.url()
         } catch (e: Exception) {
             throw LcpException.Parsing.Url(rel = LicenseDocument.Rel.Publication.value)
         }
@@ -115,12 +115,12 @@ public class LicenseDocument internal constructor(public val json: JSONObject) {
         rel: Rel,
         preferredType: MediaType? = null,
         parameters: URLParameters = emptyMap()
-    ): URL {
+    ): Url {
         val link = link(rel, preferredType)
             ?: links.firstWithRelAndNoType(rel.value)
             ?: throw LcpException.Parsing.Url(rel = rel.value)
 
-        return link.url(parameters)
+        return link.url(parameters = parameters)
     }
 
     public val description: String

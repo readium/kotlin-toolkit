@@ -101,6 +101,7 @@ class Readium(context: Context) {
     val publicationFactory = PublicationFactory(
         context,
         contentProtections = contentProtections,
+        formatRegistry = formatRegistry,
         mediaTypeRetriever = mediaTypeRetriever,
         httpClient = httpClient,
         // Only required if you want to support PDF files using the PDFium adapter.

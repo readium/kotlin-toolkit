@@ -21,6 +21,7 @@ import org.readium.r2.shared.publication.ReadingProgression
 import org.readium.r2.shared.publication.services.cacheService
 import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.util.SuspendingCloseable
+import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.cache.Cache
 import org.readium.r2.shared.util.mediatype.MediaType
 
@@ -144,13 +145,13 @@ public interface PdfDocument : SuspendingCloseable {
  *        relative to.
  */
 @ExperimentalReadiumApi
-public fun List<PdfDocument.OutlineNode>.toLinks(documentHref: String): List<Link> =
+public fun List<PdfDocument.OutlineNode>.toLinks(documentHref: Url): List<Link> =
     map { it.toLink(documentHref) }
 
 @ExperimentalReadiumApi
-public fun PdfDocument.OutlineNode.toLink(documentHref: String): Link =
+public fun PdfDocument.OutlineNode.toLink(documentHref: Url): Link =
     Link(
-        href = "$documentHref#page=$pageNumber",
+        href = documentHref.resolve(Url("#page=$pageNumber")!!),
         mediaType = MediaType.PDF,
         title = title,
         children = children.toLinks(documentHref)

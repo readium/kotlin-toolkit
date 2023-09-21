@@ -12,16 +12,21 @@ package org.readium.r2.streamer.extensions
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
+import org.junit.runner.RunWith
 import org.readium.r2.shared.resource.Container
 import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.resource.ResourceTry
+import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
+import org.robolectric.RobolectricTestRunner
 
+@RunWith(RobolectricTestRunner::class)
 class ContainerEntryTest {
 
-    class Entry(override val path: String) : Container.Entry {
-        override val source: Url? = null
+    class Entry(path: String) : Container.Entry {
+        override val url: Url = Url(path)!!
+        override val source: AbsoluteUrl? = null
         override suspend fun mediaType(): ResourceTry<MediaType> =
             throw NotImplementedError()
         override suspend fun properties(): ResourceTry<Resource.Properties> =
@@ -38,7 +43,7 @@ class ContainerEntryTest {
     @Test
     fun `pathCommonFirstComponent is null when files are in the root`() {
         assertNull(
-            listOf(Entry("/im1.jpg"), Entry("/im2.jpg"), Entry("/toc.xml"))
+            listOf(Entry("im1.jpg"), Entry("im2.jpg"), Entry("toc.xml"))
                 .pathCommonFirstComponent()
         )
     }
@@ -46,7 +51,7 @@ class ContainerEntryTest {
     @Test
     fun `pathCommonFirstComponent is null when files are in different directories`() {
         assertNull(
-            listOf(Entry("/dir1/im1.jpg"), Entry("/dir2/im2.jpg"), Entry("/toc.xml"))
+            listOf(Entry("dir1/im1.jpg"), Entry("dir2/im2.jpg"), Entry("toc.xml"))
                 .pathCommonFirstComponent()
         )
     }
@@ -55,7 +60,7 @@ class ContainerEntryTest {
     fun `pathCommonFirstComponent is correct when there is only one file in the root`() {
         assertEquals(
             "im1.jpg",
-            listOf(Entry("/im1.jpg")).pathCommonFirstComponent()?.name
+            listOf(Entry("im1.jpg")).pathCommonFirstComponent()?.name
         )
     }
 
@@ -64,9 +69,9 @@ class ContainerEntryTest {
         assertEquals(
             "root",
             listOf(
-                Entry("/root/im1.jpg"),
-                Entry("/root/im2.jpg"),
-                Entry("/root/xml/toc.xml")
+                Entry("root/im1.jpg"),
+                Entry("root/im2.jpg"),
+                Entry("root/xml/toc.xml")
             ).pathCommonFirstComponent()?.name
         )
     }

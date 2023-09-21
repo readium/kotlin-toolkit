@@ -14,12 +14,12 @@ import java.nio.channels.FileChannel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.extensions.*
+import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Try
-import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
 
 internal class FileChannelResource(
-    override val source: Url?,
+    override val source: AbsoluteUrl?,
     private val file: File?,
     private val channel: FileChannel
 ) : Resource {

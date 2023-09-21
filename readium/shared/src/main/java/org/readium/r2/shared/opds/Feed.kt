@@ -9,14 +9,14 @@
 
 package org.readium.r2.shared.opds
 
-import java.net.URL
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.util.Url
 
 public data class Feed(
     val title: String,
     val type: Int,
-    val href: URL,
+    val href: Url,
     var metadata: OpdsMetadata = OpdsMetadata(title = title),
     var links: MutableList<Link> = mutableListOf(),
     var facets: MutableList<Facet> = mutableListOf(),

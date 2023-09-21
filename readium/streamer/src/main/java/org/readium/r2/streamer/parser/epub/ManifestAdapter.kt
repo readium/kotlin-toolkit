@@ -10,6 +10,7 @@ import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Manifest
 import org.readium.r2.shared.publication.PublicationCollection
 import org.readium.r2.shared.publication.encryption.Encryption
+import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 
 /**
@@ -21,7 +22,7 @@ import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 internal class ManifestAdapter(
     private val packageDocument: PackageDocument,
     private val navigationData: Map<String, List<Link>> = emptyMap(),
-    private val encryptionData: Map<String, Encryption> = emptyMap(),
+    private val encryptionData: Map<Url, Encryption> = emptyMap(),
     private val displayOptions: Map<String, String> = emptyMap(),
     private val mediaTypeRetriever: MediaTypeRetriever
 ) {

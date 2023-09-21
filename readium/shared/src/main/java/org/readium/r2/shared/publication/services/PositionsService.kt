@@ -32,7 +32,7 @@ private val positionsMediaType =
     MediaType("application/vnd.readium.position-list+json")!!
 
 private val positionsLink = Link(
-    href = "/~readium/positions",
+    href = Url("/~readium/positions")!!,
     mediaType = positionsMediaType
 )
 
@@ -53,13 +53,12 @@ public interface PositionsService : Publication.Service {
 
     override val links: List<Link> get() = listOf(positionsLink)
 
-    override fun get(link: Link): Resource? {
-        if (link.href != positionsLink.href) {
+    override fun get(href: Url): Resource? {
+        if (href != positionsLink.url()) {
             return null
         }
 
         return StringResource(
-            url = Url(positionsLink.href),
             mediaType = positionsMediaType
         ) {
             val positions = positions()
@@ -97,7 +96,7 @@ public suspend fun PublicationServicesHolder.positions(): List<Locator> {
     ReplaceWith("positionsByReadingOrder"),
     level = DeprecationLevel.ERROR
 )
-public val Publication.positionsByResource: Map<String, List<Locator>>
+public val Publication.positionsByResource: Map<Url, List<Locator>>
     get() = runBlocking { positions().groupBy { it.href } }
 
 /** Factory to build a [PositionsService] */
@@ -114,7 +113,7 @@ public var Publication.ServicesBuilder.positionsServiceFactory: ServiceFactory?
  */
 public class PerResourcePositionsService(
     private val readingOrder: List<Link>,
-    private val fallbackMediaType: String
+    private val fallbackMediaType: MediaType
 ) : PositionsService {
 
     override suspend fun positionsByReadingOrder(): List<List<Locator>> {
@@ -123,8 +122,8 @@ public class PerResourcePositionsService(
         return readingOrder.mapIndexed { index, link ->
             listOf(
                 Locator(
-                    href = link.href,
-                    type = link.mediaType?.toString() ?: fallbackMediaType,
+                    href = link.url(),
+                    mediaType = link.mediaType ?: fallbackMediaType,
                     title = link.title,
                     locations = Locator.Locations(
                         position = index + 1,
@@ -137,7 +136,7 @@ public class PerResourcePositionsService(
 
     public companion object {
 
-        public fun createFactory(fallbackMediaType: String): (Publication.Service.Context) -> PerResourcePositionsService = {
+        public fun createFactory(fallbackMediaType: MediaType): (Publication.Service.Context) -> PerResourcePositionsService = {
             PerResourcePositionsService(
                 readingOrder = it.manifest.readingOrder,
                 fallbackMediaType = fallbackMediaType
@@ -167,12 +166,12 @@ internal class WebPositionsService(
 
     override suspend fun positionsByReadingOrder(): List<List<Locator>> {
         val locators = positions().groupBy(Locator::href)
-        return manifest.readingOrder.map { locators[it.href].orEmpty() }
+        return manifest.readingOrder.map { locators[it.url()].orEmpty() }
     }
 
     private suspend fun computePositions(): List<Locator> =
         links.firstOrNull()
-            ?.let { get(it) }
+            ?.let { get(it.url()) }
             ?.readAsString()
             ?.getOrNull()
             ?.toJsonOrNull()

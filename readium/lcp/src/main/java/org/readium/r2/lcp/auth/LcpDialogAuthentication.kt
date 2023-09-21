@@ -34,6 +34,8 @@ import org.readium.r2.lcp.R
 import org.readium.r2.lcp.license.model.components.Link
 import org.readium.r2.shared.extensions.tryOr
 import org.readium.r2.shared.extensions.tryOrNull
+import org.readium.r2.shared.util.AbsoluteUrl
+import org.readium.r2.shared.util.toUri
 import timber.log.Timber
 
 /**
@@ -152,7 +154,7 @@ public class LcpDialogAuthentication : LcpAuthenticating {
     private fun showHelpDialog(context: Context, links: List<Link>) {
         val titles = links.map {
             it.title ?: tryOr(context.getString(R.string.readium_lcp_dialog_support)) {
-                when (Uri.parse(it.href).scheme) {
+                when ((it.url() as? AbsoluteUrl)?.scheme?.value) {
                     "http", "https" -> context.getString(R.string.readium_lcp_dialog_support_web)
                     "tel" -> context.getString(R.string.readium_lcp_dialog_support_phone)
                     "mailto" -> context.getString(R.string.readium_lcp_dialog_support_mail)
@@ -169,9 +171,9 @@ public class LcpDialogAuthentication : LcpAuthenticating {
     }
 
     private fun Context.startActivityForLink(link: Link) {
-        val url = tryOrNull { Uri.parse(link.href) } ?: return
+        val url = tryOrNull { (link.url() as? AbsoluteUrl) } ?: return
 
-        val action = when (url.scheme?.lowercase(Locale.ROOT)) {
+        val action = when (url.scheme.value) {
             "http", "https" -> Intent(Intent.ACTION_VIEW)
             "tel" -> Intent(Intent.ACTION_CALL)
             "mailto" -> Intent(Intent.ACTION_SEND)
@@ -180,7 +182,7 @@ public class LcpDialogAuthentication : LcpAuthenticating {
 
         startActivity(
             Intent(action).apply {
-                data = url
+                data = url.toUri()
             }
         )
     }

@@ -55,7 +55,7 @@ class GroupAdapter(
                 binding.groupViewGroupPublications.itemRecycleMoreButton.visibility = View.VISIBLE
                 binding.groupViewGroupPublications.itemRecycleMoreButton.setOnClickListener {
                     val catalog1 = Catalog(
-                        href = group.links.first().href,
+                        href = group.links.first().href.toString(),
                         title = group.title,
                         type = type
                     )

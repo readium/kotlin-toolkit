@@ -9,7 +9,6 @@ package org.readium.r2.shared.util.archive.channel
 import java.io.File
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.readium.r2.shared.extensions.addPrefix
 import org.readium.r2.shared.extensions.readFully
 import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.resource.ArchiveFactory
@@ -20,6 +19,8 @@ import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.resource.ResourceMediaTypeSnifferContent
 import org.readium.r2.shared.resource.ResourceTry
 import org.readium.r2.shared.resource.archive
+import org.readium.r2.shared.util.AbsoluteUrl
+import org.readium.r2.shared.util.RelativeUrl
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.archive.channel.compress.archivers.zip.ZipArchiveEntry
@@ -34,19 +35,20 @@ import org.readium.r2.shared.util.toUrl
 
 internal class ChannelZipContainer(
     private val archive: ZipFile,
-    override val source: Url?,
+    override val source: AbsoluteUrl?,
     private val mediaTypeRetriever: MediaTypeRetriever
 ) : Container {
 
     private inner class FailureEntry(
-        override val path: String
+        override val url: Url
     ) : Container.Entry, Resource by FailureResource(Resource.Exception.NotFound())
 
-    private inner class Entry(private val entry: ZipArchiveEntry) : Container.Entry {
+    private inner class Entry(
+        override val url: Url,
+        private val entry: ZipArchiveEntry
+    ) : Container.Entry {
 
-        override val path: String = entry.name.addPrefix("/")
-
-        override val source: Url? get() = null
+        override val source: AbsoluteUrl? get() = null
 
         override suspend fun properties(): ResourceTry<Resource.Properties> =
             ResourceTry.success(
@@ -62,7 +64,7 @@ internal class ChannelZipContainer(
         override suspend fun mediaType(): ResourceTry<MediaType> =
             Try.success(
                 mediaTypeRetriever.retrieve(
-                    hints = MediaTypeHints(fileExtension = File(path).extension),
+                    hints = MediaTypeHints(fileExtension = url.extension),
                     content = ResourceMediaTypeSnifferContent(this)
                 ) ?: MediaType.BINARY
             )
@@ -147,14 +149,18 @@ internal class ChannelZipContainer(
     override suspend fun entries(): Set<Container.Entry> =
         archive.entries.toList()
             .filterNot { it.isDirectory }
-            .mapNotNull { Entry(it) }
+            .mapNotNull { entry ->
+                Url.fromDecodedPath(entry.name)
+                    ?.let { url -> Entry(url, entry) }
+            }
             .toSet()
 
-    override fun get(path: String): Container.Entry =
-        archive.getEntry(path.removePrefix("/"))
+    override fun get(url: Url): Container.Entry =
+        (url as? RelativeUrl)?.path
+            ?.let { archive.getEntry(it) }
             ?.takeUnless { it.isDirectory }
-            ?.let { Entry(it) }
-            ?: FailureEntry(path)
+            ?.let { Entry(url, it) }
+            ?: FailureEntry(url)
 
     override suspend fun close() {
         withContext(Dispatchers.IO) {

@@ -24,6 +24,7 @@ import org.readium.r2.shared.resource.Container
 import org.readium.r2.shared.resource.content.DefaultResourceContentExtractorFactory
 import org.readium.r2.shared.resource.content.ResourceContentExtractor
 import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.getOrThrow
 import timber.log.Timber
 
@@ -113,9 +114,9 @@ public class StringSearchService(
                 index += 1
 
                 val link = manifest.readingOrder[index]
-                val resource = container.get(link.href)
-
-                val text = extractorFactory.createExtractor(resource)?.extractText(resource)?.getOrThrow()
+                val text =
+                    container.get(link.url())
+                        .let { extractorFactory.createExtractor(it)?.extractText(it)?.getOrThrow() }
                 if (text == null) {
                     Timber.w("Cannot extract text from resource: ${link.href}")
                     return next()
@@ -141,7 +142,7 @@ public class StringSearchService(
                 return emptyList()
             }
 
-            val resourceTitle = manifest.tableOfContents.titleMatching(link.href)
+            val resourceTitle = manifest.tableOfContents.titleMatching(link.url())
             var resourceLocator = manifest.locatorFromLink(link) ?: return emptyList()
             resourceLocator = resourceLocator.copy(title = resourceTitle ?: resourceLocator.title)
             val locators = mutableListOf<Locator>()
@@ -343,15 +344,15 @@ public class StringSearchService(
     }
 }
 
-private fun List<Link>.titleMatching(href: String): String? {
+private fun List<Link>.titleMatching(href: Url): String? {
     for (link in this) {
         link.titleMatching(href)?.let { return it }
     }
     return null
 }
 
-private fun Link.titleMatching(targetHref: String): String? {
-    if (href.substringBeforeLast("#") == targetHref) {
+private fun Link.titleMatching(targetHref: Url): String? {
+    if (url().removeFragment() == targetHref) {
         return title
     }
     return children.titleMatching(targetHref)

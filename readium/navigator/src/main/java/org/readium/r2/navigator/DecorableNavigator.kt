@@ -21,6 +21,7 @@ import org.json.JSONObject
 import org.readium.r2.shared.JSONable
 import org.readium.r2.shared.extensions.JSONParceler
 import org.readium.r2.shared.publication.Locator
+import org.readium.r2.shared.util.Url
 
 /**
  * A navigator able to render arbitrary decorations over a publication.
@@ -162,7 +163,7 @@ public sealed class DecorationChange {
  * The changes need to be applied in the same order, one by one.
  */
 @ExperimentalDecorator
-public suspend fun List<Decoration>.changesByHref(target: List<Decoration>): Map<String, List<DecorationChange>> = withContext(
+public suspend fun List<Decoration>.changesByHref(target: List<Decoration>): Map<Url, List<DecorationChange>> = withContext(
     Dispatchers.Default
 ) {
     val source = this@changesByHref
@@ -182,7 +183,7 @@ public suspend fun List<Decoration>.changesByHref(target: List<Decoration>): Map
         }
     })
 
-    val changes = mutableMapOf<String, List<DecorationChange>>()
+    val changes = mutableMapOf<Url, List<DecorationChange>>()
 
     fun registerChange(change: DecorationChange, locator: Locator) {
         val resourceChanges = changes[locator.href] ?: emptyList()

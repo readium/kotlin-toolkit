@@ -10,6 +10,7 @@
 package org.readium.r2.streamer.parser.readium
 
 import org.readium.r2.shared.ExperimentalReadiumApi
+import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
@@ -18,7 +19,6 @@ import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.pdf.PdfDocument
 import org.readium.r2.shared.util.pdf.PdfDocumentFactory
 import org.readium.r2.shared.util.pdf.cachedIn
-import timber.log.Timber
 
 /**
  * Creates the [positions] for an LCP protected PDF [Publication] from its reading order and
@@ -75,13 +75,15 @@ internal class LcpdfPositionsService(
             return emptyList()
         }
 
+        val href = link.url()
+
         // FIXME: Use the [tableOfContents] to generate the titles
         return (1..pageCount).map { position ->
             val progression = (position - 1) / pageCount.toDouble()
             val totalProgression = (startPosition + position - 1) / totalPageCount.toDouble()
             Locator(
-                href = link.href,
-                type = (link.mediaType ?: MediaType.PDF).toString(),
+                href = href,
+                mediaType = link.mediaType ?: MediaType.PDF,
                 locations = Locator.Locations(
                     fragments = listOf("page=$position"),
                     progression = progression,
@@ -93,13 +95,10 @@ internal class LcpdfPositionsService(
     }
 
     private suspend fun openPdfAt(link: Link): PdfDocument? =
-        try {
+        tryOrLog {
             pdfFactory
                 .cachedIn(context.services)
-                .open(context.container.get(link.href), password = null)
-        } catch (e: Exception) {
-            Timber.e(e)
-            null
+                .open(context.container.get(link.url()), password = null)
         }
 
     companion object {

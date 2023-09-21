@@ -91,7 +91,7 @@ public var Publication.ServicesBuilder.coverServiceFactory: ServiceFactory?
 public abstract class GeneratedCoverService : CoverService {
 
     private val coverLink = Link(
-        href = "/~readium/cover",
+        href = Url("/~readium/cover")!!,
         mediaType = MediaType.PNG,
         rels = setOf("cover")
     )
@@ -100,12 +100,12 @@ public abstract class GeneratedCoverService : CoverService {
 
     abstract override suspend fun cover(): Bitmap
 
-    override fun get(link: Link): Resource? {
-        if (link.href != coverLink.href) {
+    override fun get(href: Url): Resource? {
+        if (href != coverLink.url()) {
             return null
         }
 
-        return LazyResource(source = Url(link.href)) {
+        return LazyResource {
             val cover = cover()
             val png = cover.toPng()
 
@@ -113,7 +113,7 @@ public abstract class GeneratedCoverService : CoverService {
                 val error = Exception("Unable to convert cover to PNG.")
                 FailureResource(error)
             } else {
-                BytesResource(png, url = Url(coverLink.href), mediaType = MediaType.PNG)
+                BytesResource(png, mediaType = MediaType.PNG)
             }
         }
     }

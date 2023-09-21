@@ -288,7 +288,7 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
 @OptIn(ExperimentalDecorator::class)
 private fun annotationMarkTemplate(@ColorInt defaultTint: Int = Color.YELLOW): HtmlDecorationTemplate {
     val className = "testapp-annotation-mark"
-    val iconUrl = EpubNavigatorFragment.assetUrl("annotation-icon.svg")
+    val iconUrl = checkNotNull(EpubNavigatorFragment.assetUrl("annotation-icon.svg"))
     return HtmlDecorationTemplate(
         layout = HtmlDecorationTemplate.Layout.BOUNDS,
         width = HtmlDecorationTemplate.Width.PAGE,

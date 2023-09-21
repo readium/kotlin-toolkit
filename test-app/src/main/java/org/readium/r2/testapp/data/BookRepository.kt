@@ -8,6 +8,7 @@ package org.readium.r2.testapp.data
 
 import androidx.annotation.ColorInt
 import androidx.lifecycle.LiveData
+import java.io.File
 import kotlinx.coroutines.flow.Flow
 import org.joda.time.DateTime
 import org.readium.r2.shared.asset.AssetType
@@ -38,8 +39,8 @@ class BookRepository(
             creation = DateTime().toDate().time,
             bookId = bookId,
             resourceIndex = resource.toLong(),
-            resourceHref = locator.href,
-            resourceType = locator.type,
+            resourceHref = locator.href.toString(),
+            resourceType = locator.mediaType.toString(),
             resourceTitle = locator.title.orEmpty(),
             location = locator.locations.toJSON().toString(),
             locatorText = Locator.Text().toJSON().toString()
@@ -84,7 +85,7 @@ class BookRepository(
         assetType: AssetType,
         drm: ContentProtection.Scheme?,
         publication: Publication,
-        cover: String
+        cover: File
     ): Long {
         val book = Book(
             creation = DateTime().toDate().time,
@@ -96,7 +97,7 @@ class BookRepository(
             assetType = assetType,
             drm = drm,
             progression = "{}",
-            cover = cover
+            cover = cover.path
         )
         return booksDao.insertBook(book)
     }

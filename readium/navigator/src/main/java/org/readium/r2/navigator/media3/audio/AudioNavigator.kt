@@ -14,22 +14,24 @@ import kotlin.time.ExperimentalTime
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.flow.StateFlow
+import org.readium.r2.navigator.extensions.normalizeLocator
 import org.readium.r2.navigator.extensions.sum
 import org.readium.r2.navigator.extensions.time
 import org.readium.r2.navigator.media3.api.Media3Adapter
 import org.readium.r2.navigator.media3.api.MediaNavigator
 import org.readium.r2.navigator.media3.api.TimeBasedMediaNavigator
 import org.readium.r2.navigator.preferences.Configurable
+import org.readium.r2.shared.DelicateReadiumApi
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.extensions.mapStateIn
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.util.Href
+import org.readium.r2.shared.util.Url
 import timber.log.Timber
 
 @ExperimentalReadiumApi
-@OptIn(ExperimentalTime::class)
+@OptIn(ExperimentalTime::class, DelicateReadiumApi::class)
 public class AudioNavigator<S : Configurable.Settings, P : Configurable.Preferences<P>> private constructor(
     override val publication: Publication,
     private val audioEngine: AudioEngine<S, P>,
@@ -55,8 +57,8 @@ public class AudioNavigator<S : Configurable.Settings, P : Configurable.Preferen
 
             val items = readingOrder.map {
                 ReadingOrder.Item(
-                    Href(it.href),
-                    duration(it, publication)
+                    href = it.url(),
+                    duration = duration(it, publication)
                 )
             }
             val totalDuration = publication.metadata.duration?.seconds
@@ -66,8 +68,9 @@ public class AudioNavigator<S : Configurable.Settings, P : Configurable.Preferen
 
             val actualReadingOrder = ReadingOrder(totalDuration, items)
 
-            val actualInitialLocator = initialLocator
-                ?: publication.locatorFromLink(publication.readingOrder[0])!!
+            val actualInitialLocator =
+                initialLocator?.let { publication.normalizeLocator(it) }
+                    ?: publication.locatorFromLink(publication.readingOrder[0])!!
 
             val audioEngine =
                 audioEngineProvider.createEngine(
@@ -95,7 +98,7 @@ public class AudioNavigator<S : Configurable.Settings, P : Configurable.Preferen
     }
 
     public data class Location(
-        override val href: Href,
+        override val href: Url,
         override val offset: Duration
     ) : TimeBasedMediaNavigator.Location
 
@@ -105,7 +108,7 @@ public class AudioNavigator<S : Configurable.Settings, P : Configurable.Preferen
     ) : TimeBasedMediaNavigator.ReadingOrder {
 
         public data class Item(
-            val href: Href,
+            val href: Url,
             override val duration: Duration?
         ) : TimeBasedMediaNavigator.ReadingOrder.Item
     }
@@ -135,7 +138,7 @@ public class AudioNavigator<S : Configurable.Settings, P : Configurable.Preferen
     override val currentLocator: StateFlow<Locator> =
         audioEngine.playback.mapStateIn(coroutineScope) { playback ->
             val currentItem = readingOrder.items[playback.index]
-            val link = requireNotNull(publication.linkWithHref(currentItem.href.string))
+            val link = requireNotNull(publication.linkWithHref(currentItem.href))
             val item = readingOrder.items[playback.index]
             val itemStartPosition = readingOrder.items
                 .slice(0 until playback.index)
@@ -206,7 +209,9 @@ public class AudioNavigator<S : Configurable.Settings, P : Configurable.Preferen
         audioEngine.asPlayer()
 
     override fun go(locator: Locator, animated: Boolean, completion: () -> Unit): Boolean {
-        val itemIndex = readingOrder.items.indexOfFirst { it.href.string == locator.href }
+        @Suppress("NAME_SHADOWING")
+        val locator = publication.normalizeLocator(locator)
+        val itemIndex = readingOrder.items.indexOfFirst { it.href == locator.href }
             .takeUnless { it == -1 }
             ?: return false
         val position = locator.locations.time ?: Duration.ZERO

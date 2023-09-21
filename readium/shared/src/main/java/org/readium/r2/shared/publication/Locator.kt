@@ -17,8 +17,10 @@ import org.json.JSONObject
 import org.readium.r2.shared.JSONable
 import org.readium.r2.shared.extensions.*
 import org.readium.r2.shared.toJSON
+import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.logging.log
+import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 
 /**
@@ -35,8 +37,8 @@ import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
  */
 @Parcelize
 public data class Locator(
-    val href: String,
-    val type: String,
+    val href: Url,
+    val mediaType: MediaType,
     val title: String? = null,
     val locations: Locations = Locations(),
     val text: Text = Text()
@@ -77,7 +79,9 @@ public data class Locator(
 
         public companion object {
 
-            public fun fromJSON(json: JSONObject?): Locations {
+            public fun fromJSON(
+                json: JSONObject?
+            ): Locations {
                 val fragments = json?.optStringsFromArrayOrSingle("fragments", remove = true)?.takeIf { it.isNotEmpty() }
                     ?: json?.optStringsFromArrayOrSingle("fragment", remove = true)
                     ?: emptyList()
@@ -177,16 +181,27 @@ public data class Locator(
     )
 
     override fun toJSON(): JSONObject = JSONObject().apply {
-        put("href", href)
-        put("type", type)
+        put("href", href.toString())
+        put("type", mediaType.toString())
         put("title", title)
         putIfNotEmpty("locations", locations)
         putIfNotEmpty("text", text)
     }
 
+    @Deprecated(
+        "Use [mediaType.toString()] instead",
+        ReplaceWith("mediaType.toString()"),
+        level = DeprecationLevel.ERROR
+    )
+    public val type: String get() = throw NotImplementedError()
+
     public companion object {
 
-        public fun fromJSON(json: JSONObject?, warnings: WarningLogger? = null): Locator? {
+        public fun fromJSON(
+            json: JSONObject?,
+            mediaTypeRetriever: MediaTypeRetriever = MediaTypeRetriever(),
+            warnings: WarningLogger? = null
+        ): Locator? {
             val href = json?.optNullableString("href")
             val type = json?.optNullableString("type")
             if (href == null || type == null) {
@@ -194,9 +209,19 @@ public data class Locator(
                 return null
             }
 
+            val url = Url(href) ?: run {
+                warnings?.log(Locator::class.java, "[href] is not a valid URL", json)
+                return null
+            }
+
+            val mediaType = MediaType(type) ?: run {
+                warnings?.log(Locator::class.java, "[type] is not a valid media type", json)
+                return null
+            }
+
             return Locator(
-                href = href,
-                type = type,
+                href = url,
+                mediaType = mediaTypeRetriever.retrieve(mediaType),
                 title = json.optNullableString("title"),
                 locations = Locations.fromJSON(json.optJSONObject("locations")),
                 text = Text.fromJSON(json.optJSONObject("text"))
@@ -205,9 +230,10 @@ public data class Locator(
 
         public fun fromJSONArray(
             json: JSONArray?,
+            mediaTypeRetriever: MediaTypeRetriever = MediaTypeRetriever(),
             warnings: WarningLogger? = null
         ): List<Locator> {
-            return json.parseObjects { fromJSON(it as? JSONObject, warnings) }
+            return json.parseObjects { fromJSON(it as? JSONObject, mediaTypeRetriever, warnings) }
         }
     }
 }
@@ -292,7 +318,11 @@ public data class LocatorCollection(
                     mediaTypeRetriever,
                     warnings = warnings
                 ),
-                locators = Locator.fromJSONArray(json?.optJSONArray("locators"), warnings)
+                locators = Locator.fromJSONArray(
+                    json?.optJSONArray("locators"),
+                    mediaTypeRetriever,
+                    warnings
+                )
             )
         }
     }

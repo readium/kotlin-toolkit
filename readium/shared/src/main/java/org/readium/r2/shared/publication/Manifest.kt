@@ -14,10 +14,8 @@ import org.json.JSONObject
 import org.readium.r2.shared.JSONable
 import org.readium.r2.shared.extensions.optStringsFromArrayOrSingle
 import org.readium.r2.shared.extensions.putIfNotEmpty
-import org.readium.r2.shared.extensions.removeLastComponent
-import org.readium.r2.shared.extensions.toUrlOrNull
 import org.readium.r2.shared.toJSON
-import org.readium.r2.shared.util.Href
+import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.logging.log
 import org.readium.r2.shared.util.mediatype.MediaType
@@ -34,7 +32,6 @@ public data class Manifest(
     val resources: List<Link> = emptyList(),
     val tableOfContents: List<Link> = emptyList(),
     val subcollections: Map<String, List<PublicationCollection>> = emptyMap()
-
 ) : JSONable {
 
     /**
@@ -66,10 +63,10 @@ public data class Manifest(
      * If there's no match, tries again after removing any query parameter and anchor from the
      * given [href].
      */
-    public fun linkWithHref(href: String): Link? {
-        fun List<Link>.deepLinkWithHref(href: String): Link? {
+    public fun linkWithHref(href: Url): Link? {
+        fun List<Link>.deepLinkWithHref(href: Url): Link? {
             for (l in this) {
-                if (l.href == href) {
+                if (l.url() == href) {
                     return l
                 } else {
                     l.alternates.deepLinkWithHref(href)?.let { return it }
@@ -79,14 +76,14 @@ public data class Manifest(
             return null
         }
 
-        fun find(href: String): Link? {
+        fun find(href: Url): Link? {
             return readingOrder.deepLinkWithHref(href)
                 ?: resources.deepLinkWithHref(href)
                 ?: links.deepLinkWithHref(href)
         }
 
         return find(href)
-            ?: find(href.takeWhile { it !in "#?" })
+            ?: find(href.removeFragment().removeQuery())
     }
 
     /**
@@ -109,15 +106,16 @@ public data class Manifest(
      * Returns null if the resource is not found in this manifest.
      */
     public fun locatorFromLink(link: Link): Locator? {
-        val components = link.href.split("#", limit = 2)
-        val href = components.firstOrNull() ?: link.href
-        val resourceLink = linkWithHref(href) ?: return null
-        val type = resourceLink.mediaType?.toString() ?: return null
-        val fragment = components.getOrNull(1)
+        var url = link.url()
+        val fragment = url.fragment
+        url = url.removeFragment()
+
+        val resourceLink = linkWithHref(url) ?: return null
+        val mediaType = resourceLink.mediaType ?: return null
 
         return Locator(
-            href = href,
-            type = type,
+            href = url,
+            mediaType = mediaType,
             title = resourceLink.title ?: link.title,
             locations = Locator.Locations(
                 fragments = listOfNotNull(fragment),
@@ -160,27 +158,11 @@ public data class Manifest(
         ): Manifest? {
             json ?: return null
 
-            val baseUrl =
-                Link.fromJSONArray(
-                    json.optJSONArray("links"),
-                    mediaTypeRetriever,
-                    warnings = warnings
-                )
-                    .firstWithRel("self")
-                    ?.href
-                    ?.toUrlOrNull()
-                    ?.removeLastComponent()
-                    ?.toString()
-                    ?: "/"
-
-            val normalizeHref = { href: String -> Href(href, baseUrl).string }
-
             val context = json.optStringsFromArrayOrSingle("@context", remove = true)
 
             val metadata = Metadata.fromJSON(
                 json.remove("metadata") as? JSONObject,
                 mediaTypeRetriever,
-                normalizeHref,
                 warnings
             )
             if (metadata == null) {
@@ -191,7 +173,6 @@ public data class Manifest(
             val links = Link.fromJSONArray(
                 json.remove("links") as? JSONArray,
                 mediaTypeRetriever,
-                normalizeHref,
                 warnings
             )
 
@@ -200,7 +181,6 @@ public data class Manifest(
             val readingOrder = Link.fromJSONArray(
                 readingOrderJSON,
                 mediaTypeRetriever,
-                normalizeHref,
                 warnings
             )
                 .filter { it.mediaType != null }
@@ -208,7 +188,6 @@ public data class Manifest(
             val resources = Link.fromJSONArray(
                 json.remove("resources") as? JSONArray,
                 mediaTypeRetriever,
-                normalizeHref,
                 warnings
             )
                 .filter { it.mediaType != null }
@@ -216,7 +195,6 @@ public data class Manifest(
             val tableOfContents = Link.fromJSONArray(
                 json.remove("toc") as? JSONArray,
                 mediaTypeRetriever,
-                normalizeHref,
                 warnings
             )
 
@@ -224,7 +202,6 @@ public data class Manifest(
             val subcollections = PublicationCollection.collectionsFromJSON(
                 json,
                 mediaTypeRetriever,
-                normalizeHref,
                 warnings
             )
 

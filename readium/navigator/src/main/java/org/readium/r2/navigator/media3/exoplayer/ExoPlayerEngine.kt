@@ -23,6 +23,8 @@ import org.readium.r2.navigator.media3.audio.AudioEngine
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.units.Hz
 import org.readium.r2.shared.units.hz
+import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.toUri
 
 /**
  * An [AudioEngine] based on Media3 ExoPlayer.
@@ -66,7 +68,7 @@ public class ExoPlayerEngine private constructor(
             exoPlayer.setMediaItems(
                 playlist.items.map { item ->
                     MediaItem.Builder()
-                        .setUri(item.uri)
+                        .setUri(item.url.toUri())
                         .setMediaMetadata(item.mediaMetadata)
                         .build()
                 }
@@ -132,7 +134,7 @@ public class ExoPlayerEngine private constructor(
         val items: List<Item>
     ) {
         public data class Item(
-            val uri: String,
+            val url: Url,
             val mediaMetadata: MediaMetadata,
             val duration: Duration?
         )

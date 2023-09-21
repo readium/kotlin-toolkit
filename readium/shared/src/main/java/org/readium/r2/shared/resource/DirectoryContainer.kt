@@ -6,13 +6,13 @@
 
 package org.readium.r2.shared.resource
 
-import android.content.ContentResolver
 import java.io.File
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.readium.r2.shared.extensions.addPrefix
 import org.readium.r2.shared.extensions.isParentOf
 import org.readium.r2.shared.extensions.tryOr
+import org.readium.r2.shared.util.AbsoluteUrl
+import org.readium.r2.shared.util.RelativeUrl
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
@@ -26,25 +26,26 @@ internal class DirectoryContainer(
     private val mediaTypeRetriever: MediaTypeRetriever
 ) : Container {
 
-    private inner class FileEntry(file: File) :
+    private inner class FileEntry(override val url: Url, file: File) :
         Container.Entry, Resource by FileResource(file, mediaTypeRetriever) {
-
-        override val path: String =
-            file.relativeTo(root).path.addPrefix("/")
 
         override suspend fun close() {}
     }
 
     override suspend fun entries(): Set<Container.Entry> =
-        entries.map { FileEntry(it) }.toSet()
+        entries.mapNotNull { file ->
+            Url.fromDecodedPath(file.relativeTo(root).path)
+                ?.let { url -> FileEntry(url, file) }
+        }.toSet()
 
-    override fun get(path: String): Container.Entry {
-        val file = File(root, path.removePrefix("/"))
+    override fun get(url: Url): Container.Entry {
+        val file = (url as? RelativeUrl)?.path
+            ?.let { File(root, it) }
 
-        return if (!root.isParentOf(file)) {
-            FailureResource(Resource.Exception.NotFound()).toEntry(path)
+        return if (file == null || !root.isParentOf(file)) {
+            FailureResource(Resource.Exception.NotFound()).toEntry(url)
         } else {
-            FileEntry(file)
+            FileEntry(url, file)
         }
     }
 
@@ -55,12 +56,9 @@ public class DirectoryContainerFactory(
     private val mediaTypeRetriever: MediaTypeRetriever
 ) : ContainerFactory {
 
-    override suspend fun create(url: Url): Try<Container, ContainerFactory.Error> {
-        if (url.scheme != ContentResolver.SCHEME_FILE) {
-            return Try.failure(ContainerFactory.Error.SchemeNotSupported(url.scheme))
-        }
-
-        val file = File(url.path)
+    override suspend fun create(url: AbsoluteUrl): Try<Container, ContainerFactory.Error> {
+        val file = url.toFile()
+            ?: return Try.failure(ContainerFactory.Error.SchemeNotSupported(url.scheme))
 
         if (!tryOr(false) { file.isDirectory }) {
             return Try.failure(ContainerFactory.Error.NotAContainer(url))

@@ -21,24 +21,11 @@ import org.readium.r2.shared.extensions.optPositiveInt
 import org.readium.r2.shared.extensions.optStringsFromArrayOrSingle
 import org.readium.r2.shared.extensions.parseObjects
 import org.readium.r2.shared.extensions.putIfNotEmpty
-import org.readium.r2.shared.util.Href
-import org.readium.r2.shared.util.URITemplate
+import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.logging.log
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
-
-/**
- * Function used to recursively transform the href of a [Link] when parsing its JSON
- * representation.
- */
-
-public typealias LinkHrefNormalizer = (String) -> String
-
-/**
- * Default href normalizer for [Link], doing nothing.
- */
-public val LinkHrefNormalizerIdentity: LinkHrefNormalizer = { it }
 
 /**
  * Link Object for the Readium Web Publication Manifest.
@@ -46,7 +33,6 @@ public val LinkHrefNormalizerIdentity: LinkHrefNormalizer = { it }
  *
  * @param href URI or URI template of the linked resource.
  * @param mediaType Media type of the linked resource.
- * @param templated Indicates that a URI template is used in href.
  * @param title Title of the linked resource.
  * @param rels Relation between the linked resource and its containing collection.
  * @param properties Properties associated to the linked resource.
@@ -61,9 +47,8 @@ public val LinkHrefNormalizerIdentity: LinkHrefNormalizer = { it }
  */
 @Parcelize
 public data class Link(
-    val href: String,
+    val href: Href,
     val mediaType: MediaType? = null,
-    val templated: Boolean = false,
     val title: String? = null,
     val rels: Set<String> = setOf(),
     val properties: Properties = Properties(),
@@ -77,46 +62,79 @@ public data class Link(
 ) : JSONable, Parcelable {
 
     /**
+     * Convenience constructor for a [Link] with a [Url] as [href].
+     */
+    public constructor(
+        href: Url,
+        mediaType: MediaType? = null,
+        title: String? = null,
+        rels: Set<String> = setOf(),
+        properties: Properties = Properties(),
+        alternates: List<Link> = listOf(),
+        children: List<Link> = listOf()
+    ) : this(
+        href = Href(href),
+        mediaType = mediaType,
+        title = title,
+        rels = rels,
+        properties = properties,
+        alternates = alternates,
+        children = children
+    )
+
+    /**
+     * Returns the URL represented by this link's HREF, resolved to the given [base] URL.
+     *
+     * If the HREF is a template, the [parameters] are used to expand it according to RFC 6570.
+     */
+    public fun url(
+        base: Url? = null,
+        parameters: Map<String, String> = emptyMap()
+    ): Url = href.resolve(base, parameters)
+
+    /**
      * List of URI template parameter keys, if the [Link] is templated.
      */
     @IgnoredOnParcel
-    val templateParameters: List<String> by lazy {
-        if (!templated) {
-            emptyList()
-        } else {
-            URITemplate(href).parameters
-        }
-    }
+    @Deprecated("Open a GitHub issue if you were using this", level = DeprecationLevel.ERROR)
+    val templateParameters: List<String> get() =
+        throw NotImplementedError()
 
     /**
      * Expands the HREF by replacing URI template variables by the given parameters.
      *
      * See RFC 6570 on URI template.
      */
-    public fun expandTemplate(parameters: Map<String, String>): Link =
-        copy(href = URITemplate(href).expand(parameters), templated = false)
+    @Deprecated(
+        "Use `url(parameters)` instead",
+        ReplaceWith("this.url(parameters = parameters)"),
+        level = DeprecationLevel.ERROR
+    )
+    @Suppress("UNUSED_PARAMETER")
+    public fun expandTemplate(parameters: Map<String, String>): Link? =
+        throw NotImplementedError()
 
     /**
      * Computes an absolute URL to the link, relative to the given [baseUrl].
      *
      * If the link's [href] is already absolute, the [baseUrl] is ignored.
      */
-    public fun toUrl(baseUrl: String?): String? {
-        val href = href.removePrefix("/")
-        if (href.isBlank()) {
-            return null
-        }
-
-        return Href(href, baseHref = baseUrl ?: "/").percentEncodedString
-    }
+    @Deprecated(
+        "Use `url(baseUrl)` instead",
+        ReplaceWith("this.url(baseUrl)"),
+        level = DeprecationLevel.ERROR
+    )
+    @Suppress("UNUSED_PARAMETER")
+    public fun toUrl(baseUrl: Url?): String? =
+        throw NotImplementedError()
 
     /**
      * Serializes a [Link] to its RWPM JSON representation.
      */
     override fun toJSON(): JSONObject = JSONObject().apply {
-        put("href", href)
+        put("href", href.toString())
         put("type", mediaType?.toString())
-        put("templated", templated)
+        put("templated", href.isTemplated)
         put("title", title)
         putIfNotEmpty("rel", rels)
         putIfNotEmpty("properties", properties)
@@ -139,27 +157,31 @@ public data class Link(
 
         /**
          * Creates an [Link] from its RWPM JSON representation.
-         * It's [href] and its children's recursively will be normalized using the provided
-         * [normalizeHref] closure.
+         *
          * If the link can't be parsed, a warning will be logged with [warnings].
          */
         public fun fromJSON(
             json: JSONObject?,
             mediaTypeRetriever: MediaTypeRetriever = MediaTypeRetriever(),
-            normalizeHref: LinkHrefNormalizer = LinkHrefNormalizerIdentity,
             warnings: WarningLogger? = null
         ): Link? {
-            val href = json?.optNullableString("href")
-            if (href == null) {
+            val hrefString = json?.optNullableString("href")
+            if (hrefString == null) {
                 warnings?.log(Link::class.java, "[href] is required", json)
+                return null
+            }
+            val href = Href(
+                href = hrefString,
+                templated = json.optBoolean("templated", false)
+            ) ?: run {
+                warnings?.log(Link::class.java, "[href] is not a valid URL or URL template", json)
                 return null
             }
 
             return Link(
-                href = normalizeHref(href),
+                href = href,
                 mediaType = json.optNullableString("type")
                     ?.let { mediaTypeRetriever.retrieve(it) },
-                templated = json.optBoolean("templated", false),
                 title = json.optNullableString("title"),
                 rels = json.optStringsFromArrayOrSingle("rel").toSet(),
                 properties = Properties.fromJSON(json.optJSONObject("properties")),
@@ -170,34 +192,29 @@ public data class Link(
                 languages = json.optStringsFromArrayOrSingle("language"),
                 alternates = fromJSONArray(
                     json.optJSONArray("alternate"),
-                    mediaTypeRetriever,
-                    normalizeHref
+                    mediaTypeRetriever
                 ),
                 children = fromJSONArray(
                     json.optJSONArray("children"),
-                    mediaTypeRetriever,
-                    normalizeHref
+                    mediaTypeRetriever
                 )
             )
         }
 
         /**
          * Creates a list of [Link] from its RWPM JSON representation.
-         * It's [href] and its children's recursively will be normalized using the provided
-         * [normalizeHref] closure.
+         *
          * If a link can't be parsed, a warning will be logged with [warnings].
          */
         public fun fromJSONArray(
             json: JSONArray?,
             mediaTypeRetriever: MediaTypeRetriever = MediaTypeRetriever(),
-            normalizeHref: LinkHrefNormalizer = LinkHrefNormalizerIdentity,
             warnings: WarningLogger? = null
         ): List<Link> {
             return json.parseObjects {
                 fromJSON(
                     it as? JSONObject,
                     mediaTypeRetriever,
-                    normalizeHref,
                     warnings
                 )
             }
@@ -222,14 +239,14 @@ public data class Link(
 /**
  * Returns the first [Link] with the given [href], or null if not found.
  */
-public fun List<Link>.indexOfFirstWithHref(href: String): Int? =
-    indexOfFirst { it.href == href }
+public fun List<Link>.indexOfFirstWithHref(href: Url): Int? =
+    indexOfFirst { it.url() == href }
         .takeUnless { it == -1 }
 
 /**
  * Finds the first link matching the given HREF.
  */
-public fun List<Link>.firstWithHref(href: String): Link? = firstOrNull { it.href == href }
+public fun List<Link>.firstWithHref(href: Url): Link? = firstOrNull { it.url() == href }
 
 /**
  * Finds the first link with the given relation.

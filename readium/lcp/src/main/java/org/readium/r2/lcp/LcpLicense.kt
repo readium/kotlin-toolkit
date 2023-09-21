@@ -17,6 +17,7 @@ import org.readium.r2.lcp.license.model.LicenseDocument
 import org.readium.r2.lcp.license.model.StatusDocument
 import org.readium.r2.shared.publication.services.ContentProtectionService
 import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.Url
 import timber.log.Timber
 
 /**
@@ -102,7 +103,7 @@ public interface LcpLicense : ContentProtectionService.UserRights {
          * You should present the URL in a Chrome Custom Tab and terminate the function when the
          * web page is dismissed by the user.
          */
-        public suspend fun openWebPage(url: URL)
+        public suspend fun openWebPage(url: Url)
     }
 
     @Deprecated(

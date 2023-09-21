@@ -22,7 +22,10 @@ import org.readium.r2.shared.resource.FileResourceFactory
 import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.resource.ResourceFactory
 import org.readium.r2.shared.resource.ResourceMediaTypeSnifferContent
+import org.readium.r2.shared.util.AbsoluteUrl
+import org.readium.r2.shared.util.BaseError
 import org.readium.r2.shared.util.Either
+import org.readium.r2.shared.util.Error as SharedError
 import org.readium.r2.shared.util.ThrowableError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
@@ -58,105 +61,71 @@ public class AssetRetriever(
         }
     }
 
-    public sealed class Error : org.readium.r2.shared.util.Error {
+    public sealed class Error(message: String, cause: SharedError?) : BaseError(message, cause) {
 
         public class SchemeNotSupported(
-            public val scheme: String,
-            override val cause: org.readium.r2.shared.util.Error?
-        ) : Error() {
+            public val scheme: Url.Scheme,
+            cause: SharedError?
+        ) : Error("Scheme $scheme is not supported.", cause) {
 
-            public constructor(scheme: String, exception: Exception) :
+            public constructor(scheme: Url.Scheme, exception: Exception) :
                 this(scheme, ThrowableError(exception))
-
-            override val message: String =
-                "Scheme $scheme is not supported."
         }
 
         public class NotFound(
-            public val url: Url,
-            override val cause: org.readium.r2.shared.util.Error?
-        ) : Error() {
+            public val url: AbsoluteUrl,
+            cause: SharedError?
+        ) : Error("Asset could not be found at $url.", cause) {
 
-            public constructor(url: Url, exception: Exception) :
+            public constructor(url: AbsoluteUrl, exception: Exception) :
                 this(url, ThrowableError(exception))
-
-            override val message: String =
-                "Asset could not be found at $url."
         }
 
-        public class InvalidAsset(
-            override val cause: org.readium.r2.shared.util.Error?
-        ) : Error() {
+        public class InvalidAsset(cause: SharedError?) :
+            Error("Asset looks corrupted.", cause) {
 
             public constructor(exception: Exception) :
                 this(ThrowableError(exception))
-
-            override val message: String =
-                "Asset looks corrupted."
         }
 
-        public class ArchiveFormatNotSupported(
-            override val cause: org.readium.r2.shared.util.Error?
-        ) : Error() {
+        public class ArchiveFormatNotSupported(cause: SharedError?) :
+            Error("Archive factory does not support this kind of archive.", cause) {
 
             public constructor(exception: Exception) :
                 this(ThrowableError(exception))
-
-            override val message: String =
-                "Archive factory does not support this kind of archive."
         }
 
         public class Forbidden(
-            public val url: Url,
-            override val cause: org.readium.r2.shared.util.Error
-        ) : Error() {
+            public val url: AbsoluteUrl,
+            cause: SharedError?
+        ) : Error("Access to asset at url $url is forbidden.", cause) {
 
-            public constructor(url: Url, exception: Exception) :
+            public constructor(url: AbsoluteUrl, exception: Exception) :
                 this(url, ThrowableError(exception))
-
-            override val message: String =
-                "Access to asset at url $url is forbidden."
         }
 
-        public class Unavailable(
-            override val cause: org.readium.r2.shared.util.Error
-        ) : Error() {
+        public class Unavailable(cause: SharedError) :
+            Error("Asset seems not to be available at the moment.", cause) {
 
             public constructor(exception: Exception) :
                 this(ThrowableError(exception))
-
-            override val message: String =
-                "Asset seems not to be available at the moment."
         }
 
-        public class OutOfMemory(
-            error: OutOfMemoryError
-        ) : Error() {
-
-            override val message: String =
-                "There is not enough memory on the device to load the asset."
-
-            override val cause: org.readium.r2.shared.util.Error =
+        public class OutOfMemory(error: OutOfMemoryError) :
+            Error(
+                "There is not enough memory on the device to load the asset.",
                 ThrowableError(error)
-        }
+            )
 
-        public class Unknown(
-            private val exception: Exception
-        ) : Error() {
-
-            override val message: String =
-                exception.message ?: "Something unexpected happened."
-
-            override val cause: org.readium.r2.shared.util.Error =
-                ThrowableError(exception)
-        }
+        public class Unknown(exception: Exception) :
+            Error("Something unexpected happened.", ThrowableError(exception))
     }
 
     /**
      * Retrieves an asset from a known media and asset type.
      */
     public suspend fun retrieve(
-        url: Url,
+        url: AbsoluteUrl,
         mediaType: MediaType,
         assetType: AssetType
     ): Try<Asset, Error> {
@@ -173,7 +142,7 @@ public class AssetRetriever(
     }
 
     private suspend fun retrieveArchiveAsset(
-        url: Url,
+        url: AbsoluteUrl,
         mediaType: MediaType
     ): Try<Asset.Container, Error> {
         return retrieveResource(url)
@@ -194,7 +163,7 @@ public class AssetRetriever(
     }
 
     private suspend fun retrieveDirectoryAsset(
-        url: Url,
+        url: AbsoluteUrl,
         mediaType: MediaType
     ): Try<Asset.Container, Error> {
         return containerFactory.create(url)
@@ -214,7 +183,7 @@ public class AssetRetriever(
     }
 
     private suspend fun retrieveResourceAsset(
-        url: Url,
+        url: AbsoluteUrl,
         mediaType: MediaType
     ): Try<Asset.Resource, Error> {
         return retrieveResource(url)
@@ -222,7 +191,7 @@ public class AssetRetriever(
     }
 
     private suspend fun retrieveResource(
-        url: Url
+        url: AbsoluteUrl
     ): Try<Resource, Error> {
         return resourceFactory.create(url)
             .mapFailure { error ->
@@ -237,7 +206,7 @@ public class AssetRetriever(
             }
     }
 
-    private fun Resource.Exception.wrap(url: Url): Error =
+    private fun Resource.Exception.wrap(url: AbsoluteUrl): Error =
         when (this) {
             is Resource.Exception.Forbidden ->
                 Error.Forbidden(url, this)
@@ -274,6 +243,8 @@ public class AssetRetriever(
      * Retrieves an asset from a [Url].
      */
     public suspend fun retrieve(url: Url): Asset? {
+        if (url !is AbsoluteUrl) return null
+
         val resource = resourceFactory
             .create(url)
             .getOrElse { error ->
@@ -293,7 +264,7 @@ public class AssetRetriever(
     }
 
     private suspend fun retrieve(
-        url: Url,
+        url: AbsoluteUrl,
         container: Container,
         exploded: Boolean
     ): Asset? {
@@ -302,14 +273,14 @@ public class AssetRetriever(
         return Asset.Container(mediaType, exploded = exploded, container = container)
     }
 
-    private suspend fun retrieve(url: Url, resource: Resource): Asset? {
+    private suspend fun retrieve(url: AbsoluteUrl, resource: Resource): Asset? {
         val mediaType = retrieveMediaType(url, Either(resource))
             ?: return null
         return Asset.Resource(mediaType, resource = resource)
     }
 
     private suspend fun retrieveMediaType(
-        url: Url,
+        url: AbsoluteUrl,
         asset: Either<Resource, Container>
     ): MediaType? {
         suspend fun retrieve(hints: MediaTypeHints): MediaType? =
@@ -329,7 +300,7 @@ public class AssetRetriever(
         // otherwise it will detect JSON, XML or ZIP formats before we have a chance of sniffing
         // their content (for example, for RWPM).
 
-        if (url.scheme == ContentResolver.SCHEME_CONTENT) {
+        if (url.isContent) {
             val contentHints = MediaTypeHints(
                 mediaType = contentResolver.getType(url.uri)
                     ?.let { MediaType(it)!! }

@@ -9,8 +9,8 @@
 
 package org.readium.r2.shared.extensions
 
+import android.net.Uri
 import java.net.URL
-import java.net.URLDecoder
 import java.security.MessageDigest
 import java.util.*
 import org.joda.time.DateTime
@@ -46,7 +46,19 @@ public fun String.addPrefix(prefix: CharSequence): String {
     if (startsWith(prefix)) {
         return this
     }
-    return "$prefix$this"
+    return prefix.toString() + this
+}
+
+/**
+ * If this string ends with the given [suffix], returns this string.
+ * Otherwise, returns a copy of this string after adding the [suffix].
+ */
+@InternalReadiumApi
+public fun String.addSuffix(suffix: CharSequence): String {
+    if (endsWith(suffix)) {
+        return this
+    }
+    return this + suffix
 }
 
 internal enum class HashAlgorithm(val key: String) {
@@ -74,9 +86,18 @@ internal fun String.toJsonOrNull(): JSONObject? =
         null
     }
 
-internal fun String.queryParameters(): Map<String, String> = URLDecoder.decode(this, "UTF-8")
-    .substringAfter("?") // query start
-    .takeWhile { it != '#' } // anchor start
-    .split("&")
-    .mapNotNull { it.split("=").takeIf { it.size == 2 } }
-    .associate { Pair(it[0], it[1]) }
+/**
+ * Percent-encodes an URL path section.
+ *
+ * Equivalent to Swift's `string.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed)`
+ */
+internal fun String.percentEncodedPath(): String =
+    Uri.encode(this, "$&+,/:=@")
+
+/**
+ * Percent-encodes an URL query key or value.
+ *
+ * Equivalent to Swift's `string.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)`
+ */
+internal fun String.percentEncodedQuery(): String =
+    Uri.encode(this, "$+,/?:=@")

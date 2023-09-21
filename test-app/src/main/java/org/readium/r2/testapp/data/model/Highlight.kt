@@ -10,6 +10,8 @@ import androidx.annotation.ColorInt
 import androidx.room.*
 import org.json.JSONObject
 import org.readium.r2.shared.publication.Locator
+import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.mediatype.MediaType
 
 /**
  * @param id Primary key, auto-incremented
@@ -76,8 +78,8 @@ data class Highlight(
             bookId = bookId,
             style = style,
             tint = tint,
-            href = locator.href,
-            type = locator.type,
+            href = locator.href.toString(),
+            type = locator.mediaType.toString(),
             title = locator.title,
             totalProgression = locator.locations.totalProgression ?: 0.0,
             locations = locator.locations,
@@ -86,8 +88,8 @@ data class Highlight(
         )
 
     val locator: Locator get() = Locator(
-        href = href,
-        type = type,
+        href = Url(href)!!,
+        mediaType = MediaType(type) ?: MediaType.BINARY,
         title = title,
         locations = locations,
         text = text

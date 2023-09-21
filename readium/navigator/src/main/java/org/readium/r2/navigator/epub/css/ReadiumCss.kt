@@ -13,6 +13,7 @@ import org.jsoup.nodes.Element
 import org.readium.r2.navigator.preferences.FontFamily
 import org.readium.r2.navigator.preferences.ReadingProgression
 import org.readium.r2.shared.ExperimentalReadiumApi
+import org.readium.r2.shared.util.Url
 
 @ExperimentalReadiumApi
 internal data class ReadiumCss(
@@ -21,7 +22,7 @@ internal data class ReadiumCss(
     val userProperties: UserProperties = UserProperties(),
     val fontFamilyDeclarations: List<FontFamilyDeclaration> = emptyList(),
     val googleFonts: List<FontFamily> = emptyList(),
-    val assetsBaseHref: String
+    val assetsBaseHref: Url
 ) {
 
     /**
@@ -46,12 +47,6 @@ internal data class ReadiumCss(
      */
     private fun injectStyles(content: StringBuilder) {
         val hasStyles = content.hasStyles()
-        val assetsBaseHref = assetsBaseHref.removeSuffix("/")
-        val stylesheetsFolder = assetsBaseHref + "/readium/readium-css/" + (
-            layout.stylesheets.folder?.plus(
-                "/"
-            ) ?: ""
-            )
 
         val headBeforeIndex = content.indexForOpeningTag("head")
         content.insert(
@@ -59,7 +54,7 @@ internal data class ReadiumCss(
             "\n" + buildList {
                 addAll(fontsInjectableLinks)
 
-                add(stylesheetLink(stylesheetsFolder + "ReadiumCSS-before.css"))
+                add(stylesheetLink(beforeCss))
 
                 // Fix Readium CSS issue with the positioning of <audio> elements.
                 // https://github.com/readium/readium-css/issues/94
@@ -79,7 +74,7 @@ internal data class ReadiumCss(
                 )
 
                 if (!hasStyles) {
-                    add(stylesheetLink(stylesheetsFolder + "ReadiumCSS-default.css"))
+                    add(stylesheetLink(defaultCss))
                 }
             }.joinToString("\n") + "\n"
         )
@@ -88,7 +83,7 @@ internal data class ReadiumCss(
         content.insert(
             endHeadIndex,
             "\n" + buildList {
-                add(stylesheetLink(stylesheetsFolder + "ReadiumCSS-after.css"))
+                add(stylesheetLink(afterCss))
 
                 if (fontsInjectableCss.isNotEmpty()) {
                     add(
@@ -101,6 +96,24 @@ internal data class ReadiumCss(
                 }
             }.joinToString("\n") + "\n"
         )
+    }
+
+    private val stylesheetsFolder by lazy {
+        assetsBaseHref.resolve(
+            Url("readium/readium-css/${layout.stylesheets.folder?.plus("/") ?: ""}")!!
+        )
+    }
+
+    private val beforeCss by lazy {
+        stylesheetsFolder.resolve(Url("ReadiumCSS-before.css")!!)
+    }
+
+    private val afterCss by lazy {
+        stylesheetsFolder.resolve(Url("ReadiumCSS-after.css")!!)
+    }
+
+    private val defaultCss by lazy {
+        stylesheetsFolder.resolve(Url("ReadiumCSS-default.css")!!)
     }
 
     /**
@@ -135,8 +148,8 @@ internal data class ReadiumCss(
             .flatMap { it.links(::normalizeAssetUrl) }
     }
 
-    private fun normalizeAssetUrl(url: String): String =
-        assetsBaseHref.removeSuffix("/") + "/" + url.removePrefix("/")
+    private fun normalizeAssetUrl(url: Url): Url =
+        assetsBaseHref.resolve(url)
 
     /**
      * Returns whether the [String] receiver has any CSS styles.
@@ -151,7 +164,7 @@ internal data class ReadiumCss(
             )
     }
 
-    private fun stylesheetLink(href: String): String =
+    private fun stylesheetLink(href: Url): String =
         """<link rel="stylesheet" type="text/css" href="$href"/>"""
 
     /**

@@ -64,12 +64,13 @@ internal class PdfNavigatorViewModel<S : Configurable.Settings, P : Configurable
      * HREF "/$assetName". This was fragile if the asset named changed, or was different on other
      * devices.
      *
-     * To avoid this, we now use a single link with the HREF ".". And to avoid breaking legacy
-     * locators, we match any HREF if the reading order contains a single link with the HREF ".".
+     * To avoid this, we now use a single link with the HREF "publication.pdf". And to avoid
+     * breaking legacy locators, we match any HREF if the reading order contains a single link with
+     * the HREF "publication.pdf".
      */
     private val isPDFFile: Boolean =
         publication.readingOrder.count() == 1 &&
-            publication.readingOrder[0].href == "."
+            publication.readingOrder[0].href.toString() == "publication.pdf"
 
     companion object {
         fun <S : Configurable.Settings, P : Configurable.Preferences<P>, E : PreferencesEditor<P>> createFactory(

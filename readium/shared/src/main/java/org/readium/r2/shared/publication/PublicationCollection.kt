@@ -51,13 +51,10 @@ public data class PublicationCollection(
          * Parses a [PublicationCollection] from its RWPM JSON representation.
          *
          * If the collection can't be parsed, a warning will be logged with [warnings].
-         * The [links]' href and their children's will be normalized recursively using the
-         * provided [normalizeHref] closure.
          */
         public fun fromJSON(
             json: Any?,
             mediaTypeRetriever: MediaTypeRetriever = MediaTypeRetriever(),
-            normalizeHref: LinkHrefNormalizer = LinkHrefNormalizerIdentity,
             warnings: WarningLogger? = null
         ): PublicationCollection? {
             json ?: return null
@@ -72,21 +69,19 @@ public data class PublicationCollection(
                     links = Link.fromJSONArray(
                         json.remove("links") as? JSONArray,
                         mediaTypeRetriever,
-                        normalizeHref,
                         warnings
                     )
                     metadata = (json.remove("metadata") as? JSONObject)?.toMap()
                     subcollections = collectionsFromJSON(
                         json,
                         mediaTypeRetriever,
-                        normalizeHref,
                         warnings
                     )
                 }
 
                 // Parses an array of links.
                 is JSONArray -> {
-                    links = Link.fromJSONArray(json, mediaTypeRetriever, normalizeHref, warnings)
+                    links = Link.fromJSONArray(json, mediaTypeRetriever, warnings)
                 }
 
                 else -> {
@@ -114,13 +109,10 @@ public data class PublicationCollection(
          * Parses a map of [PublicationCollection] indexed by their roles from its RWPM JSON representation.
          *
          * If the collection can't be parsed, a warning will be logged with [warnings].
-         * The [links]' href and their children's will be normalized recursively using the
-         * provided [normalizeHref] closure.
          */
         public fun collectionsFromJSON(
             json: JSONObject,
             mediaTypeRetriever: MediaTypeRetriever = MediaTypeRetriever(),
-            normalizeHref: LinkHrefNormalizer = LinkHrefNormalizerIdentity,
             warnings: WarningLogger? = null
         ): Map<String, List<PublicationCollection>> {
             val collections = mutableMapOf<String, MutableList<PublicationCollection>>()
@@ -128,7 +120,7 @@ public data class PublicationCollection(
                 val subJSON = json.get(role)
 
                 // Parses a list of links or a single collection object.
-                val collection = fromJSON(subJSON, mediaTypeRetriever, normalizeHref, warnings)
+                val collection = fromJSON(subJSON, mediaTypeRetriever, warnings)
                 if (collection != null) {
                     collections.getOrPut(role) { mutableListOf() }.add(collection)
 
@@ -139,7 +131,6 @@ public data class PublicationCollection(
                             fromJSON(
                                 it,
                                 mediaTypeRetriever,
-                                normalizeHref,
                                 warnings
                             )
                         }
