@@ -103,16 +103,14 @@ internal class LicensesService(
         file: File,
         mediaType: MediaType,
         authentication: LcpAuthenticating,
-        allowUserInteraction: Boolean,
-        sender: Any?
+        allowUserInteraction: Boolean
     ): Try<LcpLicense, LcpException> =
         try {
             val container = createLicenseContainer(file, mediaType)
             val license = retrieveLicense(
                 container,
                 authentication,
-                allowUserInteraction,
-                sender
+                allowUserInteraction
             )
             Try.success(license)
         } catch (e: Exception) {
@@ -122,16 +120,14 @@ internal class LicensesService(
     override suspend fun retrieveLicense(
         asset: Asset,
         authentication: LcpAuthenticating,
-        allowUserInteraction: Boolean,
-        sender: Any?
+        allowUserInteraction: Boolean
     ): Try<LcpLicense, LcpException> =
         try {
             val licenseContainer = createLicenseContainer(context, asset)
             val license = retrieveLicense(
                 licenseContainer,
                 authentication,
-                allowUserInteraction,
-                sender
+                allowUserInteraction
             )
             Try.success(license)
         } catch (e: Exception) {
@@ -141,8 +137,7 @@ internal class LicensesService(
     private suspend fun retrieveLicense(
         container: LicenseContainer,
         authentication: LcpAuthenticating,
-        allowUserInteraction: Boolean,
-        sender: Any?
+        allowUserInteraction: Boolean
     ): LcpLicense {
         // WARNING: Using the Default dispatcher in the state machine code is critical. If we were using the Main Dispatcher,
         // calling runBlocking in LicenseValidation.handle would block the main thread and cause a severe issue
@@ -152,8 +147,7 @@ internal class LicensesService(
             retrieveLicenseUnsafe(
                 container,
                 authentication,
-                allowUserInteraction,
-                sender
+                allowUserInteraction
             )
         }
         Timber.d("license retrieved ${license.license}")
@@ -164,15 +158,13 @@ internal class LicensesService(
     private suspend fun retrieveLicenseUnsafe(
         container: LicenseContainer,
         authentication: LcpAuthenticating?,
-        allowUserInteraction: Boolean,
-        sender: Any?
+        allowUserInteraction: Boolean
     ): License =
         suspendCancellableCoroutine { cont ->
             retrieveLicense(
                 container,
                 authentication,
-                allowUserInteraction,
-                sender
+                allowUserInteraction
             ) { license ->
                 if (cont.isActive) {
                     cont.resume(license)
@@ -184,17 +176,20 @@ internal class LicensesService(
         container: LicenseContainer,
         authentication: LcpAuthenticating?,
         allowUserInteraction: Boolean,
-        sender: Any?,
         completion: (License) -> Unit
     ) {
         var initialData = container.read()
         Timber.d("license ${LicenseDocument(data = initialData).json}")
 
         val validation = LicenseValidation(
-            authentication = authentication, crl = this.crl,
-            device = this.device, network = this.network, passphrases = this.passphrases, context = this.context,
-            allowUserInteraction = allowUserInteraction, ignoreInternetErrors = container is WritableLicenseContainer,
-            sender = sender
+            authentication = authentication,
+            crl = this.crl,
+            device = this.device,
+            network = this.network,
+            passphrases = this.passphrases,
+            context = this.context,
+            allowUserInteraction = allowUserInteraction,
+            ignoreInternetErrors = container is WritableLicenseContainer
         ) { licenseDocument ->
             try {
                 launch {

@@ -23,6 +23,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import org.readium.r2.shared.util.Url
+import org.readium.r2.testapp.Application
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.data.model.Book
 import org.readium.r2.testapp.databinding.FragmentBookshelfBinding
@@ -38,6 +39,9 @@ class BookshelfFragment : Fragment() {
     private lateinit var sharedStoragePickerLauncher: ActivityResultLauncher<Array<String>>
     private var binding: FragmentBookshelfBinding by viewLifecycle()
 
+    private val app: Application
+        get() = requireContext().applicationContext as Application
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -50,15 +54,13 @@ class BookshelfFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        app.readium.onLcpDialogAuthenticationParentCreated(view)
         bookshelfViewModel.channel.receive(viewLifecycleOwner) { handleEvent(it) }
 
         bookshelfAdapter = BookshelfAdapter(
             onBookClick = { book ->
                 book.id?.let {
-                    bookshelfViewModel.openPublication(
-                        it,
-                        requireActivity()
-                    )
+                    bookshelfViewModel.openPublication(it)
                 }
             },
             onBookLongClick = { book -> confirmDeleteBook(book) }
@@ -114,6 +116,11 @@ class BookshelfFragment : Fragment() {
                 }
                 .show()
         }
+    }
+
+    override fun onDestroyView() {
+        app.readium.onDestroyLcpDialogAuthenticationView()
+        super.onDestroyView()
     }
 
     private fun askForRemoteUrl() {

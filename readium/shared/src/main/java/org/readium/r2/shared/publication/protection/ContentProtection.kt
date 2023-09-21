@@ -46,8 +46,7 @@ public interface ContentProtection {
     public suspend fun open(
         asset: org.readium.r2.shared.asset.Asset,
         credentials: String?,
-        allowUserInteraction: Boolean,
-        sender: Any?
+        allowUserInteraction: Boolean
     ): Try<Asset, Publication.OpenError>
 
     /**

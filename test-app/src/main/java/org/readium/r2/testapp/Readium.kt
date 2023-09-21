@@ -7,9 +7,11 @@
 package org.readium.r2.testapp
 
 import android.content.Context
+import android.view.View
 import org.readium.adapters.pdfium.document.PdfiumDocumentFactory
 import org.readium.r2.lcp.LcpException
 import org.readium.r2.lcp.LcpService
+import org.readium.r2.lcp.auth.LcpDialogAuthentication
 import org.readium.r2.navigator.preferences.FontFamily
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.asset.AssetRetriever
@@ -86,8 +88,10 @@ class Readium(context: Context) {
     )?.let { Try.success(it) }
         ?: Try.failure(LcpException.Unknown(Exception("liblcp is missing on the classpath")))
 
+    private val lcpDialogAuthentication = LcpDialogAuthentication(null)
+
     private val contentProtections = listOfNotNull(
-        lcpService.getOrNull()?.contentProtection()
+        lcpService.getOrNull()?.contentProtection(lcpDialogAuthentication)
     )
 
     val protectionRetriever = ContentProtectionSchemeRetriever(
@@ -107,6 +111,14 @@ class Readium(context: Context) {
         // Only required if you want to support PDF files using the PDFium adapter.
         pdfFactory = PdfiumDocumentFactory(context)
     )
+
+    fun onLcpDialogAuthenticationParentCreated(view: View) {
+        lcpDialogAuthentication.onParentViewCreated(view)
+    }
+
+    fun onDestroyLcpDialogAuthenticationView() {
+        lcpDialogAuthentication.onDestroyView()
+    }
 }
 
 @OptIn(ExperimentalReadiumApi::class)

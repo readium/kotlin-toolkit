@@ -105,7 +105,6 @@ internal class LicenseValidation(
     var authentication: LcpAuthenticating?,
     val allowUserInteraction: Boolean,
     val ignoreInternetErrors: Boolean,
-    val sender: Any?,
     val crl: CRLService,
     val device: DeviceService,
     val network: NetworkService,
@@ -433,7 +432,7 @@ internal class LicenseValidation(
 
     private suspend fun requestPassphrase(license: LicenseDocument) {
         if (DEBUG) Timber.d("requestPassphrase")
-        val passphrase = passphrases.request(license, authentication, allowUserInteraction, sender)
+        val passphrase = passphrases.request(license, authentication, allowUserInteraction)
         if (passphrase == null) {
             raise(Event.cancelled)
         } else {

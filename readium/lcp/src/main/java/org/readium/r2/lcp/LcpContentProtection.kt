@@ -41,36 +41,33 @@ internal class LcpContentProtection(
     override suspend fun open(
         asset: Asset,
         credentials: String?,
-        allowUserInteraction: Boolean,
-        sender: Any?
+        allowUserInteraction: Boolean
     ): Try<ContentProtection.Asset, Publication.OpenError> {
         return when (asset) {
-            is Asset.Container -> openPublication(asset, credentials, allowUserInteraction, sender)
-            is Asset.Resource -> openLicense(asset, credentials, allowUserInteraction, sender)
+            is Asset.Container -> openPublication(asset, credentials, allowUserInteraction)
+            is Asset.Resource -> openLicense(asset, credentials, allowUserInteraction)
         }
     }
 
     private suspend fun openPublication(
         asset: Asset.Container,
         credentials: String?,
-        allowUserInteraction: Boolean,
-        sender: Any?
+        allowUserInteraction: Boolean
     ): Try<ContentProtection.Asset, Publication.OpenError> {
-        val license = retrieveLicense(asset, credentials, allowUserInteraction, sender)
+        val license = retrieveLicense(asset, credentials, allowUserInteraction)
         return createResultAsset(asset, license)
     }
 
     private suspend fun retrieveLicense(
         asset: Asset,
         credentials: String?,
-        allowUserInteraction: Boolean,
-        sender: Any?
+        allowUserInteraction: Boolean
     ): Try<LcpLicense, LcpException> {
         val authentication = credentials
             ?.let { LcpPassphraseAuthentication(it, fallback = this.authentication) }
             ?: this.authentication
 
-        return lcpService.retrieveLicense(asset, authentication, allowUserInteraction, sender)
+        return lcpService.retrieveLicense(asset, authentication, allowUserInteraction)
     }
 
     private fun createResultAsset(
@@ -105,10 +102,9 @@ internal class LcpContentProtection(
     private suspend fun openLicense(
         licenseAsset: Asset.Resource,
         credentials: String?,
-        allowUserInteraction: Boolean,
-        sender: Any?
+        allowUserInteraction: Boolean
     ): Try<ContentProtection.Asset, Publication.OpenError> {
-        val license = retrieveLicense(licenseAsset, credentials, allowUserInteraction, sender)
+        val license = retrieveLicense(licenseAsset, credentials, allowUserInteraction)
 
         val licenseDoc = license.getOrNull()?.license
             ?: licenseAsset.resource.read()

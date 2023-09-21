@@ -29,6 +29,10 @@ dependencies {
 }
 ```
 
+### LcpDialogAuthentication now supports configuration changes. 
+
+See documentation.
+
 ### All resources now have the prefix `readium_`.
 
 To avoid conflicts when merging your app resources, all resources declared in the Readium toolkit now have the prefix `readium_`. This means that you must rename any layouts or strings you have overridden. Here is a comprehensive list of the changes.

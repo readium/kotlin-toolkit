@@ -6,7 +6,6 @@
 
 package org.readium.r2.testapp.reader
 
-import android.app.Activity
 import android.app.Application
 import androidx.annotation.StringRes
 import androidx.datastore.core.DataStore
@@ -95,7 +94,7 @@ class ReaderRepository(
     operator fun get(bookId: Long): ReaderInitData? =
         repository[bookId]
 
-    suspend fun open(bookId: Long, activity: Activity): Try<Unit, OpeningError> {
+    suspend fun open(bookId: Long): Try<Unit, OpeningError> {
         if (bookId in repository.keys) {
             return Try.success(Unit)
         }
@@ -111,8 +110,7 @@ class ReaderRepository(
         val publication = readium.publicationFactory.open(
             asset,
             contentProtectionScheme = book.drmScheme,
-            allowUserInteraction = true,
-            sender = activity
+            allowUserInteraction = true
         ).getOrElse { return Try.failure(OpeningError.PublicationError(it)) }
 
         // The publication is protected with a DRM and not unlocked.
