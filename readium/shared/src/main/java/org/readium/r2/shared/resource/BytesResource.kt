@@ -47,11 +47,16 @@ public sealed class BaseBytesResource(
 
 /** Creates a Resource serving a [ByteArray]. */
 public class BytesResource(
-    url: AbsoluteUrl? = null,
+    source: AbsoluteUrl? = null,
     mediaType: MediaType,
     properties: Resource.Properties = Resource.Properties(),
     bytes: suspend () -> ResourceTry<ByteArray>
-) : BaseBytesResource(source = url, mediaType = mediaType, properties = properties, bytes = bytes) {
+) : BaseBytesResource(
+    source = source,
+    mediaType = mediaType,
+    properties = properties,
+    bytes = bytes
+) {
 
     public constructor(
         bytes: ByteArray,
@@ -59,7 +64,7 @@ public class BytesResource(
         url: AbsoluteUrl? = null,
         properties: Resource.Properties = Resource.Properties()
     ) :
-        this(url = url, mediaType = mediaType, properties = properties, { Try.success(bytes) })
+        this(source = url, mediaType = mediaType, properties = properties, { Try.success(bytes) })
 
     override fun toString(): String =
         "${javaClass.simpleName}(${runBlocking { length() }} bytes)"
@@ -67,12 +72,12 @@ public class BytesResource(
 
 /** Creates a Resource serving a [String]. */
 public class StringResource(
-    url: AbsoluteUrl? = null,
+    source: AbsoluteUrl? = null,
     mediaType: MediaType,
     properties: Resource.Properties = Resource.Properties(),
     string: suspend () -> ResourceTry<String>
 ) : BaseBytesResource(
-    source = url,
+    source = source,
     mediaType = mediaType,
     properties = properties,
     { string().map { it.toByteArray() } }
@@ -84,7 +89,7 @@ public class StringResource(
         url: AbsoluteUrl? = null,
         properties: Resource.Properties = Resource.Properties()
     ) :
-        this(url = url, mediaType = mediaType, properties = properties, { Try.success(string) })
+        this(source = url, mediaType = mediaType, properties = properties, { Try.success(string) })
 
     override fun toString(): String =
         "${javaClass.simpleName}(${runBlocking { readAsString() }})"

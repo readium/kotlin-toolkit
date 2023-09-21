@@ -16,7 +16,6 @@ import kotlinx.parcelize.Parcelize
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.extensions.percentEncodedPath
 import org.readium.r2.shared.extensions.tryOrNull
-import org.readium.r2.shared.publication.Href
 
 /**
  * A Uniform Resource Locator.

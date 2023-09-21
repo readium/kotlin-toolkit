@@ -127,7 +127,7 @@ internal class LcpContentProtection(
                     )
                 }
 
-        val link = checkNotNull(licenseDoc.link(LicenseDocument.Rel.Publication))
+        val link = licenseDoc.publicationLink
         val url = (link.url() as? AbsoluteUrl)
             ?: return Try.failure(
                 Publication.OpenError.InvalidAsset(

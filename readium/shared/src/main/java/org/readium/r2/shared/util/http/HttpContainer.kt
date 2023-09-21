@@ -12,7 +12,6 @@ import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.resource.toEntry
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Url
-import timber.log.Timber
 
 /**
  * Fetches remote resources through HTTP.
@@ -34,11 +33,11 @@ public class HttpContainer(
         val absoluteUrl = (baseUrl?.resolve(url) ?: url) as? AbsoluteUrl
 
         return if (absoluteUrl == null || !absoluteUrl.isHttp) {
-            val cause = IllegalArgumentException(
-                "Invalid URL: $url, produced absolute URL: $absoluteUrl"
+            FailureResource(
+                Resource.Exception.NotFound(
+                    Exception("URL scheme is not supported: ${absoluteUrl?.scheme}.")
+                )
             )
-            Timber.e(cause)
-            FailureResource(Resource.Exception.BadRequest(cause = cause))
         } else {
             HttpResource(client, absoluteUrl)
         }
