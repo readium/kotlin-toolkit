@@ -20,7 +20,6 @@ import kotlinx.coroutines.launch
 import org.readium.r2.navigator.Decoration
 import org.readium.r2.navigator.ExperimentalDecorator
 import org.readium.r2.shared.ExperimentalReadiumApi
-import org.readium.r2.shared.Search
 import org.readium.r2.shared.UserException
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.LocatorCollection
@@ -39,7 +38,7 @@ import org.readium.r2.testapp.utils.EventChannel
 import org.readium.r2.testapp.utils.createViewModelFactory
 import timber.log.Timber
 
-@OptIn(Search::class, ExperimentalDecorator::class, ExperimentalCoroutinesApi::class)
+@OptIn(ExperimentalDecorator::class, ExperimentalCoroutinesApi::class)
 class ReaderViewModel(
     private val bookId: Long,
     private val readerRepository: ReaderRepository,

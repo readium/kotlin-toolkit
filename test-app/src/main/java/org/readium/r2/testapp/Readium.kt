@@ -88,7 +88,7 @@ class Readium(context: Context) {
     )?.let { Try.success(it) }
         ?: Try.failure(LcpException.Unknown(Exception("liblcp is missing on the classpath")))
 
-    private val lcpDialogAuthentication = LcpDialogAuthentication(null)
+    private val lcpDialogAuthentication = LcpDialogAuthentication()
 
     private val contentProtections = listOfNotNull(
         lcpService.getOrNull()?.contentProtection(lcpDialogAuthentication)
@@ -112,12 +112,12 @@ class Readium(context: Context) {
         pdfFactory = PdfiumDocumentFactory(context)
     )
 
-    fun onLcpDialogAuthenticationParentCreated(view: View) {
-        lcpDialogAuthentication.onParentViewCreated(view)
+    fun onLcpDialogAuthenticationParentAttached(view: View) {
+        lcpDialogAuthentication.onParentViewAttachedToWindow(view)
     }
 
-    fun onDestroyLcpDialogAuthenticationView() {
-        lcpDialogAuthentication.onDestroyView()
+    fun onLcpDialogAuthenticationParentDetached() {
+        lcpDialogAuthentication.onParentViewDetachedFromWindow()
     }
 }
 

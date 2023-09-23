@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Readium Foundation. All rights reserved.
+ * Copyright 2023 Readium Foundation. All rights reserved.
  * Use of this source code is governed by the BSD-style license
  * available in the top-level LICENSE file of the project.
  */
@@ -10,8 +10,6 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import android.os.Handler
-import android.os.Looper
 import android.text.Editable
 import android.view.Gravity
 import android.view.LayoutInflater
@@ -43,14 +41,13 @@ import org.readium.r2.shared.util.toUri
 /**
  * An [LcpAuthenticating] implementation presenting a dialog to the user.
  *
- * This authentication requires a view to anchor on. You can pass it at construction time if you
- * already have it or call onParentViewCreated later. Anyway, you'll need to follow
- * the view lifecycle calling onDestroyView when it gets destroyed and
- * onParentViewCreated every time it gets created again.
+ * This authentication requires a view to anchor on. To use it, you'll need to call
+ * [onParentViewAttachedToWindow] every time it gets attached to a window and
+ * [onParentViewDetachedFromWindow] when it gets detached. You can typically achieve this with
+ * a [View.OnAttachStateChangeListener]. Without view to anchor on, [retrievePassphrase] will
+ * suspend until one is available.
  */
-public class LcpDialogAuthentication(
-    private var parentView: View?
-) : LcpAuthenticating {
+public class LcpDialogAuthentication : LcpAuthenticating {
 
     private class SuspendedCall(
         val continuation: Continuation<String?>,
@@ -60,38 +57,21 @@ public class LcpDialogAuthentication(
     )
 
     private val mutex: Mutex = Mutex()
-
     private var suspendedCall: SuspendedCall? = null
-
-    private val handler: Handler = Handler(Looper.getMainLooper())
+    private var parentView: View? = null
 
     /**
-     * Call this method every time the anchor view has just been created, for instance when
-     * the method onViewCreated of a fragment is called.
+     * Call this method every time the anchor view gets attached to the window.
      */
-    public fun onParentViewCreated(parentView: View) {
-        this.parentView = parentView
-        // Calling showPopupWindow immediately raises an exception due to the window
-        // having a null token
-        handler.post {
-            suspendedCall
-                ?.let {
-                    showPopupWindow(
-                        it.continuation,
-                        it.license,
-                        it.reason,
-                        parentView,
-                        it.currentInput
-                    )
-                }
-        }
+    public fun onParentViewAttachedToWindow(parentView: View) {
+        this@LcpDialogAuthentication.parentView = parentView
+        suspendedCall?.let { showPopupWindow(it, parentView) }
     }
 
     /**
-     * Call this method every time the anchor view is about to be destroyed, for instance when the
-     * method of the same name of a fragment is called.
+     * Call this method every time the anchor view gets detached from the window.
      */
-    public fun onDestroyView() {
+    public fun onParentViewDetachedFromWindow() {
         this.parentView = null
     }
 
@@ -118,8 +98,9 @@ public class LcpDialogAuthentication(
         mutex.lock()
 
         return suspendCoroutine { cont ->
-            suspendedCall = SuspendedCall(cont, license, reason)
-            parentView?.let { showPopupWindow(cont, license, reason, it) }
+            val suspendedCall = SuspendedCall(cont, license, reason)
+            this.suspendedCall = suspendedCall
+            parentView?.let { showPopupWindow(suspendedCall, it) }
         }
     }
 
@@ -129,11 +110,8 @@ public class LcpDialogAuthentication(
     }
 
     private fun showPopupWindow(
-        continuation: Continuation<String?>,
-        license: LcpAuthenticating.AuthenticatedLicense,
-        reason: LcpAuthenticating.AuthenticationReason,
-        hostView: View,
-        currentInput: Editable? = null
+        suspendedCall: SuspendedCall,
+        hostView: View
     ) {
         val context = hostView.context
 
@@ -152,13 +130,13 @@ public class LcpDialogAuthentication(
         val forgotButton = dialogView.findViewById(R.id.r2_forgotButton) as Button
         val helpButton = dialogView.findViewById(R.id.r2_helpButton) as Button
 
-        password.text = currentInput
-        password.addTextChangedListener { suspendedCall?.currentInput = it }
+        password.text = suspendedCall.currentInput
+        password.addTextChangedListener { suspendedCall.currentInput = it }
 
-        forgotButton.isVisible = license.hintLink != null
-        helpButton.isVisible = license.supportLinks.isNotEmpty()
+        forgotButton.isVisible = suspendedCall.license.hintLink != null
+        helpButton.isVisible = suspendedCall.license.supportLinks.isNotEmpty()
 
-        when (reason) {
+        when (suspendedCall.reason) {
             LcpAuthenticating.AuthenticationReason.PassphraseNotFound -> {
                 title.text = context.getString(
                     R.string.readium_lcp_dialog_reason_passphraseNotFound
@@ -173,10 +151,12 @@ public class LcpDialogAuthentication(
             }
         }
 
-        val provider = tryOr(license.provider) { Uri.parse(license.provider).host }
+        val provider = tryOr(suspendedCall.license.provider) {
+            Uri.parse(suspendedCall.license.provider).host
+        }
         description.text = context.getString(R.string.readium_lcp_dialog_prompt, provider)
 
-        hint.text = license.hint
+        hint.text = suspendedCall.license.hint
 
         val popupWindow = PopupWindow(
             dialogView,
@@ -191,21 +171,21 @@ public class LcpDialogAuthentication(
         cancelButton.setOnClickListener {
             popupWindow.dismiss()
             terminateCall()
-            continuation.resume(null)
+            suspendedCall.continuation.resume(null)
         }
 
         confirmButton.setOnClickListener {
             popupWindow.dismiss()
             terminateCall()
-            continuation.resume(password.text.toString())
+            suspendedCall.continuation.resume(password.text.toString())
         }
 
         forgotButton.setOnClickListener {
-            license.hintLink?.let { context.startActivityForLink(it) }
+            suspendedCall.license.hintLink?.let { context.startActivityForLink(it) }
         }
 
         helpButton.setOnClickListener {
-            showHelpDialog(context, license.supportLinks)
+            showHelpDialog(context, suspendedCall.license.supportLinks)
         }
 
         popupWindow.showAtLocation(hostView, Gravity.CENTER, 0, 0)

@@ -33,11 +33,22 @@ import org.readium.r2.testapp.utils.viewLifecycle
 
 class BookshelfFragment : Fragment() {
 
+    private inner class OnViewAttachedListener : View.OnAttachStateChangeListener {
+        override fun onViewAttachedToWindow(view: View) {
+            app.readium.onLcpDialogAuthenticationParentAttached(view)
+        }
+
+        override fun onViewDetachedFromWindow(view: View) {
+            app.readium.onLcpDialogAuthenticationParentDetached()
+        }
+    }
+
     private val bookshelfViewModel: BookshelfViewModel by activityViewModels()
     private lateinit var bookshelfAdapter: BookshelfAdapter
     private lateinit var appStoragePickerLauncher: ActivityResultLauncher<String>
     private lateinit var sharedStoragePickerLauncher: ActivityResultLauncher<Array<String>>
     private var binding: FragmentBookshelfBinding by viewLifecycle()
+    private var onViewAttachedListener: OnViewAttachedListener = OnViewAttachedListener()
 
     private val app: Application
         get() = requireContext().applicationContext as Application
@@ -54,7 +65,8 @@ class BookshelfFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        app.readium.onLcpDialogAuthenticationParentCreated(view)
+        view.addOnAttachStateChangeListener(onViewAttachedListener)
+
         bookshelfViewModel.channel.receive(viewLifecycleOwner) { handleEvent(it) }
 
         bookshelfAdapter = BookshelfAdapter(
@@ -116,11 +128,6 @@ class BookshelfFragment : Fragment() {
                 }
                 .show()
         }
-    }
-
-    override fun onDestroyView() {
-        app.readium.onDestroyLcpDialogAuthenticationView()
-        super.onDestroyView()
     }
 
     private fun askForRemoteUrl() {
