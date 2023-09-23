@@ -77,7 +77,7 @@ class PublicationAdapter(
             oldItem: Publication,
             newItem: Publication
         ): Boolean {
-            return oldItem.jsonManifest == newItem.jsonManifest
+            return oldItem.manifest == newItem.manifest
         }
     }
 }
