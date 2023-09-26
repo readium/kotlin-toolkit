@@ -19,7 +19,9 @@ import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.extensions.md5
 import org.readium.r2.shared.extensions.tryOrNull
 import org.readium.r2.shared.resource.Resource
-import org.readium.r2.shared.util.getOrThrow
+import org.readium.r2.shared.resource.ResourceTry
+import org.readium.r2.shared.resource.mapCatching
+import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.pdf.PdfDocument
 import org.readium.r2.shared.util.pdf.PdfDocumentFactory
 import org.readium.r2.shared.util.use
@@ -84,24 +86,28 @@ public class PdfiumDocumentFactory(context: Context) : PdfDocumentFactory<Pdfium
 
     private val core by lazy { PdfiumCore(context.applicationContext) }
 
-    override suspend fun open(file: File, password: String?): PdfiumDocument =
-        core.fromFile(file, password)
+    override suspend fun open(file: File, password: String?): ResourceTry<PdfiumDocument> =
+        try {
+            Try.success(core.fromFile(file, password))
+        } catch (e: Throwable) {
+            Try.failure(Resource.Exception.wrap(e))
+        }
 
-    override suspend fun open(resource: Resource, password: String?): PdfiumDocument {
+    override suspend fun open(resource: Resource, password: String?): ResourceTry<PdfiumDocument> {
         // First try to open the resource as a file on the FS for performance improvement, as
         // PDFium requires the whole PDF document to be loaded in memory when using raw bytes.
         return resource.openAsFile(password)
             ?: resource.openBytes(password)
     }
 
-    private suspend fun Resource.openAsFile(password: String?): PdfiumDocument? =
+    private suspend fun Resource.openAsFile(password: String?): ResourceTry<PdfiumDocument>? =
         tryOrNull {
             source?.toFile()?.let { open(it, password) }
         }
 
-    private suspend fun Resource.openBytes(password: String?): PdfiumDocument =
+    private suspend fun Resource.openBytes(password: String?): ResourceTry<PdfiumDocument> =
         use {
-            core.fromBytes(read().getOrThrow(), password)
+            read().mapCatching { core.fromBytes(it, password) }
         }
 
     private fun PdfiumCore.fromFile(file: File, password: String?): PdfiumDocument =

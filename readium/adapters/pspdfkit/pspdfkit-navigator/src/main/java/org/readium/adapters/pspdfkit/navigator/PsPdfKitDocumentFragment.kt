@@ -14,6 +14,10 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.FragmentContainerView
 import androidx.fragment.app.commitNow
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.viewModelScope
 import com.pspdfkit.annotations.Annotation
 import com.pspdfkit.annotations.LinkAnnotation
 import com.pspdfkit.annotations.SoundAnnotation
@@ -31,35 +35,92 @@ import com.pspdfkit.listeners.OnPreparePopupToolbarListener
 import com.pspdfkit.ui.PdfFragment
 import com.pspdfkit.ui.toolbar.popup.PdfTextSelectionPopupToolbar
 import kotlin.math.roundToInt
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.async
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 import org.readium.adapters.pspdfkit.document.PsPdfKitDocument
+import org.readium.adapters.pspdfkit.document.PsPdfKitDocumentFactory
+import org.readium.r2.navigator.input.InputListener
+import org.readium.r2.navigator.input.TapEvent
 import org.readium.r2.navigator.pdf.PdfDocumentFragment
 import org.readium.r2.navigator.preferences.Axis
 import org.readium.r2.navigator.preferences.Fit
 import org.readium.r2.navigator.preferences.ReadingProgression
 import org.readium.r2.navigator.preferences.Spread
+import org.readium.r2.navigator.util.createViewModelFactory
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.services.isProtected
+import org.readium.r2.shared.resource.Resource
+import org.readium.r2.shared.resource.ResourceTry
+import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.pdf.cachedIn
 
 @ExperimentalReadiumApi
-internal class PsPdfKitDocumentFragment(
+public class PsPdfKitDocumentFragment(
     private val publication: Publication,
-    private val document: PsPdfKitDocument,
-    private val initialPageIndex: Int,
-    settings: PsPdfKitSettings,
-    private val listener: Listener?
-) : PdfDocumentFragment<PsPdfKitSettings>() {
+    private val href: Url,
+    initialPageIndex: Int,
+    initialSettings: PsPdfKitSettings,
+    private val listener: Listener?,
+    private val inputListener: InputListener
+) : PdfDocumentFragment<PsPdfKitDocumentFragment.Listener, PsPdfKitSettings>() {
 
-    override var settings: PsPdfKitSettings = settings
-        set(value) {
-            if (field == value) return
+    public interface Listener : PdfDocumentFragment.Listener {
+        /**
+         * Called when a PDF resource failed to be loaded, for example because of an
+         * [OutOfMemoryError].
+         */
+        public fun onResourceLoadFailed(href: Url, error: Resource.Exception) {}
 
-            field = value
-            reloadDocumentAtPage()
-        }
+        /** Called when configuring a new PDF fragment. */
+        public fun onConfigurePdfView(builder: PdfConfiguration.Builder): PdfConfiguration.Builder = builder
+    }
 
-    private lateinit var pdfFragment: PdfFragment
+    private companion object {
+        private const val pdfFragmentTag = "com.pspdfkit.ui.PdfFragment"
+    }
+
+    private var pdfFragment: PdfFragment? = null
     private val psPdfKitListener = PsPdfKitListener()
+
+    private class DocumentViewModel(
+        document: suspend () -> ResourceTry<PsPdfKitDocument>
+    ) : ViewModel() {
+
+        val document: Deferred<ResourceTry<PsPdfKitDocument>> =
+            viewModelScope.async { document() }
+    }
+
+    private val viewModel: DocumentViewModel by viewModels {
+        createViewModelFactory {
+            DocumentViewModel(
+                document = {
+                    PsPdfKitDocumentFactory(requireContext())
+                        .cachedIn(publication)
+                        .open(publication.get(href), null)
+                }
+            )
+        }
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        // We don't support fragment restoration for the PdfFragment, as we want to recreate a fresh
+        // instance in [reset]. To prevent restoring (and crashing) the PdfFragment without a
+        // document source, we remove it from the fragment manager.
+        (childFragmentManager.findFragmentByTag(pdfFragmentTag) as? PdfFragment)
+            ?.let { fragment ->
+                childFragmentManager.commitNow {
+                    remove(fragment)
+                }
+            }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -73,63 +134,46 @@ internal class PsPdfKitDocumentFragment(
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        reloadDocumentAtPage()
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.document.await()
+                .onFailure { error ->
+                    listener?.onResourceLoadFailed(href, error)
+                }
+                .onSuccess { reset() }
+        }
     }
 
-    private fun reloadDocumentAtPage() {
-        pdfFragment = createPdfFragment()
+    private fun reset() {
+        val doc = viewModel.document.tryGetCompleted()?.getOrNull() ?: return
+        if (view == null) return
+
+        doc.document.pageBinding = settings.readingProgression.pageBinding
+
+        val fragment = PdfFragment.newInstance(doc.document, configForSettings(settings))
+            .apply {
+                setOnPreparePopupToolbarListener(psPdfKitListener)
+                addDocumentListener(psPdfKitListener)
+            }
+            .also { pdfFragment = it }
 
         childFragmentManager.commitNow {
-            replace(R.id.readium_pspdfkit_fragment, pdfFragment, "com.pspdfkit.ui.PdfFragment")
+            replace(R.id.readium_pspdfkit_fragment, fragment, pdfFragmentTag)
         }
-    }
-
-    private fun createPdfFragment(): PdfFragment {
-        document.document.pageBinding = settings.readingProgression.pageBinding
-        val config = configForSettings(settings)
-
-        val newFragment = if (::pdfFragment.isInitialized) {
-            PdfFragment.newInstance(pdfFragment, config)
-        } else {
-            PdfFragment.newInstance(document.document, config)
-        }
-
-        newFragment.apply {
-            setOnPreparePopupToolbarListener(psPdfKitListener)
-            addDocumentListener(psPdfKitListener)
-        }
-
-        return newFragment
     }
 
     private fun configForSettings(settings: PsPdfKitSettings): PdfConfiguration {
-        val config = PdfConfiguration.Builder()
+        var config = PdfConfiguration.Builder()
             .animateScrollOnEdgeTaps(false)
             .annotationReplyFeatures(AnnotationReplyFeatures.READ_ONLY)
             .automaticallyGenerateLinks(true)
             .autosaveEnabled(false)
-//            .backgroundColor(Color.TRANSPARENT)
             .disableAnnotationEditing()
             .disableAnnotationRotation()
             .disableAutoSelectNextFormElement()
             .disableFormEditing()
             .enableMagnifier(true)
             .excludedAnnotationTypes(emptyList())
-            .fitMode(settings.fit.fitMode)
-            .layoutMode(settings.spread.pageLayout)
-//            .loadingProgressDrawable(null)
-//            .maxZoomScale()
-            .firstPageAlwaysSingle(settings.offsetFirstPage)
-            .pagePadding(settings.pageSpacing.roundToInt())
-            .restoreLastViewedPage(false)
-            .scrollDirection(
-                if (!settings.scroll) {
-                    PageScrollDirection.HORIZONTAL
-                } else {
-                    settings.scrollAxis.scrollDirection
-                }
-            )
-            .scrollMode(settings.scroll.scrollMode)
             .scrollOnEdgeTapEnabled(false)
             .scrollOnEdgeTapMargin(50)
             .scrollbarsEnabled(true)
@@ -141,41 +185,70 @@ internal class PsPdfKitDocumentFragment(
             .videoPlaybackEnabled(true)
             .zoomOutBounce(true)
 
+        // Customization point for integrators.
+        listener?.let {
+            config = it.onConfigurePdfView(config)
+        }
+
+        // Settings-specific configuration
+        config = config
+            .fitMode(settings.fit.fitMode)
+            .layoutMode(settings.spread.pageLayout)
+            .firstPageAlwaysSingle(settings.offsetFirstPage)
+            .pagePadding(settings.pageSpacing.roundToInt())
+            .restoreLastViewedPage(false)
+            .scrollDirection(
+                if (!settings.scroll) {
+                    PageScrollDirection.HORIZONTAL
+                } else {
+                    settings.scrollAxis.scrollDirection
+                }
+            )
+            .scrollMode(settings.scroll.scrollMode)
+
         if (publication.isProtected) {
-            config.disableCopyPaste()
+            config = config.disableCopyPaste()
         }
 
         return config.build()
     }
 
-    override var pageIndex: Int = initialPageIndex
-        private set
+    private val _pageIndex = MutableStateFlow(initialPageIndex)
+    override val pageIndex: StateFlow<Int> = _pageIndex.asStateFlow()
 
     override fun goToPageIndex(index: Int, animated: Boolean): Boolean {
+        val fragment = pdfFragment ?: return false
         if (!isValidPageIndex(index)) {
             return false
         }
-        pageIndex = index
-        pdfFragment.setPageIndex(index, animated)
+        fragment.setPageIndex(index, animated)
         return true
     }
 
     private fun isValidPageIndex(pageIndex: Int): Boolean {
-        val validRange = 0 until pdfFragment.pageCount
+        val validRange = 0 until (pdfFragment?.pageCount ?: 0)
         return validRange.contains(pageIndex)
+    }
+
+    private var settings: PsPdfKitSettings = initialSettings
+
+    override fun applySettings(settings: PsPdfKitSettings) {
+        if (this.settings == settings) {
+            return
+        }
+
+        this.settings = settings
+        reset()
     }
 
     private inner class PsPdfKitListener : DocumentListener, OnPreparePopupToolbarListener {
         override fun onPageChanged(document: PdfDocument, pageIndex: Int) {
-            this@PsPdfKitDocumentFragment.pageIndex = pageIndex
-            listener?.onPageChanged(pageIndex)
+            _pageIndex.value = pageIndex
         }
 
         override fun onDocumentClick(): Boolean {
-            val listener = listener ?: return false
-
             val center = view?.run { PointF(width.toFloat() / 2, height.toFloat() / 2) }
-            return center?.let { listener.onTap(it) } ?: false
+            return center?.let { inputListener.onTap(TapEvent(it)) } ?: false
         }
 
         override fun onPageClick(
@@ -192,8 +265,8 @@ internal class PsPdfKitDocumentFragment(
                 return false
             }
 
-            pdfFragment.viewProjection.toViewPoint(pagePosition, pageIndex)
-            return listener?.onTap(pagePosition) ?: false
+            checkNotNull(pdfFragment).viewProjection.toViewPoint(pagePosition, pageIndex)
+            return inputListener.onTap(TapEvent(pagePosition))
         }
 
         private val allowedTextSelectionItems = listOf(
@@ -211,7 +284,7 @@ internal class PsPdfKitDocumentFragment(
         override fun onDocumentLoaded(document: PdfDocument) {
             super.onDocumentLoaded(document)
 
-            pdfFragment.setPageIndex(pageIndex, false)
+            checkNotNull(pdfFragment).setPageIndex(pageIndex.value, false)
         }
     }
 
@@ -244,5 +317,13 @@ internal class PsPdfKitDocumentFragment(
             Spread.AUTO -> PageLayoutMode.AUTO
             Spread.ALWAYS -> PageLayoutMode.DOUBLE
             Spread.NEVER -> PageLayoutMode.SINGLE
+        }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    private fun <T> Deferred<T>.tryGetCompleted(): T? =
+        if (isCompleted) {
+            getCompleted()
+        } else {
+            null
         }
 }

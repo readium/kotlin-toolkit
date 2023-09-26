@@ -17,10 +17,13 @@ import com.pspdfkit.document.PdfDocument as _PsPdfKitDocument
 import com.pspdfkit.document.PdfDocumentLoader
 import java.io.File
 import kotlin.reflect.KClass
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.publication.ReadingProgression
 import org.readium.r2.shared.resource.Resource
+import org.readium.r2.shared.resource.ResourceTry
+import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.pdf.PdfDocument
 import org.readium.r2.shared.util.pdf.PdfDocumentFactory
 import timber.log.Timber
@@ -30,15 +33,23 @@ public class PsPdfKitDocumentFactory(context: Context) : PdfDocumentFactory<PsPd
 
     override val documentType: KClass<PsPdfKitDocument> = PsPdfKitDocument::class
 
-    override suspend fun open(file: File, password: String?): PsPdfKitDocument =
+    override suspend fun open(file: File, password: String?): ResourceTry<PsPdfKitDocument> =
         open(context, DocumentSource(file.toUri(), password))
 
-    override suspend fun open(resource: Resource, password: String?): PsPdfKitDocument =
+    override suspend fun open(resource: Resource, password: String?): ResourceTry<PsPdfKitDocument> =
         open(context, DocumentSource(ResourceDataProvider(resource), password))
 
-    private suspend fun open(context: Context, documentSource: DocumentSource): PsPdfKitDocument =
+    private suspend fun open(context: Context, documentSource: DocumentSource): ResourceTry<PsPdfKitDocument> =
         withContext(Dispatchers.IO) {
-            PsPdfKitDocument(PdfDocumentLoader.openDocument(context, documentSource))
+            try {
+                Try.success(
+                    PsPdfKitDocument(PdfDocumentLoader.openDocument(context, documentSource))
+                )
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Throwable) {
+                Try.failure(Resource.Exception.wrap(e))
+            }
         }
 }
 

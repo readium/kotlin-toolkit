@@ -15,6 +15,7 @@ import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.util.Closeable
 import org.readium.r2.shared.util.MemoryObserver
 import org.readium.r2.shared.util.SuspendingCloseable
+import org.readium.r2.shared.util.Try
 
 /**
  * A generic cache for objects of type [V].
@@ -45,13 +46,6 @@ public interface CacheTransaction<V> {
     public suspend fun put(key: String, value: V?)
 
     /**
-     * Gets the current cached value for the given [key] or creates and caches a new one.
-     */
-    public suspend fun <V> CacheTransaction<V>.getOrPut(key: String, defaultValue: suspend () -> V): V =
-        get(key)
-            ?: defaultValue().also { put(key, it) }
-
-    /**
      * Clears the cached value for the given [key].
      *
      * @return The cached value if any.
@@ -63,6 +57,24 @@ public interface CacheTransaction<V> {
      */
     public suspend fun clear()
 }
+
+/**
+ * Gets the current cached value for the given [key] or creates and caches a new one.
+ */
+public suspend fun <V> CacheTransaction<V>.getOrPut(key: String, defaultValue: suspend () -> V): V =
+    get(key)
+        ?: defaultValue().also { put(key, it) }
+
+/**
+ * Gets the current cached value for the given [key] or creates and caches a new one.
+ */
+public suspend fun <V, F> CacheTransaction<V>.getOrTryPut(
+    key: String,
+    defaultValue: suspend () -> Try<V, F>
+): Try<V, F> =
+    get(key)?.let { Try.success(it) }
+        ?: defaultValue()
+            .onSuccess { put(key, it) }
 
 /**
  * A basic in-memory cache.

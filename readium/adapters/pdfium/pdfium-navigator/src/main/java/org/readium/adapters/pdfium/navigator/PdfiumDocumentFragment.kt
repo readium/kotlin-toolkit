@@ -14,7 +14,6 @@ import android.view.ViewGroup
 import androidx.lifecycle.lifecycleScope
 import com.github.barteksc.pdfviewer.PDFView
 import kotlin.math.roundToInt
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -30,6 +29,7 @@ import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.util.SingleJob
 import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.getOrElse
 import timber.log.Timber
 
 @ExperimentalReadiumApi
@@ -77,54 +77,51 @@ public class PdfiumDocumentFragment internal constructor(
         val context = context?.applicationContext ?: return
 
         resetJob.launch {
-            try {
-                val document = PdfiumDocumentFactory(context)
-                    // PDFium crashes when reusing the same PdfDocument, so we must not cache it.
+            val document = PdfiumDocumentFactory(context)
+                // PDFium crashes when reusing the same PdfDocument, so we must not cache it.
 //                    .cachedIn(publication)
-                    .open(publication.get(href), null)
+                .open(publication.get(href), null)
+                .getOrElse { error ->
+                    Timber.e(error)
+                    listener?.onResourceLoadFailed(href, error)
+                    return@launch
+                }
 
-                pageCount = document.pageCount
-                val page = convertPageIndexToView(pageIndex)
+            pageCount = document.pageCount
+            val page = convertPageIndexToView(pageIndex)
 
-                pdfView.recycle()
-                pdfView
-                    .fromSource { _, _, _ -> document.document }
-                    .apply {
-                        if (isPagesOrderReversed) {
-                            // AndroidPdfViewer doesn't support RTL. A workaround is to provide
-                            // the explicit page list in the right order.
-                            pages(*((pageCount - 1) downTo 0).toList().toIntArray())
-                        }
+            pdfView.recycle()
+            pdfView
+                .fromSource { _, _, _ -> document.document }
+                .apply {
+                    if (isPagesOrderReversed) {
+                        // AndroidPdfViewer doesn't support RTL. A workaround is to provide
+                        // the explicit page list in the right order.
+                        pages(*((pageCount - 1) downTo 0).toList().toIntArray())
                     }
-                    .swipeHorizontal(settings.scrollAxis == Axis.HORIZONTAL)
-                    .spacing(settings.pageSpacing.roundToInt())
-                    // Customization of [PDFView] is done before setting the listeners,
-                    // to avoid overriding them in reading apps, which would break the
-                    // navigator.
-                    .apply { listener?.onConfigurePdfView(this) }
-                    .defaultPage(page)
-                    .onRender { _, _, _ ->
-                        if (settings.fit == Fit.WIDTH) {
-                            pdfView.fitToWidth()
-                            // Using `fitToWidth` often breaks the use of `defaultPage`, so we
-                            // need to jump manually to the target page.
-                            pdfView.jumpTo(page, false)
-                        }
+                }
+                .swipeHorizontal(settings.scrollAxis == Axis.HORIZONTAL)
+                .spacing(settings.pageSpacing.roundToInt())
+                // Customization of [PDFView] is done before setting the listeners,
+                // to avoid overriding them in reading apps, which would break the
+                // navigator.
+                .apply { listener?.onConfigurePdfView(this) }
+                .defaultPage(page)
+                .onRender { _, _, _ ->
+                    if (settings.fit == Fit.WIDTH) {
+                        pdfView.fitToWidth()
+                        // Using `fitToWidth` often breaks the use of `defaultPage`, so we
+                        // need to jump manually to the target page.
+                        pdfView.jumpTo(page, false)
                     }
-                    .onPageChange { index, _ ->
-                        _pageIndex.value = convertPageIndexFromView(index)
-                    }
-                    .onTap { event ->
-                        inputListener.onTap(TapEvent(PointF(event.x, event.y)))
-                    }
-                    .load()
-            } catch (e: CancellationException) {
-                throw e
-            } catch (e: Throwable) {
-                val error = Resource.Exception.wrap(e)
-                Timber.e(error)
-                listener?.onResourceLoadFailed(href, error)
-            }
+                }
+                .onPageChange { index, _ ->
+                    _pageIndex.value = convertPageIndexFromView(index)
+                }
+                .onTap { event ->
+                    inputListener.onTap(TapEvent(PointF(event.x, event.y)))
+                }
+                .load()
         }
     }
 
