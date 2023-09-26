@@ -10,6 +10,8 @@ import org.readium.r2.navigator.SimplePresentation
 import org.readium.r2.navigator.VisualNavigator
 import org.readium.r2.navigator.pdf.PdfDocumentFragmentInput
 import org.readium.r2.navigator.pdf.PdfEngineProvider
+import org.readium.r2.navigator.util.SingleFragmentFactory
+import org.readium.r2.navigator.util.createFragmentFactory
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Metadata
 import org.readium.r2.shared.publication.Publication
@@ -22,19 +24,22 @@ import org.readium.r2.shared.publication.Publication
  */
 @ExperimentalReadiumApi
 public class PdfiumEngineProvider(
-    private val listener: PdfiumDocumentFragment.Listener? = null,
     private val defaults: PdfiumDefaults = PdfiumDefaults()
-) : PdfEngineProvider<PdfiumSettings, PdfiumPreferences, PdfiumPreferencesEditor> {
+) : PdfEngineProvider<PdfiumDocumentFragment, PdfiumDocumentFragment.Listener, PdfiumSettings, PdfiumPreferences, PdfiumPreferencesEditor> {
 
-    override suspend fun createDocumentFragment(input: PdfDocumentFragmentInput<PdfiumSettings>): PdfiumDocumentFragment =
-        PdfiumDocumentFragment(
-            publication = input.publication,
-            link = input.link,
-            initialPageIndex = input.initialPageIndex,
-            settings = input.settings,
-            appListener = listener,
-            navigatorListener = input.listener
-        )
+    override fun createDocumentFragmentFactory(
+        input: PdfDocumentFragmentInput<PdfiumDocumentFragment.Listener, PdfiumSettings>
+    ): SingleFragmentFactory<PdfiumDocumentFragment> =
+        createFragmentFactory {
+            PdfiumDocumentFragment(
+                publication = input.publication,
+                href = input.href,
+                initialPageIndex = input.pageIndex,
+                initialSettings = input.settings,
+                listener = input.listener,
+                inputListener = input.inputListener
+            )
+        }
 
     override fun computeSettings(metadata: Metadata, preferences: PdfiumPreferences): PdfiumSettings {
         val settingsPolicy = PdfiumSettingsResolver(metadata, defaults)

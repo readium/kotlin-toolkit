@@ -14,46 +14,46 @@ import android.view.ViewGroup
 import androidx.lifecycle.lifecycleScope
 import com.github.barteksc.pdfviewer.PDFView
 import kotlin.math.roundToInt
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import org.readium.adapters.pdfium.document.PdfiumDocumentFactory
+import org.readium.r2.navigator.input.InputListener
+import org.readium.r2.navigator.input.TapEvent
 import org.readium.r2.navigator.pdf.PdfDocumentFragment
 import org.readium.r2.navigator.preferences.Axis
 import org.readium.r2.navigator.preferences.Fit
 import org.readium.r2.navigator.preferences.ReadingProgression
 import org.readium.r2.shared.ExperimentalReadiumApi
-import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.resource.Resource
+import org.readium.r2.shared.util.SingleJob
+import org.readium.r2.shared.util.Url
 import timber.log.Timber
 
 @ExperimentalReadiumApi
 public class PdfiumDocumentFragment internal constructor(
     private val publication: Publication,
-    private val link: Link,
+    private val href: Url,
     private val initialPageIndex: Int,
-    settings: PdfiumSettings,
-    private val appListener: Listener?,
-    private val navigatorListener: PdfDocumentFragment.Listener?
-) : PdfDocumentFragment<PdfiumSettings>() {
+    initialSettings: PdfiumSettings,
+    private val listener: Listener?,
+    private val inputListener: InputListener
+) : PdfDocumentFragment<PdfiumDocumentFragment.Listener, PdfiumSettings>() {
 
-    public interface Listener {
+    public interface Listener : PdfDocumentFragment.Listener {
+        /**
+         * Called when a PDF resource failed to be loaded, for example because of an
+         * [OutOfMemoryError].
+         */
+        public fun onResourceLoadFailed(href: Url, error: Resource.Exception) {}
+
         /** Called when configuring [PDFView]. */
         public fun onConfigurePdfView(configurator: PDFView.Configurator) {}
     }
 
-    override var settings: PdfiumSettings = settings
-        set(value) {
-            if (field == value) return
-
-            val page = pageIndex
-            field = value
-            reloadDocumentAtPage(page)
-        }
-
     private lateinit var pdfView: PDFView
-
-    private var isReloading: Boolean = false
-    private var hasToReload: Int? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -65,25 +65,23 @@ public class PdfiumDocumentFragment internal constructor(
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        reloadDocumentAtPage(pageIndex)
+
+        resetJob = SingleJob(viewLifecycleOwner.lifecycleScope)
+        reset(pageIndex = initialPageIndex)
     }
 
-    private fun reloadDocumentAtPage(pageIndex: Int) {
-        if (isReloading) {
-            hasToReload = pageIndex
-            return
-        }
+    private lateinit var resetJob: SingleJob
 
-        isReloading = true
-
+    private fun reset(pageIndex: Int = _pageIndex.value) {
+        if (view == null) return
         val context = context?.applicationContext ?: return
 
-        viewLifecycleOwner.lifecycleScope.launch {
+        resetJob.launch {
             try {
                 val document = PdfiumDocumentFactory(context)
                     // PDFium crashes when reusing the same PdfDocument, so we must not cache it.
 //                    .cachedIn(publication)
-                    .open(publication.get(link), null)
+                    .open(publication.get(href), null)
 
                 pageCount = document.pageCount
                 val page = convertPageIndexToView(pageIndex)
@@ -103,7 +101,7 @@ public class PdfiumDocumentFragment internal constructor(
                     // Customization of [PDFView] is done before setting the listeners,
                     // to avoid overriding them in reading apps, which would break the
                     // navigator.
-                    .apply { appListener?.onConfigurePdfView(this) }
+                    .apply { listener?.onConfigurePdfView(this) }
                     .defaultPage(page)
                     .onRender { _, _, _ ->
                         if (settings.fit == Fit.WIDTH) {
@@ -113,38 +111,27 @@ public class PdfiumDocumentFragment internal constructor(
                             pdfView.jumpTo(page, false)
                         }
                     }
-                    .onLoad {
-                        val hasToReloadNow = hasToReload
-                        if (hasToReloadNow != null) {
-                            reloadDocumentAtPage(pageIndex)
-                        } else {
-                            isReloading = false
-                        }
-                    }
                     .onPageChange { index, _ ->
-                        navigatorListener?.onPageChanged(convertPageIndexFromView(index))
+                        _pageIndex.value = convertPageIndexFromView(index)
                     }
                     .onTap { event ->
-                        navigatorListener?.onTap(PointF(event.x, event.y))
-                            ?: false
+                        inputListener.onTap(TapEvent(PointF(event.x, event.y)))
                     }
                     .load()
-            } catch (e: Exception) {
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Throwable) {
                 val error = Resource.Exception.wrap(e)
                 Timber.e(error)
-                navigatorListener?.onResourceLoadFailed(link, error)
+                listener?.onResourceLoadFailed(href, error)
             }
         }
     }
 
-    override val pageIndex: Int get() = viewPageIndex ?: initialPageIndex
+    private var pageCount = 0
 
-    private val viewPageIndex: Int? get() =
-        if (pdfView.isRecycled) {
-            null
-        } else {
-            convertPageIndexFromView(pdfView.currentPage)
-        }
+    private val _pageIndex = MutableStateFlow(initialPageIndex)
+    override val pageIndex: StateFlow<Int> = _pageIndex.asStateFlow()
 
     override fun goToPageIndex(index: Int, animated: Boolean): Boolean {
         if (!isValidPageIndex(index)) {
@@ -153,8 +140,6 @@ public class PdfiumDocumentFragment internal constructor(
         pdfView.jumpTo(convertPageIndexToView(index), animated)
         return true
     }
-
-    private var pageCount = 0
 
     private fun isValidPageIndex(pageIndex: Int): Boolean {
         val validRange = 0 until pageCount
@@ -182,6 +167,16 @@ public class PdfiumDocumentFragment internal constructor(
      * right-to-left reading progressions.
      */
     private val isPagesOrderReversed: Boolean get() =
-        settings.scrollAxis == Axis.HORIZONTAL &&
-            settings.readingProgression == ReadingProgression.RTL
+        settings.scrollAxis == Axis.HORIZONTAL && settings.readingProgression == ReadingProgression.RTL
+
+    private var settings: PdfiumSettings = initialSettings
+
+    override fun applySettings(settings: PdfiumSettings) {
+        if (this.settings == settings) {
+            return
+        }
+
+        this.settings = settings
+        reset()
+    }
 }

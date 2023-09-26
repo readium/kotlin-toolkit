@@ -6,27 +6,28 @@
 
 package org.readium.r2.navigator.pdf
 
-import android.graphics.PointF
 import androidx.fragment.app.Fragment
+import kotlinx.coroutines.flow.StateFlow
 import org.readium.r2.navigator.VisualNavigator
+import org.readium.r2.navigator.input.InputListener
 import org.readium.r2.navigator.preferences.Configurable
 import org.readium.r2.navigator.preferences.PreferencesEditor
+import org.readium.r2.navigator.util.SingleFragmentFactory
 import org.readium.r2.shared.ExperimentalReadiumApi
-import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Metadata
 import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.resource.Resource
+import org.readium.r2.shared.util.Url
 
 /**
  * To be implemented by adapters for third-party PDF engines which can be used with [PdfNavigatorFragment].
  */
 @ExperimentalReadiumApi
-public interface PdfEngineProvider<S : Configurable.Settings, P : Configurable.Preferences<P>, E : PreferencesEditor<P>> {
+public interface PdfEngineProvider<F : PdfDocumentFragment<L, S>, L : PdfDocumentFragment.Listener, S : Configurable.Settings, P : Configurable.Preferences<P>, E : PreferencesEditor<P>> {
 
     /**
-     * Creates a [PdfDocumentFragment] for [input].
+     * Creates a [PdfDocumentFragment] factory for [input].
      */
-    public suspend fun createDocumentFragment(input: PdfDocumentFragmentInput<S>): PdfDocumentFragment<S>
+    public fun createDocumentFragmentFactory(input: PdfDocumentFragmentInput<L, S>): SingleFragmentFactory<F>
 
     /**
      * Creates settings for [metadata] and [preferences].
@@ -34,7 +35,7 @@ public interface PdfEngineProvider<S : Configurable.Settings, P : Configurable.P
     public fun computeSettings(metadata: Metadata, preferences: P): S
 
     /**
-     * Infers a [VisualNavigator.Presentation] from settings.
+     * Infers a [VisualNavigator.Presentation] from [settings].
      */
     public fun computePresentation(settings: S): VisualNavigator.Presentation
 
@@ -49,36 +50,18 @@ public interface PdfEngineProvider<S : Configurable.Settings, P : Configurable.P
     public fun createEmptyPreferences(): P
 }
 
-@ExperimentalReadiumApi
-public typealias PdfDocumentFragmentFactory<S> = suspend (PdfDocumentFragmentInput<S>) -> PdfDocumentFragment<S>
-
 /**
- * A [PdfDocumentFragment] renders a single PDF resource.
+ * A [PdfDocumentFragment] renders a single PDF document.
  */
 @ExperimentalReadiumApi
-public abstract class PdfDocumentFragment<S : Configurable.Settings> : Fragment() {
+public abstract class PdfDocumentFragment<L : PdfDocumentFragment.Listener, S : Configurable.Settings> : Fragment() {
 
-    public interface Listener {
-        /**
-         * Called when the fragment navigates to a different page.
-         */
-        public fun onPageChanged(pageIndex: Int)
-
-        /**
-         * Called when the user triggers a tap on the document.
-         */
-        public fun onTap(point: PointF): Boolean
-
-        /**
-         * Called when the PDF engine fails to load the PDF document.
-         */
-        public fun onResourceLoadFailed(link: Link, error: Resource.Exception)
-    }
+    public interface Listener
 
     /**
-     * Returns the current page index in the document, from 0.
+     * Current page index displayed in the PDF document.
      */
-    public abstract val pageIndex: Int
+    public abstract val pageIndex: StateFlow<Int>
 
     /**
      * Jumps to the given page [index].
@@ -89,16 +72,17 @@ public abstract class PdfDocumentFragment<S : Configurable.Settings> : Fragment(
     public abstract fun goToPageIndex(index: Int, animated: Boolean): Boolean
 
     /**
-     * Current settings for the PDF document.
+     * Submits a new set of settings.
      */
-    public abstract var settings: S
+    public abstract fun applySettings(settings: S)
 }
 
 @ExperimentalReadiumApi
-public data class PdfDocumentFragmentInput<S : Configurable.Settings>(
+public data class PdfDocumentFragmentInput<L : PdfDocumentFragment.Listener, S : Configurable.Settings>(
     val publication: Publication,
-    val link: Link,
-    val initialPageIndex: Int,
+    val href: Url,
+    val pageIndex: Int,
     val settings: S,
-    val listener: PdfDocumentFragment.Listener?
+    val listener: L?,
+    val inputListener: InputListener
 )
