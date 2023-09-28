@@ -15,6 +15,7 @@ import com.pspdfkit.document.OutlineElement
 import com.pspdfkit.document.PageBinding
 import com.pspdfkit.document.PdfDocument as _PsPdfKitDocument
 import com.pspdfkit.document.PdfDocumentLoader
+import com.pspdfkit.exceptions.InvalidPasswordException
 import java.io.File
 import kotlin.reflect.KClass
 import kotlinx.coroutines.CancellationException
@@ -45,6 +46,8 @@ public class PsPdfKitDocumentFactory(context: Context) : PdfDocumentFactory<PsPd
                 Try.success(
                     PsPdfKitDocument(PdfDocumentLoader.openDocument(context, documentSource))
                 )
+            } catch (e: InvalidPasswordException) {
+                Try.failure(Resource.Exception.Forbidden(e))
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Throwable) {
