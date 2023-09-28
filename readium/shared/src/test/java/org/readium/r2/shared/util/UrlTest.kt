@@ -4,6 +4,8 @@ import android.net.Uri
 import java.io.File
 import java.net.URI
 import java.net.URL
+import kotlin.test.assertIs
+import kotlin.test.assertNotNull
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
@@ -34,8 +36,40 @@ class UrlTest {
         assertEquals(RelativeUrl(Uri.parse("foo/bar")), Url("foo/bar"))
         assertEquals(RelativeUrl(Uri.parse("../bar")), Url("../bar"))
 
+        // Special characters valid in a path.
+        assertEquals("$&+,/=@", RelativeUrl("$&+,/=@")?.path)
+
         // Used in the EPUB parser
-        assertEquals(RelativeUrl(Uri.parse("#")), Url("#"))
+        val url = Url("#") as? RelativeUrl
+        assertNotNull(url)
+        assertEquals(null, url.path)
+        assertEquals(null, url.fragment)
+    }
+
+    @Test
+    fun createFromLegacyHref() {
+        testLegacy<RelativeUrl>("dir/chapter.xhtml", "dir/chapter.xhtml")
+        // Starting slash is removed.
+        testLegacy<RelativeUrl>("/dir/chapter.xhtml", "dir/chapter.xhtml")
+        // Special characters are percent-encoded.
+        testLegacy<RelativeUrl>("/dir/per%cent.xhtml", "dir/per%25cent.xhtml")
+        testLegacy<RelativeUrl>("/barré.xhtml", "barr%C3%A9.xhtml")
+        testLegacy<RelativeUrl>("/spa ce.xhtml", "spa%20ce.xhtml")
+        // We assume that a relative path is percent-decoded.
+        testLegacy<RelativeUrl>("/spa%20ce.xhtml", "spa%2520ce.xhtml")
+        // Some special characters are authorized in a path.
+        testLegacy<RelativeUrl>("/$&+,/=@", "$&+,/=@")
+        // Valid absolute URL are left untouched.
+        testLegacy<AbsoluteUrl>("http://domain.com/a%20book?page=3", "http://domain.com/a%20book?page=3")
+        // Invalid absolute URL.
+        assertNull(Url.fromLegacyHref("http://domain.com/a book"))
+    }
+
+    private inline fun <reified T : Url> testLegacy(href: String, expected: String) {
+        val url = Url.fromLegacyHref(href)
+        assertNotNull(url)
+        assertIs<T>(url)
+        assertEquals(expected, url.toString())
     }
 
     @Test

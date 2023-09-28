@@ -34,6 +34,9 @@ public sealed class Url : Parcelable {
         public fun fromDecodedPath(path: String): RelativeUrl? =
             RelativeUrl(path.percentEncodedPath())
 
+        public fun fromLegacyHref(href: String): Url? =
+            AbsoluteUrl(href) ?: fromDecodedPath(href.removePrefix("/"))
+
         /**
          * Creates a [Url] from its encoded string representation.
          */
@@ -286,7 +289,6 @@ public class RelativeUrl private constructor(override val uri: Uri) : Url() {
         internal operator fun invoke(uri: Uri): RelativeUrl? =
             tryOrNull {
                 require(uri.isRelative)
-                require(uri.isHierarchical)
                 RelativeUrl(uri)
             }
     }
