@@ -170,7 +170,8 @@ internal class ChannelZipContainer(
 }
 
 /**
- * An [ArchiveFactory] able to open a ZIP archive served through an HTTP server.
+ * An [ArchiveFactory] able to open a ZIP archive served through a stream (e.g. HTTP server,
+ * content URI, etc.).
  */
 public class ChannelZipArchiveFactory(
     private val mediaTypeRetriever: MediaTypeRetriever
