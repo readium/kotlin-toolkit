@@ -62,7 +62,10 @@ class UrlTest {
         // Some special characters are authorized in a path.
         testLegacy<RelativeUrl>("/$&+,/=@", "$&+,/=@")
         // Valid absolute URL are left untouched.
-        testLegacy<AbsoluteUrl>("http://domain.com/a%20book?page=3", "http://domain.com/a%20book?page=3")
+        testLegacy<AbsoluteUrl>(
+            "http://domain.com/a%20book?page=3",
+            "http://domain.com/a%20book?page=3"
+        )
         // Invalid absolute URL.
         assertNull(Url.fromLegacyHref("http://domain.com/a book"))
     }

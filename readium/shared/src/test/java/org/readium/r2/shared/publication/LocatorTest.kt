@@ -73,13 +73,16 @@ class LocatorTest {
     }
 
     @OptIn(DelicateReadiumApi::class)
-    @Test fun `parse {Locator} with legacy HREF`() {
-        val json = JSONObject("""
+    @Test
+    fun `parse {Locator} with legacy HREF`() {
+        val json = JSONObject(
+            """
             {
                 "href": "legacy href",
                 "type": "text/html"
             }
-        """)
+        """
+        )
 
         assertNull(Locator.fromJSON(json))
 

@@ -237,9 +237,12 @@ public data class Locator(
             }
 
             val url = (
-                if (withLegacyHref) Url.fromLegacyHref(href)
-                else Url(href)
-            ) ?: run {
+                if (withLegacyHref) {
+                    Url.fromLegacyHref(href)
+                } else {
+                    Url(href)
+                }
+                ) ?: run {
                 warnings?.log(Locator::class.java, "[href] is not a valid URL", json)
                 return null
             }
