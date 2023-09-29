@@ -10,6 +10,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.readium.r2.shared.DelicateReadiumApi
 import org.readium.r2.shared.util.Url.Query
 import org.readium.r2.shared.util.Url.QueryParameter
 import org.robolectric.RobolectricTestRunner
@@ -46,6 +47,7 @@ class UrlTest {
         assertEquals(null, url.fragment)
     }
 
+    @OptIn(DelicateReadiumApi::class)
     @Test
     fun createFromLegacyHref() {
         testLegacy<RelativeUrl>("dir/chapter.xhtml", "dir/chapter.xhtml")
@@ -65,6 +67,7 @@ class UrlTest {
         assertNull(Url.fromLegacyHref("http://domain.com/a book"))
     }
 
+    @OptIn(DelicateReadiumApi::class)
     private inline fun <reified T : Url> testLegacy(href: String, expected: String) {
         val url = Url.fromLegacyHref(href)
         assertNotNull(url)

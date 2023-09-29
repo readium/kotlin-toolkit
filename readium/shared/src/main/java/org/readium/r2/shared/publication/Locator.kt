@@ -14,6 +14,7 @@ import kotlinx.parcelize.Parcelize
 import kotlinx.parcelize.WriteWith
 import org.json.JSONArray
 import org.json.JSONObject
+import org.readium.r2.shared.DelicateReadiumApi
 import org.readium.r2.shared.JSONable
 import org.readium.r2.shared.extensions.*
 import org.readium.r2.shared.toJSON
@@ -197,10 +198,36 @@ public data class Locator(
 
     public companion object {
 
+        /**
+         * Creates a [Locator] from its JSON representation.
+         */
         public fun fromJSON(
             json: JSONObject?,
             mediaTypeRetriever: MediaTypeRetriever = MediaTypeRetriever(),
             warnings: WarningLogger? = null
+        ): Locator? =
+            fromJSON(json, mediaTypeRetriever, warnings, withLegacyHref = false)
+
+        /**
+         * Creates a [Locator] from its legacy JSON representation.
+         *
+         * Only use this API when you are upgrading to Readium 3.x and migrating the [Locator]
+         * objects stored in your database. See the migration guide for more information.
+         */
+        @DelicateReadiumApi
+        public fun fromLegacyJSON(
+            json: JSONObject?,
+            mediaTypeRetriever: MediaTypeRetriever = MediaTypeRetriever(),
+            warnings: WarningLogger? = null
+        ): Locator? =
+            fromJSON(json, mediaTypeRetriever, warnings, withLegacyHref = true)
+
+        @OptIn(DelicateReadiumApi::class)
+        private fun fromJSON(
+            json: JSONObject?,
+            mediaTypeRetriever: MediaTypeRetriever = MediaTypeRetriever(),
+            warnings: WarningLogger? = null,
+            withLegacyHref: Boolean = false
         ): Locator? {
             val href = json?.optNullableString("href")
             val type = json?.optNullableString("type")
@@ -209,7 +236,10 @@ public data class Locator(
                 return null
             }
 
-            val url = Url(href) ?: run {
+            val url = (
+                if (withLegacyHref) Url.fromLegacyHref(href)
+                else Url(href)
+            ) ?: run {
                 warnings?.log(Locator::class.java, "[href] is not a valid URL", json)
                 return null
             }
