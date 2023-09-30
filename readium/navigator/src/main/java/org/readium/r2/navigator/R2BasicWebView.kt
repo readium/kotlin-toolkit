@@ -29,6 +29,8 @@ import kotlin.coroutines.suspendCoroutine
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.json.JSONObject
@@ -130,6 +132,19 @@ internal open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebV
 
     init {
         setWebContentsDebuggingEnabled(BuildConfig.DEBUG)
+        setOverScrollMode(scrollMode)
+
+        scrollModeFlow
+            .onEach { setOverScrollMode(it) }
+            .launchIn(uiScope)
+    }
+
+    private fun setOverScrollMode(scrollMode: Boolean) {
+        overScrollMode = if (scrollMode) {
+            View.OVER_SCROLL_IF_CONTENT_SCROLLS
+        } else {
+            View.OVER_SCROLL_NEVER
+        }
     }
 
     /** Computes the current progression in the resource. */
