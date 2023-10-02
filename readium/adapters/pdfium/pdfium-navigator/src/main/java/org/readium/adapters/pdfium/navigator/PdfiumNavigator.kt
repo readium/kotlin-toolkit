@@ -11,7 +11,7 @@ import org.readium.r2.navigator.pdf.PdfNavigatorFragment
 import org.readium.r2.shared.ExperimentalReadiumApi
 
 @ExperimentalReadiumApi
-public typealias PdfiumNavigatorFragment = PdfNavigatorFragment<PdfiumDocumentFragment, PdfiumSettings, PdfiumPreferences>
+public typealias PdfiumNavigatorFragment = PdfNavigatorFragment<PdfiumSettings, PdfiumPreferences>
 
 @ExperimentalReadiumApi
-public typealias PdfiumNavigatorFactory = PdfNavigatorFactory<PdfiumDocumentFragment, PdfiumSettings, PdfiumPreferences, PdfiumPreferencesEditor>
+public typealias PdfiumNavigatorFactory = PdfNavigatorFactory<PdfiumSettings, PdfiumPreferences, PdfiumPreferencesEditor>

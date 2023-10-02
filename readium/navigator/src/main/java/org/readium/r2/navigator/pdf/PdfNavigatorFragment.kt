@@ -52,12 +52,12 @@ import org.readium.r2.shared.util.mediatype.MediaType
  */
 @ExperimentalReadiumApi
 @OptIn(DelicateReadiumApi::class)
-public class PdfNavigatorFragment<F : PdfDocumentFragment<S>, S : Configurable.Settings, P : Configurable.Preferences<P>> internal constructor(
+public class PdfNavigatorFragment<S : Configurable.Settings, P : Configurable.Preferences<P>> internal constructor(
     override val publication: Publication,
     private val initialLocator: Locator? = null,
     private val initialPreferences: P,
     private val listener: Listener?,
-    private val pdfEngineProvider: PdfEngineProvider<F, S, P, *>
+    private val pdfEngineProvider: PdfEngineProvider<S, P, *>
 ) : Fragment(), VisualNavigator, Configurable<S, P> {
 
     public interface Listener : VisualNavigator.Listener
@@ -80,7 +80,7 @@ public class PdfNavigatorFragment<F : PdfDocumentFragment<S>, S : Configurable.S
             initialLocator: Locator? = null,
             preferences: P? = null,
             listener: Listener? = null,
-            pdfEngineProvider: PdfEngineProvider<*, *, P, *>
+            pdfEngineProvider: PdfEngineProvider<*, P, *>
         ): FragmentFactory = createFragmentFactory {
             PdfNavigatorFragment(
                 publication,
@@ -115,7 +115,7 @@ public class PdfNavigatorFragment<F : PdfDocumentFragment<S>, S : Configurable.S
 
     private lateinit var documentFragment: PdfDocumentFragment<S>
 
-    private val documentFragmentFactory: SingleFragmentFactory<F> by lazy {
+    private val documentFragmentFactory: SingleFragmentFactory<*> by lazy {
         val locator = viewModel.currentLocator.value
         pdfEngineProvider.createDocumentFragmentFactory(
             PdfDocumentFragmentInput(

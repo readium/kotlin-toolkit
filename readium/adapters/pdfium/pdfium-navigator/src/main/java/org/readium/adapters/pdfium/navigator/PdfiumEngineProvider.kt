@@ -31,7 +31,7 @@ import org.readium.r2.shared.util.Url
 public class PdfiumEngineProvider(
     private val defaults: PdfiumDefaults = PdfiumDefaults(),
     private val listener: Listener? = null
-) : PdfEngineProvider<PdfiumDocumentFragment, PdfiumSettings, PdfiumPreferences, PdfiumPreferencesEditor> {
+) : PdfEngineProvider<PdfiumSettings, PdfiumPreferences, PdfiumPreferencesEditor> {
 
     public interface Listener : PdfEngineProvider.Listener {
 

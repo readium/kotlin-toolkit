@@ -23,14 +23,14 @@ import org.readium.r2.shared.util.Url
  * To be implemented by adapters for third-party PDF engines which can be used with [PdfNavigatorFragment].
  */
 @ExperimentalReadiumApi
-public interface PdfEngineProvider<F : PdfDocumentFragment<S>, S : Configurable.Settings, P : Configurable.Preferences<P>, E : PreferencesEditor<P>> {
+public interface PdfEngineProvider<S : Configurable.Settings, P : Configurable.Preferences<P>, E : PreferencesEditor<P>> {
 
     public interface Listener
 
     /**
      * Creates a [PdfDocumentFragment] factory for [input].
      */
-    public fun createDocumentFragmentFactory(input: PdfDocumentFragmentInput<S>): SingleFragmentFactory<F>
+    public fun createDocumentFragmentFactory(input: PdfDocumentFragmentInput<S>): SingleFragmentFactory<*>
 
     /**
      * Creates settings for [metadata] and [preferences].

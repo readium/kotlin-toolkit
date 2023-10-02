@@ -32,7 +32,7 @@ import org.readium.r2.shared.util.Url
 public class PsPdfKitEngineProvider(
     private val defaults: PsPdfKitDefaults = PsPdfKitDefaults(),
     private val listener: Listener? = null
-) : PdfEngineProvider<PsPdfKitDocumentFragment, PsPdfKitSettings, PsPdfKitPreferences, PsPdfKitPreferencesEditor> {
+) : PdfEngineProvider<PsPdfKitSettings, PsPdfKitPreferences, PsPdfKitPreferencesEditor> {
 
     public interface Listener : PdfEngineProvider.Listener {
 
