@@ -32,9 +32,10 @@ import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.resource.readAsString
 import org.readium.r2.shared.util.Language
 import org.readium.r2.shared.util.Url
-import org.readium.r2.shared.util.getOrThrow
+import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.use
+import timber.log.Timber
 
 /**
  * Iterates an HTML [resource], starting from the given [locator].
@@ -147,7 +148,11 @@ public class HtmlResourceContentIterator internal constructor(
 
     private suspend fun parseElements(): ParsedElements {
         val document = resource.use { res ->
-            val html = res.readAsString().getOrThrow()
+            val html = res.readAsString().getOrElse {
+                Timber.w(it, "Failed to read HTML resource")
+                return ParsedElements()
+            }
+
             Jsoup.parse(html)
         }
 
@@ -206,8 +211,8 @@ public class HtmlResourceContentIterator internal constructor(
      * possible. Defaults to 0.
      */
     public data class ParsedElements(
-        val elements: List<Content.Element>,
-        val startIndex: Int
+        val elements: List<Content.Element> = emptyList(),
+        val startIndex: Int = 0
     )
 
     private class ContentParser(

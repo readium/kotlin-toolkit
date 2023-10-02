@@ -715,7 +715,7 @@ internal class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView
                 if (!isSelecting && !mIsBeingDragged) {
                     mInitialVelocity = getCurrentXVelocity()
                     val pointerIndex = ev.findPointerIndex(mActivePointerId)
-                    val x = ev.getX(pointerIndex)
+                    val x = ev.safeGetX(pointerIndex)
                     val xDiff = abs(x - mLastMotionX)
 
                     if (xDiff > mTouchSlop) {
@@ -736,8 +736,8 @@ internal class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView
                     mHasAbortedScroller = false
 
                     val activePointerIndex = ev.findPointerIndex(mActivePointerId)
-                    val x = ev.getX(activePointerIndex)
-                    val y = ev.getY(activePointerIndex)
+                    val x = ev.safeGetX(activePointerIndex)
+                    val y = ev.safeGetY(activePointerIndex)
 
                     if (scrollMode) {
                         val totalDelta = (y - mInitialMotionY).toInt()
@@ -786,13 +786,13 @@ internal class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView
             }
             MotionEvent.ACTION_POINTER_DOWN -> {
                 val index = ev.actionIndex
-                val x = ev.getX(index)
+                val x = ev.safeGetX(index)
                 mLastMotionX = x
                 mActivePointerId = ev.getPointerId(index)
             }
             MotionEvent.ACTION_POINTER_UP -> {
                 onSecondaryPointerUp(ev)
-                mLastMotionX = ev.getX(ev.findPointerIndex(mActivePointerId))
+                mLastMotionX = ev.safeGetX(ev.findPointerIndex(mActivePointerId))
             }
         }
 
@@ -878,7 +878,7 @@ internal class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView
             // This was our active pointer going up. Choose a new
             // active pointer and adjust accordingly.
             val newPointerIndex = if (pointerIndex == 0) 1 else 0
-            mLastMotionX = ev.getX(newPointerIndex)
+            mLastMotionX = ev.safeGetX(newPointerIndex)
             mActivePointerId = ev.getPointerId(newPointerIndex)
             mVelocityTracker?.clear()
         }
@@ -1092,3 +1092,15 @@ internal class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView
         }
     }
 }
+
+/**
+ * May crash with java.lang.IllegalArgumentException: pointerIndex out of range
+ */
+private fun MotionEvent.safeGetX(pointerIndex: Int): Float =
+    try { getX(pointerIndex) } catch (e: IllegalArgumentException) { 0F }
+
+/**
+ * May crash with java.lang.IllegalArgumentException: pointerIndex out of range
+ */
+private fun MotionEvent.safeGetY(pointerIndex: Int): Float =
+    try { getY(pointerIndex) } catch (e: IllegalArgumentException) { 0F }
