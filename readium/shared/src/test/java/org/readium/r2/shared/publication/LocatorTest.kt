@@ -14,6 +14,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.readium.r2.shared.DelicateReadiumApi
 import org.readium.r2.shared.assertJSONEquals
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
@@ -69,6 +70,26 @@ class LocatorTest {
 
     @Test fun `parse {Locator} invalid JSON`() {
         assertNull(Locator.fromJSON(JSONObject("{ 'invalid': 'object' }")))
+    }
+
+    @OptIn(DelicateReadiumApi::class)
+    @Test
+    fun `parse {Locator} with legacy HREF`() {
+        val json = JSONObject(
+            """
+            {
+                "href": "legacy href",
+                "type": "text/html"
+            }
+        """
+        )
+
+        assertNull(Locator.fromJSON(json))
+
+        assertEquals(
+            Locator(href = Url("legacy%20href")!!, mediaType = MediaType.HTML),
+            Locator.fromLegacyJSON(json)
+        )
     }
 
     @Test fun `get {Locator} minimal JSON`() {

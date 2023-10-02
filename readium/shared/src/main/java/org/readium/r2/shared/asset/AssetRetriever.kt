@@ -303,7 +303,7 @@ public class AssetRetriever(
         if (url.isContent) {
             val contentHints = MediaTypeHints(
                 mediaType = contentResolver.getType(url.uri)
-                    ?.let { MediaType(it)!! }
+                    ?.let { MediaType(it) }
                     ?.takeUnless { it.matches(MediaType.BINARY) },
                 fileExtension = contentResolver
                     .queryProjection(url.uri, MediaStore.MediaColumns.DISPLAY_NAME)
