@@ -6,13 +6,13 @@
 
 package org.readium.adapters.pspdfkit.document
 
-import com.pspdfkit.document.PdfDocument as _PsPdfKitDocument
 import android.content.Context
 import android.graphics.Bitmap
 import com.pspdfkit.annotations.actions.GoToAction
 import com.pspdfkit.document.DocumentSource
 import com.pspdfkit.document.OutlineElement
 import com.pspdfkit.document.PageBinding
+import com.pspdfkit.document.PdfDocument as _PsPdfKitDocument
 import com.pspdfkit.document.PdfDocumentLoader
 import com.pspdfkit.exceptions.InvalidPasswordException
 import kotlin.reflect.KClass

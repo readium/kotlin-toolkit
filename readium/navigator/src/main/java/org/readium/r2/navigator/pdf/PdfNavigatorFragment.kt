@@ -46,20 +46,18 @@ import org.readium.r2.shared.util.mediatype.MediaType
  * Navigator for PDF publications.
  *
  * The PDF navigator delegates the actual PDF rendering to third-party engines like PDFium or
- * PSPDFKit. You must use an implementation of [PdfDocumentFragmentFactory] provided by the PDF
- * engine of your choice.
+ * PSPDFKit.
  *
  * To use this [Fragment], create a factory with [PdfNavigatorFactory.createFragmentFactory].
  */
 @ExperimentalReadiumApi
 @OptIn(DelicateReadiumApi::class)
-public class PdfNavigatorFragment<F : PdfDocumentFragment<L, S>, L : PdfDocumentFragment.Listener, S : Configurable.Settings, P : Configurable.Preferences<P>> internal constructor(
+public class PdfNavigatorFragment<F : PdfDocumentFragment<S>, S : Configurable.Settings, P : Configurable.Preferences<P>> internal constructor(
     override val publication: Publication,
     private val initialLocator: Locator? = null,
     private val initialPreferences: P,
     private val listener: Listener?,
-    private val documentFragmentListener: L?,
-    private val pdfEngineProvider: PdfEngineProvider<F, L, S, P, *>
+    private val pdfEngineProvider: PdfEngineProvider<F, S, P, *>
 ) : Fragment(), VisualNavigator, Configurable<S, P> {
 
     public interface Listener : VisualNavigator.Listener
@@ -77,20 +75,18 @@ public class PdfNavigatorFragment<F : PdfDocumentFragment<L, S>, L : PdfDocument
          * @param pdfEngineProvider provider for third-party PDF engine adapter.
          */
         @ExperimentalReadiumApi
-        public fun <L : PdfDocumentFragment.Listener, P : Configurable.Preferences<P>> createFactory(
+        public fun <P : Configurable.Preferences<P>> createFactory(
             publication: Publication,
             initialLocator: Locator? = null,
             preferences: P? = null,
             listener: Listener? = null,
-            documentFragmentListener: L? = null,
-            pdfEngineProvider: PdfEngineProvider<*, L, *, P, *>
+            pdfEngineProvider: PdfEngineProvider<*, *, P, *>
         ): FragmentFactory = createFragmentFactory {
             PdfNavigatorFragment(
                 publication,
                 initialLocator,
                 preferences ?: pdfEngineProvider.createEmptyPreferences(),
                 listener,
-                documentFragmentListener,
                 pdfEngineProvider
             )
         }
@@ -117,7 +113,7 @@ public class PdfNavigatorFragment<F : PdfDocumentFragment<L, S>, L : PdfDocument
         )
     }
 
-    private lateinit var documentFragment: PdfDocumentFragment<L, S>
+    private lateinit var documentFragment: PdfDocumentFragment<S>
 
     private val documentFragmentFactory: SingleFragmentFactory<F> by lazy {
         val locator = viewModel.currentLocator.value
@@ -127,7 +123,7 @@ public class PdfNavigatorFragment<F : PdfDocumentFragment<L, S>, L : PdfDocument
                 href = locator.href,
                 pageIndex = locator.locations.pageIndex,
                 settings = viewModel.settings.value,
-                listener = documentFragmentListener,
+                navigatorListener = listener,
                 inputListener = inputListener
             )
         )
@@ -163,7 +159,7 @@ public class PdfNavigatorFragment<F : PdfDocumentFragment<L, S>, L : PdfDocument
         }
 
         @Suppress("UNCHECKED_CAST")
-        documentFragment = childFragmentManager.findFragmentByTag(tag) as PdfDocumentFragment<L, S>
+        documentFragment = childFragmentManager.findFragmentByTag(tag) as PdfDocumentFragment<S>
 
         viewLifecycleOwner.lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {

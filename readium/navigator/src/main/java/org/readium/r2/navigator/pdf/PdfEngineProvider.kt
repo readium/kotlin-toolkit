@@ -8,6 +8,7 @@ package org.readium.r2.navigator.pdf
 
 import androidx.fragment.app.Fragment
 import kotlinx.coroutines.flow.StateFlow
+import org.readium.r2.navigator.Navigator
 import org.readium.r2.navigator.VisualNavigator
 import org.readium.r2.navigator.input.InputListener
 import org.readium.r2.navigator.preferences.Configurable
@@ -22,12 +23,14 @@ import org.readium.r2.shared.util.Url
  * To be implemented by adapters for third-party PDF engines which can be used with [PdfNavigatorFragment].
  */
 @ExperimentalReadiumApi
-public interface PdfEngineProvider<F : PdfDocumentFragment<L, S>, L : PdfDocumentFragment.Listener, S : Configurable.Settings, P : Configurable.Preferences<P>, E : PreferencesEditor<P>> {
+public interface PdfEngineProvider<F : PdfDocumentFragment<S>, S : Configurable.Settings, P : Configurable.Preferences<P>, E : PreferencesEditor<P>> {
+
+    public interface Listener
 
     /**
      * Creates a [PdfDocumentFragment] factory for [input].
      */
-    public fun createDocumentFragmentFactory(input: PdfDocumentFragmentInput<L, S>): SingleFragmentFactory<F>
+    public fun createDocumentFragmentFactory(input: PdfDocumentFragmentInput<S>): SingleFragmentFactory<F>
 
     /**
      * Creates settings for [metadata] and [preferences].
@@ -54,9 +57,7 @@ public interface PdfEngineProvider<F : PdfDocumentFragment<L, S>, L : PdfDocumen
  * A [PdfDocumentFragment] renders a single PDF document.
  */
 @ExperimentalReadiumApi
-public abstract class PdfDocumentFragment<L : PdfDocumentFragment.Listener, S : Configurable.Settings> : Fragment() {
-
-    public interface Listener
+public abstract class PdfDocumentFragment<S : Configurable.Settings> : Fragment() {
 
     /**
      * Current page index displayed in the PDF document.
@@ -78,11 +79,11 @@ public abstract class PdfDocumentFragment<L : PdfDocumentFragment.Listener, S : 
 }
 
 @ExperimentalReadiumApi
-public data class PdfDocumentFragmentInput<L : PdfDocumentFragment.Listener, S : Configurable.Settings>(
+public data class PdfDocumentFragmentInput<S : Configurable.Settings>(
     val publication: Publication,
     val href: Url,
     val pageIndex: Int,
     val settings: S,
-    val listener: L?,
-    val inputListener: InputListener
+    val navigatorListener: Navigator.Listener?,
+    val inputListener: InputListener?
 )

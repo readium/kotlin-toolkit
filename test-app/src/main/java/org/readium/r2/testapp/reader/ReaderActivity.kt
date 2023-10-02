@@ -160,9 +160,6 @@ open class ReaderActivity : AppCompatActivity() {
             is ReaderViewModel.Event.OpenDrmManagementRequested -> showDrmManagementFragment()
             is ReaderViewModel.Event.Failure -> {
                 showError(event.error)
-                if (event.fatal) {
-                    finish()
-                }
             }
             else -> {}
         }

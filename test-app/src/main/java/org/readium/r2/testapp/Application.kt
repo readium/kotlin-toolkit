@@ -9,7 +9,6 @@ package org.readium.r2.testapp
 import android.content.Context
 import android.os.Build
 import android.os.StrictMode
-import androidx.annotation.RequiresApi
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore

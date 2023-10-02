@@ -21,9 +21,9 @@ import org.readium.r2.shared.publication.Publication
  * @param pdfEngineProvider provider for third-party PDF engine adapter.
  */
 @ExperimentalReadiumApi
-public class PdfNavigatorFactory<F : PdfDocumentFragment<L, S>, L : PdfDocumentFragment.Listener, S : Configurable.Settings, P : Configurable.Preferences<P>, E : PreferencesEditor<P>>(
+public class PdfNavigatorFactory<F : PdfDocumentFragment<S>, S : Configurable.Settings, P : Configurable.Preferences<P>, E : PreferencesEditor<P>>(
     private val publication: Publication,
-    private val pdfEngineProvider: PdfEngineProvider<F, L, S, P, E>
+    private val pdfEngineProvider: PdfEngineProvider<F, S, P, E>
 ) {
 
     /**
@@ -38,15 +38,13 @@ public class PdfNavigatorFactory<F : PdfDocumentFragment<L, S>, L : PdfDocumentF
     public fun createFragmentFactory(
         initialLocator: Locator? = null,
         initialPreferences: P? = null,
-        listener: PdfNavigatorFragment.Listener? = null,
-        documentFragmentListener: L? = null
+        listener: PdfNavigatorFragment.Listener? = null
     ): FragmentFactory = createFragmentFactory {
         PdfNavigatorFragment(
             publication = publication,
             initialLocator = initialLocator,
             initialPreferences = initialPreferences ?: pdfEngineProvider.createEmptyPreferences(),
             listener = listener,
-            documentFragmentListener = documentFragmentListener,
             pdfEngineProvider = pdfEngineProvider
         )
     }

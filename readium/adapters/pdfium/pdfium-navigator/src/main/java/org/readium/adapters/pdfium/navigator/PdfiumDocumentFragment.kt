@@ -18,8 +18,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import org.readium.adapters.pdfium.document.PdfiumDocumentFactory
-import org.readium.r2.navigator.input.InputListener
-import org.readium.r2.navigator.input.TapEvent
 import org.readium.r2.navigator.pdf.PdfDocumentFragment
 import org.readium.r2.navigator.preferences.Axis
 import org.readium.r2.navigator.preferences.Fit
@@ -38,19 +36,13 @@ public class PdfiumDocumentFragment internal constructor(
     private val href: Url,
     private val initialPageIndex: Int,
     initialSettings: PdfiumSettings,
-    private val listener: Listener?,
-    private val inputListener: InputListener
-) : PdfDocumentFragment<PdfiumDocumentFragment.Listener, PdfiumSettings>() {
+    private val listener: Listener?
+) : PdfDocumentFragment<PdfiumSettings>() {
 
-    public interface Listener : PdfDocumentFragment.Listener {
-        /**
-         * Called when a PDF resource failed to be loaded, for example because of an
-         * [OutOfMemoryError].
-         */
-        public fun onResourceLoadFailed(href: Url, error: Resource.Exception) {}
-
-        /** Called when configuring [PDFView]. */
-        public fun onConfigurePdfView(configurator: PDFView.Configurator) {}
+    internal interface Listener {
+        fun onResourceLoadFailed(href: Url, error: Resource.Exception)
+        fun onConfigurePdfView(configurator: PDFView.Configurator)
+        fun onTap(point: PointF): Boolean
     }
 
     private lateinit var pdfView: PDFView
@@ -119,7 +111,7 @@ public class PdfiumDocumentFragment internal constructor(
                     _pageIndex.value = convertPageIndexFromView(index)
                 }
                 .onTap { event ->
-                    inputListener.onTap(TapEvent(PointF(event.x, event.y)))
+                    listener?.onTap(PointF(event.x, event.y)) ?: false
                 }
                 .load()
         }

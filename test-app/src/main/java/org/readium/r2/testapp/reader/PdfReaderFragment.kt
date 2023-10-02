@@ -31,8 +31,7 @@ class PdfReaderFragment : VisualReaderFragment() {
             readerData.navigatorFactory.createFragmentFactory(
                 initialLocator = readerData.initialLocation,
                 initialPreferences = readerData.preferencesManager.preferences.value,
-                listener = model,
-                documentFragmentListener = model
+                listener = model
             )
 
         super.onCreate(savedInstanceState)
