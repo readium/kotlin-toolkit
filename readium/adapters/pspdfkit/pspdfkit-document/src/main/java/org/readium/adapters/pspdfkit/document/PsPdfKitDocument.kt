@@ -6,17 +6,15 @@
 
 package org.readium.adapters.pspdfkit.document
 
+import com.pspdfkit.document.PdfDocument as _PsPdfKitDocument
 import android.content.Context
 import android.graphics.Bitmap
-import androidx.core.net.toUri
 import com.pspdfkit.annotations.actions.GoToAction
 import com.pspdfkit.document.DocumentSource
 import com.pspdfkit.document.OutlineElement
 import com.pspdfkit.document.PageBinding
-import com.pspdfkit.document.PdfDocument as _PsPdfKitDocument
 import com.pspdfkit.document.PdfDocumentLoader
 import com.pspdfkit.exceptions.InvalidPasswordException
-import java.io.File
 import kotlin.reflect.KClass
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
@@ -33,9 +31,6 @@ public class PsPdfKitDocumentFactory(context: Context) : PdfDocumentFactory<PsPd
     private val context = context.applicationContext
 
     override val documentType: KClass<PsPdfKitDocument> = PsPdfKitDocument::class
-
-    override suspend fun open(file: File, password: String?): ResourceTry<PsPdfKitDocument> =
-        open(context, DocumentSource(file.toUri(), password))
 
     override suspend fun open(resource: Resource, password: String?): ResourceTry<PsPdfKitDocument> =
         open(context, DocumentSource(ResourceDataProvider(resource), password))

@@ -6,10 +6,10 @@
 
 package org.readium.adapters.pdfium.document
 
+import com.shockwave.pdfium.PdfDocument as _PdfiumDocument
 import android.content.Context
 import android.graphics.Bitmap
 import android.os.ParcelFileDescriptor
-import com.shockwave.pdfium.PdfDocument as _PdfiumDocument
 import com.shockwave.pdfium.PdfiumCore
 import java.io.File
 import kotlin.reflect.KClass
@@ -86,13 +86,6 @@ public class PdfiumDocumentFactory(context: Context) : PdfDocumentFactory<Pdfium
 
     private val core by lazy { PdfiumCore(context.applicationContext) }
 
-    override suspend fun open(file: File, password: String?): ResourceTry<PdfiumDocument> =
-        try {
-            Try.success(core.fromFile(file, password))
-        } catch (e: Throwable) {
-            Try.failure(Resource.Exception.wrap(e))
-        }
-
     override suspend fun open(resource: Resource, password: String?): ResourceTry<PdfiumDocument> {
         // First try to open the resource as a file on the FS for performance improvement, as
         // PDFium requires the whole PDF document to be loaded in memory when using raw bytes.
@@ -102,7 +95,11 @@ public class PdfiumDocumentFactory(context: Context) : PdfDocumentFactory<Pdfium
 
     private suspend fun Resource.openAsFile(password: String?): ResourceTry<PdfiumDocument>? =
         tryOrNull {
-            source?.toFile()?.let { open(it, password) }
+            source?.toFile()?.let { file ->
+                withContext(Dispatchers.IO) {
+                    Try.success(core.fromFile(file, password))
+                }
+            }
         }
 
     private suspend fun Resource.openBytes(password: String?): ResourceTry<PdfiumDocument> =

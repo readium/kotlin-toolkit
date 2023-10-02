@@ -11,7 +11,6 @@ package org.readium.r2.shared.util.pdf
 
 import android.content.Context
 import android.graphics.Bitmap
-import java.io.File
 import kotlin.reflect.KClass
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Link
@@ -31,9 +30,6 @@ public interface PdfDocumentFactory<T : PdfDocument> {
 
     /** Class for the type of document this factory produces. */
     public val documentType: KClass<T>
-
-    /** Opens a PDF from a [file]. */
-    public suspend fun open(file: File, password: String?): ResourceTry<T>
 
     /** Opens a PDF from a [resource]. */
     public suspend fun open(resource: Resource, password: String?): ResourceTry<T>
@@ -59,13 +55,6 @@ private class CachingPdfDocumentFactory<T : PdfDocument>(
     private val factory: PdfDocumentFactory<T>,
     private val cache: Cache<T>
 ) : PdfDocumentFactory<T> by factory {
-
-    override suspend fun open(file: File, password: String?): ResourceTry<T> =
-        cache.transaction {
-            getOrTryPut(file.path) {
-                factory.open(file, password)
-            }
-        }
 
     override suspend fun open(resource: Resource, password: String?): ResourceTry<T> {
         val key = resource.source?.toString() ?: return factory.open(resource, password)
