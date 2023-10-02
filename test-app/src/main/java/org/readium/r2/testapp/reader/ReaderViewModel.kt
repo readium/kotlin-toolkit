@@ -17,8 +17,12 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import org.readium.adapters.pdfium.navigator.PdfiumDocumentFragment
 import org.readium.r2.navigator.Decoration
 import org.readium.r2.navigator.ExperimentalDecorator
+import org.readium.r2.navigator.epub.EpubNavigatorFragment
+import org.readium.r2.navigator.image.ImageNavigatorFragment
+import org.readium.r2.navigator.pdf.PdfNavigatorFragment
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.Search
 import org.readium.r2.shared.UserException
@@ -28,7 +32,9 @@ import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.services.search.SearchIterator
 import org.readium.r2.shared.publication.services.search.SearchTry
 import org.readium.r2.shared.publication.services.search.search
+import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.Url
 import org.readium.r2.testapp.Application
 import org.readium.r2.testapp.data.BookRepository
 import org.readium.r2.testapp.data.model.Highlight
@@ -44,7 +50,11 @@ class ReaderViewModel(
     private val bookId: Long,
     private val readerRepository: ReaderRepository,
     private val bookRepository: BookRepository
-) : ViewModel() {
+) : ViewModel(),
+    EpubNavigatorFragment.Listener,
+    ImageNavigatorFragment.Listener,
+    PdfNavigatorFragment.Listener,
+    PdfiumDocumentFragment.Listener {
 
     val readerInitData =
         try {
@@ -238,6 +248,16 @@ class ReaderViewModel(
         SearchPagingSource(listener = PagingSourceListener())
     }
 
+    override fun onResourceLoadFailed(href: Url, error: Resource.Exception) {
+        val message = when (error) {
+            is Resource.Exception.OutOfMemory -> "The PDF is too large to be rendered on this device"
+            else -> "Failed to render this PDF"
+        }
+        val wrappingError = UserException(message, error)
+        // There's nothing we can do to recover, so we quit the Activity.
+        activityChannel.send(Event.Failure(wrappingError, fatal = true))
+    }
+
     inner class PagingSourceListener : SearchPagingSource.Listener {
         override suspend fun next(): SearchTry<LocatorCollection?> {
             val iterator = searchIterator ?: return Try.success(null)
@@ -257,7 +277,7 @@ class ReaderViewModel(
         object OpenOutlineRequested : Event()
         object OpenDrmManagementRequested : Event()
         object StartNewSearch : Event()
-        class Failure(val error: UserException) : Event()
+        class Failure(val error: UserException, val fatal: Boolean = false) : Event()
     }
 
     sealed class FeedbackEvent {

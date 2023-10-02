@@ -66,7 +66,7 @@ import org.readium.r2.testapp.utils.extensions.throttleLatest
  * Provides common menu items and saves last location on stop.
  */
 @OptIn(ExperimentalDecorator::class, ExperimentalReadiumApi::class)
-abstract class VisualReaderFragment : BaseReaderFragment(), VisualNavigator.Listener {
+abstract class VisualReaderFragment : BaseReaderFragment() {
 
     protected var binding: FragmentReaderBinding by viewLifecycle()
 
