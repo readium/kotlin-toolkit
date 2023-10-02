@@ -15,6 +15,9 @@ import org.readium.r2.shared.util.MessageError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 
+/**
+ * An [ArchiveFactory] to open local ZIP files with Java's [ZipFile].
+ */
 public class DefaultArchiveFactory(
     private val mediaTypeRetriever: MediaTypeRetriever
 ) : ArchiveFactory {
@@ -28,7 +31,7 @@ public class DefaultArchiveFactory(
             ?.let { open(it) }
             ?: Try.Failure(
                 ArchiveFactory.Error.FormatNotSupported(
-                    MessageError("Resource not supported because file cannot be directly access.")
+                    MessageError("Resource not supported because file cannot be directly accessed.")
                 )
             )
     }
