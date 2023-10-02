@@ -44,8 +44,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import org.readium.adapters.pspdfkit.document.PsPdfKitDocument
 import org.readium.adapters.pspdfkit.document.PsPdfKitDocumentFactory
-import org.readium.r2.navigator.input.InputListener
-import org.readium.r2.navigator.input.TapEvent
 import org.readium.r2.navigator.pdf.PdfDocumentFragment
 import org.readium.r2.navigator.preferences.Axis
 import org.readium.r2.navigator.preferences.Fit
@@ -61,24 +59,18 @@ import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.pdf.cachedIn
 
 @ExperimentalReadiumApi
-public class PsPdfKitDocumentFragment(
+public class PsPdfKitDocumentFragment internal constructor(
     private val publication: Publication,
     private val href: Url,
     initialPageIndex: Int,
     initialSettings: PsPdfKitSettings,
-    private val listener: Listener?,
-    private val inputListener: InputListener
-) : PdfDocumentFragment<PsPdfKitDocumentFragment.Listener, PsPdfKitSettings>() {
+    private val listener: Listener?
+) : PdfDocumentFragment<PsPdfKitSettings>() {
 
-    public interface Listener : PdfDocumentFragment.Listener {
-        /**
-         * Called when a PDF resource failed to be loaded, for example because of an
-         * [OutOfMemoryError].
-         */
-        public fun onResourceLoadFailed(href: Url, error: Resource.Exception) {}
-
-        /** Called when configuring a new PDF fragment. */
-        public fun onConfigurePdfView(builder: PdfConfiguration.Builder): PdfConfiguration.Builder = builder
+    internal interface Listener {
+        fun onResourceLoadFailed(href: Url, error: Resource.Exception)
+        fun onConfigurePdfView(builder: PdfConfiguration.Builder): PdfConfiguration.Builder
+        fun onTap(point: PointF): Boolean
     }
 
     private companion object {
@@ -248,7 +240,7 @@ public class PsPdfKitDocumentFragment(
 
         override fun onDocumentClick(): Boolean {
             val center = view?.run { PointF(width.toFloat() / 2, height.toFloat() / 2) }
-            return center?.let { inputListener.onTap(TapEvent(it)) } ?: false
+            return center?.let { listener?.onTap(it) } ?: false
         }
 
         override fun onPageClick(
@@ -266,7 +258,7 @@ public class PsPdfKitDocumentFragment(
             }
 
             checkNotNull(pdfFragment).viewProjection.toViewPoint(pagePosition, pageIndex)
-            return inputListener.onTap(TapEvent(pagePosition))
+            return listener?.onTap(pagePosition) ?: false
         }
 
         private val allowedTextSelectionItems = listOf(

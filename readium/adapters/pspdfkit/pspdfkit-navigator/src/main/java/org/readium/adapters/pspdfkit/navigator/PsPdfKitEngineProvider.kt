@@ -6,8 +6,11 @@
 
 package org.readium.adapters.pspdfkit.navigator
 
+import android.graphics.PointF
+import com.pspdfkit.configuration.PdfConfiguration
 import org.readium.r2.navigator.SimplePresentation
 import org.readium.r2.navigator.VisualNavigator
+import org.readium.r2.navigator.input.TapEvent
 import org.readium.r2.navigator.pdf.PdfDocumentFragmentInput
 import org.readium.r2.navigator.pdf.PdfEngineProvider
 import org.readium.r2.navigator.preferences.Axis
@@ -16,6 +19,8 @@ import org.readium.r2.navigator.util.createFragmentFactory
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Metadata
 import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.resource.Resource
+import org.readium.r2.shared.util.Url
 
 /**
  * Main component to use the PDF navigator with PSPDFKit.
@@ -25,11 +30,18 @@ import org.readium.r2.shared.publication.Publication
  */
 @ExperimentalReadiumApi
 public class PsPdfKitEngineProvider(
-    private val defaults: PsPdfKitDefaults = PsPdfKitDefaults()
-) : PdfEngineProvider<PsPdfKitDocumentFragment, PsPdfKitDocumentFragment.Listener, PsPdfKitSettings, PsPdfKitPreferences, PsPdfKitPreferencesEditor> {
+    private val defaults: PsPdfKitDefaults = PsPdfKitDefaults(),
+    private val listener: Listener? = null
+) : PdfEngineProvider<PsPdfKitDocumentFragment, PsPdfKitSettings, PsPdfKitPreferences, PsPdfKitPreferencesEditor> {
+
+    public interface Listener : PdfEngineProvider.Listener {
+
+        /** Called when configuring a new PDF fragment. */
+        public fun onConfigurePdfView(builder: PdfConfiguration.Builder): PdfConfiguration.Builder = builder
+    }
 
     override fun createDocumentFragmentFactory(
-        input: PdfDocumentFragmentInput<PsPdfKitDocumentFragment.Listener, PsPdfKitSettings>
+        input: PdfDocumentFragmentInput<PsPdfKitSettings>
     ): SingleFragmentFactory<PsPdfKitDocumentFragment> =
         createFragmentFactory {
             PsPdfKitDocumentFragment(
@@ -37,8 +49,17 @@ public class PsPdfKitEngineProvider(
                 href = input.href,
                 initialPageIndex = input.pageIndex,
                 initialSettings = input.settings,
-                listener = input.listener,
-                inputListener = input.inputListener
+                listener = object : PsPdfKitDocumentFragment.Listener {
+                    override fun onResourceLoadFailed(href: Url, error: Resource.Exception) {
+                        input.navigatorListener?.onResourceLoadFailed(href, error)
+                    }
+
+                    override fun onConfigurePdfView(builder: PdfConfiguration.Builder): PdfConfiguration.Builder =
+                        listener?.onConfigurePdfView(builder) ?: builder
+
+                    override fun onTap(point: PointF): Boolean =
+                        input.inputListener?.onTap(TapEvent(point)) ?: false
+                }
             )
         }
 

@@ -11,7 +11,7 @@ import org.readium.r2.navigator.pdf.PdfNavigatorFragment
 import org.readium.r2.shared.ExperimentalReadiumApi
 
 @ExperimentalReadiumApi
-public typealias PsPdfKitNavigatorFragment = PdfNavigatorFragment<PsPdfKitDocumentFragment, PsPdfKitDocumentFragment.Listener, PsPdfKitSettings, PsPdfKitPreferences>
+public typealias PsPdfKitNavigatorFragment = PdfNavigatorFragment<PsPdfKitDocumentFragment, PsPdfKitSettings, PsPdfKitPreferences>
 
 @ExperimentalReadiumApi
-public typealias PsPdfKitNavigatorFactory = PdfNavigatorFactory<PsPdfKitDocumentFragment, PsPdfKitDocumentFragment.Listener, PsPdfKitSettings, PsPdfKitPreferences, PsPdfKitPreferencesEditor>
+public typealias PsPdfKitNavigatorFactory = PdfNavigatorFactory<PsPdfKitDocumentFragment, PsPdfKitSettings, PsPdfKitPreferences, PsPdfKitPreferencesEditor>
