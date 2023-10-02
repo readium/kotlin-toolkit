@@ -7,12 +7,16 @@
 package org.readium.r2.testapp
 
 import android.content.Context
+import android.os.Build
+import android.os.StrictMode
+import androidx.annotation.RequiresApi
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
 import com.google.android.material.color.DynamicColors
 import java.io.File
 import java.util.Properties
+import java.util.concurrent.Executors
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.MainScope
@@ -54,9 +58,14 @@ class Application : android.app.Application() {
         by preferencesDataStore(name = "navigator-preferences")
 
     override fun onCreate() {
+        if (DEBUG) {
+//            enableStrictMode()
+            Timber.plant(Timber.DebugTree())
+        }
+
         super.onCreate()
+
         DynamicColors.applyToActivitiesIfAvailable(this)
-        if (DEBUG) Timber.plant(Timber.DebugTree())
 
         readium = Readium(this)
 
@@ -136,6 +145,36 @@ class Application : android.app.Application() {
             } else {
                 filesDir?.path + "/"
             }
+        )
+    }
+
+    /**
+     * Strict mode will log violation of VM and threading policy.
+     * Use it to make sure the app doesn't do too much work on the main thread.
+     */
+    private fun enableStrictMode() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) {
+            return
+        }
+
+        val executor = Executors.newSingleThreadExecutor()
+        StrictMode.setThreadPolicy(
+            StrictMode.ThreadPolicy.Builder()
+                .detectAll()
+                .penaltyListener(executor) { violation ->
+                    Timber.e(violation, "Thread policy violation")
+                }
+//                .penaltyDeath()
+                .build()
+        )
+        StrictMode.setVmPolicy(
+            StrictMode.VmPolicy.Builder()
+                .detectAll()
+                .penaltyListener(executor) { violation ->
+                    Timber.e(violation, "VM policy violation")
+                }
+//                .penaltyDeath()
+                .build()
         )
     }
 }
