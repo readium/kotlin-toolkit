@@ -20,8 +20,8 @@ import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.ReadingProgression as PublicationReadingProgression
-import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.resource.Resource
 
 /**
  * Base interface for a navigator rendering a publication.

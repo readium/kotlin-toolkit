@@ -7,13 +7,13 @@
 package org.readium.r2.streamer.parser
 
 import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.resource.Container
-import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.util.MessageError
 import org.readium.r2.shared.util.ThrowableError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.shared.util.resource.Container
+import org.readium.r2.shared.util.resource.Resource
 
 /**
  *  Parses a Publication from an asset.

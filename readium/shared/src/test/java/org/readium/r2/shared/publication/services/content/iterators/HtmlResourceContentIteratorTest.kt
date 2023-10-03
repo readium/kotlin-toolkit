@@ -17,10 +17,10 @@ import org.readium.r2.shared.publication.services.content.Content.AttributeKey.C
 import org.readium.r2.shared.publication.services.content.Content.AttributeKey.Companion.LANGUAGE
 import org.readium.r2.shared.publication.services.content.Content.TextElement
 import org.readium.r2.shared.publication.services.content.Content.TextElement.Segment
-import org.readium.r2.shared.resource.StringResource
 import org.readium.r2.shared.util.Language
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.shared.util.resource.StringResource
 import org.robolectric.RobolectricTestRunner
 
 @OptIn(ExperimentalReadiumApi::class)

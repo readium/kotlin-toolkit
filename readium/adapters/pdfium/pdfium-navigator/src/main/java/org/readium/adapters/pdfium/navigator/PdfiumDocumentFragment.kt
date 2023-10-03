@@ -24,10 +24,10 @@ import org.readium.r2.navigator.preferences.Fit
 import org.readium.r2.navigator.preferences.ReadingProgression
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.util.SingleJob
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.getOrElse
+import org.readium.r2.shared.util.resource.Resource
 import timber.log.Timber
 
 @ExperimentalReadiumApi

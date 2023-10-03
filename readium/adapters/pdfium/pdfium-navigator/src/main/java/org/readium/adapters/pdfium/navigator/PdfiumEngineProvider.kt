@@ -18,8 +18,8 @@ import org.readium.r2.navigator.util.createFragmentFactory
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Metadata
 import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.resource.Resource
 
 /**
  * Main component to use the PDF navigator with the PDFium adapter.

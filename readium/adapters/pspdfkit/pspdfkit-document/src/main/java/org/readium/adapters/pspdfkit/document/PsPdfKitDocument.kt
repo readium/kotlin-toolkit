@@ -20,11 +20,11 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.publication.ReadingProgression
-import org.readium.r2.shared.resource.Resource
-import org.readium.r2.shared.resource.ResourceTry
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.pdf.PdfDocument
 import org.readium.r2.shared.util.pdf.PdfDocumentFactory
+import org.readium.r2.shared.util.resource.Resource
+import org.readium.r2.shared.util.resource.ResourceTry
 import timber.log.Timber
 
 public class PsPdfKitDocumentFactory(context: Context) : PdfDocumentFactory<PsPdfKitDocument> {

@@ -10,11 +10,11 @@ import com.mcxiaoke.koi.HASH
 import com.mcxiaoke.koi.ext.toHexBytes
 import kotlin.experimental.xor
 import org.readium.r2.shared.publication.encryption.Encryption
-import org.readium.r2.shared.resource.Resource
-import org.readium.r2.shared.resource.ResourceTry
-import org.readium.r2.shared.resource.TransformingResource
-import org.readium.r2.shared.resource.flatMap
 import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.resource.Resource
+import org.readium.r2.shared.util.resource.ResourceTry
+import org.readium.r2.shared.util.resource.TransformingResource
+import org.readium.r2.shared.util.resource.flatMap
 
 /**
  * Deobfuscates fonts according to https://www.w3.org/TR/epub-33/#sec-font-obfuscation

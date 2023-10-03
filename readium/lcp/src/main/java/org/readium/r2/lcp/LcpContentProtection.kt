@@ -8,21 +8,21 @@ package org.readium.r2.lcp
 
 import org.readium.r2.lcp.auth.LcpPassphraseAuthentication
 import org.readium.r2.lcp.license.model.LicenseDocument
-import org.readium.r2.shared.asset.Asset
-import org.readium.r2.shared.asset.AssetRetriever
-import org.readium.r2.shared.asset.AssetType
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.encryption.encryption
 import org.readium.r2.shared.publication.flatten
 import org.readium.r2.shared.publication.protection.ContentProtection
 import org.readium.r2.shared.publication.services.contentProtectionServiceFactory
-import org.readium.r2.shared.resource.Resource
-import org.readium.r2.shared.resource.TransformingContainer
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.ThrowableError
 import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.asset.Asset
+import org.readium.r2.shared.util.asset.AssetRetriever
+import org.readium.r2.shared.util.asset.AssetType
 import org.readium.r2.shared.util.flatMap
 import org.readium.r2.shared.util.getOrElse
+import org.readium.r2.shared.util.resource.Resource
+import org.readium.r2.shared.util.resource.TransformingContainer
 
 internal class LcpContentProtection(
     private val lcpService: LcpService,

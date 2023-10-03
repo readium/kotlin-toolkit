@@ -16,11 +16,11 @@ import org.readium.r2.shared.publication.epub.layoutOf
 import org.readium.r2.shared.publication.presentation.Presentation
 import org.readium.r2.shared.publication.presentation.presentation
 import org.readium.r2.shared.publication.services.PositionsService
-import org.readium.r2.shared.resource.Container
-import org.readium.r2.shared.resource.Resource
-import org.readium.r2.shared.resource.archive
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.shared.util.resource.Container
+import org.readium.r2.shared.util.resource.Resource
+import org.readium.r2.shared.util.resource.archive
 import org.readium.r2.shared.util.use
 
 /**

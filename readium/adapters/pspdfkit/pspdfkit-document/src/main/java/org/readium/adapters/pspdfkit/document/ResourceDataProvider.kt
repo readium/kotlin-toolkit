@@ -9,10 +9,10 @@ package org.readium.adapters.pspdfkit.document
 import com.pspdfkit.document.providers.DataProvider
 import java.util.*
 import kotlinx.coroutines.runBlocking
-import org.readium.r2.shared.resource.Resource
-import org.readium.r2.shared.resource.synchronized
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.isLazyInitialized
+import org.readium.r2.shared.util.resource.Resource
+import org.readium.r2.shared.util.resource.synchronized
 import timber.log.Timber
 
 internal class ResourceDataProvider(

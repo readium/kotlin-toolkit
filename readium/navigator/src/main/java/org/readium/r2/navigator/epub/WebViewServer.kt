@@ -19,16 +19,16 @@ import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Href
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.resource.Resource
-import org.readium.r2.shared.resource.ResourceInputStream
-import org.readium.r2.shared.resource.StringResource
-import org.readium.r2.shared.resource.fallback
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.http.HttpHeaders
 import org.readium.r2.shared.util.http.HttpRange
 import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.shared.util.resource.Resource
+import org.readium.r2.shared.util.resource.ResourceInputStream
+import org.readium.r2.shared.util.resource.StringResource
+import org.readium.r2.shared.util.resource.fallback
 
 /**
  * Serves the publication resources and application assets in the EPUB navigator web views.

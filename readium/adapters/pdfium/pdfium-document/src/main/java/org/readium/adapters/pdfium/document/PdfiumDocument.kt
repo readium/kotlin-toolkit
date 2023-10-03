@@ -18,12 +18,12 @@ import kotlinx.coroutines.withContext
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.extensions.md5
 import org.readium.r2.shared.extensions.tryOrNull
-import org.readium.r2.shared.resource.Resource
-import org.readium.r2.shared.resource.ResourceTry
-import org.readium.r2.shared.resource.mapCatching
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.pdf.PdfDocument
 import org.readium.r2.shared.util.pdf.PdfDocumentFactory
+import org.readium.r2.shared.util.resource.Resource
+import org.readium.r2.shared.util.resource.ResourceTry
+import org.readium.r2.shared.util.resource.mapCatching
 import org.readium.r2.shared.util.use
 import timber.log.Timber
 

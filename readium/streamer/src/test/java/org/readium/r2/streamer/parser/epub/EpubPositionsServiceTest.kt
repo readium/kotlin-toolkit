@@ -18,15 +18,15 @@ import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Properties
 import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.publication.presentation.Presentation
-import org.readium.r2.shared.resource.ArchiveProperties
-import org.readium.r2.shared.resource.Container
-import org.readium.r2.shared.resource.Resource
-import org.readium.r2.shared.resource.ResourceTry
-import org.readium.r2.shared.resource.archive
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.shared.util.resource.ArchiveProperties
+import org.readium.r2.shared.util.resource.Container
+import org.readium.r2.shared.util.resource.Resource
+import org.readium.r2.shared.util.resource.ResourceTry
+import org.readium.r2.shared.util.resource.archive
 import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)

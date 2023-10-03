@@ -27,17 +27,17 @@ import org.readium.r2.shared.publication.services.PositionsService
 import org.readium.r2.shared.publication.services.WebPositionsService
 import org.readium.r2.shared.publication.services.content.ContentService
 import org.readium.r2.shared.publication.services.search.SearchService
-import org.readium.r2.shared.resource.Container
-import org.readium.r2.shared.resource.EmptyContainer
-import org.readium.r2.shared.resource.Resource
-import org.readium.r2.shared.resource.ResourceTry
-import org.readium.r2.shared.resource.fallback
 import org.readium.r2.shared.util.BaseError
 import org.readium.r2.shared.util.Closeable
 import org.readium.r2.shared.util.Error
 import org.readium.r2.shared.util.ThrowableError
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.shared.util.resource.Container
+import org.readium.r2.shared.util.resource.EmptyContainer
+import org.readium.r2.shared.util.resource.Resource
+import org.readium.r2.shared.util.resource.ResourceTry
+import org.readium.r2.shared.util.resource.fallback
 
 internal typealias ServiceFactory = (Publication.Service.Context) -> Publication.Service?
 

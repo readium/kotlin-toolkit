@@ -8,10 +8,10 @@ package org.readium.r2.lcp.license.container
 
 import kotlinx.coroutines.runBlocking
 import org.readium.r2.lcp.LcpException
-import org.readium.r2.shared.resource.Container
-import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.getOrThrow
+import org.readium.r2.shared.util.resource.Container
+import org.readium.r2.shared.util.resource.Resource
 
 /**
  * Access to a License Document stored in a read-only container.

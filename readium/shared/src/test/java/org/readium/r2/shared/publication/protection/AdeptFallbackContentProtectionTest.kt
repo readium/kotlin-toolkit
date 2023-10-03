@@ -11,8 +11,8 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.readium.r2.shared.asset.Asset
 import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.asset.Asset
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.robolectric.RobolectricTestRunner
 
@@ -73,7 +73,7 @@ class AdeptFallbackContentProtectionTest {
 
     private fun supports(mediaType: MediaType, resources: Map<String, String>): Boolean = runBlocking {
         AdeptFallbackContentProtection().supports(
-            Asset.Container(
+            org.readium.r2.shared.util.asset.Asset.Container(
                 mediaType = mediaType,
                 exploded = false,
                 container = TestContainer(resources.mapKeys { Url(it.key)!! })

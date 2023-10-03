@@ -11,15 +11,15 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import org.readium.navigators.media.common.MediaNavigator
+import org.readium.navigators.media.tts.AndroidTtsNavigator
+import org.readium.navigators.media.tts.AndroidTtsNavigatorFactory
+import org.readium.navigators.media.tts.TtsNavigator
+import org.readium.navigators.media.tts.android.AndroidTtsEngine
+import org.readium.navigators.media.tts.android.AndroidTtsPreferences
+import org.readium.navigators.media.tts.android.AndroidTtsSettings
 import org.readium.r2.navigator.Navigator
 import org.readium.r2.navigator.VisualNavigator
-import org.readium.r2.navigator.media3.api.MediaNavigator
-import org.readium.r2.navigator.media3.tts.AndroidTtsNavigator
-import org.readium.r2.navigator.media3.tts.AndroidTtsNavigatorFactory
-import org.readium.r2.navigator.media3.tts.TtsNavigator
-import org.readium.r2.navigator.media3.tts.android.AndroidTtsEngine
-import org.readium.r2.navigator.media3.tts.android.AndroidTtsPreferences
-import org.readium.r2.navigator.media3.tts.android.AndroidTtsSettings
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.UserException
 import org.readium.r2.shared.publication.Locator
@@ -143,7 +143,9 @@ class TtsViewModel private constructor(
                         stop()
                     }
                     is MediaNavigator.State.Error -> {
-                        onPlaybackError(playback.state as TtsNavigator.State.Error)
+                        onPlaybackError(
+                            playback.state as TtsNavigator.State.Error
+                        )
                     }
                     is MediaNavigator.State.Ready -> {}
                     is MediaNavigator.State.Buffering -> {}

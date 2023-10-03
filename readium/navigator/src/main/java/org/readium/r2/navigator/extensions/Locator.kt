@@ -12,6 +12,7 @@ package org.readium.r2.navigator.extensions
 import java.util.*
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
+import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.publication.Locator
 
 // FIXME: This should be in r2-shared once this public API is specified.
@@ -59,7 +60,8 @@ internal val Locator.Locations.page: Int? get() =
  *
  * https://www.w3.org/TR/media-frags/
  */
-internal val Locator.Locations.time: Duration? get() =
+@InternalReadiumApi
+public val Locator.Locations.time: Duration? get() =
     fragmentParameters["t"]?.toIntOrNull()?.seconds
 
 /**
