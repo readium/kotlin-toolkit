@@ -45,8 +45,7 @@ public class LcpFallbackContentProtection(
     override suspend fun open(
         asset: Asset,
         credentials: String?,
-        allowUserInteraction: Boolean,
-        sender: Any?
+        allowUserInteraction: Boolean
     ): Try<ContentProtection.Asset, Publication.OpenError> {
         if (asset !is Asset.Container) {
             return Try.failure(

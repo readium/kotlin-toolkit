@@ -125,8 +125,6 @@ public class PublicationFactory(
      *   publication, for example a password.
      * @param allowUserInteraction Indicates whether the user can be prompted, for example for its
      *   credentials.
-     * @param sender Free object that can be used by reading apps to give some UX context when
-     *   presenting dialogs.
      * @param onCreatePublication Transformation which will be applied on the Publication Builder.
      *   It can be used to modify the manifest, the root container or the list of service
      *   factories of the [Publication].
@@ -138,7 +136,6 @@ public class PublicationFactory(
         contentProtectionScheme: ContentProtection.Scheme? = null,
         credentials: String? = null,
         allowUserInteraction: Boolean,
-        sender: Any? = null,
         onCreatePublication: Publication.Builder.() -> Unit = {},
         warnings: WarningLogger? = null
     ): PublicationTry<Publication> {
@@ -159,7 +156,6 @@ public class PublicationFactory(
                 contentProtectionScheme,
                 credentials,
                 allowUserInteraction,
-                sender,
                 compositeOnCreatePublication,
                 warnings
             )
@@ -181,12 +177,11 @@ public class PublicationFactory(
         contentProtectionScheme: ContentProtection.Scheme,
         credentials: String?,
         allowUserInteraction: Boolean,
-        sender: Any?,
         onCreatePublication: Publication.Builder.() -> Unit,
         warnings: WarningLogger?
     ): Try<Publication, Publication.OpenError> {
         val protectedAsset = contentProtections[contentProtectionScheme]
-            ?.open(asset, credentials, allowUserInteraction, sender)
+            ?.open(asset, credentials, allowUserInteraction)
             ?.getOrElse { return Try.failure(it) }
             ?: return Try.failure(Publication.OpenError.Forbidden())
 

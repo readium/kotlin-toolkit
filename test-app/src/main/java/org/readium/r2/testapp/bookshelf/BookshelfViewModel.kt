@@ -6,7 +6,6 @@
 
 package org.readium.r2.testapp.bookshelf
 
-import android.app.Activity
 import android.app.Application
 import android.net.Uri
 import androidx.lifecycle.AndroidViewModel
@@ -45,12 +44,11 @@ class BookshelfViewModel(application: Application) : AndroidViewModel(applicatio
     }
 
     fun openPublication(
-        bookId: Long,
-        activity: Activity
+        bookId: Long
     ) {
         viewModelScope.launch {
             val readerRepository = app.readerRepository.await()
-            readerRepository.open(bookId, activity)
+            readerRepository.open(bookId)
                 .onFailure { error ->
                     val message = error.getUserMessage(app)
                     channel.send(Event.OpenPublicationError(message))

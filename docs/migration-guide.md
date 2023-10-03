@@ -78,6 +78,17 @@ val MIGRATION_HREF = object : Migration(1, 2) {
 }
 ```
 
+### LcpDialogAuthentication now supports configuration changes.
+
+You no longer need to pass an activity, fragment or view as `sender` to `retrievePassphrase`.
+Instead, call `onParentViewAttachedToWindow` every time you have a
+view attached to a window available as anchor and `onParentViewDetachedFromWindow` every time it
+gets detached. You can monitor these events by setting a `View.OnAttachStateChangeListener` on your
+view.
+
+See the [test-app](https://github.com/readium/kotlin-toolkit/blob/01d6c7936accea2d6b953d435e669260676e8c99/test-app/src/main/java/org/readium/r2/testapp/bookshelf/BookshelfFragment.kt#L68)
+for an example.
+
 ### All resources now have the prefix `readium_`.
 
 To avoid conflicts when merging your app resources, all resources declared in the Readium toolkit now have the prefix `readium_`. This means that you must rename any layouts or strings you have overridden. Here is a comprehensive list of the changes.

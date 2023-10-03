@@ -41,14 +41,11 @@ public interface LcpAuthenticating {
      * @param license Information to show to the user about the license being opened.
      * @param reason Reason why the passphrase is requested. It should be used to prompt the user.
      * @param allowUserInteraction Indicates whether the user can be prompted for their passphrase.
-     * @param sender Free object that can be used by reading apps to give some UX context when
-     *        presenting dialogs.
      */
     public suspend fun retrievePassphrase(
         license: AuthenticatedLicense,
         reason: AuthenticationReason,
-        allowUserInteraction: Boolean,
-        sender: Any? = null
+        allowUserInteraction: Boolean
     ): String?
 
     public enum class AuthenticationReason {
@@ -95,7 +92,7 @@ public interface LcpAuthenticating {
         /**
          * Informations about the user owning the license.
          */
-        val user: User?
+        val user: User
             get() = document.user
     }
 }

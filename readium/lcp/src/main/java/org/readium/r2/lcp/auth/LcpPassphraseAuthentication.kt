@@ -22,15 +22,13 @@ public class LcpPassphraseAuthentication(
     override suspend fun retrievePassphrase(
         license: LcpAuthenticating.AuthenticatedLicense,
         reason: LcpAuthenticating.AuthenticationReason,
-        allowUserInteraction: Boolean,
-        sender: Any?
+        allowUserInteraction: Boolean
     ): String? {
         if (reason != LcpAuthenticating.AuthenticationReason.PassphraseNotFound) {
             return fallback?.retrievePassphrase(
                 license,
                 reason,
-                allowUserInteraction = allowUserInteraction,
-                sender = sender
+                allowUserInteraction = allowUserInteraction
             )
         }
 
