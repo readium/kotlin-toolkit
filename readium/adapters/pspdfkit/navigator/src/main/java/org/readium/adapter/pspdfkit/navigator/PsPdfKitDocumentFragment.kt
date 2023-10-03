@@ -162,7 +162,7 @@ public class PsPdfKitDocumentFragment internal constructor(
      * Recreates the [PdfFragment] with the current settings.
      */
     private fun resetPdfFragment() {
-        if (view == null) return
+        if (isStateSaved || view == null) return
         val doc = viewModel.document ?: return
 
         doc.document.pageBinding = settings.readingProgression.pageBinding
