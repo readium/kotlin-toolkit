@@ -6,13 +6,20 @@
 
 package org.readium.adapters.pdfium.navigator
 
+import android.graphics.PointF
+import com.github.barteksc.pdfviewer.PDFView
 import org.readium.r2.navigator.SimplePresentation
 import org.readium.r2.navigator.VisualNavigator
+import org.readium.r2.navigator.input.TapEvent
 import org.readium.r2.navigator.pdf.PdfDocumentFragmentInput
 import org.readium.r2.navigator.pdf.PdfEngineProvider
+import org.readium.r2.navigator.util.SingleFragmentFactory
+import org.readium.r2.navigator.util.createFragmentFactory
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Metadata
 import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.resource.Resource
+import org.readium.r2.shared.util.Url
 
 /**
  * Main component to use the PDF navigator with the PDFium adapter.
@@ -22,19 +29,39 @@ import org.readium.r2.shared.publication.Publication
  */
 @ExperimentalReadiumApi
 public class PdfiumEngineProvider(
-    private val listener: PdfiumDocumentFragment.Listener? = null,
-    private val defaults: PdfiumDefaults = PdfiumDefaults()
+    private val defaults: PdfiumDefaults = PdfiumDefaults(),
+    private val listener: Listener? = null
 ) : PdfEngineProvider<PdfiumSettings, PdfiumPreferences, PdfiumPreferencesEditor> {
 
-    override suspend fun createDocumentFragment(input: PdfDocumentFragmentInput<PdfiumSettings>): PdfiumDocumentFragment =
-        PdfiumDocumentFragment(
-            publication = input.publication,
-            link = input.link,
-            initialPageIndex = input.initialPageIndex,
-            settings = input.settings,
-            appListener = listener,
-            navigatorListener = input.listener
-        )
+    public interface Listener : PdfEngineProvider.Listener {
+
+        /** Called when configuring [PDFView]. */
+        public fun onConfigurePdfView(configurator: PDFView.Configurator) {}
+    }
+
+    override fun createDocumentFragmentFactory(
+        input: PdfDocumentFragmentInput<PdfiumSettings>
+    ): SingleFragmentFactory<PdfiumDocumentFragment> =
+        createFragmentFactory {
+            PdfiumDocumentFragment(
+                publication = input.publication,
+                href = input.href,
+                initialPageIndex = input.pageIndex,
+                initialSettings = input.settings,
+                listener = object : PdfiumDocumentFragment.Listener {
+                    override fun onResourceLoadFailed(href: Url, error: Resource.Exception) {
+                        input.navigatorListener?.onResourceLoadFailed(href, error)
+                    }
+
+                    override fun onConfigurePdfView(configurator: PDFView.Configurator) {
+                        listener?.onConfigurePdfView(configurator)
+                    }
+
+                    override fun onTap(point: PointF): Boolean =
+                        input.inputListener?.onTap(TapEvent(point)) ?: false
+                }
+            )
+        }
 
     override fun computeSettings(metadata: Metadata, preferences: PdfiumPreferences): PdfiumSettings {
         val settingsPolicy = PdfiumSettingsResolver(metadata, defaults)

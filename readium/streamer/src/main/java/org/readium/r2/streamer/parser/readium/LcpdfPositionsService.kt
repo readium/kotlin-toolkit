@@ -10,15 +10,16 @@
 package org.readium.r2.streamer.parser.readium
 
 import org.readium.r2.shared.ExperimentalReadiumApi
-import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.services.PositionsService
+import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.pdf.PdfDocument
 import org.readium.r2.shared.util.pdf.PdfDocumentFactory
 import org.readium.r2.shared.util.pdf.cachedIn
+import timber.log.Timber
 
 /**
  * Creates the [positions] for an LCP protected PDF [Publication] from its reading order and
@@ -95,11 +96,13 @@ internal class LcpdfPositionsService(
     }
 
     private suspend fun openPdfAt(link: Link): PdfDocument? =
-        tryOrLog {
-            pdfFactory
-                .cachedIn(context.services)
-                .open(context.container.get(link.url()), password = null)
-        }
+        pdfFactory
+            .cachedIn(context.services)
+            .open(context.container.get(link.url()), password = null)
+            .getOrElse {
+                Timber.e(it)
+                null
+            }
 
     companion object {
 

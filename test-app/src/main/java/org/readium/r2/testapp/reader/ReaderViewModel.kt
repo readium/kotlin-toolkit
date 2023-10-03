@@ -19,8 +19,10 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import org.readium.r2.navigator.Decoration
 import org.readium.r2.navigator.ExperimentalDecorator
+import org.readium.r2.navigator.epub.EpubNavigatorFragment
+import org.readium.r2.navigator.image.ImageNavigatorFragment
+import org.readium.r2.navigator.pdf.PdfNavigatorFragment
 import org.readium.r2.shared.ExperimentalReadiumApi
-import org.readium.r2.shared.Search
 import org.readium.r2.shared.UserException
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.LocatorCollection
@@ -28,7 +30,9 @@ import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.services.search.SearchIterator
 import org.readium.r2.shared.publication.services.search.SearchTry
 import org.readium.r2.shared.publication.services.search.search
+import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.Url
 import org.readium.r2.testapp.Application
 import org.readium.r2.testapp.data.BookRepository
 import org.readium.r2.testapp.data.model.Highlight
@@ -39,12 +43,15 @@ import org.readium.r2.testapp.utils.EventChannel
 import org.readium.r2.testapp.utils.createViewModelFactory
 import timber.log.Timber
 
-@OptIn(Search::class, ExperimentalDecorator::class, ExperimentalCoroutinesApi::class)
+@OptIn(ExperimentalDecorator::class, ExperimentalCoroutinesApi::class)
 class ReaderViewModel(
     private val bookId: Long,
     private val readerRepository: ReaderRepository,
     private val bookRepository: BookRepository
-) : ViewModel() {
+) : ViewModel(),
+    EpubNavigatorFragment.Listener,
+    ImageNavigatorFragment.Listener,
+    PdfNavigatorFragment.Listener {
 
     val readerInitData =
         try {
@@ -237,6 +244,18 @@ class ReaderViewModel(
     private val pagingSourceFactory = InvalidatingPagingSourceFactory {
         SearchPagingSource(listener = PagingSourceListener())
     }
+
+    // Navigator.Listener
+
+    override fun onResourceLoadFailed(href: Url, error: Resource.Exception) {
+        val message = when (error) {
+            is Resource.Exception.OutOfMemory -> "The resource is too large to be rendered on this device: $href"
+            else -> "Failed to render the resource: $href"
+        }
+        activityChannel.send(Event.Failure(UserException(message, error)))
+    }
+
+    // Search
 
     inner class PagingSourceListener : SearchPagingSource.Listener {
         override suspend fun next(): SearchTry<LocatorCollection?> {

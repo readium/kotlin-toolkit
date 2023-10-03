@@ -88,7 +88,6 @@ public class ImageNavigatorFragment private constructor(
         childFragmentManager.fragmentFactory = createFragmentFactory {
             R2CbzPageFragment(publication) { x, y ->
                 inputListener.onTap(
-                    this,
                     TapEvent(PointF(x, y))
                 )
             }
@@ -142,7 +141,7 @@ public class ImageNavigatorFragment private constructor(
             go(initialLocator)
         }
 
-        return KeyInterceptorView(view, this, inputListener)
+        return KeyInterceptorView(view, inputListener)
     }
 
     override fun onStart() {
