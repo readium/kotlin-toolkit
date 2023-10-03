@@ -18,12 +18,12 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.firstWithRel
-import org.readium.r2.shared.resource.DefaultArchiveFactory
-import org.readium.r2.shared.resource.FileResource
-import org.readium.r2.shared.resource.ResourceContainer
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
+import org.readium.r2.shared.util.resource.FileResource
+import org.readium.r2.shared.util.resource.FileZipArchiveFactory
+import org.readium.r2.shared.util.resource.ResourceContainer
 import org.readium.r2.shared.util.toUrl
 import org.readium.r2.streamer.parseBlocking
 import org.readium.r2.streamer.parser.PublicationParser
@@ -37,7 +37,7 @@ class ImageParserTest {
     private val cbzAsset = runBlocking {
         val file = fileForResource("futuristic_tales.cbz")
         val resource = FileResource(file, mediaType = MediaType.CBZ)
-        val archive = DefaultArchiveFactory(MediaTypeRetriever()).create(
+        val archive = FileZipArchiveFactory(MediaTypeRetriever()).create(
             resource,
             password = null
         ).getOrNull()!!

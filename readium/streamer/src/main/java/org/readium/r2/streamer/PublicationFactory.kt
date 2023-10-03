@@ -8,13 +8,12 @@ package org.readium.r2.streamer
 
 import android.content.Context
 import org.readium.r2.shared.PdfSupport
-import org.readium.r2.shared.asset.Asset
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.protection.AdeptFallbackContentProtection
 import org.readium.r2.shared.publication.protection.ContentProtection
 import org.readium.r2.shared.publication.protection.LcpFallbackContentProtection
-import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.asset.Asset
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.http.DefaultHttpClient
 import org.readium.r2.shared.util.http.HttpClient
@@ -22,6 +21,7 @@ import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.mediatype.FormatRegistry
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 import org.readium.r2.shared.util.pdf.PdfDocumentFactory
+import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.streamer.parser.PublicationParser
 import org.readium.r2.streamer.parser.audio.AudioParser
 import org.readium.r2.streamer.parser.epub.EpubParser
@@ -132,7 +132,7 @@ public class PublicationFactory(
      * @return A [Publication] or a [Publication.OpenError] in case of failure.
      */
     public suspend fun open(
-        asset: Asset,
+        asset: org.readium.r2.shared.util.asset.Asset,
         contentProtectionScheme: ContentProtection.Scheme? = null,
         credentials: String? = null,
         allowUserInteraction: Boolean,
@@ -163,7 +163,7 @@ public class PublicationFactory(
     }
 
     private suspend fun openUnprotected(
-        asset: Asset,
+        asset: org.readium.r2.shared.util.asset.Asset,
         onCreatePublication: Publication.Builder.() -> Unit,
         warnings: WarningLogger?
     ): Try<Publication, Publication.OpenError> {
@@ -173,7 +173,7 @@ public class PublicationFactory(
     }
 
     private suspend fun openProtected(
-        asset: Asset,
+        asset: org.readium.r2.shared.util.asset.Asset,
         contentProtectionScheme: ContentProtection.Scheme,
         credentials: String?,
         allowUserInteraction: Boolean,

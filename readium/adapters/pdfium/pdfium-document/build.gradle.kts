@@ -40,7 +40,7 @@ android {
     buildFeatures {
         viewBinding = true
     }
-    namespace = "org.readium.adapters.pdfium.document"
+    namespace = "org.readium.adapter.pdfium.document"
 }
 
 kotlin {

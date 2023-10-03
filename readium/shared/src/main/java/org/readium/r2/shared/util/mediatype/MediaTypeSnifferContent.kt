@@ -7,9 +7,9 @@ import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import org.readium.r2.shared.extensions.read
 import org.readium.r2.shared.extensions.tryOrNull
-import org.readium.r2.shared.parser.xml.ElementNode
-import org.readium.r2.shared.parser.xml.XmlParser
 import org.readium.r2.shared.publication.Manifest
+import org.readium.r2.shared.util.xml.ElementNode
+import org.readium.r2.shared.util.xml.XmlParser
 
 /**
  * Provides read access to an asset content.

@@ -41,7 +41,7 @@ android {
     buildFeatures {
         viewBinding = true
     }
-    namespace = "org.readium.adapters.pdfium.navigator"
+    namespace = "org.readium.adapter.pdfium.navigator"
 }
 
 kotlin {

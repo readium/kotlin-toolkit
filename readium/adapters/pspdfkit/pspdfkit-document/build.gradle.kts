@@ -40,7 +40,7 @@ android {
     buildFeatures {
         viewBinding = true
     }
-    namespace = "org.readium.adapters.pspdfkit.document"
+    namespace = "org.readium.adapter.pspdfkit.document"
 }
 
 kotlin {

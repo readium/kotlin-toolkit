@@ -54,8 +54,8 @@ import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.PublicationId
 import org.readium.r2.shared.publication.indexOfFirstWithHref
-import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.shared.util.toUri
 import timber.log.Timber
 

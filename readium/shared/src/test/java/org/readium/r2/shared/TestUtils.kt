@@ -17,7 +17,7 @@ import org.json.JSONObject
 import org.junit.Assert.assertEquals
 import org.readium.r2.shared.extensions.toListTest
 import org.readium.r2.shared.extensions.toMapTest
-import org.readium.r2.shared.resource.Resource
+import org.readium.r2.shared.util.resource.Resource
 
 /**
  * Asserts that two [JSONObject] are equal.

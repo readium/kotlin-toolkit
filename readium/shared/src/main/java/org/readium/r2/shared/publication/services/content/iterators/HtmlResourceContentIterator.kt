@@ -28,12 +28,12 @@ import org.readium.r2.shared.publication.services.content.Content.ImageElement
 import org.readium.r2.shared.publication.services.content.Content.TextElement
 import org.readium.r2.shared.publication.services.content.Content.VideoElement
 import org.readium.r2.shared.publication.services.positionsByReadingOrder
-import org.readium.r2.shared.resource.Resource
-import org.readium.r2.shared.resource.readAsString
 import org.readium.r2.shared.util.Language
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.shared.util.resource.Resource
+import org.readium.r2.shared.util.resource.readAsString
 import org.readium.r2.shared.util.use
 import timber.log.Timber
 

@@ -14,12 +14,12 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
-import org.readium.adapters.pdfium.navigator.PdfiumPreferences
-import org.readium.adapters.pdfium.navigator.PdfiumSettings
+import org.readium.adapter.exoplayer.ExoPlayerPreferences
+import org.readium.adapter.exoplayer.ExoPlayerSettings
+import org.readium.adapter.pdfium.navigator.PdfiumPreferences
+import org.readium.adapter.pdfium.navigator.PdfiumSettings
 import org.readium.r2.navigator.epub.EpubPreferences
 import org.readium.r2.navigator.epub.EpubSettings
-import org.readium.r2.navigator.media3.exoplayer.ExoPlayerPreferences
-import org.readium.r2.navigator.media3.exoplayer.ExoPlayerSettings
 import org.readium.r2.navigator.preferences.Configurable
 import org.readium.r2.navigator.preferences.PreferencesEditor
 import org.readium.r2.shared.ExperimentalReadiumApi

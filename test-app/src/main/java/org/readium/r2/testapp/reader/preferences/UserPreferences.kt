@@ -18,10 +18,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import org.readium.adapters.pdfium.navigator.PdfiumPreferencesEditor
+import org.readium.adapter.exoplayer.ExoPlayerPreferencesEditor
+import org.readium.adapter.pdfium.navigator.PdfiumPreferencesEditor
+import org.readium.navigator.media.tts.android.AndroidTtsEngine
 import org.readium.r2.navigator.epub.EpubPreferencesEditor
-import org.readium.r2.navigator.media3.exoplayer.ExoPlayerPreferencesEditor
-import org.readium.r2.navigator.media3.tts.android.AndroidTtsEngine
 import org.readium.r2.navigator.preferences.*
 import org.readium.r2.navigator.preferences.TextAlign as ReadiumTextAlign
 import org.readium.r2.shared.ExperimentalReadiumApi

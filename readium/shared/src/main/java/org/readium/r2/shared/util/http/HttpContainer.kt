@@ -6,12 +6,12 @@
 
 package org.readium.r2.shared.util.http
 
-import org.readium.r2.shared.resource.Container
-import org.readium.r2.shared.resource.FailureResource
-import org.readium.r2.shared.resource.Resource
-import org.readium.r2.shared.resource.toEntry
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.resource.Container
+import org.readium.r2.shared.util.resource.FailureResource
+import org.readium.r2.shared.util.resource.Resource
+import org.readium.r2.shared.util.resource.toEntry
 
 /**
  * Fetches remote resources through HTTP.

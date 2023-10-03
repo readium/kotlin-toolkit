@@ -9,15 +9,15 @@ import kotlinx.coroutines.runBlocking
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.readium.r2.shared.Fixtures
-import org.readium.r2.shared.resource.DefaultArchiveFactory
 import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.resource.FileZipArchiveFactory
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows.shadowOf
 
 @RunWith(RobolectricTestRunner::class)
 class MediaTypeRetrieverTest {
 
-    val fixtures = Fixtures("format")
+    val fixtures = Fixtures("util/mediatype")
 
     private val retriever = MediaTypeRetriever()
 
@@ -497,7 +497,7 @@ class MediaTypeRetrieverTest {
         file: File,
         hints: MediaTypeHints = MediaTypeHints()
     ): MediaType? {
-        val archive = assertNotNull(DefaultArchiveFactory(this).open(file).getOrNull())
+        val archive = assertNotNull(FileZipArchiveFactory(this).open(file).getOrNull())
 
         return retrieve(
             hints,

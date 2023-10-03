@@ -11,7 +11,7 @@ import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.publication.ServiceFactory
 import org.readium.r2.shared.publication.services.content.iterators.PublicationContentIterator
 import org.readium.r2.shared.publication.services.content.iterators.ResourceContentIteratorFactory
-import org.readium.r2.shared.resource.Container
+import org.readium.r2.shared.util.resource.Container
 
 /**
  * Provides a way to extract the raw [Content] of a [Publication].

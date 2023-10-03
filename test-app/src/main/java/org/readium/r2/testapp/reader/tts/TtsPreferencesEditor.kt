@@ -6,9 +6,9 @@
 
 package org.readium.r2.testapp.reader.tts
 
-import org.readium.r2.navigator.media3.tts.android.AndroidTtsEngine
-import org.readium.r2.navigator.media3.tts.android.AndroidTtsPreferences
-import org.readium.r2.navigator.media3.tts.android.AndroidTtsPreferencesEditor
+import org.readium.navigator.media.tts.android.AndroidTtsEngine
+import org.readium.navigator.media.tts.android.AndroidTtsPreferences
+import org.readium.navigator.media.tts.android.AndroidTtsPreferencesEditor
 import org.readium.r2.navigator.preferences.*
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.Language

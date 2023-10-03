@@ -12,10 +12,10 @@ package org.readium.r2.lcp
 import kotlin.math.ceil
 import org.readium.r2.shared.extensions.coerceIn
 import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.resource.Resource
-import org.readium.r2.shared.resource.mapCatching
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.getOrThrow
+import org.readium.r2.shared.util.resource.Resource
+import org.readium.r2.shared.util.resource.mapCatching
 import org.readium.r2.shared.util.use
 import timber.log.Timber
 

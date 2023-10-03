@@ -11,11 +11,11 @@ import androidx.lifecycle.LiveData
 import java.io.File
 import kotlinx.coroutines.flow.Flow
 import org.joda.time.DateTime
-import org.readium.r2.shared.asset.AssetType
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.indexOfFirstWithHref
 import org.readium.r2.shared.publication.protection.ContentProtection
+import org.readium.r2.shared.util.asset.AssetType
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.testapp.data.db.BooksDao
 import org.readium.r2.testapp.data.model.Book

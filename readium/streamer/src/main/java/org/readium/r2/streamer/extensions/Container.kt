@@ -10,11 +10,11 @@
 package org.readium.r2.streamer.extensions
 
 import java.io.File
-import org.readium.r2.shared.parser.xml.ElementNode
-import org.readium.r2.shared.resource.Container
-import org.readium.r2.shared.resource.readAsXml
 import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.resource.Container
+import org.readium.r2.shared.util.resource.readAsXml
 import org.readium.r2.shared.util.use
+import org.readium.r2.shared.util.xml.ElementNode
 
 /** Returns the resource data as an XML Document at the given [path], or null. */
 internal suspend fun Container.readAsXmlOrNull(path: String): ElementNode? =

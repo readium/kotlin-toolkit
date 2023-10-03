@@ -19,8 +19,8 @@ import androidx.media3.session.MediaSession
 import androidx.media3.session.MediaSessionService
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
-import org.readium.r2.navigator.media3.api.Media3Adapter
-import org.readium.r2.navigator.media3.api.MediaNavigator
+import org.readium.navigator.media.common.Media3Adapter
+import org.readium.navigator.media.common.MediaNavigator
 import org.readium.r2.shared.ExperimentalReadiumApi
 import timber.log.Timber
 

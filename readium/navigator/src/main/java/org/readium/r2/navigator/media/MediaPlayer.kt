@@ -15,7 +15,7 @@ import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.PublicationId
-import org.readium.r2.shared.resource.Resource
+import org.readium.r2.shared.util.resource.Resource
 
 /**
  * Media player compatible with Android's MediaSession and handling the playback for

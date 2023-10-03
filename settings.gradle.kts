@@ -68,9 +68,25 @@ include(":readium:navigator")
 project(":readium:navigator")
     .name = "readium-navigator"
 
+include(":readium:navigators:media:common")
+project(":readium:navigators:media:common")
+    .name = "readium-navigator-media-common"
+
+include(":readium:navigators:media:audio")
+project(":readium:navigators:media:audio")
+    .name = "readium-navigator-media-audio"
+
+include(":readium:navigators:media:tts")
+project(":readium:navigators:media:tts")
+    .name = "readium-navigator-media-tts"
+
 include(":readium:navigator-media2")
 project(":readium:navigator-media2")
     .name = "readium-navigator-media2"
+
+include(":readium:adapters:exoplayer")
+project(":readium:adapters:exoplayer")
+    .name = "readium-adapter-exoplayer"
 
 include(":readium:opds")
 project(":readium:opds")

@@ -14,19 +14,19 @@ import org.readium.r2.shared.extensions.coerceFirstNonNegative
 import org.readium.r2.shared.extensions.inflate
 import org.readium.r2.shared.extensions.requireLengthFitInt
 import org.readium.r2.shared.publication.encryption.Encryption
-import org.readium.r2.shared.resource.Container
-import org.readium.r2.shared.resource.FailureResource
-import org.readium.r2.shared.resource.Resource
-import org.readium.r2.shared.resource.ResourceTry
-import org.readium.r2.shared.resource.TransformingResource
-import org.readium.r2.shared.resource.flatMap
-import org.readium.r2.shared.resource.flatMapCatching
-import org.readium.r2.shared.resource.mapCatching
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.getOrThrow
+import org.readium.r2.shared.util.resource.Container
+import org.readium.r2.shared.util.resource.FailureResource
+import org.readium.r2.shared.util.resource.Resource
+import org.readium.r2.shared.util.resource.ResourceTry
+import org.readium.r2.shared.util.resource.TransformingResource
+import org.readium.r2.shared.util.resource.flatMap
+import org.readium.r2.shared.util.resource.flatMapCatching
+import org.readium.r2.shared.util.resource.mapCatching
 
 /**
  * Decrypts a resource protected with LCP.

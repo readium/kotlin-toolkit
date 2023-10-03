@@ -24,15 +24,15 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.extensions.tryOr
-import org.readium.r2.shared.resource.FileResource
-import org.readium.r2.shared.units.Hz
-import org.readium.r2.shared.units.hz
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.downloads.DownloadManager
 import org.readium.r2.shared.util.mediatype.FormatRegistry
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
+import org.readium.r2.shared.util.resource.FileResource
 import org.readium.r2.shared.util.toUri
+import org.readium.r2.shared.util.units.Hz
+import org.readium.r2.shared.util.units.hz
 
 /**
  * A [DownloadManager] implementation using the Android download service.
