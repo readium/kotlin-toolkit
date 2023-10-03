@@ -78,14 +78,35 @@ public class PsPdfKitDocumentFragment internal constructor(
     }
 
     private var pdfFragment: PdfFragment? = null
+        set(value) {
+            field = value
+            value?.apply {
+                setOnPreparePopupToolbarListener(psPdfKitListener)
+                addDocumentListener(psPdfKitListener)
+            }
+        }
+
     private val psPdfKitListener = PsPdfKitListener()
 
     private class DocumentViewModel(
         document: suspend () -> ResourceTry<PsPdfKitDocument>
     ) : ViewModel() {
 
-        val document: Deferred<ResourceTry<PsPdfKitDocument>> =
+        private val _document: Deferred<ResourceTry<PsPdfKitDocument>> =
             viewModelScope.async { document() }
+
+        suspend fun loadDocument(): ResourceTry<PsPdfKitDocument> =
+            _document.await()
+
+        @OptIn(ExperimentalCoroutinesApi::class)
+        val document: PsPdfKitDocument? get() =
+            _document.run {
+                if (isCompleted) {
+                    getCompleted().getOrNull()
+                } else {
+                    null
+                }
+            }
     }
 
     private val viewModel: DocumentViewModel by viewModels {
@@ -103,14 +124,13 @@ public class PsPdfKitDocumentFragment internal constructor(
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // We don't support fragment restoration for the PdfFragment, as we want to recreate a fresh
-        // instance in [reset]. To prevent restoring (and crashing) the PdfFragment without a
-        // document source, we remove it from the fragment manager.
-        (childFragmentManager.findFragmentByTag(pdfFragmentTag) as? PdfFragment)
-            ?.let { fragment ->
-                childFragmentManager.commitNow {
-                    remove(fragment)
+        // Restores the PdfFragment after a configuration change.
+        pdfFragment = (childFragmentManager.findFragmentByTag(pdfFragmentTag) as? PdfFragment)
+            ?.apply {
+                val document = checkNotNull(viewModel.document) {
+                    "Should have a document when restoring the PdfFragment."
                 }
+                setCustomPdfSources(document.document.documentSources)
             }
     }
 
@@ -127,26 +147,27 @@ public class PsPdfKitDocumentFragment internal constructor(
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.document.await()
-                .onFailure { error ->
-                    listener?.onResourceLoadFailed(href, error)
-                }
-                .onSuccess { reset() }
+        if (pdfFragment == null) {
+            viewLifecycleOwner.lifecycleScope.launch {
+                viewModel.loadDocument()
+                    .onFailure { error ->
+                        listener?.onResourceLoadFailed(href, error)
+                    }
+                    .onSuccess { resetPdfFragment() }
+            }
         }
     }
 
-    private fun reset() {
-        val doc = viewModel.document.tryGetCompleted()?.getOrNull() ?: return
+    /**
+     * Recreates the [PdfFragment] with the current settings.
+     */
+    private fun resetPdfFragment() {
         if (view == null) return
+        val doc = viewModel.document ?: return
 
         doc.document.pageBinding = settings.readingProgression.pageBinding
 
         val fragment = PdfFragment.newInstance(doc.document, configForSettings(settings))
-            .apply {
-                setOnPreparePopupToolbarListener(psPdfKitListener)
-                addDocumentListener(psPdfKitListener)
-            }
             .also { pdfFragment = it }
 
         childFragmentManager.commitNow {
@@ -230,7 +251,7 @@ public class PsPdfKitDocumentFragment internal constructor(
         }
 
         this.settings = settings
-        reset()
+        resetPdfFragment()
     }
 
     private inner class PsPdfKitListener : DocumentListener, OnPreparePopupToolbarListener {
@@ -309,13 +330,5 @@ public class PsPdfKitDocumentFragment internal constructor(
             Spread.AUTO -> PageLayoutMode.AUTO
             Spread.ALWAYS -> PageLayoutMode.DOUBLE
             Spread.NEVER -> PageLayoutMode.SINGLE
-        }
-
-    @OptIn(ExperimentalCoroutinesApi::class)
-    private fun <T> Deferred<T>.tryGetCompleted(): T? =
-        if (isCompleted) {
-            getCompleted()
-        } else {
-            null
         }
 }
