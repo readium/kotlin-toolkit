@@ -41,7 +41,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.parcelize.Parcelize
-import org.readium.navigators.media.tts.android.AndroidTtsEngine
+import org.readium.navigator.media.tts.android.AndroidTtsEngine
 import org.readium.r2.navigator.*
 import org.readium.r2.navigator.input.InputListener
 import org.readium.r2.navigator.input.TapEvent

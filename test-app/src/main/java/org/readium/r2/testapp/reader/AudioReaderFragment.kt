@@ -23,10 +23,10 @@ import kotlin.time.DurationUnit
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
-import org.readium.adapters.exoplayer.ExoPlayerPreferences
-import org.readium.adapters.exoplayer.ExoPlayerSettings
-import org.readium.navigators.media.common.MediaNavigator
-import org.readium.navigators.media.common.TimeBasedMediaNavigator
+import org.readium.adapter.exoplayer.ExoPlayerPreferences
+import org.readium.adapter.exoplayer.ExoPlayerSettings
+import org.readium.navigator.media.common.MediaNavigator
+import org.readium.navigator.media.common.TimeBasedMediaNavigator
 import org.readium.r2.navigator.preferences.Configurable
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Locator

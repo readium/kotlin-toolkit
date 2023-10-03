@@ -8,13 +8,13 @@
 
 package org.readium.r2.testapp.reader
 
-import org.readium.adapters.exoplayer.ExoPlayerNavigator
-import org.readium.adapters.exoplayer.ExoPlayerNavigatorFactory
-import org.readium.adapters.exoplayer.ExoPlayerPreferences
-import org.readium.adapters.pdfium.navigator.PdfiumNavigatorFactory
-import org.readium.adapters.pdfium.navigator.PdfiumPreferences
-import org.readium.navigators.media.tts.AndroidTtsNavigatorFactory
-import org.readium.navigators.media.tts.android.AndroidTtsPreferences
+import org.readium.adapter.exoplayer.ExoPlayerNavigator
+import org.readium.adapter.exoplayer.ExoPlayerNavigatorFactory
+import org.readium.adapter.exoplayer.ExoPlayerPreferences
+import org.readium.adapter.pdfium.navigator.PdfiumNavigatorFactory
+import org.readium.adapter.pdfium.navigator.PdfiumPreferences
+import org.readium.navigator.media.tts.AndroidTtsNavigatorFactory
+import org.readium.navigator.media.tts.android.AndroidTtsPreferences
 import org.readium.r2.navigator.epub.EpubNavigatorFactory
 import org.readium.r2.navigator.epub.EpubPreferences
 import org.readium.r2.shared.ExperimentalReadiumApi

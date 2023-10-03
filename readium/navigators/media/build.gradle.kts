@@ -37,7 +37,7 @@ android {
             proguardFiles(getDefaultProguardFile("proguard-android.txt"))
         }
     }
-    namespace = "org.readium.navigators.media"
+    namespace = "org.readium.navigator.media"
 }
 
 kotlin {

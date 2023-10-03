@@ -93,6 +93,13 @@ for an example.
 
 To avoid conflicts when merging your app resources, all resources declared in the Readium toolkit now have the prefix `readium_`. This means that you must rename any layouts or strings you have overridden. Here is a comprehensive list of the changes.
 
+### Pdfium and PSPDFKit adapters' namespaces slightly changed
+
+`org.readium.adapters.pspdfkit.document` moved to `org.readium.adapter.pdspdfKit.document`
+`org.readium.adapters.pspdfkit.navigator` moved to `org.readium.adapter.pdspdfKit.navigator`
+`org.readium.adapters.pdfium.document` moved to `org.readium.adapter.pdfium.document`
+`org.readium.adapters.pdfium.navigator` moved to `org.readium.adapter.pdfium.navigator`
+
 #### Layouts
 
 | Deprecated                  | New                                           |

@@ -8,7 +8,7 @@ package org.readium.r2.testapp
 
 import android.content.Context
 import android.view.View
-import org.readium.adapters.pdfium.document.PdfiumDocumentFactory
+import org.readium.adapter.pdfium.document.PdfiumDocumentFactory
 import org.readium.r2.lcp.LcpException
 import org.readium.r2.lcp.LcpService
 import org.readium.r2.lcp.auth.LcpDialogAuthentication

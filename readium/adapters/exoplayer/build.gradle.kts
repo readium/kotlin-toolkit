@@ -41,7 +41,7 @@ android {
     buildFeatures {
         viewBinding = true
     }
-    namespace = "org.readium.adapters.exoplayer"
+    namespace = "org.readium.adapter.exoplayer"
 }
 
 kotlin {

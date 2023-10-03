@@ -11,10 +11,10 @@ import androidx.annotation.StringRes
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences as JetpackPreferences
 import org.json.JSONObject
-import org.readium.adapters.exoplayer.ExoPlayerEngineProvider
-import org.readium.adapters.pdfium.navigator.PdfiumEngineProvider
-import org.readium.navigators.media.audio.AudioNavigatorFactory
-import org.readium.navigators.media.tts.TtsNavigatorFactory
+import org.readium.adapter.exoplayer.ExoPlayerEngineProvider
+import org.readium.adapter.pdfium.navigator.PdfiumEngineProvider
+import org.readium.navigator.media.audio.AudioNavigatorFactory
+import org.readium.navigator.media.tts.TtsNavigatorFactory
 import org.readium.r2.navigator.epub.EpubNavigatorFactory
 import org.readium.r2.navigator.pdf.PdfNavigatorFactory
 import org.readium.r2.shared.ExperimentalReadiumApi
