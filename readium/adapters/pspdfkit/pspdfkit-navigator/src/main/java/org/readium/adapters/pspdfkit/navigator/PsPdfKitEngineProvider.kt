@@ -6,18 +6,21 @@
 
 package org.readium.adapters.pspdfkit.navigator
 
-import android.content.Context
-import org.readium.adapters.pspdfkit.document.PsPdfKitDocumentFactory
+import android.graphics.PointF
+import com.pspdfkit.configuration.PdfConfiguration
 import org.readium.r2.navigator.SimplePresentation
 import org.readium.r2.navigator.VisualNavigator
-import org.readium.r2.navigator.pdf.PdfDocumentFragment
+import org.readium.r2.navigator.input.TapEvent
 import org.readium.r2.navigator.pdf.PdfDocumentFragmentInput
 import org.readium.r2.navigator.pdf.PdfEngineProvider
 import org.readium.r2.navigator.preferences.Axis
+import org.readium.r2.navigator.util.SingleFragmentFactory
+import org.readium.r2.navigator.util.createFragmentFactory
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Metadata
 import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.util.pdf.cachedIn
+import org.readium.r2.shared.resource.Resource
+import org.readium.r2.shared.util.Url
 
 /**
  * Main component to use the PDF navigator with PSPDFKit.
@@ -27,26 +30,38 @@ import org.readium.r2.shared.util.pdf.cachedIn
  */
 @ExperimentalReadiumApi
 public class PsPdfKitEngineProvider(
-    private val context: Context,
-    private val defaults: PsPdfKitDefaults = PsPdfKitDefaults()
+    private val defaults: PsPdfKitDefaults = PsPdfKitDefaults(),
+    private val listener: Listener? = null
 ) : PdfEngineProvider<PsPdfKitSettings, PsPdfKitPreferences, PsPdfKitPreferencesEditor> {
 
-    override suspend fun createDocumentFragment(
-        input: PdfDocumentFragmentInput<PsPdfKitSettings>
-    ): PdfDocumentFragment<PsPdfKitSettings> {
-        val publication = input.publication
-        val document = PsPdfKitDocumentFactory(context)
-            .cachedIn(publication)
-            .open(publication.get(input.link), null)
+    public interface Listener : PdfEngineProvider.Listener {
 
-        return PsPdfKitDocumentFragment(
-            publication = publication,
-            document = document,
-            initialPageIndex = input.initialPageIndex,
-            settings = input.settings,
-            listener = input.listener
-        )
+        /** Called when configuring a new PDF fragment. */
+        public fun onConfigurePdfView(builder: PdfConfiguration.Builder): PdfConfiguration.Builder = builder
     }
+
+    override fun createDocumentFragmentFactory(
+        input: PdfDocumentFragmentInput<PsPdfKitSettings>
+    ): SingleFragmentFactory<PsPdfKitDocumentFragment> =
+        createFragmentFactory {
+            PsPdfKitDocumentFragment(
+                publication = input.publication,
+                href = input.href,
+                initialPageIndex = input.pageIndex,
+                initialSettings = input.settings,
+                listener = object : PsPdfKitDocumentFragment.Listener {
+                    override fun onResourceLoadFailed(href: Url, error: Resource.Exception) {
+                        input.navigatorListener?.onResourceLoadFailed(href, error)
+                    }
+
+                    override fun onConfigurePdfView(builder: PdfConfiguration.Builder): PdfConfiguration.Builder =
+                        listener?.onConfigurePdfView(builder) ?: builder
+
+                    override fun onTap(point: PointF): Boolean =
+                        input.inputListener?.onTap(TapEvent(point)) ?: false
+                }
+            )
+        }
 
     override fun computeSettings(metadata: Metadata, preferences: PsPdfKitPreferences): PsPdfKitSettings {
         val settingsPolicy = PsPdfKitSettingsResolver(metadata, defaults)

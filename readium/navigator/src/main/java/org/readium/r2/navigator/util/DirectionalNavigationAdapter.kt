@@ -33,6 +33,7 @@ import org.readium.r2.shared.ExperimentalReadiumApi
  */
 @ExperimentalReadiumApi
 public class DirectionalNavigationAdapter(
+    private val navigator: VisualNavigator,
     private val tapEdges: Set<TapEdge> = setOf(TapEdge.Horizontal),
     private val handleTapsWhileScrolling: Boolean = false,
     private val minimumHorizontalEdgeSize: Double = 80.0,
@@ -49,7 +50,7 @@ public class DirectionalNavigationAdapter(
         Horizontal, Vertical;
     }
 
-    override fun onTap(navigator: VisualNavigator, event: TapEvent): Boolean {
+    override fun onTap(event: TapEvent): Boolean {
         if (navigator.presentation.value.scroll && !handleTapsWhileScrolling) {
             return false
         }
@@ -89,7 +90,7 @@ public class DirectionalNavigationAdapter(
         return false
     }
 
-    override fun onKey(navigator: VisualNavigator, event: KeyEvent): Boolean {
+    override fun onKey(event: KeyEvent): Boolean {
         if (event.type != KeyEvent.Type.Down || event.modifiers.isNotEmpty()) {
             return false
         }

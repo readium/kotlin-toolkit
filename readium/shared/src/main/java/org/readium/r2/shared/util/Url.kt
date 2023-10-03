@@ -13,6 +13,7 @@ import java.io.File
 import java.net.URI
 import java.net.URL
 import kotlinx.parcelize.Parcelize
+import org.readium.r2.shared.DelicateReadiumApi
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.extensions.percentEncodedPath
 import org.readium.r2.shared.extensions.tryOrNull
@@ -41,6 +42,19 @@ public sealed class Url : Parcelable {
             if (!url.isValidUrl()) return null
             return invoke(Uri.parse(url))
         }
+
+        /**
+         * Creates an [Url] from a legacy HREF.
+         *
+         * For example, if it is a relative path such as `/dir/my chapter.html`, it will be
+         * converted to the valid relative URL `dir/my%20chapter.html`.
+         *
+         * Only use this API when you are upgrading to Readium 3.x and migrating the HREFs stored in
+         * your database. See the 3.0 migration guide for more information.
+         */
+        @DelicateReadiumApi
+        public fun fromLegacyHref(href: String): Url? =
+            AbsoluteUrl(href) ?: fromDecodedPath(href.removePrefix("/"))
 
         internal operator fun invoke(uri: Uri): Url? =
             if (uri.isAbsolute) {
@@ -286,7 +300,6 @@ public class RelativeUrl private constructor(override val uri: Uri) : Url() {
         internal operator fun invoke(uri: Uri): RelativeUrl? =
             tryOrNull {
                 require(uri.isRelative)
-                require(uri.isHierarchical)
                 RelativeUrl(uri)
             }
     }

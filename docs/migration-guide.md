@@ -29,6 +29,55 @@ dependencies {
 }
 ```
 
+### Migration of HREFs and Locators (bookmarks, annotations, etc.)
+
+:warning: This requires a database migration in your application, if you were persisting `Locator` objects.
+
+In Readium v2.x, a `Link` or `Locator`'s `href` could be either:
+
+* a valid absolute URL for a streamed publication, e.g. `https://domain.com/isbn/dir/my%20chapter.html`,
+* a percent-decoded path for a local archive such as an EPUB, e.g. `/dir/my chapter.html`.
+    * Note that it was relative to the root of the archive (`/`).
+
+To improve the interoperability with other Readium toolkits (in particular the Readium Web Toolkits, which only work in a streaming context) **Readium v3 now generates and expects valid URLs** for `Locator` and `Link`'s `href`.
+
+* `https://domain.com/isbn/dir/my%20chapter.html` is left unchanged, as it was already a valid URL.
+* `/dir/my chapter.html` becomes the relative URL path `dir/my%20chapter.html`
+    * We dropped the `/` prefix to avoid issues when resolving to a base URL.
+    * Special characters are percent-encoded.
+    
+**You must migrate the HREFs or Locators stored in your database** when upgrading to Readium 3. To assist you, two helpers are provided: `Url.fromLegacyHref()` and `Locator.fromLegacyJSON()`.
+
+Here's an example of a Jetpack Room migration that can serve as inspiration:
+
+```kotlin
+val MIGRATION_HREF = object : Migration(1, 2) {
+
+    override fun migrate(db: SupportSQLiteDatabase) {
+        val normalizedHrefs: Map<Long, String> = buildMap {
+            db.query("SELECT id, href FROM bookmarks").use { cursor ->
+                while (cursor.moveToNext()) {
+                    val id = cursor.getLong(0)
+                    val href = cursor.getString(1)
+
+                    val normalizedHref = Url.fromLegacyHref(href)?.toString()
+                    if (normalizedHref != null) {
+                        put(id, normalizedHref)
+                    }
+                }
+            }
+        }
+
+        val stmt = db.compileStatement("UPDATE bookmarks SET href = ? WHERE id = ?")
+        for ((id, href) in normalizedHrefs) {
+            stmt.bindString(1, href)
+            stmt.bindLong(2, id)
+            stmt.executeUpdateDelete()
+        }
+    }
+}
+```
+
 ### LcpDialogAuthentication now supports configuration changes.
 
 You no longer need to pass an activity, fragment or view as `sender` to `retrievePassphrase`.

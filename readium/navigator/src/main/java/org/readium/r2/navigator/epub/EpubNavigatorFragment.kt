@@ -419,7 +419,7 @@ public class EpubNavigatorFragment internal constructor(
 
         // Fixed layout publications cannot intercept JS events yet.
         if (publication.metadata.presentation.layout == EpubLayout.FIXED) {
-            view = KeyInterceptorView(view, this, inputListener)
+            view = KeyInterceptorView(view, inputListener)
         }
 
         return view
@@ -757,7 +757,7 @@ public class EpubNavigatorFragment internal constructor(
             config.javascriptInterfaces.mapValues { (_, factory) -> factory(link) }
 
         override fun onTap(point: PointF): Boolean =
-            inputListener.onTap(this@EpubNavigatorFragment, TapEvent(point))
+            inputListener.onTap(TapEvent(point))
 
         override fun onDragStart(event: R2BasicWebView.DragEvent): Boolean =
             onDrag(DragEvent.Type.Start, event)
@@ -770,7 +770,6 @@ public class EpubNavigatorFragment internal constructor(
 
         private fun onDrag(type: DragEvent.Type, event: R2BasicWebView.DragEvent): Boolean =
             inputListener.onDrag(
-                this@EpubNavigatorFragment,
                 DragEvent(
                     type = type,
                     start = event.startPoint.adjustedToViewport(),
@@ -779,7 +778,7 @@ public class EpubNavigatorFragment internal constructor(
             )
 
         override fun onKey(event: KeyEvent): Boolean =
-            inputListener.onKey(this@EpubNavigatorFragment, event)
+            inputListener.onKey(event)
 
         override fun onDecorationActivated(
             id: DecorationId,

@@ -20,6 +20,8 @@ import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.ReadingProgression as PublicationReadingProgression
+import org.readium.r2.shared.resource.Resource
+import org.readium.r2.shared.util.Url
 
 /**
  * Base interface for a navigator rendering a publication.
@@ -75,6 +77,11 @@ public interface Navigator {
     public fun goBackward(animated: Boolean = false, completion: () -> Unit = {}): Boolean
 
     public interface Listener {
+
+        /**
+         * Called when a publication resource failed to be loaded.
+         */
+        public fun onResourceLoadFailed(href: Url, error: Resource.Exception) {}
 
         /**
          * Called when the navigator jumps to an explicit location, which might break the linear
