@@ -79,6 +79,7 @@ public interface VisualNavigator : Navigator {
 @ExperimentalReadiumApi
 public interface DirectionalNavigator : VisualNavigator {
 
+    @ExperimentalReadiumApi
     public interface Listener : VisualNavigator.Listener
 
     /**
@@ -92,7 +93,7 @@ public interface DirectionalNavigator : VisualNavigator {
         /**
          * Horizontal direction of progression across resources.
          */
-        public val readingProgression: org.readium.r2.navigator.preferences.ReadingProgression
+        public val readingProgression: ReadingProgression
 
         /**
          * If the overflow of the content is managed through scroll instead of pagination.
@@ -122,10 +123,10 @@ public interface DirectionalNavigator : VisualNavigator {
 @ExperimentalReadiumApi
 public fun DirectionalNavigator.goLeft(animated: Boolean = false, completion: () -> Unit = {}): Boolean {
     return when (presentation.value.readingProgression) {
-        org.readium.r2.navigator.preferences.ReadingProgression.LTR ->
+        ReadingProgression.LTR ->
             goBackward(animated = animated, completion = completion)
 
-        org.readium.r2.navigator.preferences.ReadingProgression.RTL ->
+        ReadingProgression.RTL ->
             goForward(animated = animated, completion = completion)
     }
 }
@@ -136,10 +137,10 @@ public fun DirectionalNavigator.goLeft(animated: Boolean = false, completion: ()
 @ExperimentalReadiumApi
 public fun DirectionalNavigator.goRight(animated: Boolean = false, completion: () -> Unit = {}): Boolean {
     return when (presentation.value.readingProgression) {
-        org.readium.r2.navigator.preferences.ReadingProgression.LTR ->
+        ReadingProgression.LTR ->
             goForward(animated = animated, completion = completion)
 
-        org.readium.r2.navigator.preferences.ReadingProgression.RTL ->
+        ReadingProgression.RTL ->
             goBackward(animated = animated, completion = completion)
     }
 }

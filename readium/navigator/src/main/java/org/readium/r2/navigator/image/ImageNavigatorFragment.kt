@@ -56,6 +56,7 @@ public class ImageNavigatorFragment private constructor(
     private val initialLocator: Locator? = null,
     internal val listener: Listener? = null
 ) : Fragment(), DirectionalNavigator {
+
     public interface Listener : VisualNavigator.Listener
 
     init {

@@ -97,12 +97,12 @@ public interface TimeBasedMediaNavigator<L : TimeBasedMediaNavigator.Location, P
     public fun skip(duration: Duration)
 
     /**
-     * Skips forward by a small increment.
+     * Skips forward a small increment.
      */
     public fun skipForward()
 
     /**
-     * Skips backward by a small increment.
+     * Skips backward a small increment.
      */
     public fun skipBackward()
 }
