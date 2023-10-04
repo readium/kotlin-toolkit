@@ -223,7 +223,7 @@ internal class TtsPlayer<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
                     audioAttributes,
                     audioFormat,
                     bufferSize,
-                    AudioTrack.MODE_STATIC,
+                    AudioTrack.MODE_STREAM,
                     AudioManager.AUDIO_SESSION_ID_GENERATE
                 )
             }
