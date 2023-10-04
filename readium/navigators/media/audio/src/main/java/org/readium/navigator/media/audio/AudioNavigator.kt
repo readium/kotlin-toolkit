@@ -185,20 +185,20 @@ public class AudioNavigator<S : Configurable.Settings, P : Configurable.Preferen
         audioEngine.pause()
     }
 
-    override fun seek(index: Int, offset: Duration) {
-        audioEngine.seek(index, offset)
+    override fun skipTo(index: Int, offset: Duration) {
+        audioEngine.skipTo(index, offset)
     }
 
-    public fun seekForward() {
-        audioEngine.seekForward()
+    public override fun skipForward() {
+        audioEngine.skipForward()
     }
 
-    public fun seekBackward() {
-        audioEngine.seekBackward()
+    public override fun skipBackward() {
+        audioEngine.skipBackward()
     }
 
-    public fun seekBy(offset: Duration) {
-        audioEngine.seekBy(offset)
+    public override fun skip(duration: Duration) {
+        audioEngine.skip(duration)
     }
 
     override fun close() {
@@ -216,23 +216,13 @@ public class AudioNavigator<S : Configurable.Settings, P : Configurable.Preferen
             ?: return false
         val position = locator.locations.time ?: Duration.ZERO
         Timber.v("Go to locator $locator")
-        audioEngine.seek(itemIndex, position)
+        audioEngine.skipTo(itemIndex, position)
         return true
     }
 
     override fun go(link: Link, animated: Boolean, completion: () -> Unit): Boolean {
         val locator = publication.locatorFromLink(link) ?: return false
         return go(locator, animated, completion)
-    }
-
-    override fun goForward(animated: Boolean, completion: () -> Unit): Boolean {
-        seekForward()
-        return true
-    }
-
-    override fun goBackward(animated: Boolean, completion: () -> Unit): Boolean {
-        seekBackward()
-        return true
     }
 
     private fun AudioEngine.State.toState(): MediaNavigator.State =

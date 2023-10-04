@@ -1,6 +1,6 @@
 package org.readium.r2.navigator.util
 
-import org.readium.r2.navigator.VisualNavigator
+import org.readium.r2.navigator.DirectionalNavigator
 import org.readium.r2.navigator.goLeft
 import org.readium.r2.navigator.goRight
 import org.readium.r2.navigator.input.InputListener
@@ -33,7 +33,7 @@ import org.readium.r2.shared.ExperimentalReadiumApi
  */
 @ExperimentalReadiumApi
 public class DirectionalNavigationAdapter(
-    private val navigator: VisualNavigator,
+    private val navigator: DirectionalNavigator,
     private val tapEdges: Set<TapEdge> = setOf(TapEdge.Horizontal),
     private val handleTapsWhileScrolling: Boolean = false,
     private val minimumHorizontalEdgeSize: Double = 80.0,

@@ -83,24 +83,24 @@ public interface AudioEngine<S : Configurable.Settings, P : Configurable.Prefere
     public fun pause()
 
     /**
-     * Seeks to [position] in the item at [index].
+     * Skips to [offset] in the item at [index].
      */
-    public fun seek(index: Int, position: Duration)
+    public fun skipTo(index: Int, offset: Duration)
 
     /**
-     * Seeks by [offset] either forward or backward if [offset] is negative.
+     * Skips [duration] either forward or backward if [duration] is negative.
      */
-    public fun seekBy(offset: Duration)
+    public fun skip(duration: Duration)
 
     /**
-     * Seeks by a small increment forward.
+     * Skips forward by a small increment.
      */
-    public fun seekForward()
+    public fun skipForward()
 
     /**
-     * Seeks by a small increment backward.
+     * Skips backward by a small increment.
      */
-    public fun seekBackward()
+    public fun skipBackward()
 
     /**
      * Closes the player.

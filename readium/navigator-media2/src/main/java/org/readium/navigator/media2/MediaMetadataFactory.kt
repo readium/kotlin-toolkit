@@ -7,7 +7,7 @@ import androidx.media2.common.MediaMetadata
  *
  * The metadata are used for example in the media-style Android notification.
  */
-@ExperimentalMedia2
+@Deprecated("Use the new MediaMetadataFactory from the readium-navigator-media-audio module.")
 public interface MediaMetadataFactory {
 
     /**

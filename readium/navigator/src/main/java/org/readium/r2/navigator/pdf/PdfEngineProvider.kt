@@ -8,6 +8,7 @@ package org.readium.r2.navigator.pdf
 
 import androidx.fragment.app.Fragment
 import kotlinx.coroutines.flow.StateFlow
+import org.readium.r2.navigator.DirectionalNavigator
 import org.readium.r2.navigator.Navigator
 import org.readium.r2.navigator.VisualNavigator
 import org.readium.r2.navigator.input.InputListener
@@ -40,7 +41,7 @@ public interface PdfEngineProvider<S : Configurable.Settings, P : Configurable.P
     /**
      * Infers a [VisualNavigator.Presentation] from [settings].
      */
-    public fun computePresentation(settings: S): VisualNavigator.Presentation
+    public fun computePresentation(settings: S): DirectionalNavigator.Presentation
 
     /**
      * Creates a preferences editor for [publication] and [initialPreferences].

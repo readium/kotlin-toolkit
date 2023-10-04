@@ -91,10 +91,12 @@ abstract class VisualReaderFragment : BaseReaderFragment() {
 
         navigatorFragment = navigator as Fragment
 
-        (navigator as VisualNavigator).apply {
+        (navigator as DirectionalNavigator).apply {
             // This will automatically turn pages when tapping the screen edges or arrow keys.
             addInputListener(DirectionalNavigationAdapter(this))
+        }
 
+        (navigator as VisualNavigator).apply {
             addInputListener(object : InputListener {
                 override fun onTap(event: TapEvent): Boolean {
                     requireActivity().toggleSystemUi()

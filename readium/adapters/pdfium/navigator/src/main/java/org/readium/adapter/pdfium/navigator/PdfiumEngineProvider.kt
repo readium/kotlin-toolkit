@@ -8,8 +8,8 @@ package org.readium.adapter.pdfium.navigator
 
 import android.graphics.PointF
 import com.github.barteksc.pdfviewer.PDFView
+import org.readium.r2.navigator.DirectionalNavigator
 import org.readium.r2.navigator.SimplePresentation
-import org.readium.r2.navigator.VisualNavigator
 import org.readium.r2.navigator.input.TapEvent
 import org.readium.r2.navigator.pdf.PdfDocumentFragmentInput
 import org.readium.r2.navigator.pdf.PdfEngineProvider
@@ -68,7 +68,7 @@ public class PdfiumEngineProvider(
         return settingsPolicy.settings(preferences)
     }
 
-    override fun computePresentation(settings: PdfiumSettings): VisualNavigator.Presentation =
+    override fun computePresentation(settings: PdfiumSettings): DirectionalNavigator.Presentation =
         SimplePresentation(
             readingProgression = settings.readingProgression,
             scroll = true,

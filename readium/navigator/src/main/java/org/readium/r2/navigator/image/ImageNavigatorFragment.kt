@@ -17,12 +17,11 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentFactory
 import androidx.viewpager.widget.ViewPager
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.runBlocking
+import org.readium.r2.navigator.DirectionalNavigator
 import org.readium.r2.navigator.SimplePresentation
 import org.readium.r2.navigator.VisualNavigator
 import org.readium.r2.navigator.databinding.ReadiumNavigatorViewpagerBinding
@@ -56,8 +55,7 @@ public class ImageNavigatorFragment private constructor(
     override val publication: Publication,
     private val initialLocator: Locator? = null,
     internal val listener: Listener? = null
-) : Fragment(), CoroutineScope by MainScope(), VisualNavigator {
-
+) : Fragment(), DirectionalNavigator {
     public interface Listener : VisualNavigator.Listener
 
     init {
@@ -247,7 +245,7 @@ public class ImageNavigatorFragment private constructor(
         publication.metadata.effectiveReadingProgression
 
     @ExperimentalReadiumApi
-    override val presentation: StateFlow<VisualNavigator.Presentation> =
+    override val presentation: StateFlow<DirectionalNavigator.Presentation> =
         MutableStateFlow(
             SimplePresentation(
                 readingProgression = when (publication.metadata.readingProgression) {

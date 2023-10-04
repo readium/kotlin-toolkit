@@ -30,6 +30,7 @@ import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.services.search.SearchIterator
 import org.readium.r2.shared.publication.services.search.SearchTry
 import org.readium.r2.shared.publication.services.search.search
+import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.resource.Resource
@@ -64,10 +65,13 @@ class ReaderViewModel(
     val publication: Publication =
         readerInitData.publication
 
-    val activityChannel: EventChannel<Event> =
+    val activityChannel: EventChannel<ActivityCommand> =
         EventChannel(Channel(Channel.BUFFERED), viewModelScope)
 
     val fragmentChannel: EventChannel<FeedbackEvent> =
+        EventChannel(Channel(Channel.BUFFERED), viewModelScope)
+
+    val searchChannel: EventChannel<SearchCommand> =
         EventChannel(Channel(Channel.BUFFERED), viewModelScope)
 
     val tts: TtsViewModel? = TtsViewModel(
@@ -203,10 +207,10 @@ class ReaderViewModel(
         lastSearchQuery = query
         _searchLocators.value = emptyList()
         searchIterator = publication.search(query)
-            .onFailure { activityChannel.send(Event.Failure(it)) }
+            .onFailure { activityChannel.send(ActivityCommand.ToastError(it)) }
             .getOrNull()
         pagingSourceFactory.invalidate()
-        activityChannel.send(Event.StartNewSearch)
+        searchChannel.send(SearchCommand.StartNewSearch)
     }
 
     fun cancelSearch() = viewModelScope.launch {
@@ -252,7 +256,12 @@ class ReaderViewModel(
             is Resource.Exception.OutOfMemory -> "The resource is too large to be rendered on this device: $href"
             else -> "Failed to render the resource: $href"
         }
-        activityChannel.send(Event.Failure(UserException(message, error)))
+        activityChannel.send(ActivityCommand.ToastError(UserException(message, error)))
+    }
+
+    // HyperlinkNavigator.Listener
+    override fun onOpenExternalLinkRequested(url: AbsoluteUrl) {
+        activityChannel.send(ActivityCommand.OpenExternalLink(url))
     }
 
     // Search
@@ -272,16 +281,20 @@ class ReaderViewModel(
 
     // Events
 
-    sealed class Event {
-        object OpenOutlineRequested : Event()
-        object OpenDrmManagementRequested : Event()
-        object StartNewSearch : Event()
-        class Failure(val error: UserException) : Event()
+    sealed class ActivityCommand {
+        object OpenOutlineRequested : ActivityCommand()
+        object OpenDrmManagementRequested : ActivityCommand()
+        class OpenExternalLink(val url: AbsoluteUrl) : ActivityCommand()
+        class ToastError(val error: UserException) : ActivityCommand()
     }
 
     sealed class FeedbackEvent {
         object BookmarkSuccessfullyAdded : FeedbackEvent()
         object BookmarkFailed : FeedbackEvent()
+    }
+
+    sealed class SearchCommand {
+        object StartNewSearch : SearchCommand()
     }
 
     companion object {

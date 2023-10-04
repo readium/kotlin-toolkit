@@ -21,6 +21,7 @@ import androidx.lifecycle.ViewModelProvider
 import org.readium.navigator.media2.ExperimentalMedia2
 import org.readium.r2.shared.UserException
 import org.readium.r2.shared.publication.Locator
+import org.readium.r2.shared.util.toUri
 import org.readium.r2.testapp.Application
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.databinding.ActivityReaderBinding
@@ -28,6 +29,7 @@ import org.readium.r2.testapp.drm.DrmManagementContract
 import org.readium.r2.testapp.drm.DrmManagementFragment
 import org.readium.r2.testapp.outline.OutlineContract
 import org.readium.r2.testapp.outline.OutlineFragment
+import org.readium.r2.testapp.utils.launchWebBrowser
 
 /*
  * An activity to read a publication
@@ -154,14 +156,16 @@ open class ReaderActivity : AppCompatActivity() {
         super.finish()
     }
 
-    private fun handleReaderFragmentEvent(event: ReaderViewModel.Event) {
-        when (event) {
-            is ReaderViewModel.Event.OpenOutlineRequested -> showOutlineFragment()
-            is ReaderViewModel.Event.OpenDrmManagementRequested -> showDrmManagementFragment()
-            is ReaderViewModel.Event.Failure -> {
-                showError(event.error)
-            }
-            else -> {}
+    private fun handleReaderFragmentEvent(command: ReaderViewModel.ActivityCommand) {
+        when (command) {
+            is ReaderViewModel.ActivityCommand.OpenOutlineRequested ->
+                showOutlineFragment()
+            is ReaderViewModel.ActivityCommand.OpenDrmManagementRequested ->
+                showDrmManagementFragment()
+            is ReaderViewModel.ActivityCommand.OpenExternalLink ->
+                launchWebBrowser(this, command.url.toUri())
+            is ReaderViewModel.ActivityCommand.ToastError ->
+                showError(command.error)
         }
     }
 

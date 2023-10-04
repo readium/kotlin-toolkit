@@ -17,4 +17,4 @@ public data class SimplePresentation(
     override val readingProgression: ReadingProgression,
     override val scroll: Boolean,
     override val axis: Axis
-) : VisualNavigator.Presentation
+) : DirectionalNavigator.Presentation

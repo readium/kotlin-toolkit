@@ -205,19 +205,19 @@ public class ExoPlayerEngine private constructor(
         exoPlayer.pause()
     }
 
-    override fun seek(index: Int, position: Duration) {
-        exoPlayer.seekTo(index, position.inWholeMilliseconds)
+    override fun skipTo(index: Int, offset: Duration) {
+        exoPlayer.seekTo(index, offset.inWholeMilliseconds)
     }
 
-    override fun seekBy(offset: Duration) {
-        exoPlayer.seekBy(offset)
+    override fun skip(duration: Duration) {
+        exoPlayer.seekBy(duration)
     }
 
-    override fun seekForward() {
+    override fun skipForward() {
         exoPlayer.seekForward()
     }
 
-    override fun seekBackward() {
+    override fun skipBackward() {
         exoPlayer.seekBack()
     }
 

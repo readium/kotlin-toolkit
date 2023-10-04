@@ -244,16 +244,6 @@ public class TtsNavigator<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
         return go(locator, animated, completion)
     }
 
-    override fun goForward(animated: Boolean, completion: () -> Unit): Boolean {
-        player.nextUtterance()
-        return true
-    }
-
-    override fun goBackward(animated: Boolean, completion: () -> Unit): Boolean {
-        player.previousUtterance()
-        return true
-    }
-
     override val settings: StateFlow<S> =
         player.settings
 

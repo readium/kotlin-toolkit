@@ -167,7 +167,7 @@ class AudioReaderFragment : BaseReaderFragment(), SeekBar.OnSeekBarChangeListene
 
     override fun onStopTrackingTouch(seekBar: SeekBar) {
         Timber.d("onStopTrackingTouch")
-        navigator.seek(checkNotNull(seekingItem), seekBar.progress.seconds)
+        navigator.skipTo(checkNotNull(seekingItem), seekBar.progress.seconds)
         seekingItem = null
     }
 
@@ -185,7 +185,7 @@ class AudioReaderFragment : BaseReaderFragment(), SeekBar.OnSeekBarChangeListene
             }
             is MediaNavigator.State.Ended -> {
                 model.viewModelScope.launch {
-                    navigator.seek(0, Duration.ZERO)
+                    navigator.skipTo(0, Duration.ZERO)
                     navigator.play()
                 }
                 Unit
@@ -198,13 +198,13 @@ class AudioReaderFragment : BaseReaderFragment(), SeekBar.OnSeekBarChangeListene
 
     private fun onSkipForward(@Suppress("UNUSED_PARAMETER") view: View) {
         model.viewModelScope.launch {
-            navigator.goForward()
+            navigator.skipForward()
         }
     }
 
     private fun onSkipBackward(@Suppress("UNUSED_PARAMETER") view: View) {
         model.viewModelScope.launch {
-            navigator.goBackward()
+            navigator.skipBackward()
         }
     }
 

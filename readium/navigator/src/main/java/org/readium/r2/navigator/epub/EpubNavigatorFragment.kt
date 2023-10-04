@@ -45,12 +45,13 @@ import org.json.JSONObject
 import org.readium.r2.navigator.DecorableNavigator
 import org.readium.r2.navigator.Decoration
 import org.readium.r2.navigator.DecorationId
+import org.readium.r2.navigator.DirectionalNavigator
 import org.readium.r2.navigator.ExperimentalDecorator
+import org.readium.r2.navigator.HyperlinkNavigator
 import org.readium.r2.navigator.R
 import org.readium.r2.navigator.R2BasicWebView
 import org.readium.r2.navigator.SelectableNavigator
 import org.readium.r2.navigator.Selection
-import org.readium.r2.navigator.VisualNavigator
 import org.readium.r2.navigator.databinding.ReadiumNavigatorViewpagerBinding
 import org.readium.r2.navigator.epub.EpubNavigatorViewModel.RunScriptCommand
 import org.readium.r2.navigator.epub.css.FontFamilyDeclaration
@@ -87,11 +88,9 @@ import org.readium.r2.shared.publication.presentation.presentation
 import org.readium.r2.shared.publication.services.isRestricted
 import org.readium.r2.shared.publication.services.positionsByReadingOrder
 import org.readium.r2.shared.util.Url
-import org.readium.r2.shared.util.launchWebBrowser
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.shared.util.toAbsoluteUrl
-import org.readium.r2.shared.util.toUri
 
 /**
  * Factory for a [JavascriptInterface] which will be injected in the web views.
@@ -116,7 +115,12 @@ public class EpubNavigatorFragment internal constructor(
     epubLayout: EpubLayout,
     private val defaults: EpubDefaults,
     configuration: Configuration
-) : Fragment(), VisualNavigator, SelectableNavigator, DecorableNavigator, Configurable<EpubSettings, EpubPreferences> {
+) : Fragment(),
+    DirectionalNavigator,
+    SelectableNavigator,
+    DecorableNavigator,
+    HyperlinkNavigator,
+    Configurable<EpubSettings, EpubPreferences> {
 
     // Make a copy to prevent the user from modifying the configuration after initialization.
     internal val config: Configuration = configuration.copy().apply {
@@ -255,7 +259,7 @@ public class EpubNavigatorFragment internal constructor(
         public fun onPageLoaded() {}
     }
 
-    public interface Listener : VisualNavigator.Listener
+    public interface Listener : DirectionalNavigator.Listener, HyperlinkNavigator.Listener
 
     init {
         require(!publication.isRestricted) { "The provided publication is restricted. Check that any DRM was properly unlocked using a Content Protection." }
@@ -532,9 +536,6 @@ public class EpubNavigatorFragment internal constructor(
             EpubNavigatorViewModel.Event.InvalidateViewPager -> {
                 invalidateResourcePager()
             }
-            is EpubNavigatorViewModel.Event.OpenExternalLink -> {
-                launchWebBrowser(requireContext(), event.url.toUri())
-            }
         }
     }
 
@@ -666,7 +667,7 @@ public class EpubNavigatorFragment internal constructor(
     override val publicationView: View
         get() = requireView()
 
-    override val presentation: StateFlow<VisualNavigator.Presentation>
+    override val presentation: StateFlow<DirectionalNavigator.Presentation>
         get() = viewModel.presentation
 
     @Deprecated(
