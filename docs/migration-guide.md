@@ -168,8 +168,8 @@ navigator.addInputListener(object : InputListener {
 
 ### New navigator interfaces
 
-An important part of `VisualNavigator` was moved to `DirectionalNavigator`. A new [HyperlinkNavigator]
-interface implemented by the [EpubFragmentNavigator] provides the ability to intercept clicks on
+An important part of `VisualNavigator` was moved to `DirectionalNavigator`. A new `HyperlinkNavigator`
+interface implemented by the `EpubFragmentNavigator` provides the ability to intercept clicks on
 links to both internal and external URLs. Opening external URLs is no longer handled by the navigator,
 that's something you should do by yourself in the way you like.
 
