@@ -12,16 +12,23 @@ import android.media.AudioManager
 import android.media.AudioTrack
 import android.os.Build
 import kotlin.coroutines.coroutineContext
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import org.readium.r2.navigator.preferences.Configurable
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.extensions.tryOrNull
 import org.readium.r2.shared.publication.Locator
+import timber.log.Timber
 
 /**
  * Plays the content from a [TtsUtteranceIterator] with a [TtsEngine].
@@ -190,7 +197,6 @@ internal class TtsPlayer<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
         coroutineScope.launch {
             // WORKAROUND to get the media buttons correctly working.
             fakePlayingAudio()
-
             playAsync()
         }
     }
@@ -205,7 +211,6 @@ internal class TtsPlayer<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
         val audioFormat =
             AudioFormat.Builder()
                 .setEncoding(AudioFormat.ENCODING_PCM_16BIT)
-                .setSampleRate(44100)
                 .setChannelMask(AudioFormat.CHANNEL_OUT_STEREO)
                 .build()
 
@@ -213,21 +218,26 @@ internal class TtsPlayer<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
 
         val audioTrack =
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                AudioTrack.Builder()
-                    .setAudioAttributes(audioAttributes)
-                    .setAudioFormat(audioFormat)
-                    .setBufferSizeInBytes(bufferSize)
-                    .build()
+                tryOrNull {
+                    AudioTrack.Builder()
+                        .setAudioAttributes(audioAttributes)
+                        .setAudioFormat(audioFormat)
+                        .setBufferSizeInBytes(bufferSize)
+                        .build()
+                }
             } else {
                 AudioTrack(
                     audioAttributes,
                     audioFormat,
                     bufferSize,
-                    AudioTrack.MODE_STATIC,
+                    AudioTrack.MODE_STREAM,
                     AudioManager.AUDIO_SESSION_ID_GENERATE
-                )
+                ).takeIf { it.state == AudioTrack.STATE_INITIALIZED }
             }
-        audioTrack.play()
+
+        audioTrack
+            ?.play()
+            ?: run { Timber.e("Couldn't fake playing audio.") }
     }
 
     private suspend fun playAsync() = mutex.withLock {

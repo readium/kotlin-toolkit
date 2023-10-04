@@ -1,4 +1,4 @@
-package org.readium.adapter.exoplayer
+package org.readium.adapter.exoplayer.audio
 
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds

@@ -4,7 +4,7 @@
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.adapter.exoplayer
+package org.readium.adapter.exoplayer.audio
 
 import android.app.Application
 import androidx.media3.datasource.DataSource

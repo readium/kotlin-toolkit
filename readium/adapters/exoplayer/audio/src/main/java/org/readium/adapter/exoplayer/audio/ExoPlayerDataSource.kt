@@ -4,7 +4,7 @@
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.adapter.exoplayer
+package org.readium.adapter.exoplayer.audio
 
 import android.net.Uri
 import androidx.media3.common.C.LENGTH_UNSET
@@ -21,13 +21,13 @@ import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.shared.util.resource.buffered
 import org.readium.r2.shared.util.toUrl
 
-public sealed class ExoPlayerDataSourceException(message: String, cause: Throwable?) : IOException(
+internal sealed class ExoPlayerDataSourceException(message: String, cause: Throwable?) : IOException(
     message,
     cause
 ) {
-    public class NotOpened(message: String) : ExoPlayerDataSourceException(message, null)
-    public class NotFound(message: String) : ExoPlayerDataSourceException(message, null)
-    public class ReadFailed(uri: Uri, offset: Int, readLength: Int, cause: Throwable) : ExoPlayerDataSourceException(
+    class NotOpened(message: String) : ExoPlayerDataSourceException(message, null)
+    class NotFound(message: String) : ExoPlayerDataSourceException(message, null)
+    class ReadFailed(uri: Uri, offset: Int, readLength: Int, cause: Throwable) : ExoPlayerDataSourceException(
         "Failed to read $readLength bytes of URI $uri at offset $offset.",
         cause
     )

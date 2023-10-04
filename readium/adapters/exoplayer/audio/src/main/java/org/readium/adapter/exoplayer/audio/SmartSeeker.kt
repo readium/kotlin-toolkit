@@ -4,7 +4,7 @@
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.adapter.exoplayer
+package org.readium.adapter.exoplayer.audio
 
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime

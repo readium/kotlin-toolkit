@@ -8,9 +8,9 @@
 
 package org.readium.r2.testapp.reader
 
-import org.readium.adapter.exoplayer.ExoPlayerNavigator
-import org.readium.adapter.exoplayer.ExoPlayerNavigatorFactory
-import org.readium.adapter.exoplayer.ExoPlayerPreferences
+import org.readium.adapter.exoplayer.audio.ExoPlayerNavigator
+import org.readium.adapter.exoplayer.audio.ExoPlayerNavigatorFactory
+import org.readium.adapter.exoplayer.audio.ExoPlayerPreferences
 import org.readium.adapter.pdfium.navigator.PdfiumNavigatorFactory
 import org.readium.adapter.pdfium.navigator.PdfiumPreferences
 import org.readium.navigator.media.tts.AndroidTtsNavigatorFactory

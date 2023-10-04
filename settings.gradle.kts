@@ -44,20 +44,20 @@ dependencyResolutionManagement {
 
 rootProject.name = "Readium"
 
-include(":readium:adapters:pdfium:pdfium-document")
-project(":readium:adapters:pdfium:pdfium-document")
+include(":readium:adapters:pdfium:document")
+project(":readium:adapters:pdfium:document")
     .name = "readium-adapter-pdfium-document"
 
-include(":readium:adapters:pdfium:pdfium-navigator")
-project(":readium:adapters:pdfium:pdfium-navigator")
+include(":readium:adapters:pdfium:navigator")
+project(":readium:adapters:pdfium:navigator")
     .name = "readium-adapter-pdfium-navigator"
 
-include(":readium:adapters:pspdfkit:pspdfkit-document")
-project(":readium:adapters:pspdfkit:pspdfkit-document")
+include(":readium:adapters:pspdfkit:document")
+project(":readium:adapters:pspdfkit:document")
     .name = "readium-adapter-pspdfkit-document"
 
-include(":readium:adapters:pspdfkit:pspdfkit-navigator")
-project(":readium:adapters:pspdfkit:pspdfkit-navigator")
+include(":readium:adapters:pspdfkit:navigator")
+project(":readium:adapters:pspdfkit:navigator")
     .name = "readium-adapter-pspdfkit-navigator"
 
 include(":readium:lcp")
@@ -84,9 +84,9 @@ include(":readium:navigator-media2")
 project(":readium:navigator-media2")
     .name = "readium-navigator-media2"
 
-include(":readium:adapters:exoplayer")
-project(":readium:adapters:exoplayer")
-    .name = "readium-adapter-exoplayer"
+include(":readium:adapters:exoplayer:audio")
+project(":readium:adapters:exoplayer:audio")
+    .name = "readium-adapter-exoplayer-audio"
 
 include(":readium:opds")
 project(":readium:opds")

@@ -22,6 +22,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import org.readium.navigator.media.tts.TtsEngine
 import org.readium.r2.shared.ExperimentalReadiumApi
+import org.readium.r2.shared.extensions.tryOrNull
 import org.readium.r2.shared.util.Language
 
 /*
@@ -57,7 +58,7 @@ public class AndroidTtsEngine private constructor(
             val textToSpeech = initializeTextToSpeech(context)
                 ?: return null
 
-            val voices = textToSpeech.voices
+            val voices = tryOrNull { textToSpeech.voices } // throws on Nexus 4
                 ?.map { it.toTtsEngineVoice() }
                 ?.toSet()
                 .orEmpty()
