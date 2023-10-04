@@ -17,6 +17,10 @@ All notable changes to this project will be documented in this file. Take a look
 * Scroll mode: jumping between two EPUB resources with a horizontal swipe triggers the `Navigator.Listener.onJumpToLocator()` callback.
     * This can be used to allow the user to go back to their previous location if they swiped across chapters by mistake.
 * Support for keyboard events in the EPUB, PDF and image navigators. See `VisualNavigator.addInputListener()`.
+* Support for non-linear EPUB resources with an opt-in in reading apps (contributed by @chrfalch in [#375](https://github.com/readium/kotlin-toolkit/pull/375) and [#376](https://github.com/readium/kotlin-toolkit/pull/376)).
+     1. Override loading non-linear resources with `VisualNavigator.Listener.shouldJumpToLink()`.
+     2. Present a new `EpubNavigatorFragment` by providing a custom `readingOrder` with only this resource to the constructor.
+
 
 #### Streamer
 
