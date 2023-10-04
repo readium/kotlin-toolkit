@@ -27,7 +27,6 @@ import org.readium.r2.shared.publication.services.PositionsService
 import org.readium.r2.shared.publication.services.WebPositionsService
 import org.readium.r2.shared.publication.services.content.ContentService
 import org.readium.r2.shared.publication.services.search.SearchService
-import org.readium.r2.shared.util.BaseError
 import org.readium.r2.shared.util.Closeable
 import org.readium.r2.shared.util.Error
 import org.readium.r2.shared.util.ThrowableError
@@ -497,8 +496,10 @@ public class Publication(
     /**
      * Errors occurring while opening a Publication.
      */
-    public sealed class OpenError(message: String, cause: Error? = null) :
-        BaseError(message, cause) {
+    public sealed class OpenError(
+        override val message: String,
+        override val cause: Error? = null
+    ) : Error {
 
         /**
          * The file format could not be recognized by any parser.
@@ -514,12 +515,11 @@ public class Publication(
         /**
          * The publication parsing failed with the given underlying error.
          */
-        public class InvalidAsset private constructor(
+        public class InvalidAsset(
             message: String,
-            cause: Error?
+            cause: Error? = null
         ) : OpenError(message, cause) {
-            public constructor(message: String) : this(message, null)
-            public constructor(cause: Error? = null) : this(
+            public constructor(cause: Error?) : this(
                 "The asset seems corrupted so the publication cannot be opened.",
                 cause
             )

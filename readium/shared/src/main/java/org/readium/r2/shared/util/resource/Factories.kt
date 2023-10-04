@@ -7,7 +7,6 @@
 package org.readium.r2.shared.util.resource
 
 import org.readium.r2.shared.util.AbsoluteUrl
-import org.readium.r2.shared.util.BaseError
 import org.readium.r2.shared.util.Error as SharedError
 import org.readium.r2.shared.util.ThrowableError
 import org.readium.r2.shared.util.Try
@@ -125,7 +124,10 @@ public fun interface ContainerFactory {
  */
 public fun interface ArchiveFactory {
 
-    public sealed class Error(message: String, cause: SharedError?) : BaseError(message, cause) {
+    public sealed class Error(
+        override val message: String,
+        override val cause: SharedError?
+    ) : SharedError {
 
         public class FormatNotSupported(
             cause: SharedError? = null

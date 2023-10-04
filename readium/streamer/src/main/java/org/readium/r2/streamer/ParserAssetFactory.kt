@@ -12,7 +12,6 @@ import org.readium.r2.shared.extensions.addPrefix
 import org.readium.r2.shared.publication.Manifest
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.util.AbsoluteUrl
-import org.readium.r2.shared.util.MessageError
 import org.readium.r2.shared.util.ThrowableError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
@@ -69,30 +68,29 @@ internal class ParserAssetFactory(
         asset: org.readium.r2.shared.util.asset.Asset.Resource
     ): Try<PublicationParser.Asset, Publication.OpenError> {
         val manifest = asset.resource.readAsRwpm()
-            .mapFailure { Publication.OpenError.InvalidAsset(ThrowableError(it)) }
+            .mapFailure {
+                Publication.OpenError.InvalidAsset(
+                    "Failed to read the publication as a RWPM",
+                    ThrowableError(it)
+                )
+            }
             .getOrElse { return Try.failure(it) }
 
         val baseUrl =
             manifest.linkWithRel("self")?.href?.resolve()
                 ?: return Try.failure(
-                    Publication.OpenError.InvalidAsset(
-                        MessageError("No self link in the manifest.")
-                    )
+                    Publication.OpenError.InvalidAsset("No self link in the manifest.")
                 )
 
         if (baseUrl !is AbsoluteUrl) {
             return Try.failure(
-                Publication.OpenError.InvalidAsset(
-                    MessageError("Self link is not absolute.")
-                )
+                Publication.OpenError.InvalidAsset("Self link is not absolute.")
             )
         }
 
         if (!baseUrl.isHttp) {
             return Try.failure(
-                Publication.OpenError.UnsupportedAsset(
-                    "Self link doesn't use the HTTP(S) scheme."
-                )
+                Publication.OpenError.UnsupportedAsset("Self link doesn't use the HTTP(S) scheme.")
             )
         }
 
