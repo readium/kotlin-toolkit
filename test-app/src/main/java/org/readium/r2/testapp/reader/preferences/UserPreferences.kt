@@ -18,7 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import org.readium.adapter.exoplayer.ExoPlayerPreferencesEditor
+import org.readium.adapter.exoplayer.audio.ExoPlayerPreferencesEditor
 import org.readium.adapter.pdfium.navigator.PdfiumPreferencesEditor
 import org.readium.navigator.media.tts.android.AndroidTtsEngine
 import org.readium.r2.navigator.epub.EpubPreferencesEditor

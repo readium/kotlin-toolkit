@@ -19,8 +19,8 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
-import org.readium.adapter.exoplayer.ExoPlayerPreferences
-import org.readium.adapter.exoplayer.ExoPlayerPreferencesSerializer
+import org.readium.adapter.exoplayer.audio.ExoPlayerPreferences
+import org.readium.adapter.exoplayer.audio.ExoPlayerPreferencesSerializer
 import org.readium.adapter.pdfium.navigator.PdfiumPreferences
 import org.readium.adapter.pdfium.navigator.PdfiumPreferencesSerializer
 import org.readium.adapter.pdfium.navigator.PdfiumPublicationPreferencesFilter

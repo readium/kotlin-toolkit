@@ -8,6 +8,7 @@ plugins {
     id("com.android.library")
     kotlin("android")
     kotlin("plugin.parcelize")
+    kotlin("plugin.serialization")
 }
 
 android {
@@ -37,16 +38,29 @@ android {
             proguardFiles(getDefaultProguardFile("proguard-android.txt"))
         }
     }
-    namespace = "org.readium.adapter.exoplayer"
+    buildFeatures {
+        viewBinding = true
+    }
+    namespace = "org.readium.adapter.exoplayer.audio"
 }
 
 kotlin {
     explicitApi()
 }
 
-rootProject.ext["publish.artifactId"] = "readium-adapter-exoplayer"
+rootProject.ext["publish.artifactId"] = "readium-navigator-exoplayer-audio"
 apply(from = "$rootDir/scripts/publish-module.gradle")
 
 dependencies {
-    api(project(":readium:adapters:exoplayer:readium-adapter-exoplayer-audio"))
+    api(project(":readium:readium-shared"))
+    api(project(":readium:navigators:media:readium-navigator-media-audio"))
+
+    implementation(libs.androidx.media3.common)
+    implementation(libs.androidx.media3.exoplayer)
+    implementation(libs.timber)
+    implementation(libs.bundles.coroutines)
+    implementation(libs.kotlinx.serialization.json)
+
+    // Tests
+    testImplementation(libs.junit)
 }

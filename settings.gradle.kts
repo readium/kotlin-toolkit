@@ -84,9 +84,9 @@ include(":readium:navigator-media2")
 project(":readium:navigator-media2")
     .name = "readium-navigator-media2"
 
-include(":readium:adapters:exoplayer")
-project(":readium:adapters:exoplayer")
-    .name = "readium-adapter-exoplayer"
+include(":readium:adapters:exoplayer:exoplayer-audio")
+project(":readium:adapters:exoplayer:exoplayer-audio")
+    .name = "readium-adapter-exoplayer-audio"
 
 include(":readium:opds")
 project(":readium:opds")

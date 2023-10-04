@@ -4,7 +4,7 @@
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.adapter.exoplayer
+package org.readium.adapter.exoplayer.audio
 
 import kotlinx.serialization.json.Json
 import org.readium.r2.navigator.preferences.PreferencesSerializer
