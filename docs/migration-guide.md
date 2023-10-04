@@ -166,16 +166,26 @@ navigator.addInputListener(object : InputListener {
 })
 ```
 
+### New navigator interfaces
+
+An important part of `VisualNavigator` was moved to `DirectionalNavigator`. A new [HyperlinkNavigator]
+interface implemented by the [EpubFragmentNavigator] provides the ability to intercept clicks on
+links to both internal and external URLs. Opening external URLs is no longer handled by the navigator,
+that's something you should do by yourself in the way you like.
+
 ### Edge tap and keyboard navigation
 
 Version 3.0.0 ships with a new `DirectionalNavigationAdapter` component replacing `EdgeTapNavigation`. This helper allows users to turn pages with arrow and space keys on their keyboard or by tapping the edge of the screen.
 
-It's easy to set it up with an implementation of `VisualNavigator`, as it implements `InputListener`.
+It's easy to set it up with an implementation of `DirectionalNavigator`, as it implements `InputListener`.
 
 ```kotlin
-navigator.addInputListener(DirectionalNavigationAdapter(
-    animatedTransition = true
-))
+navigator.addInputListener(
+    DirectionalNavigationAdapter(
+        navigator,
+        animatedTransition = true
+    )
+)
 ```
 
 `DirectionalNavigationAdapter` offers a lot of customization options. Take a look at its API.

@@ -11,19 +11,51 @@ import android.view.View
 import kotlinx.coroutines.flow.StateFlow
 import org.readium.r2.navigator.input.InputListener
 import org.readium.r2.navigator.preferences.Axis
+import org.readium.r2.navigator.preferences.ReadingProgression
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Locator
-import org.readium.r2.shared.publication.ReadingProgression
+import org.readium.r2.shared.publication.ReadingProgression as PublicationReadingProgression
 
 /**
  * A navigator rendering the publication visually on-screen.
  */
 public interface VisualNavigator : Navigator {
 
+    @Deprecated(
+        "Moved to DirectionalNavigator",
+        level = DeprecationLevel.ERROR
+    )
+    @OptIn(ExperimentalReadiumApi::class)
+    public interface Presentation {
+        /**
+         * Horizontal direction of progression across resources.
+         */
+        public val readingProgression: ReadingProgression
+
+        /**
+         * If the overflow of the content is managed through scroll instead of pagination.
+         */
+        public val scroll: Boolean
+
+        /**
+         * Main axis along which the resources are laid out.
+         */
+        public val axis: Axis
+    }
+
     /**
      * View displaying the publication.
      */
     public val publicationView: View
+
+    /**
+     * Current presentation rendered by the navigator.
+     */
+    @Deprecated(
+        "Moved to DirectionalNavigator",
+        level = DeprecationLevel.ERROR
+    )
+    public val presentation: StateFlow<Any>
 
     /**
      * Returns the [Locator] to the first content element that begins on the current screen.
@@ -70,7 +102,25 @@ public interface VisualNavigator : Navigator {
         ReplaceWith("presentation.value.readingProgression"),
         level = DeprecationLevel.ERROR
     )
-    public val readingProgression: ReadingProgression
+    public val readingProgression: PublicationReadingProgression
+
+    /**
+     * Moves to the next content portion (eg. page) in the reading progression direction.
+     */
+    @Deprecated(
+        "Moved to DirectionalNavigator",
+        level = DeprecationLevel.ERROR
+    )
+    public fun goForward(animated: Boolean = false, completion: () -> Unit = {}): Boolean
+
+    /**
+     * Moves to the previous content portion (eg. page) in the reading progression direction.
+     */
+    @Deprecated(
+        "Moved to DirectionalNavigator",
+        level = DeprecationLevel.ERROR
+    )
+    public fun goBackward(animated: Boolean = false, completion: () -> Unit = {}): Boolean
 }
 
 /**
@@ -86,7 +136,7 @@ public interface DirectionalNavigator : VisualNavigator {
      * Current presentation rendered by the navigator.
      */
     @ExperimentalReadiumApi
-    public val presentation: StateFlow<Presentation>
+    public override val presentation: StateFlow<Presentation>
 
     @ExperimentalReadiumApi
     public interface Presentation {
@@ -109,38 +159,10 @@ public interface DirectionalNavigator : VisualNavigator {
     /**
      * Moves to the next content portion (eg. page) in the reading progression direction.
      */
-    public fun goForward(animated: Boolean = false, completion: () -> Unit = {}): Boolean
+    public override fun goForward(animated: Boolean, completion: () -> Unit): Boolean
 
     /**
      * Moves to the previous content portion (eg. page) in the reading progression direction.
      */
-    public fun goBackward(animated: Boolean = false, completion: () -> Unit = {}): Boolean
-}
-
-/**
- * Moves to the left content portion (eg. page) relative to the reading progression direction.
- */
-@ExperimentalReadiumApi
-public fun DirectionalNavigator.goLeft(animated: Boolean = false, completion: () -> Unit = {}): Boolean {
-    return when (presentation.value.readingProgression) {
-        ReadingProgression.LTR ->
-            goBackward(animated = animated, completion = completion)
-
-        ReadingProgression.RTL ->
-            goForward(animated = animated, completion = completion)
-    }
-}
-
-/**
- * Moves to the right content portion (eg. page) relative to the reading progression direction.
- */
-@ExperimentalReadiumApi
-public fun DirectionalNavigator.goRight(animated: Boolean = false, completion: () -> Unit = {}): Boolean {
-    return when (presentation.value.readingProgression) {
-        ReadingProgression.LTR ->
-            goForward(animated = animated, completion = completion)
-
-        ReadingProgression.RTL ->
-            goBackward(animated = animated, completion = completion)
-    }
+    public override fun goBackward(animated: Boolean, completion: () -> Unit): Boolean
 }

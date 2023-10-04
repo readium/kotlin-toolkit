@@ -1,12 +1,17 @@
+/*
+ * Copyright 2021 Readium Foundation. All rights reserved.
+ * Use of this source code is governed by the BSD-style license
+ * available in the top-level LICENSE file of the project.
+ */
+
 package org.readium.r2.navigator.util
 
 import org.readium.r2.navigator.DirectionalNavigator
-import org.readium.r2.navigator.goLeft
-import org.readium.r2.navigator.goRight
 import org.readium.r2.navigator.input.InputListener
 import org.readium.r2.navigator.input.Key
 import org.readium.r2.navigator.input.KeyEvent
 import org.readium.r2.navigator.input.TapEvent
+import org.readium.r2.navigator.preferences.ReadingProgression
 import org.readium.r2.shared.ExperimentalReadiumApi
 
 /**
@@ -101,6 +106,32 @@ public class DirectionalNavigationAdapter(
             Key.ArrowLeft -> navigator.goLeft(animated = animatedTransition)
             Key.ArrowRight -> navigator.goRight(animated = animatedTransition)
             else -> false
+        }
+    }
+
+    /**
+     * Moves to the left content portion (eg. page) relative to the reading progression direction.
+     */
+    private fun DirectionalNavigator.goLeft(animated: Boolean = false): Boolean {
+        return when (presentation.value.readingProgression) {
+            ReadingProgression.LTR ->
+                goBackward(animated = animated)
+
+            ReadingProgression.RTL ->
+                goForward(animated = animated)
+        }
+    }
+
+    /**
+     * Moves to the right content portion (eg. page) relative to the reading progression direction.
+     */
+    private fun DirectionalNavigator.goRight(animated: Boolean = false): Boolean {
+        return when (presentation.value.readingProgression) {
+            ReadingProgression.LTR ->
+                goForward(animated = animated)
+
+            ReadingProgression.RTL ->
+                goBackward(animated = animated)
         }
     }
 }

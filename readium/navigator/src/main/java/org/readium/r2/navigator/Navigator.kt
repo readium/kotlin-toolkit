@@ -25,9 +25,7 @@ import org.readium.r2.shared.util.resource.Resource
  *   and provide the initial location when creating the navigator.
  * - **User accessibility settings should override the behavior when needed** (eg. disabling
  *   animated transition, even when requested by the caller).
- * - **The navigator is the single source of truth for the current location.** So for example, the
- *   TTS should observe the position from the navigator instead of having the reading app move
- *   manually both the navigator and the TTS reader when the user skips forward.
+ * - **The navigator is the single source of truth for the current location.**
  * - **The navigator should only provide a minimal gestures/interactions set.** For example,
  *   scrolling through a web view or zooming a fixed image is expected from the user. But additional
  *   interactions such as tapping/clicking the edge of the page to skip to the next one should be
