@@ -58,7 +58,7 @@ public class HtmlResourceContentExtractor : ResourceContentExtractor {
     override suspend fun extractText(resource: Resource): ResourceTry<String> = withContext(
         Dispatchers.IO
     ) {
-        resource.readAsString().mapCatching { html ->
+        resource.readAsString().mapCatching(resource) { html ->
             val body = Jsoup.parse(html).body().text()
             // Transform HTML entities into their actual characters.
             Parser.unescapeEntities(body, false)

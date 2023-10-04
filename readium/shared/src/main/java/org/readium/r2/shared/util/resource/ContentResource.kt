@@ -105,6 +105,7 @@ public class ContentResource(
         ResourceTry.catching {
             val stream = contentResolver.openInputStream(uri)
                 ?: throw Resource.Exception.Unavailable(
+                    source,
                     Exception("Content provider recently crashed.")
                 )
             val result = block(stream)
@@ -116,15 +117,15 @@ public class ContentResource(
         try {
             success(closure())
         } catch (e: FileNotFoundException) {
-            failure(Resource.Exception.NotFound(e))
+            failure(Resource.Exception.NotFound(source, e))
         } catch (e: SecurityException) {
-            failure(Resource.Exception.Forbidden(e))
+            failure(Resource.Exception.Forbidden(source, e))
         } catch (e: IOException) {
-            failure(Resource.Exception.Unavailable(e))
+            failure(Resource.Exception.Unavailable(source, e))
         } catch (e: Exception) {
-            failure(Resource.Exception.wrap(e))
+            failure(Resource.Exception.wrap(source, e))
         } catch (e: OutOfMemoryError) { // We don't want to catch any Error, only OOM.
-            failure(Resource.Exception.wrap(e))
+            failure(Resource.Exception.wrap(source, e))
         }
 
     override fun toString(): String =

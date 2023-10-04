@@ -17,6 +17,7 @@ import org.readium.r2.shared.UserException
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.SuspendingCloseable
 import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.flatMap
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.xml.ElementNode
@@ -80,19 +81,25 @@ public interface Resource : SuspendingCloseable {
 
     /**
      * Errors occurring while accessing a resource.
+     *
+     * @param url URL locating the resource, if any.
      */
-    public sealed class Exception(@StringRes userMessageId: Int, cause: Throwable? = null) : UserException(
+    public sealed class Exception(
+        public val url: Url?,
+        @StringRes userMessageId: Int,
+        cause: Throwable? = null
+    ) : UserException(
         userMessageId,
         cause = cause
     ) {
 
         /** Equivalent to a 400 HTTP error. */
-        public class BadRequest(cause: Throwable? = null) :
-            Exception(R.string.readium_shared_resource_exception_bad_request, cause)
+        public class BadRequest(url: Url?, cause: Throwable? = null) :
+            Exception(url, R.string.readium_shared_resource_exception_bad_request, cause)
 
         /** Equivalent to a 404 HTTP error. */
-        public class NotFound(cause: Throwable? = null) :
-            Exception(R.string.readium_shared_resource_exception_not_found, cause)
+        public class NotFound(url: Url?, cause: Throwable? = null) :
+            Exception(url, R.string.readium_shared_resource_exception_not_found, cause)
 
         /**
          * Equivalent to a 403 HTTP error.
@@ -100,8 +107,11 @@ public interface Resource : SuspendingCloseable {
          * This can be returned when trying to read a resource protected with a DRM that is not
          * unlocked.
          */
-        public class Forbidden(cause: Throwable? = null) :
-            Exception(R.string.readium_shared_resource_exception_forbidden, cause)
+        public class Forbidden(url: Url?, cause: Throwable? = null) :
+            Exception(url, R.string.readium_shared_resource_exception_forbidden, cause) {
+            public constructor(resource: Resource, cause: Throwable? = null) :
+                this(resource.url, cause)
+        }
 
         /**
          * Equivalent to a 503 HTTP error.
@@ -109,46 +119,51 @@ public interface Resource : SuspendingCloseable {
          * Used when the source can't be reached, e.g. no Internet connection, or an issue with the
          * file system. Usually this is a temporary error.
          */
-        public class Unavailable(cause: Throwable? = null) :
-            Exception(R.string.readium_shared_resource_exception_unavailable, cause)
+        public class Unavailable(url: Url?, cause: Throwable? = null) :
+            Exception(url, R.string.readium_shared_resource_exception_unavailable, cause)
 
         /**
          * The Internet connection appears to be offline.
          */
-        public object Offline : Exception(R.string.readium_shared_resource_exception_offline)
+        public data object Offline :
+            Exception(null, R.string.readium_shared_resource_exception_offline)
 
         /**
          * Equivalent to a 507 HTTP error.
          *
          * Used when the requested range is too large to be read in memory.
          */
-        public class OutOfMemory(override val cause: OutOfMemoryError) :
-            Exception(R.string.readium_shared_resource_exception_out_of_memory)
+        public class OutOfMemory(url: Url?, override val cause: OutOfMemoryError) :
+            Exception(url, R.string.readium_shared_resource_exception_out_of_memory)
 
         /** For any other error, such as HTTP 500. */
-        public class Other(cause: Throwable) : Exception(
-            R.string.readium_shared_resource_exception_other,
-            cause
-        )
+        public class Other(url: Url?, cause: Throwable) :
+            Exception(url, R.string.readium_shared_resource_exception_other, cause)
 
         public companion object {
 
-            public fun wrap(e: Throwable): Exception =
+            public fun wrap(resource: Resource?, e: Throwable): Exception =
+                wrap(resource?.url, e)
+
+            public fun wrap(url: Url?, e: Throwable): Exception =
                 when (e) {
                     is Exception -> e
-                    is OutOfMemoryError -> OutOfMemory(e)
-                    else -> Other(e)
+                    is OutOfMemoryError -> OutOfMemory(url, e)
+                    else -> Other(url, e)
                 }
         }
     }
 }
+
+private val Resource.url: Url?
+    get() = source ?: (this as? Container.Entry)?.url
 
 /** Creates a Resource that will always return the given [error]. */
 public class FailureResource(
     private val error: Resource.Exception
 ) : Resource {
 
-    internal constructor(cause: Throwable) : this(Resource.Exception.wrap(cause))
+    internal constructor(url: Url?, cause: Throwable) : this(Resource.Exception.wrap(url, cause))
 
     override val source: AbsoluteUrl? = null
     override suspend fun mediaType(): ResourceTry<MediaType> = Try.failure(error)
@@ -166,17 +181,20 @@ public class FailureResource(
  *
  * If the [transform] throws an [Exception], it is wrapped in a failure with Resource.Exception.Other.
  */
-public inline fun <R, S> ResourceTry<S>.mapCatching(transform: (value: S) -> R): ResourceTry<R> =
+public inline fun <R, S> ResourceTry<S>.mapCatching(resource: Resource, transform: (value: S) -> R): ResourceTry<R> =
     try {
         map(transform)
     } catch (e: Exception) {
-        Try.failure(Resource.Exception.wrap(e))
+        Try.failure(Resource.Exception.wrap(resource, e))
     } catch (e: OutOfMemoryError) { // We don't want to catch any Error, only OOM.
-        Try.failure(Resource.Exception.wrap(e))
+        Try.failure(Resource.Exception.wrap(resource, e))
     }
 
-public inline fun <R, S> ResourceTry<S>.flatMapCatching(transform: (value: S) -> ResourceTry<R>): ResourceTry<R> =
-    mapCatching(transform).flatMap { it }
+public inline fun <R, S> ResourceTry<S>.flatMapCatching(
+    resource: Resource,
+    transform: (value: S) -> ResourceTry<R>
+): ResourceTry<R> =
+    mapCatching(resource, transform).flatMap { it }
 
 /**
  * Reads the full content as a [String].
@@ -185,7 +203,7 @@ public inline fun <R, S> ResourceTry<S>.flatMapCatching(transform: (value: S) ->
  * or falls back on UTF-8.
  */
 public suspend fun Resource.readAsString(charset: Charset? = null): ResourceTry<String> =
-    read().mapCatching {
+    read().mapCatching(this) {
         String(it, charset = charset ?: Charsets.UTF_8)
     }
 
@@ -193,19 +211,19 @@ public suspend fun Resource.readAsString(charset: Charset? = null): ResourceTry<
  * Reads the full content as a JSON object.
  */
 public suspend fun Resource.readAsJson(): ResourceTry<JSONObject> =
-    readAsString(charset = Charsets.UTF_8).mapCatching { JSONObject(it) }
+    readAsString(charset = Charsets.UTF_8).mapCatching(this) { JSONObject(it) }
 
 /**
  * Reads the full content as an XML document.
  */
 public suspend fun Resource.readAsXml(): ResourceTry<ElementNode> =
-    read().mapCatching { XmlParser().parse(ByteArrayInputStream(it)) }
+    read().mapCatching(this) { XmlParser().parse(ByteArrayInputStream(it)) }
 
 /**
  * Reads the full content as a [Bitmap].
  */
 public suspend fun Resource.readAsBitmap(): ResourceTry<Bitmap> =
-    read().mapCatching {
+    read().mapCatching(this) {
         BitmapFactory.decodeByteArray(it, 0, it.size)
             ?: throw kotlin.Exception("Could not decode resource as a bitmap")
     }

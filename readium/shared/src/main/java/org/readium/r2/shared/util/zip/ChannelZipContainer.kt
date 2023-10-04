@@ -37,7 +37,7 @@ internal class ChannelZipContainer(
 
     private inner class FailureEntry(
         override val url: Url
-    ) : Container.Entry, Resource by FailureResource(Resource.Exception.NotFound())
+    ) : Container.Entry, Resource by FailureResource(Resource.Exception.NotFound(url))
 
     private inner class Entry(
         override val url: Url,
@@ -68,7 +68,7 @@ internal class ChannelZipContainer(
         override suspend fun length(): ResourceTry<Long> =
             entry.size.takeUnless { it == -1L }
                 ?.let { Try.success(it) }
-                ?: Try.failure(Resource.Exception.Other(UnsupportedOperationException()))
+                ?: Try.failure(Resource.Exception.Other(url, UnsupportedOperationException()))
 
         private val compressedLength: Long?
             get() =
@@ -89,7 +89,7 @@ internal class ChannelZipContainer(
                         }
                     Try.success(bytes)
                 } catch (e: Exception) {
-                    Try.failure(Resource.Exception.wrap(e))
+                    Try.failure(Resource.Exception.wrap(url, e))
                 }
             }
 

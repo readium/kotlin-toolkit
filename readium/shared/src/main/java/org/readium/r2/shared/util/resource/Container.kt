@@ -51,7 +51,7 @@ public class EmptyContainer : Container {
     override suspend fun entries(): Set<Container.Entry> = emptySet()
 
     override fun get(url: Url): Container.Entry =
-        FailureResource(Resource.Exception.NotFound()).toEntry(url)
+        FailureResource(Resource.Exception.NotFound(url)).toEntry(url)
 
     override suspend fun close() {}
 }
@@ -65,7 +65,7 @@ public class ResourceContainer(url: Url, resource: Resource) : Container {
 
     override fun get(url: Url): Container.Entry {
         if (url.removeFragment().removeQuery() != entry.url) {
-            return FailureResource(Resource.Exception.NotFound()).toEntry(url)
+            return FailureResource(Resource.Exception.NotFound(url)).toEntry(url)
         }
 
         return entry

@@ -297,12 +297,14 @@ private sealed class RouteHandler {
             val text = query.firstNamedOrNull("text")
                 ?: return FailureResource(
                     Resource.Exception.BadRequest(
+                        url = url,
                         IllegalArgumentException("'text' parameter is required")
                     )
                 )
             val peek = (query.firstNamedOrNull("peek") ?: "false").toBooleanOrNull()
                 ?: return FailureResource(
                     Resource.Exception.BadRequest(
+                        url = url,
                         IllegalArgumentException("if present, 'peek' must be true or false")
                     )
                 )
@@ -310,7 +312,7 @@ private sealed class RouteHandler {
             val copyAllowed = with(service.rights) { if (peek) canCopy(text) else copy(text) }
 
             return if (!copyAllowed) {
-                FailureResource(Resource.Exception.Forbidden())
+                FailureResource(Resource.Exception.Forbidden(url))
             } else {
                 StringResource("true", MediaType.JSON)
             }
@@ -335,6 +337,7 @@ private sealed class RouteHandler {
             val pageCountString = query.firstNamedOrNull("pageCount")
                 ?: return FailureResource(
                     Resource.Exception.BadRequest(
+                        url = url,
                         IllegalArgumentException("'pageCount' parameter is required")
                     )
                 )
@@ -342,12 +345,14 @@ private sealed class RouteHandler {
             val pageCount = pageCountString.toIntOrNull()?.takeIf { it >= 0 }
                 ?: return FailureResource(
                     Resource.Exception.BadRequest(
+                        url = url,
                         IllegalArgumentException("'pageCount' must be a positive integer")
                     )
                 )
             val peek = (query.firstNamedOrNull("peek") ?: "false").toBooleanOrNull()
                 ?: return FailureResource(
                     Resource.Exception.BadRequest(
+                        url = url,
                         IllegalArgumentException("if present, 'peek' must be true or false")
                     )
                 )
@@ -363,7 +368,7 @@ private sealed class RouteHandler {
             }
 
             return if (!printAllowed) {
-                FailureResource(Resource.Exception.Forbidden())
+                FailureResource(Resource.Exception.Forbidden(url))
             } else {
                 StringResource("true", mediaType = MediaType.JSON)
             }

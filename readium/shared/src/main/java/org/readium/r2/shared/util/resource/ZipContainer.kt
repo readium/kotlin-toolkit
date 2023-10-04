@@ -101,13 +101,13 @@ internal class JavaZipContainer(
             )
 
         override suspend fun properties(): ResourceTry<Resource.Properties> =
-            Try.failure(Resource.Exception.NotFound())
+            Try.failure(Resource.Exception.NotFound(url))
 
         override suspend fun length(): ResourceTry<Long> =
-            Try.failure(Resource.Exception.NotFound())
+            Try.failure(Resource.Exception.NotFound(url))
 
         override suspend fun read(range: LongRange?): ResourceTry<ByteArray> =
-            Try.failure(Resource.Exception.NotFound())
+            Try.failure(Resource.Exception.NotFound(url))
 
         override suspend fun close() {
         }
@@ -139,7 +139,7 @@ internal class JavaZipContainer(
         override suspend fun length(): Try<Long, Resource.Exception> =
             entry.size.takeUnless { it == -1L }
                 ?.let { Try.success(it) }
-                ?: Try.failure(Resource.Exception.Other(Exception("Unsupported operation")))
+                ?: Try.failure(Resource.Exception.Other(url, Exception("Unsupported operation")))
 
         private val compressedLength: Long? =
             if (entry.method == ZipEntry.STORED || entry.method == -1) {
@@ -160,9 +160,9 @@ internal class JavaZipContainer(
                     Try.success(bytes)
                 }
             } catch (e: IOException) {
-                Try.failure(Resource.Exception.Unavailable(e))
+                Try.failure(Resource.Exception.Unavailable(url, e))
             } catch (e: Exception) {
-                Try.failure(Resource.Exception.wrap(e))
+                Try.failure(Resource.Exception.wrap(url, e))
             }
 
         private suspend fun readFully(): ByteArray =

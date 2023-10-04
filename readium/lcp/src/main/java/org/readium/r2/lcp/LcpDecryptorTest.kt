@@ -122,7 +122,7 @@ internal suspend fun Resource.readByChunks(
     groundTruth: ByteArray,
     shuffle: Boolean = true
 ) =
-    length().mapCatching { length ->
+    length().mapCatching(this) { length ->
         val blockNb = ceil(length / chunkSize.toDouble()).toInt()
         val blocks = (0 until blockNb)
             .map { Pair(it, it * chunkSize until kotlin.math.min(length, (it + 1) * chunkSize)) }
