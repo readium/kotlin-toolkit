@@ -1,4 +1,5 @@
 SCRIPTS_PATH := readium/navigator/src/main/assets/_scripts
+YARN := yarn --cwd $(SCRIPTS_PATH) services/client/
 
 help:
 	@echo "Usage: make <target>\n\n\
@@ -17,7 +18,7 @@ format:
 
 .PHONY: scripts
 scripts:
-	yarn --cwd "$(SCRIPTS_PATH)" install --frozen-lockfile
-	yarn --cwd "$(SCRIPTS_PATH)" run format
-	yarn --cwd "$(SCRIPTS_PATH)" run lint
-	yarn --cwd "$(SCRIPTS_PATH)" run bundle
+	$(YARN) install --frozen-lockfile
+	$(YARN) run format
+	$(YARN) run lint
+	$(YARN) run bundle
