@@ -48,6 +48,7 @@ internal class EpubNavigatorViewModel(
     val config: EpubNavigatorFragment.Configuration,
     initialPreferences: EpubPreferences,
     val layout: EpubLayout,
+    val listener: VisualNavigator.Listener?,
     private val defaults: EpubDefaults,
     private val server: WebViewServer
 ) : AndroidViewModel(application) {
@@ -66,7 +67,7 @@ internal class EpubNavigatorViewModel(
     }
 
     sealed class Event {
-        data class GoTo(val target: Link) : Event()
+        data class OpenInternalLink(val target: Link) : Event()
         data class OpenExternalLink(val url: Url) : Event()
 
         /** Refreshes all the resources in the view pager. */
@@ -177,7 +178,9 @@ internal class EpubNavigatorViewModel(
     fun navigateToUrl(url: AbsoluteUrl) = viewModelScope.launch {
         val link = internalLinkFromUrl(url)
         if (link != null) {
-            _events.send(Event.GoTo(link))
+            if (listener?.shouldJumpToLink(link) == true) {
+                _events.send(Event.OpenInternalLink(link))
+            }
         } else {
             _events.send(Event.OpenExternalLink(url))
         }
@@ -338,6 +341,7 @@ internal class EpubNavigatorViewModel(
             application: Application,
             publication: Publication,
             layout: EpubLayout,
+            listener: VisualNavigator.Listener?,
             defaults: EpubDefaults,
             config: EpubNavigatorFragment.Configuration,
             initialPreferences: EpubPreferences
@@ -348,6 +352,7 @@ internal class EpubNavigatorViewModel(
                 config,
                 initialPreferences,
                 layout,
+                listener,
                 defaults = defaults,
                 server = WebViewServer(
                     application,
