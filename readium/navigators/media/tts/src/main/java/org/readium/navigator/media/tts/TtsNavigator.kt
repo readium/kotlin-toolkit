@@ -208,11 +208,11 @@ public class TtsNavigator<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
         player.go(publication.normalizeLocator(locator))
     }
 
-    override fun goToPreviousUtterance() {
+    override fun skipToPreviousUtterance() {
         player.previousUtterance()
     }
 
-    override fun goToNextUtterance() {
+    override fun skipToNextUtterance() {
         player.nextUtterance()
     }
 

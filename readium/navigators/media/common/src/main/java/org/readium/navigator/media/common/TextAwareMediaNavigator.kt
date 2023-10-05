@@ -108,14 +108,14 @@ public interface TextAwareMediaNavigator<
      *
      * Does nothing if the current utterance is the first one.
      */
-    public fun goToPreviousUtterance()
+    public fun skipToPreviousUtterance()
 
     /**
      * Jumps to the next utterance.
      *
      * Does nothing if the current utterance is the last one.
      */
-    public fun goToNextUtterance()
+    public fun skipToNextUtterance()
 
     /**
      * Whether the current utterance has a previous one or is the first one.

@@ -205,11 +205,11 @@ class TtsViewModel private constructor(
     }
 
     fun previous() {
-        navigatorNow?.goToPreviousUtterance()
+        navigatorNow?.skipToPreviousUtterance()
     }
 
     fun next() {
-        navigatorNow?.goToNextUtterance()
+        navigatorNow?.skipToNextUtterance()
     }
 
     override fun onStopRequested() {
