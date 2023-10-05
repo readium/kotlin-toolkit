@@ -210,17 +210,21 @@ internal class JavaZipContainer(
     override val source: AbsoluteUrl = file.toUrl()
 
     override suspend fun entries(): Set<Container.Entry> =
-        archive.entries().toList()
-            .filterNot { it.isDirectory }
-            .mapNotNull { entry ->
-                Url.fromDecodedPath(entry.name)
-                    ?.let { url -> Entry(url, entry) }
-            }
-            .toSet()
+        tryOrLog {
+            archive.entries().toList()
+                .filterNot { it.isDirectory }
+                .mapNotNull { entry ->
+                    Url.fromDecodedPath(entry.name)
+                        ?.let { url -> Entry(url, entry) }
+                }
+                .toSet()
+        } ?: emptySet()
 
     override fun get(url: Url): Container.Entry =
         (url as? RelativeUrl)?.path
-            ?.let { archive.getEntry(it) }
+            ?.let {
+                tryOrLog { archive.getEntry(it) }
+            }
             ?.let { Entry(url, it) }
             ?: FailureEntry(url)
 
