@@ -6,6 +6,8 @@
 
 package org.readium.r2.shared.publication.services.content.iterators
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 import org.jsoup.nodes.Node
@@ -146,42 +148,43 @@ public class HtmlResourceContentIterator internal constructor(
 
     private var parsedElements: ParsedElements? = null
 
-    private suspend fun parseElements(): ParsedElements {
-        val document = resource.use { res ->
-            val html = res.readAsString().getOrElse {
-                Timber.w(it, "Failed to read HTML resource")
-                return ParsedElements()
+    private suspend fun parseElements(): ParsedElements =
+        withContext(Dispatchers.Default) {
+            val document = resource.use { res ->
+                val html = res.readAsString().getOrElse {
+                    Timber.w(it, "Failed to read HTML resource")
+                    return@withContext ParsedElements()
+                }
+
+                Jsoup.parse(html)
             }
 
-            Jsoup.parse(html)
-        }
-
-        val contentParser = ContentParser(
-            baseLocator = locator,
-            startElement = locator.locations.cssSelector?.let {
-                tryOrNull { document.selectFirst(it) }
-            },
-            beforeMaxLength = beforeMaxLength
-        )
-        NodeTraversor.traverse(contentParser, document.body())
-        val elements = contentParser.result()
-        val elementCount = elements.elements.size
-        if (elementCount == 0) {
-            return elements
-        }
-
-        return elements.copy(
-            elements = elements.elements.mapIndexed { index, element ->
-                val progression = index.toDouble() / elementCount
-                element.copy(
-                    progression = progression,
-                    totalProgression = totalProgressionRange?.let {
-                        totalProgressionRange.start + progression * (totalProgressionRange.endInclusive - totalProgressionRange.start)
-                    }
-                )
+            val contentParser = ContentParser(
+                baseLocator = locator,
+                startElement = locator.locations.cssSelector?.let {
+                    tryOrNull { document.selectFirst(it) }
+                },
+                beforeMaxLength = beforeMaxLength
+            )
+            NodeTraversor.traverse(contentParser, document.body())
+            val elements = contentParser.result()
+            val elementCount = elements.elements.size
+            if (elementCount == 0) {
+                return@withContext elements
             }
-        )
-    }
+
+            elements.copy(
+                elements = elements.elements.mapIndexed { index, element ->
+                    val progression = index.toDouble() / elementCount
+                    element.copy(
+                        progression = progression,
+                        totalProgression = totalProgressionRange?.let {
+                            totalProgressionRange.start + progression * (totalProgressionRange.endInclusive - totalProgressionRange.start)
+                        }
+                    )
+                }
+            )
+        }
 
     private fun Content.Element.copy(progression: Double?, totalProgression: Double?): Content.Element {
         fun Locator.update(): Locator =
