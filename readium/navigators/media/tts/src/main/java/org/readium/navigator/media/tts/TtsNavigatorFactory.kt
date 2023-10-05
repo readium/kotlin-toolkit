@@ -34,7 +34,7 @@ public class TtsNavigatorFactory<S : TtsEngine.Settings, P : TtsEngine.Preferenc
 ) {
     public companion object {
 
-        public suspend operator fun invoke(
+        public operator fun invoke(
             application: Application,
             publication: Publication,
             tokenizerFactory: (language: Language?) -> TextTokenizer = defaultTokenizerFactory,
@@ -57,24 +57,23 @@ public class TtsNavigatorFactory<S : TtsEngine.Settings, P : TtsEngine.Preferenc
             )
         }
 
-        public suspend operator fun <S : TtsEngine.Settings, P : TtsEngine.Preferences<P>, E : PreferencesEditor<P>,
+        public operator fun <S : TtsEngine.Settings, P : TtsEngine.Preferences<P>, E : PreferencesEditor<P>,
             F : TtsEngine.Error, V : TtsEngine.Voice> invoke(
             application: Application,
             publication: Publication,
             ttsEngineProvider: TtsEngineProvider<S, P, E, F, V>,
             tokenizerFactory: (language: Language?) -> TextTokenizer = defaultTokenizerFactory,
             metadataProvider: MediaMetadataProvider = defaultMediaMetadataProvider
-        ): TtsNavigatorFactory<S, P, E, F, V>? {
-            return createNavigatorFactory(
+        ): TtsNavigatorFactory<S, P, E, F, V>? =
+            createNavigatorFactory(
                 application,
                 publication,
                 ttsEngineProvider,
                 tokenizerFactory,
                 metadataProvider
             )
-        }
 
-        private suspend fun <S : TtsEngine.Settings, P : TtsEngine.Preferences<P>, E : PreferencesEditor<P>,
+        private fun <S : TtsEngine.Settings, P : TtsEngine.Preferences<P>, E : PreferencesEditor<P>,
             F : TtsEngine.Error, V : TtsEngine.Voice> createNavigatorFactory(
             application: Application,
             publication: Publication,
@@ -82,10 +81,7 @@ public class TtsNavigatorFactory<S : TtsEngine.Settings, P : TtsEngine.Preferenc
             tokenizerFactory: (language: Language?) -> TextTokenizer,
             metadataProvider: MediaMetadataProvider
         ): TtsNavigatorFactory<S, P, E, F, V>? {
-            publication.content()
-                ?.iterator()
-                ?.takeIf { it.hasNext() }
-                ?: return null
+            publication.content() ?: return null
 
             return TtsNavigatorFactory(
                 application,

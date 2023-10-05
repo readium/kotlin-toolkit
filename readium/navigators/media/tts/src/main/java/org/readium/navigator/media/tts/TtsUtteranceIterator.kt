@@ -105,6 +105,19 @@ internal class TtsUtteranceIterator(
     private fun createIterator(locator: Locator?): Content.Iterator =
         contentService.content(locator).iterator()
 
+    suspend fun hasPrevious(): Boolean =
+        hasNextIn(Direction.Backward)
+
+    suspend fun hasNext(): Boolean =
+        hasNextIn(Direction.Forward)
+
+    private suspend fun hasNextIn(direction: Direction): Boolean {
+        if (utterances.isEmpty()) {
+            loadNextUtterances(direction)
+        }
+        return utterances.hasNextIn(direction)
+    }
+
     /**
      * Advances to the previous item and returns it, or null if we reached the beginning.
      */
@@ -216,6 +229,12 @@ internal class TtsUtteranceIterator(
             else -> emptyList()
         }
     }
+
+    private fun <E> CursorList<E>.hasNextIn(direction: Direction): Boolean =
+        when (direction) {
+            Direction.Forward -> hasNext()
+            Direction.Backward -> hasPrevious()
+        }
 
     private fun <E> CursorList<E>.nextIn(direction: Direction): E? =
         when (direction) {
