@@ -41,7 +41,7 @@ jobs:
 
   lint-js:
     name: Lint JavaScript
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
     if: ${{ !github.event.pull_request.draft }}
     env:
       scripts: ${{ 'readium/navigator/src/main/assets/_scripts' }}
