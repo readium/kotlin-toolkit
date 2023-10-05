@@ -29,5 +29,5 @@
     "hash.js": "^1.1.7",
     "string.prototype.matchall": "^4.0.5"
   },
-  "packageManager": "pnpm@8.8.0"
+  "packageManager": "pnpm@8.8.0+sha256.d713a5750e41c3660d1e090608c7f607ad00d1dd5ba9b6552b5f390bf37924e9"
 }

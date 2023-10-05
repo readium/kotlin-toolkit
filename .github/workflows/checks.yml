@@ -46,18 +46,22 @@ jobs:
     defaults:
       run:
         working-directory: readium/navigator/src/main/assets/_scripts
-    env:
-      scripts: ${{ 'src/main/assets/_scripts' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-      - name: Setup Node.js
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          package_json_file: readium/navigator/src/main/assets/_scripts/package.json
+          run_install: false
+      - name: Setup cache
         uses: actions/setup-node@v3
         with:
           node-version: 20
-          corepack-enable: true
+          cache: 'pnpm'
+          cache-dependency-path: readium/navigator/src/main/assets/_scripts/pnpm-lock.yaml
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install
       - name: Lint
         run: pnpm run lint
       - name: Check formatting
