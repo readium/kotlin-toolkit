@@ -65,8 +65,7 @@ jobs:
         run: pnpm --dir "$scripts" run lint
       - name: Check formatting
         run: pnpm --dir "$scripts" run checkformat
-      # FIXME: This suddenly stopped working even though the toolchain versions seem identical.
-      # - name: Check if bundled scripts are up-to-date
-      #   run: |
-      #       make scripts
-      #       git diff --exit-code --name-only src/main/assets/readium/scripts/*.js
+      - name: Check if bundled scripts are up-to-date
+        run: |
+           make scripts
+           git diff --exit-code --name-only readium/navigator/src/main/assets/readium/scripts/*.js
