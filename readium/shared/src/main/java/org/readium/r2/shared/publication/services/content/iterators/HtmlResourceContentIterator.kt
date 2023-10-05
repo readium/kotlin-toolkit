@@ -16,6 +16,7 @@ import org.jsoup.parser.Parser
 import org.jsoup.select.NodeTraversor
 import org.jsoup.select.NodeVisitor
 import org.readium.r2.shared.ExperimentalReadiumApi
+import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.extensions.tryOrNull
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
@@ -259,9 +260,12 @@ public class HtmlResourceContentIterator internal constructor(
 
         private data class ParentElement(
             val element: Element,
-            val cssSelector: String
+            val cssSelector: String?
         ) {
-            constructor(element: Element) : this(element, element.cssSelector())
+            constructor(element: Element) : this(
+                element = element,
+                cssSelector = tryOrLog { element.cssSelector() }
+            )
         }
 
         override fun head(node: Node, depth: Int) {
@@ -278,7 +282,9 @@ public class HtmlResourceContentIterator internal constructor(
                     baseLocator.copy(
                         locations = Locator.Locations(
                             otherLocations = buildMap {
-                                put("cssSelector", parent.cssSelector as Any)
+                                parent.cssSelector?.let {
+                                    put("cssSelector", it as Any)
+                                }
                             }
                         )
                     )
@@ -405,8 +411,8 @@ public class HtmlResourceContentIterator internal constructor(
                     locator = baseLocator.copy(
                         locations = Locator.Locations(
                             otherLocations = buildMap {
-                                parent?.let {
-                                    put("cssSelector", it.cssSelector as Any)
+                                parent?.cssSelector?.let {
+                                    put("cssSelector", it as Any)
                                 }
                             }
                         ),
@@ -445,8 +451,8 @@ public class HtmlResourceContentIterator internal constructor(
                         locator = baseLocator.copy(
                             locations = Locator.Locations(
                                 otherLocations = buildMap {
-                                    parent?.let {
-                                        put("cssSelector", it.cssSelector as Any)
+                                    parent?.cssSelector?.let {
+                                        put("cssSelector", it as Any)
                                     }
                                 }
                             ),
