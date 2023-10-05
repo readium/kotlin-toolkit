@@ -45,23 +45,23 @@ jobs:
     if: ${{ !github.event.pull_request.draft }}
     defaults:
       run:
-        working-directory: readium/navigator
+        working-directory: readium/navigator/src/main/assets/_scripts
     env:
       scripts: ${{ 'src/main/assets/_scripts' }}
     steps:
-      - name: Enable Corepack
-        if: inputs.enable-corepack == 'true'
-        shell: bash
-        working-directory: ${{ inputs.cwd }}
-        run: corepack enable
       - name: Checkout
         uses: actions/checkout@v3
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
+          corepack-enable: true
       - name: Install dependencies
-        run: yarn --cwd "$scripts" install --frozen-lockfile
+        run: pnpm install --frozen-lockfile
       - name: Lint
-        run: yarn --cwd "$scripts" run lint
+        run: pnpm run lint
       - name: Check formatting
-        run: yarn --cwd "$scripts" run checkformat
+        run: pnpm run checkformat
       # FIXME: This suddenly stopped working even though the toolchain versions seem identical.
       # - name: Check if bundled scripts are up-to-date
       #   run: |

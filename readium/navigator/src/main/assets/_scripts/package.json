@@ -29,5 +29,5 @@
     "hash.js": "^1.1.7",
     "string.prototype.matchall": "^4.0.5"
   },
-  "packageManager": "yarn@3.6.4"
+  "packageManager": "pnpm@8.8.0"
 }
