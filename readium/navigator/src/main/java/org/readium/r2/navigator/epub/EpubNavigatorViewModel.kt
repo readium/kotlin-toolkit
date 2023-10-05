@@ -181,7 +181,7 @@ internal class EpubNavigatorViewModel(
                 _events.send(Event.OpenInternalLink(link))
             }
         } else {
-            listener?.onOpenExternalLinkRequested(url)
+            listener?.onExternalLinkClicked(url)
         }
     }
 

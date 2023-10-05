@@ -35,6 +35,6 @@ public interface HyperlinkNavigator : Navigator {
          * Called when a link to an external URL was clicked in the navigator.
          */
         @ExperimentalReadiumApi
-        public fun onOpenExternalLinkRequested(url: AbsoluteUrl)
+        public fun onExternalLinkClicked(url: AbsoluteUrl)
     }
 }
