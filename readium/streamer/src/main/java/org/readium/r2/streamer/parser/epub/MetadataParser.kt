@@ -11,6 +11,7 @@ import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 import org.readium.r2.shared.util.xml.ElementNode
+import org.readium.r2.streamer.parser.epub.extensions.fromEpubHref
 
 internal class MetadataParser(
     private val prefixMap: Map<String, String>,
@@ -38,7 +39,7 @@ internal class MetadataParser(
         }
 
     private fun parseLinkElement(element: ElementNode, filePath: Url): MetadataItem.Link? {
-        val href = element.getAttr("href")?.let { Url(it) } ?: return null
+        val href = element.getAttr("href")?.let { Url.fromEpubHref(it) } ?: return null
         val relAttr = element.getAttr("rel").orEmpty()
         val rel = parseProperties(relAttr).map { resolveProperty(it, prefixMap, DEFAULT_VOCAB.LINK) }
         val propAttr = element.getAttr("properties").orEmpty()

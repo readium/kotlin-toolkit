@@ -26,6 +26,7 @@ import org.readium.r2.shared.util.resource.readAsXml
 import org.readium.r2.shared.util.use
 import org.readium.r2.streamer.extensions.readAsXmlOrNull
 import org.readium.r2.streamer.parser.PublicationParser
+import org.readium.r2.streamer.parser.epub.extensions.fromEpubHref
 
 /**
  * Parses a Publication from an EPUB publication.
@@ -98,7 +99,7 @@ public class EpubParser(
             .getFirst("rootfiles", Namespaces.OPC)
             ?.getFirst("rootfile", Namespaces.OPC)
             ?.getAttr("full-path")
-            ?.let { Url(it) }
+            ?.let { Url.fromEpubHref(it) }
             ?.let { Try.success(it) }
             ?: Try.failure(PublicationParser.Error.ParsingFailed("Cannot successfully parse OPF."))
 

@@ -10,6 +10,7 @@ import org.readium.r2.shared.MediaOverlayNode
 import org.readium.r2.shared.MediaOverlays
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.xml.ElementNode
+import org.readium.r2.streamer.parser.epub.extensions.fromEpubHref
 
 internal object SmilParser {
     /* According to https://www.w3.org/publishing/epub3/epub-mediaoverlays.html#sec-overlays-content-conf
@@ -39,7 +40,7 @@ internal object SmilParser {
        - the seq element has an textref attribute (this is mandatory according to the EPUB spec)
        */
         val textref = node.getAttrNs("textref", Namespaces.OPS)
-            ?.let { Url(it) }
+            ?.let { Url.fromEpubHref(it) }
         val audioFiles = children.mapNotNull(MediaOverlayNode::audioFile)
         return if (textref != null && audioFiles.distinct().size == 1) { // hierarchy
             val normalizedTextref = filePath.resolve(textref)
@@ -52,7 +53,7 @@ internal object SmilParser {
     private fun parsePar(node: ElementNode, filePath: Url): MediaOverlayNode? {
         val text = node.getFirst("text", Namespaces.SMIL)
             ?.getAttr("src")
-            ?.let { Url(it) }
+            ?.let { Url.fromEpubHref(it) }
             ?: return null
         val audio = node.getFirst("audio", Namespaces.SMIL)
             ?.let { audioNode ->
@@ -61,7 +62,7 @@ internal object SmilParser {
                 val end = audioNode.getAttr("clipEnd")?.let { ClockValueParser.parse(it) } ?: ""
                 "$src#t=$begin,$end"
             }
-            ?.let { Url(it) }
+            ?.let { Url.fromEpubHref(it) }
 
         return MediaOverlayNode(
             filePath.resolve(text),
@@ -75,7 +76,7 @@ internal object SmilParser {
         val file = audioChildren.first().audioFile
         val start = audioChildren.first().clip.start ?: ""
         val end = audioChildren.last().clip.end ?: ""
-        val audio = Url("$file#t=$start,$end")
+        val audio = Url.fromEpubHref("$file#t=$start,$end")
         return MediaOverlayNode(text, audio, children, listOf("section"))
     }
 }
