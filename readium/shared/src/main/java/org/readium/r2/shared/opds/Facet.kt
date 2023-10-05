@@ -9,10 +9,25 @@
 
 package org.readium.r2.shared.opds
 
+import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.publication.Link
 
 public data class Facet(
     val title: String,
-    var metadata: OpdsMetadata = OpdsMetadata(title = title),
-    var links: MutableList<Link> = mutableListOf()
-)
+    val metadata: OpdsMetadata = OpdsMetadata(title = title),
+    val links: List<Link> = emptyList()
+) {
+    @InternalReadiumApi
+    public data class Builder(
+        val title: String,
+        val metadata: OpdsMetadata.Builder = OpdsMetadata.Builder(title = title),
+        val links: MutableList<Link> = mutableListOf()
+    ) {
+        public fun build(): Facet =
+            Facet(
+                title = title,
+                metadata = metadata.build(),
+                links = links.toList()
+            )
+    }
+}

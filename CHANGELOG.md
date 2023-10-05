@@ -58,7 +58,11 @@ All notable changes to this project will be documented in this file. Take a look
 
 #### Streamer
 
-* Fix issue with the TTS starting from the beginning of the chapter instead of the current position.
+* Fixed issue with the TTS starting from the beginning of the chapter instead of the current position.
+
+#### OPDS
+
+* Fixed race conditions causing `ConcurrentModificationException` to be thrown when parsing an OPDS 2 feed.
 
 ## [2.3.0]
 
