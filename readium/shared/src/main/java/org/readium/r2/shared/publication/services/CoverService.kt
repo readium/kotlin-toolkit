@@ -111,7 +111,7 @@ public abstract class GeneratedCoverService : CoverService {
 
             if (png == null) {
                 val error = Exception("Unable to convert cover to PNG.")
-                FailureResource(href, error)
+                FailureResource(error)
             } else {
                 BytesResource(png, mediaType = MediaType.PNG)
             }

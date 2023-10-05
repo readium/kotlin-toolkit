@@ -119,13 +119,13 @@ public class FileResource private constructor(
         try {
             success(closure())
         } catch (e: FileNotFoundException) {
-            failure(Resource.Exception.NotFound(file.toUrl(), e))
+            failure(Resource.Exception.NotFound(e))
         } catch (e: SecurityException) {
-            failure(Resource.Exception.Forbidden(file.toUrl(), e))
+            failure(Resource.Exception.Forbidden(e))
         } catch (e: Exception) {
-            failure(Resource.Exception.wrap(file.toUrl(), e))
+            failure(Resource.Exception.wrap(e))
         } catch (e: OutOfMemoryError) { // We don't want to catch any Error, only OOM.
-            failure(Resource.Exception.wrap(file.toUrl(), e))
+            failure(Resource.Exception.wrap(e))
         }
 
     override fun toString(): String =

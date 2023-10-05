@@ -42,7 +42,7 @@ public class RoutingContainer(private val routes: List<Route>) : Container {
 
     override fun get(url: Url): Container.Entry =
         routes.firstOrNull { it.accepts(url) }?.container?.get(url)
-            ?: FailureResource(Resource.Exception.NotFound(url)).toEntry(url)
+            ?: FailureResource(Resource.Exception.NotFound()).toEntry(url)
 
     override suspend fun close() {
         routes.forEach { it.container.close() }

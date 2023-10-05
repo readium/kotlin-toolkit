@@ -51,7 +51,7 @@ internal class LcpDecryptor(
             }
 
             when {
-                license == null -> FailureResource(Resource.Exception.Forbidden(resource))
+                license == null -> FailureResource(Resource.Exception.Forbidden())
                 encryption.isDeflated || !encryption.isCbcEncrypted -> FullLcpResource(
                     resource,
                     encryption,
@@ -76,7 +76,7 @@ internal class LcpDecryptor(
     ) : TransformingResource(resource) {
 
         override suspend fun transform(data: ResourceTry<ByteArray>): ResourceTry<ByteArray> =
-            license.decryptFully(this, data, encryption.isDeflated)
+            license.decryptFully(data, encryption.isDeflated)
 
         override suspend fun length(): ResourceTry<Long> =
             encryption.originalLength?.let { Try.success(it) }
@@ -127,14 +127,14 @@ internal class LcpDecryptor(
         }
 
         private suspend fun lengthFromPadding(): ResourceTry<Long> =
-            resource.length().flatMapCatching(resource) { length ->
+            resource.length().flatMapCatching { length ->
                 if (length < 2 * AES_BLOCK_SIZE) {
                     throw Exception("Invalid CBC-encrypted stream")
                 }
 
                 val readOffset = length - (2 * AES_BLOCK_SIZE)
                 resource.read(readOffset..length)
-                    .mapCatching(resource) { bytes ->
+                    .mapCatching { bytes ->
                         val decryptedBytes = license.decrypt(bytes)
                             .getOrElse {
                                 throw Exception(
@@ -152,7 +152,7 @@ internal class LcpDecryptor(
 
         override suspend fun read(range: LongRange?): ResourceTry<ByteArray> {
             if (range == null) {
-                return license.decryptFully(resource, resource.read(), isDeflated = false)
+                return license.decryptFully(resource.read(), isDeflated = false)
             }
 
             @Suppress("NAME_SHADOWING")
@@ -164,13 +164,13 @@ internal class LcpDecryptor(
                 return Try.success(ByteArray(0))
             }
 
-            return resource.length().flatMapCatching(resource) { encryptedLength ->
+            return resource.length().flatMapCatching { encryptedLength ->
                 // encrypted data is shifted by AES_BLOCK_SIZE because of IV and
                 // the previous block must be provided to perform XOR on intermediate blocks
                 val encryptedStart = range.first.floorMultipleOf(AES_BLOCK_SIZE.toLong())
                 val encryptedEndExclusive = (range.last + 1).ceilMultipleOf(AES_BLOCK_SIZE.toLong()) + AES_BLOCK_SIZE
 
-                getEncryptedData(encryptedStart until encryptedEndExclusive).mapCatching(resource) { encryptedData ->
+                getEncryptedData(encryptedStart until encryptedEndExclusive).mapCatching { encryptedData ->
                     if (encryptedData.size >= _cache.data.size) {
                         // cache the three last encrypted blocks that have been read for future use
                         val cacheStart = encryptedData.size - _cache.data.size
@@ -233,12 +233,8 @@ internal class LcpDecryptor(
     }
 }
 
-private suspend fun LcpLicense.decryptFully(
-    resource: Resource,
-    data: ResourceTry<ByteArray>,
-    isDeflated: Boolean
-): ResourceTry<ByteArray> =
-    data.mapCatching(resource) { encryptedData ->
+private suspend fun LcpLicense.decryptFully(data: ResourceTry<ByteArray>, isDeflated: Boolean): ResourceTry<ByteArray> =
+    data.mapCatching { encryptedData ->
         // Decrypts the resource.
         var bytes = decrypt(encryptedData)
             .getOrElse { throw Exception("Failed to decrypt the resource", it) }

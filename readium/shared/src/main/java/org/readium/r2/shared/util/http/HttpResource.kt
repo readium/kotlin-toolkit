@@ -34,7 +34,7 @@ public class HttpResource(
             return if (contentLength != null) {
                 Try.success(contentLength)
             } else {
-                Try.failure(Resource.Exception.Unavailable(source))
+                Try.failure(Resource.Exception.Unavailable())
             }
         }
 
@@ -52,9 +52,9 @@ public class HttpResource(
                 }
             }
         } catch (e: HttpException) {
-            Try.failure(Resource.Exception.wrapHttp(source, e))
+            Try.failure(Resource.Exception.wrapHttp(e))
         } catch (e: Exception) {
-            Try.failure(Resource.Exception.wrap(source, e))
+            Try.failure(Resource.Exception.wrap(e))
         }
     }
 
@@ -67,7 +67,7 @@ public class HttpResource(
         }
 
         _headResponse = client.head(HttpRequest(source.toString()))
-            .mapFailure { Resource.Exception.wrapHttp(source, it) }
+            .mapFailure { Resource.Exception.wrapHttp(it) }
 
         return _headResponse
     }
@@ -106,7 +106,7 @@ public class HttpResource(
                 }
             }
             .map { CountingInputStream(it.body) }
-            .mapFailure { Resource.Exception.wrapHttp(source, it) }
+            .mapFailure { Resource.Exception.wrapHttp(it) }
             .onSuccess {
                 inputStream = it
                 inputStreamStart = from ?: 0
@@ -116,20 +116,20 @@ public class HttpResource(
     private var inputStream: CountingInputStream? = null
     private var inputStreamStart = 0L
 
-    private fun Resource.Exception.Companion.wrapHttp(url: AbsoluteUrl, e: HttpException): Resource.Exception =
+    private fun Resource.Exception.Companion.wrapHttp(e: HttpException): Resource.Exception =
         when (e.kind) {
             HttpException.Kind.MalformedRequest, HttpException.Kind.BadRequest, HttpException.Kind.MethodNotAllowed ->
-                Resource.Exception.BadRequest(url, cause = e)
+                Resource.Exception.BadRequest(cause = e)
             HttpException.Kind.Timeout, HttpException.Kind.Offline ->
-                Resource.Exception.Unavailable(url, e)
+                Resource.Exception.Unavailable(e)
             HttpException.Kind.Unauthorized, HttpException.Kind.Forbidden ->
-                Resource.Exception.Forbidden(url, e)
+                Resource.Exception.Forbidden(e)
             HttpException.Kind.NotFound ->
-                Resource.Exception.NotFound(url, e)
+                Resource.Exception.NotFound(e)
             HttpException.Kind.Cancelled ->
-                Resource.Exception.Unavailable(url, e)
+                Resource.Exception.Unavailable(e)
             HttpException.Kind.MalformedResponse, HttpException.Kind.ClientError, HttpException.Kind.ServerError, HttpException.Kind.Other ->
-                Resource.Exception.Other(url, e)
+                Resource.Exception.Other(e)
         }
 
     public companion object {

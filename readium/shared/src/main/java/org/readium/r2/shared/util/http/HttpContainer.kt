@@ -35,7 +35,6 @@ public class HttpContainer(
         return if (absoluteUrl == null || !absoluteUrl.isHttp) {
             FailureResource(
                 Resource.Exception.NotFound(
-                    url,
                     Exception("URL scheme is not supported: ${absoluteUrl?.scheme}.")
                 )
             )

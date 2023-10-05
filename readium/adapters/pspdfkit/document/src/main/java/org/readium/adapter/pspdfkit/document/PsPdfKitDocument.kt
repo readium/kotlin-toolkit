@@ -33,18 +33,20 @@ public class PsPdfKitDocumentFactory(context: Context) : PdfDocumentFactory<PsPd
     override val documentType: KClass<PsPdfKitDocument> = PsPdfKitDocument::class
 
     override suspend fun open(resource: Resource, password: String?): ResourceTry<PsPdfKitDocument> =
+        open(context, DocumentSource(ResourceDataProvider(resource), password))
+
+    private suspend fun open(context: Context, documentSource: DocumentSource): ResourceTry<PsPdfKitDocument> =
         withContext(Dispatchers.IO) {
             try {
-                val documentSource = DocumentSource(ResourceDataProvider(resource), password)
                 Try.success(
                     PsPdfKitDocument(PdfDocumentLoader.openDocument(context, documentSource))
                 )
             } catch (e: InvalidPasswordException) {
-                Try.failure(Resource.Exception.Forbidden(resource, e))
+                Try.failure(Resource.Exception.Forbidden(e))
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Throwable) {
-                Try.failure(Resource.Exception.wrap(resource, e))
+                Try.failure(Resource.Exception.wrap(e))
             }
         }
 }

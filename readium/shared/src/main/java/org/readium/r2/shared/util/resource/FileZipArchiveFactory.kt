@@ -14,7 +14,6 @@ import kotlinx.coroutines.withContext
 import org.readium.r2.shared.util.MessageError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
-import org.readium.r2.shared.util.toUrl
 
 /**
  * An [ArchiveFactory] to open local ZIP files with Java's [ZipFile].
@@ -32,9 +31,7 @@ public class FileZipArchiveFactory(
             ?.let { open(it) }
             ?: Try.Failure(
                 ArchiveFactory.Error.FormatNotSupported(
-                    MessageError(
-                        "Resource not supported because the file cannot be directly accessed."
-                    )
+                    MessageError("Resource not supported because file cannot be directly accessed.")
                 )
             )
     }
@@ -48,17 +45,9 @@ public class FileZipArchiveFactory(
             } catch (e: ZipException) {
                 Try.failure(ArchiveFactory.Error.FormatNotSupported(e))
             } catch (e: SecurityException) {
-                Try.failure(
-                    ArchiveFactory.Error.ResourceReading(
-                        Resource.Exception.Forbidden(file.toUrl(), e)
-                    )
-                )
+                Try.failure(ArchiveFactory.Error.ResourceReading(Resource.Exception.Forbidden(e)))
             } catch (e: Exception) {
-                Try.failure(
-                    ArchiveFactory.Error.ResourceReading(
-                        Resource.Exception.wrap(file.toUrl(), e)
-                    )
-                )
+                Try.failure(ArchiveFactory.Error.ResourceReading(Resource.Exception.wrap(e)))
             }
         }
 }

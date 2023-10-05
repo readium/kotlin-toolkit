@@ -17,7 +17,6 @@ import org.readium.r2.shared.extensions.*
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.mediatype.MediaType
-import org.readium.r2.shared.util.toUrl
 
 internal class FileChannelResource(
     override val source: AbsoluteUrl?,
@@ -83,7 +82,7 @@ internal class FileChannelResource(
                     check(channel.isOpen)
                     Try.success(channel.size())
                 } catch (e: IOException) {
-                    Try.failure(Resource.Exception.Unavailable(file?.toUrl(), e))
+                    Try.failure(Resource.Exception.Unavailable(e))
                 }
             }
         }
@@ -95,13 +94,13 @@ internal class FileChannelResource(
         try {
             success(closure())
         } catch (e: FileNotFoundException) {
-            failure(Resource.Exception.NotFound(file?.toUrl(), e))
+            failure(Resource.Exception.NotFound(e))
         } catch (e: SecurityException) {
-            failure(Resource.Exception.Forbidden(file?.toUrl(), e))
+            failure(Resource.Exception.Forbidden(e))
         } catch (e: Exception) {
-            failure(Resource.Exception.wrap(file?.toUrl(), e))
+            failure(Resource.Exception.wrap(e))
         } catch (e: OutOfMemoryError) { // We don't want to catch any Error, only OOM.
-            failure(Resource.Exception.wrap(file?.toUrl(), e))
+            failure(Resource.Exception.wrap(e))
         }
 
     override fun toString(): String =
