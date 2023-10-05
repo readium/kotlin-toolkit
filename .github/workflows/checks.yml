@@ -64,7 +64,7 @@ jobs:
       - name: Lint
         run: pnpm --dir "$scripts" run lint
       - name: Check formatting
-        run: pnpm --dir "$scripts"run checkformat
+        run: pnpm --dir "$scripts" run checkformat
       # FIXME: This suddenly stopped working even though the toolchain versions seem identical.
       # - name: Check if bundled scripts are up-to-date
       #   run: |
