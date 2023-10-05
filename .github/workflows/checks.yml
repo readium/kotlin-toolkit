@@ -43,9 +43,8 @@ jobs:
     name: Lint JavaScript
     runs-on: macos-latest
     if: ${{ !github.event.pull_request.draft }}
-    defaults:
-      run:
-        working-directory: readium/navigator/src/main/assets/_scripts
+    env:
+      scripts: ${{ 'readium/navigator/src/main/assets/_scripts' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -61,11 +60,11 @@ jobs:
           cache: 'pnpm'
           cache-dependency-path: readium/navigator/src/main/assets/_scripts/pnpm-lock.yaml
       - name: Install dependencies
-        run: pnpm install
+        run: pnpm --dir "$scripts" install
       - name: Lint
-        run: pnpm run lint
+        run: pnpm --dir "$scripts" run lint
       - name: Check formatting
-        run: pnpm run checkformat
+        run: pnpm --dir "$scripts"run checkformat
       # FIXME: This suddenly stopped working even though the toolchain versions seem identical.
       # - name: Check if bundled scripts are up-to-date
       #   run: |
