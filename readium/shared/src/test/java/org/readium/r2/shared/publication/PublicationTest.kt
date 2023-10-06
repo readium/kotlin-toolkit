@@ -121,7 +121,10 @@ class PublicationTest {
     @Test fun `get {baseUrl} computes the URL from the {self} link`() {
         val publication = createPublication(
             links = listOf(
-                Link(href = Href("http://domain.com/path/manifest.json")!!, rels = setOf("self"))
+                Link(
+                    href = Href(Url("http://domain.com/path/manifest.json")!!),
+                    rels = setOf("self")
+                )
             )
         )
         assertEquals(
@@ -144,24 +147,24 @@ class PublicationTest {
         assertTrue(
             createPublication(
                 readingOrder = listOf(
-                    Link(href = Href("c1.mp3")!!, mediaType = MediaType.MP3),
-                    Link(href = Href("c2.aac")!!, mediaType = MediaType.AAC)
+                    Link(href = Href(Url("c1.mp3")!!), mediaType = MediaType.MP3),
+                    Link(href = Href(Url("c2.aac")!!), mediaType = MediaType.AAC)
                 )
             ).conformsTo(Profile.AUDIOBOOK)
         )
         assertTrue(
             createPublication(
                 readingOrder = listOf(
-                    Link(href = Href("c1.jpg")!!, mediaType = MediaType.JPEG),
-                    Link(href = Href("c2.png")!!, mediaType = MediaType.PNG)
+                    Link(href = Href(Url("c1.jpg")!!), mediaType = MediaType.JPEG),
+                    Link(href = Href(Url("c2.png")!!), mediaType = MediaType.PNG)
                 )
             ).conformsTo(Profile.DIVINA)
         )
         assertTrue(
             createPublication(
                 readingOrder = listOf(
-                    Link(href = Href("c1.pdf")!!, mediaType = MediaType.PDF),
-                    Link(href = Href("c2.pdf")!!, mediaType = MediaType.PDF)
+                    Link(href = Href(Url("c1.pdf")!!), mediaType = MediaType.PDF),
+                    Link(href = Href(Url("c2.pdf")!!), mediaType = MediaType.PDF)
                 )
             ).conformsTo(Profile.PDF)
         )
@@ -170,16 +173,16 @@ class PublicationTest {
         assertFalse(
             createPublication(
                 readingOrder = listOf(
-                    Link(href = Href("c1.mp3")!!, mediaType = MediaType.MP3),
-                    Link(href = Href("c2.jpg")!!, mediaType = MediaType.JPEG)
+                    Link(href = Href(Url("c1.mp3")!!), mediaType = MediaType.MP3),
+                    Link(href = Href(Url("c2.jpg")!!), mediaType = MediaType.JPEG)
                 )
             ).conformsTo(Profile.AUDIOBOOK)
         )
         assertFalse(
             createPublication(
                 readingOrder = listOf(
-                    Link(href = Href("c1.mp3")!!, mediaType = MediaType.MP3),
-                    Link(href = Href("c2.jpg")!!, mediaType = MediaType.JPEG)
+                    Link(href = Href(Url("c1.mp3")!!), mediaType = MediaType.MP3),
+                    Link(href = Href(Url("c2.jpg")!!), mediaType = MediaType.JPEG)
                 )
             ).conformsTo(Profile.DIVINA)
         )
@@ -188,8 +191,8 @@ class PublicationTest {
         assertTrue(
             createPublication(
                 readingOrder = listOf(
-                    Link(href = Href("c1.xhtml")!!, mediaType = MediaType.XHTML),
-                    Link(href = Href("c2.xhtml")!!, mediaType = MediaType.XHTML)
+                    Link(href = Href(Url("c1.xhtml")!!), mediaType = MediaType.XHTML),
+                    Link(href = Href(Url("c2.xhtml")!!), mediaType = MediaType.XHTML)
                 ),
                 conformsTo = setOf(Profile.EPUB)
             ).conformsTo(Profile.EPUB)
@@ -197,8 +200,8 @@ class PublicationTest {
         assertTrue(
             createPublication(
                 readingOrder = listOf(
-                    Link(href = Href("c1.html")!!, mediaType = MediaType.HTML),
-                    Link(href = Href("c2.html")!!, mediaType = MediaType.HTML)
+                    Link(href = Href(Url("c1.html")!!), mediaType = MediaType.HTML),
+                    Link(href = Href(Url("c2.html")!!), mediaType = MediaType.HTML)
                 ),
                 conformsTo = setOf(Profile.EPUB)
             ).conformsTo(Profile.EPUB)
@@ -206,24 +209,24 @@ class PublicationTest {
         assertFalse(
             createPublication(
                 readingOrder = listOf(
-                    Link(href = Href("c1.xhtml")!!, mediaType = MediaType.XHTML),
-                    Link(href = Href("c2.xhtml")!!, mediaType = MediaType.XHTML)
+                    Link(href = Href(Url("c1.xhtml")!!), mediaType = MediaType.XHTML),
+                    Link(href = Href(Url("c2.xhtml")!!), mediaType = MediaType.XHTML)
                 )
             ).conformsTo(Profile.EPUB)
         )
         assertFalse(
             createPublication(
                 readingOrder = listOf(
-                    Link(href = Href("c1.html")!!, mediaType = MediaType.HTML),
-                    Link(href = Href("c2.html")!!, mediaType = MediaType.HTML)
+                    Link(href = Href(Url("c1.html")!!), mediaType = MediaType.HTML),
+                    Link(href = Href(Url("c2.html")!!), mediaType = MediaType.HTML)
                 )
             ).conformsTo(Profile.EPUB)
         )
         assertFalse(
             createPublication(
                 readingOrder = listOf(
-                    Link(href = Href("c1.pdf")!!, mediaType = MediaType.PDF),
-                    Link(href = Href("c2.pdf")!!, mediaType = MediaType.PDF)
+                    Link(href = Href(Url("c1.pdf")!!), mediaType = MediaType.PDF),
+                    Link(href = Href(Url("c2.pdf")!!), mediaType = MediaType.PDF)
                 ),
                 conformsTo = setOf(Profile.EPUB)
             ).conformsTo(Profile.EPUB)
@@ -233,8 +236,8 @@ class PublicationTest {
         assertTrue(
             createPublication(
                 readingOrder = listOf(
-                    Link(href = Href("c1.mp3")!!, mediaType = MediaType.MP3),
-                    Link(href = Href("c2.aac")!!, mediaType = MediaType.AAC)
+                    Link(href = Href(Url("c1.mp3")!!), mediaType = MediaType.MP3),
+                    Link(href = Href(Url("c2.aac")!!), mediaType = MediaType.AAC)
                 ),
                 conformsTo = setOf(Profile.DIVINA)
             ).conformsTo(Profile.AUDIOBOOK)
@@ -242,8 +245,8 @@ class PublicationTest {
         assertFalse(
             createPublication(
                 readingOrder = listOf(
-                    Link(href = Href("c1.mp3")!!, mediaType = MediaType.MP3),
-                    Link(href = Href("c2.aac")!!, mediaType = MediaType.AAC)
+                    Link(href = Href(Url("c1.mp3")!!), mediaType = MediaType.MP3),
+                    Link(href = Href(Url("c2.aac")!!), mediaType = MediaType.AAC)
                 ),
                 conformsTo = setOf(Profile.DIVINA)
             ).conformsTo(Profile.DIVINA)
@@ -253,20 +256,20 @@ class PublicationTest {
         val profile = Profile("http://extension")
         assertTrue(
             createPublication(
-                readingOrder = listOf(Link(href = Href("file")!!)),
+                readingOrder = listOf(Link(href = Href(Url("file")!!))),
                 conformsTo = setOf(profile)
             ).conformsTo(profile)
         )
     }
 
     @Test fun `find the first {Link} with the given {rel}`() {
-        val link1 = Link(href = Href("found")!!, rels = setOf("rel1"))
-        val link2 = Link(href = Href("found")!!, rels = setOf("rel2"))
-        val link3 = Link(href = Href("found")!!, rels = setOf("rel3"))
+        val link1 = Link(href = Href(Url("found")!!), rels = setOf("rel1"))
+        val link2 = Link(href = Href(Url("found")!!), rels = setOf("rel2"))
+        val link3 = Link(href = Href(Url("found")!!), rels = setOf("rel3"))
         val publication = createPublication(
-            links = listOf(Link(href = Href("other")!!), link1),
-            readingOrder = listOf(Link(href = Href("other")!!), link2),
-            resources = listOf(Link(href = Href("other")!!), link3)
+            links = listOf(Link(href = Href(Url("other")!!)), link1),
+            readingOrder = listOf(Link(href = Href(Url("other")!!)), link2),
+            resources = listOf(Link(href = Href(Url("other")!!)), link3)
         )
 
         assertEquals(link1, publication.linkWithRel("rel1"))
@@ -281,29 +284,29 @@ class PublicationTest {
     @Test fun `find all the links with the given {rel}`() {
         val publication = createPublication(
             links = listOf(
-                Link(href = Href("l1")!!),
-                Link(href = Href("l2")!!, rels = setOf("rel1"))
+                Link(href = Href(Url("l1")!!)),
+                Link(href = Href(Url("l2")!!), rels = setOf("rel1"))
             ),
             readingOrder = listOf(
-                Link(href = Href("l3")!!),
-                Link(href = Href("l4")!!, rels = setOf("rel1"))
+                Link(href = Href(Url("l3")!!)),
+                Link(href = Href(Url("l4")!!), rels = setOf("rel1"))
             ),
             resources = listOf(
                 Link(
-                    href = Href("l5")!!,
+                    href = Href(Url("l5")!!),
                     alternates = listOf(
-                        Link(href = Href("alternate")!!, rels = setOf("rel1"))
+                        Link(href = Href(Url("alternate")!!), rels = setOf("rel1"))
                     )
                 ),
-                Link(href = Href("l6")!!, rels = setOf("rel1"))
+                Link(href = Href(Url("l6")!!), rels = setOf("rel1"))
             )
         )
 
         assertEquals(
             listOf(
-                Link(href = Href("l4")!!, rels = setOf("rel1")),
-                Link(href = Href("l6")!!, rels = setOf("rel1")),
-                Link(href = Href("l2")!!, rels = setOf("rel1"))
+                Link(href = Href(Url("l4")!!), rels = setOf("rel1")),
+                Link(href = Href(Url("l6")!!), rels = setOf("rel1")),
+                Link(href = Href(Url("l2")!!), rels = setOf("rel1"))
             ),
             publication.linksWithRel("rel1")
         )
@@ -314,19 +317,19 @@ class PublicationTest {
     }
 
     @Test fun `find the first {Link} with the given {href}`() {
-        val link1 = Link(href = Href("href1")!!)
-        val link2 = Link(href = Href("href2")!!)
-        val link3 = Link(href = Href("href3")!!)
-        val link4 = Link(href = Href("href4")!!)
-        val link5 = Link(href = Href("href5")!!)
+        val link1 = Link(href = Href(Url("href1")!!))
+        val link2 = Link(href = Href(Url("href2")!!))
+        val link3 = Link(href = Href(Url("href3")!!))
+        val link4 = Link(href = Href(Url("href4")!!))
+        val link5 = Link(href = Href(Url("href5")!!))
         val publication = createPublication(
-            links = listOf(Link(href = Href("other")!!), link1),
+            links = listOf(Link(href = Href(Url("other")!!)), link1),
             readingOrder = listOf(
                 Link(
-                    href = Href("other")!!,
+                    href = Href(Url("other")!!),
                     alternates = listOf(
                         Link(
-                            href = Href("alt1")!!,
+                            href = Href(Url("alt1")!!),
                             alternates = listOf(
                                 link2
                             )
@@ -337,10 +340,10 @@ class PublicationTest {
             ),
             resources = listOf(
                 Link(
-                    href = Href("other")!!,
+                    href = Href(Url("other")!!),
                     children = listOf(
                         Link(
-                            href = Href("alt1")!!,
+                            href = Href(Url("alt1")!!),
                             children = listOf(
                                 link4
                             )
@@ -359,9 +362,9 @@ class PublicationTest {
     }
 
     @Test fun `find the first {Link} with the given {href} without query parameters`() {
-        val link = Link(href = Href("http://example.com/index.html")!!)
+        val link = Link(href = Href(Url("http://example.com/index.html")!!))
         val publication = createPublication(
-            readingOrder = listOf(Link(href = Href("other")!!), link)
+            readingOrder = listOf(Link(href = Href(Url("other")!!)), link)
         )
 
         assertEquals(
@@ -371,9 +374,9 @@ class PublicationTest {
     }
 
     @Test fun `find the first {Link} with the given {href} without anchor`() {
-        val link = Link(href = Href("http://example.com/index.html")!!)
+        val link = Link(href = Href(Url("http://example.com/index.html")!!))
         val publication = createPublication(
-            readingOrder = listOf(Link(href = Href("other")!!), link)
+            readingOrder = listOf(Link(href = Href(Url("other")!!)), link)
         )
 
         assertEquals(link, publication.linkWithHref(Url("http://example.com/index.html#sec1")!!))
@@ -391,7 +394,7 @@ class PublicationTest {
             }
         }
 
-        val link = Link(href = Href("link?param1=a&param2=b")!!)
+        val link = Link(href = Href(Url("link?param1=a&param2=b")!!))
         val publication = createPublication(
             resources = listOf(link),
             servicesBuilder = Publication.ServicesBuilder(
@@ -405,13 +408,13 @@ class PublicationTest {
     }
 
     @Test fun `find the first resource {Link} with the given {href}`() {
-        val link1 = Link(href = Href("href1")!!)
-        val link2 = Link(href = Href("href2")!!)
-        val link3 = Link(href = Href("href3")!!)
+        val link1 = Link(href = Href(Url("href1")!!))
+        val link2 = Link(href = Href(Url("href2")!!))
+        val link3 = Link(href = Href(Url("href3")!!))
         val publication = createPublication(
-            links = listOf(Link(href = Href("other")!!), link1),
-            readingOrder = listOf(Link(href = Href("other")!!), link2),
-            resources = listOf(Link(href = Href("other")!!), link3)
+            links = listOf(Link(href = Href(Url("other")!!)), link1),
+            readingOrder = listOf(Link(href = Href(Url("other")!!)), link2),
+            resources = listOf(Link(href = Href(Url("other")!!)), link3)
         )
 
         assertEquals(link1, publication.linkWithHref(Url("href1")!!))

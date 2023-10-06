@@ -37,10 +37,14 @@ public data class Link(
         ): Link {
             val hrefString = json.optNullableString("href")
                 ?: throw LcpException.Parsing.Link
-            val href = Href(
-                href = hrefString,
-                templated = json.optBoolean("templated", false)
-            ) ?: throw LcpException.Parsing.Link
+
+            val href =
+                if (json.optBoolean("templated", false)) {
+                    Href.fromTemplate(hrefString)
+                } else {
+                    Url(hrefString)?.let { Href(it) }
+                }
+                    ?: throw LcpException.Parsing.Link
 
             return Link(
                 href = href,

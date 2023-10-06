@@ -13,6 +13,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.readium.r2.shared.publication.*
+import org.readium.r2.shared.util.Url
 import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
@@ -28,7 +29,7 @@ class PublicationTest {
     )
 
     @Test fun `get {images}`() {
-        val links = listOf(Link(href = Href("/image.png")!!))
+        val links = listOf(Link(href = Href(Url("/image.png")!!)))
         assertEquals(
             links,
             createPublication(

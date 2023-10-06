@@ -16,6 +16,7 @@ import org.readium.r2.shared.publication.Href
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Properties
 import org.readium.r2.shared.publication.presentation.Presentation
+import org.readium.r2.shared.util.Url
 import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
@@ -62,7 +63,7 @@ class PresentationTest {
     }
 
     private fun createLink(layout: EpubLayout?) = Link(
-        href = Href("res")!!,
+        href = Href(Url("res")!!),
         properties = Properties(
             otherProperties = layout?.let { mapOf("layout" to layout.value) }
                 ?: emptyMap()

@@ -22,19 +22,18 @@ import timber.log.Timber
 public class Href private constructor(private val href: Url) : Parcelable {
 
     public companion object {
+        /**
+         * Creates an [Href] from a valid URL.
+         */
         public operator fun invoke(href: SharedUrl): Href =
             Href(StaticUrl(href))
 
-        public operator fun invoke(href: String, templated: Boolean = false): Href? {
-            val url =
-                if (templated) {
-                    TemplatedUrl(href)
-                } else {
-                    SharedUrl(href)?.let { StaticUrl(it) }
-                }
-
-            return url?.let { Href(it) }
-        }
+        /**
+         * Creates an [Href] from an URL template (RFC 6570).
+         */
+        @Suppress("RedundantNullableReturnType") // In case we validate the URI template at some point.
+        public fun fromTemplate(href: String): Href? =
+            Href(TemplatedUrl(href))
     }
 
     /**

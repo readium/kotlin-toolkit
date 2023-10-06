@@ -124,7 +124,7 @@ class PerResourcePositionsServiceTest {
     @Test
     fun `Positions from a {readingOrder} with one resource`() {
         val service = PerResourcePositionsService(
-            readingOrder = listOf(Link(href = Href("res")!!, mediaType = MediaType.PNG)),
+            readingOrder = listOf(Link(href = Href(Url("res")!!), mediaType = MediaType.PNG)),
             fallbackMediaType = MediaType.BINARY
         )
 
@@ -147,9 +147,9 @@ class PerResourcePositionsServiceTest {
     fun `Positions from a {readingOrder} with a few resources`() {
         val service = PerResourcePositionsService(
             readingOrder = listOf(
-                Link(href = Href("res")!!),
-                Link(href = Href("chap1")!!, mediaType = MediaType.PNG),
-                Link(href = Href("chap2")!!, mediaType = MediaType.PNG, title = "Chapter 2")
+                Link(href = Href(Url("res")!!)),
+                Link(href = Href(Url("chap1")!!), mediaType = MediaType.PNG),
+                Link(href = Href(Url("chap2")!!), mediaType = MediaType.PNG, title = "Chapter 2")
             ),
             fallbackMediaType = MediaType.BINARY
         )
@@ -190,7 +190,7 @@ class PerResourcePositionsServiceTest {
     fun `{type} fallbacks on the given media type`() {
         val services = PerResourcePositionsService(
             readingOrder = listOf(
-                Link(href = Href("res")!!)
+                Link(href = Href(Url("res")!!))
             ),
             fallbackMediaType = MediaType("image/*")!!
         )

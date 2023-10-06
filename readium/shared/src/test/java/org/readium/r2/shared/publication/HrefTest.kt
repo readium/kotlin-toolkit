@@ -35,7 +35,7 @@ class HrefTest {
 
     @Test
     fun `convert templated Href to Url`() {
-        val template = Href("url{?x,hello,y}name", templated = true)!!
+        val template = Href.fromTemplate("url{?x,hello,y}name")!!
 
         val parameters = mapOf(
             "x" to "aaa",
@@ -67,22 +67,22 @@ class HrefTest {
 
     @Test
     fun `get is templated`() {
-        assertFalse(Href("url", templated = false)!!.isTemplated)
-        assertTrue(Href("url", templated = true)!!.isTemplated)
-        assertTrue(Href("url{?x,hello,y}name", templated = true)!!.isTemplated)
+        assertFalse(Href(Url("url")!!).isTemplated)
+        assertTrue(Href.fromTemplate("url")!!.isTemplated)
+        assertTrue(Href.fromTemplate("url{?x,hello,y}name")!!.isTemplated)
     }
 
     @Test
     fun `get template parameters`() {
-        assertNull(Href("url", templated = false)!!.parameters)
+        assertNull(Href(Url("url")!!).parameters)
 
         assertEquals(
             listOf<String>(),
-            Href("url", templated = true)!!.parameters
+            Href.fromTemplate("url")!!.parameters
         )
         assertEquals(
             listOf("x", "hello", "y"),
-            Href("url{?x,hello,y}name", templated = true)!!.parameters
+            Href.fromTemplate("url{?x,hello,y}name")!!.parameters
         )
     }
 
@@ -91,7 +91,7 @@ class HrefTest {
         assertEquals("folder/chapter.xhtml", Href(Url("folder/chapter.xhtml")!!).toString())
         assertEquals(
             "url{?x,hello,y}name",
-            Href("url{?x,hello,y}name", templated = true)!!.toString()
+            Href.fromTemplate("url{?x,hello,y}name")!!.toString()
         )
     }
 
@@ -102,7 +102,7 @@ class HrefTest {
         assertEquals(Href(url1), Href(url1))
         assertNotEquals(Href(url1), Href(url2))
 
-        assertEquals(Href("template1", templated = true), Href("template1", templated = true)!!)
-        assertNotEquals(Href("template1", templated = true), Href("template2", templated = true)!!)
+        assertEquals(Href.fromTemplate("template1"), Href.fromTemplate("template1")!!)
+        assertNotEquals(Href.fromTemplate("template1"), Href.fromTemplate("template2")!!)
     }
 }

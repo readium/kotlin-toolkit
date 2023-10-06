@@ -165,21 +165,10 @@ public data class Link(
             mediaTypeRetriever: MediaTypeRetriever = MediaTypeRetriever(),
             warnings: WarningLogger? = null
         ): Link? {
-            val hrefString = json?.optNullableString("href")
-            if (hrefString == null) {
-                warnings?.log(Link::class.java, "[href] is required", json)
-                return null
-            }
-            val href = Href(
-                href = hrefString,
-                templated = json.optBoolean("templated", false)
-            ) ?: run {
-                warnings?.log(Link::class.java, "[href] is not a valid URL or URL template", json)
-                return null
-            }
+            json ?: return null
 
             return Link(
-                href = href,
+                href = parseHref(json, warnings) ?: return null,
                 mediaType = json.optNullableString("type")
                     ?.let { mediaTypeRetriever.retrieve(it) },
                 title = json.optNullableString("title"),
@@ -199,6 +188,41 @@ public data class Link(
                     mediaTypeRetriever
                 )
             )
+        }
+
+        private fun parseHref(
+            json: JSONObject,
+            warnings: WarningLogger? = null
+        ): Href? {
+            val hrefString = json.optNullableString("href")
+            if (hrefString == null) {
+                warnings?.log(Link::class.java, "[href] is required", json)
+                return null
+            }
+
+            val templated = json.optBoolean("templated", false)
+            val href = if (templated) {
+                Href.fromTemplate(hrefString)
+            } else {
+                // We support existing publications with incorrect HREFs (not valid percent-encoded
+                // URIs). We try to parse them first as valid, but fall back on a percent-decoded
+                // path if it fails.
+                val url = Url(hrefString) ?: run {
+                    warnings?.log(
+                        Link::class.java,
+                        "[href] is not a valid percent-encoded URL",
+                        json
+                    )
+                    Url.fromDecodedPath(hrefString)
+                }
+                url?.let { Href(it) }
+            }
+
+            if (href == null) {
+                warnings?.log(Link::class.java, "[href] is not a valid URL or URL template", json)
+            }
+
+            return href
         }
 
         /**

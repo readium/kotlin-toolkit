@@ -16,6 +16,7 @@ import org.readium.r2.shared.extensions.optStringsFromArrayOrSingle
 import org.readium.r2.shared.extensions.putIfNotEmpty
 import org.readium.r2.shared.toJSON
 import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.logging.ConsoleWarningLogger
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.logging.log
 import org.readium.r2.shared.util.mediatype.MediaType
@@ -154,7 +155,7 @@ public data class Manifest(
         public fun fromJSON(
             json: JSONObject?,
             mediaTypeRetriever: MediaTypeRetriever = MediaTypeRetriever(),
-            warnings: WarningLogger? = null
+            warnings: WarningLogger? = ConsoleWarningLogger()
         ): Manifest? {
             json ?: return null
 
