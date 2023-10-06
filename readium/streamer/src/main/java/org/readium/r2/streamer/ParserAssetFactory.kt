@@ -12,7 +12,6 @@ import org.readium.r2.shared.extensions.addPrefix
 import org.readium.r2.shared.publication.Manifest
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.util.AbsoluteUrl
-import org.readium.r2.shared.util.MessageError
 import org.readium.r2.shared.util.ThrowableError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
@@ -28,6 +27,7 @@ import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.shared.util.resource.ResourceContainer
 import org.readium.r2.shared.util.resource.RoutingContainer
 import org.readium.r2.streamer.parser.PublicationParser
+import timber.log.Timber
 
 internal class ParserAssetFactory(
     private val httpClient: HttpClient,
@@ -36,18 +36,18 @@ internal class ParserAssetFactory(
 ) {
 
     suspend fun createParserAsset(
-        asset: org.readium.r2.shared.util.asset.Asset
+        asset: Asset
     ): Try<PublicationParser.Asset, Publication.OpenError> {
         return when (asset) {
-            is org.readium.r2.shared.util.asset.Asset.Container ->
+            is Asset.Container ->
                 createParserAssetForContainer(asset)
-            is org.readium.r2.shared.util.asset.Asset.Resource ->
+            is Asset.Resource ->
                 createParserAssetForResource(asset)
         }
     }
 
     private fun createParserAssetForContainer(
-        asset: org.readium.r2.shared.util.asset.Asset.Container
+        asset: Asset.Container
     ): Try<PublicationParser.Asset, Publication.OpenError> =
         Try.success(
             PublicationParser.Asset(
@@ -57,7 +57,7 @@ internal class ParserAssetFactory(
         )
 
     private suspend fun createParserAssetForResource(
-        asset: org.readium.r2.shared.util.asset.Asset.Resource
+        asset: Asset.Resource
     ): Try<PublicationParser.Asset, Publication.OpenError> =
         if (asset.mediaType.isRwpm) {
             createParserAssetForManifest(asset)
@@ -66,34 +66,28 @@ internal class ParserAssetFactory(
         }
 
     private suspend fun createParserAssetForManifest(
-        asset: org.readium.r2.shared.util.asset.Asset.Resource
+        asset: Asset.Resource
     ): Try<PublicationParser.Asset, Publication.OpenError> {
         val manifest = asset.resource.readAsRwpm()
             .mapFailure { Publication.OpenError.InvalidAsset(ThrowableError(it)) }
             .getOrElse { return Try.failure(it) }
 
-        val baseUrl =
-            manifest.linkWithRel("self")?.href?.resolve()
-                ?: return Try.failure(
-                    Publication.OpenError.InvalidAsset(
-                        MessageError("No self link in the manifest.")
+        val baseUrl = manifest.linkWithRel("self")?.href?.resolve()
+        if (baseUrl == null) {
+            Timber.w("No self link found in the manifest at ${asset.resource.source}")
+        } else {
+            if (baseUrl !is AbsoluteUrl) {
+                return Try.failure(
+                    Publication.OpenError.InvalidAsset("Self link is not absolute.")
+                )
+            }
+            if (!baseUrl.isHttp) {
+                return Try.failure(
+                    Publication.OpenError.UnsupportedAsset(
+                        "Self link doesn't use the HTTP(S) scheme."
                     )
                 )
-
-        if (baseUrl !is AbsoluteUrl) {
-            return Try.failure(
-                Publication.OpenError.InvalidAsset(
-                    MessageError("Self link is not absolute.")
-                )
-            )
-        }
-
-        if (!baseUrl.isHttp) {
-            return Try.failure(
-                Publication.OpenError.UnsupportedAsset(
-                    "Self link doesn't use the HTTP(S) scheme."
-                )
-            )
+            }
         }
 
         val container =
@@ -114,7 +108,7 @@ internal class ParserAssetFactory(
     }
 
     private fun createParserAssetForContent(
-        asset: org.readium.r2.shared.util.asset.Asset.Resource
+        asset: Asset.Resource
     ): Try<PublicationParser.Asset, Publication.OpenError> {
         // Historically, the reading order of a standalone file contained a single link with the
         // HREF "/$assetName". This was fragile if the asset named changed, or was different on
