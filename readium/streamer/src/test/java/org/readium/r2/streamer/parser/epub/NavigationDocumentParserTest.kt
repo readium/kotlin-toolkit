@@ -42,7 +42,7 @@ class NavigationDocumentParserTest {
     @Test
     fun `nav can be a non-direct descendant of body`() {
         assertThat(navSection["toc"]).containsExactly(
-            Link(title = "Chapter 1", href = Href("OEBPS/xhtml/chapter1.xhtml")!!)
+            Link(title = "Chapter 1", href = Href(Url("OEBPS/xhtml/chapter1.xhtml")!!))
         )
     }
 
@@ -51,7 +51,7 @@ class NavigationDocumentParserTest {
         assertThat(navTitles["toc"]).contains(
             Link(
                 title = "A link with new lines splitting the text",
-                href = Href("OEBPS/xhtml/chapter1.xhtml")!!
+                href = Href(Url("OEBPS/xhtml/chapter1.xhtml")!!)
             )
         )
     }
@@ -61,7 +61,7 @@ class NavigationDocumentParserTest {
         assertThat(navTitles["toc"]).contains(
             Link(
                 title = "A link with ignorable spaces",
-                href = Href("OEBPS/xhtml/chapter2.xhtml")!!
+                href = Href(Url("OEBPS/xhtml/chapter2.xhtml")!!)
             )
         )
     }
@@ -71,7 +71,7 @@ class NavigationDocumentParserTest {
         assertThat(navTitles["toc"]).contains(
             Link(
                 title = "A link with nested HTML elements",
-                href = Href("OEBPS/xhtml/chapter3.xhtml")!!
+                href = Href(Url("OEBPS/xhtml/chapter3.xhtml")!!)
             )
         )
     }
@@ -79,7 +79,7 @@ class NavigationDocumentParserTest {
     @Test
     fun `Entries with a zero-length title and no children are ignored`() {
         assertThat(navTitles["toc"]).doesNotContain(
-            Link(title = "", href = Href("OEBPS/xhtml/chapter4.xhtml")!!)
+            Link(title = "", href = Href(Url("OEBPS/xhtml/chapter4.xhtml")!!))
         )
     }
 
@@ -88,7 +88,7 @@ class NavigationDocumentParserTest {
         assertThat(navTitles["toc"]).doesNotContain(
             Link(
                 title = "An unlinked element without children must be ignored",
-                href = Href("#")!!
+                href = Href(Url("#")!!)
             )
         )
     }
@@ -96,21 +96,33 @@ class NavigationDocumentParserTest {
     @Test
     fun `Hierarchical items are allowed`() {
         assertThat(navChildren["toc"]).containsExactly(
-            Link(title = "Introduction", href = Href("OEBPS/xhtml/introduction.xhtml")!!),
+            Link(title = "Introduction", href = Href(Url("OEBPS/xhtml/introduction.xhtml")!!)),
             Link(
                 title = "Part I",
-                href = Href("#")!!,
+                href = Href(Url("#")!!),
                 children = listOf(
-                    Link(title = "Chapter 1", href = Href("OEBPS/xhtml/part1/chapter1.xhtml")!!),
-                    Link(title = "Chapter 2", href = Href("OEBPS/xhtml/part1/chapter2.xhtml")!!)
+                    Link(
+                        title = "Chapter 1",
+                        href = Href(Url("OEBPS/xhtml/part1/chapter1.xhtml")!!)
+                    ),
+                    Link(
+                        title = "Chapter 2",
+                        href = Href(Url("OEBPS/xhtml/part1/chapter2.xhtml")!!)
+                    )
                 )
             ),
             Link(
                 title = "Part II",
-                href = Href("OEBPS/xhtml/part2/chapter1.xhtml")!!,
+                href = Href(Url("OEBPS/xhtml/part2/chapter1.xhtml")!!),
                 children = listOf(
-                    Link(title = "Chapter 1", href = Href("OEBPS/xhtml/part2/chapter1.xhtml")!!),
-                    Link(title = "Chapter 2", href = Href("OEBPS/xhtml/part2/chapter2.xhtml")!!)
+                    Link(
+                        title = "Chapter 1",
+                        href = Href(Url("OEBPS/xhtml/part2/chapter1.xhtml")!!)
+                    ),
+                    Link(
+                        title = "Chapter 2",
+                        href = Href(Url("OEBPS/xhtml/part2/chapter2.xhtml")!!)
+                    )
                 )
             )
         )
@@ -124,24 +136,24 @@ class NavigationDocumentParserTest {
     @Test
     fun `toc is rightly parsed`() {
         assertThat(navComplex["toc"]).containsExactly(
-            Link(title = "Chapter 1", href = Href("OEBPS/xhtml/chapter1.xhtml")!!),
-            Link(title = "Chapter 2", href = Href("OEBPS/xhtml/chapter2.xhtml")!!)
+            Link(title = "Chapter 1", href = Href(Url("OEBPS/xhtml/chapter1.xhtml")!!)),
+            Link(title = "Chapter 2", href = Href(Url("OEBPS/xhtml/chapter2.xhtml")!!))
         )
     }
 
     @Test
     fun `landmarks are rightly parsed`() {
         assertThat(navComplex["landmarks"]).containsExactly(
-            Link(title = "Table of Contents", href = Href("OEBPS/xhtml/nav.xhtml#toc")!!),
-            Link(title = "Begin Reading", href = Href("OEBPS/xhtml/chapter1.xhtml")!!)
+            Link(title = "Table of Contents", href = Href(Url("OEBPS/xhtml/nav.xhtml#toc")!!)),
+            Link(title = "Begin Reading", href = Href(Url("OEBPS/xhtml/chapter1.xhtml")!!))
         )
     }
 
     @Test
     fun `page-list is rightly parsed`() {
         assertThat(navComplex["page-list"]).containsExactly(
-            Link(title = "1", href = Href("OEBPS/xhtml/chapter1.xhtml#page1")!!),
-            Link(title = "2", href = Href("OEBPS/xhtml/chapter1.xhtml#page2")!!)
+            Link(title = "1", href = Href(Url("OEBPS/xhtml/chapter1.xhtml#page1")!!)),
+            Link(title = "2", href = Href(Url("OEBPS/xhtml/chapter1.xhtml#page2")!!))
         )
     }
 }
