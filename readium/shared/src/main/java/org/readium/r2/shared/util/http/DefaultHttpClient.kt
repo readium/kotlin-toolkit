@@ -40,15 +40,31 @@ import timber.log.Timber
 public class DefaultHttpClient(
     private val mediaTypeRetriever: MediaTypeRetriever,
     private val userAgent: String? = null,
-    @Deprecated(
-        "Pass all headers when building your request or modify it in Callback.onStartRequest",
-        level = DeprecationLevel.ERROR
-    )
-    private val additionalHeaders: Map<String, List<String>> = mapOf(),
     private val connectTimeout: Duration? = null,
     private val readTimeout: Duration? = null,
     public var callback: Callback = object : Callback {}
 ) : HttpClient {
+
+    @Suppress("UNUSED_PARAMETER")
+    @Deprecated(
+        "You need to provide a [mediaTypeRetriever]. If you used [additionalHeaders], pass all headers when building your request or modify it in Callback.onStartRequest instead.",
+        level = DeprecationLevel.ERROR,
+        replaceWith = ReplaceWith("DefaultHttpClient(mediaTypeRetriever = MediaTypeRetriever())")
+    )
+    public constructor(
+        userAgent: String? = null,
+        additionalHeaders: Map<String, String> = mapOf(),
+        connectTimeout: Duration? = null,
+        readTimeout: Duration? = null,
+        callback: Callback = object : Callback {},
+    ) : this(
+        mediaTypeRetriever = MediaTypeRetriever(),
+        userAgent = userAgent,
+        connectTimeout = connectTimeout,
+        readTimeout = readTimeout,
+        callback = callback
+    )
+
     public companion object {
         /**
          * [HttpRequest.extras] key for the number of redirections performed for a request.
