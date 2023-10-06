@@ -21,7 +21,6 @@ All notable changes to this project will be documented in this file. Take a look
      1. Override loading non-linear resources with `VisualNavigator.Listener.shouldJumpToLink()`.
      2. Present a new `EpubNavigatorFragment` by providing a custom `readingOrder` with only this resource to the constructor.
 
-
 #### Streamer
 
 * The EPUB content iterator now returns `audio` and `video` elements.
@@ -45,6 +44,10 @@ All notable changes to this project will be documented in this file. Take a look
 * The new `DirectionalNavigationAdapter` component replaces `EdgeTapNavigation`, helping you turn pages with the arrow and space keyboard keys, or taps on the edge of the screen.
 
 ### Deprecated
+
+#### Shared
+
+* `DefaultHttClient.additionalHeaders` is deprecated. Set all the headers when creating a new `HttpRequest`, or modify outgoing requests in `DefaultHttpClient.Callback.onStartRequest()`.
 
 #### Navigator
 

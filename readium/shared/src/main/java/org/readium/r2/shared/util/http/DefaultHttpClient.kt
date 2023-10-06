@@ -15,7 +15,7 @@ import java.net.URL
 import kotlin.time.Duration
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.readium.r2.shared.extensions.flatten
+import org.readium.r2.shared.extensions.joinValues
 import org.readium.r2.shared.extensions.lowerCaseKeys
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.flatMap
@@ -56,7 +56,7 @@ public class DefaultHttpClient(
         additionalHeaders: Map<String, String> = mapOf(),
         connectTimeout: Duration? = null,
         readTimeout: Duration? = null,
-        callback: Callback = object : Callback {},
+        callback: Callback = object : Callback {}
     ) : this(
         mediaTypeRetriever = MediaTypeRetriever(),
         userAgent = userAgent,
@@ -277,7 +277,7 @@ public class DefaultHttpClient(
 
         val normalizedHeaders = headers
             .lowerCaseKeys()
-            .flatten(",")
+            .joinValues(",")
 
         for ((k, v) in normalizedHeaders) {
             connection.setRequestProperty(k, v)

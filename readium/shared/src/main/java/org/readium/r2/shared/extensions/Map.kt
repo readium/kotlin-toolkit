@@ -23,7 +23,7 @@ internal fun <K, V> MutableMap<K, V>.getOrPut(key: K, fallbackValue: V): V =
         fallbackValue
     }
 
-internal fun Map<String, List<String>>.flatten(separator: CharSequence): Map<String, String> =
+internal fun Map<String, List<String>>.joinValues(separator: CharSequence): Map<String, String> =
     mapValues { it.value.joinToString(separator) }
 
 internal fun <K, V> Map<K, List<V>>.toMutable() =
