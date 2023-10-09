@@ -233,7 +233,7 @@ public class DefaultHttpClient(
             return Try.failure(HttpException.CANCELLED)
         }
 
-        val location = response.valueForHeader("Location")
+        val location = response.header("Location")
             ?: return Try.failure(HttpException(kind = HttpException.Kind.MalformedResponse))
 
         val newRequest = HttpRequest(
@@ -241,7 +241,7 @@ public class DefaultHttpClient(
             body = request.body,
             method = request.method,
             headers = buildMap {
-                response.valuesForHeader("Set-Cookie")
+                response.headers("Set-Cookie")
                     .takeUnless { it.isEmpty() }
                     ?.let { put("Cookie", it) }
             },
