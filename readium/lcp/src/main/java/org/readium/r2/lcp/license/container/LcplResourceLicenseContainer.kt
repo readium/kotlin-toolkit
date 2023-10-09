@@ -11,8 +11,8 @@ package org.readium.r2.lcp.license.container
 
 import kotlinx.coroutines.runBlocking
 import org.readium.r2.lcp.LcpException
-import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.util.getOrThrow
+import org.readium.r2.shared.util.resource.Resource
 
 /**
  * Access a License Document stored in an LCP License Document file (LCPL) readable through a

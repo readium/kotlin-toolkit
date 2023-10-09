@@ -8,18 +8,15 @@ package org.readium.r2.streamer
 
 import java.nio.charset.Charset
 import org.json.JSONObject
-import org.readium.r2.shared.asset.Asset
 import org.readium.r2.shared.extensions.addPrefix
 import org.readium.r2.shared.publication.Manifest
 import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.resource.Resource
-import org.readium.r2.shared.resource.ResourceContainer
-import org.readium.r2.shared.resource.RoutingContainer
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.MessageError
 import org.readium.r2.shared.util.ThrowableError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.asset.Asset
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.getOrThrow
 import org.readium.r2.shared.util.http.HttpClient
@@ -27,6 +24,9 @@ import org.readium.r2.shared.util.http.HttpContainer
 import org.readium.r2.shared.util.mediatype.FormatRegistry
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
+import org.readium.r2.shared.util.resource.Resource
+import org.readium.r2.shared.util.resource.ResourceContainer
+import org.readium.r2.shared.util.resource.RoutingContainer
 import org.readium.r2.streamer.parser.PublicationParser
 
 internal class ParserAssetFactory(
@@ -36,18 +36,18 @@ internal class ParserAssetFactory(
 ) {
 
     suspend fun createParserAsset(
-        asset: Asset
+        asset: org.readium.r2.shared.util.asset.Asset
     ): Try<PublicationParser.Asset, Publication.OpenError> {
         return when (asset) {
-            is Asset.Container ->
+            is org.readium.r2.shared.util.asset.Asset.Container ->
                 createParserAssetForContainer(asset)
-            is Asset.Resource ->
+            is org.readium.r2.shared.util.asset.Asset.Resource ->
                 createParserAssetForResource(asset)
         }
     }
 
     private fun createParserAssetForContainer(
-        asset: Asset.Container
+        asset: org.readium.r2.shared.util.asset.Asset.Container
     ): Try<PublicationParser.Asset, Publication.OpenError> =
         Try.success(
             PublicationParser.Asset(
@@ -57,7 +57,7 @@ internal class ParserAssetFactory(
         )
 
     private suspend fun createParserAssetForResource(
-        asset: Asset.Resource
+        asset: org.readium.r2.shared.util.asset.Asset.Resource
     ): Try<PublicationParser.Asset, Publication.OpenError> =
         if (asset.mediaType.isRwpm) {
             createParserAssetForManifest(asset)
@@ -66,7 +66,7 @@ internal class ParserAssetFactory(
         }
 
     private suspend fun createParserAssetForManifest(
-        asset: Asset.Resource
+        asset: org.readium.r2.shared.util.asset.Asset.Resource
     ): Try<PublicationParser.Asset, Publication.OpenError> {
         val manifest = asset.resource.readAsRwpm()
             .mapFailure { Publication.OpenError.InvalidAsset(ThrowableError(it)) }
@@ -114,7 +114,7 @@ internal class ParserAssetFactory(
     }
 
     private fun createParserAssetForContent(
-        asset: Asset.Resource
+        asset: org.readium.r2.shared.util.asset.Asset.Resource
     ): Try<PublicationParser.Asset, Publication.OpenError> {
         // Historically, the reading order of a standalone file contained a single link with the
         // HREF "/$assetName". This was fragile if the asset named changed, or was different on

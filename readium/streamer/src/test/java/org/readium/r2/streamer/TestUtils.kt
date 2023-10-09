@@ -11,7 +11,7 @@ package org.readium.r2.streamer
 
 import kotlinx.coroutines.runBlocking
 import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.resource.Resource
+import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.streamer.parser.PublicationParser
 
 internal fun Resource.readBlocking(range: LongRange? = null) = runBlocking { read(range) }

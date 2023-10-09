@@ -7,26 +7,28 @@
 package org.readium.r2.testapp
 
 import android.content.Context
-import org.readium.adapters.pdfium.document.PdfiumDocumentFactory
+import android.view.View
+import org.readium.adapter.pdfium.document.PdfiumDocumentFactory
 import org.readium.r2.lcp.LcpException
 import org.readium.r2.lcp.LcpService
+import org.readium.r2.lcp.auth.LcpDialogAuthentication
 import org.readium.r2.navigator.preferences.FontFamily
 import org.readium.r2.shared.ExperimentalReadiumApi
-import org.readium.r2.shared.asset.AssetRetriever
 import org.readium.r2.shared.publication.protection.ContentProtectionSchemeRetriever
-import org.readium.r2.shared.resource.CompositeArchiveFactory
-import org.readium.r2.shared.resource.CompositeResourceFactory
-import org.readium.r2.shared.resource.ContentResourceFactory
-import org.readium.r2.shared.resource.DefaultArchiveFactory
-import org.readium.r2.shared.resource.DirectoryContainerFactory
-import org.readium.r2.shared.resource.FileResourceFactory
 import org.readium.r2.shared.util.Try
-import org.readium.r2.shared.util.archive.channel.ChannelZipArchiveFactory
+import org.readium.r2.shared.util.asset.AssetRetriever
 import org.readium.r2.shared.util.downloads.android.AndroidDownloadManager
 import org.readium.r2.shared.util.http.DefaultHttpClient
 import org.readium.r2.shared.util.http.HttpResourceFactory
 import org.readium.r2.shared.util.mediatype.FormatRegistry
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
+import org.readium.r2.shared.util.resource.CompositeArchiveFactory
+import org.readium.r2.shared.util.resource.CompositeResourceFactory
+import org.readium.r2.shared.util.resource.ContentResourceFactory
+import org.readium.r2.shared.util.resource.DirectoryContainerFactory
+import org.readium.r2.shared.util.resource.FileResourceFactory
+import org.readium.r2.shared.util.resource.FileZipArchiveFactory
+import org.readium.r2.shared.util.zip.StreamingZipArchiveFactory
 import org.readium.r2.streamer.PublicationFactory
 
 /**
@@ -43,8 +45,8 @@ class Readium(context: Context) {
     )
 
     private val archiveFactory = CompositeArchiveFactory(
-        DefaultArchiveFactory(mediaTypeRetriever),
-        ChannelZipArchiveFactory(mediaTypeRetriever)
+        FileZipArchiveFactory(mediaTypeRetriever),
+        StreamingZipArchiveFactory(mediaTypeRetriever)
     )
 
     private val resourceFactory = CompositeResourceFactory(
@@ -86,8 +88,10 @@ class Readium(context: Context) {
     )?.let { Try.success(it) }
         ?: Try.failure(LcpException.Unknown(Exception("liblcp is missing on the classpath")))
 
+    private val lcpDialogAuthentication = LcpDialogAuthentication()
+
     private val contentProtections = listOfNotNull(
-        lcpService.getOrNull()?.contentProtection()
+        lcpService.getOrNull()?.contentProtection(lcpDialogAuthentication)
     )
 
     val protectionRetriever = ContentProtectionSchemeRetriever(
@@ -107,6 +111,14 @@ class Readium(context: Context) {
         // Only required if you want to support PDF files using the PDFium adapter.
         pdfFactory = PdfiumDocumentFactory(context)
     )
+
+    fun onLcpDialogAuthenticationParentAttached(view: View) {
+        lcpDialogAuthentication.onParentViewAttachedToWindow(view)
+    }
+
+    fun onLcpDialogAuthenticationParentDetached() {
+        lcpDialogAuthentication.onParentViewDetachedFromWindow()
+    }
 }
 
 @OptIn(ExperimentalReadiumApi::class)

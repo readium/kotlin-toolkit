@@ -8,13 +8,12 @@ package org.readium.r2.streamer
 
 import android.content.Context
 import org.readium.r2.shared.PdfSupport
-import org.readium.r2.shared.asset.Asset
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.protection.AdeptFallbackContentProtection
 import org.readium.r2.shared.publication.protection.ContentProtection
 import org.readium.r2.shared.publication.protection.LcpFallbackContentProtection
-import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.asset.Asset
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.http.DefaultHttpClient
 import org.readium.r2.shared.util.http.HttpClient
@@ -22,6 +21,7 @@ import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.mediatype.FormatRegistry
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 import org.readium.r2.shared.util.pdf.PdfDocumentFactory
+import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.streamer.parser.PublicationParser
 import org.readium.r2.streamer.parser.audio.AudioParser
 import org.readium.r2.streamer.parser.epub.EpubParser
@@ -125,8 +125,6 @@ public class PublicationFactory(
      *   publication, for example a password.
      * @param allowUserInteraction Indicates whether the user can be prompted, for example for its
      *   credentials.
-     * @param sender Free object that can be used by reading apps to give some UX context when
-     *   presenting dialogs.
      * @param onCreatePublication Transformation which will be applied on the Publication Builder.
      *   It can be used to modify the manifest, the root container or the list of service
      *   factories of the [Publication].
@@ -134,11 +132,10 @@ public class PublicationFactory(
      * @return A [Publication] or a [Publication.OpenError] in case of failure.
      */
     public suspend fun open(
-        asset: Asset,
+        asset: org.readium.r2.shared.util.asset.Asset,
         contentProtectionScheme: ContentProtection.Scheme? = null,
         credentials: String? = null,
         allowUserInteraction: Boolean,
-        sender: Any? = null,
         onCreatePublication: Publication.Builder.() -> Unit = {},
         warnings: WarningLogger? = null
     ): PublicationTry<Publication> {
@@ -159,7 +156,6 @@ public class PublicationFactory(
                 contentProtectionScheme,
                 credentials,
                 allowUserInteraction,
-                sender,
                 compositeOnCreatePublication,
                 warnings
             )
@@ -167,7 +163,7 @@ public class PublicationFactory(
     }
 
     private suspend fun openUnprotected(
-        asset: Asset,
+        asset: org.readium.r2.shared.util.asset.Asset,
         onCreatePublication: Publication.Builder.() -> Unit,
         warnings: WarningLogger?
     ): Try<Publication, Publication.OpenError> {
@@ -177,16 +173,15 @@ public class PublicationFactory(
     }
 
     private suspend fun openProtected(
-        asset: Asset,
+        asset: org.readium.r2.shared.util.asset.Asset,
         contentProtectionScheme: ContentProtection.Scheme,
         credentials: String?,
         allowUserInteraction: Boolean,
-        sender: Any?,
         onCreatePublication: Publication.Builder.() -> Unit,
         warnings: WarningLogger?
     ): Try<Publication, Publication.OpenError> {
         val protectedAsset = contentProtections[contentProtectionScheme]
-            ?.open(asset, credentials, allowUserInteraction, sender)
+            ?.open(asset, credentials, allowUserInteraction)
             ?.getOrElse { return Try.failure(it) }
             ?: return Try.failure(Publication.OpenError.Forbidden())
 

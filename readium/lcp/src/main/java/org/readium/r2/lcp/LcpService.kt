@@ -26,10 +26,10 @@ import org.readium.r2.lcp.service.LicensesService
 import org.readium.r2.lcp.service.NetworkService
 import org.readium.r2.lcp.service.PassphrasesRepository
 import org.readium.r2.lcp.service.PassphrasesService
-import org.readium.r2.shared.asset.Asset
-import org.readium.r2.shared.asset.AssetRetriever
 import org.readium.r2.shared.publication.protection.ContentProtection
 import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.asset.Asset
+import org.readium.r2.shared.util.asset.AssetRetriever
 import org.readium.r2.shared.util.downloads.DownloadManager
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
@@ -89,15 +89,12 @@ public interface LcpService {
      *        The request will be cancelled if no passphrase is found in the LCP passphrase storage
      *        and the provided [authentication].
      * @param allowUserInteraction Indicates whether the user can be prompted for their passphrase.
-     * @param sender Free object that can be used by reading apps to give some UX context when
-     *        presenting dialogs with [LcpAuthenticating].
      */
     public suspend fun retrieveLicense(
         file: File,
         mediaType: MediaType,
-        authentication: LcpAuthenticating = LcpDialogAuthentication(),
-        allowUserInteraction: Boolean,
-        sender: Any? = null
+        authentication: LcpAuthenticating,
+        allowUserInteraction: Boolean
     ): Try<LcpLicense, LcpException>
 
     /**
@@ -113,14 +110,11 @@ public interface LcpService {
      *        The request will be cancelled if no passphrase is found in the LCP passphrase storage
      *        and the provided [authentication].
      * @param allowUserInteraction Indicates whether the user can be prompted for their passphrase.
-     * @param sender Free object that can be used by reading apps to give some UX context when
-     *        presenting dialogs with [LcpAuthenticating].
      */
     public suspend fun retrieveLicense(
         asset: Asset,
-        authentication: LcpAuthenticating = LcpDialogAuthentication(),
-        allowUserInteraction: Boolean,
-        sender: Any?
+        authentication: LcpAuthenticating,
+        allowUserInteraction: Boolean
     ): Try<LcpLicense, LcpException>
 
     /**
@@ -138,7 +132,7 @@ public interface LcpService {
      * user to enter their passphrase.
      */
     public fun contentProtection(
-        authentication: LcpAuthenticating = LcpDialogAuthentication()
+        authentication: LcpAuthenticating
     ): ContentProtection
 
     /**

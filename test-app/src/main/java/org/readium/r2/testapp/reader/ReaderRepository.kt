@@ -6,26 +6,25 @@
 
 package org.readium.r2.testapp.reader
 
-import android.app.Activity
 import android.app.Application
 import androidx.annotation.StringRes
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences as JetpackPreferences
 import org.json.JSONObject
-import org.readium.adapters.pdfium.navigator.PdfiumEngineProvider
+import org.readium.adapter.exoplayer.audio.ExoPlayerEngineProvider
+import org.readium.adapter.pdfium.navigator.PdfiumEngineProvider
+import org.readium.navigator.media.audio.AudioNavigatorFactory
+import org.readium.navigator.media.tts.TtsNavigatorFactory
 import org.readium.r2.navigator.epub.EpubNavigatorFactory
-import org.readium.r2.navigator.media3.audio.AudioNavigatorFactory
-import org.readium.r2.navigator.media3.exoplayer.ExoPlayerEngineProvider
-import org.readium.r2.navigator.media3.tts.TtsNavigatorFactory
 import org.readium.r2.navigator.pdf.PdfNavigatorFactory
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.UserException
-import org.readium.r2.shared.asset.AssetRetriever
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.allAreHtml
 import org.readium.r2.shared.publication.services.isRestricted
 import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.asset.AssetRetriever
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.testapp.Readium
 import org.readium.r2.testapp.data.BookRepository
@@ -95,7 +94,7 @@ class ReaderRepository(
     operator fun get(bookId: Long): ReaderInitData? =
         repository[bookId]
 
-    suspend fun open(bookId: Long, activity: Activity): Try<Unit, OpeningError> {
+    suspend fun open(bookId: Long): Try<Unit, OpeningError> {
         if (bookId in repository.keys) {
             return Try.success(Unit)
         }
@@ -111,8 +110,7 @@ class ReaderRepository(
         val publication = readium.publicationFactory.open(
             asset,
             contentProtectionScheme = book.drmScheme,
-            allowUserInteraction = true,
-            sender = activity
+            allowUserInteraction = true
         ).getOrElse { return Try.failure(OpeningError.PublicationError(it)) }
 
         // The publication is protected with a DRM and not unlocked.

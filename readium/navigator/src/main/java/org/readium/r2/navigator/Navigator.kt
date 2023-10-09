@@ -20,8 +20,8 @@ import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.ReadingProgression as PublicationReadingProgression
-import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.resource.Resource
 
 /**
  * Base interface for a navigator rendering a publication.
@@ -173,6 +173,18 @@ public interface VisualNavigator : Navigator {
     public fun removeInputListener(listener: InputListener)
 
     public interface Listener : Navigator.Listener {
+
+        /**
+         * Called when a link to an internal resource was clicked in the navigator.
+         *
+         * You can use this callback to perform custom navigation like opening a new window
+         * or other operations.
+         *
+         * By returning false the navigator wont try to open the link itself and it is up
+         * to the calling app to decide how to display the link.
+         */
+        public fun shouldJumpToLink(link: Link): Boolean { return true }
+
         @Deprecated("Use `addInputListener` instead", level = DeprecationLevel.ERROR)
         public fun onTap(point: PointF): Boolean = false
 

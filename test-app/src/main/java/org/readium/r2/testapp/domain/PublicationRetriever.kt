@@ -17,13 +17,13 @@ import org.readium.r2.lcp.LcpException
 import org.readium.r2.lcp.LcpPublicationRetriever as ReadiumLcpPublicationRetriever
 import org.readium.r2.lcp.LcpService
 import org.readium.r2.lcp.license.model.LicenseDocument
-import org.readium.r2.shared.asset.Asset
-import org.readium.r2.shared.asset.AssetRetriever
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.opds.images
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.asset.Asset
+import org.readium.r2.shared.util.asset.AssetRetriever
 import org.readium.r2.shared.util.downloads.DownloadManager
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.mediatype.FormatRegistry
@@ -155,7 +155,7 @@ class LocalPublicationRetriever(
             }
 
         if (
-            sourceAsset is Asset.Resource &&
+            sourceAsset is org.readium.r2.shared.util.asset.Asset.Resource &&
             sourceAsset.mediaType.matches(MediaType.LCP_LICENSE_DOCUMENT)
         ) {
             if (lcpPublicationRetriever == null) {
@@ -332,7 +332,7 @@ class LcpPublicationRetriever(
      * Retrieves a publication protected with the given license.
      */
     fun retrieve(
-        licenceAsset: Asset.Resource,
+        licenceAsset: org.readium.r2.shared.util.asset.Asset.Resource,
         licenceFile: File,
         coverUrl: AbsoluteUrl?
     ) {

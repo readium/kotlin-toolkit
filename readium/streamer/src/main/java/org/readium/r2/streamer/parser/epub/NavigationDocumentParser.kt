@@ -6,9 +6,9 @@
 
 package org.readium.r2.streamer.parser.epub
 
-import org.readium.r2.shared.parser.xml.ElementNode
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.xml.ElementNode
 
 internal object NavigationDocumentParser {
 

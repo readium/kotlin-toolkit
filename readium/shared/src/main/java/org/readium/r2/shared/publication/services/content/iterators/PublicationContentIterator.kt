@@ -13,9 +13,9 @@ import org.readium.r2.shared.publication.Manifest
 import org.readium.r2.shared.publication.PublicationServicesHolder
 import org.readium.r2.shared.publication.indexOfFirstWithHref
 import org.readium.r2.shared.publication.services.content.Content
-import org.readium.r2.shared.resource.Container
-import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.util.Either
+import org.readium.r2.shared.util.resource.Container
+import org.readium.r2.shared.util.resource.Resource
 
 /**
  * Creates a [Content.Iterator] instance for the [Resource], starting from the

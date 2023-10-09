@@ -16,7 +16,7 @@ import org.json.JSONObject
 import org.readium.r2.shared.JSONable
 import org.readium.r2.shared.extensions.JSONParceler
 import org.readium.r2.shared.extensions.toMap
-import org.readium.r2.shared.resource.Resource
+import org.readium.r2.shared.util.resource.Resource
 
 /**
  * Properties associated to the linked resource.

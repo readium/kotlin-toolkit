@@ -37,7 +37,7 @@ android {
             proguardFiles(getDefaultProguardFile("proguard-android.txt"))
         }
     }
-    namespace = "org.readium.adapters.pdfium"
+    namespace = "org.readium.adapter.pdfium"
 }
 
 kotlin {

@@ -31,12 +31,12 @@ import org.readium.r2.lcp.license.container.LicenseContainer
 import org.readium.r2.lcp.license.container.WritableLicenseContainer
 import org.readium.r2.lcp.license.container.createLicenseContainer
 import org.readium.r2.lcp.license.model.LicenseDocument
-import org.readium.r2.shared.asset.Asset
-import org.readium.r2.shared.asset.AssetRetriever
 import org.readium.r2.shared.extensions.tryOr
 import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.publication.protection.ContentProtection
 import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.asset.Asset
+import org.readium.r2.shared.util.asset.AssetRetriever
 import org.readium.r2.shared.util.downloads.DownloadManager
 import org.readium.r2.shared.util.mediatype.FormatRegistry
 import org.readium.r2.shared.util.mediatype.MediaType
@@ -50,7 +50,7 @@ internal class LicensesService(
     private val network: NetworkService,
     private val passphrases: PassphrasesService,
     private val context: Context,
-    private val assetRetriever: AssetRetriever,
+    private val assetRetriever: org.readium.r2.shared.util.asset.AssetRetriever,
     private val mediaTypeRetriever: MediaTypeRetriever,
     private val downloadManager: DownloadManager
 ) : LcpService, CoroutineScope by MainScope() {
@@ -60,12 +60,12 @@ internal class LicensesService(
         return isLcpProtected(asset)
     }
 
-    override suspend fun isLcpProtected(asset: Asset): Boolean =
+    override suspend fun isLcpProtected(asset: org.readium.r2.shared.util.asset.Asset): Boolean =
         tryOr(false) {
             when (asset) {
-                is Asset.Resource ->
+                is org.readium.r2.shared.util.asset.Asset.Resource ->
                     asset.mediaType == MediaType.LCP_LICENSE_DOCUMENT
-                is Asset.Container -> {
+                is org.readium.r2.shared.util.asset.Asset.Container -> {
                     createLicenseContainer(context, asset.container, asset.mediaType).read()
                     true
                 }
@@ -103,16 +103,14 @@ internal class LicensesService(
         file: File,
         mediaType: MediaType,
         authentication: LcpAuthenticating,
-        allowUserInteraction: Boolean,
-        sender: Any?
+        allowUserInteraction: Boolean
     ): Try<LcpLicense, LcpException> =
         try {
             val container = createLicenseContainer(file, mediaType)
             val license = retrieveLicense(
                 container,
                 authentication,
-                allowUserInteraction,
-                sender
+                allowUserInteraction
             )
             Try.success(license)
         } catch (e: Exception) {
@@ -120,18 +118,16 @@ internal class LicensesService(
         }
 
     override suspend fun retrieveLicense(
-        asset: Asset,
+        asset: org.readium.r2.shared.util.asset.Asset,
         authentication: LcpAuthenticating,
-        allowUserInteraction: Boolean,
-        sender: Any?
+        allowUserInteraction: Boolean
     ): Try<LcpLicense, LcpException> =
         try {
             val licenseContainer = createLicenseContainer(context, asset)
             val license = retrieveLicense(
                 licenseContainer,
                 authentication,
-                allowUserInteraction,
-                sender
+                allowUserInteraction
             )
             Try.success(license)
         } catch (e: Exception) {
@@ -141,8 +137,7 @@ internal class LicensesService(
     private suspend fun retrieveLicense(
         container: LicenseContainer,
         authentication: LcpAuthenticating,
-        allowUserInteraction: Boolean,
-        sender: Any?
+        allowUserInteraction: Boolean
     ): LcpLicense {
         // WARNING: Using the Default dispatcher in the state machine code is critical. If we were using the Main Dispatcher,
         // calling runBlocking in LicenseValidation.handle would block the main thread and cause a severe issue
@@ -152,8 +147,7 @@ internal class LicensesService(
             retrieveLicenseUnsafe(
                 container,
                 authentication,
-                allowUserInteraction,
-                sender
+                allowUserInteraction
             )
         }
         Timber.d("license retrieved ${license.license}")
@@ -164,15 +158,13 @@ internal class LicensesService(
     private suspend fun retrieveLicenseUnsafe(
         container: LicenseContainer,
         authentication: LcpAuthenticating?,
-        allowUserInteraction: Boolean,
-        sender: Any?
+        allowUserInteraction: Boolean
     ): License =
         suspendCancellableCoroutine { cont ->
             retrieveLicense(
                 container,
                 authentication,
-                allowUserInteraction,
-                sender
+                allowUserInteraction
             ) { license ->
                 if (cont.isActive) {
                     cont.resume(license)
@@ -184,17 +176,20 @@ internal class LicensesService(
         container: LicenseContainer,
         authentication: LcpAuthenticating?,
         allowUserInteraction: Boolean,
-        sender: Any?,
         completion: (License) -> Unit
     ) {
         var initialData = container.read()
         Timber.d("license ${LicenseDocument(data = initialData).json}")
 
         val validation = LicenseValidation(
-            authentication = authentication, crl = this.crl,
-            device = this.device, network = this.network, passphrases = this.passphrases, context = this.context,
-            allowUserInteraction = allowUserInteraction, ignoreInternetErrors = container is WritableLicenseContainer,
-            sender = sender
+            authentication = authentication,
+            crl = this.crl,
+            device = this.device,
+            network = this.network,
+            passphrases = this.passphrases,
+            context = this.context,
+            allowUserInteraction = allowUserInteraction,
+            ignoreInternetErrors = container is WritableLicenseContainer
         ) { licenseDocument ->
             try {
                 launch {

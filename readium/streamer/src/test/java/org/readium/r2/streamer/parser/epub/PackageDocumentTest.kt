@@ -12,7 +12,6 @@ package org.readium.r2.streamer.parser.epub
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.readium.r2.shared.parser.xml.XmlParser
 import org.readium.r2.shared.publication.Href
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Manifest
@@ -24,6 +23,7 @@ import org.readium.r2.shared.publication.presentation.*
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
+import org.readium.r2.shared.util.xml.XmlParser
 import org.robolectric.RobolectricTestRunner
 
 fun parsePackageDocument(path: String): Manifest {

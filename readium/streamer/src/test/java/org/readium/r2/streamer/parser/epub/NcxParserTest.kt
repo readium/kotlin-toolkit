@@ -13,10 +13,10 @@ import org.assertj.core.api.Assertions
 import org.junit.Assert.assertNotNull
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.readium.r2.shared.parser.xml.XmlParser
 import org.readium.r2.shared.publication.Href
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.xml.XmlParser
 import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)

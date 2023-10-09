@@ -2,7 +2,6 @@ package org.readium.r2.opds
 
 import java.util.*
 import org.joda.time.DateTime
-import org.json.JSONObject
 import org.junit.Assert.*
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -223,7 +222,7 @@ class OPDS1ParserTest {
                     )
                 )
             ).toJSON(),
-            JSONObject(feed.publications[0].jsonManifest)
+            feed.publications[0].manifest.toJSON()
         )
 
         assertJSONEquals(
@@ -282,7 +281,7 @@ class OPDS1ParserTest {
                     )
                 )
             ).toJSON(),
-            JSONObject(feed.publications[1].jsonManifest)
+            feed.publications[1].manifest.toJSON()
         )
     }
 
@@ -356,7 +355,7 @@ class OPDS1ParserTest {
                     )
                 )
             ).toJSON(),
-            JSONObject(publication!!.jsonManifest)
+            publication!!.manifest.toJSON()
         )
     }
 

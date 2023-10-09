@@ -7,8 +7,8 @@
 package org.readium.r2.streamer.extensions
 
 import org.readium.r2.shared.publication.Link
-import org.readium.r2.shared.resource.Container
 import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.shared.util.resource.Container
 
 internal suspend fun Container.Entry.toLink(mediaType: MediaType? = null): Link =
     Link(

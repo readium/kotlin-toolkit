@@ -20,12 +20,12 @@ import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.publication.services.positionsByReadingOrder
 import org.readium.r2.shared.publication.services.search.SearchService.Options
-import org.readium.r2.shared.resource.Container
-import org.readium.r2.shared.resource.content.DefaultResourceContentExtractorFactory
-import org.readium.r2.shared.resource.content.ResourceContentExtractor
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.getOrThrow
+import org.readium.r2.shared.util.resource.Container
+import org.readium.r2.shared.util.resource.content.DefaultResourceContentExtractorFactory
+import org.readium.r2.shared.util.resource.content.ResourceContentExtractor
 import timber.log.Timber
 
 /**

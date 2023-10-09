@@ -9,9 +9,9 @@ package org.readium.r2.testapp.data.model
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import org.readium.r2.shared.asset.AssetType
 import org.readium.r2.shared.publication.protection.ContentProtection
 import org.readium.r2.shared.util.AbsoluteUrl
+import org.readium.r2.shared.util.asset.AssetType
 import org.readium.r2.shared.util.mediatype.MediaType
 
 @Entity(tableName = Book.TABLE_NAME)

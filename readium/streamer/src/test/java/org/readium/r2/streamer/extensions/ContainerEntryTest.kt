@@ -13,12 +13,12 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.readium.r2.shared.resource.Container
-import org.readium.r2.shared.resource.Resource
-import org.readium.r2.shared.resource.ResourceTry
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.shared.util.resource.Container
+import org.readium.r2.shared.util.resource.Resource
+import org.readium.r2.shared.util.resource.ResourceTry
 import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)

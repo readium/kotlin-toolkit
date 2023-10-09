@@ -27,17 +27,17 @@ import org.readium.r2.shared.publication.services.PositionsService
 import org.readium.r2.shared.publication.services.WebPositionsService
 import org.readium.r2.shared.publication.services.content.ContentService
 import org.readium.r2.shared.publication.services.search.SearchService
-import org.readium.r2.shared.resource.Container
-import org.readium.r2.shared.resource.EmptyContainer
-import org.readium.r2.shared.resource.Resource
-import org.readium.r2.shared.resource.ResourceTry
-import org.readium.r2.shared.resource.fallback
 import org.readium.r2.shared.util.BaseError
 import org.readium.r2.shared.util.Closeable
 import org.readium.r2.shared.util.Error
 import org.readium.r2.shared.util.ThrowableError
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.shared.util.resource.Container
+import org.readium.r2.shared.util.resource.EmptyContainer
+import org.readium.r2.shared.util.resource.Resource
+import org.readium.r2.shared.util.resource.ResourceTry
+import org.readium.r2.shared.util.resource.fallback
 
 internal typealias ServiceFactory = (Publication.Service.Context) -> Publication.Service?
 
@@ -77,33 +77,33 @@ public class Publication(
     public var cssStyle: String? = null
 ) : PublicationServicesHolder {
 
-    private val _manifest: Manifest
+    public val manifest: Manifest
 
     private val services = ListPublicationServicesHolder()
 
     init {
         services.services = servicesBuilder.build(Service.Context(manifest, container, services))
-        _manifest = manifest.copy(
+        this.manifest = manifest.copy(
             links = manifest.links + services.services.map(Service::links).flatten()
         )
     }
 
     // Shortcuts to manifest properties
 
-    public val context: List<String> get() = _manifest.context
-    public val metadata: Metadata get() = _manifest.metadata
-    public val links: List<Link> get() = _manifest.links
+    public val context: List<String> get() = manifest.context
+    public val metadata: Metadata get() = manifest.metadata
+    public val links: List<Link> get() = manifest.links
 
     /** Identifies a list of resources in reading order for the publication. */
-    public val readingOrder: List<Link> get() = _manifest.readingOrder
+    public val readingOrder: List<Link> get() = manifest.readingOrder
 
     /** Identifies resources that are necessary for rendering the publication. */
-    public val resources: List<Link> get() = _manifest.resources
+    public val resources: List<Link> get() = manifest.resources
 
     /** Identifies the collection that contains a table of contents. */
-    public val tableOfContents: List<Link> get() = _manifest.tableOfContents
+    public val tableOfContents: List<Link> get() = manifest.tableOfContents
 
-    public val subcollections: Map<String, List<PublicationCollection>> get() = _manifest.subcollections
+    public val subcollections: Map<String, List<PublicationCollection>> get() = manifest.subcollections
 
     @Deprecated(
         "Use conformsTo() to check the kind of a publication.",
@@ -117,8 +117,13 @@ public class Publication(
     /**
      * Returns the RWPM JSON representation for this [Publication]'s manifest, as a string.
      */
+    @Deprecated(
+        "Jsonify the manifest by yourself.",
+        replaceWith = ReplaceWith("""manifest.toJSON().toString().replace("\\/", "/")"""),
+        DeprecationLevel.ERROR
+    )
     public val jsonManifest: String
-        get() = _manifest.toJSON().toString().replace("\\/", "/")
+        get() = manifest.toJSON().toString().replace("\\/", "/")
 
     /**
      * The URL from which the publication resources are relative to, computed from the [Link] with
@@ -158,7 +163,7 @@ public class Publication(
      * Returns whether this publication conforms to the given Readium Web Publication Profile.
      */
     public fun conformsTo(profile: Profile): Boolean =
-        _manifest.conformsTo(profile)
+        manifest.conformsTo(profile)
 
     /**
      * Finds the first [Link] with the given HREF in the publication's links.
@@ -169,24 +174,24 @@ public class Publication(
      * If there's no match, tries again after removing any query parameter and anchor from the
      * given [href].
      */
-    public fun linkWithHref(href: Url): Link? = _manifest.linkWithHref(href)
+    public fun linkWithHref(href: Url): Link? = manifest.linkWithHref(href)
 
     /**
      * Finds the first [Link] having the given [rel] in the publications's links.
      */
-    public fun linkWithRel(rel: String): Link? = _manifest.linkWithRel(rel)
+    public fun linkWithRel(rel: String): Link? = manifest.linkWithRel(rel)
 
     /**
      * Finds all [Link]s having the given [rel] in the publications's links.
      */
-    public fun linksWithRel(rel: String): List<Link> = _manifest.linksWithRel(rel)
+    public fun linksWithRel(rel: String): List<Link> = manifest.linksWithRel(rel)
 
     /**
      * Creates a new [Locator] object from a [Link] to a resource of this publication.
      *
      * Returns null if the resource is not found in this publication.
      */
-    public fun locatorFromLink(link: Link): Locator? = _manifest.locatorFromLink(link)
+    public fun locatorFromLink(link: Link): Locator? = manifest.locatorFromLink(link)
 
     /**
      * Returns the resource targeted by the given non-templated [link].
@@ -672,11 +677,11 @@ public class Publication(
     public fun link(predicate: (Link) -> Boolean): Link? = null
 
     @Deprecated(
-        "Use [jsonManifest] instead",
-        ReplaceWith("jsonManifest"),
+        "Jsonify the manifest by yourself",
+        ReplaceWith("manifest.toJSON()"),
         level = DeprecationLevel.ERROR
     )
-    public fun toJSON(): JSONObject = JSONObject(jsonManifest)
+    public fun toJSON(): JSONObject = throw NotImplementedError()
 
     @Deprecated(
         "Use `metadata.effectiveReadingProgression` instead",

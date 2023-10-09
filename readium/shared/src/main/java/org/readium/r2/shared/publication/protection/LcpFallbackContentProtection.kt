@@ -8,21 +8,21 @@ package org.readium.r2.shared.publication.protection
 
 import org.json.JSONObject
 import org.readium.r2.shared.InternalReadiumApi
-import org.readium.r2.shared.asset.Asset
-import org.readium.r2.shared.parser.xml.ElementNode
 import org.readium.r2.shared.publication.Manifest
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.encryption.encryption
 import org.readium.r2.shared.publication.protection.ContentProtection.Scheme
 import org.readium.r2.shared.publication.services.contentProtectionServiceFactory
-import org.readium.r2.shared.resource.Container
-import org.readium.r2.shared.resource.Resource
-import org.readium.r2.shared.resource.readAsJson
-import org.readium.r2.shared.resource.readAsXml
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.asset.Asset
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
+import org.readium.r2.shared.util.resource.Container
+import org.readium.r2.shared.util.resource.Resource
+import org.readium.r2.shared.util.resource.readAsJson
+import org.readium.r2.shared.util.resource.readAsXml
+import org.readium.r2.shared.util.xml.ElementNode
 
 /**
  * [ContentProtection] implementation used as a fallback by the Streamer to detect LCP DRM
@@ -36,19 +36,23 @@ public class LcpFallbackContentProtection(
     override val scheme: Scheme =
         Scheme.Lcp
 
-    override suspend fun supports(asset: Asset): Boolean =
+    override suspend fun supports(asset: org.readium.r2.shared.util.asset.Asset): Boolean =
         when (asset) {
-            is Asset.Container -> isLcpProtected(asset.container, asset.mediaType)
-            is Asset.Resource -> asset.mediaType.matches(MediaType.LCP_LICENSE_DOCUMENT)
+            is org.readium.r2.shared.util.asset.Asset.Container -> isLcpProtected(
+                asset.container,
+                asset.mediaType
+            )
+            is org.readium.r2.shared.util.asset.Asset.Resource -> asset.mediaType.matches(
+                MediaType.LCP_LICENSE_DOCUMENT
+            )
         }
 
     override suspend fun open(
-        asset: Asset,
+        asset: org.readium.r2.shared.util.asset.Asset,
         credentials: String?,
-        allowUserInteraction: Boolean,
-        sender: Any?
+        allowUserInteraction: Boolean
     ): Try<ContentProtection.Asset, Publication.OpenError> {
-        if (asset !is Asset.Container) {
+        if (asset !is org.readium.r2.shared.util.asset.Asset.Container) {
             return Try.failure(
                 Publication.OpenError.UnsupportedAsset("A container asset was expected.")
             )

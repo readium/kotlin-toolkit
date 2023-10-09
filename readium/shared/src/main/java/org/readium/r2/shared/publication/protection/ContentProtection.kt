@@ -15,9 +15,9 @@ import org.readium.r2.shared.UserException
 import org.readium.r2.shared.publication.LocalizedString
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.services.ContentProtectionService
-import org.readium.r2.shared.resource.Container
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.shared.util.resource.Container
 
 /**
  * Bridge between a Content Protection technology and the Readium toolkit.
@@ -34,7 +34,7 @@ public interface ContentProtection {
      * Returns if this [ContentProtection] supports the given [asset].
      */
     public suspend fun supports(
-        asset: org.readium.r2.shared.asset.Asset
+        asset: org.readium.r2.shared.util.asset.Asset
     ): Boolean
 
     /**
@@ -44,10 +44,9 @@ public interface ContentProtection {
      * asset can't be successfully opened even in restricted mode.
      */
     public suspend fun open(
-        asset: org.readium.r2.shared.asset.Asset,
+        asset: org.readium.r2.shared.util.asset.Asset,
         credentials: String?,
-        allowUserInteraction: Boolean,
-        sender: Any?
+        allowUserInteraction: Boolean
     ): Try<Asset, Publication.OpenError>
 
     /**
