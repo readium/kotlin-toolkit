@@ -9,10 +9,9 @@ package org.readium.r2.testapp.reader
 import android.app.Application
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import org.readium.navigator.media.common.Media3Adapter
 import org.readium.r2.shared.ExperimentalReadiumApi
+import org.readium.r2.testapp.utils.CoroutineQueue
 
 /**
  * Enables to try to close a session without starting the [MediaService] if it is not started.
@@ -24,8 +23,8 @@ class MediaServiceFacade(
     private val coroutineScope: CoroutineScope =
         MainScope()
 
-    private val mutex: Mutex =
-        Mutex()
+    private val coroutineQueue: CoroutineQueue =
+        CoroutineQueue()
 
     private var binder: MediaService.Binder? =
         null
@@ -42,39 +41,33 @@ class MediaServiceFacade(
     suspend fun <N> openSession(
         bookId: Long,
         navigator: N
-    ) where N : AnyMediaNavigator, N : Media3Adapter = mutex.withLock {
-        if (session.value != null) {
-            throw CancellationException("A session is already running.")
-        }
-
-        try {
+    ) where N : AnyMediaNavigator, N : Media3Adapter {
+        coroutineQueue.await {
             if (binder == null) {
                 MediaService.start(application)
-                val binder = MediaService.bind(application)
-                this.binder = binder
-                bindingJob = binder.session
-                    .onEach { sessionMutable.value = it }
-                    .launchIn(coroutineScope)
-            }
+                try {
+                    val binder = MediaService.bind(application)
+                    this.binder = binder
+                    bindingJob = binder.session
+                        .onEach { sessionMutable.value = it }
+                        .launchIn(coroutineScope)
+                } catch (e: Exception) {
+                    // Failed to bind to the service.
+                    MediaService.stop(application)
+                }
 
-            binder!!.openSession(navigator, bookId)
-        } catch (e: CancellationException) {
-            MediaService.stop(application)
-            throw e
+                binder!!.openSession(navigator, bookId)
+            }
         }
     }
 
-    suspend fun closeSession() = mutex.withLock {
-        if (session.value == null) {
-            throw CancellationException("No session to close.")
-        }
-
-        withContext(NonCancellable) {
+    fun closeSession() {
+        coroutineQueue.launch {
             bindingJob!!.cancelAndJoin()
             binder!!.closeSession()
+            binder!!.stop()
             sessionMutable.value = null
             binder = null
-            MediaService.stop(application)
         }
     }
 }

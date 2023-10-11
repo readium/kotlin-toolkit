@@ -194,10 +194,25 @@ internal class TtsPlayer<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
     }
 
     fun play() {
+        // This can be called by the session adapter with a pending intent for a foreground service
+        // if playWhenReady is false or the state is Ended.
+        // We must keep or transition to a state which will be translated by media3 to a
+        // foreground state.
+        // If the state was State.Ended, it will get back to its initial value later.
+
+        if (playbackMutable.value.playWhenReady && playback.value.state == State.Ready) {
+            return
+        }
+
+        playbackMutable.value =
+            playbackMutable.value.copy(state = State.Ready, playWhenReady = true)
+
         coroutineScope.launch {
-            // WORKAROUND to get the media buttons correctly working.
-            fakePlayingAudio()
-            playAsync()
+            mutex.withLock {
+                // WORKAROUND to get the media buttons correctly working.
+                fakePlayingAudio()
+                playIfReadyAndNotPaused()
+            }
         }
     }
 
@@ -240,30 +255,19 @@ internal class TtsPlayer<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
             ?: run { Timber.e("Couldn't fake playing audio.") }
     }
 
-    private suspend fun playAsync() = mutex.withLock {
-        if (isPlaying()) {
-            return
-        }
-
-        playbackMutable.value = playbackMutable.value.copy(playWhenReady = true)
-        playIfReadyAndNotPaused()
-    }
-
     fun pause() {
-        coroutineScope.launch {
-            pauseAsync()
-        }
-    }
-
-    private suspend fun pauseAsync() = mutex.withLock {
         if (!playbackMutable.value.playWhenReady) {
             return
         }
 
         playbackMutable.value = playbackMutable.value.copy(playWhenReady = false)
         utteranceMutable.value = utteranceMutable.value.copy(range = null)
-        playbackJob?.cancelAndJoin()
-        Unit
+
+        coroutineScope.launch {
+            mutex.withLock {
+                playbackJob?.cancelAndJoin()
+            }
+        }
     }
 
     fun tryRecover() {
@@ -308,19 +312,17 @@ internal class TtsPlayer<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
     }
 
     fun restartUtterance() {
-        coroutineScope.launch {
-            restartUtteranceAsync()
-        }
-    }
-
-    private suspend fun restartUtteranceAsync() = mutex.withLock {
-        playbackJob?.cancel()
         if (playbackMutable.value.state == State.Ended) {
             playbackMutable.value = playbackMutable.value.copy(state = State.Ready)
         }
-        utteranceMutable.value = utteranceMutable.value.copy(range = null)
-        playbackJob?.join()
-        playIfReadyAndNotPaused()
+
+        coroutineScope.launch {
+            playbackJob?.cancel()
+            utteranceMutable.value = utteranceMutable.value.copy(range = null)
+
+            playbackJob?.join()
+            playIfReadyAndNotPaused()
+        }
     }
 
     fun hasNextUtterance() =
@@ -540,9 +542,6 @@ internal class TtsPlayer<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
         contentIterator.language = engineFacade.settings.value.language
         contentIterator.overrideContentLanguage = engineFacade.settings.value.overrideContentLanguage
     }
-
-    private fun isPlaying() =
-        playbackMutable.value.playWhenReady && playback.value.state == State.Ready
 
     private fun TtsUtteranceIterator.Utterance.ttsPlayerUtterance(): Utterance =
         Utterance(

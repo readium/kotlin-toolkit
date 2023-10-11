@@ -8,6 +8,7 @@ package org.readium.r2.testapp.reader.tts
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -93,6 +94,8 @@ class TtsViewModel private constructor(
     private val navigatorNow: AndroidTtsNavigator? get() =
         mediaServiceFacade.session.value?.ttsNavigator
 
+    private var launchJob: Job? = null
+
     private val _events: Channel<Event> =
         Channel(Channel.BUFFERED)
 
@@ -162,11 +165,11 @@ class TtsViewModel private constructor(
      * Starts the TTS using the first visible locator in the given [navigator].
      */
     fun start(navigator: Navigator) {
-        viewModelScope.launch {
-            if (mediaServiceFacade.session.value != null) {
-                return@launch
-            }
+        if (launchJob != null) {
+            return
+        }
 
+        launchJob = viewModelScope.launch {
             openSession(navigator)
         }
     }
@@ -184,16 +187,17 @@ class TtsViewModel private constructor(
             return
         }
 
-        // playWhenReady must be true for the MediaSessionService to call Service.startForeground
-        // and prevent crashing
-        ttsNavigator.play()
-        mediaServiceFacade.openSession(bookId, ttsNavigator)
+        try {
+            mediaServiceFacade.openSession(bookId, ttsNavigator)
+            ttsNavigator.play()
+        } catch (e: Exception) {
+            launchJob = null
+        }
     }
 
     fun stop() {
-        viewModelScope.launch {
-            mediaServiceFacade.closeSession()
-        }
+        launchJob = null
+        mediaServiceFacade.closeSession()
     }
 
     fun play() {
