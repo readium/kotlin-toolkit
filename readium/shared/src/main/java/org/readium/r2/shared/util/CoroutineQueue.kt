@@ -16,20 +16,19 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.trySendBlocking
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.supervisorScope
 import kotlinx.coroutines.suspendCancellableCoroutine
-import org.readium.r2.shared.InternalReadiumApi
 
 /**
  * Executes coroutines in a sequential order (FIFO).
  */
-@InternalReadiumApi
 public class CoroutineQueue(
-    public val scope: CoroutineScope = MainScope()
+    private val scope: CoroutineScope = MainScope()
 ) {
     init {
         scope.launch {
             for (task in tasks) {
-                scope.launch {
+                supervisorScope {
                     try {
                         task()
                     } catch (e: Exception) {
@@ -43,6 +42,8 @@ public class CoroutineQueue(
 
     /**
      * Launches a coroutine in the queue.
+     *
+     * Exceptions thrown by [task] will be ignored.
      */
     public fun launch(task: suspend () -> Unit) {
         tasks.trySendBlocking(Task(task)).getOrThrow()
@@ -50,6 +51,8 @@ public class CoroutineQueue(
 
     /**
      * Launches a coroutine in the queue, and waits for its result.
+     *
+     * Exceptions thrown by [task] will be propagated to the caller.
      */
     public suspend fun <T> await(task: suspend () -> T): T =
         suspendCancellableCoroutine { cont ->

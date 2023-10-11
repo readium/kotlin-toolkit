@@ -318,9 +318,8 @@ internal class TtsPlayer<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
 
         coroutineScope.launch {
             playbackJob?.cancel()
-            utteranceMutable.value = utteranceMutable.value.copy(range = null)
-
             playbackJob?.join()
+            utteranceMutable.value = utteranceMutable.value.copy(range = null)
             playIfReadyAndNotPaused()
         }
     }

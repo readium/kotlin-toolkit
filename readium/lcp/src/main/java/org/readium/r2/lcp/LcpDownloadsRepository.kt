@@ -9,8 +9,10 @@ package org.readium.r2.lcp
 import android.content.Context
 import java.io.File
 import java.util.LinkedList
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -20,10 +22,14 @@ import org.readium.r2.shared.util.CoroutineQueue
 internal class LcpDownloadsRepository(
     context: Context
 ) {
-    private val queue = CoroutineQueue()
+    private val coroutineScope: CoroutineScope =
+        MainScope()
+
+    private val queue: CoroutineQueue =
+        CoroutineQueue()
 
     private val storageDir: Deferred<File> =
-        queue.scope.async {
+        coroutineScope.async {
             withContext(Dispatchers.IO) {
                 File(context.noBackupFilesDir, LcpDownloadsRepository::class.qualifiedName!!)
                     .also { if (!it.exists()) it.mkdirs() }
@@ -31,7 +37,7 @@ internal class LcpDownloadsRepository(
         }
 
     private val storageFile: Deferred<File> =
-        queue.scope.async {
+        coroutineScope.async {
             withContext(Dispatchers.IO) {
                 File(storageDir.await(), "licenses.json")
                     .also { if (!it.exists()) { it.writeText("{}", Charsets.UTF_8) } }
@@ -39,12 +45,12 @@ internal class LcpDownloadsRepository(
         }
 
     private val snapshot: Deferred<MutableMap<String, JSONObject>> =
-        queue.scope.async {
+        coroutineScope.async {
             readSnapshot().toMutableMap()
         }
 
     fun addDownload(id: String, license: JSONObject) {
-        queue.scope.launch {
+        coroutineScope.launch {
             val snapshotCompleted = snapshot.await()
             snapshotCompleted[id] = license
             writeSnapshot(snapshotCompleted)
