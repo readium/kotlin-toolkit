@@ -18,11 +18,13 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.trySendBlocking
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.supervisorScope
+import org.readium.r2.shared.InternalReadiumApi
 
 /**
  * CoroutineScope-like util to execute coroutines in a sequential order (FIFO).
  * As with a SupervisorJob, children can be cancelled or fail independently one from the other.
  */
+@InternalReadiumApi
 public class CoroutineQueue(
     dispatcher: CoroutineDispatcher = Dispatchers.Main
 ) {
