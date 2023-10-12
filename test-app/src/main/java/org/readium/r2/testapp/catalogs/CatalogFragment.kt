@@ -41,7 +41,7 @@ class CatalogFragment : Fragment() {
     private lateinit var navigationAdapter: NavigationAdapter
     private lateinit var catalog: Catalog
     private var showFacetMenu = false
-    private lateinit var facets: MutableList<Facet>
+    private lateinit var facets: List<Facet>
     private var binding: FragmentCatalogBinding by viewLifecycle()
 
     override fun onCreateView(
@@ -141,7 +141,7 @@ class CatalogFragment : Fragment() {
             }
 
             is CatalogViewModel.Event.CatalogParseSuccess -> {
-                facets = event.result.feed?.facets ?: mutableListOf()
+                facets = event.result.feed?.facets ?: emptyList()
 
                 if (facets.size > 0) {
                     showFacetMenu = true
