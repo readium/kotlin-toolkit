@@ -209,7 +209,8 @@ internal class TtsPlayer<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
 
         coroutineScope.launch {
             mutex.withLock {
-                // WORKAROUND to get the media buttons correctly working.
+                // WORKAROUND to get the media buttons correctly working when an audio player was
+                // running before.
                 fakePlayingAudio()
                 playIfReadyAndNotPaused()
             }
