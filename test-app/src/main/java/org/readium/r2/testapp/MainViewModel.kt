@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import org.readium.r2.testapp.domain.Bookshelf
+import org.readium.r2.testapp.domain.ImportError
 import org.readium.r2.testapp.utils.EventChannel
 
 class MainViewModel(
@@ -41,8 +42,7 @@ class MainViewModel(
     private fun sendImportFeedback(event: Bookshelf.Event) {
         when (event) {
             is Bookshelf.Event.ImportPublicationError -> {
-                val errorMessage = event.error.getUserMessage(app)
-                channel.send(Event.ImportPublicationError(errorMessage))
+                channel.send(Event.ImportPublicationError(event.error))
             }
             Bookshelf.Event.ImportPublicationSuccess -> {
                 channel.send(Event.ImportPublicationSuccess)
@@ -56,7 +56,7 @@ class MainViewModel(
             Event()
 
         class ImportPublicationError(
-            val errorMessage: String
+            val error: ImportError
         ) : Event()
     }
 }

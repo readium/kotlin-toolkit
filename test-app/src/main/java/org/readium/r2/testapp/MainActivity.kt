@@ -16,6 +16,8 @@ import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.snackbar.Snackbar
+import org.readium.r2.testapp.utils.extensions.readium.toDebugDescription
+import timber.log.Timber
 
 class MainActivity : AppCompatActivity() {
 
@@ -59,7 +61,8 @@ class MainActivity : AppCompatActivity() {
                     getString(R.string.import_publication_success)
 
                 is MainViewModel.Event.ImportPublicationError -> {
-                    event.errorMessage
+                    Timber.e(event.error.toDebugDescription(this))
+                    event.error.getUserMessage(this)
                 }
             }
         Snackbar.make(

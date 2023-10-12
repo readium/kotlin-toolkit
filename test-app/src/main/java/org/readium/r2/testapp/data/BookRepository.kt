@@ -21,7 +21,7 @@ import org.readium.r2.testapp.data.db.BooksDao
 import org.readium.r2.testapp.data.model.Book
 import org.readium.r2.testapp.data.model.Bookmark
 import org.readium.r2.testapp.data.model.Highlight
-import org.readium.r2.testapp.utils.extensions.authorName
+import org.readium.r2.testapp.utils.extensions.readium.authorName
 
 class BookRepository(
     private val booksDao: BooksDao
