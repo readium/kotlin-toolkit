@@ -285,7 +285,7 @@ private sealed class RouteHandler {
         private val path = "/~readium/rights/copy"
 
         override val link: Link = Link(
-            href = Href.fromTemplate("$path{?text,peek}")!!,
+            href = Href("$path{?text,peek}", templated = true)!!,
             mediaType = mediaType
         )
 
@@ -323,7 +323,7 @@ private sealed class RouteHandler {
         private val path = "/~readium/rights/print"
 
         override val link = Link(
-            href = Href.fromTemplate("$path{?pageCount,peek}")!!,
+            href = Href("$path{?pageCount,peek}", templated = true)!!,
             mediaType = mediaType
         )
 

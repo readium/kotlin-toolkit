@@ -33,7 +33,7 @@ class LinkTest {
     @Test fun `parse full JSON`() {
         assertEquals(
             Link(
-                href = Href(Url("http://href")!!),
+                href = Href("http://href")!!,
                 mediaType = MediaType.PDF,
                 title = "Link Title",
                 rels = setOf("publication", "cover"),
@@ -111,7 +111,7 @@ class LinkTest {
     @Test fun `parse JSON multiple languages`() {
         assertEquals(
             Link.fromJSON(JSONObject("{'href': 'a', 'language': ['fr', 'en']}")),
-            Link(href = Href(Url("a")!!), languages = listOf("fr", "en"))
+            Link(href = Href("a")!!, languages = listOf("fr", "en"))
         )
     }
 
@@ -211,7 +211,7 @@ class LinkTest {
             }"""
             ),
             Link(
-                href = Href.fromTemplate("http://href")!!,
+                href = Href("http://href", templated = true)!!,
                 mediaType = MediaType.PDF,
                 title = "Link Title",
                 rels = setOf("publication", "cover"),
@@ -262,7 +262,7 @@ class LinkTest {
     @Test
     fun `Make a copy after adding the given {properties}`() {
         val link = Link(
-            href = Href.fromTemplate("http://href")!!,
+            href = Href("http://href", templated = true)!!,
             mediaType = MediaType.PDF,
             title = "Link Title",
             rels = setOf("publication", "cover"),

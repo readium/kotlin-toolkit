@@ -13,7 +13,6 @@ import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.readium.r2.shared.publication.*
-import org.readium.r2.shared.util.Url
 import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
@@ -29,7 +28,7 @@ class PublicationTest {
     )
 
     @Test fun `get {pageList}`() {
-        val links = listOf(Link(href = Href(Url("/page1.html")!!)))
+        val links = listOf(Link(href = Href("/page1.html")!!))
         assertEquals(
             links,
             createPublication(
@@ -45,7 +44,7 @@ class PublicationTest {
     }
 
     @Test fun `get {landmarks}`() {
-        val links = listOf(Link(href = Href(Url("/landmark.html")!!)))
+        val links = listOf(Link(href = Href("/landmark.html")!!))
         assertEquals(
             links,
             createPublication(
@@ -61,7 +60,7 @@ class PublicationTest {
     }
 
     @Test fun `get {listOfAudioClips}`() {
-        val links = listOf(Link(href = Href(Url("/audio.mp3")!!)))
+        val links = listOf(Link(href = Href("/audio.mp3")!!))
         assertEquals(
             links,
             createPublication(
@@ -77,7 +76,7 @@ class PublicationTest {
     }
 
     @Test fun `get {listOfIllustrations}`() {
-        val links = listOf(Link(href = Href(Url("/image.jpg")!!)))
+        val links = listOf(Link(href = Href("/image.jpg")!!))
         assertEquals(
             links,
             createPublication(
@@ -93,7 +92,7 @@ class PublicationTest {
     }
 
     @Test fun `get {listOfTables}`() {
-        val links = listOf(Link(href = Href(Url("/table.html")!!)))
+        val links = listOf(Link(href = Href("/table.html")!!))
         assertEquals(
             links,
             createPublication(
@@ -111,7 +110,7 @@ class PublicationTest {
     }
 
     @Test fun `get {listOfVideoClips}`() {
-        val links = listOf(Link(href = Href(Url("/video.mov")!!)))
+        val links = listOf(Link(href = Href("/video.mov")!!))
         assertEquals(
             links,
             createPublication(

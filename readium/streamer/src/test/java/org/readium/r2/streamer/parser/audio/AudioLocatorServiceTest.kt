@@ -25,8 +25,8 @@ class AudioLocatorServiceTest {
     fun `locate(Locator) matching reading order HREF`() = runBlocking {
         val service = AudioLocatorService(
             listOf(
-                Link(Href(Url("l1")!!)),
-                Link(Href(Url("l2")!!))
+                Link(Href("l1")!!),
+                Link(Href("l2")!!)
             )
         )
 
@@ -42,8 +42,8 @@ class AudioLocatorServiceTest {
     fun `locate(Locator) returns null if no match`() = runBlocking {
         val service = AudioLocatorService(
             listOf(
-                Link(Href(Url("l1")!!)),
-                Link(Href(Url("l2")!!))
+                Link(Href("l1")!!),
+                Link(Href("l2")!!)
             )
         )
 
@@ -59,8 +59,8 @@ class AudioLocatorServiceTest {
     fun `locate(Locator) uses totalProgression`() = runBlocking {
         val service = AudioLocatorService(
             listOf(
-                Link(Href(Url("l1")!!), mediaType = MediaType.MP3, duration = 100.0),
-                Link(Href(Url("l2")!!), mediaType = MediaType.MP3, duration = 100.0)
+                Link(Href("l1")!!, mediaType = MediaType.MP3, duration = 100.0),
+                Link(Href("l2")!!, mediaType = MediaType.MP3, duration = 100.0)
             )
         )
 
@@ -126,8 +126,8 @@ class AudioLocatorServiceTest {
     fun `locate(Locator) using totalProgression keeps title and text`() = runBlocking {
         val service = AudioLocatorService(
             listOf(
-                Link(Href(Url("l1")!!), mediaType = MediaType.MP3, duration = 100.0),
-                Link(Href(Url("l2")!!), mediaType = MediaType.MP3, duration = 100.0)
+                Link(Href("l1")!!, mediaType = MediaType.MP3, duration = 100.0),
+                Link(Href("l2")!!, mediaType = MediaType.MP3, duration = 100.0)
             )
         )
 
@@ -165,8 +165,8 @@ class AudioLocatorServiceTest {
     fun `locate progression`() = runBlocking {
         val service = AudioLocatorService(
             listOf(
-                Link(Href(Url("l1")!!), mediaType = MediaType.MP3, duration = 100.0),
-                Link(Href(Url("l2")!!), mediaType = MediaType.MP3, duration = 100.0)
+                Link(Href("l1")!!, mediaType = MediaType.MP3, duration = 100.0),
+                Link(Href("l2")!!, mediaType = MediaType.MP3, duration = 100.0)
             )
         )
 
@@ -240,8 +240,8 @@ class AudioLocatorServiceTest {
     fun `locate invalid progression`() = runBlocking {
         val service = AudioLocatorService(
             listOf(
-                Link(Href(Url("l1")!!), mediaType = MediaType.MP3, duration = 100.0),
-                Link(Href(Url("l2")!!), mediaType = MediaType.MP3, duration = 100.0)
+                Link(Href("l1")!!, mediaType = MediaType.MP3, duration = 100.0),
+                Link(Href("l2")!!, mediaType = MediaType.MP3, duration = 100.0)
             )
         )
 

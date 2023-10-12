@@ -26,9 +26,9 @@ class LocatorServiceTest {
     fun `locate from Locator`() = runTest {
         val service = createService(
             readingOrder = listOf(
-                Link(href = Href(Url("chap1")!!), mediaType = MediaType.XML),
-                Link(href = Href(Url("chap2")!!), mediaType = MediaType.XML),
-                Link(href = Href(Url("chap3")!!), mediaType = MediaType.XML)
+                Link(href = Href("chap1")!!, mediaType = MediaType.XML),
+                Link(href = Href("chap2")!!, mediaType = MediaType.XML),
+                Link(href = Href("chap3")!!, mediaType = MediaType.XML)
             )
         )
         val locator = Locator(
@@ -54,8 +54,8 @@ class LocatorServiceTest {
     fun `locate from Locator not found`() = runTest {
         val service = createService(
             readingOrder = listOf(
-                Link(href = Href(Url("chap1")!!), mediaType = MediaType.XML),
-                Link(href = Href(Url("chap3")!!), mediaType = MediaType.XML)
+                Link(href = Href("chap1")!!, mediaType = MediaType.XML),
+                Link(href = Href("chap3")!!, mediaType = MediaType.XML)
             )
         )
         val locator = Locator(

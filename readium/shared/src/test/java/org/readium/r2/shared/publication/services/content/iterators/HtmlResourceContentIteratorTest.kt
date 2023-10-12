@@ -27,7 +27,7 @@ import org.robolectric.RobolectricTestRunner
 @RunWith(RobolectricTestRunner::class)
 class HtmlResourceContentIteratorTest {
 
-    private val link = Link(href = Href(Url("/dir/res.xhtml")!!), mediaType = MediaType.XHTML)
+    private val link = Link(href = Href("/dir/res.xhtml")!!, mediaType = MediaType.XHTML)
     private val locator = Locator(href = Url("/dir/res.xhtml")!!, mediaType = MediaType.XHTML)
 
     private val html = """
@@ -383,7 +383,7 @@ class HtmlResourceContentIteratorTest {
                         progression = 0.0,
                         selector = "html > body > img:nth-child(1)"
                     ),
-                    embeddedLink = Link(href = Href(Url("/dir/image.png")!!)),
+                    embeddedLink = Link(href = Href("/dir/image.png")!!),
                     caption = null,
                     attributes = emptyList()
                 ),
@@ -392,7 +392,7 @@ class HtmlResourceContentIteratorTest {
                         progression = 0.5,
                         selector = "html > body > img:nth-child(2)"
                     ),
-                    embeddedLink = Link(href = Href(Url("/cover.jpg")!!)),
+                    embeddedLink = Link(href = Href("/cover.jpg")!!),
                     caption = null,
                     attributes = listOf(Attribute(ACCESSIBILITY_LABEL, "Accessibility description"))
                 )
@@ -423,7 +423,7 @@ class HtmlResourceContentIteratorTest {
                         progression = 0.0,
                         selector = "html > body > audio:nth-child(1)"
                     ),
-                    embeddedLink = Link(href = Href(Url("/dir/audio.mp3")!!)),
+                    embeddedLink = Link(href = Href("/dir/audio.mp3")!!),
                     attributes = emptyList()
                 ),
                 Content.AudioElement(
@@ -432,10 +432,10 @@ class HtmlResourceContentIteratorTest {
                         selector = "html > body > audio:nth-child(2)"
                     ),
                     embeddedLink = Link(
-                        href = Href(Url("/dir/audio.mp3")!!),
+                        href = Href("/dir/audio.mp3")!!,
                         mediaType = MediaType.MP3,
                         alternates = listOf(
-                            Link(href = Href(Url("/dir/audio.ogg")!!), mediaType = MediaType.OGG)
+                            Link(href = Href("/dir/audio.ogg")!!, mediaType = MediaType.OGG)
                         )
                     ),
                     attributes = emptyList()
@@ -467,7 +467,7 @@ class HtmlResourceContentIteratorTest {
                         progression = 0.0,
                         selector = "html > body > video:nth-child(1)"
                     ),
-                    embeddedLink = Link(href = Href(Url("/dir/video.mp4")!!)),
+                    embeddedLink = Link(href = Href("/dir/video.mp4")!!),
                     attributes = emptyList()
                 ),
                 Content.VideoElement(
@@ -476,11 +476,11 @@ class HtmlResourceContentIteratorTest {
                         selector = "html > body > video:nth-child(2)"
                     ),
                     embeddedLink = Link(
-                        href = Href(Url("/dir/video.mp4")!!),
+                        href = Href("/dir/video.mp4")!!,
                         mediaType = MediaType("video/mp4")!!,
                         alternates = listOf(
                             Link(
-                                href = Href(Url("/dir/video.m4v")!!),
+                                href = Href("/dir/video.m4v")!!,
                                 mediaType = MediaType("video/x-m4v")!!
                             )
                         )

@@ -20,7 +20,6 @@ import org.readium.r2.shared.publication.Link as SharedLink
 import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.publication.presentation.Presentation
 import org.readium.r2.shared.publication.presentation.presentation
-import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.robolectric.RobolectricTestRunner
 
@@ -339,7 +338,7 @@ class MetadataMiscTest {
     @Test
     fun `Cover link is rightly identified`() {
         val expected = SharedLink(
-            href = Href(Url("OEBPS/cover.jpg")!!),
+            href = Href("OEBPS/cover.jpg")!!,
             mediaType = MediaType.JPEG,
             rels = setOf("cover")
         )

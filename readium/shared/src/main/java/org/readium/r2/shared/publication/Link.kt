@@ -202,7 +202,7 @@ public data class Link(
 
             val templated = json.optBoolean("templated", false)
             val href = if (templated) {
-                Href.fromTemplate(hrefString)
+                Href(hrefString, templated = true)
             } else {
                 // We support existing publications with incorrect HREFs (not valid percent-encoded
                 // URIs). We try to parse them first as valid, but fall back on a percent-decoded

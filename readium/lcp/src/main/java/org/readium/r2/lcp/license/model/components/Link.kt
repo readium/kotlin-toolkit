@@ -35,16 +35,14 @@ public data class Link(
             json: JSONObject,
             mediaTypeRetriever: MediaTypeRetriever = MediaTypeRetriever()
         ): Link {
-            val hrefString = json.optNullableString("href")
-                ?: throw LcpException.Parsing.Link
-
-            val href =
-                if (json.optBoolean("templated", false)) {
-                    Href.fromTemplate(hrefString)
-                } else {
-                    Url(hrefString)?.let { Href(it) }
+            val href = json.optNullableString("href")
+                ?.let {
+                    Href(
+                        href = it,
+                        templated = json.optBoolean("templated", false)
+                    )
                 }
-                    ?: throw LcpException.Parsing.Link
+                ?: throw LcpException.Parsing.Link
 
             return Link(
                 href = href,
