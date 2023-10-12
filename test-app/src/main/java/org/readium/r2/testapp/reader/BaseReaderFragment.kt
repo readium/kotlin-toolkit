@@ -25,6 +25,8 @@ import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.reader.preferences.UserPreferencesBottomSheetDialogFragment
+import org.readium.r2.testapp.utils.extensions.readium.toDebugDescription
+import timber.log.Timber
 
 /*
  * Base reader fragment class
@@ -115,6 +117,7 @@ abstract class BaseReaderFragment : Fragment() {
 
     protected fun showError(error: UserException) {
         val context = context ?: return
+        Timber.e(error.toDebugDescription(context))
         Toast.makeText(context, error.getUserMessage(context), Toast.LENGTH_LONG).show()
     }
 }
