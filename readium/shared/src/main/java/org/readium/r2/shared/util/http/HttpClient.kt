@@ -59,13 +59,37 @@ public data class HttpResponse(
      * Finds the first value of the first header matching the given name.
      * In keeping with the HTTP RFC, HTTP header field names are case-insensitive.
      */
-    public fun valueForHeader(name: String): String? = httpHeaders[name]
+    @Deprecated("Use the header method instead.", level = DeprecationLevel.ERROR)
+    @Suppress("Unused_parameter")
+    public fun valueForHeader(name: String): String? {
+        throw NotImplementedError()
+    }
 
     /**
      * Finds all the values of the first header matching the given name.
      * In keeping with the HTTP RFC, HTTP header field names are case-insensitive.
      */
-    public fun valuesForHeader(name: String): List<String> = httpHeaders.getAll(name)
+    @Deprecated("Use the headers method instead.", level = DeprecationLevel.ERROR)
+    @Suppress("Unused_parameter")
+    public fun valuesForHeader(name: String): List<String> {
+        throw NotImplementedError()
+    }
+
+    /**
+     * Finds the last header matching the given name.
+     * In keeping with the HTTP RFC, HTTP header field names are case-insensitive.
+     * The returned string can contain a single value or a comma-separated list of values if
+     * the field supports it.
+     */
+    public fun header(name: String): String? = httpHeaders[name]
+
+    /**
+     * Finds all the headers matching the given name.
+     * In keeping with the HTTP RFC, HTTP header field names are case-insensitive.
+     * Each item of the returned list can contain a single value or a comma-separated list of
+     * values if the field supports it.
+     */
+    public fun headers(name: String): List<String> = httpHeaders.getAll(name)
 
     /**
      * Indicates whether this server supports byte range requests.
