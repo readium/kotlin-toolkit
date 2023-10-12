@@ -189,10 +189,15 @@ class TtsViewModel private constructor(
 
         try {
             mediaServiceFacade.openSession(bookId, ttsNavigator)
-            ttsNavigator.play()
         } catch (e: Exception) {
+            ttsNavigator.close()
+            val exception = UserException(R.string.error_unexpected)
+            _events.trySend(Event.OnError(exception))
             launchJob = null
+            return
         }
+
+        ttsNavigator.play()
     }
 
     fun stop() {

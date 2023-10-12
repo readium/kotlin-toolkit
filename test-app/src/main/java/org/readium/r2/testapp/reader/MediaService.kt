@@ -56,10 +56,9 @@ class MediaService : MediaSessionService() {
         fun closeSession() {
             Timber.d("closeSession")
             session.value?.let { session ->
-                session.navigator.close()
                 session.mediaSession.release()
-                session.mediaSession.player.release()
                 session.coroutineScope.cancel()
+                session.navigator.close()
                 sessionMutable.value = null
             }
         }

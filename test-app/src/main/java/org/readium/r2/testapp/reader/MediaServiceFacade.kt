@@ -38,35 +38,35 @@ class MediaServiceFacade(
     val session: StateFlow<MediaService.Session?> =
         sessionMutable.asStateFlow()
 
+    /**
+     * Throws an IllegalStateException if binding to the MediaService fails.
+     */
     suspend fun <N> openSession(
         bookId: Long,
         navigator: N
     ) where N : AnyMediaNavigator, N : Media3Adapter {
         coroutineQueue.await {
-            if (binder == null) {
-                MediaService.start(application)
-                try {
-                    val binder = MediaService.bind(application)
-                    this.binder = binder
-                    bindingJob = binder.session
-                        .onEach { sessionMutable.value = it }
-                        .launchIn(coroutineScope)
-                } catch (e: Exception) {
-                    // Failed to bind to the service.
-                    MediaService.stop(application)
-                    throw e
-                }
-
-                binder!!.openSession(navigator, bookId)
+            MediaService.start(application)
+            binder = try {
+                MediaService.bind(application)
+            } catch (e: Exception) {
+                // Failed to bind to the service.
+                MediaService.stop(application)
+                throw e
             }
+
+            bindingJob = binder!!.session
+                .onEach { sessionMutable.value = it }
+                .launchIn(coroutineScope)
+            binder!!.openSession(navigator, bookId)
         }
     }
 
     fun closeSession() {
         coroutineQueue.launch {
-            bindingJob!!.cancelAndJoin()
-            binder!!.closeSession()
-            binder!!.stop()
+            bindingJob?.cancelAndJoin()
+            binder?.closeSession()
+            binder?.stop()
             sessionMutable.value = null
             binder = null
         }
