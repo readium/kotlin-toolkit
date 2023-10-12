@@ -20,36 +20,24 @@ public data class HttpHeaders(val headers: Map<String, List<String>>) {
     }
 
     /**
-     * Finds the first value of the first header matching the given name.
+     * Finds the last header matching the given name.
      * In keeping with the HTTP RFC, HTTP header field names are case-insensitive.
+     * The returned string can contain a single value or a comma-separated list of values if
+     * the field supports it.
      */
-    public operator fun get(name: String): String? {
-        val n = name.lowercase()
-        return headers.firstNotNullOfOrNull { (key, value) ->
-            if (key.lowercase() == n) {
-                value.firstOrNull()
-            } else {
-                null
-            }
-        }
-    }
+    public operator fun get(name: String): String? = getAll(name)
+        .lastOrNull()
 
     /**
-     * Finds all the values of the first header matching the given name.
+     * Finds all the headers matching the given name.
      * In keeping with the HTTP RFC, HTTP header field names are case-insensitive.
+     * Each item of the returned list can contain a single value or a comma-separated list of
+     * values if the field supports it.
      */
-    public fun getAll(name: String): List<String> {
-        val n = name.lowercase()
-        return headers
-            .mapNotNull { (key, value) ->
-                if (key.lowercase() == n) {
-                    value
-                } else {
-                    null
-                }
-            }
-            .flatten()
-    }
+    public fun getAll(name: String): List<String> = headers
+        .filter { it.key.lowercase() == name.lowercase() }
+        .values
+        .flatten()
 
     /**
      * Indicates whether this server supports byte range requests.

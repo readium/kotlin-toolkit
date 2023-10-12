@@ -1,3 +1,9 @@
+/*
+ * Copyright 2023 Readium Foundation. All rights reserved.
+ * Use of this source code is governed by the BSD-style license
+ * available in the top-level LICENSE file of the project.
+ */
+
 package org.readium.r2.shared.util.http
 
 import android.net.Uri
@@ -5,6 +11,7 @@ import android.os.Bundle
 import java.io.Serializable
 import java.net.URLEncoder
 import kotlin.time.Duration
+import org.readium.r2.shared.extensions.toMutable
 
 /**
  * Holds the information about an HTTP request performed by an [HttpClient].
@@ -25,7 +32,7 @@ import kotlin.time.Duration
 public class HttpRequest(
     public val url: String,
     public val method: Method = Method.GET,
-    public val headers: Map<String, String> = mapOf(),
+    public val headers: Map<String, List<String>> = mapOf(),
     public val body: Body? = null,
     public val extras: Bundle = Bundle(),
     public val connectTimeout: Duration? = null,
@@ -47,7 +54,7 @@ public class HttpRequest(
     public fun buildUpon(): Builder = Builder(
         url = url,
         method = method,
-        headers = headers.toMutableMap(),
+        headers = headers.toMutable(),
         body = body,
         extras = extras,
         connectTimeout = connectTimeout,
@@ -66,7 +73,7 @@ public class HttpRequest(
     public class Builder(
         url: String,
         public var method: Method = Method.GET,
-        public var headers: MutableMap<String, String> = mutableMapOf(),
+        public var headers: MutableMap<String, MutableList<String>> = mutableMapOf(),
         public var body: Body? = null,
         public var extras: Bundle = Bundle(),
         public var connectTimeout: Duration? = null,
@@ -94,8 +101,27 @@ public class HttpRequest(
             return this
         }
 
+        /**
+         * Sets header with key [key] to [values] overriding current values, if any.
+         */
+        public fun setHeader(key: String, values: List<String>): Builder {
+            headers[key] = values.toMutableList()
+            return this
+        }
+
+        /**
+         * Sets header with [key] to [value] overriding current values, if any.
+         */
         public fun setHeader(key: String, value: String): Builder {
-            headers[key] = value
+            headers[key] = mutableListOf(value)
+            return this
+        }
+
+        /**
+         * Adds [value] to header values associated with [key].
+         */
+        public fun addHeader(key: String, value: String): Builder {
+            headers.getOrPut(key) { mutableListOf() }.add(value)
             return this
         }
 

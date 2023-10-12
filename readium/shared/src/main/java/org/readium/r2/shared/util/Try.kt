@@ -38,6 +38,14 @@ public sealed class Try<out Success, out Failure> {
         override val isFailure: Boolean get() = true
         override fun getOrNull(): S? = null
         override fun failureOrNull(): F = value
+
+        @Deprecated(
+            "Renamed to value.",
+            level = DeprecationLevel.ERROR,
+            replaceWith = ReplaceWith("value")
+        )
+        public val exception: F
+            get() = value
     }
 
     /**
