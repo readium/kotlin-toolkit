@@ -6,35 +6,35 @@
 
 package org.readium.r2.testapp.utils
 
-import kotlin.coroutines.resume
-import kotlin.coroutines.resumeWithException
-import kotlinx.coroutines.CancellableContinuation
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.trySendBlocking
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.supervisorScope
-import kotlinx.coroutines.suspendCancellableCoroutine
 
 /**
- * Executes coroutines in a sequential order (FIFO).
+ * CoroutineScope-like util to execute coroutines in a sequential order (FIFO).
+ * As with a SupervisorJob, children can be cancelled or fail independently one from the other.
  */
 class CoroutineQueue(
-    private val scope: CoroutineScope = MainScope()
+    dispatcher: CoroutineDispatcher = Dispatchers.Main
 ) {
+    private val scope: CoroutineScope =
+        CoroutineScope(dispatcher + SupervisorJob())
+
     init {
         scope.launch {
             for (task in tasks) {
+                // Don't fail the root job if one task fails.
                 supervisorScope {
-                    try {
-                        task()
-                    } catch (e: Exception) {
-                        // Exceptions are propagated only when run with await.
-                        task.continuation?.resumeWithException(e)
-                    }
+                    task()
                 }
             }
         }
@@ -43,26 +43,35 @@ class CoroutineQueue(
     /**
      * Launches a coroutine in the queue.
      *
-     * Exceptions thrown by [task] will be ignored.
+     * Exceptions thrown by [block] will be ignored.
      */
-    fun launch(task: suspend () -> Unit) {
-        tasks.trySendBlocking(Task(task)).getOrThrow()
+    fun launch(block: suspend () -> Unit) {
+        tasks.trySendBlocking(Task(block)).getOrThrow()
+    }
+
+    /**
+     * Creates a coroutine in the queue and returns its future result
+     * as an implementation of Deferred.
+     *
+     * Exceptions thrown by [block] will be caught and represented in the resulting [Deferred].
+     */
+    fun <T> async(block: suspend () -> T): Deferred<T> {
+        val deferred = CompletableDeferred<T>()
+        val task = Task(block, deferred)
+        tasks.trySendBlocking(task).getOrThrow()
+        return deferred
     }
 
     /**
      * Launches a coroutine in the queue, and waits for its result.
      *
-     * Exceptions thrown by [task] will be propagated to the caller.
+     * Exceptions thrown by [block] will be rethrown.
      */
-    suspend fun <T> await(task: suspend () -> T): T =
-        suspendCancellableCoroutine { cont ->
-            tasks.trySendBlocking(Task(task, cont)).getOrThrow()
-        }
+    suspend fun <T> await(block: suspend () -> T): T =
+        async(block).await()
 
     /**
-     * Cancels all the coroutines in the queue.
-     *
-     * This [CoroutineQueue] can no longer be used.
+     * Cancels this coroutine queue, including all its children with an optional cancellation cause.
      */
     fun cancel(cause: CancellationException? = null) {
         scope.cancel(cause)
@@ -72,11 +81,15 @@ class CoroutineQueue(
 
     private class Task<T>(
         val task: suspend () -> T,
-        val continuation: CancellableContinuation<T>? = null
+        val deferred: CompletableDeferred<T>? = null
     ) {
         suspend operator fun invoke() {
-            val result = task()
-            continuation?.resume(result)
+            try {
+                val result = task()
+                deferred?.complete(result)
+            } catch (e: Exception) {
+                deferred?.completeExceptionally(e)
+            }
         }
     }
 }

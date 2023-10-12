@@ -13,6 +13,7 @@ import android.content.Intent
 import android.content.ServiceConnection
 import android.os.Build
 import android.os.IBinder
+import androidx.core.app.NotificationManagerCompat
 import androidx.core.app.ServiceCompat
 import androidx.media3.session.MediaSession
 import androidx.media3.session.MediaSessionService
@@ -152,6 +153,9 @@ class MediaService : MediaSessionService() {
     override fun onDestroy() {
         Timber.d("Destroying MediaService.")
         binder.closeSession()
+        // Ensure one more time that all notifications are gone and,
+        // hopefully, pending intents cancelled.
+        NotificationManagerCompat.from(this).cancelAll()
         super.onDestroy()
     }
 

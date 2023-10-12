@@ -11,7 +11,7 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import org.readium.navigator.media.common.Media3Adapter
 import org.readium.r2.shared.ExperimentalReadiumApi
-import org.readium.r2.shared.util.CoroutineQueue
+import org.readium.r2.testapp.utils.CoroutineQueue
 
 /**
  * Enables to try to close a session without starting the [MediaService] if it is not started.
