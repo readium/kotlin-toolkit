@@ -1,5 +1,4 @@
 SCRIPTS_PATH := readium/navigator/src/main/assets/_scripts
-PNPM := pnpm --dir $(SCRIPTS_PATH)
 
 help:
 	@echo "Usage: make <target>\n\n\
@@ -18,7 +17,11 @@ format:
 
 .PHONY: scripts
 scripts:
-	$(PNPM) install --frozen-lockfile
-	$(PNPM) run format
-	$(PNPM) run lint
-	$(PNPM) run bundle
+	@which corepack >/dev/null 2>&1 || (echo "ERROR: corepack is required, please install it first\nhttps://pnpm.io/installation#using-corepack"; exit 1)
+
+	cd $(SCRIPTS_PATH); \
+	corepack install; \
+	pnpm install --frozen-lockfile; \
+	pnpm run format; \
+	pnpm run lint; \
+	pnpm run bundle
