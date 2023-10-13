@@ -8,7 +8,7 @@ package org.readium.adapter.pspdfkit.navigator
 
 import android.graphics.PointF
 import com.pspdfkit.configuration.PdfConfiguration
-import org.readium.r2.navigator.DirectionalNavigator
+import org.readium.r2.navigator.OverflowNavigator
 import org.readium.r2.navigator.SimplePresentation
 import org.readium.r2.navigator.input.TapEvent
 import org.readium.r2.navigator.pdf.PdfDocumentFragmentInput
@@ -68,7 +68,7 @@ public class PsPdfKitEngineProvider(
         return settingsPolicy.settings(preferences)
     }
 
-    override fun computePresentation(settings: PsPdfKitSettings): DirectionalNavigator.Presentation =
+    override fun computePresentation(settings: PsPdfKitSettings): OverflowNavigator.Presentation =
         SimplePresentation(
             readingProgression = settings.readingProgression,
             scroll = settings.scroll,

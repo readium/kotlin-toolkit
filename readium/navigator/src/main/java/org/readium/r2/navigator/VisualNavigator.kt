@@ -124,10 +124,12 @@ public interface VisualNavigator : Navigator {
 }
 
 /**
- * A navigator able to move backward and forward in a publication.
+ * A [VisualNavigator] with content that can extend beyond the viewport.
+ *
+ * The user typically navigates through the publication by scrolling or tapping the viewport edges.
  */
 @ExperimentalReadiumApi
-public interface DirectionalNavigator : VisualNavigator {
+public interface OverflowNavigator : VisualNavigator {
 
     @ExperimentalReadiumApi
     public interface Listener : VisualNavigator.Listener

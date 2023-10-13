@@ -32,9 +32,9 @@ public interface HyperlinkNavigator : Navigator {
         public fun shouldJumpToLink(link: Link): Boolean { return true }
 
         /**
-         * Called when a link to an external URL was clicked in the navigator.
+         * Called when a link to an external URL was activated in the navigator.
          */
         @ExperimentalReadiumApi
-        public fun onExternalLinkClicked(url: AbsoluteUrl)
+        public fun onExternalLinkActivated(url: AbsoluteUrl)
     }
 }

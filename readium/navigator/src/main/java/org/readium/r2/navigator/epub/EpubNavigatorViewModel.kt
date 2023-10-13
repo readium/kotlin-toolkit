@@ -85,7 +85,7 @@ internal class EpubNavigatorViewModel(
 
     val settings: StateFlow<EpubSettings> = _settings.asStateFlow()
 
-    val presentation: StateFlow<DirectionalNavigator.Presentation> = _settings
+    val presentation: StateFlow<OverflowNavigator.Presentation> = _settings
         .mapStateIn(viewModelScope) { settings ->
             SimplePresentation(
                 readingProgression = settings.readingProgression,
@@ -181,7 +181,7 @@ internal class EpubNavigatorViewModel(
                 _events.send(Event.OpenInternalLink(link))
             }
         } else {
-            listener?.onExternalLinkClicked(url)
+            listener?.onExternalLinkActivated(url)
         }
     }
 

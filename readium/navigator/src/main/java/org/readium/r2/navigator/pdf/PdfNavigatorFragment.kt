@@ -22,7 +22,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
-import org.readium.r2.navigator.DirectionalNavigator
+import org.readium.r2.navigator.OverflowNavigator
 import org.readium.r2.navigator.R
 import org.readium.r2.navigator.VisualNavigator
 import org.readium.r2.navigator.extensions.normalizeLocator
@@ -59,7 +59,7 @@ public class PdfNavigatorFragment<S : Configurable.Settings, P : Configurable.Pr
     private val initialPreferences: P,
     private val listener: Listener?,
     private val pdfEngineProvider: PdfEngineProvider<S, P, *>
-) : Fragment(), VisualNavigator, DirectionalNavigator, Configurable<S, P> {
+) : Fragment(), VisualNavigator, OverflowNavigator, Configurable<S, P> {
 
     public interface Listener : VisualNavigator.Listener
 
@@ -221,7 +221,7 @@ public class PdfNavigatorFragment<S : Configurable.Settings, P : Configurable.Pr
         get() = requireView()
 
     @ExperimentalReadiumApi
-    override val presentation: StateFlow<DirectionalNavigator.Presentation>
+    override val presentation: StateFlow<OverflowNavigator.Presentation>
         get() = settings.mapStateIn(lifecycleScope) { settings ->
             pdfEngineProvider.computePresentation(settings)
         }

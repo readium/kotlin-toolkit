@@ -260,7 +260,7 @@ class ReaderViewModel(
     }
 
     // HyperlinkNavigator.Listener
-    override fun onExternalLinkClicked(url: AbsoluteUrl) {
+    override fun onExternalLinkActivated(url: AbsoluteUrl) {
         activityChannel.send(ActivityCommand.OpenExternalLink(url))
     }
 

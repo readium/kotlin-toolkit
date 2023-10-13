@@ -21,7 +21,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.runBlocking
-import org.readium.r2.navigator.DirectionalNavigator
+import org.readium.r2.navigator.OverflowNavigator
 import org.readium.r2.navigator.SimplePresentation
 import org.readium.r2.navigator.VisualNavigator
 import org.readium.r2.navigator.databinding.ReadiumNavigatorViewpagerBinding
@@ -55,7 +55,7 @@ public class ImageNavigatorFragment private constructor(
     override val publication: Publication,
     private val initialLocator: Locator? = null,
     internal val listener: Listener? = null
-) : Fragment(), DirectionalNavigator {
+) : Fragment(), OverflowNavigator {
 
     public interface Listener : VisualNavigator.Listener
 
@@ -246,7 +246,7 @@ public class ImageNavigatorFragment private constructor(
         publication.metadata.effectiveReadingProgression
 
     @ExperimentalReadiumApi
-    override val presentation: StateFlow<DirectionalNavigator.Presentation> =
+    override val presentation: StateFlow<OverflowNavigator.Presentation> =
         MutableStateFlow(
             SimplePresentation(
                 readingProgression = when (publication.metadata.readingProgression) {
