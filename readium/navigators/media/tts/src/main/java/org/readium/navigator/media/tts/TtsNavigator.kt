@@ -211,11 +211,11 @@ public class TtsNavigator<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
         player.go(publication.normalizeLocator(locator))
     }
 
-    override fun goToPreviousUtterance() {
+    override fun skipToPreviousUtterance() {
         player.previousUtterance()
     }
 
-    override fun goToNextUtterance() {
+    override fun skipToNextUtterance() {
         player.nextUtterance()
     }
 
@@ -246,16 +246,6 @@ public class TtsNavigator<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
     override fun go(link: Link, animated: Boolean, completion: () -> Unit): Boolean {
         val locator = publication.locatorFromLink(link) ?: return false
         return go(locator, animated, completion)
-    }
-
-    override fun goForward(animated: Boolean, completion: () -> Unit): Boolean {
-        player.nextUtterance()
-        return true
-    }
-
-    override fun goBackward(animated: Boolean, completion: () -> Unit): Boolean {
-        player.previousUtterance()
-        return true
     }
 
     override val settings: StateFlow<S> =

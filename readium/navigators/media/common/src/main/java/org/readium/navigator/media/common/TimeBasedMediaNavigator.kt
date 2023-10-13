@@ -87,7 +87,22 @@ public interface TimeBasedMediaNavigator<L : TimeBasedMediaNavigator.Location, P
     override val readingOrder: R
 
     /**
-     * Seeks to [offset] in the item at [index].
+     * Skips to [offset] in the item at [index].
      */
-    public fun seek(index: Int, offset: Duration)
+    public fun skipTo(index: Int, offset: Duration)
+
+    /**
+     * Skips [duration] either forward or backward if [duration] is negative.
+     */
+    public fun skip(duration: Duration)
+
+    /**
+     * Skips forward a small increment.
+     */
+    public fun skipForward()
+
+    /**
+     * Skips backward a small increment.
+     */
+    public fun skipBackward()
 }
