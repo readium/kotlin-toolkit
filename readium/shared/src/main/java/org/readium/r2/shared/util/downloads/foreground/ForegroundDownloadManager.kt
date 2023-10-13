@@ -65,7 +65,7 @@ public class ForegroundDownloadManager(
             .download(
                 request = HttpRequest(
                     url = request.url.toString(),
-                    headers = request.headers.mapValues { it.value.joinToString(",") }
+                    headers = request.headers
                 ),
                 destination = destination,
                 onProgress = { downloaded, expected ->

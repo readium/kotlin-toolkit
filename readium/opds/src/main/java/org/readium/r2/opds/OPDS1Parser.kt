@@ -75,7 +75,7 @@ public class OPDS1Parser {
         private fun parseFeed(root: ElementNode, url: Url): Feed {
             val feedTitle = root.getFirst("title", Namespaces.Atom)?.text
                 ?: throw Exception(OPDSParserError.MissingTitle.name)
-            val feed = Feed(feedTitle, 1, url)
+            val feed = Feed.Builder(feedTitle, 1, url)
             val tmpDate = root.getFirst("updated", Namespaces.Atom)?.text
             feed.metadata.modified = tmpDate?.let { DateTime(it).toDate() }
 
@@ -175,7 +175,7 @@ public class OPDS1Parser {
                     )
                 }
             }
-            return feed
+            return feed.build()
         }
 
         private fun parseMimeType(mimeTypeString: String): MimeTypeParameters {
@@ -357,20 +357,20 @@ public class OPDS1Parser {
             return Publication(manifest)
         }
 
-        private fun addFacet(feed: Feed, link: Link, title: String) {
+        private fun addFacet(feed: Feed.Builder, link: Link, title: String) {
             for (facet in feed.facets) {
                 if (facet.metadata.title == title) {
                     facet.links.add(link)
                     return
                 }
             }
-            val newFacet = Facet(title = title)
+            val newFacet = Facet.Builder(title = title)
             newFacet.links.add(link)
             feed.facets.add(newFacet)
         }
 
         private fun addPublicationInGroup(
-            feed: Feed,
+            feed: Feed.Builder,
             publication: Publication,
             collectionLink: Link
         ) {
@@ -387,14 +387,14 @@ public class OPDS1Parser {
                 val selfLink = collectionLink.copy(
                     rels = collectionLink.rels + "self"
                 )
-                val newGroup = Group(title = title)
+                val newGroup = Group.Builder(title = title)
                 newGroup.links.add(selfLink)
                 newGroup.publications.add(publication)
                 feed.groups.add(newGroup)
             }
         }
 
-        private fun addNavigationInGroup(feed: Feed, link: Link, collectionLink: Link) {
+        private fun addNavigationInGroup(feed: Feed.Builder, link: Link, collectionLink: Link) {
             for (group in feed.groups) {
                 for (l in group.links) {
                     if (l.href == collectionLink.href) {
@@ -408,7 +408,7 @@ public class OPDS1Parser {
                 val selfLink = collectionLink.copy(
                     rels = collectionLink.rels + "self"
                 )
-                val newGroup = Group(title = title)
+                val newGroup = Group.Builder(title = title)
                 newGroup.links.add(selfLink)
                 newGroup.navigation.add(link)
                 feed.groups.add(newGroup)

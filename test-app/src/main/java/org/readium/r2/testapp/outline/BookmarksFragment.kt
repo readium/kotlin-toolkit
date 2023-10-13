@@ -28,7 +28,7 @@ import org.readium.r2.testapp.data.model.Bookmark
 import org.readium.r2.testapp.databinding.FragmentListviewBinding
 import org.readium.r2.testapp.databinding.ItemRecycleBookmarkBinding
 import org.readium.r2.testapp.reader.ReaderViewModel
-import org.readium.r2.testapp.utils.extensions.outlineTitle
+import org.readium.r2.testapp.utils.extensions.readium.outlineTitle
 import org.readium.r2.testapp.utils.viewLifecycle
 
 class BookmarksFragment : Fragment() {

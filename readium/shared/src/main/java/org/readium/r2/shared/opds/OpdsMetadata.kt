@@ -10,13 +10,36 @@
 package org.readium.r2.shared.opds
 
 import java.util.*
+import org.readium.r2.shared.InternalReadiumApi
 
 public data class OpdsMetadata(
-    var title: String,
-    var numberOfItems: Int? = null,
-    var itemsPerPage: Int? = null,
-    var currentPage: Int? = null,
-    var modified: Date? = null,
-    var position: Int? = null,
-    var rdfType: String? = null
-)
+    val title: String,
+    val numberOfItems: Int? = null,
+    val itemsPerPage: Int? = null,
+    val currentPage: Int? = null,
+    val modified: Date? = null,
+    val position: Int? = null,
+    val rdfType: String? = null
+) {
+    @InternalReadiumApi
+    public data class Builder(
+        var title: String,
+        var numberOfItems: Int? = null,
+        var itemsPerPage: Int? = null,
+        var currentPage: Int? = null,
+        var modified: Date? = null,
+        var position: Int? = null,
+        var rdfType: String? = null
+    ) {
+        public fun build(): OpdsMetadata =
+            OpdsMetadata(
+                title = title,
+                numberOfItems = numberOfItems,
+                itemsPerPage = itemsPerPage,
+                currentPage = currentPage,
+                modified = modified,
+                position = position,
+                rdfType = rdfType
+            )
+    }
+}
