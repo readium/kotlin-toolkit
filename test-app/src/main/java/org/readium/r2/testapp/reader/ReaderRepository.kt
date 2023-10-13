@@ -10,9 +10,6 @@ import android.app.Application
 import androidx.annotation.StringRes
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences as JetpackPreferences
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.MainScope
-import kotlinx.coroutines.launch
 import org.json.JSONObject
 import org.readium.adapter.exoplayer.audio.ExoPlayerEngineProvider
 import org.readium.adapter.pdfium.navigator.PdfiumEngineProvider
@@ -36,6 +33,7 @@ import org.readium.r2.testapp.reader.preferences.AndroidTtsPreferencesManagerFac
 import org.readium.r2.testapp.reader.preferences.EpubPreferencesManagerFactory
 import org.readium.r2.testapp.reader.preferences.ExoPlayerPreferencesManagerFactory
 import org.readium.r2.testapp.reader.preferences.PdfiumPreferencesManagerFactory
+import org.readium.r2.testapp.utils.CoroutineQueue
 import timber.log.Timber
 
 /**
@@ -88,8 +86,8 @@ class ReaderRepository(
         }
     }
 
-    private val coroutineScope: CoroutineScope =
-        MainScope()
+    private val coroutineQueue: CoroutineQueue =
+        CoroutineQueue()
 
     private val repository: MutableMap<Long, ReaderInitData> =
         mutableMapOf()
@@ -100,7 +98,10 @@ class ReaderRepository(
     operator fun get(bookId: Long): ReaderInitData? =
         repository[bookId]
 
-    suspend fun open(bookId: Long): Try<Unit, OpeningError> {
+    suspend fun open(bookId: Long): Try<Unit, OpeningError> =
+        coroutineQueue.await { doOpen(bookId) }
+
+    private suspend fun doOpen(bookId: Long): Try<Unit, OpeningError> {
         if (bookId in repository.keys) {
             return Try.success(Unit)
         }
@@ -250,7 +251,7 @@ class ReaderRepository(
     }
 
     fun close(bookId: Long) {
-        coroutineScope.launch {
+        coroutineQueue.launch {
             Timber.v("Closing Publication $bookId.")
             when (val initData = repository.remove(bookId)) {
                 is MediaReaderInitData -> {
