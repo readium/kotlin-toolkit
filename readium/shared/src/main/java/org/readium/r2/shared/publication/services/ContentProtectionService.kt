@@ -24,6 +24,7 @@ import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.resource.FailureResource
+import org.readium.r2.shared.util.resource.LazyResource
 import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.shared.util.resource.StringResource
 
@@ -102,7 +103,7 @@ public interface ContentProtectionService : Publication.Service {
          *
          * Returns whether the user is allowed to copy the given text.
          */
-        public fun copy(text: String): Boolean
+        public suspend fun copy(text: String): Boolean
 
         /**
          * Returns whether the user is currently allowed to print the content.
@@ -127,7 +128,7 @@ public interface ContentProtectionService : Publication.Service {
          *
          * Returns whether the user is allowed to print the given amount of pages.
          */
-        public fun print(pageCount: Int): Boolean
+        public suspend fun print(pageCount: Int): Boolean
 
         /**
          * A [UserRights] without any restriction.
@@ -137,13 +138,13 @@ public interface ContentProtectionService : Publication.Service {
 
             override fun canCopy(text: String): Boolean = true
 
-            override fun copy(text: String): Boolean = true
+            override suspend fun copy(text: String): Boolean = true
 
             override val canPrint: Boolean = true
 
             override fun canPrint(pageCount: Int): Boolean = true
 
-            override fun print(pageCount: Int): Boolean = true
+            override suspend fun print(pageCount: Int): Boolean = true
         }
 
         /**
@@ -154,13 +155,13 @@ public interface ContentProtectionService : Publication.Service {
 
             override fun canCopy(text: String): Boolean = false
 
-            override fun copy(text: String): Boolean = false
+            override suspend fun copy(text: String): Boolean = false
 
             override val canPrint: Boolean = false
 
             override fun canPrint(pageCount: Int): Boolean = false
 
-            override fun print(pageCount: Int): Boolean = false
+            override suspend fun print(pageCount: Int): Boolean = false
         }
     }
 }
@@ -292,7 +293,10 @@ private sealed class RouteHandler {
         override fun acceptRequest(url: Url): Boolean =
             url.path == path
 
-        override fun handleRequest(url: Url, service: ContentProtectionService): Resource {
+        override fun handleRequest(url: Url, service: ContentProtectionService): Resource =
+            LazyResource { handleRequestAsync(url, service) }
+
+        private suspend fun handleRequestAsync(url: Url, service: ContentProtectionService): Resource {
             val query = url.query
             val text = query.firstNamedOrNull("text")
                 ?: return FailureResource(
@@ -330,7 +334,9 @@ private sealed class RouteHandler {
         override fun acceptRequest(url: Url): Boolean =
             url.path == path
 
-        override fun handleRequest(url: Url, service: ContentProtectionService): Resource {
+        override fun handleRequest(url: Url, service: ContentProtectionService): Resource =
+            LazyResource { handleRequestAsync(url, service) }
+        private suspend fun handleRequestAsync(url: Url, service: ContentProtectionService): Resource {
             val query = url.query
             val pageCountString = query.firstNamedOrNull("pageCount")
                 ?: return FailureResource(

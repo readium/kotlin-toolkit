@@ -50,7 +50,7 @@ internal class LicensesService(
     private val network: NetworkService,
     private val passphrases: PassphrasesService,
     private val context: Context,
-    private val assetRetriever: org.readium.r2.shared.util.asset.AssetRetriever,
+    private val assetRetriever: AssetRetriever,
     private val mediaTypeRetriever: MediaTypeRetriever,
     private val downloadManager: DownloadManager
 ) : LcpService, CoroutineScope by MainScope() {
@@ -60,12 +60,12 @@ internal class LicensesService(
         return isLcpProtected(asset)
     }
 
-    override suspend fun isLcpProtected(asset: org.readium.r2.shared.util.asset.Asset): Boolean =
+    override suspend fun isLcpProtected(asset: Asset): Boolean =
         tryOr(false) {
             when (asset) {
-                is org.readium.r2.shared.util.asset.Asset.Resource ->
+                is Asset.Resource ->
                     asset.mediaType == MediaType.LCP_LICENSE_DOCUMENT
-                is org.readium.r2.shared.util.asset.Asset.Container -> {
+                is Asset.Container -> {
                     createLicenseContainer(context, asset.container, asset.mediaType).read()
                     true
                 }
@@ -118,7 +118,7 @@ internal class LicensesService(
         }
 
     override suspend fun retrieveLicense(
-        asset: org.readium.r2.shared.util.asset.Asset,
+        asset: Asset,
         authentication: LcpAuthenticating,
         allowUserInteraction: Boolean
     ): Try<LcpLicense, LcpException> =
@@ -219,15 +219,17 @@ internal class LicensesService(
                 Timber.d("validated documents $it")
                 try {
                     documents.getContext()
-                    completion(
-                        License(
-                            documents = it,
-                            validation = validation,
-                            licenses = this.licenses,
-                            device = this.device,
-                            network = this.network
+                    launch {
+                        completion(
+                            License(
+                                documents = it,
+                                validation = validation,
+                                licenses = this@LicensesService.licenses,
+                                device = this@LicensesService.device,
+                                network = this@LicensesService.network
+                            )
                         )
-                    )
+                    }
                 } catch (e: Exception) {
                     throw e
                 }

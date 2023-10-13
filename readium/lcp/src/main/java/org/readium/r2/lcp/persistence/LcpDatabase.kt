@@ -81,7 +81,7 @@ internal abstract class LcpDatabase : RoomDatabase() {
                     context.applicationContext,
                     LcpDatabase::class.java,
                     "lcpdatabase"
-                ).allowMainThreadQueries().addMigrations(MIGRATION_1_2).build()
+                ).addMigrations(MIGRATION_1_2).build()
                 INSTANCE = instance
                 return instance
             }
