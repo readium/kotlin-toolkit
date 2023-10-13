@@ -21,7 +21,6 @@ All notable changes to this project will be documented in this file. Take a look
      1. Override loading non-linear resources with `VisualNavigator.Listener.shouldJumpToLink()`.
      2. Present a new `EpubNavigatorFragment` by providing a custom `readingOrder` with only this resource to the constructor.
 
-
 #### Streamer
 
 * The EPUB content iterator now returns `audio` and `video` elements.
@@ -46,6 +45,10 @@ All notable changes to this project will be documented in this file. Take a look
 
 ### Deprecated
 
+#### Shared
+
+* `DefaultHttClient.additionalHeaders` is deprecated. Set all the headers when creating a new `HttpRequest`, or modify outgoing requests in `DefaultHttpClient.Callback.onStartRequest()`.
+
 #### Navigator
 
 * All the navigator `Activity` are deprecated in favor of the `Fragment` variants.
@@ -62,7 +65,11 @@ All notable changes to this project will be documented in this file. Take a look
 
 #### Streamer
 
-* Fix issue with the TTS starting from the beginning of the chapter instead of the current position.
+* Fixed issue with the TTS starting from the beginning of the chapter instead of the current position.
+
+#### OPDS
+
+* Fixed race conditions causing `ConcurrentModificationException` to be thrown when parsing an OPDS 2 feed.
 
 ## [2.3.0]
 
