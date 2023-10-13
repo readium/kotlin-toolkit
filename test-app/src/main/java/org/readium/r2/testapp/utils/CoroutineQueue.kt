@@ -4,7 +4,7 @@
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.r2.shared.util
+package org.readium.r2.testapp.utils
 
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
@@ -18,14 +18,12 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.trySendBlocking
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.supervisorScope
-import org.readium.r2.shared.InternalReadiumApi
 
 /**
  * CoroutineScope-like util to execute coroutines in a sequential order (FIFO).
  * As with a SupervisorJob, children can be cancelled or fail independently one from the other.
  */
-@InternalReadiumApi
-public class CoroutineQueue(
+class CoroutineQueue(
     dispatcher: CoroutineDispatcher = Dispatchers.Main
 ) {
     private val scope: CoroutineScope =
@@ -47,7 +45,7 @@ public class CoroutineQueue(
      *
      * Exceptions thrown by [block] will be ignored.
      */
-    public fun launch(block: suspend () -> Unit) {
+    fun launch(block: suspend () -> Unit) {
         tasks.trySendBlocking(Task(block)).getOrThrow()
     }
 
@@ -57,7 +55,7 @@ public class CoroutineQueue(
      *
      * Exceptions thrown by [block] will be caught and represented in the resulting [Deferred].
      */
-    public fun <T> async(block: suspend () -> T): Deferred<T> {
+    fun <T> async(block: suspend () -> T): Deferred<T> {
         val deferred = CompletableDeferred<T>()
         val task = Task(block, deferred)
         tasks.trySendBlocking(task).getOrThrow()
@@ -69,13 +67,13 @@ public class CoroutineQueue(
      *
      * Exceptions thrown by [block] will be rethrown.
      */
-    public suspend fun <T> await(block: suspend () -> T): T =
+    suspend fun <T> await(block: suspend () -> T): T =
         async(block).await()
 
     /**
      * Cancels this coroutine queue, including all its children with an optional cancellation cause.
      */
-    public fun cancel(cause: CancellationException? = null) {
+    fun cancel(cause: CancellationException? = null) {
         scope.cancel(cause)
     }
 
