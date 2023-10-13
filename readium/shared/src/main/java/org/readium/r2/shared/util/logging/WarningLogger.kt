@@ -109,7 +109,7 @@ public data class JsonWarning(
 
     override val tag: String = "json"
 
-    override val message: String get() = "${javaClass.name} ${modelClass.name}: $reason"
+    override val message: String get() = "${javaClass.simpleName} ${modelClass.name}: $reason"
 }
 
 /**

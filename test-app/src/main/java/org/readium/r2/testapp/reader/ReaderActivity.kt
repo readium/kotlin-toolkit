@@ -28,6 +28,8 @@ import org.readium.r2.testapp.drm.DrmManagementContract
 import org.readium.r2.testapp.drm.DrmManagementFragment
 import org.readium.r2.testapp.outline.OutlineContract
 import org.readium.r2.testapp.outline.OutlineFragment
+import org.readium.r2.testapp.utils.extensions.readium.toDebugDescription
+import timber.log.Timber
 
 /*
  * An activity to read a publication
@@ -166,6 +168,7 @@ open class ReaderActivity : AppCompatActivity() {
     }
 
     private fun showError(error: UserException) {
+        Timber.e(error.toDebugDescription(this))
         Toast.makeText(this, error.getUserMessage(this), Toast.LENGTH_LONG).show()
     }
 

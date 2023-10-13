@@ -21,7 +21,7 @@ import org.readium.r2.shared.publication.Publication
 import org.readium.r2.testapp.databinding.FragmentListviewBinding
 import org.readium.r2.testapp.databinding.ItemRecycleNavigationBinding
 import org.readium.r2.testapp.reader.ReaderViewModel
-import org.readium.r2.testapp.utils.extensions.outlineTitle
+import org.readium.r2.testapp.utils.extensions.readium.outlineTitle
 import org.readium.r2.testapp.utils.viewLifecycle
 
 /*

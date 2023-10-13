@@ -44,8 +44,6 @@ public class OPDS2Parser {
 
     public companion object {
 
-        private lateinit var feed: Feed
-
         public suspend fun parseUrlString(
             url: String,
             client: HttpClient = DefaultHttpClient(MediaTypeRetriever())
@@ -93,7 +91,7 @@ public class OPDS2Parser {
                 ?: throw Exception(OPDS2ParserError.MetadataNotFound.name)
             val title = metadataDict.getString("title")
                 ?: throw Exception(OPDS2ParserError.MissingTitle.name)
-            feed = Feed(title, 2, url)
+            val feed = Feed.Builder(title, 2, url)
             parseFeedMetadata(opdsMetadata = feed.metadata, metadataDict = metadataDict)
             if (topLevelDict.has("@context")) {
                 if (topLevelDict.get("@context") is JSONObject) {
@@ -143,10 +141,10 @@ public class OPDS2Parser {
                     parseGroups(feed, groups)
                 }
             }
-            return feed
+            return feed.build()
         }
 
-        private fun parseFeedMetadata(opdsMetadata: OpdsMetadata, metadataDict: JSONObject) {
+        private fun parseFeedMetadata(opdsMetadata: OpdsMetadata.Builder, metadataDict: JSONObject) {
             if (metadataDict.has("title")) {
                 metadataDict.get("title").let {
                     opdsMetadata.title = it.toString()
@@ -179,14 +177,14 @@ public class OPDS2Parser {
             }
         }
 
-        private fun parseFacets(feed: Feed, facets: JSONArray) {
+        private fun parseFacets(feed: Feed.Builder, facets: JSONArray) {
             for (i in 0 until facets.length()) {
                 val facetDict = facets.getJSONObject(i)
                 val metadata = facetDict.getJSONObject("metadata")
                     ?: throw Exception(OPDS2ParserError.InvalidFacet.name)
                 val title = metadata["title"] as? String
                     ?: throw Exception(OPDS2ParserError.InvalidFacet.name)
-                val facet = Facet(title = title)
+                val facet = Facet.Builder(title = title)
                 parseFeedMetadata(opdsMetadata = facet.metadata, metadataDict = metadata)
                 if (facetDict.has("links")) {
                     val links = facetDict.getJSONArray("links")
@@ -202,7 +200,7 @@ public class OPDS2Parser {
             }
         }
 
-        private fun parseLinks(feed: Feed, links: JSONArray) {
+        private fun parseLinks(feed: Feed.Builder, links: JSONArray) {
             for (i in 0 until links.length()) {
                 val linkDict = links.getJSONObject(i)
                 parseLink(linkDict, feed.href)?.let {
@@ -211,7 +209,7 @@ public class OPDS2Parser {
             }
         }
 
-        private fun parsePublications(feed: Feed, publications: JSONArray) {
+        private fun parsePublications(feed: Feed.Builder, publications: JSONArray) {
             for (i in 0 until publications.length()) {
                 val pubDict = publications.getJSONObject(i)
                 parsePublication(pubDict, feed.href)?.let {
@@ -220,7 +218,7 @@ public class OPDS2Parser {
             }
         }
 
-        private fun parseNavigation(feed: Feed, navLinks: JSONArray) {
+        private fun parseNavigation(feed: Feed.Builder, navLinks: JSONArray) {
             for (i in 0 until navLinks.length()) {
                 val navDict = navLinks.getJSONObject(i)
                 parseLink(navDict, feed.href)?.let { link ->
@@ -229,14 +227,14 @@ public class OPDS2Parser {
             }
         }
 
-        private fun parseGroups(feed: Feed, groups: JSONArray) {
+        private fun parseGroups(feed: Feed.Builder, groups: JSONArray) {
             for (i in 0 until groups.length()) {
                 val groupDict = groups.getJSONObject(i)
                 val metadata = groupDict.getJSONObject("metadata")
                     ?: throw Exception(OPDS2ParserError.InvalidGroup.name)
                 val title = metadata.getString("title")
                     ?: throw Exception(OPDS2ParserError.InvalidGroup.name)
-                val group = Group(title = title)
+                val group = Group.Builder(title = title)
                 parseFeedMetadata(opdsMetadata = group.metadata, metadataDict = metadata)
 
                 if (groupDict.has("links")) {
