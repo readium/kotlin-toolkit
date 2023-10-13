@@ -98,14 +98,14 @@ internal class License private constructor(
         }
     }
 
-    override val charactersToCopyLeft: Int?
-        get() = copiesLeft.value
+    override val charactersToCopyLeft: StateFlow<Int?>
+        get() = copiesLeft
 
     override val canCopy: Boolean
-        get() = (charactersToCopyLeft ?: 1) > 0
+        get() = (charactersToCopyLeft.value ?: 1) > 0
 
     override fun canCopy(text: String): Boolean =
-        charactersToCopyLeft?.let { it <= text.length }
+        charactersToCopyLeft.value?.let { it <= text.length }
             ?: true
 
     override suspend fun copy(text: String): Boolean {
@@ -117,14 +117,14 @@ internal class License private constructor(
         }
     }
 
-    override val pagesToPrintLeft: Int?
-        get() = printsLeft.value
+    override val pagesToPrintLeft: StateFlow<Int?> =
+        printsLeft
 
     override val canPrint: Boolean
-        get() = (pagesToPrintLeft ?: 1) > 0
+        get() = (pagesToPrintLeft.value ?: 1) > 0
 
     override fun canPrint(pageCount: Int): Boolean =
-        pagesToPrintLeft?.let { it <= pageCount }
+        pagesToPrintLeft.value?.let { it <= pageCount }
             ?: true
 
     override suspend fun print(pageCount: Int): Boolean {
