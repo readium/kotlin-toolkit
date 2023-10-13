@@ -61,7 +61,7 @@ internal class License private constructor(
                 .stateIn(coroutineScope)
 
             val copiesLeft = licenses
-                .printsLeft(documents.license.id)
+                .copiesLeft(documents.license.id)
                 .stateIn(coroutineScope)
 
             return License(
@@ -111,8 +111,8 @@ internal class License private constructor(
     override suspend fun copy(text: String): Boolean {
         return try {
             licenses.tryCopy(text.length, license.id)
-        } catch (error: Error) {
-            if (DEBUG) Timber.e(error)
+        } catch (e: Exception) {
+            if (DEBUG) Timber.e(e)
             false
         }
     }
@@ -130,8 +130,8 @@ internal class License private constructor(
     override suspend fun print(pageCount: Int): Boolean {
         return try {
             licenses.tryPrint(pageCount, license.id)
-        } catch (error: Error) {
-            if (DEBUG) Timber.e(error)
+        } catch (e: Exception) {
+            if (DEBUG) Timber.e(e)
             false
         }
     }
