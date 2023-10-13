@@ -29,7 +29,7 @@ public interface HyperlinkNavigator : Navigator {
          * to the calling app to decide how to display the link.
          */
         @ExperimentalReadiumApi
-        public fun shouldJumpToLink(link: Link): Boolean { return true }
+        public fun shouldFollowInternalLink(link: Link): Boolean { return true }
 
         /**
          * Called when a link to an external URL was activated in the navigator.

@@ -177,7 +177,7 @@ internal class EpubNavigatorViewModel(
     fun navigateToUrl(url: AbsoluteUrl) = viewModelScope.launch {
         val link = internalLinkFromUrl(url)
         if (link != null) {
-            if (listener == null || listener.shouldJumpToLink(link)) {
+            if (listener == null || listener.shouldFollowInternalLink(link)) {
                 _events.send(Event.OpenInternalLink(link))
             }
         } else {
