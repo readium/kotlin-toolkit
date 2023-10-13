@@ -149,4 +149,6 @@
     <string name="tts_settings">Speech settings</string>
     <string name="tts_stop">Stop</string>
     <string name="tts_voice">Voice</string>
+
+    <string name="error_unexpected">An unexpected error occurred.</string>
 </resources>

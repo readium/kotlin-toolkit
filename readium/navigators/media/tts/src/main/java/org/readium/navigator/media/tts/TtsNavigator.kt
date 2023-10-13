@@ -232,6 +232,7 @@ public class TtsNavigator<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
 
     override fun close() {
         player.close()
+        sessionAdapter.release()
     }
 
     override val currentLocator: StateFlow<Locator> =
