@@ -13,6 +13,7 @@ import kotlinx.coroutines.launch
 import org.readium.r2.lcp.license.container.createLicenseContainer
 import org.readium.r2.lcp.license.model.LicenseDocument
 import org.readium.r2.shared.extensions.tryOrLog
+import org.readium.r2.shared.util.ErrorException
 import org.readium.r2.shared.util.downloads.DownloadManager
 import org.readium.r2.shared.util.mediatype.FormatRegistry
 import org.readium.r2.shared.util.mediatype.MediaType
@@ -255,7 +256,7 @@ public class LcpPublicationRetriever(
             listenersForId.forEach {
                 it.onAcquisitionFailed(
                     lcpRequestId,
-                    LcpException.Network(Exception(error.message))
+                    LcpException.Network(ErrorException(error))
                 )
             }
 

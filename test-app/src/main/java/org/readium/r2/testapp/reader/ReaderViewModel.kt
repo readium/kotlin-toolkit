@@ -85,9 +85,7 @@ class ReaderViewModel(
     )
 
     fun close() {
-        viewModelScope.launch {
-            readerRepository.close(bookId)
-        }
+        readerRepository.close(bookId)
     }
 
     fun saveProgression(locator: Locator) = viewModelScope.launch {

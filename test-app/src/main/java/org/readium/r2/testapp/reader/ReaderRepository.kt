@@ -33,6 +33,7 @@ import org.readium.r2.testapp.reader.preferences.AndroidTtsPreferencesManagerFac
 import org.readium.r2.testapp.reader.preferences.EpubPreferencesManagerFactory
 import org.readium.r2.testapp.reader.preferences.ExoPlayerPreferencesManagerFactory
 import org.readium.r2.testapp.reader.preferences.PdfiumPreferencesManagerFactory
+import org.readium.r2.testapp.utils.CoroutineQueue
 import timber.log.Timber
 
 /**
@@ -85,6 +86,9 @@ class ReaderRepository(
         }
     }
 
+    private val coroutineQueue: CoroutineQueue =
+        CoroutineQueue()
+
     private val repository: MutableMap<Long, ReaderInitData> =
         mutableMapOf()
 
@@ -94,7 +98,10 @@ class ReaderRepository(
     operator fun get(bookId: Long): ReaderInitData? =
         repository[bookId]
 
-    suspend fun open(bookId: Long): Try<Unit, OpeningError> {
+    suspend fun open(bookId: Long): Try<Unit, OpeningError> =
+        coroutineQueue.await { doOpen(bookId) }
+
+    private suspend fun doOpen(bookId: Long): Try<Unit, OpeningError> {
         if (bookId in repository.keys) {
             return Try.success(Unit)
         }
@@ -243,19 +250,21 @@ class ReaderRepository(
         return TtsInitData(mediaServiceFacade, navigatorFactory, preferencesManager)
     }
 
-    suspend fun close(bookId: Long) {
-        Timber.v("Closing Publication $bookId.")
-        when (val initData = repository.remove(bookId)) {
-            is MediaReaderInitData -> {
-                mediaServiceFacade.closeSession()
-                initData.publication.close()
-            }
-            is VisualReaderInitData -> {
-                mediaServiceFacade.closeSession()
-                initData.publication.close()
-            }
-            null, is DummyReaderInitData -> {
-                // Do nothing
+    fun close(bookId: Long) {
+        coroutineQueue.launch {
+            Timber.v("Closing Publication $bookId.")
+            when (val initData = repository.remove(bookId)) {
+                is MediaReaderInitData -> {
+                    mediaServiceFacade.closeSession()
+                    initData.publication.close()
+                }
+                is VisualReaderInitData -> {
+                    mediaServiceFacade.closeSession()
+                    initData.publication.close()
+                }
+                null, is DummyReaderInitData -> {
+                    // Do nothing
+                }
             }
         }
     }

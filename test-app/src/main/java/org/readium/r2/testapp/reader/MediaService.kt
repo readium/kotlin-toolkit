@@ -13,8 +13,8 @@ import android.content.Intent
 import android.content.ServiceConnection
 import android.os.Build
 import android.os.IBinder
+import androidx.core.app.NotificationManagerCompat
 import androidx.core.app.ServiceCompat
-import androidx.core.content.ContextCompat
 import androidx.media3.session.MediaSession
 import androidx.media3.session.MediaSessionService
 import kotlinx.coroutines.*
@@ -54,11 +54,13 @@ class MediaService : MediaSessionService() {
             sessionMutable.asStateFlow()
 
         fun closeSession() {
-            ServiceCompat.stopForeground(this@MediaService, ServiceCompat.STOP_FOREGROUND_REMOVE)
-            session.value?.mediaSession?.release()
-            session.value?.navigator?.close()
-            session.value?.coroutineScope?.cancel()
-            sessionMutable.value = null
+            Timber.d("closeSession")
+            session.value?.let { session ->
+                session.mediaSession.release()
+                session.coroutineScope.cancel()
+                session.navigator.close()
+                sessionMutable.value = null
+            }
         }
 
         @OptIn(FlowPreview::class)
@@ -66,6 +68,7 @@ class MediaService : MediaSessionService() {
             navigator: N,
             bookId: Long
         ) where N : AnyMediaNavigator, N : Media3Adapter {
+            Timber.d("openSession")
             val activityIntent = createSessionActivityIntent()
             val mediaSession = MediaSession.Builder(applicationContext, navigator.asMedia3Player())
                 .setSessionActivity(activityIntent)
@@ -107,6 +110,12 @@ class MediaService : MediaSessionService() {
 
             return PendingIntent.getActivity(applicationContext, 0, intent, flags)
         }
+
+        fun stop() {
+            closeSession()
+            ServiceCompat.stopForeground(this@MediaService, ServiceCompat.STOP_FOREGROUND_REMOVE)
+            this@MediaService.stopSelf()
+        }
     }
 
     private val binder by lazy {
@@ -135,9 +144,18 @@ class MediaService : MediaSessionService() {
     override fun onTaskRemoved(rootIntent: Intent) {
         super.onTaskRemoved(rootIntent)
         Timber.d("Task removed. Stopping session and service.")
-        // Close the navigator to allow the service to be stopped.
+        // Close the session to allow the service to be stopped.
         binder.closeSession()
-        stopSelf()
+        binder.stop()
+    }
+
+    override fun onDestroy() {
+        Timber.d("Destroying MediaService.")
+        binder.closeSession()
+        // Ensure one more time that all notifications are gone and,
+        // hopefully, pending intents cancelled.
+        NotificationManagerCompat.from(this).cancelAll()
+        super.onDestroy()
     }
 
     companion object {
@@ -146,7 +164,12 @@ class MediaService : MediaSessionService() {
 
         fun start(application: Application) {
             val intent = intent(application)
-            ContextCompat.startForegroundService(application, intent)
+            application.startService(intent)
+        }
+
+        fun stop(application: Application) {
+            val intent = intent(application)
+            application.stopService(intent)
         }
 
         suspend fun bind(application: Application): Binder {
@@ -162,10 +185,14 @@ class MediaService : MediaSessionService() {
 
                 override fun onServiceDisconnected(name: ComponentName) {
                     Timber.d("MediaService disconnected.")
-                    // Should not happen, do nothing.
                 }
 
                 override fun onNullBinding(name: ComponentName) {
+                    if (mediaServiceBinder.isCompleted) {
+                        // This happens when the service has successfully connected and later
+                        // stopped and disconnected.
+                        return
+                    }
                     val errorMessage = "Failed to bind to MediaService."
                     Timber.e(errorMessage)
                     val exception = IllegalStateException(errorMessage)
@@ -177,11 +204,6 @@ class MediaService : MediaSessionService() {
             application.bindService(intent, mediaServiceConnection, 0)
 
             return mediaServiceBinder.await()
-        }
-
-        fun stop(application: Application) {
-            val intent = intent(application)
-            application.stopService(intent)
         }
 
         private fun intent(application: Application) =

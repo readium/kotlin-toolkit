@@ -10,6 +10,7 @@ import org.readium.r2.shared.publication.encryption.Encryption
 import org.readium.r2.shared.publication.protection.ContentProtection
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.xml.ElementNode
+import org.readium.r2.streamer.parser.epub.extensions.fromEpubHref
 
 internal object EncryptionParser {
     fun parse(document: ElementNode): Map<Url, Encryption> =
@@ -20,7 +21,7 @@ internal object EncryptionParser {
     private fun parseEncryptedData(node: ElementNode): Pair<Url, Encryption>? {
         val resourceURI = node.getFirst("CipherData", Namespaces.ENC)
             ?.getFirst("CipherReference", Namespaces.ENC)?.getAttr("URI")
-            ?.let { Url(it) }
+            ?.let { Url.fromEpubHref(it) }
             ?: return null
         val retrievalMethod = node.getFirst("KeyInfo", Namespaces.SIG)
             ?.getFirst("RetrievalMethod", Namespaces.SIG)?.getAttr("URI")

@@ -69,7 +69,12 @@ internal class ParserAssetFactory(
         asset: Asset.Resource
     ): Try<PublicationParser.Asset, Publication.OpenError> {
         val manifest = asset.resource.readAsRwpm()
-            .mapFailure { Publication.OpenError.InvalidAsset(ThrowableError(it)) }
+            .mapFailure {
+                Publication.OpenError.InvalidAsset(
+                    "Failed to read the publication as a RWPM",
+                    ThrowableError(it)
+                )
+            }
             .getOrElse { return Try.failure(it) }
 
         val baseUrl = manifest.linkWithRel("self")?.href?.resolve()
