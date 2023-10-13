@@ -10,6 +10,7 @@ import org.readium.r2.shared.publication.ReadingProgression
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 import org.readium.r2.shared.util.xml.ElementNode
+import org.readium.r2.streamer.parser.epub.extensions.fromEpubHref
 
 internal data class PackageDocument(
     val path: Url,
@@ -56,7 +57,7 @@ internal data class Item(
     companion object {
         fun parse(element: ElementNode, filePath: Url, prefixMap: Map<String, String>): Item? {
             val href = element.getAttr("href")
-                ?.let { Url(it) }
+                ?.let { Url.fromEpubHref(it) }
                 ?.let { filePath.resolve(it) }
                 ?: return null
             val propAttr = element.getAttr("properties").orEmpty()

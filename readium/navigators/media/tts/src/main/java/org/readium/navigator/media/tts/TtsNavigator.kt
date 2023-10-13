@@ -76,6 +76,9 @@ public class TtsNavigator<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
 
             val contentIterator =
                 TtsUtteranceIterator(publication, tokenizerFactory, initialLocator)
+            if (!contentIterator.hasNext()) {
+                return null
+            }
 
             val ttsEngine =
                 ttsEngineProvider.createEngine(publication, actualInitialPreferences)

@@ -23,41 +23,26 @@ public interface Error {
 }
 
 /**
- * An error caused by the catch of a throwable.
- *
- * @param throwable the cause Throwable
- */
-public class ThrowableError(
-    public val throwable: Throwable
-) : BaseError(throwable.message ?: throwable.toString(), cause = null)
-
-/**
  * A basic [Error] implementation with a message.
  */
 public class MessageError(
-    override val message: String
-) : BaseError(message, cause = null)
-
-/**
- * A basic implementation of [Error] able to print itself in a structured way.
- */
-public abstract class BaseError(
     override val message: String,
     override val cause: Error? = null
-) : Error {
-    override fun toString(): String {
-        var desc = "${javaClass.nameWithEnclosingClasses()}: $message"
-        if (cause != null) {
-            desc += "\n  ${cause.toString().prependIndent("  ")}"
-        }
-        return desc
-    }
+) : Error
 
-    private fun Class<*>.nameWithEnclosingClasses(): String {
-        var name = simpleName
-        enclosingClass?.let {
-            name = "${it.nameWithEnclosingClasses()}.$name"
-        }
-        return name
-    }
+/**
+ * An error caused by the catch of a throwable.
+ */
+public class ThrowableError(
+    public val throwable: Throwable
+) : Error {
+    override val message: String = throwable.message ?: throwable.toString()
+    override val cause: Error? = null
 }
+
+/**
+ * A throwable caused by an [Error].
+ */
+public class ErrorException(
+    public val error: Error
+) : Exception(error.message)

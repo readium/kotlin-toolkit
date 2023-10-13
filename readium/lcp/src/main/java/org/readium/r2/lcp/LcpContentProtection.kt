@@ -113,7 +113,10 @@ internal class LcpContentProtection(
                         LicenseDocument(it)
                     } catch (e: Exception) {
                         return Try.failure(
-                            Publication.OpenError.InvalidAsset(cause = ThrowableError(e))
+                            Publication.OpenError.InvalidAsset(
+                                "Failed to read the LCP license document",
+                                cause = ThrowableError(e)
+                            )
                         )
                     }
                 }
@@ -127,9 +130,7 @@ internal class LcpContentProtection(
         val url = (link.url() as? AbsoluteUrl)
             ?: return Try.failure(
                 Publication.OpenError.InvalidAsset(
-                    cause = ThrowableError(
-                        LcpException.Parsing.Url(rel = LicenseDocument.Rel.Publication.value)
-                    )
+                    "The LCP license document does not contain a valid link to the publication"
                 )
             )
 

@@ -57,6 +57,7 @@ import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.pdf.cachedIn
 import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.shared.util.resource.ResourceTry
+import timber.log.Timber
 
 @ExperimentalReadiumApi
 public class PsPdfKitDocumentFragment internal constructor(
@@ -162,7 +163,7 @@ public class PsPdfKitDocumentFragment internal constructor(
      * Recreates the [PdfFragment] with the current settings.
      */
     private fun resetPdfFragment() {
-        if (view == null) return
+        if (isStateSaved || view == null) return
         val doc = viewModel.document ?: return
 
         doc.document.pageBinding = settings.readingProgression.pageBinding
@@ -295,9 +296,15 @@ public class PsPdfKitDocumentFragment internal constructor(
         }
 
         override fun onDocumentLoaded(document: PdfDocument) {
-            super.onDocumentLoaded(document)
+            val index = pageIndex.value
+            if (index < 0 || index >= document.pageCount) {
+                Timber.w(
+                    "Tried to restore page index $index, but the document has ${document.pageCount} pages"
+                )
+                return
+            }
 
-            checkNotNull(pdfFragment).setPageIndex(pageIndex.value, false)
+            checkNotNull(pdfFragment).setPageIndex(index, false)
         }
     }
 
