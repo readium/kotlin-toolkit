@@ -136,18 +136,28 @@ public class FileResourceFactory(
     private val mediaTypeRetriever: MediaTypeRetriever
 ) : ResourceFactory {
 
-    override suspend fun create(url: AbsoluteUrl): Try<Resource, ResourceFactory.Error> {
+    override suspend fun create(url: AbsoluteUrl): Resource? {
         val file = url.toFile()
-            ?: return Try.failure(ResourceFactory.Error.SchemeNotSupported(url.scheme))
+            ?: return null
 
         try {
             if (!file.isFile) {
-                return Try.failure(ResourceFactory.Error.NotAResource(url))
+                return null
             }
         } catch (e: Exception) {
-            return Try.failure(ResourceFactory.Error.Forbidden(e))
+            return null
         }
 
-        return Try.success(FileResource(file, mediaTypeRetriever))
+        return FileResource(file, mediaTypeRetriever)
+    }
+
+    override suspend fun create(
+        url: AbsoluteUrl,
+        mediaType: MediaType
+    ): Try<Resource, ResourceFactory.Error> {
+        val file = url.toFile()
+            ?: return Try.failure(ResourceFactory.Error.SchemeNotSupported(url.scheme))
+
+        return Try.success(FileResource(file, mediaType))
     }
 }

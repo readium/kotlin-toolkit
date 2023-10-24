@@ -18,7 +18,7 @@ public sealed class Asset {
     /**
      * Type of the asset source.
      */
-    public abstract val assetType: org.readium.r2.shared.util.asset.AssetType
+    public abstract val assetType: AssetType
 
     /**
      * Media type of the asset.
@@ -39,10 +39,10 @@ public sealed class Asset {
     public class Resource(
         override val mediaType: MediaType,
         public val resource: SharedResource
-    ) : org.readium.r2.shared.util.asset.Asset() {
+    ) : Asset() {
 
-        override val assetType: org.readium.r2.shared.util.asset.AssetType =
-            org.readium.r2.shared.util.asset.AssetType.Resource
+        override val assetType: AssetType =
+            AssetType.Resource
 
         override suspend fun close() {
             resource.close()
@@ -60,13 +60,13 @@ public sealed class Asset {
         override val mediaType: MediaType,
         exploded: Boolean,
         public val container: SharedContainer
-    ) : org.readium.r2.shared.util.asset.Asset() {
+    ) : Asset() {
 
-        override val assetType: org.readium.r2.shared.util.asset.AssetType =
+        override val assetType: AssetType =
             if (exploded) {
-                org.readium.r2.shared.util.asset.AssetType.Directory
+                AssetType.Directory
             } else {
-                org.readium.r2.shared.util.asset.AssetType.Archive
+                AssetType.Archive
             }
 
         override suspend fun close() {

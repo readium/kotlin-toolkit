@@ -11,6 +11,12 @@ import android.content.Context
 import android.net.Uri
 import android.provider.MediaStore
 import java.io.File
+import kotlin.Boolean
+import kotlin.Exception
+import kotlin.String
+import kotlin.let
+import kotlin.run
+import kotlin.takeUnless
 import org.readium.r2.shared.extensions.queryProjection
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Either
@@ -19,7 +25,6 @@ import org.readium.r2.shared.util.ThrowableError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.flatMap
-import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.mediatype.MediaTypeHints
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
@@ -147,9 +152,9 @@ public class AssetRetriever(
         url: AbsoluteUrl,
         mediaType: MediaType
     ): Try<Asset.Container, Error> {
-        return retrieveResource(url)
+        return retrieveResource(url, mediaType)
             .flatMap { resource: Resource ->
-                archiveFactory.create(resource, password = null)
+                archiveFactory.create(resource, password = null, mediaType)
                     .mapFailure { error ->
                         when (error) {
                             is ArchiveFactory.Error.FormatNotSupported ->
@@ -178,7 +183,7 @@ public class AssetRetriever(
         url: AbsoluteUrl,
         mediaType: MediaType
     ): Try<Asset.Container, Error> {
-        return containerFactory.create(url)
+        return containerFactory.create(url, mediaType)
             .map { container ->
                 Asset.Container(
                     mediaType,
@@ -188,16 +193,6 @@ public class AssetRetriever(
             }
             .mapFailure { error ->
                 when (error) {
-                    is ContainerFactory.Error.NotAContainer ->
-                        Error.NotFound(
-                            url,
-                            error
-                        )
-                    is ContainerFactory.Error.Forbidden ->
-                        Error.Forbidden(
-                            url,
-                            error
-                        )
                     is ContainerFactory.Error.SchemeNotSupported ->
                         Error.SchemeNotSupported(
                             error.scheme,
@@ -211,7 +206,7 @@ public class AssetRetriever(
         url: AbsoluteUrl,
         mediaType: MediaType
     ): Try<Asset.Resource, Error> {
-        return retrieveResource(url)
+        return retrieveResource(url, mediaType)
             .map { resource ->
                 Asset.Resource(
                     mediaType,
@@ -221,21 +216,12 @@ public class AssetRetriever(
     }
 
     private suspend fun retrieveResource(
-        url: AbsoluteUrl
+        url: AbsoluteUrl,
+        mediaType: MediaType
     ): Try<Resource, Error> {
-        return resourceFactory.create(url)
+        return resourceFactory.create(url, mediaType)
             .mapFailure { error ->
                 when (error) {
-                    is ResourceFactory.Error.NotAResource ->
-                        Error.NotFound(
-                            url,
-                            error
-                        )
-                    is ResourceFactory.Error.Forbidden ->
-                        Error.Forbidden(
-                            url,
-                            error
-                        )
                     is ResourceFactory.Error.SchemeNotSupported ->
                         Error.SchemeNotSupported(
                             error.scheme,
@@ -297,22 +283,15 @@ public class AssetRetriever(
     public suspend fun retrieve(url: Url): Asset? {
         if (url !is AbsoluteUrl) return null
 
-        val resource = resourceFactory
-            .create(url)
-            .getOrElse { error ->
-                when (error) {
-                    is ResourceFactory.Error.NotAResource ->
-                        return containerFactory.create(url).getOrNull()
-                            ?.let { retrieve(url, it, exploded = true) }
-                    else -> return null
-                }
+        val resource = resourceFactory.create(url)
+            ?: run {
+                return containerFactory.create(url)
+                    ?.let { retrieve(url, it, exploded = true) }
             }
 
         return archiveFactory.create(resource, password = null)
-            .fold(
-                { retrieve(url, container = it, exploded = false) },
-                { retrieve(url, resource) }
-            )
+            ?.let { retrieve(url, container = it, exploded = false) }
+            ?: retrieve(url, resource)
     }
 
     private suspend fun retrieve(

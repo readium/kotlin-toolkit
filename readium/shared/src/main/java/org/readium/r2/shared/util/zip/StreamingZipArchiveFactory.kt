@@ -7,7 +7,9 @@
 package org.readium.r2.shared.util.zip
 
 import java.io.File
+import org.readium.r2.shared.extensions.tryOrNull
 import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 import org.readium.r2.shared.util.resource.ArchiveFactory
 import org.readium.r2.shared.util.resource.Container
@@ -27,6 +29,23 @@ public class StreamingZipArchiveFactory(
     override suspend fun create(
         resource: Resource,
         password: String?
+    ): Container? {
+        if (password != null) {
+            return null
+        }
+
+        return tryOrNull {
+            val resourceChannel = ResourceChannel(resource)
+            val channel = wrapBaseChannel(resourceChannel)
+            val zipFile = ZipFile(channel, true)
+            ChannelZipContainer(zipFile, resource.source, mediaTypeRetriever)
+        }
+    }
+
+    override suspend fun create(
+        resource: Resource,
+        password: String?,
+        mediaType: MediaType
     ): Try<Container, ArchiveFactory.Error> {
         if (password != null) {
             return Try.failure(ArchiveFactory.Error.PasswordsNotSupported())
