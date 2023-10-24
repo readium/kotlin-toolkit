@@ -110,10 +110,6 @@ public class PublicationFactory(
      * set it to false if you just want to import the [Publication] without reading its content, to
      * avoid prompting the user.
      *
-     * When using Content Protections, you can use [sender] to provide a free object which can be
-     * used to give some context. For example, it could be the source Activity or Fragment which
-     * would be used to present a credentials dialog.
-     *
      * The [warnings] logger can be used to observe non-fatal parsing warnings, caused by
      * publication authoring mistakes. This can be useful to warn users of potential rendering
      * issues.
@@ -132,7 +128,7 @@ public class PublicationFactory(
      * @return A [Publication] or a [Publication.OpenError] in case of failure.
      */
     public suspend fun open(
-        asset: org.readium.r2.shared.util.asset.Asset,
+        asset: Asset,
         contentProtectionScheme: ContentProtection.Scheme? = null,
         credentials: String? = null,
         allowUserInteraction: Boolean,
@@ -163,7 +159,7 @@ public class PublicationFactory(
     }
 
     private suspend fun openUnprotected(
-        asset: org.readium.r2.shared.util.asset.Asset,
+        asset: Asset,
         onCreatePublication: Publication.Builder.() -> Unit,
         warnings: WarningLogger?
     ): Try<Publication, Publication.OpenError> {
@@ -173,7 +169,7 @@ public class PublicationFactory(
     }
 
     private suspend fun openProtected(
-        asset: org.readium.r2.shared.util.asset.Asset,
+        asset: Asset,
         contentProtectionScheme: ContentProtection.Scheme,
         credentials: String?,
         allowUserInteraction: Boolean,

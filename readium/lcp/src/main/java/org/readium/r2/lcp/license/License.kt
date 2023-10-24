@@ -12,8 +12,10 @@ package org.readium.r2.lcp.license
 import java.net.HttpURLConnection
 import java.util.*
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.withContext
@@ -36,6 +38,7 @@ import org.readium.r2.shared.util.mediatype.MediaType
 import timber.log.Timber
 
 internal class License private constructor(
+    private val coroutineScope: CoroutineScope,
     private var documents: ValidatedDocuments,
     private val validation: LicenseValidation,
     private val licenses: LicensesRepository,
@@ -65,6 +68,7 @@ internal class License private constructor(
                 .stateIn(coroutineScope)
 
             return License(
+                coroutineScope = coroutineScope,
                 documents = documents,
                 validation = validation,
                 licenses = licenses,
@@ -266,6 +270,9 @@ internal class License private constructor(
         }
     }
 
+    private fun validateStatusDocument(data: ByteArray): Unit =
+        validation.validate(LicenseValidation.Document.status(data)) { _, _ -> }
+
     init {
         LicenseValidation.observe(validation) { documents, _ ->
             documents?.let {
@@ -274,6 +281,7 @@ internal class License private constructor(
         }
     }
 
-    private fun validateStatusDocument(data: ByteArray): Unit =
-        validation.validate(LicenseValidation.Document.status(data)) { _, _ -> }
+    override fun close() {
+        coroutineScope.cancel()
+    }
 }
