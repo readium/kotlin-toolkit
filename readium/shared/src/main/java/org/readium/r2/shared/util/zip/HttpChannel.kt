@@ -18,7 +18,7 @@ import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.getOrThrow
 import org.readium.r2.shared.util.http.HttpClient
-import org.readium.r2.shared.util.http.HttpException
+import org.readium.r2.shared.util.http.HttpError
 import org.readium.r2.shared.util.http.HttpRequest
 import org.readium.r2.shared.util.http.HttpResponse
 import org.readium.r2.shared.util.http.head
@@ -43,9 +43,9 @@ internal class HttpChannel(
     private var inputStreamStart = 0L
 
     /** Cached HEAD response to get the expected content length and other metadata. */
-    private lateinit var _headResponse: Try<HttpResponse, HttpException>
+    private lateinit var _headResponse: Try<HttpResponse, HttpError>
 
-    private suspend fun headResponse(): Try<HttpResponse, HttpException> {
+    private suspend fun headResponse(): Try<HttpResponse, HttpError> {
         if (::_headResponse.isInitialized) {
             return _headResponse
         }
@@ -60,7 +60,7 @@ internal class HttpChannel(
      * The stream is cached and reused for next calls, if the next [from] offset is in a forward
      * direction.
      */
-    private suspend fun stream(from: Long? = null): Try<InputStream, HttpException> {
+    private suspend fun stream(from: Long? = null): Try<InputStream, HttpError> {
         Timber.d("getStream")
         val stream = inputStream
         if (from != null && stream != null) {

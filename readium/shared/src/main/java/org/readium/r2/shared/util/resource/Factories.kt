@@ -110,15 +110,8 @@ public interface ArchiveFactory {
         }
 
         public class ResourceReading(
-            cause: SharedError?,
-            public val resourceException: Resource.Exception
-        ) : Error("An error occurred while attempting to read the resource.", cause) {
-
-            public constructor(exception: Resource.Exception) : this(
-                ThrowableError(exception),
-                exception
-            )
-        }
+            override val cause: ResourceError
+        ) : Error("An error occurred while attempting to read the resource.", cause)
     }
 
     /**

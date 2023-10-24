@@ -28,7 +28,7 @@ internal class ContainerLicenseContainer(
                 .read()
                 .mapFailure {
                     when (it) {
-                        is Resource.Exception.NotFound ->
+                        is ResourceError.NotFound ->
                             LcpException.Container.FileNotFound(entryUrl)
                         else ->
                             LcpException.Container.ReadFailed(entryUrl)

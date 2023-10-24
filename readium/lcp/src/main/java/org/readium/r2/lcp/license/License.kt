@@ -9,6 +9,7 @@
 
 package org.readium.r2.lcp.license
 
+import java.lang.Error
 import java.net.HttpURLConnection
 import java.util.*
 import kotlinx.coroutines.CancellationException

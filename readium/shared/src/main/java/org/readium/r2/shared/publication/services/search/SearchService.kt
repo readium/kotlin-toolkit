@@ -7,84 +7,63 @@
 package org.readium.r2.shared.publication.services.search
 
 import android.os.Parcelable
-import androidx.annotation.StringRes
 import kotlinx.parcelize.Parcelize
 import org.readium.r2.shared.ExperimentalReadiumApi
-import org.readium.r2.shared.R
-import org.readium.r2.shared.UserException
 import org.readium.r2.shared.publication.LocatorCollection
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.ServiceFactory
+import org.readium.r2.shared.util.Error
 import org.readium.r2.shared.util.SuspendingCloseable
 import org.readium.r2.shared.util.Try
-import org.readium.r2.shared.util.http.HttpException
-import org.readium.r2.shared.util.resource.Resource
+import org.readium.r2.shared.util.http.HttpError
 
 @ExperimentalReadiumApi
-public typealias SearchTry<SuccessT> = Try<SuccessT, SearchException>
+public typealias SearchTry<SuccessT> = Try<SuccessT, SearchError>
 
 /**
  * Represents an error which might occur during a search activity.
  */
 @ExperimentalReadiumApi
-public sealed class SearchException(content: Content, cause: Throwable? = null) : UserException(
-    content,
-    cause
-) {
-    protected constructor(@StringRes userMessageId: Int, vararg args: Any, cause: Throwable? = null) :
-        this(Content(userMessageId, *args), cause)
-    protected constructor(cause: UserException) :
-        this(Content(cause), cause)
+public sealed class SearchError(
+    override val message: String,
+    override val cause: Error? = null
+) : Error {
 
     /**
      * The publication is not searchable.
      */
-    public object PublicationNotSearchable : SearchException(
-        R.string.readium_shared_search_exception_publication_not_searchable
-    )
+    public object PublicationNotSearchable
+        : SearchError("This publication is not searchable.")
 
     /**
      * The provided search query cannot be handled by the service.
      */
-    public class BadQuery(cause: UserException) : SearchException(cause)
+    public class BadQuery(cause: Error)
+        : SearchError("The provided search query cannot be handled by the service.", cause)
 
     /**
      * An error occurred while accessing one of the publication's resources.
      */
-    public class ResourceError(cause: Resource.Exception) : SearchException(cause)
+    public class ResourceError(cause: Error)
+        : SearchError("An error occurred while accessing one of the publication's resources.", cause)
 
     /**
      * An error occurred while performing an HTTP request.
      */
-    public class NetworkError(cause: HttpException) : SearchException(cause)
+    public class NetworkError(cause: HttpError)
+        : SearchError("An error occurred while performing an HTTP request.", cause)
 
     /**
      * The search was cancelled by the caller.
      *
      * For example, when a coroutine or a network request is cancelled.
      */
-    public object Cancelled : SearchException(R.string.readium_shared_search_exception_cancelled)
+    public object Cancelled
+        : SearchError("The search was cancelled.")
 
     /** For any other custom service error. */
-    public class Other(cause: Throwable) : SearchException(
-        R.string.readium_shared_search_exception_other,
-        cause = cause
-    )
-
-    public companion object {
-        public fun wrap(e: Throwable): SearchException =
-            when (e) {
-                is SearchException -> e
-                is Resource.Exception -> ResourceError(e)
-                is HttpException ->
-                    if (e.kind == HttpException.Kind.Cancelled) {
-                        Cancelled
-                    } else {
-                        NetworkError(e)
-                    }
-                else -> Other(e)
-            }
-    }
+    public class Other(cause: Error)
+        : SearchError("An error occurred while searching.", cause)
 }
 
 /**
@@ -163,7 +142,7 @@ public val Publication.searchOptions: SearchService.Options get() =
 @ExperimentalReadiumApi
 public suspend fun Publication.search(query: String, options: SearchService.Options? = null): SearchTry<SearchIterator> =
     findService(SearchService::class)?.search(query, options)
-        ?: Try.failure(SearchException.PublicationNotSearchable)
+        ?: Try.failure(SearchError.PublicationNotSearchable)
 
 /** Factory to build a [SearchService] */
 @ExperimentalReadiumApi

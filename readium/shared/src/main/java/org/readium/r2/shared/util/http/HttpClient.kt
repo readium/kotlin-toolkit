@@ -12,6 +12,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import org.readium.r2.shared.ExperimentalReadiumApi
+import org.readium.r2.shared.util.ThrowableError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.flatMap
 import org.readium.r2.shared.util.mediatype.MediaType
@@ -125,9 +126,13 @@ public suspend fun HttpClient.fetch(request: HttpRequest): HttpTry<HttpFetchResp
                 val body = withContext(Dispatchers.IO) {
                     response.body.use { it.readBytes() }
                 }
-                Try.success(HttpFetchResponse(response.response, body))
+                Try.success(
+                    HttpFetchResponse(response.response, body)
+                )
             } catch (e: Exception) {
-                Try.failure(HttpException.wrap(e))
+                Try.failure(
+                    HttpError(HttpError.Kind.Other, cause = ThrowableError(e))
+                )
             }
         }
 
@@ -143,9 +148,13 @@ public suspend fun <T> HttpClient.fetchWithDecoder(
     fetch(request)
         .flatMap {
             try {
-                Try.success(decoder(it))
+                Try.success(
+                    decoder(it)
+                )
             } catch (e: Exception) {
-                Try.failure(HttpException(kind = HttpException.Kind.MalformedResponse, cause = e))
+                Try.failure(
+                    HttpError(kind = HttpError.Kind.MalformedResponse, cause = ThrowableError(e))
+                )
             }
         }
 
@@ -192,7 +201,7 @@ public suspend fun HttpClient.head(request: HttpRequest): HttpTry<HttpResponse> 
         .copy { method = HttpRequest.Method.HEAD }
         .response()
         .tryRecover { exception ->
-            if (exception.kind != HttpException.Kind.MethodNotAllowed) {
+            if (exception.kind != HttpError.Kind.MethodNotAllowed) {
                 return@tryRecover Try.failure(exception)
             }
 

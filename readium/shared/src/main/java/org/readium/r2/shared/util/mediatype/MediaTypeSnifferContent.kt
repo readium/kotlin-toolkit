@@ -28,55 +28,55 @@ public interface ResourceMediaTypeSnifferContent : MediaTypeSnifferContent {
      * See https://en.wikipedia.org/wiki/List_of_file_signatures
      */
     public suspend fun read(range: LongRange? = null): ByteArray?
-
-    /**
-     * Content as plain text.
-     *
-     * It will extract the charset parameter from the media type hints to figure out an encoding.
-     * Otherwise, fallback on UTF-8.
-     */
-    public suspend fun contentAsString(): String? =
-        read()?.let {
-            tryOrNull {
-                withContext(Dispatchers.Default) { String(it) }
-            }
-        }
-
-    /** Content as an XML document. */
-    public suspend fun contentAsXml(): ElementNode? =
-        read()?.let {
-            tryOrNull {
-                withContext(Dispatchers.Default) {
-                    XmlParser().parse(ByteArrayInputStream(it))
-                }
-            }
-        }
-
-    /**
-     * Content parsed from JSON.
-     */
-    public suspend fun contentAsJson(): JSONObject? =
-        contentAsString()?.let {
-            tryOrNull {
-                withContext(Dispatchers.Default) {
-                    JSONObject(it)
-                }
-            }
-        }
-
-    /** Readium Web Publication Manifest parsed from the content. */
-    public suspend fun contentAsRwpm(): Manifest? =
-        Manifest.fromJSON(contentAsJson())
-
-    /**
-     * Raw bytes stream of the content.
-     *
-     * A byte stream can be useful when sniffers only need to read a few bytes at the beginning of
-     * the file.
-     */
-    public suspend fun contentAsStream(): InputStream =
-        ByteArrayInputStream(read() ?: ByteArray(0))
 }
+
+/**
+ * Content as plain text.
+ *
+ * It will extract the charset parameter from the media type hints to figure out an encoding.
+ * Otherwise, fallback on UTF-8.
+ */
+public suspend fun ResourceMediaTypeSnifferContent.contentAsString(): String? =
+    read()?.let {
+        tryOrNull {
+            withContext(Dispatchers.Default) { String(it) }
+        }
+    }
+
+/** Content as an XML document. */
+public suspend fun ResourceMediaTypeSnifferContent.contentAsXml(): ElementNode? =
+    read()?.let {
+        tryOrNull {
+            withContext(Dispatchers.Default) {
+                XmlParser().parse(ByteArrayInputStream(it))
+            }
+        }
+    }
+
+/**
+ * Content parsed from JSON.
+ */
+public suspend fun ResourceMediaTypeSnifferContent.contentAsJson(): JSONObject? =
+    contentAsString()?.let {
+        tryOrNull {
+            withContext(Dispatchers.Default) {
+                JSONObject(it)
+            }
+        }
+    }
+
+/** Readium Web Publication Manifest parsed from the content. */
+public suspend fun ResourceMediaTypeSnifferContent.contentAsRwpm(): Manifest? =
+    Manifest.fromJSON(contentAsJson())
+
+/**
+ * Raw bytes stream of the content.
+ *
+ * A byte stream can be useful when sniffers only need to read a few bytes at the beginning of
+ * the file.
+ */
+public suspend fun ResourceMediaTypeSnifferContent.contentAsStream(): InputStream =
+    ByteArrayInputStream(read() ?: ByteArray(0))
 
 /**
  * Returns whether the content is a JSON object containing all of the given root keys.

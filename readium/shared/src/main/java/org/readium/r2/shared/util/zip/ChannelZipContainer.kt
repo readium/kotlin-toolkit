@@ -23,6 +23,7 @@ import org.readium.r2.shared.util.resource.ArchiveProperties
 import org.readium.r2.shared.util.resource.Container
 import org.readium.r2.shared.util.resource.FailureResource
 import org.readium.r2.shared.util.resource.Resource
+import org.readium.r2.shared.util.resource.ResourceError
 import org.readium.r2.shared.util.resource.ResourceMediaTypeSnifferContent
 import org.readium.r2.shared.util.resource.ResourceTry
 import org.readium.r2.shared.util.resource.archive
@@ -37,7 +38,7 @@ internal class ChannelZipContainer(
 
     private inner class FailureEntry(
         override val url: Url
-    ) : Container.Entry, Resource by FailureResource(Resource.Exception.NotFound())
+    ) : Container.Entry, Resource by FailureResource(ResourceError.NotFound())
 
     private inner class Entry(
         override val url: Url,
@@ -68,7 +69,7 @@ internal class ChannelZipContainer(
         override suspend fun length(): ResourceTry<Long> =
             entry.size.takeUnless { it == -1L }
                 ?.let { Try.success(it) }
-                ?: Try.failure(Resource.Exception.Other(UnsupportedOperationException()))
+                ?: Try.failure(ResourceError.Other(UnsupportedOperationException()))
 
         private val compressedLength: Long?
             get() =
@@ -88,8 +89,10 @@ internal class ChannelZipContainer(
                             readRange(range)
                         }
                     Try.success(bytes)
+                } catch (e: ResourceChannel.ResourceException) {
+                    Try.failure(e.error)
                 } catch (e: Exception) {
-                    Try.failure(Resource.Exception.wrap(e))
+                    Try.failure(ResourceError.Other(e))
                 }
             }
 

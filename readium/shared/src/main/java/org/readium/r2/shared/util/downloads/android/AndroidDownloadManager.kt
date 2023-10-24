@@ -24,8 +24,11 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.extensions.tryOr
+import org.readium.r2.shared.util.MessageError
+import org.readium.r2.shared.util.ThrowableError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.downloads.DownloadManager
+import org.readium.r2.shared.util.http.HttpError
 import org.readium.r2.shared.util.mediatype.FormatRegistry
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
@@ -288,40 +291,38 @@ public class AndroidDownloadManager internal constructor(
                 Try.success(download)
             } else {
                 Try.failure(
-                    DownloadManager.Error.FileError("Failed to rename the downloaded file.")
+                    DownloadManager.Error.FileSystemError(
+                        MessageError("Failed to rename the downloaded file."))
                 )
             }
         }
 
     private fun mapErrorCode(code: Int): DownloadManager.Error =
         when (code) {
-            401, 403 ->
-                DownloadManager.Error.Forbidden()
-            404 ->
-                DownloadManager.Error.NotFound()
-            500, 501 ->
-                DownloadManager.Error.Server()
-            502, 503, 504 ->
-                DownloadManager.Error.Unreachable()
+            in 400 until 1000 ->
+                DownloadManager.Error.HttpError(httpErrorForCode(code))
+            SystemDownloadManager.ERROR_UNHANDLED_HTTP_CODE ->
+                DownloadManager.Error.HttpError(httpErrorForCode(code))
+            SystemDownloadManager.ERROR_HTTP_DATA_ERROR ->
+                DownloadManager.Error.HttpError(HttpError(HttpError.Kind.Other))
+            SystemDownloadManager.ERROR_TOO_MANY_REDIRECTS ->
+                DownloadManager.Error.HttpError(HttpError(HttpError.Kind.TooManyRedirects))
             SystemDownloadManager.ERROR_CANNOT_RESUME ->
                 DownloadManager.Error.CannotResume()
             SystemDownloadManager.ERROR_DEVICE_NOT_FOUND ->
                 DownloadManager.Error.DeviceNotFound()
             SystemDownloadManager.ERROR_FILE_ERROR ->
-                DownloadManager.Error.FileError("IO error on the local device.")
-            SystemDownloadManager.ERROR_HTTP_DATA_ERROR ->
-                DownloadManager.Error.HttpData()
+                DownloadManager.Error.FileSystemError()
             SystemDownloadManager.ERROR_INSUFFICIENT_SPACE ->
                 DownloadManager.Error.InsufficientSpace()
-            SystemDownloadManager.ERROR_TOO_MANY_REDIRECTS ->
-                DownloadManager.Error.TooManyRedirects()
-            SystemDownloadManager.ERROR_UNHANDLED_HTTP_CODE ->
-                DownloadManager.Error.Unknown()
             SystemDownloadManager.ERROR_UNKNOWN ->
                 DownloadManager.Error.Unknown()
             else ->
                 DownloadManager.Error.Unknown()
         }
+
+    private fun httpErrorForCode(code: Int): HttpError =
+        HttpError(code) ?: HttpError(HttpError.Kind.Other)
 
     public override fun close() {
         listeners.clear()

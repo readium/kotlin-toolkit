@@ -38,6 +38,7 @@ import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.shared.util.resource.readAsString
 import org.readium.r2.shared.util.use
+import org.readium.r2.shared.util.w
 import timber.log.Timber
 
 /**

@@ -50,7 +50,7 @@ public class PsPdfKitEngineProvider(
                 initialPageIndex = input.pageIndex,
                 initialSettings = input.settings,
                 listener = object : PsPdfKitDocumentFragment.Listener {
-                    override fun onResourceLoadFailed(href: Url, error: Resource.Exception) {
+                    override fun onResourceLoadFailed(href: Url, error: Resource.Error) {
                         input.navigatorListener?.onResourceLoadFailed(href, error)
                     }
 

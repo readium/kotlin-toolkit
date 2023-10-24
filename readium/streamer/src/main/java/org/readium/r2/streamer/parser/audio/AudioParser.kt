@@ -32,7 +32,7 @@ public class AudioParser : PublicationParser {
         warnings: WarningLogger?
     ): Try<Publication.Builder, PublicationParser.Error> {
         if (!asset.mediaType.matches(MediaType.ZAB) && !asset.mediaType.isAudio) {
-            return Try.failure(PublicationParser.Error.FormatNotSupported())
+            return Try.failure(PublicationParser.Error.UnsupportedFormat())
         }
 
         val readingOrder =

@@ -40,8 +40,10 @@ public class FileResource private constructor(
     )
 
     private val randomAccessFile by lazy {
-        ResourceTry.catching {
-            RandomAccessFile(file, "r")
+        try {
+            Try.success(RandomAccessFile(file, "r"))
+        } catch (e: FileNotFoundException) {
+            Try.failure(e)
         }
     }
 
@@ -119,13 +121,13 @@ public class FileResource private constructor(
         try {
             success(closure())
         } catch (e: FileNotFoundException) {
-            failure(Resource.Exception.NotFound(e))
+            failure(ResourceError.NotFound(e))
         } catch (e: SecurityException) {
-            failure(Resource.Exception.Forbidden(e))
+            failure(ResourceError.Forbidden(e))
         } catch (e: Exception) {
-            failure(Resource.Exception.wrap(e))
+            failure(ResourceError.Other(e))
         } catch (e: OutOfMemoryError) { // We don't want to catch any Error, only OOM.
-            failure(Resource.Exception.wrap(e))
+            failure(ResourceError.OutOfMemory(e))
         }
 
     override fun toString(): String =

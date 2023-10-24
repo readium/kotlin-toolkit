@@ -57,7 +57,7 @@ internal class DirectoryContainer(
             ?.let { File(root, it) }
 
         return if (file == null || !root.isParentOf(file)) {
-            FailureResource(Resource.Exception.NotFound()).toEntry(url)
+            FailureResource(ResourceError.NotFound()).toEntry(url)
         } else {
             FileEntry(url, file)
         }

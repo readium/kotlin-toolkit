@@ -6,10 +6,10 @@
 
 package org.readium.adapter.pdfium.document
 
+import com.shockwave.pdfium.PdfDocument as _PdfiumDocument
 import android.content.Context
 import android.graphics.Bitmap
 import android.os.ParcelFileDescriptor
-import com.shockwave.pdfium.PdfDocument as _PdfiumDocument
 import com.shockwave.pdfium.PdfiumCore
 import java.io.File
 import kotlin.reflect.KClass
@@ -23,7 +23,7 @@ import org.readium.r2.shared.util.pdf.PdfDocument
 import org.readium.r2.shared.util.pdf.PdfDocumentFactory
 import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.shared.util.resource.ResourceTry
-import org.readium.r2.shared.util.resource.mapCatching
+import org.readium.r2.shared.util.resource.decode
 import org.readium.r2.shared.util.use
 import timber.log.Timber
 
@@ -104,7 +104,11 @@ public class PdfiumDocumentFactory(context: Context) : PdfDocumentFactory<Pdfium
 
     private suspend fun Resource.openBytes(password: String?): ResourceTry<PdfiumDocument> =
         use {
-            read().mapCatching { core.fromBytes(it, password) }
+            read()
+                .decode(
+                    { core.fromBytes(it, password) },
+                    { "Pdfium could not read data." }
+            )
         }
 
     private fun PdfiumCore.fromFile(file: File, password: String?): PdfiumDocument =

@@ -8,7 +8,7 @@ package org.readium.r2.testapp.domain
 
 import androidx.annotation.StringRes
 import org.readium.r2.shared.UserException
-import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.util.asset.AssetError
 import org.readium.r2.shared.util.downloads.DownloadManager
 import org.readium.r2.testapp.R
 
@@ -34,7 +34,7 @@ sealed class ImportError(
         companion object {
 
             operator fun invoke(
-                error: Publication.OpenError
+                error: AssetError
             ): ImportError = PublicationError(
                 org.readium.r2.testapp.domain.PublicationError(
                     error

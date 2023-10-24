@@ -118,30 +118,33 @@ public class ContentResource internal constructor(
         return _length
     }
 
-    private suspend fun <T> withStream(block: suspend (InputStream) -> T): Try<T, Resource.Exception> =
-        ResourceTry.catching {
+    private suspend fun <T> withStream(block: suspend (InputStream) -> T): Try<T, ResourceError> {
+        return ResourceTry.catching {
             val stream = contentResolver.openInputStream(uri)
-                ?: throw Resource.Exception.Unavailable(
-                    Exception("Content provider recently crashed.")
+                ?: return Try.failure(
+                    ResourceError.Unavailable(
+                        Exception("Content provider recently crashed.")
+                    )
                 )
             val result = block(stream)
             stream.close()
             result
         }
+    }
 
     private inline fun <T> Try.Companion.catching(closure: () -> T): ResourceTry<T> =
         try {
             success(closure())
         } catch (e: FileNotFoundException) {
-            failure(Resource.Exception.NotFound(e))
+            failure(ResourceError.NotFound(e))
         } catch (e: SecurityException) {
-            failure(Resource.Exception.Forbidden(e))
+            failure(ResourceError.Forbidden(e))
         } catch (e: IOException) {
-            failure(Resource.Exception.Unavailable(e))
+            failure(ResourceError.Unavailable(e))
         } catch (e: Exception) {
-            failure(Resource.Exception.wrap(e))
+            failure(ResourceError.Other(e))
         } catch (e: OutOfMemoryError) { // We don't want to catch any Error, only OOM.
-            failure(Resource.Exception.wrap(e))
+            failure(ResourceError.OutOfMemory(e))
         }
 
     override fun toString(): String =

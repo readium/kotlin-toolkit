@@ -14,7 +14,7 @@ import org.readium.r2.shared.util.mediatype.MediaType
  */
 public class FallbackResource(
     private val originalResource: Resource,
-    private val fallbackResourceFactory: (Resource.Exception) -> Resource?
+    private val fallbackResourceFactory: (ResourceError) -> Resource?
 ) : Resource {
 
     override val source: AbsoluteUrl? = null
@@ -63,7 +63,7 @@ public class FallbackResource(
  * Falls back to alternative resources when the receiver fails.
  */
 public fun Resource.fallback(
-    fallbackResourceFactory: (Resource.Exception) -> Resource?
+    fallbackResourceFactory: (ResourceError) -> Resource?
 ): Resource =
     FallbackResource(this, fallbackResourceFactory)
 

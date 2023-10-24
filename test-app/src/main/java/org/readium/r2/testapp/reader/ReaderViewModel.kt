@@ -249,9 +249,9 @@ class ReaderViewModel(
 
     // Navigator.Listener
 
-    override fun onResourceLoadFailed(href: Url, error: Resource.Exception) {
+    override fun onResourceLoadFailed(href: Url, error: Resource.Error) {
         val message = when (error) {
-            is Resource.Exception.OutOfMemory -> "The resource is too large to be rendered on this device: $href"
+            is ResourceError.OutOfMemory -> "The resource is too large to be rendered on this device: $href"
             else -> "Failed to render the resource: $href"
         }
         activityChannel.send(ActivityCommand.ToastError(UserException(message, error)))

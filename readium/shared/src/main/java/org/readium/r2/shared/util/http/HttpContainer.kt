@@ -10,7 +10,7 @@ import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.resource.Container
 import org.readium.r2.shared.util.resource.FailureResource
-import org.readium.r2.shared.util.resource.Resource
+import org.readium.r2.shared.util.resource.ResourceError
 import org.readium.r2.shared.util.resource.toEntry
 
 /**
@@ -34,7 +34,7 @@ public class HttpContainer(
 
         return if (absoluteUrl == null || !absoluteUrl.isHttp) {
             FailureResource(
-                Resource.Exception.NotFound(
+                ResourceError.NotFound(
                     Exception("URL scheme is not supported: ${absoluteUrl?.scheme}.")
                 )
             )

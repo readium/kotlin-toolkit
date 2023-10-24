@@ -15,31 +15,4 @@
 
     <string name="readium_shared_publication.content_protection.exception.not_supported">This publication cannot be opened because it is protected with %1$s</string>
     <string name="readium_shared_publication.content_protection.exception.not_supported.unknown">This publication cannot be opened because it is protected with an unknown DRM</string>
-
-    <string name="readium_shared_resource.exception.bad_request">Invalid request which can\'t be processed</string>
-    <string name="readium_shared_resource.exception.not_found">Resource not found</string>
-    <string name="readium_shared_resource.exception.forbidden">You are not allowed to access the resource</string>
-    <string name="readium_shared_resource.exception.unavailable">The resource is currently unavailable, please try again later</string>
-    <string name="readium_shared_resource_exception_offline">The Internet connection appears to be offline</string>
-    <string name="readium_shared_resource.exception.out_of_memory">The resource is too large to be read on this device</string>
-    <string name="readium_shared_resource.exception.unexpected">An expected error occurred.</string>
-    <string name="readium_shared_resource.exception.other">A service error occurred</string>
-
-    <string name="readium_shared_http.exception.malformed_request">The provided request was not valid</string>
-    <string name="readium_shared_http.exception.malformed_response">The received response could not be decoded</string>
-    <string name="readium_shared_http.exception.timeout">Request timed out</string>
-    <string name="readium_shared_http.exception.bad_request">The provided request was not valid</string>
-    <string name="readium_shared_http.exception.unauthorized">Authentication required</string>
-    <string name="readium_shared_http.exception.forbidden">You are not authorized</string>
-    <string name="readium_shared_http.exception.not_found">Page not found</string>
-    <string name="readium_shared_http.exception.method_not_allowed">Method not allowed</string>
-    <string name="readium_shared_http.exception.client_error">A client error occurred</string>
-    <string name="readium_shared_http.exception.server_error">A server error occurred, please try again later</string>
-    <string name="readium_shared_http.exception.offline">Your Internet connection appears to be offline</string>
-    <string name="readium_shared_http.exception.cancelled">The request was cancelled</string>
-    <string name="readium_shared_http.exception.other">A networking error occurred</string>
-
-    <string name="readium_shared_search.exception.publication_not_searchable">This publication is not searchable</string>
-    <string name="readium_shared_search.exception.cancelled">The search was cancelled</string>
-    <string name="readium_shared_search.exception.other">An error occurred while searching</string>
 </resources>

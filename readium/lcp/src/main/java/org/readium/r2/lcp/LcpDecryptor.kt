@@ -22,6 +22,7 @@ import org.readium.r2.shared.util.getOrThrow
 import org.readium.r2.shared.util.resource.Container
 import org.readium.r2.shared.util.resource.FailureResource
 import org.readium.r2.shared.util.resource.Resource
+import org.readium.r2.shared.util.resource.ResourceError
 import org.readium.r2.shared.util.resource.ResourceTry
 import org.readium.r2.shared.util.resource.TransformingResource
 import org.readium.r2.shared.util.resource.flatMap
@@ -51,7 +52,7 @@ internal class LcpDecryptor(
             }
 
             when {
-                license == null -> FailureResource(Resource.Exception.Forbidden())
+                license == null -> FailureResource(ResourceError.Forbidden())
                 encryption.isDeflated || !encryption.isCbcEncrypted -> FullLcpResource(
                     resource,
                     encryption,

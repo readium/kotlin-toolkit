@@ -39,13 +39,13 @@ public class ReadiumWebPubParser(
         warnings: WarningLogger?
     ): Try<Publication.Builder, PublicationParser.Error> {
         if (!asset.mediaType.isReadiumWebPublication) {
-            return Try.failure(PublicationParser.Error.FormatNotSupported())
+            return Try.failure(PublicationParser.Error.UnsupportedFormat())
         }
 
         val manifestJson = asset.container
             .get(Url("manifest.json")!!)
             .readAsJson()
-            .getOrElse { return Try.failure(PublicationParser.Error.IO(it)) }
+            .getOrElse { return Try.failure(PublicationParser.Error.ResourceReading(it)) }
 
         val manifest = Manifest.fromJSON(
             manifestJson,

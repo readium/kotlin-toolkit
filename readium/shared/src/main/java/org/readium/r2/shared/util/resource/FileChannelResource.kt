@@ -6,7 +6,6 @@
 
 package org.readium.r2.shared.util.resource
 
-import java.io.File
 import java.io.FileNotFoundException
 import java.io.IOException
 import java.nio.channels.Channels
@@ -20,7 +19,6 @@ import org.readium.r2.shared.util.mediatype.MediaType
 
 internal class FileChannelResource(
     override val source: AbsoluteUrl?,
-    private val file: File?,
     private val channel: FileChannel
 ) : Resource {
 
@@ -82,7 +80,7 @@ internal class FileChannelResource(
                     check(channel.isOpen)
                     Try.success(channel.size())
                 } catch (e: IOException) {
-                    Try.failure(Resource.Exception.Unavailable(e))
+                    Try.failure(ResourceError.Unavailable(e))
                 }
             }
         }
@@ -94,13 +92,13 @@ internal class FileChannelResource(
         try {
             success(closure())
         } catch (e: FileNotFoundException) {
-            failure(Resource.Exception.NotFound(e))
+            failure(ResourceError.NotFound(e))
         } catch (e: SecurityException) {
-            failure(Resource.Exception.Forbidden(e))
+            failure(ResourceError.Forbidden(e))
         } catch (e: Exception) {
-            failure(Resource.Exception.wrap(e))
+            failure(ResourceError.Other(e))
         } catch (e: OutOfMemoryError) { // We don't want to catch any Error, only OOM.
-            failure(Resource.Exception.wrap(e))
+            failure(ResourceError.OutOfMemory(e))
         }
 
     override fun toString(): String =

@@ -59,7 +59,7 @@ public interface MediaPlayer {
          * Called when a resource failed to be loaded, for example because the Internet connection
          * is offline and the resource is streamed.
          */
-        public fun onResourceLoadFailed(link: Link, error: Resource.Exception)
+        public fun onResourceLoadFailed(link: Link, error: Resource.Error)
 
         /**
          * Creates the [NotificationMetadata] for the given resource [link].

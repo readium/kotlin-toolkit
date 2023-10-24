@@ -106,7 +106,7 @@ public open class MediaService : MediaBrowserServiceCompat(), CoroutineScope by 
      *
      * You should present the exception to the user.
      */
-    public open fun onResourceLoadFailed(link: Link, error: Resource.Exception) {
+    public open fun onResourceLoadFailed(link: Link, error: Resource.Error) {
         Toast.makeText(this, error.getUserMessage(this), Toast.LENGTH_LONG).show()
     }
 
@@ -214,7 +214,7 @@ public open class MediaService : MediaBrowserServiceCompat(), CoroutineScope by 
             this@MediaService.onPlayerStopped()
         }
 
-        override fun onResourceLoadFailed(link: Link, error: Resource.Exception) {
+        override fun onResourceLoadFailed(link: Link, error: Resource.Error) {
             this@MediaService.onResourceLoadFailed(link, error)
         }
     }

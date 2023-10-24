@@ -41,21 +41,9 @@ public interface DownloadManager {
         override val cause: org.readium.r2.shared.util.Error? = null
     ) : org.readium.r2.shared.util.Error {
 
-        public class NotFound(
-            cause: org.readium.r2.shared.util.Error? = null
-        ) : Error("File not found.", cause)
-
-        public class Unreachable(
-            cause: org.readium.r2.shared.util.Error? = null
-        ) : Error("Server is not reachable.", cause)
-
-        public class Server(
-            cause: org.readium.r2.shared.util.Error? = null
-        ) : Error("An error occurred on the server-side.", cause)
-
-        public class Forbidden(
-            cause: org.readium.r2.shared.util.Error? = null
-        ) : Error("Access to the resource was denied.", cause)
+        public class HttpError(
+            cause: org.readium.r2.shared.util.http.HttpError
+        ) : Error(cause.message, cause)
 
         public class DeviceNotFound(
             cause: org.readium.r2.shared.util.Error? = null
@@ -69,14 +57,9 @@ public interface DownloadManager {
             cause: org.readium.r2.shared.util.Error? = null
         ) : Error("There is not enough space to complete the download.", cause)
 
-        public class FileError(
-            message: String,
+        public class FileSystemError(
             cause: org.readium.r2.shared.util.Error? = null
-        ) : Error(message, cause)
-
-        public class HttpData(
-            cause: org.readium.r2.shared.util.Error? = null
-        ) : Error("A data error occurred at the HTTP level.", cause)
+        ) : Error("IO error on the local device.", cause)
 
         public class TooManyRedirects(
             cause: org.readium.r2.shared.util.Error? = null

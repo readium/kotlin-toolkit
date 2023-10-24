@@ -8,8 +8,8 @@ package org.readium.r2.shared.publication.protection
 
 import org.json.JSONObject
 import org.readium.r2.shared.InternalReadiumApi
+import org.readium.r2.shared.util.asset.AssetError
 import org.readium.r2.shared.publication.Manifest
-import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.encryption.encryption
 import org.readium.r2.shared.publication.protection.ContentProtection.Scheme
 import org.readium.r2.shared.publication.services.contentProtectionServiceFactory
@@ -36,25 +36,25 @@ public class LcpFallbackContentProtection(
     override val scheme: Scheme =
         Scheme.Lcp
 
-    override suspend fun supports(asset: org.readium.r2.shared.util.asset.Asset): Boolean =
+    override suspend fun supports(asset: Asset): Boolean =
         when (asset) {
-            is org.readium.r2.shared.util.asset.Asset.Container -> isLcpProtected(
+            is Asset.Container -> isLcpProtected(
                 asset.container,
                 asset.mediaType
             )
-            is org.readium.r2.shared.util.asset.Asset.Resource -> asset.mediaType.matches(
+            is Asset.Resource -> asset.mediaType.matches(
                 MediaType.LCP_LICENSE_DOCUMENT
             )
         }
 
     override suspend fun open(
-        asset: org.readium.r2.shared.util.asset.Asset,
+        asset: Asset,
         credentials: String?,
         allowUserInteraction: Boolean
-    ): Try<ContentProtection.Asset, Publication.OpenError> {
-        if (asset !is org.readium.r2.shared.util.asset.Asset.Container) {
+    ): Try<ContentProtection.Asset, AssetError> {
+        if (asset !is Asset.Container) {
             return Try.failure(
-                Publication.OpenError.UnsupportedAsset("A container asset was expected.")
+                AssetError.UnsupportedAsset("A container asset was expected.")
             )
         }
 

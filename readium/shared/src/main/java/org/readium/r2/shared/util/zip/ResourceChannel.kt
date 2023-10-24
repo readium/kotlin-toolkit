@@ -8,10 +8,18 @@ package org.readium.r2.shared.util.zip
 
 import java.io.IOException
 import java.nio.ByteBuffer
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
+import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.getOrThrow
 import org.readium.r2.shared.util.resource.Resource
+import org.readium.r2.shared.util.resource.ResourceError
+import org.readium.r2.shared.util.resource.ResourceTry
 import org.readium.r2.shared.util.zip.jvm.ClosedChannelException
 import org.readium.r2.shared.util.zip.jvm.NonWritableChannelException
 import org.readium.r2.shared.util.zip.jvm.SeekableByteChannel
@@ -19,6 +27,10 @@ import org.readium.r2.shared.util.zip.jvm.SeekableByteChannel
 internal class ResourceChannel(
     private val resource: Resource
 ) : SeekableByteChannel {
+
+    class ResourceException(
+        val error: ResourceError,
+    ) : IOException(error.message)
 
     private val coroutineScope: CoroutineScope =
         MainScope()
@@ -50,7 +62,7 @@ internal class ResourceChannel(
 
             withContext(Dispatchers.IO) {
                 val size = resource.length()
-                    .getOrElse { throw IOException("Content length not available.", it) }
+                    .getOrElse { throw ResourceException(it) }
 
                 if (position >= size) {
                     return@withContext -1
@@ -60,8 +72,7 @@ internal class ResourceChannel(
                 val toBeRead = dst.remaining().coerceAtMost(available.toInt())
                 check(toBeRead > 0)
                 val bytes = resource.read(position until position + toBeRead)
-                    .mapFailure { IOException(it) }
-                    .getOrThrow()
+                    .getOrElse { throw ResourceException(it) }
                 check(bytes.size == toBeRead)
                 dst.put(bytes, 0, toBeRead)
                 position += toBeRead
@@ -93,7 +104,7 @@ internal class ResourceChannel(
         }
 
         return runBlocking { resource.length() }
-            .mapFailure { IOException(it) }
+            .mapFailure { IOException(ResourceException(it)) }
             .getOrThrow()
     }
 

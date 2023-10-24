@@ -7,11 +7,13 @@ import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.extensions.read
 import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.util.AbsoluteUrl
+import org.readium.r2.shared.util.MessageError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.flatMap
 import org.readium.r2.shared.util.io.CountingInputStream
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.resource.Resource
+import org.readium.r2.shared.util.resource.ResourceError
 import org.readium.r2.shared.util.resource.ResourceTry
 
 /** Provides access to an external URL. */
@@ -34,7 +36,7 @@ public class HttpResource(
             return if (contentLength != null) {
                 Try.success(contentLength)
             } else {
-                Try.failure(Resource.Exception.Unavailable())
+                Try.failure(ResourceError.Unavailable())
             }
         }
 
@@ -51,10 +53,8 @@ public class HttpResource(
                     stream.readBytes()
                 }
             }
-        } catch (e: HttpException) {
-            Try.failure(Resource.Exception.wrapHttp(e))
         } catch (e: Exception) {
-            Try.failure(Resource.Exception.wrap(e))
+            Try.failure(ResourceError.Other(e))
         }
     }
 
@@ -67,7 +67,7 @@ public class HttpResource(
         }
 
         _headResponse = client.head(HttpRequest(source.toString()))
-            .mapFailure { Resource.Exception.wrapHttp(it) }
+            .mapFailure { ResourceError.wrapHttp(it) }
 
         return _headResponse
     }
@@ -99,14 +99,14 @@ public class HttpResource(
             .flatMap { response ->
                 if (from != null && response.response.statusCode != 206
                 ) {
-                    val exception = Exception("Server seems not to support range requests.")
-                    Try.failure(HttpException.wrap(exception))
+                    val error = MessageError("Server seems not to support range requests.")
+                    Try.failure(HttpError(HttpError.Kind.Other, cause = error))
                 } else {
                     Try.success(response)
                 }
             }
             .map { CountingInputStream(it.body) }
-            .mapFailure { Resource.Exception.wrapHttp(it) }
+            .mapFailure { ResourceError.wrapHttp(it) }
             .onSuccess {
                 inputStream = it
                 inputStreamStart = from ?: 0
@@ -116,20 +116,20 @@ public class HttpResource(
     private var inputStream: CountingInputStream? = null
     private var inputStreamStart = 0L
 
-    private fun Resource.Exception.Companion.wrapHttp(e: HttpException): Resource.Exception =
+    private fun ResourceError.Companion.wrapHttp(e: HttpError): ResourceError =
         when (e.kind) {
-            HttpException.Kind.MalformedRequest, HttpException.Kind.BadRequest, HttpException.Kind.MethodNotAllowed ->
-                Resource.Exception.BadRequest(cause = e)
-            HttpException.Kind.Timeout, HttpException.Kind.Offline ->
-                Resource.Exception.Unavailable(e)
-            HttpException.Kind.Unauthorized, HttpException.Kind.Forbidden ->
-                Resource.Exception.Forbidden(e)
-            HttpException.Kind.NotFound ->
-                Resource.Exception.NotFound(e)
-            HttpException.Kind.Cancelled ->
-                Resource.Exception.Unavailable(e)
-            HttpException.Kind.MalformedResponse, HttpException.Kind.ClientError, HttpException.Kind.ServerError, HttpException.Kind.Other ->
-                Resource.Exception.Other(e)
+            HttpError.Kind.MalformedRequest, HttpError.Kind.BadRequest, HttpError.Kind.MethodNotAllowed ->
+                ResourceError.BadRequest(cause = e)
+            HttpError.Kind.Timeout, HttpError.Kind.Offline, HttpError.Kind.TooManyRedirects ->
+                ResourceError.Unavailable(e)
+            HttpError.Kind.Unauthorized, HttpError.Kind.Forbidden ->
+                ResourceError.Forbidden(e)
+            HttpError.Kind.NotFound ->
+                ResourceError.NotFound(e)
+            HttpError.Kind.Cancelled ->
+                ResourceError.Unavailable(e)
+            HttpError.Kind.MalformedResponse, HttpError.Kind.ClientError, HttpError.Kind.ServerError, HttpError.Kind.Other ->
+                ResourceError.Other(e)
         }
 
     public companion object {

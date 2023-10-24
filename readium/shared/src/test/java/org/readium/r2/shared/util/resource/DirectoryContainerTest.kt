@@ -42,7 +42,7 @@ class DirectoryContainerTest {
     @Test
     fun `Reading a missing file returns NotFound`() {
         val resource = sut().get(Url("unknown")!!)
-        assertIs<Resource.Exception.NotFound>(resource.readBlocking().failureOrNull())
+        assertIs<ResourceError.NotFound>(resource.readBlocking().failureOrNull())
     }
 
     @Test
@@ -62,13 +62,13 @@ class DirectoryContainerTest {
     @Test
     fun `Reading a directory returns NotFound`() {
         val resource = sut().get(Url("subdirectory")!!)
-        assertIs<Resource.Exception.NotFound>(resource.readBlocking().failureOrNull())
+        assertIs<ResourceError.NotFound>(resource.readBlocking().failureOrNull())
     }
 
     @Test
     fun `Reading a file outside the allowed directory returns NotFound`() {
         val resource = sut().get(Url("../epub.epub")!!)
-        assertIs<Resource.Exception.NotFound>(resource.readBlocking().failureOrNull())
+        assertIs<ResourceError.NotFound>(resource.readBlocking().failureOrNull())
     }
 
     @Test
@@ -114,13 +114,13 @@ class DirectoryContainerTest {
     @Test
     fun `Computing a directory length returns NotFound`() {
         val resource = sut().get(Url("subdirectory")!!)
-        assertIs<Resource.Exception.NotFound>(resource.lengthBlocking().failureOrNull())
+        assertIs<ResourceError.NotFound>(resource.lengthBlocking().failureOrNull())
     }
 
     @Test
     fun `Computing the length of a missing file returns NotFound`() {
         val resource = sut().get(Url("unknown")!!)
-        assertIs<Resource.Exception.NotFound>(resource.lengthBlocking().failureOrNull())
+        assertIs<ResourceError.NotFound>(resource.lengthBlocking().failureOrNull())
     }
 
     @Test

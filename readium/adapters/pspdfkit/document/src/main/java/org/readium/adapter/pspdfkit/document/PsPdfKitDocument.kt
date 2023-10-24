@@ -24,6 +24,7 @@ import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.pdf.PdfDocument
 import org.readium.r2.shared.util.pdf.PdfDocumentFactory
 import org.readium.r2.shared.util.resource.Resource
+import org.readium.r2.shared.util.resource.ResourceError
 import org.readium.r2.shared.util.resource.ResourceTry
 import timber.log.Timber
 
@@ -42,11 +43,13 @@ public class PsPdfKitDocumentFactory(context: Context) : PdfDocumentFactory<PsPd
                     PsPdfKitDocument(PdfDocumentLoader.openDocument(context, documentSource))
                 )
             } catch (e: InvalidPasswordException) {
-                Try.failure(Resource.Exception.Forbidden(e))
+                Try.failure(ResourceError.Forbidden(e))
             } catch (e: CancellationException) {
                 throw e
-            } catch (e: Throwable) {
-                Try.failure(Resource.Exception.wrap(e))
+            } catch (e: OutOfMemoryError) {
+                Try.failure(ResourceError.OutOfMemory(e))
+            } catch (e: Exception) {
+                Try.failure(ResourceError.Other(e))
             }
         }
 }

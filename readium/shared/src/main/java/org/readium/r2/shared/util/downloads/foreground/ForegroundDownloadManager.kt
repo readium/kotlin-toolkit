@@ -22,7 +22,7 @@ import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.downloads.DownloadManager
 import org.readium.r2.shared.util.flatMap
 import org.readium.r2.shared.util.http.HttpClient
-import org.readium.r2.shared.util.http.HttpException
+import org.readium.r2.shared.util.http.HttpError
 import org.readium.r2.shared.util.http.HttpRequest
 import org.readium.r2.shared.util.http.HttpResponse
 import org.readium.r2.shared.util.http.HttpTry
@@ -87,7 +87,7 @@ public class ForegroundDownloadManager(
             }
             .onFailure { error ->
                 forEachListener(id) {
-                    onDownloadFailed(id, mapError(error))
+                    onDownloadFailed(id,  DownloadManager.Error.HttpError(error))
                 }
             }
 
@@ -148,50 +148,6 @@ public class ForegroundDownloadManager(
                 }
             }
         } catch (e: Exception) {
-            Try.failure(HttpException.wrap(e))
+            Try.failure(HttpError(HttpError.Kind.Other, cause = ThrowableError(e)))
         }
-
-    private fun mapError(httpException: HttpException): DownloadManager.Error {
-        val httpError = ThrowableError(httpException)
-        return when (httpException.kind) {
-            HttpException.Kind.MalformedRequest ->
-                DownloadManager.Error.Unknown(httpError)
-
-            HttpException.Kind.MalformedResponse ->
-                DownloadManager.Error.HttpData(httpError)
-
-            HttpException.Kind.Timeout ->
-                DownloadManager.Error.Unreachable(httpError)
-
-            HttpException.Kind.BadRequest ->
-                DownloadManager.Error.Unknown(httpError)
-
-            HttpException.Kind.Unauthorized ->
-                DownloadManager.Error.Forbidden(httpError)
-
-            HttpException.Kind.Forbidden ->
-                DownloadManager.Error.Forbidden(httpError)
-
-            HttpException.Kind.MethodNotAllowed ->
-                DownloadManager.Error.Unknown(httpError)
-
-            HttpException.Kind.NotFound ->
-                DownloadManager.Error.NotFound(httpError)
-
-            HttpException.Kind.ClientError ->
-                DownloadManager.Error.HttpData(httpError)
-
-            HttpException.Kind.ServerError ->
-                DownloadManager.Error.Server(httpError)
-
-            HttpException.Kind.Offline ->
-                DownloadManager.Error.Unreachable(httpError)
-
-            HttpException.Kind.Cancelled ->
-                DownloadManager.Error.Unknown(httpError)
-
-            HttpException.Kind.Other ->
-                DownloadManager.Error.Unknown(httpError)
-        }
-    }
 }

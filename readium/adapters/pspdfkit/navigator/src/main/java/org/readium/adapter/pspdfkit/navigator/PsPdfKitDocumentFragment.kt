@@ -69,7 +69,7 @@ public class PsPdfKitDocumentFragment internal constructor(
 ) : PdfDocumentFragment<PsPdfKitSettings>() {
 
     internal interface Listener {
-        fun onResourceLoadFailed(href: Url, error: Resource.Exception)
+        fun onResourceLoadFailed(href: Url, error: Resource.Error)
         fun onConfigurePdfView(builder: PdfConfiguration.Builder): PdfConfiguration.Builder
         fun onTap(point: PointF): Boolean
     }

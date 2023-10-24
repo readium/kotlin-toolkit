@@ -8,21 +8,22 @@ package org.readium.r2.shared.util.resource
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import androidx.annotation.StringRes
 import java.io.ByteArrayInputStream
 import java.nio.charset.Charset
 import org.json.JSONObject
-import org.readium.r2.shared.R
-import org.readium.r2.shared.UserException
+import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.util.AbsoluteUrl
+import org.readium.r2.shared.util.Error
+import org.readium.r2.shared.util.MessageError
 import org.readium.r2.shared.util.SuspendingCloseable
+import org.readium.r2.shared.util.ThrowableError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.flatMap
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.xml.ElementNode
 import org.readium.r2.shared.util.xml.XmlParser
 
-public typealias ResourceTry<SuccessT> = Try<SuccessT, Resource.Exception>
+public typealias ResourceTry<SuccessT> = Try<SuccessT, ResourceError>
 
 /**
  * Acts as a proxy to an actual resource by handling read access.
@@ -77,78 +78,85 @@ public interface Resource : SuspendingCloseable {
      * available length automatically.
      */
     public suspend fun read(range: LongRange? = null): ResourceTry<ByteArray>
+}
+
+/**
+ * Errors occurring while accessing a resource.
+ */
+public sealed class ResourceError(
+    override val message: String,
+    override val cause: Error? = null
+) : Error {
+
+    /** Equivalent to a 400 HTTP error. */
+    public class BadRequest(cause: Error? = null) :
+        ResourceError("Invalid request which can't be processed", cause) {
+
+            public constructor(exception: Exception) : this(ThrowableError(exception))
+        }
+
+    /** Equivalent to a 404 HTTP error. */
+    public class NotFound(cause: Error? = null) :
+        ResourceError("Resource not found", cause) {
+
+            public constructor(exception: Exception) : this(ThrowableError(exception))
+        }
 
     /**
-     * Errors occurring while accessing a resource.
+     * Equivalent to a 403 HTTP error.
+     *
+     * This can be returned when trying to read a resource protected with a DRM that is not
+     * unlocked.
      */
-    public sealed class Exception(@StringRes userMessageId: Int, cause: Throwable? = null) : UserException(
-        userMessageId,
-        cause = cause
-    ) {
-
-        /** Equivalent to a 400 HTTP error. */
-        public class BadRequest(cause: Throwable? = null) :
-            Exception(R.string.readium_shared_resource_exception_bad_request, cause)
-
-        /** Equivalent to a 404 HTTP error. */
-        public class NotFound(cause: Throwable? = null) :
-            Exception(R.string.readium_shared_resource_exception_not_found, cause)
-
-        /**
-         * Equivalent to a 403 HTTP error.
-         *
-         * This can be returned when trying to read a resource protected with a DRM that is not
-         * unlocked.
-         */
-        public class Forbidden(cause: Throwable? = null) :
-            Exception(R.string.readium_shared_resource_exception_forbidden, cause)
-
-        /**
-         * Equivalent to a 503 HTTP error.
-         *
-         * Used when the source can't be reached, e.g. no Internet connection, or an issue with the
-         * file system. Usually this is a temporary error.
-         */
-        public class Unavailable(cause: Throwable? = null) :
-            Exception(R.string.readium_shared_resource_exception_unavailable, cause)
-
-        /**
-         * The Internet connection appears to be offline.
-         */
-        public object Offline : Exception(R.string.readium_shared_resource_exception_offline)
-
-        /**
-         * Equivalent to a 507 HTTP error.
-         *
-         * Used when the requested range is too large to be read in memory.
-         */
-        public class OutOfMemory(override val cause: OutOfMemoryError) :
-            Exception(R.string.readium_shared_resource_exception_out_of_memory)
-
-        /** For any other error, such as HTTP 500. */
-        public class Other(cause: Throwable) : Exception(
-            R.string.readium_shared_resource_exception_other,
-            cause
-        )
-
-        public companion object {
-
-            public fun wrap(e: Throwable): Exception =
-                when (e) {
-                    is Exception -> e
-                    is OutOfMemoryError -> OutOfMemory(e)
-                    else -> Other(e)
-                }
+    public class Forbidden(cause: Error? = null) :
+        ResourceError("You are not allowed to access the resource.", cause) {
+            public constructor(exception: Exception) : this(ThrowableError(exception))
         }
+
+    /**
+     * Equivalent to a 503 HTTP error.
+     *
+     * Used when the source can't be reached, e.g. no Internet connection, or an issue with the
+     * file system. Usually this is a temporary error.
+     */
+    public class Unavailable(cause: Error? = null) :
+        ResourceError("The resource is currently unavailable, please try again later.", cause) {
+
+            public constructor(exception: Exception) : this(ThrowableError(exception))
+        }
+
+    /**
+     * The Internet connection appears to be offline.
+     */
+    public object Offline : ResourceError("The Internet connection appears to be offline.")
+
+    /**
+     * Equivalent to a 507 HTTP error.
+     *
+     * Used when the requested range is too large to be read in memory.
+     */
+    public class OutOfMemory(override val cause: ThrowableError<OutOfMemoryError>) :
+        ResourceError("The resource is too large to be read on this device.", cause) {
+
+            public constructor(error: OutOfMemoryError) : this(ThrowableError(error))
+        }
+
+    public class InvalidContent(cause: Error?)
+        : ResourceError("Content seems invalid. ", cause)
+
+    /** For any other error, such as HTTP 500. */
+    public class Other(cause: Error) : ResourceError("A service error occurred", cause) {
+
+        public constructor(exception: Exception) : this(ThrowableError(exception))
     }
+
+    internal companion object
 }
 
 /** Creates a Resource that will always return the given [error]. */
 public class FailureResource(
-    private val error: Resource.Exception
+    private val error: ResourceError
 ) : Resource {
-
-    internal constructor(cause: Throwable) : this(Resource.Exception.wrap(cause))
 
     override val source: AbsoluteUrl? = null
     override suspend fun mediaType(): ResourceTry<MediaType> = Try.failure(error)
@@ -161,51 +169,98 @@ public class FailureResource(
         "${javaClass.simpleName}($error)"
 }
 
+
 /**
  * Maps the result with the given [transform]
  *
  * If the [transform] throws an [Exception], it is wrapped in a failure with Resource.Exception.Other.
  */
-public inline fun <R, S> ResourceTry<S>.mapCatching(transform: (value: S) -> R): ResourceTry<R> =
-    try {
-        map(transform)
-    } catch (e: Exception) {
-        Try.failure(Resource.Exception.wrap(e))
-    } catch (e: OutOfMemoryError) { // We don't want to catch any Error, only OOM.
-        Try.failure(Resource.Exception.wrap(e))
-    }
+
+@Deprecated("Catch exceptions yourself to the most suitable ResourceError.", level = DeprecationLevel.ERROR,
+    replaceWith = ReplaceWith("map(transform)")
+)
+@Suppress("UnusedReceiverParameter")
+public fun <R, S> ResourceTry<S>.mapCatching(): ResourceTry<R> =
+    throw NotImplementedError()
+
 
 public inline fun <R, S> ResourceTry<S>.flatMapCatching(transform: (value: S) -> ResourceTry<R>): ResourceTry<R> =
-    mapCatching(transform).flatMap { it }
+    flatMap {
+        try {
+            transform(it)
+        } catch (e: Exception) {
+            Try.failure(ResourceError.Other(e))
+        } catch (e: OutOfMemoryError) { // We don't want to catch any Error, only OOM.
+            Try.failure(ResourceError.OutOfMemory(e))
+        }
+    }
+
+@InternalReadiumApi
+public fun<R, S> ResourceTry<S>.decode(
+    block: (value: S) -> R,
+    errorMessage: () -> String
+): ResourceTry<R> =
+    when (this) {
+        is Try.Success ->
+            try {
+                Try.success(
+                    block(value)
+                )
+            } catch (e: Exception) {
+                Try.failure(
+                    ResourceError.InvalidContent(
+                        MessageError(errorMessage())
+                    )
+                )
+            }
+        is Try.Failure ->
+            Try.failure(value)
+    }
 
 /**
  * Reads the full content as a [String].
  *
- * If [charset] is null, then it is parsed from the `charset` parameter of link().type,
- * or falls back on UTF-8.
+ * If [charset] is null, then it falls back on UTF-8.
  */
 public suspend fun Resource.readAsString(charset: Charset? = null): ResourceTry<String> =
-    read().mapCatching {
-        String(it, charset = charset ?: Charsets.UTF_8)
-    }
+    read()
+        .decode(
+            { String(it, charset = charset ?: Charsets.UTF_8) },
+            { "Content doesn't seem to be a valid string." }
+        )
 
 /**
  * Reads the full content as a JSON object.
  */
 public suspend fun Resource.readAsJson(): ResourceTry<JSONObject> =
-    readAsString(charset = Charsets.UTF_8).mapCatching { JSONObject(it) }
+    readAsString(charset = Charsets.UTF_8)
+        .decode(
+            {  JSONObject(it) },
+            { "Content doesn't seem to be valid JSON." }
+        )
+
 
 /**
  * Reads the full content as an XML document.
  */
 public suspend fun Resource.readAsXml(): ResourceTry<ElementNode> =
-    read().mapCatching { XmlParser().parse(ByteArrayInputStream(it)) }
+    read()
+        .decode(
+            {  XmlParser().parse(ByteArrayInputStream(it)) },
+            { "Content doesn't seem to be valid XML." }
+    )
 
 /**
  * Reads the full content as a [Bitmap].
  */
 public suspend fun Resource.readAsBitmap(): ResourceTry<Bitmap> =
-    read().mapCatching {
-        BitmapFactory.decodeByteArray(it, 0, it.size)
-            ?: throw kotlin.Exception("Could not decode resource as a bitmap")
-    }
+    read()
+        .flatMap { bytes ->
+            BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+                ?.let { Try.success(it) }
+                ?: Try.failure(
+                    ResourceError.InvalidContent(
+                        MessageError("Could not decode resource as a bitmap.")
+                    )
+                )
+        }

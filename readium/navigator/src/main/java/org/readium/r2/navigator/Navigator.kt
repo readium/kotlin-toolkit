@@ -59,7 +59,7 @@ public interface Navigator {
         /**
          * Called when a publication resource failed to be loaded.
          */
-        public fun onResourceLoadFailed(href: Url, error: Resource.Exception) {}
+        public fun onResourceLoadFailed(href: Url, error: Resource.Error) {}
 
         /**
          * Called when the navigator jumps to an explicit location, which might break the linear

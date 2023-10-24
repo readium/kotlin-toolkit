@@ -200,17 +200,17 @@ public class ExoMediaPlayer(
         }
 
         override fun onPlayerError(error: PlaybackException) {
-            var resourceException: Resource.Exception? = error.asInstance<Resource.Exception>()
-            if (resourceException == null && (error.cause as? HttpDataSource.HttpDataSourceException)?.cause is UnknownHostException) {
-                resourceException = Resource.Exception.Offline
+            var resourceError: Resource.Error? = error.asInstance<Resource.Error>()
+            if (resourceError == null && (error.cause as? HttpDataSource.HttpDataSourceException)?.cause is UnknownHostException) {
+                resourceError = Resource.Error.Offline
             }
 
-            if (resourceException != null) {
+            if (resourceError != null) {
                 player.currentMediaItem?.mediaId
                     ?.let { Url(it) }
                     ?.let { href -> publication.linkWithHref(href) }
                     ?.let { link ->
-                        listener?.onResourceLoadFailed(link, resourceException)
+                        listener?.onResourceLoadFailed(link, resourceError)
                     }
             } else {
                 Timber.e(error)

@@ -40,7 +40,7 @@ public class PdfiumDocumentFragment internal constructor(
 ) : PdfDocumentFragment<PdfiumSettings>() {
 
     internal interface Listener {
-        fun onResourceLoadFailed(href: Url, error: Resource.Exception)
+        fun onResourceLoadFailed(href: Url, error: Resource.Error)
         fun onConfigurePdfView(configurator: PDFView.Configurator)
         fun onTap(point: PointF): Boolean
     }

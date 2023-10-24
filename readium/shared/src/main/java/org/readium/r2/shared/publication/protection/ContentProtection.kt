@@ -12,6 +12,7 @@ package org.readium.r2.shared.publication.protection
 import androidx.annotation.StringRes
 import org.readium.r2.shared.R
 import org.readium.r2.shared.UserException
+import org.readium.r2.shared.util.asset.AssetError
 import org.readium.r2.shared.publication.LocalizedString
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.services.ContentProtectionService
@@ -47,7 +48,7 @@ public interface ContentProtection {
         asset: org.readium.r2.shared.util.asset.Asset,
         credentials: String?,
         allowUserInteraction: Boolean
-    ): Try<Asset, Publication.OpenError>
+    ): Try<Asset, AssetError>
 
     /**
      * Holds the result of opening an [Asset] with a [ContentProtection].

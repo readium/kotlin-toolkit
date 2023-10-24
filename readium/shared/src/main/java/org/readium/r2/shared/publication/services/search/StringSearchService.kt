@@ -20,9 +20,10 @@ import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.publication.services.positionsByReadingOrder
 import org.readium.r2.shared.publication.services.search.SearchService.Options
+import org.readium.r2.shared.util.ThrowableError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
-import org.readium.r2.shared.util.getOrThrow
+import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.resource.Container
 import org.readium.r2.shared.util.resource.content.DefaultResourceContentExtractorFactory
 import org.readium.r2.shared.util.resource.content.ResourceContentExtractor
@@ -86,7 +87,7 @@ public class StringSearchService(
                 )
             )
         } catch (e: Exception) {
-            Try.failure(SearchException.wrap(e))
+            Try.failure(SearchError.Other(ThrowableError(e)))
         }
 
     private inner class Iterator(
@@ -116,7 +117,9 @@ public class StringSearchService(
                 val link = manifest.readingOrder[index]
                 val text =
                     container.get(link.url())
-                        .let { extractorFactory.createExtractor(it)?.extractText(it)?.getOrThrow() }
+                        .let { extractorFactory.createExtractor(it)?.extractText(it) }
+                        ?.getOrElse { return Try.failure(SearchError.ResourceError(it)) }
+
                 if (text == null) {
                     Timber.w("Cannot extract text from resource: ${link.href}")
                     return next()
@@ -133,7 +136,7 @@ public class StringSearchService(
 
                 return Try.success(LocatorCollection(locators = locators))
             } catch (e: Exception) {
-                return Try.failure(SearchException.wrap(e))
+                return Try.failure(SearchError.Other(ThrowableError(e)))
             }
         }
 

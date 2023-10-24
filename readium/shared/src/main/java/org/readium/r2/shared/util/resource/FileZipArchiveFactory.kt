@@ -64,9 +64,9 @@ public class FileZipArchiveFactory(
             } catch (e: ZipException) {
                 Try.failure(ArchiveFactory.Error.FormatNotSupported(e))
             } catch (e: SecurityException) {
-                Try.failure(ArchiveFactory.Error.ResourceReading(Resource.Exception.Forbidden(e)))
+                Try.failure(ArchiveFactory.Error.ResourceReading(ResourceError.Forbidden(e)))
             } catch (e: Exception) {
-                Try.failure(ArchiveFactory.Error.ResourceReading(Resource.Exception.wrap(e)))
+                Try.failure(ArchiveFactory.Error.ResourceReading(ResourceError.Other(e)))
             }
         }
 }

@@ -13,7 +13,7 @@ import org.readium.r2.shared.publication.protection.AdeptFallbackContentProtecti
 import org.readium.r2.shared.publication.protection.ContentProtection
 import org.readium.r2.shared.publication.protection.LcpFallbackContentProtection
 import org.readium.r2.shared.util.Try
-import org.readium.r2.shared.util.asset.Asset
+import org.readium.r2.shared.util.asset.AssetError
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.http.DefaultHttpClient
 import org.readium.r2.shared.util.http.HttpClient
@@ -21,7 +21,7 @@ import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.mediatype.FormatRegistry
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 import org.readium.r2.shared.util.pdf.PdfDocumentFactory
-import org.readium.r2.shared.util.resource.Resource
+import org.readium.r2.shared.util.resource.ResourceError
 import org.readium.r2.streamer.parser.PublicationParser
 import org.readium.r2.streamer.parser.audio.AudioParser
 import org.readium.r2.streamer.parser.epub.EpubParser
@@ -29,7 +29,7 @@ import org.readium.r2.streamer.parser.image.ImageParser
 import org.readium.r2.streamer.parser.pdf.PdfParser
 import org.readium.r2.streamer.parser.readium.ReadiumWebPubParser
 
-internal typealias PublicationTry<SuccessT> = Try<SuccessT, Publication.OpenError>
+internal typealias PublicationTry<SuccessT> = Try<SuccessT, AssetError>
 
 /**
  * Opens a Publication using a list of parsers.
@@ -162,7 +162,7 @@ public class PublicationFactory(
         asset: Asset,
         onCreatePublication: Publication.Builder.() -> Unit,
         warnings: WarningLogger?
-    ): Try<Publication, Publication.OpenError> {
+    ): Try<Publication, AssetError> {
         val parserAsset = parserAssetFactory.createParserAsset(asset)
             .getOrElse { return Try.failure(it) }
         return openParserAsset(parserAsset, onCreatePublication, warnings)
@@ -175,11 +175,11 @@ public class PublicationFactory(
         allowUserInteraction: Boolean,
         onCreatePublication: Publication.Builder.() -> Unit,
         warnings: WarningLogger?
-    ): Try<Publication, Publication.OpenError> {
+    ): Try<Publication, AssetError> {
         val protectedAsset = contentProtections[contentProtectionScheme]
             ?.open(asset, credentials, allowUserInteraction)
             ?.getOrElse { return Try.failure(it) }
-            ?: return Try.failure(Publication.OpenError.Forbidden())
+            ?: return Try.failure(AssetError.Forbidden())
 
         val parserAsset = PublicationParser.Asset(
             protectedAsset.mediaType,
@@ -198,7 +198,7 @@ public class PublicationFactory(
         publicationAsset: PublicationParser.Asset,
         onCreatePublication: Publication.Builder.() -> Unit = {},
         warnings: WarningLogger? = null
-    ): Try<Publication, Publication.OpenError> {
+    ): Try<Publication, AssetError> {
         val builder = parse(publicationAsset, warnings)
             .getOrElse { return Try.failure(wrapParserException(it)) }
 
@@ -216,34 +216,32 @@ public class PublicationFactory(
             val result = parser.parse(publicationAsset, warnings)
             if (
                 result is Try.Success ||
-                result is Try.Failure && result.value !is PublicationParser.Error.FormatNotSupported
+                result is Try.Failure && result.value !is PublicationParser.Error.UnsupportedFormat
             ) {
                 return result
             }
         }
-        return Try.failure(PublicationParser.Error.FormatNotSupported())
+        return Try.failure(PublicationParser.Error.UnsupportedFormat())
     }
 
-    private fun wrapParserException(e: PublicationParser.Error): Publication.OpenError =
+    private fun wrapParserException(e: PublicationParser.Error): AssetError =
         when (e) {
-            is PublicationParser.Error.FormatNotSupported ->
-                Publication.OpenError.UnsupportedAsset("Cannot find a parser for this asset")
-            is PublicationParser.Error.IO ->
-                when (e.resourceError) {
-                    is Resource.Exception.BadRequest, is Resource.Exception.Other ->
-                        Publication.OpenError.Unknown(e)
-                    is Resource.Exception.Forbidden ->
-                        Publication.OpenError.Forbidden(e)
-                    is Resource.Exception.NotFound ->
-                        Publication.OpenError.InvalidAsset(e)
-                    is Resource.Exception.OutOfMemory ->
-                        Publication.OpenError.OutOfMemory(e)
-                    is Resource.Exception.Unavailable, is Resource.Exception.Offline ->
-                        Publication.OpenError.Unavailable(e)
+            is PublicationParser.Error.UnsupportedFormat ->
+                AssetError.UnsupportedAsset("Cannot find a parser for this asset")
+            is PublicationParser.Error.ResourceReading ->
+                when (e.cause) {
+                    is ResourceError.BadRequest, is ResourceError.Other ->
+                        AssetError.Unknown(e)
+                    is ResourceError.Forbidden ->
+                        AssetError.Forbidden(e)
+                    is ResourceError.NotFound ->
+                        AssetError.InvalidAsset(e)
+                    is ResourceError.OutOfMemory ->
+                        AssetError.OutOfMemory(e)
+                    is ResourceError.Unavailable, is ResourceError.Offline ->
+                        AssetError.Unavailable(e)
                 }
-            is PublicationParser.Error.OutOfMemory ->
-                Publication.OpenError.OutOfMemory(e)
             is PublicationParser.Error.ParsingFailed ->
-                Publication.OpenError.InvalidAsset(e)
+                AssetError.InvalidAsset(e)
         }
 }

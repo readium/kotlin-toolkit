@@ -6,19 +6,13 @@
 
 package org.readium.r2.shared.util.http
 
-import android.content.Context
-import androidx.annotation.StringRes
-import java.net.MalformedURLException
-import java.net.SocketTimeoutException
-import java.util.concurrent.CancellationException
 import org.json.JSONObject
-import org.readium.r2.shared.R
-import org.readium.r2.shared.UserException
 import org.readium.r2.shared.extensions.tryOrLog
+import org.readium.r2.shared.util.Error
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.mediatype.MediaType
 
-public typealias HttpTry<SuccessT> = Try<SuccessT, HttpException>
+public typealias HttpTry<SuccessT> = Try<SuccessT, HttpError>
 
 /**
  * Represents an error occurring during an HTTP activity.
@@ -28,52 +22,55 @@ public typealias HttpTry<SuccessT> = Try<SuccessT, HttpException>
  * @param body Response body.
  * @param cause Underlying error, if any.
  */
-public class HttpException(
+public class HttpError(
     public val kind: Kind,
     public val mediaType: MediaType? = null,
     public val body: ByteArray? = null,
-    cause: Throwable? = null
-) : UserException(kind.userMessageId, cause = cause) {
+    public override val cause: Error? = null
+) : Error {
 
-    public enum class Kind(@StringRes public val userMessageId: Int) {
+    public enum class Kind(public val message: String) {
         /** The provided request was not valid. */
-        MalformedRequest(R.string.readium_shared_http_exception_malformed_request),
+        MalformedRequest("The provided request was not valid."),
 
         /** The received response couldn't be decoded. */
-        MalformedResponse(R.string.readium_shared_http_exception_malformed_response),
+        MalformedResponse("The received response could not be decoded."),
 
         /** The client, server or gateways timed out. */
-        Timeout(R.string.readium_shared_http_exception_timeout),
+        Timeout("Request timed out."),
 
         /** (400) The server cannot or will not process the request due to an apparent client error. */
-        BadRequest(R.string.readium_shared_http_exception_bad_request),
+        BadRequest("The provided request was not valid."),
 
         /** (401) Authentication is required and has failed or has not yet been provided. */
-        Unauthorized(R.string.readium_shared_http_exception_unauthorized),
+        Unauthorized("Authentication required."),
 
         /** (403) The server refuses the action, probably because we don't have the necessary permissions. */
-        Forbidden(R.string.readium_shared_http_exception_forbidden),
+        Forbidden("You are not authorized."),
 
         /** (404) The requested resource could not be found. */
-        NotFound(R.string.readium_shared_http_exception_not_found),
+        NotFound("Page not found."),
 
         /** (405) Method not allowed. */
-        MethodNotAllowed(R.string.readium_shared_http_exception_method_not_allowed),
+        MethodNotAllowed("Method not allowed."),
 
         /** (4xx) Other client errors */
-        ClientError(R.string.readium_shared_http_exception_client_error),
+        ClientError("A client error occurred."),
 
         /** (5xx) Server errors */
-        ServerError(R.string.readium_shared_http_exception_server_error),
+        ServerError("A server error occurred, please try again later."),
 
         /** The device is offline. */
-        Offline(R.string.readium_shared_http_exception_offline),
+        Offline("Your Internet connection appears to be offline."),
+
+        /** Too many redirects */
+        TooManyRedirects("There were too many redirects to follow."),
 
         /** The request was cancelled. */
-        Cancelled(R.string.readium_shared_http_exception_cancelled),
+        Cancelled("The request was cancelled."),
 
         /** An error whose kind is not recognized. */
-        Other(R.string.readium_shared_http_exception_other);
+        Other("A networking error occurred.");
 
         public companion object {
 
@@ -94,25 +91,8 @@ public class HttpException(
         }
     }
 
-    override fun getUserMessage(context: Context, includesCauses: Boolean): String {
-        problemDetails?.let { error ->
-            var message = error.title
-            if (error.detail != null) {
-                message += "\n" + error.detail
-            }
-            return message
-        }
-
-        return super.getUserMessage(context, includesCauses)
-    }
-
-    override fun getLocalizedMessage(): String {
-        var message = "HTTP error: ${kind.name}"
-        problemDetails?.let { details ->
-            message += ": ${details.title} ${details.detail}"
-        }
-        return message
-    }
+    override val message: String
+        get() = kind.message
 
     /** Response body parsed as a JSON problem details. */
     public val problemDetails: ProblemDetails? by lazy {
@@ -128,7 +108,7 @@ public class HttpException(
         /**
          * Shortcut for a cancelled HTTP error.
          */
-        public val CANCELLED: HttpException = HttpException(kind = Kind.Cancelled)
+        public val CANCELLED: HttpError = HttpError(kind = Kind.Cancelled)
 
         /**
          * Creates an HTTP error from a status code.
@@ -139,24 +119,9 @@ public class HttpException(
             statusCode: Int,
             mediaType: MediaType? = null,
             body: ByteArray? = null
-        ): HttpException? =
+        ): HttpError? =
             Kind.ofStatusCode(statusCode)?.let { kind ->
-                HttpException(kind, mediaType, body)
+                HttpError(kind, mediaType, body)
             }
-
-        /**
-         * Creates an HTTP error from a generic exception.
-         */
-        public fun wrap(cause: Throwable): HttpException {
-            val kind = when (cause) {
-                is HttpException -> return cause
-                is MalformedURLException -> Kind.MalformedRequest
-                is CancellationException -> Kind.Cancelled
-                is SocketTimeoutException -> Kind.Timeout
-                else -> Kind.Other
-            }
-
-            return HttpException(kind = kind, cause = cause)
-        }
     }
 }

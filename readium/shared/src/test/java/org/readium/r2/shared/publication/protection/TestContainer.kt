@@ -35,16 +35,16 @@ class TestContainer(resources: Map<Url, String> = emptyMap()) : Container {
         override val source: AbsoluteUrl? = null
 
         override suspend fun mediaType(): ResourceTry<MediaType> =
-            Try.failure(Resource.Exception.NotFound())
+            Try.failure(Resource.Error.NotFound())
 
         override suspend fun properties(): ResourceTry<Resource.Properties> =
-            Try.failure(Resource.Exception.NotFound())
+            Try.failure(Resource.Error.NotFound())
 
         override suspend fun length(): ResourceTry<Long> =
-            Try.failure(Resource.Exception.NotFound())
+            Try.failure(Resource.Error.NotFound())
 
         override suspend fun read(range: LongRange?): ResourceTry<ByteArray> =
-            Try.failure(Resource.Exception.NotFound())
+            Try.failure(Resource.Error.NotFound())
 
         override suspend fun close() {
         }

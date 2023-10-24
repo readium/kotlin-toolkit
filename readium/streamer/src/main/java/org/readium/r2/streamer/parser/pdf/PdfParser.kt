@@ -38,7 +38,7 @@ public class PdfParser(
         warnings: WarningLogger?
     ): Try<Publication.Builder, PublicationParser.Error> {
         if (asset.mediaType != MediaType.PDF) {
-            return Try.failure(PublicationParser.Error.FormatNotSupported())
+            return Try.failure(PublicationParser.Error.UnsupportedFormat())
         }
 
         val resource = asset.container.entries()?.firstOrNull()
@@ -47,7 +47,7 @@ public class PdfParser(
             )
         val document = pdfFactory.open(resource, password = null)
             .getOrElse {
-                return Try.failure(PublicationParser.Error.IO(it))
+                return Try.failure(PublicationParser.Error.ResourceReading(it))
             }
         val tableOfContents = document.outline.toLinks(resource.url)
 

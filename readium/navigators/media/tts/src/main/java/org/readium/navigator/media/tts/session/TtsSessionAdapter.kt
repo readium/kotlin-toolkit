@@ -43,6 +43,7 @@ import org.readium.navigator.media.tts.TtsEngine
 import org.readium.navigator.media.tts.TtsPlayer
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.resource.Resource
+import java.lang.Error
 
 /**
  * Adapts the [TtsPlayer] to media3 [Player] interface.
@@ -919,31 +920,31 @@ internal class TtsSessionAdapter<E : TtsEngine.Error>(
     private fun TtsPlayer.State.Error.toPlaybackException(): PlaybackException = when (this) {
         is TtsPlayer.State.Error.EngineError<*> -> mapEngineError(error as E)
         is TtsPlayer.State.Error.ContentError -> when (exception) {
-            is Resource.Exception.BadRequest ->
+            is ResourceError.BadRequest ->
                 PlaybackException(exception.message, exception.cause, ERROR_CODE_IO_BAD_HTTP_STATUS)
-            is Resource.Exception.NotFound ->
+            is ResourceError.NotFound ->
                 PlaybackException(exception.message, exception.cause, ERROR_CODE_IO_BAD_HTTP_STATUS)
-            is Resource.Exception.Forbidden ->
+            is ResourceError.Forbidden ->
                 PlaybackException(
                     exception.message,
                     exception.cause,
                     ERROR_CODE_DRM_DISALLOWED_OPERATION
                 )
-            is Resource.Exception.Unavailable ->
+            is ResourceError.Unavailable ->
                 PlaybackException(
                     exception.message,
                     exception.cause,
                     ERROR_CODE_IO_NETWORK_CONNECTION_FAILED
                 )
-            is Resource.Exception.Offline ->
+            is ResourceError.Offline ->
                 PlaybackException(
                     exception.message,
                     exception.cause,
                     ERROR_CODE_IO_NETWORK_CONNECTION_FAILED
                 )
-            is Resource.Exception.OutOfMemory ->
+            is ResourceError.OutOfMemory ->
                 PlaybackException(exception.message, exception.cause, ERROR_CODE_UNSPECIFIED)
-            is Resource.Exception.Other ->
+            is ResourceError.Other ->
                 PlaybackException(exception.message, exception.cause, ERROR_CODE_UNSPECIFIED)
             else ->
                 PlaybackException(exception.message, exception.cause, ERROR_CODE_UNSPECIFIED)

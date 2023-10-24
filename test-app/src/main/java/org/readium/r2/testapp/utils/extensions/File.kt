@@ -20,7 +20,7 @@ import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.asset.AssetRetriever
 import org.readium.r2.shared.util.flatMap
 import org.readium.r2.shared.util.http.HttpClient
-import org.readium.r2.shared.util.http.HttpException
+import org.readium.r2.shared.util.http.HttpError
 import org.readium.r2.shared.util.http.HttpRequest
 import org.readium.r2.shared.util.http.HttpResponse
 import org.readium.r2.shared.util.http.HttpTry
@@ -87,5 +87,5 @@ private suspend fun HttpClient.download(
             }
         }
     } catch (e: Exception) {
-        Try.failure(HttpException.wrap(e))
+        Try.failure(HttpError.wrap(e))
     }

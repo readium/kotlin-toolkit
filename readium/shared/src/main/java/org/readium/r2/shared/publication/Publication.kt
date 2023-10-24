@@ -28,13 +28,12 @@ import org.readium.r2.shared.publication.services.WebPositionsService
 import org.readium.r2.shared.publication.services.content.ContentService
 import org.readium.r2.shared.publication.services.search.SearchService
 import org.readium.r2.shared.util.Closeable
-import org.readium.r2.shared.util.Error
-import org.readium.r2.shared.util.ThrowableError
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.resource.Container
 import org.readium.r2.shared.util.resource.EmptyContainer
 import org.readium.r2.shared.util.resource.Resource
+import org.readium.r2.shared.util.resource.ResourceError
 import org.readium.r2.shared.util.resource.ResourceTry
 import org.readium.r2.shared.util.resource.fallback
 
@@ -209,7 +208,7 @@ public class Publication(
 
         return container.get(href)
             .fallback { error ->
-                if (error is Resource.Exception.NotFound) {
+                if (error is ResourceError.NotFound) {
                     // Try again after removing query and fragment.
                     container.get(href.removeQuery().removeFragment())
                 } else {
@@ -494,80 +493,6 @@ public class Publication(
     }
 
     /**
-     * Errors occurring while opening a Publication.
-     */
-    public sealed class OpenError(
-        override val message: String,
-        override val cause: Error? = null
-    ) : Error {
-
-        /**
-         * The file format could not be recognized by any parser.
-         */
-        public class UnsupportedAsset(
-            message: String,
-            cause: Error?
-        ) : OpenError(message, cause) {
-            public constructor(message: String) : this(message, null)
-            public constructor(cause: Error? = null) : this("Asset is not supported.", cause)
-        }
-
-        /**
-         * The publication parsing failed with the given underlying error.
-         */
-        public class InvalidAsset(
-            message: String,
-            cause: Error? = null
-        ) : OpenError(message, cause) {
-            public constructor(cause: Error?) : this(
-                "The asset seems corrupted so the publication cannot be opened.",
-                cause
-            )
-        }
-
-        /**
-         * The publication file was not found on the file system.
-         */
-        public class NotFound(cause: Error? = null) :
-            OpenError("Asset could not be found.", cause)
-
-        /**
-         * We're not allowed to open the publication at all, for example because it expired.
-         */
-        public class Forbidden(cause: Error? = null) :
-            OpenError("You are not allowed to open this publication.", cause)
-
-        /**
-         * The publication can't be opened at the moment, for example because of a networking error.
-         * This error is generally temporary, so the operation may be retried or postponed.
-         */
-        public class Unavailable(cause: Error? = null) :
-            OpenError("The publication is not available at the moment.", cause)
-
-        /**
-         * The provided credentials are incorrect and we can't open the publication in a
-         * `restricted` state (e.g. for a password-protected ZIP).
-         */
-        public class IncorrectCredentials(cause: Error? = null) :
-            OpenError("Provided credentials were incorrect.", cause)
-
-        /**
-         * Opening the publication exceeded the available device memory.
-         */
-        public class OutOfMemory(cause: Error? = null) :
-            OpenError("There is not enough memory available to open the publication.", cause)
-
-        /**
-         * An unexpected error occurred.
-         */
-        public class Unknown(cause: Error? = null) :
-            OpenError("An unexpected error occurred.", cause) {
-
-            public constructor(exception: Exception) : this(ThrowableError(exception))
-        }
-    }
-
-    /**
      * Builds a Publication from its components.
      *
      * A Publication's construction is distributed over the Streamer and its parsers,
@@ -630,10 +555,10 @@ public class Publication(
         level = DeprecationLevel.ERROR
     )
     @Suppress("UNUSED_PARAMETER")
-    public fun resource(href: String): Link? = throw NotImplementedError()
+    public fun resource(href: String): Link = throw NotImplementedError()
 
     @Deprecated("Refactored as a property", ReplaceWith("baseUrl"), level = DeprecationLevel.ERROR)
-    public fun baseUrl(): URL? = throw NotImplementedError()
+    public fun baseUrl(): URL = throw NotImplementedError()
 
     @Deprecated(
         "Renamed [subcollections]",
@@ -658,7 +583,7 @@ public class Publication(
         level = DeprecationLevel.ERROR
     )
     @Suppress("UNUSED_PARAMETER")
-    public fun resourceWithHref(href: String): Link? = throw NotImplementedError()
+    public fun resourceWithHref(href: String): Link = throw NotImplementedError()
 
     @Deprecated(
         "Use a [ServiceFactory] for a [PositionsService] instead.",

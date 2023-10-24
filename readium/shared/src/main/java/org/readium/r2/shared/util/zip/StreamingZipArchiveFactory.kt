@@ -57,8 +57,8 @@ public class StreamingZipArchiveFactory(
             val zipFile = ZipFile(channel, true)
             val channelZip = ChannelZipContainer(zipFile, resource.source, mediaTypeRetriever)
             Try.success(channelZip)
-        } catch (e: Resource.Exception) {
-            Try.failure(ArchiveFactory.Error.ResourceReading(e))
+        } catch (e: ResourceChannel.ResourceException) {
+            Try.failure(ArchiveFactory.Error.ResourceReading(e.error))
         } catch (e: Exception) {
             Try.failure(ArchiveFactory.Error.FormatNotSupported(e))
         }

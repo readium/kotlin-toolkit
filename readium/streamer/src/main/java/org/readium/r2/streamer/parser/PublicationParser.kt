@@ -8,12 +8,11 @@ package org.readium.r2.streamer.parser
 
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.util.MessageError
-import org.readium.r2.shared.util.ThrowableError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.resource.Container
-import org.readium.r2.shared.util.resource.Resource
+import org.readium.r2.shared.util.resource.ResourceError
 
 /**
  *  Parses a Publication from an asset.
@@ -48,7 +47,7 @@ public interface PublicationParser {
 
     public sealed class Error : org.readium.r2.shared.util.Error {
 
-        public class FormatNotSupported : Error() {
+        public class UnsupportedFormat : Error() {
 
             override val message: String =
                 "Asset format not supported."
@@ -65,23 +64,12 @@ public interface PublicationParser {
                 "An error occurred while parsing the publication."
         }
 
-        public class IO(
-            public val resourceError: Resource.Exception
+        public class ResourceReading(
+            override val cause: ResourceError
         ) : Error() {
 
             override val message: String =
                 "An IO error occurred."
-
-            override val cause: org.readium.r2.shared.util.Error =
-                ThrowableError(resourceError)
-        }
-
-        public class OutOfMemory(
-            override val cause: org.readium.r2.shared.util.Error?
-        ) : Error() {
-
-            override val message: String =
-                "There is not enough memory on the device to parse the publication."
         }
     }
 }

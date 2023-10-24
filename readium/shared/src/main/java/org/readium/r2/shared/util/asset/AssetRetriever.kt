@@ -36,6 +36,7 @@ import org.readium.r2.shared.util.resource.DirectoryContainerFactory
 import org.readium.r2.shared.util.resource.FileResourceFactory
 import org.readium.r2.shared.util.resource.FileZipArchiveFactory
 import org.readium.r2.shared.util.resource.Resource
+import org.readium.r2.shared.util.resource.ResourceError
 import org.readium.r2.shared.util.resource.ResourceFactory
 import org.readium.r2.shared.util.resource.ResourceMediaTypeSnifferContent
 import org.readium.r2.shared.util.toUrl
@@ -124,8 +125,8 @@ public class AssetRetriever(
                 ThrowableError(error)
             )
 
-        public class Unknown(exception: Exception) :
-            Error("Something unexpected happened.", ThrowableError(exception))
+        public class Unknown(error: SharedError) :
+            Error("Something unexpected happened.", error)
     }
 
     /**
@@ -162,7 +163,7 @@ public class AssetRetriever(
                                     error
                                 )
                             is ArchiveFactory.Error.ResourceReading ->
-                                error.resourceException.wrap(url)
+                                error.cause.wrap(url)
                             is ArchiveFactory.Error.PasswordsNotSupported ->
                                 Error.ArchiveFormatNotSupported(
                                     error
@@ -231,26 +232,26 @@ public class AssetRetriever(
             }
     }
 
-    private fun Resource.Exception.wrap(url: AbsoluteUrl): Error =
+    private fun ResourceError.wrap(url: AbsoluteUrl): Error =
         when (this) {
-            is Resource.Exception.Forbidden ->
+            is ResourceError.Forbidden ->
                 Error.Forbidden(
                     url,
                     this
                 )
-            is Resource.Exception.NotFound ->
+            is ResourceError.NotFound ->
                 Error.InvalidAsset(
                     this
                 )
-            is Resource.Exception.Unavailable, Resource.Exception.Offline ->
+            is ResourceError.Unavailable, ResourceError.Offline ->
                 Error.Unavailable(
                     this
                 )
-            is Resource.Exception.OutOfMemory ->
+            is ResourceError.OutOfMemory ->
                 Error.OutOfMemory(
-                    cause
+                    cause.throwable
                 )
-            is Resource.Exception.Other ->
+            is ResourceError.Other ->
                 Error.Unknown(
                     this
                 )

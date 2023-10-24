@@ -65,20 +65,20 @@ public data class ArchiveProperties(
     }
 }
 
-private const val archiveKey = "archive"
+private const val ARCHIVE_KEY = "archive"
 
 public val Resource.Properties.archive: ArchiveProperties?
-    get() = (this[archiveKey] as? Map<*, *>)
+    get() = (this[ARCHIVE_KEY] as? Map<*, *>)
         ?.let { ArchiveProperties.fromJSON(JSONObject(it)) }
 
 public var Resource.Properties.Builder.archive: ArchiveProperties?
-    get() = (this[archiveKey] as? Map<*, *>)
+    get() = (this[ARCHIVE_KEY] as? Map<*, *>)
         ?.let { ArchiveProperties.fromJSON(JSONObject(it)) }
     set(value) {
         if (value == null) {
-            remove(archiveKey)
+            remove(ARCHIVE_KEY)
         } else {
-            put(archiveKey, value.toJSON().toMap())
+            put(ARCHIVE_KEY, value.toJSON().toMap())
         }
     }
 
@@ -101,13 +101,13 @@ internal class JavaZipContainer(
             )
 
         override suspend fun properties(): ResourceTry<Resource.Properties> =
-            Try.failure(Resource.Exception.NotFound())
+            Try.failure(ResourceError.NotFound())
 
         override suspend fun length(): ResourceTry<Long> =
-            Try.failure(Resource.Exception.NotFound())
+            Try.failure(ResourceError.NotFound())
 
         override suspend fun read(range: LongRange?): ResourceTry<ByteArray> =
-            Try.failure(Resource.Exception.NotFound())
+            Try.failure(ResourceError.NotFound())
 
         override suspend fun close() {
         }
@@ -136,10 +136,10 @@ internal class JavaZipContainer(
                 }
             )
 
-        override suspend fun length(): Try<Long, Resource.Exception> =
+        override suspend fun length(): Try<Long, ResourceError> =
             entry.size.takeUnless { it == -1L }
                 ?.let { Try.success(it) }
-                ?: Try.failure(Resource.Exception.Other(Exception("Unsupported operation")))
+                ?: Try.failure(ResourceError.Other(Exception("Unsupported operation")))
 
         private val compressedLength: Long? =
             if (entry.method == ZipEntry.STORED || entry.method == -1) {
@@ -148,7 +148,7 @@ internal class JavaZipContainer(
                 entry.compressedSize.takeUnless { it == -1L }
             }
 
-        override suspend fun read(range: LongRange?): Try<ByteArray, Resource.Exception> =
+        override suspend fun read(range: LongRange?): Try<ByteArray, ResourceError> =
             try {
                 withContext(Dispatchers.IO) {
                     val bytes =
@@ -160,9 +160,9 @@ internal class JavaZipContainer(
                     Try.success(bytes)
                 }
             } catch (e: IOException) {
-                Try.failure(Resource.Exception.Unavailable(e))
+                Try.failure(ResourceError.Unavailable(e))
             } catch (e: Exception) {
-                Try.failure(Resource.Exception.wrap(e))
+                Try.failure(ResourceError.Other(e))
             }
 
         private suspend fun readFully(): ByteArray =

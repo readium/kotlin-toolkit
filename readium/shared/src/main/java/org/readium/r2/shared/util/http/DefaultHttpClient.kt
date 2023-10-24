@@ -11,13 +11,18 @@ import java.io.ByteArrayInputStream
 import java.io.FileInputStream
 import java.io.InputStream
 import java.net.HttpURLConnection
+import java.net.MalformedURLException
+import java.net.SocketTimeoutException
 import java.net.URL
+import java.util.concurrent.CancellationException
 import kotlin.time.Duration
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.extensions.joinValues
 import org.readium.r2.shared.extensions.lowerCaseKeys
+import org.readium.r2.shared.util.ThrowableError
 import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.e
 import org.readium.r2.shared.util.flatMap
 import org.readium.r2.shared.util.http.HttpRequest.Method
 import org.readium.r2.shared.util.mediatype.BytesResourceMediaTypeSnifferContent
@@ -93,9 +98,9 @@ public class DefaultHttpClient(
          * You can return either:
          *   - a new recovery request to start
          *   - the [error] argument, if you cannot recover from it
-         *   - a new [HttpException] to provide additional information
+         *   - a new [HttpError] to provide additional information
          */
-        public suspend fun onRecoverRequest(request: HttpRequest, error: HttpException): HttpTry<HttpRequest> =
+        public suspend fun onRecoverRequest(request: HttpRequest, error: HttpError): HttpTry<HttpRequest> =
             Try.failure(error)
 
         /**
@@ -109,14 +114,14 @@ public class DefaultHttpClient(
          * You can return either:
          *   - the provided [newRequest] to proceed with the redirection
          *   - a different redirection request
-         *   - a [HttpException.CANCELLED] error to abort the redirection
+         *   - a [HttpError.CANCELLED] error to abort the redirection
          */
         public suspend fun onFollowUnsafeRedirect(
             request: HttpRequest,
             response: HttpResponse,
             newRequest: HttpRequest
         ): HttpTry<HttpRequest> =
-            Try.failure(HttpException.CANCELLED)
+            Try.failure(HttpError.CANCELLED)
 
         /**
          * Called when the HTTP client received an HTTP response for the given [request].
@@ -135,7 +140,7 @@ public class DefaultHttpClient(
          *
          * This will be called only if [onRecoverRequest] is not implemented, or returns an error.
          */
-        public suspend fun onRequestFailed(request: HttpRequest, error: HttpException) {}
+        public suspend fun onRequestFailed(request: HttpRequest, error: HttpError) {}
     }
 
     // We are using Dispatchers.IO but we still get this warning...
@@ -148,7 +153,7 @@ public class DefaultHttpClient(
                     var connection = request.toHttpURLConnection()
 
                     val statusCode = connection.responseCode
-                    HttpException.Kind.ofStatusCode(statusCode)?.let { kind ->
+                    HttpError.Kind.ofStatusCode(statusCode)?.let { kind ->
                         // It was a HEAD request? We need to query the resource again to get the error body.
                         // The body is needed for example when the response is an OPDS Authentication
                         // Document.
@@ -169,7 +174,7 @@ public class DefaultHttpClient(
                                 content = BytesResourceMediaTypeSnifferContent { it }
                             )
                         }
-                        throw HttpException(kind, mediaType, body)
+                        return@withContext Try.failure(HttpError(kind, mediaType, body))
                     }
 
                     val mediaType = mediaTypeRetriever.retrieve(MediaTypeHints(connection))
@@ -195,14 +200,14 @@ public class DefaultHttpClient(
                         )
                     }
                 } catch (e: Exception) {
-                    Try.failure(HttpException.wrap(e))
+                    Try.failure(wrap(e))
                 }
             }
 
         return callback.onStartRequest(request)
             .flatMap { tryStream(it) }
             .tryRecover { error ->
-                if (error.kind != HttpException.Kind.Cancelled) {
+                if (error.kind != HttpError.Kind.Cancelled) {
                     callback.onRecoverRequest(request, error)
                         .flatMap { stream(it) }
                 } else {
@@ -230,11 +235,11 @@ public class DefaultHttpClient(
         // > https://www.rfc-editor.org/rfc/rfc1945.html#section-9.3
         val redirectCount = request.extras.getInt(EXTRA_REDIRECT_COUNT)
         if (redirectCount > 5) {
-            return Try.failure(HttpException.CANCELLED)
+            return Try.failure(HttpError(HttpError.Kind.TooManyRedirects))
         }
 
         val location = response.header("Location")
-            ?: return Try.failure(HttpException(kind = HttpException.Kind.MalformedResponse))
+            ?: return Try.failure(HttpError(kind = HttpError.Kind.MalformedResponse))
 
         val newRequest = HttpRequest(
             url = location,
@@ -307,6 +312,20 @@ public class DefaultHttpClient(
             @Suppress("SENSELESS_COMPARISON")
             key == null || value == null
         }
+}
+
+/**
+ * Creates an HTTP error from a generic exception.
+ */
+private fun wrap(cause: Throwable): HttpError {
+    val kind = when (cause) {
+        is MalformedURLException -> HttpError.Kind.MalformedRequest
+        is CancellationException -> HttpError.Kind.Cancelled
+        is SocketTimeoutException -> HttpError.Kind.Timeout
+        else -> HttpError.Kind.Other
+    }
+
+    return HttpError(kind = kind, cause = ThrowableError(cause))
 }
 
 /**

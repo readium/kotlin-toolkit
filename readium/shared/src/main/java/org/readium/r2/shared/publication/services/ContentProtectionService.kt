@@ -26,6 +26,7 @@ import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.resource.FailureResource
 import org.readium.r2.shared.util.resource.LazyResource
 import org.readium.r2.shared.util.resource.Resource
+import org.readium.r2.shared.util.resource.ResourceError
 import org.readium.r2.shared.util.resource.StringResource
 
 /**
@@ -300,13 +301,13 @@ private sealed class RouteHandler {
             val query = url.query
             val text = query.firstNamedOrNull("text")
                 ?: return FailureResource(
-                    Resource.Exception.BadRequest(
+                    ResourceError.BadRequest(
                         IllegalArgumentException("'text' parameter is required")
                     )
                 )
             val peek = (query.firstNamedOrNull("peek") ?: "false").toBooleanOrNull()
                 ?: return FailureResource(
-                    Resource.Exception.BadRequest(
+                    ResourceError.BadRequest(
                         IllegalArgumentException("if present, 'peek' must be true or false")
                     )
                 )
@@ -314,7 +315,7 @@ private sealed class RouteHandler {
             val copyAllowed = with(service.rights) { if (peek) canCopy(text) else copy(text) }
 
             return if (!copyAllowed) {
-                FailureResource(Resource.Exception.Forbidden())
+                FailureResource(ResourceError.Forbidden())
             } else {
                 StringResource("true", MediaType.JSON)
             }
@@ -340,20 +341,20 @@ private sealed class RouteHandler {
             val query = url.query
             val pageCountString = query.firstNamedOrNull("pageCount")
                 ?: return FailureResource(
-                    Resource.Exception.BadRequest(
+                    ResourceError.BadRequest(
                         IllegalArgumentException("'pageCount' parameter is required")
                     )
                 )
 
             val pageCount = pageCountString.toIntOrNull()?.takeIf { it >= 0 }
                 ?: return FailureResource(
-                    Resource.Exception.BadRequest(
+                    ResourceError.BadRequest(
                         IllegalArgumentException("'pageCount' must be a positive integer")
                     )
                 )
             val peek = (query.firstNamedOrNull("peek") ?: "false").toBooleanOrNull()
                 ?: return FailureResource(
-                    Resource.Exception.BadRequest(
+                    ResourceError.BadRequest(
                         IllegalArgumentException("if present, 'peek' must be true or false")
                     )
                 )
@@ -369,7 +370,7 @@ private sealed class RouteHandler {
             }
 
             return if (!printAllowed) {
-                FailureResource(Resource.Exception.Forbidden())
+                FailureResource(ResourceError.Forbidden())
             } else {
                 StringResource("true", mediaType = MediaType.JSON)
             }

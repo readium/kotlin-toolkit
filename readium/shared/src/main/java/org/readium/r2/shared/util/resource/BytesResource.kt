@@ -10,13 +10,14 @@ import kotlinx.coroutines.runBlocking
 import org.readium.r2.shared.extensions.read
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.getOrThrow
 import org.readium.r2.shared.util.mediatype.MediaType
 
 public sealed class BaseBytesResource(
     override val source: AbsoluteUrl?,
     private val mediaType: MediaType,
     private val properties: Resource.Properties,
-    protected val bytes: suspend () -> Try<ByteArray, Resource.Exception>
+    protected val bytes: suspend () -> Try<ByteArray, ResourceError>
 ) : Resource {
 
     override suspend fun properties(): ResourceTry<Resource.Properties> =
@@ -28,7 +29,7 @@ public sealed class BaseBytesResource(
     override suspend fun length(): ResourceTry<Long> =
         read().map { it.size.toLong() }
 
-    private lateinit var _bytes: Try<ByteArray, Resource.Exception>
+    private lateinit var _bytes: Try<ByteArray, ResourceError>
 
     override suspend fun read(range: LongRange?): ResourceTry<ByteArray> {
         if (!::_bytes.isInitialized) {
@@ -92,5 +93,5 @@ public class StringResource(
         this(source = url, mediaType = mediaType, properties = properties, { Try.success(string) })
 
     override fun toString(): String =
-        "${javaClass.simpleName}(${runBlocking { readAsString() }})"
+        "${javaClass.simpleName}(${runBlocking { read().getOrThrow().decodeToString() } }})"
 }

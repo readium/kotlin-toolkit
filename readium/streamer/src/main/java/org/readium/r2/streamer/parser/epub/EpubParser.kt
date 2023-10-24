@@ -45,14 +45,14 @@ public class EpubParser(
         warnings: WarningLogger?
     ): Try<Publication.Builder, PublicationParser.Error> {
         if (asset.mediaType != MediaType.EPUB) {
-            return Try.failure(PublicationParser.Error.FormatNotSupported())
+            return Try.failure(PublicationParser.Error.UnsupportedFormat())
         }
 
         val opfPath = getRootFilePath(asset.container)
             .getOrElse { return Try.failure(it) }
         val opfResource = asset.container.get(opfPath)
         val opfXmlDocument = opfResource.readAsXml()
-            .getOrElse { return Try.failure(PublicationParser.Error.IO(it)) }
+            .getOrElse { return Try.failure(PublicationParser.Error.ResourceReading(it)) }
         val packageDocument = PackageDocument.parse(opfXmlDocument, opfPath, mediaTypeRetriever)
             ?: return Try.failure(PublicationParser.Error.ParsingFailed("Invalid OPF file."))
 
@@ -95,7 +95,7 @@ public class EpubParser(
         container
             .get(Url("META-INF/container.xml")!!)
             .use { it.readAsXml() }
-            .getOrElse { return Try.failure(PublicationParser.Error.IO(it)) }
+            .getOrElse { return Try.failure(PublicationParser.Error.ResourceReading(it)) }
             .getFirst("rootfiles", Namespaces.OPC)
             ?.getFirst("rootfile", Namespaces.OPC)
             ?.getAttr("full-path")

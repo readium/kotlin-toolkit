@@ -6,6 +6,9 @@
 
 package org.readium.r2.shared.util
 
+import org.readium.r2.shared.InternalReadiumApi
+import timber.log.Timber
+
 /**
  * Describes an error.
  */
@@ -33,8 +36,8 @@ public class MessageError(
 /**
  * An error caused by the catch of a throwable.
  */
-public class ThrowableError(
-    public val throwable: Throwable
+public class ThrowableError<E: Throwable>(
+    public val throwable: E
 ) : Error {
     override val message: String = throwable.message ?: throwable.toString()
     override val cause: Error? = null
@@ -46,3 +49,20 @@ public class ThrowableError(
 public class ErrorException(
     public val error: Error
 ) : Exception(error.message)
+
+public fun <S, F : Error> Try<S, F>.getOrThrow(): S =
+    when (this) {
+        is Try.Success -> value
+        is Try.Failure -> throw Exception("Try was excepted to contain a success.")
+    }
+
+//FIXME: to improve
+@InternalReadiumApi
+public fun Timber.Forest.e(error: Error, message: String? = null) {
+    Timber.e(Exception(error.message), message)
+}
+
+@InternalReadiumApi
+public fun Timber.Forest.w(error: Error, message: String? = null) {
+    Timber.w(Exception(error.message), message)
+}

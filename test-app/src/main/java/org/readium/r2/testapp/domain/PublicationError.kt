@@ -8,7 +8,7 @@ package org.readium.r2.testapp.domain
 
 import androidx.annotation.StringRes
 import org.readium.r2.shared.UserException
-import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.util.asset.AssetError
 import org.readium.r2.shared.util.Error
 import org.readium.r2.shared.util.asset.AssetRetriever
 import org.readium.r2.testapp.R
@@ -45,23 +45,23 @@ sealed class PublicationError(@StringRes userMessageId: Int) : UserException(use
 
     companion object {
 
-        operator fun invoke(error: Publication.OpenError): PublicationError =
+        operator fun invoke(error: AssetError): PublicationError =
             when (error) {
-                is Publication.OpenError.Forbidden ->
+                is AssetError.Forbidden ->
                     Forbidden(error)
-                is Publication.OpenError.IncorrectCredentials ->
+                is AssetError.IncorrectCredentials ->
                     IncorrectCredentials(error)
-                is Publication.OpenError.NotFound ->
+                is AssetError.NotFound ->
                     NotFound(error)
-                is Publication.OpenError.OutOfMemory ->
+                is AssetError.OutOfMemory ->
                     OutOfMemory(error)
-                is Publication.OpenError.InvalidAsset ->
+                is AssetError.InvalidAsset ->
                     InvalidPublication(error)
-                is Publication.OpenError.Unavailable ->
+                is AssetError.Unavailable ->
                     Unavailable(error)
-                is Publication.OpenError.Unknown ->
+                is AssetError.Unknown ->
                     Unexpected(error)
-                is Publication.OpenError.UnsupportedAsset ->
+                is AssetError.UnsupportedAsset ->
                     UnsupportedAsset(error)
             }
 

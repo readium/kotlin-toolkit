@@ -7,7 +7,7 @@
 package org.readium.r2.shared.publication.protection
 
 import org.readium.r2.shared.InternalReadiumApi
-import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.util.asset.AssetError
 import org.readium.r2.shared.publication.protection.ContentProtection.Scheme
 import org.readium.r2.shared.publication.services.contentProtectionServiceFactory
 import org.readium.r2.shared.util.Try
@@ -27,8 +27,8 @@ public class AdeptFallbackContentProtection : ContentProtection {
 
     override val scheme: Scheme = Scheme.Adept
 
-    override suspend fun supports(asset: org.readium.r2.shared.util.asset.Asset): Boolean {
-        if (asset !is org.readium.r2.shared.util.asset.Asset.Container) {
+    override suspend fun supports(asset: Asset): Boolean {
+        if (asset !is Asset.Container) {
             return false
         }
 
@@ -36,13 +36,13 @@ public class AdeptFallbackContentProtection : ContentProtection {
     }
 
     override suspend fun open(
-        asset: org.readium.r2.shared.util.asset.Asset,
+        asset: Asset,
         credentials: String?,
         allowUserInteraction: Boolean
-    ): Try<ContentProtection.Asset, Publication.OpenError> {
-        if (asset !is org.readium.r2.shared.util.asset.Asset.Container) {
+    ): Try<ContentProtection.Asset, AssetError> {
+        if (asset !is Asset.Container) {
             return Try.failure(
-                Publication.OpenError.UnsupportedAsset("A container asset was expected.")
+                AssetError.UnsupportedAsset("A container asset was expected.")
             )
         }
 
@@ -58,7 +58,7 @@ public class AdeptFallbackContentProtection : ContentProtection {
         return Try.success(protectedFile)
     }
 
-    private suspend fun isAdept(asset: org.readium.r2.shared.util.asset.Asset.Container): Boolean {
+    private suspend fun isAdept(asset: Asset.Container): Boolean {
         if (!asset.mediaType.matches(MediaType.EPUB)) {
             return false
         }
