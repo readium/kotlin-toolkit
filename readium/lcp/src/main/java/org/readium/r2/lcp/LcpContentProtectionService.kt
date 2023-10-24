@@ -27,6 +27,10 @@ public class LcpContentProtectionService(
 
     override val scheme: ContentProtection.Scheme = ContentProtection.Scheme.Lcp
 
+    override fun close() {
+        license?.close()
+    }
+
     public companion object {
 
         public fun createFactory(license: LcpLicense?, error: LcpException?): (

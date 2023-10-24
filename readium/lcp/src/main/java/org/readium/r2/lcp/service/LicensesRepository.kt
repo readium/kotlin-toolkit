@@ -9,6 +9,7 @@
 
 package org.readium.r2.lcp.service
 
+import kotlinx.coroutines.flow.Flow
 import org.readium.r2.lcp.license.model.LicenseDocument
 import org.readium.r2.lcp.persistence.LcpDao
 import org.readium.r2.lcp.persistence.License
@@ -27,19 +28,17 @@ internal class LicensesRepository(private val lcpDao: LcpDao) {
         lcpDao.addLicense(license)
     }
 
-    fun copiesLeft(licenseId: String): Int? {
-        return lcpDao.getCopiesLeft(licenseId)
+    fun copiesLeft(licenseId: String): Flow<Int?> {
+        return lcpDao.copiesLeftFlow(licenseId)
     }
 
-    fun setCopiesLeft(quantity: Int, licenseId: String) {
-        lcpDao.setCopiesLeft(quantity, licenseId)
+    suspend fun tryCopy(quantity: Int, licenseId: String): Boolean =
+        lcpDao.tryCopy(quantity, licenseId)
+
+    fun printsLeft(licenseId: String): Flow<Int?> {
+        return lcpDao.printsLeftFlow(licenseId)
     }
 
-    fun printsLeft(licenseId: String): Int? {
-        return lcpDao.getPrintsLeft(licenseId)
-    }
-
-    fun setPrintsLeft(quantity: Int, licenseId: String) {
-        lcpDao.setPrintsLeft(quantity, licenseId)
-    }
+    suspend fun tryPrint(quantity: Int, licenseId: String): Boolean =
+        lcpDao.tryPrint(quantity, licenseId)
 }

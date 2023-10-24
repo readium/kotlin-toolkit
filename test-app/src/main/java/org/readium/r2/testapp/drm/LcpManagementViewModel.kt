@@ -36,13 +36,13 @@ class LcpManagementViewModel(
     override val state: String?
         get() = lcpLicense.status?.status?.value
 
-    override val provider: String?
+    override val provider: String
         get() = lcpLicense.license.provider
 
-    override val issued: Date?
+    override val issued: Date
         get() = lcpLicense.license.issued
 
-    override val updated: Date?
+    override val updated: Date
         get() = lcpLicense.license.updated
 
     override val start: Date?
@@ -52,12 +52,12 @@ class LcpManagementViewModel(
         get() = lcpLicense.license.rights.end
 
     override val copiesLeft: String =
-        lcpLicense.charactersToCopyLeft
+        lcpLicense.charactersToCopyLeft.value
             ?.let { "$it characters" }
             ?: super.copiesLeft
 
     override val printsLeft: String =
-        lcpLicense.pagesToPrintLeft
+        lcpLicense.pagesToPrintLeft.value
             ?.let { "$it pages" }
             ?: super.printsLeft
 

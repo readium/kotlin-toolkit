@@ -10,12 +10,14 @@ import java.net.URL
 import java.util.*
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.joda.time.DateTime
 import org.readium.r2.lcp.license.model.LicenseDocument
 import org.readium.r2.lcp.license.model.StatusDocument
 import org.readium.r2.shared.publication.services.ContentProtectionService
+import org.readium.r2.shared.util.Closeable
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import timber.log.Timber
@@ -23,7 +25,7 @@ import timber.log.Timber
 /**
  * Opened license, used to decipher a protected publication and manage its license.
  */
-public interface LcpLicense : ContentProtectionService.UserRights {
+public interface LcpLicense : ContentProtectionService.UserRights, Closeable {
 
     /**
      * License Document information.
@@ -40,12 +42,12 @@ public interface LcpLicense : ContentProtectionService.UserRights {
     /**
      * Number of remaining characters allowed to be copied by the user. If null, there's no limit.
      */
-    public val charactersToCopyLeft: Int?
+    public val charactersToCopyLeft: StateFlow<Int?>
 
     /**
      * Number of pages allowed to be printed by the user. If null, there's no limit.
      */
-    public val pagesToPrintLeft: Int?
+    public val pagesToPrintLeft: StateFlow<Int?>
 
     /**
      * Can the user renew the loaned publication?

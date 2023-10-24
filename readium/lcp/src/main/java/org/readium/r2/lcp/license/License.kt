@@ -12,7 +12,12 @@ package org.readium.r2.lcp.license
 import java.net.HttpURLConnection
 import java.util.*
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.withContext
 import org.readium.r2.lcp.BuildConfig.DEBUG
 import org.readium.r2.lcp.LcpException
@@ -32,13 +37,48 @@ import org.readium.r2.shared.util.getOrThrow
 import org.readium.r2.shared.util.mediatype.MediaType
 import timber.log.Timber
 
-internal class License(
+internal class License private constructor(
+    private val coroutineScope: CoroutineScope,
     private var documents: ValidatedDocuments,
     private val validation: LicenseValidation,
     private val licenses: LicensesRepository,
     private val device: DeviceService,
-    private val network: NetworkService
+    private val network: NetworkService,
+    private val printsLeft: StateFlow<Int?>,
+    private val copiesLeft: StateFlow<Int?>
 ) : LcpLicense {
+
+    companion object {
+
+        suspend operator fun invoke(
+            documents: ValidatedDocuments,
+            validation: LicenseValidation,
+            licenses: LicensesRepository,
+            device: DeviceService,
+            network: NetworkService
+        ): License {
+            val coroutineScope = MainScope()
+
+            val printsLeft = licenses
+                .printsLeft(documents.license.id)
+                .stateIn(coroutineScope)
+
+            val copiesLeft = licenses
+                .copiesLeft(documents.license.id)
+                .stateIn(coroutineScope)
+
+            return License(
+                coroutineScope = coroutineScope,
+                documents = documents,
+                validation = validation,
+                licenses = licenses,
+                device = device,
+                network = network,
+                printsLeft = printsLeft,
+                copiesLeft = copiesLeft
+            )
+        }
+    }
 
     override val license: LicenseDocument
         get() = documents.license
@@ -62,73 +102,42 @@ internal class License(
         }
     }
 
-    override val charactersToCopyLeft: Int?
-        get() {
-            try {
-                val charactersLeft = licenses.copiesLeft(license.id)
-                if (charactersLeft != null) {
-                    return charactersLeft
-                }
-            } catch (error: Error) {
-                if (DEBUG) Timber.e(error)
-            }
-            return null
-        }
+    override val charactersToCopyLeft: StateFlow<Int?>
+        get() = copiesLeft
 
     override val canCopy: Boolean
-        get() = (charactersToCopyLeft ?: 1) > 0
+        get() = (charactersToCopyLeft.value ?: 1) > 0
 
     override fun canCopy(text: String): Boolean =
-        charactersToCopyLeft?.let { it <= text.length }
+        charactersToCopyLeft.value?.let { it <= text.length }
             ?: true
 
-    override fun copy(text: String): Boolean {
-        var charactersLeft = charactersToCopyLeft ?: return true
-        if (text.length > charactersLeft) {
-            return false
+    override suspend fun copy(text: String): Boolean {
+        return try {
+            licenses.tryCopy(text.length, license.id)
+        } catch (e: Exception) {
+            if (DEBUG) Timber.e(e)
+            false
         }
-
-        try {
-            charactersLeft = maxOf(0, charactersLeft - text.length)
-            licenses.setCopiesLeft(charactersLeft, license.id)
-        } catch (error: Error) {
-            if (DEBUG) Timber.e(error)
-        }
-        return true
     }
 
-    override val pagesToPrintLeft: Int?
-        get() {
-            try {
-                val pagesLeft = licenses.printsLeft(license.id)
-                if (pagesLeft != null) {
-                    return pagesLeft
-                }
-            } catch (error: Error) {
-                if (DEBUG) Timber.e(error)
-            }
-            return null
-        }
+    override val pagesToPrintLeft: StateFlow<Int?> =
+        printsLeft
 
     override val canPrint: Boolean
-        get() = (pagesToPrintLeft ?: 1) > 0
+        get() = (pagesToPrintLeft.value ?: 1) > 0
 
     override fun canPrint(pageCount: Int): Boolean =
-        pagesToPrintLeft?.let { it <= pageCount }
+        pagesToPrintLeft.value?.let { it <= pageCount }
             ?: true
 
-    override fun print(pageCount: Int): Boolean {
-        var pagesLeft = pagesToPrintLeft ?: return true
-        if (pagesLeft < pageCount) {
-            return false
+    override suspend fun print(pageCount: Int): Boolean {
+        return try {
+            licenses.tryPrint(pageCount, license.id)
+        } catch (e: Exception) {
+            if (DEBUG) Timber.e(e)
+            false
         }
-        try {
-            pagesLeft = maxOf(0, pagesLeft - pageCount)
-            licenses.setPrintsLeft(pagesLeft, license.id)
-        } catch (error: Error) {
-            if (DEBUG) Timber.e(error)
-        }
-        return true
     }
 
     override val canRenewLoan: Boolean
@@ -261,6 +270,9 @@ internal class License(
         }
     }
 
+    private fun validateStatusDocument(data: ByteArray): Unit =
+        validation.validate(LicenseValidation.Document.status(data)) { _, _ -> }
+
     init {
         LicenseValidation.observe(validation) { documents, _ ->
             documents?.let {
@@ -269,6 +281,7 @@ internal class License(
         }
     }
 
-    private fun validateStatusDocument(data: ByteArray): Unit =
-        validation.validate(LicenseValidation.Document.status(data)) { _, _ -> }
+    override fun close() {
+        coroutineScope.cancel()
+    }
 }

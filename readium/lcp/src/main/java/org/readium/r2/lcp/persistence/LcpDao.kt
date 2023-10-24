@@ -4,6 +4,8 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Transaction
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 internal interface LcpDao {
@@ -49,20 +51,62 @@ internal interface LcpDao {
     @Query(
         "SELECT ${License.RIGHTCOPY} FROM ${License.TABLE_NAME} WHERE ${License.LICENSE_ID} = :licenseId"
     )
-    fun getCopiesLeft(licenseId: String): Int?
+    suspend fun getCopiesLeft(licenseId: String): Int?
+
+    @Query(
+        "SELECT ${License.RIGHTCOPY} FROM ${License.TABLE_NAME} WHERE ${License.LICENSE_ID} = :licenseId"
+    )
+    fun copiesLeftFlow(licenseId: String): Flow<Int?>
 
     @Query(
         "UPDATE ${License.TABLE_NAME} SET ${License.RIGHTCOPY} = :quantity WHERE ${License.LICENSE_ID} = :licenseId"
     )
-    fun setCopiesLeft(quantity: Int, licenseId: String)
+    suspend fun setCopiesLeft(quantity: Int, licenseId: String)
+
+    @Transaction
+    suspend fun tryCopy(quantity: Int, licenseId: String): Boolean {
+        require(quantity >= 0)
+        val copiesLeft = getCopiesLeft(licenseId)
+        return when {
+            copiesLeft == null ->
+                true
+            copiesLeft < quantity ->
+                false
+            else -> {
+                setCopiesLeft(copiesLeft - quantity, licenseId)
+                return true
+            }
+        }
+    }
 
     @Query(
         "SELECT ${License.RIGHTPRINT} FROM ${License.TABLE_NAME} WHERE ${License.LICENSE_ID} = :licenseId"
     )
-    fun getPrintsLeft(licenseId: String): Int?
+    suspend fun getPrintsLeft(licenseId: String): Int?
+
+    @Query(
+        "SELECT ${License.RIGHTPRINT} FROM ${License.TABLE_NAME} WHERE ${License.LICENSE_ID} = :licenseId"
+    )
+    fun printsLeftFlow(licenseId: String): Flow<Int?>
 
     @Query(
         "UPDATE ${License.TABLE_NAME} SET ${License.RIGHTPRINT} = :quantity WHERE ${License.LICENSE_ID} = :licenseId"
     )
-    fun setPrintsLeft(quantity: Int, licenseId: String)
+    suspend fun setPrintsLeft(quantity: Int, licenseId: String)
+
+    @Transaction
+    suspend fun tryPrint(quantity: Int, licenseId: String): Boolean {
+        require(quantity >= 0)
+        val printLeft = getPrintsLeft(licenseId)
+        return when {
+            printLeft == null ->
+                true
+            printLeft < quantity ->
+                false
+            else -> {
+                setPrintsLeft(printLeft - quantity, licenseId)
+                return true
+            }
+        }
+    }
 }
