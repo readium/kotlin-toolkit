@@ -13,6 +13,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.util.MessageError
 import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 
 /**
@@ -22,9 +23,27 @@ public class FileZipArchiveFactory(
     private val mediaTypeRetriever: MediaTypeRetriever
 ) : ArchiveFactory {
 
-    override suspend fun create(resource: Resource, password: String?): Try<Container, ArchiveFactory.Error> {
+    override suspend fun create(resource: Resource, password: String?): Container? {
+        if (password != null) {
+            return null
+        }
+
+        return resource.source?.toFile()
+            ?.let { open(it) }
+            ?.getOrNull()
+    }
+
+    override suspend fun create(
+        resource: Resource,
+        password: String?,
+        mediaType: MediaType
+    ): Try<Container, ArchiveFactory.Error> {
         if (password != null) {
             return Try.failure(ArchiveFactory.Error.PasswordsNotSupported())
+        }
+
+        if (!mediaType.isZip) {
+            return Try.failure(ArchiveFactory.Error.FormatNotSupported())
         }
 
         return resource.source?.toFile()

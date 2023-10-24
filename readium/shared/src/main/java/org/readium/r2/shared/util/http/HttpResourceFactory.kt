@@ -8,6 +8,7 @@ package org.readium.r2.shared.util.http
 
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.shared.util.resource.ResourceFactory
 
@@ -15,7 +16,19 @@ public class HttpResourceFactory(
     private val httpClient: HttpClient
 ) : ResourceFactory {
 
-    override suspend fun create(url: AbsoluteUrl): Try<Resource, ResourceFactory.Error> {
+    override suspend fun create(url: AbsoluteUrl): Resource? {
+        if (!url.isHttp) {
+            return null
+        }
+
+        // FIXME: should make a head request to check that url points to a resource
+        return HttpResource(httpClient, url)
+    }
+
+    override suspend fun create(
+        url: AbsoluteUrl,
+        mediaType: MediaType
+    ): Try<Resource, ResourceFactory.Error> {
         if (!url.isHttp) {
             return Try.failure(ResourceFactory.Error.SchemeNotSupported(url.scheme))
         }

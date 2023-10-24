@@ -11,10 +11,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.extensions.isParentOf
 import org.readium.r2.shared.extensions.tryOr
+import org.readium.r2.shared.extensions.tryOrNull
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.RelativeUrl
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 
 /**
@@ -22,7 +24,6 @@ import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
  */
 internal class DirectoryContainer(
     private val root: File,
-    private val entries: List<File>,
     private val mediaTypeRetriever: MediaTypeRetriever
 ) : Container {
 
@@ -32,11 +33,24 @@ internal class DirectoryContainer(
         override suspend fun close() {}
     }
 
-    override suspend fun entries(): Set<Container.Entry> =
-        entries.mapNotNull { file ->
-            Url.fromDecodedPath(file.relativeTo(root).path)
-                ?.let { url -> FileEntry(url, file) }
-        }.toSet()
+    private val _entries: Set<Container.Entry>? by lazy {
+        tryOrNull {
+            root.walk()
+                .filter { it.isFile }
+                .mapNotNull { it.toEntry() }
+                .toSet()
+        }
+    }
+
+    private fun File.toEntry(): Container.Entry? =
+        Url.fromDecodedPath(this.relativeTo(root).path)
+            ?.let { url -> FileEntry(url, this) }
+
+    override suspend fun entries(): Set<Container.Entry>? {
+        return withContext(Dispatchers.IO) {
+            _entries
+        }
+    }
 
     override fun get(url: Url): Container.Entry {
         val file = (url as? RelativeUrl)?.path
@@ -56,31 +70,30 @@ public class DirectoryContainerFactory(
     private val mediaTypeRetriever: MediaTypeRetriever
 ) : ContainerFactory {
 
-    override suspend fun create(url: AbsoluteUrl): Try<Container, ContainerFactory.Error> {
+    override suspend fun create(url: AbsoluteUrl): Container? {
         val file = url.toFile()
-            ?: return Try.failure(ContainerFactory.Error.SchemeNotSupported(url.scheme))
+            ?: return null
 
         if (!tryOr(false) { file.isDirectory }) {
-            return Try.failure(ContainerFactory.Error.NotAContainer(url))
+            return null
         }
+
+        return create(file).getOrNull()
+    }
+
+    override suspend fun create(
+        url: AbsoluteUrl,
+        mediaType: MediaType
+    ): Try<Container, ContainerFactory.Error> {
+        val file = url.toFile()
+            ?: return Try.failure(ContainerFactory.Error.SchemeNotSupported(url.scheme))
 
         return create(file)
     }
 
     // Internal for testing purpose
     internal suspend fun create(file: File): Try<Container, ContainerFactory.Error> {
-        val entries =
-            try {
-                withContext(Dispatchers.IO) {
-                    file.walk()
-                        .filter { it.isFile }
-                        .toList()
-                }
-            } catch (e: Exception) {
-                return Try.failure(ContainerFactory.Error.Forbidden(e))
-            }
-
-        val container = DirectoryContainer(file, entries, mediaTypeRetriever)
+        val container = DirectoryContainer(file, mediaTypeRetriever)
 
         return Try.success(container)
     }

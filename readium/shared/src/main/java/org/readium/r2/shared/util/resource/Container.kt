@@ -76,7 +76,7 @@ public class ResourceContainer(url: Url, resource: Resource) : Container {
     }
 }
 
-/** Convenience helper to wrap a [Resource] and a [path] into a [Container.Entry]. */
+/** Convenience helper to wrap a [Resource] and a [url] into a [Container.Entry]. */
 internal fun Resource.toEntry(url: Url): Container.Entry =
     object : Container.Entry, Resource by this {
         override val url: Url = url

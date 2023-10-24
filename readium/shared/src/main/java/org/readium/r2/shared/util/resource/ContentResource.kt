@@ -28,12 +28,24 @@ public class ContentResourceFactory(
     private val contentResolver: ContentResolver
 ) : ResourceFactory {
 
-    override suspend fun create(url: AbsoluteUrl): Try<Resource, ResourceFactory.Error> {
+    override suspend fun create(url: AbsoluteUrl): Resource? {
+        if (!url.isContent) {
+            return null
+        }
+
+        // FIXME: should check if uri points t o a file
+        return ContentResource(url.toUri(), contentResolver)
+    }
+
+    override suspend fun create(
+        url: AbsoluteUrl,
+        mediaType: MediaType
+    ): Try<Resource, ResourceFactory.Error> {
         if (!url.isContent) {
             return Try.failure(ResourceFactory.Error.SchemeNotSupported(url.scheme))
         }
 
-        val resource = ContentResource(url.toUri(), contentResolver)
+        val resource = ContentResource(url.toUri(), contentResolver, mediaType)
 
         return Try.success(resource)
     }
@@ -42,9 +54,10 @@ public class ContentResourceFactory(
 /**
  * A [Resource] to access content [uri] thanks to a [ContentResolver].
  */
-public class ContentResource(
+public class ContentResource internal constructor(
     private val uri: Uri,
-    private val contentResolver: ContentResolver
+    private val contentResolver: ContentResolver,
+    private val mediaType: MediaType? = null
 ) : Resource {
 
     private lateinit var _length: ResourceTry<Long>
@@ -55,7 +68,11 @@ public class ContentResource(
         ResourceTry.success(Resource.Properties())
 
     override suspend fun mediaType(): ResourceTry<MediaType> =
-        Try.success(contentResolver.getType(uri)?.let { MediaType(it) } ?: MediaType.BINARY)
+        Try.success(
+            mediaType
+                ?: contentResolver.getType(uri)?.let { MediaType(it) }
+                ?: MediaType.BINARY
+        )
 
     override suspend fun close() {
     }
