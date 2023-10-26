@@ -21,6 +21,8 @@ import org.readium.r2.shared.extensions.queryProjection
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Either
 import org.readium.r2.shared.util.Error as SharedError
+import org.readium.r2.shared.util.FilesystemError
+import org.readium.r2.shared.util.NetworkError
 import org.readium.r2.shared.util.ThrowableError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
@@ -111,13 +113,11 @@ public class AssetRetriever(
             public constructor(url: AbsoluteUrl, exception: Exception) :
                 this(url, ThrowableError(exception))
         }
+        public class Network(public override val cause: NetworkError) :
+            Error("A network error occurred.", cause)
 
-        public class Unavailable(cause: SharedError) :
-            Error("Asset seems not to be available at the moment.", cause) {
-
-            public constructor(exception: Exception) :
-                this(ThrowableError(exception))
-        }
+        public class Filesystem(public override val cause: FilesystemError) :
+            Error("A filesystem error occurred.", cause)
 
         public class OutOfMemory(error: OutOfMemoryError) :
             Error(
@@ -235,29 +235,19 @@ public class AssetRetriever(
     private fun ResourceError.wrap(url: AbsoluteUrl): Error =
         when (this) {
             is ResourceError.Forbidden ->
-                Error.Forbidden(
-                    url,
-                    this
-                )
+                Error.Forbidden(url, this)
             is ResourceError.NotFound ->
-                Error.InvalidAsset(
-                    this
-                )
-            is ResourceError.Unavailable, ResourceError.Offline ->
-                Error.Unavailable(
-                    this
-                )
+                Error.InvalidAsset(this)
+            is ResourceError.Network ->
+                Error.Network(cause)
             is ResourceError.OutOfMemory ->
-                Error.OutOfMemory(
-                    cause.throwable
-                )
+                Error.OutOfMemory(cause.throwable)
             is ResourceError.Other ->
-                Error.Unknown(
-                    this
-                )
-            else -> Error.Unknown(
-                this
-            )
+                Error.Unknown(this)
+            is ResourceError.InvalidContent ->
+                Error.InvalidAsset(this)
+            is ResourceError.Filesystem ->
+                Error.Unknown(this)
         }
 
     /* Sniff unknown assets */

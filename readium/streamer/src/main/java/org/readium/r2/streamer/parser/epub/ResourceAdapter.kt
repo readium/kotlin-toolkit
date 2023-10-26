@@ -50,14 +50,14 @@ internal class ResourceAdapter(
         return Links(readingOrder, resources)
     }
 
-    /** Recursively find the ids of the fallback items in [items] */
+    /** Recursively find the ids contained in fallback chains of items with [ids]. */
     private fun computeIdsWithFallbacks(ids: List<String>): Set<String> {
         val fallbackIds: MutableSet<String> = mutableSetOf()
         ids.forEach { fallbackIds.addAll(computeFallbackChain(it)) }
         return fallbackIds
     }
 
-    /** Compute the ids contained in the fallback chain of [item] */
+    /** Compute the ids contained in the fallback chain of item with [id]. */
     private fun computeFallbackChain(id: String): Set<String> {
         // The termination has already been checked while computing links
         val ids: MutableSet<String> = mutableSetOf()

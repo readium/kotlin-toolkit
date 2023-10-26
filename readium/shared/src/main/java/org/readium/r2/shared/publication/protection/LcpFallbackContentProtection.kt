@@ -8,7 +8,6 @@ package org.readium.r2.shared.publication.protection
 
 import org.json.JSONObject
 import org.readium.r2.shared.InternalReadiumApi
-import org.readium.r2.shared.util.asset.AssetError
 import org.readium.r2.shared.publication.Manifest
 import org.readium.r2.shared.publication.encryption.encryption
 import org.readium.r2.shared.publication.protection.ContentProtection.Scheme
@@ -16,6 +15,7 @@ import org.readium.r2.shared.publication.services.contentProtectionServiceFactor
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.asset.Asset
+import org.readium.r2.shared.util.asset.AssetError
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 import org.readium.r2.shared.util.resource.Container

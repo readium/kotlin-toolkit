@@ -17,7 +17,6 @@ import android.os.Process
 import android.os.ResultReceiver
 import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.session.MediaSessionCompat
-import android.widget.Toast
 import androidx.core.app.ServiceCompat
 import androidx.core.os.BundleCompat
 import androidx.media.MediaBrowserServiceCompat
@@ -35,7 +34,7 @@ import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.PublicationId
 import org.readium.r2.shared.publication.services.cover
 import org.readium.r2.shared.util.Url
-import org.readium.r2.shared.util.resource.Resource
+import org.readium.r2.shared.util.resource.ResourceError
 import timber.log.Timber
 
 /**
@@ -106,9 +105,7 @@ public open class MediaService : MediaBrowserServiceCompat(), CoroutineScope by 
      *
      * You should present the exception to the user.
      */
-    public open fun onResourceLoadFailed(link: Link, error: Resource.Error) {
-        Toast.makeText(this, error.getUserMessage(this), Toast.LENGTH_LONG).show()
-    }
+    public open fun onResourceLoadFailed(link: Link, error: ResourceError) {}
 
     /**
      * Override to control which app can access the MediaSession through the MediaBrowserService.
@@ -214,7 +211,7 @@ public open class MediaService : MediaBrowserServiceCompat(), CoroutineScope by 
             this@MediaService.onPlayerStopped()
         }
 
-        override fun onResourceLoadFailed(link: Link, error: Resource.Error) {
+        override fun onResourceLoadFailed(link: Link, error: ResourceError) {
             this@MediaService.onResourceLoadFailed(link, error)
         }
     }

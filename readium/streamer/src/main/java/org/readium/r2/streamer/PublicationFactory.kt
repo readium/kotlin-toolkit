@@ -13,6 +13,7 @@ import org.readium.r2.shared.publication.protection.AdeptFallbackContentProtecti
 import org.readium.r2.shared.publication.protection.ContentProtection
 import org.readium.r2.shared.publication.protection.LcpFallbackContentProtection
 import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.asset.Asset
 import org.readium.r2.shared.util.asset.AssetError
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.http.DefaultHttpClient
@@ -21,7 +22,6 @@ import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.mediatype.FormatRegistry
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 import org.readium.r2.shared.util.pdf.PdfDocumentFactory
-import org.readium.r2.shared.util.resource.ResourceError
 import org.readium.r2.streamer.parser.PublicationParser
 import org.readium.r2.streamer.parser.audio.AudioParser
 import org.readium.r2.streamer.parser.epub.EpubParser
@@ -29,7 +29,7 @@ import org.readium.r2.streamer.parser.image.ImageParser
 import org.readium.r2.streamer.parser.pdf.PdfParser
 import org.readium.r2.streamer.parser.readium.ReadiumWebPubParser
 
-internal typealias PublicationTry<SuccessT> = Try<SuccessT, AssetError>
+internal typealias AssetTry<SuccessT> = Try<SuccessT, AssetError>
 
 /**
  * Opens a Publication using a list of parsers.
@@ -125,7 +125,7 @@ public class PublicationFactory(
      *   It can be used to modify the manifest, the root container or the list of service
      *   factories of the [Publication].
      * @param warnings Logger used to broadcast non-fatal parsing warnings.
-     * @return A [Publication] or a [Publication.OpenError] in case of failure.
+     * @return A [Publication] or a [AssetError] in case of failure.
      */
     public suspend fun open(
         asset: Asset,
@@ -134,7 +134,7 @@ public class PublicationFactory(
         allowUserInteraction: Boolean,
         onCreatePublication: Publication.Builder.() -> Unit = {},
         warnings: WarningLogger? = null
-    ): PublicationTry<Publication> {
+    ): AssetTry<Publication> {
         val compositeOnCreatePublication: Publication.Builder.() -> Unit = {
             this@PublicationFactory.onCreatePublication(this)
             onCreatePublication(this)
@@ -227,21 +227,18 @@ public class PublicationFactory(
     private fun wrapParserException(e: PublicationParser.Error): AssetError =
         when (e) {
             is PublicationParser.Error.UnsupportedFormat ->
-                AssetError.UnsupportedAsset("Cannot find a parser for this asset")
-            is PublicationParser.Error.ResourceReading ->
-                when (e.cause) {
-                    is ResourceError.BadRequest, is ResourceError.Other ->
-                        AssetError.Unknown(e)
-                    is ResourceError.Forbidden ->
-                        AssetError.Forbidden(e)
-                    is ResourceError.NotFound ->
-                        AssetError.InvalidAsset(e)
-                    is ResourceError.OutOfMemory ->
-                        AssetError.OutOfMemory(e)
-                    is ResourceError.Unavailable, is ResourceError.Offline ->
-                        AssetError.Unavailable(e)
-                }
-            is PublicationParser.Error.ParsingFailed ->
+                AssetError.UnsupportedAsset("Cannot find a parser for this asset.")
+            is PublicationParser.Error.InvalidAsset ->
                 AssetError.InvalidAsset(e)
+            is PublicationParser.Error.Filesystem ->
+                AssetError.Filesystem(e.cause)
+            is PublicationParser.Error.Forbidden ->
+                AssetError.Forbidden(e.cause)
+            is PublicationParser.Error.Network ->
+                AssetError.Network(e.cause)
+            is PublicationParser.Error.Other ->
+                AssetError.Unknown(e)
+            is PublicationParser.Error.OutOfMemory ->
+                AssetError.OutOfMemory(e.cause)
         }
 }

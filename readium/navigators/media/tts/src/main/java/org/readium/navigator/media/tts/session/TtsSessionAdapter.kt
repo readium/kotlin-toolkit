@@ -34,6 +34,7 @@ import androidx.media3.common.util.Clock
 import androidx.media3.common.util.ListenerSet
 import androidx.media3.common.util.Size
 import androidx.media3.common.util.Util
+import java.lang.Error
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.flow.StateFlow
@@ -42,8 +43,8 @@ import kotlinx.coroutines.flow.onEach
 import org.readium.navigator.media.tts.TtsEngine
 import org.readium.navigator.media.tts.TtsPlayer
 import org.readium.r2.shared.ExperimentalReadiumApi
-import org.readium.r2.shared.util.resource.Resource
-import java.lang.Error
+import org.readium.r2.shared.util.ErrorException
+import org.readium.r2.shared.util.resource.ResourceError
 
 /**
  * Adapts the [TtsPlayer] to media3 [Player] interface.
@@ -918,36 +919,25 @@ internal class TtsSessionAdapter<E : TtsEngine.Error>(
 
     @Suppress("Unchecked_cast")
     private fun TtsPlayer.State.Error.toPlaybackException(): PlaybackException = when (this) {
-        is TtsPlayer.State.Error.EngineError<*> -> mapEngineError(error as E)
-        is TtsPlayer.State.Error.ContentError -> when (exception) {
-            is ResourceError.BadRequest ->
-                PlaybackException(exception.message, exception.cause, ERROR_CODE_IO_BAD_HTTP_STATUS)
-            is ResourceError.NotFound ->
-                PlaybackException(exception.message, exception.cause, ERROR_CODE_IO_BAD_HTTP_STATUS)
-            is ResourceError.Forbidden ->
-                PlaybackException(
-                    exception.message,
-                    exception.cause,
+        is TtsPlayer.State.Error.EngineError<*> -> {
+            mapEngineError(error as E)
+        }
+        is TtsPlayer.State.Error.ContentError -> {
+            val errorCode = when (error) {
+                is ResourceError.NotFound ->
+                    ERROR_CODE_IO_BAD_HTTP_STATUS
+                is ResourceError.Forbidden ->
                     ERROR_CODE_DRM_DISALLOWED_OPERATION
-                )
-            is ResourceError.Unavailable ->
-                PlaybackException(
-                    exception.message,
-                    exception.cause,
+                is ResourceError.Network ->
                     ERROR_CODE_IO_NETWORK_CONNECTION_FAILED
-                )
-            is ResourceError.Offline ->
-                PlaybackException(
-                    exception.message,
-                    exception.cause,
-                    ERROR_CODE_IO_NETWORK_CONNECTION_FAILED
-                )
-            is ResourceError.OutOfMemory ->
-                PlaybackException(exception.message, exception.cause, ERROR_CODE_UNSPECIFIED)
-            is ResourceError.Other ->
-                PlaybackException(exception.message, exception.cause, ERROR_CODE_UNSPECIFIED)
-            else ->
-                PlaybackException(exception.message, exception.cause, ERROR_CODE_UNSPECIFIED)
+                else ->
+                    ERROR_CODE_UNSPECIFIED
+            }
+            PlaybackException(
+                error.message,
+                error.cause?.let { ErrorException(it) },
+                errorCode
+            )
         }
     }
 }

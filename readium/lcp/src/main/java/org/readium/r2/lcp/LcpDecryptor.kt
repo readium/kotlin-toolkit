@@ -9,12 +9,13 @@
 
 package org.readium.r2.lcp
 
-import java.io.IOException
 import org.readium.r2.shared.extensions.coerceFirstNonNegative
 import org.readium.r2.shared.extensions.inflate
 import org.readium.r2.shared.extensions.requireLengthFitInt
 import org.readium.r2.shared.publication.encryption.Encryption
 import org.readium.r2.shared.util.AbsoluteUrl
+import org.readium.r2.shared.util.MessageError
+import org.readium.r2.shared.util.ThrowableError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.getOrElse
@@ -27,7 +28,6 @@ import org.readium.r2.shared.util.resource.ResourceTry
 import org.readium.r2.shared.util.resource.TransformingResource
 import org.readium.r2.shared.util.resource.flatMap
 import org.readium.r2.shared.util.resource.flatMapCatching
-import org.readium.r2.shared.util.resource.mapCatching
 
 /**
  * Decrypts a resource protected with LCP.
@@ -127,29 +127,34 @@ internal class LcpDecryptor(
             return _length
         }
 
-        private suspend fun lengthFromPadding(): ResourceTry<Long> =
-            resource.length().flatMapCatching { length ->
-                if (length < 2 * AES_BLOCK_SIZE) {
-                    throw Exception("Invalid CBC-encrypted stream")
-                }
+        private suspend fun lengthFromPadding(): ResourceTry<Long> {
+            val length = resource.length()
+                .getOrElse { return Try.failure(it) }
 
-                val readOffset = length - (2 * AES_BLOCK_SIZE)
-                resource.read(readOffset..length)
-                    .mapCatching { bytes ->
-                        val decryptedBytes = license.decrypt(bytes)
-                            .getOrElse {
-                                throw Exception(
-                                    "Can't decrypt trailing size of CBC-encrypted stream",
-                                    it
-                                )
-                            }
-                        check(decryptedBytes.size == AES_BLOCK_SIZE)
-
-                        return@mapCatching length -
-                            AES_BLOCK_SIZE - // Minus IV
-                            decryptedBytes.last().toInt() // Minus padding size
-                    }
+            if (length < 2 * AES_BLOCK_SIZE) {
+                return Try.failure(ResourceError.InvalidContent("Invalid CBC-encrypted stream."))
             }
+
+            val readOffset = length - (2 * AES_BLOCK_SIZE)
+            val bytes = resource.read(readOffset..length)
+                .getOrElse { return Try.failure(it) }
+
+            val decryptedBytes = license.decrypt(bytes)
+                .getOrElse {
+                    return Try.failure(
+                        ResourceError.InvalidContent(
+                            "Can't decrypt trailing size of CBC-encrypted stream"
+                        )
+                    )
+                }
+            check(decryptedBytes.size == AES_BLOCK_SIZE)
+
+            val adjustedLength = length -
+                AES_BLOCK_SIZE - // Minus IV
+                decryptedBytes.last().toInt() // Minus padding size
+
+            return Try.success(adjustedLength)
+        }
 
         override suspend fun read(range: LongRange?): ResourceTry<ByteArray> {
             if (range == null) {
@@ -165,49 +170,55 @@ internal class LcpDecryptor(
                 return Try.success(ByteArray(0))
             }
 
-            return resource.length().flatMapCatching { encryptedLength ->
-                // encrypted data is shifted by AES_BLOCK_SIZE because of IV and
-                // the previous block must be provided to perform XOR on intermediate blocks
-                val encryptedStart = range.first.floorMultipleOf(AES_BLOCK_SIZE.toLong())
-                val encryptedEndExclusive = (range.last + 1).ceilMultipleOf(AES_BLOCK_SIZE.toLong()) + AES_BLOCK_SIZE
+            val encryptedLength = resource.length()
+                .getOrElse { return Try.failure(it) }
 
-                getEncryptedData(encryptedStart until encryptedEndExclusive).mapCatching { encryptedData ->
-                    if (encryptedData.size >= _cache.data.size) {
-                        // cache the three last encrypted blocks that have been read for future use
-                        val cacheStart = encryptedData.size - _cache.data.size
-                        _cache.startIndex = (encryptedEndExclusive - _cache.data.size).toInt()
-                        encryptedData.copyInto(_cache.data, 0, cacheStart)
-                    }
+            // encrypted data is shifted by AES_BLOCK_SIZE because of IV and
+            // the previous block must be provided to perform XOR on intermediate blocks
+            val encryptedStart = range.first.floorMultipleOf(AES_BLOCK_SIZE.toLong())
+            val encryptedEndExclusive = (range.last + 1).ceilMultipleOf(AES_BLOCK_SIZE.toLong()) + AES_BLOCK_SIZE
 
-                    val bytes = license.decrypt(encryptedData)
-                        .getOrElse {
-                            throw IOException(
-                                "Can't decrypt the content for resource with key: ${resource.source}",
-                                it
-                            )
-                        }
+            val encryptedData = getEncryptedData(encryptedStart until encryptedEndExclusive)
+                .getOrElse { return Try.failure(it) }
 
-                    // exclude the bytes added to match a multiple of AES_BLOCK_SIZE
-                    val sliceStart = (range.first - encryptedStart).toInt()
-
-                    // was the last block read to provide the desired range
-                    val lastBlockRead = encryptedLength - encryptedEndExclusive <= AES_BLOCK_SIZE
-
-                    val rangeLength =
-                        if (lastBlockRead) {
-                            // use decrypted length to ensure range.last doesn't exceed decrypted length - 1
-                            range.last.coerceAtMost(length().getOrThrow() - 1) - range.first + 1
-                        } else {
-                            // the last block won't be read, so there's no need to compute length
-                            range.last - range.first + 1
-                        }
-
-                    // keep only enough bytes to fit the length corrected request in order to never include padding
-                    val sliceEnd = sliceStart + rangeLength.toInt()
-
-                    bytes.sliceArray(sliceStart until sliceEnd)
-                }
+            if (encryptedData.size >= _cache.data.size) {
+                // cache the three last encrypted blocks that have been read for future use
+                val cacheStart = encryptedData.size - _cache.data.size
+                _cache.startIndex = (encryptedEndExclusive - _cache.data.size).toInt()
+                encryptedData.copyInto(_cache.data, 0, cacheStart)
             }
+
+            val bytes = license.decrypt(encryptedData)
+                .getOrElse {
+                    return Try.failure(
+                        ResourceError.InvalidContent(
+                            MessageError(
+                                "Can't decrypt the content for resource with key: ${resource.source}",
+                                ThrowableError(it)
+                            )
+                        )
+                    )
+                }
+
+            // exclude the bytes added to match a multiple of AES_BLOCK_SIZE
+            val sliceStart = (range.first - encryptedStart).toInt()
+
+            // was the last block read to provide the desired range
+            val lastBlockRead = encryptedLength - encryptedEndExclusive <= AES_BLOCK_SIZE
+
+            val rangeLength =
+                if (lastBlockRead) {
+                    // use decrypted length to ensure range.last doesn't exceed decrypted length - 1
+                    range.last.coerceAtMost(length().getOrThrow() - 1) - range.first + 1
+                } else {
+                    // the last block won't be read, so there's no need to compute length
+                    range.last - range.first + 1
+                }
+
+            // keep only enough bytes to fit the length corrected request in order to never include padding
+            val sliceEnd = sliceStart + rangeLength.toInt()
+
+            return Try.success(bytes.sliceArray(sliceStart until sliceEnd))
         }
 
         private suspend fun getEncryptedData(range: LongRange): ResourceTry<ByteArray> {
@@ -235,10 +246,16 @@ internal class LcpDecryptor(
 }
 
 private suspend fun LcpLicense.decryptFully(data: ResourceTry<ByteArray>, isDeflated: Boolean): ResourceTry<ByteArray> =
-    data.mapCatching { encryptedData ->
+    data.flatMapCatching { encryptedData ->
         // Decrypts the resource.
         var bytes = decrypt(encryptedData)
-            .getOrElse { throw Exception("Failed to decrypt the resource", it) }
+            .getOrElse {
+                return Try.failure(
+                    ResourceError.InvalidContent(
+                        MessageError("Failed to decrypt the resource", ThrowableError(it))
+                    )
+                )
+            }
 
         if (bytes.isEmpty()) {
             throw IllegalStateException("Lcp.nativeDecrypt returned an empty ByteArray")
@@ -253,7 +270,7 @@ private suspend fun LcpLicense.decryptFully(data: ResourceTry<ByteArray>, isDefl
             bytes = bytes.inflate(nowrap = true)
         }
 
-        bytes
+        Try.success(bytes)
     }
 
 private val Encryption.isDeflated: Boolean get() =

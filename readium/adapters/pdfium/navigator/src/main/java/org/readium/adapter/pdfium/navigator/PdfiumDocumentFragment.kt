@@ -26,8 +26,9 @@ import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.util.SingleJob
 import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.e
 import org.readium.r2.shared.util.getOrElse
-import org.readium.r2.shared.util.resource.Resource
+import org.readium.r2.shared.util.resource.ResourceError
 import timber.log.Timber
 
 @ExperimentalReadiumApi
@@ -40,7 +41,7 @@ public class PdfiumDocumentFragment internal constructor(
 ) : PdfDocumentFragment<PdfiumSettings>() {
 
     internal interface Listener {
-        fun onResourceLoadFailed(href: Url, error: Resource.Error)
+        fun onResourceLoadFailed(href: Url, error: ResourceError)
         fun onConfigurePdfView(configurator: PDFView.Configurator)
         fun onTap(point: PointF): Boolean
     }

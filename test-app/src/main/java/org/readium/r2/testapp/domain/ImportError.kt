@@ -43,8 +43,8 @@ sealed class ImportError(
         }
     }
 
-    class StorageError(
-        override val cause: Throwable
+    class ResourceError(
+        val error: org.readium.r2.shared.util.resource.ResourceError
     ) : ImportError(R.string.import_publication_unexpected_io_exception)
 
     class DownloadFailed(

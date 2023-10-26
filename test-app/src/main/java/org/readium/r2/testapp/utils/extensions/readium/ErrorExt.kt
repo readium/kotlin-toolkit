@@ -15,7 +15,7 @@ import org.readium.r2.shared.util.ThrowableError
  * Convenience function to get the description of an error with its cause.
  */
 fun Error.toDebugDescription(context: Context): String =
-    if (this is ThrowableError) {
+    if (this is ThrowableError<*>) {
         throwable.toDebugDescription(context)
     } else {
         var desc = "${javaClass.nameWithEnclosingClasses()}: $message"

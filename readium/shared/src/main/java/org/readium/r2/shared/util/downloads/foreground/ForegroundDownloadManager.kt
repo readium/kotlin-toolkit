@@ -87,7 +87,7 @@ public class ForegroundDownloadManager(
             }
             .onFailure { error ->
                 forEachListener(id) {
-                    onDownloadFailed(id,  DownloadManager.Error.HttpError(error))
+                    onDownloadFailed(id, DownloadManager.Error.HttpError(error))
                 }
             }
 

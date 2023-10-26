@@ -7,15 +7,18 @@
  * LICENSE file present in the project repository where this source code is maintained.
  */
 
+@file:Suppress("unused")
+
 package org.readium.r2.lcp
 
 import kotlin.math.ceil
 import org.readium.r2.shared.extensions.coerceIn
 import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.util.ErrorException
+import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.getOrThrow
 import org.readium.r2.shared.util.resource.Resource
-import org.readium.r2.shared.util.resource.mapCatching
 import org.readium.r2.shared.util.use
 import timber.log.Timber
 
@@ -51,7 +54,10 @@ internal suspend fun checkLengthComputationIsCorrect(publication: Publication) {
             publication.get(link).use { resource ->
                 resource.length()
                     .onFailure {
-                        throw IllegalStateException("failed to compute length of ${link.href}", it)
+                        throw IllegalStateException(
+                            "failed to compute length of ${link.href}",
+                            ErrorException(it)
+                        )
                     }.onSuccess {
                         check(it == trueLength) { "computed length of ${link.href} seems to be wrong" }
                     }
@@ -122,7 +128,11 @@ internal suspend fun Resource.readByChunks(
     groundTruth: ByteArray,
     shuffle: Boolean = true
 ) =
-    length().mapCatching { length ->
+    try {
+        val length = length()
+            .mapFailure { ErrorException(it) }
+            .getOrThrow()
+
         val blockNb = ceil(length / chunkSize.toDouble()).toInt()
         val blocks = (0 until blockNb)
             .map { Pair(it, it * chunkSize until kotlin.math.min(length, (it + 1) * chunkSize)) }
@@ -140,7 +150,7 @@ internal suspend fun Resource.readByChunks(
             val decryptedBytes = read(it.second).getOrElse { error ->
                 throw IllegalStateException(
                     "unable to decrypt chunk ${it.second} from $source",
-                    error
+                    ErrorException(error)
                 )
             }
             check(decryptedBytes.isNotEmpty()) { "empty decrypted bytearray" }
@@ -153,4 +163,7 @@ internal suspend fun Resource.readByChunks(
             }
             Pair(it.first, decryptedBytes)
         }
+        Try.success(Unit)
+    } catch (e: Exception) {
+        Try.failure(e)
     }

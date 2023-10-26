@@ -158,12 +158,16 @@ internal class LcpContentProtection(
                 AssetError.Forbidden(this)
             is ResourceError.NotFound ->
                 AssetError.NotFound(this)
-            ResourceError.Offline, is ResourceError.Unavailable ->
-                AssetError.Unavailable(this)
-            is ResourceError.Other, is ResourceError.BadRequest ->
+            is ResourceError.Other ->
                 AssetError.Unknown(this)
             is ResourceError.OutOfMemory ->
                 AssetError.OutOfMemory(this)
+            is ResourceError.Filesystem ->
+                AssetError.Filesystem(cause)
+            is ResourceError.InvalidContent ->
+                AssetError.InvalidAsset(this)
+            is ResourceError.Network ->
+                AssetError.Network(cause)
         }
 
     private fun AssetRetriever.Error.wrap(): AssetError =
@@ -180,9 +184,11 @@ internal class LcpContentProtection(
                 AssetError.OutOfMemory(this)
             is AssetRetriever.Error.SchemeNotSupported ->
                 AssetError.UnsupportedAsset(this)
-            is AssetRetriever.Error.Unavailable ->
-                AssetError.Unavailable(this)
             is AssetRetriever.Error.Unknown ->
                 AssetError.Unknown(this)
+            is AssetRetriever.Error.Filesystem ->
+                AssetError.Filesystem(cause)
+            is AssetRetriever.Error.Network ->
+                AssetError.Network(cause)
         }
 }

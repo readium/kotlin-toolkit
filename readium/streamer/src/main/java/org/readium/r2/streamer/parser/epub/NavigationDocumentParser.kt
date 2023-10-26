@@ -41,7 +41,7 @@ internal object NavigationDocumentParser {
         prefixMap: Map<String, String>
     ): Pair<List<String>, List<Link>>? {
         val typeAttr = nav.getAttrNs("type", Namespaces.OPS) ?: return null
-        val types = parseProperties(typeAttr).mapNotNull {
+        val types = parseProperties(typeAttr).map {
             resolveProperty(
                 it,
                 prefixMap,

@@ -20,6 +20,7 @@ import org.readium.r2.shared.util.pdf.PdfDocumentFactory
 import org.readium.r2.shared.util.pdf.toLinks
 import org.readium.r2.streamer.extensions.toLink
 import org.readium.r2.streamer.parser.PublicationParser
+import org.readium.r2.streamer.parser.PublicationParser.Error.Companion.toParserError
 
 /**
  * Parses a PDF file into a Readium [Publication].
@@ -43,12 +44,10 @@ public class PdfParser(
 
         val resource = asset.container.entries()?.firstOrNull()
             ?: return Try.failure(
-                PublicationParser.Error.ParsingFailed("No PDF found in the publication.")
+                PublicationParser.Error.InvalidAsset("No PDF found in the publication.")
             )
         val document = pdfFactory.open(resource, password = null)
-            .getOrElse {
-                return Try.failure(PublicationParser.Error.ResourceReading(it))
-            }
+            .getOrElse { return Try.failure(it.toParserError()) }
         val tableOfContents = document.outline.toLinks(resource.url)
 
         val manifest = Manifest(

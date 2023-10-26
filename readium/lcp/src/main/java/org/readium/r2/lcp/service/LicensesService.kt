@@ -36,6 +36,8 @@ import org.readium.r2.shared.extensions.tryOr
 import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.publication.protection.ContentProtection
 import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.asset.Asset
+import org.readium.r2.shared.util.asset.AssetRetriever
 import org.readium.r2.shared.util.downloads.DownloadManager
 import org.readium.r2.shared.util.mediatype.FormatRegistry
 import org.readium.r2.shared.util.mediatype.MediaType

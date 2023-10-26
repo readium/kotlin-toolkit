@@ -228,8 +228,8 @@ class TtsViewModel private constructor(
     private fun onPlaybackError(error: TtsNavigator.State.Error) {
         val event = when (error) {
             is TtsNavigator.State.Error.ContentError -> {
-                Timber.e(error.exception)
-                Event.OnError(UserException(R.string.tts_error_other, cause = error.exception))
+                Timber.e(error.error)
+                Event.OnError(UserException(R.string.tts_error_other, cause = error.error))
             }
             is TtsNavigator.State.Error.EngineError<*> -> {
                 val engineError = (error.error as AndroidTtsEngine.Error)

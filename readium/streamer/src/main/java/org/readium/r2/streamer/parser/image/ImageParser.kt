@@ -48,7 +48,7 @@ public class ImageParser : PublicationParser {
 
         if (readingOrder.isEmpty()) {
             return Try.failure(
-                PublicationParser.Error.ParsingFailed("No bitmap found in the publication.")
+                PublicationParser.Error.InvalidAsset("No bitmap found in the publication.")
             )
         }
 

@@ -6,18 +6,16 @@
 
 package org.readium.r2.streamer
 
-import java.nio.charset.Charset
-import org.json.JSONObject
 import org.readium.r2.shared.extensions.addPrefix
-import org.readium.r2.shared.util.asset.AssetError
 import org.readium.r2.shared.publication.Manifest
 import org.readium.r2.shared.util.AbsoluteUrl
-import org.readium.r2.shared.util.ThrowableError
+import org.readium.r2.shared.util.MessageError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.asset.Asset
+import org.readium.r2.shared.util.asset.AssetError
+import org.readium.r2.shared.util.flatMap
 import org.readium.r2.shared.util.getOrElse
-import org.readium.r2.shared.util.getOrThrow
 import org.readium.r2.shared.util.http.HttpClient
 import org.readium.r2.shared.util.http.HttpContainer
 import org.readium.r2.shared.util.mediatype.FormatRegistry
@@ -25,7 +23,10 @@ import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.shared.util.resource.ResourceContainer
+import org.readium.r2.shared.util.resource.ResourceError
+import org.readium.r2.shared.util.resource.ResourceTry
 import org.readium.r2.shared.util.resource.RoutingContainer
+import org.readium.r2.shared.util.resource.readAsJson
 import org.readium.r2.streamer.parser.PublicationParser
 import timber.log.Timber
 
@@ -69,12 +70,7 @@ internal class ParserAssetFactory(
         asset: Asset.Resource
     ): Try<PublicationParser.Asset, AssetError> {
         val manifest = asset.resource.readAsRwpm()
-            .mapFailure {
-                AssetError.InvalidAsset(
-                    "Failed to read the publication as a RWPM",
-                    ThrowableError(it)
-                )
-            }
+            .mapFailure { AssetError.InvalidAsset(it) }
             .getOrElse { return Try.failure(it) }
 
         val baseUrl = manifest.linkWithRel("self")?.href?.resolve()
@@ -133,18 +129,18 @@ internal class ParserAssetFactory(
         )
     }
 
-    private suspend fun Resource.readAsRwpm(): Try<Manifest, Exception> =
-        try {
-            val bytes = read().getOrThrow()
-            val string = String(bytes, Charset.defaultCharset())
-            val json = JSONObject(string)
-            val manifest = Manifest.fromJSON(
-                json,
-                mediaTypeRetriever = mediaTypeRetriever
-            )
-                ?: throw Exception("Failed to parse the RWPM Manifest")
-            Try.success(manifest)
-        } catch (e: Exception) {
-            Try.failure(e)
-        }
+    private suspend fun Resource.readAsRwpm(): ResourceTry<Manifest> =
+        readAsJson()
+            .flatMap { json ->
+                Manifest.fromJSON(
+                    json,
+                    mediaTypeRetriever = mediaTypeRetriever
+                )?.let { manifest ->
+                    Try.success(manifest)
+                } ?: Try.failure(
+                    ResourceError.InvalidContent(
+                        MessageError("Failed to parse the RWPM Manifest.")
+                    )
+                )
+            }
 }

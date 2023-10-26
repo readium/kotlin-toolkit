@@ -6,10 +6,10 @@
 
 package org.readium.adapter.pdfium.document
 
-import com.shockwave.pdfium.PdfDocument as _PdfiumDocument
 import android.content.Context
 import android.graphics.Bitmap
 import android.os.ParcelFileDescriptor
+import com.shockwave.pdfium.PdfDocument as _PdfiumDocument
 import com.shockwave.pdfium.PdfiumCore
 import java.io.File
 import kotlin.reflect.KClass
@@ -108,7 +108,7 @@ public class PdfiumDocumentFactory(context: Context) : PdfDocumentFactory<Pdfium
                 .decode(
                     { core.fromBytes(it, password) },
                     { "Pdfium could not read data." }
-            )
+                )
         }
 
     private fun PdfiumCore.fromFile(file: File, password: String?): PdfiumDocument =

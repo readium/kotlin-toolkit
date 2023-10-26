@@ -25,7 +25,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.extensions.tryOr
 import org.readium.r2.shared.util.MessageError
-import org.readium.r2.shared.util.ThrowableError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.downloads.DownloadManager
 import org.readium.r2.shared.util.http.HttpError
@@ -292,7 +291,8 @@ public class AndroidDownloadManager internal constructor(
             } else {
                 Try.failure(
                     DownloadManager.Error.FileSystemError(
-                        MessageError("Failed to rename the downloaded file."))
+                        MessageError("Failed to rename the downloaded file.")
+                    )
                 )
             }
         }

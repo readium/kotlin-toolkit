@@ -7,7 +7,6 @@
 package org.readium.r2.shared.util.resource
 
 import java.io.FileNotFoundException
-import java.io.IOException
 import java.nio.channels.Channels
 import java.nio.channels.FileChannel
 import kotlinx.coroutines.Dispatchers
@@ -75,12 +74,10 @@ internal class FileChannelResource(
 
     override suspend fun length(): ResourceTry<Long> {
         if (!::_length.isInitialized) {
-            _length = withContext(Dispatchers.IO) {
-                try {
+            ResourceTry.catching {
+                _length = withContext(Dispatchers.IO) {
                     check(channel.isOpen)
                     Try.success(channel.size())
-                } catch (e: IOException) {
-                    Try.failure(ResourceError.Unavailable(e))
                 }
             }
         }

@@ -115,7 +115,7 @@ internal data class Itemref(
             val notLinear = element.getAttr("linear") == "no"
             val propAttr = element.getAttr("properties").orEmpty()
             val properties = parseProperties(propAttr)
-                .mapNotNull { resolveProperty(it, prefixMap, DEFAULT_VOCAB.ITEMREF) }
+                .map { resolveProperty(it, prefixMap, DEFAULT_VOCAB.ITEMREF) }
             return Itemref(idref, !notLinear, properties)
         }
     }

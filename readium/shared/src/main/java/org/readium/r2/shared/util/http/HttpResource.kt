@@ -8,6 +8,7 @@ import org.readium.r2.shared.extensions.read
 import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.MessageError
+import org.readium.r2.shared.util.NetworkError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.flatMap
 import org.readium.r2.shared.util.io.CountingInputStream
@@ -36,7 +37,7 @@ public class HttpResource(
             return if (contentLength != null) {
                 Try.success(contentLength)
             } else {
-                Try.failure(ResourceError.Unavailable())
+                Try.failure(ResourceError.Other(UnsupportedOperationException()))
             }
         }
 
@@ -119,15 +120,15 @@ public class HttpResource(
     private fun ResourceError.Companion.wrapHttp(e: HttpError): ResourceError =
         when (e.kind) {
             HttpError.Kind.MalformedRequest, HttpError.Kind.BadRequest, HttpError.Kind.MethodNotAllowed ->
-                ResourceError.BadRequest(cause = e)
-            HttpError.Kind.Timeout, HttpError.Kind.Offline, HttpError.Kind.TooManyRedirects ->
-                ResourceError.Unavailable(e)
+                ResourceError.Network(NetworkError.BadRequest(cause = e))
+            HttpError.Kind.Timeout, HttpError.Kind.Offline ->
+                ResourceError.Network(NetworkError.Offline(e))
             HttpError.Kind.Unauthorized, HttpError.Kind.Forbidden ->
                 ResourceError.Forbidden(e)
             HttpError.Kind.NotFound ->
                 ResourceError.NotFound(e)
-            HttpError.Kind.Cancelled ->
-                ResourceError.Unavailable(e)
+            HttpError.Kind.Cancelled, HttpError.Kind.TooManyRedirects ->
+                ResourceError.Other(e)
             HttpError.Kind.MalformedResponse, HttpError.Kind.ClientError, HttpError.Kind.ServerError, HttpError.Kind.Other ->
                 ResourceError.Other(e)
         }

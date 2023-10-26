@@ -14,12 +14,10 @@ import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
-import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.getOrThrow
 import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.shared.util.resource.ResourceError
-import org.readium.r2.shared.util.resource.ResourceTry
 import org.readium.r2.shared.util.zip.jvm.ClosedChannelException
 import org.readium.r2.shared.util.zip.jvm.NonWritableChannelException
 import org.readium.r2.shared.util.zip.jvm.SeekableByteChannel
@@ -29,7 +27,7 @@ internal class ResourceChannel(
 ) : SeekableByteChannel {
 
     class ResourceException(
-        val error: ResourceError,
+        val error: ResourceError
     ) : IOException(error.message)
 
     private val coroutineScope: CoroutineScope =

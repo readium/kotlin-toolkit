@@ -8,14 +8,18 @@ package org.readium.r2.testapp.domain
 
 import androidx.annotation.StringRes
 import org.readium.r2.shared.UserException
-import org.readium.r2.shared.util.asset.AssetError
 import org.readium.r2.shared.util.Error
+import org.readium.r2.shared.util.asset.AssetError
 import org.readium.r2.shared.util.asset.AssetRetriever
 import org.readium.r2.testapp.R
 
 sealed class PublicationError(@StringRes userMessageId: Int) : UserException(userMessageId) {
 
-    class Unavailable(val error: Error) : PublicationError(R.string.publication_error_unavailable)
+    class Network(val error: Error) : PublicationError(
+        R.string.publication_error_network_unexpected
+    )
+
+    class Filesystem(val error: Error) : PublicationError(R.string.publication_error_filesystem)
 
     class NotFound(val error: Error) : PublicationError(R.string.publication_error_not_found)
 
@@ -57,12 +61,14 @@ sealed class PublicationError(@StringRes userMessageId: Int) : UserException(use
                     OutOfMemory(error)
                 is AssetError.InvalidAsset ->
                     InvalidPublication(error)
-                is AssetError.Unavailable ->
-                    Unavailable(error)
                 is AssetError.Unknown ->
                     Unexpected(error)
                 is AssetError.UnsupportedAsset ->
                     UnsupportedAsset(error)
+                is AssetError.Filesystem ->
+                    Filesystem(error.cause)
+                is AssetError.Network ->
+                    Network(error.cause)
             }
 
         operator fun invoke(error: AssetRetriever.Error): PublicationError =
@@ -79,10 +85,12 @@ sealed class PublicationError(@StringRes userMessageId: Int) : UserException(use
                     OutOfMemory(error)
                 is AssetRetriever.Error.SchemeNotSupported ->
                     SchemeNotSupported(error)
-                is AssetRetriever.Error.Unavailable ->
-                    Unavailable(error)
                 is AssetRetriever.Error.Unknown ->
                     Unexpected(error)
+                is AssetRetriever.Error.Filesystem ->
+                    Filesystem(error.cause)
+                is AssetRetriever.Error.Network ->
+                    Filesystem(error.cause)
             }
     }
 }

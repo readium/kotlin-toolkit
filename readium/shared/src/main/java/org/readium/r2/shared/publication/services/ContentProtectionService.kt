@@ -20,6 +20,7 @@ import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.PublicationServicesHolder
 import org.readium.r2.shared.publication.ServiceFactory
 import org.readium.r2.shared.publication.protection.ContentProtection
+import org.readium.r2.shared.util.NetworkError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
@@ -301,14 +302,14 @@ private sealed class RouteHandler {
             val query = url.query
             val text = query.firstNamedOrNull("text")
                 ?: return FailureResource(
-                    ResourceError.BadRequest(
-                        IllegalArgumentException("'text' parameter is required")
+                    ResourceError.Network(
+                        NetworkError.BadRequest("'text' parameter is required")
                     )
                 )
             val peek = (query.firstNamedOrNull("peek") ?: "false").toBooleanOrNull()
                 ?: return FailureResource(
-                    ResourceError.BadRequest(
-                        IllegalArgumentException("if present, 'peek' must be true or false")
+                    ResourceError.Network(
+                        NetworkError.BadRequest("If present, 'peek' must be true or false")
                     )
                 )
 
@@ -341,21 +342,21 @@ private sealed class RouteHandler {
             val query = url.query
             val pageCountString = query.firstNamedOrNull("pageCount")
                 ?: return FailureResource(
-                    ResourceError.BadRequest(
-                        IllegalArgumentException("'pageCount' parameter is required")
+                    ResourceError.Network(
+                        NetworkError.BadRequest("'pageCount' parameter is required")
                     )
                 )
 
             val pageCount = pageCountString.toIntOrNull()?.takeIf { it >= 0 }
                 ?: return FailureResource(
-                    ResourceError.BadRequest(
-                        IllegalArgumentException("'pageCount' must be a positive integer")
+                    ResourceError.Network(
+                        NetworkError.BadRequest("'pageCount' must be a positive integer")
                     )
                 )
             val peek = (query.firstNamedOrNull("peek") ?: "false").toBooleanOrNull()
                 ?: return FailureResource(
-                    ResourceError.BadRequest(
-                        IllegalArgumentException("if present, 'peek' must be true or false")
+                    ResourceError.Network(
+                        NetworkError.BadRequest("if present, 'peek' must be true or false")
                     )
                 )
 

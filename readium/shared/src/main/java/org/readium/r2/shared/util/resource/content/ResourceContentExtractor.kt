@@ -6,12 +6,12 @@
 
 package org.readium.r2.shared.util.resource.content
 
-import org.readium.r2.shared.util.Error as SharedError
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.jsoup.Jsoup
 import org.jsoup.parser.Parser
 import org.readium.r2.shared.ExperimentalReadiumApi
+import org.readium.r2.shared.util.Error as SharedError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.resource.Resource
@@ -78,6 +78,6 @@ public class HtmlResourceContentExtractor : ResourceContentExtractor {
                 val body = Jsoup.parse(html).body().text()
                 // Transform HTML entities into their actual characters.
                 Parser.unescapeEntities(body, false)
-        }
+            }
     }
 }

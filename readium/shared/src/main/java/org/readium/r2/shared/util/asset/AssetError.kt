@@ -1,6 +1,14 @@
+/*
+ * Copyright 2023 Readium Foundation. All rights reserved.
+ * Use of this source code is governed by the BSD-style license
+ * available in the top-level LICENSE file of the project.
+ */
+
 package org.readium.r2.shared.util.asset
 
 import org.readium.r2.shared.util.Error
+import org.readium.r2.shared.util.FilesystemError
+import org.readium.r2.shared.util.NetworkError
 import org.readium.r2.shared.util.ThrowableError
 
 /**
@@ -47,12 +55,11 @@ public sealed class AssetError(
     public class Forbidden(cause: Error? = null) :
         AssetError("You are not allowed to open this publication.", cause)
 
-    /**
-     * The publication can't be opened at the moment, for example because of a networking error.
-     * This error is generally temporary, so the operation may be retried or postponed.
-     */
-    public class Unavailable(cause: Error? = null) :
-        AssetError("The publication is not available at the moment.", cause)
+    public class Network(public override val cause: NetworkError) :
+        AssetError("A network error occurred.", cause)
+
+    public class Filesystem(public override val cause: FilesystemError) :
+        AssetError("A filesystem error occurred.", cause)
 
     /**
      * The provided credentials are incorrect and we can't open the publication in a

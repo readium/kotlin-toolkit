@@ -36,11 +36,11 @@ public class MessageError(
 /**
  * An error caused by the catch of a throwable.
  */
-public class ThrowableError<E: Throwable>(
+public class ThrowableError<E : Throwable>(
     public val throwable: E
 ) : Error {
     override val message: String = throwable.message ?: throwable.toString()
-    override val cause: Error? = null
+    override val cause: Error? = throwable.cause?.let { ThrowableError(it) }
 }
 
 /**
@@ -48,7 +48,7 @@ public class ThrowableError<E: Throwable>(
  */
 public class ErrorException(
     public val error: Error
-) : Exception(error.message)
+) : Exception(error.message, error.cause?.let { ErrorException(it) })
 
 public fun <S, F : Error> Try<S, F>.getOrThrow(): S =
     when (this) {
@@ -56,13 +56,21 @@ public fun <S, F : Error> Try<S, F>.getOrThrow(): S =
         is Try.Failure -> throw Exception("Try was excepted to contain a success.")
     }
 
-//FIXME: to improve
+public class FilesystemError(
+    override val cause: Error? = null
+) : Error {
+
+    override val message: String =
+        "An unexpected error occurred on the filesystem."
+}
+
+// FIXME: to improve
 @InternalReadiumApi
 public fun Timber.Forest.e(error: Error, message: String? = null) {
-    Timber.e(Exception(error.message), message)
+    e(Exception(error.message), message)
 }
 
 @InternalReadiumApi
 public fun Timber.Forest.w(error: Error, message: String? = null) {
-    Timber.w(Exception(error.message), message)
+    w(Exception(error.message), message)
 }

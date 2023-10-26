@@ -49,7 +49,7 @@ public class AudioParser : PublicationParser {
 
         if (readingOrder.isEmpty()) {
             return Try.failure(
-                PublicationParser.Error.ParsingFailed("No audio file found in the publication.")
+                PublicationParser.Error.InvalidAsset("No audio file found in the publication.")
             )
         }
 

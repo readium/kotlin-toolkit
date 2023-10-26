@@ -176,7 +176,7 @@ public class TtsNavigator<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
 
             public data class EngineError<E : TtsEngine.Error> (val error: E) : Error()
 
-            public data class ContentError(val exception: Exception) : Error()
+            public data class ContentError(val error: org.readium.r2.shared.util.Error) : Error()
         }
     }
 
@@ -274,7 +274,7 @@ public class TtsNavigator<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
 
     private fun TtsPlayer.State.Error.toError(): State.Error =
         when (this) {
-            is TtsPlayer.State.Error.ContentError -> State.Error.ContentError(exception)
+            is TtsPlayer.State.Error.ContentError -> State.Error.ContentError(error)
             is TtsPlayer.State.Error.EngineError<*> -> State.Error.EngineError(error)
         }
 

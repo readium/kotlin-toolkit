@@ -19,6 +19,7 @@ import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.asset.AssetRetriever
 import org.readium.r2.shared.util.getOrElse
+import org.readium.r2.shared.util.resource.ResourceError
 import org.readium.r2.shared.util.toUrl
 import org.readium.r2.streamer.PublicationFactory
 import org.readium.r2.testapp.data.BookRepository
@@ -139,7 +140,7 @@ class Bookshelf(
             val coverFile =
                 coverStorage.storeCover(publication, coverUrl)
                     .getOrElse {
-                        return Try.failure(ImportError.StorageError(it))
+                        return Try.failure(ImportError.ResourceError(ResourceError.Filesystem(it)))
                     }
 
             val id = bookRepository.insertBook(

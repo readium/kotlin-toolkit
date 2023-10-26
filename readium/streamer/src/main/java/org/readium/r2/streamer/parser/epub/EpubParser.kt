@@ -26,6 +26,7 @@ import org.readium.r2.shared.util.resource.readAsXml
 import org.readium.r2.shared.util.use
 import org.readium.r2.streamer.extensions.readAsXmlOrNull
 import org.readium.r2.streamer.parser.PublicationParser
+import org.readium.r2.streamer.parser.PublicationParser.Error.Companion.toParserError
 import org.readium.r2.streamer.parser.epub.extensions.fromEpubHref
 
 /**
@@ -52,9 +53,9 @@ public class EpubParser(
             .getOrElse { return Try.failure(it) }
         val opfResource = asset.container.get(opfPath)
         val opfXmlDocument = opfResource.readAsXml()
-            .getOrElse { return Try.failure(PublicationParser.Error.ResourceReading(it)) }
+            .getOrElse { return Try.failure(it.toParserError()) }
         val packageDocument = PackageDocument.parse(opfXmlDocument, opfPath, mediaTypeRetriever)
-            ?: return Try.failure(PublicationParser.Error.ParsingFailed("Invalid OPF file."))
+            ?: return Try.failure(PublicationParser.Error.InvalidAsset("Invalid OPF file."))
 
         val manifest = ManifestAdapter(
             packageDocument = packageDocument,
@@ -95,13 +96,13 @@ public class EpubParser(
         container
             .get(Url("META-INF/container.xml")!!)
             .use { it.readAsXml() }
-            .getOrElse { return Try.failure(PublicationParser.Error.ResourceReading(it)) }
+            .getOrElse { return Try.failure(it.toParserError()) }
             .getFirst("rootfiles", Namespaces.OPC)
             ?.getFirst("rootfile", Namespaces.OPC)
             ?.getAttr("full-path")
             ?.let { Url.fromEpubHref(it) }
             ?.let { Try.success(it) }
-            ?: Try.failure(PublicationParser.Error.ParsingFailed("Cannot successfully parse OPF."))
+            ?: Try.failure(PublicationParser.Error.InvalidAsset("Cannot successfully parse OPF."))
 
     private suspend fun parseEncryptionData(container: Container): Map<Url, Encryption> =
         container.readAsXmlOrNull("META-INF/encryption.xml")

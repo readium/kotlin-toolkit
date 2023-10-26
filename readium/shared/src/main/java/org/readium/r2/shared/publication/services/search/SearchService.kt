@@ -32,38 +32,41 @@ public sealed class SearchError(
     /**
      * The publication is not searchable.
      */
-    public object PublicationNotSearchable
-        : SearchError("This publication is not searchable.")
+    public object PublicationNotSearchable :
+        SearchError("This publication is not searchable.")
 
     /**
      * The provided search query cannot be handled by the service.
      */
-    public class BadQuery(cause: Error)
-        : SearchError("The provided search query cannot be handled by the service.", cause)
+    public class BadQuery(cause: Error) :
+        SearchError("The provided search query cannot be handled by the service.", cause)
 
     /**
      * An error occurred while accessing one of the publication's resources.
      */
-    public class ResourceError(cause: Error)
-        : SearchError("An error occurred while accessing one of the publication's resources.", cause)
+    public class ResourceError(cause: Error) :
+        SearchError(
+            "An error occurred while accessing one of the publication's resources.",
+            cause
+        )
 
     /**
      * An error occurred while performing an HTTP request.
      */
-    public class NetworkError(cause: HttpError)
-        : SearchError("An error occurred while performing an HTTP request.", cause)
+    public class NetworkError(cause: HttpError) :
+        SearchError("An error occurred while performing an HTTP request.", cause)
 
     /**
      * The search was cancelled by the caller.
      *
      * For example, when a coroutine or a network request is cancelled.
      */
-    public object Cancelled
-        : SearchError("The search was cancelled.")
+    public object Cancelled :
+        SearchError("The search was cancelled.")
 
     /** For any other custom service error. */
-    public class Other(cause: Error)
-        : SearchError("An error occurred while searching.", cause)
+    public class Other(cause: Error) :
+        SearchError("An error occurred while searching.", cause)
 }
 
 /**

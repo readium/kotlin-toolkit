@@ -14,7 +14,9 @@ import org.json.JSONObject
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Error
+import org.readium.r2.shared.util.FilesystemError
 import org.readium.r2.shared.util.MessageError
+import org.readium.r2.shared.util.NetworkError
 import org.readium.r2.shared.util.SuspendingCloseable
 import org.readium.r2.shared.util.ThrowableError
 import org.readium.r2.shared.util.Try
@@ -88,19 +90,12 @@ public sealed class ResourceError(
     override val cause: Error? = null
 ) : Error {
 
-    /** Equivalent to a 400 HTTP error. */
-    public class BadRequest(cause: Error? = null) :
-        ResourceError("Invalid request which can't be processed", cause) {
-
-            public constructor(exception: Exception) : this(ThrowableError(exception))
-        }
-
     /** Equivalent to a 404 HTTP error. */
     public class NotFound(cause: Error? = null) :
-        ResourceError("Resource not found", cause) {
+        ResourceError("Resource not found.", cause) {
 
-            public constructor(exception: Exception) : this(ThrowableError(exception))
-        }
+        public constructor(exception: Exception) : this(ThrowableError(exception))
+    }
 
     /**
      * Equivalent to a 403 HTTP error.
@@ -110,25 +105,19 @@ public sealed class ResourceError(
      */
     public class Forbidden(cause: Error? = null) :
         ResourceError("You are not allowed to access the resource.", cause) {
-            public constructor(exception: Exception) : this(ThrowableError(exception))
-        }
+        public constructor(exception: Exception) : this(ThrowableError(exception))
+    }
 
-    /**
-     * Equivalent to a 503 HTTP error.
-     *
-     * Used when the source can't be reached, e.g. no Internet connection, or an issue with the
-     * file system. Usually this is a temporary error.
-     */
-    public class Unavailable(cause: Error? = null) :
-        ResourceError("The resource is currently unavailable, please try again later.", cause) {
+    public class Network(public override val cause: NetworkError) :
+        ResourceError("A network error occurred.", cause)
 
-            public constructor(exception: Exception) : this(ThrowableError(exception))
-        }
+    public class Filesystem(public override val cause: FilesystemError) :
+        ResourceError("A filesystem error occurred.", cause) {
 
-    /**
-     * The Internet connection appears to be offline.
-     */
-    public object Offline : ResourceError("The Internet connection appears to be offline.")
+        public constructor(exception: Exception) : this(
+            FilesystemError(ThrowableError(exception))
+        )
+    }
 
     /**
      * Equivalent to a 507 HTTP error.
@@ -138,11 +127,15 @@ public sealed class ResourceError(
     public class OutOfMemory(override val cause: ThrowableError<OutOfMemoryError>) :
         ResourceError("The resource is too large to be read on this device.", cause) {
 
-            public constructor(error: OutOfMemoryError) : this(ThrowableError(error))
-        }
+        public constructor(error: OutOfMemoryError) : this(ThrowableError(error))
+    }
 
-    public class InvalidContent(cause: Error?)
-        : ResourceError("Content seems invalid. ", cause)
+    public class InvalidContent(cause: Error?) :
+        ResourceError("Content seems invalid. ", cause) {
+
+        public constructor(message: String) : this(MessageError(message))
+        public constructor(exception: Exception) : this(ThrowableError(exception))
+    }
 
     /** For any other error, such as HTTP 500. */
     public class Other(cause: Error) : ResourceError("A service error occurred", cause) {
@@ -169,20 +162,14 @@ public class FailureResource(
         "${javaClass.simpleName}($error)"
 }
 
-
-/**
- * Maps the result with the given [transform]
- *
- * If the [transform] throws an [Exception], it is wrapped in a failure with Resource.Exception.Other.
- */
-
-@Deprecated("Catch exceptions yourself to the most suitable ResourceError.", level = DeprecationLevel.ERROR,
+@Deprecated(
+    "Catch exceptions yourself to the most suitable ResourceError.",
+    level = DeprecationLevel.ERROR,
     replaceWith = ReplaceWith("map(transform)")
 )
 @Suppress("UnusedReceiverParameter")
 public fun <R, S> ResourceTry<S>.mapCatching(): ResourceTry<R> =
     throw NotImplementedError()
-
 
 public inline fun <R, S> ResourceTry<S>.flatMapCatching(transform: (value: S) -> ResourceTry<R>): ResourceTry<R> =
     flatMap {
@@ -235,10 +222,9 @@ public suspend fun Resource.readAsString(charset: Charset? = null): ResourceTry<
 public suspend fun Resource.readAsJson(): ResourceTry<JSONObject> =
     readAsString(charset = Charsets.UTF_8)
         .decode(
-            {  JSONObject(it) },
+            { JSONObject(it) },
             { "Content doesn't seem to be valid JSON." }
         )
-
 
 /**
  * Reads the full content as an XML document.
@@ -246,9 +232,9 @@ public suspend fun Resource.readAsJson(): ResourceTry<JSONObject> =
 public suspend fun Resource.readAsXml(): ResourceTry<ElementNode> =
     read()
         .decode(
-            {  XmlParser().parse(ByteArrayInputStream(it)) },
+            { XmlParser().parse(ByteArrayInputStream(it)) },
             { "Content doesn't seem to be valid XML." }
-    )
+        )
 
 /**
  * Reads the full content as a [Bitmap].

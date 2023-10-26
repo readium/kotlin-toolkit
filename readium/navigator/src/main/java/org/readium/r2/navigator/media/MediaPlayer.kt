@@ -15,7 +15,7 @@ import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.PublicationId
-import org.readium.r2.shared.util.resource.Resource
+import org.readium.r2.shared.util.resource.ResourceError
 
 /**
  * Media player compatible with Android's MediaSession and handling the playback for
@@ -59,7 +59,7 @@ public interface MediaPlayer {
          * Called when a resource failed to be loaded, for example because the Internet connection
          * is offline and the resource is streamed.
          */
-        public fun onResourceLoadFailed(link: Link, error: Resource.Error)
+        public fun onResourceLoadFailed(link: Link, error: ResourceError)
 
         /**
          * Creates the [NotificationMetadata] for the given resource [link].

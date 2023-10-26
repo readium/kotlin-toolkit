@@ -92,7 +92,7 @@ internal class ChannelZipContainer(
                 } catch (e: ResourceChannel.ResourceException) {
                     Try.failure(e.error)
                 } catch (e: Exception) {
-                    Try.failure(ResourceError.Other(e))
+                    Try.failure(ResourceError.InvalidContent(e))
                 }
             }
 

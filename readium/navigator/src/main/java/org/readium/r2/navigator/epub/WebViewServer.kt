@@ -7,28 +7,22 @@
 package org.readium.r2.navigator.epub
 
 import android.app.Application
-import android.content.res.AssetManager
 import android.os.PatternMatcher
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import androidx.webkit.WebViewAssetLoader
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import org.readium.r2.navigator.epub.css.ReadiumCss
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Href
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.util.AbsoluteUrl
-import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.http.HttpHeaders
 import org.readium.r2.shared.util.http.HttpRange
-import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.resource.Resource
+import org.readium.r2.shared.util.resource.ResourceError
 import org.readium.r2.shared.util.resource.ResourceInputStream
-import org.readium.r2.shared.util.resource.StringResource
-import org.readium.r2.shared.util.resource.fallback
 
 /**
  * Serves the publication resources and application assets in the EPUB navigator web views.
@@ -38,7 +32,8 @@ internal class WebViewServer(
     private val application: Application,
     private val publication: Publication,
     servedAssets: List<String>,
-    private val disableSelectionWhenProtected: Boolean
+    private val disableSelectionWhenProtected: Boolean,
+    private val onResourceLoadFailed: (Url, ResourceError) -> Unit
 ) {
     companion object {
         val publicationBaseHref = AbsoluteUrl("https://readium/publication/")!!
@@ -47,8 +42,6 @@ internal class WebViewServer(
         fun assetUrl(path: String): Url? =
             Url.fromDecodedPath(path)?.let { assetsBaseHref.resolve(it) }
     }
-
-    private val assetManager: AssetManager = application.assets
 
     /**
      * Serves the requests of the navigator web views.
@@ -95,7 +88,8 @@ internal class WebViewServer(
         )
 
         var resource = publication.get(linkWithoutAnchor)
-            .fallback { errorResource(link, error = it) }
+        // FIXME: report loading errors through Navigator.Listener.onResourceLoadingFailed
+        // .fallback { errorResource(link, error = it) }
         if (link.mediaType?.isHtml == true) {
             resource = resource.injectHtml(
                 publication,
@@ -135,19 +129,6 @@ internal class WebViewServer(
             )
         }
     }
-
-    private fun errorResource(link: Link, error: Resource.Error): Resource =
-        StringResource(mediaType = MediaType.XHTML) {
-            withContext(Dispatchers.IO) {
-                Try.success(
-                    assetManager
-                        .open("readium/error.xhtml").bufferedReader()
-                        .use { it.readText() }
-                        .replace("\${error}", error.getUserMessage(application))
-                        .replace("\${href}", link.href.toString())
-                )
-            }
-        }
 
     private fun isServedAsset(path: String): Boolean =
         servedAssetPatterns.any { it.match(path) }

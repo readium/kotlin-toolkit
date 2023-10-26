@@ -15,6 +15,7 @@ import org.readium.r2.shared.extensions.toMap
 import org.readium.r2.shared.opds.*
 import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.toJSON
+import org.readium.r2.shared.util.ErrorException
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.http.DefaultHttpClient
@@ -60,7 +61,7 @@ public class OPDS1Parser {
             return client.fetchWithDecoder(request) {
                 val url = Url(request.url) ?: throw Exception("Invalid URL")
                 this.parse(it.body, url)
-            }
+            }.mapFailure { ErrorException(it) }
         }
 
         public fun parse(xmlData: ByteArray, url: Url): ParseData {
@@ -243,7 +244,7 @@ public class OPDS1Parser {
                     template
                 }
                 null
-            }
+            }.mapFailure { ErrorException(it) }
         }
 
         private fun parseEntry(entry: ElementNode, baseUrl: Url): Publication? {

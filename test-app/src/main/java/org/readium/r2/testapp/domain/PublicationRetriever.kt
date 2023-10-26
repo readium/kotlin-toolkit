@@ -22,11 +22,13 @@ import org.readium.r2.shared.publication.opds.images
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.asset.Asset
 import org.readium.r2.shared.util.asset.AssetRetriever
 import org.readium.r2.shared.util.downloads.DownloadManager
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.mediatype.FormatRegistry
 import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.shared.util.resource.ResourceError
 import org.readium.r2.testapp.data.DownloadRepository
 import org.readium.r2.testapp.utils.extensions.copyToTempFile
 import org.readium.r2.testapp.utils.extensions.moveTo
@@ -121,7 +123,7 @@ class LocalPublicationRetriever(
         coroutineScope.launch {
             val tempFile = uri.copyToTempFile(context, storageDir)
                 .getOrElse {
-                    listener.onError(ImportError.StorageError(it))
+                    listener.onError(ImportError.ResourceError(ResourceError.Filesystem(it)))
                     return@launch
                 }
 
@@ -154,7 +156,7 @@ class LocalPublicationRetriever(
             }
 
         if (
-            sourceAsset is org.readium.r2.shared.util.asset.Asset.Resource &&
+            sourceAsset is Asset.Resource &&
             sourceAsset.mediaType.matches(MediaType.LCP_LICENSE_DOCUMENT)
         ) {
             if (lcpPublicationRetriever == null) {
@@ -176,7 +178,7 @@ class LocalPublicationRetriever(
         } catch (e: Exception) {
             Timber.d(e)
             tryOrNull { libraryFile.delete() }
-            listener.onError(ImportError.StorageError(e))
+            listener.onError(ImportError.ResourceError(ResourceError.Filesystem(e)))
             return
         }
 
@@ -331,14 +333,14 @@ class LcpPublicationRetriever(
      * Retrieves a publication protected with the given license.
      */
     fun retrieve(
-        licenceAsset: org.readium.r2.shared.util.asset.Asset.Resource,
+        licenceAsset: Asset.Resource,
         licenceFile: File,
         coverUrl: AbsoluteUrl?
     ) {
         coroutineScope.launch {
             val license = licenceAsset.resource.read()
                 .getOrElse {
-                    listener.onError(ImportError.StorageError(it))
+                    listener.onError(ImportError.ResourceError(it))
                     return@launch
                 }
                 .let {

@@ -160,7 +160,7 @@ internal class JavaZipContainer(
                     Try.success(bytes)
                 }
             } catch (e: IOException) {
-                Try.failure(ResourceError.Unavailable(e))
+                Try.failure(ResourceError.Filesystem(e))
             } catch (e: Exception) {
                 Try.failure(ResourceError.Other(e))
             }

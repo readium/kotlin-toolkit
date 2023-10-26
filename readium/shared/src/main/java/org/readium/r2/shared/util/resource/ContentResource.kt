@@ -122,7 +122,7 @@ public class ContentResource internal constructor(
         return ResourceTry.catching {
             val stream = contentResolver.openInputStream(uri)
                 ?: return Try.failure(
-                    ResourceError.Unavailable(
+                    ResourceError.Other(
                         Exception("Content provider recently crashed.")
                     )
                 )
@@ -140,7 +140,7 @@ public class ContentResource internal constructor(
         } catch (e: SecurityException) {
             failure(ResourceError.Forbidden(e))
         } catch (e: IOException) {
-            failure(ResourceError.Unavailable(e))
+            failure(ResourceError.Filesystem(e))
         } catch (e: Exception) {
             failure(ResourceError.Other(e))
         } catch (e: OutOfMemoryError) { // We don't want to catch any Error, only OOM.

@@ -20,7 +20,7 @@ import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Metadata
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.util.Url
-import org.readium.r2.shared.util.resource.Resource
+import org.readium.r2.shared.util.resource.ResourceError
 
 /**
  * Main component to use the PDF navigator with PSPDFKit.
@@ -50,7 +50,7 @@ public class PsPdfKitEngineProvider(
                 initialPageIndex = input.pageIndex,
                 initialSettings = input.settings,
                 listener = object : PsPdfKitDocumentFragment.Listener {
-                    override fun onResourceLoadFailed(href: Url, error: Resource.Error) {
+                    override fun onResourceLoadFailed(href: Url, error: ResourceError) {
                         input.navigatorListener?.onResourceLoadFailed(href, error)
                     }
 

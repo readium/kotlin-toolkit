@@ -28,6 +28,9 @@ import org.readium.r2.navigator.preferences.Configurable
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.extensions.tryOrNull
 import org.readium.r2.shared.publication.Locator
+import org.readium.r2.shared.util.Error as SharedError
+import org.readium.r2.shared.util.ErrorException
+import org.readium.r2.shared.util.ThrowableError
 import timber.log.Timber
 
 /**
@@ -104,12 +107,12 @@ internal class TtsPlayer<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
         /**
          * The player is ready to play.
          */
-        object Ready : State
+        data object Ready : State
 
         /**
          * The end of the media has been reached.
          */
-        object Ended : State
+        data object Ended : State
 
         /**
          * The player cannot play because an error occurred.
@@ -118,7 +121,7 @@ internal class TtsPlayer<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
 
             data class EngineError<E : TtsEngine.Error> (val error: E) : Error()
 
-            data class ContentError(val exception: Exception) : Error()
+            data class ContentError(val error: org.readium.r2.shared.util.Error) : Error()
         }
     }
 
@@ -364,9 +367,11 @@ internal class TtsPlayer<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
         playIfReadyAndNotPaused()
     }
 
+    @Suppress("unused")
     fun hasNextResource(): Boolean =
         utteranceMutable.value.position.resourceIndex + 1 < contentIterator.resourceCount
 
+    @Suppress("unused")
     fun nextResource() {
         coroutineScope.launch {
             nextResourceAsync()
@@ -386,9 +391,11 @@ internal class TtsPlayer<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
         playIfReadyAndNotPaused()
     }
 
+    @Suppress("MemberVisibilityCanBePrivate")
     fun hasPreviousResource(): Boolean =
         utteranceMutable.value.position.resourceIndex > 0
 
+    @Suppress("unused")
     fun previousResource() {
         coroutineScope.launch {
             previousResourceAsync()
@@ -438,7 +445,7 @@ internal class TtsPlayer<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
 
                 previousUtterance
             } catch (e: Exception) {
-                onContentError(e)
+                onContentException(e)
                 return
             }
 
@@ -461,7 +468,7 @@ internal class TtsPlayer<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
         val nextUtterance = try {
             contentIterator.next()
         } catch (e: Exception) {
-            onContentError(e)
+            onContentException(e)
             return
         }
 
@@ -480,7 +487,7 @@ internal class TtsPlayer<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
         val startContext = try {
             contentIterator.startContext()
         } catch (e: Exception) {
-            onContentError(e)
+            onContentException(e)
             return
         }
         utteranceWindow = checkNotNull(startContext)
@@ -519,9 +526,19 @@ internal class TtsPlayer<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
         playbackJob?.cancel()
     }
 
-    private fun onContentError(exception: Exception) {
+    private fun onContentException(exception: Exception) {
+        val error =
+            if (exception is ErrorException) {
+                exception.error
+            } else {
+                ThrowableError(exception)
+            }
+        onContentError(error)
+    }
+
+    private fun onContentError(error: SharedError) {
         playbackMutable.value = playbackMutable.value.copy(
-            state = State.Error.ContentError(exception)
+            state = State.Error.ContentError(error)
         )
         playbackJob?.cancel()
     }
