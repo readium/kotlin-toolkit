@@ -16,11 +16,6 @@ public enum class AssetType(public val value: String) {
     Resource("resource"),
 
     /**
-     * A directory container.
-     */
-    Directory("directory"),
-
-    /**
      * An archive container.
      */
     Archive("archive");

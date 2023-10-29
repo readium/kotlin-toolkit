@@ -16,7 +16,7 @@ import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.protection.ContentProtectionSchemeRetriever
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Try
-import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.asset.Asset
 import org.readium.r2.shared.util.asset.AssetRetriever
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.resource.ResourceError
@@ -95,7 +95,7 @@ class Bookshelf(
     }
 
     fun addPublicationFromWeb(
-        url: Url
+        url: AbsoluteUrl
     ) {
         coroutineScope.launch {
             addBookFeedback(url)
@@ -103,7 +103,7 @@ class Bookshelf(
     }
 
     fun addPublicationFromStorage(
-        url: Url
+        url: AbsoluteUrl
     ) {
         coroutineScope.launch {
             addBookFeedback(url)
@@ -111,7 +111,7 @@ class Bookshelf(
     }
 
     private suspend fun addBookFeedback(
-        url: Url,
+        url: AbsoluteUrl,
         coverUrl: AbsoluteUrl? = null
     ) {
         addBook(url, coverUrl)
@@ -120,14 +120,16 @@ class Bookshelf(
     }
 
     private suspend fun addBook(
-        url: Url,
+        url: AbsoluteUrl,
         coverUrl: AbsoluteUrl? = null
     ): Try<Unit, ImportError> {
         val asset =
             assetRetriever.retrieve(url)
-                ?: return Try.failure(
-                    ImportError.PublicationError(PublicationError.UnsupportedAsset())
-                )
+                .getOrElse {
+                    return Try.failure(
+                        ImportError.PublicationError(PublicationError.UnsupportedAsset())
+                    )
+                }
 
         val drmScheme =
             protectionRetriever.retrieve(asset)
@@ -140,13 +142,15 @@ class Bookshelf(
             val coverFile =
                 coverStorage.storeCover(publication, coverUrl)
                     .getOrElse {
-                        return Try.failure(ImportError.ResourceError(ResourceError.Filesystem(it)))
+                        return Try.failure(
+                            ImportError.ResourceError(ResourceError.Filesystem(it))
+                        )
                     }
 
             val id = bookRepository.insertBook(
                 url.toString(),
                 asset.mediaType,
-                asset.assetType,
+                (asset as? Asset.Container)?.containerType,
                 drmScheme,
                 publication,
                 coverFile

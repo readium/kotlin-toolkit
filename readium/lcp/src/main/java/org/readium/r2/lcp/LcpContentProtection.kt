@@ -18,9 +18,9 @@ import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.asset.Asset
 import org.readium.r2.shared.util.asset.AssetError
 import org.readium.r2.shared.util.asset.AssetRetriever
-import org.readium.r2.shared.util.asset.AssetType
 import org.readium.r2.shared.util.flatMap
 import org.readium.r2.shared.util.getOrElse
+import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.resource.ResourceError
 import org.readium.r2.shared.util.resource.TransformingContainer
 
@@ -139,14 +139,20 @@ internal class LcpContentProtection(
                 assetRetriever.retrieve(
                     url,
                     mediaType = link.mediaType,
-                    assetType = AssetType.Archive
+                    containerType = if (link.mediaType.isZip) MediaType.ZIP else null
                 )
                     .map { it as Asset.Container }
                     .mapFailure { it.wrap() }
             } else {
-                (assetRetriever.retrieve(url) as? Asset.Container)
-                    ?.let { Try.success(it) }
-                    ?: Try.failure(AssetError.UnsupportedAsset())
+                assetRetriever.retrieve(url)
+                    .mapFailure { it.wrap() }
+                    .flatMap {
+                        if (it is Asset.Container) {
+                            Try.success((it))
+                        } else {
+                            Try.failure(AssetError.UnsupportedAsset())
+                        }
+                    }
             }
 
         return asset.flatMap { createResultAsset(it, license) }

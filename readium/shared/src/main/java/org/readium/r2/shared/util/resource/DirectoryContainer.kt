@@ -10,19 +10,15 @@ import java.io.File
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.extensions.isParentOf
-import org.readium.r2.shared.extensions.tryOr
 import org.readium.r2.shared.extensions.tryOrNull
-import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.RelativeUrl
-import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
-import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 
 /**
  * A file system directory as a [Container].
  */
-internal class DirectoryContainer(
+public class DirectoryContainer(
     private val root: File,
     private val mediaTypeRetriever: MediaTypeRetriever
 ) : Container {
@@ -64,37 +60,4 @@ internal class DirectoryContainer(
     }
 
     override suspend fun close() {}
-}
-
-public class DirectoryContainerFactory(
-    private val mediaTypeRetriever: MediaTypeRetriever
-) : ContainerFactory {
-
-    override suspend fun create(url: AbsoluteUrl): Container? {
-        val file = url.toFile()
-            ?: return null
-
-        if (!tryOr(false) { file.isDirectory }) {
-            return null
-        }
-
-        return create(file).getOrNull()
-    }
-
-    override suspend fun create(
-        url: AbsoluteUrl,
-        mediaType: MediaType
-    ): Try<Container, ContainerFactory.Error> {
-        val file = url.toFile()
-            ?: return Try.failure(ContainerFactory.Error.SchemeNotSupported(url.scheme))
-
-        return create(file)
-    }
-
-    // Internal for testing purpose
-    internal suspend fun create(file: File): Try<Container, ContainerFactory.Error> {
-        val container = DirectoryContainer(file, mediaTypeRetriever)
-
-        return Try.success(container)
-    }
 }

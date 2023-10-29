@@ -22,11 +22,10 @@ import org.readium.navigator.media.tts.android.AndroidTtsSettings
 import org.readium.r2.navigator.Navigator
 import org.readium.r2.navigator.VisualNavigator
 import org.readium.r2.shared.ExperimentalReadiumApi
-import org.readium.r2.shared.UserException
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.util.Language
-import org.readium.r2.testapp.R
+import org.readium.r2.testapp.domain.TtsError
 import org.readium.r2.testapp.reader.MediaService
 import org.readium.r2.testapp.reader.MediaServiceFacade
 import org.readium.r2.testapp.reader.ReaderInitData
@@ -79,7 +78,7 @@ class TtsViewModel private constructor(
         /**
          * Emitted when the [TtsNavigator] fails with an error.
          */
-        class OnError(val error: UserException) : Event()
+        class OnError(val error: TtsError) : Event()
 
         /**
          * Emitted when the selected language cannot be played because it is missing voice data.
@@ -182,8 +181,8 @@ class TtsViewModel private constructor(
             initialLocator = start,
             initialPreferences = preferencesManager.preferences.value
         ) ?: run {
-            val exception = UserException(R.string.tts_error_initialization)
-            _events.send(Event.OnError(exception))
+            val error = TtsError.Initialization()
+            _events.send(Event.OnError(error))
             return
         }
 
@@ -191,7 +190,7 @@ class TtsViewModel private constructor(
             mediaServiceFacade.openSession(bookId, ttsNavigator)
         } catch (e: Exception) {
             ttsNavigator.close()
-            val exception = UserException(R.string.error_unexpected)
+            val exception = TtsError.ServiceError(e)
             _events.trySend(Event.OnError(exception))
             launchJob = null
             return
@@ -228,18 +227,21 @@ class TtsViewModel private constructor(
     private fun onPlaybackError(error: TtsNavigator.State.Error) {
         val event = when (error) {
             is TtsNavigator.State.Error.ContentError -> {
-                Timber.e(error.error)
-                Event.OnError(UserException(R.string.tts_error_other, cause = error.error))
+                Event.OnError(TtsError.ContentError(error))
             }
             is TtsNavigator.State.Error.EngineError<*> -> {
                 val engineError = (error.error as AndroidTtsEngine.Error)
                 when (engineError) {
                     is AndroidTtsEngine.Error.LanguageMissingData ->
                         Event.OnMissingVoiceData(engineError.language)
-                    AndroidTtsEngine.Error.Network ->
-                        Event.OnError(UserException(R.string.tts_error_network))
-                    else ->
-                        Event.OnError(UserException(R.string.tts_error_other))
+                    is AndroidTtsEngine.Error.Network -> {
+                        val ttsError = TtsError.EngineError.Network(engineError)
+                        Event.OnError(ttsError)
+                    }
+                    else -> {
+                        val ttsError = TtsError.EngineError.Other(engineError)
+                        Event.OnError(ttsError)
+                    }
                 }.also { Timber.e("Error type: $error") }
             }
         }

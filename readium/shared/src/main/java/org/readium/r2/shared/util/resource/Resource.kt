@@ -114,9 +114,7 @@ public sealed class ResourceError(
     public class Filesystem(public override val cause: FilesystemError) :
         ResourceError("A filesystem error occurred.", cause) {
 
-        public constructor(exception: Exception) : this(
-            FilesystemError(ThrowableError(exception))
-        )
+        public constructor(exception: Exception) : this(FilesystemError(exception))
     }
 
     /**
@@ -130,7 +128,7 @@ public sealed class ResourceError(
         public constructor(error: OutOfMemoryError) : this(ThrowableError(error))
     }
 
-    public class InvalidContent(cause: Error?) :
+    public class InvalidContent(cause: Error? = null) :
         ResourceError("Content seems invalid. ", cause) {
 
         public constructor(message: String) : this(MessageError(message))
@@ -138,8 +136,10 @@ public sealed class ResourceError(
     }
 
     /** For any other error, such as HTTP 500. */
-    public class Other(cause: Error) : ResourceError("A service error occurred", cause) {
+    public class Other(cause: Error) :
+        ResourceError("An unclassified error occurred.", cause) {
 
+        public constructor(message: String) : this(MessageError(message))
         public constructor(exception: Exception) : this(ThrowableError(exception))
     }
 
@@ -195,9 +195,7 @@ public fun<R, S> ResourceTry<S>.decode(
                 )
             } catch (e: Exception) {
                 Try.failure(
-                    ResourceError.InvalidContent(
-                        MessageError(errorMessage())
-                    )
+                    ResourceError.InvalidContent(errorMessage())
                 )
             }
         is Try.Failure ->
@@ -245,8 +243,6 @@ public suspend fun Resource.readAsBitmap(): ResourceTry<Bitmap> =
             BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
                 ?.let { Try.success(it) }
                 ?: Try.failure(
-                    ResourceError.InvalidContent(
-                        MessageError("Could not decode resource as a bitmap.")
-                    )
+                    ResourceError.InvalidContent("Could not decode resource as a bitmap.")
                 )
         }

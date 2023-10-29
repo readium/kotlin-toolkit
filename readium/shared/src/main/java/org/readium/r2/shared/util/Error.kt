@@ -60,6 +60,8 @@ public class FilesystemError(
     override val cause: Error? = null
 ) : Error {
 
+    public constructor(exception: Exception) : this(ThrowableError(exception))
+
     override val message: String =
         "An unexpected error occurred on the filesystem."
 }

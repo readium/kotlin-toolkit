@@ -28,18 +28,9 @@ public class ContentResourceFactory(
     private val contentResolver: ContentResolver
 ) : ResourceFactory {
 
-    override suspend fun create(url: AbsoluteUrl): Resource? {
-        if (!url.isContent) {
-            return null
-        }
-
-        // FIXME: should check if uri points t o a file
-        return ContentResource(url.toUri(), contentResolver)
-    }
-
     override suspend fun create(
         url: AbsoluteUrl,
-        mediaType: MediaType
+        mediaType: MediaType?
     ): Try<Resource, ResourceFactory.Error> {
         if (!url.isContent) {
             return Try.failure(ResourceFactory.Error.SchemeNotSupported(url.scheme))

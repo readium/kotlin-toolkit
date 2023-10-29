@@ -140,5 +140,10 @@
     <string name="tts_stop">Stop</string>
     <string name="tts_voice">Voice</string>
 
+    <string name="search_error_not_searchable">This publication is not searchable</string>
+    <string name="search_error_cancelled">The search was cancelled</string>
+    <string name="search_error_other">An error occurred while searching</string>
+
+
     <string name="error_unexpected">An unexpected error occurred.</string>
 </resources>

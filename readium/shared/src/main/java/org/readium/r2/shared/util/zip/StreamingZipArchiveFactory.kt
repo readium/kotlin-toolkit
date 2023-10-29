@@ -7,7 +7,6 @@
 package org.readium.r2.shared.util.zip
 
 import java.io.File
-import org.readium.r2.shared.extensions.tryOrNull
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
@@ -28,25 +27,13 @@ public class StreamingZipArchiveFactory(
 
     override suspend fun create(
         resource: Resource,
+        archiveType: MediaType?,
         password: String?
-    ): Container? {
-        if (password != null) {
-            return null
+    ): Try<ArchiveFactory.Result, ArchiveFactory.Error> {
+        if (archiveType != null && !archiveType.matches(MediaType.ZIP)) {
+            return Try.failure(ArchiveFactory.Error.FormatNotSupported())
         }
 
-        return tryOrNull {
-            val resourceChannel = ResourceChannel(resource)
-            val channel = wrapBaseChannel(resourceChannel)
-            val zipFile = ZipFile(channel, true)
-            ChannelZipContainer(zipFile, resource.source, mediaTypeRetriever)
-        }
-    }
-
-    override suspend fun create(
-        resource: Resource,
-        password: String?,
-        mediaType: MediaType
-    ): Try<Container, ArchiveFactory.Error> {
         if (password != null) {
             return Try.failure(ArchiveFactory.Error.PasswordsNotSupported())
         }
@@ -56,9 +43,9 @@ public class StreamingZipArchiveFactory(
             val channel = wrapBaseChannel(resourceChannel)
             val zipFile = ZipFile(channel, true)
             val channelZip = ChannelZipContainer(zipFile, resource.source, mediaTypeRetriever)
-            Try.success(channelZip)
+            Try.success(ArchiveFactory.Result(MediaType.ZIP, channelZip))
         } catch (e: ResourceChannel.ResourceException) {
-            Try.failure(ArchiveFactory.Error.ResourceReading(e.error))
+            Try.failure(ArchiveFactory.Error.ResourceError(e.error))
         } catch (e: Exception) {
             Try.failure(ArchiveFactory.Error.FormatNotSupported(e))
         }

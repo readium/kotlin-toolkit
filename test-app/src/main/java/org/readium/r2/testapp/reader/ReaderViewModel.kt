@@ -27,6 +27,7 @@ import org.readium.r2.shared.UserException
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.LocatorCollection
 import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.publication.services.search.SearchError
 import org.readium.r2.shared.publication.services.search.SearchIterator
 import org.readium.r2.shared.publication.services.search.SearchTry
 import org.readium.r2.shared.publication.services.search.search
@@ -205,11 +206,27 @@ class ReaderViewModel(
         lastSearchQuery = query
         _searchLocators.value = emptyList()
         searchIterator = publication.search(query)
-            .onFailure { activityChannel.send(ActivityCommand.ToastError(it)) }
+            .onFailure { activityChannel.send(ActivityCommand.ToastError(it.wrap())) }
             .getOrNull()
         pagingSourceFactory.invalidate()
         searchChannel.send(SearchCommand.StartNewSearch)
     }
+
+    private fun SearchError.wrap(): org.readium.r2.testapp.domain.SearchError =
+        when (this) {
+            is SearchError.BadQuery ->
+                org.readium.r2.testapp.domain.SearchError.BadQuery(this)
+            SearchError.Cancelled ->
+                org.readium.r2.testapp.domain.SearchError.Cancelled
+            is SearchError.NetworkError ->
+                org.readium.r2.testapp.domain.SearchError.NetworkError(this)
+            is SearchError.Other ->
+                org.readium.r2.testapp.domain.SearchError.Other(this)
+            SearchError.PublicationNotSearchable ->
+                org.readium.r2.testapp.domain.SearchError.PublicationNotSearchable
+            is SearchError.ResourceError ->
+                org.readium.r2.testapp.domain.SearchError.ResourceError(this)
+        }
 
     fun cancelSearch() = viewModelScope.launch {
         _searchLocators.value = emptyList()

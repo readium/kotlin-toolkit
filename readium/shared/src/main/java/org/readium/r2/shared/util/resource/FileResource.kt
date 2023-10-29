@@ -8,6 +8,7 @@ package org.readium.r2.shared.util.resource
 
 import java.io.File
 import java.io.FileNotFoundException
+import java.io.IOException
 import java.io.RandomAccessFile
 import java.nio.channels.Channels
 import kotlinx.coroutines.Dispatchers
@@ -124,6 +125,8 @@ public class FileResource private constructor(
             failure(ResourceError.NotFound(e))
         } catch (e: SecurityException) {
             failure(ResourceError.Forbidden(e))
+        } catch (e: IOException) {
+            failure(ResourceError.Filesystem(e))
         } catch (e: Exception) {
             failure(ResourceError.Other(e))
         } catch (e: OutOfMemoryError) { // We don't want to catch any Error, only OOM.
@@ -138,28 +141,17 @@ public class FileResourceFactory(
     private val mediaTypeRetriever: MediaTypeRetriever
 ) : ResourceFactory {
 
-    override suspend fun create(url: AbsoluteUrl): Resource? {
-        val file = url.toFile()
-            ?: return null
-
-        try {
-            if (!file.isFile) {
-                return null
-            }
-        } catch (e: Exception) {
-            return null
-        }
-
-        return FileResource(file, mediaTypeRetriever)
-    }
-
     override suspend fun create(
         url: AbsoluteUrl,
-        mediaType: MediaType
+        mediaType: MediaType?
     ): Try<Resource, ResourceFactory.Error> {
         val file = url.toFile()
             ?: return Try.failure(ResourceFactory.Error.SchemeNotSupported(url.scheme))
 
-        return Try.success(FileResource(file, mediaType))
+        val resource = mediaType
+            ?.let { FileResource(file, mediaType) }
+            ?: FileResource(file, mediaTypeRetriever)
+
+        return Try.success(resource)
     }
 }

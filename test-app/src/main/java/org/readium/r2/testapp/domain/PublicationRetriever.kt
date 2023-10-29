@@ -148,9 +148,9 @@ class LocalPublicationRetriever(
         coverUrl: AbsoluteUrl? = null
     ) {
         val sourceAsset = assetRetriever.retrieve(tempFile)
-            ?: run {
+            .getOrElse {
                 listener.onError(
-                    ImportError.PublicationError(PublicationError.UnsupportedAsset())
+                    ImportError.PublicationError(PublicationError(it))
                 )
                 return
             }

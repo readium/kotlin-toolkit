@@ -16,6 +16,7 @@ import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.mediatype.MediaType
 
+// TODO: to remove if the current approach of reading through shared storage proves good
 internal class FileChannelResource(
     override val source: AbsoluteUrl?,
     private val channel: FileChannel

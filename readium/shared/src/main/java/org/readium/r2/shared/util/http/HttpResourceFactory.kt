@@ -16,18 +16,9 @@ public class HttpResourceFactory(
     private val httpClient: HttpClient
 ) : ResourceFactory {
 
-    override suspend fun create(url: AbsoluteUrl): Resource? {
-        if (!url.isHttp) {
-            return null
-        }
-
-        // FIXME: should make a head request to check that url points to a resource
-        return HttpResource(httpClient, url)
-    }
-
     override suspend fun create(
         url: AbsoluteUrl,
-        mediaType: MediaType
+        mediaType: MediaType?
     ): Try<Resource, ResourceFactory.Error> {
         if (!url.isHttp) {
             return Try.failure(ResourceFactory.Error.SchemeNotSupported(url.scheme))

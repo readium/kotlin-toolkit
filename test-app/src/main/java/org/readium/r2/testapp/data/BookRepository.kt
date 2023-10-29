@@ -15,7 +15,6 @@ import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.indexOfFirstWithHref
 import org.readium.r2.shared.publication.protection.ContentProtection
-import org.readium.r2.shared.util.asset.AssetType
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.testapp.data.db.BooksDao
 import org.readium.r2.testapp.data.model.Book
@@ -82,7 +81,7 @@ class BookRepository(
     suspend fun insertBook(
         href: String,
         mediaType: MediaType,
-        assetType: AssetType,
+        containerType: MediaType?,
         drm: ContentProtection.Scheme?,
         publication: Publication,
         cover: File
@@ -94,7 +93,7 @@ class BookRepository(
             href = href,
             identifier = publication.metadata.identifier ?: "",
             mediaType = mediaType,
-            assetType = assetType,
+            containerType = containerType,
             drm = drm,
             progression = "{}",
             cover = cover.path

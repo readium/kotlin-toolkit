@@ -8,33 +8,30 @@ package org.readium.r2.shared.util.asset
 
 import android.content.ContentResolver
 import android.content.Context
-import android.net.Uri
 import android.provider.MediaStore
 import java.io.File
-import kotlin.Boolean
 import kotlin.Exception
 import kotlin.String
 import kotlin.let
-import kotlin.run
 import kotlin.takeUnless
 import org.readium.r2.shared.extensions.queryProjection
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Either
 import org.readium.r2.shared.util.Error as SharedError
 import org.readium.r2.shared.util.FilesystemError
+import org.readium.r2.shared.util.MessageError
 import org.readium.r2.shared.util.NetworkError
 import org.readium.r2.shared.util.ThrowableError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.flatMap
+import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.mediatype.MediaTypeHints
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 import org.readium.r2.shared.util.resource.ArchiveFactory
 import org.readium.r2.shared.util.resource.Container
-import org.readium.r2.shared.util.resource.ContainerFactory
 import org.readium.r2.shared.util.resource.ContainerMediaTypeSnifferContent
-import org.readium.r2.shared.util.resource.DirectoryContainerFactory
 import org.readium.r2.shared.util.resource.FileResourceFactory
 import org.readium.r2.shared.util.resource.FileZipArchiveFactory
 import org.readium.r2.shared.util.resource.Resource
@@ -50,7 +47,6 @@ import org.readium.r2.shared.util.toUrl
 public class AssetRetriever(
     private val mediaTypeRetriever: MediaTypeRetriever,
     private val resourceFactory: ResourceFactory,
-    private val containerFactory: ContainerFactory,
     private val archiveFactory: ArchiveFactory,
     private val contentResolver: ContentResolver
 ) {
@@ -61,7 +57,6 @@ public class AssetRetriever(
             return AssetRetriever(
                 mediaTypeRetriever = mediaTypeRetriever,
                 resourceFactory = FileResourceFactory(mediaTypeRetriever),
-                containerFactory = DirectoryContainerFactory(mediaTypeRetriever),
                 archiveFactory = FileZipArchiveFactory(mediaTypeRetriever),
                 contentResolver = context.contentResolver
             )
@@ -75,7 +70,7 @@ public class AssetRetriever(
 
         public class SchemeNotSupported(
             public val scheme: Url.Scheme,
-            cause: SharedError?
+            cause: SharedError? = null
         ) : Error("Scheme $scheme is not supported.", cause) {
 
             public constructor(scheme: Url.Scheme, exception: Exception) :
@@ -135,71 +130,41 @@ public class AssetRetriever(
     public suspend fun retrieve(
         url: AbsoluteUrl,
         mediaType: MediaType,
-        assetType: AssetType
+        containerType: MediaType?
     ): Try<Asset, Error> {
-        return when (assetType) {
-            AssetType.Archive ->
-                retrieveArchiveAsset(url, mediaType)
-
-            AssetType.Directory ->
-                retrieveDirectoryAsset(url, mediaType)
-
-            AssetType.Resource ->
+        return when (containerType) {
+            null ->
                 retrieveResourceAsset(url, mediaType)
+            else ->
+                retrieveArchiveAsset(url, mediaType, containerType)
         }
     }
 
     private suspend fun retrieveArchiveAsset(
         url: AbsoluteUrl,
-        mediaType: MediaType
+        mediaType: MediaType,
+        containerType: MediaType
     ): Try<Asset.Container, Error> {
         return retrieveResource(url, mediaType)
             .flatMap { resource: Resource ->
-                archiveFactory.create(resource, password = null, mediaType)
+                archiveFactory.create(resource, containerType, password = null)
                     .mapFailure { error ->
                         when (error) {
                             is ArchiveFactory.Error.FormatNotSupported ->
-                                Error.ArchiveFormatNotSupported(
-                                    error
-                                )
-                            is ArchiveFactory.Error.ResourceReading ->
+                                Error.ArchiveFormatNotSupported(error)
+                            is ArchiveFactory.Error.ResourceError ->
                                 error.cause.wrap(url)
                             is ArchiveFactory.Error.PasswordsNotSupported ->
-                                Error.ArchiveFormatNotSupported(
-                                    error
-                                )
+                                Error.ArchiveFormatNotSupported(error)
                         }
                     }
             }
             .map { container ->
                 Asset.Container(
                     mediaType,
-                    exploded = false,
-                    container
+                    containerType,
+                    container.container
                 )
-            }
-    }
-
-    private suspend fun retrieveDirectoryAsset(
-        url: AbsoluteUrl,
-        mediaType: MediaType
-    ): Try<Asset.Container, Error> {
-        return containerFactory.create(url, mediaType)
-            .map { container ->
-                Asset.Container(
-                    mediaType,
-                    exploded = true,
-                    container
-                )
-            }
-            .mapFailure { error ->
-                when (error) {
-                    is ContainerFactory.Error.SchemeNotSupported ->
-                        Error.SchemeNotSupported(
-                            error.scheme,
-                            error
-                        )
-                }
             }
     }
 
@@ -224,10 +189,7 @@ public class AssetRetriever(
             .mapFailure { error ->
                 when (error) {
                     is ResourceFactory.Error.SchemeNotSupported ->
-                        Error.SchemeNotSupported(
-                            error.scheme,
-                            error
-                        )
+                        Error.SchemeNotSupported(error.scheme, error)
                 }
             }
     }
@@ -255,46 +217,82 @@ public class AssetRetriever(
     /**
      * Retrieves an asset from a local file.
      */
-    public suspend fun retrieve(file: File): Asset? =
+    public suspend fun retrieve(file: File): Try<Asset, Error> =
         retrieve(file.toUrl())
-
-    /**
-     * Retrieves an asset from a [Uri].
-     */
-    public suspend fun retrieve(uri: Uri): Asset? {
-        val url = uri.toUrl()
-            ?: return null
-
-        return retrieve(url)
-    }
 
     /**
      * Retrieves an asset from a [Url].
      */
-    public suspend fun retrieve(url: Url): Asset? {
-        if (url !is AbsoluteUrl) return null
-
+    public suspend fun retrieve(url: AbsoluteUrl): Try<Asset, Error> {
         val resource = resourceFactory.create(url)
-            ?: run {
-                return containerFactory.create(url)
-                    ?.let { retrieve(url, it, exploded = true) }
+            .getOrElse {
+                return Try.failure(
+                    when (it) {
+                        is ResourceFactory.Error.SchemeNotSupported ->
+                            Error.SchemeNotSupported(it.scheme)
+                    }
+                )
             }
 
-        return archiveFactory.create(resource, password = null)
-            ?.let { retrieve(url, container = it, exploded = false) }
-            ?: retrieve(url, resource)
+        return when (
+            val archive = archiveFactory.create(
+                resource,
+                archiveType = null,
+                password = null
+            )
+        ) {
+            is Try.Failure ->
+                when (archive.value) {
+                    is ArchiveFactory.Error.PasswordsNotSupported ->
+                        return Try.failure(Error.ArchiveFormatNotSupported(archive.value))
+                    is ArchiveFactory.Error.ResourceError -> when (archive.value.cause) {
+                        is ResourceError.Filesystem ->
+                            return Try.failure(Error.Filesystem(archive.value.cause.cause))
+                        is ResourceError.Network ->
+                            return Try.failure(Error.Network(archive.value.cause.cause))
+                        is ResourceError.Forbidden ->
+                            return Try.failure(Error.Forbidden(url, archive.value))
+                        is ResourceError.NotFound ->
+                            return Try.failure(Error.NotFound(url, archive.value))
+                        is ResourceError.Other ->
+                            return Try.failure(Error.Unknown(archive.value))
+                        is ResourceError.OutOfMemory ->
+                            return Try.failure(
+                                Error.OutOfMemory(archive.value.cause.cause.throwable)
+                            )
+                        is ResourceError.InvalidContent ->
+                            return Try.failure(Error.InvalidAsset(archive.value))
+                    }
+                    is ArchiveFactory.Error.FormatNotSupported ->
+                        retrieve(url, resource)
+                            ?.let { Try.success(it) }
+                            ?: Try.failure(
+                                Error.Unknown(
+                                    MessageError("Cannot determine media type.")
+                                )
+                            )
+                }
+            is Try.Success ->
+                retrieve(url, archive.value.container, archive.value.mediaType)
+                    ?.let { Try.success(it) }
+                    ?: Try.failure(
+                        Error.Unknown(
+                            MessageError("Cannot determine media type.")
+                        )
+                    )
+        }
     }
 
     private suspend fun retrieve(
         url: AbsoluteUrl,
         container: Container,
-        exploded: Boolean
+        containerType: MediaType
     ): Asset? {
         val mediaType = retrieveMediaType(url, Either(container))
             ?: return null
         return Asset.Container(
             mediaType,
-            exploded = exploded,
+            containerType = containerType,
             container = container
         )
     }

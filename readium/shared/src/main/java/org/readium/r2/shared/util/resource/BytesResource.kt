@@ -7,7 +7,9 @@
 package org.readium.r2.shared.util.resource
 
 import kotlinx.coroutines.runBlocking
+import org.readium.r2.shared.extensions.coerceFirstNonNegative
 import org.readium.r2.shared.extensions.read
+import org.readium.r2.shared.extensions.requireLengthFitInt
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.getOrThrow
@@ -38,6 +40,15 @@ public sealed class BaseBytesResource(
 
         if (range == null) {
             return _bytes
+        }
+
+        @Suppress("NAME_SHADOWING")
+        val range = range
+            .coerceFirstNonNegative()
+            .requireLengthFitInt()
+
+        if (range.isEmpty()) {
+            return Try.success(ByteArray(0))
         }
 
         return _bytes.map { it.read(range) }

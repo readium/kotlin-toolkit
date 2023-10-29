@@ -16,11 +16,6 @@ import org.readium.r2.shared.util.resource.Resource as SharedResource
 public sealed class Asset {
 
     /**
-     * Type of the asset source.
-     */
-    public abstract val assetType: AssetType
-
-    /**
      * Media type of the asset.
      */
     public abstract val mediaType: MediaType
@@ -41,9 +36,6 @@ public sealed class Asset {
         public val resource: SharedResource
     ) : Asset() {
 
-        override val assetType: AssetType =
-            AssetType.Resource
-
         override suspend fun close() {
             resource.close()
         }
@@ -53,21 +45,14 @@ public sealed class Asset {
      * A container asset providing access to several resources.
      *
      * @param mediaType Media type of the asset.
-     * @param exploded If this container is an exploded or packaged container.
+     * @param containerType Media type of the container.
      * @param container Opened container to access asset resources.
      */
     public class Container(
         override val mediaType: MediaType,
-        exploded: Boolean,
+        public val containerType: MediaType,
         public val container: SharedContainer
     ) : Asset() {
-
-        override val assetType: AssetType =
-            if (exploded) {
-                AssetType.Directory
-            } else {
-                AssetType.Archive
-            }
 
         override suspend fun close() {
             container.close()

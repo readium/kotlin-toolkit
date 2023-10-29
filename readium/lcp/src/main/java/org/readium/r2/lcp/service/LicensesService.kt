@@ -39,6 +39,7 @@ import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.asset.Asset
 import org.readium.r2.shared.util.asset.AssetRetriever
 import org.readium.r2.shared.util.downloads.DownloadManager
+import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.mediatype.FormatRegistry
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
@@ -57,7 +58,8 @@ internal class LicensesService(
 ) : LcpService, CoroutineScope by MainScope() {
 
     override suspend fun isLcpProtected(file: File): Boolean {
-        val asset = assetRetriever.retrieve(file) ?: return false
+        val asset = assetRetriever.retrieve(file)
+            .getOrElse { return false }
         return isLcpProtected(asset)
     }
 

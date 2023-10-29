@@ -25,7 +25,6 @@ import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 import org.readium.r2.shared.util.resource.CompositeArchiveFactory
 import org.readium.r2.shared.util.resource.CompositeResourceFactory
 import org.readium.r2.shared.util.resource.ContentResourceFactory
-import org.readium.r2.shared.util.resource.DirectoryContainerFactory
 import org.readium.r2.shared.util.resource.FileResourceFactory
 import org.readium.r2.shared.util.resource.FileZipArchiveFactory
 import org.readium.r2.shared.util.zip.StreamingZipArchiveFactory
@@ -57,14 +56,9 @@ class Readium(context: Context) {
         )
     )
 
-    private val containerFactory = DirectoryContainerFactory(
-        mediaTypeRetriever
-    )
-
     val assetRetriever = AssetRetriever(
         mediaTypeRetriever,
         resourceFactory,
-        containerFactory,
         archiveFactory,
         context.contentResolver
     )

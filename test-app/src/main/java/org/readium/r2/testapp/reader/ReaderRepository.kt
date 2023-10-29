@@ -112,7 +112,7 @@ class ReaderRepository(
         val asset = readium.assetRetriever.retrieve(
             book.url,
             book.mediaType,
-            book.assetType
+            book.containerType
         ).getOrElse { return Try.failure(OpeningError.PublicationError(it)) }
 
         val publication = readium.publicationFactory.open(

@@ -16,72 +16,24 @@ import org.readium.r2.shared.util.tryRecover
 
 /**
  * A factory to read [Resource]s from [Url]s.
- *
- * An exception must be returned if the url scheme is not supported or
- * the resource cannot be found.
  */
 public interface ResourceFactory {
 
-    public sealed class Error : SharedError {
+    public sealed class Error(
+        override val message: String,
+        override val cause: SharedError?
+    ) : SharedError {
 
         public class SchemeNotSupported(
             public val scheme: Url.Scheme,
-            override val cause: SharedError? = null
-        ) : Error() {
-
-            public constructor(scheme: Url.Scheme, exception: Exception) : this(
-                scheme,
-                ThrowableError(exception)
-            )
-
-            override val message: String =
-                "Url scheme $scheme is not supported."
-        }
+            cause: SharedError? = null
+        ) : Error("Url scheme $scheme is not supported.", cause)
     }
 
-    public suspend fun create(url: AbsoluteUrl): Resource?
-
-    public suspend fun create(url: AbsoluteUrl, mediaType: MediaType): Try<Resource, Error>
-}
-
-/**
- * A factory to create [Container]s from [Url]s.
- *
- * An exception must be returned if the url scheme is not supported or
- * the url doesn't seem to point to a container.
- */
-public interface ContainerFactory {
-
-    public sealed class Error : SharedError {
-
-        public class SchemeNotSupported(
-            public val scheme: Url.Scheme,
-            override val cause: SharedError? = null
-        ) : Error() {
-
-            public constructor(scheme: Url.Scheme, exception: Exception) : this(
-                scheme,
-                ThrowableError(exception)
-            )
-
-            override val message: String =
-                "Url scheme $scheme is not supported."
-        }
-    }
-
-    /**
-     * Returns a [Container] to access the content if this factory claims that [url] points to
-     * a resource it can provide access to and null otherwise.
-     */
-    public suspend fun create(url: AbsoluteUrl): Container?
-
-    /**
-     * Tries to create a [Container] giving access to a [Url] known to point to a directory
-     * with the given [mediaType].
-     *
-     * An error must be returned if the url scheme or media type is not supported.
-     */
-    public suspend fun create(url: AbsoluteUrl, mediaType: MediaType): Try<Container, Error>
+    public suspend fun create(
+        url: AbsoluteUrl,
+        mediaType: MediaType? = null
+    ): Try<Resource, Error>
 }
 
 /**
@@ -109,24 +61,24 @@ public interface ArchiveFactory {
             public constructor(exception: Exception) : this(ThrowableError(exception))
         }
 
-        public class ResourceReading(
-            override val cause: ResourceError
+        public class ResourceError(
+            override val cause: org.readium.r2.shared.util.resource.ResourceError
         ) : Error("An error occurred while attempting to read the resource.", cause)
     }
 
-    /**
-     * Returns a [Container] to access the archive content if this factory claims that [resource] is
-     * an archive that it supports and null otherwise.
-     */
-    public suspend fun create(resource: Resource, password: String?): Container?
+    public data class Result(
+        val mediaType: MediaType,
+        val container: Container
+    )
 
     /**
-     * Tries to create a [Container] from a [Resource] known to be an archive
-     * with the given [mediaType].
-     *
-     * An error must be returned if the resource type, password or media type is not supported.
+     * Creates a new archive [Container] to access the entries of the given archive.
      */
-    public suspend fun create(resource: Resource, password: String?, mediaType: MediaType): Try<Container, Error>
+    public suspend fun create(
+        resource: Resource,
+        archiveType: MediaType? = null,
+        password: String? = null
+    ): Try<Result, Error>
 }
 
 /**
@@ -138,16 +90,19 @@ public class CompositeArchiveFactory(
     private val fallbackFactory: ArchiveFactory
 ) : ArchiveFactory {
 
-    override suspend fun create(resource: Resource, password: String?): Container? {
-        return primaryFactory.create(resource, password)
-            ?: fallbackFactory.create(resource, password)
-    }
-
-    override suspend fun create(resource: Resource, password: String?, mediaType: MediaType): Try<Container, ArchiveFactory.Error> {
-        return primaryFactory.create(resource, password, mediaType)
+    override suspend fun create(
+        resource: Resource,
+        archiveType: MediaType?,
+        password: String?
+    ): Try<ArchiveFactory.Result, ArchiveFactory.Error> {
+        return primaryFactory.create(resource, archiveType, password)
             .tryRecover { error ->
-                if (error is ArchiveFactory.Error.FormatNotSupported) {
-                    fallbackFactory.create(resource, password, mediaType)
+                if (
+                    error is ArchiveFactory.Error.FormatNotSupported ||
+                    archiveType == null && error is ArchiveFactory.Error.ResourceError &&
+                    error.cause is ResourceError.InvalidContent
+                ) {
+                    fallbackFactory.create(resource, archiveType)
                 } else {
                     Try.failure(error)
                 }
@@ -164,39 +119,13 @@ public class CompositeResourceFactory(
     private val fallbackFactory: ResourceFactory
 ) : ResourceFactory {
 
-    override suspend fun create(url: AbsoluteUrl): Resource? {
-        return primaryFactory.create(url) ?: fallbackFactory.create(url)
-    }
-
-    override suspend fun create(url: AbsoluteUrl, mediaType: MediaType): Try<Resource, ResourceFactory.Error> {
+    override suspend fun create(
+        url: AbsoluteUrl,
+        mediaType: MediaType?
+    ): Try<Resource, ResourceFactory.Error> {
         return primaryFactory.create(url, mediaType)
             .tryRecover { error ->
                 if (error is ResourceFactory.Error.SchemeNotSupported) {
-                    fallbackFactory.create(url, mediaType)
-                } else {
-                    Try.failure(error)
-                }
-            }
-    }
-}
-
-/**
- * A composite container factory which first tries [primaryFactory]
- * and falls back on [fallbackFactory] if it doesn't support the scheme.
- */
-public class CompositeContainerFactory(
-    private val primaryFactory: ContainerFactory,
-    private val fallbackFactory: ContainerFactory
-) : ContainerFactory {
-
-    override suspend fun create(url: AbsoluteUrl): Container? {
-        return primaryFactory.create(url) ?: fallbackFactory.create(url)
-    }
-
-    override suspend fun create(url: AbsoluteUrl, mediaType: MediaType): Try<Container, ContainerFactory.Error> {
-        return primaryFactory.create(url, mediaType)
-            .tryRecover { error ->
-                if (error is ContainerFactory.Error.SchemeNotSupported) {
                     fallbackFactory.create(url, mediaType)
                 } else {
                     Try.failure(error)
