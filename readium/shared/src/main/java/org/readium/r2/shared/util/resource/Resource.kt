@@ -6,12 +6,6 @@
 
 package org.readium.r2.shared.util.resource
 
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import java.io.ByteArrayInputStream
-import java.nio.charset.Charset
-import org.json.JSONObject
-import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Error
 import org.readium.r2.shared.util.FilesystemError
@@ -22,8 +16,6 @@ import org.readium.r2.shared.util.ThrowableError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.flatMap
 import org.readium.r2.shared.util.mediatype.MediaType
-import org.readium.r2.shared.util.xml.ElementNode
-import org.readium.r2.shared.util.xml.XmlParser
 
 public typealias ResourceTry<SuccessT> = Try<SuccessT, ResourceError>
 
@@ -181,68 +173,3 @@ public inline fun <R, S> ResourceTry<S>.flatMapCatching(transform: (value: S) ->
             Try.failure(ResourceError.OutOfMemory(e))
         }
     }
-
-@InternalReadiumApi
-public fun<R, S> ResourceTry<S>.decode(
-    block: (value: S) -> R,
-    errorMessage: () -> String
-): ResourceTry<R> =
-    when (this) {
-        is Try.Success ->
-            try {
-                Try.success(
-                    block(value)
-                )
-            } catch (e: Exception) {
-                Try.failure(
-                    ResourceError.InvalidContent(errorMessage())
-                )
-            }
-        is Try.Failure ->
-            Try.failure(value)
-    }
-
-/**
- * Reads the full content as a [String].
- *
- * If [charset] is null, then it falls back on UTF-8.
- */
-public suspend fun Resource.readAsString(charset: Charset? = null): ResourceTry<String> =
-    read()
-        .decode(
-            { String(it, charset = charset ?: Charsets.UTF_8) },
-            { "Content doesn't seem to be a valid string." }
-        )
-
-/**
- * Reads the full content as a JSON object.
- */
-public suspend fun Resource.readAsJson(): ResourceTry<JSONObject> =
-    readAsString(charset = Charsets.UTF_8)
-        .decode(
-            { JSONObject(it) },
-            { "Content doesn't seem to be valid JSON." }
-        )
-
-/**
- * Reads the full content as an XML document.
- */
-public suspend fun Resource.readAsXml(): ResourceTry<ElementNode> =
-    read()
-        .decode(
-            { XmlParser().parse(ByteArrayInputStream(it)) },
-            { "Content doesn't seem to be valid XML." }
-        )
-
-/**
- * Reads the full content as a [Bitmap].
- */
-public suspend fun Resource.readAsBitmap(): ResourceTry<Bitmap> =
-    read()
-        .flatMap { bytes ->
-            BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
-                ?.let { Try.success(it) }
-                ?: Try.failure(
-                    ResourceError.InvalidContent("Could not decode resource as a bitmap.")
-                )
-        }

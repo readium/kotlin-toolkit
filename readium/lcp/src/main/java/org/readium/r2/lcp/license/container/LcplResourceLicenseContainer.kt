@@ -11,7 +11,7 @@ package org.readium.r2.lcp.license.container
 
 import kotlinx.coroutines.runBlocking
 import org.readium.r2.lcp.LcpException
-import org.readium.r2.shared.util.getOrThrow
+import org.readium.r2.shared.util.assertSuccess
 import org.readium.r2.shared.util.resource.Resource
 
 /**
@@ -22,7 +22,7 @@ internal class LcplResourceLicenseContainer(private val resource: Resource) : Li
 
     override fun read(): ByteArray =
         try {
-            runBlocking { resource.read().getOrThrow() }
+            runBlocking { resource.read().assertSuccess() }
         } catch (e: Exception) {
             throw LcpException.Container.OpenFailed
         }

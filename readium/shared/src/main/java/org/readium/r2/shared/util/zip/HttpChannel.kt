@@ -16,7 +16,7 @@ import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.extensions.readSafe
 import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.util.Try
-import org.readium.r2.shared.util.getOrThrow
+import org.readium.r2.shared.util.assertSuccess
 import org.readium.r2.shared.util.http.HttpClient
 import org.readium.r2.shared.util.http.HttpError
 import org.readium.r2.shared.util.http.HttpRequest
@@ -108,7 +108,7 @@ internal class HttpChannel(
                 withContext(Dispatchers.IO) {
                     val size = headResponse()
                         .map { it.contentLength }
-                        .getOrThrow()
+                        .assertSuccess()
                         ?: throw IOException("Server didn't provide content length.")
 
                     if (position >= size) {
@@ -120,7 +120,7 @@ internal class HttpChannel(
                     val buffer = ByteArray(dst.remaining().coerceAtMost(available.toInt()))
                     Timber.d("bufferSize ${buffer.size}")
                     val read = stream(position)
-                        .getOrThrow()
+                        .assertSuccess()
                         .readSafe(buffer)
                     Timber.d("read $read")
                     if (read != -1) {
@@ -157,7 +157,7 @@ internal class HttpChannel(
     override fun size(): Long {
         return synchronized(lock) {
             runBlocking { headResponse() }
-                .getOrThrow()
+                .assertSuccess()
                 .contentLength
                 ?: throw IOException("Unknown file length.")
         }

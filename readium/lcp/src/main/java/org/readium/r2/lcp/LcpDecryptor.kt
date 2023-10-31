@@ -19,7 +19,7 @@ import org.readium.r2.shared.util.ThrowableError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.getOrElse
-import org.readium.r2.shared.util.getOrThrow
+import org.readium.r2.shared.util.assertSuccess
 import org.readium.r2.shared.util.resource.Container
 import org.readium.r2.shared.util.resource.FailureResource
 import org.readium.r2.shared.util.resource.Resource
@@ -209,7 +209,7 @@ internal class LcpDecryptor(
             val rangeLength =
                 if (lastBlockRead) {
                     // use decrypted length to ensure range.last doesn't exceed decrypted length - 1
-                    range.last.coerceAtMost(length().getOrThrow() - 1) - range.first + 1
+                    range.last.coerceAtMost(length().assertSuccess() - 1) - range.first + 1
                 } else {
                     // the last block won't be read, so there's no need to compute length
                     range.last - range.first + 1

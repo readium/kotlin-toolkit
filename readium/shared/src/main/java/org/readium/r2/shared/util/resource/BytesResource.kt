@@ -12,7 +12,7 @@ import org.readium.r2.shared.extensions.read
 import org.readium.r2.shared.extensions.requireLengthFitInt
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Try
-import org.readium.r2.shared.util.getOrThrow
+import org.readium.r2.shared.util.assertSuccess
 import org.readium.r2.shared.util.mediatype.MediaType
 
 public sealed class BaseBytesResource(
@@ -104,5 +104,5 @@ public class StringResource(
         this(source = url, mediaType = mediaType, properties = properties, { Try.success(string) })
 
     override fun toString(): String =
-        "${javaClass.simpleName}(${runBlocking { read().getOrThrow().decodeToString() } }})"
+        "${javaClass.simpleName}(${runBlocking { read().assertSuccess().decodeToString() } }})"
 }

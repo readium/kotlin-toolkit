@@ -50,10 +50,19 @@ public class ErrorException(
     public val error: Error
 ) : Exception(error.message, error.cause?.let { ErrorException(it) })
 
-public fun <S, F : Error> Try<S, F>.getOrThrow(): S =
+public fun <S, F> Try<S, F>.assertSuccess(): S =
     when (this) {
-        is Try.Success -> value
-        is Try.Failure -> throw Exception("Try was excepted to contain a success.")
+        is Try.Success ->
+            value
+        is Try.Failure ->
+            throw IllegalStateException("Try was excepted to contain a success.")
+    }
+public fun <S, F: Throwable> Try<S, F>.assertSuccess(): S =
+    when (this) {
+        is Try.Success ->
+            value
+        is Try.Failure ->
+            throw IllegalStateException("Try was excepted to contain a success.", value)
     }
 
 public class FilesystemError(

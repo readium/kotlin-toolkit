@@ -18,6 +18,7 @@ import org.readium.r2.shared.util.ErrorException
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.getOrThrow
+import org.readium.r2.shared.util.assertSuccess
 import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.shared.util.use
 import timber.log.Timber
@@ -50,7 +51,7 @@ internal suspend fun checkLengthComputationIsCorrect(publication: Publication) {
 
     (publication.readingOrder + publication.resources)
         .forEach { link ->
-            val trueLength = publication.get(link).use { it.read().getOrThrow().size.toLong() }
+            val trueLength = publication.get(link).use { it.read().assertSuccess().size.toLong() }
             publication.get(link).use { resource ->
                 resource.length()
                     .onFailure {
@@ -71,7 +72,7 @@ internal suspend fun checkAllResourcesAreReadableByChunks(publication: Publicati
     (publication.readingOrder + publication.resources)
         .forEach { link ->
             Timber.d("attempting to read ${link.href} by chunks ")
-            val groundTruth = publication.get(link).use { it.read() }.getOrThrow()
+            val groundTruth = publication.get(link).use { it.read() }.assertSuccess()
             for (chunkSize in listOf(4096L, 2050L)) {
                 publication.get(link).use { resource ->
                     resource.readByChunks(chunkSize, groundTruth).onFailure {
@@ -91,8 +92,8 @@ internal suspend fun checkExceedingRangesAreAllowed(publication: Publication) {
     (publication.readingOrder + publication.resources)
         .forEach { link ->
             publication.get(link).use { resource ->
-                val length = resource.length().getOrThrow()
-                val fullTruth = resource.read().getOrThrow()
+                val length = resource.length().assertSuccess()
+                val fullTruth = resource.read().assertSuccess()
                 for (
                 range in listOf(
                     0 until length + 100,

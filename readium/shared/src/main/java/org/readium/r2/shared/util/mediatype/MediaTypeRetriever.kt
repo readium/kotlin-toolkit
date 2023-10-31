@@ -6,6 +6,8 @@
 
 package org.readium.r2.shared.util.mediatype
 
+import org.readium.r2.shared.util.Try
+
 /**
  * Retrieves a canonical [MediaType] for the provided media type and file extension hints and/or
  * asset content.
@@ -43,14 +45,18 @@ public class MediaTypeRetriever(
      * Retrieves a canonical [MediaType] for the provided media type and file extension [hints].
      */
     public fun retrieve(hints: MediaTypeHints): MediaType? {
-        sniffers.firstNotNullOfOrNull { it.sniffHints(hints) }
-            ?.let { return it }
+        for (sniffer in sniffers) {
+            sniffer.sniffHints(hints)
+                .getOrNull()
+                ?.let { return it }
+        }
 
         // Falls back on the system-wide registered media types using MimeTypeMap.
         // Note: This is done after the default sniffers, because otherwise it will detect
         // JSON, XML or ZIP formats before we have a chance of sniffing their content (for example,
         // for RWPM).
         SystemMediaTypeSniffer.sniffHints(hints)
+            .getOrNull()
             ?.let { return it }
 
         return hints.mediaTypes.firstOrNull()
@@ -89,20 +95,45 @@ public class MediaTypeRetriever(
     public suspend fun retrieve(
         hints: MediaTypeHints = MediaTypeHints(),
         content: MediaTypeSnifferContent? = null
-    ): MediaType? {
-        sniffers.run {
-            firstNotNullOfOrNull { it.sniffHints(hints) }
-                ?: content?.let { firstNotNullOfOrNull { it.sniffContent(content) } }
-        }?.let { return it }
+    ): Try<MediaType, MediaTypeSniffer.Error> {
+        for (sniffer in sniffers) {
+            sniffer.sniffHints(hints)
+                .getOrNull()
+                ?.let { return Try.success(it) }
+        }
+
+        if (content != null) {
+            for (sniffer in sniffers) {
+                sniffer.sniffContent(content)
+                    .onSuccess { return Try.success(it) }
+                    .onFailure { error ->
+                        if (error is MediaTypeSniffer.Error.SourceError) {
+                            return Try.failure(error)
+                        }
+                    }
+            }
+        }
 
         // Falls back on the system-wide registered media types using MimeTypeMap.
         // Note: This is done after the default sniffers, because otherwise it will detect
         // JSON, XML or ZIP formats before we have a chance of sniffing their content (for example,
         // for RWPM).
-        SystemMediaTypeSniffer.run {
-            sniffHints(hints) ?: content?.let { sniffContent(it) }
-        }?.let { return it }
+        SystemMediaTypeSniffer.sniffHints(hints)
+            .getOrNull()
+            ?.let { return Try.success(it) }
+
+        if (content != null) {
+            SystemMediaTypeSniffer.sniffContent(content)
+                .onSuccess { return Try.success(it) }
+                .onFailure { error ->
+                    if (error is MediaTypeSniffer.Error.SourceError) {
+                        return Try.failure(error)
+                    }
+                }
+        }
 
         return hints.mediaTypes.firstOrNull()
+            ?.let { Try.success(it) }
+            ?: Try.failure(MediaTypeSniffer.Error.NotRecognized)
     }
 }

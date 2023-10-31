@@ -19,7 +19,7 @@ import com.google.android.exoplayer2.upstream.TransferListener
 import java.io.IOException
 import kotlinx.coroutines.runBlocking
 import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.util.getOrThrow
+import org.readium.r2.shared.util.assertSuccess
 import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.shared.util.resource.buffered
 import org.readium.r2.shared.util.toUrl
@@ -119,7 +119,7 @@ internal class PublicationDataSource(private val publication: Publication) : Bas
             val data = runBlocking {
                 openedResource.resource
                     .read(range = openedResource.position until (openedResource.position + length))
-                    .getOrThrow()
+                    .assertSuccess()
             }
 
             if (data.isEmpty()) {

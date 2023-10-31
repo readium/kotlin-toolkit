@@ -93,12 +93,10 @@ internal class JavaZipContainer(
         override val source: AbsoluteUrl? = null
 
         override suspend fun mediaType(): ResourceTry<MediaType> =
-            Try.success(
-                mediaTypeRetriever.retrieve(
-                    hints = MediaTypeHints(fileExtension = url.extension),
-                    content = ResourceMediaTypeSnifferContent(this)
-                ) ?: MediaType.BINARY
-            )
+            mediaTypeRetriever.retrieve(
+                hints = MediaTypeHints(fileExtension = url.extension),
+                content = ResourceMediaTypeSnifferContent(this)
+            ).toResourceTry()
 
         override suspend fun properties(): ResourceTry<Resource.Properties> =
             Try.failure(ResourceError.NotFound())
@@ -118,12 +116,10 @@ internal class JavaZipContainer(
         override val source: AbsoluteUrl? = null
 
         override suspend fun mediaType(): ResourceTry<MediaType> =
-            Try.success(
-                mediaTypeRetriever.retrieve(
-                    hints = MediaTypeHints(fileExtension = url.extension),
-                    content = ResourceMediaTypeSnifferContent(this)
-                ) ?: MediaType.BINARY
-            )
+            mediaTypeRetriever.retrieve(
+                hints = MediaTypeHints(fileExtension = url.extension),
+                content = ResourceMediaTypeSnifferContent(this)
+            ).toResourceTry()
 
         override suspend fun properties(): ResourceTry<Resource.Properties> =
             ResourceTry.success(

@@ -27,6 +27,7 @@ import org.readium.r2.shared.util.resource.ResourceError
 import org.readium.r2.shared.util.resource.ResourceMediaTypeSnifferContent
 import org.readium.r2.shared.util.resource.ResourceTry
 import org.readium.r2.shared.util.resource.archive
+import org.readium.r2.shared.util.resource.toResourceTry
 import org.readium.r2.shared.util.zip.compress.archivers.zip.ZipArchiveEntry
 import org.readium.r2.shared.util.zip.compress.archivers.zip.ZipFile
 
@@ -59,12 +60,10 @@ internal class ChannelZipContainer(
             )
 
         override suspend fun mediaType(): ResourceTry<MediaType> =
-            Try.success(
-                mediaTypeRetriever.retrieve(
-                    hints = MediaTypeHints(fileExtension = url.extension),
-                    content = ResourceMediaTypeSnifferContent(this)
-                ) ?: MediaType.BINARY
-            )
+            mediaTypeRetriever.retrieve(
+                hints = MediaTypeHints(fileExtension = url.extension),
+                content = ResourceMediaTypeSnifferContent(this)
+            ).toResourceTry()
 
         override suspend fun length(): ResourceTry<Long> =
             entry.size.takeUnless { it == -1L }

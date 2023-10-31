@@ -15,7 +15,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.readium.r2.shared.publication.encryption.Encryption
 import org.readium.r2.shared.util.Url
-import org.readium.r2.shared.util.getOrThrow
+import org.readium.r2.shared.util.assertSuccess
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 import org.readium.r2.shared.util.resource.DirectoryContainerFactory
 import org.readium.r2.shared.util.resource.Resource
@@ -76,7 +76,7 @@ class EpubDeobfuscatorTest {
             val deobfuscatedRes = deobfuscate(
                 "/cut-cut.obf.woff",
                 "http://www.idpf.org/2008/embedding"
-            ).read(20L until 40L).getOrThrow()
+            ).read(20L until 40L).assertSuccess()
             assertThat(deobfuscatedRes).isEqualTo(font.copyOfRange(20, 40))
         }
     }

@@ -29,6 +29,8 @@ import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.mediatype.MediaTypeHints
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
+import org.readium.r2.shared.util.mediatype.MediaTypeSniffer
+import org.readium.r2.shared.util.mediatype.MediaTypeSnifferContentError
 import org.readium.r2.shared.util.resource.ArchiveFactory
 import org.readium.r2.shared.util.resource.Container
 import org.readium.r2.shared.util.resource.ContainerMediaTypeSnifferContent
@@ -209,7 +211,7 @@ public class AssetRetriever(
             is ResourceError.InvalidContent ->
                 Error.InvalidAsset(this)
             is ResourceError.Filesystem ->
-                Error.Unknown(this)
+                Error.Filesystem(cause)
         }
 
     /* Sniff unknown assets */
@@ -245,72 +247,66 @@ public class AssetRetriever(
                 when (archive.value) {
                     is ArchiveFactory.Error.PasswordsNotSupported ->
                         return Try.failure(Error.ArchiveFormatNotSupported(archive.value))
-                    is ArchiveFactory.Error.ResourceError -> when (archive.value.cause) {
-                        is ResourceError.Filesystem ->
-                            return Try.failure(Error.Filesystem(archive.value.cause.cause))
-                        is ResourceError.Network ->
-                            return Try.failure(Error.Network(archive.value.cause.cause))
-                        is ResourceError.Forbidden ->
-                            return Try.failure(Error.Forbidden(url, archive.value))
-                        is ResourceError.NotFound ->
-                            return Try.failure(Error.NotFound(url, archive.value))
-                        is ResourceError.Other ->
-                            return Try.failure(Error.Unknown(archive.value))
-                        is ResourceError.OutOfMemory ->
-                            return Try.failure(
-                                Error.OutOfMemory(archive.value.cause.cause.throwable)
-                            )
-                        is ResourceError.InvalidContent ->
-                            return Try.failure(Error.InvalidAsset(archive.value))
-                    }
+                    is ArchiveFactory.Error.ResourceError ->
+                        return Try.failure(archive.value.cause.wrap(url))
                     is ArchiveFactory.Error.FormatNotSupported ->
                         retrieve(url, resource)
-                            ?.let { Try.success(it) }
-                            ?: Try.failure(
-                                Error.Unknown(
-                                    MessageError("Cannot determine media type.")
-                                )
-                            )
+                            .mapFailure {it.wrap(url) }
                 }
             is Try.Success ->
                 retrieve(url, archive.value.container, archive.value.mediaType)
-                    ?.let { Try.success(it) }
-                    ?: Try.failure(
-                        Error.Unknown(
-                            MessageError("Cannot determine media type.")
-                        )
-                    )
+                    .mapFailure { it.wrap(url) }
         }
+    }
+
+    private fun MediaTypeSniffer.Error.wrap(url: AbsoluteUrl) = when (this) {
+        is MediaTypeSniffer.Error.SourceError ->
+            when (cause) {
+                is MediaTypeSnifferContentError.Filesystem ->
+                    Error.Filesystem(cause.cause)
+                is MediaTypeSnifferContentError.Forbidden ->
+                    Error.Forbidden(url, cause.cause)
+                is MediaTypeSnifferContentError.Network ->
+                    Error.Network(cause.cause)
+                is MediaTypeSnifferContentError.NotFound ->
+                    Error.NotFound(url, cause.cause)
+            }
+        MediaTypeSniffer.Error.NotRecognized ->
+            Error.Unknown(MessageError("Cannot determine media type."))
     }
 
     private suspend fun retrieve(
         url: AbsoluteUrl,
         container: Container,
         containerType: MediaType
-    ): Asset? {
+    ): Try<Asset, MediaTypeSniffer.Error> {
         val mediaType = retrieveMediaType(url, Either(container))
-            ?: return null
-        return Asset.Container(
-            mediaType,
-            containerType = containerType,
-            container = container
-        )
+            .getOrElse { return Try.failure(it) }
+
+        val asset =
+            Asset.Container(
+                mediaType,
+                containerType = containerType,
+                container = container
+            )
+
+        return Try.success(asset)
     }
 
-    private suspend fun retrieve(url: AbsoluteUrl, resource: Resource): Asset? {
+    private suspend fun retrieve(url: AbsoluteUrl, resource: Resource): Try<Asset, MediaTypeSniffer.Error> {
         val mediaType = retrieveMediaType(url, Either(resource))
-            ?: return null
-        return Asset.Resource(
-            mediaType,
-            resource = resource
-        )
+            .getOrElse { return Try.failure(it) }
+
+        val asset = Asset.Resource(mediaType, resource = resource)
+
+        return Try.success(asset)
     }
 
     private suspend fun retrieveMediaType(
         url: AbsoluteUrl,
         asset: Either<Resource, Container>
-    ): MediaType? {
-        suspend fun retrieve(hints: MediaTypeHints): MediaType? =
+    ): Try<MediaType, MediaTypeSniffer.Error> {
+        suspend fun retrieve(hints: MediaTypeHints): Try<MediaType, MediaTypeSniffer.Error>  =
             mediaTypeRetriever.retrieve(
                 hints = hints,
                 content = when (asset) {
@@ -320,7 +316,12 @@ public class AssetRetriever(
             )
 
         retrieve(MediaTypeHints(fileExtensions = listOfNotNull(url.extension)))
-            ?.let { return it }
+            .onSuccess { return Try.success(it) }
+            .onFailure { error ->
+                if (error is MediaTypeSniffer.Error.SourceError) {
+                    return Try.failure(error)
+                }
+            }
 
         // Falls back on the [contentResolver] in case of content Uri.
         // Note: This is done after the heavy sniffing of the provided [sniffers], because
@@ -337,9 +338,11 @@ public class AssetRetriever(
                     ?.let { filename -> File(filename).extension }
             )
 
-            retrieve(contentHints)?.let { return it }
+            retrieve(contentHints)
+                .getOrNull()
+                ?.let { return Try.success(it) }
         }
 
-        return null
+        return Try.failure(MediaTypeSniffer.Error.NotRecognized)
     }
 }
