@@ -100,6 +100,18 @@ class EpubNavigatorFragment internal constructor(
     configuration: Configuration,
 ) : Fragment(), VisualNavigator, SelectableNavigator, DecorableNavigator, Configurable<EpubSettings, EpubPreferences> {
 
+    constructor() : this(
+        publication = dummyPublication,
+        baseUrl = null,
+        initialLocator = Locator(href = "#", type = "application/xhtml+xml"),
+        initialPreferences = EpubPreferences(),
+        listener = null,
+        paginationListener = null,
+        epubLayout = EpubLayout.REFLOWABLE,
+        defaults = EpubDefaults(),
+        configuration = Configuration()
+    )
+
     // Make a copy to prevent the user from modifying the configuration after initialization.
     internal val config: Configuration = configuration.copy().apply {
         servedAssets += "readium/.*"
@@ -550,6 +562,11 @@ class EpubNavigatorFragment internal constructor(
 
     override fun onResume() {
         super.onResume()
+
+        if (publication == dummyPublication) {
+            throw RestorationNotSupportedException
+        }
+
         notifyCurrentLocation()
     }
 
