@@ -6,20 +6,24 @@
 
 package org.readium.r2.shared.util.resource
 
+import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.MessageError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.mediatype.ContainerMediaTypeSnifferContent
 import org.readium.r2.shared.util.mediatype.MediaType
-import org.readium.r2.shared.util.mediatype.MediaTypeSniffer
 import org.readium.r2.shared.util.mediatype.MediaTypeSnifferContentError
+import org.readium.r2.shared.util.mediatype.MediaTypeSnifferError
 import org.readium.r2.shared.util.mediatype.ResourceMediaTypeSnifferContent
 import org.readium.r2.shared.util.tryRecover
 
 public class ResourceMediaTypeSnifferContent(
     private val resource: Resource
 ) : ResourceMediaTypeSnifferContent {
+
+    override val source: AbsoluteUrl? =
+        resource.source
 
     override suspend fun read(range: LongRange?): Try<ByteArray, MediaTypeSnifferContentError> =
         resource.safeRead(range)
@@ -44,7 +48,6 @@ public class ContainerMediaTypeSnifferContent(
     override suspend fun length(url: Url): Try<Long, MediaTypeSnifferContentError> =
         container.get(url).length()
             .mapFailure { it.toMediaTypeSnifferContentError() }
-
 }
 private suspend fun Resource.safeRead(range: LongRange?): Try<ByteArray, ResourceError> {
     try {
@@ -72,27 +75,30 @@ internal fun ResourceError.toMediaTypeSnifferContentError() =
         is ResourceError.Forbidden ->
             MediaTypeSnifferContentError.Forbidden(this)
         is ResourceError.InvalidContent ->
+            MediaTypeSnifferContentError.ArchiveError(this)
         is ResourceError.Network ->
             MediaTypeSnifferContentError.Network(cause)
         is ResourceError.NotFound ->
             MediaTypeSnifferContentError.NotFound(this)
         is ResourceError.Other ->
+            MediaTypeSnifferContentError.Unknown(this)
         is ResourceError.OutOfMemory ->
+            MediaTypeSnifferContentError.TooBig(cause)
     }
 
-internal fun Try<MediaType, MediaTypeSniffer.Error>.toResourceTry(): ResourceTry<MediaType> =
+internal fun Try<MediaType, MediaTypeSnifferError>.toResourceTry(): ResourceTry<MediaType> =
     tryRecover {
         when (it) {
-            MediaTypeSniffer.Error.NotRecognized ->
+            MediaTypeSnifferError.NotRecognized ->
                 Try.success(MediaType.BINARY)
-           else ->
-               Try.failure(it)
+            else ->
+                Try.failure(it)
         }
     }.mapFailure {
         when (it) {
-            MediaTypeSniffer.Error.NotRecognized ->
+            MediaTypeSnifferError.NotRecognized ->
                 throw IllegalStateException()
-            is MediaTypeSniffer.Error.SourceError -> {
+            is MediaTypeSnifferError.SourceError -> {
                 when (it.cause) {
                     is MediaTypeSnifferContentError.Filesystem ->
                         ResourceError.Filesystem(it.cause.cause)
@@ -102,8 +108,13 @@ internal fun Try<MediaType, MediaTypeSniffer.Error>.toResourceTry(): ResourceTry
                         ResourceError.Network(it.cause.cause)
                     is MediaTypeSnifferContentError.NotFound ->
                         ResourceError.NotFound(it.cause.cause)
+                    is MediaTypeSnifferContentError.ArchiveError ->
+                        ResourceError.InvalidContent(it)
+                    is MediaTypeSnifferContentError.TooBig ->
+                        ResourceError.OutOfMemory(it.cause.cause)
+                    is MediaTypeSnifferContentError.Unknown ->
+                        ResourceError.Other(it)
                 }
             }
         }
-
     }

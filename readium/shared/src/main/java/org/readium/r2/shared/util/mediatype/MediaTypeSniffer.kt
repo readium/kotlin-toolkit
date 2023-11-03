@@ -12,43 +12,133 @@ import java.util.Locale
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
-import org.readium.r2.shared.datasource.DecoderError
 import org.readium.r2.shared.extensions.tryOrNull
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Manifest
 import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.Error as BaseError
 import org.readium.r2.shared.util.RelativeUrl
 import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.datasource.DecoderError
 import org.readium.r2.shared.util.getOrElse
+
+public sealed class MediaTypeSnifferError(
+    override val message: String,
+    override val cause: BaseError?
+) : BaseError {
+    public data object NotRecognized :
+        MediaTypeSnifferError("Media type of resource could not be inferred.", null)
+
+    public data class SourceError(override val cause: MediaTypeSnifferContentError) :
+        MediaTypeSnifferError("An error occurred while trying to read content.", cause)
+}
+
+public interface HintMediaTypeSniffer {
+    public fun sniffHints(
+        hints: MediaTypeHints
+    ): Try<MediaType, MediaTypeSnifferError.NotRecognized>
+}
+
+public interface ResourceMediaTypeSniffer {
+    public suspend fun sniffResource(
+        resource: ResourceMediaTypeSnifferContent
+    ): Try<MediaType, MediaTypeSnifferError>
+}
+
+public interface ContainerMediaTypeSniffer {
+    public suspend fun sniffContainer(
+        container: ContainerMediaTypeSnifferContent
+    ): Try<MediaType, MediaTypeSnifferError>
+}
 
 /**
  * Sniffs a [MediaType] from media type and file extension hints or asset content.
  */
-public interface MediaTypeSniffer {
-
-    public sealed class Error(
-        override val message: String,
-        override val cause: org.readium.r2.shared.util.Error?
-    ) : org.readium.r2.shared.util.Error {
-        public data object NotRecognized :
-            Error("Media type of resource could not be inferred.", null)
-
-        public data class SourceError(override val cause: MediaTypeSnifferContentError) :
-            Error("An error occurred while trying to read content.", cause)
-    }
+public interface MediaTypeSniffer : HintMediaTypeSniffer, ResourceMediaTypeSniffer, ContainerMediaTypeSniffer {
 
     /**
      * Sniffs a [MediaType] from media type and file extension hints.
      */
-    public fun sniffHints(hints: MediaTypeHints): Try<MediaType, Error.NotRecognized> =
-        Try.failure(Error.NotRecognized)
+    public override fun sniffHints(
+        hints: MediaTypeHints
+    ): Try<MediaType, MediaTypeSnifferError.NotRecognized> =
+        Try.failure(MediaTypeSnifferError.NotRecognized)
 
     /**
-     * Sniffs a [MediaType] from an asset [content].
+     * Sniffs a [MediaType] from a [ResourceMediaTypeSnifferContent].
      */
-    public suspend fun sniffContent(content: MediaTypeSnifferContent): Try<MediaType, Error> =
-        Try.failure(Error.NotRecognized)
+    public override suspend fun sniffResource(
+        resource: ResourceMediaTypeSnifferContent
+    ): Try<MediaType, MediaTypeSnifferError> =
+        Try.failure(MediaTypeSnifferError.NotRecognized)
+
+    /**
+     * Sniffs a [MediaType] from a [ContainerMediaTypeSnifferContent].
+     */
+    public override suspend fun sniffContainer(
+        container: ContainerMediaTypeSnifferContent
+    ): Try<MediaType, MediaTypeSnifferError> =
+        Try.failure(MediaTypeSnifferError.NotRecognized)
+}
+
+internal suspend fun MediaTypeSniffer.sniffContent(
+    content: MediaTypeSnifferContent
+): Try<MediaType, MediaTypeSnifferError> =
+    when (content) {
+        is ContainerMediaTypeSnifferContent ->
+            sniffContainer(content)
+        is ResourceMediaTypeSnifferContent ->
+            sniffResource(content)
+    }
+
+internal class CompositeMediaTypeSniffer(
+    private val sniffers: List<MediaTypeSniffer>
+) : MediaTypeSniffer {
+
+    override fun sniffHints(hints: MediaTypeHints): Try<MediaType, MediaTypeSnifferError.NotRecognized> {
+        for (sniffer in sniffers) {
+            sniffer.sniffHints(hints)
+                .getOrNull()
+                ?.let { return Try.success(it) }
+        }
+
+        return Try.failure(MediaTypeSnifferError.NotRecognized)
+    }
+
+    override suspend fun sniffResource(resource: ResourceMediaTypeSnifferContent): Try<MediaType, MediaTypeSnifferError> {
+        for (sniffer in sniffers) {
+            sniffer.sniffResource(resource)
+                .getOrElse { error ->
+                    when (error) {
+                        MediaTypeSnifferError.NotRecognized ->
+                            null
+                        is MediaTypeSnifferError.SourceError ->
+                            return Try.failure(error)
+                    }
+                }
+                ?.let { return Try.success(it) }
+        }
+
+        return Try.failure(MediaTypeSnifferError.NotRecognized)
+    }
+
+    override suspend fun sniffContainer(container: ContainerMediaTypeSnifferContent): Try<MediaType, MediaTypeSnifferError> {
+        for (sniffer in sniffers) {
+            sniffer.sniffContainer(container)
+                .getOrElse { error ->
+                    when (error) {
+                        MediaTypeSnifferError.NotRecognized ->
+                            null
+                        is MediaTypeSnifferError.SourceError ->
+                            return Try.failure(error)
+                    }
+                }
+                ?.let { return Try.success(it) }
+        }
+
+        return Try.failure(MediaTypeSnifferError.NotRecognized)
+    }
 }
 
 /**
@@ -57,7 +147,7 @@ public interface MediaTypeSniffer {
  * Must precede the HTML sniffer.
  */
 public object XhtmlMediaTypeSniffer : MediaTypeSniffer {
-    override fun sniffHints(hints: MediaTypeHints): Try<MediaType, MediaTypeSniffer.Error.NotRecognized> {
+    override fun sniffHints(hints: MediaTypeHints): Try<MediaType, MediaTypeSnifferError.NotRecognized> {
         if (
             hints.hasFileExtension("xht", "xhtml") ||
             hints.hasMediaType("application/xhtml+xml")
@@ -65,19 +155,15 @@ public object XhtmlMediaTypeSniffer : MediaTypeSniffer {
             return Try.success(MediaType.XHTML)
         }
 
-        return Try.failure(MediaTypeSniffer.Error.NotRecognized)
+        return Try.failure(MediaTypeSnifferError.NotRecognized)
     }
 
-    override suspend fun sniffContent(content: MediaTypeSnifferContent): Try<MediaType, MediaTypeSniffer.Error> {
-        if (content !is ResourceMediaTypeSnifferContent) {
-            return Try.failure(MediaTypeSniffer.Error.NotRecognized)
-        }
-
-        content.contentAsXml()
+    override suspend fun sniffResource(resource: ResourceMediaTypeSnifferContent): Try<MediaType, MediaTypeSnifferError> {
+        resource.contentAsXml()
             .getOrElse {
                 when (it) {
                     is DecoderError.DataSourceError ->
-                        return Try.failure(MediaTypeSniffer.Error.SourceError(it.cause))
+                        return Try.failure(MediaTypeSnifferError.SourceError(it.cause))
                     is DecoderError.DecodingError ->
                         null
                 }
@@ -89,13 +175,13 @@ public object XhtmlMediaTypeSniffer : MediaTypeSniffer {
                 return Try.success(MediaType.XHTML)
             }
 
-        return Try.failure(MediaTypeSniffer.Error.NotRecognized)
+        return Try.failure(MediaTypeSnifferError.NotRecognized)
     }
 }
 
 /** Sniffs an HTML document. */
 public object HtmlMediaTypeSniffer : MediaTypeSniffer {
-    override fun sniffHints(hints: MediaTypeHints): Try<MediaType, MediaTypeSniffer.Error.NotRecognized> {
+    override fun sniffHints(hints: MediaTypeHints): Try<MediaType, MediaTypeSnifferError.NotRecognized> {
         if (
             hints.hasFileExtension("htm", "html") ||
             hints.hasMediaType("text/html")
@@ -103,32 +189,28 @@ public object HtmlMediaTypeSniffer : MediaTypeSniffer {
             return Try.success(MediaType.HTML)
         }
 
-        return Try.failure(MediaTypeSniffer.Error.NotRecognized)
+        return Try.failure(MediaTypeSnifferError.NotRecognized)
     }
 
-    override suspend fun sniffContent(content: MediaTypeSnifferContent): Try<MediaType, MediaTypeSniffer.Error> {
-        if (content !is ResourceMediaTypeSnifferContent) {
-            return Try.failure(MediaTypeSniffer.Error.NotRecognized)
-        }
-
+    override suspend fun sniffResource(resource: ResourceMediaTypeSnifferContent): Try<MediaType, MediaTypeSnifferError> {
         // [contentAsXml] will fail if the HTML is not a proper XML document, hence the doctype check.
-        content.contentAsXml()
+        resource.contentAsXml()
             .getOrElse {
                 when (it) {
                     is DecoderError.DataSourceError ->
-                        return Try.failure(MediaTypeSniffer.Error.SourceError(it.cause))
+                        return Try.failure(MediaTypeSnifferError.SourceError(it.cause))
                     is DecoderError.DecodingError ->
                         null
                 }
             }
-            ?.takeIf { it.name.lowercase(Locale.ROOT) == "html"  }
+            ?.takeIf { it.name.lowercase(Locale.ROOT) == "html" }
             ?.let { return Try.success(MediaType.HTML) }
 
-        content.contentAsString()
+        resource.contentAsString()
             .getOrElse {
                 when (it) {
                     is DecoderError.DataSourceError ->
-                        return Try.failure(MediaTypeSniffer.Error.SourceError(it.cause))
+                        return Try.failure(MediaTypeSnifferError.SourceError(it.cause))
 
                     is DecoderError.DecodingError ->
                         null
@@ -137,14 +219,14 @@ public object HtmlMediaTypeSniffer : MediaTypeSniffer {
             ?.takeIf { it.trimStart().take(15).lowercase() == "<!doctype html>" }
             ?.let { return Try.success(MediaType.HTML) }
 
-        return Try.failure(MediaTypeSniffer.Error.NotRecognized)
+        return Try.failure(MediaTypeSnifferError.NotRecognized)
     }
 }
 
 /** Sniffs an OPDS document. */
 public object OpdsMediaTypeSniffer : MediaTypeSniffer {
 
-    override fun sniffHints(hints: MediaTypeHints): Try<MediaType, MediaTypeSniffer.Error.NotRecognized> {
+    override fun sniffHints(hints: MediaTypeHints): Try<MediaType, MediaTypeSnifferError.NotRecognized> {
         // OPDS 1
         if (hints.hasMediaType("application/atom+xml;type=entry;profile=opds-catalog")) {
             return Try.success(MediaType.OPDS1_ENTRY)
@@ -175,20 +257,16 @@ public object OpdsMediaTypeSniffer : MediaTypeSniffer {
             return Try.success(MediaType.OPDS_AUTHENTICATION)
         }
 
-        return Try.failure(MediaTypeSniffer.Error.NotRecognized)
+        return Try.failure(MediaTypeSnifferError.NotRecognized)
     }
 
-    override suspend fun sniffContent(content: MediaTypeSnifferContent): Try<MediaType, MediaTypeSniffer.Error> {
-        if (content !is ResourceMediaTypeSnifferContent) {
-            return Try.failure(MediaTypeSniffer.Error.NotRecognized)
-        }
-
+    override suspend fun sniffResource(resource: ResourceMediaTypeSnifferContent): Try<MediaType, MediaTypeSnifferError> {
         // OPDS 1
-        content.contentAsXml()
+        resource.contentAsXml()
             .getOrElse {
                 when (it) {
                     is DecoderError.DataSourceError ->
-                        return Try.failure(MediaTypeSniffer.Error.SourceError(it.cause))
+                        return Try.failure(MediaTypeSnifferError.SourceError(it.cause))
                     is DecoderError.DecodingError ->
                         null
                 }
@@ -203,11 +281,11 @@ public object OpdsMediaTypeSniffer : MediaTypeSniffer {
             }
 
         // OPDS 2
-        content.contentAsRwpm()
+        resource.contentAsRwpm()
             .getOrElse {
                 when (it) {
                     is DecoderError.DataSourceError ->
-                        return Try.failure(MediaTypeSniffer.Error.SourceError(it.cause))
+                        return Try.failure(MediaTypeSnifferError.SourceError(it.cause))
                     is DecoderError.DecodingError ->
                         null
                 }
@@ -224,32 +302,37 @@ public object OpdsMediaTypeSniffer : MediaTypeSniffer {
                 fun List<Link>.firstWithRelMatching(predicate: (String) -> Boolean): Link? =
                     firstOrNull { it.rels.any(predicate) }
 
-                if (rwpm.links.firstWithRelMatching { it.startsWith("http://opds-spec.org/acquisition") } != null) {
+                if (rwpm.links.firstWithRelMatching {
+                    it.startsWith(
+                            "http://opds-spec.org/acquisition"
+                        )
+                } != null
+                ) {
                     return Try.success(MediaType.OPDS2_PUBLICATION)
                 }
             }
 
         // OPDS Authentication Document.
-        content.containsJsonKeys("id", "title", "authentication")
+        resource.containsJsonKeys("id", "title", "authentication")
             .getOrElse {
                 when (it) {
                     is DecoderError.DataSourceError ->
-                        return Try.failure(MediaTypeSniffer.Error.SourceError(it.cause))
+                        return Try.failure(MediaTypeSnifferError.SourceError(it.cause))
 
                     is DecoderError.DecodingError ->
                         null
                 }
             }
             ?.takeIf { it }
-            ?.let {  return Try.success(MediaType.OPDS_AUTHENTICATION) }
+            ?.let { return Try.success(MediaType.OPDS_AUTHENTICATION) }
 
-        return Try.failure(MediaTypeSniffer.Error.NotRecognized)
+        return Try.failure(MediaTypeSnifferError.NotRecognized)
     }
 }
 
 /** Sniffs an LCP License Document. */
 public object LcpLicenseMediaTypeSniffer : MediaTypeSniffer {
-    override fun sniffHints(hints: MediaTypeHints): Try<MediaType, MediaTypeSniffer.Error.NotRecognized> {
+    override fun sniffHints(hints: MediaTypeHints): Try<MediaType, MediaTypeSnifferError.NotRecognized> {
         if (
             hints.hasFileExtension("lcpl") ||
             hints.hasMediaType("application/vnd.readium.lcp.license.v1.0+json")
@@ -257,18 +340,15 @@ public object LcpLicenseMediaTypeSniffer : MediaTypeSniffer {
             return Try.success(MediaType.LCP_LICENSE_DOCUMENT)
         }
 
-        return Try.failure(MediaTypeSniffer.Error.NotRecognized)
+        return Try.failure(MediaTypeSnifferError.NotRecognized)
     }
 
-    override suspend fun sniffContent(content: MediaTypeSnifferContent): Try<MediaType, MediaTypeSniffer.Error> {
-        if (content !is ResourceMediaTypeSnifferContent) {
-            return Try.failure(MediaTypeSniffer.Error.NotRecognized)
-        }
-        content.containsJsonKeys("id", "issued", "provider", "encryption")
+    override suspend fun sniffResource(resource: ResourceMediaTypeSnifferContent): Try<MediaType, MediaTypeSnifferError> {
+        resource.containsJsonKeys("id", "issued", "provider", "encryption")
             .getOrElse {
                 when (it) {
                     is DecoderError.DataSourceError ->
-                        return Try.failure(MediaTypeSniffer.Error.SourceError(it.cause))
+                        return Try.failure(MediaTypeSnifferError.SourceError(it.cause))
 
                     is DecoderError.DecodingError ->
                         null
@@ -277,13 +357,13 @@ public object LcpLicenseMediaTypeSniffer : MediaTypeSniffer {
             ?.takeIf { it }
             ?.let { return Try.success(MediaType.LCP_LICENSE_DOCUMENT) }
 
-        return Try.failure(MediaTypeSniffer.Error.NotRecognized)
+        return Try.failure(MediaTypeSnifferError.NotRecognized)
     }
 }
 
 /** Sniffs a bitmap image. */
 public object BitmapMediaTypeSniffer : MediaTypeSniffer {
-    override fun sniffHints(hints: MediaTypeHints): Try<MediaType, MediaTypeSniffer.Error.NotRecognized> {
+    override fun sniffHints(hints: MediaTypeHints): Try<MediaType, MediaTypeSnifferError.NotRecognized> {
         if (
             hints.hasFileExtension("avif") ||
             hints.hasMediaType("image/avif")
@@ -332,13 +412,13 @@ public object BitmapMediaTypeSniffer : MediaTypeSniffer {
         ) {
             return Try.success(MediaType.WEBP)
         }
-        return Try.failure(MediaTypeSniffer.Error.NotRecognized)
+        return Try.failure(MediaTypeSnifferError.NotRecognized)
     }
 }
 
 /** Sniffs a Readium Web Manifest. */
 public object WebPubManifestMediaTypeSniffer : MediaTypeSniffer {
-    override fun sniffHints(hints: MediaTypeHints): Try<MediaType, MediaTypeSniffer.Error.NotRecognized> {
+    override fun sniffHints(hints: MediaTypeHints): Try<MediaType, MediaTypeSnifferError.NotRecognized> {
         if (hints.hasMediaType("application/audiobook+json")) {
             return Try.success(MediaType.READIUM_AUDIOBOOK_MANIFEST)
         }
@@ -351,26 +431,22 @@ public object WebPubManifestMediaTypeSniffer : MediaTypeSniffer {
             return Try.success(MediaType.READIUM_WEBPUB_MANIFEST)
         }
 
-        return Try.failure(MediaTypeSniffer.Error.NotRecognized)
+        return Try.failure(MediaTypeSnifferError.NotRecognized)
     }
 
-    override suspend fun sniffContent(content: MediaTypeSnifferContent): Try<MediaType, MediaTypeSniffer.Error> {
-        if (content !is ResourceMediaTypeSnifferContent) {
-            return Try.failure(MediaTypeSniffer.Error.NotRecognized)
-        }
-
+    override suspend fun sniffResource(resource: ResourceMediaTypeSnifferContent): Try<MediaType, MediaTypeSnifferError> {
         val manifest: Manifest =
-            content.contentAsRwpm()
+            resource.contentAsRwpm()
                 .getOrElse {
                     when (it) {
                         is DecoderError.DataSourceError ->
-                            return Try.failure(MediaTypeSniffer.Error.SourceError(it.cause))
+                            return Try.failure(MediaTypeSnifferError.SourceError(it.cause))
 
                         is DecoderError.DecodingError ->
                             null
                     }
                 }
-                ?: return Try.failure(MediaTypeSniffer.Error.NotRecognized)
+                ?: return Try.failure(MediaTypeSnifferError.NotRecognized)
 
         if (manifest.conformsTo(Publication.Profile.AUDIOBOOK)) {
             return Try.success(MediaType.READIUM_AUDIOBOOK_MANIFEST)
@@ -383,13 +459,13 @@ public object WebPubManifestMediaTypeSniffer : MediaTypeSniffer {
             return Try.success(MediaType.READIUM_WEBPUB_MANIFEST)
         }
 
-        return Try.failure(MediaTypeSniffer.Error.NotRecognized)
+        return Try.failure(MediaTypeSnifferError.NotRecognized)
     }
 }
 
 /** Sniffs a Readium Web Publication, protected or not by LCP. */
 public object WebPubMediaTypeSniffer : MediaTypeSniffer {
-    override fun sniffHints(hints: MediaTypeHints): Try<MediaType, MediaTypeSniffer.Error.NotRecognized> {
+    override fun sniffHints(hints: MediaTypeHints): Try<MediaType, MediaTypeSnifferError.NotRecognized> {
         if (
             hints.hasFileExtension("audiobook") ||
             hints.hasMediaType("application/audiobook+zip")
@@ -424,29 +500,25 @@ public object WebPubMediaTypeSniffer : MediaTypeSniffer {
             return Try.success(MediaType.LCP_PROTECTED_PDF)
         }
 
-        return Try.failure(MediaTypeSniffer.Error.NotRecognized)
+        return Try.failure(MediaTypeSnifferError.NotRecognized)
     }
 
-    override suspend fun sniffContent(content: MediaTypeSnifferContent): Try<MediaType, MediaTypeSniffer.Error> {
-        if (content !is ContainerMediaTypeSnifferContent) {
-            return Try.failure(MediaTypeSniffer.Error.NotRecognized)
-        }
-
+    override suspend fun sniffContainer(container: ContainerMediaTypeSnifferContent): Try<MediaType, MediaTypeSnifferError> {
         // Reads a RWPM from a manifest.json archive entry.
         val manifest: Manifest =
-            content.read(RelativeUrl("manifest.json")!!)
+            container.read(RelativeUrl("manifest.json")!!)
                 .getOrElse { error ->
                     when (error) {
                         is MediaTypeSnifferContentError.NotFound ->
                             null
                         else ->
-                            return Try.failure(MediaTypeSniffer.Error.SourceError(error))
+                            return Try.failure(MediaTypeSnifferError.SourceError(error))
                     }
                 }
                 ?.let { tryOrNull { Manifest.fromJSON(JSONObject(String(it))) } }
-             ?: return Try.failure(MediaTypeSniffer.Error.NotRecognized)
+                ?: return Try.failure(MediaTypeSnifferError.NotRecognized)
 
-        val isLcpProtected = content.checkContains(RelativeUrl("license.lcpl")!!)
+        val isLcpProtected = container.checkContains(RelativeUrl("license.lcpl")!!)
             .fold(
                 { true },
                 { error ->
@@ -454,7 +526,7 @@ public object WebPubMediaTypeSniffer : MediaTypeSniffer {
                         is MediaTypeSnifferContentError.NotFound ->
                             false
                         else ->
-                            return Try.failure(MediaTypeSniffer.Error.SourceError(error))
+                            return Try.failure(MediaTypeSnifferError.SourceError(error))
                     }
                 }
             )
@@ -476,23 +548,19 @@ public object WebPubMediaTypeSniffer : MediaTypeSniffer {
             return Try.success(MediaType.READIUM_WEBPUB)
         }
 
-        return Try.failure(MediaTypeSniffer.Error.NotRecognized)
+        return Try.failure(MediaTypeSnifferError.NotRecognized)
     }
 }
 
 /** Sniffs a W3C Web Publication Manifest. */
 public object W3cWpubMediaTypeSniffer : MediaTypeSniffer {
-    override suspend fun sniffContent(content: MediaTypeSnifferContent): Try<MediaType, MediaTypeSniffer.Error> {
-        if (content !is ResourceMediaTypeSnifferContent) {
-            return Try.failure(MediaTypeSniffer.Error.NotRecognized)
-        }
-
+    override suspend fun sniffResource(resource: ResourceMediaTypeSnifferContent): Try<MediaType, MediaTypeSnifferError> {
         // Somehow, [JSONObject] can't access JSON-LD keys such as `@content`.
-        val string = content.contentAsString()
+        val string = resource.contentAsString()
             .getOrElse {
                 when (it) {
                     is DecoderError.DataSourceError ->
-                        return Try.failure(MediaTypeSniffer.Error.SourceError(it.cause))
+                        return Try.failure(MediaTypeSnifferError.SourceError(it.cause))
 
                     is DecoderError.DecodingError ->
                         null
@@ -505,7 +573,7 @@ public object W3cWpubMediaTypeSniffer : MediaTypeSniffer {
             return Try.success(MediaType.W3C_WPUB_MANIFEST)
         }
 
-       return Try.failure(MediaTypeSniffer.Error.NotRecognized)
+        return Try.failure(MediaTypeSnifferError.NotRecognized)
     }
 }
 
@@ -515,7 +583,7 @@ public object W3cWpubMediaTypeSniffer : MediaTypeSniffer {
  * Reference: https://www.w3.org/publishing/epub3/epub-ocf.html#sec-zip-container-mime
  */
 public object EpubMediaTypeSniffer : MediaTypeSniffer {
-    override fun sniffHints(hints: MediaTypeHints): Try<MediaType, MediaTypeSniffer.Error.NotRecognized> {
+    override fun sniffHints(hints: MediaTypeHints): Try<MediaType, MediaTypeSnifferError.NotRecognized> {
         if (
             hints.hasFileExtension("epub") ||
             hints.hasMediaType("application/epub+zip")
@@ -523,21 +591,17 @@ public object EpubMediaTypeSniffer : MediaTypeSniffer {
             return Try.success(MediaType.EPUB)
         }
 
-        return Try.failure(MediaTypeSniffer.Error.NotRecognized)
+        return Try.failure(MediaTypeSnifferError.NotRecognized)
     }
 
-    override suspend fun sniffContent(content: MediaTypeSnifferContent): Try<MediaType, MediaTypeSniffer.Error> {
-        if (content !is ContainerMediaTypeSnifferContent) {
-            return Try.failure(MediaTypeSniffer.Error.NotRecognized)
-        }
-
-        val mimetype = content.read(RelativeUrl("mimetype")!!)
+    override suspend fun sniffContainer(container: ContainerMediaTypeSnifferContent): Try<MediaType, MediaTypeSnifferError> {
+        val mimetype = container.read(RelativeUrl("mimetype")!!)
             .getOrElse { error ->
                 when (error) {
                     is MediaTypeSnifferContentError.NotFound ->
                         null
                     else ->
-                        return Try.failure(MediaTypeSniffer.Error.SourceError(error))
+                        return Try.failure(MediaTypeSnifferError.SourceError(error))
                 }
             }
             ?.let { String(it, charset = Charsets.US_ASCII).trim() }
@@ -545,7 +609,7 @@ public object EpubMediaTypeSniffer : MediaTypeSniffer {
             return Try.success(MediaType.EPUB)
         }
 
-        return Try.failure(MediaTypeSniffer.Error.NotRecognized)
+        return Try.failure(MediaTypeSnifferError.NotRecognized)
     }
 }
 
@@ -557,7 +621,7 @@ public object EpubMediaTypeSniffer : MediaTypeSniffer {
  *  - https://www.w3.org/TR/pub-manifest/
  */
 public object LpfMediaTypeSniffer : MediaTypeSniffer {
-    override fun sniffHints(hints: MediaTypeHints): Try<MediaType, MediaTypeSniffer.Error.NotRecognized> {
+    override fun sniffHints(hints: MediaTypeHints): Try<MediaType, MediaTypeSnifferError.NotRecognized> {
         if (
             hints.hasFileExtension("lpf") ||
             hints.hasMediaType("application/lpf+zip")
@@ -565,34 +629,30 @@ public object LpfMediaTypeSniffer : MediaTypeSniffer {
             return Try.success(MediaType.LPF)
         }
 
-        return Try.failure(MediaTypeSniffer.Error.NotRecognized)
+        return Try.failure(MediaTypeSnifferError.NotRecognized)
     }
 
-    override suspend fun sniffContent(content: MediaTypeSnifferContent): Try<MediaType, MediaTypeSniffer.Error> {
-        if (content !is ContainerMediaTypeSnifferContent) {
-            return Try.failure(MediaTypeSniffer.Error.NotRecognized)
-        }
-
-        content.checkContains(RelativeUrl("index.html")!!)
-            .onSuccess { return Try.success(MediaType.LPF)  }
+    override suspend fun sniffContainer(container: ContainerMediaTypeSnifferContent): Try<MediaType, MediaTypeSnifferError> {
+        container.checkContains(RelativeUrl("index.html")!!)
+            .onSuccess { return Try.success(MediaType.LPF) }
             .onFailure { error ->
                 when (error) {
                     is MediaTypeSnifferContentError.NotFound -> {}
-                    else -> return Try.failure(MediaTypeSniffer.Error.SourceError(error))
+                    else -> return Try.failure(MediaTypeSnifferError.SourceError(error))
                 }
             }
 
         // Somehow, [JSONObject] can't access JSON-LD keys such as `@content`.
-        content.read(RelativeUrl("publication.json")!!)
+        container.read(RelativeUrl("publication.json")!!)
             .getOrElse { error ->
                 when (error) {
                     is MediaTypeSnifferContentError.NotFound ->
                         null
                     else ->
-                        return Try.failure(MediaTypeSniffer.Error.SourceError(error))
+                        return Try.failure(MediaTypeSnifferError.SourceError(error))
                 }
             }
-            ?.let { tryOrNull { String(it)  } }
+            ?.let { tryOrNull { String(it) } }
             ?.let { manifest ->
                 if (
                     manifest.contains("@context") &&
@@ -602,7 +662,7 @@ public object LpfMediaTypeSniffer : MediaTypeSniffer {
                 }
             }
 
-        return Try.failure(MediaTypeSniffer.Error.NotRecognized)
+        return Try.failure(MediaTypeSnifferError.NotRecognized)
     }
 }
 
@@ -656,7 +716,7 @@ public object ArchiveMediaTypeSniffer : MediaTypeSniffer {
         "zpl"
     )
 
-    override fun sniffHints(hints: MediaTypeHints): Try<MediaType, MediaTypeSniffer.Error.NotRecognized> {
+    override fun sniffHints(hints: MediaTypeHints): Try<MediaType, MediaTypeSnifferError.NotRecognized> {
         if (
             hints.hasFileExtension("cbz") ||
             hints.hasMediaType(
@@ -671,20 +731,20 @@ public object ArchiveMediaTypeSniffer : MediaTypeSniffer {
             return Try.success(MediaType.ZAB)
         }
 
-        return Try.failure(MediaTypeSniffer.Error.NotRecognized)
+        return Try.failure(MediaTypeSnifferError.NotRecognized)
     }
 
-    override suspend fun sniffContent(content: MediaTypeSnifferContent): Try<MediaType, MediaTypeSniffer.Error> {
-        if (content !is ContainerMediaTypeSnifferContent) {
-            return Try.failure(MediaTypeSniffer.Error.NotRecognized)
-        }
-
+    override suspend fun sniffContainer(container: ContainerMediaTypeSnifferContent): Try<MediaType, MediaTypeSnifferError> {
         fun isIgnored(url: Url): Boolean =
             url.filename?.startsWith(".") == true || url.filename == "Thumbs.db"
 
         suspend fun archiveContainsOnlyExtensions(fileExtensions: List<String>): Boolean =
-            content.entries()?.all { url ->
-                isIgnored(url) || url.extension?.let { fileExtensions.contains(it.lowercase(Locale.ROOT)) } == true
+            container.entries()?.all { url ->
+                isIgnored(url) || url.extension?.let {
+                    fileExtensions.contains(
+                        it.lowercase(Locale.ROOT)
+                    )
+                } == true
             } ?: false
 
         if (archiveContainsOnlyExtensions(cbzExtensions)) {
@@ -694,7 +754,7 @@ public object ArchiveMediaTypeSniffer : MediaTypeSniffer {
             return Try.success(MediaType.ZAB)
         }
 
-        return Try.failure(MediaTypeSniffer.Error.NotRecognized)
+        return Try.failure(MediaTypeSnifferError.NotRecognized)
     }
 }
 
@@ -704,7 +764,7 @@ public object ArchiveMediaTypeSniffer : MediaTypeSniffer {
  * Reference: https://www.loc.gov/preservation/digital/formats/fdd/fdd000123.shtml
  */
 public object PdfMediaTypeSniffer : MediaTypeSniffer {
-    override fun sniffHints(hints: MediaTypeHints): Try<MediaType, MediaTypeSniffer.Error.NotRecognized> {
+    override fun sniffHints(hints: MediaTypeHints): Try<MediaType, MediaTypeSnifferError.NotRecognized> {
         if (
             hints.hasFileExtension("pdf") ||
             hints.hasMediaType("application/pdf")
@@ -712,46 +772,38 @@ public object PdfMediaTypeSniffer : MediaTypeSniffer {
             return Try.success(MediaType.PDF)
         }
 
-        return Try.failure(MediaTypeSniffer.Error.NotRecognized)
+        return Try.failure(MediaTypeSnifferError.NotRecognized)
     }
 
-    override suspend fun sniffContent(content: MediaTypeSnifferContent): Try<MediaType, MediaTypeSniffer.Error> {
-        if (content !is ResourceMediaTypeSnifferContent) {
-            return Try.failure(MediaTypeSniffer.Error.NotRecognized)
-        }
-
-        content.read(0L until 5L)
+    override suspend fun sniffResource(resource: ResourceMediaTypeSnifferContent): Try<MediaType, MediaTypeSnifferError> {
+        resource.read(0L until 5L)
             .getOrElse { error ->
-                return Try.failure(MediaTypeSniffer.Error.SourceError(error))
+                return Try.failure(MediaTypeSnifferError.SourceError(error))
             }
             .let { tryOrNull { it.toString(Charsets.UTF_8) } }
             .takeIf { it == "%PDF-" }
             ?.let { return Try.success(MediaType.PDF) }
 
-        return Try.failure(MediaTypeSniffer.Error.NotRecognized)
+        return Try.failure(MediaTypeSnifferError.NotRecognized)
     }
 }
 
 /** Sniffs a JSON document. */
 public object JsonMediaTypeSniffer : MediaTypeSniffer {
-    override fun sniffHints(hints: MediaTypeHints): Try<MediaType, MediaTypeSniffer.Error.NotRecognized> {
+    override fun sniffHints(hints: MediaTypeHints): Try<MediaType, MediaTypeSnifferError.NotRecognized> {
         if (hints.hasMediaType("application/problem+json")) {
             return Try.success(MediaType.JSON_PROBLEM_DETAILS)
         }
 
-        return Try.failure(MediaTypeSniffer.Error.NotRecognized)
+        return Try.failure(MediaTypeSnifferError.NotRecognized)
     }
 
-    override suspend fun sniffContent(content: MediaTypeSnifferContent): Try<MediaType, MediaTypeSniffer.Error> {
-        if (content !is ResourceMediaTypeSnifferContent) {
-            return Try.failure(MediaTypeSniffer.Error.NotRecognized)
-        }
-
-        content.contentAsJson()
+    override suspend fun sniffResource(resource: ResourceMediaTypeSnifferContent): Try<MediaType, MediaTypeSnifferError> {
+        resource.contentAsJson()
             .getOrElse {
                 when (it) {
                     is DecoderError.DataSourceError ->
-                        return Try.failure(MediaTypeSniffer.Error.SourceError(it.cause))
+                        return Try.failure(MediaTypeSnifferError.SourceError(it.cause))
 
                     is DecoderError.DecodingError ->
                         null
@@ -759,7 +811,7 @@ public object JsonMediaTypeSniffer : MediaTypeSniffer {
             }
             ?.let { return Try.success(MediaType.JSON) }
 
-        return Try.failure(MediaTypeSniffer.Error.NotRecognized)
+        return Try.failure(MediaTypeSnifferError.NotRecognized)
     }
 }
 
@@ -771,7 +823,7 @@ public object SystemMediaTypeSniffer : MediaTypeSniffer {
 
     private val mimetypes = tryOrNull { MimeTypeMap.getSingleton() }
 
-    override fun sniffHints(hints: MediaTypeHints): Try<MediaType, MediaTypeSniffer.Error.NotRecognized> {
+    override fun sniffHints(hints: MediaTypeHints): Try<MediaType, MediaTypeSnifferError.NotRecognized> {
         for (mediaType in hints.mediaTypes) {
             sniffType(mediaType.toString())
                 ?.let { return Try.success(it) }
@@ -782,15 +834,11 @@ public object SystemMediaTypeSniffer : MediaTypeSniffer {
                 ?.let { return Try.success(it) }
         }
 
-        return Try.failure(MediaTypeSniffer.Error.NotRecognized)
+        return Try.failure(MediaTypeSnifferError.NotRecognized)
     }
 
-    override suspend fun sniffContent(content: MediaTypeSnifferContent): Try<MediaType, MediaTypeSniffer.Error> {
-        if (content !is ResourceMediaTypeSnifferContent) {
-            return Try.failure(MediaTypeSniffer.Error.NotRecognized)
-        }
-
-        content.contentAsStream()
+    override suspend fun sniffResource(resource: ResourceMediaTypeSnifferContent): Try<MediaType, MediaTypeSnifferError> {
+        resource.contentAsStream()
             .use {
                 try {
                     withContext(Dispatchers.IO) {
@@ -798,12 +846,12 @@ public object SystemMediaTypeSniffer : MediaTypeSniffer {
                             ?.let { sniffType(it) }
                     }
                 } catch (e: MediaTypeSnifferContentException) {
-                    return Try.failure(MediaTypeSniffer.Error.SourceError(e.error))
+                    return Try.failure(MediaTypeSnifferError.SourceError(e.error))
                 }
             }
             ?.let { return Try.success(it) }
 
-        return Try.failure(MediaTypeSniffer.Error.NotRecognized)
+        return Try.failure(MediaTypeSnifferError.NotRecognized)
     }
 
     private fun sniffType(type: String): MediaType? {

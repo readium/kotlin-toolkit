@@ -4,7 +4,7 @@
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.r2.shared.datasource
+package org.readium.r2.shared.util.datasource
 
 import java.io.IOException
 import java.io.InputStream
@@ -18,7 +18,7 @@ import org.readium.r2.shared.util.getOrThrow
  * If you experience bad performances, consider wrapping the stream in a BufferedInputStream. This
  * is particularly useful when streaming deflated ZIP entries.
  */
-internal class DataSourceInputStream<E: Error>(
+internal class DataSourceInputStream<E : Error>(
     private val dataSource: DataSource<E>,
     private val wrapError: (E) -> IOException,
     private val range: LongRange? = null
@@ -68,9 +68,11 @@ internal class DataSourceInputStream<E: Error>(
             return -1
         }
 
-        val bytes = runBlocking { dataSource.read(position until (position + 1))
-            .mapFailure { wrapError(it) }
-            .getOrThrow() }
+        val bytes = runBlocking {
+            dataSource.read(position until (position + 1))
+                .mapFailure { wrapError(it) }
+                .getOrThrow()
+        }
         position += 1
         return bytes.first().toUByte().toInt()
     }
@@ -83,9 +85,11 @@ internal class DataSourceInputStream<E: Error>(
         }
 
         val bytesToRead = len.coerceAtMost(available())
-        val bytes = runBlocking { dataSource.read(position until (position + bytesToRead))
-            .mapFailure { wrapError(it) }
-            .getOrThrow() }
+        val bytes = runBlocking {
+            dataSource.read(position until (position + bytesToRead))
+                .mapFailure { wrapError(it) }
+                .getOrThrow()
+        }
         check(bytes.size <= bytesToRead)
         bytes.copyInto(
             destination = b,

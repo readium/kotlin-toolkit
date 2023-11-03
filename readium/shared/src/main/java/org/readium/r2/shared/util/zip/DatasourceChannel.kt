@@ -14,21 +14,17 @@ import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
-import org.readium.r2.shared.util.getOrElse
+import org.readium.r2.shared.util.Error
+import org.readium.r2.shared.util.datasource.DataSource
 import org.readium.r2.shared.util.getOrThrow
-import org.readium.r2.shared.util.resource.Resource
-import org.readium.r2.shared.util.resource.ResourceError
 import org.readium.r2.shared.util.zip.jvm.ClosedChannelException
 import org.readium.r2.shared.util.zip.jvm.NonWritableChannelException
 import org.readium.r2.shared.util.zip.jvm.SeekableByteChannel
 
-internal class ResourceChannel(
-    private val resource: Resource
+internal class DatasourceChannel<E : Error>(
+    private val dataSource: DataSource<E>,
+    private val wrapError: (E) -> IOException
 ) : SeekableByteChannel {
-
-    class ResourceException(
-        val error: ResourceError
-    ) : IOException(error.message)
 
     private val coroutineScope: CoroutineScope =
         MainScope()
@@ -45,7 +41,7 @@ internal class ResourceChannel(
         }
 
         isClosed = true
-        coroutineScope.launch { resource.close() }
+        coroutineScope.launch { dataSource.close() }
     }
 
     override fun isOpen(): Boolean {
@@ -59,8 +55,9 @@ internal class ResourceChannel(
             }
 
             withContext(Dispatchers.IO) {
-                val size = resource.length()
-                    .getOrElse { throw ResourceException(it) }
+                val size = dataSource.length()
+                    .mapFailure(wrapError)
+                    .getOrThrow()
 
                 if (position >= size) {
                     return@withContext -1
@@ -69,8 +66,9 @@ internal class ResourceChannel(
                 val available = size - position
                 val toBeRead = dst.remaining().coerceAtMost(available.toInt())
                 check(toBeRead > 0)
-                val bytes = resource.read(position until position + toBeRead)
-                    .getOrElse { throw ResourceException(it) }
+                val bytes = dataSource.read(position until position + toBeRead)
+                    .mapFailure(wrapError)
+                    .getOrThrow()
                 check(bytes.size == toBeRead)
                 dst.put(bytes, 0, toBeRead)
                 position += toBeRead
@@ -101,8 +99,8 @@ internal class ResourceChannel(
             throw ClosedChannelException()
         }
 
-        return runBlocking { resource.length() }
-            .mapFailure { IOException(ResourceException(it)) }
+        return runBlocking { dataSource.length() }
+            .mapFailure { wrapError(it) }
             .getOrThrow()
     }
 

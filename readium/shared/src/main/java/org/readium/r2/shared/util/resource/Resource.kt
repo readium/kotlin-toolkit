@@ -6,8 +6,10 @@
 
 package org.readium.r2.shared.util.resource
 
+import java.io.IOException
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Error
+import org.readium.r2.shared.util.ErrorException
 import org.readium.r2.shared.util.FilesystemError
 import org.readium.r2.shared.util.MessageError
 import org.readium.r2.shared.util.NetworkError
@@ -173,3 +175,33 @@ public inline fun <R, S> ResourceTry<S>.flatMapCatching(transform: (value: S) ->
             Try.failure(ResourceError.OutOfMemory(e))
         }
     }
+
+internal fun Resource.withMediaType(mediaType: MediaType?): Resource {
+    if (mediaType == null) {
+        return this
+    }
+
+    return object : Resource by this {
+        override suspend fun mediaType(): ResourceTry<MediaType> =
+            ResourceTry.success(mediaType)
+    }
+}
+
+internal class ResourceException(
+    val error: ResourceError
+) : IOException(error.message, ErrorException(error)) {
+
+    companion object {
+        fun Exception.unwrapResourceException(): Exception {
+            this.findResourceExceptionCause()?.let { return it }
+            return this
+        }
+
+        private fun Throwable.findResourceExceptionCause(): ResourceException? =
+            when {
+                this is ResourceException -> this
+                cause != null -> cause!!.findResourceExceptionCause()
+                else -> null
+            }
+    }
+}

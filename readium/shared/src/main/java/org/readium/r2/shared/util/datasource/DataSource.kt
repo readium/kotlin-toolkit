@@ -4,7 +4,7 @@
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.r2.shared.datasource
+package org.readium.r2.shared.util.datasource
 
 import org.readium.r2.shared.util.SuspendingCloseable
 import org.readium.r2.shared.util.Try

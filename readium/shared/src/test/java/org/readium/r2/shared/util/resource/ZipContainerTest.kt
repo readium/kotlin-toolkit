@@ -23,7 +23,7 @@ import org.readium.r2.shared.util.assertSuccess
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 import org.readium.r2.shared.util.use
-import org.readium.r2.shared.util.zip.StreamingZipArchiveFactory
+import org.readium.r2.shared.util.zip.StreamingZipArchiveProvider
 import org.robolectric.ParameterizedRobolectricTestRunner
 
 @RunWith(ParameterizedRobolectricTestRunner::class)
@@ -39,7 +39,7 @@ class ZipContainerTest(val sut: suspend () -> Container) {
 
             val zipArchive = suspend {
                 assertNotNull(
-                    FileZipArchiveFactory(MediaTypeRetriever())
+                    FileZipArchiveProvider(MediaTypeRetriever())
                         .create(
                             FileResource(File(epubZip.path), mediaType = MediaType.EPUB),
                             password = null
@@ -49,7 +49,7 @@ class ZipContainerTest(val sut: suspend () -> Container) {
             }
 
             val apacheZipArchive = suspend {
-                StreamingZipArchiveFactory(MediaTypeRetriever())
+                StreamingZipArchiveProvider(MediaTypeRetriever())
                     .openFile(File(epubZip.path))
             }
 

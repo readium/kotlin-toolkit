@@ -32,11 +32,11 @@ public class FileResource private constructor(
     private val mediaTypeRetriever: MediaTypeRetriever?
 ) : Resource {
 
-    public constructor(file: File, mediaType: MediaType)
-        : this(file, mediaType, null)
+    public constructor(file: File, mediaType: MediaType) :
+        this(file, mediaType, null)
 
-    public constructor(file: File, mediaTypeRetriever: MediaTypeRetriever)
-        : this(file, null, mediaTypeRetriever)
+    public constructor(file: File, mediaTypeRetriever: MediaTypeRetriever) :
+        this(file, null, mediaTypeRetriever)
 
     private val randomAccessFile by lazy {
         try {
@@ -53,7 +53,7 @@ public class FileResource private constructor(
 
     override suspend fun mediaType(): ResourceTry<MediaType> =
         mediaType
-            ?.let {  Try.success(it) }
+            ?.let { Try.success(it) }
             ?: mediaTypeRetriever!!.retrieve(
                 hints = MediaTypeHints(fileExtension = file.extension),
                 content = ResourceMediaTypeSnifferContent(this)

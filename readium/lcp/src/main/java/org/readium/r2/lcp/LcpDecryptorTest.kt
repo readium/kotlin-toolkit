@@ -16,9 +16,9 @@ import org.readium.r2.shared.extensions.coerceIn
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.util.ErrorException
 import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.assertSuccess
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.getOrThrow
-import org.readium.r2.shared.util.assertSuccess
 import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.shared.util.use
 import timber.log.Timber

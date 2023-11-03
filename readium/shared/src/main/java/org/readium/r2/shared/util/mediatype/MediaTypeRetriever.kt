@@ -95,7 +95,7 @@ public class MediaTypeRetriever(
     public suspend fun retrieve(
         hints: MediaTypeHints = MediaTypeHints(),
         content: MediaTypeSnifferContent? = null
-    ): Try<MediaType, MediaTypeSniffer.Error> {
+    ): Try<MediaType, MediaTypeSnifferError> {
         for (sniffer in sniffers) {
             sniffer.sniffHints(hints)
                 .getOrNull()
@@ -107,7 +107,7 @@ public class MediaTypeRetriever(
                 sniffer.sniffContent(content)
                     .onSuccess { return Try.success(it) }
                     .onFailure { error ->
-                        if (error is MediaTypeSniffer.Error.SourceError) {
+                        if (error is MediaTypeSnifferError.SourceError) {
                             return Try.failure(error)
                         }
                     }
@@ -126,7 +126,7 @@ public class MediaTypeRetriever(
             SystemMediaTypeSniffer.sniffContent(content)
                 .onSuccess { return Try.success(it) }
                 .onFailure { error ->
-                    if (error is MediaTypeSniffer.Error.SourceError) {
+                    if (error is MediaTypeSnifferError.SourceError) {
                         return Try.failure(error)
                     }
                 }
@@ -134,6 +134,6 @@ public class MediaTypeRetriever(
 
         return hints.mediaTypes.firstOrNull()
             ?.let { Try.success(it) }
-            ?: Try.failure(MediaTypeSniffer.Error.NotRecognized)
+            ?: Try.failure(MediaTypeSnifferError.NotRecognized)
     }
 }

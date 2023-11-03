@@ -18,6 +18,8 @@ import kotlinx.coroutines.withContext
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.extensions.md5
 import org.readium.r2.shared.extensions.tryOrNull
+import org.readium.r2.shared.util.MessageError
+import org.readium.r2.shared.util.ThrowableError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.pdf.PdfDocument
 import org.readium.r2.shared.util.pdf.PdfDocumentFactory
@@ -104,11 +106,10 @@ public class PdfiumDocumentFactory(context: Context) : PdfDocumentFactory<Pdfium
 
     private suspend fun Resource.openBytes(password: String?): ResourceTry<PdfiumDocument> =
         use {
-            read()
-                .decode(
-                    { core.fromBytes(it, password) },
-                    { "Pdfium could not read data." }
-                )
+            it.decode(
+                { bytes -> core.fromBytes(bytes, password) },
+                { MessageError("Pdfium could not read data.", ThrowableError(it)) }
+            )
         }
 
     private fun PdfiumCore.fromFile(file: File, password: String?): PdfiumDocument =

@@ -22,12 +22,10 @@ import org.readium.r2.shared.util.http.DefaultHttpClient
 import org.readium.r2.shared.util.http.HttpResourceFactory
 import org.readium.r2.shared.util.mediatype.FormatRegistry
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
-import org.readium.r2.shared.util.resource.CompositeArchiveFactory
 import org.readium.r2.shared.util.resource.CompositeResourceFactory
 import org.readium.r2.shared.util.resource.ContentResourceFactory
 import org.readium.r2.shared.util.resource.FileResourceFactory
-import org.readium.r2.shared.util.resource.FileZipArchiveFactory
-import org.readium.r2.shared.util.zip.StreamingZipArchiveFactory
+import org.readium.r2.shared.util.zip.StreamingZipArchiveProvider
 import org.readium.r2.streamer.PublicationFactory
 
 /**
@@ -43,24 +41,21 @@ class Readium(context: Context) {
         mediaTypeRetriever = mediaTypeRetriever
     )
 
-    private val archiveFactory = CompositeArchiveFactory(
-        FileZipArchiveFactory(mediaTypeRetriever),
-        StreamingZipArchiveFactory(mediaTypeRetriever)
+    private val archiveProviders = listOf(
+        StreamingZipArchiveProvider(mediaTypeRetriever)
     )
 
     private val resourceFactory = CompositeResourceFactory(
         FileResourceFactory(mediaTypeRetriever),
-        CompositeResourceFactory(
-            ContentResourceFactory(context.contentResolver),
-            HttpResourceFactory(httpClient)
-        )
+        ContentResourceFactory(context.contentResolver),
+        HttpResourceFactory(httpClient)
     )
 
     val assetRetriever = AssetRetriever(
         mediaTypeRetriever,
         resourceFactory,
-        archiveFactory,
-        context.contentResolver
+        context.contentResolver,
+        archiveProviders
     )
 
     val downloadManager = AndroidDownloadManager(

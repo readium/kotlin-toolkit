@@ -24,6 +24,7 @@ import org.readium.r2.shared.util.ThrowableError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.e
 import org.readium.r2.shared.util.flatMap
+import org.readium.r2.shared.util.getOrDefault
 import org.readium.r2.shared.util.http.HttpRequest.Method
 import org.readium.r2.shared.util.mediatype.BytesResourceMediaTypeSnifferContent
 import org.readium.r2.shared.util.mediatype.MediaType
@@ -172,7 +173,7 @@ public class DefaultHttpClient(
                             mediaTypeRetriever.retrieve(
                                 hints = MediaTypeHints(connection),
                                 content = BytesResourceMediaTypeSnifferContent { it }
-                            )
+                            ).getOrDefault(MediaType.BINARY)
                         }
                         return@withContext Try.failure(HttpError(kind, mediaType, body))
                     }

@@ -45,7 +45,11 @@ import org.readium.r2.testapp.utils.EventChannel
 import org.readium.r2.testapp.utils.createViewModelFactory
 import timber.log.Timber
 
-@OptIn(ExperimentalDecorator::class, ExperimentalCoroutinesApi::class)
+@OptIn(
+    ExperimentalDecorator::class,
+    ExperimentalCoroutinesApi::class,
+    ExperimentalReadiumApi::class
+)
 class ReaderViewModel(
     private val bookId: Long,
     private val readerRepository: ReaderRepository,

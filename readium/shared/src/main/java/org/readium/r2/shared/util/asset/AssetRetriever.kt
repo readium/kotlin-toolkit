@@ -24,18 +24,21 @@ import org.readium.r2.shared.util.NetworkError
 import org.readium.r2.shared.util.ThrowableError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
-import org.readium.r2.shared.util.flatMap
 import org.readium.r2.shared.util.getOrElse
+import org.readium.r2.shared.util.mediatype.CompositeMediaTypeSniffer
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.mediatype.MediaTypeHints
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 import org.readium.r2.shared.util.mediatype.MediaTypeSniffer
 import org.readium.r2.shared.util.mediatype.MediaTypeSnifferContentError
+import org.readium.r2.shared.util.mediatype.MediaTypeSnifferError
 import org.readium.r2.shared.util.resource.ArchiveFactory
+import org.readium.r2.shared.util.resource.ArchiveProvider
+import org.readium.r2.shared.util.resource.CompositeArchiveFactory
 import org.readium.r2.shared.util.resource.Container
 import org.readium.r2.shared.util.resource.ContainerMediaTypeSnifferContent
 import org.readium.r2.shared.util.resource.FileResourceFactory
-import org.readium.r2.shared.util.resource.FileZipArchiveFactory
+import org.readium.r2.shared.util.resource.FileZipArchiveProvider
 import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.shared.util.resource.ResourceError
 import org.readium.r2.shared.util.resource.ResourceFactory
@@ -49,9 +52,14 @@ import org.readium.r2.shared.util.toUrl
 public class AssetRetriever(
     private val mediaTypeRetriever: MediaTypeRetriever,
     private val resourceFactory: ResourceFactory,
-    private val archiveFactory: ArchiveFactory,
-    private val contentResolver: ContentResolver
+    private val contentResolver: ContentResolver,
+    archiveProviders: List<ArchiveProvider> = listOf(FileZipArchiveProvider(mediaTypeRetriever))
 ) {
+    private val archiveSniffer: MediaTypeSniffer =
+        CompositeMediaTypeSniffer(archiveProviders)
+
+    private val archiveFactory: ArchiveFactory =
+        CompositeArchiveFactory(archiveProviders)
 
     public companion object {
         public operator fun invoke(context: Context): AssetRetriever {
@@ -59,7 +67,7 @@ public class AssetRetriever(
             return AssetRetriever(
                 mediaTypeRetriever = mediaTypeRetriever,
                 resourceFactory = FileResourceFactory(mediaTypeRetriever),
-                archiveFactory = FileZipArchiveFactory(mediaTypeRetriever),
+                archiveProviders = emptyList(),
                 contentResolver = context.contentResolver
             )
         }
@@ -110,6 +118,7 @@ public class AssetRetriever(
             public constructor(url: AbsoluteUrl, exception: Exception) :
                 this(url, ThrowableError(exception))
         }
+
         public class Network(public override val cause: NetworkError) :
             Error("A network error occurred.", cause)
 
@@ -137,6 +146,7 @@ public class AssetRetriever(
         return when (containerType) {
             null ->
                 retrieveResourceAsset(url, mediaType)
+
             else ->
                 retrieveArchiveAsset(url, mediaType, containerType)
         }
@@ -147,28 +157,40 @@ public class AssetRetriever(
         mediaType: MediaType,
         containerType: MediaType
     ): Try<Asset.Container, Error> {
-        return retrieveResource(url, mediaType)
-            .flatMap { resource: Resource ->
-                archiveFactory.create(resource, containerType, password = null)
-                    .mapFailure { error ->
-                        when (error) {
-                            is ArchiveFactory.Error.FormatNotSupported ->
-                                Error.ArchiveFormatNotSupported(error)
-                            is ArchiveFactory.Error.ResourceError ->
-                                error.cause.wrap(url)
-                            is ArchiveFactory.Error.PasswordsNotSupported ->
-                                Error.ArchiveFormatNotSupported(error)
-                        }
-                    }
-            }
-            .map { container ->
-                Asset.Container(
-                    mediaType,
-                    containerType,
-                    container.container
-                )
-            }
+        val resource = retrieveResource(url, containerType)
+            .getOrElse { return Try.failure(it) }
+
+        return retrieveArchiveAsset(url, resource, mediaType, containerType)
     }
+    private suspend fun retrieveArchiveAsset(
+        url: AbsoluteUrl,
+        resource: Resource,
+        mediaType: MediaType,
+        containerType: MediaType
+    ): Try<Asset.Container, Error> {
+        val container = archiveFactory.create(resource)
+            .getOrElse { error -> return Try.failure(error.toAssetRetrieverError(url)) }
+
+        val asset = Asset.Container(
+            mediaType = mediaType,
+            containerType = containerType,
+            container = container
+        )
+
+        return Try.success(asset)
+    }
+
+    private fun ArchiveFactory.Error.toAssetRetrieverError(url: AbsoluteUrl): Error =
+        when (this) {
+            is ArchiveFactory.Error.UnsupportedFormat ->
+                Error.ArchiveFormatNotSupported(this)
+
+            is ArchiveFactory.Error.ResourceError ->
+                cause.wrap(url)
+
+            is ArchiveFactory.Error.PasswordsNotSupported ->
+                Error.ArchiveFormatNotSupported(this)
+        }
 
     private suspend fun retrieveResourceAsset(
         url: AbsoluteUrl,
@@ -200,16 +222,22 @@ public class AssetRetriever(
         when (this) {
             is ResourceError.Forbidden ->
                 Error.Forbidden(url, this)
+
             is ResourceError.NotFound ->
                 Error.InvalidAsset(this)
+
             is ResourceError.Network ->
                 Error.Network(cause)
+
             is ResourceError.OutOfMemory ->
                 Error.OutOfMemory(cause.throwable)
+
             is ResourceError.Other ->
                 Error.Unknown(this)
+
             is ResourceError.InvalidContent ->
                 Error.InvalidAsset(this)
+
             is ResourceError.Filesystem ->
                 Error.Filesystem(cause)
         }
@@ -236,31 +264,27 @@ public class AssetRetriever(
                 )
             }
 
-        return when (
-            val archive = archiveFactory.create(
-                resource,
-                archiveType = null,
-                password = null
-            )
-        ) {
-            is Try.Failure ->
-                when (archive.value) {
-                    is ArchiveFactory.Error.PasswordsNotSupported ->
-                        return Try.failure(Error.ArchiveFormatNotSupported(archive.value))
-                    is ArchiveFactory.Error.ResourceError ->
-                        return Try.failure(archive.value.cause.wrap(url))
-                    is ArchiveFactory.Error.FormatNotSupported ->
-                        retrieve(url, resource)
-                            .mapFailure {it.wrap(url) }
+        val mediaType = retrieveMediaType(url, Either.Left(resource))
+            .getOrElse { return Try.failure(it.wrap(url)) }
+
+        return archiveSniffer.sniffResource(ResourceMediaTypeSnifferContent(resource))
+            .fold(
+                { containerType ->
+                    retrieveArchiveAsset(url, mediaType = mediaType, containerType = containerType)
+                },
+                { error ->
+                    when (error) {
+                        MediaTypeSnifferError.NotRecognized ->
+                            Try.success(Asset.Resource(mediaType, resource))
+                        is MediaTypeSnifferError.SourceError ->
+                            Try.failure(error.wrap(url))
+                    }
                 }
-            is Try.Success ->
-                retrieve(url, archive.value.container, archive.value.mediaType)
-                    .mapFailure { it.wrap(url) }
-        }
+            )
     }
 
-    private fun MediaTypeSniffer.Error.wrap(url: AbsoluteUrl) = when (this) {
-        is MediaTypeSniffer.Error.SourceError ->
+    private fun MediaTypeSnifferError.wrap(url: AbsoluteUrl) = when (this) {
+        is MediaTypeSnifferError.SourceError ->
             when (cause) {
                 is MediaTypeSnifferContentError.Filesystem ->
                     Error.Filesystem(cause.cause)
@@ -270,43 +294,22 @@ public class AssetRetriever(
                     Error.Network(cause.cause)
                 is MediaTypeSnifferContentError.NotFound ->
                     Error.NotFound(url, cause.cause)
+                is MediaTypeSnifferContentError.ArchiveError ->
+                    Error.InvalidAsset(cause)
+                is MediaTypeSnifferContentError.TooBig ->
+                    Error.OutOfMemory(cause.cause.throwable)
+                is MediaTypeSnifferContentError.Unknown ->
+                    Error.Unknown(cause)
             }
-        MediaTypeSniffer.Error.NotRecognized ->
+        MediaTypeSnifferError.NotRecognized ->
             Error.Unknown(MessageError("Cannot determine media type."))
-    }
-
-    private suspend fun retrieve(
-        url: AbsoluteUrl,
-        container: Container,
-        containerType: MediaType
-    ): Try<Asset, MediaTypeSniffer.Error> {
-        val mediaType = retrieveMediaType(url, Either(container))
-            .getOrElse { return Try.failure(it) }
-
-        val asset =
-            Asset.Container(
-                mediaType,
-                containerType = containerType,
-                container = container
-            )
-
-        return Try.success(asset)
-    }
-
-    private suspend fun retrieve(url: AbsoluteUrl, resource: Resource): Try<Asset, MediaTypeSniffer.Error> {
-        val mediaType = retrieveMediaType(url, Either(resource))
-            .getOrElse { return Try.failure(it) }
-
-        val asset = Asset.Resource(mediaType, resource = resource)
-
-        return Try.success(asset)
     }
 
     private suspend fun retrieveMediaType(
         url: AbsoluteUrl,
         asset: Either<Resource, Container>
-    ): Try<MediaType, MediaTypeSniffer.Error> {
-        suspend fun retrieve(hints: MediaTypeHints): Try<MediaType, MediaTypeSniffer.Error>  =
+    ): Try<MediaType, MediaTypeSnifferError> {
+        suspend fun retrieve(hints: MediaTypeHints): Try<MediaType, MediaTypeSnifferError> =
             mediaTypeRetriever.retrieve(
                 hints = hints,
                 content = when (asset) {
@@ -318,7 +321,7 @@ public class AssetRetriever(
         retrieve(MediaTypeHints(fileExtensions = listOfNotNull(url.extension)))
             .onSuccess { return Try.success(it) }
             .onFailure { error ->
-                if (error is MediaTypeSniffer.Error.SourceError) {
+                if (error is MediaTypeSnifferError.SourceError) {
                     return Try.failure(error)
                 }
             }
@@ -343,6 +346,6 @@ public class AssetRetriever(
                 ?.let { return Try.success(it) }
         }
 
-        return Try.failure(MediaTypeSniffer.Error.NotRecognized)
+        return Try.failure(MediaTypeSnifferError.NotRecognized)
     }
 }

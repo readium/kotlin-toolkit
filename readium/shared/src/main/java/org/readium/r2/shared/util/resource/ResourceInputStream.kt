@@ -7,10 +7,7 @@
 package org.readium.r2.shared.util.resource
 
 import java.io.FilterInputStream
-import java.io.IOException
-import org.readium.r2.shared.datasource.DataSourceInputStream
-import org.readium.r2.shared.util.ErrorException
-import org.readium.r2.shared.util.resource.ResourceInputStream.ResourceException
+import org.readium.r2.shared.util.datasource.DataSourceInputStream
 
 /**
  * Input stream reading a [Resource]'s content.
@@ -26,8 +23,4 @@ public class ResourceInputStream private constructor(
 
     public constructor(resource: Resource, range: LongRange? = null) :
         this(DataSourceInputStream(resource.asDataSource(), ::ResourceException, range))
-
-    public class ResourceException(
-        public val error: ResourceError
-    ) : IOException(error.message, ErrorException(error))
 }

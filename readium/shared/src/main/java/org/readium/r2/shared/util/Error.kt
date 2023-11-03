@@ -55,14 +55,10 @@ public fun <S, F> Try<S, F>.assertSuccess(): S =
         is Try.Success ->
             value
         is Try.Failure ->
-            throw IllegalStateException("Try was excepted to contain a success.")
-    }
-public fun <S, F: Throwable> Try<S, F>.assertSuccess(): S =
-    when (this) {
-        is Try.Success ->
-            value
-        is Try.Failure ->
-            throw IllegalStateException("Try was excepted to contain a success.", value)
+            throw IllegalStateException(
+                "Try was excepted to contain a success.",
+                value as? Throwable
+            )
     }
 
 public class FilesystemError(

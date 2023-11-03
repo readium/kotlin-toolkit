@@ -10,7 +10,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.readium.r2.shared.Fixtures
 import org.readium.r2.shared.util.Url
-import org.readium.r2.shared.util.resource.FileZipArchiveFactory
+import org.readium.r2.shared.util.resource.FileZipArchiveProvider
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows.shadowOf
 
@@ -497,7 +497,7 @@ class MediaTypeRetrieverTest {
         file: File,
         hints: MediaTypeHints = MediaTypeHints()
     ): MediaType? {
-        val archive = assertNotNull(FileZipArchiveFactory(this).open(file).getOrNull())
+        val archive = assertNotNull(FileZipArchiveProvider(this).open(file).getOrNull())
 
         return retrieve(
             hints,

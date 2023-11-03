@@ -18,8 +18,8 @@ import org.readium.r2.shared.util.MessageError
 import org.readium.r2.shared.util.ThrowableError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
-import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.assertSuccess
+import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.resource.Container
 import org.readium.r2.shared.util.resource.FailureResource
 import org.readium.r2.shared.util.resource.Resource

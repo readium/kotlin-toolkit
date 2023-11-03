@@ -4,7 +4,7 @@
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.r2.shared.datasource
+package org.readium.r2.shared.util.datasource
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -22,21 +22,20 @@ import org.readium.r2.shared.util.flatMap
 import org.readium.r2.shared.util.xml.ElementNode
 import org.readium.r2.shared.util.xml.XmlParser
 
-internal sealed class DecoderError<E: Error>(
+internal sealed class DecoderError<E : Error>(
     override val message: String
-): Error {
+) : Error {
 
-    class DataSourceError<E: Error>(
+    class DataSourceError<E : Error>(
         override val cause: E
     ) : DecoderError<E>("Data source error")
 
-    class DecodingError<E: Error>(
+    class DecodingError<E : Error>(
         override val cause: Error?
     ) : DecoderError<E>("Decoding Error")
-
 }
 
-internal suspend fun<R, S, E: Error> Try<S, E>.decode(
+internal suspend fun<R, S, E : Error> Try<S, E>.decode(
     block: (value: S) -> R,
     wrapException: (Exception) -> Error
 ): Try<R, DecoderError<E>> =
@@ -55,7 +54,7 @@ internal suspend fun<R, S, E: Error> Try<S, E>.decode(
             Try.failure(DecoderError.DataSourceError(value))
     }
 
-internal suspend fun<R, S, E: Error> Try<S, DecoderError<E>>.decode(
+internal suspend fun<R, S, E : Error> Try<S, DecoderError<E>>.decodeMap(
     block: (value: S) -> R,
     wrapException: (Exception) -> Error
 ): Try<R, DecoderError<E>> =
@@ -73,22 +72,23 @@ internal suspend fun<R, S, E: Error> Try<S, DecoderError<E>>.decode(
         is Try.Failure ->
             Try.failure(value)
     }
+
 /**
  * Content as plain text.
  *
  * It will extract the charset parameter from the media type hints to figure out an encoding.
  * Otherwise, fallback on UTF-8.
  */
-internal suspend fun<E: Error> DataSource<E>.readAsString(
+internal suspend fun<E : Error> DataSource<E>.readAsString(
     charset: Charset = Charsets.UTF_8
 ): Try<String, DecoderError<E>> =
     read().decode(
         { String(it, charset = charset) },
-        { MessageError("Content is not a valid $charset string.", ThrowableError(it))  }
+        { MessageError("Content is not a valid $charset string.", ThrowableError(it)) }
     )
 
 /** Content as an XML document. */
-internal suspend fun<E: Error> DataSource<E>.readAsXml(): Try<ElementNode,DecoderError<E>> =
+internal suspend fun<E : Error> DataSource<E>.readAsXml(): Try<ElementNode, DecoderError<E>> =
     read().decode(
         { XmlParser().parse(ByteArrayInputStream(it)) },
         { MessageError("Content is not a valid XML document.", ThrowableError(it)) }
@@ -97,14 +97,14 @@ internal suspend fun<E: Error> DataSource<E>.readAsXml(): Try<ElementNode,Decode
 /**
  * Content parsed from JSON.
  */
-internal suspend fun<E: Error> DataSource<E>.readAsJson(): Try<JSONObject, DecoderError<E>> =
-    readAsString().decode(
+internal suspend fun<E : Error> DataSource<E>.readAsJson(): Try<JSONObject, DecoderError<E>> =
+    readAsString().decodeMap(
         { JSONObject(it) },
         { MessageError("Content is not valid JSON.", ThrowableError(it)) }
     )
 
 /** Readium Web Publication Manifest parsed from the content. */
-internal suspend fun<E: Error> DataSource<E>.readAsRwpm(): Try<Manifest, DecoderError<E>> =
+internal suspend fun<E : Error> DataSource<E>.readAsRwpm(): Try<Manifest, DecoderError<E>> =
     readAsJson().flatMap { json ->
         Manifest.fromJSON(json)
             ?.let { Try.success(it) }
@@ -118,7 +118,7 @@ internal suspend fun<E: Error> DataSource<E>.readAsRwpm(): Try<Manifest, Decoder
 /**
  * Reads the full content as a [Bitmap].
  */
-internal suspend fun<E: Error> DataSource<E>.readAsBitmap(): Try<Bitmap, DecoderError<E>> =
+internal suspend fun<E : Error> DataSource<E>.readAsBitmap(): Try<Bitmap, DecoderError<E>> =
     read()
         .mapFailure { DecoderError.DataSourceError(it) }
         .flatMap { bytes ->

@@ -34,8 +34,8 @@ import org.readium.r2.shared.util.resource.Container
 import org.readium.r2.shared.util.resource.EmptyContainer
 import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.shared.util.resource.ResourceError
-import org.readium.r2.shared.util.resource.ResourceTry
 import org.readium.r2.shared.util.resource.fallback
+import org.readium.r2.shared.util.resource.withMediaType
 
 internal typealias ServiceFactory = (Publication.Service.Context) -> Publication.Service?
 
@@ -629,15 +629,4 @@ public class Publication(
         level = DeprecationLevel.ERROR
     )
     public sealed class OpeningException
-}
-
-private fun Resource.withMediaType(mediaType: MediaType?): Resource {
-    if (mediaType == null) {
-        return this
-    }
-
-    return object : Resource by this {
-        override suspend fun mediaType(): ResourceTry<MediaType> =
-            ResourceTry.success(mediaType)
-    }
 }

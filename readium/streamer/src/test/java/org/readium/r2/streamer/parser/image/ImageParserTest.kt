@@ -22,7 +22,7 @@ import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 import org.readium.r2.shared.util.resource.FileResource
-import org.readium.r2.shared.util.resource.FileZipArchiveFactory
+import org.readium.r2.shared.util.resource.FileZipArchiveProvider
 import org.readium.r2.shared.util.resource.ResourceContainer
 import org.readium.r2.shared.util.toUrl
 import org.readium.r2.streamer.parseBlocking
@@ -37,7 +37,7 @@ class ImageParserTest {
     private val cbzAsset = runBlocking {
         val file = fileForResource("futuristic_tales.cbz")
         val resource = FileResource(file, mediaType = MediaType.CBZ)
-        val archive = FileZipArchiveFactory(MediaTypeRetriever()).create(
+        val archive = FileZipArchiveProvider(MediaTypeRetriever()).create(
             resource,
             password = null
         ).getOrNull()!!

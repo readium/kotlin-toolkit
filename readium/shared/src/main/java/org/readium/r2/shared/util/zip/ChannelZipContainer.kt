@@ -24,6 +24,8 @@ import org.readium.r2.shared.util.resource.Container
 import org.readium.r2.shared.util.resource.FailureResource
 import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.shared.util.resource.ResourceError
+import org.readium.r2.shared.util.resource.ResourceException
+import org.readium.r2.shared.util.resource.ResourceException.Companion.unwrapResourceException
 import org.readium.r2.shared.util.resource.ResourceMediaTypeSnifferContent
 import org.readium.r2.shared.util.resource.ResourceTry
 import org.readium.r2.shared.util.resource.archive
@@ -88,10 +90,13 @@ internal class ChannelZipContainer(
                             readRange(range)
                         }
                     Try.success(bytes)
-                } catch (e: ResourceChannel.ResourceException) {
-                    Try.failure(e.error)
-                } catch (e: Exception) {
-                    Try.failure(ResourceError.InvalidContent(e))
+                } catch (exception: Exception) {
+                    when (val e = exception.unwrapResourceException()) {
+                        is ResourceException ->
+                            Try.failure(e.error)
+                        else ->
+                            Try.failure(ResourceError.InvalidContent(e))
+                    }
                 }
             }
 
