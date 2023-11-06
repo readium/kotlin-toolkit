@@ -100,18 +100,6 @@ class EpubNavigatorFragment internal constructor(
     configuration: Configuration,
 ) : Fragment(), VisualNavigator, SelectableNavigator, DecorableNavigator, Configurable<EpubSettings, EpubPreferences> {
 
-    constructor() : this(
-        publication = dummyPublication,
-        baseUrl = null,
-        initialLocator = Locator(href = "#", type = "application/xhtml+xml"),
-        initialPreferences = EpubPreferences(),
-        listener = null,
-        paginationListener = null,
-        epubLayout = EpubLayout.REFLOWABLE,
-        defaults = EpubDefaults(),
-        configuration = Configuration()
-    )
-
     // Make a copy to prevent the user from modifying the configuration after initialization.
     internal val config: Configuration = configuration.copy().apply {
         servedAssets += "readium/.*"
@@ -1082,6 +1070,27 @@ class EpubNavigatorFragment internal constructor(
                     configuration = config,
                 )
             }
+
+        /**
+         * Creates a factory for a dummy [EpubNavigatorFragment].
+         *
+         * Used when Android restore the [EpubNavigatorFragment] after the process was killed. You
+         * need to make sure the fragment is removed from the screen before [onResume] is called.
+         */
+        fun createDummyFactory(): FragmentFactory = createFragmentFactory {
+            EpubNavigatorFragment(
+                publication = dummyPublication,
+                baseUrl = null,
+                initialLocator = Locator(href = "#", type = "application/xhtml+xml"),
+                readingOrder = null,
+                initialPreferences = EpubPreferences(),
+                listener = null,
+                paginationListener = null,
+                epubLayout = EpubLayout.REFLOWABLE,
+                defaults = EpubDefaults(),
+                configuration = Configuration()
+            )
+        }
 
         /**
          * Returns a URL to the application asset at [path], served in the web views.

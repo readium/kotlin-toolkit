@@ -18,7 +18,9 @@ import androidx.lifecycle.repeatOnLifecycle
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import org.readium.r2.navigator.R
+import org.readium.r2.navigator.RestorationNotSupportedException
 import org.readium.r2.navigator.VisualNavigator
+import org.readium.r2.navigator.dummyPublication
 import org.readium.r2.navigator.extensions.page
 import org.readium.r2.navigator.preferences.Configurable
 import org.readium.r2.navigator.preferences.PreferencesEditor
@@ -87,15 +89,35 @@ class PdfNavigatorFragment<S : Configurable.Settings, P : Configurable.Preferenc
                 listener, pdfEngineProvider
             )
         }
+
+        /**
+         * Creates a factory for a dummy [PdfNavigatorFragment].
+         *
+         * Used when Android restore the [PdfNavigatorFragment] after the process was killed. You need
+         * to make sure the fragment is removed from the screen before `onResume` is called.
+         */
+        fun <P : Configurable.Preferences<P>> createDummyFactory(
+            pdfEngineProvider: PdfEngineProvider<*, P, *>
+        ): FragmentFactory = createFragmentFactory {
+            PdfNavigatorFragment(
+                publication = dummyPublication,
+                initialLocator = Locator(href = "#", type = "application/pdf"),
+                initialPreferences = pdfEngineProvider.createEmptyPreferences(),
+                listener = null,
+                pdfEngineProvider = pdfEngineProvider
+            )
+        }
     }
 
     init {
         require(!publication.isRestricted) { "The provided publication is restricted. Check that any DRM was properly unlocked using a Content Protection." }
 
-        require(
-            publication.readingOrder.count() == 1 &&
-                publication.readingOrder.first().mediaType.matches(MediaType.PDF)
-        ) { "[PdfNavigatorFragment] currently supports only publications with a single PDF for reading order" }
+        if (publication != dummyPublication) {
+            require(
+                publication.readingOrder.count() == 1 &&
+                    publication.readingOrder.first().mediaType.matches(MediaType.PDF)
+            ) { "[PdfNavigatorFragment] currently supports only publications with a single PDF for reading order" }
+        }
     }
 
     // Configurable
@@ -164,6 +186,14 @@ class PdfNavigatorFragment<S : Configurable.Settings, P : Configurable.Preferenc
                     }
                     .launchIn(this)
             }
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        if (publication == dummyPublication) {
+            throw RestorationNotSupportedException
         }
     }
 

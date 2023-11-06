@@ -92,8 +92,8 @@ class BookshelfViewModel(application: Application) : AndroidViewModel(applicatio
         bookId: Long,
         activity: Activity
     ) = viewModelScope.launch {
-        val readerRepository = app.readerRepository.await()
-        readerRepository.open(bookId, activity)
+        app.readerRepository
+            .open(bookId, activity)
             .onFailure { exception ->
                 if (exception is ReaderRepository.CancellationException)
                     return@launch

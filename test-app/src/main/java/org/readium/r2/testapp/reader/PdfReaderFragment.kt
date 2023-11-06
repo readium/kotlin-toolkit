@@ -12,6 +12,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.commitNow
+import org.readium.adapters.pdfium.navigator.PdfiumEngineProvider
 import org.readium.adapters.pdfium.navigator.PdfiumPreferences
 import org.readium.adapters.pdfium.navigator.PdfiumSettings
 import org.readium.r2.navigator.pdf.PdfNavigatorFragment
@@ -27,7 +28,17 @@ class PdfReaderFragment : VisualReaderFragment(), PdfNavigatorFragment.Listener 
     override lateinit var navigator: PdfNavigatorFragment<PdfiumSettings, PdfiumPreferences>
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        val readerData = model.readerInitData as PdfReaderInitData
+        val readerData = model.readerInitData as? PdfReaderInitData ?: run {
+            // We provide a dummy fragment factory  if the ReaderActivity is restored after the
+            // app process was killed because the ReaderRepository is empty. In that case, finish
+            // the activity as soon as possible and go back to the previous one.
+            childFragmentManager.fragmentFactory = PdfNavigatorFragment.createDummyFactory(
+                pdfEngineProvider = PdfiumEngineProvider()
+            )
+            super.onCreate(savedInstanceState)
+            requireActivity().finish()
+            return
+        }
 
         childFragmentManager.fragmentFactory =
             readerData.navigatorFactory.createFragmentFactory(
