@@ -11,7 +11,7 @@ import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.util.Url
-import org.readium.r2.shared.util.resource.ResourceError
+import org.readium.r2.shared.util.data.ReadError
 
 /**
  * Base interface for a navigator rendering a publication.
@@ -59,7 +59,7 @@ public interface Navigator {
         /**
          * Called when a publication resource failed to be loaded.
          */
-        public fun onResourceLoadFailed(href: Url, error: ResourceError) {}
+        public fun onResourceLoadFailed(href: Url, error: ReadError) {}
 
         /**
          * Called when the navigator jumps to an explicit location, which might break the linear

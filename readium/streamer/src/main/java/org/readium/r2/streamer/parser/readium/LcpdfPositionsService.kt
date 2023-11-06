@@ -96,14 +96,18 @@ internal class LcpdfPositionsService(
         }
     }
 
-    private suspend fun openPdfAt(link: Link): PdfDocument? =
-        pdfFactory
+    private suspend fun openPdfAt(link: Link): PdfDocument? {
+        val resource = context.container.get(link.url())
+            ?: return null
+
+        return pdfFactory
             .cachedIn(context.services)
-            .open(context.container.get(link.url()), password = null)
+            .open(resource, password = null)
             .getOrElse {
                 Timber.e(it)
                 null
             }
+    }
 
     companion object {
 

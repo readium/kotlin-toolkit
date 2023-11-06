@@ -27,7 +27,6 @@ import org.readium.r2.shared.publication.presentation.presentation
 import org.readium.r2.shared.util.Language
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.logging.log
-import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 
 /**
  * https://readium.org/webpub-manifest/schema/metadata.schema.json
@@ -256,7 +255,6 @@ public data class Metadata(
          */
         public fun fromJSON(
             json: JSONObject?,
-            mediaTypeRetriever: MediaTypeRetriever = MediaTypeRetriever(),
             warnings: WarningLogger? = null
         ): Metadata? {
             json ?: return null
@@ -279,72 +277,58 @@ public data class Metadata(
             val localizedSortAs = LocalizedString.fromJSON(json.remove("sortAs"), warnings)
             val subjects = Subject.fromJSONArray(
                 json.remove("subject"),
-                mediaTypeRetriever,
                 warnings
             )
             val authors = Contributor.fromJSONArray(
                 json.remove("author"),
-                mediaTypeRetriever,
                 warnings
             )
             val translators = Contributor.fromJSONArray(
                 json.remove("translator"),
-                mediaTypeRetriever,
                 warnings
             )
             val editors = Contributor.fromJSONArray(
                 json.remove("editor"),
-                mediaTypeRetriever,
                 warnings
             )
             val artists = Contributor.fromJSONArray(
                 json.remove("artist"),
-                mediaTypeRetriever,
                 warnings
             )
             val illustrators = Contributor.fromJSONArray(
                 json.remove("illustrator"),
-                mediaTypeRetriever,
                 warnings
             )
             val letterers = Contributor.fromJSONArray(
                 json.remove("letterer"),
-                mediaTypeRetriever,
                 warnings
             )
             val pencilers = Contributor.fromJSONArray(
                 json.remove("penciler"),
-                mediaTypeRetriever,
                 warnings
             )
             val colorists = Contributor.fromJSONArray(
                 json.remove("colorist"),
-                mediaTypeRetriever,
                 warnings
             )
             val inkers = Contributor.fromJSONArray(
                 json.remove("inker"),
-                mediaTypeRetriever,
                 warnings
             )
             val narrators = Contributor.fromJSONArray(
                 json.remove("narrator"),
-                mediaTypeRetriever,
                 warnings
             )
             val contributors = Contributor.fromJSONArray(
                 json.remove("contributor"),
-                mediaTypeRetriever,
                 warnings
             )
             val publishers = Contributor.fromJSONArray(
                 json.remove("publisher"),
-                mediaTypeRetriever,
                 warnings
             )
             val imprints = Contributor.fromJSONArray(
                 json.remove("imprint"),
-                mediaTypeRetriever,
                 warnings
             )
             val readingProgression = ReadingProgression(
@@ -366,7 +350,6 @@ public data class Metadata(
                     val value = belongsToJson.get(key)
                     belongsTo[key] = Collection.fromJSONArray(
                         value,
-                        mediaTypeRetriever,
                         warnings
                     )
                 }

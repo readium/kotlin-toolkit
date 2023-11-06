@@ -21,12 +21,11 @@ import org.readium.r2.shared.publication.presentation.Presentation
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.archive.ArchiveProperties
+import org.readium.r2.shared.util.archive.archive
 import org.readium.r2.shared.util.mediatype.MediaType
-import org.readium.r2.shared.util.resource.ArchiveProperties
 import org.readium.r2.shared.util.resource.Container
-import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.shared.util.resource.ResourceTry
-import org.readium.r2.shared.util.resource.archive
 import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
@@ -503,7 +502,7 @@ class EpubPositionsServiceTest {
                     override suspend fun mediaType(): ResourceTry<MediaType> =
                         Try.success(item.link.mediaType ?: MediaType.BINARY)
 
-                    override suspend fun properties(): ResourceTry<Resource.Properties> =
+                    override suspend fun properties(): ResourceTry<Properties> =
                         Try.success(item.resourceProperties)
 
                     override suspend fun length() = Try.success(item.length)
@@ -552,7 +551,7 @@ class EpubPositionsServiceTest {
             )
         )
 
-        val resourceProperties: Resource.Properties = Resource.Properties {
+        val resourceProperties: Properties = Properties {
             if (archiveEntryLength != null) {
                 archive = ArchiveProperties(
                     entryLength = archiveEntryLength,

@@ -13,21 +13,23 @@ import org.readium.r2.shared.publication.flatten
 import org.readium.r2.shared.publication.protection.ContentProtection
 import org.readium.r2.shared.publication.services.contentProtectionServiceFactory
 import org.readium.r2.shared.util.AbsoluteUrl
+import org.readium.r2.shared.util.MessageError
 import org.readium.r2.shared.util.ThrowableError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.asset.Asset
-import org.readium.r2.shared.util.asset.AssetError
 import org.readium.r2.shared.util.asset.AssetRetriever
+import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.flatMap
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.mediatype.MediaType
-import org.readium.r2.shared.util.resource.ResourceError
+import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 import org.readium.r2.shared.util.resource.TransformingContainer
 
 internal class LcpContentProtection(
     private val lcpService: LcpService,
     private val authentication: LcpAuthenticating,
-    private val assetRetriever: AssetRetriever
+    private val assetRetriever: AssetRetriever,
+    private val mediaTypeRetriever: MediaTypeRetriever
 ) : ContentProtection {
 
     override val scheme: ContentProtection.Scheme =
@@ -35,14 +37,14 @@ internal class LcpContentProtection(
 
     override suspend fun supports(
         asset: Asset
-    ): Boolean =
+    ): Try<Boolean, ReadError> =
         lcpService.isLcpProtected(asset)
 
     override suspend fun open(
         asset: Asset,
         credentials: String?,
         allowUserInteraction: Boolean
-    ): Try<ContentProtection.Asset, AssetError> {
+    ): Try<ContentProtection.Asset, ContentProtection.Error> {
         return when (asset) {
             is Asset.Container -> openPublication(asset, credentials, allowUserInteraction)
             is Asset.Resource -> openLicense(asset, credentials, allowUserInteraction)
@@ -53,7 +55,7 @@ internal class LcpContentProtection(
         asset: Asset.Container,
         credentials: String?,
         allowUserInteraction: Boolean
-    ): Try<ContentProtection.Asset, AssetError> {
+    ): Try<ContentProtection.Asset, ContentProtection.Error> {
         val license = retrieveLicense(asset, credentials, allowUserInteraction)
         return createResultAsset(asset, license)
     }
@@ -73,11 +75,11 @@ internal class LcpContentProtection(
     private fun createResultAsset(
         asset: Asset.Container,
         license: Try<LcpLicense, LcpException>
-    ): Try<ContentProtection.Asset, AssetError> {
+    ): Try<ContentProtection.Asset, ContentProtection.Error> {
         val serviceFactory = LcpContentProtectionService
             .createFactory(license.getOrNull(), license.failureOrNull())
 
-        val decryptor = LcpDecryptor(license.getOrNull())
+        val decryptor = LcpDecryptor(license.getOrNull(), mediaTypeRetriever)
 
         val container = TransformingContainer(asset.container, decryptor::transform)
 
@@ -103,7 +105,7 @@ internal class LcpContentProtection(
         licenseAsset: Asset.Resource,
         credentials: String?,
         allowUserInteraction: Boolean
-    ): Try<ContentProtection.Asset, AssetError> {
+    ): Try<ContentProtection.Asset, ContentProtection.Error> {
         val license = retrieveLicense(licenseAsset, credentials, allowUserInteraction)
 
         val licenseDoc = license.getOrNull()?.license
@@ -113,24 +115,32 @@ internal class LcpContentProtection(
                         LicenseDocument(it)
                     } catch (e: Exception) {
                         return Try.failure(
-                            AssetError.InvalidAsset(
-                                "Failed to read the LCP license document",
-                                cause = ThrowableError(e)
+                            ContentProtection.Error.AccessError(
+                                ReadError.Content(
+                                    MessageError(
+                                        "Failed to read the LCP license document",
+                                        cause = ThrowableError(e)
+                                    )
+                                )
                             )
                         )
                     }
                 }
                 .getOrElse {
                     return Try.failure(
-                        it.wrap()
+                        ContentProtection.Error.AccessError(it)
                     )
                 }
 
         val link = licenseDoc.publicationLink
         val url = (link.url() as? AbsoluteUrl)
             ?: return Try.failure(
-                AssetError.InvalidAsset(
-                    "The LCP license document does not contain a valid link to the publication"
+                ContentProtection.Error.AccessError(
+                    ReadError.Content(
+                        MessageError(
+                            "The LCP license document does not contain a valid link to the publication"
+                        )
+                    )
                 )
             )
 
@@ -150,7 +160,13 @@ internal class LcpContentProtection(
                         if (it is Asset.Container) {
                             Try.success((it))
                         } else {
-                            Try.failure(AssetError.UnsupportedAsset())
+                            Try.failure(
+                                ContentProtection.Error.UnsupportedAsset(
+                                    MessageError(
+                                        "LCP license points to an unsupported publication."
+                                    )
+                                )
+                            )
                         }
                     }
             }
@@ -158,43 +174,13 @@ internal class LcpContentProtection(
         return asset.flatMap { createResultAsset(it, license) }
     }
 
-    private fun ResourceError.wrap(): AssetError =
-        when (this) {
-            is ResourceError.Forbidden ->
-                AssetError.Forbidden(this)
-            is ResourceError.NotFound ->
-                AssetError.NotFound(this)
-            is ResourceError.Other ->
-                AssetError.Unknown(this)
-            is ResourceError.OutOfMemory ->
-                AssetError.OutOfMemory(this)
-            is ResourceError.Filesystem ->
-                AssetError.Filesystem(cause)
-            is ResourceError.InvalidContent ->
-                AssetError.InvalidAsset(this)
-            is ResourceError.Network ->
-                AssetError.Network(cause)
-        }
-
-    private fun AssetRetriever.Error.wrap(): AssetError =
+    private fun AssetRetriever.Error.wrap(): ContentProtection.Error =
         when (this) {
             is AssetRetriever.Error.ArchiveFormatNotSupported ->
-                AssetError.UnsupportedAsset(this)
-            is AssetRetriever.Error.Forbidden ->
-                AssetError.Forbidden(this)
-            is AssetRetriever.Error.InvalidAsset ->
-                AssetError.InvalidAsset(this)
-            is AssetRetriever.Error.NotFound ->
-                AssetError.NotFound(this)
-            is AssetRetriever.Error.OutOfMemory ->
-                AssetError.OutOfMemory(this)
+                ContentProtection.Error.UnsupportedAsset(this)
+            is AssetRetriever.Error.AccessError ->
+                ContentProtection.Error.AccessError(cause)
             is AssetRetriever.Error.SchemeNotSupported ->
-                AssetError.UnsupportedAsset(this)
-            is AssetRetriever.Error.Unknown ->
-                AssetError.Unknown(this)
-            is AssetRetriever.Error.Filesystem ->
-                AssetError.Filesystem(cause)
-            is AssetRetriever.Error.Network ->
-                AssetError.Network(cause)
+                ContentProtection.Error.UnsupportedAsset(this)
         }
 }

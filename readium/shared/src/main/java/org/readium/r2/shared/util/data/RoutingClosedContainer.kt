@@ -4,7 +4,7 @@
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.r2.shared.util.resource
+package org.readium.r2.shared.util.data
 
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Url
@@ -17,19 +17,21 @@ import org.readium.r2.shared.util.Url
  *
  * The [routes] will be tested in the given order.
  */
-public class RoutingContainer(private val routes: List<Route>) : Container {
+public class RoutingClosedContainer<E : ContainerEntry>(
+    private val routes: List<Route<E>>
+) : ClosedContainer<E> {
 
     /**
      * Holds a child fetcher and the predicate used to determine if it can answer a request.
      *
      * The default value for [accepts] means that the fetcher will accept any link.
      */
-    public class Route(
-        public val container: Container,
+    public class Route<E : ContainerEntry>(
+        public val container: ClosedContainer<E>,
         public val accepts: (Url) -> Boolean = { true }
     )
 
-    public constructor(local: Container, remote: Container) :
+    public constructor(local: ClosedContainer<E>, remote: ClosedContainer<E>) :
         this(
             listOf(
                 Route(local, accepts = ::isLocal),
@@ -37,12 +39,11 @@ public class RoutingContainer(private val routes: List<Route>) : Container {
             )
         )
 
-    override suspend fun entries(): Set<Container.Entry>? =
-        null // We can't guarantee the list of entries is exhaustive, so we return null
+    override suspend fun entries(): Set<Url> =
+        routes.fold(emptySet()) { acc, route -> acc + route.container.entries() }
 
-    override fun get(url: Url): Container.Entry =
+    override fun get(url: Url): E? =
         routes.firstOrNull { it.accepts(url) }?.container?.get(url)
-            ?: FailureResource(ResourceError.NotFound()).toEntry(url)
 
     override suspend fun close() {
         routes.forEach { it.container.close() }

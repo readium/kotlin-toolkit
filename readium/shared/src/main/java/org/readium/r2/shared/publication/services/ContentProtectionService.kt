@@ -23,12 +23,16 @@ import org.readium.r2.shared.publication.protection.ContentProtection
 import org.readium.r2.shared.util.NetworkError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.data.ReadError
+import org.readium.r2.shared.util.http.HttpError
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.resource.FailureResource
+import org.readium.r2.shared.util.resource.FailureResourceEntry
 import org.readium.r2.shared.util.resource.LazyResource
 import org.readium.r2.shared.util.resource.Resource
-import org.readium.r2.shared.util.resource.ResourceError
+import org.readium.r2.shared.util.resource.ResourceEntry
 import org.readium.r2.shared.util.resource.StringResource
+import org.readium.r2.shared.util.resource.toResourceEntry
 
 /**
  * Provides information about a publication's content protection and manages user rights.
@@ -295,20 +299,22 @@ private sealed class RouteHandler {
         override fun acceptRequest(url: Url): Boolean =
             url.path == path
 
-        override fun handleRequest(url: Url, service: ContentProtectionService): Resource =
-            LazyResource { handleRequestAsync(url, service) }
+        override fun handleRequest(url: Url, service: ContentProtectionService): ResourceEntry =
+            LazyResource { handleRequestAsync(url, service) }.toResourceEntry(url)
 
-        private suspend fun handleRequestAsync(url: Url, service: ContentProtectionService): Resource {
+        private suspend fun handleRequestAsync(url: Url, service: ContentProtectionService): ResourceEntry {
             val query = url.query
             val text = query.firstNamedOrNull("text")
-                ?: return FailureResource(
-                    ResourceError.Network(
+                ?: return FailureResourceEntry(
+                    url,
+                    ReadError.Network(
                         NetworkError.BadRequest("'text' parameter is required")
                     )
                 )
             val peek = (query.firstNamedOrNull("peek") ?: "false").toBooleanOrNull()
-                ?: return FailureResource(
-                    ResourceError.Network(
+                ?: return FailureResourceEntry(
+                    url,
+                    ReadError.Network(
                         NetworkError.BadRequest("If present, 'peek' must be true or false")
                     )
                 )
@@ -316,7 +322,7 @@ private sealed class RouteHandler {
             val copyAllowed = with(service.rights) { if (peek) canCopy(text) else copy(text) }
 
             return if (!copyAllowed) {
-                FailureResource(ResourceError.Forbidden())
+                FailureResource(ReadError.Network(HttpError(HttpError.Kind.Forbidden)))
             } else {
                 StringResource("true", MediaType.JSON)
             }
@@ -342,20 +348,20 @@ private sealed class RouteHandler {
             val query = url.query
             val pageCountString = query.firstNamedOrNull("pageCount")
                 ?: return FailureResource(
-                    ResourceError.Network(
+                    ReadError.Network(
                         NetworkError.BadRequest("'pageCount' parameter is required")
                     )
                 )
 
             val pageCount = pageCountString.toIntOrNull()?.takeIf { it >= 0 }
                 ?: return FailureResource(
-                    ResourceError.Network(
+                    ReadError.Network(
                         NetworkError.BadRequest("'pageCount' must be a positive integer")
                     )
                 )
             val peek = (query.firstNamedOrNull("peek") ?: "false").toBooleanOrNull()
                 ?: return FailureResource(
-                    ResourceError.Network(
+                    ReadError.Network(
                         NetworkError.BadRequest("if present, 'peek' must be true or false")
                     )
                 )
@@ -371,7 +377,7 @@ private sealed class RouteHandler {
             }
 
             return if (!printAllowed) {
-                FailureResource(ResourceError.Forbidden())
+                FailureResource(ReadError.Network(NetworkError.Forbidden()))
             } else {
                 StringResource("true", mediaType = MediaType.JSON)
             }

@@ -13,7 +13,12 @@ import org.readium.r2.shared.extensions.isParentOf
 import org.readium.r2.shared.extensions.tryOrNull
 import org.readium.r2.shared.util.RelativeUrl
 import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.data.ClosedContainer
+import org.readium.r2.shared.util.data.Container
+import org.readium.r2.shared.util.data.FileBlob
+import org.readium.r2.shared.util.mediatype.MediaTypeHints
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
+import org.readium.r2.shared.util.toUrl
 
 /**
  * A file system directory as a [Container].
@@ -21,42 +26,41 @@ import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 public class DirectoryContainer(
     private val root: File,
     private val mediaTypeRetriever: MediaTypeRetriever
-) : Container {
+) : ClosedContainer<ResourceEntry> {
 
-    private inner class FileEntry(override val url: Url, file: File) :
-        Container.Entry, Resource by FileResource(file, mediaTypeRetriever) {
-
-        override suspend fun close() {}
-    }
-
-    private val _entries: Set<Container.Entry>? by lazy {
+    private val _entries: Set<Url> by lazy {
         tryOrNull {
             root.walk()
                 .filter { it.isFile }
-                .mapNotNull { it.toEntry() }
+                .mapNotNull { it.toUrl() }
                 .toSet()
-        }
+        }.orEmpty()
     }
 
-    private fun File.toEntry(): Container.Entry? =
-        Url.fromDecodedPath(this.relativeTo(root).path)
-            ?.let { url -> FileEntry(url, this) }
+    private fun File.toEntry(): ResourceEntry? {
+        val url = Url.fromDecodedPath(this.relativeTo(root).path)
+            ?: return null
 
-    override suspend fun entries(): Set<Container.Entry>? {
+        val resource = GuessMediaTypeResourceAdapter(
+            FileBlob(this),
+            mediaTypeRetriever,
+            MediaTypeHints(fileExtension = extension)
+        )
+        return DelegatingResourceEntry(url, resource)
+    }
+
+    override suspend fun entries(): Set<Url> {
         return withContext(Dispatchers.IO) {
             _entries
         }
     }
 
-    override fun get(url: Url): Container.Entry {
+    override fun get(url: Url): ResourceEntry? {
         val file = (url as? RelativeUrl)?.path
             ?.let { File(root, it) }
+            ?.takeIf { !root.isParentOf(it) }
 
-        return if (file == null || !root.isParentOf(file)) {
-            FailureResource(ResourceError.NotFound()).toEntry(url)
-        } else {
-            FileEntry(url, file)
-        }
+        return file?.toEntry()
     }
 
     override suspend fun close() {}

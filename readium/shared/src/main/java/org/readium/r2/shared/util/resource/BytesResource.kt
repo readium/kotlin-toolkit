@@ -13,27 +13,28 @@ import org.readium.r2.shared.extensions.requireLengthFitInt
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.assertSuccess
+import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.mediatype.MediaType
 
 public sealed class BaseBytesResource(
     override val source: AbsoluteUrl?,
     private val mediaType: MediaType,
     private val properties: Resource.Properties,
-    protected val bytes: suspend () -> Try<ByteArray, ResourceError>
+    protected val bytes: suspend () -> Try<ByteArray, ReadError>
 ) : Resource {
 
-    override suspend fun properties(): ResourceTry<Resource.Properties> =
+    override suspend fun properties(): Try<Resource.Properties, ReadError> =
         Try.success(properties)
 
-    override suspend fun mediaType(): ResourceTry<MediaType> =
+    override suspend fun mediaType(): Try<MediaType, ReadError> =
         Try.success(mediaType)
 
-    override suspend fun length(): ResourceTry<Long> =
+    override suspend fun length(): Try<Long, ReadError> =
         read().map { it.size.toLong() }
 
-    private lateinit var _bytes: Try<ByteArray, ResourceError>
+    private lateinit var _bytes: Try<ByteArray, ReadError>
 
-    override suspend fun read(range: LongRange?): ResourceTry<ByteArray> {
+    override suspend fun read(range: LongRange?): Try<ByteArray, ReadError> {
         if (!::_bytes.isInitialized) {
             _bytes = bytes()
         }
@@ -62,7 +63,7 @@ public class BytesResource(
     source: AbsoluteUrl? = null,
     mediaType: MediaType,
     properties: Resource.Properties = Resource.Properties(),
-    bytes: suspend () -> ResourceTry<ByteArray>
+    bytes: suspend () -> Try<ByteArray, ReadError>
 ) : BaseBytesResource(
     source = source,
     mediaType = mediaType,
@@ -87,7 +88,7 @@ public class StringResource(
     source: AbsoluteUrl? = null,
     mediaType: MediaType,
     properties: Resource.Properties = Resource.Properties(),
-    string: suspend () -> ResourceTry<String>
+    string: suspend () -> Try<String, ReadError>
 ) : BaseBytesResource(
     source = source,
     mediaType = mediaType,

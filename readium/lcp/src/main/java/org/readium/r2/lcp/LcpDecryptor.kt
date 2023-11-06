@@ -19,26 +19,31 @@ import org.readium.r2.shared.util.ThrowableError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.assertSuccess
+import org.readium.r2.shared.util.data.ReadError
+import org.readium.r2.shared.util.flatMap
 import org.readium.r2.shared.util.getOrElse
-import org.readium.r2.shared.util.resource.Container
+import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.shared.util.mediatype.MediaTypeHints
+import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
+import org.readium.r2.shared.util.mediatype.MediaTypeSnifferError
 import org.readium.r2.shared.util.resource.FailureResource
 import org.readium.r2.shared.util.resource.Resource
-import org.readium.r2.shared.util.resource.ResourceError
-import org.readium.r2.shared.util.resource.ResourceTry
+import org.readium.r2.shared.util.resource.ResourceEntry
 import org.readium.r2.shared.util.resource.TransformingResource
 import org.readium.r2.shared.util.resource.flatMap
-import org.readium.r2.shared.util.resource.flatMapCatching
+import org.readium.r2.shared.util.tryRecover
 
 /**
  * Decrypts a resource protected with LCP.
  */
 internal class LcpDecryptor(
     val license: LcpLicense?,
+    private val mediaTypeRetriever: MediaTypeRetriever,
     var encryptionData: Map<Url, Encryption> = emptyMap()
 ) {
 
     fun transform(resource: Resource): Resource {
-        if (resource !is Container.Entry) {
+        if (resource !is ResourceEntry) {
             return resource
         }
 
@@ -52,14 +57,24 @@ internal class LcpDecryptor(
             }
 
             when {
-                license == null -> FailureResource(ResourceError.Forbidden())
-                encryption.isDeflated || !encryption.isCbcEncrypted -> FullLcpResource(
-                    resource,
-                    encryption,
-                    license
-                )
-
-                else -> CbcLcpResource(resource, encryption, license)
+                license == null ->
+                    FailureResource(
+                        ReadError.Content()
+                    )
+                encryption.isDeflated || !encryption.isCbcEncrypted ->
+                    FullLcpResource(
+                        resource,
+                        encryption,
+                        license,
+                        mediaTypeRetriever
+                    )
+                else ->
+                    CbcLcpResource(
+                        resource,
+                        encryption,
+                        license,
+                        mediaTypeRetriever
+                    )
             }
         }
     }
@@ -71,15 +86,33 @@ internal class LcpDecryptor(
      * resource, for example when the resource is deflated before encryption.
      */
     private class FullLcpResource(
-        resource: Resource,
+        private val resource: ResourceEntry,
         private val encryption: Encryption,
-        private val license: LcpLicense
+        private val license: LcpLicense,
+        private val mediaTypeRetriever: MediaTypeRetriever
     ) : TransformingResource(resource) {
 
-        override suspend fun transform(data: ResourceTry<ByteArray>): ResourceTry<ByteArray> =
+        override val source: AbsoluteUrl? =
+            null
+        override suspend fun mediaType(): Try<MediaType, ReadError> =
+            mediaTypeRetriever
+                .retrieve(
+                    hints = MediaTypeHints(fileExtension = resource.url.extension),
+                    blob = this
+                )
+                .tryRecover { error ->
+                    when (error) {
+                        is MediaTypeSnifferError.DataAccess ->
+                            Try.failure(error.cause)
+                        MediaTypeSnifferError.NotRecognized ->
+                            Try.success(MediaType.BINARY)
+                    }
+                }
+
+        override suspend fun transform(data: Try<ByteArray, ReadError>): Try<ByteArray, ReadError> =
             license.decryptFully(data, encryption.isDeflated)
 
-        override suspend fun length(): ResourceTry<Long> =
+        override suspend fun length(): Try<Long, ReadError> =
             encryption.originalLength?.let { Try.success(it) }
                 ?: super.length()
     }
@@ -90,9 +123,10 @@ internal class LcpDecryptor(
      * Supports random access for byte range requests, but the resource MUST NOT be deflated.
      */
     private class CbcLcpResource(
-        private val resource: Resource,
+        private val resource: ResourceEntry,
         private val encryption: Encryption,
-        private val license: LcpLicense
+        private val license: LcpLicense,
+        private val mediaTypeRetriever: MediaTypeRetriever
     ) : Resource by resource {
 
         override val source: AbsoluteUrl? = null
@@ -102,7 +136,7 @@ internal class LcpDecryptor(
             val data: ByteArray = ByteArray(3 * AES_BLOCK_SIZE)
         )
 
-        private lateinit var _length: ResourceTry<Long>
+        private lateinit var _length: Try<Long, ReadError>
 
         /*
         * Decryption needs to look around the data strictly matching the content to decipher.
@@ -115,8 +149,22 @@ internal class LcpDecryptor(
         */
         private val _cache: Cache = Cache()
 
+        override suspend fun mediaType(): Try<MediaType, ReadError> =
+            mediaTypeRetriever
+                .retrieve(
+                    hints = MediaTypeHints(fileExtension = resource.url.extension),
+                    blob = this
+                ).tryRecover { error ->
+                    when (error) {
+                        is MediaTypeSnifferError.DataAccess ->
+                            Try.failure(error.cause)
+                        MediaTypeSnifferError.NotRecognized ->
+                            Try.success(MediaType.BINARY)
+                    }
+                }
+
         /** Plain text size. */
-        override suspend fun length(): ResourceTry<Long> {
+        override suspend fun length(): Try<Long, ReadError> {
             if (::_length.isInitialized) {
                 return _length
             }
@@ -127,12 +175,16 @@ internal class LcpDecryptor(
             return _length
         }
 
-        private suspend fun lengthFromPadding(): ResourceTry<Long> {
+        private suspend fun lengthFromPadding(): Try<Long, ReadError> {
             val length = resource.length()
                 .getOrElse { return Try.failure(it) }
 
             if (length < 2 * AES_BLOCK_SIZE) {
-                return Try.failure(ResourceError.InvalidContent("Invalid CBC-encrypted stream."))
+                return Try.failure(
+                    ReadError.Content(
+                        MessageError("Invalid CBC-encrypted stream.")
+                    )
+                )
             }
 
             val readOffset = length - (2 * AES_BLOCK_SIZE)
@@ -142,11 +194,12 @@ internal class LcpDecryptor(
             val decryptedBytes = license.decrypt(bytes)
                 .getOrElse {
                     return Try.failure(
-                        ResourceError.InvalidContent(
-                            "Can't decrypt trailing size of CBC-encrypted stream"
+                        ReadError.Content(
+                            MessageError("Can't decrypt trailing size of CBC-encrypted stream")
                         )
                     )
                 }
+
             check(decryptedBytes.size == AES_BLOCK_SIZE)
 
             val adjustedLength = length -
@@ -156,7 +209,7 @@ internal class LcpDecryptor(
             return Try.success(adjustedLength)
         }
 
-        override suspend fun read(range: LongRange?): ResourceTry<ByteArray> {
+        override suspend fun read(range: LongRange?): Try<ByteArray, ReadError> {
             if (range == null) {
                 return license.decryptFully(resource.read(), isDeflated = false)
             }
@@ -191,7 +244,7 @@ internal class LcpDecryptor(
             val bytes = license.decrypt(encryptedData)
                 .getOrElse {
                     return Try.failure(
-                        ResourceError.InvalidContent(
+                        ReadError.Content(
                             MessageError(
                                 "Can't decrypt the content for resource with key: ${resource.source}",
                                 ThrowableError(it)
@@ -221,7 +274,7 @@ internal class LcpDecryptor(
             return Try.success(bytes.sliceArray(sliceStart until sliceEnd))
         }
 
-        private suspend fun getEncryptedData(range: LongRange): ResourceTry<ByteArray> {
+        private suspend fun getEncryptedData(range: LongRange): Try<ByteArray, ReadError> {
             val cacheStartIndex = _cache.startIndex
                 ?.takeIf { cacheStart ->
                     val cacheEnd = cacheStart + _cache.data.size
@@ -245,13 +298,16 @@ internal class LcpDecryptor(
     }
 }
 
-private suspend fun LcpLicense.decryptFully(data: ResourceTry<ByteArray>, isDeflated: Boolean): ResourceTry<ByteArray> =
-    data.flatMapCatching { encryptedData ->
+private suspend fun LcpLicense.decryptFully(
+    data: Try<ByteArray, ReadError>,
+    isDeflated: Boolean
+): Try<ByteArray, ReadError> =
+    data.flatMap { encryptedData ->
         // Decrypts the resource.
         var bytes = decrypt(encryptedData)
             .getOrElse {
                 return Try.failure(
-                    ResourceError.InvalidContent(
+                    ReadError.Content(
                         MessageError("Failed to decrypt the resource", ThrowableError(it))
                     )
                 )

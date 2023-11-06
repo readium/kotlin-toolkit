@@ -8,15 +8,14 @@ package org.readium.r2.shared.util.http
 
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Url
-import org.readium.r2.shared.util.resource.Container
-import org.readium.r2.shared.util.resource.FailureResource
-import org.readium.r2.shared.util.resource.ResourceError
-import org.readium.r2.shared.util.resource.toEntry
+import org.readium.r2.shared.util.data.ClosedContainer
+import org.readium.r2.shared.util.resource.ResourceEntry
+import org.readium.r2.shared.util.resource.toResourceEntry
 
 /**
  * Fetches remote resources through HTTP.
  *
- * Since this fetcher is used when doing progressive download streaming (e.g. audiobook), the HTTP
+ * Since this container is used when doing progressive download streaming (e.g. audiobook), the HTTP
  * byte range requests are open-ended and reused. This helps to avoid issuing too many requests.
  *
  * @param client HTTP client used to perform HTTP requests.
@@ -24,24 +23,20 @@ import org.readium.r2.shared.util.resource.toEntry
  */
 public class HttpContainer(
     private val client: HttpClient,
-    private val baseUrl: Url? = null
-) : Container {
+    private val baseUrl: Url? = null,
+    private val entries: Set<Url>
+) : ClosedContainer<ResourceEntry> {
 
-    override suspend fun entries(): Set<Container.Entry>? = null
+    override suspend fun entries(): Set<Url> = entries
 
-    override fun get(url: Url): Container.Entry {
+    override fun get(url: Url): ResourceEntry? {
         val absoluteUrl = (baseUrl?.resolve(url) ?: url) as? AbsoluteUrl
 
         return if (absoluteUrl == null || !absoluteUrl.isHttp) {
-            FailureResource(
-                ResourceError.NotFound(
-                    Exception("URL scheme is not supported: ${absoluteUrl?.scheme}.")
-                )
-            )
+            null
         } else {
-            HttpResource(client, absoluteUrl)
+            HttpResource(client, absoluteUrl).toResourceEntry(url)
         }
-            .toEntry(url)
     }
 
     override suspend fun close() {}

@@ -19,12 +19,12 @@ import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.ServiceFactory
 import org.readium.r2.shared.util.MessageError
 import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.resource.BytesResource
 import org.readium.r2.shared.util.resource.FailureResource
 import org.readium.r2.shared.util.resource.LazyResource
 import org.readium.r2.shared.util.resource.Resource
-import org.readium.r2.shared.util.resource.ResourceError
 
 /**
  * Provides an easy access to a bitmap version of the publication cover.
@@ -60,7 +60,7 @@ public interface CoverService : Publication.Service {
 
 private suspend fun Publication.coverFromManifest(): Bitmap? {
     for (link in linksWithRel("cover")) {
-        val data = get(link).read().getOrNull() ?: continue
+        val data = get(link)?.read()?.getOrNull() ?: continue
         return BitmapFactory.decodeByteArray(data, 0, data.size) ?: continue
     }
     return null
@@ -113,7 +113,7 @@ public abstract class GeneratedCoverService : CoverService {
 
             if (png == null) {
                 FailureResource(
-                    ResourceError.InvalidContent(
+                    ReadError.Content(
                         MessageError("Unable to convert cover to PNG.")
                     )
                 )

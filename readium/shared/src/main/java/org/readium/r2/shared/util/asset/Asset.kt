@@ -6,9 +6,10 @@
 
 package org.readium.r2.shared.util.asset
 
+import org.readium.r2.shared.util.data.ClosedContainer
 import org.readium.r2.shared.util.mediatype.MediaType
-import org.readium.r2.shared.util.resource.Container as SharedContainer
 import org.readium.r2.shared.util.resource.Resource as SharedResource
+import org.readium.r2.shared.util.resource.ResourceEntry
 
 /**
  * An asset which is either a single resource or a container that holds multiple resources.
@@ -51,7 +52,7 @@ public sealed class Asset {
     public class Container(
         override val mediaType: MediaType,
         public val containerType: MediaType,
-        public val container: SharedContainer
+        public val container: ClosedContainer<ResourceEntry>
     ) : Asset() {
 
         override suspend fun close() {

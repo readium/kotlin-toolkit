@@ -4,14 +4,22 @@
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.r2.shared.util.resource
+package org.readium.r2.shared.util.archive
 
 import org.readium.r2.shared.util.ThrowableError
 import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.data.Blob
+import org.readium.r2.shared.util.data.ClosedContainer
+import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.getOrElse
+import org.readium.r2.shared.util.mediatype.MediaTypeSniffer
+import org.readium.r2.shared.util.resource.ResourceContainer
+import org.readium.r2.shared.util.resource.ResourceEntry
+
+public interface ArchiveProvider : MediaTypeSniffer, ArchiveFactory
 
 /**
- * A factory to create [Container]s from archive [Resource]s.
+ * A factory to create a [ResourceContainer]s from archive [Blob]s.
  *
  */
 public interface ArchiveFactory {
@@ -33,17 +41,17 @@ public interface ArchiveFactory {
         ) : Error("Resource is not supported.", cause)
 
         public class ResourceError(
-            override val cause: org.readium.r2.shared.util.resource.ResourceError
+            override val cause: ReadError
         ) : Error("An error occurred while attempting to read the resource.", cause)
     }
 
     /**
-     * Creates a new archive [Container] to access the entries of the given archive.
+     * Creates a new archive [ResourceContainer] to access the entries of the given archive.
      */
     public suspend fun create(
-        resource: Resource,
+        resource: Blob<ReadError>,
         password: String? = null
-    ): Try<Container, Error>
+    ): Try<ClosedContainer<ResourceEntry>, Error>
 }
 
 public class CompositeArchiveFactory(
@@ -53,9 +61,9 @@ public class CompositeArchiveFactory(
     public constructor(vararg factories: ArchiveFactory) : this(factories.toList())
 
     override suspend fun create(
-        resource: Resource,
+        resource: Blob<ReadError>,
         password: String?
-    ): Try<Container, ArchiveFactory.Error> {
+    ): Try<ClosedContainer<ResourceEntry>, ArchiveFactory.Error> {
         for (factory in factories) {
             factory.create(resource, password)
                 .getOrElse { error ->

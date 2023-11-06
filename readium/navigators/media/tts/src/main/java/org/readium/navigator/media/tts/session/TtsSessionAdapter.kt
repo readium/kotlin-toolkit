@@ -44,7 +44,7 @@ import org.readium.navigator.media.tts.TtsEngine
 import org.readium.navigator.media.tts.TtsPlayer
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.ErrorException
-import org.readium.r2.shared.util.resource.ResourceError
+import org.readium.r2.shared.util.data.ReadError
 
 /**
  * Adapts the [TtsPlayer] to media3 [Player] interface.
@@ -924,11 +924,11 @@ internal class TtsSessionAdapter<E : TtsEngine.Error>(
         }
         is TtsPlayer.State.Error.ContentError -> {
             val errorCode = when (error) {
-                is ResourceError.NotFound ->
+                is ReadError.NotFound ->
                     ERROR_CODE_IO_BAD_HTTP_STATUS
-                is ResourceError.Forbidden ->
+                is ReadError.Forbidden ->
                     ERROR_CODE_DRM_DISALLOWED_OPERATION
-                is ResourceError.Network ->
+                is ReadError.Network ->
                     ERROR_CODE_IO_NETWORK_CONNECTION_FAILED
                 else ->
                     ERROR_CODE_UNSPECIFIED

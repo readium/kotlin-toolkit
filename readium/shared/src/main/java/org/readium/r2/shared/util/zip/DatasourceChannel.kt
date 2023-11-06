@@ -15,14 +15,14 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.util.Error
-import org.readium.r2.shared.util.datasource.DataSource
+import org.readium.r2.shared.util.data.Blob
 import org.readium.r2.shared.util.getOrThrow
 import org.readium.r2.shared.util.zip.jvm.ClosedChannelException
 import org.readium.r2.shared.util.zip.jvm.NonWritableChannelException
 import org.readium.r2.shared.util.zip.jvm.SeekableByteChannel
 
 internal class DatasourceChannel<E : Error>(
-    private val dataSource: DataSource<E>,
+    private val blob: Blob<E>,
     private val wrapError: (E) -> IOException
 ) : SeekableByteChannel {
 
@@ -41,7 +41,7 @@ internal class DatasourceChannel<E : Error>(
         }
 
         isClosed = true
-        coroutineScope.launch { dataSource.close() }
+        coroutineScope.launch { blob.close() }
     }
 
     override fun isOpen(): Boolean {
@@ -55,7 +55,7 @@ internal class DatasourceChannel<E : Error>(
             }
 
             withContext(Dispatchers.IO) {
-                val size = dataSource.length()
+                val size = blob.length()
                     .mapFailure(wrapError)
                     .getOrThrow()
 
@@ -66,7 +66,7 @@ internal class DatasourceChannel<E : Error>(
                 val available = size - position
                 val toBeRead = dst.remaining().coerceAtMost(available.toInt())
                 check(toBeRead > 0)
-                val bytes = dataSource.read(position until position + toBeRead)
+                val bytes = blob.read(position until position + toBeRead)
                     .mapFailure(wrapError)
                     .getOrThrow()
                 check(bytes.size == toBeRead)
@@ -99,7 +99,7 @@ internal class DatasourceChannel<E : Error>(
             throw ClosedChannelException()
         }
 
-        return runBlocking { dataSource.length() }
+        return runBlocking { blob.length() }
             .mapFailure { wrapError(it) }
             .getOrThrow()
     }

@@ -273,7 +273,7 @@ public class OPDS2Parser {
         }
 
         private fun parsePublication(json: JSONObject, baseUrl: Url): Publication? =
-            Manifest.fromJSON(json, mediaTypeRetriever = mediaTypeRetriever)
+            Manifest.fromJSON(json, mediaTypeSniffer = mediaTypeRetriever)
                 // Self link takes precedence over the given `baseUrl`.
                 ?.let { it.normalizeHrefsToBase(it.linkWithRel("self")?.href?.resolve() ?: baseUrl) }
                 ?.let { Publication(it) }

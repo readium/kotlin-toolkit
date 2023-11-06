@@ -23,10 +23,10 @@ import org.readium.r2.shared.publication.firstWithMediaType
 import org.readium.r2.shared.toJSON
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.data.readAsString
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.shared.util.resource.StringResource
-import org.readium.r2.shared.util.resource.readAsString
 
 private val positionsMediaType =
     MediaType("application/vnd.readium.position-list+json")!!

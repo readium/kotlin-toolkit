@@ -7,31 +7,33 @@
 package org.readium.adapter.pspdfkit.document
 
 import com.pspdfkit.document.providers.DataProvider
-import java.util.*
+import java.util.UUID
 import kotlinx.coroutines.runBlocking
+import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.e
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.isLazyInitialized
 import org.readium.r2.shared.util.resource.Resource
-import org.readium.r2.shared.util.resource.ResourceError
 import org.readium.r2.shared.util.resource.synchronized
 import timber.log.Timber
 
 internal class ResourceDataProvider(
     resource: Resource,
-    private val onResourceError: (ResourceError) -> Unit = { Timber.e(it) }
+    private val onResourceError: (ReadError) -> Unit = { Timber.e(it) }
 ) : DataProvider {
 
     private val resource =
         // PSPDFKit accesses the resource from multiple threads.
         resource.synchronized()
 
-    private val length: Long = runBlocking {
-        resource.length()
-            .getOrElse {
-                onResourceError(it)
-                DataProvider.FILE_SIZE_UNKNOWN.toLong()
-            }
+    private val length by lazy {
+        runBlocking {
+            resource.length()
+                .getOrElse {
+                    onResourceError(it)
+                    DataProvider.FILE_SIZE_UNKNOWN.toLong()
+                }
+        }
     }
 
     override fun getSize(): Long = length

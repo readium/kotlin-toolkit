@@ -4,7 +4,7 @@
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.r2.shared.util.resource
+package org.readium.r2.shared.util.data
 
 import android.content.ContentResolver
 import android.net.Uri
@@ -16,59 +16,26 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.extensions.*
 import org.readium.r2.shared.util.AbsoluteUrl
+import org.readium.r2.shared.util.FilesystemError
 import org.readium.r2.shared.util.Try
-import org.readium.r2.shared.util.mediatype.MediaType
-import org.readium.r2.shared.util.toUri
 import org.readium.r2.shared.util.toUrl
-
-/**
- * Creates [ContentResource]s.
- */
-public class ContentResourceFactory(
-    private val contentResolver: ContentResolver
-) : ResourceFactory {
-
-    override suspend fun create(
-        url: AbsoluteUrl,
-        mediaType: MediaType?
-    ): Try<Resource, ResourceFactory.Error> {
-        if (!url.isContent) {
-            return Try.failure(ResourceFactory.Error.SchemeNotSupported(url.scheme))
-        }
-
-        val resource = ContentResource(url.toUri(), contentResolver, mediaType)
-
-        return Try.success(resource)
-    }
-}
 
 /**
  * A [Resource] to access content [uri] thanks to a [ContentResolver].
  */
-public class ContentResource internal constructor(
+public class ContentBlob(
     private val uri: Uri,
-    private val contentResolver: ContentResolver,
-    private val mediaType: MediaType? = null
-) : Resource {
+    private val contentResolver: ContentResolver
+) : Blob<ReadError> {
 
-    private lateinit var _length: ResourceTry<Long>
+    private lateinit var _length: Try<Long, ReadError>
 
     override val source: AbsoluteUrl? = uri.toUrl() as? AbsoluteUrl
-
-    override suspend fun properties(): ResourceTry<Resource.Properties> =
-        ResourceTry.success(Resource.Properties())
-
-    override suspend fun mediaType(): ResourceTry<MediaType> =
-        Try.success(
-            mediaType
-                ?: contentResolver.getType(uri)?.let { MediaType(it) }
-                ?: MediaType.BINARY
-        )
 
     override suspend fun close() {
     }
 
-    override suspend fun read(range: LongRange?): ResourceTry<ByteArray> {
+    override suspend fun read(range: LongRange?): Try<ByteArray, ReadError> {
         if (range == null) {
             return readFully()
         }
@@ -85,10 +52,10 @@ public class ContentResource internal constructor(
         return readRange(range)
     }
 
-    private suspend fun readFully(): ResourceTry<ByteArray> =
+    private suspend fun readFully(): Try<ByteArray, ReadError> =
         withStream { it.readFully() }
 
-    private suspend fun readRange(range: LongRange): ResourceTry<ByteArray> =
+    private suspend fun readRange(range: LongRange): Try<ByteArray, ReadError> =
         withStream {
             withContext(Dispatchers.IO) {
                 val skipped = it.skip(range.first)
@@ -98,9 +65,9 @@ public class ContentResource internal constructor(
             }
         }
 
-    override suspend fun length(): ResourceTry<Long> {
+    override suspend fun length(): Try<Long, ReadError> {
         if (!::_length.isInitialized) {
-            _length = ResourceTry.catching {
+            _length = Try.catching {
                 contentResolver.openFileDescriptor(uri, "r")
                     .use { fd -> checkNotNull(fd?.statSize.takeUnless { it == -1L }) }
             }
@@ -109,11 +76,11 @@ public class ContentResource internal constructor(
         return _length
     }
 
-    private suspend fun <T> withStream(block: suspend (InputStream) -> T): Try<T, ResourceError> {
-        return ResourceTry.catching {
+    private suspend fun <T> withStream(block: suspend (InputStream) -> T): Try<T, ReadError> {
+        return Try.catching {
             val stream = contentResolver.openInputStream(uri)
                 ?: return Try.failure(
-                    ResourceError.Other(
+                    ReadError.Other(
                         Exception("Content provider recently crashed.")
                     )
                 )
@@ -123,19 +90,19 @@ public class ContentResource internal constructor(
         }
     }
 
-    private inline fun <T> Try.Companion.catching(closure: () -> T): ResourceTry<T> =
+    private inline fun <T> Try.Companion.catching(closure: () -> T): Try<T, ReadError> =
         try {
             success(closure())
         } catch (e: FileNotFoundException) {
-            failure(ResourceError.NotFound(e))
+            failure(ReadError.Filesystem(FilesystemError.NotFound(e)))
         } catch (e: SecurityException) {
-            failure(ResourceError.Forbidden(e))
+            failure(ReadError.Filesystem(FilesystemError.Forbidden(e)))
         } catch (e: IOException) {
-            failure(ResourceError.Filesystem(e))
+            failure(ReadError.Filesystem(FilesystemError.Unknown(e)))
         } catch (e: Exception) {
-            failure(ResourceError.Other(e))
+            failure(ReadError.Filesystem(FilesystemError.Unknown(e)))
         } catch (e: OutOfMemoryError) { // We don't want to catch any Error, only OOM.
-            failure(ResourceError.OutOfMemory(e))
+            failure(ReadError.OutOfMemory(e))
         }
 
     override fun toString(): String =

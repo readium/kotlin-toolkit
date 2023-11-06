@@ -9,14 +9,15 @@ package org.readium.r2.shared.publication.protection
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.publication.protection.ContentProtection.Scheme
 import org.readium.r2.shared.publication.services.contentProtectionServiceFactory
+import org.readium.r2.shared.util.MessageError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.asset.Asset
-import org.readium.r2.shared.util.asset.AssetError
+import org.readium.r2.shared.util.data.DecoderError
+import org.readium.r2.shared.util.data.ReadError
+import org.readium.r2.shared.util.data.readAsXml
+import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.mediatype.MediaType
-import org.readium.r2.shared.util.resource.Resource
-import org.readium.r2.shared.util.resource.readAsXml
-import org.readium.r2.shared.util.xml.ElementNode
 
 /**
  * [ContentProtection] implementation used as a fallback by the Streamer to detect Adept DRM,
@@ -27,9 +28,9 @@ public class AdeptFallbackContentProtection : ContentProtection {
 
     override val scheme: Scheme = Scheme.Adept
 
-    override suspend fun supports(asset: Asset): Boolean {
+    override suspend fun supports(asset: Asset): Try<Boolean, ReadError> {
         if (asset !is Asset.Container) {
-            return false
+            return Try.success(false)
         }
 
         return isAdept(asset)
@@ -39,10 +40,12 @@ public class AdeptFallbackContentProtection : ContentProtection {
         asset: Asset,
         credentials: String?,
         allowUserInteraction: Boolean
-    ): Try<ContentProtection.Asset, AssetError> {
+    ): Try<ContentProtection.Asset, ContentProtection.Error> {
         if (asset !is Asset.Container) {
             return Try.failure(
-                AssetError.UnsupportedAsset("A container asset was expected.")
+                ContentProtection.Error.UnsupportedAsset(
+                    MessageError("A container asset was expected.")
+                )
             )
         }
 
@@ -58,27 +61,37 @@ public class AdeptFallbackContentProtection : ContentProtection {
         return Try.success(protectedFile)
     }
 
-    private suspend fun isAdept(asset: Asset.Container): Boolean {
+    private suspend fun isAdept(asset: Asset.Container): Try<Boolean, ReadError> {
         if (!asset.mediaType.matches(MediaType.EPUB)) {
-            return false
+            return Try.success(false)
         }
 
-        val rightsXml = asset.container.get(Url("META-INF/rights.xml")!!)
-            .readAsXmlOrNull()
+        asset.container.get(Url("META-INF/encryption.xml")!!)
+            ?.readAsXml()
+            ?.getOrElse {
+                when (it) {
+                    is DecoderError.DecodingError ->
+                        return Try.success(false)
+                    is DecoderError.DataAccess ->
+                        return Try.failure(it.cause)
+                }
+            }?.get("EncryptedData", EpubEncryption.ENC)
+            ?.flatMap { it.get("KeyInfo", EpubEncryption.SIG) }
+            ?.flatMap { it.get("resource", "http://ns.adobe.com/adept") }
+            ?.takeIf { it.isNotEmpty() }
+            ?.let { return Try.success(true) }
 
-        val encryptionXml = asset.container.get(Url("META-INF/encryption.xml")!!)
-            .readAsXmlOrNull()
-
-        return encryptionXml != null && (
-            rightsXml?.namespace == "http://ns.adobe.com/adept" ||
-                encryptionXml
-                    .get("EncryptedData", EpubEncryption.ENC)
-                    .flatMap { it.get("KeyInfo", EpubEncryption.SIG) }
-                    .flatMap { it.get("resource", "http://ns.adobe.com/adept") }
-                    .isNotEmpty()
-            )
+        return asset.container.get(Url("META-INF/rights.xml")!!)
+            ?.readAsXml()
+            ?.getOrElse {
+                when (it) {
+                    is DecoderError.DecodingError ->
+                        return Try.success(false)
+                    is DecoderError.DataAccess ->
+                        return Try.failure(it.cause)
+                }
+            }?.takeIf { it.namespace == "http://ns.adobe.com/adept" }
+            ?.let { Try.success(true) }
+            ?: Try.success(false)
     }
 }
-
-private suspend inline fun Resource.readAsXmlOrNull(): ElementNode? =
-    readAsXml().getOrNull()

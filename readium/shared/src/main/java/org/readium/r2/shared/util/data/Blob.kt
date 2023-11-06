@@ -4,15 +4,22 @@
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.r2.shared.util.datasource
+package org.readium.r2.shared.util.data
 
+import org.readium.r2.shared.util.AbsoluteUrl
+import org.readium.r2.shared.util.Error
 import org.readium.r2.shared.util.SuspendingCloseable
 import org.readium.r2.shared.util.Try
 
 /**
  * Acts as a proxy to an actual data source by handling read access.
  */
-internal interface DataSource<E> : SuspendingCloseable {
+public interface Blob<E : Error> : SuspendingCloseable {
+
+    /**
+     * URL locating this resource, if any.
+     */
+    public val source: AbsoluteUrl?
 
     /**
      * Returns data length from metadata if available, or calculated from reading the bytes otherwise.
@@ -20,7 +27,7 @@ internal interface DataSource<E> : SuspendingCloseable {
      * This value must be treated as a hint, as it might not reflect the actual bytes length. To get
      * the real length, you need to read the whole resource.
      */
-    suspend fun length(): Try<Long, E>
+    public suspend fun length(): Try<Long, E>
 
     /**
      * Reads the bytes at the given range.
@@ -28,5 +35,5 @@ internal interface DataSource<E> : SuspendingCloseable {
      * When [range] is null, the whole content is returned. Out-of-range indexes are clamped to the
      * available length automatically.
      */
-    suspend fun read(range: LongRange? = null): Try<ByteArray, E>
+    public suspend fun read(range: LongRange? = null): Try<ByteArray, E>
 }

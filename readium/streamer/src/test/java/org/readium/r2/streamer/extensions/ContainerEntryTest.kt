@@ -17,7 +17,6 @@ import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.resource.Container
-import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.shared.util.resource.ResourceTry
 import org.robolectric.RobolectricTestRunner
 
@@ -29,7 +28,7 @@ class ContainerEntryTest {
         override val source: AbsoluteUrl? = null
         override suspend fun mediaType(): ResourceTry<MediaType> =
             throw NotImplementedError()
-        override suspend fun properties(): ResourceTry<Resource.Properties> =
+        override suspend fun properties(): ResourceTry<Properties> =
             throw NotImplementedError()
         override suspend fun length(): ResourceTry<Long> =
             throw NotImplementedError()

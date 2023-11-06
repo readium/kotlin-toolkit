@@ -14,48 +14,44 @@ import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.RelativeUrl
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.archive.ArchiveProperties
+import org.readium.r2.shared.util.archive.archive
+import org.readium.r2.shared.util.data.AccessException
+import org.readium.r2.shared.util.data.ClosedContainer
+import org.readium.r2.shared.util.data.ReadError
+import org.readium.r2.shared.util.data.unwrapAccessException
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.io.CountingInputStream
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.mediatype.MediaTypeHints
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
-import org.readium.r2.shared.util.resource.ArchiveProperties
-import org.readium.r2.shared.util.resource.Container
-import org.readium.r2.shared.util.resource.FailureResource
+import org.readium.r2.shared.util.mediatype.MediaTypeSnifferError
 import org.readium.r2.shared.util.resource.Resource
-import org.readium.r2.shared.util.resource.ResourceError
-import org.readium.r2.shared.util.resource.ResourceException
-import org.readium.r2.shared.util.resource.ResourceException.Companion.unwrapResourceException
-import org.readium.r2.shared.util.resource.ResourceMediaTypeSnifferContent
+import org.readium.r2.shared.util.resource.ResourceEntry
 import org.readium.r2.shared.util.resource.ResourceTry
-import org.readium.r2.shared.util.resource.archive
-import org.readium.r2.shared.util.resource.toResourceTry
+import org.readium.r2.shared.util.tryRecover
 import org.readium.r2.shared.util.zip.compress.archivers.zip.ZipArchiveEntry
 import org.readium.r2.shared.util.zip.compress.archivers.zip.ZipFile
 
 internal class ChannelZipContainer(
-    private val archive: ZipFile,
+    private val zipFile: ZipFile,
     override val source: AbsoluteUrl?,
     private val mediaTypeRetriever: MediaTypeRetriever
-) : Container {
-
-    private inner class FailureEntry(
-        override val url: Url
-    ) : Container.Entry, Resource by FailureResource(ResourceError.NotFound())
+) : ClosedContainer<ResourceEntry> {
 
     private inner class Entry(
         override val url: Url,
         private val entry: ZipArchiveEntry
-    ) : Container.Entry {
+    ) : ResourceEntry {
 
         override val source: AbsoluteUrl? get() = null
 
         override suspend fun properties(): ResourceTry<Resource.Properties> =
-            ResourceTry.success(
+            Try.success(
                 Resource.Properties {
                     archive = ArchiveProperties(
                         entryLength = compressedLength
-                            ?: length().getOrElse { return ResourceTry.failure(it) },
+                            ?: length().getOrElse { return Try.failure(it) },
                         isEntryCompressed = compressedLength != null
                     )
                 }
@@ -64,13 +60,20 @@ internal class ChannelZipContainer(
         override suspend fun mediaType(): ResourceTry<MediaType> =
             mediaTypeRetriever.retrieve(
                 hints = MediaTypeHints(fileExtension = url.extension),
-                content = ResourceMediaTypeSnifferContent(this)
-            ).toResourceTry()
+                blob = this
+            ).tryRecover { error ->
+                when (error) {
+                    is MediaTypeSnifferError.DataAccess ->
+                        Try.failure(error.cause)
+                    MediaTypeSnifferError.NotRecognized ->
+                        Try.success(MediaType.BINARY)
+                }
+            }
 
         override suspend fun length(): ResourceTry<Long> =
             entry.size.takeUnless { it == -1L }
                 ?.let { Try.success(it) }
-                ?: Try.failure(ResourceError.Other(UnsupportedOperationException()))
+                ?: Try.failure(ReadError.Other(UnsupportedOperationException()))
 
         private val compressedLength: Long?
             get() =
@@ -91,17 +94,17 @@ internal class ChannelZipContainer(
                         }
                     Try.success(bytes)
                 } catch (exception: Exception) {
-                    when (val e = exception.unwrapResourceException()) {
-                        is ResourceException ->
+                    when (val e = exception.unwrapAccessException()) {
+                        is AccessException ->
                             Try.failure(e.error)
                         else ->
-                            Try.failure(ResourceError.InvalidContent(e))
+                            Try.failure(ReadError.Content(e))
                     }
                 }
             }
 
         private suspend fun readFully(): ByteArray =
-            archive.getInputStream(entry).use {
+            zipFile.getInputStream(entry).use {
                 it.readFully()
             }
 
@@ -124,7 +127,7 @@ internal class ChannelZipContainer(
          */
         private fun stream(fromIndex: Long): CountingInputStream {
             if (entry.method == ZipArchiveEntry.STORED && fromIndex < entry.size) {
-                return CountingInputStream(archive.getRawInputStream(entry, fromIndex), fromIndex)
+                return CountingInputStream(zipFile.getRawInputStream(entry, fromIndex), fromIndex)
             }
 
             // Reuse the current stream if it didn't exceed the requested index.
@@ -134,7 +137,7 @@ internal class ChannelZipContainer(
 
             stream?.close()
 
-            return CountingInputStream(archive.getInputStream(entry))
+            return CountingInputStream(zipFile.getInputStream(entry))
                 .also { stream = it }
         }
 
@@ -149,25 +152,21 @@ internal class ChannelZipContainer(
         }
     }
 
-    override suspend fun entries(): Set<Container.Entry> =
-        archive.entries.toList()
+    override suspend fun entries(): Set<Url> =
+        zipFile.entries.toList()
             .filterNot { it.isDirectory }
-            .mapNotNull { entry ->
-                Url.fromDecodedPath(entry.name)
-                    ?.let { url -> Entry(url, entry) }
-            }
+            .mapNotNull { entry -> Url.fromDecodedPath(entry.name) }
             .toSet()
 
-    override fun get(url: Url): Container.Entry =
+    override fun get(url: Url): ResourceEntry? =
         (url as? RelativeUrl)?.path
-            ?.let { archive.getEntry(it) }
+            ?.let { zipFile.getEntry(it) }
             ?.takeUnless { it.isDirectory }
             ?.let { Entry(url, it) }
-            ?: FailureEntry(url)
 
     override suspend fun close() {
         withContext(Dispatchers.IO) {
-            tryOrLog { archive.close() }
+            tryOrLog { zipFile.close() }
         }
     }
 }

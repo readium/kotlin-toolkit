@@ -29,12 +29,11 @@ import org.readium.r2.shared.publication.services.content.ContentService
 import org.readium.r2.shared.publication.services.search.SearchService
 import org.readium.r2.shared.util.Closeable
 import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.data.ClosedContainer
+import org.readium.r2.shared.util.data.EmptyContainer
 import org.readium.r2.shared.util.mediatype.MediaType
-import org.readium.r2.shared.util.resource.Container
-import org.readium.r2.shared.util.resource.EmptyContainer
 import org.readium.r2.shared.util.resource.Resource
-import org.readium.r2.shared.util.resource.ResourceError
-import org.readium.r2.shared.util.resource.fallback
+import org.readium.r2.shared.util.resource.ResourceEntry
 import org.readium.r2.shared.util.resource.withMediaType
 
 internal typealias ServiceFactory = (Publication.Service.Context) -> Publication.Service?
@@ -49,6 +48,8 @@ internal typealias ServiceFactory = (Publication.Service.Context) -> Publication
  */
 public typealias PublicationId = String
 
+public typealias PublicationContainer = ClosedContainer<ResourceEntry>
+
 /**
  * The Publication shared model is the entry-point for all the metadata and services
  * related to a Readium publication.
@@ -61,7 +62,7 @@ public typealias PublicationId = String
  */
 public class Publication(
     manifest: Manifest,
-    private val container: Container = EmptyContainer(),
+    private val container: PublicationContainer = EmptyContainer(),
     private val servicesBuilder: ServicesBuilder = ServicesBuilder(),
     @Deprecated(
         "Migrate to the new Settings API (see migration guide)",
@@ -194,27 +195,23 @@ public class Publication(
     /**
      * Returns the resource targeted by the given non-templated [link].
      */
-    public fun get(link: Link): Resource =
+    public fun get(link: Link): Resource? =
         get(link.url(), link.mediaType)
 
     /**
      * Returns the resource targeted by the given [href].
      */
-    public fun get(href: Url): Resource =
+    public fun get(href: Url): Resource? =
         get(href, linkWithHref(href)?.mediaType)
 
-    private fun get(href: Url, mediaType: MediaType?): Resource {
+    private fun get(href: Url, mediaType: MediaType?): Resource? {
         services.services.forEach { service -> service.get(href)?.let { return it } }
 
-        return container.get(href)
-            .fallback { error ->
-                if (error is ResourceError.NotFound) {
-                    // Try again after removing query and fragment.
-                    container.get(href.removeQuery().removeFragment())
-                } else {
-                    null
-                }
-            }
+        val entry = container.get(href)
+            ?: container.get(href.removeQuery().removeFragment()) // Try again after removing query and fragment.
+            ?: return null
+
+        return entry
             .withMediaType(mediaType)
     }
 
@@ -357,7 +354,7 @@ public class Publication(
          */
         public class Context(
             public val manifest: Manifest,
-            public val container: Container,
+            public val container: PublicationContainer,
             public val services: PublicationServicesHolder
         )
 
@@ -500,7 +497,7 @@ public class Publication(
      */
     public class Builder(
         public var manifest: Manifest,
-        public var container: Container,
+        public var container: PublicationContainer,
         public var servicesBuilder: ServicesBuilder = ServicesBuilder()
     ) {
 

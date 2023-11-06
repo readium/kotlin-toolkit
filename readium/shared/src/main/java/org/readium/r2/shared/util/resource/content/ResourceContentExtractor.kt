@@ -12,10 +12,12 @@ import org.jsoup.Jsoup
 import org.jsoup.parser.Parser
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.data.DecoderError
+import org.readium.r2.shared.util.data.ReadError
+import org.readium.r2.shared.util.data.readAsString
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.resource.Resource
-import org.readium.r2.shared.util.resource.ResourceTry
-import org.readium.r2.shared.util.resource.readAsString
+import org.readium.r2.shared.util.tryRecover
 
 /**
  * Extracts pure content from a marked-up (e.g. HTML) or binary (e.g. PDF) resource.
@@ -26,7 +28,7 @@ public interface ResourceContentExtractor {
     /**
      * Extracts the text content of the given [resource].
      */
-    public suspend fun extractText(resource: Resource): ResourceTry<String> = Try.success("")
+    public suspend fun extractText(resource: Resource): Try<String, ReadError> = Try.success("")
 
     public interface Factory {
         /**
@@ -54,15 +56,22 @@ public class DefaultResourceContentExtractorFactory : ResourceContentExtractor.F
 @ExperimentalReadiumApi
 public class HtmlResourceContentExtractor : ResourceContentExtractor {
 
-    override suspend fun extractText(resource: Resource): ResourceTry<String> = withContext(
-        Dispatchers.IO
-    ) {
-        resource
-            .readAsString()
-            .map { html ->
-                val body = Jsoup.parse(html).body().text()
-                // Transform HTML entities into their actual characters.
-                Parser.unescapeEntities(body, false)
-            }
-    }
+    override suspend fun extractText(resource: Resource): Try<String, ReadError> =
+        withContext(Dispatchers.IO) {
+            resource
+                .readAsString()
+                .tryRecover {
+                    when (it) {
+                        is DecoderError.DataAccess ->
+                            return@withContext Try.failure(it.cause)
+                        is DecoderError.DecodingError ->
+                            Try.success("")
+                    }
+                }
+                .map { html ->
+                    val body = Jsoup.parse(html).body().text()
+                    // Transform HTML entities into their actual characters.
+                    Parser.unescapeEntities(body, false)
+                }
+        }
 }

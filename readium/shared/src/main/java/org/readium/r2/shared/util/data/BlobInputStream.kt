@@ -4,22 +4,22 @@
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.r2.shared.util.datasource
+package org.readium.r2.shared.util.data
 
 import java.io.IOException
 import java.io.InputStream
 import kotlinx.coroutines.runBlocking
 import org.readium.r2.shared.util.Error
-import org.readium.r2.shared.util.getOrThrow
+import org.readium.r2.shared.util.Try
 
 /**
- * Input stream reading through a [DataSource].
+ * Input stream reading through a [Blob].
  *
  * If you experience bad performances, consider wrapping the stream in a BufferedInputStream. This
  * is particularly useful when streaming deflated ZIP entries.
  */
-internal class DataSourceInputStream<E : Error>(
-    private val dataSource: DataSource<E>,
+public class BlobInputStream<E : Error>(
+    private val blob: Blob<E>,
     private val wrapError: (E) -> IOException,
     private val range: LongRange? = null
 ) : InputStream() {
@@ -28,9 +28,8 @@ internal class DataSourceInputStream<E : Error>(
 
     private val end: Long by lazy {
         val resourceLength =
-            runBlocking { dataSource.length() }
-                .mapFailure { wrapError(it) }
-                .getOrThrow()
+            runBlocking { blob.length() }
+                .recover()
 
         if (range == null) {
             resourceLength
@@ -46,6 +45,14 @@ internal class DataSourceInputStream<E : Error>(
      * The currently marked position in the stream. Defaults to 0.
      */
     private var mark: Long = range?.start ?: 0
+
+    private var error: E? = null
+
+    internal fun consumeError(): E? {
+        val errorNow = error
+        error = null
+        return errorNow
+    }
 
     override fun available(): Int {
         checkNotClosed()
@@ -69,9 +76,8 @@ internal class DataSourceInputStream<E : Error>(
         }
 
         val bytes = runBlocking {
-            dataSource.read(position until (position + 1))
-                .mapFailure { wrapError(it) }
-                .getOrThrow()
+            blob.read(position until (position + 1))
+                .recover()
         }
         position += 1
         return bytes.first().toUByte().toInt()
@@ -86,9 +92,8 @@ internal class DataSourceInputStream<E : Error>(
 
         val bytesToRead = len.coerceAtMost(available())
         val bytes = runBlocking {
-            dataSource.read(position until (position + bytesToRead))
-                .mapFailure { wrapError(it) }
-                .getOrThrow()
+            blob.read(position until (position + bytesToRead))
+                .recover()
         }
         check(bytes.size <= bytesToRead)
         bytes.copyInto(
@@ -135,4 +140,15 @@ internal class DataSourceInputStream<E : Error>(
             throw IllegalStateException("InputStream is closed.")
         }
     }
+
+    private fun<S> Try<S, E>.recover(): S =
+        when (this) {
+            is Try.Success -> {
+                value
+            }
+            is Try.Failure -> {
+                error = value
+                throw wrapError(value)
+            }
+        }
 }

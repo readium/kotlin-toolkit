@@ -50,27 +50,6 @@ public class ErrorException(
     public val error: Error
 ) : Exception(error.message, error.cause?.let { ErrorException(it) })
 
-public fun <S, F> Try<S, F>.assertSuccess(): S =
-    when (this) {
-        is Try.Success ->
-            value
-        is Try.Failure ->
-            throw IllegalStateException(
-                "Try was excepted to contain a success.",
-                value as? Throwable
-            )
-    }
-
-public class FilesystemError(
-    override val cause: Error? = null
-) : Error {
-
-    public constructor(exception: Exception) : this(ThrowableError(exception))
-
-    override val message: String =
-        "An unexpected error occurred on the filesystem."
-}
-
 // FIXME: to improve
 @InternalReadiumApi
 public fun Timber.Forest.e(error: Error, message: String? = null) {

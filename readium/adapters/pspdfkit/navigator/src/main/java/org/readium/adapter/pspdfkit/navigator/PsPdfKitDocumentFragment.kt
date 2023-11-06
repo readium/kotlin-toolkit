@@ -55,7 +55,7 @@ import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.services.isProtected
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.pdf.cachedIn
-import org.readium.r2.shared.util.resource.ResourceError
+import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.resource.ResourceTry
 import timber.log.Timber
 
@@ -69,7 +69,7 @@ public class PsPdfKitDocumentFragment internal constructor(
 ) : PdfDocumentFragment<PsPdfKitSettings>() {
 
     internal interface Listener {
-        fun onResourceLoadFailed(href: Url, error: ResourceError)
+        fun onResourceLoadFailed(href: Url, error: ReadError)
         fun onConfigurePdfView(builder: PdfConfiguration.Builder): PdfConfiguration.Builder
         fun onTap(point: PointF): Boolean
     }

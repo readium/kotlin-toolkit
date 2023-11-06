@@ -8,7 +8,7 @@ package org.readium.r2.testapp.domain
 
 import androidx.annotation.StringRes
 import org.readium.r2.shared.UserException
-import org.readium.r2.shared.util.asset.AssetError
+import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.downloads.DownloadManager
 import org.readium.r2.testapp.R
 
@@ -44,7 +44,7 @@ sealed class ImportError(
     }
 
     class ResourceError(
-        val error: org.readium.r2.shared.util.resource.ResourceError
+        val error: ReadError
     ) : ImportError(R.string.import_publication_unexpected_io_exception)
 
     class DownloadFailed(

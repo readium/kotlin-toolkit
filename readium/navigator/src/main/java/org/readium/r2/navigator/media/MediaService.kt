@@ -34,7 +34,7 @@ import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.PublicationId
 import org.readium.r2.shared.publication.services.cover
 import org.readium.r2.shared.util.Url
-import org.readium.r2.shared.util.resource.ResourceError
+import org.readium.r2.shared.util.data.ReadError
 import timber.log.Timber
 
 /**
@@ -105,7 +105,7 @@ public open class MediaService : MediaBrowserServiceCompat(), CoroutineScope by 
      *
      * You should present the exception to the user.
      */
-    public open fun onResourceLoadFailed(link: Link, error: ResourceError) {}
+    public open fun onResourceLoadFailed(link: Link, error: ReadError) {}
 
     /**
      * Override to control which app can access the MediaSession through the MediaBrowserService.
@@ -211,7 +211,7 @@ public open class MediaService : MediaBrowserServiceCompat(), CoroutineScope by 
             this@MediaService.onPlayerStopped()
         }
 
-        override fun onResourceLoadFailed(link: Link, error: ResourceError) {
+        override fun onResourceLoadFailed(link: Link, error: ReadError) {
             this@MediaService.onResourceLoadFailed(link, error)
         }
     }

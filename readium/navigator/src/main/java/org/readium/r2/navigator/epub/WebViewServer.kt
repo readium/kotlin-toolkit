@@ -18,11 +18,12 @@ import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.data.AccessException
+import org.readium.r2.shared.util.data.BlobInputStream
+import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.http.HttpHeaders
 import org.readium.r2.shared.util.http.HttpRange
 import org.readium.r2.shared.util.resource.Resource
-import org.readium.r2.shared.util.resource.ResourceError
-import org.readium.r2.shared.util.resource.ResourceInputStream
 
 /**
  * Serves the publication resources and application assets in the EPUB navigator web views.
@@ -33,7 +34,7 @@ internal class WebViewServer(
     private val publication: Publication,
     servedAssets: List<String>,
     private val disableSelectionWhenProtected: Boolean,
-    private val onResourceLoadFailed: (Url, ResourceError) -> Unit
+    private val onResourceLoadFailed: (Url, ReadError) -> Unit
 ) {
     companion object {
         val publicationBaseHref = AbsoluteUrl("https://readium/publication/")!!
@@ -110,15 +111,16 @@ internal class WebViewServer(
                 200,
                 "OK",
                 headers,
-                ResourceInputStream(resource)
+                BlobInputStream(resource, ::AccessException)
             )
         } else { // Byte range request
-            val stream = ResourceInputStream(resource)
+            val stream = BlobInputStream(resource, ::AccessException)
             val length = stream.available()
             val longRange = range.toLongRange(length.toLong())
             headers["Content-Range"] = "bytes ${longRange.first}-${longRange.last}/$length"
             // Content-Length will automatically be filled by the WebView using the Content-Range header.
-//            headers["Content-Length"] = (longRange.last - longRange.first + 1).toString()
+            // headers["Content-Length"] = (longRange.last - longRange.first + 1).toString()
+            // Weirdly, the WebView will call itself stream.skip to skip to the requested range.
             return WebResourceResponse(
                 link.mediaType?.toString(),
                 null,

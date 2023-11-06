@@ -26,12 +26,14 @@ import kotlinx.coroutines.withContext
 import org.readium.r2.shared.extensions.tryOr
 import org.readium.r2.shared.util.MessageError
 import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.data.FileBlob
 import org.readium.r2.shared.util.downloads.DownloadManager
+import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.http.HttpError
 import org.readium.r2.shared.util.mediatype.FormatRegistry
 import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.shared.util.mediatype.MediaTypeHints
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
-import org.readium.r2.shared.util.resource.FileResource
 import org.readium.r2.shared.util.toUri
 import org.readium.r2.shared.util.units.Hz
 import org.readium.r2.shared.util.units.hz
@@ -272,9 +274,14 @@ public class AndroidDownloadManager internal constructor(
 
     private suspend fun prepareResult(destFile: File, mediaTypeHint: String?): Try<DownloadManager.Download, DownloadManager.Error> =
         withContext(Dispatchers.IO) {
-            val mediaType = mediaTypeHint?.let { mediaTypeRetriever.retrieve(it) }
-                ?: FileResource(destFile, mediaTypeRetriever).mediaType().getOrNull()
-                ?: MediaType.BINARY
+            val mediaType = mediaTypeRetriever.retrieve(
+                hints = MediaTypeHints(
+                    mediaTypes = listOfNotNull(
+                        mediaTypeHint?.let { MediaType(it) }
+                    )
+                ),
+                blob = FileBlob(destFile)
+            ).getOrElse { MediaType.BINARY }
 
             val extension = formatRegistry.fileExtension(mediaType)
                 ?: destFile.extension.takeUnless { it.isEmpty() }

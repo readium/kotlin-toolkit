@@ -10,8 +10,10 @@ import org.readium.r2.shared.publication.LocalizedString
 import org.readium.r2.shared.publication.Manifest
 import org.readium.r2.shared.publication.Metadata
 import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.util.MessageError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.streamer.extensions.guessTitle
@@ -37,19 +39,23 @@ public class AudioParser : PublicationParser {
 
         val readingOrder =
             if (asset.mediaType.matches(MediaType.ZAB)) {
-                (asset.container.entries() ?: emptySet())
-                    .filter { entry -> zabCanContain(entry.url) }
-                    .sortedBy { it.url.toString() }
+                asset.container.entries()
+                    .filter { zabCanContain(it) }
+                    .sortedBy { it.toString() }
                     .toMutableList()
             } else {
                 listOfNotNull(
-                    asset.container.entries()?.firstOrNull()
+                    asset.container.entries().firstOrNull()
                 )
             }
 
         if (readingOrder.isEmpty()) {
             return Try.failure(
-                PublicationParser.Error.InvalidAsset("No audio file found in the publication.")
+                PublicationParser.Error.ReadError(
+                    ReadError.Content(
+                        MessageError("No audio file found in the publication.")
+                    )
+                )
             )
         }
 

@@ -10,6 +10,7 @@ import org.readium.r2.shared.extensions.coerceIn
 import org.readium.r2.shared.extensions.contains
 import org.readium.r2.shared.extensions.requireLengthFitInt
 import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.data.ReadError
 
 /**
  * Wraps a [Resource] and buffers its content.
@@ -44,8 +45,8 @@ public class BufferingResource(
      */
     private var buffer: Pair<ByteArray, LongRange>? = null
 
-    private lateinit var _cachedLength: ResourceTry<Long>
-    private suspend fun cachedLength(): ResourceTry<Long> {
+    private lateinit var _cachedLength: Try<Long, ReadError>
+    private suspend fun cachedLength(): Try<Long, ReadError> {
         if (!::_cachedLength.isInitialized) {
             _cachedLength = resource.length()
         }
@@ -58,7 +59,7 @@ public class BufferingResource(
         }
     }
 
-    override suspend fun read(range: LongRange?): ResourceTry<ByteArray> {
+    override suspend fun read(range: LongRange?): Try<ByteArray, ReadError> {
         val length = cachedLength().getOrNull()
         // Reading the whole resource bypasses buffering to keep things simple.
         if (range == null || length == null) {

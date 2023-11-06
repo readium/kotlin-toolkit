@@ -30,6 +30,7 @@ import org.readium.r2.shared.publication.protection.ContentProtection
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.asset.Asset
 import org.readium.r2.shared.util.asset.AssetRetriever
+import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.downloads.DownloadManager
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
@@ -47,7 +48,7 @@ public interface LcpService {
     /**
      * Returns if the asset is a LCP license document or a publication protected by LCP.
      */
-    public suspend fun isLcpProtected(asset: Asset): Boolean
+    public suspend fun isLcpProtected(asset: Asset): Try<Boolean, ReadError>
 
     /**
      * Acquires a protected publication from a standalone LCPL's bytes.

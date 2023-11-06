@@ -12,9 +12,9 @@ import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.protection.AdeptFallbackContentProtection
 import org.readium.r2.shared.publication.protection.ContentProtection
 import org.readium.r2.shared.publication.protection.LcpFallbackContentProtection
+import org.readium.r2.shared.util.MessageError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.asset.Asset
-import org.readium.r2.shared.util.asset.AssetError
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.http.DefaultHttpClient
 import org.readium.r2.shared.util.http.HttpClient
@@ -28,8 +28,6 @@ import org.readium.r2.streamer.parser.epub.EpubParser
 import org.readium.r2.streamer.parser.image.ImageParser
 import org.readium.r2.streamer.parser.pdf.PdfParser
 import org.readium.r2.streamer.parser.readium.ReadiumWebPubParser
-
-internal typealias AssetTry<SuccessT> = Try<SuccessT, AssetError>
 
 /**
  * Opens a Publication using a list of parsers.
@@ -60,6 +58,23 @@ public class PublicationFactory(
     pdfFactory: PdfDocumentFactory<*>?,
     private val onCreatePublication: Publication.Builder.() -> Unit = {}
 ) {
+    public sealed class Error(
+        override val message: String,
+        override val cause: org.readium.r2.shared.util.Error?
+    ) : org.readium.r2.shared.util.Error {
+
+        public class ReadError(
+            override val cause: org.readium.r2.shared.util.data.ReadError
+        ) : Error("An error occurred while trying to read asset.", cause)
+
+        public class UnsupportedAsset(
+            override val cause: org.readium.r2.shared.util.Error?
+        ) : Error("Asset is not supported.", cause)
+
+        public class UnsupportedContentProtection(
+            override val cause: org.readium.r2.shared.util.Error? = null
+        ) : Error("No ContentProtection available to open asset.", cause)
+    }
 
     public companion object {
         public operator fun invoke(
@@ -67,13 +82,12 @@ public class PublicationFactory(
             contentProtections: List<ContentProtection> = emptyList(),
             onCreatePublication: Publication.Builder.() -> Unit
         ): PublicationFactory {
-            val mediaTypeRetriever = MediaTypeRetriever()
             return PublicationFactory(
                 context = context,
                 contentProtections = contentProtections,
                 formatRegistry = FormatRegistry(),
-                mediaTypeRetriever = mediaTypeRetriever,
-                httpClient = DefaultHttpClient(mediaTypeRetriever),
+                mediaTypeRetriever = MediaTypeRetriever(),
+                httpClient = DefaultHttpClient(MediaTypeRetriever()),
                 pdfFactory = null,
                 onCreatePublication = onCreatePublication
             )
@@ -82,7 +96,7 @@ public class PublicationFactory(
 
     private val contentProtections: Map<ContentProtection.Scheme, ContentProtection> =
         buildList {
-            add(LcpFallbackContentProtection(mediaTypeRetriever))
+            add(LcpFallbackContentProtection())
             add(AdeptFallbackContentProtection())
             addAll(contentProtections.asReversed())
         }.associateBy(ContentProtection::scheme)
@@ -91,7 +105,7 @@ public class PublicationFactory(
         listOfNotNull(
             EpubParser(mediaTypeRetriever),
             pdfFactory?.let { PdfParser(context, it) },
-            ReadiumWebPubParser(context, pdfFactory, mediaTypeRetriever),
+            ReadiumWebPubParser(context, pdfFactory),
             ImageParser(),
             AudioParser()
         )
@@ -100,7 +114,7 @@ public class PublicationFactory(
         if (!ignoreDefaultParsers) defaultParsers else emptyList()
 
     private val parserAssetFactory: ParserAssetFactory =
-        ParserAssetFactory(httpClient, mediaTypeRetriever, formatRegistry)
+        ParserAssetFactory(httpClient, formatRegistry)
 
     /**
      * Opens a [Publication] from the given asset.
@@ -134,7 +148,7 @@ public class PublicationFactory(
         allowUserInteraction: Boolean,
         onCreatePublication: Publication.Builder.() -> Unit = {},
         warnings: WarningLogger? = null
-    ): AssetTry<Publication> {
+    ): Try<Publication, Error> {
         val compositeOnCreatePublication: Publication.Builder.() -> Unit = {
             this@PublicationFactory.onCreatePublication(this)
             onCreatePublication(this)
@@ -162,8 +176,16 @@ public class PublicationFactory(
         asset: Asset,
         onCreatePublication: Publication.Builder.() -> Unit,
         warnings: WarningLogger?
-    ): Try<Publication, AssetError> {
+    ): Try<Publication, Error> {
         val parserAsset = parserAssetFactory.createParserAsset(asset)
+            .mapFailure {
+                when (it) {
+                    is ParserAssetFactory.Error.ReadError ->
+                        Error.ReadError(it.cause)
+                    is ParserAssetFactory.Error.UnsupportedAsset ->
+                        Error.UnsupportedAsset(it.cause)
+                }
+            }
             .getOrElse { return Try.failure(it) }
         return openParserAsset(parserAsset, onCreatePublication, warnings)
     }
@@ -175,11 +197,19 @@ public class PublicationFactory(
         allowUserInteraction: Boolean,
         onCreatePublication: Publication.Builder.() -> Unit,
         warnings: WarningLogger?
-    ): Try<Publication, AssetError> {
+    ): Try<Publication, Error> {
         val protectedAsset = contentProtections[contentProtectionScheme]
             ?.open(asset, credentials, allowUserInteraction)
+            ?.mapFailure {
+                when (it) {
+                    is ContentProtection.Error.AccessError ->
+                        Error.ReadError(it.cause)
+                    is ContentProtection.Error.UnsupportedAsset ->
+                        Error.UnsupportedAsset(it)
+                }
+            }
             ?.getOrElse { return Try.failure(it) }
-            ?: return Try.failure(AssetError.Forbidden())
+            ?: return Try.failure(Error.UnsupportedContentProtection())
 
         val parserAsset = PublicationParser.Asset(
             protectedAsset.mediaType,
@@ -198,7 +228,7 @@ public class PublicationFactory(
         publicationAsset: PublicationParser.Asset,
         onCreatePublication: Publication.Builder.() -> Unit = {},
         warnings: WarningLogger? = null
-    ): Try<Publication, AssetError> {
+    ): Try<Publication, Error> {
         val builder = parse(publicationAsset, warnings)
             .getOrElse { return Try.failure(wrapParserException(it)) }
 
@@ -224,21 +254,11 @@ public class PublicationFactory(
         return Try.failure(PublicationParser.Error.UnsupportedFormat())
     }
 
-    private fun wrapParserException(e: PublicationParser.Error): AssetError =
+    private fun wrapParserException(e: PublicationParser.Error): Error =
         when (e) {
             is PublicationParser.Error.UnsupportedFormat ->
-                AssetError.UnsupportedAsset("Cannot find a parser for this asset.")
-            is PublicationParser.Error.InvalidAsset ->
-                AssetError.InvalidAsset(e)
-            is PublicationParser.Error.Filesystem ->
-                AssetError.Filesystem(e.cause)
-            is PublicationParser.Error.Forbidden ->
-                AssetError.Forbidden(e.cause)
-            is PublicationParser.Error.Network ->
-                AssetError.Network(e.cause)
-            is PublicationParser.Error.Other ->
-                AssetError.Unknown(e)
-            is PublicationParser.Error.OutOfMemory ->
-                AssetError.OutOfMemory(e.cause)
+                Error.UnsupportedAsset(MessageError("Cannot find a parser for this asset."))
+            is PublicationParser.Error.ReadError ->
+                Error.ReadError(e.cause)
         }
 }

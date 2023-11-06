@@ -16,7 +16,6 @@ import org.json.JSONObject
 import org.readium.r2.shared.JSONable
 import org.readium.r2.shared.extensions.JSONParceler
 import org.readium.r2.shared.extensions.toMap
-import org.readium.r2.shared.util.resource.Resource
 
 /**
  * Properties associated to the linked resource.
@@ -55,8 +54,8 @@ public data class Properties(
      */
     public operator fun get(key: String): Any? = otherProperties[key]
 
-    internal fun toResourceProperties(): Resource.Properties =
-        Resource.Properties(otherProperties)
+    internal fun toResourceProperties(): Properties =
+        Properties(otherProperties)
 
     public companion object {
 

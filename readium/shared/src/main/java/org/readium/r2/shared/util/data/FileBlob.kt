@@ -4,7 +4,7 @@
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.r2.shared.util.resource
+package org.readium.r2.shared.util.data
 
 import java.io.File
 import java.io.FileNotFoundException
@@ -15,28 +15,18 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.extensions.*
 import org.readium.r2.shared.util.AbsoluteUrl
+import org.readium.r2.shared.util.FilesystemError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.getOrThrow
 import org.readium.r2.shared.util.isLazyInitialized
-import org.readium.r2.shared.util.mediatype.MediaType
-import org.readium.r2.shared.util.mediatype.MediaTypeHints
-import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 import org.readium.r2.shared.util.toUrl
 
 /**
  * A [Resource] to access a [file].
  */
-public class FileResource private constructor(
-    private val file: File,
-    private val mediaType: MediaType?,
-    private val mediaTypeRetriever: MediaTypeRetriever?
-) : Resource {
-
-    public constructor(file: File, mediaType: MediaType) :
-        this(file, mediaType, null)
-
-    public constructor(file: File, mediaTypeRetriever: MediaTypeRetriever) :
-        this(file, null, mediaTypeRetriever)
+public class FileBlob(
+    private val file: File
+) : Blob<ReadError> {
 
     private val randomAccessFile by lazy {
         try {
@@ -48,17 +38,6 @@ public class FileResource private constructor(
 
     override val source: AbsoluteUrl = file.toUrl()
 
-    override suspend fun properties(): ResourceTry<Resource.Properties> =
-        ResourceTry.success(Resource.Properties())
-
-    override suspend fun mediaType(): ResourceTry<MediaType> =
-        mediaType
-            ?.let { Try.success(it) }
-            ?: mediaTypeRetriever!!.retrieve(
-                hints = MediaTypeHints(fileExtension = file.extension),
-                content = ResourceMediaTypeSnifferContent(this)
-            ).toResourceTry()
-
     override suspend fun close() {
         withContext(Dispatchers.IO) {
             if (::randomAccessFile.isLazyInitialized) {
@@ -69,9 +48,9 @@ public class FileResource private constructor(
         }
     }
 
-    override suspend fun read(range: LongRange?): ResourceTry<ByteArray> =
+    override suspend fun read(range: LongRange?): Try<ByteArray, ReadError> =
         withContext(Dispatchers.IO) {
-            ResourceTry.catching {
+            Try.catching {
                 readSync(range)
             }
         }
@@ -102,7 +81,7 @@ public class FileResource private constructor(
         }
     }
 
-    override suspend fun length(): ResourceTry<Long> =
+    override suspend fun length(): Try<Long, ReadError> =
         metadataLength?.let { Try.success(it) }
             ?: read().map { it.size.toLong() }
 
@@ -115,40 +94,21 @@ public class FileResource private constructor(
             }
         }
 
-    private inline fun <T> Try.Companion.catching(closure: () -> T): ResourceTry<T> =
+    private inline fun <T> Try.Companion.catching(closure: () -> T): Try<T, ReadError> =
         try {
             success(closure())
         } catch (e: FileNotFoundException) {
-            failure(ResourceError.NotFound(e))
+            failure(ReadError.Filesystem(FilesystemError.NotFound(e)))
         } catch (e: SecurityException) {
-            failure(ResourceError.Forbidden(e))
+            failure(ReadError.Filesystem(FilesystemError.Forbidden(e)))
         } catch (e: IOException) {
-            failure(ResourceError.Filesystem(e))
+            failure(ReadError.Filesystem(FilesystemError.Unknown(e)))
         } catch (e: Exception) {
-            failure(ResourceError.Other(e))
+            failure(ReadError.Filesystem(FilesystemError.Unknown(e)))
         } catch (e: OutOfMemoryError) { // We don't want to catch any Error, only OOM.
-            failure(ResourceError.OutOfMemory(e))
+            failure(ReadError.OutOfMemory(e))
         }
 
     override fun toString(): String =
         "${javaClass.simpleName}(${file.path})"
-}
-
-public class FileResourceFactory(
-    private val mediaTypeRetriever: MediaTypeRetriever
-) : ResourceFactory {
-
-    override suspend fun create(
-        url: AbsoluteUrl,
-        mediaType: MediaType?
-    ): Try<Resource, ResourceFactory.Error> {
-        val file = url.toFile()
-            ?: return Try.failure(ResourceFactory.Error.SchemeNotSupported(url.scheme))
-
-        val resource = mediaType
-            ?.let { FileResource(file, mediaType) }
-            ?: FileResource(file, mediaTypeRetriever)
-
-        return Try.success(resource)
-    }
 }

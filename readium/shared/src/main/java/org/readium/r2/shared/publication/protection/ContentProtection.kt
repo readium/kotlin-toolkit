@@ -10,15 +10,25 @@
 package org.readium.r2.shared.publication.protection
 
 import androidx.annotation.StringRes
+import kotlin.Any
+import kotlin.Boolean
+import kotlin.Deprecated
+import kotlin.DeprecationLevel
+import kotlin.Int
+import kotlin.String
+import kotlin.Throwable
+import kotlin.Unit
 import org.readium.r2.shared.R
 import org.readium.r2.shared.UserException
 import org.readium.r2.shared.publication.LocalizedString
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.services.ContentProtectionService
+import org.readium.r2.shared.util.Error as BaseError
 import org.readium.r2.shared.util.Try
-import org.readium.r2.shared.util.asset.AssetError
+import org.readium.r2.shared.util.data.ClosedContainer
+import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.mediatype.MediaType
-import org.readium.r2.shared.util.resource.Container
+import org.readium.r2.shared.util.resource.ResourceEntry
 
 /**
  * Bridge between a Content Protection technology and the Readium toolkit.
@@ -29,6 +39,20 @@ import org.readium.r2.shared.util.resource.Container
  */
 public interface ContentProtection {
 
+    public sealed class Error(
+        override val message: String,
+        override val cause: BaseError?
+    ) : BaseError {
+
+        public class AccessError(
+            override val cause: org.readium.r2.shared.util.data.ReadError
+        ) : Error("An error occurred while trying to read asset.", cause)
+
+        public class UnsupportedAsset(
+            override val cause: BaseError?
+        ) : Error("Asset is not supported.", cause)
+    }
+
     public val scheme: Scheme
 
     /**
@@ -36,7 +60,7 @@ public interface ContentProtection {
      */
     public suspend fun supports(
         asset: org.readium.r2.shared.util.asset.Asset
-    ): Boolean
+    ): Try<Boolean, ReadError>
 
     /**
      * Attempts to unlock a potentially protected publication asset.
@@ -48,7 +72,7 @@ public interface ContentProtection {
         asset: org.readium.r2.shared.util.asset.Asset,
         credentials: String?,
         allowUserInteraction: Boolean
-    ): Try<Asset, AssetError>
+    ): Try<Asset, Error>
 
     /**
      * Holds the result of opening an [Asset] with a [ContentProtection].
@@ -61,7 +85,7 @@ public interface ContentProtection {
      */
     public data class Asset(
         val mediaType: MediaType,
-        val container: Container,
+        val container: ClosedContainer<ResourceEntry>,
         val onCreatePublication: Publication.Builder.() -> Unit = {}
     )
 

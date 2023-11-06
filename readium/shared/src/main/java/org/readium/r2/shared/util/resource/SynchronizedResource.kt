@@ -9,6 +9,8 @@ package org.readium.r2.shared.util.resource
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import org.readium.r2.shared.util.AbsoluteUrl
+import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.mediatype.MediaType
 
 /**
@@ -24,16 +26,16 @@ public class SynchronizedResource(
 
     override val source: AbsoluteUrl? get() = resource.source
 
-    override suspend fun properties(): ResourceTry<Resource.Properties> =
+    override suspend fun properties(): Try<Resource.Properties, ReadError> =
         mutex.withLock { resource.properties() }
 
-    override suspend fun mediaType(): ResourceTry<MediaType> =
+    override suspend fun mediaType(): Try<MediaType, ReadError> =
         mutex.withLock { resource.mediaType() }
 
-    override suspend fun length(): ResourceTry<Long> =
+    override suspend fun length(): Try<Long, ReadError> =
         mutex.withLock { resource.length() }
 
-    override suspend fun read(range: LongRange?): ResourceTry<ByteArray> =
+    override suspend fun read(range: LongRange?): Try<ByteArray, ReadError> =
         mutex.withLock { resource.read(range) }
 
     override suspend fun close() {

@@ -19,7 +19,7 @@ import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Metadata
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.util.Url
-import org.readium.r2.shared.util.resource.ResourceError
+import org.readium.r2.shared.util.data.ReadError
 
 /**
  * Main component to use the PDF navigator with the PDFium adapter.
@@ -49,7 +49,7 @@ public class PdfiumEngineProvider(
                 initialPageIndex = input.pageIndex,
                 initialSettings = input.settings,
                 listener = object : PdfiumDocumentFragment.Listener {
-                    override fun onResourceLoadFailed(href: Url, error: ResourceError) {
+                    override fun onResourceLoadFailed(href: Url, error: ReadError) {
                         input.navigatorListener?.onResourceLoadFailed(href, error)
                     }
 

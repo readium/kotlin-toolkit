@@ -10,12 +10,11 @@ import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.MessageError
 import org.readium.r2.shared.util.NetworkError
 import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.flatMap
 import org.readium.r2.shared.util.io.CountingInputStream
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.resource.Resource
-import org.readium.r2.shared.util.resource.ResourceError
-import org.readium.r2.shared.util.resource.ResourceTry
 
 /** Provides access to an external URL. */
 @OptIn(ExperimentalReadiumApi::class)
@@ -25,25 +24,25 @@ public class HttpResource(
     private val maxSkipBytes: Long = MAX_SKIP_BYTES
 ) : Resource {
 
-    override suspend fun mediaType(): ResourceTry<MediaType> =
+    override suspend fun mediaType(): Try<MediaType, ReadError> =
         headResponse().map { it.mediaType }
 
-    override suspend fun properties(): ResourceTry<Resource.Properties> =
-        ResourceTry.success(Resource.Properties())
+    override suspend fun properties(): Try<Resource.Properties, ReadError> =
+        Try.success(Resource.Properties())
 
-    override suspend fun length(): ResourceTry<Long> =
+    override suspend fun length(): Try<Long, ReadError> =
         headResponse().flatMap {
             val contentLength = it.contentLength
             return if (contentLength != null) {
                 Try.success(contentLength)
             } else {
-                Try.failure(ResourceError.Other(UnsupportedOperationException()))
+                Try.failure(ReadError.Other(UnsupportedOperationException()))
             }
         }
 
     override suspend fun close() {}
 
-    override suspend fun read(range: LongRange?): ResourceTry<ByteArray> = withContext(
+    override suspend fun read(range: LongRange?): Try<ByteArray, ReadError> = withContext(
         Dispatchers.IO
     ) {
         try {
@@ -55,20 +54,20 @@ public class HttpResource(
                 }
             }
         } catch (e: Exception) {
-            Try.failure(ResourceError.Other(e))
+            Try.failure(ReadError.Other(e))
         }
     }
 
     /** Cached HEAD response to get the expected content length and other metadata. */
-    private lateinit var _headResponse: ResourceTry<HttpResponse>
+    private lateinit var _headResponse: Try<HttpResponse, ReadError>
 
-    private suspend fun headResponse(): ResourceTry<HttpResponse> {
+    private suspend fun headResponse(): Try<HttpResponse, ReadError> {
         if (::_headResponse.isInitialized) {
             return _headResponse
         }
 
         _headResponse = client.head(HttpRequest(source.toString()))
-            .mapFailure { ResourceError.wrapHttp(it) }
+            .mapFailure { it.wrap() }
 
         return _headResponse
     }
@@ -79,7 +78,7 @@ public class HttpResource(
      * The stream is cached and reused for next calls, if the next [from] offset is not too far
      * and in a forward direction.
      */
-    private suspend fun stream(from: Long? = null): ResourceTry<InputStream> {
+    private suspend fun stream(from: Long? = null): Try<InputStream, ReadError> {
         val stream = inputStream
         if (from != null && stream != null) {
             tryOrLog {
@@ -107,7 +106,7 @@ public class HttpResource(
                 }
             }
             .map { CountingInputStream(it.body) }
-            .mapFailure { ResourceError.wrapHttp(it) }
+            .mapFailure { it.wrap() }
             .onSuccess {
                 inputStream = it
                 inputStreamStart = from ?: 0
@@ -117,20 +116,20 @@ public class HttpResource(
     private var inputStream: CountingInputStream? = null
     private var inputStreamStart = 0L
 
-    private fun ResourceError.Companion.wrapHttp(e: HttpError): ResourceError =
-        when (e.kind) {
+    private fun HttpError.wrap(): ReadError =
+        when (this.kind) {
             HttpError.Kind.MalformedRequest, HttpError.Kind.BadRequest, HttpError.Kind.MethodNotAllowed ->
-                ResourceError.Network(NetworkError.BadRequest(cause = e))
+                ReadError.Network(NetworkError.BadRequest(cause = this))
             HttpError.Kind.Timeout, HttpError.Kind.Offline ->
-                ResourceError.Network(NetworkError.Offline(e))
+                ReadError.Network(NetworkError.Offline(this))
             HttpError.Kind.Unauthorized, HttpError.Kind.Forbidden ->
-                ResourceError.Forbidden(e)
+                ReadError.Network(NetworkError.Forbidden(this))
             HttpError.Kind.NotFound ->
-                ResourceError.NotFound(e)
+                ReadError.Network(NetworkError.NotFound(this))
             HttpError.Kind.Cancelled, HttpError.Kind.TooManyRedirects ->
-                ResourceError.Other(e)
+                ReadError.Other(this)
             HttpError.Kind.MalformedResponse, HttpError.Kind.ClientError, HttpError.Kind.ServerError, HttpError.Kind.Other ->
-                ResourceError.Other(e)
+                ReadError.Other(this)
         }
 
     public companion object {

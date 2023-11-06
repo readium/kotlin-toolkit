@@ -4,9 +4,10 @@
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.r2.shared.util.resource
+package org.readium.r2.shared.util.archive
 
 import java.io.File
+import java.io.FileNotFoundException
 import java.io.IOException
 import java.util.zip.ZipException
 import java.util.zip.ZipFile
@@ -16,19 +17,21 @@ import org.readium.r2.shared.util.FilesystemError
 import org.readium.r2.shared.util.MessageError
 import org.readium.r2.shared.util.ThrowableError
 import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.data.Blob
+import org.readium.r2.shared.util.data.ClosedContainer
+import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.mediatype.MediaTypeHints
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
-import org.readium.r2.shared.util.mediatype.MediaTypeSnifferContentError
 import org.readium.r2.shared.util.mediatype.MediaTypeSnifferError
-import org.readium.r2.shared.util.mediatype.ResourceMediaTypeSnifferContent
+import org.readium.r2.shared.util.resource.ResourceEntry
 
 /**
  * An [ArchiveFactory] to open local ZIP files with Java's [ZipFile].
  */
 public class FileZipArchiveProvider(
-    private val mediaTypeRetriever: MediaTypeRetriever
+    private val mediaTypeRetriever: MediaTypeRetriever = MediaTypeRetriever()
 ) : ArchiveProvider {
 
     override fun sniffHints(hints: MediaTypeHints): Try<MediaType, MediaTypeSnifferError.NotRecognized> {
@@ -41,8 +44,8 @@ public class FileZipArchiveProvider(
         return Try.failure(MediaTypeSnifferError.NotRecognized)
     }
 
-    override suspend fun sniffResource(resource: ResourceMediaTypeSnifferContent): Try<MediaType, MediaTypeSnifferError> {
-        val file = resource.source?.toFile()
+    override suspend fun sniffBlob(blob: Blob<ReadError>): Try<MediaType, MediaTypeSnifferError> {
+        val file = blob.source?.toFile()
             ?: return Try.Failure(MediaTypeSnifferError.NotRecognized)
 
         return withContext(Dispatchers.IO) {
@@ -53,20 +56,20 @@ public class FileZipArchiveProvider(
                 Try.failure(MediaTypeSnifferError.NotRecognized)
             } catch (e: SecurityException) {
                 Try.failure(
-                    MediaTypeSnifferError.SourceError(
-                        MediaTypeSnifferContentError.Forbidden(ThrowableError(e))
+                    MediaTypeSnifferError.DataAccess(
+                        ReadError.Filesystem(FilesystemError.Forbidden(e))
                     )
                 )
             } catch (e: IOException) {
                 Try.failure(
-                    MediaTypeSnifferError.SourceError(
-                        MediaTypeSnifferContentError.Filesystem(FilesystemError(e))
+                    MediaTypeSnifferError.DataAccess(
+                        ReadError.Filesystem(FilesystemError.Unknown(e))
                     )
                 )
             } catch (e: Exception) {
                 Try.failure(
-                    MediaTypeSnifferError.SourceError(
-                        MediaTypeSnifferContentError.Unknown(ThrowableError(e))
+                    MediaTypeSnifferError.DataAccess(
+                        ReadError.Other(ThrowableError(e))
                     )
                 )
             }
@@ -74,9 +77,9 @@ public class FileZipArchiveProvider(
     }
 
     override suspend fun create(
-        resource: Resource,
+        resource: Blob<ReadError>,
         password: String?
-    ): Try<Container, ArchiveFactory.Error> {
+    ): Try<ClosedContainer<ResourceEntry>, ArchiveFactory.Error> {
         if (password != null) {
             return Try.failure(ArchiveFactory.Error.PasswordsNotSupported())
         }
@@ -95,17 +98,41 @@ public class FileZipArchiveProvider(
     }
 
     // Internal for testing purpose
-    internal suspend fun open(file: File): Try<Container, ArchiveFactory.Error> =
+    internal suspend fun open(file: File): Try<ClosedContainer<ResourceEntry>, ArchiveFactory.Error> =
         withContext(Dispatchers.IO) {
             try {
                 val archive = JavaZipContainer(ZipFile(file), file, mediaTypeRetriever)
                 Try.success(archive)
+            } catch (e: FileNotFoundException) {
+                Try.failure(
+                    ArchiveFactory.Error.ResourceError(
+                        ReadError.Filesystem(FilesystemError.NotFound(e))
+                    )
+                )
             } catch (e: ZipException) {
-                Try.failure(ArchiveFactory.Error.ResourceError(ResourceError.InvalidContent(e)))
+                Try.failure(
+                    ArchiveFactory.Error.ResourceError(
+                        ReadError.Content(e)
+                    )
+                )
             } catch (e: SecurityException) {
-                Try.failure(ArchiveFactory.Error.ResourceError(ResourceError.Forbidden(e)))
+                Try.failure(
+                    ArchiveFactory.Error.ResourceError(
+                        ReadError.Filesystem(FilesystemError.Forbidden(e))
+                    )
+                )
             } catch (e: IOException) {
-                Try.failure(ArchiveFactory.Error.ResourceError(ResourceError.Filesystem(e)))
+                Try.failure(
+                    ArchiveFactory.Error.ResourceError(
+                        ReadError.Filesystem(FilesystemError.Unknown(e))
+                    )
+                )
+            } catch (e: Exception) {
+                Try.failure(
+                    ArchiveFactory.Error.ResourceError(
+                        ReadError.Other(e)
+                    )
+                )
             }
         }
 }

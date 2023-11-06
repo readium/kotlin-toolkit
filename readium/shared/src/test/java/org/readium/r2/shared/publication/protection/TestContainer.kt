@@ -37,7 +37,7 @@ class TestContainer(resources: Map<Url, String> = emptyMap()) : Container {
         override suspend fun mediaType(): ResourceTry<MediaType> =
             Try.failure(Resource.Error.NotFound())
 
-        override suspend fun properties(): ResourceTry<Resource.Properties> =
+        override suspend fun properties(): ResourceTry<Properties> =
             Try.failure(Resource.Error.NotFound())
 
         override suspend fun length(): ResourceTry<Long> =

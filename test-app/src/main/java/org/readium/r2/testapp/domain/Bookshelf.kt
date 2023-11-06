@@ -18,8 +18,8 @@ import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.asset.Asset
 import org.readium.r2.shared.util.asset.AssetRetriever
+import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.getOrElse
-import org.readium.r2.shared.util.resource.ResourceError
 import org.readium.r2.shared.util.toUrl
 import org.readium.r2.streamer.PublicationFactory
 import org.readium.r2.testapp.data.BookRepository
@@ -143,7 +143,7 @@ class Bookshelf(
                 coverStorage.storeCover(publication, coverUrl)
                     .getOrElse {
                         return Try.failure(
-                            ImportError.ResourceError(ResourceError.Filesystem(it))
+                            ImportError.ResourceError(ReadError.Filesystem(it))
                         )
                     }
 

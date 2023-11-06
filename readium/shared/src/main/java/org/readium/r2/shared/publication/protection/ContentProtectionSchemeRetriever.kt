@@ -6,24 +6,45 @@
 
 package org.readium.r2.shared.publication.protection
 
-import org.readium.r2.shared.util.asset.Asset
-import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
+import kotlin.String
+import kotlin.let
+import kotlin.takeIf
+import org.readium.r2.shared.util.Error as BaseError
+import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.getOrElse
 
 /**
  * Retrieves [ContentProtection] schemes of assets.
  */
 public class ContentProtectionSchemeRetriever(
-    contentProtections: List<ContentProtection>,
-    mediaTypeRetriever: MediaTypeRetriever
+    contentProtections: List<ContentProtection>
 ) {
     private val contentProtections: List<ContentProtection> =
         contentProtections + listOf(
-            LcpFallbackContentProtection(mediaTypeRetriever),
+            LcpFallbackContentProtection(),
             AdeptFallbackContentProtection()
         )
 
-    public suspend fun retrieve(asset: org.readium.r2.shared.util.asset.Asset): ContentProtection.Scheme? =
-        contentProtections
-            .firstOrNull { it.supports(asset) }
-            ?.scheme
+    public sealed class Error(
+        override val message: String,
+        override val cause: org.readium.r2.shared.util.Error?
+    ) : BaseError {
+
+        public object NoContentProtectionFound :
+            Error("No content protection recognized the given asset.", null)
+
+        public class AccessError(cause: org.readium.r2.shared.util.Error?) :
+            Error("An error occurred while trying to read asset.", cause)
+    }
+
+    public suspend fun retrieve(asset: org.readium.r2.shared.util.asset.Asset): Try<ContentProtection.Scheme, Error> {
+        for (protection in contentProtections) {
+            protection.supports(asset)
+                .getOrElse { return Try.failure(Error.AccessError(it)) }
+                .takeIf { it }
+                ?.let { return Try.success(protection.scheme) }
+        }
+
+        return Try.failure(Error.NoContentProtectionFound)
+    }
 }

@@ -17,10 +17,11 @@ import org.readium.r2.shared.publication.presentation.Presentation
 import org.readium.r2.shared.publication.presentation.presentation
 import org.readium.r2.shared.publication.services.PositionsService
 import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.archive.archive
+import org.readium.r2.shared.util.data.ClosedContainer
 import org.readium.r2.shared.util.mediatype.MediaType
-import org.readium.r2.shared.util.resource.Container
 import org.readium.r2.shared.util.resource.Resource
-import org.readium.r2.shared.util.resource.archive
+import org.readium.r2.shared.util.resource.ResourceEntry
 import org.readium.r2.shared.util.use
 
 /**
@@ -35,7 +36,7 @@ import org.readium.r2.shared.util.use
 public class EpubPositionsService(
     private val readingOrder: List<Link>,
     private val presentation: Presentation,
-    private val container: Container,
+    private val container: ClosedContainer<ResourceEntry>,
     private val reflowableStrategy: ReflowableStrategy
 ) : PositionsService {
 
@@ -121,7 +122,9 @@ public class EpubPositionsService(
                 if (presentation.layoutOf(link) == EpubLayout.FIXED) {
                     createFixed(link, lastPositionOfPreviousResource)
                 } else {
-                    createReflowable(link, lastPositionOfPreviousResource, container)
+                    container.get(link.url())
+                        ?.use { createReflowable(link, lastPositionOfPreviousResource, it) }
+                        ?: emptyList()
                 }
 
             positions.lastOrNull()?.locations?.position?.let {
@@ -160,12 +163,11 @@ public class EpubPositionsService(
             )
         )
 
-    private suspend fun createReflowable(link: Link, startPosition: Int, container: Container): List<Locator> {
+    private suspend fun createReflowable(link: Link, startPosition: Int, resource: Resource): List<Locator> {
         val href = link.url()
 
-        val positionCount = container.get(href).use { resource ->
+        val positionCount =
             reflowableStrategy.positionCount(link, resource)
-        }
 
         return (1..positionCount).mapNotNull { position ->
             createLocator(

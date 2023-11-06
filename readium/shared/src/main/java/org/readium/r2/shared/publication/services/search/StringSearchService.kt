@@ -24,7 +24,6 @@ import org.readium.r2.shared.util.ThrowableError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.getOrElse
-import org.readium.r2.shared.util.resource.Container
 import org.readium.r2.shared.util.resource.content.DefaultResourceContentExtractorFactory
 import org.readium.r2.shared.util.resource.content.ResourceContentExtractor
 import timber.log.Timber
@@ -42,7 +41,7 @@ import timber.log.Timber
 @ExperimentalReadiumApi
 public class StringSearchService(
     private val manifest: Manifest,
-    private val container: Container,
+    private val container: PublicationContainer,
     private val services: PublicationServicesHolder,
     private val language: String?,
     private val snippetLength: Int,
@@ -92,7 +91,7 @@ public class StringSearchService(
 
     private inner class Iterator(
         val manifest: Manifest,
-        val container: Container,
+        val container: PublicationContainer,
         val query: String,
         val options: Options,
         val locale: Locale
@@ -117,7 +116,7 @@ public class StringSearchService(
                 val link = manifest.readingOrder[index]
                 val text =
                     container.get(link.url())
-                        .let { extractorFactory.createExtractor(it)?.extractText(it) }
+                        ?.let { extractorFactory.createExtractor(it)?.extractText(it) }
                         ?.getOrElse { return Try.failure(SearchError.ResourceError(it)) }
 
                 if (text == null) {

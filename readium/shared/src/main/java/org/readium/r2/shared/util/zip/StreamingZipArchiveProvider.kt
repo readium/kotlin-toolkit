@@ -11,25 +11,20 @@ import java.io.IOException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.util.AbsoluteUrl
-import org.readium.r2.shared.util.Error
 import org.readium.r2.shared.util.Try
-import org.readium.r2.shared.util.datasource.DataSource
+import org.readium.r2.shared.util.archive.ArchiveFactory
+import org.readium.r2.shared.util.archive.ArchiveProvider
+import org.readium.r2.shared.util.data.AccessException
+import org.readium.r2.shared.util.data.Blob
+import org.readium.r2.shared.util.data.ClosedContainer
+import org.readium.r2.shared.util.data.ReadError
+import org.readium.r2.shared.util.data.unwrapAccessException
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.mediatype.MediaTypeHints
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
-import org.readium.r2.shared.util.mediatype.MediaTypeSnifferContentException
-import org.readium.r2.shared.util.mediatype.MediaTypeSnifferContentException.Companion.unwrapMediaTypeSnifferContentException
 import org.readium.r2.shared.util.mediatype.MediaTypeSnifferError
-import org.readium.r2.shared.util.mediatype.ResourceMediaTypeSnifferContent
-import org.readium.r2.shared.util.mediatype.asDataSource
-import org.readium.r2.shared.util.resource.ArchiveFactory
-import org.readium.r2.shared.util.resource.ArchiveProvider
-import org.readium.r2.shared.util.resource.Container
-import org.readium.r2.shared.util.resource.Resource
-import org.readium.r2.shared.util.resource.ResourceError
-import org.readium.r2.shared.util.resource.ResourceException
-import org.readium.r2.shared.util.resource.ResourceException.Companion.unwrapResourceException
-import org.readium.r2.shared.util.resource.asDataSource
+import org.readium.r2.shared.util.resource.ResourceContainer
+import org.readium.r2.shared.util.resource.ResourceEntry
 import org.readium.r2.shared.util.toUrl
 import org.readium.r2.shared.util.zip.compress.archivers.zip.ZipFile
 import org.readium.r2.shared.util.zip.jvm.SeekableByteChannel
@@ -52,16 +47,14 @@ public class StreamingZipArchiveProvider(
         return Try.failure(MediaTypeSnifferError.NotRecognized)
     }
 
-    override suspend fun sniffResource(resource: ResourceMediaTypeSnifferContent): Try<MediaType, MediaTypeSnifferError> {
-        val datasource = resource.asDataSource()
-
+    override suspend fun sniffBlob(blob: Blob<ReadError>): Try<MediaType, MediaTypeSnifferError> {
         return try {
-            openDataSource(datasource, ::MediaTypeSnifferContentException, null)
+            openDataSource(blob, ::AccessException, null)
             Try.success(MediaType.ZIP)
         } catch (exception: Exception) {
-            when (val e = exception.unwrapMediaTypeSnifferContentException()) {
-                is MediaTypeSnifferContentException ->
-                    Try.failure(MediaTypeSnifferError.SourceError(e.error))
+            when (val e = exception.unwrapAccessException()) {
+                is AccessException ->
+                    Try.failure(MediaTypeSnifferError.DataAccess(e.error))
                 else ->
                     Try.failure(MediaTypeSnifferError.NotRecognized)
             }
@@ -69,42 +62,42 @@ public class StreamingZipArchiveProvider(
     }
 
     override suspend fun create(
-        resource: Resource,
+        resource: Blob<ReadError>,
         password: String?
-    ): Try<Container, ArchiveFactory.Error> {
+    ): Try<ClosedContainer<ResourceEntry>, ArchiveFactory.Error> {
         if (password != null) {
             return Try.failure(ArchiveFactory.Error.PasswordsNotSupported())
         }
 
         return try {
             val container = openDataSource(
-                resource.asDataSource(),
-                ::ResourceException,
+                resource,
+                ::AccessException,
                 resource.source
             )
             Try.success(container)
         } catch (exception: Exception) {
-            when (val e = exception.unwrapResourceException()) {
-                is ResourceException ->
+            when (val e = exception.unwrapAccessException()) {
+                is AccessException ->
                     Try.failure(ArchiveFactory.Error.ResourceError(e.error))
                 else ->
-                    Try.failure(ArchiveFactory.Error.ResourceError(ResourceError.InvalidContent(e)))
+                    Try.failure(ArchiveFactory.Error.ResourceError(ReadError.Content(e)))
             }
         }
     }
 
-    private suspend fun<E : Error> openDataSource(
-        dataSource: DataSource<E>,
-        wrapError: (E) -> IOException,
+    private suspend fun openDataSource(
+        blob: Blob<ReadError>,
+        wrapError: (ReadError) -> IOException,
         sourceUrl: AbsoluteUrl?
-    ): Container = withContext(Dispatchers.IO) {
-        val datasourceChannel = DatasourceChannel(dataSource, wrapError)
+    ): ClosedContainer<ResourceEntry> = withContext(Dispatchers.IO) {
+        val datasourceChannel = DatasourceChannel(blob, wrapError)
         val channel = wrapBaseChannel(datasourceChannel)
         val zipFile = ZipFile(channel, true)
         ChannelZipContainer(zipFile, sourceUrl, mediaTypeRetriever)
     }
 
-    internal suspend fun openFile(file: File): Container = withContext(Dispatchers.IO) {
+    internal suspend fun openFile(file: File): ResourceContainer = withContext(Dispatchers.IO) {
         val fileChannel = FileChannelAdapter(file, "r")
         val channel = wrapBaseChannel(fileChannel)
         ChannelZipContainer(ZipFile(channel), file.toUrl(), mediaTypeRetriever)

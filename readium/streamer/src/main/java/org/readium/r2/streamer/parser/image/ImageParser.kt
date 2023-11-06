@@ -11,7 +11,9 @@ import org.readium.r2.shared.publication.Manifest
 import org.readium.r2.shared.publication.Metadata
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.services.PerResourcePositionsService
+import org.readium.r2.shared.util.MessageError
 import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.streamer.extensions.guessTitle
@@ -37,18 +39,22 @@ public class ImageParser : PublicationParser {
 
         val readingOrder =
             if (asset.mediaType.matches(MediaType.CBZ)) {
-                (asset.container.entries() ?: emptySet())
-                    .filter { !it.url.isHiddenOrThumbs && it.mediaType().getOrNull()?.isBitmap == true }
-                    .sortedBy { it.url.toString() }
+                (asset.container.entries())
+                    .filter { !it.isHiddenOrThumbs && it.mediaType().getOrNull()?.isBitmap == true }
+                    .sortedBy { it.toString() }
             } else {
-                listOfNotNull(asset.container.entries()?.firstOrNull())
+                listOfNotNull(asset.container.entries().firstOrNull())
             }
                 .map { it.toLink() }
                 .toMutableList()
 
         if (readingOrder.isEmpty()) {
             return Try.failure(
-                PublicationParser.Error.InvalidAsset("No bitmap found in the publication.")
+                PublicationParser.Error.ReadError(
+                    ReadError.Content(
+                        MessageError("No bitmap found in the publication.")
+                    )
+                )
             )
         }
 

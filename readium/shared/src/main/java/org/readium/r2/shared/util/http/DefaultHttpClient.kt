@@ -26,10 +26,10 @@ import org.readium.r2.shared.util.e
 import org.readium.r2.shared.util.flatMap
 import org.readium.r2.shared.util.getOrDefault
 import org.readium.r2.shared.util.http.HttpRequest.Method
-import org.readium.r2.shared.util.mediatype.BytesResourceMediaTypeSnifferContent
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.mediatype.MediaTypeHints
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
+import org.readium.r2.shared.util.resource.BytesResource
 import org.readium.r2.shared.util.tryRecover
 import timber.log.Timber
 
@@ -172,7 +172,7 @@ public class DefaultHttpClient(
                         val mediaType = body?.let {
                             mediaTypeRetriever.retrieve(
                                 hints = MediaTypeHints(connection),
-                                content = BytesResourceMediaTypeSnifferContent { it }
+                                blob = BytesResource { it }
                             ).getOrDefault(MediaType.BINARY)
                         }
                         return@withContext Try.failure(HttpError(kind, mediaType, body))

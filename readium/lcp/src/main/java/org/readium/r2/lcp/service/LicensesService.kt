@@ -38,6 +38,7 @@ import org.readium.r2.shared.publication.protection.ContentProtection
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.asset.Asset
 import org.readium.r2.shared.util.asset.AssetRetriever
+import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.downloads.DownloadManager
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.mediatype.FormatRegistry
@@ -63,11 +64,11 @@ internal class LicensesService(
         return isLcpProtected(asset)
     }
 
-    override suspend fun isLcpProtected(asset: Asset): Boolean =
+    override suspend fun isLcpProtected(asset: Asset): Try<Boolean, ReadError> =
         tryOr(false) {
             when (asset) {
                 is Asset.Resource ->
-                    asset.mediaType == MediaType.LCP_LICENSE_DOCUMENT
+                    Try.success(asset.mediaType == MediaType.LCP_LICENSE_DOCUMENT)
                 is Asset.Container -> {
                     createLicenseContainer(context, asset.container, asset.mediaType).read()
                     true

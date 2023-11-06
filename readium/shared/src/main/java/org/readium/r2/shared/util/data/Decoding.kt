@@ -4,7 +4,7 @@
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.r2.shared.util.datasource
+package org.readium.r2.shared.util.data
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -19,18 +19,19 @@ import org.readium.r2.shared.util.MessageError
 import org.readium.r2.shared.util.ThrowableError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.flatMap
+import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.xml.ElementNode
 import org.readium.r2.shared.util.xml.XmlParser
 
-internal sealed class DecoderError<E : Error>(
+public sealed class DecoderError<E : Error>(
     override val message: String
 ) : Error {
 
-    class DataSourceError<E : Error>(
+    public class DataAccess<E : Error>(
         override val cause: E
     ) : DecoderError<E>("Data source error")
 
-    class DecodingError<E : Error>(
+    public class DecodingError<E : Error>(
         override val cause: Error?
     ) : DecoderError<E>("Decoding Error")
 }
@@ -51,7 +52,7 @@ internal suspend fun<R, S, E : Error> Try<S, E>.decode(
                 Try.failure(DecoderError.DecodingError(wrapException(e)))
             }
         is Try.Failure ->
-            Try.failure(DecoderError.DataSourceError(value))
+            Try.failure(DecoderError.DataAccess(value))
     }
 
 internal suspend fun<R, S, E : Error> Try<S, DecoderError<E>>.decodeMap(
@@ -79,7 +80,7 @@ internal suspend fun<R, S, E : Error> Try<S, DecoderError<E>>.decodeMap(
  * It will extract the charset parameter from the media type hints to figure out an encoding.
  * Otherwise, fallback on UTF-8.
  */
-internal suspend fun<E : Error> DataSource<E>.readAsString(
+public suspend fun<E : Error> Blob<E>.readAsString(
     charset: Charset = Charsets.UTF_8
 ): Try<String, DecoderError<E>> =
     read().decode(
@@ -88,7 +89,7 @@ internal suspend fun<E : Error> DataSource<E>.readAsString(
     )
 
 /** Content as an XML document. */
-internal suspend fun<E : Error> DataSource<E>.readAsXml(): Try<ElementNode, DecoderError<E>> =
+public suspend fun<E : Error> Blob<E>.readAsXml(): Try<ElementNode, DecoderError<E>> =
     read().decode(
         { XmlParser().parse(ByteArrayInputStream(it)) },
         { MessageError("Content is not a valid XML document.", ThrowableError(it)) }
@@ -97,20 +98,20 @@ internal suspend fun<E : Error> DataSource<E>.readAsXml(): Try<ElementNode, Deco
 /**
  * Content parsed from JSON.
  */
-internal suspend fun<E : Error> DataSource<E>.readAsJson(): Try<JSONObject, DecoderError<E>> =
+public suspend fun<E : Error> Blob<E>.readAsJson(): Try<JSONObject, DecoderError<E>> =
     readAsString().decodeMap(
         { JSONObject(it) },
         { MessageError("Content is not valid JSON.", ThrowableError(it)) }
     )
 
 /** Readium Web Publication Manifest parsed from the content. */
-internal suspend fun<E : Error> DataSource<E>.readAsRwpm(): Try<Manifest, DecoderError<E>> =
+public suspend fun<E : Error> Blob<E>.readAsRwpm(): Try<Manifest, DecoderError<E>> =
     readAsJson().flatMap { json ->
         Manifest.fromJSON(json)
             ?.let { Try.success(it) }
             ?: Try.failure(
                 DecoderError.DecodingError(
-                    MessageError("Content is not a valid RPWM.")
+                    MessageError("Content is not a valid RWPM.")
                 )
             )
     }
@@ -118,9 +119,9 @@ internal suspend fun<E : Error> DataSource<E>.readAsRwpm(): Try<Manifest, Decode
 /**
  * Reads the full content as a [Bitmap].
  */
-internal suspend fun<E : Error> DataSource<E>.readAsBitmap(): Try<Bitmap, DecoderError<E>> =
+public suspend fun<E : Error> Blob<E>.readAsBitmap(): Try<Bitmap, DecoderError<E>> =
     read()
-        .mapFailure { DecoderError.DataSourceError(it) }
+        .mapFailure { DecoderError.DataAccess(it) }
         .flatMap { bytes ->
             BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
                 ?.let { Try.success(it) }
@@ -130,3 +131,14 @@ internal suspend fun<E : Error> DataSource<E>.readAsBitmap(): Try<Bitmap, Decode
                     )
                 )
         }
+
+/**
+ * Returns whether the content is a JSON object containing all of the given root keys.
+ */
+public suspend fun<E : Error> Blob<E>.containsJsonKeys(
+    vararg keys: String
+): Try<Boolean, DecoderError<E>> {
+    val json = readAsJson()
+        .getOrElse { return Try.failure(it) }
+    return Try.success(json.keys().asSequence().toSet().containsAll(keys.toList()))
+}

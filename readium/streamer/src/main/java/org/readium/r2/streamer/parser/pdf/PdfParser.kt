@@ -12,7 +12,9 @@ import org.readium.r2.shared.PdfSupport
 import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.publication.services.InMemoryCacheService
 import org.readium.r2.shared.publication.services.InMemoryCoverService
+import org.readium.r2.shared.util.MessageError
 import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.mediatype.MediaType
@@ -20,7 +22,6 @@ import org.readium.r2.shared.util.pdf.PdfDocumentFactory
 import org.readium.r2.shared.util.pdf.toLinks
 import org.readium.r2.streamer.extensions.toLink
 import org.readium.r2.streamer.parser.PublicationParser
-import org.readium.r2.streamer.parser.PublicationParser.Error.Companion.toParserError
 
 /**
  * Parses a PDF file into a Readium [Publication].
@@ -42,12 +43,18 @@ public class PdfParser(
             return Try.failure(PublicationParser.Error.UnsupportedFormat())
         }
 
-        val resource = asset.container.entries()?.firstOrNull()
+        val resource = asset.container.entries()
+            .firstOrNull()
+            ?.let { asset.container.get(it) }
             ?: return Try.failure(
-                PublicationParser.Error.InvalidAsset("No PDF found in the publication.")
+                PublicationParser.Error.ReadError(
+                    ReadError.Content(
+                        MessageError("No PDF found in the publication.")
+                    )
+                )
             )
         val document = pdfFactory.open(resource, password = null)
-            .getOrElse { return Try.failure(it.toParserError()) }
+            .getOrElse { return Try.failure(PublicationParser.Error.ReadError(it)) }
         val tableOfContents = document.outline.toLinks(resource.url)
 
         val manifest = Manifest(

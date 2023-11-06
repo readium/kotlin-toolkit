@@ -21,10 +21,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.publication.ReadingProgression
 import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.data.ReadError
+import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.shared.util.pdf.PdfDocument
 import org.readium.r2.shared.util.pdf.PdfDocumentFactory
-import org.readium.r2.shared.util.resource.Resource
-import org.readium.r2.shared.util.resource.ResourceError
 import org.readium.r2.shared.util.resource.ResourceTry
 import timber.log.Timber
 
@@ -36,6 +36,7 @@ public class PsPdfKitDocumentFactory(context: Context) : PdfDocumentFactory<PsPd
     override suspend fun open(resource: Resource, password: String?): ResourceTry<PsPdfKitDocument> =
         open(context, DocumentSource(ResourceDataProvider(resource), password))
 
+    // FIXME : error handling is too rough
     private suspend fun open(context: Context, documentSource: DocumentSource): ResourceTry<PsPdfKitDocument> =
         withContext(Dispatchers.IO) {
             try {
@@ -43,13 +44,13 @@ public class PsPdfKitDocumentFactory(context: Context) : PdfDocumentFactory<PsPd
                     PsPdfKitDocument(PdfDocumentLoader.openDocument(context, documentSource))
                 )
             } catch (e: InvalidPasswordException) {
-                Try.failure(ResourceError.Forbidden(e))
+                Try.failure(ReadError.Forbidden(e))
             } catch (e: CancellationException) {
                 throw e
             } catch (e: OutOfMemoryError) {
-                Try.failure(ResourceError.OutOfMemory(e))
+                Try.failure(ReadError.OutOfMemory(e))
             } catch (e: Exception) {
-                Try.failure(ResourceError.Other(e))
+                Try.failure(ReadError.Other(e))
             }
         }
 }

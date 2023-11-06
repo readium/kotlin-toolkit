@@ -143,8 +143,19 @@ public inline fun <R, S, F> Try<S, F>.flatMap(transform: (value: S) -> Try<R, F>
  * Returns the encapsulated result of the given transform function applied to the encapsulated value
  * if this instance represents failure or the original encapsulated value if it is success.
  */
-public inline fun <R, S : R, F> Try<S, F>.tryRecover(transform: (exception: F) -> Try<R, F>): Try<R, F> =
+public inline fun <R, S : R, F, T> Try<S, F>.tryRecover(transform: (exception: F) -> Try<R, T>): Try<R, T> =
     when (this) {
         is Try.Success -> Try.success(value)
         is Try.Failure -> transform(value)
+    }
+
+public fun <S, F> Try<S, F>.assertSuccess(): S =
+    when (this) {
+        is Try.Success ->
+            value
+        is Try.Failure ->
+            throw IllegalStateException(
+                "Try was excepted to contain a success.",
+                value as? Throwable
+            )
     }
