@@ -4,7 +4,11 @@ All notable changes to this project will be documented in this file. Take a look
 
 **Warning:** Features marked as *experimental* may change or be removed in a future release without notice. Use with caution.
 
-## [Unreleased]
+<!-- ## [Unreleased] -->
+
+## [2.4.0]
+
+* Readium is now distributed with [Maven Central](https://search.maven.org/search?q=g:org.readium.kotlin-toolkit). Take a look at [the migration guide](docs/migration-guide.md#240) to update your Gradle configuration.
 
 ### Added
 
@@ -58,6 +62,7 @@ All notable changes to this project will be documented in this file. Take a look
 #### Streamer
 
 * Fixed issue with the TTS starting from the beginning of the chapter instead of the current position.
+
 
 ## [2.3.0]
 
@@ -692,4 +697,5 @@ progression. Now if no reading progression is set, the `effectiveReadingProgress
 [2.2.0]: https://github.com/readium/kotlin-toolkit/compare/2.1.1...2.2.0
 [2.2.1]: https://github.com/readium/kotlin-toolkit/compare/2.2.0...2.2.1
 [2.3.0]: https://github.com/readium/kotlin-toolkit/compare/2.2.1...2.3.0
+[2.4.0]: https://github.com/readium/kotlin-toolkit/compare/2.3.0...2.4.0
 
