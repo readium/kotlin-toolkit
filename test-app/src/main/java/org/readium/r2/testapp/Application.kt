@@ -30,7 +30,7 @@ class Application : android.app.Application() {
     lateinit var bookRepository: BookRepository
         private set
 
-    lateinit var readerRepository: Deferred<ReaderRepository>
+    lateinit var readerRepository: ReaderRepository
         private set
 
     private val coroutineScope: CoroutineScope =
@@ -63,15 +63,12 @@ class Application : android.app.Application() {
                     )
                 }
 
-        readerRepository =
-            coroutineScope.async {
-                ReaderRepository(
-                    this@Application,
-                    readium,
-                    bookRepository,
-                    navigatorPreferences,
-                )
-            }
+        readerRepository = ReaderRepository(
+            this@Application,
+            readium,
+            bookRepository,
+            navigatorPreferences
+        )
     }
 
     private fun computeStorageDir(): File {

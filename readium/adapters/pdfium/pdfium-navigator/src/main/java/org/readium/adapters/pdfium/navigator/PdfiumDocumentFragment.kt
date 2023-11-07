@@ -23,6 +23,9 @@ import org.readium.r2.navigator.preferences.ReadingProgression
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.publication.Link
+import org.readium.r2.shared.publication.LocalizedString
+import org.readium.r2.shared.publication.Manifest
+import org.readium.r2.shared.publication.Metadata
 import org.readium.r2.shared.publication.Publication
 import timber.log.Timber
 
@@ -35,6 +38,28 @@ class PdfiumDocumentFragment internal constructor(
     private val appListener: Listener?,
     private val navigatorListener: PdfDocumentFragment.Listener?
 ) : PdfDocumentFragment<PdfiumSettings>() {
+
+    // Dummy constructor to address https://github.com/readium/kotlin-toolkit/issues/395
+    constructor() : this(
+        publication = Publication(
+            manifest = Manifest(
+                metadata = Metadata(
+                    identifier = "readium:dummy",
+                    localizedTitle = LocalizedString("")
+                )
+            )
+        ),
+        link = Link(href = "publication.pdf", type = "application/pdf"),
+        initialPageIndex = 0,
+        settings = PdfiumSettings(
+            fit = Fit.WIDTH,
+            pageSpacing = 0.0,
+            readingProgression = ReadingProgression.LTR,
+            scrollAxis = Axis.VERTICAL
+        ),
+        appListener = null,
+        navigatorListener = null
+    )
 
     interface Listener {
         /** Called when configuring [PDFView]. */

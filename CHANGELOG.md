@@ -19,6 +19,24 @@ All notable changes to this project will be documented in this file. Take a look
 * Support for non-linear EPUB resources with an opt-in in reading apps (contributed by @chrfalch in [#375](https://github.com/readium/kotlin-toolkit/pull/375) and [#376](https://github.com/readium/kotlin-toolkit/pull/376)).
      1. Override loading non-linear resources with `VisualNavigator.Listener.shouldJumpToLink()`.
      2. Present a new `EpubNavigatorFragment` by providing a custom `readingOrder` with only this resource to the constructor.
+* Added dummy navigator fragment factories to prevent crashes caused by Android restoring the fragments after a process death.
+    * To use it, set the dummy fragment factory when you don't have access to the `Publication` instance. Then, either finish the `Activity` or pop the fragment from the UI before it resumes.
+        ```kotlin
+        override fun onCreate(savedInstanceState: Bundle?) {
+            val publication = model.publication ?: run {
+                childFragmentManager.fragmentFactory = EpubNavigatorFragment.createDummyFactory()
+                super.onCreate(savedInstanceState)
+
+                requireActivity().finish()
+                // or
+                navController?.popBackStack()
+
+                return
+            }
+
+            // Create the real navigator factory as usual...
+        }
+        ```
 
 #### Streamer
 
@@ -39,7 +57,7 @@ All notable changes to this project will be documented in this file. Take a look
 
 #### Streamer
 
-* Fix issue with the TTS starting from the beginning of the chapter instead of the current position.
+* Fixed issue with the TTS starting from the beginning of the chapter instead of the current position.
 
 ## [2.3.0]
 

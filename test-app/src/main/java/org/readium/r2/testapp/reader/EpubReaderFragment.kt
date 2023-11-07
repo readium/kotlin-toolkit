@@ -49,7 +49,15 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
             isSearchViewIconified = savedInstanceState.getBoolean(IS_SEARCH_VIEW_ICONIFIED)
         }
 
-        val readerData = model.readerInitData as EpubReaderInitData
+        val readerData = model.readerInitData as? EpubReaderInitData ?: run {
+            // We provide a dummy fragment factory  if the ReaderActivity is restored after the
+            // app process was killed because the ReaderRepository is empty. In that case, finish
+            // the activity as soon as possible and go back to the previous one.
+            childFragmentManager.fragmentFactory = EpubNavigatorFragment.createDummyFactory()
+            super.onCreate(savedInstanceState)
+            requireActivity().finish()
+            return
+        }
 
         childFragmentManager.fragmentFactory =
             readerData.navigatorFactory.createFragmentFactory(
