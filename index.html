@@ -1,7 +1,18 @@
-<html xmlns="http://www.w3.org/1999/xhtml">
+<!DOCTYPE html>
+<html>
 <head>
-    <meta http-equiv="refresh" content="0;URL='latest'" />
+  <meta charset="utf-8">
+  <title>Redirecting</title>
+  <noscript>
+    <meta http-equiv="refresh" content="1; url=2.4.0/" />
+  </noscript>
+  <script>
+    window.location.replace(
+      "2.4.0/" + window.location.search + window.location.hash
+    );
+  </script>
 </head>
 <body>
+  Redirecting to <a href="2.4.0/">2.4.0/</a>...
 </body>
 </html>
