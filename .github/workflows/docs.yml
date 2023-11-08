@@ -9,26 +9,26 @@ on:
 jobs:
   docs:
     name: Update documentation
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Fetch tags
         run: git fetch --prune --unshallow
 
       - name: Set up Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
-          python-version: 3.6
+          python-version: 3.11.6
 
       - name: Install Python dependencies
         run: |
           python -m pip install --upgrade pip
           pip install mkdocs mkdocs-material mike
 
-      - uses: actions/setup-java@v2
+      - uses: actions/setup-java@v3
         with:
           java-version: 11
           distribution: 'adopt'
@@ -48,4 +48,4 @@ jobs:
           git config --global user.email "${GITHUB_ACTOR}@users.noreply.github.com"
           mike deploy ${{ env.READIUM_VERSION }}
           mike set-default ${{ env.READIUM_VERSION }}
-          mike deploy --rebase --push --update-aliases ${{ env.READIUM_VERSION }} latest
+          mike deploy --push --update-aliases ${{ env.READIUM_VERSION }} latest
