@@ -54,8 +54,8 @@ import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.services.isProtected
 import org.readium.r2.shared.util.Url
-import org.readium.r2.shared.util.pdf.cachedIn
 import org.readium.r2.shared.util.data.ReadError
+import org.readium.r2.shared.util.pdf.cachedIn
 import org.readium.r2.shared.util.resource.ResourceTry
 import timber.log.Timber
 
@@ -114,9 +114,10 @@ public class PsPdfKitDocumentFragment internal constructor(
         createViewModelFactory {
             DocumentViewModel(
                 document = {
+                    val resource = requireNotNull(publication.get(href))
                     PsPdfKitDocumentFactory(requireContext())
                         .cachedIn(publication)
-                        .open(publication.get(href), null)
+                        .open(resource, null)
                 }
             )
         }

@@ -59,7 +59,11 @@ internal class LcpDecryptor(
             when {
                 license == null ->
                     FailureResource(
-                        ReadError.Content()
+                        ReadError.Content(
+                            MessageError(
+                                "Cannot decipher content because the publication is locked."
+                            )
+                        )
                     )
                 encryption.isDeflated || !encryption.isCbcEncrypted ->
                     FullLcpResource(

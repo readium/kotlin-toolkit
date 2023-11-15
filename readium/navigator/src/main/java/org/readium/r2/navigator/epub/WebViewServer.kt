@@ -11,19 +11,25 @@ import android.os.PatternMatcher
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import androidx.webkit.WebViewAssetLoader
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.readium.r2.navigator.epub.css.ReadiumCss
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Href
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.util.AbsoluteUrl
+import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
-import org.readium.r2.shared.util.data.AccessException
 import org.readium.r2.shared.util.data.BlobInputStream
 import org.readium.r2.shared.util.data.ReadError
+import org.readium.r2.shared.util.data.ReadException
 import org.readium.r2.shared.util.http.HttpHeaders
 import org.readium.r2.shared.util.http.HttpRange
+import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.resource.Resource
+import org.readium.r2.shared.util.resource.StringResource
+import org.readium.r2.shared.util.resource.fallback
 
 /**
  * Serves the publication resources and application assets in the EPUB navigator web views.
@@ -84,13 +90,21 @@ internal class WebViewServer(
             ?: Link(href = href)
 
         // Drop anchor because it is meant to be interpreted by the client.
-        val linkWithoutAnchor = link.copy(
-            href = Href(href.removeFragment())
-        )
+        val urlWithoutAnchor = href.removeFragment()
 
-        var resource = publication.get(linkWithoutAnchor)
-        // FIXME: report loading errors through Navigator.Listener.onResourceLoadingFailed
-        // .fallback { errorResource(link, error = it) }
+        var resource = publication
+            .get(urlWithoutAnchor)
+            ?.fallback {
+                onResourceLoadFailed(urlWithoutAnchor, it)
+                errorResource(urlWithoutAnchor, it)
+            } ?: run {
+            val error = ReadError.Content(
+                "Resource not found at $urlWithoutAnchor in publication."
+            )
+            onResourceLoadFailed(urlWithoutAnchor, error)
+            errorResource(urlWithoutAnchor, error)
+        }
+
         if (link.mediaType?.isHtml == true) {
             resource = resource.injectHtml(
                 publication,
@@ -111,10 +125,10 @@ internal class WebViewServer(
                 200,
                 "OK",
                 headers,
-                BlobInputStream(resource, ::AccessException)
+                BlobInputStream(resource, ::ReadException)
             )
         } else { // Byte range request
-            val stream = BlobInputStream(resource, ::AccessException)
+            val stream = BlobInputStream(resource, ::ReadException)
             val length = stream.available()
             val longRange = range.toLongRange(length.toLong())
             headers["Content-Range"] = "bytes ${longRange.first}-${longRange.last}/$length"
@@ -131,6 +145,18 @@ internal class WebViewServer(
             )
         }
     }
+    private fun errorResource(url: Url, error: ReadError): Resource =
+        StringResource(mediaType = MediaType.XHTML) {
+            withContext(Dispatchers.IO) {
+                Try.success(
+                    application.assets
+                        .open("readium/error.xhtml").bufferedReader()
+                        .use { it.readText() }
+                        .replace("\${error}", error.message)
+                        .replace("\${href}", url.toString())
+                )
+            }
+        }
 
     private fun isServedAsset(path: String): Boolean =
         servedAssetPatterns.any { it.match(path) }

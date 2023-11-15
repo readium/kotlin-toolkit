@@ -54,9 +54,9 @@ import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.PublicationId
 import org.readium.r2.shared.publication.indexOfFirstWithHref
-import org.readium.r2.shared.util.NetworkError
 import org.readium.r2.shared.util.ThrowableError
 import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.data.HttpError
 import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.toUri
 import timber.log.Timber
@@ -205,7 +205,7 @@ public class ExoMediaPlayer(
             var resourceError: ReadError? = error.asInstance<ReadError>()
             if (resourceError == null && (error.cause as? HttpDataSource.HttpDataSourceException)?.cause is UnknownHostException) {
                 resourceError = ReadError.Network(
-                    NetworkError.Offline(ThrowableError(error.cause!!))
+                    HttpError.UnreachableHost(ThrowableError(error.cause!!))
                 )
             }
 

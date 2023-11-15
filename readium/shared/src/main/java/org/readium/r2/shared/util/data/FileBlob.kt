@@ -15,7 +15,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.extensions.*
 import org.readium.r2.shared.util.AbsoluteUrl
-import org.readium.r2.shared.util.FilesystemError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.getOrThrow
 import org.readium.r2.shared.util.isLazyInitialized
@@ -26,7 +25,7 @@ import org.readium.r2.shared.util.toUrl
  */
 public class FileBlob(
     private val file: File
-) : Blob<ReadError> {
+) : Blob {
 
     private val randomAccessFile by lazy {
         try {

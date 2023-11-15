@@ -16,8 +16,8 @@ import org.readium.r2.shared.publication.services.positionsServiceFactory
 import org.readium.r2.shared.util.MessageError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
-import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.data.DecoderError
+import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.data.readAsRwpm
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.logging.WarningLogger
@@ -31,7 +31,7 @@ import org.readium.r2.streamer.parser.audio.AudioLocatorService
  */
 public class ReadiumWebPubParser(
     private val context: Context? = null,
-    private val pdfFactory: PdfDocumentFactory<*>?,
+    private val pdfFactory: PdfDocumentFactory<*>?
 ) : PublicationParser {
 
     override suspend fun parse(
@@ -62,13 +62,13 @@ public class ReadiumWebPubParser(
                             )
                         )
                 }
-            } ?:  return Try.failure(
-                    PublicationParser.Error.ReadError(
-                        ReadError.Content(
-                            MessageError("Missing manifest.")
-                        )
-                    )
+            } ?: return Try.failure(
+            PublicationParser.Error.ReadError(
+                ReadError.Content(
+                    MessageError("Missing manifest.")
+                )
             )
+        )
 
         // Checks the requirements from the LCPDF specification.
         // https://readium.org/lcp-specs/notes/lcp-for-pdf.html

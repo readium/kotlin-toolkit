@@ -12,11 +12,15 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import org.readium.r2.shared.ExperimentalReadiumApi
+import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.ThrowableError
 import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.data.HttpError
 import org.readium.r2.shared.util.flatMap
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.tryRecover
+
+public typealias HttpTry<SuccessT> = Try<SuccessT, HttpError>
 
 /**
  * An HTTP client performs HTTP requests.
@@ -48,7 +52,7 @@ public interface HttpClient {
  */
 public data class HttpResponse(
     val request: HttpRequest,
-    val url: String,
+    val url: AbsoluteUrl,
     val statusCode: Int,
     val headers: Map<String, List<String>>,
     val mediaType: MediaType
@@ -131,7 +135,7 @@ public suspend fun HttpClient.fetch(request: HttpRequest): HttpTry<HttpFetchResp
                 )
             } catch (e: Exception) {
                 Try.failure(
-                    HttpError(HttpError.Kind.Other, cause = ThrowableError(e))
+                    HttpError.Other(ThrowableError(e))
                 )
             }
         }
@@ -153,7 +157,7 @@ public suspend fun <T> HttpClient.fetchWithDecoder(
                 )
             } catch (e: Exception) {
                 Try.failure(
-                    HttpError(kind = HttpError.Kind.MalformedResponse, cause = ThrowableError(e))
+                    HttpError.MalformedResponse(ThrowableError(e))
                 )
             }
         }
@@ -200,9 +204,9 @@ public suspend fun HttpClient.head(request: HttpRequest): HttpTry<HttpResponse> 
     return request
         .copy { method = HttpRequest.Method.HEAD }
         .response()
-        .tryRecover { exception ->
-            if (exception.kind != HttpError.Kind.MethodNotAllowed) {
-                return@tryRecover Try.failure(exception)
+        .tryRecover { error ->
+            if (error !is HttpError.Response || error.kind != HttpError.Kind.MethodNotAllowed) {
+                return@tryRecover Try.failure(error)
             }
 
             request

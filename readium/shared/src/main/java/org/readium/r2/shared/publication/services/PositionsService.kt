@@ -20,13 +20,17 @@ import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.PublicationServicesHolder
 import org.readium.r2.shared.publication.ServiceFactory
 import org.readium.r2.shared.publication.firstWithMediaType
+import org.readium.r2.shared.publication.firstWithRel
 import org.readium.r2.shared.toJSON
+import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
-import org.readium.r2.shared.util.data.readAsString
+import org.readium.r2.shared.util.data.HttpError
+import org.readium.r2.shared.util.http.HttpClient
+import org.readium.r2.shared.util.http.HttpRequest
+import org.readium.r2.shared.util.http.HttpResponse
+import org.readium.r2.shared.util.http.HttpStreamResponse
 import org.readium.r2.shared.util.mediatype.MediaType
-import org.readium.r2.shared.util.resource.Resource
-import org.readium.r2.shared.util.resource.StringResource
 
 private val positionsMediaType =
     MediaType("application/vnd.readium.position-list+json")!!
@@ -39,7 +43,7 @@ private val positionsLink = Link(
 /**
  * Provides a list of discrete locations in the publication, no matter what the original format is.
  */
-public interface PositionsService : Publication.Service {
+public interface PositionsService : Publication.Service, Publication.WebService {
 
     /**
      * Returns the list of all the positions in the publication, grouped by the resource reading order index.
@@ -53,22 +57,25 @@ public interface PositionsService : Publication.Service {
 
     override val links: List<Link> get() = listOf(positionsLink)
 
-    override fun get(href: Url): Resource? {
-        if (href != positionsLink.url()) {
+    override suspend fun handle(request: HttpRequest): Try<HttpStreamResponse, HttpError.Response>? {
+        if (request.url != positionsLink.url()) {
             return null
         }
 
-        return StringResource(
-            mediaType = positionsMediaType
-        ) {
-            val positions = positions()
-            Try.success(
-                JSONObject().apply {
-                    put("total", positions.size)
-                    put("positions", positions.toJSON())
-                }.toString()
-            )
+        val positions = positions()
+
+        val jsonResponse = JSONObject().apply {
+            put("total", positions.size)
+            put("positions", positions.toJSON())
         }
+
+        val stream = jsonResponse
+            .toString()
+            .byteInputStream(charset = Charsets.UTF_8)
+
+        val response = HttpResponse(request, request.url, 200, emptyMap(), positionsMediaType)
+
+        return Try.success(HttpStreamResponse(response, stream))
     }
 }
 
@@ -146,7 +153,8 @@ public class PerResourcePositionsService(
 }
 
 internal class WebPositionsService(
-    private val manifest: Manifest
+    private val manifest: Manifest,
+    private val httpClient: HttpClient
 ) : PositionsService {
 
     private lateinit var _positions: List<Locator>
@@ -169,20 +177,28 @@ internal class WebPositionsService(
         return manifest.readingOrder.map { locators[it.url()].orEmpty() }
     }
 
-    private suspend fun computePositions(): List<Locator> =
-        links.firstOrNull()
-            ?.let { get(it.url()) }
-            ?.readAsString()
-            ?.getOrNull()
+    private suspend fun computePositions(): List<Locator> {
+        val positionsLink = links.firstOrNull()
+            ?: return emptyList()
+        val selfLink = manifest.links.firstWithRel("self")
+        val positionsUrl = (positionsLink.url(base = selfLink?.url()) as? AbsoluteUrl)
+            ?: return emptyList()
+
+        return httpClient.stream(HttpRequest(positionsUrl))
+            .getOrNull()
+            ?.body
+            ?.readBytes()
+            ?.decodeToString()
             ?.toJsonOrNull()
             ?.optJSONArray("positions")
             ?.mapNotNull { Locator.fromJSON(it as? JSONObject) }
             .orEmpty()
+    }
 
     companion object {
 
-        fun createFactory(): (Publication.Service.Context) -> WebPositionsService = {
-            WebPositionsService(it.manifest)
+        fun createFactory(httpClient: HttpClient): (Publication.Service.Context) -> WebPositionsService = {
+            WebPositionsService(it.manifest, httpClient)
         }
     }
 }

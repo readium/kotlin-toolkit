@@ -7,7 +7,7 @@
 package org.readium.r2.shared.util.downloads
 
 import java.io.File
-import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.downloads.android.AndroidDownloadManager
 import org.readium.r2.shared.util.downloads.foreground.ForegroundDownloadManager
 import org.readium.r2.shared.util.mediatype.MediaType
@@ -24,7 +24,7 @@ import org.readium.r2.shared.util.mediatype.MediaType
 public interface DownloadManager {
 
     public data class Request(
-        val url: Url,
+        val url: AbsoluteUrl,
         val headers: Map<String, List<String>> = emptyMap()
     )
 
@@ -42,7 +42,7 @@ public interface DownloadManager {
     ) : org.readium.r2.shared.util.Error {
 
         public class HttpError(
-            cause: org.readium.r2.shared.util.http.HttpError
+            cause: org.readium.r2.shared.util.data.HttpError
         ) : Error(cause.message, cause)
 
         public class DeviceNotFound(

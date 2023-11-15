@@ -9,16 +9,16 @@ package org.readium.r2.shared.publication.protection
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.data.StringBlob
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.resource.Container
 import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.shared.util.resource.ResourceTry
-import org.readium.r2.shared.util.resource.StringResource
 
 class TestContainer(resources: Map<Url, String> = emptyMap()) : Container {
 
     private val entries: Map<Url, Entry> =
-        resources.mapValues { Entry(it.key, StringResource(it.value, MediaType.TEXT)) }
+        resources.mapValues { Entry(it.key, StringBlob(it.value, MediaType.TEXT)) }
 
     override suspend fun entries(): Set<Container.Entry> =
         entries.values.toSet()
@@ -52,6 +52,6 @@ class TestContainer(resources: Map<Url, String> = emptyMap()) : Container {
 
     private class Entry(
         override val url: Url,
-        private val resource: StringResource
+        private val resource: StringBlob
     ) : Resource by resource, Container.Entry
 }

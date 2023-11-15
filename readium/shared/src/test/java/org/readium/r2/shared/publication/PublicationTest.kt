@@ -20,10 +20,10 @@ import org.readium.r2.shared.publication.services.WebPositionsService
 import org.readium.r2.shared.publication.services.positions
 import org.readium.r2.shared.publication.services.positionsByReadingOrder
 import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.data.StringBlob
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.resource.EmptyContainer
 import org.readium.r2.shared.util.resource.Resource
-import org.readium.r2.shared.util.resource.StringResource
 import org.readium.r2.shared.util.resource.readAsString
 import org.robolectric.RobolectricTestRunner
 
@@ -387,7 +387,7 @@ class PublicationTest {
         val service = object : Publication.Service {
             override fun get(href: Url): Resource {
                 assertEquals("link?param1=a&param2=b", href.toString())
-                return StringResource("test passed", MediaType.TEXT)
+                return StringBlob("test passed", MediaType.TEXT)
             }
         }
 

@@ -53,7 +53,7 @@ public interface HintMediaTypeSniffer {
 
 public interface BlobMediaTypeSniffer {
     public suspend fun sniffBlob(
-        blob: Blob<ReadError>
+        blob: Blob
     ): Try<MediaType, MediaTypeSnifferError>
 }
 
@@ -83,7 +83,7 @@ public interface MediaTypeSniffer :
      * Sniffs a [MediaType] from a [Blob].
      */
     public override suspend fun sniffBlob(
-        blob: Blob<ReadError>
+        blob: Blob
     ): Try<MediaType, MediaTypeSnifferError> =
         Try.failure(MediaTypeSnifferError.NotRecognized)
 
@@ -110,7 +110,7 @@ internal open class CompositeMediaTypeSniffer(
         return Try.failure(MediaTypeSnifferError.NotRecognized)
     }
 
-    override suspend fun sniffBlob(blob: Blob<ReadError>): Try<MediaType, MediaTypeSnifferError> {
+    override suspend fun sniffBlob(blob: Blob): Try<MediaType, MediaTypeSnifferError> {
         for (sniffer in sniffers) {
             sniffer.sniffBlob(blob)
                 .getOrElse { error ->
@@ -162,7 +162,7 @@ public class XhtmlMediaTypeSniffer : MediaTypeSniffer {
         return Try.failure(MediaTypeSnifferError.NotRecognized)
     }
 
-    override suspend fun sniffBlob(blob: Blob<ReadError>): Try<MediaType, MediaTypeSnifferError> {
+    override suspend fun sniffBlob(blob: Blob): Try<MediaType, MediaTypeSnifferError> {
         blob.readAsXml()
             .getOrElse {
                 when (it) {
@@ -198,7 +198,7 @@ public class HtmlMediaTypeSniffer : MediaTypeSniffer {
         return Try.failure(MediaTypeSnifferError.NotRecognized)
     }
 
-    override suspend fun sniffBlob(blob: Blob<ReadError>): Try<MediaType, MediaTypeSnifferError> {
+    override suspend fun sniffBlob(blob: Blob): Try<MediaType, MediaTypeSnifferError> {
         // [contentAsXml] will fail if the HTML is not a proper XML document, hence the doctype check.
         blob.readAsXml()
             .getOrElse {
@@ -266,7 +266,7 @@ public object OpdsMediaTypeSniffer : MediaTypeSniffer {
         return Try.failure(MediaTypeSnifferError.NotRecognized)
     }
 
-    override suspend fun sniffBlob(blob: Blob<ReadError>): Try<MediaType, MediaTypeSnifferError> {
+    override suspend fun sniffBlob(blob: Blob): Try<MediaType, MediaTypeSnifferError> {
         // OPDS 1
         blob.readAsXml()
             .getOrElse {
@@ -349,7 +349,7 @@ public object LcpLicenseMediaTypeSniffer : MediaTypeSniffer {
         return Try.failure(MediaTypeSnifferError.NotRecognized)
     }
 
-    override suspend fun sniffBlob(blob: Blob<ReadError>): Try<MediaType, MediaTypeSnifferError> {
+    override suspend fun sniffBlob(blob: Blob): Try<MediaType, MediaTypeSnifferError> {
         blob.containsJsonKeys("id", "issued", "provider", "encryption")
             .getOrElse {
                 when (it) {
@@ -440,7 +440,7 @@ public class WebPubManifestMediaTypeSniffer : MediaTypeSniffer {
         return Try.failure(MediaTypeSnifferError.NotRecognized)
     }
 
-    public override suspend fun sniffBlob(blob: Blob<ReadError>): Try<MediaType, MediaTypeSnifferError> {
+    public override suspend fun sniffBlob(blob: Blob): Try<MediaType, MediaTypeSnifferError> {
         val manifest: Manifest =
             blob.readAsRwpm()
                 .getOrElse {
@@ -548,7 +548,7 @@ public class WebPubMediaTypeSniffer : MediaTypeSniffer {
 
 /** Sniffs a W3C Web Publication Manifest. */
 public object W3cWpubMediaTypeSniffer : MediaTypeSniffer {
-    override suspend fun sniffBlob(blob: Blob<ReadError>): Try<MediaType, MediaTypeSnifferError> {
+    override suspend fun sniffBlob(blob: Blob): Try<MediaType, MediaTypeSnifferError> {
         // Somehow, [JSONObject] can't access JSON-LD keys such as `@content`.
         val string = blob.readAsString()
             .getOrElse {
@@ -762,7 +762,7 @@ public object PdfMediaTypeSniffer : MediaTypeSniffer {
         return Try.failure(MediaTypeSnifferError.NotRecognized)
     }
 
-    override suspend fun sniffBlob(blob: Blob<ReadError>): Try<MediaType, MediaTypeSnifferError> {
+    override suspend fun sniffBlob(blob: Blob): Try<MediaType, MediaTypeSnifferError> {
         blob.read(0L until 5L)
             .getOrElse { error ->
                 return Try.failure(MediaTypeSnifferError.DataAccess(error))
@@ -785,7 +785,7 @@ public object JsonMediaTypeSniffer : MediaTypeSniffer {
         return Try.failure(MediaTypeSnifferError.NotRecognized)
     }
 
-    override suspend fun sniffBlob(blob: Blob<ReadError>): Try<MediaType, MediaTypeSnifferError> {
+    override suspend fun sniffBlob(blob: Blob): Try<MediaType, MediaTypeSnifferError> {
         blob.readAsJson()
             .getOrElse {
                 when (it) {
@@ -824,7 +824,7 @@ public class SystemMediaTypeSniffer : MediaTypeSniffer {
         return Try.failure(MediaTypeSnifferError.NotRecognized)
     }
 
-    override suspend fun sniffBlob(blob: Blob<ReadError>): Try<MediaType, MediaTypeSnifferError> {
+    override suspend fun sniffBlob(blob: Blob): Try<MediaType, MediaTypeSnifferError> {
         BlobInputStream(blob, ::SystemSnifferException)
             .use { stream ->
                 try {

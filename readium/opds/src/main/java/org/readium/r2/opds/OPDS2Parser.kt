@@ -24,6 +24,7 @@ import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Manifest
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.normalizeHrefsToBase
+import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.ErrorException
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
@@ -49,15 +50,16 @@ public class OPDS2Parser {
             url: String,
             client: HttpClient = DefaultHttpClient(MediaTypeRetriever())
         ): Try<ParseData, Exception> =
-            parseRequest(HttpRequest(url), client)
+            AbsoluteUrl(url)
+                ?.let { parseRequest(HttpRequest(it), client) }
+                ?: run { Try.failure(Exception("Not an absolute URL.")) }
 
         public suspend fun parseRequest(
             request: HttpRequest,
             client: HttpClient = DefaultHttpClient(MediaTypeRetriever())
         ): Try<ParseData, Exception> {
             return client.fetchWithDecoder(request) {
-                val url = Url(request.url) ?: throw Exception("Invalid URL")
-                this.parse(it.body, url)
+                this.parse(it.body, request.url)
             }.mapFailure { ErrorException(it) }
         }
 
@@ -273,13 +275,13 @@ public class OPDS2Parser {
         }
 
         private fun parsePublication(json: JSONObject, baseUrl: Url): Publication? =
-            Manifest.fromJSON(json, mediaTypeSniffer = mediaTypeRetriever)
+            Manifest.fromJSON(json)
                 // Self link takes precedence over the given `baseUrl`.
                 ?.let { it.normalizeHrefsToBase(it.linkWithRel("self")?.href?.resolve() ?: baseUrl) }
                 ?.let { Publication(it) }
 
         private fun parseLink(json: JSONObject, baseUrl: Url): Link? =
-            Link.fromJSON(json, mediaTypeRetriever)
+            Link.fromJSON(json)
                 ?.normalizeHrefsToBase(baseUrl)
 
         public var mediaTypeRetriever: MediaTypeRetriever = MediaTypeRetriever()

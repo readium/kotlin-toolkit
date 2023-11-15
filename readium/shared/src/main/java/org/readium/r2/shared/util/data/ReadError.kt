@@ -7,9 +7,9 @@
 package org.readium.r2.shared.util.data
 
 import java.io.IOException
+import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.util.Error
 import org.readium.r2.shared.util.ErrorException
-import org.readium.r2.shared.util.FilesystemError
 import org.readium.r2.shared.util.MessageError
 import org.readium.r2.shared.util.ThrowableError
 
@@ -21,7 +21,7 @@ public sealed class ReadError(
     override val cause: Error? = null
 ) : Error {
 
-    public class Network(public override val cause: Error) :
+    public class Network(public override val cause: HttpError) :
         ReadError("A network error occurred.", cause)
 
     public class Filesystem(public override val cause: FilesystemError) :
@@ -54,18 +54,19 @@ public sealed class ReadError(
     }
 }
 
-public class AccessException(
+public class ReadException(
     public val error: ReadError
 ) : IOException(error.message, ErrorException(error))
 
-internal fun Exception.unwrapAccessException(): Exception {
-    fun Throwable.findResourceExceptionCause(): AccessException? =
+@InternalReadiumApi
+public fun Exception.unwrapReadException(): Exception {
+    fun Throwable.findReadExceptionCause(): ReadException? =
         when {
-            this is AccessException -> this
-            cause != null -> cause!!.findResourceExceptionCause()
+            this is ReadException -> this
+            cause != null -> cause!!.findReadExceptionCause()
             else -> null
         }
 
-    this.findResourceExceptionCause()?.let { return it }
+    this.findReadExceptionCause()?.let { return it }
     return this
 }

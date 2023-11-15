@@ -11,7 +11,6 @@ import java.io.ByteArrayInputStream
 import java.io.FileInputStream
 import java.io.InputStream
 import java.net.HttpURLConnection
-import java.net.MalformedURLException
 import java.net.SocketTimeoutException
 import java.net.URL
 import java.util.concurrent.CancellationException
@@ -20,8 +19,13 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.extensions.joinValues
 import org.readium.r2.shared.extensions.lowerCaseKeys
+import org.readium.r2.shared.util.AbsoluteUrl
+import org.readium.r2.shared.util.MessageError
 import org.readium.r2.shared.util.ThrowableError
 import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.data.HttpError
+import org.readium.r2.shared.util.data.InMemoryBlob
 import org.readium.r2.shared.util.e
 import org.readium.r2.shared.util.flatMap
 import org.readium.r2.shared.util.getOrDefault
@@ -29,7 +33,6 @@ import org.readium.r2.shared.util.http.HttpRequest.Method
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.mediatype.MediaTypeHints
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
-import org.readium.r2.shared.util.resource.BytesResource
 import org.readium.r2.shared.util.tryRecover
 import timber.log.Timber
 
@@ -115,14 +118,17 @@ public class DefaultHttpClient(
          * You can return either:
          *   - the provided [newRequest] to proceed with the redirection
          *   - a different redirection request
-         *   - a [HttpError.CANCELLED] error to abort the redirection
          */
         public suspend fun onFollowUnsafeRedirect(
             request: HttpRequest,
             response: HttpResponse,
             newRequest: HttpRequest
         ): HttpTry<HttpRequest> =
-            Try.failure(HttpError.CANCELLED)
+            Try.failure(
+                HttpError.Cancelled(
+                    MessageError("Request cancelled because of an unsafe redirect.")
+                )
+            )
 
         /**
          * Called when the HTTP client received an HTTP response for the given [request].
@@ -172,17 +178,19 @@ public class DefaultHttpClient(
                         val mediaType = body?.let {
                             mediaTypeRetriever.retrieve(
                                 hints = MediaTypeHints(connection),
-                                blob = BytesResource { it }
+                                blob = InMemoryBlob(it)
                             ).getOrDefault(MediaType.BINARY)
                         }
-                        return@withContext Try.failure(HttpError(kind, mediaType, body))
+                        return@withContext Try.failure(
+                            HttpError.Response(kind, statusCode, mediaType, body)
+                        )
                     }
 
                     val mediaType = mediaTypeRetriever.retrieve(MediaTypeHints(connection))
 
                     val response = HttpResponse(
                         request = request,
-                        url = connection.url.toString(),
+                        url = request.url,
                         statusCode = statusCode,
                         headers = connection.safeHeaders,
                         mediaType = mediaType ?: MediaType.BINARY
@@ -208,7 +216,7 @@ public class DefaultHttpClient(
         return callback.onStartRequest(request)
             .flatMap { tryStream(it) }
             .tryRecover { error ->
-                if (error.kind != HttpError.Kind.Cancelled) {
+                if (error !is HttpError.Cancelled) {
                     callback.onRecoverRequest(request, error)
                         .flatMap { stream(it) }
                 } else {
@@ -236,11 +244,20 @@ public class DefaultHttpClient(
         // > https://www.rfc-editor.org/rfc/rfc1945.html#section-9.3
         val redirectCount = request.extras.getInt(EXTRA_REDIRECT_COUNT)
         if (redirectCount > 5) {
-            return Try.failure(HttpError(HttpError.Kind.TooManyRedirects))
+            return Try.failure(
+                HttpError.Cancelled(
+                    MessageError("There were too many redirects to follow.")
+                )
+            )
         }
 
         val location = response.header("Location")
-            ?: return Try.failure(HttpError(kind = HttpError.Kind.MalformedResponse))
+            ?.let { Url(it)?.resolve(request.url) as? AbsoluteUrl }
+            ?: return Try.failure(
+                HttpError.MalformedResponse(
+                    MessageError("Location of redirect is missing or invalid.")
+                )
+            )
 
         val newRequest = HttpRequest(
             url = location,
@@ -262,7 +279,7 @@ public class DefaultHttpClient(
     }
 
     private fun HttpRequest.toHttpURLConnection(): HttpURLConnection {
-        val url = URL(url)
+        val url = URL(url.toString())
         val connection = (url.openConnection() as HttpURLConnection)
         connection.requestMethod = method.name
 
@@ -318,16 +335,15 @@ public class DefaultHttpClient(
 /**
  * Creates an HTTP error from a generic exception.
  */
-private fun wrap(cause: Throwable): HttpError {
-    val kind = when (cause) {
-        is MalformedURLException -> HttpError.Kind.MalformedRequest
-        is CancellationException -> HttpError.Kind.Cancelled
-        is SocketTimeoutException -> HttpError.Kind.Timeout
-        else -> HttpError.Kind.Other
+private fun wrap(cause: Throwable): HttpError =
+    when (cause) {
+        is CancellationException ->
+            throw cause
+        is SocketTimeoutException ->
+            HttpError.Timeout(ThrowableError(cause))
+        else ->
+            HttpError.Other(ThrowableError(cause))
     }
-
-    return HttpError(kind = kind, cause = ThrowableError(cause))
-}
 
 /**
  * [HttpURLConnection]'s input stream which disconnects when closed.

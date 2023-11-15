@@ -13,12 +13,16 @@ import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.services.PerResourcePositionsService
 import org.readium.r2.shared.util.MessageError
 import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.data.ClosedContainer
 import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.shared.util.resource.ResourceEntry
+import org.readium.r2.shared.util.use
 import org.readium.r2.streamer.extensions.guessTitle
 import org.readium.r2.streamer.extensions.isHiddenOrThumbs
-import org.readium.r2.streamer.extensions.toLink
+import org.readium.r2.streamer.extensions.linkForUrl
 import org.readium.r2.streamer.parser.PublicationParser
 
 /**
@@ -40,12 +44,12 @@ public class ImageParser : PublicationParser {
         val readingOrder =
             if (asset.mediaType.matches(MediaType.CBZ)) {
                 (asset.container.entries())
-                    .filter { !it.isHiddenOrThumbs && it.mediaType().getOrNull()?.isBitmap == true }
+                    .filter { !it.isHiddenOrThumbs && entryIsBitmap(asset.container, it) }
                     .sortedBy { it.toString() }
             } else {
                 listOfNotNull(asset.container.entries().firstOrNull())
             }
-                .map { it.toLink() }
+                .map { asset.container.linkForUrl(it) }
                 .toMutableList()
 
         if (readingOrder.isEmpty()) {
@@ -81,4 +85,7 @@ public class ImageParser : PublicationParser {
 
         return Try.success(publicationBuilder)
     }
+
+    private suspend fun entryIsBitmap(container: ClosedContainer<ResourceEntry>, url: Url) =
+        container.get(url)!!.use { it.mediaType() }.getOrNull()?.isBitmap == true
 }

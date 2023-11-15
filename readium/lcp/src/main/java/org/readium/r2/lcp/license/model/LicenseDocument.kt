@@ -22,6 +22,7 @@ import org.readium.r2.lcp.license.model.components.lcp.User
 import org.readium.r2.lcp.service.URLParameters
 import org.readium.r2.shared.extensions.iso8601ToDate
 import org.readium.r2.shared.extensions.optNullableString
+import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
 
@@ -73,7 +74,7 @@ public class LicenseDocument internal constructor(public val json: JSONObject) {
 
         // Check that the acquisition link has a valid URL.
         try {
-            link(Rel.Publication)!!.url()
+            link(Rel.Publication)!!.url() as AbsoluteUrl
         } catch (e: Exception) {
             throw LcpException.Parsing.Url(rel = LicenseDocument.Rel.Publication.value)
         }

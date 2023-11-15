@@ -18,14 +18,15 @@ import kotlinx.coroutines.withContext
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.extensions.md5
 import org.readium.r2.shared.extensions.tryOrNull
-import org.readium.r2.shared.util.MessageError
-import org.readium.r2.shared.util.ThrowableError
 import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.data.ReadError
+import org.readium.r2.shared.util.data.ReadException
+import org.readium.r2.shared.util.data.unwrapReadException
+import org.readium.r2.shared.util.flatMap
 import org.readium.r2.shared.util.pdf.PdfDocument
 import org.readium.r2.shared.util.pdf.PdfDocumentFactory
 import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.shared.util.resource.ResourceTry
-import org.readium.r2.shared.util.resource.decode
 import org.readium.r2.shared.util.use
 import timber.log.Timber
 
@@ -106,10 +107,20 @@ public class PdfiumDocumentFactory(context: Context) : PdfDocumentFactory<Pdfium
 
     private suspend fun Resource.openBytes(password: String?): ResourceTry<PdfiumDocument> =
         use {
-            it.decode(
-                { bytes -> core.fromBytes(bytes, password) },
-                { MessageError("Pdfium could not read data.", ThrowableError(it)) }
-            )
+            it.read()
+                .flatMap { bytes ->
+                    try {
+                        Try.success(
+                            core.fromBytes(bytes, password)
+                        )
+                    } catch (e: Exception) {
+                        val error = when (val exception = e.unwrapReadException()) {
+                            is ReadException -> exception.error
+                            else -> ReadError.Content("Pdfium could not read data.")
+                        }
+                        Try.failure(error)
+                    }
+                }
         }
 
     private fun PdfiumCore.fromFile(file: File, password: String?): PdfiumDocument =

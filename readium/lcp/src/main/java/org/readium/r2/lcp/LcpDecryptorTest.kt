@@ -39,7 +39,7 @@ internal suspend fun checkResourcesAreReadableInOneBlock(publication: Publicatio
     (publication.readingOrder + publication.resources)
         .forEach { link ->
             Timber.d("attempting to read ${link.href} in one block")
-            publication.get(link).use { resource ->
+            publication.get(link)!!.use { resource ->
                 val bytes = resource.read()
                 check(bytes.isSuccess) { "failed to read ${link.href} in one block" }
             }
@@ -51,8 +51,8 @@ internal suspend fun checkLengthComputationIsCorrect(publication: Publication) {
 
     (publication.readingOrder + publication.resources)
         .forEach { link ->
-            val trueLength = publication.get(link).use { it.read().assertSuccess().size.toLong() }
-            publication.get(link).use { resource ->
+            val trueLength = publication.get(link)!!.use { it.read().assertSuccess().size.toLong() }
+            publication.get(link)!!.use { resource ->
                 resource.length()
                     .onFailure {
                         throw IllegalStateException(
@@ -72,10 +72,10 @@ internal suspend fun checkAllResourcesAreReadableByChunks(publication: Publicati
     (publication.readingOrder + publication.resources)
         .forEach { link ->
             Timber.d("attempting to read ${link.href} by chunks ")
-            val groundTruth = publication.get(link).use { it.read() }.assertSuccess()
+            val groundTruth = publication.get(link)!!.use { it.read() }.assertSuccess()
             for (chunkSize in listOf(4096L, 2050L)) {
                 publication.get(link).use { resource ->
-                    resource.readByChunks(chunkSize, groundTruth).onFailure {
+                    resource!!.readByChunks(chunkSize, groundTruth).onFailure {
                         throw IllegalStateException(
                             "failed to read ${link.href} by chunks of size $chunkSize",
                             it
@@ -92,7 +92,7 @@ internal suspend fun checkExceedingRangesAreAllowed(publication: Publication) {
     (publication.readingOrder + publication.resources)
         .forEach { link ->
             publication.get(link).use { resource ->
-                val length = resource.length().assertSuccess()
+                val length = resource!!.length().assertSuccess()
                 val fullTruth = resource.read().assertSuccess()
                 for (
                 range in listOf(

@@ -15,7 +15,7 @@ import org.readium.r2.shared.publication.ServiceFactory
 import org.readium.r2.shared.util.Error
 import org.readium.r2.shared.util.SuspendingCloseable
 import org.readium.r2.shared.util.Try
-import org.readium.r2.shared.util.http.HttpError
+import org.readium.r2.shared.util.data.HttpError
 
 @ExperimentalReadiumApi
 public typealias SearchTry<SuccessT> = Try<SuccessT, SearchError>

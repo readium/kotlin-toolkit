@@ -16,10 +16,10 @@ import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.archive.ArchiveProperties
 import org.readium.r2.shared.util.archive.archive
-import org.readium.r2.shared.util.data.AccessException
 import org.readium.r2.shared.util.data.ClosedContainer
 import org.readium.r2.shared.util.data.ReadError
-import org.readium.r2.shared.util.data.unwrapAccessException
+import org.readium.r2.shared.util.data.ReadException
+import org.readium.r2.shared.util.data.unwrapReadException
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.io.CountingInputStream
 import org.readium.r2.shared.util.mediatype.MediaType
@@ -94,8 +94,8 @@ internal class ChannelZipContainer(
                         }
                     Try.success(bytes)
                 } catch (exception: Exception) {
-                    when (val e = exception.unwrapAccessException()) {
-                        is AccessException ->
+                    when (val e = exception.unwrapReadException()) {
+                        is ReadException ->
                             Try.failure(e.error)
                         else ->
                             Try.failure(ReadError.Content(e))

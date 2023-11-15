@@ -14,16 +14,16 @@ import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
-import org.readium.r2.shared.util.Error
 import org.readium.r2.shared.util.data.Blob
+import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.getOrThrow
 import org.readium.r2.shared.util.zip.jvm.ClosedChannelException
 import org.readium.r2.shared.util.zip.jvm.NonWritableChannelException
 import org.readium.r2.shared.util.zip.jvm.SeekableByteChannel
 
-internal class DatasourceChannel<E : Error>(
-    private val blob: Blob<E>,
-    private val wrapError: (E) -> IOException
+internal class BlobChannel(
+    private val blob: Blob,
+    private val wrapError: (ReadError) -> IOException
 ) : SeekableByteChannel {
 
     private val coroutineScope: CoroutineScope =

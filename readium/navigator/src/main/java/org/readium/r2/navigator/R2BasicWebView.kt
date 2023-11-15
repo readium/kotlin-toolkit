@@ -48,8 +48,8 @@ import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.assertSuccess
+import org.readium.r2.shared.util.data.readAsString
 import org.readium.r2.shared.util.resource.Resource
-import org.readium.r2.shared.util.resource.readAsString
 import org.readium.r2.shared.util.toUrl
 import org.readium.r2.shared.util.use
 import timber.log.Timber

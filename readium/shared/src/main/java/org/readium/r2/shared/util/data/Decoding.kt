@@ -23,23 +23,23 @@ import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.xml.ElementNode
 import org.readium.r2.shared.util.xml.XmlParser
 
-public sealed class DecoderError<E : Error>(
+public sealed class DecoderError(
     override val message: String
 ) : Error {
 
-    public class DataAccess<E : Error>(
-        override val cause: E
-    ) : DecoderError<E>("Data source error")
+    public class DataAccess(
+        override val cause: ReadError
+    ) : DecoderError("Data source error")
 
-    public class DecodingError<E : Error>(
+    public class DecodingError(
         override val cause: Error?
-    ) : DecoderError<E>("Decoding Error")
+    ) : DecoderError("Decoding Error")
 }
 
-internal suspend fun<R, S, E : Error> Try<S, E>.decode(
+internal suspend fun<R, S> Try<S, ReadError>.decode(
     block: (value: S) -> R,
     wrapException: (Exception) -> Error
-): Try<R, DecoderError<E>> =
+): Try<R, DecoderError> =
     when (this) {
         is Try.Success ->
             try {
@@ -55,10 +55,10 @@ internal suspend fun<R, S, E : Error> Try<S, E>.decode(
             Try.failure(DecoderError.DataAccess(value))
     }
 
-internal suspend fun<R, S, E : Error> Try<S, DecoderError<E>>.decodeMap(
+internal suspend fun<R, S> Try<S, DecoderError>.decodeMap(
     block: (value: S) -> R,
     wrapException: (Exception) -> Error
-): Try<R, DecoderError<E>> =
+): Try<R, DecoderError> =
     when (this) {
         is Try.Success ->
             try {
@@ -80,16 +80,16 @@ internal suspend fun<R, S, E : Error> Try<S, DecoderError<E>>.decodeMap(
  * It will extract the charset parameter from the media type hints to figure out an encoding.
  * Otherwise, fallback on UTF-8.
  */
-public suspend fun<E : Error> Blob<E>.readAsString(
+public suspend fun Blob.readAsString(
     charset: Charset = Charsets.UTF_8
-): Try<String, DecoderError<E>> =
+): Try<String, DecoderError> =
     read().decode(
         { String(it, charset = charset) },
         { MessageError("Content is not a valid $charset string.", ThrowableError(it)) }
     )
 
 /** Content as an XML document. */
-public suspend fun<E : Error> Blob<E>.readAsXml(): Try<ElementNode, DecoderError<E>> =
+public suspend fun Blob.readAsXml(): Try<ElementNode, DecoderError> =
     read().decode(
         { XmlParser().parse(ByteArrayInputStream(it)) },
         { MessageError("Content is not a valid XML document.", ThrowableError(it)) }
@@ -98,14 +98,14 @@ public suspend fun<E : Error> Blob<E>.readAsXml(): Try<ElementNode, DecoderError
 /**
  * Content parsed from JSON.
  */
-public suspend fun<E : Error> Blob<E>.readAsJson(): Try<JSONObject, DecoderError<E>> =
+public suspend fun Blob.readAsJson(): Try<JSONObject, DecoderError> =
     readAsString().decodeMap(
         { JSONObject(it) },
         { MessageError("Content is not valid JSON.", ThrowableError(it)) }
     )
 
 /** Readium Web Publication Manifest parsed from the content. */
-public suspend fun<E : Error> Blob<E>.readAsRwpm(): Try<Manifest, DecoderError<E>> =
+public suspend fun Blob.readAsRwpm(): Try<Manifest, DecoderError> =
     readAsJson().flatMap { json ->
         Manifest.fromJSON(json)
             ?.let { Try.success(it) }
@@ -119,7 +119,7 @@ public suspend fun<E : Error> Blob<E>.readAsRwpm(): Try<Manifest, DecoderError<E
 /**
  * Reads the full content as a [Bitmap].
  */
-public suspend fun<E : Error> Blob<E>.readAsBitmap(): Try<Bitmap, DecoderError<E>> =
+public suspend fun Blob.readAsBitmap(): Try<Bitmap, DecoderError> =
     read()
         .mapFailure { DecoderError.DataAccess(it) }
         .flatMap { bytes ->
@@ -135,9 +135,9 @@ public suspend fun<E : Error> Blob<E>.readAsBitmap(): Try<Bitmap, DecoderError<E
 /**
  * Returns whether the content is a JSON object containing all of the given root keys.
  */
-public suspend fun<E : Error> Blob<E>.containsJsonKeys(
+public suspend fun Blob.containsJsonKeys(
     vararg keys: String
-): Try<Boolean, DecoderError<E>> {
+): Try<Boolean, DecoderError> {
     val json = readAsJson()
         .getOrElse { return Try.failure(it) }
     return Try.success(json.keys().asSequence().toSet().containsAll(keys.toList()))

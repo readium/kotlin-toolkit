@@ -22,15 +22,22 @@ import org.readium.r2.shared.publication.services.CacheService
 import org.readium.r2.shared.publication.services.ContentProtectionService
 import org.readium.r2.shared.publication.services.CoverService
 import org.readium.r2.shared.publication.services.DefaultLocatorService
+import org.readium.r2.shared.publication.services.ExternalCoverService
 import org.readium.r2.shared.publication.services.LocatorService
 import org.readium.r2.shared.publication.services.PositionsService
+import org.readium.r2.shared.publication.services.ResourceCoverService
 import org.readium.r2.shared.publication.services.WebPositionsService
 import org.readium.r2.shared.publication.services.content.ContentService
 import org.readium.r2.shared.publication.services.search.SearchService
 import org.readium.r2.shared.util.Closeable
+import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.data.ClosedContainer
 import org.readium.r2.shared.util.data.EmptyContainer
+import org.readium.r2.shared.util.data.HttpError
+import org.readium.r2.shared.util.http.HttpClient
+import org.readium.r2.shared.util.http.HttpRequest
+import org.readium.r2.shared.util.http.HttpStreamResponse
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.shared.util.resource.ResourceEntry
@@ -61,9 +68,10 @@ public typealias PublicationContainer = ClosedContainer<ResourceEntry>
  * Publication.Service attached to this Publication.
  */
 public class Publication(
-    manifest: Manifest,
+    public val manifest: Manifest,
     private val container: PublicationContainer = EmptyContainer(),
     private val servicesBuilder: ServicesBuilder = ServicesBuilder(),
+    private val httpClient: HttpClient? = null,
     @Deprecated(
         "Migrate to the new Settings API (see migration guide)",
         level = DeprecationLevel.ERROR
@@ -76,14 +84,12 @@ public class Publication(
     public var cssStyle: String? = null
 ) : PublicationServicesHolder {
 
-    public val manifest: Manifest
-
     private val services = ListPublicationServicesHolder()
 
     init {
-        services.services = servicesBuilder.build(Service.Context(manifest, container, services))
-        this.manifest = manifest.copy(
-            links = manifest.links + services.services.map(Service::links).flatten()
+        services.services = servicesBuilder.build(
+            context = Service.Context(manifest, container, services),
+            httpClient = httpClient
         )
     }
 
@@ -205,8 +211,6 @@ public class Publication(
         get(href, linkWithHref(href)?.mediaType)
 
     private fun get(href: Url, mediaType: MediaType?): Resource? {
-        services.services.forEach { service -> service.get(href)?.let { return it } }
-
         val entry = container.get(href)
             ?: container.get(href.removeQuery().removeFragment()) // Try again after removing query and fragment.
             ?: return null
@@ -359,6 +363,14 @@ public class Publication(
         )
 
         /**
+         * Closes any opened file handles, removes temporary files, etc.
+         */
+        override fun close() {}
+    }
+
+    public interface WebService : Service {
+
+        /**
          * Links which will be added to [Publication.links].
          * It can be used to expose a web API for the service, through [Publication.get].
          *
@@ -375,7 +387,7 @@ public class Publication(
          * )
          * ```
          */
-        public val links: List<Link> get() = emptyList()
+        public val links: List<Link>
 
         /**
          * A service can return a Resource to:
@@ -392,12 +404,7 @@ public class Publication(
          * @return The [Resource] containing the response, or null if the service doesn't
          * recognize this request.
          */
-        public fun get(href: Url): Resource? = null
-
-        /**
-         * Closes any opened file handles, removes temporary files, etc.
-         */
-        override fun close() {}
+        public suspend fun handle(request: HttpRequest): Try<HttpStreamResponse, HttpError.Response>?
     }
 
     /**
@@ -432,7 +439,7 @@ public class Publication(
         )
 
         /** Builds the actual list of publication services to use in a Publication. */
-        public fun build(context: Service.Context): List<Service> {
+        public fun build(context: Service.Context, httpClient: HttpClient?): List<Service> {
             val serviceFactories =
                 buildMap<String, ServiceFactory> {
                     putAll(this@ServicesBuilder.serviceFactories)
@@ -444,9 +451,18 @@ public class Publication(
                         put(LocatorService::class.java.simpleName, factory)
                     }
 
-                    if (!containsKey(PositionsService::class.java.simpleName)) {
-                        val factory = WebPositionsService.createFactory()
+                    if (httpClient != null && !containsKey(PositionsService::class.java.simpleName)) {
+                        val factory = WebPositionsService.createFactory(httpClient)
                         put(PositionsService::class.java.simpleName, factory)
+                    }
+
+                    if (!containsKey(CoverService::class.java.simpleName)) {
+                        val factory = { context: Service.Context ->
+                            ResourceCoverService.createFactory()(context)
+                                ?: httpClient
+                                    ?.let { ExternalCoverService.createFactory(it)(context) }
+                        }
+                        put(CoverService::class.java.simpleName, factory)
                     }
                 }
 

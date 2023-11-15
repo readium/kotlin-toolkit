@@ -14,11 +14,11 @@ import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.archive.ArchiveFactory
 import org.readium.r2.shared.util.archive.ArchiveProvider
-import org.readium.r2.shared.util.data.AccessException
 import org.readium.r2.shared.util.data.Blob
 import org.readium.r2.shared.util.data.ClosedContainer
 import org.readium.r2.shared.util.data.ReadError
-import org.readium.r2.shared.util.data.unwrapAccessException
+import org.readium.r2.shared.util.data.ReadException
+import org.readium.r2.shared.util.data.unwrapReadException
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.mediatype.MediaTypeHints
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
@@ -47,13 +47,13 @@ public class StreamingZipArchiveProvider(
         return Try.failure(MediaTypeSnifferError.NotRecognized)
     }
 
-    override suspend fun sniffBlob(blob: Blob<ReadError>): Try<MediaType, MediaTypeSnifferError> {
+    override suspend fun sniffBlob(blob: Blob): Try<MediaType, MediaTypeSnifferError> {
         return try {
-            openDataSource(blob, ::AccessException, null)
+            openBlob(blob, ::ReadException, null)
             Try.success(MediaType.ZIP)
         } catch (exception: Exception) {
-            when (val e = exception.unwrapAccessException()) {
-                is AccessException ->
+            when (val e = exception.unwrapReadException()) {
+                is ReadException ->
                     Try.failure(MediaTypeSnifferError.DataAccess(e.error))
                 else ->
                     Try.failure(MediaTypeSnifferError.NotRecognized)
@@ -62,7 +62,7 @@ public class StreamingZipArchiveProvider(
     }
 
     override suspend fun create(
-        resource: Blob<ReadError>,
+        resource: Blob,
         password: String?
     ): Try<ClosedContainer<ResourceEntry>, ArchiveFactory.Error> {
         if (password != null) {
@@ -70,15 +70,15 @@ public class StreamingZipArchiveProvider(
         }
 
         return try {
-            val container = openDataSource(
+            val container = openBlob(
                 resource,
-                ::AccessException,
+                ::ReadException,
                 resource.source
             )
             Try.success(container)
         } catch (exception: Exception) {
-            when (val e = exception.unwrapAccessException()) {
-                is AccessException ->
+            when (val e = exception.unwrapReadException()) {
+                is ReadException ->
                     Try.failure(ArchiveFactory.Error.ResourceError(e.error))
                 else ->
                     Try.failure(ArchiveFactory.Error.ResourceError(ReadError.Content(e)))
@@ -86,12 +86,12 @@ public class StreamingZipArchiveProvider(
         }
     }
 
-    private suspend fun openDataSource(
-        blob: Blob<ReadError>,
+    private suspend fun openBlob(
+        blob: Blob,
         wrapError: (ReadError) -> IOException,
         sourceUrl: AbsoluteUrl?
     ): ClosedContainer<ResourceEntry> = withContext(Dispatchers.IO) {
-        val datasourceChannel = DatasourceChannel(blob, wrapError)
+        val datasourceChannel = BlobChannel(blob, wrapError)
         val channel = wrapBaseChannel(datasourceChannel)
         val zipFile = ZipFile(channel, true)
         ChannelZipContainer(zipFile, sourceUrl, mediaTypeRetriever)

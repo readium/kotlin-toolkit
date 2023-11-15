@@ -10,9 +10,9 @@ import org.readium.r2.shared.util.mediatype.MediaTypeSnifferError
 import org.readium.r2.shared.util.tryRecover
 
 internal class KnownMediaTypeResourceAdapter(
-    private val blob: Blob<ReadError>,
+    private val blob: Blob,
     private val mediaType: MediaType
-) : Resource, Blob<ReadError> by blob {
+) : Resource, Blob by blob {
 
     override suspend fun mediaType(): Try<MediaType, ReadError> =
         Try.success(mediaType)
@@ -23,10 +23,10 @@ internal class KnownMediaTypeResourceAdapter(
 }
 
 internal class GuessMediaTypeResourceAdapter(
-    private val blob: Blob<ReadError>,
+    private val blob: Blob,
     private val mediaTypeRetriever: MediaTypeRetriever,
     private val mediaTypeHints: MediaTypeHints
-) : Resource, Blob<ReadError> by blob {
+) : Resource, Blob by blob {
 
     override suspend fun mediaType(): Try<MediaType, ReadError> =
         mediaTypeRetriever.retrieve(

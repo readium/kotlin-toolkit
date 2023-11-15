@@ -14,7 +14,6 @@ import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.data.Blob
 import org.readium.r2.shared.util.data.Container
 import org.readium.r2.shared.util.data.FileBlob
-import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.toUri
 
 /**
@@ -113,7 +112,7 @@ public class MediaTypeRetriever(
      */
     public suspend fun retrieve(
         hints: MediaTypeHints = MediaTypeHints(),
-        blob: Blob<ReadError>? = null
+        blob: Blob? = null
     ): Try<MediaType, MediaTypeSnifferError> {
         mediaTypeSniffer.sniffHints(hints)
             .getOrNull()

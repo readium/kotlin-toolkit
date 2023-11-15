@@ -18,7 +18,7 @@ import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.streamer.extensions.guessTitle
 import org.readium.r2.streamer.extensions.isHiddenOrThumbs
-import org.readium.r2.streamer.extensions.toLink
+import org.readium.r2.streamer.extensions.linkForUrl
 import org.readium.r2.streamer.parser.PublicationParser
 
 /**
@@ -64,7 +64,7 @@ public class AudioParser : PublicationParser {
                 conformsTo = setOf(Publication.Profile.AUDIOBOOK),
                 localizedTitle = asset.container.guessTitle()?.let { LocalizedString(it) }
             ),
-            readingOrder = readingOrder.map { it.toLink() }
+            readingOrder = readingOrder.map { asset.container.linkForUrl(it) }
         )
 
         val publicationBuilder = Publication.Builder(

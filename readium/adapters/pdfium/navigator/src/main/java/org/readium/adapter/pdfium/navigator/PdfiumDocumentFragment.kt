@@ -27,6 +27,7 @@ import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.util.SingleJob
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.data.ReadError
+import org.readium.r2.shared.util.e
 import org.readium.r2.shared.util.getOrElse
 import timber.log.Timber
 
@@ -69,10 +70,11 @@ public class PdfiumDocumentFragment internal constructor(
         val context = context?.applicationContext ?: return
 
         resetJob.launch {
+            val resource = requireNotNull(publication.get(href))
             val document = PdfiumDocumentFactory(context)
                 // PDFium crashes when reusing the same PdfDocument, so we must not cache it.
 //                    .cachedIn(publication)
-                .open(publication.get(href), null)
+                .open(resource, null)
                 .getOrElse { error ->
                     Timber.e(error)
                     listener?.onResourceLoadFailed(href, error)

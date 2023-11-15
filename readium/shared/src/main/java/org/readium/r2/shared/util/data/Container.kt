@@ -15,7 +15,7 @@ import org.readium.r2.shared.util.resource.Resource
 /**
  * Represents a container entry's.
  */
-public interface ContainerEntry : Blob<ReadError> {
+public interface ContainerEntry : Blob {
 
     /**
      * URL used to access the resource in the container.

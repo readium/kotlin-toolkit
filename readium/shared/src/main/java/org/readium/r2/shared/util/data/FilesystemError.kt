@@ -4,7 +4,10 @@
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.r2.shared.util
+package org.readium.r2.shared.util.data
+
+import org.readium.r2.shared.util.Error
+import org.readium.r2.shared.util.ThrowableError
 
 public sealed class FilesystemError(
     override val message: String,

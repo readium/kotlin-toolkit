@@ -19,10 +19,10 @@ import kotlinx.coroutines.withContext
 import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.util.ThrowableError
 import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.data.HttpError
 import org.readium.r2.shared.util.downloads.DownloadManager
 import org.readium.r2.shared.util.flatMap
 import org.readium.r2.shared.util.http.HttpClient
-import org.readium.r2.shared.util.http.HttpError
 import org.readium.r2.shared.util.http.HttpRequest
 import org.readium.r2.shared.util.http.HttpResponse
 import org.readium.r2.shared.util.http.HttpTry
@@ -64,7 +64,7 @@ public class ForegroundDownloadManager(
         httpClient
             .download(
                 request = HttpRequest(
-                    url = request.url.toString(),
+                    url = request.url,
                     headers = request.headers
                 ),
                 destination = destination,
@@ -148,6 +148,6 @@ public class ForegroundDownloadManager(
                 }
             }
         } catch (e: Exception) {
-            Try.failure(HttpError(HttpError.Kind.Other, cause = ThrowableError(e)))
+            Try.failure(HttpError.Other(ThrowableError(e)))
         }
 }

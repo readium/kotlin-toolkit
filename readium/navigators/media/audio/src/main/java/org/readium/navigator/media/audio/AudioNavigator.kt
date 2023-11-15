@@ -87,7 +87,7 @@ public class AudioNavigator<S : Configurable.Settings, P : Configurable.Preferen
                 .takeUnless { it == Duration.ZERO }
 
             if (duration == null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                val resource = publication.get(link)
+                val resource = requireNotNull(publication.get(link))
                 val metadataRetriever = MetadataRetriever(resource)
                 duration = metadataRetriever.duration()
                 metadataRetriever.close()

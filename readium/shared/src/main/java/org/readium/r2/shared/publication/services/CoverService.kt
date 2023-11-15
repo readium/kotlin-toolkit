@@ -17,14 +17,21 @@ import org.readium.r2.shared.extensions.toPng
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.ServiceFactory
-import org.readium.r2.shared.util.MessageError
+import org.readium.r2.shared.publication.firstWithRel
+import org.readium.r2.shared.util.AbsoluteUrl
+import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
-import org.readium.r2.shared.util.data.ReadError
+import org.readium.r2.shared.util.data.ClosedContainer
+import org.readium.r2.shared.util.data.HttpError
+import org.readium.r2.shared.util.data.readAsBitmap
+import org.readium.r2.shared.util.getOrElse
+import org.readium.r2.shared.util.http.HttpClient
+import org.readium.r2.shared.util.http.HttpRequest
+import org.readium.r2.shared.util.http.HttpResponse
+import org.readium.r2.shared.util.http.HttpStreamResponse
+import org.readium.r2.shared.util.http.fetch
 import org.readium.r2.shared.util.mediatype.MediaType
-import org.readium.r2.shared.util.resource.BytesResource
-import org.readium.r2.shared.util.resource.FailureResource
-import org.readium.r2.shared.util.resource.LazyResource
-import org.readium.r2.shared.util.resource.Resource
+import org.readium.r2.shared.util.resource.ResourceEntry
 
 /**
  * Provides an easy access to a bitmap version of the publication cover.
@@ -87,10 +94,67 @@ public var Publication.ServicesBuilder.coverServiceFactory: ServiceFactory?
     get() = get(CoverService::class)
     set(value) = set(CoverService::class, value)
 
+internal class ExternalCoverService(
+    private val coverUrl: AbsoluteUrl,
+    private val httpClient: HttpClient
+) : CoverService {
+
+    override suspend fun cover(): Bitmap? {
+        val request = HttpRequest(coverUrl)
+
+        val response = httpClient.fetch(request)
+            .getOrElse { return null }
+
+        return BitmapFactory.decodeByteArray(response.body, 0, response.body.size)
+    }
+
+    companion object {
+
+        fun createFactory(httpClient: HttpClient): (Publication.Service.Context) -> ExternalCoverService? = {
+            val manifestUrl = it.manifest
+                .links
+                .firstWithRel("self")
+                ?.url()
+
+            it.manifest
+                .linksWithRel("cover")
+                .firstNotNullOfOrNull { link -> link.url(base = manifestUrl) as? AbsoluteUrl }
+                ?.let { url -> ExternalCoverService(url, httpClient) }
+        }
+    }
+}
+
+internal class ResourceCoverService(
+    private val coverUrl: Url,
+    private val container: ClosedContainer<ResourceEntry>
+) : CoverService {
+
+    override suspend fun cover(): Bitmap? {
+        val resource = container.get(coverUrl)
+            ?: return null
+
+        return resource.readAsBitmap()
+            .getOrNull()
+    }
+
+    companion object {
+
+        fun createFactory(): (Publication.Service.Context) -> ResourceCoverService? = {
+            val publicationContent: List<Link> =
+                it.manifest.resources + it.manifest.readingOrder
+
+            publicationContent
+                .firstWithRel("cover")
+                ?.url()
+                ?.let { url -> ResourceCoverService(url, it.container) }
+        }
+    }
+}
+
 /**
  * A [CoverService] which provides a unique cover for each Publication.
  */
-public abstract class GeneratedCoverService : CoverService {
+public abstract class GeneratedCoverService : CoverService, Publication.WebService {
 
     private val coverLink = Link(
         href = Url("/~readium/cover")!!,
@@ -102,25 +166,30 @@ public abstract class GeneratedCoverService : CoverService {
 
     abstract override suspend fun cover(): Bitmap
 
-    override fun get(href: Url): Resource? {
-        if (href != coverLink.url()) {
+    override suspend fun handle(request: HttpRequest): Try<HttpStreamResponse, HttpError.Response>? {
+        if (request.url != coverLink.url()) {
             return null
         }
 
-        return LazyResource {
-            val cover = cover()
-            val png = cover.toPng()
-
-            if (png == null) {
-                FailureResource(
-                    ReadError.Content(
-                        MessageError("Unable to convert cover to PNG.")
-                    )
+        val cover = cover()
+        val png = cover.toPng()
+            ?: return Try.failure(
+                HttpError.Response(
+                    HttpError.Kind.ServerError,
+                    500,
+                    null,
+                    null
                 )
-            } else {
-                BytesResource(png, mediaType = MediaType.PNG)
-            }
-        }
+            )
+
+        val response = HttpResponse(request, request.url, 200, emptyMap(), MediaType.PNG)
+
+        return Try.success(
+            HttpStreamResponse(
+                response = response,
+                body = png.inputStream()
+            )
+        )
     }
 }
 

@@ -7,11 +7,23 @@
 package org.readium.r2.streamer.extensions
 
 import org.readium.r2.shared.publication.Link
+import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.data.ClosedContainer
 import org.readium.r2.shared.util.mediatype.MediaType
-import org.readium.r2.shared.util.resource.Container
+import org.readium.r2.shared.util.resource.ResourceEntry
+import org.readium.r2.shared.util.use
 
-internal suspend fun Container.Entry.toLink(mediaType: MediaType? = null): Link =
+internal suspend fun ClosedContainer<ResourceEntry>.linkForUrl(
+    url: Url,
+    mediaType: MediaType? = null
+): Link =
     Link(
         href = url,
-        mediaType = mediaType ?: mediaType().getOrNull()
+        mediaType = mediaType ?: get(url)?.use { it.mediaType().getOrNull() }
+    )
+
+internal suspend fun ResourceEntry.toLink(mediaType: MediaType? = null): Link =
+    Link(
+        href = url,
+        mediaType = mediaType ?: this.mediaType().getOrNull()
     )

@@ -20,11 +20,12 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.publication.ReadingProgression
+import org.readium.r2.shared.util.ThrowableError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.data.ReadError
-import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.shared.util.pdf.PdfDocument
 import org.readium.r2.shared.util.pdf.PdfDocumentFactory
+import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.shared.util.resource.ResourceTry
 import timber.log.Timber
 
@@ -44,7 +45,7 @@ public class PsPdfKitDocumentFactory(context: Context) : PdfDocumentFactory<PsPd
                     PsPdfKitDocument(PdfDocumentLoader.openDocument(context, documentSource))
                 )
             } catch (e: InvalidPasswordException) {
-                Try.failure(ReadError.Forbidden(e))
+                Try.failure(ReadError.Content(ThrowableError(e)))
             } catch (e: CancellationException) {
                 throw e
             } catch (e: OutOfMemoryError) {

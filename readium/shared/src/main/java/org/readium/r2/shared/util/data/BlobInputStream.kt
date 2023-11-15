@@ -9,7 +9,6 @@ package org.readium.r2.shared.util.data
 import java.io.IOException
 import java.io.InputStream
 import kotlinx.coroutines.runBlocking
-import org.readium.r2.shared.util.Error
 import org.readium.r2.shared.util.Try
 
 /**
@@ -18,9 +17,9 @@ import org.readium.r2.shared.util.Try
  * If you experience bad performances, consider wrapping the stream in a BufferedInputStream. This
  * is particularly useful when streaming deflated ZIP entries.
  */
-public class BlobInputStream<E : Error>(
-    private val blob: Blob<E>,
-    private val wrapError: (E) -> IOException,
+public class BlobInputStream(
+    private val blob: Blob,
+    private val wrapError: (ReadError) -> IOException,
     private val range: LongRange? = null
 ) : InputStream() {
 
@@ -46,9 +45,9 @@ public class BlobInputStream<E : Error>(
      */
     private var mark: Long = range?.start ?: 0
 
-    private var error: E? = null
+    private var error: ReadError? = null
 
-    internal fun consumeError(): E? {
+    internal fun consumeError(): ReadError? {
         val errorNow = error
         error = null
         return errorNow
@@ -141,7 +140,7 @@ public class BlobInputStream<E : Error>(
         }
     }
 
-    private fun<S> Try<S, E>.recover(): S =
+    private fun<S> Try<S, ReadError>.recover(): S =
         when (this) {
             is Try.Success -> {
                 value

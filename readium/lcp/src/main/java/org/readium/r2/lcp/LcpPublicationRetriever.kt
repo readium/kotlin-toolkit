@@ -13,6 +13,7 @@ import kotlinx.coroutines.launch
 import org.readium.r2.lcp.license.container.createLicenseContainer
 import org.readium.r2.lcp.license.model.LicenseDocument
 import org.readium.r2.shared.extensions.tryOrLog
+import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.ErrorException
 import org.readium.r2.shared.util.downloads.DownloadManager
 import org.readium.r2.shared.util.mediatype.FormatRegistry
@@ -153,7 +154,7 @@ public class LcpPublicationRetriever(
     private fun fetchPublication(
         license: LicenseDocument
     ): RequestId {
-        val url = license.publicationLink.url()
+        val url = license.publicationLink.url() as AbsoluteUrl
 
         val requestId = downloadManager.submit(
             request = DownloadManager.Request(

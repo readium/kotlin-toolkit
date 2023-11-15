@@ -16,7 +16,6 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.extensions.*
 import org.readium.r2.shared.util.AbsoluteUrl
-import org.readium.r2.shared.util.FilesystemError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.toUrl
 
@@ -26,7 +25,7 @@ import org.readium.r2.shared.util.toUrl
 public class ContentBlob(
     private val uri: Uri,
     private val contentResolver: ContentResolver
-) : Blob<ReadError> {
+) : Blob {
 
     private lateinit var _length: Try<Long, ReadError>
 

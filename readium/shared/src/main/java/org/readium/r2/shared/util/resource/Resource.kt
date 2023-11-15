@@ -15,7 +15,7 @@ import org.readium.r2.shared.util.mediatype.MediaType
 /**
  * Acts as a proxy to an actual resource by handling read access.
  */
-public interface Resource : Blob<ReadError> {
+public interface Resource : Blob {
 
     /**
      * Returns the resource media type if known.
@@ -68,19 +68,12 @@ public class FailureResource(
     replaceWith = ReplaceWith("map(transform)")
 )
 @Suppress("UnusedReceiverParameter")
-public fun <R, S> Try<S>.mapCatching(): ResourceTry<R> =
+public fun <R, S, E> Try<S, E>.mapCatching(): ResourceTry<R> =
     throw NotImplementedError()
 
-public inline fun <R, S> Try<S, ResourceException>.flatMapCatching(
-    transform: (value: S) -> ResourceTry<R>
-): ResourceTry<R> =
-    flatMap {
-        try {
-            transform(it)
-        } catch (e: OutOfMemoryError) { // We don't want to catch any Error, only OOM.
-            Try.failure(ContainerEntry(ReadError.OutOfMemory(e)))
-        }
-    }
+@Suppress("UnusedReceiverParameter")
+public fun <R, S, E> Try<S, E>.flatMapCatching(): ResourceTry<R> =
+    throw NotImplementedError()
 
 internal fun Resource.withMediaType(mediaType: MediaType?): Resource {
     if (mediaType == null) {

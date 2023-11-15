@@ -61,8 +61,8 @@ internal class R2CbzPageFragment(
 
         launch {
             publication.get(link)
-                .read()
-                .getOrNull()
+                ?.read()
+                ?.getOrNull()
                 ?.let { BitmapFactory.decodeByteArray(it, 0, it.size) }
                 ?.let { photoView.setImageBitmap(it) }
         }

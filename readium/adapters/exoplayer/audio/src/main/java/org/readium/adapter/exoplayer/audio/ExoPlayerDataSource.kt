@@ -63,15 +63,14 @@ internal class ExoPlayerDataSource internal constructor(
     private var openedResource: OpenedResource? = null
 
     override fun open(dataSpec: DataSpec): Long {
-        val link = dataSpec.uri.toUrl()
+        val resource = dataSpec.uri.toUrl()
             ?.let { publication.linkWithHref(it) }
+            ?.let { publication.get(it) }
+            // Significantly improves performances, in particular with deflated ZIP entries.
+            ?.buffered(resourceLength = cachedLengths[dataSpec.uri.toString()])
             ?: throw ExoPlayerDataSourceException.NotFound(
                 "Can't find a [Link] for URI: ${dataSpec.uri}. Make sure you only request resources declared in the manifest."
             )
-
-        val resource = publication.get(link)
-            // Significantly improves performances, in particular with deflated ZIP entries.
-            .buffered(resourceLength = cachedLengths[dataSpec.uri.toString()])
 
         openedResource = OpenedResource(
             resource = resource,

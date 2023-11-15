@@ -13,12 +13,12 @@ import java.util.zip.ZipException
 import java.util.zip.ZipFile
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.readium.r2.shared.util.FilesystemError
 import org.readium.r2.shared.util.MessageError
 import org.readium.r2.shared.util.ThrowableError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.data.Blob
 import org.readium.r2.shared.util.data.ClosedContainer
+import org.readium.r2.shared.util.data.FilesystemError
 import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.mediatype.MediaType
@@ -44,7 +44,7 @@ public class FileZipArchiveProvider(
         return Try.failure(MediaTypeSnifferError.NotRecognized)
     }
 
-    override suspend fun sniffBlob(blob: Blob<ReadError>): Try<MediaType, MediaTypeSnifferError> {
+    override suspend fun sniffBlob(blob: Blob): Try<MediaType, MediaTypeSnifferError> {
         val file = blob.source?.toFile()
             ?: return Try.Failure(MediaTypeSnifferError.NotRecognized)
 
@@ -77,7 +77,7 @@ public class FileZipArchiveProvider(
     }
 
     override suspend fun create(
-        resource: Blob<ReadError>,
+        resource: Blob,
         password: String?
     ): Try<ClosedContainer<ResourceEntry>, ArchiveFactory.Error> {
         if (password != null) {

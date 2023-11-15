@@ -78,7 +78,7 @@ class PositionsServiceTest {
             override suspend fun positionsByReadingOrder(): List<List<Locator>> = positions
         }
 
-        val json = service.get(Url("/~readium/positions")!!)
+        val json = service.handle(Url("/~readium/positions")!!)
             ?.let { runBlocking { it.readAsString() } }
             ?.getOrNull()
             ?.let { JSONObject(it) }

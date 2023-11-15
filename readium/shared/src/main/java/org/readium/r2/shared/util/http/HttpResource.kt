@@ -8,8 +8,8 @@ import org.readium.r2.shared.extensions.read
 import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.MessageError
-import org.readium.r2.shared.util.NetworkError
 import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.data.HttpError
 import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.flatMap
 import org.readium.r2.shared.util.io.CountingInputStream
@@ -66,8 +66,8 @@ public class HttpResource(
             return _headResponse
         }
 
-        _headResponse = client.head(HttpRequest(source.toString()))
-            .mapFailure { it.wrap() }
+        _headResponse = client.head(HttpRequest(source))
+            .mapFailure { ReadError.Network(it) }
 
         return _headResponse
     }
@@ -91,7 +91,7 @@ public class HttpResource(
         }
         tryOrLog { inputStream?.close() }
 
-        val request = HttpRequest(source.toString()) {
+        val request = HttpRequest(source) {
             from?.let { setRange(from..-1) }
         }
 
@@ -100,13 +100,13 @@ public class HttpResource(
                 if (from != null && response.response.statusCode != 206
                 ) {
                     val error = MessageError("Server seems not to support range requests.")
-                    Try.failure(HttpError(HttpError.Kind.Other, cause = error))
+                    Try.failure(HttpError.Other(error))
                 } else {
                     Try.success(response)
                 }
             }
             .map { CountingInputStream(it.body) }
-            .mapFailure { it.wrap() }
+            .mapFailure { ReadError.Network(it) }
             .onSuccess {
                 inputStream = it
                 inputStreamStart = from ?: 0
@@ -115,22 +115,6 @@ public class HttpResource(
 
     private var inputStream: CountingInputStream? = null
     private var inputStreamStart = 0L
-
-    private fun HttpError.wrap(): ReadError =
-        when (this.kind) {
-            HttpError.Kind.MalformedRequest, HttpError.Kind.BadRequest, HttpError.Kind.MethodNotAllowed ->
-                ReadError.Network(NetworkError.BadRequest(cause = this))
-            HttpError.Kind.Timeout, HttpError.Kind.Offline ->
-                ReadError.Network(NetworkError.Offline(this))
-            HttpError.Kind.Unauthorized, HttpError.Kind.Forbidden ->
-                ReadError.Network(NetworkError.Forbidden(this))
-            HttpError.Kind.NotFound ->
-                ReadError.Network(NetworkError.NotFound(this))
-            HttpError.Kind.Cancelled, HttpError.Kind.TooManyRedirects ->
-                ReadError.Other(this)
-            HttpError.Kind.MalformedResponse, HttpError.Kind.ClientError, HttpError.Kind.ServerError, HttpError.Kind.Other ->
-                ReadError.Other(this)
-        }
 
     public companion object {
 

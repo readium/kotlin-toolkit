@@ -20,24 +20,18 @@ import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.PublicationServicesHolder
 import org.readium.r2.shared.publication.ServiceFactory
 import org.readium.r2.shared.publication.protection.ContentProtection
-import org.readium.r2.shared.util.NetworkError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
-import org.readium.r2.shared.util.data.ReadError
-import org.readium.r2.shared.util.http.HttpError
+import org.readium.r2.shared.util.data.HttpError
+import org.readium.r2.shared.util.http.HttpRequest
+import org.readium.r2.shared.util.http.HttpResponse
+import org.readium.r2.shared.util.http.HttpStreamResponse
 import org.readium.r2.shared.util.mediatype.MediaType
-import org.readium.r2.shared.util.resource.FailureResource
-import org.readium.r2.shared.util.resource.FailureResourceEntry
-import org.readium.r2.shared.util.resource.LazyResource
-import org.readium.r2.shared.util.resource.Resource
-import org.readium.r2.shared.util.resource.ResourceEntry
-import org.readium.r2.shared.util.resource.StringResource
-import org.readium.r2.shared.util.resource.toResourceEntry
 
 /**
  * Provides information about a publication's content protection and manages user rights.
  */
-public interface ContentProtectionService : Publication.Service {
+public interface ContentProtectionService : Publication.WebService {
 
     /**
      * Whether the [Publication] has a restricted access to its resources, and can't be rendered in
@@ -74,9 +68,9 @@ public interface ContentProtectionService : Publication.Service {
     override val links: List<Link>
         get() = RouteHandler.links
 
-    override fun get(href: Url): Resource? {
-        val route = RouteHandler.route(href) ?: return null
-        return route.handleRequest(href, this)
+    override suspend fun handle(request: HttpRequest): Try<HttpStreamResponse, HttpError.Response>? {
+        val route = RouteHandler.route(request.url) ?: return null
+        return route.handleRequest(request, this)
     }
 
     /**
@@ -258,7 +252,7 @@ private sealed class RouteHandler {
 
     abstract fun acceptRequest(url: Url): Boolean
 
-    abstract fun handleRequest(url: Url, service: ContentProtectionService): Resource
+    abstract suspend fun handleRequest(request: HttpRequest, service: ContentProtectionService): Try<HttpStreamResponse, HttpError.Response>
 
     object ContentProtectionHandler : RouteHandler() {
 
@@ -273,17 +267,30 @@ private sealed class RouteHandler {
         override fun acceptRequest(url: Url): Boolean =
             url.path == path
 
-        override fun handleRequest(url: Url, service: ContentProtectionService): Resource =
-            StringResource(mediaType = mediaType) {
-                Try.success(
-                    JSONObject().apply {
-                        put("isRestricted", service.isRestricted)
-                        putOpt("error", service.error?.localizedMessage)
-                        putIfNotEmpty("name", service.name)
-                        put("rights", service.rights.toJSON())
-                    }.toString()
-                )
+        override suspend fun handleRequest(request: HttpRequest, service: ContentProtectionService): Try<HttpStreamResponse, HttpError.Response> {
+            val json = JSONObject().apply {
+                put("isRestricted", service.isRestricted)
+                putOpt("error", service.error?.localizedMessage)
+                putIfNotEmpty("name", service.name)
+                put("rights", service.rights.toJSON())
             }
+
+            val response = HttpResponse(
+                request = request,
+                url = request.url,
+                200,
+                emptyMap(),
+                mediaType
+            )
+
+            val body = json
+                .toString()
+                .byteInputStream(charset = Charsets.UTF_8)
+
+            return Try.success(
+                HttpStreamResponse(response, body)
+            )
+        }
     }
 
     object RightsCopyHandler : RouteHandler() {
@@ -299,32 +306,23 @@ private sealed class RouteHandler {
         override fun acceptRequest(url: Url): Boolean =
             url.path == path
 
-        override fun handleRequest(url: Url, service: ContentProtectionService): ResourceEntry =
-            LazyResource { handleRequestAsync(url, service) }.toResourceEntry(url)
-
-        private suspend fun handleRequestAsync(url: Url, service: ContentProtectionService): ResourceEntry {
-            val query = url.query
+        override suspend fun handleRequest(request: HttpRequest, service: ContentProtectionService): Try<HttpStreamResponse, HttpError.Response> {
+            val query = request.url.query
             val text = query.firstNamedOrNull("text")
-                ?: return FailureResourceEntry(
-                    url,
-                    ReadError.Network(
-                        NetworkError.BadRequest("'text' parameter is required")
-                    )
+                ?: return Try.failure(
+                    badRequestResponse("'text' parameter is required.")
                 )
             val peek = (query.firstNamedOrNull("peek") ?: "false").toBooleanOrNull()
-                ?: return FailureResourceEntry(
-                    url,
-                    ReadError.Network(
-                        NetworkError.BadRequest("If present, 'peek' must be true or false")
-                    )
+                ?: return Try.failure(
+                    badRequestResponse("If present, 'peek' must be true or false.")
                 )
 
             val copyAllowed = with(service.rights) { if (peek) canCopy(text) else copy(text) }
 
             return if (!copyAllowed) {
-                FailureResource(ReadError.Network(HttpError(HttpError.Kind.Forbidden)))
+                Try.failure(forbiddenResponse())
             } else {
-                StringResource("true", MediaType.JSON)
+                Try.success(trueResponse(request))
             }
         }
     }
@@ -342,28 +340,20 @@ private sealed class RouteHandler {
         override fun acceptRequest(url: Url): Boolean =
             url.path == path
 
-        override fun handleRequest(url: Url, service: ContentProtectionService): Resource =
-            LazyResource { handleRequestAsync(url, service) }
-        private suspend fun handleRequestAsync(url: Url, service: ContentProtectionService): Resource {
-            val query = url.query
+        override suspend fun handleRequest(request: HttpRequest, service: ContentProtectionService): Try<HttpStreamResponse, HttpError.Response> {
+            val query = request.url.query
             val pageCountString = query.firstNamedOrNull("pageCount")
-                ?: return FailureResource(
-                    ReadError.Network(
-                        NetworkError.BadRequest("'pageCount' parameter is required")
-                    )
+                ?: return Try.failure(
+                    badRequestResponse("'pageCount' parameter is required")
                 )
 
             val pageCount = pageCountString.toIntOrNull()?.takeIf { it >= 0 }
-                ?: return FailureResource(
-                    ReadError.Network(
-                        NetworkError.BadRequest("'pageCount' must be a positive integer")
-                    )
+                ?: return Try.failure(
+                    badRequestResponse("'pageCount' must be a positive integer")
                 )
             val peek = (query.firstNamedOrNull("peek") ?: "false").toBooleanOrNull()
-                ?: return FailureResource(
-                    ReadError.Network(
-                        NetworkError.BadRequest("if present, 'peek' must be true or false")
-                    )
+                ?: return Try.failure(
+                    badRequestResponse("If present, 'peek' must be true or false")
                 )
 
             val printAllowed = with(service.rights) {
@@ -377,9 +367,9 @@ private sealed class RouteHandler {
             }
 
             return if (!printAllowed) {
-                FailureResource(ReadError.Network(NetworkError.Forbidden()))
+                Try.failure(forbiddenResponse())
             } else {
-                StringResource("true", mediaType = MediaType.JSON)
+                Try.success(trueResponse(request))
             }
         }
     }
@@ -395,3 +385,32 @@ private sealed class RouteHandler {
         put("canPrint", canPrint)
     }
 }
+
+private fun trueResponse(request: HttpRequest): HttpStreamResponse =
+    HttpStreamResponse(
+        response = HttpResponse(
+            request,
+            request.url,
+            200,
+            emptyMap(),
+            MediaType.JSON
+        ),
+        body = "true".byteInputStream()
+    )
+private fun forbiddenResponse(): HttpError.Response =
+    HttpError.Response(
+        HttpError.Kind.Forbidden,
+        403,
+        null
+    )
+
+private fun badRequestResponse(detail: String): HttpError.Response =
+    HttpError.Response(
+        HttpError.Kind.BadRequest,
+        400,
+        null,
+        JSONObject().apply {
+            put("title", "Bad request")
+            put("detail", detail)
+        }.toString().encodeToByteArray()
+    )

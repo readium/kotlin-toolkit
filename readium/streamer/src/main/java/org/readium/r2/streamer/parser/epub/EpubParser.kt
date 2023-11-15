@@ -139,7 +139,10 @@ public class EpubParser(
             ?.let { EncryptionParser.parse(it) }
             ?: emptyMap()
 
-    private suspend fun parseNavigationData(packageDocument: PackageDocument, container: ClosedContainer<ResourceEntry>): Map<String, List<Link>> =
+    private suspend fun parseNavigationData(
+        packageDocument: PackageDocument,
+        container: ClosedContainer<ResourceEntry>
+    ): Map<String, List<Link>> =
         parseNavigationDocument(packageDocument, container)
             ?: parseNcx(packageDocument, container)
             ?: emptyMap()
@@ -156,7 +159,10 @@ public class EpubParser(
             }
             ?.takeUnless { it.isEmpty() }
 
-    private suspend fun parseNcx(packageDocument: PackageDocument, container: ClosedContainer<ResourceEntry>): Map<String, List<Link>>? {
+    private suspend fun parseNcx(
+        packageDocument: PackageDocument,
+        container: ClosedContainer<ResourceEntry>
+    ): Map<String, List<Link>>? {
         val ncxItem =
             if (packageDocument.spine.toc != null) {
                 packageDocument.manifest.firstOrNull { it.id == packageDocument.spine.toc }
@@ -187,9 +193,8 @@ public class EpubParser(
     }
 
     private suspend fun<R> ResourceEntry.decodeOrFail(
-        decode: suspend Resource.() -> Try<R, DecoderError<ReadError>>
+        decode: suspend Resource.() -> Try<R, DecoderError>
     ): Try<R, PublicationParser.Error> {
-
         return decode()
             .mapFailure {
                 when (it) {

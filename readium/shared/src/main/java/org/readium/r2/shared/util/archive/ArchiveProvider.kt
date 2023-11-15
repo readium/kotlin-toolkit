@@ -49,7 +49,7 @@ public interface ArchiveFactory {
      * Creates a new archive [ResourceContainer] to access the entries of the given archive.
      */
     public suspend fun create(
-        resource: Blob<ReadError>,
+        resource: Blob,
         password: String? = null
     ): Try<ClosedContainer<ResourceEntry>, Error>
 }
@@ -61,7 +61,7 @@ public class CompositeArchiveFactory(
     public constructor(vararg factories: ArchiveFactory) : this(factories.toList())
 
     override suspend fun create(
-        resource: Blob<ReadError>,
+        resource: Blob,
         password: String?
     ): Try<ClosedContainer<ResourceEntry>, ArchiveFactory.Error> {
         for (factory in factories) {
