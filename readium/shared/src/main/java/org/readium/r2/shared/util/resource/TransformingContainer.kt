@@ -23,24 +23,24 @@ public typealias ResourceTransformer = (Resource) -> Resource
  * functions.
  */
 public class TransformingContainer(
-    private val container: ClosedContainer<ResourceEntry>,
-    private val transformers: List<ResourceTransformer>
-) : ClosedContainer<ResourceEntry> {
+    private val container: ClosedContainer<Resource>,
+    private val transformers: List<(Url, Resource) -> Resource>
+) : ClosedContainer<Resource> {
 
-    public constructor(container: ClosedContainer<ResourceEntry>, transformer: ResourceTransformer) :
+    public constructor(container: ClosedContainer<Resource>, transformer: (Url, Resource) -> Resource) :
         this(container, listOf(transformer))
 
     override suspend fun entries(): Set<Url> =
         container.entries()
 
-    override fun get(url: Url): ResourceEntry? {
+    override fun get(url: Url): Resource? {
         val originalResource = container.get(url)
             ?: return null
 
         return transformers
-            .fold(originalResource) { acc: Resource, transformer: ResourceTransformer ->
-                transformer(acc)
-            }.toResourceEntry(url)
+            .fold(originalResource) { acc: Resource, transformer: (Url, Resource) -> Resource ->
+                transformer(url, acc)
+            }
     }
 
     override suspend fun close() {

@@ -43,8 +43,10 @@ public class PdfParser(
             return Try.failure(PublicationParser.Error.UnsupportedFormat())
         }
 
-        val resource = asset.container.entries()
+        val url = asset.container.entries()
             .firstOrNull()
+
+        val resource = url
             ?.let { asset.container.get(it) }
             ?: return Try.failure(
                 PublicationParser.Error.ReadError(
@@ -55,7 +57,7 @@ public class PdfParser(
             )
         val document = pdfFactory.open(resource, password = null)
             .getOrElse { return Try.failure(PublicationParser.Error.ReadError(it)) }
-        val tableOfContents = document.outline.toLinks(resource.url)
+        val tableOfContents = document.outline.toLinks(url)
 
         val manifest = Manifest(
             metadata = Metadata(
@@ -66,7 +68,7 @@ public class PdfParser(
                 readingProgression = document.readingProgression,
                 numberOfPages = document.pageCount
             ),
-            readingOrder = listOf(resource.toLink(MediaType.PDF)),
+            readingOrder = listOf(resource.toLink(url, MediaType.PDF)),
             tableOfContents = tableOfContents
         )
 

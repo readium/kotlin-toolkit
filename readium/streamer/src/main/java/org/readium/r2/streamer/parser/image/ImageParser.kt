@@ -18,7 +18,7 @@ import org.readium.r2.shared.util.data.ClosedContainer
 import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.mediatype.MediaType
-import org.readium.r2.shared.util.resource.ResourceEntry
+import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.shared.util.use
 import org.readium.r2.streamer.extensions.guessTitle
 import org.readium.r2.streamer.extensions.isHiddenOrThumbs
@@ -86,6 +86,6 @@ public class ImageParser : PublicationParser {
         return Try.success(publicationBuilder)
     }
 
-    private suspend fun entryIsBitmap(container: ClosedContainer<ResourceEntry>, url: Url) =
+    private suspend fun entryIsBitmap(container: ClosedContainer<Resource>, url: Url) =
         container.get(url)!!.use { it.mediaType() }.getOrNull()?.isBitmap == true
 }

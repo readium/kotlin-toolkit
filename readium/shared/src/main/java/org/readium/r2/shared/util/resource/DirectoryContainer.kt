@@ -10,12 +10,13 @@ import java.io.File
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.extensions.isParentOf
-import org.readium.r2.shared.extensions.tryOrNull
 import org.readium.r2.shared.util.RelativeUrl
+import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.data.ClosedContainer
 import org.readium.r2.shared.util.data.Container
 import org.readium.r2.shared.util.data.FileBlob
+import org.readium.r2.shared.util.data.FilesystemError
 import org.readium.r2.shared.util.mediatype.MediaTypeHints
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 import org.readium.r2.shared.util.toUrl
@@ -25,43 +26,46 @@ import org.readium.r2.shared.util.toUrl
  */
 public class DirectoryContainer(
     private val root: File,
-    private val mediaTypeRetriever: MediaTypeRetriever
-) : ClosedContainer<ResourceEntry> {
+    private val mediaTypeRetriever: MediaTypeRetriever,
+    private val entries: Set<Url>
+) : ClosedContainer<Resource> {
 
-    private val _entries: Set<Url> by lazy {
-        tryOrNull {
-            root.walk()
-                .filter { it.isFile }
-                .mapNotNull { it.toUrl() }
-                .toSet()
-        }.orEmpty()
-    }
-
-    private fun File.toEntry(): ResourceEntry? {
-        val url = Url.fromDecodedPath(this.relativeTo(root).path)
-            ?: return null
-
-        val resource = GuessMediaTypeResourceAdapter(
+    private fun File.toResource(): Resource {
+        return GuessMediaTypeResourceAdapter(
             FileBlob(this),
             mediaTypeRetriever,
             MediaTypeHints(fileExtension = extension)
         )
-        return DelegatingResourceEntry(url, resource)
     }
 
     override suspend fun entries(): Set<Url> {
-        return withContext(Dispatchers.IO) {
-            _entries
-        }
+       return entries
     }
 
-    override fun get(url: Url): ResourceEntry? {
-        val file = (url as? RelativeUrl)?.path
+    override fun get(url: Url): Resource? =
+        (url as? RelativeUrl)?.path
             ?.let { File(root, it) }
             ?.takeIf { !root.isParentOf(it) }
-
-        return file?.toEntry()
-    }
+            ?.toResource()
 
     override suspend fun close() {}
+
+    public companion object {
+
+        public suspend operator fun invoke(root: File, mediaTypeRetriever: MediaTypeRetriever): Try<DirectoryContainer, FilesystemError> {
+            val entries =
+                try {
+                    withContext(Dispatchers.IO) {
+                        root.walk()
+                            .filter { it.isFile }
+                            .map { it.toUrl() }
+                            .toSet()
+                    }
+                } catch (e: SecurityException) {
+                    return Try.failure(FilesystemError.Forbidden(e))
+                }
+            val container = DirectoryContainer(root, mediaTypeRetriever, entries)
+            return Try.success(container)
+        }
+    }
 }

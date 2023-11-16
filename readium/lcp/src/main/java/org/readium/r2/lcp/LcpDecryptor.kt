@@ -28,7 +28,6 @@ import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 import org.readium.r2.shared.util.mediatype.MediaTypeSnifferError
 import org.readium.r2.shared.util.resource.FailureResource
 import org.readium.r2.shared.util.resource.Resource
-import org.readium.r2.shared.util.resource.ResourceEntry
 import org.readium.r2.shared.util.resource.TransformingResource
 import org.readium.r2.shared.util.resource.flatMap
 import org.readium.r2.shared.util.tryRecover
@@ -42,13 +41,9 @@ internal class LcpDecryptor(
     var encryptionData: Map<Url, Encryption> = emptyMap()
 ) {
 
-    fun transform(resource: Resource): Resource {
-        if (resource !is ResourceEntry) {
-            return resource
-        }
-
+    fun transform(url: Url, resource: Resource): Resource {
         return resource.flatMap {
-            val encryption = encryptionData[resource.url]
+            val encryption = encryptionData[url]
 
             // Checks if the resource is encrypted and whether the encryption schemes of the resource
             // and the DRM license are the same.
@@ -67,6 +62,7 @@ internal class LcpDecryptor(
                     )
                 encryption.isDeflated || !encryption.isCbcEncrypted ->
                     FullLcpResource(
+                        url,
                         resource,
                         encryption,
                         license,
@@ -74,6 +70,7 @@ internal class LcpDecryptor(
                     )
                 else ->
                     CbcLcpResource(
+                        url,
                         resource,
                         encryption,
                         license,
@@ -90,7 +87,8 @@ internal class LcpDecryptor(
      * resource, for example when the resource is deflated before encryption.
      */
     private class FullLcpResource(
-        private val resource: ResourceEntry,
+        private val url: Url,
+        resource: Resource,
         private val encryption: Encryption,
         private val license: LcpLicense,
         private val mediaTypeRetriever: MediaTypeRetriever
@@ -101,7 +99,7 @@ internal class LcpDecryptor(
         override suspend fun mediaType(): Try<MediaType, ReadError> =
             mediaTypeRetriever
                 .retrieve(
-                    hints = MediaTypeHints(fileExtension = resource.url.extension),
+                    hints = MediaTypeHints(fileExtension = url.extension),
                     blob = this
                 )
                 .tryRecover { error ->
@@ -127,7 +125,8 @@ internal class LcpDecryptor(
      * Supports random access for byte range requests, but the resource MUST NOT be deflated.
      */
     private class CbcLcpResource(
-        private val resource: ResourceEntry,
+        private val url: Url,
+        private val resource: Resource,
         private val encryption: Encryption,
         private val license: LcpLicense,
         private val mediaTypeRetriever: MediaTypeRetriever
@@ -156,7 +155,7 @@ internal class LcpDecryptor(
         override suspend fun mediaType(): Try<MediaType, ReadError> =
             mediaTypeRetriever
                 .retrieve(
-                    hints = MediaTypeHints(fileExtension = resource.url.extension),
+                    hints = MediaTypeHints(fileExtension = url.extension),
                     blob = this
                 ).tryRecover { error ->
                     when (error) {

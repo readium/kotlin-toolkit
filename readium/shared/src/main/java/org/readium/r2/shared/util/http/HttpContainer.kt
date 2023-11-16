@@ -9,8 +9,7 @@ package org.readium.r2.shared.util.http
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.data.ClosedContainer
-import org.readium.r2.shared.util.resource.ResourceEntry
-import org.readium.r2.shared.util.resource.toResourceEntry
+import org.readium.r2.shared.util.resource.Resource
 
 /**
  * Fetches remote resources through HTTP.
@@ -25,17 +24,17 @@ public class HttpContainer(
     private val client: HttpClient,
     private val baseUrl: Url? = null,
     private val entries: Set<Url>
-) : ClosedContainer<ResourceEntry> {
+) : ClosedContainer<Resource> {
 
     override suspend fun entries(): Set<Url> = entries
 
-    override fun get(url: Url): ResourceEntry? {
+    override fun get(url: Url): Resource? {
         val absoluteUrl = (baseUrl?.resolve(url) ?: url) as? AbsoluteUrl
 
         return if (absoluteUrl == null || !absoluteUrl.isHttp) {
             null
         } else {
-            HttpResource(client, absoluteUrl).toResourceEntry(url)
+            HttpResource(client, absoluteUrl)
         }
     }
 

@@ -32,7 +32,7 @@ import org.readium.r2.shared.util.http.HttpResponse
 import org.readium.r2.shared.util.http.HttpStreamResponse
 import org.readium.r2.shared.util.http.fetch
 import org.readium.r2.shared.util.mediatype.MediaType
-import org.readium.r2.shared.util.resource.ResourceEntry
+import org.readium.r2.shared.util.resource.Resource
 
 /**
  * Provides an easy access to a bitmap version of the publication cover.
@@ -127,7 +127,7 @@ internal class ExternalCoverService(
 
 internal class ResourceCoverService(
     private val coverUrl: Url,
-    private val container: ClosedContainer<ResourceEntry>
+    private val container: ClosedContainer<Resource>
 ) : CoverService {
 
     override suspend fun cover(): Bitmap? {

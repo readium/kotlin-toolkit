@@ -14,7 +14,7 @@ import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.mediatype.MediaTypeSniffer
 import org.readium.r2.shared.util.resource.ResourceContainer
-import org.readium.r2.shared.util.resource.ResourceEntry
+import org.readium.r2.shared.util.resource.Resource
 
 public interface ArchiveProvider : MediaTypeSniffer, ArchiveFactory
 
@@ -51,7 +51,7 @@ public interface ArchiveFactory {
     public suspend fun create(
         resource: Blob,
         password: String? = null
-    ): Try<ClosedContainer<ResourceEntry>, Error>
+    ): Try<ClosedContainer<Resource>, Error>
 }
 
 public class CompositeArchiveFactory(
@@ -63,7 +63,7 @@ public class CompositeArchiveFactory(
     override suspend fun create(
         resource: Blob,
         password: String?
-    ): Try<ClosedContainer<ResourceEntry>, ArchiveFactory.Error> {
+    ): Try<ClosedContainer<Resource>, ArchiveFactory.Error> {
         for (factory in factories) {
             factory.create(resource, password)
                 .getOrElse { error ->

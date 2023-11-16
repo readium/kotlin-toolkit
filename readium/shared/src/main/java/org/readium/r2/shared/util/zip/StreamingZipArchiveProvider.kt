@@ -24,7 +24,7 @@ import org.readium.r2.shared.util.mediatype.MediaTypeHints
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 import org.readium.r2.shared.util.mediatype.MediaTypeSnifferError
 import org.readium.r2.shared.util.resource.ResourceContainer
-import org.readium.r2.shared.util.resource.ResourceEntry
+import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.shared.util.toUrl
 import org.readium.r2.shared.util.zip.compress.archivers.zip.ZipFile
 import org.readium.r2.shared.util.zip.jvm.SeekableByteChannel
@@ -64,7 +64,7 @@ public class StreamingZipArchiveProvider(
     override suspend fun create(
         resource: Blob,
         password: String?
-    ): Try<ClosedContainer<ResourceEntry>, ArchiveFactory.Error> {
+    ): Try<ClosedContainer<Resource>, ArchiveFactory.Error> {
         if (password != null) {
             return Try.failure(ArchiveFactory.Error.PasswordsNotSupported())
         }
@@ -90,7 +90,7 @@ public class StreamingZipArchiveProvider(
         blob: Blob,
         wrapError: (ReadError) -> IOException,
         sourceUrl: AbsoluteUrl?
-    ): ClosedContainer<ResourceEntry> = withContext(Dispatchers.IO) {
+    ): ClosedContainer<Resource> = withContext(Dispatchers.IO) {
         val datasourceChannel = BlobChannel(blob, wrapError)
         val channel = wrapBaseChannel(datasourceChannel)
         val zipFile = ZipFile(channel, true)

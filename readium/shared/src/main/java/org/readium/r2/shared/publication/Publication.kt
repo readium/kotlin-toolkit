@@ -40,7 +40,6 @@ import org.readium.r2.shared.util.http.HttpRequest
 import org.readium.r2.shared.util.http.HttpStreamResponse
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.resource.Resource
-import org.readium.r2.shared.util.resource.ResourceEntry
 import org.readium.r2.shared.util.resource.withMediaType
 
 internal typealias ServiceFactory = (Publication.Service.Context) -> Publication.Service?
@@ -55,7 +54,7 @@ internal typealias ServiceFactory = (Publication.Service.Context) -> Publication
  */
 public typealias PublicationId = String
 
-public typealias PublicationContainer = ClosedContainer<ResourceEntry>
+public typealias PublicationContainer = ClosedContainer<Resource>
 
 /**
  * The Publication shared model is the entry-point for all the metadata and services

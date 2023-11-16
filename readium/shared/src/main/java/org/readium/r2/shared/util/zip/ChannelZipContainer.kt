@@ -27,7 +27,6 @@ import org.readium.r2.shared.util.mediatype.MediaTypeHints
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 import org.readium.r2.shared.util.mediatype.MediaTypeSnifferError
 import org.readium.r2.shared.util.resource.Resource
-import org.readium.r2.shared.util.resource.ResourceEntry
 import org.readium.r2.shared.util.resource.ResourceTry
 import org.readium.r2.shared.util.tryRecover
 import org.readium.r2.shared.util.zip.compress.archivers.zip.ZipArchiveEntry
@@ -37,12 +36,12 @@ internal class ChannelZipContainer(
     private val zipFile: ZipFile,
     override val source: AbsoluteUrl?,
     private val mediaTypeRetriever: MediaTypeRetriever
-) : ClosedContainer<ResourceEntry> {
+) : ClosedContainer<Resource> {
 
     private inner class Entry(
-        override val url: Url,
+        private val url: Url,
         private val entry: ZipArchiveEntry
-    ) : ResourceEntry {
+    ) : Resource {
 
         override val source: AbsoluteUrl? get() = null
 
@@ -158,7 +157,7 @@ internal class ChannelZipContainer(
             .mapNotNull { entry -> Url.fromDecodedPath(entry.name) }
             .toSet()
 
-    override fun get(url: Url): ResourceEntry? =
+    override fun get(url: Url): Resource? =
         (url as? RelativeUrl)?.path
             ?.let { zipFile.getEntry(it) }
             ?.takeUnless { it.isDirectory }

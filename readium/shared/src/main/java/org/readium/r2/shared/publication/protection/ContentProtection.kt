@@ -28,7 +28,7 @@ import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.data.ClosedContainer
 import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.mediatype.MediaType
-import org.readium.r2.shared.util.resource.ResourceEntry
+import org.readium.r2.shared.util.resource.Resource
 
 /**
  * Bridge between a Content Protection technology and the Readium toolkit.
@@ -85,7 +85,7 @@ public interface ContentProtection {
      */
     public data class Asset(
         val mediaType: MediaType,
-        val container: ClosedContainer<ResourceEntry>,
+        val container: ClosedContainer<Resource>,
         val onCreatePublication: Publication.Builder.() -> Unit = {}
     )
 

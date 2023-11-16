@@ -25,7 +25,7 @@ import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.mediatype.MediaTypeHints
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 import org.readium.r2.shared.util.mediatype.MediaTypeSnifferError
-import org.readium.r2.shared.util.resource.ResourceEntry
+import org.readium.r2.shared.util.resource.Resource
 
 /**
  * An [ArchiveFactory] to open local ZIP files with Java's [ZipFile].
@@ -79,7 +79,7 @@ public class FileZipArchiveProvider(
     override suspend fun create(
         resource: Blob,
         password: String?
-    ): Try<ClosedContainer<ResourceEntry>, ArchiveFactory.Error> {
+    ): Try<ClosedContainer<Resource>, ArchiveFactory.Error> {
         if (password != null) {
             return Try.failure(ArchiveFactory.Error.PasswordsNotSupported())
         }
@@ -98,7 +98,7 @@ public class FileZipArchiveProvider(
     }
 
     // Internal for testing purpose
-    internal suspend fun open(file: File): Try<ClosedContainer<ResourceEntry>, ArchiveFactory.Error> =
+    internal suspend fun open(file: File): Try<ClosedContainer<Resource>, ArchiveFactory.Error> =
         withContext(Dispatchers.IO) {
             try {
                 val archive = JavaZipContainer(ZipFile(file), file, mediaTypeRetriever)

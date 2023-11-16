@@ -28,7 +28,6 @@ import org.readium.r2.shared.util.mediatype.MediaTypeHints
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 import org.readium.r2.shared.util.mediatype.MediaTypeSnifferError
 import org.readium.r2.shared.util.resource.Resource
-import org.readium.r2.shared.util.resource.ResourceEntry
 import org.readium.r2.shared.util.toUrl
 import org.readium.r2.shared.util.tryRecover
 
@@ -36,10 +35,10 @@ internal class JavaZipContainer(
     private val archive: ZipFile,
     file: File,
     private val mediaTypeRetriever: MediaTypeRetriever
-) : ClosedContainer<ResourceEntry> {
+) : ClosedContainer<Resource> {
 
-    private inner class Entry(override val url: Url, private val entry: ZipEntry) :
-        ResourceEntry {
+    private inner class Entry(private val url: Url, private val entry: ZipEntry) :
+        Resource {
 
         override val source: AbsoluteUrl? = null
 
@@ -147,7 +146,7 @@ internal class JavaZipContainer(
             .mapNotNull { entry -> Url.fromDecodedPath(entry.name) }
             .toSet()
 
-    override fun get(url: Url): ResourceEntry? =
+    override fun get(url: Url): Resource? =
         (url as? RelativeUrl)?.path
             ?.let {
                 tryOrLog { archive.getEntry(it) }

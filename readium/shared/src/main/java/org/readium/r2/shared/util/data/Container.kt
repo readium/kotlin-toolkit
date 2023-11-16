@@ -13,20 +13,9 @@ import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.resource.Resource
 
 /**
- * Represents a container entry's.
- */
-public interface ContainerEntry : Blob {
-
-    /**
-     * URL used to access the resource in the container.
-     */
-    public val url: Url
-}
-
-/**
  * A container provides access to a list of [Resource] entries.
  */
-public interface Container<E : ContainerEntry> : SuspendingCloseable {
+public interface Container<E : Blob> : SuspendingCloseable {
 
     /**
      * Direct source to this container, when available.
@@ -42,7 +31,7 @@ public interface Container<E : ContainerEntry> : SuspendingCloseable {
     public fun get(url: Url): E?
 }
 
-public interface ClosedContainer<E : ContainerEntry> : Container<E> {
+public interface ClosedContainer<E : Blob> : Container<E> {
 
     /**
      * List of all the container entries.
@@ -51,7 +40,7 @@ public interface ClosedContainer<E : ContainerEntry> : Container<E> {
 }
 
 /** A [Container] providing no resources at all. */
-public class EmptyContainer<E : ContainerEntry> : ClosedContainer<E> {
+public class EmptyContainer<E : Blob> : ClosedContainer<E> {
 
     override suspend fun entries(): Set<Url> = emptySet()
 
@@ -63,7 +52,7 @@ public class EmptyContainer<E : ContainerEntry> : ClosedContainer<E> {
 /**
  * Returns whether an entry exists in the container.
  */
-internal suspend fun<E : ContainerEntry> Container<E>.contains(url: Url): Try<Boolean, ReadError> {
+internal suspend fun<E : Blob> Container<E>.contains(url: Url): Try<Boolean, ReadError> {
     if (this is ClosedContainer) {
         return Try.success(url in entries())
     }

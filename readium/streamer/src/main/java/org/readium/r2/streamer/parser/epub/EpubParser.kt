@@ -26,7 +26,6 @@ import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 import org.readium.r2.shared.util.resource.Resource
-import org.readium.r2.shared.util.resource.ResourceEntry
 import org.readium.r2.shared.util.resource.TransformingContainer
 import org.readium.r2.shared.util.use
 import org.readium.r2.streamer.extensions.readAsXmlOrNull
@@ -64,7 +63,7 @@ public class EpubParser(
                 )
             )
         val opfXmlDocument = opfResource
-            .use { it.decodeOrFail { readAsXml() } }
+            .use { it.decodeOrFail(opfPath) { readAsXml() } }
             .getOrElse { return Try.failure(it) }
         val packageDocument = PackageDocument.parse(opfXmlDocument, opfPath, mediaTypeRetriever)
             ?: return Try.failure(
@@ -110,9 +109,11 @@ public class EpubParser(
         return Try.success(builder)
     }
 
-    private suspend fun getRootFilePath(container: ClosedContainer<ResourceEntry>): Try<Url, PublicationParser.Error> {
+    private suspend fun getRootFilePath(container: ClosedContainer<Resource>): Try<Url, PublicationParser.Error> {
+        val containerXmlUrl =Url("META-INF/container.xml")!!
+
         val containerXmlResource = container
-            .get(Url("META-INF/container.xml")!!)
+            .get(containerXmlUrl)
             ?: return Try.failure(
                 PublicationParser.Error.ReadError(
                     ReadError.Decoding("container.xml not found.")
@@ -120,7 +121,7 @@ public class EpubParser(
             )
 
         return containerXmlResource
-            .use { it.decodeOrFail { readAsXml() } }
+            .use { it.decodeOrFail(containerXmlUrl) { readAsXml() } }
             .getOrElse { return Try.failure(it) }
             .getFirst("rootfiles", Namespaces.OPC)
             ?.getFirst("rootfile", Namespaces.OPC)
@@ -134,14 +135,14 @@ public class EpubParser(
             )
     }
 
-    private suspend fun parseEncryptionData(container: ClosedContainer<ResourceEntry>): Map<Url, Encryption> =
+    private suspend fun parseEncryptionData(container: ClosedContainer<Resource>): Map<Url, Encryption> =
         container.readAsXmlOrNull("META-INF/encryption.xml")
             ?.let { EncryptionParser.parse(it) }
             ?: emptyMap()
 
     private suspend fun parseNavigationData(
         packageDocument: PackageDocument,
-        container: ClosedContainer<ResourceEntry>
+        container: ClosedContainer<Resource>
     ): Map<String, List<Link>> =
         parseNavigationDocument(packageDocument, container)
             ?: parseNcx(packageDocument, container)
@@ -149,7 +150,7 @@ public class EpubParser(
 
     private suspend fun parseNavigationDocument(
         packageDocument: PackageDocument,
-        container: ClosedContainer<ResourceEntry>
+        container: ClosedContainer<Resource>
     ): Map<String, List<Link>>? =
         packageDocument.manifest
             .firstOrNull { it.properties.contains(Vocabularies.ITEM + "nav") }
@@ -161,7 +162,7 @@ public class EpubParser(
 
     private suspend fun parseNcx(
         packageDocument: PackageDocument,
-        container: ClosedContainer<ResourceEntry>
+        container: ClosedContainer<Resource>
     ): Map<String, List<Link>>? {
         val ncxItem =
             if (packageDocument.spine.toc != null) {
@@ -177,7 +178,7 @@ public class EpubParser(
             ?.takeUnless { it.isEmpty() }
     }
 
-    private suspend fun parseDisplayOptions(container: ClosedContainer<ResourceEntry>): Map<String, String> {
+    private suspend fun parseDisplayOptions(container: ClosedContainer<Resource>): Map<String, String> {
         val displayOptionsXml =
             container.readAsXmlOrNull("META-INF/com.apple.ibooks.display-options.xml")
                 ?: container.readAsXmlOrNull("META-INF/com.kobobooks.display-options.xml")
@@ -192,7 +193,8 @@ public class EpubParser(
             ?.toMap().orEmpty()
     }
 
-    private suspend fun<R> ResourceEntry.decodeOrFail(
+    private suspend fun<R> Resource.decodeOrFail(
+        url: Url,
         decode: suspend Resource.() -> Try<R, DecoderError>
     ): Try<R, PublicationParser.Error> {
         return decode()

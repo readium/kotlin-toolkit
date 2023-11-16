@@ -17,7 +17,7 @@ import org.readium.r2.shared.util.Url
  *
  * The [routes] will be tested in the given order.
  */
-public class RoutingClosedContainer<E : ContainerEntry>(
+public class RoutingClosedContainer<E : Blob>(
     private val routes: List<Route<E>>
 ) : ClosedContainer<E> {
 
@@ -26,7 +26,7 @@ public class RoutingClosedContainer<E : ContainerEntry>(
      *
      * The default value for [accepts] means that the fetcher will accept any link.
      */
-    public class Route<E : ContainerEntry>(
+    public class Route<E : Blob>(
         public val container: ClosedContainer<E>,
         public val accepts: (Url) -> Boolean = { true }
     )
