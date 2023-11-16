@@ -80,7 +80,7 @@ internal class ParserAssetFactory(
         val manifest = asset.resource.readAsRwpm()
             .mapFailure {
                 when (it) {
-                    is DecoderError.DecodingError -> ReadError.Content(it.cause)
+                    is DecoderError.DecodingError -> ReadError.Decoding(it.cause)
                     is DecoderError.DataAccess -> it.cause
                 }
             }
@@ -93,7 +93,7 @@ internal class ParserAssetFactory(
             if (baseUrl !is AbsoluteUrl) {
                 return Try.failure(
                     Error.ReadError(
-                        ReadError.Content("Self link is not absolute.")
+                        ReadError.Decoding("Self link is not absolute.")
                     )
                 )
             }

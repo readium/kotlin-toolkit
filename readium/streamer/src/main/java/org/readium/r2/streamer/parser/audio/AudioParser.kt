@@ -52,7 +52,7 @@ public class AudioParser : PublicationParser {
         if (readingOrder.isEmpty()) {
             return Try.failure(
                 PublicationParser.Error.ReadError(
-                    ReadError.Content(
+                    ReadError.Decoding(
                         MessageError("No audio file found in the publication.")
                     )
                 )

@@ -16,6 +16,7 @@ import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.ThrowableError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.data.HttpError
+import org.readium.r2.shared.util.data.HttpStatus
 import org.readium.r2.shared.util.flatMap
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.tryRecover
@@ -205,7 +206,7 @@ public suspend fun HttpClient.head(request: HttpRequest): HttpTry<HttpResponse> 
         .copy { method = HttpRequest.Method.HEAD }
         .response()
         .tryRecover { error ->
-            if (error !is HttpError.Response || error.kind != HttpError.Kind.MethodNotAllowed) {
+            if (error !is HttpError.Response || error.status != HttpStatus.MethodNotAllowed) {
                 return@tryRecover Try.failure(error)
             }
 

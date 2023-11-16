@@ -98,7 +98,7 @@ internal class ChannelZipContainer(
                         is ReadException ->
                             Try.failure(e.error)
                         else ->
-                            Try.failure(ReadError.Content(e))
+                            Try.failure(ReadError.Decoding(e))
                     }
                 }
             }

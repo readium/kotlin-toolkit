@@ -112,7 +112,7 @@ public class FileZipArchiveProvider(
             } catch (e: ZipException) {
                 Try.failure(
                     ArchiveFactory.Error.ResourceError(
-                        ReadError.Content(e)
+                        ReadError.Decoding(e)
                     )
                 )
             } catch (e: SecurityException) {

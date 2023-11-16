@@ -104,7 +104,7 @@ public class LcpFallbackContentProtection : ContentProtection {
             ?.getOrElse {
                 when (it) {
                     is DecoderError.DataAccess ->
-                        return Try.failure(ReadError.Content(it))
+                        return Try.failure(ReadError.Decoding(it))
                     is DecoderError.DecodingError ->
                         return Try.success(false)
                 }
@@ -125,9 +125,9 @@ public class LcpFallbackContentProtection : ContentProtection {
             ?.getOrElse {
                 when (it) {
                     is DecoderError.DataAccess ->
-                        return Try.failure(ReadError.Content(it.cause.cause))
+                        return Try.failure(ReadError.Decoding(it.cause.cause))
                     is DecoderError.DecodingError ->
-                        return Try.failure(ReadError.Content(it.cause))
+                        return Try.failure(ReadError.Decoding(it.cause))
                 }
             }
             ?: return Try.success(false)

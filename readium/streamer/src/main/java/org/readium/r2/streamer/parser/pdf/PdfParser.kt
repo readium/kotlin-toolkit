@@ -48,7 +48,7 @@ public class PdfParser(
             ?.let { asset.container.get(it) }
             ?: return Try.failure(
                 PublicationParser.Error.ReadError(
-                    ReadError.Content(
+                    ReadError.Decoding(
                         MessageError("No PDF found in the publication.")
                     )
                 )

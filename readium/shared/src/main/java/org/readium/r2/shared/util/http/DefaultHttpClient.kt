@@ -25,6 +25,7 @@ import org.readium.r2.shared.util.ThrowableError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.data.HttpError
+import org.readium.r2.shared.util.data.HttpStatus
 import org.readium.r2.shared.util.data.InMemoryBlob
 import org.readium.r2.shared.util.e
 import org.readium.r2.shared.util.flatMap
@@ -125,7 +126,7 @@ public class DefaultHttpClient(
             newRequest: HttpRequest
         ): HttpTry<HttpRequest> =
             Try.failure(
-                HttpError.Cancelled(
+                HttpError.Redirection(
                     MessageError("Request cancelled because of an unsafe redirect.")
                 )
             )
@@ -160,7 +161,7 @@ public class DefaultHttpClient(
                     var connection = request.toHttpURLConnection()
 
                     val statusCode = connection.responseCode
-                    HttpError.Kind.ofStatusCode(statusCode)?.let { kind ->
+                    if (statusCode >= 400) {
                         // It was a HEAD request? We need to query the resource again to get the error body.
                         // The body is needed for example when the response is an OPDS Authentication
                         // Document.
@@ -182,7 +183,7 @@ public class DefaultHttpClient(
                             ).getOrDefault(MediaType.BINARY)
                         }
                         return@withContext Try.failure(
-                            HttpError.Response(kind, statusCode, mediaType, body)
+                            HttpError.Response(HttpStatus(statusCode), mediaType, body)
                         )
                     }
 
@@ -216,7 +217,7 @@ public class DefaultHttpClient(
         return callback.onStartRequest(request)
             .flatMap { tryStream(it) }
             .tryRecover { error ->
-                if (error !is HttpError.Cancelled) {
+                if (error !is HttpError.Redirection) {
                     callback.onRecoverRequest(request, error)
                         .flatMap { stream(it) }
                 } else {
@@ -245,7 +246,7 @@ public class DefaultHttpClient(
         val redirectCount = request.extras.getInt(EXTRA_REDIRECT_COUNT)
         if (redirectCount > 5) {
             return Try.failure(
-                HttpError.Cancelled(
+                HttpError.Redirection(
                     MessageError("There were too many redirects to follow.")
                 )
             )

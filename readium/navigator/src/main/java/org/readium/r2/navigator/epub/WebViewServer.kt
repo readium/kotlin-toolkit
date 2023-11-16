@@ -98,7 +98,7 @@ internal class WebViewServer(
                 onResourceLoadFailed(urlWithoutAnchor, it)
                 errorResource(urlWithoutAnchor, it)
             } ?: run {
-            val error = ReadError.Content(
+            val error = ReadError.Decoding(
                 "Resource not found at $urlWithoutAnchor in publication."
             )
             onResourceLoadFailed(urlWithoutAnchor, error)

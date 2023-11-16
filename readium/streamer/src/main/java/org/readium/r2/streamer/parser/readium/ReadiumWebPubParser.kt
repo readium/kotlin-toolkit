@@ -50,13 +50,13 @@ public class ReadiumWebPubParser(
                     is DecoderError.DataAccess ->
                         return Try.failure(
                             PublicationParser.Error.ReadError(
-                                ReadError.Content(it.cause)
+                                ReadError.Decoding(it.cause)
                             )
                         )
                     is DecoderError.DecodingError ->
                         return Try.failure(
                             PublicationParser.Error.ReadError(
-                                ReadError.Content(
+                                ReadError.Decoding(
                                     MessageError("Failed to parse the RWPM Manifest.")
                                 )
                             )
@@ -64,7 +64,7 @@ public class ReadiumWebPubParser(
                 }
             } ?: return Try.failure(
             PublicationParser.Error.ReadError(
-                ReadError.Content(
+                ReadError.Decoding(
                     MessageError("Missing manifest.")
                 )
             )
@@ -78,7 +78,7 @@ public class ReadiumWebPubParser(
         ) {
             return Try.failure(
                 PublicationParser.Error.ReadError(
-                    ReadError.Content("Invalid LCP Protected PDF.")
+                    ReadError.Decoding("Invalid LCP Protected PDF.")
                 )
             )
         }

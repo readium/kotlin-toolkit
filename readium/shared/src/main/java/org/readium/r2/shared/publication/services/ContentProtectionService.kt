@@ -23,6 +23,7 @@ import org.readium.r2.shared.publication.protection.ContentProtection
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.data.HttpError
+import org.readium.r2.shared.util.data.HttpStatus
 import org.readium.r2.shared.util.http.HttpRequest
 import org.readium.r2.shared.util.http.HttpResponse
 import org.readium.r2.shared.util.http.HttpStreamResponse
@@ -399,16 +400,13 @@ private fun trueResponse(request: HttpRequest): HttpStreamResponse =
     )
 private fun forbiddenResponse(): HttpError.Response =
     HttpError.Response(
-        HttpError.Kind.Forbidden,
-        403,
-        null
+        HttpStatus.Forbidden
     )
 
 private fun badRequestResponse(detail: String): HttpError.Response =
     HttpError.Response(
-        HttpError.Kind.BadRequest,
-        400,
-        null,
+       HttpStatus.BadRequest,
+        MediaType.JSON_PROBLEM_DETAILS,
         JSONObject().apply {
             put("title", "Bad request")
             put("detail", detail)

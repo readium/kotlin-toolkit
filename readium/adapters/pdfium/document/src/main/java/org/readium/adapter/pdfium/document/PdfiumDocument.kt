@@ -116,7 +116,7 @@ public class PdfiumDocumentFactory(context: Context) : PdfDocumentFactory<Pdfium
                     } catch (e: Exception) {
                         val error = when (val exception = e.unwrapReadException()) {
                             is ReadException -> exception.error
-                            else -> ReadError.Content("Pdfium could not read data.")
+                            else -> ReadError.Decoding("Pdfium could not read data.")
                         }
                         Try.failure(error)
                     }

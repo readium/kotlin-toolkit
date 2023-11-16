@@ -45,11 +45,9 @@ public class PsPdfKitDocumentFactory(context: Context) : PdfDocumentFactory<PsPd
                     PsPdfKitDocument(PdfDocumentLoader.openDocument(context, documentSource))
                 )
             } catch (e: InvalidPasswordException) {
-                Try.failure(ReadError.Content(ThrowableError(e)))
+                Try.failure(ReadError.Decoding(ThrowableError(e)))
             } catch (e: CancellationException) {
                 throw e
-            } catch (e: OutOfMemoryError) {
-                Try.failure(ReadError.OutOfMemory(e))
             } catch (e: Exception) {
                 Try.failure(ReadError.Other(e))
             }

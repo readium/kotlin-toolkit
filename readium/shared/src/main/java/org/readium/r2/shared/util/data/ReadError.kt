@@ -38,8 +38,8 @@ public sealed class ReadError(
         public constructor(error: OutOfMemoryError) : this(ThrowableError(error))
     }
 
-    public class Content(cause: Error? = null) :
-        ReadError("Content seems invalid. ", cause) {
+    public class Decoding(cause: Error? = null) :
+        ReadError("An error occurred while attempting to decode the content.", cause) {
 
         public constructor(message: String) : this(MessageError(message))
         public constructor(exception: Exception) : this(ThrowableError(exception))

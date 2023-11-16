@@ -28,6 +28,7 @@ import org.readium.r2.shared.util.MessageError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.data.FileBlob
 import org.readium.r2.shared.util.data.HttpError
+import org.readium.r2.shared.util.data.HttpStatus
 import org.readium.r2.shared.util.downloads.DownloadManager
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.mediatype.FormatRegistry
@@ -314,7 +315,7 @@ public class AndroidDownloadManager internal constructor(
                 DownloadManager.Error.HttpError(HttpError.MalformedResponse(null))
             SystemDownloadManager.ERROR_TOO_MANY_REDIRECTS ->
                 DownloadManager.Error.HttpError(
-                    HttpError.Cancelled(MessageError("Too many redirects."))
+                    HttpError.Redirection(MessageError("Too many redirects."))
                 )
             SystemDownloadManager.ERROR_CANNOT_RESUME ->
                 DownloadManager.Error.CannotResume()
@@ -331,8 +332,10 @@ public class AndroidDownloadManager internal constructor(
         }
 
     private fun httpErrorForCode(code: Int): HttpError =
-        HttpError.Response(code)
-            ?: HttpError.MalformedResponse(MessageError("Unknown HTTP status code."))
+        when (code) {
+            in 0 until 1000 -> HttpError.Response(HttpStatus(code))
+            else -> HttpError.MalformedResponse(MessageError("Unknown HTTP status code."))
+        }
 
     public override fun close() {
         listeners.clear()

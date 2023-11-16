@@ -59,7 +59,7 @@ internal class LcpDecryptor(
             when {
                 license == null ->
                     FailureResource(
-                        ReadError.Content(
+                        ReadError.Decoding(
                             MessageError(
                                 "Cannot decipher content because the publication is locked."
                             )
@@ -185,7 +185,7 @@ internal class LcpDecryptor(
 
             if (length < 2 * AES_BLOCK_SIZE) {
                 return Try.failure(
-                    ReadError.Content(
+                    ReadError.Decoding(
                         MessageError("Invalid CBC-encrypted stream.")
                     )
                 )
@@ -198,7 +198,7 @@ internal class LcpDecryptor(
             val decryptedBytes = license.decrypt(bytes)
                 .getOrElse {
                     return Try.failure(
-                        ReadError.Content(
+                        ReadError.Decoding(
                             MessageError("Can't decrypt trailing size of CBC-encrypted stream")
                         )
                     )
@@ -248,7 +248,7 @@ internal class LcpDecryptor(
             val bytes = license.decrypt(encryptedData)
                 .getOrElse {
                     return Try.failure(
-                        ReadError.Content(
+                        ReadError.Decoding(
                             MessageError(
                                 "Can't decrypt the content for resource with key: ${resource.source}",
                                 ThrowableError(it)
@@ -311,7 +311,7 @@ private suspend fun LcpLicense.decryptFully(
         var bytes = decrypt(encryptedData)
             .getOrElse {
                 return Try.failure(
-                    ReadError.Content(
+                    ReadError.Decoding(
                         MessageError("Failed to decrypt the resource", ThrowableError(it))
                     )
                 )

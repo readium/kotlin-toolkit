@@ -81,7 +81,7 @@ public class StreamingZipArchiveProvider(
                 is ReadException ->
                     Try.failure(ArchiveFactory.Error.ResourceError(e.error))
                 else ->
-                    Try.failure(ArchiveFactory.Error.ResourceError(ReadError.Content(e)))
+                    Try.failure(ArchiveFactory.Error.ResourceError(ReadError.Decoding(e)))
             }
         }
     }

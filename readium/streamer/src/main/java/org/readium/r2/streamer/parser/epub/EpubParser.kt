@@ -58,7 +58,7 @@ public class EpubParser(
         val opfResource = asset.container.get(opfPath)
             ?: return Try.failure(
                 PublicationParser.Error.ReadError(
-                    ReadError.Content(
+                    ReadError.Decoding(
                         MessageError("Missing OPF file.")
                     )
                 )
@@ -69,7 +69,7 @@ public class EpubParser(
         val packageDocument = PackageDocument.parse(opfXmlDocument, opfPath, mediaTypeRetriever)
             ?: return Try.failure(
                 PublicationParser.Error.ReadError(
-                    ReadError.Content(
+                    ReadError.Decoding(
                         MessageError("Invalid OPF file.")
                     )
                 )
@@ -115,7 +115,7 @@ public class EpubParser(
             .get(Url("META-INF/container.xml")!!)
             ?: return Try.failure(
                 PublicationParser.Error.ReadError(
-                    ReadError.Content("container.xml not found.")
+                    ReadError.Decoding("container.xml not found.")
                 )
             )
 
@@ -129,7 +129,7 @@ public class EpubParser(
             ?.let { Try.success(it) }
             ?: Try.failure(
                 PublicationParser.Error.ReadError(
-                    ReadError.Content("Cannot successfully parse OPF.")
+                    ReadError.Decoding("Cannot successfully parse OPF.")
                 )
             )
     }
@@ -202,7 +202,7 @@ public class EpubParser(
                         PublicationParser.Error.ReadError(it.cause)
                     is DecoderError.DecodingError ->
                         PublicationParser.Error.ReadError(
-                            ReadError.Content(
+                            ReadError.Decoding(
                                 MessageError(
                                     "Couldn't decode resource at $url",
                                     it.cause

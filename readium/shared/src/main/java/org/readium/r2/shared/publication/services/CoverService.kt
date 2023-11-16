@@ -23,6 +23,7 @@ import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.data.ClosedContainer
 import org.readium.r2.shared.util.data.HttpError
+import org.readium.r2.shared.util.data.HttpStatus
 import org.readium.r2.shared.util.data.readAsBitmap
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.http.HttpClient
@@ -175,8 +176,7 @@ public abstract class GeneratedCoverService : CoverService, Publication.WebServi
         val png = cover.toPng()
             ?: return Try.failure(
                 HttpError.Response(
-                    HttpError.Kind.ServerError,
-                    500,
+                    HttpStatus(500),
                     null,
                     null
                 )
