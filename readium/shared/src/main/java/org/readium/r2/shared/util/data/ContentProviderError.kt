@@ -16,21 +16,21 @@ public sealed class ContentProviderError(
 
     public class FileNotFound(
         cause: Error?
-    ) : FileSystemError("File not found.", cause) {
+    ) : ContentProviderError("File not found.", cause) {
 
         public constructor(exception: Exception) : this(ThrowableError(exception))
     }
 
     public class NotAvailable(
         cause: Error?
-    ) : FileSystemError("Content Provider recently crashed.", cause) {
+    ) : ContentProviderError("Content Provider recently crashed.", cause) {
 
         public constructor(exception: Exception) : this(ThrowableError(exception))
     }
 
     public class IO(
         cause: Error?
-    ) : FileSystemError("An IO error occurred.", cause) {
+    ) : ContentProviderError("An IO error occurred.", cause) {
 
         public constructor(exception: Exception) : this(ThrowableError(exception))
     }

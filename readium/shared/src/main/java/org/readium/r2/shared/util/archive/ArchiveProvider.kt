@@ -9,7 +9,7 @@ package org.readium.r2.shared.util.archive
 import org.readium.r2.shared.util.ThrowableError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.data.Blob
-import org.readium.r2.shared.util.data.ClosedContainer
+import org.readium.r2.shared.util.data.Container
 import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.mediatype.MediaTypeSniffer
@@ -51,7 +51,7 @@ public interface ArchiveFactory {
     public suspend fun create(
         resource: Blob,
         password: String? = null
-    ): Try<ClosedContainer<Resource>, Error>
+    ): Try<Container<Resource>, Error>
 }
 
 public class CompositeArchiveFactory(
@@ -63,7 +63,7 @@ public class CompositeArchiveFactory(
     override suspend fun create(
         resource: Blob,
         password: String?
-    ): Try<ClosedContainer<Resource>, ArchiveFactory.Error> {
+    ): Try<Container<Resource>, ArchiveFactory.Error> {
         for (factory in factories) {
             factory.create(resource, password)
                 .getOrElse { error ->

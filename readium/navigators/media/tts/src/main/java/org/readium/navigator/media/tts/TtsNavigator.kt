@@ -38,9 +38,9 @@ import org.readium.r2.shared.util.tokenizer.TextTokenizer
 @ExperimentalReadiumApi
 @OptIn(DelicateReadiumApi::class)
 public class TtsNavigator<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
-    E : TtsEngine.Error, V : TtsEngine.Voice> private constructor(
+    E : TtsEngine.Error, V : TtsEngine.Voice> internal constructor(
     coroutineScope: CoroutineScope,
-    override val publication: Publication,
+    private val publication: Publication,
     private val player: TtsPlayer<S, P, E, V>,
     private val sessionAdapter: TtsSessionAdapter<E>
 ) :
@@ -48,91 +48,6 @@ public class TtsNavigator<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
     TextAwareMediaNavigator<TtsNavigator.Location, TtsNavigator.Playback, TtsNavigator.ReadingOrder>,
     Media3Adapter,
     Configurable<S, P> {
-
-    public companion object {
-
-        public suspend operator fun <S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
-            E : TtsEngine.Error, V : TtsEngine.Voice> invoke(
-            application: Application,
-            publication: Publication,
-            ttsEngineProvider: TtsEngineProvider<S, P, *, E, V>,
-            tokenizerFactory: (language: Language?) -> TextTokenizer,
-            metadataProvider: MediaMetadataProvider,
-            listener: Listener,
-            initialLocator: Locator? = null,
-            initialPreferences: P? = null
-        ): TtsNavigator<S, P, E, V>? {
-            if (publication.findService(ContentService::class) == null) {
-                return null
-            }
-
-            @Suppress("NAME_SHADOWING")
-            val initialLocator =
-                initialLocator?.let { publication.normalizeLocator(it) }
-
-            val actualInitialPreferences =
-                initialPreferences
-                    ?: ttsEngineProvider.createEmptyPreferences()
-
-            val contentIterator =
-                TtsUtteranceIterator(publication, tokenizerFactory, initialLocator)
-            if (!contentIterator.hasNext()) {
-                return null
-            }
-
-            val ttsEngine =
-                ttsEngineProvider.createEngine(publication, actualInitialPreferences)
-                    ?: return null
-
-            val metadataFactory =
-                metadataProvider.createMetadataFactory(publication)
-
-            val playlistMetadata =
-                metadataFactory.publicationMetadata()
-
-            val mediaItems =
-                publication.readingOrder.indices.map { index ->
-                    val metadata = metadataFactory.resourceMetadata(index)
-                    MediaItem.Builder()
-                        .setMediaMetadata(metadata)
-                        .build()
-                }
-
-            val ttsPlayer =
-                TtsPlayer(ttsEngine, contentIterator, actualInitialPreferences)
-                    ?: return null
-
-            val coroutineScope =
-                MainScope()
-
-            val playbackParameters =
-                ttsPlayer.settings.mapStateIn(coroutineScope) {
-                    ttsEngineProvider.getPlaybackParameters(it)
-                }
-
-            val onSetPlaybackParameters = { parameters: PlaybackParameters ->
-                val newPreferences = ttsEngineProvider.updatePlaybackParameters(
-                    ttsPlayer.lastPreferences,
-                    parameters
-                )
-                ttsPlayer.submitPreferences(newPreferences)
-            }
-
-            val sessionAdapter =
-                TtsSessionAdapter(
-                    application,
-                    ttsPlayer,
-                    playlistMetadata,
-                    mediaItems,
-                    listener::onStopRequested,
-                    playbackParameters,
-                    onSetPlaybackParameters,
-                    ttsEngineProvider::mapEngineError
-                )
-
-            return TtsNavigator(coroutineScope, publication, ttsPlayer, sessionAdapter)
-        }
-    }
 
     public interface Listener {
 

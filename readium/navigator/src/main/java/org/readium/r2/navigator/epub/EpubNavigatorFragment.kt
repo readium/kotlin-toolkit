@@ -106,7 +106,7 @@ public typealias JavascriptInterfaceFactory = (resource: Link) -> Any?
  */
 @OptIn(ExperimentalDecorator::class, ExperimentalReadiumApi::class, DelicateReadiumApi::class)
 public class EpubNavigatorFragment internal constructor(
-    override val publication: Publication,
+    private val publication: Publication,
     private val initialLocator: Locator?,
     readingOrder: List<Link>?,
     private val initialPreferences: EpubPreferences,

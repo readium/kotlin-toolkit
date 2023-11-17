@@ -14,7 +14,7 @@ import org.readium.r2.shared.publication.services.PerResourcePositionsService
 import org.readium.r2.shared.util.MessageError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
-import org.readium.r2.shared.util.data.ClosedContainer
+import org.readium.r2.shared.util.data.Container
 import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.mediatype.MediaType
@@ -43,11 +43,11 @@ public class ImageParser : PublicationParser {
 
         val readingOrder =
             if (asset.mediaType.matches(MediaType.CBZ)) {
-                (asset.container.entries())
+                (asset.container)
                     .filter { !it.isHiddenOrThumbs && entryIsBitmap(asset.container, it) }
                     .sortedBy { it.toString() }
             } else {
-                listOfNotNull(asset.container.entries().firstOrNull())
+                listOfNotNull(asset.container.firstOrNull())
             }
                 .map { asset.container.linkForUrl(it) }
                 .toMutableList()
@@ -86,6 +86,6 @@ public class ImageParser : PublicationParser {
         return Try.success(publicationBuilder)
     }
 
-    private suspend fun entryIsBitmap(container: ClosedContainer<Resource>, url: Url) =
+    private suspend fun entryIsBitmap(container: Container<Resource>, url: Url) =
         container.get(url)!!.use { it.mediaType() }.getOrNull()?.isBitmap == true
 }

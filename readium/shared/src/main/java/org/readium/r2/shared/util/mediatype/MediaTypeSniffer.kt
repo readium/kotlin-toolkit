@@ -23,11 +23,9 @@ import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.data.Blob
 import org.readium.r2.shared.util.data.BlobInputStream
-import org.readium.r2.shared.util.data.ClosedContainer
 import org.readium.r2.shared.util.data.Container
 import org.readium.r2.shared.util.data.DecoderError
 import org.readium.r2.shared.util.data.ReadError
-import org.readium.r2.shared.util.data.contains
 import org.readium.r2.shared.util.data.containsJsonKeys
 import org.readium.r2.shared.util.data.readAsJson
 import org.readium.r2.shared.util.data.readAsRwpm
@@ -512,7 +510,7 @@ public class WebPubMediaTypeSniffer : MediaTypeSniffer {
     override suspend fun sniffContainer(container: Container<*>): Try<MediaType, MediaTypeSnifferError> {
         // Reads a RWPM from a manifest.json archive entry.
         val manifest: Manifest =
-            container.get(RelativeUrl("manifest.json")!!)
+            container[RelativeUrl("manifest.json")!!]
                 ?.read()
                 ?.getOrElse { error ->
                     return Try.failure(MediaTypeSnifferError.DataAccess(error))
@@ -520,10 +518,7 @@ public class WebPubMediaTypeSniffer : MediaTypeSniffer {
                 ?.let { tryOrNull { Manifest.fromJSON(JSONObject(String(it))) } }
                 ?: return Try.failure(MediaTypeSnifferError.NotRecognized)
 
-        val isLcpProtected = container.contains(RelativeUrl("license.lcpl")!!)
-            .getOrElse {
-                return Try.failure(MediaTypeSnifferError.DataAccess(it))
-            }
+        val isLcpProtected = RelativeUrl("license.lcpl")!! in container
 
         if (manifest.conformsTo(Publication.Profile.AUDIOBOOK)) {
             return if (isLcpProtected) {
@@ -589,8 +584,7 @@ public class EpubMediaTypeSniffer : MediaTypeSniffer {
     }
 
     override suspend fun sniffContainer(container: Container<*>): Try<MediaType, MediaTypeSnifferError> {
-        val mimetype = container
-            .get(RelativeUrl("mimetype")!!)
+        val mimetype = container[RelativeUrl("mimetype")!!]
             ?.read()
             ?.getOrElse { error ->
                 return Try.failure(MediaTypeSnifferError.DataAccess(error))
@@ -624,13 +618,12 @@ public object LpfMediaTypeSniffer : MediaTypeSniffer {
     }
 
     override suspend fun sniffContainer(container: Container<*>): Try<MediaType, MediaTypeSnifferError> {
-        container.contains(RelativeUrl("index.html")!!)
-            .getOrElse { return Try.failure(MediaTypeSnifferError.DataAccess(it)) }
-            .takeIf { it }
-            ?.let { return Try.success(MediaType.LPF) }
+        if (RelativeUrl("index.html")!! in container) {
+            return Try.success(MediaType.LPF)
+        }
 
         // Somehow, [JSONObject] can't access JSON-LD keys such as `@content`.
-        container.get(RelativeUrl("publication.json")!!)
+        container[RelativeUrl("publication.json")!!]
             ?.read()
             ?.getOrElse { error ->
                 return Try.failure(MediaTypeSnifferError.DataAccess(error))
@@ -718,15 +711,11 @@ public object ArchiveMediaTypeSniffer : MediaTypeSniffer {
     }
 
     override suspend fun sniffContainer(container: Container<*>): Try<MediaType, MediaTypeSnifferError> {
-        if (container !is ClosedContainer<*>) {
-            return Try.failure(MediaTypeSnifferError.NotRecognized)
-        }
-
         fun isIgnored(url: Url): Boolean =
             url.filename?.startsWith(".") == true || url.filename == "Thumbs.db"
 
-        suspend fun archiveContainsOnlyExtensions(fileExtensions: List<String>): Boolean =
-            container.entries().all { url ->
+        fun archiveContainsOnlyExtensions(fileExtensions: List<String>): Boolean =
+            container.all { url ->
                 isIgnored(url) || url.extension?.let {
                     fileExtensions.contains(
                         it.lowercase(Locale.ROOT)

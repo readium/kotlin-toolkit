@@ -11,6 +11,7 @@ import kotlin.let
 import kotlin.takeIf
 import org.readium.r2.shared.util.Error as BaseError
 import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.getOrElse
 
 /**
@@ -33,7 +34,7 @@ public class ContentProtectionSchemeRetriever(
         public object NoContentProtectionFound :
             Error("No content protection recognized the given asset.", null)
 
-        public class AccessError(cause: org.readium.r2.shared.util.Error?) :
+        public class AccessError(override val cause: ReadError) :
             Error("An error occurred while trying to read asset.", cause)
     }
 

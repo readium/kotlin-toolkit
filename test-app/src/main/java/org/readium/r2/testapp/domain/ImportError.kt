@@ -8,7 +8,6 @@ package org.readium.r2.testapp.domain
 
 import androidx.annotation.StringRes
 import org.readium.r2.shared.UserException
-import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.downloads.DownloadManager
 import org.readium.r2.testapp.R
 
@@ -28,24 +27,8 @@ sealed class ImportError(
     ) : ImportError(cause)
 
     class PublicationError(
-        override val cause: UserException
-    ) : ImportError(cause) {
-
-        companion object {
-
-            operator fun invoke(
-                error: AssetError
-            ): ImportError = PublicationError(
-                org.readium.r2.testapp.domain.PublicationError(
-                    error
-                )
-            )
-        }
-    }
-
-    class ResourceError(
-        val error: ReadError
-    ) : ImportError(R.string.import_publication_unexpected_io_exception)
+        override val cause: org.readium.r2.testapp.domain.PublicationError
+    ) : ImportError(cause)
 
     class DownloadFailed(
         val error: DownloadManager.Error

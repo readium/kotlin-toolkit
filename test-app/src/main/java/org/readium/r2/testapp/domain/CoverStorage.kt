@@ -40,7 +40,7 @@ class CoverStorage(
         tryOrLog {
             when {
                 isFile -> toFile()?.toBitmap()
-                isHttp -> httpClient.fetchBitmap(HttpRequest(toString())).getOrNull()
+                isHttp -> httpClient.fetchBitmap(HttpRequest(this)).getOrNull()
                 else -> null
             }
         }

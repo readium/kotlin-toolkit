@@ -18,6 +18,7 @@ import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.indexOfFirstWithHref
+import org.readium.r2.shared.util.Try
 
 /**
  * Main component to use the audio navigator with the ExoPlayer adapter.
@@ -38,7 +39,7 @@ public class ExoPlayerEngineProvider(
         publication: Publication,
         initialLocator: Locator,
         initialPreferences: ExoPlayerPreferences
-    ): ExoPlayerEngine {
+    ): Try<ExoPlayerEngine, Nothing> {
         val metadataFactory = metadataProvider.createMetadataFactory(publication)
         val settingsResolver = ExoPlayerSettingsResolver(defaults)
         val dataSourceFactory: DataSource.Factory = ExoPlayerDataSource.Factory(publication)
@@ -56,7 +57,7 @@ public class ExoPlayerEngineProvider(
             }
         )
 
-        return ExoPlayerEngine(
+        val engine = ExoPlayerEngine(
             application = application,
             settingsResolver = settingsResolver,
             playlist = playlist,
@@ -66,6 +67,8 @@ public class ExoPlayerEngineProvider(
             initialPosition = initialPosition,
             initialPreferences = initialPreferences
         )
+
+        return Try.success(engine)
     }
 
     override fun createPreferenceEditor(

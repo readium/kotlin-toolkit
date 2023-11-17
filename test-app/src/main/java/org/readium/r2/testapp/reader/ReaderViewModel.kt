@@ -38,6 +38,7 @@ import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.testapp.Application
 import org.readium.r2.testapp.data.BookRepository
 import org.readium.r2.testapp.data.model.Highlight
+import org.readium.r2.testapp.domain.PublicationError
 import org.readium.r2.testapp.reader.preferences.UserPreferencesViewModel
 import org.readium.r2.testapp.reader.tts.TtsViewModel
 import org.readium.r2.testapp.search.SearchPagingSource
@@ -271,11 +272,11 @@ class ReaderViewModel(
     // Navigator.Listener
 
     override fun onResourceLoadFailed(href: Url, error: ReadError) {
-        val message = when (error) {
-            is ReadError.OutOfMemory -> "The resource is too large to be rendered on this device: $href"
-            else -> "Failed to render the resource: $href"
-        }
-        activityChannel.send(ActivityCommand.ToastError(UserException(message, error)))
+        activityChannel.send(
+            ActivityCommand.ToastError(
+                PublicationError(error)
+            )
+        )
     }
 
     // HyperlinkNavigator.Listener

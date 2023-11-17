@@ -54,7 +54,7 @@ import org.readium.r2.shared.util.mediatype.MediaType
 @ExperimentalReadiumApi
 @OptIn(DelicateReadiumApi::class)
 public class PdfNavigatorFragment<S : Configurable.Settings, P : Configurable.Preferences<P>> internal constructor(
-    override val publication: Publication,
+    private val publication: Publication,
     private val initialLocator: Locator? = null,
     private val initialPreferences: P,
     private val listener: Listener?,

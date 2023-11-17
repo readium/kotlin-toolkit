@@ -32,7 +32,7 @@ import org.readium.r2.shared.publication.services.search.SearchService
 import org.readium.r2.shared.util.Closeable
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
-import org.readium.r2.shared.util.data.ClosedContainer
+import org.readium.r2.shared.util.data.Container
 import org.readium.r2.shared.util.data.EmptyContainer
 import org.readium.r2.shared.util.http.HttpError
 import org.readium.r2.shared.util.http.HttpClient
@@ -54,7 +54,7 @@ internal typealias ServiceFactory = (Publication.Service.Context) -> Publication
  */
 public typealias PublicationId = String
 
-public typealias PublicationContainer = ClosedContainer<Resource>
+public typealias PublicationContainer = Container<Resource>
 
 /**
  * The Publication shared model is the entry-point for all the metadata and services

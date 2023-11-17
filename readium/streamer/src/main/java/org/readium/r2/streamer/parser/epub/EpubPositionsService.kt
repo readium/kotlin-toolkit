@@ -18,7 +18,7 @@ import org.readium.r2.shared.publication.presentation.presentation
 import org.readium.r2.shared.publication.services.PositionsService
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.archive.archive
-import org.readium.r2.shared.util.data.ClosedContainer
+import org.readium.r2.shared.util.data.Container
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.shared.util.use
@@ -35,7 +35,7 @@ import org.readium.r2.shared.util.use
 public class EpubPositionsService(
     private val readingOrder: List<Link>,
     private val presentation: Presentation,
-    private val container: ClosedContainer<Resource>,
+    private val container: Container<Resource>,
     private val reflowableStrategy: ReflowableStrategy
 ) : PositionsService {
 

@@ -15,7 +15,7 @@ import org.readium.r2.lcp.LcpException
 import org.readium.r2.lcp.license.model.LicenseDocument
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.asset.Asset
-import org.readium.r2.shared.util.data.ClosedContainer
+import org.readium.r2.shared.util.data.Container
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.resource.Resource
 
@@ -72,7 +72,7 @@ internal fun createLicenseContainer(
 
 internal fun createLicenseContainer(
     context: Context,
-    container: ClosedContainer<Resource>,
+    container: Container<Resource>,
     mediaType: MediaType
 ): LicenseContainer {
     val licensePath = when (mediaType) {

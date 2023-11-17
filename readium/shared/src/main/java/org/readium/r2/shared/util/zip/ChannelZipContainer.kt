@@ -17,7 +17,7 @@ import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.archive.ArchiveProperties
 import org.readium.r2.shared.util.archive.archive
-import org.readium.r2.shared.util.data.ClosedContainer
+import org.readium.r2.shared.util.data.Container
 import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.data.ReadException
 import org.readium.r2.shared.util.data.unwrapReadException
@@ -37,7 +37,7 @@ internal class ChannelZipContainer(
     private val zipFile: ZipFile,
     override val source: AbsoluteUrl?,
     private val mediaTypeRetriever: MediaTypeRetriever
-) : ClosedContainer<Resource> {
+) : Container<Resource> {
 
     private inner class Entry(
         private val url: Url,
@@ -156,7 +156,7 @@ internal class ChannelZipContainer(
         }
     }
 
-    override suspend fun entries(): Set<Url> =
+    override val entries: Set<Url> =
         zipFile.entries.toList()
             .filterNot { it.isDirectory }
             .mapNotNull { entry -> Url.fromDecodedPath(entry.name) }

@@ -19,12 +19,12 @@ import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.asset.AssetRetriever
 import org.readium.r2.shared.util.asset.CompositeResourceFactory
 import org.readium.r2.shared.util.asset.HttpResourceFactory
-import org.readium.r2.shared.util.data.FileResourceFactory
+import org.readium.r2.shared.util.asset.FileResourceFactory
 import org.readium.r2.shared.util.downloads.android.AndroidDownloadManager
 import org.readium.r2.shared.util.http.DefaultHttpClient
 import org.readium.r2.shared.util.mediatype.FormatRegistry
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
-import org.readium.r2.shared.util.resource.ContentResourceFactory
+import org.readium.r2.shared.util.asset.ContentResourceFactory
 import org.readium.r2.shared.util.zip.StreamingZipArchiveProvider
 import org.readium.r2.streamer.PublicationFactory
 
@@ -52,9 +52,7 @@ class Readium(context: Context) {
     )
 
     val assetRetriever = AssetRetriever(
-        mediaTypeRetriever,
         resourceFactory,
-        context.contentResolver,
         archiveProviders
     )
 
@@ -84,8 +82,7 @@ class Readium(context: Context) {
     )
 
     val protectionRetriever = ContentProtectionSchemeRetriever(
-        contentProtections,
-        mediaTypeRetriever
+        contentProtections
     )
 
     /**

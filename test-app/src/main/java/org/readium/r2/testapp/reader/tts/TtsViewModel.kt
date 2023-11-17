@@ -25,6 +25,7 @@ import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.util.Language
+import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.testapp.domain.TtsError
 import org.readium.r2.testapp.reader.MediaService
 import org.readium.r2.testapp.reader.MediaServiceFacade
@@ -180,7 +181,7 @@ class TtsViewModel private constructor(
             this,
             initialLocator = start,
             initialPreferences = preferencesManager.preferences.value
-        ) ?: run {
+        ).getOrElse {
             val error = TtsError.Initialization()
             _events.send(Event.OnError(error))
             return

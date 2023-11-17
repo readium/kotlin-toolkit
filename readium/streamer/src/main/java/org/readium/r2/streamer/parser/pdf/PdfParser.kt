@@ -43,11 +43,11 @@ public class PdfParser(
             return Try.failure(PublicationParser.Error.UnsupportedFormat())
         }
 
-        val url = asset.container.entries()
+        val url = asset.container.entries
             .firstOrNull()
 
         val resource = url
-            ?.let { asset.container.get(it) }
+            ?.let { asset.container[it] }
             ?: return Try.failure(
                 PublicationParser.Error.ReadError(
                     ReadError.Decoding(

@@ -6,6 +6,7 @@
 
 package org.readium.r2.testapp.domain
 
+import org.readium.r2.lcp.LcpPublicationRetriever as ReadiumLcpPublicationRetriever
 import android.content.Context
 import android.net.Uri
 import java.io.File
@@ -14,17 +15,16 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import org.readium.r2.lcp.LcpException
-import org.readium.r2.lcp.LcpPublicationRetriever as ReadiumLcpPublicationRetriever
 import org.readium.r2.lcp.LcpService
 import org.readium.r2.lcp.license.model.LicenseDocument
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.opds.images
 import org.readium.r2.shared.util.AbsoluteUrl
+import org.readium.r2.shared.util.ThrowableError
 import org.readium.r2.shared.util.Try
-import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.asset.Asset
 import org.readium.r2.shared.util.asset.AssetRetriever
-import org.readium.r2.shared.util.data.ReadError
+import org.readium.r2.shared.util.data.FileSystemError
 import org.readium.r2.shared.util.downloads.DownloadManager
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.mediatype.FormatRegistry
@@ -123,7 +123,11 @@ class LocalPublicationRetriever(
         coroutineScope.launch {
             val tempFile = uri.copyToTempFile(context, storageDir)
                 .getOrElse {
-                    listener.onError(ImportError.ResourceError(ReadError.Filesystem(it)))
+                    listener.onError(
+                        ImportError.PublicationError(
+                           PublicationError.FsUnexpected(FileSystemError.IO(it))
+                        )
+                    )
                     return@launch
                 }
 
@@ -161,7 +165,7 @@ class LocalPublicationRetriever(
         ) {
             if (lcpPublicationRetriever == null) {
                 listener.onError(
-                    ImportError.PublicationError(PublicationError.UnsupportedAsset())
+                    ImportError.PublicationError(PublicationError.UnsupportedContentProtection())
                 )
             } else {
                 lcpPublicationRetriever.retrieve(sourceAsset, tempFile, coverUrl)
@@ -178,7 +182,9 @@ class LocalPublicationRetriever(
         } catch (e: Exception) {
             Timber.d(e)
             tryOrNull { libraryFile.delete() }
-            listener.onError(ImportError.ResourceError(ReadError.Filesystem(e)))
+            listener.onError(ImportError.PublicationError(
+                PublicationError.FsUnexpected(ThrowableError(e)))
+            )
             return
         }
 
@@ -253,12 +259,13 @@ class OpdsPublicationRetriever(
         }
     }
 
-    private fun Publication.acquisitionUrl(): Try<Url, Exception> {
-        val acquisitionLink = links
-            .firstOrNull { it.mediaType?.isPublication == true || it.mediaType == MediaType.LCP_LICENSE_DOCUMENT }
+    private fun Publication.acquisitionUrl(): Try<AbsoluteUrl, Exception> {
+        val acquisitionUrl = links
+            .filter { it.mediaType?.isPublication == true || it.mediaType == MediaType.LCP_LICENSE_DOCUMENT }
+            .firstNotNullOfOrNull { it.url() as? AbsoluteUrl }
             ?: return Try.failure(Exception("No supported link to acquire publication."))
 
-        return Try.success(acquisitionLink.url())
+        return Try.success(acquisitionUrl)
     }
 
     private val downloadListener: DownloadListener =
@@ -340,7 +347,7 @@ class LcpPublicationRetriever(
         coroutineScope.launch {
             val license = licenceAsset.resource.read()
                 .getOrElse {
-                    listener.onError(ImportError.ResourceError(it))
+                    listener.onError(ImportError.PublicationError(PublicationError(it)))
                     return@launch
                 }
                 .let {

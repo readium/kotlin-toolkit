@@ -11,6 +11,8 @@ import org.readium.r2.navigator.preferences.PreferencesEditor
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.util.Error
+import org.readium.r2.shared.util.Try
 
 /**
  * To be implemented by adapters for third-party audio engines which can be used with [AudioNavigator].
@@ -23,7 +25,7 @@ public interface AudioEngineProvider<S : Configurable.Settings, P : Configurable
         publication: Publication,
         initialLocator: Locator,
         initialPreferences: P
-    ): AudioEngine<S, P>?
+    ): Try<AudioEngine<S, P>, Error>
 
     /**
      * Creates a preferences editor for [publication] and [initialPreferences].

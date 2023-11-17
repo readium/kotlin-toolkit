@@ -22,7 +22,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
-import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.testapp.Application
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.data.model.Book
@@ -140,7 +140,7 @@ class BookshelfFragment : Fragment() {
                 dialog.cancel()
             }
             .setPositiveButton(getString(R.string.ok)) { _, _ ->
-                val url = Url(urlEditText.text.toString())
+                val url = AbsoluteUrl(urlEditText.text.toString())
                 if (url == null || !URLUtil.isValidUrl(urlEditText.text.toString())) {
                     urlEditText.error = getString(R.string.invalid_url)
                     return@setPositiveButton

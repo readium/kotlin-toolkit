@@ -17,7 +17,7 @@ import org.readium.r2.shared.publication.services.search.StringSearchService
 import org.readium.r2.shared.util.MessageError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
-import org.readium.r2.shared.util.data.ClosedContainer
+import org.readium.r2.shared.util.data.Container
 import org.readium.r2.shared.util.data.DecoderError
 import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.data.readAsXml
@@ -109,7 +109,7 @@ public class EpubParser(
         return Try.success(builder)
     }
 
-    private suspend fun getRootFilePath(container: ClosedContainer<Resource>): Try<Url, PublicationParser.Error> {
+    private suspend fun getRootFilePath(container: Container<Resource>): Try<Url, PublicationParser.Error> {
         val containerXmlUrl =Url("META-INF/container.xml")!!
 
         val containerXmlResource = container
@@ -135,14 +135,14 @@ public class EpubParser(
             )
     }
 
-    private suspend fun parseEncryptionData(container: ClosedContainer<Resource>): Map<Url, Encryption> =
+    private suspend fun parseEncryptionData(container: Container<Resource>): Map<Url, Encryption> =
         container.readAsXmlOrNull("META-INF/encryption.xml")
             ?.let { EncryptionParser.parse(it) }
             ?: emptyMap()
 
     private suspend fun parseNavigationData(
         packageDocument: PackageDocument,
-        container: ClosedContainer<Resource>
+        container: Container<Resource>
     ): Map<String, List<Link>> =
         parseNavigationDocument(packageDocument, container)
             ?: parseNcx(packageDocument, container)
@@ -150,7 +150,7 @@ public class EpubParser(
 
     private suspend fun parseNavigationDocument(
         packageDocument: PackageDocument,
-        container: ClosedContainer<Resource>
+        container: Container<Resource>
     ): Map<String, List<Link>>? =
         packageDocument.manifest
             .firstOrNull { it.properties.contains(Vocabularies.ITEM + "nav") }
@@ -162,7 +162,7 @@ public class EpubParser(
 
     private suspend fun parseNcx(
         packageDocument: PackageDocument,
-        container: ClosedContainer<Resource>
+        container: Container<Resource>
     ): Map<String, List<Link>>? {
         val ncxItem =
             if (packageDocument.spine.toc != null) {
@@ -178,7 +178,7 @@ public class EpubParser(
             ?.takeUnless { it.isEmpty() }
     }
 
-    private suspend fun parseDisplayOptions(container: ClosedContainer<Resource>): Map<String, String> {
+    private suspend fun parseDisplayOptions(container: Container<Resource>): Map<String, String> {
         val displayOptionsXml =
             container.readAsXmlOrNull("META-INF/com.apple.ibooks.display-options.xml")
                 ?: container.readAsXmlOrNull("META-INF/com.kobobooks.display-options.xml")

@@ -20,7 +20,7 @@ import org.readium.r2.shared.util.MessageError
 import org.readium.r2.shared.util.RelativeUrl
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
-import org.readium.r2.shared.util.data.ClosedContainer
+import org.readium.r2.shared.util.data.Container
 import org.readium.r2.shared.util.data.FileSystemError
 import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.getOrElse
@@ -37,7 +37,7 @@ internal class JavaZipContainer(
     private val archive: ZipFile,
     file: File,
     private val mediaTypeRetriever: MediaTypeRetriever
-) : ClosedContainer<Resource> {
+) : Container<Resource> {
 
     private inner class Entry(private val url: Url, private val entry: ZipEntry) :
         Resource {
@@ -145,7 +145,7 @@ internal class JavaZipContainer(
 
     override val source: AbsoluteUrl = file.toUrl()
 
-    override suspend fun entries(): Set<Url> =
+    override val entries: Set<Url> =
         tryOrLog { archive.entries().toList() }
             .orEmpty()
             .filterNot { it.isDirectory }

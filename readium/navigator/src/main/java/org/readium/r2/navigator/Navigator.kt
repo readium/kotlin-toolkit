@@ -34,11 +34,6 @@ import org.readium.r2.shared.util.data.ReadError
 public interface Navigator {
 
     /**
-     * Publication rendered by this navigator.
-     */
-    public val publication: Publication
-
-    /**
      * Current position in the publication.
      * Can be used to save a bookmark to the current position.
      */

@@ -8,7 +8,7 @@ package org.readium.r2.shared.util.http
 
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Url
-import org.readium.r2.shared.util.data.ClosedContainer
+import org.readium.r2.shared.util.data.Container
 import org.readium.r2.shared.util.resource.Resource
 
 /**
@@ -23,10 +23,8 @@ import org.readium.r2.shared.util.resource.Resource
 public class HttpContainer(
     private val client: HttpClient,
     private val baseUrl: Url? = null,
-    private val entries: Set<Url>
-) : ClosedContainer<Resource> {
-
-    override suspend fun entries(): Set<Url> = entries
+    override val entries: Set<Url>
+) : Container<Resource> {
 
     override fun get(url: Url): Resource? {
         val absoluteUrl = (baseUrl?.resolve(url) ?: url) as? AbsoluteUrl

@@ -16,7 +16,7 @@ import kotlinx.coroutines.withContext
 import org.readium.r2.shared.util.MessageError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.data.Blob
-import org.readium.r2.shared.util.data.ClosedContainer
+import org.readium.r2.shared.util.data.Container
 import org.readium.r2.shared.util.data.FileSystemError
 import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.getOrElse
@@ -72,7 +72,7 @@ public class FileZipArchiveProvider(
     override suspend fun create(
         resource: Blob,
         password: String?
-    ): Try<ClosedContainer<Resource>, ArchiveFactory.Error> {
+    ): Try<Container<Resource>, ArchiveFactory.Error> {
         if (password != null) {
             return Try.failure(ArchiveFactory.Error.PasswordsNotSupported())
         }
@@ -91,7 +91,7 @@ public class FileZipArchiveProvider(
     }
 
     // Internal for testing purpose
-    internal suspend fun open(file: File): Try<ClosedContainer<Resource>, ArchiveFactory.Error> =
+    internal suspend fun open(file: File): Try<Container<Resource>, ArchiveFactory.Error> =
         withContext(Dispatchers.IO) {
             try {
                 val archive = JavaZipContainer(ZipFile(file), file, mediaTypeRetriever)

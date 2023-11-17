@@ -12,7 +12,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
-import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.toUrl
 import org.readium.r2.testapp.data.model.Book
 import org.readium.r2.testapp.reader.ReaderActivityContract
@@ -36,10 +36,10 @@ class BookshelfViewModel(application: Application) : AndroidViewModel(applicatio
     }
 
     fun addPublicationFromStorage(uri: Uri) {
-        app.bookshelf.addPublicationFromStorage(uri.toUrl()!!)
+        app.bookshelf.addPublicationFromStorage(uri.toUrl()!! as AbsoluteUrl)
     }
 
-    fun addPublicationFromWeb(url: Url) {
+    fun addPublicationFromWeb(url: AbsoluteUrl) {
         app.bookshelf.addPublicationFromWeb(url)
     }
 

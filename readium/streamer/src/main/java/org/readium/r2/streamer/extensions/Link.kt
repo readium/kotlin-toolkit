@@ -8,12 +8,12 @@ package org.readium.r2.streamer.extensions
 
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.util.Url
-import org.readium.r2.shared.util.data.ClosedContainer
+import org.readium.r2.shared.util.data.Container
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.shared.util.use
 
-internal suspend fun ClosedContainer<Resource>.linkForUrl(
+internal suspend fun Container<Resource>.linkForUrl(
     url: Url,
     mediaType: MediaType? = null
 ): Link =

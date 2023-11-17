@@ -21,7 +21,7 @@ import org.readium.r2.shared.publication.firstWithRel
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
-import org.readium.r2.shared.util.data.ClosedContainer
+import org.readium.r2.shared.util.data.Container
 import org.readium.r2.shared.util.http.HttpError
 import org.readium.r2.shared.util.http.HttpStatus
 import org.readium.r2.shared.util.data.readAsBitmap
@@ -127,7 +127,7 @@ internal class ExternalCoverService(
 
 internal class ResourceCoverService(
     private val coverUrl: Url,
-    private val container: ClosedContainer<Resource>
+    private val container: Container<Resource>
 ) : CoverService {
 
     override suspend fun cover(): Bitmap? {

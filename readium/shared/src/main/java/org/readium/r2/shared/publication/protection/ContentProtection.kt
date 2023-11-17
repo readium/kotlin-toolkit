@@ -25,7 +25,7 @@ import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.services.ContentProtectionService
 import org.readium.r2.shared.util.Error as BaseError
 import org.readium.r2.shared.util.Try
-import org.readium.r2.shared.util.data.ClosedContainer
+import org.readium.r2.shared.util.data.Container
 import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.resource.Resource
@@ -85,7 +85,7 @@ public interface ContentProtection {
      */
     public data class Asset(
         val mediaType: MediaType,
-        val container: ClosedContainer<Resource>,
+        val container: Container<Resource>,
         val onCreatePublication: Publication.Builder.() -> Unit = {}
     )
 

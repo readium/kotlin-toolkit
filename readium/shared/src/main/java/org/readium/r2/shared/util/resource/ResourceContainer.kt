@@ -8,7 +8,6 @@ package org.readium.r2.shared.util.resource
 
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
-import org.readium.r2.shared.util.data.ClosedContainer
 import org.readium.r2.shared.util.data.Container
 import org.readium.r2.shared.util.data.ReadError
 
@@ -18,9 +17,9 @@ public typealias ResourceContainer = Container<Resource>
 
 /** A [Container] for a single [Resource]. */
 public class SingleResourceContainer(
-    private val url: Url,
+    url: Url,
     private val resource: Resource
-) : ClosedContainer<Resource> {
+) : Container<Resource> {
 
     private class Entry(
         private val resource: Resource
@@ -31,7 +30,7 @@ public class SingleResourceContainer(
         }
     }
 
-    override suspend fun entries(): Set<Url> = setOf(url)
+    override val entries: Set<Url> = setOf(url)
 
     override fun get(url: Url): Resource? {
         if (url.removeFragment().removeQuery() != url) {

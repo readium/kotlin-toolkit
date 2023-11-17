@@ -19,7 +19,7 @@ import org.readium.r2.shared.util.Url
  */
 public class RoutingContainer<E : Blob>(
     private val routes: List<Route<E>>
-) : ClosedContainer<E> {
+) : Container<E> {
 
     /**
      * Holds a child fetcher and the predicate used to determine if it can answer a request.
@@ -27,11 +27,11 @@ public class RoutingContainer<E : Blob>(
      * The default value for [accepts] means that the fetcher will accept any link.
      */
     public class Route<E : Blob>(
-        public val container: ClosedContainer<E>,
+        public val container: Container<E>,
         public val accepts: (Url) -> Boolean = { true }
     )
 
-    public constructor(local: ClosedContainer<E>, remote: ClosedContainer<E>) :
+    public constructor(local: Container<E>, remote: Container<E>) :
         this(
             listOf(
                 Route(local, accepts = ::isLocal),
@@ -39,8 +39,8 @@ public class RoutingContainer<E : Blob>(
             )
         )
 
-    override suspend fun entries(): Set<Url> =
-        routes.fold(emptySet()) { acc, route -> acc + route.container.entries() }
+    override val entries: Set<Url> =
+        routes.fold(emptySet()) { acc, route -> acc + route.container.entries }
 
     override fun get(url: Url): E? =
         routes.firstOrNull { it.accepts(url) }?.container?.get(url)

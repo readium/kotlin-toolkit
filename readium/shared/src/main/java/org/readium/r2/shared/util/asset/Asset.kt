@@ -6,7 +6,6 @@
 
 package org.readium.r2.shared.util.asset
 
-import org.readium.r2.shared.util.data.ClosedContainer
 import org.readium.r2.shared.util.mediatype.MediaType
 
 /**
@@ -50,7 +49,7 @@ public sealed class Asset {
     public class Container(
         override val mediaType: MediaType,
         public val containerType: MediaType,
-        public val container: ClosedContainer<org.readium.r2.shared.util.resource.Resource>
+        public val container: org.readium.r2.shared.util.data.Container<org.readium.r2.shared.util.resource.Resource>
     ) : Asset() {
 
         override suspend fun close() {

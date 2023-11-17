@@ -52,7 +52,7 @@ import org.readium.r2.shared.publication.services.positions
  */
 @OptIn(ExperimentalReadiumApi::class, DelicateReadiumApi::class)
 public class ImageNavigatorFragment private constructor(
-    override val publication: Publication,
+    private val publication: Publication,
     private val initialLocator: Locator? = null,
     internal val listener: Listener? = null
 ) : Fragment(), OverflowNavigator {

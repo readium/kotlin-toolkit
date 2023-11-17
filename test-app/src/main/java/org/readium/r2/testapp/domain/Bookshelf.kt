@@ -18,7 +18,7 @@ import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.asset.Asset
 import org.readium.r2.shared.util.asset.AssetRetriever
-import org.readium.r2.shared.util.data.ReadError
+import org.readium.r2.shared.util.data.FileSystemError
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.toUrl
 import org.readium.r2.streamer.PublicationFactory
@@ -127,12 +127,17 @@ class Bookshelf(
             assetRetriever.retrieve(url)
                 .getOrElse {
                     return Try.failure(
-                        ImportError.PublicationError(PublicationError.UnsupportedAsset())
+                        ImportError.PublicationError(PublicationError(it))
                     )
                 }
 
         val drmScheme =
             protectionRetriever.retrieve(asset)
+                .getOrElse {
+                    return Try.failure(
+                        ImportError.PublicationError(PublicationError(it))
+                    )
+                }
 
         publicationFactory.open(
             asset,
@@ -143,7 +148,9 @@ class Bookshelf(
                 coverStorage.storeCover(publication, coverUrl)
                     .getOrElse {
                         return Try.failure(
-                            ImportError.ResourceError(ReadError.Filesystem(it))
+                            ImportError.PublicationError(
+                                PublicationError.FsUnexpected(FileSystemError.IO(it))
+                            )
                         )
                     }
 

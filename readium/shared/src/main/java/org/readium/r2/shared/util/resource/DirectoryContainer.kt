@@ -13,7 +13,6 @@ import org.readium.r2.shared.extensions.isParentOf
 import org.readium.r2.shared.util.RelativeUrl
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
-import org.readium.r2.shared.util.data.ClosedContainer
 import org.readium.r2.shared.util.data.Container
 import org.readium.r2.shared.util.data.FileBlob
 import org.readium.r2.shared.util.data.FileSystemError
@@ -27,8 +26,8 @@ import org.readium.r2.shared.util.toUrl
 public class DirectoryContainer(
     private val root: File,
     private val mediaTypeRetriever: MediaTypeRetriever,
-    private val entries: Set<Url>
-) : ClosedContainer<Resource> {
+    override val entries: Set<Url>
+) : Container<Resource> {
 
     private fun File.toResource(): Resource {
         return GuessMediaTypeResourceAdapter(
@@ -36,10 +35,6 @@ public class DirectoryContainer(
             mediaTypeRetriever,
             MediaTypeHints(fileExtension = extension)
         )
-    }
-
-    override suspend fun entries(): Set<Url> {
-       return entries
     }
 
     override fun get(url: Url): Resource? =

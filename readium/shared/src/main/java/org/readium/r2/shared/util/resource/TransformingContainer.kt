@@ -7,7 +7,7 @@
 package org.readium.r2.shared.util.resource
 
 import org.readium.r2.shared.util.Url
-import org.readium.r2.shared.util.data.ClosedContainer
+import org.readium.r2.shared.util.data.Container
 
 /**
  * Implements the transformation of a Resource. It can be used, for example, to decrypt,
@@ -23,15 +23,15 @@ public typealias ResourceTransformer = (Resource) -> Resource
  * functions.
  */
 public class TransformingContainer(
-    private val container: ClosedContainer<Resource>,
+    private val container: Container<Resource>,
     private val transformers: List<(Url, Resource) -> Resource>
-) : ClosedContainer<Resource> {
+) : Container<Resource> {
 
-    public constructor(container: ClosedContainer<Resource>, transformer: (Url, Resource) -> Resource) :
+    public constructor(container: Container<Resource>, transformer: (Url, Resource) -> Resource) :
         this(container, listOf(transformer))
 
-    override suspend fun entries(): Set<Url> =
-        container.entries()
+    override val entries: Set<Url> =
+        container.entries
 
     override fun get(url: Url): Resource? {
         val originalResource = container.get(url)
