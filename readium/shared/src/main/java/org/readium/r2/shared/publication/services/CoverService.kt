@@ -22,13 +22,13 @@ import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.data.Container
-import org.readium.r2.shared.util.http.HttpError
-import org.readium.r2.shared.util.http.HttpStatus
 import org.readium.r2.shared.util.data.readAsBitmap
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.http.HttpClient
+import org.readium.r2.shared.util.http.HttpError
 import org.readium.r2.shared.util.http.HttpRequest
 import org.readium.r2.shared.util.http.HttpResponse
+import org.readium.r2.shared.util.http.HttpStatus
 import org.readium.r2.shared.util.http.HttpStreamResponse
 import org.readium.r2.shared.util.http.fetch
 import org.readium.r2.shared.util.mediatype.MediaType

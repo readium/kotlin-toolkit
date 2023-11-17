@@ -208,7 +208,7 @@ public class DefaultHttpClient(
                         )
                     }
                 } catch (e: IOException) {
-                    Try.failure( wrap(e))
+                    Try.failure(wrap(e))
                 }
             }
 

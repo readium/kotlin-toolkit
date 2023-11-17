@@ -40,8 +40,8 @@ public sealed class ReadError(
     public class UnsupportedOperation(cause: Error? = null) :
         ReadError("Could not proceed because an operation was not supported.", cause) {
 
-            public constructor(message: String) : this(MessageError(message))
-        }
+        public constructor(message: String) : this(MessageError(message))
+    }
 
     /** For any other error, such as HTTP 500. */
     public class Other(cause: Error) :

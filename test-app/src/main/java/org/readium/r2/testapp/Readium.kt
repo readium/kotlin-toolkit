@@ -18,13 +18,13 @@ import org.readium.r2.shared.publication.protection.ContentProtectionSchemeRetri
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.asset.AssetRetriever
 import org.readium.r2.shared.util.asset.CompositeResourceFactory
-import org.readium.r2.shared.util.asset.HttpResourceFactory
+import org.readium.r2.shared.util.asset.ContentResourceFactory
 import org.readium.r2.shared.util.asset.FileResourceFactory
+import org.readium.r2.shared.util.asset.HttpResourceFactory
 import org.readium.r2.shared.util.downloads.android.AndroidDownloadManager
 import org.readium.r2.shared.util.http.DefaultHttpClient
 import org.readium.r2.shared.util.mediatype.FormatRegistry
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
-import org.readium.r2.shared.util.asset.ContentResourceFactory
 import org.readium.r2.shared.util.zip.StreamingZipArchiveProvider
 import org.readium.r2.streamer.PublicationFactory
 

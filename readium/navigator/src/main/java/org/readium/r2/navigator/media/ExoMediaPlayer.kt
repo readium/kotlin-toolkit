@@ -56,8 +56,8 @@ import org.readium.r2.shared.publication.PublicationId
 import org.readium.r2.shared.publication.indexOfFirstWithHref
 import org.readium.r2.shared.util.ThrowableError
 import org.readium.r2.shared.util.Url
-import org.readium.r2.shared.util.http.HttpError
 import org.readium.r2.shared.util.data.ReadError
+import org.readium.r2.shared.util.http.HttpError
 import org.readium.r2.shared.util.toUri
 import timber.log.Timber
 

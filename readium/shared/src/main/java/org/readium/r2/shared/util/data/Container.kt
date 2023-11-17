@@ -36,7 +36,6 @@ public interface Container<E : Blob> : Iterable<Url>, SuspendingCloseable {
      * fetching it, such as HTTP. Therefore, errors are handled at the Entry level.
      */
     public operator fun get(url: Url): E?
-
 }
 
 /** A [Container] providing no resources at all. */

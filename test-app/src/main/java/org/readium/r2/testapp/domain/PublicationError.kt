@@ -93,7 +93,7 @@ sealed class PublicationError(@StringRes userMessageId: Int) : UserException(use
             }
 
         operator fun invoke(error: ReadError): PublicationError =
-            when (error)  {
+            when (error) {
                 is ReadError.Access ->
                     when (val cause = error.cause) {
                         is HttpError -> PublicationError(cause)

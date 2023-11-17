@@ -13,8 +13,8 @@ import org.readium.r2.shared.util.data.Container
 import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.mediatype.MediaTypeSniffer
-import org.readium.r2.shared.util.resource.ResourceContainer
 import org.readium.r2.shared.util.resource.Resource
+import org.readium.r2.shared.util.resource.ResourceContainer
 
 public interface ArchiveProvider : MediaTypeSniffer, ArchiveFactory
 

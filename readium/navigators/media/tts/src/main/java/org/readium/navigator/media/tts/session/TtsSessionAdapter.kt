@@ -44,8 +44,8 @@ import org.readium.navigator.media.tts.TtsEngine
 import org.readium.navigator.media.tts.TtsPlayer
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.ErrorException
-import org.readium.r2.shared.util.http.HttpError
 import org.readium.r2.shared.util.data.ReadError
+import org.readium.r2.shared.util.http.HttpError
 
 /**
  * Adapts the [TtsPlayer] to media3 [Player] interface.

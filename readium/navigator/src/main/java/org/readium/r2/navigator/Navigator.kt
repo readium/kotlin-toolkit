@@ -9,7 +9,6 @@ package org.readium.r2.navigator
 import kotlinx.coroutines.flow.StateFlow
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
-import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.data.ReadError
 

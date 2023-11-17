@@ -27,10 +27,10 @@ import org.readium.r2.shared.extensions.tryOr
 import org.readium.r2.shared.util.MessageError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.data.FileBlob
-import org.readium.r2.shared.util.http.HttpError
-import org.readium.r2.shared.util.http.HttpStatus
 import org.readium.r2.shared.util.downloads.DownloadManager
 import org.readium.r2.shared.util.getOrElse
+import org.readium.r2.shared.util.http.HttpError
+import org.readium.r2.shared.util.http.HttpStatus
 import org.readium.r2.shared.util.mediatype.FormatRegistry
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.mediatype.MediaTypeHints

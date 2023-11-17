@@ -6,15 +6,10 @@
 
 package org.readium.navigator.media.tts
 
-import android.app.Application
-import androidx.media3.common.MediaItem
-import androidx.media3.common.PlaybackParameters
 import androidx.media3.common.Player
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.flow.StateFlow
 import org.readium.navigator.media.common.Media3Adapter
-import org.readium.navigator.media.common.MediaMetadataProvider
 import org.readium.navigator.media.common.MediaNavigator
 import org.readium.navigator.media.common.TextAwareMediaNavigator
 import org.readium.navigator.media.tts.session.TtsSessionAdapter
@@ -27,10 +22,7 @@ import org.readium.r2.shared.extensions.mapStateIn
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.publication.services.content.ContentService
-import org.readium.r2.shared.util.Language
 import org.readium.r2.shared.util.Url
-import org.readium.r2.shared.util.tokenizer.TextTokenizer
 
 /**
  * A navigator to read aloud a [Publication] with a TTS engine.

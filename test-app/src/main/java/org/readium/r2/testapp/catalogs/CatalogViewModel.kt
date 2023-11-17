@@ -31,7 +31,7 @@ class CatalogViewModel(application: Application) : AndroidViewModel(application)
 
     fun parseCatalog(catalog: Catalog) = viewModelScope.launch {
         var parseRequest: Try<ParseData, Exception>? = null
-        catalog.href.let {href ->
+        catalog.href.let { href ->
             AbsoluteUrl(href)
                 ?.let { HttpRequest(it) }
                 ?.let { request ->

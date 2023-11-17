@@ -19,10 +19,10 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.util.Try
-import org.readium.r2.shared.util.http.HttpError
 import org.readium.r2.shared.util.downloads.DownloadManager
 import org.readium.r2.shared.util.flatMap
 import org.readium.r2.shared.util.http.HttpClient
+import org.readium.r2.shared.util.http.HttpError
 import org.readium.r2.shared.util.http.HttpRequest
 import org.readium.r2.shared.util.http.HttpResponse
 import org.readium.r2.shared.util.http.HttpTry

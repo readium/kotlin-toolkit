@@ -110,7 +110,7 @@ public class EpubParser(
     }
 
     private suspend fun getRootFilePath(container: Container<Resource>): Try<Url, PublicationParser.Error> {
-        val containerXmlUrl =Url("META-INF/container.xml")!!
+        val containerXmlUrl = Url("META-INF/container.xml")!!
 
         val containerXmlResource = container
             .get(containerXmlUrl)

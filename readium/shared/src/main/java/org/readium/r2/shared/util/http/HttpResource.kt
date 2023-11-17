@@ -38,7 +38,9 @@ public class HttpResource(
             } else {
                 Try.failure(
                     ReadError.UnsupportedOperation(
-                        MessageError("Server did not provide content length in its response to request to $source.")
+                        MessageError(
+                            "Server did not provide content length in its response to request to $source."
+                        )
                     )
                 )
             }

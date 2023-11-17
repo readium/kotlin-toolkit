@@ -33,7 +33,7 @@ import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.shared.util.toUrl
 import org.readium.r2.shared.util.tryRecover
 
-internal class JavaZipContainer(
+internal class FileZipContainer(
     private val archive: ZipFile,
     file: File,
     private val mediaTypeRetriever: MediaTypeRetriever

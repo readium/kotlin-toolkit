@@ -37,8 +37,8 @@ public sealed class HttpError(
     public class IO(cause: Error) :
         HttpError("An IO error occurred.", cause) {
 
-            public constructor(exception: Exception) : this(ThrowableError(exception))
-        }
+        public constructor(exception: Exception) : this(ThrowableError(exception))
+    }
 
     /**
      * @param status HTTP status code.

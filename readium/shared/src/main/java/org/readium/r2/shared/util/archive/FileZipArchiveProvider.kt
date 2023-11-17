@@ -49,7 +49,7 @@ public class FileZipArchiveProvider(
 
         return withContext(Dispatchers.IO) {
             try {
-                JavaZipContainer(ZipFile(file), file, mediaTypeRetriever)
+                FileZipContainer(ZipFile(file), file, mediaTypeRetriever)
                 Try.success(MediaType.ZIP)
             } catch (e: ZipException) {
                 Try.failure(MediaTypeSnifferError.NotRecognized)
@@ -94,7 +94,7 @@ public class FileZipArchiveProvider(
     internal suspend fun open(file: File): Try<Container<Resource>, ArchiveFactory.Error> =
         withContext(Dispatchers.IO) {
             try {
-                val archive = JavaZipContainer(ZipFile(file), file, mediaTypeRetriever)
+                val archive = FileZipContainer(ZipFile(file), file, mediaTypeRetriever)
                 Try.success(archive)
             } catch (e: FileNotFoundException) {
                 Try.failure(
