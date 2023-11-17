@@ -22,8 +22,8 @@ import org.readium.r2.shared.publication.ServiceFactory
 import org.readium.r2.shared.publication.protection.ContentProtection
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
-import org.readium.r2.shared.util.data.HttpError
-import org.readium.r2.shared.util.data.HttpStatus
+import org.readium.r2.shared.util.http.HttpError
+import org.readium.r2.shared.util.http.HttpStatus
 import org.readium.r2.shared.util.http.HttpRequest
 import org.readium.r2.shared.util.http.HttpResponse
 import org.readium.r2.shared.util.http.HttpStreamResponse

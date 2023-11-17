@@ -9,28 +9,28 @@ package org.readium.r2.shared.util.data
 import org.readium.r2.shared.util.Error
 import org.readium.r2.shared.util.ThrowableError
 
-public sealed class FilesystemError(
+public sealed class FileSystemError(
     override val message: String,
     override val cause: Error? = null
 ) : Error {
 
     public class NotFound(
         cause: Error?
-    ) : FilesystemError("File not found.", cause) {
+    ) : FileSystemError("File not found.", cause) {
 
         public constructor(exception: Exception) : this(ThrowableError(exception))
     }
 
     public class Forbidden(
         cause: Error?
-    ) : FilesystemError("You are not allowed to access this file.", cause) {
+    ) : FileSystemError("You are not allowed to access this file.", cause) {
 
         public constructor(exception: Exception) : this(ThrowableError(exception))
     }
 
-    public class Unknown(
+    public class IO(
         cause: Error?
-    ) : FilesystemError("An unexpected error occurred on the filesystem.", cause) {
+    ) : FileSystemError("An unexpected IO error occurred on the filesystem.", cause) {
 
         public constructor(exception: Exception) : this(ThrowableError(exception))
     }

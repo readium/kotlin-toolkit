@@ -14,7 +14,7 @@ import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.asset.Asset
 import org.readium.r2.shared.util.data.DecoderError
 import org.readium.r2.shared.util.data.ReadError
-import org.readium.r2.shared.util.data.RoutingClosedContainer
+import org.readium.r2.shared.util.data.RoutingContainer
 import org.readium.r2.shared.util.data.readAsRwpm
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.http.HttpClient
@@ -111,7 +111,7 @@ internal class ParserAssetFactory(
             .toSet()
 
         val container =
-            RoutingClosedContainer(
+            RoutingContainer(
                 local = SingleResourceContainer(
                     url = Url("manifest.json")!!,
                     asset.resource

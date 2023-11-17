@@ -22,8 +22,8 @@ import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.data.ClosedContainer
-import org.readium.r2.shared.util.data.HttpError
-import org.readium.r2.shared.util.data.HttpStatus
+import org.readium.r2.shared.util.http.HttpError
+import org.readium.r2.shared.util.http.HttpStatus
 import org.readium.r2.shared.util.data.readAsBitmap
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.http.HttpClient

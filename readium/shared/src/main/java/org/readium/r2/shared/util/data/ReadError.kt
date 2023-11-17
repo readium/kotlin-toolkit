@@ -21,22 +21,8 @@ public sealed class ReadError(
     override val cause: Error? = null
 ) : Error {
 
-    public class Network(public override val cause: HttpError) :
-        ReadError("A network error occurred.", cause)
-
-    public class Filesystem(public override val cause: FilesystemError) :
-        ReadError("A filesystem error occurred.", cause)
-
-    /**
-     * Equivalent to a 507 HTTP error.
-     *
-     * Used when the requested range is too large to be read in memory.
-     */
-    public class OutOfMemory(override val cause: ThrowableError<OutOfMemoryError>) :
-        ReadError("The resource is too large to be read on this device.", cause) {
-
-        public constructor(error: OutOfMemoryError) : this(ThrowableError(error))
-    }
+    public class Access(public override val cause: Error) :
+        ReadError("An error occurred while attempting to access data.", cause)
 
     public class Decoding(cause: Error? = null) :
         ReadError("An error occurred while attempting to decode the content.", cause) {
@@ -44,6 +30,18 @@ public sealed class ReadError(
         public constructor(message: String) : this(MessageError(message))
         public constructor(exception: Exception) : this(ThrowableError(exception))
     }
+
+    public class OutOfMemory(override val cause: ThrowableError<OutOfMemoryError>) :
+        ReadError("The resource is too large to be read on this device.", cause) {
+
+        public constructor(error: OutOfMemoryError) : this(ThrowableError(error))
+    }
+
+    public class UnsupportedOperation(cause: Error? = null) :
+        ReadError("Could not proceed because an operation was not supported.", cause) {
+
+            public constructor(message: String) : this(MessageError(message))
+        }
 
     /** For any other error, such as HTTP 500. */
     public class Other(cause: Error) :

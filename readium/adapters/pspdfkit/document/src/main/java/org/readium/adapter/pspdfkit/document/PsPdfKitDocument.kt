@@ -6,17 +6,18 @@
 
 package org.readium.adapter.pspdfkit.document
 
+import com.pspdfkit.document.PdfDocument as _PsPdfKitDocument
 import android.content.Context
 import android.graphics.Bitmap
 import com.pspdfkit.annotations.actions.GoToAction
 import com.pspdfkit.document.DocumentSource
 import com.pspdfkit.document.OutlineElement
 import com.pspdfkit.document.PageBinding
-import com.pspdfkit.document.PdfDocument as _PsPdfKitDocument
 import com.pspdfkit.document.PdfDocumentLoader
 import com.pspdfkit.exceptions.InvalidPasswordException
+import com.pspdfkit.exceptions.InvalidSignatureException
+import java.io.IOException
 import kotlin.reflect.KClass
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.publication.ReadingProgression
@@ -46,9 +47,9 @@ public class PsPdfKitDocumentFactory(context: Context) : PdfDocumentFactory<PsPd
                 )
             } catch (e: InvalidPasswordException) {
                 Try.failure(ReadError.Decoding(ThrowableError(e)))
-            } catch (e: CancellationException) {
-                throw e
-            } catch (e: Exception) {
+            } catch (e: InvalidSignatureException) {
+                Try.failure(ReadError.Decoding(ThrowableError(e)))
+            } catch (e: IOException) {
                 Try.failure(ReadError.Other(e))
             }
         }

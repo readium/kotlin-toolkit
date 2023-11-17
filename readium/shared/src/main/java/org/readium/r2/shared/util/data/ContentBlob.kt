@@ -16,7 +16,9 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.extensions.*
 import org.readium.r2.shared.util.AbsoluteUrl
+import org.readium.r2.shared.util.MessageError
 import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.flatMap
 import org.readium.r2.shared.util.toUrl
 
 /**
@@ -57,8 +59,15 @@ public class ContentBlob(
     private suspend fun readRange(range: LongRange): Try<ByteArray, ReadError> =
         withStream {
             withContext(Dispatchers.IO) {
-                val skipped = it.skip(range.first)
-                check(skipped == range.first)
+                var skipped: Long = 0
+
+                while (skipped != range.first) {
+                    skipped += it.skip(range.first - skipped)
+                    if (skipped == 0L) {
+                        throw IOException("Could not skip InputStream.")
+                    }
+                }
+
                 val length = range.last - range.first + 1
                 it.read(length)
             }
@@ -68,7 +77,16 @@ public class ContentBlob(
         if (!::_length.isInitialized) {
             _length = Try.catching {
                 contentResolver.openFileDescriptor(uri, "r")
-                    .use { fd -> checkNotNull(fd?.statSize.takeUnless { it == -1L }) }
+                    ?.use { fd -> fd.statSize.takeUnless { it == -1L } }
+            }.flatMap {
+                when (it) {
+                    null -> Try.failure(
+                        ReadError.UnsupportedOperation(
+                            MessageError("Content provider does not provide length for uri $uri.")
+                        )
+                    )
+                    else -> Try.success(it)
+                }
             }
         }
 
@@ -93,13 +111,9 @@ public class ContentBlob(
         try {
             success(closure())
         } catch (e: FileNotFoundException) {
-            failure(ReadError.Filesystem(FilesystemError.NotFound(e)))
-        } catch (e: SecurityException) {
-            failure(ReadError.Filesystem(FilesystemError.Forbidden(e)))
+            failure(ReadError.Access(ContentProviderError.FileNotFound(e)))
         } catch (e: IOException) {
-            failure(ReadError.Filesystem(FilesystemError.Unknown(e)))
-        } catch (e: Exception) {
-            failure(ReadError.Filesystem(FilesystemError.Unknown(e)))
+            failure(ReadError.Access(ContentProviderError.IO(e)))
         } catch (e: OutOfMemoryError) { // We don't want to catch any Error, only OOM.
             failure(ReadError.OutOfMemory(e))
         }

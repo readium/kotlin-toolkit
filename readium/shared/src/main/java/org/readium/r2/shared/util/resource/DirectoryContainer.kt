@@ -16,7 +16,7 @@ import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.data.ClosedContainer
 import org.readium.r2.shared.util.data.Container
 import org.readium.r2.shared.util.data.FileBlob
-import org.readium.r2.shared.util.data.FilesystemError
+import org.readium.r2.shared.util.data.FileSystemError
 import org.readium.r2.shared.util.mediatype.MediaTypeHints
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 import org.readium.r2.shared.util.toUrl
@@ -52,7 +52,7 @@ public class DirectoryContainer(
 
     public companion object {
 
-        public suspend operator fun invoke(root: File, mediaTypeRetriever: MediaTypeRetriever): Try<DirectoryContainer, FilesystemError> {
+        public suspend operator fun invoke(root: File, mediaTypeRetriever: MediaTypeRetriever): Try<DirectoryContainer, FileSystemError> {
             val entries =
                 try {
                     withContext(Dispatchers.IO) {
@@ -62,7 +62,7 @@ public class DirectoryContainer(
                             .toSet()
                     }
                 } catch (e: SecurityException) {
-                    return Try.failure(FilesystemError.Forbidden(e))
+                    return Try.failure(FileSystemError.Forbidden(e))
                 }
             val container = DirectoryContainer(root, mediaTypeRetriever, entries)
             return Try.success(container)

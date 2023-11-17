@@ -9,11 +9,11 @@ package org.readium.r2.shared.util.http
 import android.os.Bundle
 import java.io.ByteArrayInputStream
 import java.io.FileInputStream
+import java.io.IOException
 import java.io.InputStream
 import java.net.HttpURLConnection
 import java.net.SocketTimeoutException
 import java.net.URL
-import java.util.concurrent.CancellationException
 import kotlin.time.Duration
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -24,8 +24,6 @@ import org.readium.r2.shared.util.MessageError
 import org.readium.r2.shared.util.ThrowableError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
-import org.readium.r2.shared.util.data.HttpError
-import org.readium.r2.shared.util.data.HttpStatus
 import org.readium.r2.shared.util.data.InMemoryBlob
 import org.readium.r2.shared.util.e
 import org.readium.r2.shared.util.flatMap
@@ -209,8 +207,8 @@ public class DefaultHttpClient(
                             )
                         )
                     }
-                } catch (e: Exception) {
-                    Try.failure(wrap(e))
+                } catch (e: IOException) {
+                    Try.failure( wrap(e))
                 }
             }
 
@@ -336,14 +334,12 @@ public class DefaultHttpClient(
 /**
  * Creates an HTTP error from a generic exception.
  */
-private fun wrap(cause: Throwable): HttpError =
+private fun wrap(cause: IOException): HttpError =
     when (cause) {
-        is CancellationException ->
-            throw cause
         is SocketTimeoutException ->
             HttpError.Timeout(ThrowableError(cause))
         else ->
-            HttpError.Other(ThrowableError(cause))
+            HttpError.IO(cause)
     }
 
 /**

@@ -17,7 +17,7 @@ import org.readium.r2.shared.util.Url
  *
  * The [routes] will be tested in the given order.
  */
-public class RoutingClosedContainer<E : Blob>(
+public class RoutingContainer<E : Blob>(
     private val routes: List<Route<E>>
 ) : ClosedContainer<E> {
 

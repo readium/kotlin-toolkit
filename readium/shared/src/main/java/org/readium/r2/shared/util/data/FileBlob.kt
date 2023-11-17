@@ -15,6 +15,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.extensions.*
 import org.readium.r2.shared.util.AbsoluteUrl
+import org.readium.r2.shared.util.MessageError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.getOrThrow
 import org.readium.r2.shared.util.isLazyInitialized
@@ -82,7 +83,11 @@ public class FileBlob(
 
     override suspend fun length(): Try<Long, ReadError> =
         metadataLength?.let { Try.success(it) }
-            ?: read().map { it.size.toLong() }
+            ?: Try.failure(
+                ReadError.UnsupportedOperation(
+                    MessageError("Length not available for file at ${file.path}.")
+                )
+            )
 
     private val metadataLength: Long? =
         tryOrNull {
@@ -97,13 +102,13 @@ public class FileBlob(
         try {
             success(closure())
         } catch (e: FileNotFoundException) {
-            failure(ReadError.Filesystem(FilesystemError.NotFound(e)))
+            failure(ReadError.Access(FileSystemError.NotFound(e)))
         } catch (e: SecurityException) {
-            failure(ReadError.Filesystem(FilesystemError.Forbidden(e)))
+            failure(ReadError.Access(FileSystemError.Forbidden(e)))
         } catch (e: IOException) {
-            failure(ReadError.Filesystem(FilesystemError.Unknown(e)))
+            failure(ReadError.Access(FileSystemError.IO(e)))
         } catch (e: Exception) {
-            failure(ReadError.Filesystem(FilesystemError.Unknown(e)))
+            failure(ReadError.Access(FileSystemError.IO(e)))
         } catch (e: OutOfMemoryError) { // We don't want to catch any Error, only OOM.
             failure(ReadError.OutOfMemory(e))
         }

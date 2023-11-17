@@ -4,12 +4,12 @@
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.r2.shared.util.data
+package org.readium.r2.shared.util.http
 
 import org.json.JSONObject
 import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.util.Error
-import org.readium.r2.shared.util.http.ProblemDetails
+import org.readium.r2.shared.util.ThrowableError
 import org.readium.r2.shared.util.mediatype.MediaType
 
 /**
@@ -34,8 +34,11 @@ public sealed class HttpError(
         HttpError("Redirection failed.", cause)
 
     /** An unknown networking error. */
-    public class Other(cause: Error) :
-        HttpError("A networking error occurred.", cause)
+    public class IO(cause: Error) :
+        HttpError("An IO error occurred.", cause) {
+
+            public constructor(exception: Exception) : this(ThrowableError(exception))
+        }
 
     /**
      * @param status HTTP status code.

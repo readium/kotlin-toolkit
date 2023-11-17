@@ -22,6 +22,8 @@ internal class ResourceDataProvider(
     private val onResourceError: (ReadError) -> Unit = { Timber.e(it) }
 ) : DataProvider {
 
+    var error: ReadError? = null
+
     private val resource =
         // PSPDFKit accesses the resource from multiple threads.
         resource.synchronized()
@@ -30,6 +32,7 @@ internal class ResourceDataProvider(
         runBlocking {
             resource.length()
                 .getOrElse {
+                    error = it
                     onResourceError(it)
                     DataProvider.FILE_SIZE_UNKNOWN.toLong()
                 }
@@ -51,6 +54,7 @@ internal class ResourceDataProvider(
         val range = offset until (offset + size)
         resource.read(range)
             .getOrElse {
+                error = it
                 onResourceError(it)
                 DataProvider.NO_DATA_AVAILABLE
             }
@@ -58,6 +62,7 @@ internal class ResourceDataProvider(
 
     override fun release() {
         if (::resource.isLazyInitialized) {
+            error = null
             runBlocking { resource.close() }
         }
     }

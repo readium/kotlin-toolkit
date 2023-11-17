@@ -14,11 +14,10 @@ import java.util.zip.ZipFile
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.util.MessageError
-import org.readium.r2.shared.util.ThrowableError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.data.Blob
 import org.readium.r2.shared.util.data.ClosedContainer
-import org.readium.r2.shared.util.data.FilesystemError
+import org.readium.r2.shared.util.data.FileSystemError
 import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.mediatype.MediaType
@@ -57,19 +56,13 @@ public class FileZipArchiveProvider(
             } catch (e: SecurityException) {
                 Try.failure(
                     MediaTypeSnifferError.DataAccess(
-                        ReadError.Filesystem(FilesystemError.Forbidden(e))
+                        ReadError.Access(FileSystemError.Forbidden(e))
                     )
                 )
             } catch (e: IOException) {
                 Try.failure(
                     MediaTypeSnifferError.DataAccess(
-                        ReadError.Filesystem(FilesystemError.Unknown(e))
-                    )
-                )
-            } catch (e: Exception) {
-                Try.failure(
-                    MediaTypeSnifferError.DataAccess(
-                        ReadError.Other(ThrowableError(e))
+                        ReadError.Access(FileSystemError.IO(e))
                     )
                 )
             }
@@ -106,7 +99,7 @@ public class FileZipArchiveProvider(
             } catch (e: FileNotFoundException) {
                 Try.failure(
                     ArchiveFactory.Error.ResourceError(
-                        ReadError.Filesystem(FilesystemError.NotFound(e))
+                        ReadError.Access(FileSystemError.NotFound(e))
                     )
                 )
             } catch (e: ZipException) {
@@ -118,19 +111,13 @@ public class FileZipArchiveProvider(
             } catch (e: SecurityException) {
                 Try.failure(
                     ArchiveFactory.Error.ResourceError(
-                        ReadError.Filesystem(FilesystemError.Forbidden(e))
+                        ReadError.Access(FileSystemError.Forbidden(e))
                     )
                 )
             } catch (e: IOException) {
                 Try.failure(
                     ArchiveFactory.Error.ResourceError(
-                        ReadError.Filesystem(FilesystemError.Unknown(e))
-                    )
-                )
-            } catch (e: Exception) {
-                Try.failure(
-                    ArchiveFactory.Error.ResourceError(
-                        ReadError.Other(e)
+                        ReadError.Access(FileSystemError.IO(e))
                     )
                 )
             }

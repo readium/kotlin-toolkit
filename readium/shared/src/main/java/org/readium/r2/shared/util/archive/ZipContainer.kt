@@ -9,17 +9,19 @@ package org.readium.r2.shared.util.archive
 import java.io.File
 import java.io.IOException
 import java.util.zip.ZipEntry
+import java.util.zip.ZipException
 import java.util.zip.ZipFile
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.extensions.readFully
 import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.util.AbsoluteUrl
+import org.readium.r2.shared.util.MessageError
 import org.readium.r2.shared.util.RelativeUrl
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.data.ClosedContainer
-import org.readium.r2.shared.util.data.FilesystemError
+import org.readium.r2.shared.util.data.FileSystemError
 import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.io.CountingInputStream
@@ -69,7 +71,11 @@ internal class JavaZipContainer(
         override suspend fun length(): Try<Long, ReadError> =
             entry.size.takeUnless { it == -1L }
                 ?.let { Try.success(it) }
-                ?: Try.failure(ReadError.Other(Exception("Unsupported operation")))
+                ?: Try.failure(
+                    ReadError.UnsupportedOperation(
+                        MessageError("ZIP entry doesn't provide length for entry $url.")
+                    )
+                )
 
         private val compressedLength: Long? =
             if (entry.method == ZipEntry.STORED || entry.method == -1) {
@@ -89,10 +95,10 @@ internal class JavaZipContainer(
                         }
                     Try.success(bytes)
                 }
+            } catch (e: ZipException) {
+                Try.failure(ReadError.Decoding(e))
             } catch (e: IOException) {
-                Try.failure(ReadError.Filesystem(FilesystemError.Unknown(e)))
-            } catch (e: Exception) {
-                Try.failure(ReadError.Other(e))
+                Try.failure(ReadError.Access(FileSystemError.IO(e)))
             }
 
         private suspend fun readFully(): ByteArray =

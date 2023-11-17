@@ -8,6 +8,7 @@ package org.readium.r2.shared.util.downloads.foreground
 
 import java.io.File
 import java.io.FileOutputStream
+import java.io.IOException
 import java.util.UUID
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -17,9 +18,8 @@ import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.extensions.tryOrLog
-import org.readium.r2.shared.util.ThrowableError
 import org.readium.r2.shared.util.Try
-import org.readium.r2.shared.util.data.HttpError
+import org.readium.r2.shared.util.http.HttpError
 import org.readium.r2.shared.util.downloads.DownloadManager
 import org.readium.r2.shared.util.flatMap
 import org.readium.r2.shared.util.http.HttpClient
@@ -147,7 +147,7 @@ public class ForegroundDownloadManager(
                     Try.success(res.response)
                 }
             }
-        } catch (e: Exception) {
-            Try.failure(HttpError.Other(ThrowableError(e)))
+        } catch (e: IOException) {
+            Try.failure(HttpError.IO(e))
         }
 }

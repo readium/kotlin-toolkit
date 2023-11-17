@@ -1,5 +1,6 @@
 package org.readium.r2.shared.util.http
 
+import java.io.IOException
 import java.io.InputStream
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -9,7 +10,6 @@ import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.MessageError
 import org.readium.r2.shared.util.Try
-import org.readium.r2.shared.util.data.HttpError
 import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.flatMap
 import org.readium.r2.shared.util.io.CountingInputStream
@@ -36,7 +36,11 @@ public class HttpResource(
             return if (contentLength != null) {
                 Try.success(contentLength)
             } else {
-                Try.failure(ReadError.Other(UnsupportedOperationException()))
+                Try.failure(
+                    ReadError.UnsupportedOperation(
+                        MessageError("Server did not provide content length in its response to request to $source.")
+                    )
+                )
             }
         }
 
@@ -53,8 +57,8 @@ public class HttpResource(
                     stream.readBytes()
                 }
             }
-        } catch (e: Exception) {
-            Try.failure(ReadError.Other(e))
+        } catch (e: IOException) {
+            Try.failure(ReadError.Access(HttpError.IO(e)))
         }
     }
 
@@ -67,7 +71,7 @@ public class HttpResource(
         }
 
         _headResponse = client.head(HttpRequest(source))
-            .mapFailure { ReadError.Network(it) }
+            .mapFailure { ReadError.Access(it) }
 
         return _headResponse
     }
@@ -96,17 +100,17 @@ public class HttpResource(
         }
 
         return client.stream(request)
+            .mapFailure { ReadError.Access(it) }
             .flatMap { response ->
                 if (from != null && response.response.statusCode != 206
                 ) {
                     val error = MessageError("Server seems not to support range requests.")
-                    Try.failure(HttpError.Other(error))
+                    Try.failure(ReadError.UnsupportedOperation(error))
                 } else {
                     Try.success(response)
                 }
             }
             .map { CountingInputStream(it.body) }
-            .mapFailure { ReadError.Network(it) }
             .onSuccess {
                 inputStream = it
                 inputStreamStart = from ?: 0

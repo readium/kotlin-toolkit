@@ -11,6 +11,7 @@ import kotlinx.coroutines.withContext
 import org.readium.r2.shared.extensions.readFully
 import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.util.AbsoluteUrl
+import org.readium.r2.shared.util.MessageError
 import org.readium.r2.shared.util.RelativeUrl
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
@@ -72,7 +73,11 @@ internal class ChannelZipContainer(
         override suspend fun length(): ResourceTry<Long> =
             entry.size.takeUnless { it == -1L }
                 ?.let { Try.success(it) }
-                ?: Try.failure(ReadError.Other(UnsupportedOperationException()))
+                ?: Try.failure(
+                    ReadError.UnsupportedOperation(
+                        MessageError("ZIP entry doesn't provide length for entry $url.")
+                    )
+                )
 
         private val compressedLength: Long?
             get() =

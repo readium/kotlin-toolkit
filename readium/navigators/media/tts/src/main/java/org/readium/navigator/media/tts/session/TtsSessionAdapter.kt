@@ -44,7 +44,7 @@ import org.readium.navigator.media.tts.TtsEngine
 import org.readium.navigator.media.tts.TtsPlayer
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.ErrorException
-import org.readium.r2.shared.util.data.HttpError
+import org.readium.r2.shared.util.http.HttpError
 import org.readium.r2.shared.util.data.ReadError
 
 /**
@@ -925,7 +925,7 @@ internal class TtsSessionAdapter<E : TtsEngine.Error>(
         }
         is TtsPlayer.State.Error.ContentError -> {
             val errorCode = when (error) {
-                is ReadError.Network ->
+                is ReadError.Access ->
                     when (error.cause) {
                         is HttpError.Response ->
                             ERROR_CODE_IO_BAD_HTTP_STATUS

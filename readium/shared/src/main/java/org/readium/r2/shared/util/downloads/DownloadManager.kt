@@ -42,7 +42,7 @@ public interface DownloadManager {
     ) : org.readium.r2.shared.util.Error {
 
         public class HttpError(
-            cause: org.readium.r2.shared.util.data.HttpError
+            cause: org.readium.r2.shared.util.http.HttpError
         ) : Error(cause.message, cause)
 
         public class DeviceNotFound(
