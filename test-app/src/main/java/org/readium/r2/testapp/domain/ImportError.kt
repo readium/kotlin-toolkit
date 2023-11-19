@@ -6,24 +6,19 @@
 
 package org.readium.r2.testapp.domain
 
-import androidx.annotation.StringRes
-import org.readium.r2.shared.UserException
+import org.readium.r2.lcp.LcpError
+import org.readium.r2.shared.util.Error
 import org.readium.r2.shared.util.downloads.DownloadManager
-import org.readium.r2.testapp.R
 
 sealed class ImportError(
-    content: Content,
-    cause: Exception?
-) : UserException(content, cause) {
+    override val cause: Error?
+) : Error {
 
-    constructor(@StringRes userMessageId: Int) :
-        this(Content(userMessageId), null)
-
-    constructor(cause: UserException) :
-        this(Content(cause), cause)
+    override val message: String =
+        "Import failed"
 
     class LcpAcquisitionFailed(
-        override val cause: UserException
+        override val cause: LcpError
     ) : ImportError(cause)
 
     class PublicationError(
@@ -31,13 +26,12 @@ sealed class ImportError(
     ) : ImportError(cause)
 
     class DownloadFailed(
-        val error: DownloadManager.Error
-    ) : ImportError(R.string.import_publication_download_failed)
+        override val cause: DownloadManager.Error
+    ) : ImportError(cause)
 
-    class OpdsError(
-        override val cause: Throwable
-    ) : ImportError(R.string.import_publication_no_acquisition)
+    class OpdsError(override val cause: Error) :
+        ImportError(cause)
 
-    class DatabaseError :
-        ImportError(R.string.import_publication_unable_add_pub_database)
+    class DatabaseError(override val cause: Error) :
+        ImportError(cause)
 }

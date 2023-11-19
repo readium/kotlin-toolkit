@@ -21,7 +21,7 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 import org.readium.r2.lcp.LcpAuthenticating
 import org.readium.r2.lcp.LcpContentProtection
-import org.readium.r2.lcp.LcpException
+import org.readium.r2.lcp.LcpError
 import org.readium.r2.lcp.LcpLicense
 import org.readium.r2.lcp.LcpPublicationRetriever
 import org.readium.r2.lcp.LcpService
@@ -92,13 +92,13 @@ internal class LicensesService(
         ReplaceWith("publicationRetriever()"),
         level = DeprecationLevel.ERROR
     )
-    override suspend fun acquirePublication(lcpl: ByteArray, onProgress: (Double) -> Unit): Try<LcpService.AcquiredPublication, LcpException> =
+    override suspend fun acquirePublication(lcpl: ByteArray, onProgress: (Double) -> Unit): Try<LcpService.AcquiredPublication, LcpError> =
         try {
             val licenseDocument = LicenseDocument(lcpl)
             Timber.d("license ${licenseDocument.json}")
             fetchPublication(licenseDocument, onProgress).let { Try.success(it) }
         } catch (e: Exception) {
-            Try.failure(LcpException.wrap(e))
+            Try.failure(LcpError.wrap(e))
         }
 
     override suspend fun retrieveLicense(
@@ -106,7 +106,7 @@ internal class LicensesService(
         mediaType: MediaType,
         authentication: LcpAuthenticating,
         allowUserInteraction: Boolean
-    ): Try<LcpLicense, LcpException> =
+    ): Try<LcpLicense, LcpError> =
         try {
             val container = createLicenseContainer(file, mediaType)
             val license = retrieveLicense(
@@ -116,14 +116,14 @@ internal class LicensesService(
             )
             Try.success(license)
         } catch (e: Exception) {
-            Try.failure(LcpException.wrap(e))
+            Try.failure(LcpError.wrap(e))
         }
 
     override suspend fun retrieveLicense(
         asset: Asset,
         authentication: LcpAuthenticating,
         allowUserInteraction: Boolean
-    ): Try<LcpLicense, LcpException> =
+    ): Try<LcpLicense, LcpError> =
         try {
             val licenseContainer = createLicenseContainer(context, asset)
             val license = retrieveLicense(
@@ -133,7 +133,7 @@ internal class LicensesService(
             )
             Try.success(license)
         } catch (e: Exception) {
-            Try.failure(LcpException.wrap(e))
+            Try.failure(LcpError.wrap(e))
         }
 
     private suspend fun retrieveLicense(

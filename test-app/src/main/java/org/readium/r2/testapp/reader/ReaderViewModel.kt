@@ -23,11 +23,9 @@ import org.readium.r2.navigator.epub.EpubNavigatorFragment
 import org.readium.r2.navigator.image.ImageNavigatorFragment
 import org.readium.r2.navigator.pdf.PdfNavigatorFragment
 import org.readium.r2.shared.ExperimentalReadiumApi
-import org.readium.r2.shared.UserException
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.LocatorCollection
 import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.publication.services.search.SearchError
 import org.readium.r2.shared.publication.services.search.SearchIterator
 import org.readium.r2.shared.publication.services.search.SearchTry
 import org.readium.r2.shared.publication.services.search.search
@@ -36,14 +34,18 @@ import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.testapp.Application
+import org.readium.r2.testapp.R
 import org.readium.r2.testapp.data.BookRepository
 import org.readium.r2.testapp.data.model.Highlight
-import org.readium.r2.testapp.domain.PublicationError
+import org.readium.r2.testapp.domain.ReadUserError
 import org.readium.r2.testapp.reader.preferences.UserPreferencesViewModel
 import org.readium.r2.testapp.reader.tts.TtsViewModel
 import org.readium.r2.testapp.search.SearchPagingSource
+import org.readium.r2.testapp.search.SearchUserError
 import org.readium.r2.testapp.utils.EventChannel
+import org.readium.r2.testapp.utils.UserError
 import org.readium.r2.testapp.utils.createViewModelFactory
+import org.readium.r2.testapp.utils.extensions.readium.e
 import timber.log.Timber
 
 @OptIn(
@@ -59,6 +61,14 @@ class ReaderViewModel(
     EpubNavigatorFragment.Listener,
     ImageNavigatorFragment.Listener,
     PdfNavigatorFragment.Listener {
+
+    class ReaderUserError(
+        override val cause: UserError
+    ) : UserError {
+
+        override val content: UserError.Content =
+            UserError.Content(R.string.reader_error)
+    }
 
     val readerInitData =
         try {
@@ -211,27 +221,14 @@ class ReaderViewModel(
         lastSearchQuery = query
         _searchLocators.value = emptyList()
         searchIterator = publication.search(query)
-            .onFailure { activityChannel.send(ActivityCommand.ToastError(it.wrap())) }
+            .onFailure {
+                Timber.e(it)
+                activityChannel.send(ActivityCommand.ToastError(SearchUserError(it)))
+            }
             .getOrNull()
         pagingSourceFactory.invalidate()
         searchChannel.send(SearchCommand.StartNewSearch)
     }
-
-    private fun SearchError.wrap(): org.readium.r2.testapp.domain.SearchError =
-        when (this) {
-            is SearchError.BadQuery ->
-                org.readium.r2.testapp.domain.SearchError.BadQuery(this)
-            SearchError.Cancelled ->
-                org.readium.r2.testapp.domain.SearchError.Cancelled
-            is SearchError.NetworkError ->
-                org.readium.r2.testapp.domain.SearchError.NetworkError(this)
-            is SearchError.Other ->
-                org.readium.r2.testapp.domain.SearchError.Other(this)
-            SearchError.PublicationNotSearchable ->
-                org.readium.r2.testapp.domain.SearchError.PublicationNotSearchable
-            is SearchError.ResourceError ->
-                org.readium.r2.testapp.domain.SearchError.ResourceError(this)
-        }
 
     fun cancelSearch() = viewModelScope.launch {
         _searchLocators.value = emptyList()
@@ -272,9 +269,10 @@ class ReaderViewModel(
     // Navigator.Listener
 
     override fun onResourceLoadFailed(href: Url, error: ReadError) {
+        Timber.e(error)
         activityChannel.send(
             ActivityCommand.ToastError(
-                PublicationError(error)
+                ReaderUserError(ReadUserError(error))
             )
         )
     }
@@ -305,7 +303,7 @@ class ReaderViewModel(
         object OpenOutlineRequested : ActivityCommand()
         object OpenDrmManagementRequested : ActivityCommand()
         class OpenExternalLink(val url: AbsoluteUrl) : ActivityCommand()
-        class ToastError(val error: UserException) : ActivityCommand()
+        class ToastError(val error: UserError) : ActivityCommand()
     }
 
     sealed class FeedbackEvent {

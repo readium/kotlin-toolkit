@@ -15,10 +15,12 @@ import kotlinx.coroutines.launch
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.protection.ContentProtectionSchemeRetriever
 import org.readium.r2.shared.util.AbsoluteUrl
+import org.readium.r2.shared.util.MessageError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.asset.Asset
 import org.readium.r2.shared.util.asset.AssetRetriever
 import org.readium.r2.shared.util.data.FileSystemError
+import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.toUrl
 import org.readium.r2.streamer.PublicationFactory
@@ -149,7 +151,7 @@ class Bookshelf(
                     .getOrElse {
                         return Try.failure(
                             ImportError.PublicationError(
-                                PublicationError.FsUnexpected(FileSystemError.IO(it))
+                                PublicationError.ReadError(ReadError.Access(FileSystemError.IO(it)))
                             )
                         )
                     }
@@ -164,7 +166,11 @@ class Bookshelf(
             )
             if (id == -1L) {
                 coverFile.delete()
-                return Try.failure(ImportError.DatabaseError())
+                return Try.failure(
+                    ImportError.DatabaseError(
+                        MessageError("Could not insert book into database.")
+                    )
+                )
             }
         }
             .onFailure {

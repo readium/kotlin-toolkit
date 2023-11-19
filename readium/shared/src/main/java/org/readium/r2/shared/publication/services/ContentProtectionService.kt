@@ -11,8 +11,6 @@ package org.readium.r2.shared.publication.services
 
 import java.util.Locale
 import org.json.JSONObject
-import org.readium.r2.shared.UserException
-import org.readium.r2.shared.extensions.putIfNotEmpty
 import org.readium.r2.shared.publication.Href
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.LocalizedString
@@ -20,6 +18,7 @@ import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.PublicationServicesHolder
 import org.readium.r2.shared.publication.ServiceFactory
 import org.readium.r2.shared.publication.protection.ContentProtection
+import org.readium.r2.shared.util.Error
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.http.HttpError
@@ -43,7 +42,7 @@ public interface ContentProtectionService : Publication.WebService {
     /**
      * The error raised when trying to unlock the [Publication], if any.
      */
-    public val error: UserException?
+    public val error: Error?
 
     /**
      * Credentials used to unlock this [Publication].
@@ -64,7 +63,7 @@ public interface ContentProtectionService : Publication.WebService {
      * User-facing name for this Content Protection, e.g. "Readium LCP".
      * It could be used in a sentence such as "Protected by {name}"
      */
-    public val name: LocalizedString? get() = null
+    public val name: String? get() = null
 
     override val links: List<Link>
         get() = RouteHandler.links
@@ -198,7 +197,7 @@ public val Publication.isRestricted: Boolean
 /**
  * The error raised when trying to unlock the [Publication], if any.
  */
-public val Publication.protectionError: UserException?
+public val Publication.protectionError: Error?
     get() = protectionService?.error
 
 /**
@@ -224,15 +223,21 @@ public val Publication.protectionScheme: ContentProtection.Scheme?
  * User-facing localized name for this Content Protection, e.g. "Readium LCP".
  * It could be used in a sentence such as "Protected by {name}".
  */
-public val Publication.protectionLocalizedName: LocalizedString?
-    get() = protectionService?.name
+@Suppress("UnusedReceiverParameter")
+@Deprecated(
+    "Localize protection names yourself.",
+    level = DeprecationLevel.ERROR,
+    replaceWith = ReplaceWith("protectionName")
+)
+public val Publication.protectionLocalizedName: LocalizedString
+    get() = throw NotImplementedError()
 
 /**
  * User-facing name for this Content Protection, e.g. "Readium LCP".
  * It could be used in a sentence such as "Protected by {name}".
  */
 public val Publication.protectionName: String?
-    get() = protectionLocalizedName?.string
+    get() = protectionService?.name
 
 private sealed class RouteHandler {
 
@@ -271,8 +276,8 @@ private sealed class RouteHandler {
         override suspend fun handleRequest(request: HttpRequest, service: ContentProtectionService): Try<HttpStreamResponse, HttpError.Response> {
             val json = JSONObject().apply {
                 put("isRestricted", service.isRestricted)
-                putOpt("error", service.error?.localizedMessage)
-                putIfNotEmpty("name", service.name)
+                putOpt("error", service.error?.message)
+                putOpt("name", service.name)
                 put("rights", service.rights.toJSON())
             }
 

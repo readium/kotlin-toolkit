@@ -38,7 +38,7 @@ public sealed class DecoderError(
 
 internal suspend fun<R, S> Try<S, ReadError>.decode(
     block: (value: S) -> R,
-    wrapException: (Exception) -> Error
+    wrapError: (Exception) -> Error
 ): Try<R, DecoderError> =
     when (this) {
         is Try.Success ->
@@ -49,7 +49,7 @@ internal suspend fun<R, S> Try<S, ReadError>.decode(
                     }
                 )
             } catch (e: Exception) {
-                Try.failure(DecoderError.DecodingError(wrapException(e)))
+                Try.failure(DecoderError.DecodingError(wrapError(e)))
             }
         is Try.Failure ->
             Try.failure(DecoderError.DataAccess(value))
@@ -57,7 +57,7 @@ internal suspend fun<R, S> Try<S, ReadError>.decode(
 
 internal suspend fun<R, S> Try<S, DecoderError>.decodeMap(
     block: (value: S) -> R,
-    wrapException: (Exception) -> Error
+    wrapError: (Exception) -> Error
 ): Try<R, DecoderError> =
     when (this) {
         is Try.Success ->
@@ -68,7 +68,7 @@ internal suspend fun<R, S> Try<S, DecoderError>.decodeMap(
                     }
                 )
             } catch (e: Exception) {
-                Try.failure(DecoderError.DecodingError(wrapException(e)))
+                Try.failure(DecoderError.DecodingError(wrapError(e)))
             }
         is Try.Failure ->
             Try.failure(value)

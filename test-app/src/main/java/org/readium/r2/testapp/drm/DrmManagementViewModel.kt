@@ -9,6 +9,8 @@ package org.readium.r2.testapp.drm
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModel
 import java.util.*
+import org.readium.r2.shared.util.Error
+import org.readium.r2.shared.util.MessageError
 import org.readium.r2.shared.util.Try
 
 abstract class DrmManagementViewModel : ViewModel() {
@@ -33,11 +35,11 @@ abstract class DrmManagementViewModel : ViewModel() {
 
     open val canRenewLoan: Boolean = false
 
-    open suspend fun renewLoan(fragment: Fragment): Try<Date?, Exception> =
-        Try.failure(Exception("Renewing a loan is not supported"))
+    open suspend fun renewLoan(fragment: Fragment): Try<Date?, Error> =
+        Try.failure(MessageError("Renewing a loan is not supported"))
 
     open val canReturnPublication: Boolean = false
 
-    open suspend fun returnPublication(): Try<Unit, Exception> =
-        Try.failure(Exception("Returning a publication is not supported"))
+    open suspend fun returnPublication(): Try<Unit, Error> =
+        Try.failure(MessageError("Returning a publication is not supported"))
 }

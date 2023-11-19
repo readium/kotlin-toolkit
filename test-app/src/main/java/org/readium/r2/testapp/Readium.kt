@@ -9,12 +9,13 @@ package org.readium.r2.testapp
 import android.content.Context
 import android.view.View
 import org.readium.adapter.pdfium.document.PdfiumDocumentFactory
-import org.readium.r2.lcp.LcpException
+import org.readium.r2.lcp.LcpError
 import org.readium.r2.lcp.LcpService
 import org.readium.r2.lcp.auth.LcpDialogAuthentication
 import org.readium.r2.navigator.preferences.FontFamily
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.protection.ContentProtectionSchemeRetriever
+import org.readium.r2.shared.util.MessageError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.asset.AssetRetriever
 import org.readium.r2.shared.util.asset.CompositeResourceFactory
@@ -73,7 +74,7 @@ class Readium(context: Context) {
         mediaTypeRetriever,
         downloadManager
     )?.let { Try.success(it) }
-        ?: Try.failure(LcpException.Unknown(Exception("liblcp is missing on the classpath")))
+        ?: Try.failure(LcpError.Unknown(MessageError("liblcp is missing on the classpath")))
 
     private val lcpDialogAuthentication = LcpDialogAuthentication()
 

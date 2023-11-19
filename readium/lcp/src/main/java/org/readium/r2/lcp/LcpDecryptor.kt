@@ -15,7 +15,6 @@ import org.readium.r2.shared.extensions.requireLengthFitInt
 import org.readium.r2.shared.publication.encryption.Encryption
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.MessageError
-import org.readium.r2.shared.util.ThrowableError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.assertSuccess
@@ -250,7 +249,7 @@ internal class LcpDecryptor(
                         ReadError.Decoding(
                             MessageError(
                                 "Can't decrypt the content for resource with key: ${resource.source}",
-                                ThrowableError(it)
+                                it
                             )
                         )
                     )
@@ -311,7 +310,7 @@ private suspend fun LcpLicense.decryptFully(
             .getOrElse {
                 return Try.failure(
                     ReadError.Decoding(
-                        MessageError("Failed to decrypt the resource", ThrowableError(it))
+                        MessageError("Failed to decrypt the resource", it)
                     )
                 )
             }

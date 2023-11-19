@@ -9,6 +9,7 @@ package org.readium.navigator.media.tts
 import org.readium.r2.navigator.preferences.Configurable
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.Closeable
+import org.readium.r2.shared.util.Error
 import org.readium.r2.shared.util.Language
 
 /**
@@ -50,7 +51,7 @@ public interface TtsEngine<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
     /**
      * Marker interface for the errors that the [TtsEngine] returns.
      */
-    public interface Error
+    public interface Error : org.readium.r2.shared.util.Error
 
     /**
      * An id to identify a request to speak.

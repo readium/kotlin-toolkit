@@ -26,7 +26,6 @@ import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.util.Language
 import org.readium.r2.shared.util.getOrElse
-import org.readium.r2.testapp.domain.TtsError
 import org.readium.r2.testapp.reader.MediaService
 import org.readium.r2.testapp.reader.MediaServiceFacade
 import org.readium.r2.testapp.reader.ReaderInitData
@@ -147,7 +146,7 @@ class TtsViewModel private constructor(
                     }
                     is MediaNavigator.State.Error -> {
                         onPlaybackError(
-                            playback.state as TtsNavigator.State.Error
+                            (playback.state as TtsNavigator.State.Error).error
                         )
                     }
                     is MediaNavigator.State.Ready -> {}
@@ -182,7 +181,7 @@ class TtsViewModel private constructor(
             initialLocator = start,
             initialPreferences = preferencesManager.preferences.value
         ).getOrElse {
-            val error = TtsError.Initialization()
+            val error = TtsError.Initialization(it)
             _events.send(Event.OnError(error))
             return
         }
@@ -191,8 +190,8 @@ class TtsViewModel private constructor(
             mediaServiceFacade.openSession(bookId, ttsNavigator)
         } catch (e: Exception) {
             ttsNavigator.close()
-            val exception = TtsError.ServiceError(e)
-            _events.trySend(Event.OnError(exception))
+            val error = TtsError.ServiceError(e)
+            _events.trySend(Event.OnError(error))
             launchJob = null
             return
         }
@@ -225,13 +224,13 @@ class TtsViewModel private constructor(
         stop()
     }
 
-    private fun onPlaybackError(error: TtsNavigator.State.Error) {
+    private fun onPlaybackError(error: TtsNavigator.Error) {
         val event = when (error) {
-            is TtsNavigator.State.Error.ContentError -> {
+            is TtsNavigator.Error.ContentError -> {
                 Event.OnError(TtsError.ContentError(error))
             }
-            is TtsNavigator.State.Error.EngineError<*> -> {
-                val engineError = (error.error as AndroidTtsEngine.Error)
+            is TtsNavigator.Error.EngineError<*> -> {
+                val engineError = (error.cause as AndroidTtsEngine.Error)
                 when (engineError) {
                     is AndroidTtsEngine.Error.LanguageMissingData ->
                         Event.OnMissingVoiceData(engineError.language)

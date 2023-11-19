@@ -12,6 +12,7 @@ package org.readium.r2.lcp.license.model
 import java.nio.charset.Charset
 import java.util.*
 import org.json.JSONObject
+import org.readium.r2.lcp.LcpError
 import org.readium.r2.lcp.LcpException
 import org.readium.r2.lcp.license.model.components.Link
 import org.readium.r2.lcp.license.model.components.Links
@@ -70,18 +71,28 @@ public class StatusDocument(public val data: ByteArray) {
         try {
             json = JSONObject(data.toString(Charset.defaultCharset()))
         } catch (e: Exception) {
-            throw LcpException.Parsing.MalformedJSON
+            throw LcpException(LcpError.Parsing.MalformedJSON)
         }
 
-        id = json.optNullableString("id") ?: throw LcpException.Parsing.StatusDocument
-        status = json.optNullableString("status")?.let { Status(it) } ?: throw LcpException.Parsing.StatusDocument
-        message = json.optNullableString("message") ?: throw LcpException.Parsing.StatusDocument
+        id = json.optNullableString("id") ?: throw LcpException(LcpError.Parsing.StatusDocument)
+        status = json.optNullableString("status")?.let { Status(it) } ?: throw LcpException(
+            LcpError.Parsing.StatusDocument
+        )
+        message = json.optNullableString("message") ?: throw LcpException(
+            LcpError.Parsing.StatusDocument
+        )
 
         val updated = json.optJSONObject("updated") ?: JSONObject()
-        licenseUpdated = updated.optNullableString("license")?.iso8601ToDate() ?: throw LcpException.Parsing.StatusDocument
-        statusUpdated = updated.optNullableString("status")?.iso8601ToDate() ?: throw LcpException.Parsing.StatusDocument
+        licenseUpdated = updated.optNullableString("license")?.iso8601ToDate() ?: throw LcpException(
+            LcpError.Parsing.StatusDocument
+        )
+        statusUpdated = updated.optNullableString("status")?.iso8601ToDate() ?: throw LcpException(
+            LcpError.Parsing.StatusDocument
+        )
 
-        links = json.optJSONArray("links")?.let { Links(it) } ?: throw LcpException.Parsing.StatusDocument
+        links = json.optJSONArray("links")?.let { Links(it) } ?: throw LcpException(
+            LcpError.Parsing.StatusDocument
+        )
 
         potentialRights = json.optJSONObject("potential_rights")?.let { PotentialRights(it) }
 
@@ -108,7 +119,7 @@ public class StatusDocument(public val data: ByteArray) {
     ): Url {
         val link = link(rel, preferredType)
             ?: linkWithNoType(rel)
-            ?: throw LcpException.Parsing.Url(rel = rel.value)
+            ?: throw LcpException(LcpError.Parsing.Url(rel = rel.value))
 
         return link.url(parameters = parameters)
     }

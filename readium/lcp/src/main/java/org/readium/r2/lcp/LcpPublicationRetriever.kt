@@ -57,7 +57,7 @@ public class LcpPublicationRetriever(
          */
         public fun onAcquisitionFailed(
             requestId: RequestId,
-            error: LcpException
+            error: LcpError
         )
 
         /**
@@ -184,7 +184,7 @@ public class LcpPublicationRetriever(
                         listenersForId.forEach {
                             it.onAcquisitionFailed(
                                 lcpRequestId,
-                                LcpException.wrap(
+                                LcpError.wrap(
                                     Exception("Couldn't retrieve license from local storage.")
                                 )
                             )
@@ -209,7 +209,7 @@ public class LcpPublicationRetriever(
                 } catch (e: Exception) {
                     tryOrLog { download.file.delete() }
                     listenersForId.forEach {
-                        it.onAcquisitionFailed(lcpRequestId, LcpException.wrap(e))
+                        it.onAcquisitionFailed(lcpRequestId, LcpError.wrap(e))
                     }
                     return@launch
                 }
@@ -257,7 +257,7 @@ public class LcpPublicationRetriever(
             listenersForId.forEach {
                 it.onAcquisitionFailed(
                     lcpRequestId,
-                    LcpException.Network(ErrorException(error))
+                    LcpError.Network(ErrorException(error))
                 )
             }
 

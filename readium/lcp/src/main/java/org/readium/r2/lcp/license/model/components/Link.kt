@@ -11,6 +11,7 @@
 package org.readium.r2.lcp.license.model.components
 
 import org.json.JSONObject
+import org.readium.r2.lcp.LcpError
 import org.readium.r2.lcp.LcpException
 import org.readium.r2.shared.extensions.optNullableInt
 import org.readium.r2.shared.extensions.optNullableString
@@ -42,7 +43,7 @@ public data class Link(
                         templated = json.optBoolean("templated", false)
                     )
                 }
-                ?: throw LcpException.Parsing.Link
+                ?: throw LcpException(LcpError.Parsing.Link)
 
             return Link(
                 href = href,
@@ -51,7 +52,7 @@ public data class Link(
                 title = json.optNullableString("title"),
                 rels = json.optStringsFromArrayOrSingle("rel").toSet()
                     .takeIf { it.isNotEmpty() }
-                    ?: throw LcpException.Parsing.Link,
+                    ?: throw LcpException(LcpError.Parsing.Link),
                 profile = json.optNullableString("profile"),
                 length = json.optNullableInt("length"),
                 hash = json.optNullableString("hash")

@@ -79,12 +79,19 @@ public class TtsNavigator<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
 
         public object Ended : MediaNavigator.State.Ended
 
-        public sealed class Error : MediaNavigator.State.Error {
+        public data class Error(val error: TtsNavigator.Error) : MediaNavigator.State.Error
+    }
 
-            public data class EngineError<E : TtsEngine.Error> (val error: E) : Error()
+    public sealed class Error(
+        override val message: String,
+        override val cause: org.readium.r2.shared.util.Error?
+    ) : org.readium.r2.shared.util.Error {
 
-            public data class ContentError(val error: org.readium.r2.shared.util.Error) : Error()
-        }
+        public class EngineError<E : TtsEngine.Error> (override val cause: E) :
+            Error("An error occurred in the TTS engine.", cause)
+
+        public class ContentError(cause: org.readium.r2.shared.util.Error) :
+            Error("An error occurred while trying to read publication content.", cause)
     }
 
     public val voices: Set<V> get() =
@@ -181,8 +188,8 @@ public class TtsNavigator<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
 
     private fun TtsPlayer.State.Error.toError(): State.Error =
         when (this) {
-            is TtsPlayer.State.Error.ContentError -> State.Error.ContentError(error)
-            is TtsPlayer.State.Error.EngineError<*> -> State.Error.EngineError(error)
+            is TtsPlayer.State.Error.ContentError -> State.Error(Error.ContentError(error))
+            is TtsPlayer.State.Error.EngineError<*> -> State.Error(Error.EngineError(error))
         }
 
     private fun TtsPlayer.Utterance.toPosition(): Location {

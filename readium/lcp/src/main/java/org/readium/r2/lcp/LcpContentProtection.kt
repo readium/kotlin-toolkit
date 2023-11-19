@@ -64,7 +64,7 @@ internal class LcpContentProtection(
         asset: Asset,
         credentials: String?,
         allowUserInteraction: Boolean
-    ): Try<LcpLicense, LcpException> {
+    ): Try<LcpLicense, LcpError> {
         val authentication = credentials
             ?.let { LcpPassphraseAuthentication(it, fallback = this.authentication) }
             ?: this.authentication
@@ -74,7 +74,7 @@ internal class LcpContentProtection(
 
     private fun createResultAsset(
         asset: Asset.Container,
-        license: Try<LcpLicense, LcpException>
+        license: Try<LcpLicense, LcpError>
     ): Try<ContentProtection.Asset, ContentProtection.Error> {
         val serviceFactory = LcpContentProtectionService
             .createFactory(license.getOrNull(), license.failureOrNull())
@@ -115,7 +115,7 @@ internal class LcpContentProtection(
                         LicenseDocument(it)
                     } catch (e: Exception) {
                         return Try.failure(
-                            ContentProtection.Error.AccessError(
+                            ContentProtection.Error.ReadError(
                                 ReadError.Decoding(
                                     MessageError(
                                         "Failed to read the LCP license document",
@@ -128,14 +128,14 @@ internal class LcpContentProtection(
                 }
                 .getOrElse {
                     return Try.failure(
-                        ContentProtection.Error.AccessError(it)
+                        ContentProtection.Error.ReadError(it)
                     )
                 }
 
         val link = licenseDoc.publicationLink
         val url = (link.url() as? AbsoluteUrl)
             ?: return Try.failure(
-                ContentProtection.Error.AccessError(
+                ContentProtection.Error.ReadError(
                     ReadError.Decoding(
                         MessageError(
                             "The LCP license document does not contain a valid link to the publication"
@@ -179,7 +179,7 @@ internal class LcpContentProtection(
             is AssetRetriever.Error.ArchiveFormatNotSupported ->
                 ContentProtection.Error.UnsupportedAsset(this)
             is AssetRetriever.Error.AccessError ->
-                ContentProtection.Error.AccessError(cause)
+                ContentProtection.Error.ReadError(cause)
             is AssetRetriever.Error.SchemeNotSupported ->
                 ContentProtection.Error.UnsupportedAsset(this)
         }

@@ -9,7 +9,6 @@ package org.readium.r2.shared.publication.protection
 import kotlin.String
 import kotlin.let
 import kotlin.takeIf
-import org.readium.r2.shared.util.Error as BaseError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.getOrElse
@@ -29,7 +28,7 @@ public class ContentProtectionSchemeRetriever(
     public sealed class Error(
         override val message: String,
         override val cause: org.readium.r2.shared.util.Error?
-    ) : BaseError {
+    ) : org.readium.r2.shared.util.Error {
 
         public object NoContentProtectionFound :
             Error("No content protection recognized the given asset.", null)

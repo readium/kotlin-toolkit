@@ -10,7 +10,6 @@ import java.io.File
 import kotlin.Exception
 import kotlin.String
 import org.readium.r2.shared.util.AbsoluteUrl
-import org.readium.r2.shared.util.Error as SharedError
 import org.readium.r2.shared.util.ThrowableError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
@@ -18,6 +17,7 @@ import org.readium.r2.shared.util.archive.ArchiveFactory
 import org.readium.r2.shared.util.archive.ArchiveProvider
 import org.readium.r2.shared.util.archive.CompositeArchiveFactory
 import org.readium.r2.shared.util.archive.FileZipArchiveProvider
+import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.mediatype.CompositeMediaTypeSniffer
 import org.readium.r2.shared.util.mediatype.MediaType
@@ -42,26 +42,26 @@ public class AssetRetriever(
 
     public sealed class Error(
         override val message: String,
-        override val cause: SharedError?
-    ) : SharedError {
+        override val cause: org.readium.r2.shared.util.Error?
+    ) : org.readium.r2.shared.util.Error {
 
         public class SchemeNotSupported(
             public val scheme: Url.Scheme,
-            cause: SharedError? = null
+            cause: org.readium.r2.shared.util.Error? = null
         ) : Error("Scheme $scheme is not supported.", cause) {
 
             public constructor(scheme: Url.Scheme, exception: Exception) :
                 this(scheme, ThrowableError(exception))
         }
 
-        public class ArchiveFormatNotSupported(cause: SharedError?) :
+        public class ArchiveFormatNotSupported(cause: org.readium.r2.shared.util.Error?) :
             Error("Archive factory does not support this kind of archive.", cause) {
 
             public constructor(exception: Exception) :
                 this(ThrowableError(exception))
         }
 
-        public class AccessError(override val cause: org.readium.r2.shared.util.data.ReadError) :
+        public class AccessError(override val cause: ReadError) :
             Error("An error occurred when trying to read asset.", cause)
     }
 

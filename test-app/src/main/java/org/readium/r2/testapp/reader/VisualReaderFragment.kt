@@ -55,10 +55,13 @@ import org.readium.r2.testapp.data.model.Highlight
 import org.readium.r2.testapp.databinding.FragmentReaderBinding
 import org.readium.r2.testapp.reader.preferences.UserPreferencesBottomSheetDialogFragment
 import org.readium.r2.testapp.reader.tts.TtsControls
+import org.readium.r2.testapp.reader.tts.TtsUserError
 import org.readium.r2.testapp.reader.tts.TtsViewModel
 import org.readium.r2.testapp.utils.*
 import org.readium.r2.testapp.utils.extensions.confirmDialog
+import org.readium.r2.testapp.utils.extensions.readium.e
 import org.readium.r2.testapp.utils.extensions.throttleLatest
+import timber.log.Timber
 
 /*
  * Base reader fragment class
@@ -215,9 +218,10 @@ abstract class VisualReaderFragment : BaseReaderFragment() {
             events
                 .onEach { event ->
                     when (event) {
-                        is TtsViewModel.Event.OnError ->
-                            showError(event.error)
-
+                        is TtsViewModel.Event.OnError -> {
+                            Timber.e(event.error)
+                            showError(TtsUserError(event.error))
+                        }
                         is TtsViewModel.Event.OnMissingVoiceData ->
                             confirmAndInstallTtsVoice(event.language)
                     }

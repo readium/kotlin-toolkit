@@ -9,7 +9,6 @@ package org.readium.r2.streamer.parser
 import kotlin.String
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.PublicationContainer
-import org.readium.r2.shared.util.Error as BaseError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.mediatype.MediaType
@@ -48,7 +47,7 @@ public interface PublicationParser {
     public sealed class Error(
         public override val message: String,
         public override val cause: org.readium.r2.shared.util.Error?
-    ) : BaseError {
+    ) : org.readium.r2.shared.util.Error {
 
         public class UnsupportedFormat :
             Error("Asset format not supported.", null)

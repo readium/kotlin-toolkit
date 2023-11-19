@@ -10,6 +10,7 @@
 package org.readium.r2.lcp.license.model.components.lcp
 
 import org.json.JSONObject
+import org.readium.r2.lcp.LcpError
 import org.readium.r2.lcp.LcpException
 
 public data class UserKey(val json: JSONObject) {
@@ -18,8 +19,26 @@ public data class UserKey(val json: JSONObject) {
     val keyCheck: String
 
     init {
-        textHint = if (json.has("text_hint")) json.getString("text_hint") else throw LcpException.Parsing.Encryption
-        algorithm = if (json.has("algorithm")) json.getString("algorithm") else throw LcpException.Parsing.Encryption
-        keyCheck = if (json.has("key_check")) json.getString("key_check") else throw LcpException.Parsing.Encryption
+        textHint = if (json.has("text_hint")) {
+            json.getString("text_hint")
+        } else {
+            throw LcpException(
+                LcpError.Parsing.Encryption
+            )
+        }
+        algorithm = if (json.has("algorithm")) {
+            json.getString("algorithm")
+        } else {
+            throw LcpException(
+                LcpError.Parsing.Encryption
+            )
+        }
+        keyCheck = if (json.has("key_check")) {
+            json.getString("key_check")
+        } else {
+            throw LcpException(
+                LcpError.Parsing.Encryption
+            )
+        }
     }
 }

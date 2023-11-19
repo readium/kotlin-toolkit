@@ -15,6 +15,7 @@ import kotlinx.coroutines.launch
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.toUrl
 import org.readium.r2.testapp.data.model.Book
+import org.readium.r2.testapp.reader.OpeningError
 import org.readium.r2.testapp.reader.ReaderActivityContract
 import org.readium.r2.testapp.utils.EventChannel
 
@@ -49,9 +50,8 @@ class BookshelfViewModel(application: Application) : AndroidViewModel(applicatio
         viewModelScope.launch {
             val readerRepository = app.readerRepository.await()
             readerRepository.open(bookId)
-                .onFailure { error ->
-                    val message = error.getUserMessage(app)
-                    channel.send(Event.OpenPublicationError(message))
+                .onFailure {
+                    channel.send(Event.OpenPublicationError(it))
                 }
                 .onSuccess {
                     val arguments = ReaderActivityContract.Arguments(bookId)
@@ -63,7 +63,7 @@ class BookshelfViewModel(application: Application) : AndroidViewModel(applicatio
     sealed class Event {
 
         class OpenPublicationError(
-            val errorMessage: String
+            val error: OpeningError
         ) : Event()
 
         class LaunchReader(

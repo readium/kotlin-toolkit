@@ -9,21 +9,14 @@
 
 package org.readium.r2.shared.publication.protection
 
-import androidx.annotation.StringRes
-import kotlin.Any
 import kotlin.Boolean
 import kotlin.Deprecated
 import kotlin.DeprecationLevel
-import kotlin.Int
 import kotlin.String
-import kotlin.Throwable
 import kotlin.Unit
-import org.readium.r2.shared.R
-import org.readium.r2.shared.UserException
 import org.readium.r2.shared.publication.LocalizedString
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.services.ContentProtectionService
-import org.readium.r2.shared.util.Error as BaseError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.data.Container
 import org.readium.r2.shared.util.data.ReadError
@@ -41,15 +34,15 @@ public interface ContentProtection {
 
     public sealed class Error(
         override val message: String,
-        override val cause: BaseError?
-    ) : BaseError {
+        override val cause: org.readium.r2.shared.util.Error?
+    ) : org.readium.r2.shared.util.Error {
 
-        public class AccessError(
+        public class ReadError(
             override val cause: org.readium.r2.shared.util.data.ReadError
         ) : Error("An error occurred while trying to read asset.", cause)
 
         public class UnsupportedAsset(
-            override val cause: BaseError?
+            override val cause: org.readium.r2.shared.util.Error?
         ) : Error("Asset is not supported.", cause)
     }
 
@@ -107,31 +100,5 @@ public interface ContentProtection {
             /** Adobe ADEPT DRM scheme. */
             public val Adept: Scheme = Scheme(uri = "http://ns.adobe.com/adept")
         }
-    }
-
-    public sealed class Exception(
-        userMessageId: Int,
-        vararg args: Any?,
-        quantity: Int? = null,
-        cause: Throwable? = null
-    ) : UserException(userMessageId, quantity, *args, cause = cause) {
-        protected constructor(
-            @StringRes userMessageId: Int,
-            vararg args: Any?,
-            cause: Throwable? = null
-        ) : this(userMessageId, *args, quantity = null, cause = cause)
-
-        /**
-         * Exception returned when the given Content Protection [scheme] is not supported by the
-         * app.
-         */
-        public class SchemeNotSupported(public val scheme: Scheme? = null, name: String?) : Exception(
-            if (name == null) {
-                R.string.readium_shared_publication_content_protection_exception_not_supported_unknown
-            } else {
-                R.string.readium_shared_publication_content_protection_exception_not_supported
-            },
-            name
-        )
     }
 }

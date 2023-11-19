@@ -22,10 +22,13 @@ import org.joda.time.DateTime
 import org.joda.time.format.DateTimeFormat
 import org.readium.r2.lcp.MaterialRenewListener
 import org.readium.r2.lcp.lcpLicense
-import org.readium.r2.shared.UserException
+import org.readium.r2.shared.util.Error
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.databinding.FragmentDrmManagementBinding
 import org.readium.r2.testapp.reader.ReaderViewModel
+import org.readium.r2.testapp.utils.UserError
+import org.readium.r2.testapp.utils.extensions.readium.w
+import org.readium.r2.testapp.utils.getUserMessage
 import org.readium.r2.testapp.utils.viewLifecycle
 import timber.log.Timber
 
@@ -104,8 +107,8 @@ class DrmManagementFragment : Fragment() {
             model.renewLoan(this@DrmManagementFragment)
                 .onSuccess { newDate ->
                     binding.drmValueEnd.text = newDate.toFormattedString()
-                }.onFailure { exception ->
-                    exception.toastUserMessage(requireView())
+                }.onFailure { error ->
+                    error.toastUserMessage(requireView())
                 }
         }
     }
@@ -135,10 +138,10 @@ private fun Date?.toFormattedString() =
     DateTime(this).toString(DateTimeFormat.shortDateTime()).orEmpty()
 
 // FIXME: the toast is drawn behind the navigation bar
-private fun Exception.toastUserMessage(view: View) {
-    if (this is UserException) {
+private fun Error.toastUserMessage(view: View) {
+    if (this is UserError) {
         Snackbar.make(view, getUserMessage(view.context), Snackbar.LENGTH_LONG).show()
     }
 
-    Timber.d(this)
+    Timber.w(this)
 }

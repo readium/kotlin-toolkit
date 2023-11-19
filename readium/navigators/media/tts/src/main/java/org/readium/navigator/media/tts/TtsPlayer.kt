@@ -28,7 +28,7 @@ import org.readium.r2.navigator.preferences.Configurable
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.extensions.tryOrNull
 import org.readium.r2.shared.publication.Locator
-import org.readium.r2.shared.util.Error as SharedError
+import org.readium.r2.shared.util.Error
 import org.readium.r2.shared.util.ErrorException
 import org.readium.r2.shared.util.ThrowableError
 import timber.log.Timber
@@ -536,7 +536,7 @@ internal class TtsPlayer<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
         onContentError(error)
     }
 
-    private fun onContentError(error: SharedError) {
+    private fun onContentError(error: Error) {
         playbackMutable.value = playbackMutable.value.copy(
             state = State.Error.ContentError(error)
         )

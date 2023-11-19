@@ -21,11 +21,12 @@ import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.allAreHtml
 import org.readium.r2.shared.publication.services.isRestricted
+import org.readium.r2.shared.publication.services.protectionError
+import org.readium.r2.shared.util.MessageError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.testapp.Readium
 import org.readium.r2.testapp.data.BookRepository
-import org.readium.r2.testapp.domain.OpeningError
 import org.readium.r2.testapp.domain.PublicationError
 import org.readium.r2.testapp.reader.preferences.AndroidTtsPreferencesManagerFactory
 import org.readium.r2.testapp.reader.preferences.EpubPreferencesManagerFactory
@@ -98,8 +99,9 @@ class ReaderRepository(
         // The publication is protected with a DRM and not unlocked.
         if (publication.isRestricted) {
             return Try.failure(
-                OpeningError.PublicationError(
-                    PublicationError.RestrictedPublication()
+                OpeningError.RestrictedPublication(
+                    publication.protectionError
+                        ?: MessageError("Publication is restricted.")
                 )
             )
         }
@@ -119,7 +121,9 @@ class ReaderRepository(
             else ->
                 Try.failure(
                     OpeningError.PublicationError(
-                        PublicationError.UnsupportedPublication()
+                        PublicationError.UnsupportedPublication(
+                            MessageError("No navigator supports this publication.")
+                        )
                     )
                 )
         }
@@ -140,7 +144,11 @@ class ReaderRepository(
             publication,
             ExoPlayerEngineProvider(application)
         ) ?: return Try.failure(
-            OpeningError.PublicationError(PublicationError.UnsupportedPublication())
+            OpeningError.PublicationError(
+                PublicationError.UnsupportedPublication(
+                    MessageError("Cannot create audio navigator factory.")
+                )
+            )
         )
 
         val navigator = navigatorFactory.createNavigator(
@@ -152,7 +160,7 @@ class ReaderRepository(
                     is AudioNavigatorFactory.Error.EngineInitialization ->
                         OpeningError.AudioEngineInitialization(it)
                     is AudioNavigatorFactory.Error.UnsupportedPublication ->
-                        OpeningError.PublicationError(PublicationError.UnsupportedPublication())
+                        OpeningError.PublicationError(PublicationError.UnsupportedPublication(it))
                 }
             )
         }

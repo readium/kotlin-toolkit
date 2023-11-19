@@ -4,7 +4,7 @@
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.r2.shared
+package org.readium.r2.testapp.utils
 
 import android.content.Context
 import androidx.annotation.PluralsRes
@@ -12,62 +12,37 @@ import androidx.annotation.StringRes
 import java.text.DateFormat
 import java.util.Date
 import org.joda.time.DateTime
-import org.readium.r2.shared.extensions.asInstance
 
 /**
  * An exception that can be presented to the user using a localized message.
  */
-public open class UserException protected constructor(
-    protected val content: Content,
-    cause: Throwable?
-) : Exception(cause) {
+interface UserError {
 
-    public constructor(@StringRes userMessageId: Int, vararg args: Any?, cause: Throwable? = null) :
-        this(Content(userMessageId, *args), cause)
+    val content: Content
 
-    public constructor(
-        @PluralsRes userMessageId: Int,
-        quantity: Int?,
-        vararg args: Any?,
-        cause: Throwable? = null
-    ) :
-        this(Content(userMessageId, quantity, *args), cause)
-
-    public constructor(message: String, cause: Throwable? = null) :
-        this(Content(message), cause)
-
-    public constructor(cause: UserException) :
-        this(Content(cause), cause)
-
-    /**
-     * Gets the localized user-facing message for this exception.
-     *
-     * @param includesCauses Includes nested [UserException] causes in the user message when true.
-     */
-    public open fun getUserMessage(context: Context, includesCauses: Boolean = true): String =
-        content.getUserMessage(context, cause, includesCauses)
+    val cause: UserError?
 
     /**
      * Provides a way to generate a localized user message.
      */
-    protected sealed class Content {
+    sealed class Content {
 
-        public abstract fun getUserMessage(
+        abstract fun getUserMessage(
             context: Context,
-            cause: Throwable? = null,
+            cause: UserError? = null,
             includesCauses: Boolean = true
         ): String
 
         /**
-         * Holds a nested [UserException].
+         * Holds a nested [UserError].
          */
-        public class Exception(public val exception: UserException) : Content() {
+        class Error(val error: UserError) : Content() {
             override fun getUserMessage(
                 context: Context,
-                cause: Throwable?,
+                cause: UserError?,
                 includesCauses: Boolean
             ): String =
-                exception.getUserMessage(context, includesCauses)
+                error.getUserMessage(context, includesCauses)
         }
 
         /**
@@ -77,14 +52,14 @@ public open class UserException protected constructor(
          * @param args Optional arguments to expand in the message.
          * @param quantity Quantity to use if the user message is a quantity strings.
          */
-        public class LocalizedString(
+        class LocalizedString(
             private val userMessageId: Int,
             private val args: Array<out Any?>,
             private val quantity: Int?
         ) : Content() {
             override fun getUserMessage(
                 context: Context,
-                cause: Throwable?,
+                cause: UserError?,
                 includesCauses: Boolean
             ): String {
                 // Convert complex objects to strings, such as Date, to be interpolated.
@@ -107,10 +82,8 @@ public open class UserException protected constructor(
                         context.getString(userMessageId, *(args.toTypedArray()))
                     }
 
-                // Includes nested causes if they are also [UserException].
-                val userException = cause?.asInstance<UserException>()
-                if (userException != null && includesCauses) {
-                    message += ": ${userException.getUserMessage(context, includesCauses)}"
+                if (cause != null && includesCauses) {
+                    message += ": ${cause.getUserMessage(context, true)}"
                 }
 
                 return message
@@ -121,27 +94,35 @@ public open class UserException protected constructor(
          * Holds an already localized string message. For example, received from an HTTP
          * Problem Details object.
          */
-        public class Message(private val message: String) : Content() {
+        class Message(private val message: String) : Content() {
             override fun getUserMessage(
                 context: Context,
-                cause: Throwable?,
+                cause: UserError?,
                 includesCauses: Boolean
             ): String = message
         }
 
-        public companion object {
-            public operator fun invoke(@StringRes userMessageId: Int, vararg args: Any?): Content =
+        companion object {
+            operator fun invoke(@StringRes userMessageId: Int, vararg args: Any?): Content =
                 LocalizedString(userMessageId, args, null)
-            public operator fun invoke(
+            operator fun invoke(
                 @PluralsRes userMessageId: Int,
                 quantity: Int?,
                 vararg args: Any?
             ): Content =
                 LocalizedString(userMessageId, args, quantity)
-            public operator fun invoke(cause: UserException): Content =
-                Exception(cause)
-            public operator fun invoke(message: String): Content =
+            operator fun invoke(cause: UserError): Content =
+                Error(cause)
+            operator fun invoke(message: String): Content =
                 Message(message)
         }
     }
 }
+
+/**
+ * Gets the localized user-facing message for this exception.
+ *
+ * @param includesCauses Includes nested [UserError] causes in the user message when true.
+ */
+fun UserError.getUserMessage(context: Context, includesCauses: Boolean = true): String =
+    content.getUserMessage(context, cause, includesCauses)

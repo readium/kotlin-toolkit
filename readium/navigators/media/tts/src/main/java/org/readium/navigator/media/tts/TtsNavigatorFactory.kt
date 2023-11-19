@@ -104,20 +104,6 @@ public class TtsNavigatorFactory<S : TtsEngine.Settings, P : TtsEngine.Preferenc
             )
         }
 
-        public sealed class Error(
-            override val message: String,
-            override val cause: org.readium.r2.shared.util.Error?
-        ) : org.readium.r2.shared.util.Error {
-
-            public class UnsupportedPublication(
-                cause: org.readium.r2.shared.util.Error? = null
-            ) : Error("Publication is not supported.", cause)
-
-            public class EngineInitialization(
-                cause: org.readium.r2.shared.util.Error? = null
-            ) : Error("Failed to initialize TTS engine.", cause)
-        }
-
         /**
          * The default content tokenizer will split the [Content.Element] items into individual sentences.
          */
@@ -130,6 +116,20 @@ public class TtsNavigatorFactory<S : TtsEngine.Settings, P : TtsEngine.Preferenc
 
         private val defaultVoiceSelector: (Language?, Set<AndroidTtsEngine.Voice>) -> AndroidTtsEngine.Voice? =
             { _, _ -> null }
+    }
+
+    public sealed class Error(
+        override val message: String,
+        override val cause: org.readium.r2.shared.util.Error?
+    ) : org.readium.r2.shared.util.Error {
+
+        public class UnsupportedPublication(
+            cause: org.readium.r2.shared.util.Error? = null
+        ) : Error("Publication is not supported.", cause)
+
+        public class EngineInitialization(
+            cause: org.readium.r2.shared.util.Error? = null
+        ) : Error("Failed to initialize TTS engine.", cause)
     }
 
     public suspend fun createNavigator(

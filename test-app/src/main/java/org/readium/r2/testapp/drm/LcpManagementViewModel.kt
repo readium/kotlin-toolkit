@@ -11,6 +11,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import java.util.*
 import org.readium.r2.lcp.LcpLicense
+import org.readium.r2.shared.util.Error
 import org.readium.r2.shared.util.Try
 
 class LcpManagementViewModel(
@@ -64,13 +65,13 @@ class LcpManagementViewModel(
     override val canRenewLoan: Boolean
         get() = lcpLicense.canRenewLoan
 
-    override suspend fun renewLoan(fragment: Fragment): Try<Date?, Exception> {
+    override suspend fun renewLoan(fragment: Fragment): Try<Date?, Error> {
         return lcpLicense.renewLoan(renewListener)
     }
 
     override val canReturnPublication: Boolean
         get() = lcpLicense.canReturnPublication
 
-    override suspend fun returnPublication(): Try<Unit, Exception> =
+    override suspend fun returnPublication(): Try<Unit, Error> =
         lcpLicense.returnPublication()
 }

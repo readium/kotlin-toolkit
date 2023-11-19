@@ -9,7 +9,6 @@ package org.readium.r2.shared.util.asset
 import kotlin.String
 import kotlin.let
 import org.readium.r2.shared.util.AbsoluteUrl
-import org.readium.r2.shared.util.Error as SharedError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
@@ -22,12 +21,12 @@ public interface ResourceFactory {
 
     public sealed class Error(
         override val message: String,
-        override val cause: SharedError?
-    ) : SharedError {
+        override val cause: org.readium.r2.shared.util.Error?
+    ) : org.readium.r2.shared.util.Error {
 
         public class SchemeNotSupported(
             public val scheme: Url.Scheme,
-            cause: SharedError? = null
+            cause: org.readium.r2.shared.util.Error? = null
         ) : Error("Url scheme $scheme is not supported.", cause)
     }
 

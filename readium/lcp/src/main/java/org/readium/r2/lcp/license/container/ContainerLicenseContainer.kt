@@ -7,6 +7,7 @@
 package org.readium.r2.lcp.license.container
 
 import kotlinx.coroutines.runBlocking
+import org.readium.r2.lcp.LcpError
 import org.readium.r2.lcp.LcpException
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.data.Container
@@ -24,11 +25,11 @@ internal class ContainerLicenseContainer(
     override fun read(): ByteArray {
         return runBlocking {
             val resource = container.get(entryUrl)
-                ?: throw LcpException.Container.FileNotFound(entryUrl)
+                ?: throw LcpException(LcpError.Container.FileNotFound(entryUrl))
 
             resource.read()
                 .mapFailure {
-                    LcpException.Container.ReadFailed(entryUrl)
+                    LcpException(LcpError.Container.ReadFailed(entryUrl))
                 }
                 .getOrThrow()
         }

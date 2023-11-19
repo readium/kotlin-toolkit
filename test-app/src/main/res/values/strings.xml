@@ -116,6 +116,55 @@
     <string name="publication_error_invalid_publication">Publication looks corrupted.</string>
     <string name="publication_error_unexpected">An unexpected error occurred.</string>
 
+    <!-- LCP Exceptions User Messages -->
+
+    <string name="lcp_error_license_interaction_not_available">This interaction is not available</string>
+    <string name="lcp_error_license_profile_not_supported">This License has a profile identifier that this app cannot handle, the publication cannot be processed</string>
+    <string name="lcp_error_crl_fetching">Can\'t retrieve the Certificate Revocation List</string>
+    <string name="lcp_error_network">Network error</string>
+    <string name="lcp_error_runtime">Unexpected LCP error</string>
+    <string name="lcp_error_unknown">Unknown LCP error</string>
+
+    <string name="lcp_error_license_status.cancelled">This license was cancelled on %1$s</string>
+    <string name="lcp_error_license_status.returned">This license has been returned on %1$s</string>
+    <string name="lcp_error_license_status.not_started">This license starts on %1$s</string>
+    <string name="lcp_error_license_status.expired">This license expired on %1$s</string>
+    <plurals name="lcp_error_license_status.revoked">
+        <item quantity="one">This license was revoked by its provider on %1$s. It was registered by %2$d device.</item>
+        <item quantity="other">This license was revoked by its provider on %1$s. It was registered by %2$d devices.</item>
+    </plurals>
+
+    <string name="lcp_error_renew.renew_failed">Your publication could not be renewed properly</string>
+    <string name="lcp_error_renew.invalid_renewal_period">Incorrect renewal period, your publication could not be renewed</string>
+    <string name="lcp_error_renew.unexpected_server_error">An unexpected error has occurred on the server</string>
+
+    <string name="lcp_error_return.return_failed">Your publication could not be returned properly</string>
+    <string name="lcp_error_return.already_returned_or_expired">Your publication has already been returned before or is expired</string>
+    <string name="lcp_error_return.unexpected_server_error">An unexpected error has occurred on the server</string>
+
+    <string name="lcp_error_parsing">The JSON is not representing a valid document</string>
+    <string name="lcp_error_parsing.malformed_json">The JSON is malformed and can\'t be parsed</string>
+    <string name="lcp_error_parsing.license_document">The JSON is not representing a valid License Document</string>
+    <string name="lcp_error_parsing.status_document">The JSON is not representing a valid Status Document</string>
+
+    <string name="lcp_error_container.open_failed">Can\'t open the license container</string>
+    <string name="lcp_error_container.file_not_found">License not found in container</string>
+    <string name="lcp_error_container.read_failed">Can\'t read license from container</string>
+    <string name="lcp_error_container.write_failed">Can\'t write license in container</string>
+
+    <string name="lcp_error_license_integrity.certificate_revoked">Certificate has been revoked in the CRL</string>
+    <string name="lcp_error_license_integrity.invalid_certificate_signature">Certificate has not been signed by CA</string>
+    <string name="lcp_error_license_integrity.invalid_license_signature_date">License has been issued by an expired certificate</string>
+    <string name="lcp_error_license_integrity.invalid_license_signature">License signature does not match</string>
+    <string name="lcp_error_license_integrity.invalid_user_key_check">User key check invalid</string>
+
+    <string name="lcp_error_decryption.content_key_decrypt_error">Unable to decrypt encrypted content key from user key</string>
+    <string name="lcp_error_decryption.content_decrypt_error">Unable to decrypt encrypted content from content key</string>
+
+    <string name="reader_error">Error</string>
+    <string name="opening_error">Could not open publication</string>
+    <string name="import_error">Import error</string>
+
     <string name="failed_parsing_catalog">Failed parsing Catalog</string>
     <string name="no_result">No result</string>
     <string name="note">Note</string>
