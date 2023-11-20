@@ -134,6 +134,8 @@ class Bookshelf(
                     )
                 }
 
+        Timber.d("asset ${asset.mediaType}")
+
         val drmScheme =
             protectionRetriever.retrieve(asset)
                 .tryRecover {

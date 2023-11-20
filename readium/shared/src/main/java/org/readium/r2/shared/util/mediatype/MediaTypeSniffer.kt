@@ -13,6 +13,7 @@ import java.util.Locale
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
+import org.readium.r2.shared.extensions.asInstance
 import org.readium.r2.shared.extensions.tryOrNull
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Manifest
@@ -31,6 +32,7 @@ import org.readium.r2.shared.util.data.readAsJson
 import org.readium.r2.shared.util.data.readAsRwpm
 import org.readium.r2.shared.util.data.readAsString
 import org.readium.r2.shared.util.data.readAsXml
+import org.readium.r2.shared.util.getOrDefault
 import org.readium.r2.shared.util.getOrElse
 
 public sealed class MediaTypeSnifferError(
@@ -161,6 +163,10 @@ public object XhtmlMediaTypeSniffer : MediaTypeSniffer {
     }
 
     override suspend fun sniffBlob(blob: Blob): Try<MediaType, MediaTypeSnifferError> {
+        if (!blob.canReadWholeBlob()) {
+            return Try.failure(MediaTypeSnifferError.NotRecognized)
+        }
+
         blob.readAsXml()
             .getOrElse {
                 when (it) {
@@ -197,6 +203,10 @@ public object HtmlMediaTypeSniffer : MediaTypeSniffer {
     }
 
     override suspend fun sniffBlob(blob: Blob): Try<MediaType, MediaTypeSnifferError> {
+        if (!blob.canReadWholeBlob()) {
+            return Try.failure(MediaTypeSnifferError.NotRecognized)
+        }
+
         // [contentAsXml] will fail if the HTML is not a proper XML document, hence the doctype check.
         blob.readAsXml()
             .getOrElse {
@@ -265,6 +275,10 @@ public object OpdsMediaTypeSniffer : MediaTypeSniffer {
     }
 
     override suspend fun sniffBlob(blob: Blob): Try<MediaType, MediaTypeSnifferError> {
+        if (!blob.canReadWholeBlob()) {
+            return Try.failure(MediaTypeSnifferError.NotRecognized)
+        }
+
         // OPDS 1
         blob.readAsXml()
             .getOrElse {
@@ -348,6 +362,10 @@ public object LcpLicenseMediaTypeSniffer : MediaTypeSniffer {
     }
 
     override suspend fun sniffBlob(blob: Blob): Try<MediaType, MediaTypeSnifferError> {
+        if (!blob.canReadWholeBlob()) {
+            return Try.failure(MediaTypeSnifferError.NotRecognized)
+        }
+
         blob.containsJsonKeys("id", "issued", "provider", "encryption")
             .getOrElse {
                 when (it) {
@@ -439,6 +457,10 @@ public object WebPubManifestMediaTypeSniffer : MediaTypeSniffer {
     }
 
     public override suspend fun sniffBlob(blob: Blob): Try<MediaType, MediaTypeSnifferError> {
+        if (!blob.canReadWholeBlob()) {
+            return Try.failure(MediaTypeSnifferError.NotRecognized)
+        }
+
         val manifest: Manifest =
             blob.readAsRwpm()
                 .getOrElse {
@@ -544,6 +566,10 @@ public object WebPubMediaTypeSniffer : MediaTypeSniffer {
 /** Sniffs a W3C Web Publication Manifest. */
 public object W3cWpubMediaTypeSniffer : MediaTypeSniffer {
     override suspend fun sniffBlob(blob: Blob): Try<MediaType, MediaTypeSnifferError> {
+        if (!blob.canReadWholeBlob()) {
+            return Try.failure(MediaTypeSnifferError.NotRecognized)
+        }
+
         // Somehow, [JSONObject] can't access JSON-LD keys such as `@content`.
         val string = blob.readAsString()
             .getOrElse {
@@ -585,11 +611,15 @@ public object EpubMediaTypeSniffer : MediaTypeSniffer {
 
     override suspend fun sniffContainer(container: Container<*>): Try<MediaType, MediaTypeSnifferError> {
         val mimetype = container[RelativeUrl("mimetype")!!]
-            ?.read()
+            ?.readAsString(charset = Charsets.US_ASCII)
             ?.getOrElse { error ->
-                return Try.failure(MediaTypeSnifferError.Read(error))
-            }
-            ?.let { String(it, charset = Charsets.US_ASCII).trim() }
+                when (error) {
+                    is DecoderError.Decoding ->
+                        null
+                    is DecoderError.Read ->
+                        return Try.failure(MediaTypeSnifferError.Read(error.cause))
+                }
+            }?.trim()
         if (mimetype == "application/epub+zip") {
             return Try.success(MediaType.EPUB)
         }
@@ -775,6 +805,10 @@ public object JsonMediaTypeSniffer : MediaTypeSniffer {
     }
 
     override suspend fun sniffBlob(blob: Blob): Try<MediaType, MediaTypeSnifferError> {
+        if (!blob.canReadWholeBlob()) {
+            return Try.failure(MediaTypeSnifferError.NotRecognized)
+        }
+
         blob.readAsJson()
             .getOrElse {
                 when (it) {
@@ -822,7 +856,7 @@ public object SystemMediaTypeSniffer : MediaTypeSniffer {
                             ?.let { sniffType(it) }
                     }
                 } catch (e: Exception) {
-                    e.findSystemSnifferException()
+                    e.asInstance(SystemSnifferException::class.java)
                         ?.let {
                             return Try.failure(
                                 MediaTypeSnifferError.Read(it.error)
@@ -838,12 +872,6 @@ public object SystemMediaTypeSniffer : MediaTypeSniffer {
     private class SystemSnifferException(
         val error: ReadError
     ) : IOException()
-    private fun Throwable.findSystemSnifferException(): SystemSnifferException? =
-        when {
-            this is SystemSnifferException -> this
-            cause != null -> cause!!.findSystemSnifferException()
-            else -> null
-        }
 
     private fun sniffType(type: String): MediaType? {
         val extension = mimetypes?.getExtensionFromMimeType(type)
@@ -857,3 +885,6 @@ public object SystemMediaTypeSniffer : MediaTypeSniffer {
         mimetypes?.getMimeTypeFromExtension(extension)
             ?.let { MediaType(it) }
 }
+
+private suspend fun Blob.canReadWholeBlob() =
+    length().getOrDefault(0) < 5 * 1000 * 1000

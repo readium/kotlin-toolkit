@@ -132,7 +132,6 @@ class LocalPublicationRetriever(
                     )
                     return@launch
                 }
-
             retrieveFromStorage(tempFile)
         }
     }
@@ -179,7 +178,7 @@ class LocalPublicationRetriever(
             return
         }
 
-        val fileExtension = formatRegistry.fileExtension(sourceAsset.mediaType) ?: "epub"
+        val fileExtension = formatRegistry.fileExtension(sourceAsset.mediaType) ?: tempFile.extension
         val fileName = "${UUID.randomUUID()}.$fileExtension"
         val libraryFile = File(storageDir, fileName)
 

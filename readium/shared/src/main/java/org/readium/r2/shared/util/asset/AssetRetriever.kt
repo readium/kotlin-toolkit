@@ -14,12 +14,15 @@ import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.archive.ArchiveFactory
 import org.readium.r2.shared.util.archive.ArchiveProvider
 import org.readium.r2.shared.util.archive.FileZipArchiveProvider
+import org.readium.r2.shared.util.assertSuccess
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.mediatype.MediaTypeHints
+import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 import org.readium.r2.shared.util.mediatype.MediaTypeSnifferError
 import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.shared.util.toUrl
+import org.readium.r2.shared.util.tryRecover
 
 /**
  * Retrieves an [Asset] instance providing reading access to the resource(s) of an asset stored at a
@@ -27,7 +30,8 @@ import org.readium.r2.shared.util.toUrl
  */
 public class AssetRetriever(
     private val resourceFactory: ResourceFactory = FileResourceFactory(),
-    private val archiveProvider: ArchiveProvider = FileZipArchiveProvider()
+    private val archiveProvider: ArchiveProvider = FileZipArchiveProvider(),
+    private val mediaTypeRetriever: MediaTypeRetriever = MediaTypeRetriever()
 ) {
 
     public sealed class Error(
@@ -72,13 +76,6 @@ public class AssetRetriever(
         val resource = retrieveResource(url, containerType)
             .getOrElse { return Try.failure(it) }
 
-        return retrieveArchiveAsset(resource, mediaType, containerType)
-    }
-    private suspend fun retrieveArchiveAsset(
-        resource: Resource,
-        mediaType: MediaType,
-        containerType: MediaType
-    ): Try<Asset.Container, Error> {
         archiveProvider.sniffHints(MediaTypeHints(mediaType = containerType))
             .onFailure {
                 return Try.failure(
@@ -88,6 +85,13 @@ public class AssetRetriever(
                 )
             }
 
+        return retrieveArchiveAsset(resource, MediaTypeHints(mediaType = mediaType), containerType)
+    }
+    private suspend fun retrieveArchiveAsset(
+        resource: Resource,
+        mediaTypeHints: MediaTypeHints,
+        containerType: MediaType
+    ): Try<Asset.Container, Error> {
         val container = archiveProvider.create(resource)
             .mapFailure { error ->
                 when (error) {
@@ -98,6 +102,17 @@ public class AssetRetriever(
                 }
             }
             .getOrElse { return Try.failure(it) }
+
+        val mediaType = mediaTypeRetriever
+            .retrieve(mediaTypeHints, container)
+            .getOrElse { error ->
+                when (error) {
+                    MediaTypeSnifferError.NotRecognized ->
+                        MediaType.BINARY
+                    is MediaTypeSnifferError.Read ->
+                        return Try.failure(Error.ReadError(error.cause))
+                }
+            }
 
         val asset = Asset.Container(
             mediaType = mediaType,
@@ -156,22 +171,24 @@ public class AssetRetriever(
                 )
             }
 
-        val mediaType = resource.mediaType()
-            .getOrElse { return Try.failure(Error.ReadError(it)) }
-
-        return archiveProvider.sniffBlob(resource)
-            .fold(
-                { containerType ->
-                    retrieveArchiveAsset(url, mediaType = mediaType, containerType = containerType)
-                },
-                { error ->
-                    when (error) {
-                        MediaTypeSnifferError.NotRecognized ->
-                            Try.success(Asset.Resource(mediaType, resource))
-                        is MediaTypeSnifferError.Read ->
-                            Try.failure(Error.ReadError(error.cause))
-                    }
+        val containerType = archiveProvider.sniffBlob(resource)
+            .tryRecover { error ->
+                when (error) {
+                    MediaTypeSnifferError.NotRecognized ->
+                        Try.success(null)
+                    is MediaTypeSnifferError.Read ->
+                        return Try.failure(Error.ReadError(error.cause))
                 }
-            )
+            }.assertSuccess()
+
+        if (containerType == null) {
+            val mediaType = resource.mediaType()
+                .getOrElse { return Try.failure(Error.ReadError(it)) }
+            return Try.success(Asset.Resource(mediaType, resource))
+        }
+
+        val hints = MediaTypeHints(fileExtension = url.extension)
+
+        return retrieveArchiveAsset(resource, mediaTypeHints = hints, containerType = containerType)
     }
 }
