@@ -50,7 +50,7 @@ sealed class PublicationError(
 
         operator fun invoke(error: ContentProtectionSchemeRetriever.Error): PublicationError =
             when (error) {
-                is ContentProtectionSchemeRetriever.Error.AccessError ->
+                is ContentProtectionSchemeRetriever.Error.ReadError ->
                     PublicationError(error)
                 ContentProtectionSchemeRetriever.Error.NoContentProtectionFound ->
                     UnsupportedContentProtection(error)

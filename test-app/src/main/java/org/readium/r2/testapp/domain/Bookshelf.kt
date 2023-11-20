@@ -23,6 +23,7 @@ import org.readium.r2.shared.util.data.FileSystemError
 import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.toUrl
+import org.readium.r2.shared.util.tryRecover
 import org.readium.r2.streamer.PublicationFactory
 import org.readium.r2.testapp.data.BookRepository
 import org.readium.r2.testapp.data.model.Book
@@ -135,7 +136,14 @@ class Bookshelf(
 
         val drmScheme =
             protectionRetriever.retrieve(asset)
-                .getOrElse {
+                .tryRecover {
+                    when (it) {
+                        ContentProtectionSchemeRetriever.Error.NoContentProtectionFound ->
+                            Try.success(null)
+                        is ContentProtectionSchemeRetriever.Error.ReadError ->
+                            Try.failure(it)
+                    }
+                }.getOrElse {
                     return Try.failure(
                         ImportError.PublicationError(PublicationError(it))
                     )

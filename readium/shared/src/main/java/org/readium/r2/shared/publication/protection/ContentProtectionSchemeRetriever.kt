@@ -10,7 +10,6 @@ import kotlin.String
 import kotlin.let
 import kotlin.takeIf
 import org.readium.r2.shared.util.Try
-import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.getOrElse
 
 /**
@@ -33,14 +32,14 @@ public class ContentProtectionSchemeRetriever(
         public object NoContentProtectionFound :
             Error("No content protection recognized the given asset.", null)
 
-        public class AccessError(override val cause: ReadError) :
+        public class ReadError(override val cause: org.readium.r2.shared.util.data.ReadError) :
             Error("An error occurred while trying to read asset.", cause)
     }
 
     public suspend fun retrieve(asset: org.readium.r2.shared.util.asset.Asset): Try<ContentProtection.Scheme, Error> {
         for (protection in contentProtections) {
             protection.supports(asset)
-                .getOrElse { return Try.failure(Error.AccessError(it)) }
+                .getOrElse { return Try.failure(Error.ReadError(it)) }
                 .takeIf { it }
                 ?.let { return Try.success(protection.scheme) }
         }
