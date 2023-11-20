@@ -9,7 +9,6 @@ package org.readium.r2.shared.util.resource
 import java.io.File
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.readium.r2.shared.extensions.isParentOf
 import org.readium.r2.shared.util.RelativeUrl
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
@@ -37,11 +36,11 @@ public class DirectoryContainer(
         )
     }
 
-    override fun get(url: Url): Resource? =
-        (url as? RelativeUrl)?.path
-            ?.let { File(root, it) }
-            ?.takeIf { !root.isParentOf(it) }
-            ?.toResource()
+    override fun get(url: Url): Resource? = url
+        .takeIf { it in entries }
+        ?.let { (it as? RelativeUrl)?.path }
+        ?.let { File(root, it) }
+        ?.toResource()
 
     override suspend fun close() {}
 

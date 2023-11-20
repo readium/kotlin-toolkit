@@ -6,9 +6,6 @@
 
 package org.readium.r2.shared.util
 
-import org.readium.r2.shared.InternalReadiumApi
-import timber.log.Timber
-
 /**
  * Describes an error.
  */
@@ -50,13 +47,35 @@ public class ErrorException(
     public val error: Error
 ) : Exception(error.message, error.cause?.let { ErrorException(it) })
 
-// FIXME: to improve
-@InternalReadiumApi
-public fun Timber.Forest.e(error: Error, message: String? = null) {
-    e(Exception(error.message), message)
+/**
+ * Convenience function to get the description of an error with its cause.
+ */
+public fun Error.toDebugDescription(): String =
+    if (this is ThrowableError<*>) {
+        throwable.toDebugDescription()
+    } else {
+        var desc = "${javaClass.nameWithEnclosingClasses()}: $message"
+        cause?.let { cause ->
+            desc += "\n\n${cause.toDebugDescription()}"
+        }
+        desc
+    }
+
+private fun Throwable.toDebugDescription(): String {
+    var desc = "${javaClass.nameWithEnclosingClasses()}: "
+
+    desc += message ?: ""
+    desc += "\n" + stackTrace.take(2).joinToString("\n").prependIndent("  ")
+    cause?.let { cause ->
+        desc += "\n\n${cause.toDebugDescription()}"
+    }
+    return desc
 }
 
-@InternalReadiumApi
-public fun Timber.Forest.w(error: Error, message: String? = null) {
-    w(Exception(error.message), message)
+private fun Class<*>.nameWithEnclosingClasses(): String {
+    var name = simpleName
+    enclosingClass?.let {
+        name = "${it.nameWithEnclosingClasses()}.$name"
+    }
+    return name
 }

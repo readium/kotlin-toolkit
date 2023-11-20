@@ -54,3 +54,12 @@ public fun <R> Throwable.asInstance(klass: Class<R>): R? =
         klass.isInstance(this) -> this as R
         else -> cause?.asInstance(klass)
     }
+
+/**
+ * Unwraps the nearest instance of [klass] if any.
+ */
+@InternalReadiumApi
+public fun <T : Exception> Exception.unwrapInstance(klass: Class<T>): Exception {
+    asInstance(klass)?.let { return it }
+    return this
+}

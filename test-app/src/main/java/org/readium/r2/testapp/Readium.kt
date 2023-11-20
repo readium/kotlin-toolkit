@@ -42,9 +42,8 @@ class Readium(context: Context) {
         mediaTypeRetriever = mediaTypeRetriever
     )
 
-    private val archiveProviders = listOf(
+    private val archiveProvider =
         StreamingZipArchiveProvider(mediaTypeRetriever)
-    )
 
     private val resourceFactory = CompositeResourceFactory(
         FileResourceFactory(mediaTypeRetriever),
@@ -54,7 +53,7 @@ class Readium(context: Context) {
 
     val assetRetriever = AssetRetriever(
         resourceFactory,
-        archiveProviders
+        archiveProvider
     )
 
     val downloadManager = AndroidDownloadManager(

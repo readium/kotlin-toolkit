@@ -55,13 +55,13 @@ public class FileZipArchiveProvider(
                 Try.failure(MediaTypeSnifferError.NotRecognized)
             } catch (e: SecurityException) {
                 Try.failure(
-                    MediaTypeSnifferError.DataAccess(
+                    MediaTypeSnifferError.Read(
                         ReadError.Access(FileSystemError.Forbidden(e))
                     )
                 )
             } catch (e: IOException) {
                 Try.failure(
-                    MediaTypeSnifferError.DataAccess(
+                    MediaTypeSnifferError.Read(
                         ReadError.Access(FileSystemError.IO(e))
                     )
                 )
@@ -70,16 +70,16 @@ public class FileZipArchiveProvider(
     }
 
     override suspend fun create(
-        resource: Blob,
+        blob: Blob,
         password: String?
     ): Try<Container<Resource>, ArchiveFactory.Error> {
         if (password != null) {
             return Try.failure(ArchiveFactory.Error.PasswordsNotSupported())
         }
 
-        val file = resource.source?.toFile()
+        val file = blob.source?.toFile()
             ?: return Try.Failure(
-                ArchiveFactory.Error.UnsupportedFormat(
+                ArchiveFactory.Error.FormatNotSupported(
                     MessageError("Resource not supported because file cannot be directly accessed.")
                 )
             )
@@ -98,25 +98,25 @@ public class FileZipArchiveProvider(
                 Try.success(archive)
             } catch (e: FileNotFoundException) {
                 Try.failure(
-                    ArchiveFactory.Error.ResourceError(
+                    ArchiveFactory.Error.ReadError(
                         ReadError.Access(FileSystemError.NotFound(e))
                     )
                 )
             } catch (e: ZipException) {
                 Try.failure(
-                    ArchiveFactory.Error.ResourceError(
+                    ArchiveFactory.Error.ReadError(
                         ReadError.Decoding(e)
                     )
                 )
             } catch (e: SecurityException) {
                 Try.failure(
-                    ArchiveFactory.Error.ResourceError(
+                    ArchiveFactory.Error.ReadError(
                         ReadError.Access(FileSystemError.Forbidden(e))
                     )
                 )
             } catch (e: IOException) {
                 Try.failure(
-                    ArchiveFactory.Error.ResourceError(
+                    ArchiveFactory.Error.ReadError(
                         ReadError.Access(FileSystemError.IO(e))
                     )
                 )

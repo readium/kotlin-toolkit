@@ -62,9 +62,9 @@ public class HtmlResourceContentExtractor : ResourceContentExtractor {
                 .readAsString()
                 .tryRecover {
                     when (it) {
-                        is DecoderError.DataAccess ->
+                        is DecoderError.Read ->
                             return@withContext Try.failure(it.cause)
-                        is DecoderError.DecodingError ->
+                        is DecoderError.Decoding ->
                             Try.success("")
                     }
                 }

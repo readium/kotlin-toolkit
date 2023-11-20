@@ -70,9 +70,9 @@ public class AdeptFallbackContentProtection : ContentProtection {
             ?.readAsXml()
             ?.getOrElse {
                 when (it) {
-                    is DecoderError.DecodingError ->
+                    is DecoderError.Decoding ->
                         return Try.success(false)
-                    is DecoderError.DataAccess ->
+                    is DecoderError.Read ->
                         return Try.failure(it.cause)
                 }
             }?.get("EncryptedData", EpubEncryption.ENC)
@@ -85,9 +85,9 @@ public class AdeptFallbackContentProtection : ContentProtection {
             ?.readAsXml()
             ?.getOrElse {
                 when (it) {
-                    is DecoderError.DecodingError ->
+                    is DecoderError.Decoding ->
                         return Try.success(false)
-                    is DecoderError.DataAccess ->
+                    is DecoderError.Read ->
                         return Try.failure(it.cause)
                 }
             }?.takeIf { it.namespace == "http://ns.adobe.com/adept" }

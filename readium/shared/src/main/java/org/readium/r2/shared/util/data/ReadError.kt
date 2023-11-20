@@ -7,7 +7,6 @@
 package org.readium.r2.shared.util.data
 
 import java.io.IOException
-import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.util.Error
 import org.readium.r2.shared.util.ErrorException
 import org.readium.r2.shared.util.MessageError
@@ -55,16 +54,3 @@ public sealed class ReadError(
 public class ReadException(
     public val error: ReadError
 ) : IOException(error.message, ErrorException(error))
-
-@InternalReadiumApi
-public fun Exception.unwrapReadException(): Exception {
-    fun Throwable.findReadExceptionCause(): ReadException? =
-        when {
-            this is ReadException -> this
-            cause != null -> cause!!.findReadExceptionCause()
-            else -> null
-        }
-
-    this.findReadExceptionCause()?.let { return it }
-    return this
-}

@@ -22,7 +22,7 @@ import org.readium.r2.shared.util.isLazyInitialized
 import org.readium.r2.shared.util.toUrl
 
 /**
- * A [Resource] to access a [file].
+ * A [Blob] to access a [File].
  */
 public class FileBlob(
     private val file: File

@@ -12,9 +12,9 @@ import org.readium.r2.shared.util.MessageError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.asset.Asset
+import org.readium.r2.shared.util.data.CompositeContainer
 import org.readium.r2.shared.util.data.DecoderError
 import org.readium.r2.shared.util.data.ReadError
-import org.readium.r2.shared.util.data.RoutingContainer
 import org.readium.r2.shared.util.data.readAsRwpm
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.http.HttpClient
@@ -80,8 +80,8 @@ internal class ParserAssetFactory(
         val manifest = asset.resource.readAsRwpm()
             .mapFailure {
                 when (it) {
-                    is DecoderError.DecodingError -> ReadError.Decoding(it.cause)
-                    is DecoderError.DataAccess -> it.cause
+                    is DecoderError.Decoding -> ReadError.Decoding(it.cause)
+                    is DecoderError.Read -> it.cause
                 }
             }
             .getOrElse { return Try.failure(Error.ReadError(it)) }
@@ -111,12 +111,12 @@ internal class ParserAssetFactory(
             .toSet()
 
         val container =
-            RoutingContainer(
-                local = SingleResourceContainer(
+            CompositeContainer(
+                SingleResourceContainer(
                     url = Url("manifest.json")!!,
                     asset.resource
                 ),
-                remote = HttpContainer(httpClient, baseUrl, resources)
+                HttpContainer(httpClient, baseUrl, resources)
             )
 
         return Try.success(

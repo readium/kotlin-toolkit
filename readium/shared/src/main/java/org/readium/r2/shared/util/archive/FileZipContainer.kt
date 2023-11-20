@@ -50,7 +50,7 @@ internal class FileZipContainer(
                 blob = this
             ).tryRecover { error ->
                 when (error) {
-                    is MediaTypeSnifferError.DataAccess ->
+                    is MediaTypeSnifferError.Read ->
                         Try.failure(error.cause)
                     MediaTypeSnifferError.NotRecognized ->
                         Try.success(MediaType.BINARY)

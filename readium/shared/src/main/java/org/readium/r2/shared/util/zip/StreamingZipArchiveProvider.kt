@@ -10,6 +10,7 @@ import java.io.File
 import java.io.IOException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.readium.r2.shared.extensions.unwrapInstance
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.archive.ArchiveFactory
@@ -18,7 +19,6 @@ import org.readium.r2.shared.util.data.Blob
 import org.readium.r2.shared.util.data.Container
 import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.data.ReadException
-import org.readium.r2.shared.util.data.unwrapReadException
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.mediatype.MediaTypeHints
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
@@ -52,9 +52,9 @@ public class StreamingZipArchiveProvider(
             openBlob(blob, ::ReadException, null)
             Try.success(MediaType.ZIP)
         } catch (exception: Exception) {
-            when (val e = exception.unwrapReadException()) {
+            when (val e = exception.unwrapInstance(ReadException::class.java)) {
                 is ReadException ->
-                    Try.failure(MediaTypeSnifferError.DataAccess(e.error))
+                    Try.failure(MediaTypeSnifferError.Read(e.error))
                 else ->
                     Try.failure(MediaTypeSnifferError.NotRecognized)
             }
@@ -62,7 +62,7 @@ public class StreamingZipArchiveProvider(
     }
 
     override suspend fun create(
-        resource: Blob,
+        blob: Blob,
         password: String?
     ): Try<Container<Resource>, ArchiveFactory.Error> {
         if (password != null) {
@@ -71,17 +71,17 @@ public class StreamingZipArchiveProvider(
 
         return try {
             val container = openBlob(
-                resource,
+                blob,
                 ::ReadException,
-                resource.source
+                blob.source
             )
             Try.success(container)
         } catch (exception: Exception) {
-            when (val e = exception.unwrapReadException()) {
+            when (val e = exception.unwrapInstance(ReadException::class.java)) {
                 is ReadException ->
-                    Try.failure(ArchiveFactory.Error.ResourceError(e.error))
+                    Try.failure(ArchiveFactory.Error.ReadError(e.error))
                 else ->
-                    Try.failure(ArchiveFactory.Error.ResourceError(ReadError.Decoding(e)))
+                    Try.failure(ArchiveFactory.Error.ReadError(ReadError.Decoding(e)))
             }
         }
     }

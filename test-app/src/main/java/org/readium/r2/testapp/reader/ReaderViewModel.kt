@@ -33,6 +33,7 @@ import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.data.ReadError
+import org.readium.r2.shared.util.toDebugDescription
 import org.readium.r2.testapp.Application
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.data.BookRepository
@@ -45,7 +46,6 @@ import org.readium.r2.testapp.search.SearchUserError
 import org.readium.r2.testapp.utils.EventChannel
 import org.readium.r2.testapp.utils.UserError
 import org.readium.r2.testapp.utils.createViewModelFactory
-import org.readium.r2.testapp.utils.extensions.readium.e
 import timber.log.Timber
 
 @OptIn(
@@ -222,7 +222,7 @@ class ReaderViewModel(
         _searchLocators.value = emptyList()
         searchIterator = publication.search(query)
             .onFailure {
-                Timber.e(it)
+                Timber.e(it.toDebugDescription())
                 activityChannel.send(ActivityCommand.ToastError(SearchUserError(it)))
             }
             .getOrNull()
@@ -269,7 +269,7 @@ class ReaderViewModel(
     // Navigator.Listener
 
     override fun onResourceLoadFailed(href: Url, error: ReadError) {
-        Timber.e(error)
+        Timber.e(error.toDebugDescription())
         activityChannel.send(
             ActivityCommand.ToastError(
                 ReaderUserError(ReadUserError(error))

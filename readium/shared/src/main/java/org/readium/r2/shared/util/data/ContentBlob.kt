@@ -22,7 +22,7 @@ import org.readium.r2.shared.util.flatMap
 import org.readium.r2.shared.util.toUrl
 
 /**
- * A [Resource] to access content [uri] thanks to a [ContentResolver].
+ * A [Blob] to access content [uri] thanks to a [ContentResolver].
  */
 public class ContentBlob(
     private val uri: Uri,
@@ -64,7 +64,7 @@ public class ContentBlob(
                 while (skipped != range.first) {
                     skipped += it.skip(range.first - skipped)
                     if (skipped == 0L) {
-                        throw IOException("Could not skip InputStream.")
+                        throw IOException("Could not skip InputStream to read ranges from $uri.")
                     }
                 }
 
@@ -97,8 +97,10 @@ public class ContentBlob(
         return Try.catching {
             val stream = contentResolver.openInputStream(uri)
                 ?: return Try.failure(
-                    ReadError.Other(
-                        Exception("Content provider recently crashed.")
+                    ReadError.Access(
+                        ContentProviderError.NotAvailable(
+                            MessageError("Content provider recently crashed.")
+                        )
                     )
                 )
             val result = block(stream)

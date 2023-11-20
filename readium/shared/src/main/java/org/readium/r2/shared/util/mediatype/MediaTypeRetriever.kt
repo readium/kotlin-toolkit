@@ -20,8 +20,8 @@ import org.readium.r2.shared.util.toUri
  * Retrieves a canonical [MediaType] for the provided media type and file extension hints and/or
  * asset content.
  *
- * The actual format sniffing is done by the provided [sniffers]. The [defaultSniffers] cover the
- * formats supported with Readium by default.
+ * The actual format sniffing is mostly done by the provided [mediaTypeSniffer].
+ * The [DefaultMediaTypeSniffer] cover the formats supported with Readium by default.
  */
 public class MediaTypeRetriever(
     private val contentResolver: ContentResolver? = null,

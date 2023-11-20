@@ -20,7 +20,7 @@ import org.readium.r2.shared.publication.services.ContentProtectionService
 import org.readium.r2.shared.util.Closeable
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
-import org.readium.r2.shared.util.e
+import org.readium.r2.shared.util.toDebugDescription
 import timber.log.Timber
 
 /**
@@ -124,7 +124,7 @@ public interface LcpLicense : ContentProtectionService.UserRights, Closeable {
     )
     public fun decipher(data: ByteArray): ByteArray? =
         runBlocking { decrypt(data) }
-            .onFailure { Timber.e(it) }
+            .onFailure { Timber.e(it.toDebugDescription()) }
             .getOrNull()
 
     @Deprecated(

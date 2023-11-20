@@ -16,8 +16,8 @@ import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.snackbar.Snackbar
+import org.readium.r2.shared.util.toDebugDescription
 import org.readium.r2.testapp.domain.ImportUserError
-import org.readium.r2.testapp.utils.extensions.readium.e
 import org.readium.r2.testapp.utils.getUserMessage
 import timber.log.Timber
 
@@ -63,7 +63,7 @@ class MainActivity : AppCompatActivity() {
                     getString(R.string.import_publication_success)
 
                 is MainViewModel.Event.ImportPublicationError -> {
-                    Timber.e(event.error)
+                    Timber.e(event.error.toDebugDescription())
                     ImportUserError(event.error).getUserMessage(this)
                 }
             }

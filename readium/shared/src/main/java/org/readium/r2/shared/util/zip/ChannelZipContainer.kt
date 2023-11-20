@@ -10,6 +10,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.extensions.readFully
 import org.readium.r2.shared.extensions.tryOrLog
+import org.readium.r2.shared.extensions.unwrapInstance
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.MessageError
 import org.readium.r2.shared.util.RelativeUrl
@@ -20,7 +21,6 @@ import org.readium.r2.shared.util.archive.archive
 import org.readium.r2.shared.util.data.Container
 import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.data.ReadException
-import org.readium.r2.shared.util.data.unwrapReadException
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.io.CountingInputStream
 import org.readium.r2.shared.util.mediatype.MediaType
@@ -63,7 +63,7 @@ internal class ChannelZipContainer(
                 blob = this
             ).tryRecover { error ->
                 when (error) {
-                    is MediaTypeSnifferError.DataAccess ->
+                    is MediaTypeSnifferError.Read ->
                         Try.failure(error.cause)
                     MediaTypeSnifferError.NotRecognized ->
                         Try.success(MediaType.BINARY)
@@ -98,7 +98,7 @@ internal class ChannelZipContainer(
                         }
                     Try.success(bytes)
                 } catch (exception: Exception) {
-                    when (val e = exception.unwrapReadException()) {
+                    when (val e = exception.unwrapInstance(ReadException::class.java)) {
                         is ReadException ->
                             Try.failure(e.error)
                         else ->

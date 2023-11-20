@@ -7,21 +7,16 @@
 package org.readium.r2.shared.util.asset
 
 import java.io.File
-import kotlin.Exception
-import kotlin.String
 import org.readium.r2.shared.util.AbsoluteUrl
-import org.readium.r2.shared.util.ThrowableError
+import org.readium.r2.shared.util.MessageError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.archive.ArchiveFactory
 import org.readium.r2.shared.util.archive.ArchiveProvider
-import org.readium.r2.shared.util.archive.CompositeArchiveFactory
 import org.readium.r2.shared.util.archive.FileZipArchiveProvider
-import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.getOrElse
-import org.readium.r2.shared.util.mediatype.CompositeMediaTypeSniffer
 import org.readium.r2.shared.util.mediatype.MediaType
-import org.readium.r2.shared.util.mediatype.MediaTypeSniffer
+import org.readium.r2.shared.util.mediatype.MediaTypeHints
 import org.readium.r2.shared.util.mediatype.MediaTypeSnifferError
 import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.shared.util.toUrl
@@ -32,13 +27,8 @@ import org.readium.r2.shared.util.toUrl
  */
 public class AssetRetriever(
     private val resourceFactory: ResourceFactory = FileResourceFactory(),
-    archiveProviders: List<ArchiveProvider> = listOf(FileZipArchiveProvider())
+    private val archiveProvider: ArchiveProvider = FileZipArchiveProvider()
 ) {
-    private val archiveSniffer: MediaTypeSniffer =
-        CompositeMediaTypeSniffer(archiveProviders)
-
-    private val archiveFactory: ArchiveFactory =
-        CompositeArchiveFactory(archiveProviders)
 
     public sealed class Error(
         override val message: String,
@@ -48,20 +38,12 @@ public class AssetRetriever(
         public class SchemeNotSupported(
             public val scheme: Url.Scheme,
             cause: org.readium.r2.shared.util.Error? = null
-        ) : Error("Scheme $scheme is not supported.", cause) {
+        ) : Error("Scheme $scheme is not supported.", cause)
 
-            public constructor(scheme: Url.Scheme, exception: Exception) :
-                this(scheme, ThrowableError(exception))
-        }
+        public class ArchiveFormatNotSupported(cause: org.readium.r2.shared.util.Error) :
+            Error("Archive providers do not support this kind of archive.", cause)
 
-        public class ArchiveFormatNotSupported(cause: org.readium.r2.shared.util.Error?) :
-            Error("Archive factory does not support this kind of archive.", cause) {
-
-            public constructor(exception: Exception) :
-                this(ThrowableError(exception))
-        }
-
-        public class AccessError(override val cause: ReadError) :
+        public class ReadError(override val cause: org.readium.r2.shared.util.data.ReadError) :
             Error("An error occurred when trying to read asset.", cause)
     }
 
@@ -97,11 +79,20 @@ public class AssetRetriever(
         mediaType: MediaType,
         containerType: MediaType
     ): Try<Asset.Container, Error> {
-        val container = archiveFactory.create(resource)
+        archiveProvider.sniffHints(MediaTypeHints(mediaType = containerType))
+            .onFailure {
+                return Try.failure(
+                    Error.ArchiveFormatNotSupported(
+                        MessageError("Container type $containerType not recognized.")
+                    )
+                )
+            }
+
+        val container = archiveProvider.create(resource)
             .mapFailure { error ->
                 when (error) {
-                    is ArchiveFactory.Error.ResourceError ->
-                        Error.AccessError(error.cause)
+                    is ArchiveFactory.Error.ReadError ->
+                        Error.ReadError(error.cause)
                     else ->
                         Error.ArchiveFormatNotSupported(error)
                 }
@@ -166,9 +157,9 @@ public class AssetRetriever(
             }
 
         val mediaType = resource.mediaType()
-            .getOrElse { return Try.failure(Error.AccessError(it)) }
+            .getOrElse { return Try.failure(Error.ReadError(it)) }
 
-        return archiveSniffer.sniffBlob(resource)
+        return archiveProvider.sniffBlob(resource)
             .fold(
                 { containerType ->
                     retrieveArchiveAsset(url, mediaType = mediaType, containerType = containerType)
@@ -177,8 +168,8 @@ public class AssetRetriever(
                     when (error) {
                         MediaTypeSnifferError.NotRecognized ->
                             Try.success(Asset.Resource(mediaType, resource))
-                        is MediaTypeSnifferError.DataAccess ->
-                            Try.failure(Error.AccessError(error.cause))
+                        is MediaTypeSnifferError.Read ->
+                            Try.failure(Error.ReadError(error.cause))
                     }
                 }
             )

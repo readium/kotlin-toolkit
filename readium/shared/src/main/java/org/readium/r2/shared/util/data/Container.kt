@@ -30,10 +30,7 @@ public interface Container<E : Blob> : Iterable<Url>, SuspendingCloseable {
         entries.iterator()
 
     /**
-     * Returns the [Entry] at the given [url].
-     *
-     * A [Entry] is always returned, since for some cases we can't know if it exists before actually
-     * fetching it, such as HTTP. Therefore, errors are handled at the Entry level.
+     * Returns the entry at the given [url] or null if there is none.
      */
     public operator fun get(url: Url): E?
 }

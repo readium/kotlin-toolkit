@@ -23,6 +23,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import org.readium.r2.shared.util.AbsoluteUrl
+import org.readium.r2.shared.util.toDebugDescription
 import org.readium.r2.testapp.Application
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.data.model.Book
@@ -30,7 +31,6 @@ import org.readium.r2.testapp.databinding.FragmentBookshelfBinding
 import org.readium.r2.testapp.opds.GridAutoFitLayoutManager
 import org.readium.r2.testapp.reader.OpeningUserError
 import org.readium.r2.testapp.reader.ReaderActivityContract
-import org.readium.r2.testapp.utils.extensions.readium.e
 import org.readium.r2.testapp.utils.getUserMessage
 import org.readium.r2.testapp.utils.viewLifecycle
 import timber.log.Timber
@@ -159,7 +159,7 @@ class BookshelfFragment : Fragment() {
         val message =
             when (event) {
                 is BookshelfViewModel.Event.OpenPublicationError -> {
-                    Timber.e(event.error)
+                    Timber.e(event.error.toDebugDescription())
                     OpeningUserError(event.error).getUserMessage(requireContext())
                 }
 

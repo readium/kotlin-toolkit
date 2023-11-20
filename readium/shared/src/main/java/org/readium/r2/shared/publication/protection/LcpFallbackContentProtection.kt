@@ -85,9 +85,9 @@ public class LcpFallbackContentProtection : ContentProtection {
             ?.readAsJson()
             ?.getOrElse {
                 when (it) {
-                    is DecoderError.DataAccess ->
+                    is DecoderError.Read ->
                         Try.failure(it.cause.cause)
-                    is DecoderError.DecodingError ->
+                    is DecoderError.Decoding ->
                         return Try.success(false)
                 }
             }
@@ -103,9 +103,9 @@ public class LcpFallbackContentProtection : ContentProtection {
             ?.readAsRwpm()
             ?.getOrElse {
                 when (it) {
-                    is DecoderError.DataAccess ->
+                    is DecoderError.Read ->
                         return Try.failure(ReadError.Decoding(it))
-                    is DecoderError.DecodingError ->
+                    is DecoderError.Decoding ->
                         return Try.success(false)
                 }
             }
@@ -124,9 +124,9 @@ public class LcpFallbackContentProtection : ContentProtection {
             ?.readAsXml()
             ?.getOrElse {
                 when (it) {
-                    is DecoderError.DataAccess ->
+                    is DecoderError.Read ->
                         return Try.failure(ReadError.Decoding(it.cause.cause))
-                    is DecoderError.DecodingError ->
+                    is DecoderError.Decoding ->
                         return Try.failure(ReadError.Decoding(it.cause))
                 }
             }

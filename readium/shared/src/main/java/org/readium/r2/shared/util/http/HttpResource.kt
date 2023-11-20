@@ -16,7 +16,7 @@ import org.readium.r2.shared.util.io.CountingInputStream
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.resource.Resource
 
-/** Provides access to an external URL. */
+/** Provides access to an external URL through HTTP. */
 @OptIn(ExperimentalReadiumApi::class)
 public class HttpResource(
     private val client: HttpClient,
@@ -106,7 +106,9 @@ public class HttpResource(
             .flatMap { response ->
                 if (from != null && response.response.statusCode != 206
                 ) {
-                    val error = MessageError("Server seems not to support range requests.")
+                    val error = MessageError(
+                        "Server seems not to support range requests to $source."
+                    )
                     Try.failure(ReadError.UnsupportedOperation(error))
                 } else {
                     Try.success(response)

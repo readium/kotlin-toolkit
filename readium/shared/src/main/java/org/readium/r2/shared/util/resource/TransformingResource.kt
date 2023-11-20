@@ -37,7 +37,13 @@ public abstract class TransformingResource(
         ): TransformingResource =
             object : TransformingResource(resource) {
                 override suspend fun transform(data: Try<ByteArray, ReadError>): Try<ByteArray, ReadError> =
-                    data.flatMap { transform(it) }
+                    data.flatMap {
+                        try {
+                            transform(it)
+                        } catch (e: OutOfMemoryError) {
+                            Try.failure(ReadError.OutOfMemory(e))
+                        }
+                    }
             }
     }
 

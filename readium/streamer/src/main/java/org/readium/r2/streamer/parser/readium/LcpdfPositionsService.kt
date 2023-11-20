@@ -14,12 +14,12 @@ import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.services.PositionsService
-import org.readium.r2.shared.util.e
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.pdf.PdfDocument
 import org.readium.r2.shared.util.pdf.PdfDocumentFactory
 import org.readium.r2.shared.util.pdf.cachedIn
+import org.readium.r2.shared.util.toDebugDescription
 import timber.log.Timber
 
 /**
@@ -104,7 +104,7 @@ internal class LcpdfPositionsService(
             .cachedIn(context.services)
             .open(resource, password = null)
             .getOrElse {
-                Timber.e(it)
+                Timber.e(it.toDebugDescription())
                 null
             }
     }

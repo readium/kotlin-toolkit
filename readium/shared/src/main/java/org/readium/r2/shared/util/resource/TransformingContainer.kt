@@ -16,29 +16,29 @@ import org.readium.r2.shared.util.data.Container
  *
  * If the transformation doesn't apply, simply return the resource unchanged.
  */
-public typealias ResourceTransformer = (Resource) -> Resource
+public typealias EntryTransformer = (Url, Resource) -> Resource
 
 /**
- * Transforms the resources' content of a child fetcher using a list of [ResourceTransformer]
+ * Transforms the resources' content of a child fetcher using a list of [EntryTransformer]
  * functions.
  */
 public class TransformingContainer(
     private val container: Container<Resource>,
-    private val transformers: List<(Url, Resource) -> Resource>
+    private val transformers: List<EntryTransformer>
 ) : Container<Resource> {
 
-    public constructor(container: Container<Resource>, transformer: (Url, Resource) -> Resource) :
+    public constructor(container: Container<Resource>, transformer: EntryTransformer) :
         this(container, listOf(transformer))
 
     override val entries: Set<Url> =
         container.entries
 
     override fun get(url: Url): Resource? {
-        val originalResource = container.get(url)
+        val originalResource = container[url]
             ?: return null
 
         return transformers
-            .fold(originalResource) { acc: Resource, transformer: (Url, Resource) -> Resource ->
+            .fold(originalResource) { acc: Resource, transformer: EntryTransformer ->
                 transformer(url, acc)
             }
     }

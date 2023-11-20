@@ -29,7 +29,7 @@ public sealed class ContentProviderError(
     }
 
     public class IO(
-        cause: Error?
+        override val cause: Error
     ) : ContentProviderError("An IO error occurred.", cause) {
 
         public constructor(exception: Exception) : this(ThrowableError(exception))

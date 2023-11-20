@@ -13,7 +13,7 @@ import org.readium.r2.shared.extensions.requireLengthFitInt
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Try
 
-/** Creates a Blob serving a [ByteArray]. */
+/** Creates a [Blob] serving a [ByteArray]. */
 public class InMemoryBlob(
     override val source: AbsoluteUrl?,
     private val bytes: suspend () -> Try<ByteArray, ReadError>
@@ -24,10 +24,10 @@ public class InMemoryBlob(
         source: AbsoluteUrl? = null
     ) : this(source = source, { Try.success(bytes) })
 
+    private lateinit var _bytes: Try<ByteArray, ReadError>
+
     override suspend fun length(): Try<Long, ReadError> =
         read().map { it.size.toLong() }
-
-    private lateinit var _bytes: Try<ByteArray, ReadError>
 
     override suspend fun read(range: LongRange?): Try<ByteArray, ReadError> {
         if (!::_bytes.isInitialized) {

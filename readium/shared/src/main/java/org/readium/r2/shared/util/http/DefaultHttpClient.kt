@@ -12,8 +12,10 @@ import java.io.FileInputStream
 import java.io.IOException
 import java.io.InputStream
 import java.net.HttpURLConnection
+import java.net.NoRouteToHostException
 import java.net.SocketTimeoutException
 import java.net.URL
+import java.net.UnknownHostException
 import kotlin.time.Duration
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -25,13 +27,13 @@ import org.readium.r2.shared.util.ThrowableError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.data.InMemoryBlob
-import org.readium.r2.shared.util.e
 import org.readium.r2.shared.util.flatMap
 import org.readium.r2.shared.util.getOrDefault
 import org.readium.r2.shared.util.http.HttpRequest.Method
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.mediatype.MediaTypeHints
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
+import org.readium.r2.shared.util.toDebugDescription
 import org.readium.r2.shared.util.tryRecover
 import timber.log.Timber
 
@@ -224,7 +226,8 @@ public class DefaultHttpClient(
             }
             .onFailure {
                 callback.onRequestFailed(request, it)
-                Timber.e(it, "HTTP request failed ${request.url}")
+                val error = MessageError("HTTP request failed ${request.url}", it)
+                Timber.e(error.toDebugDescription())
             }
     }
 
@@ -336,6 +339,8 @@ public class DefaultHttpClient(
  */
 private fun wrap(cause: IOException): HttpError =
     when (cause) {
+        is UnknownHostException, is NoRouteToHostException ->
+            HttpError.UnreachableHost(ThrowableError(cause))
         is SocketTimeoutException ->
             HttpError.Timeout(ThrowableError(cause))
         else ->

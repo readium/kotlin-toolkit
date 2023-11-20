@@ -178,7 +178,7 @@ internal class LcpContentProtection(
         when (this) {
             is AssetRetriever.Error.ArchiveFormatNotSupported ->
                 ContentProtection.Error.UnsupportedAsset(this)
-            is AssetRetriever.Error.AccessError ->
+            is AssetRetriever.Error.ReadError ->
                 ContentProtection.Error.ReadError(cause)
             is AssetRetriever.Error.SchemeNotSupported ->
                 ContentProtection.Error.UnsupportedAsset(this)

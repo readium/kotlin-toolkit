@@ -9,8 +9,13 @@ package org.readium.r2.shared.util.resource
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.data.Blob
+import org.readium.r2.shared.util.data.Container
 import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.mediatype.MediaType
+
+public typealias ResourceTry<SuccessT> = Try<SuccessT, ReadError>
+
+public typealias ResourceContainer = Container<Resource>
 
 /**
  * Acts as a proxy to an actual resource by handling read access.
@@ -63,7 +68,7 @@ public class FailureResource(
 }
 
 @Deprecated(
-    "Catch exceptions yourself to the most suitable ResourceError.",
+    "Catch exceptions yourself to the most suitable ReadError.",
     level = DeprecationLevel.ERROR,
     replaceWith = ReplaceWith("map(transform)")
 )

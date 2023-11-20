@@ -47,13 +47,13 @@ public class ReadiumWebPubParser(
             ?.readAsRwpm()
             ?.getOrElse {
                 when (it) {
-                    is DecoderError.DataAccess ->
+                    is DecoderError.Read ->
                         return Try.failure(
                             PublicationParser.Error.ReadError(
                                 ReadError.Decoding(it.cause)
                             )
                         )
-                    is DecoderError.DecodingError ->
+                    is DecoderError.Decoding ->
                         return Try.failure(
                             PublicationParser.Error.ReadError(
                                 ReadError.Decoding(

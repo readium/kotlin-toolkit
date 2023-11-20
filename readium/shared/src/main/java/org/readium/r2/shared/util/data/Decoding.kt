@@ -27,11 +27,11 @@ public sealed class DecoderError(
     override val message: String
 ) : Error {
 
-    public class DataAccess(
+    public class Read(
         override val cause: ReadError
-    ) : DecoderError("Data source error")
+    ) : DecoderError("Reading error")
 
-    public class DecodingError(
+    public class Decoding(
         override val cause: Error?
     ) : DecoderError("Decoding Error")
 }
@@ -43,16 +43,16 @@ internal suspend fun<R, S> Try<S, ReadError>.decode(
     when (this) {
         is Try.Success ->
             try {
-                Try.success(
-                    withContext(Dispatchers.Default) {
-                        block(value)
-                    }
-                )
+                withContext(Dispatchers.Default) {
+                    Try.success(block(value))
+                }
             } catch (e: Exception) {
-                Try.failure(DecoderError.DecodingError(wrapError(e)))
+                Try.failure(DecoderError.Decoding(wrapError(e)))
+            } catch (e: OutOfMemoryError) {
+                Try.failure(DecoderError.Read(ReadError.OutOfMemory(e)))
             }
         is Try.Failure ->
-            Try.failure(DecoderError.DataAccess(value))
+            Try.failure(DecoderError.Read(value))
     }
 
 internal suspend fun<R, S> Try<S, DecoderError>.decodeMap(
@@ -62,13 +62,13 @@ internal suspend fun<R, S> Try<S, DecoderError>.decodeMap(
     when (this) {
         is Try.Success ->
             try {
-                Try.success(
-                    withContext(Dispatchers.Default) {
-                        block(value)
-                    }
-                )
+                withContext(Dispatchers.Default) {
+                    Try.success(block(value))
+                }
             } catch (e: Exception) {
-                Try.failure(DecoderError.DecodingError(wrapError(e)))
+                Try.failure(DecoderError.Decoding(wrapError(e)))
+            } catch (e: OutOfMemoryError) {
+                Try.failure(DecoderError.Read(ReadError.OutOfMemory(e)))
             }
         is Try.Failure ->
             Try.failure(value)
@@ -110,7 +110,7 @@ public suspend fun Blob.readAsRwpm(): Try<Manifest, DecoderError> =
         Manifest.fromJSON(json)
             ?.let { Try.success(it) }
             ?: Try.failure(
-                DecoderError.DecodingError(
+                DecoderError.Decoding(
                     MessageError("Content is not a valid RWPM.")
                 )
             )
@@ -121,12 +121,12 @@ public suspend fun Blob.readAsRwpm(): Try<Manifest, DecoderError> =
  */
 public suspend fun Blob.readAsBitmap(): Try<Bitmap, DecoderError> =
     read()
-        .mapFailure { DecoderError.DataAccess(it) }
+        .mapFailure { DecoderError.Read(it) }
         .flatMap { bytes ->
             BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
                 ?.let { Try.success(it) }
                 ?: Try.failure(
-                    DecoderError.DecodingError(
+                    DecoderError.Decoding(
                         MessageError("Could not decode resource as a bitmap.")
                     )
                 )

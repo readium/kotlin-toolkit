@@ -6,14 +6,8 @@
 
 package org.readium.r2.shared.util.resource
 
-import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.data.Container
-import org.readium.r2.shared.util.data.ReadError
-
-public typealias ResourceTry<SuccessT> = Try<SuccessT, ReadError>
-
-public typealias ResourceContainer = Container<Resource>
 
 /** A [Container] for a single [Resource]. */
 public class SingleResourceContainer(

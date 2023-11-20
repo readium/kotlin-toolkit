@@ -23,11 +23,11 @@ import org.joda.time.format.DateTimeFormat
 import org.readium.r2.lcp.MaterialRenewListener
 import org.readium.r2.lcp.lcpLicense
 import org.readium.r2.shared.util.Error
+import org.readium.r2.shared.util.toDebugDescription
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.databinding.FragmentDrmManagementBinding
 import org.readium.r2.testapp.reader.ReaderViewModel
 import org.readium.r2.testapp.utils.UserError
-import org.readium.r2.testapp.utils.extensions.readium.w
 import org.readium.r2.testapp.utils.getUserMessage
 import org.readium.r2.testapp.utils.viewLifecycle
 import timber.log.Timber
@@ -143,5 +143,5 @@ private fun Error.toastUserMessage(view: View) {
         Snackbar.make(view, getUserMessage(view.context), Snackbar.LENGTH_LONG).show()
     }
 
-    Timber.w(this)
+    Timber.w(toDebugDescription())
 }

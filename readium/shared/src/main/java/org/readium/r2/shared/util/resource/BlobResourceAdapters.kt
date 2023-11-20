@@ -1,3 +1,9 @@
+/*
+ * Copyright 2023 Readium Foundation. All rights reserved.
+ * Use of this source code is governed by the BSD-style license
+ * available in the top-level LICENSE file of the project.
+ */
+
 package org.readium.r2.shared.util.resource
 
 import org.readium.r2.shared.util.Try
@@ -34,7 +40,7 @@ internal class GuessMediaTypeResourceAdapter(
             blob = blob
         ).tryRecover { error ->
             when (error) {
-                is MediaTypeSnifferError.DataAccess ->
+                is MediaTypeSnifferError.Read ->
                     Try.failure(error.cause)
                 MediaTypeSnifferError.NotRecognized ->
                     Try.success(MediaType.BINARY)

@@ -200,9 +200,9 @@ public class EpubParser(
         return decode()
             .mapFailure {
                 when (it) {
-                    is DecoderError.DataAccess ->
+                    is DecoderError.Read ->
                         PublicationParser.Error.ReadError(it.cause)
-                    is DecoderError.DecodingError ->
+                    is DecoderError.Decoding ->
                         PublicationParser.Error.ReadError(
                             ReadError.Decoding(
                                 MessageError(
