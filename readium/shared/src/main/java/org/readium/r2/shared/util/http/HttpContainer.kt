@@ -27,6 +27,8 @@ public class HttpContainer(
 ) : Container<Resource> {
 
     override fun get(url: Url): Resource? {
+        // We don't check that url matches any entry because that might save us from edge cases.
+
         val absoluteUrl = (baseUrl?.resolve(url) ?: url) as? AbsoluteUrl
 
         return if (absoluteUrl == null || !absoluteUrl.isHttp) {

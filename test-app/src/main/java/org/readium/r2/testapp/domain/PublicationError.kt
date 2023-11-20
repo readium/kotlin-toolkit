@@ -41,7 +41,7 @@ sealed class PublicationError(
         operator fun invoke(error: AssetRetriever.Error): PublicationError =
             when (error) {
                 is AssetRetriever.Error.ReadError ->
-                    PublicationError(error)
+                    ReadError(error.cause)
                 is AssetRetriever.Error.ArchiveFormatNotSupported ->
                     UnsupportedArchiveFormat(error)
                 is AssetRetriever.Error.SchemeNotSupported ->
@@ -51,7 +51,7 @@ sealed class PublicationError(
         operator fun invoke(error: ContentProtectionSchemeRetriever.Error): PublicationError =
             when (error) {
                 is ContentProtectionSchemeRetriever.Error.ReadError ->
-                    PublicationError(error)
+                    ReadError(error.cause)
                 ContentProtectionSchemeRetriever.Error.NoContentProtectionFound ->
                     UnsupportedContentProtection(error)
             }
@@ -59,7 +59,7 @@ sealed class PublicationError(
         operator fun invoke(error: PublicationFactory.Error): PublicationError =
             when (error) {
                 is PublicationFactory.Error.ReadError ->
-                    PublicationError(error)
+                    ReadError(error.cause)
                 is PublicationFactory.Error.UnsupportedAsset ->
                     UnsupportedPublication(error)
                 is PublicationFactory.Error.UnsupportedContentProtection ->

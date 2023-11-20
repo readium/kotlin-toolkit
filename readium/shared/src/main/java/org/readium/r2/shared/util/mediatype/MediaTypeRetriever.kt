@@ -28,9 +28,6 @@ public class MediaTypeRetriever(
     private val mediaTypeSniffer: MediaTypeSniffer = DefaultMediaTypeSniffer()
 ) : MediaTypeSniffer {
 
-    private val systemMediaTypeSniffer: MediaTypeSniffer =
-        SystemMediaTypeSniffer()
-
     /**
      * Retrieves a canonical [MediaType] for the provided media type and file extension [hints].
      */
@@ -43,7 +40,7 @@ public class MediaTypeRetriever(
         // Note: This is done after the default sniffers, because otherwise it will detect
         // JSON, XML or ZIP formats before we have a chance of sniffing their content (for example,
         // for RWPM).
-        systemMediaTypeSniffer.sniffHints(hints)
+        SystemMediaTypeSniffer.sniffHints(hints)
             .getOrNull()
             ?.let { return it }
 
@@ -133,12 +130,12 @@ public class MediaTypeRetriever(
         // Note: This is done after the default sniffers, because otherwise it will detect
         // JSON, XML or ZIP formats before we have a chance of sniffing their content (for example,
         // for RWPM).
-        systemMediaTypeSniffer.sniffHints(hints)
+        SystemMediaTypeSniffer.sniffHints(hints)
             .getOrNull()
             ?.let { return Try.success(it) }
 
         if (blob != null) {
-            systemMediaTypeSniffer.sniffBlob(blob)
+            SystemMediaTypeSniffer.sniffBlob(blob)
                 .onSuccess { return Try.success(it) }
                 .onFailure { error ->
                     when (error) {

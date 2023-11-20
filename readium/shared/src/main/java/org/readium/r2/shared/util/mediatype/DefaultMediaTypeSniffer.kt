@@ -19,15 +19,15 @@ public class DefaultMediaTypeSniffer : MediaTypeSniffer {
     private val sniffer: MediaTypeSniffer =
         CompositeMediaTypeSniffer(
             listOf(
-                XhtmlMediaTypeSniffer(),
-                HtmlMediaTypeSniffer(),
+                XhtmlMediaTypeSniffer,
+                HtmlMediaTypeSniffer,
                 OpdsMediaTypeSniffer,
                 LcpLicenseMediaTypeSniffer,
                 BitmapMediaTypeSniffer,
-                WebPubManifestMediaTypeSniffer(),
-                WebPubMediaTypeSniffer(),
+                WebPubManifestMediaTypeSniffer,
+                WebPubMediaTypeSniffer,
                 W3cWpubMediaTypeSniffer,
-                EpubMediaTypeSniffer(),
+                EpubMediaTypeSniffer,
                 LpfMediaTypeSniffer,
                 ArchiveMediaTypeSniffer,
                 PdfMediaTypeSniffer,

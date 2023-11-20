@@ -165,7 +165,7 @@ class Bookshelf(
                     }
 
             val id = bookRepository.insertBook(
-                url.toString(),
+                url,
                 asset.mediaType,
                 (asset as? Asset.Container)?.containerType,
                 drmScheme,

@@ -148,7 +148,7 @@ internal class CompositeMediaTypeSniffer(
  *
  * Must precede the HTML sniffer.
  */
-public class XhtmlMediaTypeSniffer : MediaTypeSniffer {
+public object XhtmlMediaTypeSniffer : MediaTypeSniffer {
     override fun sniffHints(hints: MediaTypeHints): Try<MediaType, MediaTypeSnifferError.NotRecognized> {
         if (
             hints.hasFileExtension("xht", "xhtml") ||
@@ -184,7 +184,7 @@ public class XhtmlMediaTypeSniffer : MediaTypeSniffer {
 }
 
 /** Sniffs an HTML document. */
-public class HtmlMediaTypeSniffer : MediaTypeSniffer {
+public object HtmlMediaTypeSniffer : MediaTypeSniffer {
     override fun sniffHints(hints: MediaTypeHints): Try<MediaType, MediaTypeSnifferError.NotRecognized> {
         if (
             hints.hasFileExtension("htm", "html") ||
@@ -421,7 +421,7 @@ public object BitmapMediaTypeSniffer : MediaTypeSniffer {
 }
 
 /** Sniffs a Readium Web Manifest. */
-public class WebPubManifestMediaTypeSniffer : MediaTypeSniffer {
+public object WebPubManifestMediaTypeSniffer : MediaTypeSniffer {
     override fun sniffHints(hints: MediaTypeHints): Try<MediaType, MediaTypeSnifferError.NotRecognized> {
         if (hints.hasMediaType("application/audiobook+json")) {
             return Try.success(MediaType.READIUM_AUDIOBOOK_MANIFEST)
@@ -468,7 +468,7 @@ public class WebPubManifestMediaTypeSniffer : MediaTypeSniffer {
 }
 
 /** Sniffs a Readium Web Publication, protected or not by LCP. */
-public class WebPubMediaTypeSniffer : MediaTypeSniffer {
+public object WebPubMediaTypeSniffer : MediaTypeSniffer {
     override fun sniffHints(hints: MediaTypeHints): Try<MediaType, MediaTypeSnifferError.NotRecognized> {
         if (
             hints.hasFileExtension("audiobook") ||
@@ -571,7 +571,7 @@ public object W3cWpubMediaTypeSniffer : MediaTypeSniffer {
  *
  * Reference: https://www.w3.org/publishing/epub3/epub-ocf.html#sec-zip-container-mime
  */
-public class EpubMediaTypeSniffer : MediaTypeSniffer {
+public object EpubMediaTypeSniffer : MediaTypeSniffer {
     override fun sniffHints(hints: MediaTypeHints): Try<MediaType, MediaTypeSnifferError.NotRecognized> {
         if (
             hints.hasFileExtension("epub") ||
@@ -795,7 +795,7 @@ public object JsonMediaTypeSniffer : MediaTypeSniffer {
  * Sniffs the system-wide registered media types using [MimeTypeMap] and
  * [URLConnection.guessContentTypeFromStream].
  */
-public class SystemMediaTypeSniffer : MediaTypeSniffer {
+public object SystemMediaTypeSniffer : MediaTypeSniffer {
 
     private val mimetypes = tryOrNull { MimeTypeMap.getSingleton() }
 
