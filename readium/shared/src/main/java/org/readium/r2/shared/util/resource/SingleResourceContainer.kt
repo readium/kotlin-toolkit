@@ -11,7 +11,7 @@ import org.readium.r2.shared.util.data.Container
 
 /** A [Container] for a single [Resource]. */
 public class SingleResourceContainer(
-    url: Url,
+    private val entryUrl: Url,
     private val resource: Resource
 ) : Container<Resource> {
 
@@ -24,10 +24,10 @@ public class SingleResourceContainer(
         }
     }
 
-    override val entries: Set<Url> = setOf(url)
+    override val entries: Set<Url> = setOf(entryUrl)
 
     override fun get(url: Url): Resource? {
-        if (url.removeFragment().removeQuery() != url) {
+        if (url.removeFragment().removeQuery() != entryUrl) {
             return null
         }
 

@@ -113,7 +113,7 @@ internal class ParserAssetFactory(
         val container =
             CompositeContainer(
                 SingleResourceContainer(
-                    url = Url("manifest.json")!!,
+                    Url("manifest.json")!!,
                     asset.resource
                 ),
                 HttpContainer(httpClient, baseUrl, resources)
