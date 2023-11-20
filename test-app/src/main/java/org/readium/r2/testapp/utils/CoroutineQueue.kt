@@ -29,6 +29,8 @@ class CoroutineQueue(
     private val scope: CoroutineScope =
         CoroutineScope(dispatcher + SupervisorJob())
 
+    private val tasks: Channel<Task<*>> = Channel(Channel.UNLIMITED)
+
     init {
         scope.launch {
             for (task in tasks) {
@@ -76,8 +78,6 @@ class CoroutineQueue(
     fun cancel(cause: CancellationException? = null) {
         scope.cancel(cause)
     }
-
-    private val tasks: Channel<Task<*>> = Channel(Channel.UNLIMITED)
 
     private class Task<T>(
         val task: suspend () -> T,
