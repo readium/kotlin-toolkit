@@ -156,6 +156,6 @@ public fun <S, F> Try<S, F>.assertSuccess(): S =
         is Try.Failure ->
             throw IllegalStateException(
                 "Try was excepted to contain a success.",
-                value as? Throwable
+                value as? Throwable ?: (value as? Error)?.let { ErrorException(it) }
             )
     }

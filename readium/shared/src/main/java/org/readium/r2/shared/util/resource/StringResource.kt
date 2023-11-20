@@ -9,7 +9,6 @@ package org.readium.r2.shared.util.resource
 import kotlinx.coroutines.runBlocking
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Try
-import org.readium.r2.shared.util.assertSuccess
 import org.readium.r2.shared.util.data.Blob
 import org.readium.r2.shared.util.data.InMemoryBlob
 import org.readium.r2.shared.util.data.ReadError
@@ -43,5 +42,5 @@ public class StringResource(
         Try.success(properties)
 
     override fun toString(): String =
-        "${javaClass.simpleName}(${runBlocking { read().assertSuccess().decodeToString() } }})"
+        "${javaClass.simpleName}(${runBlocking { read().map { it.decodeToString() } } }})"
 }

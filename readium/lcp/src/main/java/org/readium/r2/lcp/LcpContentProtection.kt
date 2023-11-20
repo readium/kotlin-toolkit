@@ -37,7 +37,7 @@ internal class LcpContentProtection(
 
     override suspend fun supports(
         asset: Asset
-    ): Try<Boolean, ReadError> =
+    ): Try<Boolean, Nothing> =
         Try.success(lcpService.isLcpProtected(asset))
 
     override suspend fun open(

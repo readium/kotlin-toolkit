@@ -19,7 +19,8 @@ import com.google.android.exoplayer2.upstream.TransferListener
 import java.io.IOException
 import kotlinx.coroutines.runBlocking
 import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.util.assertSuccess
+import org.readium.r2.shared.util.data.ReadException
+import org.readium.r2.shared.util.getOrThrow
 import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.shared.util.resource.buffered
 import org.readium.r2.shared.util.toUrl
@@ -118,7 +119,8 @@ public class ExoPlayerDataSource internal constructor(private val publication: P
             val data = runBlocking {
                 openedResource.resource
                     .read(range = openedResource.position until (openedResource.position + length))
-                    .assertSuccess()
+                    .mapFailure { ReadException(it) }
+                    .getOrThrow()
             }
 
             if (data.isEmpty()) {

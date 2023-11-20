@@ -47,7 +47,6 @@ import org.readium.r2.shared.extensions.tryOrNull
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.util.Url
-import org.readium.r2.shared.util.assertSuccess
 import org.readium.r2.shared.util.data.readAsString
 import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.shared.util.toUrl
@@ -352,7 +351,7 @@ internal open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebV
                     ?.use { res ->
                         res.readAsString()
                             .map { Jsoup.parse(it) }
-                            .assertSuccess()
+                            .getOrNull()
                     }
                     ?.select("#$id")
                     ?.first()?.html()
