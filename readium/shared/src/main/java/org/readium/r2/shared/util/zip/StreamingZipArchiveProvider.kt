@@ -15,6 +15,7 @@ import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.archive.ArchiveFactory
 import org.readium.r2.shared.util.archive.ArchiveProvider
+import org.readium.r2.shared.util.archive.ZipHintMediaTypeSniffer
 import org.readium.r2.shared.util.data.Blob
 import org.readium.r2.shared.util.data.Container
 import org.readium.r2.shared.util.data.ReadError
@@ -37,15 +38,8 @@ public class StreamingZipArchiveProvider(
     private val mediaTypeRetriever: MediaTypeRetriever
 ) : ArchiveProvider {
 
-    override fun sniffHints(hints: MediaTypeHints): Try<MediaType, MediaTypeSnifferError.NotRecognized> {
-        if (hints.hasMediaType("application/zip") ||
-            hints.hasFileExtension("zip")
-        ) {
-            return Try.success(MediaType.ZIP)
-        }
-
-        return Try.failure(MediaTypeSnifferError.NotRecognized)
-    }
+    override fun sniffHints(hints: MediaTypeHints): Try<MediaType, MediaTypeSnifferError.NotRecognized> =
+        ZipHintMediaTypeSniffer.sniffHints(hints)
 
     override suspend fun sniffBlob(blob: Blob): Try<MediaType, MediaTypeSnifferError> {
         return try {

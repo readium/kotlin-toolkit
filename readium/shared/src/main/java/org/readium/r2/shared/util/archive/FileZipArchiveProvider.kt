@@ -33,15 +33,8 @@ public class FileZipArchiveProvider(
     private val mediaTypeRetriever: MediaTypeRetriever = MediaTypeRetriever()
 ) : ArchiveProvider {
 
-    override fun sniffHints(hints: MediaTypeHints): Try<MediaType, MediaTypeSnifferError.NotRecognized> {
-        if (hints.hasMediaType("application/zip") ||
-            hints.hasFileExtension("zip")
-        ) {
-            return Try.success(MediaType.ZIP)
-        }
-
-        return Try.failure(MediaTypeSnifferError.NotRecognized)
-    }
+    override fun sniffHints(hints: MediaTypeHints): Try<MediaType, MediaTypeSnifferError.NotRecognized> =
+        ZipHintMediaTypeSniffer.sniffHints(hints)
 
     override suspend fun sniffBlob(blob: Blob): Try<MediaType, MediaTypeSnifferError> {
         val file = blob.source?.toFile()

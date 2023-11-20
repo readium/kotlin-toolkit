@@ -171,8 +171,13 @@ public class AssetRetriever(
                 )
             }
 
-        val containerType = archiveProvider.sniffBlob(resource)
-            .tryRecover { error ->
+        // FIXME: should use HTTP Content-Type but not the resource content
+        val containerType = archiveProvider.sniffHints(
+            MediaTypeHints(fileExtension = url.extension)
+        )
+            .tryRecover {
+                archiveProvider.sniffBlob(resource)
+            }.tryRecover { error ->
                 when (error) {
                     MediaTypeSnifferError.NotRecognized ->
                         Try.success(null)
