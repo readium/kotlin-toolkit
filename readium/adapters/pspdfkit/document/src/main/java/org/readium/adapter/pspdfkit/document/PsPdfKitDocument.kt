@@ -36,21 +36,18 @@ public class PsPdfKitDocumentFactory(context: Context) : PdfDocumentFactory<PsPd
     override val documentType: KClass<PsPdfKitDocument> = PsPdfKitDocument::class
 
     override suspend fun open(resource: Resource, password: String?): ResourceTry<PsPdfKitDocument> =
-        open(context, DocumentSource(ResourceDataProvider(resource), password))
-
-    // FIXME : error handling is too rough
-    private suspend fun open(context: Context, documentSource: DocumentSource): ResourceTry<PsPdfKitDocument> =
         withContext(Dispatchers.IO) {
+            val dataProvider = ResourceDataProvider(resource)
+            val documentSource = DocumentSource(dataProvider)
             try {
-                Try.success(
-                    PsPdfKitDocument(PdfDocumentLoader.openDocument(context, documentSource))
-                )
+                val innerDocument = PdfDocumentLoader.openDocument(context, documentSource)
+                Try.success(PsPdfKitDocument(innerDocument))
             } catch (e: InvalidPasswordException) {
                 Try.failure(ReadError.Decoding(ThrowableError(e)))
             } catch (e: InvalidSignatureException) {
                 Try.failure(ReadError.Decoding(ThrowableError(e)))
             } catch (e: IOException) {
-                Try.failure(ReadError.Other(e))
+                Try.failure(dataProvider.error!!)
             }
         }
 }

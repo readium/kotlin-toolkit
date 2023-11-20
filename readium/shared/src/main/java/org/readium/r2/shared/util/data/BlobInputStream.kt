@@ -45,14 +45,6 @@ public class BlobInputStream(
      */
     private var mark: Long = range?.start ?: 0
 
-    private var error: ReadError? = null
-
-    internal fun consumeError(): ReadError? {
-        val errorNow = error
-        error = null
-        return errorNow
-    }
-
     override fun available(): Int {
         checkNotClosed()
         return (end - position).toInt()
@@ -146,7 +138,6 @@ public class BlobInputStream(
                 value
             }
             is Try.Failure -> {
-                error = value
                 throw wrapError(value)
             }
         }
