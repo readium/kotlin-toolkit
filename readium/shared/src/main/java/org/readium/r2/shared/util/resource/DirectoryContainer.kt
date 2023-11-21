@@ -15,7 +15,6 @@ import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.data.Container
 import org.readium.r2.shared.util.data.FileBlob
 import org.readium.r2.shared.util.data.FileSystemError
-import org.readium.r2.shared.util.mediatype.MediaTypeHints
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 import org.readium.r2.shared.util.toUrl
 
@@ -29,10 +28,13 @@ public class DirectoryContainer(
 ) : Container<Resource> {
 
     private fun File.toResource(): Resource {
-        return GuessMediaTypeResourceAdapter(
+        return BlobResourceAdapter(
             FileBlob(this),
-            mediaTypeRetriever,
-            MediaTypeHints(fileExtension = extension)
+            Resource.Properties(
+                Resource.Properties.Builder()
+                    .also { it.filename = name }
+            ),
+            mediaTypeRetriever
         )
     }
 

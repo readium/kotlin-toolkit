@@ -9,6 +9,7 @@ package org.readium.r2.shared.util.http
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.data.Container
+import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 import org.readium.r2.shared.util.resource.Resource
 
 /**
@@ -21,9 +22,10 @@ import org.readium.r2.shared.util.resource.Resource
  * @param baseUrl Base URL from which relative URLs are served.
  */
 public class HttpContainer(
-    private val client: HttpClient,
     private val baseUrl: Url? = null,
-    override val entries: Set<Url>
+    override val entries: Set<Url>,
+    private val client: HttpClient,
+    private val mediaTypeRetriever: MediaTypeRetriever
 ) : Container<Resource> {
 
     override fun get(url: Url): Resource? {
@@ -34,7 +36,7 @@ public class HttpContainer(
         return if (absoluteUrl == null || !absoluteUrl.isHttp) {
             null
         } else {
-            HttpResource(client, absoluteUrl)
+            HttpResource(client, absoluteUrl, mediaTypeRetriever)
         }
     }
 

@@ -47,8 +47,8 @@ class Readium(context: Context) {
 
     private val resourceFactory = CompositeResourceFactory(
         FileResourceFactory(mediaTypeRetriever),
-        ContentResourceFactory(context.contentResolver),
-        HttpResourceFactory(httpClient)
+        ContentResourceFactory(context.contentResolver, mediaTypeRetriever),
+        HttpResourceFactory(httpClient, mediaTypeRetriever)
     )
 
     val assetRetriever = AssetRetriever(

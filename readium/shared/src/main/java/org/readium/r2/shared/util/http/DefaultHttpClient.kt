@@ -194,7 +194,7 @@ public class DefaultHttpClient(
                         url = request.url,
                         statusCode = statusCode,
                         headers = connection.safeHeaders,
-                        mediaType = mediaType ?: MediaType.BINARY
+                        mediaType = mediaType
                     )
 
                     callback.onResponseReceived(request, response)

@@ -30,7 +30,7 @@ public interface DownloadManager {
 
     public data class Download(
         val file: File,
-        val mediaType: MediaType
+        val mediaType: MediaType?
     )
 
     @JvmInline

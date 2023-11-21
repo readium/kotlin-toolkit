@@ -7,15 +7,17 @@
 package org.readium.r2.shared.util.asset
 
 import android.content.ContentResolver
+import android.provider.MediaStore
+import org.readium.r2.shared.extensions.queryProjection
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.data.ContentBlob
 import org.readium.r2.shared.util.mediatype.MediaType
-import org.readium.r2.shared.util.mediatype.MediaTypeHints
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
-import org.readium.r2.shared.util.resource.GuessMediaTypeResourceAdapter
-import org.readium.r2.shared.util.resource.KnownMediaTypeResourceAdapter
+import org.readium.r2.shared.util.resource.BlobResourceAdapter
 import org.readium.r2.shared.util.resource.Resource
+import org.readium.r2.shared.util.resource.filename
+import org.readium.r2.shared.util.resource.mediaType
 import org.readium.r2.shared.util.toUri
 
 /**
@@ -23,7 +25,7 @@ import org.readium.r2.shared.util.toUri
  */
 public class ContentResourceFactory(
     private val contentResolver: ContentResolver,
-    private val mediaTypeRetriever: MediaTypeRetriever = MediaTypeRetriever(contentResolver)
+    private val mediaTypeRetriever: MediaTypeRetriever
 ) : ResourceFactory {
 
     override suspend fun create(
@@ -36,12 +38,23 @@ public class ContentResourceFactory(
 
         val blob = ContentBlob(url.toUri(), contentResolver)
 
-        val resource = mediaType
-            ?.let { KnownMediaTypeResourceAdapter(blob, it) }
-            ?: GuessMediaTypeResourceAdapter(
+        val filename =
+            contentResolver.queryProjection(url.uri, MediaStore.MediaColumns.DISPLAY_NAME)
+
+        val properties =
+            Resource.Properties(
+                Resource.Properties.Builder()
+                    .also {
+                        it.filename = filename
+                        it.mediaType = mediaType
+                    }
+            )
+
+        val resource =
+            BlobResourceAdapter(
                 blob,
-                mediaTypeRetriever,
-                MediaTypeHints(fileExtension = url.extension)
+                properties,
+                mediaTypeRetriever
             )
 
         return Try.success(resource)

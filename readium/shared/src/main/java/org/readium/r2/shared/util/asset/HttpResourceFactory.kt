@@ -11,10 +11,12 @@ import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.http.HttpClient
 import org.readium.r2.shared.util.http.HttpResource
 import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 import org.readium.r2.shared.util.resource.Resource
 
 public class HttpResourceFactory(
-    private val httpClient: HttpClient
+    private val httpClient: HttpClient,
+    private val mediaTypeRetriever: MediaTypeRetriever
 ) : ResourceFactory {
 
     override suspend fun create(
@@ -25,7 +27,7 @@ public class HttpResourceFactory(
             return Try.failure(ResourceFactory.Error.SchemeNotSupported(url.scheme))
         }
 
-        val resource = HttpResource(httpClient, url)
+        val resource = HttpResource(httpClient, url, mediaTypeRetriever)
         return Try.success(resource)
     }
 }

@@ -14,13 +14,13 @@ import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.archive.ArchiveFactory
 import org.readium.r2.shared.util.archive.ArchiveProvider
 import org.readium.r2.shared.util.archive.FileZipArchiveProvider
-import org.readium.r2.shared.util.assertSuccess
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.mediatype.MediaTypeHints
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 import org.readium.r2.shared.util.mediatype.MediaTypeSnifferError
 import org.readium.r2.shared.util.resource.Resource
+import org.readium.r2.shared.util.resource.invoke
 import org.readium.r2.shared.util.toUrl
 import org.readium.r2.shared.util.tryRecover
 
@@ -171,20 +171,22 @@ public class AssetRetriever(
                 )
             }
 
-        // FIXME: should use HTTP Content-Type but not the resource content
+        val properties = resource.properties()
+            .getOrElse { return Try.failure(Error.ReadError(it)) }
+
         val containerType = archiveProvider.sniffHints(
-            MediaTypeHints(fileExtension = url.extension)
+            MediaTypeHints(properties)
         )
             .tryRecover {
                 archiveProvider.sniffBlob(resource)
-            }.tryRecover { error ->
+            }.getOrElse { error ->
                 when (error) {
                     MediaTypeSnifferError.NotRecognized ->
-                        Try.success(null)
+                        null
                     is MediaTypeSnifferError.Read ->
                         return Try.failure(Error.ReadError(error.cause))
                 }
-            }.assertSuccess()
+            }
 
         if (containerType == null) {
             val mediaType = resource.mediaType()

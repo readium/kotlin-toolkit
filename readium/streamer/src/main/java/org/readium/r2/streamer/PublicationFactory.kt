@@ -114,7 +114,7 @@ public class PublicationFactory(
         if (!ignoreDefaultParsers) defaultParsers else emptyList()
 
     private val parserAssetFactory: ParserAssetFactory =
-        ParserAssetFactory(httpClient, formatRegistry)
+        ParserAssetFactory(httpClient, formatRegistry, mediaTypeRetriever)
 
     /**
      * Opens a [Publication] from the given asset.
