@@ -20,7 +20,7 @@ public sealed class ReadError(
     override val cause: Error? = null
 ) : Error {
 
-    public class Access(public override val cause: Error) :
+    public class Access(public override val cause: AccessError) :
         ReadError("An error occurred while attempting to access data.", cause)
 
     public class Decoding(cause: Error? = null) :
@@ -41,15 +41,9 @@ public sealed class ReadError(
 
         public constructor(message: String) : this(MessageError(message))
     }
-
-    /** For any other error, such as HTTP 500. */
-    public class Other(cause: Error) :
-        ReadError("An unclassified error occurred.", cause) {
-
-        public constructor(message: String) : this(MessageError(message))
-        public constructor(exception: Exception) : this(ThrowableError(exception))
-    }
 }
+
+public interface AccessError : Error
 
 public class ReadException(
     public val error: ReadError

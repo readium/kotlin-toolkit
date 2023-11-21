@@ -12,7 +12,7 @@ import org.readium.r2.shared.util.ThrowableError
 public sealed class ContentProviderError(
     override val message: String,
     override val cause: Error? = null
-) : Error {
+) : AccessError {
 
     public class FileNotFound(
         cause: Error?

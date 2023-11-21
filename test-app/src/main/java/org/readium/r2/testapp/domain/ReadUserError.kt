@@ -62,7 +62,6 @@ sealed class ReadUserError(
                         else -> Unexpected(cause)
                     }
                 is ReadError.Decoding -> InvalidPublication(error)
-                is ReadError.Other -> Unexpected(error)
                 is ReadError.OutOfMemory -> OutOfMemory(error)
                 is ReadError.UnsupportedOperation -> Unexpected(error)
             }

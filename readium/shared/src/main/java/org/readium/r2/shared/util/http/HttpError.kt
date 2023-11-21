@@ -10,6 +10,7 @@ import org.json.JSONObject
 import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.util.Error
 import org.readium.r2.shared.util.ThrowableError
+import org.readium.r2.shared.util.data.AccessError
 import org.readium.r2.shared.util.mediatype.MediaType
 
 /**
@@ -18,7 +19,7 @@ import org.readium.r2.shared.util.mediatype.MediaType
 public sealed class HttpError(
     public override val message: String,
     public override val cause: Error? = null
-) : Error {
+) : AccessError {
 
     public class MalformedResponse(cause: Error?) :
         HttpError("The received response could not be decoded.", cause)
