@@ -32,8 +32,8 @@ import org.readium.r2.shared.util.tryRecover
 /** Provides access to an external URL through HTTP. */
 @OptIn(ExperimentalReadiumApi::class)
 public class HttpResource(
-    private val client: HttpClient,
     override val source: AbsoluteUrl,
+    private val client: HttpClient,
     private val mediaTypeRetriever: MediaTypeRetriever,
     private val maxSkipBytes: Long = MAX_SKIP_BYTES
 ) : Resource {

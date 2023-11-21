@@ -36,7 +36,7 @@ public class HttpContainer(
         return if (absoluteUrl == null || !absoluteUrl.isHttp) {
             null
         } else {
-            HttpResource(client, absoluteUrl, mediaTypeRetriever)
+            HttpResource(absoluteUrl, client, mediaTypeRetriever)
         }
     }
 

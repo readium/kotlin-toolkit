@@ -27,7 +27,7 @@ public class HttpResourceFactory(
             return Try.failure(ResourceFactory.Error.SchemeNotSupported(url.scheme))
         }
 
-        val resource = HttpResource(httpClient, url, mediaTypeRetriever)
+        val resource = HttpResource(url, httpClient, mediaTypeRetriever)
         return Try.success(resource)
     }
 }
