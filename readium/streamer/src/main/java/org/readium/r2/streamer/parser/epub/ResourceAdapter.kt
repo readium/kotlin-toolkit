@@ -12,15 +12,14 @@ import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Properties
 import org.readium.r2.shared.publication.encryption.Encryption
 import org.readium.r2.shared.util.Url
-import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
+import org.readium.r2.shared.util.mediatype.MediaType
 
 internal class ResourceAdapter(
     private val spine: Spine,
     private val manifest: List<Item>,
     private val encryptionData: Map<Url, Encryption>,
     private val coverId: String?,
-    private val durationById: Map<String, Double?>,
-    private val mediaTypeRetriever: MediaTypeRetriever
+    private val durationById: Map<String, Double?>
 ) {
     data class Links(
         val readingOrder: List<Link>,
@@ -73,7 +72,7 @@ internal class ResourceAdapter(
 
         return Link(
             href = Href(item.href),
-            mediaType = mediaTypeRetriever.retrieve(item.mediaType),
+            mediaType = item.mediaType?.let { MediaType(it) },
             duration = durationById[item.id],
             rels = rels,
             properties = properties,

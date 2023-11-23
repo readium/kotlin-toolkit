@@ -24,7 +24,6 @@ import org.readium.r2.shared.util.data.readAsXml
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.mediatype.MediaType
-import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.shared.util.resource.TransformingContainer
 import org.readium.r2.shared.util.use
@@ -40,7 +39,6 @@ import org.readium.r2.streamer.parser.epub.extensions.fromEpubHref
  */
 @OptIn(ExperimentalReadiumApi::class)
 public class EpubParser(
-    private val mediaTypeRetriever: MediaTypeRetriever,
     private val reflowablePositionsStrategy: EpubPositionsService.ReflowableStrategy = EpubPositionsService.ReflowableStrategy.recommended
 ) : PublicationParser {
 
@@ -65,7 +63,7 @@ public class EpubParser(
         val opfXmlDocument = opfResource
             .use { it.decodeOrFail(opfPath) { readAsXml() } }
             .getOrElse { return Try.failure(it) }
-        val packageDocument = PackageDocument.parse(opfXmlDocument, opfPath, mediaTypeRetriever)
+        val packageDocument = PackageDocument.parse(opfXmlDocument, opfPath)
             ?: return Try.failure(
                 PublicationParser.Error.ReadError(
                     ReadError.Decoding(
@@ -78,8 +76,7 @@ public class EpubParser(
             packageDocument = packageDocument,
             navigationData = parseNavigationData(packageDocument, asset.container),
             encryptionData = parseEncryptionData(asset.container),
-            displayOptions = parseDisplayOptions(asset.container),
-            mediaTypeRetriever = mediaTypeRetriever
+            displayOptions = parseDisplayOptions(asset.container)
         ).adapt()
 
         var container = asset.container

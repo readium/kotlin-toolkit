@@ -103,7 +103,7 @@ public class PublicationFactory(
 
     private val defaultParsers: List<PublicationParser> =
         listOfNotNull(
-            EpubParser(mediaTypeRetriever),
+            EpubParser(),
             pdfFactory?.let { PdfParser(context, it) },
             ReadiumWebPubParser(context, pdfFactory),
             ImageParser(),
