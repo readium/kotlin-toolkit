@@ -23,7 +23,6 @@ import org.readium.r2.shared.util.archive.FileZipArchiveProvider
 import org.readium.r2.shared.util.assertSuccess
 import org.readium.r2.shared.util.data.FileBlob
 import org.readium.r2.shared.util.mediatype.MediaType
-import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 import org.readium.r2.shared.util.use
 import org.readium.r2.shared.util.zip.StreamingZipArchiveProvider
 import org.robolectric.ParameterizedRobolectricTestRunner

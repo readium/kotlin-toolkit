@@ -25,7 +25,7 @@ import org.readium.r2.shared.util.asset.HttpResourceFactory
 import org.readium.r2.shared.util.downloads.android.AndroidDownloadManager
 import org.readium.r2.shared.util.http.DefaultHttpClient
 import org.readium.r2.shared.util.mediatype.FormatRegistry
-import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
+import org.readium.r2.shared.util.resource.MediaTypeRetriever
 import org.readium.r2.shared.util.zip.StreamingZipArchiveProvider
 import org.readium.r2.streamer.PublicationFactory
 

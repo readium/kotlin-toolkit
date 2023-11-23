@@ -19,7 +19,7 @@ import org.readium.r2.shared.extensions.optStringsFromArrayOrSingle
 import org.readium.r2.shared.publication.Href
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
-import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
+import org.readium.r2.shared.util.resource.MediaTypeRetriever
 
 public data class Link(
     val href: Href,

@@ -15,7 +15,6 @@ import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.data.Container
 import org.readium.r2.shared.util.data.FileBlob
 import org.readium.r2.shared.util.data.FileSystemError
-import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 import org.readium.r2.shared.util.toUrl
 
 /**

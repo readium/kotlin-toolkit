@@ -34,7 +34,7 @@ import org.readium.r2.shared.util.http.HttpStatus
 import org.readium.r2.shared.util.mediatype.FormatRegistry
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.mediatype.MediaTypeHints
-import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
+import org.readium.r2.shared.util.resource.MediaTypeRetriever
 import org.readium.r2.shared.util.toUri
 import org.readium.r2.shared.util.units.Hz
 import org.readium.r2.shared.util.units.hz

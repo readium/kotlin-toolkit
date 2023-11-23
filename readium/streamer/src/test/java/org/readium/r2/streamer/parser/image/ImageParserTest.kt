@@ -22,7 +22,7 @@ import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.archive.FileZipArchiveProvider
 import org.readium.r2.shared.util.data.FileBlob
 import org.readium.r2.shared.util.mediatype.MediaType
-import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
+import org.readium.r2.shared.util.resource.MediaTypeRetriever
 import org.readium.r2.shared.util.resource.ResourceContainer
 import org.readium.r2.shared.util.toUrl
 import org.readium.r2.streamer.parseBlocking

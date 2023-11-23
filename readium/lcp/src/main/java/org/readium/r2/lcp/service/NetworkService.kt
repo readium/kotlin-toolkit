@@ -26,7 +26,7 @@ import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.http.invoke
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.mediatype.MediaTypeHints
-import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
+import org.readium.r2.shared.util.resource.MediaTypeRetriever
 import timber.log.Timber
 
 internal typealias URLParameters = Map<String, String>

@@ -11,7 +11,7 @@ import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.http.HttpClient
 import org.readium.r2.shared.util.http.HttpResource
 import org.readium.r2.shared.util.mediatype.MediaType
-import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
+import org.readium.r2.shared.util.resource.MediaTypeRetriever
 import org.readium.r2.shared.util.resource.Resource
 
 public class HttpResourceFactory(

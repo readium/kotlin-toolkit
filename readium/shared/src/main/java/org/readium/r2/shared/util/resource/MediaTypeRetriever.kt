@@ -4,7 +4,7 @@
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.r2.shared.util.mediatype
+package org.readium.r2.shared.util.resource
 
 import android.content.ContentResolver
 import android.provider.MediaStore
@@ -14,6 +14,12 @@ import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.data.Blob
 import org.readium.r2.shared.util.data.Container
 import org.readium.r2.shared.util.data.FileBlob
+import org.readium.r2.shared.util.mediatype.DefaultMediaTypeSniffer
+import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.shared.util.mediatype.MediaTypeHints
+import org.readium.r2.shared.util.mediatype.MediaTypeSniffer
+import org.readium.r2.shared.util.mediatype.MediaTypeSnifferError
+import org.readium.r2.shared.util.mediatype.SystemMediaTypeSniffer
 import org.readium.r2.shared.util.toUri
 
 /**
@@ -75,22 +81,20 @@ public class MediaTypeRetriever(
 
     public suspend fun retrieve(
         hints: MediaTypeHints = MediaTypeHints(),
-        container: Container<*>? = null
+        container: Container<*>
     ): Try<MediaType, MediaTypeSnifferError> {
         mediaTypeSniffer.sniffHints(hints)
             .getOrNull()
             ?.let { return Try.success(it) }
 
-        if (container != null) {
-            mediaTypeSniffer.sniffContainer(container)
-                .onSuccess { return Try.success(it) }
-                .onFailure { error ->
-                    when (error) {
-                        is MediaTypeSnifferError.NotRecognized -> {}
-                        else -> return Try.failure(error)
-                    }
+        mediaTypeSniffer.sniffContainer(container)
+            .onSuccess { return Try.success(it) }
+            .onFailure { error ->
+                when (error) {
+                    is MediaTypeSnifferError.NotRecognized -> {}
+                    else -> return Try.failure(error)
                 }
-        }
+            }
 
         return hints.mediaTypes.firstOrNull()
             ?.let { Try.success(it) }
@@ -109,22 +113,20 @@ public class MediaTypeRetriever(
      */
     public suspend fun retrieve(
         hints: MediaTypeHints = MediaTypeHints(),
-        blob: Blob? = null
+        blob: Blob
     ): Try<MediaType, MediaTypeSnifferError> {
         mediaTypeSniffer.sniffHints(hints)
             .getOrNull()
             ?.let { return Try.success(it) }
 
-        if (blob != null) {
-            mediaTypeSniffer.sniffBlob(blob)
-                .onSuccess { return Try.success(it) }
-                .onFailure { error ->
-                    when (error) {
-                        is MediaTypeSnifferError.NotRecognized -> {}
-                        else -> return Try.failure(error)
-                    }
+        mediaTypeSniffer.sniffBlob(blob)
+            .onSuccess { return Try.success(it) }
+            .onFailure { error ->
+                when (error) {
+                    is MediaTypeSnifferError.NotRecognized -> {}
+                    else -> return Try.failure(error)
                 }
-        }
+            }
 
         // Falls back on the system-wide registered media types using MimeTypeMap.
         // Note: This is done after the default sniffers, because otherwise it will detect
@@ -134,16 +136,14 @@ public class MediaTypeRetriever(
             .getOrNull()
             ?.let { return Try.success(it) }
 
-        if (blob != null) {
-            SystemMediaTypeSniffer.sniffBlob(blob)
-                .onSuccess { return Try.success(it) }
-                .onFailure { error ->
-                    when (error) {
-                        is MediaTypeSnifferError.NotRecognized -> {}
-                        else -> return Try.failure(error)
-                    }
+        SystemMediaTypeSniffer.sniffBlob(blob)
+            .onSuccess { return Try.success(it) }
+            .onFailure { error ->
+                when (error) {
+                    is MediaTypeSnifferError.NotRecognized -> {}
+                    else -> return Try.failure(error)
                 }
-        }
+            }
 
         // Falls back on the [contentResolver] in case of content Uri.
         // Note: This is done after the heavy sniffing of the provided [sniffers], because
@@ -151,7 +151,7 @@ public class MediaTypeRetriever(
         // their content (for example, for RWPM).
 
         if (contentResolver != null) {
-            blob?.source
+            blob.source
                 ?.takeIf { it.isContent }
                 ?.let { url ->
                     val contentHints = MediaTypeHints(

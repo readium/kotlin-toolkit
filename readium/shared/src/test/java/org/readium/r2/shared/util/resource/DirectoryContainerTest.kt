@@ -22,7 +22,6 @@ import org.readium.r2.shared.lengthBlocking
 import org.readium.r2.shared.readBlocking
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.data.ReadError
-import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 import org.readium.r2.shared.util.toAbsoluteUrl
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows
