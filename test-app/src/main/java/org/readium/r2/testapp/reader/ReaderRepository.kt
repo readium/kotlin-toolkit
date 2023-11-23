@@ -74,8 +74,7 @@ class ReaderRepository(
 
         val asset = readium.assetRetriever.retrieve(
             book.url,
-            book.mediaType,
-            book.containerType
+            book.mediaType
         ).getOrElse {
             return Try.failure(
                 OpeningError.PublicationError(

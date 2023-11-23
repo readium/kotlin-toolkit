@@ -28,18 +28,25 @@ public class FormatRegistry(
         MediaType.ZAB to "zab"
     ),
     parentMediaTypes: Map<MediaType, MediaType> = mapOf(
+        MediaType.CBZ to MediaType.ZIP,
+        MediaType.DIVINA to MediaType.READIUM_WEBPUB,
+        MediaType.DIVINA_MANIFEST to MediaType.READIUM_WEBPUB_MANIFEST,
         MediaType.EPUB to MediaType.ZIP,
+        MediaType.LCP_LICENSE_DOCUMENT to MediaType.JSON,
+        MediaType.LCP_PROTECTED_AUDIOBOOK to MediaType.READIUM_AUDIOBOOK,
+        MediaType.LCP_PROTECTED_PDF to MediaType.READIUM_WEBPUB,
         MediaType.READIUM_AUDIOBOOK to MediaType.READIUM_WEBPUB,
-        MediaType.READIUM_WEBPUB to MediaType.ZIP
-    ),
-    archiveMediaTypes: List<MediaType> = listOf(MediaType.ZIP)
+        MediaType.READIUM_AUDIOBOOK_MANIFEST to MediaType.READIUM_WEBPUB_MANIFEST,
+        MediaType.READIUM_WEBPUB to MediaType.ZIP,
+        MediaType.READIUM_WEBPUB_MANIFEST to MediaType.JSON,
+        MediaType.W3C_WPUB_MANIFEST to MediaType.JSON,
+        MediaType.ZAB to MediaType.ZIP
+    )
 ) {
 
     private val fileExtensions: MutableMap<MediaType, String> = fileExtensions.toMutableMap()
 
     private val parentMediaTypes: MutableMap<MediaType, MediaType> = parentMediaTypes.toMutableMap()
-
-    private val archiveMediaTypes = archiveMediaTypes.toMutableList()
 
     /**
      * Registers a new [fileExtension] for the given [mediaType].
@@ -47,8 +54,7 @@ public class FormatRegistry(
     public fun register(
         mediaType: MediaType,
         fileExtension: String?,
-        isArchive: Boolean,
-        parent: MediaType?
+        parentMediaType: MediaType?
     ) {
         if (fileExtension == null) {
             fileExtensions.remove(mediaType)
@@ -56,16 +62,10 @@ public class FormatRegistry(
             fileExtensions[mediaType] = fileExtension
         }
 
-        if (parent == null) {
+        if (parentMediaType == null) {
             parentMediaTypes.remove(mediaType)
         } else {
-            parentMediaTypes[mediaType] = parent
-        }
-
-        if (isArchive) {
-            archiveMediaTypes.add(mediaType)
-        } else {
-            archiveMediaTypes.remove(mediaType)
+            parentMediaTypes[mediaType] = parentMediaType
         }
     }
 
@@ -77,24 +77,4 @@ public class FormatRegistry(
 
     public fun parentMediaType(mediaType: MediaType): MediaType? =
         parentMediaTypes[mediaType]
-
-    public fun MediaType.isAlso(mediaType: MediaType): Boolean {
-        if (this == mediaType) {
-            return true
-        }
-
-        return parentMediaTypes[this]
-            ?.isAlso(mediaType)
-            ?: false
-    }
-
-    public val MediaType.isArchive: Boolean get() {
-        if (this in archiveMediaTypes) {
-            return true
-        }
-
-        return parentMediaTypes[this]
-            ?.isArchive
-            ?: false
-    }
 }

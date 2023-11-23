@@ -17,7 +17,7 @@ import org.readium.r2.shared.util.resource.filename
 import org.readium.r2.shared.util.resource.mediaType
 
 public class FileResourceFactory(
-    private val mediaTypeRetriever: MediaTypeRetriever = MediaTypeRetriever()
+    private val mediaTypeRetriever: MediaTypeRetriever
 ) : ResourceFactory {
 
     override suspend fun create(

@@ -32,8 +32,6 @@ data class Book(
     val progression: String? = null,
     @ColumnInfo(name = MEDIA_TYPE)
     val rawMediaType: String,
-    @ColumnInfo(name = CONTAINER_TYPE)
-    val rawContainerType: String,
     @ColumnInfo(name = DRM)
     val drm: String? = null,
     @ColumnInfo(name = COVER)
@@ -49,7 +47,6 @@ data class Book(
         identifier: String,
         progression: String? = null,
         mediaType: MediaType,
-        containerType: MediaType?,
         drm: ContentProtection.Scheme?,
         cover: String
     ) : this(
@@ -61,7 +58,6 @@ data class Book(
         identifier = identifier,
         progression = progression,
         rawMediaType = mediaType.toString(),
-        rawContainerType = containerType.toString(),
         drm = drm?.uri,
         cover = cover
     )
@@ -74,9 +70,6 @@ data class Book(
     val drmScheme: ContentProtection.Scheme? get() =
         drm?.let { ContentProtection.Scheme(it) }
 
-    val containerType: MediaType? get() =
-        MediaType(rawContainerType)
-
     companion object {
 
         const val TABLE_NAME = "books"
@@ -88,7 +81,6 @@ data class Book(
         const val IDENTIFIER = "identifier"
         const val PROGRESSION = "progression"
         const val MEDIA_TYPE = "media_type"
-        const val CONTAINER_TYPE = "container_type"
         const val COVER = "cover"
         const val DRM = "drm"
     }

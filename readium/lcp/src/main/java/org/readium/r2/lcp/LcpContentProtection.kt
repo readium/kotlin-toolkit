@@ -21,7 +21,6 @@ import org.readium.r2.shared.util.asset.AssetRetriever
 import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.flatMap
 import org.readium.r2.shared.util.getOrElse
-import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.resource.MediaTypeRetriever
 import org.readium.r2.shared.util.resource.TransformingContainer
 
@@ -148,8 +147,7 @@ internal class LcpContentProtection(
             if (link.mediaType != null) {
                 assetRetriever.retrieve(
                     url,
-                    mediaType = link.mediaType,
-                    containerType = if (link.mediaType.isZip) MediaType.ZIP else null
+                    mediaType = link.mediaType
                 )
                     .map { it as Asset.Container }
                     .mapFailure { it.wrap() }

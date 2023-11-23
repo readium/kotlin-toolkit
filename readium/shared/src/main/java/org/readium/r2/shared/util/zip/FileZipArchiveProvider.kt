@@ -13,6 +13,7 @@ import java.util.zip.ZipException
 import java.util.zip.ZipFile
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.readium.r2.shared.DelicateReadiumApi
 import org.readium.r2.shared.util.MessageError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.data.Blob
@@ -23,12 +24,16 @@ import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.mediatype.MediaTypeSnifferError
 import org.readium.r2.shared.util.resource.ArchiveFactory
+import org.readium.r2.shared.util.resource.BlobMediaTypeRetriever
 import org.readium.r2.shared.util.resource.Resource
 
 /**
  * An [ArchiveFactory] to open local ZIP files with Java's [ZipFile].
  */
-internal class FileZipArchiveProvider {
+@OptIn(DelicateReadiumApi::class)
+internal class FileZipArchiveProvider(
+    private val mediaTypeRetriever: BlobMediaTypeRetriever? = null
+) {
 
     suspend fun sniffBlob(blob: Blob): Try<MediaType, MediaTypeSnifferError> {
         val file = blob.source?.toFile()

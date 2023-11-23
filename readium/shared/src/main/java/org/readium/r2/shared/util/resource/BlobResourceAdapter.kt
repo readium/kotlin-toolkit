@@ -7,7 +7,9 @@
 package org.readium.r2.shared.util.resource
 
 import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.data.Blob
+import org.readium.r2.shared.util.data.Container
 import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.mediatype.MediaTypeHints
@@ -40,4 +42,25 @@ internal class BlobResourceAdapter(
         Try.success(
             Resource.Properties(properties)
         )
+}
+
+internal class BlobContainerAdapter(
+    private val container: Container<Blob>,
+    private val properties: Map<Url, Resource.Properties>,
+    private val mediaTypeRetriever: MediaTypeRetriever
+) : Container<Resource> {
+    override val entries: Set<Url> =
+        container.entries
+
+    override fun get(url: Url): Resource? {
+        val blob = container[url] ?: return null
+
+        val resourceProperties = properties[url] ?: Resource.Properties()
+
+        return BlobResourceAdapter(blob, resourceProperties, mediaTypeRetriever)
+    }
+
+    override suspend fun close() {
+        container.close()
+    }
 }

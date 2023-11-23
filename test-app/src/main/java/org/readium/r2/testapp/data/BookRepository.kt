@@ -82,7 +82,6 @@ class BookRepository(
     suspend fun insertBook(
         url: Url,
         mediaType: MediaType,
-        containerType: MediaType?,
         drm: ContentProtection.Scheme?,
         publication: Publication,
         cover: File
@@ -94,7 +93,6 @@ class BookRepository(
             href = url.toString(),
             identifier = publication.metadata.identifier ?: "",
             mediaType = mediaType,
-            containerType = containerType,
             drm = drm,
             progression = "{}",
             cover = cover.path

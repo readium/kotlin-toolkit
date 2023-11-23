@@ -21,16 +21,15 @@ import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.shared.util.resource.SmartArchiveFactory
 import org.readium.r2.shared.util.resource.invoke
 import org.readium.r2.shared.util.toUrl
-import org.readium.r2.shared.util.zip.ZipArchiveFactory
 
 /**
  * Retrieves an [Asset] instance providing reading access to the resource(s) of an asset stored at a
  * given [Url].
  */
 public class AssetRetriever(
-    private val resourceFactory: ResourceFactory = FileResourceFactory(),
-    archiveFactory: ArchiveFactory = ZipArchiveFactory(),
-    private val mediaTypeRetriever: MediaTypeRetriever = MediaTypeRetriever(),
+    private val mediaTypeRetriever: MediaTypeRetriever,
+    private val resourceFactory: ResourceFactory,
+    archiveFactory: ArchiveFactory,
     formatRegistry: FormatRegistry = FormatRegistry()
 ) {
 

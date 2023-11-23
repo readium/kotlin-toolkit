@@ -13,6 +13,7 @@ import java.util.zip.ZipException
 import java.util.zip.ZipFile
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.readium.r2.shared.DelicateReadiumApi
 import org.readium.r2.shared.extensions.readFully
 import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.util.AbsoluteUrl
@@ -29,16 +30,16 @@ import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.mediatype.MediaTypeHints
 import org.readium.r2.shared.util.mediatype.MediaTypeSnifferError
 import org.readium.r2.shared.util.resource.ArchiveProperties
-import org.readium.r2.shared.util.resource.MediaTypeRetriever
+import org.readium.r2.shared.util.resource.BlobMediaTypeRetriever
 import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.shared.util.resource.archive
 import org.readium.r2.shared.util.toUrl
 import org.readium.r2.shared.util.tryRecover
-
+@OptIn(DelicateReadiumApi::class)
 internal class FileZipContainer(
     private val archive: ZipFile,
     file: File,
-    private val mediaTypeRetriever: MediaTypeRetriever
+    private val mediaTypeRetriever: BlobMediaTypeRetriever?
 ) : Container<Resource> {
 
     private inner class Entry(private val url: Url, private val entry: ZipEntry) :
@@ -47,17 +48,17 @@ internal class FileZipContainer(
         override val source: AbsoluteUrl? = null
 
         override suspend fun mediaType(): Try<MediaType, ReadError> =
-            mediaTypeRetriever.retrieve(
+            mediaTypeRetriever?.retrieve(
                 hints = MediaTypeHints(fileExtension = url.extension),
                 blob = this
-            ).tryRecover { error ->
+            )?.tryRecover { error ->
                 when (error) {
                     is MediaTypeSnifferError.Read ->
                         Try.failure(error.cause)
                     MediaTypeSnifferError.NotRecognized ->
                         Try.success(MediaType.BINARY)
                 }
-            }
+            } ?: Try.success(MediaType.BINARY)
 
         override suspend fun properties(): Try<Resource.Properties, ReadError> =
             Try.success(

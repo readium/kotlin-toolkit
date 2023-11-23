@@ -19,7 +19,6 @@ import org.readium.r2.shared.extensions.optStringsFromArrayOrSingle
 import org.readium.r2.shared.publication.Href
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
-import org.readium.r2.shared.util.resource.MediaTypeRetriever
 
 public data class Link(
     val href: Href,
@@ -33,8 +32,7 @@ public data class Link(
 
     public companion object {
         public operator fun invoke(
-            json: JSONObject,
-            mediaTypeRetriever: MediaTypeRetriever = MediaTypeRetriever()
+            json: JSONObject
         ): Link {
             val href = json.optNullableString("href")
                 ?.let {
@@ -48,7 +46,7 @@ public data class Link(
             return Link(
                 href = href,
                 mediaType = json.optNullableString("type")
-                    ?.let { mediaTypeRetriever.retrieve(it) },
+                    ?.let { MediaType(it) },
                 title = json.optNullableString("title"),
                 rels = json.optStringsFromArrayOrSingle("rel").toSet()
                     .takeIf { it.isNotEmpty() }

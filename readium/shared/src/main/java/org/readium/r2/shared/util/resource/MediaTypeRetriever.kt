@@ -7,9 +7,8 @@
 package org.readium.r2.shared.util.resource
 
 import android.content.ContentResolver
-import android.provider.MediaStore
 import java.io.File
-import org.readium.r2.shared.extensions.queryProjection
+import org.readium.r2.shared.DelicateReadiumApi
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.data.Blob
 import org.readium.r2.shared.util.data.Container
@@ -22,7 +21,6 @@ import org.readium.r2.shared.util.mediatype.MediaTypeHints
 import org.readium.r2.shared.util.mediatype.MediaTypeSniffer
 import org.readium.r2.shared.util.mediatype.MediaTypeSnifferError
 import org.readium.r2.shared.util.mediatype.SystemMediaTypeSniffer
-import org.readium.r2.shared.util.toUri
 import org.readium.r2.shared.util.zip.ZipArchiveFactory
 
 /**
@@ -32,12 +30,40 @@ import org.readium.r2.shared.util.zip.ZipArchiveFactory
  * The actual format sniffing is mostly done by the provided [mediaTypeSniffer].
  * The [DefaultMediaTypeSniffer] cover the formats supported with Readium by default.
  */
+@OptIn(DelicateReadiumApi::class)
 public class MediaTypeRetriever(
-    private val contentResolver: ContentResolver? = null,
-    archiveFactory: ArchiveFactory = ZipArchiveFactory(),
-    private val mediaTypeSniffer: MediaTypeSniffer = DefaultMediaTypeSniffer(),
-    formatRegistry: FormatRegistry = FormatRegistry()
-) : MediaTypeSniffer {
+    private val mediaTypeSniffer: MediaTypeSniffer,
+    formatRegistry: FormatRegistry,
+    archiveFactory: ArchiveFactory,
+    contentResolver: ContentResolver?
+) {
+
+    public companion object {
+
+        @Deprecated("This overload will be removed without notice as soon as possible.")
+        public operator fun invoke(
+            contentResolver: ContentResolver? = null
+        ): MediaTypeRetriever {
+            val mediaTypeSniffer =
+                DefaultMediaTypeSniffer()
+
+            val archiveFactory =
+                ZipArchiveFactory(mediaTypeSniffer)
+
+            val formatRegistry =
+                FormatRegistry()
+
+            return MediaTypeRetriever(
+                mediaTypeSniffer,
+                formatRegistry,
+                archiveFactory,
+                contentResolver
+            )
+        }
+    }
+
+    private val blobMediaTypeRetriever: BlobMediaTypeRetriever =
+        BlobMediaTypeRetriever(mediaTypeSniffer, contentResolver)
 
     private val archiveFactory: ArchiveFactory =
         SmartArchiveFactory(archiveFactory, formatRegistry)
@@ -46,8 +72,7 @@ public class MediaTypeRetriever(
      * Retrieves a canonical [MediaType] for the provided media type and file extension [hints].
      */
     public fun retrieve(hints: MediaTypeHints): MediaType? {
-        mediaTypeSniffer.sniffHints(hints)
-            .getOrNull()
+        blobMediaTypeRetriever.retrieve(hints)
             ?.let { return it }
 
         // Falls back on the system-wide registered media types using MimeTypeMap.
@@ -127,7 +152,7 @@ public class MediaTypeRetriever(
             .getOrNull()
             ?.let { return Try.success(it) }
 
-        val blobMediaType = doSniffBlob(hints, blob)
+        val blobMediaType = blobMediaTypeRetriever.retrieve(hints, blob)
             .getOrElse { return Try.failure(it) }
 
         val container = archiveFactory.create(blobMediaType, blob)
@@ -141,60 +166,5 @@ public class MediaTypeRetriever(
             }
 
         return retrieve(hints, container)
-    }
-
-    private suspend fun doSniffBlob(hints: MediaTypeHints, blob: Blob): Try<MediaType, MediaTypeSnifferError> {
-        mediaTypeSniffer.sniffBlob(blob)
-            .onSuccess { return Try.success(it) }
-            .onFailure { error ->
-                when (error) {
-                    is MediaTypeSnifferError.NotRecognized -> {}
-                    else -> return Try.failure(error)
-                }
-            }
-
-        // Falls back on the system-wide registered media types using MimeTypeMap.
-        // Note: This is done after the default sniffers, because otherwise it will detect
-        // JSON, XML or ZIP formats before we have a chance of sniffing their content (for example,
-        // for RWPM).
-        SystemMediaTypeSniffer.sniffHints(hints)
-            .getOrNull()
-            ?.let { return Try.success(it) }
-
-        SystemMediaTypeSniffer.sniffBlob(blob)
-            .onSuccess { return Try.success(it) }
-            .onFailure { error ->
-                when (error) {
-                    is MediaTypeSnifferError.NotRecognized -> {}
-                    else -> return Try.failure(error)
-                }
-            }
-
-        // Falls back on the [contentResolver] in case of content Uri.
-        // Note: This is done after the heavy sniffing of the provided [sniffers], because
-        // otherwise it will detect JSON, XML or ZIP formats before we have a chance of sniffing
-        // their content (for example, for RWPM).
-
-        if (contentResolver != null) {
-            blob.source
-                ?.takeIf { it.isContent }
-                ?.let { url ->
-                    val contentHints = MediaTypeHints(
-                        mediaType = contentResolver.getType(url.toUri())
-                            ?.let { MediaType(it) }
-                            ?.takeUnless { it.matches(MediaType.BINARY) },
-                        fileExtension = contentResolver
-                            .queryProjection(url.uri, MediaStore.MediaColumns.DISPLAY_NAME)
-                            ?.let { filename -> File(filename).extension }
-                    )
-
-                    retrieve(contentHints)
-                        ?.let { return Try.success(it) }
-                }
-        }
-
-        return hints.mediaTypes.firstOrNull()
-            ?.let { Try.success(it) }
-            ?: Try.failure(MediaTypeSnifferError.NotRecognized)
     }
 }

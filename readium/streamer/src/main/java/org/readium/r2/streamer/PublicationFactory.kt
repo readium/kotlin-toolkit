@@ -6,6 +6,7 @@
 
 package org.readium.r2.streamer
 
+import android.content.ContentResolver
 import android.content.Context
 import org.readium.r2.shared.PdfSupport
 import org.readium.r2.shared.publication.Publication
@@ -19,9 +20,11 @@ import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.http.DefaultHttpClient
 import org.readium.r2.shared.util.http.HttpClient
 import org.readium.r2.shared.util.logging.WarningLogger
+import org.readium.r2.shared.util.mediatype.DefaultMediaTypeSniffer
 import org.readium.r2.shared.util.mediatype.FormatRegistry
 import org.readium.r2.shared.util.pdf.PdfDocumentFactory
 import org.readium.r2.shared.util.resource.MediaTypeRetriever
+import org.readium.r2.shared.util.zip.ZipArchiveFactory
 import org.readium.r2.streamer.parser.PublicationParser
 import org.readium.r2.streamer.parser.audio.AudioParser
 import org.readium.r2.streamer.parser.epub.EpubParser
@@ -80,14 +83,32 @@ public class PublicationFactory(
         public operator fun invoke(
             context: Context,
             contentProtections: List<ContentProtection> = emptyList(),
-            onCreatePublication: Publication.Builder.() -> Unit
+            onCreatePublication: Publication.Builder.() -> Unit,
+            contentResolver: ContentResolver? = null
         ): PublicationFactory {
+            val mediaTypeSniffer =
+                DefaultMediaTypeSniffer()
+
+            val archiveFactory =
+                ZipArchiveFactory(mediaTypeSniffer)
+
+            val formatRegistry =
+                FormatRegistry()
+
+            val mediaTypeRetriever =
+                MediaTypeRetriever(
+                    mediaTypeSniffer,
+                    FormatRegistry(),
+                    archiveFactory,
+                    contentResolver
+                )
+
             return PublicationFactory(
                 context = context,
                 contentProtections = contentProtections,
-                formatRegistry = FormatRegistry(),
-                mediaTypeRetriever = MediaTypeRetriever(),
-                httpClient = DefaultHttpClient(MediaTypeRetriever()),
+                formatRegistry = formatRegistry,
+                mediaTypeRetriever = mediaTypeRetriever,
+                httpClient = DefaultHttpClient(mediaTypeRetriever),
                 pdfFactory = null,
                 onCreatePublication = onCreatePublication
             )

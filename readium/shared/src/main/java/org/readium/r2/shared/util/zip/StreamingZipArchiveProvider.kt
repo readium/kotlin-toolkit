@@ -10,6 +10,7 @@ import java.io.File
 import java.io.IOException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.readium.r2.shared.DelicateReadiumApi
 import org.readium.r2.shared.extensions.unwrapInstance
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.MessageError
@@ -21,6 +22,7 @@ import org.readium.r2.shared.util.data.ReadException
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.mediatype.MediaTypeSnifferError
 import org.readium.r2.shared.util.resource.ArchiveFactory
+import org.readium.r2.shared.util.resource.BlobMediaTypeRetriever
 import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.shared.util.resource.ResourceContainer
 import org.readium.r2.shared.util.toUrl
@@ -31,7 +33,10 @@ import org.readium.r2.shared.util.zip.jvm.SeekableByteChannel
  * An [ArchiveFactory] able to open a ZIP archive served through a stream (e.g. HTTP server,
  * content URI, etc.).
  */
-internal class StreamingZipArchiveProvider {
+@OptIn(DelicateReadiumApi::class)
+internal class StreamingZipArchiveProvider(
+    private val mediaTypeRetriever: BlobMediaTypeRetriever? = null
+) {
 
     suspend fun sniffBlob(blob: Blob): Try<MediaType, MediaTypeSnifferError> {
         return try {

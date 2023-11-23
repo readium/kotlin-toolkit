@@ -53,7 +53,9 @@ public class CompositeArchiveFactory(
     private val factories: List<ArchiveFactory>
 ) : ArchiveFactory {
 
-    public constructor(vararg factories: ArchiveFactory) : this(factories.toList())
+    public constructor(vararg factories: ArchiveFactory) :
+        this(factories.toList())
+
     override suspend fun create(
         mediaType: MediaType,
         blob: Blob,
