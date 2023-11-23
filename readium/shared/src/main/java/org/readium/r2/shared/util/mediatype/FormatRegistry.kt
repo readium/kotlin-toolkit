@@ -26,19 +26,46 @@ public class FormatRegistry(
         MediaType.READIUM_WEBPUB_MANIFEST to "json",
         MediaType.W3C_WPUB_MANIFEST to "json",
         MediaType.ZAB to "zab"
-    )
+    ),
+    parentMediaTypes: Map<MediaType, MediaType> = mapOf(
+        MediaType.EPUB to MediaType.ZIP,
+        MediaType.READIUM_AUDIOBOOK to MediaType.READIUM_WEBPUB,
+        MediaType.READIUM_WEBPUB to MediaType.ZIP
+    ),
+    archiveMediaTypes: List<MediaType> = listOf(MediaType.ZIP)
 ) {
 
     private val fileExtensions: MutableMap<MediaType, String> = fileExtensions.toMutableMap()
 
+    private val parentMediaTypes: MutableMap<MediaType, MediaType> = parentMediaTypes.toMutableMap()
+
+    private val archiveMediaTypes = archiveMediaTypes.toMutableList()
+
     /**
      * Registers a new [fileExtension] for the given [mediaType].
      */
-    public fun register(mediaType: MediaType, fileExtension: String?) {
+    public fun register(
+        mediaType: MediaType,
+        fileExtension: String?,
+        isArchive: Boolean,
+        parent: MediaType?
+    ) {
         if (fileExtension == null) {
             fileExtensions.remove(mediaType)
         } else {
             fileExtensions[mediaType] = fileExtension
+        }
+
+        if (parent == null) {
+            parentMediaTypes.remove(mediaType)
+        } else {
+            parentMediaTypes[mediaType] = parent
+        }
+
+        if (isArchive) {
+            archiveMediaTypes.add(mediaType)
+        } else {
+            archiveMediaTypes.remove(mediaType)
         }
     }
 
@@ -47,4 +74,27 @@ public class FormatRegistry(
      */
     public fun fileExtension(mediaType: MediaType): String? =
         fileExtensions[mediaType]
+
+    public fun parentMediaType(mediaType: MediaType): MediaType? =
+        parentMediaTypes[mediaType]
+
+    public fun MediaType.isAlso(mediaType: MediaType): Boolean {
+        if (this == mediaType) {
+            return true
+        }
+
+        return parentMediaTypes[this]
+            ?.isAlso(mediaType)
+            ?: false
+    }
+
+    public val MediaType.isArchive: Boolean get() {
+        if (this in archiveMediaTypes) {
+            return true
+        }
+
+        return parentMediaTypes[this]
+            ?.isArchive
+            ?: false
+    }
 }

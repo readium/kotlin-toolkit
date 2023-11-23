@@ -48,7 +48,6 @@ public sealed class Asset {
      */
     public class Container(
         override val mediaType: MediaType,
-        public val containerType: MediaType,
         public val container: org.readium.r2.shared.util.data.Container<org.readium.r2.shared.util.resource.Resource>
     ) : Asset() {
 

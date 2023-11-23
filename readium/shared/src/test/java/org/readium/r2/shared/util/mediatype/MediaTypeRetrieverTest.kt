@@ -10,8 +10,8 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.readium.r2.shared.Fixtures
 import org.readium.r2.shared.util.Url
-import org.readium.r2.shared.util.archive.FileZipArchiveProvider
 import org.readium.r2.shared.util.resource.MediaTypeRetriever
+import org.readium.r2.shared.util.zip.FileZipArchiveProvider
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows.shadowOf
 

@@ -4,46 +4,17 @@
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.r2.shared.util.archive
+package org.readium.r2.shared.util.resource
 
 import org.readium.r2.shared.util.ThrowableError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.data.Blob
 import org.readium.r2.shared.util.data.Container
 import org.readium.r2.shared.util.getOrElse
-import org.readium.r2.shared.util.mediatype.CompositeMediaTypeSniffer
 import org.readium.r2.shared.util.mediatype.MediaType
-import org.readium.r2.shared.util.mediatype.MediaTypeHints
-import org.readium.r2.shared.util.mediatype.MediaTypeSniffer
-import org.readium.r2.shared.util.mediatype.MediaTypeSnifferError
-import org.readium.r2.shared.util.resource.Resource
-import org.readium.r2.shared.util.resource.ResourceContainer
-
-public interface ArchiveProvider : MediaTypeSniffer, ArchiveFactory
-
-public class CompositeArchiveProvider(
-    providers: List<ArchiveProvider>
-) : ArchiveProvider {
-
-    private val archiveFactory = CompositeArchiveFactory(providers)
-
-    private val mediaTypeSniffer = CompositeMediaTypeSniffer(providers)
-
-    override fun sniffHints(hints: MediaTypeHints): Try<MediaType, MediaTypeSnifferError.NotRecognized> =
-        mediaTypeSniffer.sniffHints(hints)
-
-    override suspend fun sniffBlob(blob: Blob): Try<MediaType, MediaTypeSnifferError> =
-        mediaTypeSniffer.sniffBlob(blob)
-    override suspend fun create(
-        blob: Blob,
-        password: String?
-    ): Try<Container<Resource>, ArchiveFactory.Error> =
-        archiveFactory.create(blob, password)
-}
 
 /**
  * A factory to create a [ResourceContainer]s from archive [Blob]s.
- *
  */
 public interface ArchiveFactory {
 
@@ -72,6 +43,7 @@ public interface ArchiveFactory {
      * Creates a new [Container] to access the entries of the given archive.
      */
     public suspend fun create(
+        mediaType: MediaType,
         blob: Blob,
         password: String? = null
     ): Try<Container<Resource>, Error>
@@ -82,13 +54,13 @@ public class CompositeArchiveFactory(
 ) : ArchiveFactory {
 
     public constructor(vararg factories: ArchiveFactory) : this(factories.toList())
-
     override suspend fun create(
+        mediaType: MediaType,
         blob: Blob,
         password: String?
     ): Try<Container<Resource>, ArchiveFactory.Error> {
         for (factory in factories) {
-            factory.create(blob, password)
+            factory.create(mediaType, blob, password)
                 .getOrElse { error ->
                     when (error) {
                         is ArchiveFactory.Error.FormatNotSupported -> null

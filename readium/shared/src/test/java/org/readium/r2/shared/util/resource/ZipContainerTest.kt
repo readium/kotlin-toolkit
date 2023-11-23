@@ -19,11 +19,11 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.readium.r2.shared.util.Url
-import org.readium.r2.shared.util.archive.FileZipArchiveProvider
 import org.readium.r2.shared.util.assertSuccess
 import org.readium.r2.shared.util.data.FileBlob
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.use
+import org.readium.r2.shared.util.zip.FileZipArchiveProvider
 import org.readium.r2.shared.util.zip.StreamingZipArchiveProvider
 import org.robolectric.ParameterizedRobolectricTestRunner
 

@@ -4,7 +4,7 @@
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.r2.shared.util.archive
+package org.readium.r2.shared.util.zip
 
 import java.io.File
 import java.io.FileNotFoundException
@@ -21,22 +21,16 @@ import org.readium.r2.shared.util.data.FileSystemError
 import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.mediatype.MediaType
-import org.readium.r2.shared.util.mediatype.MediaTypeHints
 import org.readium.r2.shared.util.mediatype.MediaTypeSnifferError
-import org.readium.r2.shared.util.resource.MediaTypeRetriever
+import org.readium.r2.shared.util.resource.ArchiveFactory
 import org.readium.r2.shared.util.resource.Resource
 
 /**
  * An [ArchiveFactory] to open local ZIP files with Java's [ZipFile].
  */
-public class FileZipArchiveProvider(
-    private val mediaTypeRetriever: MediaTypeRetriever = MediaTypeRetriever()
-) : ArchiveProvider {
+internal class FileZipArchiveProvider {
 
-    override fun sniffHints(hints: MediaTypeHints): Try<MediaType, MediaTypeSnifferError.NotRecognized> =
-        ZipHintMediaTypeSniffer.sniffHints(hints)
-
-    override suspend fun sniffBlob(blob: Blob): Try<MediaType, MediaTypeSnifferError> {
+    suspend fun sniffBlob(blob: Blob): Try<MediaType, MediaTypeSnifferError> {
         val file = blob.source?.toFile()
             ?: return Try.Failure(MediaTypeSnifferError.NotRecognized)
 
@@ -62,10 +56,19 @@ public class FileZipArchiveProvider(
         }
     }
 
-    override suspend fun create(
+    suspend fun create(
+        mediaType: MediaType,
         blob: Blob,
         password: String?
     ): Try<Container<Resource>, ArchiveFactory.Error> {
+        if (mediaType != MediaType.ZIP) {
+            return Try.failure(
+                ArchiveFactory.Error.FormatNotSupported(
+                    MessageError("Archive type not supported")
+                )
+            )
+        }
+
         if (password != null) {
             return Try.failure(ArchiveFactory.Error.PasswordsNotSupported())
         }

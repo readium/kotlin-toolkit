@@ -4,47 +4,60 @@
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.r2.shared.util.archive
+package org.readium.r2.shared.util.zip
 
-import java.io.File
-import java.io.IOException
-import java.util.zip.ZipEntry
-import java.util.zip.ZipException
-import java.util.zip.ZipFile
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.extensions.readFully
 import org.readium.r2.shared.extensions.tryOrLog
+import org.readium.r2.shared.extensions.unwrapInstance
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.MessageError
 import org.readium.r2.shared.util.RelativeUrl
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.data.Container
-import org.readium.r2.shared.util.data.FileSystemError
 import org.readium.r2.shared.util.data.ReadError
+import org.readium.r2.shared.util.data.ReadException
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.io.CountingInputStream
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.mediatype.MediaTypeHints
 import org.readium.r2.shared.util.mediatype.MediaTypeSnifferError
+import org.readium.r2.shared.util.resource.ArchiveProperties
 import org.readium.r2.shared.util.resource.MediaTypeRetriever
 import org.readium.r2.shared.util.resource.Resource
-import org.readium.r2.shared.util.toUrl
+import org.readium.r2.shared.util.resource.ResourceTry
+import org.readium.r2.shared.util.resource.archive
 import org.readium.r2.shared.util.tryRecover
+import org.readium.r2.shared.util.zip.compress.archivers.zip.ZipArchiveEntry
+import org.readium.r2.shared.util.zip.compress.archivers.zip.ZipFile
 
-internal class FileZipContainer(
-    private val archive: ZipFile,
-    file: File,
+internal class StreamingZipContainer(
+    private val zipFile: ZipFile,
+    override val source: AbsoluteUrl?,
     private val mediaTypeRetriever: MediaTypeRetriever
 ) : Container<Resource> {
 
-    private inner class Entry(private val url: Url, private val entry: ZipEntry) :
-        Resource {
+    private inner class Entry(
+        private val url: Url,
+        private val entry: ZipArchiveEntry
+    ) : Resource {
 
-        override val source: AbsoluteUrl? = null
+        override val source: AbsoluteUrl? get() = null
 
-        override suspend fun mediaType(): Try<MediaType, ReadError> =
+        override suspend fun properties(): ResourceTry<Resource.Properties> =
+            Try.success(
+                Resource.Properties {
+                    archive = ArchiveProperties(
+                        entryLength = compressedLength
+                            ?: length().getOrElse { return Try.failure(it) },
+                        isEntryCompressed = compressedLength != null
+                    )
+                }
+            )
+
+        override suspend fun mediaType(): ResourceTry<MediaType> =
             mediaTypeRetriever.retrieve(
                 hints = MediaTypeHints(fileExtension = url.extension),
                 blob = this
@@ -57,18 +70,7 @@ internal class FileZipContainer(
                 }
             }
 
-        override suspend fun properties(): Try<Resource.Properties, ReadError> =
-            Try.success(
-                Resource.Properties {
-                    archive = ArchiveProperties(
-                        entryLength = compressedLength
-                            ?: length().getOrElse { return Try.failure(it) },
-                        isEntryCompressed = compressedLength != null
-                    )
-                }
-            )
-
-        override suspend fun length(): Try<Long, ReadError> =
+        override suspend fun length(): ResourceTry<Long> =
             entry.size.takeUnless { it == -1L }
                 ?.let { Try.success(it) }
                 ?: Try.failure(
@@ -77,16 +79,17 @@ internal class FileZipContainer(
                     )
                 )
 
-        private val compressedLength: Long? =
-            if (entry.method == ZipEntry.STORED || entry.method == -1) {
-                null
-            } else {
-                entry.compressedSize.takeUnless { it == -1L }
-            }
+        private val compressedLength: Long?
+            get() =
+                if (entry.method == ZipArchiveEntry.STORED || entry.method == -1) {
+                    null
+                } else {
+                    entry.compressedSize.takeUnless { it == -1L }
+                }
 
-        override suspend fun read(range: LongRange?): Try<ByteArray, ReadError> =
-            try {
-                withContext(Dispatchers.IO) {
+        override suspend fun read(range: LongRange?): ResourceTry<ByteArray> =
+            withContext(Dispatchers.IO) {
+                try {
                     val bytes =
                         if (range == null) {
                             readFully()
@@ -94,19 +97,19 @@ internal class FileZipContainer(
                             readRange(range)
                         }
                     Try.success(bytes)
+                } catch (exception: Exception) {
+                    when (val e = exception.unwrapInstance(ReadException::class.java)) {
+                        is ReadException ->
+                            Try.failure(e.error)
+                        else ->
+                            Try.failure(ReadError.Decoding(e))
+                    }
                 }
-            } catch (e: ZipException) {
-                Try.failure(ReadError.Decoding(e))
-            } catch (e: IOException) {
-                Try.failure(ReadError.Access(FileSystemError.IO(e)))
             }
 
         private suspend fun readFully(): ByteArray =
-            withContext(Dispatchers.IO) {
-                archive.getInputStream(entry)
-                    .use {
-                        it.readFully()
-                    }
+            zipFile.getInputStream(entry).use {
+                it.readFully()
             }
 
         private fun readRange(range: LongRange): ByteArray =
@@ -121,8 +124,16 @@ internal class FileZipContainer(
          * requested in order.
          *
          * See this issue for more info: https://github.com/readium/r2-shared-kotlin/issues/129
+         *
+         * In case of a stored entry, we create a new stream starting at the desired index in order
+         * to prevent downloading of data until [fromIndex].
+         *
          */
         private fun stream(fromIndex: Long): CountingInputStream {
+            if (entry.method == ZipArchiveEntry.STORED && fromIndex < entry.size) {
+                return CountingInputStream(zipFile.getRawInputStream(entry, fromIndex), fromIndex)
+            }
+
             // Reuse the current stream if it didn't exceed the requested index.
             stream
                 ?.takeIf { it.count <= fromIndex }
@@ -130,40 +141,36 @@ internal class FileZipContainer(
 
             stream?.close()
 
-            return CountingInputStream(archive.getInputStream(entry))
+            return CountingInputStream(zipFile.getInputStream(entry))
                 .also { stream = it }
         }
 
         private var stream: CountingInputStream? = null
 
         override suspend fun close() {
-            withContext(Dispatchers.IO) {
-                tryOrLog { stream?.close() }
+            tryOrLog {
+                withContext(Dispatchers.IO) {
+                    stream?.close()
+                }
             }
         }
     }
 
-    override val source: AbsoluteUrl = file.toUrl()
-
     override val entries: Set<Url> =
-        tryOrLog { archive.entries().toList() }
-            .orEmpty()
+        zipFile.entries.toList()
             .filterNot { it.isDirectory }
             .mapNotNull { entry -> Url.fromDecodedPath(entry.name) }
             .toSet()
 
     override fun get(url: Url): Resource? =
         (url as? RelativeUrl)?.path
-            ?.let {
-                tryOrLog { archive.getEntry(it) }
-            }
+            ?.let { zipFile.getEntry(it) }
+            ?.takeUnless { it.isDirectory }
             ?.let { Entry(url, it) }
 
     override suspend fun close() {
-        tryOrLog {
-            withContext(Dispatchers.IO) {
-                archive.close()
-            }
+        withContext(Dispatchers.IO) {
+            tryOrLog { zipFile.close() }
         }
     }
 }

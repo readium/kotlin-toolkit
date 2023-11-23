@@ -96,9 +96,11 @@ public interface MediaTypeSniffer :
         Try.failure(MediaTypeSnifferError.NotRecognized)
 }
 
-internal class CompositeMediaTypeSniffer(
+public class CompositeMediaTypeSniffer(
     private val sniffers: List<MediaTypeSniffer>
 ) : MediaTypeSniffer {
+
+    public constructor(vararg sniffers: MediaTypeSniffer) : this(sniffers.toList())
 
     override fun sniffHints(hints: MediaTypeHints): Try<MediaType, MediaTypeSnifferError.NotRecognized> {
         for (sniffer in sniffers) {

@@ -14,13 +14,16 @@ import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.data.Blob
 import org.readium.r2.shared.util.data.Container
 import org.readium.r2.shared.util.data.FileBlob
+import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.mediatype.DefaultMediaTypeSniffer
+import org.readium.r2.shared.util.mediatype.FormatRegistry
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.mediatype.MediaTypeHints
 import org.readium.r2.shared.util.mediatype.MediaTypeSniffer
 import org.readium.r2.shared.util.mediatype.MediaTypeSnifferError
 import org.readium.r2.shared.util.mediatype.SystemMediaTypeSniffer
 import org.readium.r2.shared.util.toUri
+import org.readium.r2.shared.util.zip.ZipArchiveFactory
 
 /**
  * Retrieves a canonical [MediaType] for the provided media type and file extension hints and/or
@@ -31,8 +34,13 @@ import org.readium.r2.shared.util.toUri
  */
 public class MediaTypeRetriever(
     private val contentResolver: ContentResolver? = null,
-    private val mediaTypeSniffer: MediaTypeSniffer = DefaultMediaTypeSniffer()
+    archiveFactory: ArchiveFactory = ZipArchiveFactory(),
+    private val mediaTypeSniffer: MediaTypeSniffer = DefaultMediaTypeSniffer(),
+    formatRegistry: FormatRegistry = FormatRegistry()
 ) : MediaTypeSniffer {
+
+    private val archiveFactory: ArchiveFactory =
+        SmartArchiveFactory(archiveFactory, formatRegistry)
 
     /**
      * Retrieves a canonical [MediaType] for the provided media type and file extension [hints].
@@ -119,6 +127,23 @@ public class MediaTypeRetriever(
             .getOrNull()
             ?.let { return Try.success(it) }
 
+        val blobMediaType = doSniffBlob(hints, blob)
+            .getOrElse { return Try.failure(it) }
+
+        val container = archiveFactory.create(blobMediaType, blob)
+            .getOrElse {
+                when (it) {
+                    is ArchiveFactory.Error.ReadError ->
+                        return Try.failure(MediaTypeSnifferError.Read(it.cause))
+                    else ->
+                        return Try.success(blobMediaType)
+                }
+            }
+
+        return retrieve(hints, container)
+    }
+
+    private suspend fun doSniffBlob(hints: MediaTypeHints, blob: Blob): Try<MediaType, MediaTypeSnifferError> {
         mediaTypeSniffer.sniffBlob(blob)
             .onSuccess { return Try.success(it) }
             .onFailure { error ->

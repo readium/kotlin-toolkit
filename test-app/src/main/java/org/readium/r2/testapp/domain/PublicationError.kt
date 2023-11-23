@@ -42,7 +42,7 @@ sealed class PublicationError(
             when (error) {
                 is AssetRetriever.Error.ReadError ->
                     ReadError(error.cause)
-                is AssetRetriever.Error.ArchiveFormatNotSupported ->
+                is AssetRetriever.Error.FormatNotSupported ->
                     UnsupportedArchiveFormat(error)
                 is AssetRetriever.Error.SchemeNotSupported ->
                     UnsupportedScheme(error)

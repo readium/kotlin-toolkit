@@ -12,18 +12,15 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.extensions.unwrapInstance
 import org.readium.r2.shared.util.AbsoluteUrl
+import org.readium.r2.shared.util.MessageError
 import org.readium.r2.shared.util.Try
-import org.readium.r2.shared.util.archive.ArchiveFactory
-import org.readium.r2.shared.util.archive.ArchiveProvider
-import org.readium.r2.shared.util.archive.ZipHintMediaTypeSniffer
 import org.readium.r2.shared.util.data.Blob
 import org.readium.r2.shared.util.data.Container
 import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.data.ReadException
 import org.readium.r2.shared.util.mediatype.MediaType
-import org.readium.r2.shared.util.mediatype.MediaTypeHints
 import org.readium.r2.shared.util.mediatype.MediaTypeSnifferError
-import org.readium.r2.shared.util.resource.MediaTypeRetriever
+import org.readium.r2.shared.util.resource.ArchiveFactory
 import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.shared.util.resource.ResourceContainer
 import org.readium.r2.shared.util.toUrl
@@ -34,14 +31,9 @@ import org.readium.r2.shared.util.zip.jvm.SeekableByteChannel
  * An [ArchiveFactory] able to open a ZIP archive served through a stream (e.g. HTTP server,
  * content URI, etc.).
  */
-public class StreamingZipArchiveProvider(
-    private val mediaTypeRetriever: MediaTypeRetriever
-) : ArchiveProvider {
+internal class StreamingZipArchiveProvider {
 
-    override fun sniffHints(hints: MediaTypeHints): Try<MediaType, MediaTypeSnifferError.NotRecognized> =
-        ZipHintMediaTypeSniffer.sniffHints(hints)
-
-    override suspend fun sniffBlob(blob: Blob): Try<MediaType, MediaTypeSnifferError> {
+    suspend fun sniffBlob(blob: Blob): Try<MediaType, MediaTypeSnifferError> {
         return try {
             openBlob(blob, ::ReadException, null)
             Try.success(MediaType.ZIP)
@@ -55,10 +47,19 @@ public class StreamingZipArchiveProvider(
         }
     }
 
-    override suspend fun create(
+    suspend fun create(
+        mediaType: MediaType,
         blob: Blob,
         password: String?
     ): Try<Container<Resource>, ArchiveFactory.Error> {
+        if (mediaType != MediaType.ZIP) {
+            return Try.failure(
+                ArchiveFactory.Error.FormatNotSupported(
+                    MessageError("Archive type not supported")
+                )
+            )
+        }
+
         if (password != null) {
             return Try.failure(ArchiveFactory.Error.PasswordsNotSupported())
         }
@@ -88,13 +89,13 @@ public class StreamingZipArchiveProvider(
         val datasourceChannel = BlobChannel(blob, wrapError)
         val channel = wrapBaseChannel(datasourceChannel)
         val zipFile = ZipFile(channel, true)
-        ChannelZipContainer(zipFile, sourceUrl, mediaTypeRetriever)
+        StreamingZipContainer(zipFile, sourceUrl, mediaTypeRetriever)
     }
 
     internal suspend fun openFile(file: File): ResourceContainer = withContext(Dispatchers.IO) {
         val fileChannel = FileChannelAdapter(file, "r")
         val channel = wrapBaseChannel(fileChannel)
-        ChannelZipContainer(ZipFile(channel), file.toUrl(), mediaTypeRetriever)
+        StreamingZipContainer(ZipFile(channel), file.toUrl(), mediaTypeRetriever)
     }
 
     private fun wrapBaseChannel(channel: SeekableByteChannel): SeekableByteChannel {
@@ -109,7 +110,7 @@ public class StreamingZipArchiveProvider(
         }
     }
 
-    public companion object {
+    companion object {
 
         private const val CACHE_ALL_MAX_SIZE = 5242880
 

@@ -176,7 +176,7 @@ internal class LcpContentProtection(
 
     private fun AssetRetriever.Error.wrap(): ContentProtection.Error =
         when (this) {
-            is AssetRetriever.Error.ArchiveFormatNotSupported ->
+            is AssetRetriever.Error.FormatNotSupported ->
                 ContentProtection.Error.UnsupportedAsset(this)
             is AssetRetriever.Error.ReadError ->
                 ContentProtection.Error.ReadError(cause)

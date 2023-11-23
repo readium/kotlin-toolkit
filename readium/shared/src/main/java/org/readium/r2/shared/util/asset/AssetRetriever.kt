@@ -11,18 +11,17 @@ import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.MessageError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
-import org.readium.r2.shared.util.archive.ArchiveFactory
-import org.readium.r2.shared.util.archive.ArchiveProvider
-import org.readium.r2.shared.util.archive.FileZipArchiveProvider
 import org.readium.r2.shared.util.getOrElse
+import org.readium.r2.shared.util.mediatype.FormatRegistry
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.mediatype.MediaTypeHints
-import org.readium.r2.shared.util.mediatype.MediaTypeSnifferError
+import org.readium.r2.shared.util.resource.ArchiveFactory
 import org.readium.r2.shared.util.resource.MediaTypeRetriever
 import org.readium.r2.shared.util.resource.Resource
+import org.readium.r2.shared.util.resource.SmartArchiveFactory
 import org.readium.r2.shared.util.resource.invoke
 import org.readium.r2.shared.util.toUrl
-import org.readium.r2.shared.util.tryRecover
+import org.readium.r2.shared.util.zip.ZipArchiveFactory
 
 /**
  * Retrieves an [Asset] instance providing reading access to the resource(s) of an asset stored at a
@@ -30,8 +29,9 @@ import org.readium.r2.shared.util.tryRecover
  */
 public class AssetRetriever(
     private val resourceFactory: ResourceFactory = FileResourceFactory(),
-    private val archiveProvider: ArchiveProvider = FileZipArchiveProvider(),
-    private val mediaTypeRetriever: MediaTypeRetriever = MediaTypeRetriever()
+    archiveFactory: ArchiveFactory = ZipArchiveFactory(),
+    private val mediaTypeRetriever: MediaTypeRetriever = MediaTypeRetriever(),
+    formatRegistry: FormatRegistry = FormatRegistry()
 ) {
 
     public sealed class Error(
@@ -44,96 +44,39 @@ public class AssetRetriever(
             cause: org.readium.r2.shared.util.Error? = null
         ) : Error("Scheme $scheme is not supported.", cause)
 
-        public class ArchiveFormatNotSupported(cause: org.readium.r2.shared.util.Error) :
+        public class FormatNotSupported(cause: org.readium.r2.shared.util.Error) :
             Error("Archive providers do not support this kind of archive.", cause)
 
         public class ReadError(override val cause: org.readium.r2.shared.util.data.ReadError) :
             Error("An error occurred when trying to read asset.", cause)
     }
 
+    private val archiveFactory: ArchiveFactory =
+        SmartArchiveFactory(archiveFactory, formatRegistry)
+
     /**
      * Retrieves an asset from a known media and asset type.
      */
     public suspend fun retrieve(
         url: AbsoluteUrl,
-        mediaType: MediaType,
-        containerType: MediaType?
-    ): Try<Asset, Error> {
-        return when (containerType) {
-            null ->
-                retrieveResourceAsset(url, mediaType)
-
-            else ->
-                retrieveArchiveAsset(url, mediaType, containerType)
-        }
-    }
-
-    private suspend fun retrieveArchiveAsset(
-        url: AbsoluteUrl,
-        mediaType: MediaType,
-        containerType: MediaType
-    ): Try<Asset.Container, Error> {
-        val resource = retrieveResource(url, containerType)
-            .getOrElse { return Try.failure(it) }
-
-        archiveProvider.sniffHints(MediaTypeHints(mediaType = containerType))
-            .onFailure {
-                return Try.failure(
-                    Error.ArchiveFormatNotSupported(
-                        MessageError("Container type $containerType not recognized.")
-                    )
-                )
-            }
-
-        return retrieveArchiveAsset(resource, MediaTypeHints(mediaType = mediaType), containerType)
-    }
-    private suspend fun retrieveArchiveAsset(
-        resource: Resource,
-        mediaTypeHints: MediaTypeHints,
-        containerType: MediaType
-    ): Try<Asset.Container, Error> {
-        val container = archiveProvider.create(resource)
-            .mapFailure { error ->
-                when (error) {
-                    is ArchiveFactory.Error.ReadError ->
-                        Error.ReadError(error.cause)
-                    else ->
-                        Error.ArchiveFormatNotSupported(error)
-                }
-            }
-            .getOrElse { return Try.failure(it) }
-
-        val mediaType = mediaTypeRetriever
-            .retrieve(mediaTypeHints, container)
-            .getOrElse { error ->
-                when (error) {
-                    MediaTypeSnifferError.NotRecognized ->
-                        MediaType.BINARY
-                    is MediaTypeSnifferError.Read ->
-                        return Try.failure(Error.ReadError(error.cause))
-                }
-            }
-
-        val asset = Asset.Container(
-            mediaType = mediaType,
-            containerType = containerType,
-            container = container
-        )
-
-        return Try.success(asset)
-    }
-
-    private suspend fun retrieveResourceAsset(
-        url: AbsoluteUrl,
         mediaType: MediaType
-    ): Try<Asset.Resource, Error> {
-        return retrieveResource(url, mediaType)
-            .map { resource ->
-                Asset.Resource(
-                    mediaType,
-                    resource
-                )
+    ): Try<Asset, Error> {
+        val resource = retrieveResource(url, mediaType)
+            .getOrElse { return Try.failure(it) }
+
+        val archive = archiveFactory.create(mediaType, resource)
+            .getOrElse {
+                return when (it) {
+                    is ArchiveFactory.Error.ReadError ->
+                        Try.failure(Error.ReadError(it.cause))
+                    is ArchiveFactory.Error.FormatNotSupported ->
+                        Try.success(Asset.Resource(mediaType, resource))
+                    is ArchiveFactory.Error.PasswordsNotSupported ->
+                        Try.failure(Error.FormatNotSupported(it))
+                }
             }
+
+        return Try.success(Asset.Container(mediaType, archive))
     }
 
     private suspend fun retrieveResource(
@@ -174,28 +117,27 @@ public class AssetRetriever(
         val properties = resource.properties()
             .getOrElse { return Try.failure(Error.ReadError(it)) }
 
-        val containerType = archiveProvider.sniffHints(
-            MediaTypeHints(properties)
-        )
-            .tryRecover {
-                archiveProvider.sniffBlob(resource)
-            }.getOrElse { error ->
-                when (error) {
-                    MediaTypeSnifferError.NotRecognized ->
-                        null
-                    is MediaTypeSnifferError.Read ->
-                        return Try.failure(Error.ReadError(error.cause))
+        val mediaType = mediaTypeRetriever.retrieve(
+            MediaTypeHints(properties),
+            resource
+        ).getOrElse {
+            return Try.failure(
+                Error.FormatNotSupported(
+                    MessageError("Cannot determine asset media type.")
+                )
+            )
+        }
+
+        val container = archiveFactory.create(mediaType, resource)
+            .getOrElse {
+                when (it) {
+                    is ArchiveFactory.Error.ReadError ->
+                        return Try.failure(Error.ReadError(it.cause))
+                    else ->
+                        return Try.success(Asset.Resource(mediaType, resource))
                 }
             }
 
-        if (containerType == null) {
-            val mediaType = resource.mediaType()
-                .getOrElse { return Try.failure(Error.ReadError(it)) }
-            return Try.success(Asset.Resource(mediaType, resource))
-        }
-
-        val hints = MediaTypeHints(fileExtension = url.extension)
-
-        return retrieveArchiveAsset(resource, mediaTypeHints = hints, containerType = containerType)
+        return Try.success(Asset.Container(mediaType, container))
     }
 }
