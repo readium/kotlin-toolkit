@@ -283,11 +283,16 @@ public class PsPdfKitDocumentFragment internal constructor(
             return listener?.onTap(pagePosition) ?: false
         }
 
-        private val allowedTextSelectionItems = listOf(
-            com.pspdfkit.R.id.pspdf__text_selection_toolbar_item_share,
-            com.pspdfkit.R.id.pspdf__text_selection_toolbar_item_copy,
-            com.pspdfkit.R.id.pspdf__text_selection_toolbar_item_speak
-        )
+        private val allowedTextSelectionItems: List<Int> by lazy {
+            buildList {
+                add(com.pspdfkit.R.id.pspdf__text_selection_toolbar_item_speak)
+
+                if (!publication.isProtected) {
+                    add(com.pspdfkit.R.id.pspdf__text_selection_toolbar_item_share)
+                    add(com.pspdfkit.R.id.pspdf__text_selection_toolbar_item_copy)
+                }
+            }
+        }
 
         override fun onPrepareTextSelectionPopupToolbar(toolbar: PdfTextSelectionPopupToolbar) {
             // Makes sure only the menu items in `allowedTextSelectionItems` will be visible.
