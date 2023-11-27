@@ -63,8 +63,7 @@ internal class FileZipArchiveProvider(
 
     suspend fun create(
         mediaType: MediaType,
-        blob: Blob,
-        password: String?
+        blob: Blob
     ): Try<Container<Resource>, ArchiveFactory.Error> {
         if (mediaType != MediaType.ZIP) {
             return Try.failure(
@@ -72,10 +71,6 @@ internal class FileZipArchiveProvider(
                     MessageError("Archive type not supported")
                 )
             )
-        }
-
-        if (password != null) {
-            return Try.failure(ArchiveFactory.Error.PasswordsNotSupported())
         }
 
         val file = blob.source?.toFile()

@@ -55,7 +55,7 @@ public class DefaultHttpClient(
     public var callback: Callback = object : Callback {}
 ) : HttpClient {
 
-    @Suppress("UNUSED_PARAMETER")
+    @Suppress("UNUSED_PARAMETER", "DEPRECATION")
     @Deprecated(
         "You need to provide a [mediaTypeRetriever]. If you used [additionalHeaders], pass all headers when building your request or modify it in Callback.onStartRequest instead.",
         level = DeprecationLevel.ERROR,

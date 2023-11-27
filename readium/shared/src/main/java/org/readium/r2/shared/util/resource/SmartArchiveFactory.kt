@@ -20,19 +20,16 @@ internal class SmartArchiveFactory(
 
     override suspend fun create(
         mediaType: MediaType,
-        blob: Blob,
-        password: String?
+        blob: Blob
     ): Try<Container<Resource>, ArchiveFactory.Error> =
-        archiveFactory.create(mediaType, blob, password)
+        archiveFactory.create(mediaType, blob)
             .tryRecover { error ->
                 when (error) {
                     is ArchiveFactory.Error.FormatNotSupported -> {
                         formatRegistry.parentMediaType(mediaType)
-                            ?.let { archiveFactory.create(it, blob, password) }
+                            ?.let { archiveFactory.create(it, blob) }
                             ?: Try.failure(error)
                     }
-                    is ArchiveFactory.Error.PasswordsNotSupported ->
-                        Try.failure(error)
                     is ArchiveFactory.Error.ReadError ->
                         Try.failure(error)
                 }

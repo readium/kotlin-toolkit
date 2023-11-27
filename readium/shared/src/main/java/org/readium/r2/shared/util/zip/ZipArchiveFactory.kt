@@ -29,10 +29,9 @@ public class ZipArchiveFactory(
 
     override suspend fun create(
         mediaType: MediaType,
-        blob: Blob,
-        password: String?
+        blob: Blob
     ): Try<Container<Resource>, ArchiveFactory.Error> =
         blob.source?.toFile()
-            ?.let { fileZipArchiveProvider.create(mediaType, blob, password) }
-            ?: streamingZipArchiveProvider.create(mediaType, blob, password)
+            ?.let { fileZipArchiveProvider.create(mediaType, blob) }
+            ?: streamingZipArchiveProvider.create(mediaType, blob)
 }

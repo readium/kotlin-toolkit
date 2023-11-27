@@ -54,8 +54,7 @@ internal class StreamingZipArchiveProvider(
 
     suspend fun create(
         mediaType: MediaType,
-        blob: Blob,
-        password: String?
+        blob: Blob
     ): Try<Container<Resource>, ArchiveFactory.Error> {
         if (mediaType != MediaType.ZIP) {
             return Try.failure(
@@ -63,10 +62,6 @@ internal class StreamingZipArchiveProvider(
                     MessageError("Archive type not supported")
                 )
             )
-        }
-
-        if (password != null) {
-            return Try.failure(ArchiveFactory.Error.PasswordsNotSupported())
         }
 
         return try {

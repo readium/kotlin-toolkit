@@ -6,7 +6,6 @@
 
 package org.readium.r2.shared.util.resource
 
-import org.readium.r2.shared.util.ThrowableError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.data.Blob
 import org.readium.r2.shared.util.data.Container
@@ -23,13 +22,6 @@ public interface ArchiveFactory {
         override val cause: org.readium.r2.shared.util.Error?
     ) : org.readium.r2.shared.util.Error {
 
-        public class PasswordsNotSupported(
-            cause: org.readium.r2.shared.util.Error? = null
-        ) : Error("Password feature is not supported.", cause) {
-
-            public constructor(exception: Exception) : this(ThrowableError(exception))
-        }
-
         public class FormatNotSupported(
             cause: org.readium.r2.shared.util.Error? = null
         ) : Error("Resource is not supported.", cause)
@@ -44,8 +36,7 @@ public interface ArchiveFactory {
      */
     public suspend fun create(
         mediaType: MediaType,
-        blob: Blob,
-        password: String? = null
+        blob: Blob
     ): Try<Container<Resource>, Error>
 }
 
@@ -58,11 +49,10 @@ public class CompositeArchiveFactory(
 
     override suspend fun create(
         mediaType: MediaType,
-        blob: Blob,
-        password: String?
+        blob: Blob
     ): Try<Container<Resource>, ArchiveFactory.Error> {
         for (factory in factories) {
-            factory.create(mediaType, blob, password)
+            factory.create(mediaType, blob)
                 .getOrElse { error ->
                     when (error) {
                         is ArchiveFactory.Error.FormatNotSupported -> null

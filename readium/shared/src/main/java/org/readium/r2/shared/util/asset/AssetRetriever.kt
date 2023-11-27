@@ -70,8 +70,6 @@ public class AssetRetriever(
                         Try.failure(Error.ReadError(it.cause))
                     is ArchiveFactory.Error.FormatNotSupported ->
                         Try.success(Asset.Resource(mediaType, resource))
-                    is ArchiveFactory.Error.PasswordsNotSupported ->
-                        Try.failure(Error.FormatNotSupported(it))
                 }
             }
 
