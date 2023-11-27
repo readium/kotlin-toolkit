@@ -43,7 +43,6 @@ public sealed class Asset {
      * A container asset providing access to several resources.
      *
      * @param mediaType Media type of the asset.
-     * @param containerType Media type of the container.
      * @param container Opened container to access asset resources.
      */
     public class Container(

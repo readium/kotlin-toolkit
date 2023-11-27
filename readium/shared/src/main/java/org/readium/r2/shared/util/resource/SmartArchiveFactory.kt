@@ -26,7 +26,7 @@ internal class SmartArchiveFactory(
             .tryRecover { error ->
                 when (error) {
                     is ArchiveFactory.Error.FormatNotSupported -> {
-                        formatRegistry.parentMediaType(mediaType)
+                        formatRegistry.superType(mediaType)
                             ?.let { archiveFactory.create(it, blob) }
                             ?: Try.failure(error)
                     }

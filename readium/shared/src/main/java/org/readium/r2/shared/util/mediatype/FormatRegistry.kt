@@ -27,7 +27,7 @@ public class FormatRegistry(
         MediaType.W3C_WPUB_MANIFEST to "json",
         MediaType.ZAB to "zab"
     ),
-    parentMediaTypes: Map<MediaType, MediaType> = mapOf(
+    superTypes: Map<MediaType, MediaType> = mapOf(
         MediaType.CBZ to MediaType.ZIP,
         MediaType.DIVINA to MediaType.READIUM_WEBPUB,
         MediaType.DIVINA_MANIFEST to MediaType.READIUM_WEBPUB_MANIFEST,
@@ -46,7 +46,7 @@ public class FormatRegistry(
 
     private val fileExtensions: MutableMap<MediaType, String> = fileExtensions.toMutableMap()
 
-    private val parentMediaTypes: MutableMap<MediaType, MediaType> = parentMediaTypes.toMutableMap()
+    private val superTypes: MutableMap<MediaType, MediaType> = superTypes.toMutableMap()
 
     /**
      * Registers a new [fileExtension] for the given [mediaType].
@@ -54,7 +54,7 @@ public class FormatRegistry(
     public fun register(
         mediaType: MediaType,
         fileExtension: String?,
-        parentMediaType: MediaType?
+        superType: MediaType?
     ) {
         if (fileExtension == null) {
             fileExtensions.remove(mediaType)
@@ -62,10 +62,10 @@ public class FormatRegistry(
             fileExtensions[mediaType] = fileExtension
         }
 
-        if (parentMediaType == null) {
-            parentMediaTypes.remove(mediaType)
+        if (superType == null) {
+            superTypes.remove(mediaType)
         } else {
-            parentMediaTypes[mediaType] = parentMediaType
+            superTypes[mediaType] = superType
         }
     }
 
@@ -75,6 +75,6 @@ public class FormatRegistry(
     public fun fileExtension(mediaType: MediaType): String? =
         fileExtensions[mediaType]
 
-    public fun parentMediaType(mediaType: MediaType): MediaType? =
-        parentMediaTypes[mediaType]
+    public fun superType(mediaType: MediaType): MediaType? =
+        superTypes[mediaType]
 }

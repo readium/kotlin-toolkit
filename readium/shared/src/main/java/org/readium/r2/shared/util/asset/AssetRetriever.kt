@@ -44,7 +44,7 @@ public class AssetRetriever(
         ) : Error("Scheme $scheme is not supported.", cause)
 
         public class FormatNotSupported(cause: org.readium.r2.shared.util.Error) :
-            Error("Archive providers do not support this kind of archive.", cause)
+            Error("Asset format is not supported.", cause)
 
         public class ReadError(override val cause: org.readium.r2.shared.util.data.ReadError) :
             Error("An error occurred when trying to read asset.", cause)
@@ -54,7 +54,7 @@ public class AssetRetriever(
         SmartArchiveFactory(archiveFactory, formatRegistry)
 
     /**
-     * Retrieves an asset from a known media and asset type.
+     * Retrieves an asset from a known media type.
      */
     public suspend fun retrieve(
         url: AbsoluteUrl,
