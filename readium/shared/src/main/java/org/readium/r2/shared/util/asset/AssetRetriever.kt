@@ -14,12 +14,10 @@ import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.mediatype.FormatRegistry
 import org.readium.r2.shared.util.mediatype.MediaType
-import org.readium.r2.shared.util.mediatype.MediaTypeHints
 import org.readium.r2.shared.util.resource.ArchiveFactory
 import org.readium.r2.shared.util.resource.MediaTypeRetriever
 import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.shared.util.resource.SmartArchiveFactory
-import org.readium.r2.shared.util.resource.invoke
 import org.readium.r2.shared.util.toUrl
 
 /**
@@ -111,26 +109,21 @@ public class AssetRetriever(
                 )
             }
 
-        val properties = resource.properties()
-            .getOrElse { return Try.failure(Error.ReadError(it)) }
-
-        val mediaType = mediaTypeRetriever.retrieve(
-            MediaTypeHints(properties),
-            resource
-        ).getOrElse {
-            return Try.failure(
-                Error.FormatNotSupported(
-                    MessageError("Cannot determine asset media type.")
+        val mediaType = mediaTypeRetriever.retrieve(resource)
+            .getOrElse {
+                return Try.failure(
+                    Error.FormatNotSupported(
+                        MessageError("Cannot determine asset media type.")
+                    )
                 )
-            )
-        }
+            }
 
         val container = archiveFactory.create(mediaType, resource)
             .getOrElse {
                 when (it) {
                     is ArchiveFactory.Error.ReadError ->
                         return Try.failure(Error.ReadError(it.cause))
-                    else ->
+                    is ArchiveFactory.Error.FormatNotSupported ->
                         return Try.success(Asset.Resource(mediaType, resource))
                 }
             }

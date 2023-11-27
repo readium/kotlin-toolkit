@@ -7,13 +7,13 @@
 package org.readium.r2.shared.util.resource
 
 import org.readium.r2.shared.util.Try
-import org.readium.r2.shared.util.data.Blob
 import org.readium.r2.shared.util.data.Container
+import org.readium.r2.shared.util.data.Readable
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.mediatype.MediaType
 
 /**
- * A factory to create a [ResourceContainer]s from archive [Blob]s.
+ * A factory to create a [ResourceContainer]s from archive [Readable]s.
  */
 public interface ArchiveFactory {
 
@@ -36,7 +36,7 @@ public interface ArchiveFactory {
      */
     public suspend fun create(
         mediaType: MediaType,
-        blob: Blob
+        readable: Readable
     ): Try<Container<Resource>, Error>
 }
 
@@ -49,10 +49,10 @@ public class CompositeArchiveFactory(
 
     override suspend fun create(
         mediaType: MediaType,
-        blob: Blob
+        readable: Readable
     ): Try<Container<Resource>, ArchiveFactory.Error> {
         for (factory in factories) {
-            factory.create(mediaType, blob)
+            factory.create(mediaType, readable)
                 .getOrElse { error ->
                     when (error) {
                         is ArchiveFactory.Error.FormatNotSupported -> null

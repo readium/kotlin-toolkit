@@ -21,15 +21,13 @@ import org.readium.r2.shared.util.http.HttpClient
 import org.readium.r2.shared.util.http.HttpContainer
 import org.readium.r2.shared.util.mediatype.FormatRegistry
 import org.readium.r2.shared.util.mediatype.MediaType
-import org.readium.r2.shared.util.resource.MediaTypeRetriever
 import org.readium.r2.shared.util.resource.SingleResourceContainer
 import org.readium.r2.streamer.parser.PublicationParser
 import timber.log.Timber
 
 internal class ParserAssetFactory(
     private val httpClient: HttpClient,
-    private val formatRegistry: FormatRegistry,
-    private val mediaTypeRetriever: MediaTypeRetriever
+    private val formatRegistry: FormatRegistry
 ) {
 
     sealed class Error(
@@ -118,7 +116,7 @@ internal class ParserAssetFactory(
                     Url("manifest.json")!!,
                     asset.resource
                 ),
-                HttpContainer(baseUrl, resources, httpClient, mediaTypeRetriever)
+                HttpContainer(baseUrl, resources, httpClient)
             )
 
         return Try.success(

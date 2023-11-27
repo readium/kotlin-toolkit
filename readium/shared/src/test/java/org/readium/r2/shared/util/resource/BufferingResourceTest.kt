@@ -7,7 +7,6 @@ import kotlinx.coroutines.runBlocking
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.readium.r2.shared.Fixtures
-import org.readium.r2.shared.util.data.FileBlob
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.robolectric.RobolectricTestRunner
 
@@ -123,7 +122,7 @@ class BufferingResourceTest {
 
     private val file = Fixtures("util/resource").fileAt("epub.epub")
     private val data = file.readBytes()
-    private val resource = FileBlob(file, MediaType.EPUB)
+    private val resource = FileResource(file, MediaType.EPUB)
 
     private fun sut(bufferSize: Long = 1024): BufferingResource =
         BufferingResource(resource, bufferSize = bufferSize)

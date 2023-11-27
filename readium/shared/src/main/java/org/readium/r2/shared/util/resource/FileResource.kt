@@ -4,7 +4,7 @@
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.r2.shared.util.data
+package org.readium.r2.shared.util.resource
 
 import java.io.File
 import java.io.FileNotFoundException
@@ -17,16 +17,20 @@ import org.readium.r2.shared.extensions.*
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.MessageError
 import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.data.FileSystemError
+import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.getOrThrow
 import org.readium.r2.shared.util.isLazyInitialized
+import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.toUrl
 
 /**
- * A [Blob] to access a [File].
+ * A [Resource] to access a [File].
  */
-public class FileBlob(
-    private val file: File
-) : Blob {
+public class FileResource(
+    private val file: File,
+    private val mediaType: MediaType? = null
+) : Resource {
 
     private val randomAccessFile by lazy {
         try {
@@ -36,7 +40,20 @@ public class FileBlob(
         }
     }
 
+    private val properties =
+        Resource.Properties(
+            Resource.Properties.Builder()
+                .also {
+                    it.filename = file.name
+                    it.mediaType = mediaType
+                }
+        )
+
     override val source: AbsoluteUrl = file.toUrl()
+
+    public override suspend fun properties(): Try<Resource.Properties, ReadError> {
+        return Try.success(properties)
+    }
 
     override suspend fun close() {
         withContext(Dispatchers.IO) {

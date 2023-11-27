@@ -13,10 +13,8 @@ import java.util.zip.ZipException
 import java.util.zip.ZipFile
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.readium.r2.shared.DelicateReadiumApi
 import org.readium.r2.shared.util.MessageError
 import org.readium.r2.shared.util.Try
-import org.readium.r2.shared.util.data.Blob
 import org.readium.r2.shared.util.data.Container
 import org.readium.r2.shared.util.data.FileSystemError
 import org.readium.r2.shared.util.data.ReadError
@@ -24,24 +22,17 @@ import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.mediatype.MediaTypeSnifferError
 import org.readium.r2.shared.util.resource.ArchiveFactory
-import org.readium.r2.shared.util.resource.BlobMediaTypeRetriever
 import org.readium.r2.shared.util.resource.Resource
 
 /**
  * An [ArchiveFactory] to open local ZIP files with Java's [ZipFile].
  */
-@OptIn(DelicateReadiumApi::class)
-internal class FileZipArchiveProvider(
-    private val mediaTypeRetriever: BlobMediaTypeRetriever? = null
-) {
+internal class FileZipArchiveProvider {
 
-    suspend fun sniffBlob(blob: Blob): Try<MediaType, MediaTypeSnifferError> {
-        val file = blob.source?.toFile()
-            ?: return Try.Failure(MediaTypeSnifferError.NotRecognized)
-
+    suspend fun sniffFile(file: File): Try<MediaType, MediaTypeSnifferError> {
         return withContext(Dispatchers.IO) {
             try {
-                FileZipContainer(ZipFile(file), file, mediaTypeRetriever)
+                FileZipContainer(ZipFile(file), file)
                 Try.success(MediaType.ZIP)
             } catch (e: ZipException) {
                 Try.failure(MediaTypeSnifferError.NotRecognized)
@@ -63,7 +54,7 @@ internal class FileZipArchiveProvider(
 
     suspend fun create(
         mediaType: MediaType,
-        blob: Blob
+        file: File
     ): Try<Container<Resource>, ArchiveFactory.Error> {
         if (mediaType != MediaType.ZIP) {
             return Try.failure(
@@ -72,13 +63,6 @@ internal class FileZipArchiveProvider(
                 )
             )
         }
-
-        val file = blob.source?.toFile()
-            ?: return Try.Failure(
-                ArchiveFactory.Error.FormatNotSupported(
-                    MessageError("Resource not supported because file cannot be directly accessed.")
-                )
-            )
 
         val container = open(file)
             .getOrElse { return Try.failure(it) }
@@ -90,7 +74,7 @@ internal class FileZipArchiveProvider(
     internal suspend fun open(file: File): Try<Container<Resource>, ArchiveFactory.Error> =
         withContext(Dispatchers.IO) {
             try {
-                val archive = FileZipContainer(ZipFile(file), file, mediaTypeRetriever)
+                val archive = FileZipContainer(ZipFile(file), file)
                 Try.success(archive)
             } catch (e: FileNotFoundException) {
                 Try.failure(

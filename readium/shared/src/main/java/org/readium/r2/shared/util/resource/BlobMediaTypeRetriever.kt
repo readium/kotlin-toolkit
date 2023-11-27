@@ -12,7 +12,7 @@ import java.io.File
 import org.readium.r2.shared.DelicateReadiumApi
 import org.readium.r2.shared.extensions.queryProjection
 import org.readium.r2.shared.util.Try
-import org.readium.r2.shared.util.data.Blob
+import org.readium.r2.shared.util.data.Readable
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.mediatype.MediaTypeHints
 import org.readium.r2.shared.util.mediatype.MediaTypeSniffer
@@ -45,8 +45,8 @@ public class BlobMediaTypeRetriever(
         return hints.mediaTypes.firstOrNull()
     }
 
-    public suspend fun retrieve(hints: MediaTypeHints, blob: Blob): Try<MediaType, MediaTypeSnifferError> {
-        mediaTypeSniffer.sniffBlob(blob)
+    public suspend fun retrieve(hints: MediaTypeHints, readable: Readable): Try<MediaType, MediaTypeSnifferError> {
+        mediaTypeSniffer.sniffBlob(readable)
             .onSuccess { return Try.success(it) }
             .onFailure { error ->
                 when (error) {
@@ -63,7 +63,7 @@ public class BlobMediaTypeRetriever(
             .getOrNull()
             ?.let { return Try.success(it) }
 
-        SystemMediaTypeSniffer.sniffBlob(blob)
+        SystemMediaTypeSniffer.sniffBlob(readable)
             .onSuccess { return Try.success(it) }
             .onFailure { error ->
                 when (error) {
@@ -78,7 +78,7 @@ public class BlobMediaTypeRetriever(
         // their content (for example, for RWPM).
 
         if (contentResolver != null) {
-            blob.source
+            (readable as Resource).source
                 ?.takeIf { it.isContent }
                 ?.let { url ->
                     val contentHints = MediaTypeHints(

@@ -114,9 +114,10 @@ public class StringSearchService(
                 index += 1
 
                 val link = manifest.readingOrder[index]
+                val mediaType = link.mediaType ?: return next()
                 val text =
-                    container.get(link.url())
-                        ?.let { extractorFactory.createExtractor(it)?.extractText(it) }
+                    container[link.url()]
+                        ?.let { extractorFactory.createExtractor(it, mediaType)?.extractText(it) }
                         ?.getOrElse { return Try.failure(SearchError.ResourceError(it)) }
 
                 if (text == null) {

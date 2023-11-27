@@ -18,43 +18,18 @@ import org.readium.r2.shared.util.MessageError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.flatMap
-import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.io.CountingInputStream
-import org.readium.r2.shared.util.mediatype.MediaType
-import org.readium.r2.shared.util.mediatype.MediaTypeHints
-import org.readium.r2.shared.util.mediatype.MediaTypeSnifferError
-import org.readium.r2.shared.util.resource.MediaTypeRetriever
 import org.readium.r2.shared.util.resource.Resource
-import org.readium.r2.shared.util.resource.invoke
+import org.readium.r2.shared.util.resource.filename
 import org.readium.r2.shared.util.resource.mediaType
-import org.readium.r2.shared.util.tryRecover
 
 /** Provides access to an external URL through HTTP. */
 @OptIn(ExperimentalReadiumApi::class)
 public class HttpResource(
     override val source: AbsoluteUrl,
     private val client: HttpClient,
-    private val mediaTypeRetriever: MediaTypeRetriever,
     private val maxSkipBytes: Long = MAX_SKIP_BYTES
 ) : Resource {
-
-    override suspend fun mediaType(): Try<MediaType, ReadError> {
-        val properties = properties()
-            .getOrElse { return Try.failure(it) }
-
-        val mediaTypeHints =
-            MediaTypeHints(properties)
-
-        return mediaTypeRetriever.retrieve(mediaTypeHints, this)
-            .tryRecover {
-                when (it) {
-                    MediaTypeSnifferError.NotRecognized ->
-                        Try.success(MediaType.BINARY)
-                    is MediaTypeSnifferError.Read ->
-                        Try.failure(it.cause)
-                }
-            }
-    }
 
     override suspend fun properties(): Try<Resource.Properties, ReadError> =
         headResponse().map {
@@ -62,6 +37,7 @@ public class HttpResource(
                 Resource.Properties.Builder()
                     .apply {
                         mediaType = it.mediaType
+                        filename = it.url.filename
                     }
             )
         }

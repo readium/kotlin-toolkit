@@ -15,6 +15,7 @@ import org.readium.r2.shared.publication.PublicationServicesHolder
 import org.readium.r2.shared.publication.indexOfFirstWithHref
 import org.readium.r2.shared.publication.services.content.Content
 import org.readium.r2.shared.util.Either
+import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.resource.Resource
 
 /**
@@ -36,6 +37,7 @@ public fun interface ResourceContentIteratorFactory {
         servicesHolder: PublicationServicesHolder,
         readingOrderIndex: Int,
         resource: Resource,
+        mediaType: MediaType,
         locator: Locator
     ): Content.Iterator?
 }
@@ -164,11 +166,12 @@ public class PublicationContentIterator(
     private suspend fun loadIteratorAt(index: Int, location: LocatorOrProgression): IndexedIterator? {
         val link = manifest.readingOrder[index]
         val locator = location.toLocator(link) ?: return null
-        val resource = container.get(link.url()) ?: return null
+        val resource = container[link.url()] ?: return null
+        val mediaType = link.mediaType ?: return null
 
         return resourceContentIteratorFactories
             .firstNotNullOfOrNull { factory ->
-                factory.create(manifest, services, index, resource, locator)
+                factory.create(manifest, services, index, resource, mediaType, locator)
             }
             ?.let { IndexedIterator(index, it) }
     }

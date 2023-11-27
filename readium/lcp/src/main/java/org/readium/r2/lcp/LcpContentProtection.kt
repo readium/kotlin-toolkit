@@ -21,14 +21,12 @@ import org.readium.r2.shared.util.asset.AssetRetriever
 import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.flatMap
 import org.readium.r2.shared.util.getOrElse
-import org.readium.r2.shared.util.resource.MediaTypeRetriever
 import org.readium.r2.shared.util.resource.TransformingContainer
 
 internal class LcpContentProtection(
     private val lcpService: LcpService,
     private val authentication: LcpAuthenticating,
-    private val assetRetriever: AssetRetriever,
-    private val mediaTypeRetriever: MediaTypeRetriever
+    private val assetRetriever: AssetRetriever
 ) : ContentProtection {
 
     override val scheme: ContentProtection.Scheme =
@@ -78,7 +76,7 @@ internal class LcpContentProtection(
         val serviceFactory = LcpContentProtectionService
             .createFactory(license.getOrNull(), license.failureOrNull())
 
-        val decryptor = LcpDecryptor(license.getOrNull(), mediaTypeRetriever)
+        val decryptor = LcpDecryptor(license.getOrNull())
 
         val container = TransformingContainer(asset.container, decryptor::transform)
 

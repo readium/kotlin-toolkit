@@ -38,9 +38,7 @@ import org.readium.r2.shared.util.http.HttpClient
 import org.readium.r2.shared.util.http.HttpError
 import org.readium.r2.shared.util.http.HttpRequest
 import org.readium.r2.shared.util.http.HttpStreamResponse
-import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.resource.Resource
-import org.readium.r2.shared.util.resource.withMediaType
 
 internal typealias ServiceFactory = (Publication.Service.Context) -> Publication.Service?
 
@@ -201,22 +199,14 @@ public class Publication(
      * Returns the resource targeted by the given non-templated [link].
      */
     public fun get(link: Link): Resource? =
-        get(link.url(), link.mediaType)
+        get(link.url())
 
     /**
      * Returns the resource targeted by the given [href].
      */
     public fun get(href: Url): Resource? =
-        get(href, linkWithHref(href)?.mediaType)
-
-    private fun get(href: Url, mediaType: MediaType?): Resource? {
-        val entry = container.get(href)
-            ?: container.get(href.removeQuery().removeFragment()) // Try again after removing query and fragment.
-            ?: return null
-
-        return entry
-            .withMediaType(mediaType)
-    }
+        // Try first the original href and falls back to href without query and fragment.
+        container[href] ?: container[href.removeQuery().removeFragment()]
 
     /**
      * Closes any opened resource associated with the [Publication], including services.

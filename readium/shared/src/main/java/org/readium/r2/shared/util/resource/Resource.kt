@@ -8,10 +8,9 @@ package org.readium.r2.shared.util.resource
 
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Try
-import org.readium.r2.shared.util.data.Blob
 import org.readium.r2.shared.util.data.Container
 import org.readium.r2.shared.util.data.ReadError
-import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.shared.util.data.Readable
 
 public typealias ResourceTry<SuccessT> = Try<SuccessT, ReadError>
 
@@ -20,12 +19,12 @@ public typealias ResourceContainer = Container<Resource>
 /**
  * Acts as a proxy to an actual resource by handling read access.
  */
-public interface Resource : Blob {
+public interface Resource : Readable {
 
     /**
-     * Returns the resource media type if known.
+     * URL locating this resource, if any.
      */
-    public suspend fun mediaType(): Try<MediaType, ReadError>
+    public val source: AbsoluteUrl?
 
     /**
      * Properties associated to the resource.
@@ -57,7 +56,6 @@ public class FailureResource(
 ) : Resource {
 
     override val source: AbsoluteUrl? = null
-    override suspend fun mediaType(): Try<MediaType, ReadError> = Try.failure(error)
     override suspend fun properties(): Try<Resource.Properties, ReadError> = Try.failure(error)
     override suspend fun length(): Try<Long, ReadError> = Try.failure(error)
     override suspend fun read(range: LongRange?): Try<ByteArray, ReadError> = Try.failure(error)
@@ -79,14 +77,3 @@ public fun <R, S, E> Try<S, E>.mapCatching(): ResourceTry<R> =
 @Suppress("UnusedReceiverParameter")
 public fun <R, S, E> Try<S, E>.flatMapCatching(): ResourceTry<R> =
     throw NotImplementedError()
-
-internal fun Resource.withMediaType(mediaType: MediaType?): Resource {
-    if (mediaType == null) {
-        return this
-    }
-
-    return object : Resource by this {
-        override suspend fun mediaType(): Try<MediaType, ReadError> =
-            Try.success(mediaType)
-    }
-}

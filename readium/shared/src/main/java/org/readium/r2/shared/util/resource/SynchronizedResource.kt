@@ -11,7 +11,6 @@ import kotlinx.coroutines.sync.withLock
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.data.ReadError
-import org.readium.r2.shared.util.mediatype.MediaType
 
 /**
  * Protects the access to a wrapped resource with a mutex to make it thread-safe.
@@ -28,9 +27,6 @@ public class SynchronizedResource(
 
     override suspend fun properties(): Try<Resource.Properties, ReadError> =
         mutex.withLock { resource.properties() }
-
-    override suspend fun mediaType(): Try<MediaType, ReadError> =
-        mutex.withLock { resource.mediaType() }
 
     override suspend fun length(): Try<Long, ReadError> =
         mutex.withLock { resource.length() }

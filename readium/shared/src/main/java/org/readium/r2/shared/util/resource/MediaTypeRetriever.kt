@@ -10,9 +10,8 @@ import android.content.ContentResolver
 import java.io.File
 import org.readium.r2.shared.DelicateReadiumApi
 import org.readium.r2.shared.util.Try
-import org.readium.r2.shared.util.data.Blob
 import org.readium.r2.shared.util.data.Container
-import org.readium.r2.shared.util.data.FileBlob
+import org.readium.r2.shared.util.data.Readable
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.mediatype.DefaultMediaTypeSniffer
 import org.readium.r2.shared.util.mediatype.FormatRegistry
@@ -21,6 +20,7 @@ import org.readium.r2.shared.util.mediatype.MediaTypeHints
 import org.readium.r2.shared.util.mediatype.MediaTypeSniffer
 import org.readium.r2.shared.util.mediatype.MediaTypeSnifferError
 import org.readium.r2.shared.util.mediatype.SystemMediaTypeSniffer
+import org.readium.r2.shared.util.use
 import org.readium.r2.shared.util.zip.ZipArchiveFactory
 
 /**
@@ -48,7 +48,7 @@ public class MediaTypeRetriever(
                 DefaultMediaTypeSniffer()
 
             val archiveFactory =
-                ZipArchiveFactory(mediaTypeSniffer)
+                ZipArchiveFactory()
 
             val formatRegistry =
                 FormatRegistry()
@@ -113,8 +113,8 @@ public class MediaTypeRetriever(
         retrieve(MediaTypeHints(mediaTypes = mediaTypes, fileExtensions = fileExtensions))
 
     public suspend fun retrieve(
-        hints: MediaTypeHints = MediaTypeHints(),
-        container: Container<*>
+        container: Container<Readable>,
+        hints: MediaTypeHints = MediaTypeHints()
     ): Try<MediaType, MediaTypeSnifferError> {
         mediaTypeSniffer.sniffHints(hints)
             .getOrNull()
@@ -134,37 +134,39 @@ public class MediaTypeRetriever(
             ?: Try.failure(MediaTypeSnifferError.NotRecognized)
     }
 
-    public suspend fun retrieve(file: File): Try<MediaType, MediaTypeSnifferError> =
-        retrieve(
-            hints = MediaTypeHints(fileExtension = file.extension),
-            blob = FileBlob(file)
-        )
+    public suspend fun retrieve(
+        file: File,
+        hints: MediaTypeHints = MediaTypeHints()
+    ): Try<MediaType, MediaTypeSnifferError> =
+        FileResource(file).use { retrieve(it, hints) }
 
     /**
-     * Retrieves a canonical [MediaType] for the provided media type and file extensions [hints] and
-     * asset [blob].
+     * Retrieves a canonical [MediaType] for [resource].
      */
     public suspend fun retrieve(
-        hints: MediaTypeHints = MediaTypeHints(),
-        blob: Blob
+        resource: Resource,
+        hints: MediaTypeHints = MediaTypeHints()
     ): Try<MediaType, MediaTypeSnifferError> {
-        mediaTypeSniffer.sniffHints(hints)
+        val properties = resource.properties()
+            .getOrElse { return Try.failure(MediaTypeSnifferError.Read(it)) }
+
+        mediaTypeSniffer.sniffHints(MediaTypeHints(properties) + hints)
             .getOrNull()
             ?.let { return Try.success(it) }
 
-        val blobMediaType = blobMediaTypeRetriever.retrieve(hints, blob)
+        val blobMediaType = blobMediaTypeRetriever.retrieve(hints, resource)
             .getOrElse { return Try.failure(it) }
 
-        val container = archiveFactory.create(blobMediaType, blob)
+        val container = archiveFactory.create(blobMediaType, resource)
             .getOrElse {
                 when (it) {
                     is ArchiveFactory.Error.ReadError ->
                         return Try.failure(MediaTypeSnifferError.Read(it.cause))
-                    else ->
+                    is ArchiveFactory.Error.FormatNotSupported ->
                         return Try.success(blobMediaType)
                 }
             }
 
-        return retrieve(hints, container)
+        return retrieve(container, hints)
     }
 }

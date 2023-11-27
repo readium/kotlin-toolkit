@@ -56,9 +56,9 @@ public class PublicationFactory(
     ignoreDefaultParsers: Boolean = false,
     contentProtections: List<ContentProtection>,
     formatRegistry: FormatRegistry,
-    mediaTypeRetriever: MediaTypeRetriever,
     httpClient: HttpClient,
     pdfFactory: PdfDocumentFactory<*>?,
+    private val mediaTypeRetriever: MediaTypeRetriever,
     private val onCreatePublication: Publication.Builder.() -> Unit = {}
 ) {
     public sealed class Error(
@@ -90,7 +90,7 @@ public class PublicationFactory(
                 DefaultMediaTypeSniffer()
 
             val archiveFactory =
-                ZipArchiveFactory(mediaTypeSniffer)
+                ZipArchiveFactory()
 
             val formatRegistry =
                 FormatRegistry()
@@ -106,8 +106,8 @@ public class PublicationFactory(
             return PublicationFactory(
                 context = context,
                 contentProtections = contentProtections,
-                formatRegistry = formatRegistry,
                 mediaTypeRetriever = mediaTypeRetriever,
+                formatRegistry = formatRegistry,
                 httpClient = DefaultHttpClient(mediaTypeRetriever),
                 pdfFactory = null,
                 onCreatePublication = onCreatePublication
@@ -127,15 +127,15 @@ public class PublicationFactory(
             EpubParser(),
             pdfFactory?.let { PdfParser(context, it) },
             ReadiumWebPubParser(context, pdfFactory),
-            ImageParser(),
-            AudioParser()
+            ImageParser(mediaTypeRetriever),
+            AudioParser(mediaTypeRetriever)
         )
 
     private val parsers: List<PublicationParser> = parsers +
         if (!ignoreDefaultParsers) defaultParsers else emptyList()
 
     private val parserAssetFactory: ParserAssetFactory =
-        ParserAssetFactory(httpClient, formatRegistry, mediaTypeRetriever)
+        ParserAssetFactory(httpClient, formatRegistry)
 
     /**
      * Opens a [Publication] from the given asset.

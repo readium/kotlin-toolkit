@@ -77,7 +77,7 @@ internal class LicensesService(
     override fun contentProtection(
         authentication: LcpAuthenticating
     ): ContentProtection =
-        LcpContentProtection(this, authentication, assetRetriever, mediaTypeRetriever)
+        LcpContentProtection(this, authentication, assetRetriever)
 
     override fun publicationRetriever(): LcpPublicationRetriever {
         return LcpPublicationRetriever(

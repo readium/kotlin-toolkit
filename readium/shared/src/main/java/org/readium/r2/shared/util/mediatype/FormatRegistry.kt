@@ -77,4 +77,7 @@ public class FormatRegistry(
 
     public fun superType(mediaType: MediaType): MediaType? =
         superTypes[mediaType]
+
+    public fun isSuperType(mediaType: MediaType): Boolean =
+        superTypes.values.any { it.matches(mediaType) }
 }

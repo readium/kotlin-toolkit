@@ -36,15 +36,15 @@ public interface ResourceContentExtractor {
          *
          * Return null if the resource format is not supported.
          */
-        public suspend fun createExtractor(resource: Resource): ResourceContentExtractor?
+        public suspend fun createExtractor(resource: Resource, mediaType: MediaType): ResourceContentExtractor?
     }
 }
 
 @ExperimentalReadiumApi
 public class DefaultResourceContentExtractorFactory : ResourceContentExtractor.Factory {
 
-    override suspend fun createExtractor(resource: Resource): ResourceContentExtractor? =
-        when (resource.mediaType().getOrNull()) {
+    override suspend fun createExtractor(resource: Resource, mediaType: MediaType): ResourceContentExtractor? =
+        when (mediaType) {
             MediaType.HTML, MediaType.XHTML -> HtmlResourceContentExtractor()
             else -> null
         }

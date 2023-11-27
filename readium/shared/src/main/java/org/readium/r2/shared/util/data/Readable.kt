@@ -6,19 +6,13 @@
 
 package org.readium.r2.shared.util.data
 
-import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.SuspendingCloseable
 import org.readium.r2.shared.util.Try
 
 /**
  * Acts as a proxy to an actual data source by handling read access.
  */
-public interface Blob : SuspendingCloseable {
-
-    /**
-     * URL locating this resource, if any.
-     */
-    public val source: AbsoluteUrl?
+public interface Readable : SuspendingCloseable {
 
     /**
      * Returns data length from metadata if available, or calculated from reading the bytes otherwise.

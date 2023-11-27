@@ -14,15 +14,15 @@ import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
-import org.readium.r2.shared.util.data.Blob
 import org.readium.r2.shared.util.data.ReadError
+import org.readium.r2.shared.util.data.Readable
 import org.readium.r2.shared.util.getOrThrow
 import org.readium.r2.shared.util.zip.jvm.ClosedChannelException
 import org.readium.r2.shared.util.zip.jvm.NonWritableChannelException
 import org.readium.r2.shared.util.zip.jvm.SeekableByteChannel
 
-internal class BlobChannel(
-    private val blob: Blob,
+internal class ReadableChannel(
+    private val readable: Readable,
     private val wrapError: (ReadError) -> IOException
 ) : SeekableByteChannel {
 
@@ -41,7 +41,7 @@ internal class BlobChannel(
         }
 
         isClosed = true
-        coroutineScope.launch { blob.close() }
+        coroutineScope.launch { readable.close() }
     }
 
     override fun isOpen(): Boolean {
@@ -55,7 +55,7 @@ internal class BlobChannel(
             }
 
             withContext(Dispatchers.IO) {
-                val size = blob.length()
+                val size = readable.length()
                     .mapFailure(wrapError)
                     .getOrThrow()
 
@@ -66,7 +66,7 @@ internal class BlobChannel(
                 val available = size - position
                 val toBeRead = dst.remaining().coerceAtMost(available.toInt())
                 check(toBeRead > 0)
-                val bytes = blob.read(position until position + toBeRead)
+                val bytes = readable.read(position until position + toBeRead)
                     .mapFailure(wrapError)
                     .getOrThrow()
                 check(bytes.size == toBeRead)
@@ -99,7 +99,7 @@ internal class BlobChannel(
             throw ClosedChannelException()
         }
 
-        return runBlocking { blob.length() }
+        return runBlocking { readable.length() }
             .mapFailure { wrapError(it) }
             .getOrThrow()
     }

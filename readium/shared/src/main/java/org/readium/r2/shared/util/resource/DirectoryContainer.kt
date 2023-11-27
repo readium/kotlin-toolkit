@@ -13,7 +13,6 @@ import org.readium.r2.shared.util.RelativeUrl
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.data.Container
-import org.readium.r2.shared.util.data.FileBlob
 import org.readium.r2.shared.util.data.FileSystemError
 import org.readium.r2.shared.util.toUrl
 
@@ -22,32 +21,20 @@ import org.readium.r2.shared.util.toUrl
  */
 public class DirectoryContainer(
     private val root: File,
-    private val mediaTypeRetriever: MediaTypeRetriever,
     override val entries: Set<Url>
 ) : Container<Resource> {
-
-    private fun File.toResource(): Resource {
-        return BlobResourceAdapter(
-            FileBlob(this),
-            Resource.Properties(
-                Resource.Properties.Builder()
-                    .also { it.filename = name }
-            ),
-            mediaTypeRetriever
-        )
-    }
 
     override fun get(url: Url): Resource? = url
         .takeIf { it in entries }
         ?.let { (it as? RelativeUrl)?.path }
         ?.let { File(root, it) }
-        ?.toResource()
+        ?.let { FileResource(it) }
 
     override suspend fun close() {}
 
     public companion object {
 
-        public suspend operator fun invoke(root: File, mediaTypeRetriever: MediaTypeRetriever): Try<DirectoryContainer, FileSystemError> {
+        public suspend operator fun invoke(root: File): Try<DirectoryContainer, FileSystemError> {
             val entries =
                 try {
                     withContext(Dispatchers.IO) {
@@ -59,7 +46,7 @@ public class DirectoryContainer(
                 } catch (e: SecurityException) {
                     return Try.failure(FileSystemError.Forbidden(e))
                 }
-            val container = DirectoryContainer(root, mediaTypeRetriever, entries)
+            val container = DirectoryContainer(root, entries)
             return Try.success(container)
         }
     }

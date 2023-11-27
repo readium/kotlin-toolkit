@@ -7,8 +7,8 @@
 package org.readium.r2.shared.util.mediatype
 
 import org.readium.r2.shared.util.Try
-import org.readium.r2.shared.util.data.Blob
 import org.readium.r2.shared.util.data.Container
+import org.readium.r2.shared.util.data.Readable
 
 /**
  * The default composite sniffer provided by Readium for all known formats.
@@ -38,8 +38,8 @@ public class DefaultMediaTypeSniffer : MediaTypeSniffer {
     override fun sniffHints(hints: MediaTypeHints): Try<MediaType, MediaTypeSnifferError.NotRecognized> =
         sniffer.sniffHints(hints)
 
-    override suspend fun sniffBlob(blob: Blob): Try<MediaType, MediaTypeSnifferError> =
-        sniffer.sniffBlob(blob)
+    override suspend fun sniffBlob(readable: Readable): Try<MediaType, MediaTypeSnifferError> =
+        sniffer.sniffBlob(readable)
 
     override suspend fun sniffContainer(container: Container<*>): Try<MediaType, MediaTypeSnifferError> =
         sniffer.sniffContainer(container)

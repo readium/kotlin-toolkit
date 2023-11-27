@@ -9,34 +9,29 @@ package org.readium.r2.shared.util.resource
 import kotlinx.coroutines.runBlocking
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Try
-import org.readium.r2.shared.util.data.Blob
-import org.readium.r2.shared.util.data.InMemoryBlob
 import org.readium.r2.shared.util.data.ReadError
-import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.shared.util.data.Readable
 
 /** Creates a Resource serving a [String]. */
 public class StringResource(
-    private val blob: Blob,
-    private val mediaType: MediaType,
+    private val readable: Readable,
     private val properties: Resource.Properties
-) : Resource, Blob by blob {
+) : Resource, Readable by readable {
 
     public constructor(
-        mediaType: MediaType,
         source: AbsoluteUrl? = null,
         properties: Resource.Properties = Resource.Properties(),
         string: suspend () -> Try<String, ReadError>
-    ) : this(InMemoryBlob(source) { string().map { it.toByteArray() } }, mediaType, properties)
+    ) : this(InMemoryResource(source, properties) { string().map { it.toByteArray() } }, properties)
 
     public constructor(
         string: String,
-        mediaType: MediaType,
         source: AbsoluteUrl? = null,
         properties: Resource.Properties = Resource.Properties()
-    ) : this(mediaType, source, properties, { Try.success(string) })
+    ) : this(source, properties, { Try.success(string) })
 
-    override suspend fun mediaType(): Try<MediaType, ReadError> =
-        Try.success(mediaType)
+    override val source: AbsoluteUrl? =
+        null
 
     override suspend fun properties(): Try<Resource.Properties, ReadError> =
         Try.success(properties)

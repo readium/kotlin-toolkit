@@ -14,7 +14,7 @@ import org.readium.r2.shared.util.resource.Resource
 /**
  * A container provides access to a list of [Resource] entries.
  */
-public interface Container<E : Blob> : Iterable<Url>, SuspendingCloseable {
+public interface Container<out E : Readable> : Iterable<Url>, SuspendingCloseable {
 
     /**
      * Direct source to this container, when available.
@@ -36,7 +36,7 @@ public interface Container<E : Blob> : Iterable<Url>, SuspendingCloseable {
 }
 
 /** A [Container] providing no resources at all. */
-public class EmptyContainer<E : Blob> :
+public class EmptyContainer<E : Readable> :
     Container<E> {
 
     override val entries: Set<Url> = emptySet()
@@ -54,7 +54,7 @@ public class EmptyContainer<E : Blob> :
  *
  * The [containers] will be tested in the given order.
  */
-public class CompositeContainer<E : Blob>(
+public class CompositeContainer<E : Readable>(
     private val containers: List<Container<E>>
 ) : Container<E> {
 

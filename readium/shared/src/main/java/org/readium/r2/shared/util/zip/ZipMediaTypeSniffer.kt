@@ -7,11 +7,12 @@
 package org.readium.r2.shared.util.zip
 
 import org.readium.r2.shared.util.Try
-import org.readium.r2.shared.util.data.Blob
+import org.readium.r2.shared.util.data.Readable
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.mediatype.MediaTypeHints
 import org.readium.r2.shared.util.mediatype.MediaTypeSniffer
 import org.readium.r2.shared.util.mediatype.MediaTypeSnifferError
+import org.readium.r2.shared.util.resource.Resource
 
 public object ZipMediaTypeSniffer : MediaTypeSniffer {
 
@@ -25,10 +26,10 @@ public object ZipMediaTypeSniffer : MediaTypeSniffer {
         return Try.failure(MediaTypeSnifferError.NotRecognized)
     }
 
-    override suspend fun sniffBlob(blob: Blob): Try<MediaType, MediaTypeSnifferError> {
-        blob.source?.toFile()
-            ?.let { return FileZipArchiveProvider().sniffBlob(blob) }
+    override suspend fun sniffBlob(readable: Readable): Try<MediaType, MediaTypeSnifferError> {
+        (readable as? Resource)?.source?.toFile()
+            ?.let { return FileZipArchiveProvider().sniffFile(it) }
 
-        return StreamingZipArchiveProvider().sniffBlob(blob)
+        return StreamingZipArchiveProvider().sniffBlob(readable)
     }
 }

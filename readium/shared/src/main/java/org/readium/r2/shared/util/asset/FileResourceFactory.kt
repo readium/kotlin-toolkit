@@ -8,17 +8,11 @@ package org.readium.r2.shared.util.asset
 
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Try
-import org.readium.r2.shared.util.data.FileBlob
 import org.readium.r2.shared.util.mediatype.MediaType
-import org.readium.r2.shared.util.resource.BlobResourceAdapter
-import org.readium.r2.shared.util.resource.MediaTypeRetriever
+import org.readium.r2.shared.util.resource.FileResource
 import org.readium.r2.shared.util.resource.Resource
-import org.readium.r2.shared.util.resource.filename
-import org.readium.r2.shared.util.resource.mediaType
 
-public class FileResourceFactory(
-    private val mediaTypeRetriever: MediaTypeRetriever
-) : ResourceFactory {
+public class FileResourceFactory : ResourceFactory {
 
     override suspend fun create(
         url: AbsoluteUrl,
@@ -27,23 +21,7 @@ public class FileResourceFactory(
         val file = url.toFile()
             ?: return Try.failure(ResourceFactory.Error.SchemeNotSupported(url.scheme))
 
-        val blob = FileBlob(file)
-
-        val properties =
-            Resource.Properties(
-                Resource.Properties.Builder()
-                    .also {
-                        it.filename = url.filename
-                        it.mediaType = mediaType
-                    }
-            )
-
-        val resource =
-            BlobResourceAdapter(
-                blob,
-                properties,
-                mediaTypeRetriever
-            )
+        val resource = FileResource(file, mediaType)
 
         return Try.success(resource)
     }

@@ -4,7 +4,7 @@
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.r2.shared.util.data
+package org.readium.r2.shared.util.resource
 
 import kotlinx.coroutines.runBlocking
 import org.readium.r2.shared.extensions.coerceFirstNonNegative
@@ -12,19 +12,26 @@ import org.readium.r2.shared.extensions.read
 import org.readium.r2.shared.extensions.requireLengthFitInt
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.data.ReadError
 
-/** Creates a [Blob] serving a [ByteArray]. */
-public class InMemoryBlob(
+/** Creates a [Resource] serving a [ByteArray]. */
+public class InMemoryResource(
     override val source: AbsoluteUrl?,
+    private val properties: Resource.Properties,
     private val bytes: suspend () -> Try<ByteArray, ReadError>
-) : Blob {
+) : Resource {
 
     public constructor(
         bytes: ByteArray,
-        source: AbsoluteUrl? = null
-    ) : this(source = source, { Try.success(bytes) })
+        source: AbsoluteUrl? = null,
+        properties: Resource.Properties = Resource.Properties()
+    ) : this(source = source, properties = properties, { Try.success(bytes) })
 
     private lateinit var _bytes: Try<ByteArray, ReadError>
+
+    override suspend fun properties(): Try<Resource.Properties, ReadError> {
+        return Try.success(properties)
+    }
 
     override suspend fun length(): Try<Long, ReadError> =
         read().map { it.size.toLong() }

@@ -4,10 +4,11 @@
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.r2.shared.util.data
+package org.readium.r2.shared.util.resource
 
 import android.content.ContentResolver
 import android.net.Uri
+import android.provider.MediaStore
 import java.io.FileNotFoundException
 import java.io.IOException
 import java.io.InputStream
@@ -18,22 +19,42 @@ import org.readium.r2.shared.extensions.*
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.MessageError
 import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.data.ContentProviderError
+import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.flatMap
+import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.toUrl
 
 /**
- * A [Blob] to access content [uri] thanks to a [ContentResolver].
+ * A [Resource] to access content [uri] thanks to a [ContentResolver].
  */
-public class ContentBlob(
+public class ContentResource(
     private val uri: Uri,
-    private val contentResolver: ContentResolver
-) : Blob {
+    private val contentResolver: ContentResolver,
+    private val mediaType: MediaType? = null
+) : Resource {
 
     private lateinit var _length: Try<Long, ReadError>
+
+    private val filename =
+        contentResolver.queryProjection(uri, MediaStore.MediaColumns.DISPLAY_NAME)
+
+    private val properties =
+        Resource.Properties(
+            Resource.Properties.Builder()
+                .also {
+                    it.filename = filename
+                    it.mediaType = mediaType
+                }
+        )
 
     override val source: AbsoluteUrl? = uri.toUrl() as? AbsoluteUrl
 
     override suspend fun close() {
+    }
+
+    override suspend fun properties(): Try<Resource.Properties, ReadError> {
+        return Try.success(properties)
     }
 
     override suspend fun read(range: LongRange?): Try<ByteArray, ReadError> {

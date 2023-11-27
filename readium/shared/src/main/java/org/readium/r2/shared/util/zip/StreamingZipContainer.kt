@@ -22,23 +22,18 @@ import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.data.ReadException
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.io.CountingInputStream
-import org.readium.r2.shared.util.mediatype.MediaType
-import org.readium.r2.shared.util.mediatype.MediaTypeHints
-import org.readium.r2.shared.util.mediatype.MediaTypeSnifferError
 import org.readium.r2.shared.util.resource.ArchiveProperties
-import org.readium.r2.shared.util.resource.BlobMediaTypeRetriever
 import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.shared.util.resource.ResourceTry
 import org.readium.r2.shared.util.resource.archive
-import org.readium.r2.shared.util.tryRecover
+import org.readium.r2.shared.util.resource.filename
 import org.readium.r2.shared.util.zip.compress.archivers.zip.ZipArchiveEntry
 import org.readium.r2.shared.util.zip.compress.archivers.zip.ZipFile
 
 @OptIn(DelicateReadiumApi::class)
 internal class StreamingZipContainer(
     private val zipFile: ZipFile,
-    override val source: AbsoluteUrl?,
-    private val mediaTypeRetriever: BlobMediaTypeRetriever?
+    override val source: AbsoluteUrl?
 ) : Container<Resource> {
 
     private inner class Entry(
@@ -51,6 +46,7 @@ internal class StreamingZipContainer(
         override suspend fun properties(): ResourceTry<Resource.Properties> =
             Try.success(
                 Resource.Properties {
+                    filename = url.filename
                     archive = ArchiveProperties(
                         entryLength = compressedLength
                             ?: length().getOrElse { return Try.failure(it) },
@@ -58,19 +54,6 @@ internal class StreamingZipContainer(
                     )
                 }
             )
-
-        override suspend fun mediaType(): ResourceTry<MediaType> =
-            mediaTypeRetriever?.retrieve(
-                hints = MediaTypeHints(fileExtension = url.extension),
-                blob = this
-            )?.tryRecover { error ->
-                when (error) {
-                    is MediaTypeSnifferError.Read ->
-                        Try.failure(error.cause)
-                    MediaTypeSnifferError.NotRecognized ->
-                        Try.success(MediaType.BINARY)
-                }
-            } ?: Try.success(MediaType.BINARY)
 
         override suspend fun length(): ResourceTry<Long> =
             entry.size.takeUnless { it == -1L }

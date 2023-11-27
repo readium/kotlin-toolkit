@@ -21,12 +21,11 @@ import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
-import org.readium.r2.shared.util.data.BlobInputStream
 import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.data.ReadException
+import org.readium.r2.shared.util.data.ReadableInputStream
 import org.readium.r2.shared.util.http.HttpHeaders
 import org.readium.r2.shared.util.http.HttpRange
-import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.shared.util.resource.StringResource
 import org.readium.r2.shared.util.resource.fallback
@@ -105,14 +104,17 @@ internal class WebViewServer(
             errorResource(urlWithoutAnchor, error)
         }
 
-        if (link.mediaType?.isHtml == true) {
-            resource = resource.injectHtml(
-                publication,
-                css,
-                baseHref = assetsBaseHref,
-                disableSelectionWhenProtected = disableSelectionWhenProtected
-            )
-        }
+        link.mediaType
+            ?.takeIf { it.isHtml }
+            ?.let {
+                resource = resource.injectHtml(
+                    publication,
+                    mediaType = it,
+                    css,
+                    baseHref = assetsBaseHref,
+                    disableSelectionWhenProtected = disableSelectionWhenProtected
+                )
+            }
 
         val headers = mutableMapOf(
             "Accept-Ranges" to "bytes"
@@ -125,10 +127,10 @@ internal class WebViewServer(
                 200,
                 "OK",
                 headers,
-                BlobInputStream(resource, ::ReadException)
+                ReadableInputStream(resource, ::ReadException)
             )
         } else { // Byte range request
-            val stream = BlobInputStream(resource, ::ReadException)
+            val stream = ReadableInputStream(resource, ::ReadException)
             val length = stream.available()
             val longRange = range.toLongRange(length.toLong())
             headers["Content-Range"] = "bytes ${longRange.first}-${longRange.last}/$length"
@@ -146,7 +148,7 @@ internal class WebViewServer(
         }
     }
     private fun errorResource(url: Url, error: ReadError): Resource =
-        StringResource(mediaType = MediaType.XHTML) {
+        StringResource {
             withContext(Dispatchers.IO) {
                 Try.success(
                     application.assets

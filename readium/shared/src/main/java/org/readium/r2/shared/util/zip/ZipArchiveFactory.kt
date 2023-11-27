@@ -6,32 +6,24 @@
 
 package org.readium.r2.shared.util.zip
 
-import org.readium.r2.shared.DelicateReadiumApi
 import org.readium.r2.shared.util.Try
-import org.readium.r2.shared.util.data.Blob
 import org.readium.r2.shared.util.data.Container
+import org.readium.r2.shared.util.data.Readable
 import org.readium.r2.shared.util.mediatype.MediaType
-import org.readium.r2.shared.util.mediatype.MediaTypeSniffer
 import org.readium.r2.shared.util.resource.ArchiveFactory
-import org.readium.r2.shared.util.resource.BlobMediaTypeRetriever
 import org.readium.r2.shared.util.resource.Resource
 
-@OptIn(DelicateReadiumApi::class)
-public class ZipArchiveFactory(
-    mediaTypeSniffer: MediaTypeSniffer
-) : ArchiveFactory {
+public class ZipArchiveFactory : ArchiveFactory {
 
-    private val mediaTypeRetriever = BlobMediaTypeRetriever(mediaTypeSniffer, null)
+    private val fileZipArchiveProvider = FileZipArchiveProvider()
 
-    private val fileZipArchiveProvider = FileZipArchiveProvider(mediaTypeRetriever)
-
-    private val streamingZipArchiveProvider = StreamingZipArchiveProvider(mediaTypeRetriever)
+    private val streamingZipArchiveProvider = StreamingZipArchiveProvider()
 
     override suspend fun create(
         mediaType: MediaType,
-        blob: Blob
+        readable: Readable
     ): Try<Container<Resource>, ArchiveFactory.Error> =
-        blob.source?.toFile()
-            ?.let { fileZipArchiveProvider.create(mediaType, blob) }
-            ?: streamingZipArchiveProvider.create(mediaType, blob)
+        (readable as? Resource)?.source?.toFile()
+            ?.let { fileZipArchiveProvider.create(mediaType, it) }
+            ?: streamingZipArchiveProvider.create(mediaType, readable)
 }

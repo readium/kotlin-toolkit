@@ -12,13 +12,13 @@ import kotlinx.coroutines.runBlocking
 import org.readium.r2.shared.util.Try
 
 /**
- * Input stream reading through a [Blob].
+ * Input stream reading through a [Readable].
  *
  * If you experience bad performances, consider wrapping the stream in a BufferedInputStream. This
  * is particularly useful when streaming deflated ZIP entries.
  */
-public class BlobInputStream(
-    private val blob: Blob,
+public class ReadableInputStream(
+    private val readable: Readable,
     private val wrapError: (ReadError) -> IOException,
     private val range: LongRange? = null
 ) : InputStream() {
@@ -27,7 +27,7 @@ public class BlobInputStream(
 
     private val end: Long by lazy {
         val resourceLength =
-            runBlocking { blob.length() }
+            runBlocking { readable.length() }
                 .recover()
 
         if (range == null) {
@@ -67,7 +67,7 @@ public class BlobInputStream(
         }
 
         val bytes = runBlocking {
-            blob.read(position until (position + 1))
+            readable.read(position until (position + 1))
                 .recover()
         }
         position += 1
@@ -83,7 +83,7 @@ public class BlobInputStream(
 
         val bytesToRead = len.coerceAtMost(available())
         val bytes = runBlocking {
-            blob.read(position until (position + bytesToRead))
+            readable.read(position until (position + bytesToRead))
                 .recover()
         }
         check(bytes.size <= bytesToRead)

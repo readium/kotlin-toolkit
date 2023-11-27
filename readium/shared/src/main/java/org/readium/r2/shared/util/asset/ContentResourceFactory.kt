@@ -7,25 +7,18 @@
 package org.readium.r2.shared.util.asset
 
 import android.content.ContentResolver
-import android.provider.MediaStore
-import org.readium.r2.shared.extensions.queryProjection
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Try
-import org.readium.r2.shared.util.data.ContentBlob
 import org.readium.r2.shared.util.mediatype.MediaType
-import org.readium.r2.shared.util.resource.BlobResourceAdapter
-import org.readium.r2.shared.util.resource.MediaTypeRetriever
+import org.readium.r2.shared.util.resource.ContentResource
 import org.readium.r2.shared.util.resource.Resource
-import org.readium.r2.shared.util.resource.filename
-import org.readium.r2.shared.util.resource.mediaType
 import org.readium.r2.shared.util.toUri
 
 /**
- * Creates [ContentBlob]s.
+ * Creates [ContentResource]s.
  */
 public class ContentResourceFactory(
-    private val contentResolver: ContentResolver,
-    private val mediaTypeRetriever: MediaTypeRetriever
+    private val contentResolver: ContentResolver
 ) : ResourceFactory {
 
     override suspend fun create(
@@ -36,26 +29,7 @@ public class ContentResourceFactory(
             return Try.failure(ResourceFactory.Error.SchemeNotSupported(url.scheme))
         }
 
-        val blob = ContentBlob(url.toUri(), contentResolver)
-
-        val filename =
-            contentResolver.queryProjection(url.uri, MediaStore.MediaColumns.DISPLAY_NAME)
-
-        val properties =
-            Resource.Properties(
-                Resource.Properties.Builder()
-                    .also {
-                        it.filename = filename
-                        it.mediaType = mediaType
-                    }
-            )
-
-        val resource =
-            BlobResourceAdapter(
-                blob,
-                properties,
-                mediaTypeRetriever
-            )
+        val resource = ContentResource(url.toUri(), contentResolver)
 
         return Try.success(resource)
     }

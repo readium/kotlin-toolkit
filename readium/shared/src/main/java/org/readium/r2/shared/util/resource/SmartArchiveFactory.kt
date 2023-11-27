@@ -7,8 +7,8 @@
 package org.readium.r2.shared.util.resource
 
 import org.readium.r2.shared.util.Try
-import org.readium.r2.shared.util.data.Blob
 import org.readium.r2.shared.util.data.Container
+import org.readium.r2.shared.util.data.Readable
 import org.readium.r2.shared.util.mediatype.FormatRegistry
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.tryRecover
@@ -20,14 +20,14 @@ internal class SmartArchiveFactory(
 
     override suspend fun create(
         mediaType: MediaType,
-        blob: Blob
+        readable: Readable
     ): Try<Container<Resource>, ArchiveFactory.Error> =
-        archiveFactory.create(mediaType, blob)
+        archiveFactory.create(mediaType, readable)
             .tryRecover { error ->
                 when (error) {
                     is ArchiveFactory.Error.FormatNotSupported -> {
                         formatRegistry.superType(mediaType)
-                            ?.let { archiveFactory.create(it, blob) }
+                            ?.let { archiveFactory.create(it, readable) }
                             ?: Try.failure(error)
                     }
                     is ArchiveFactory.Error.ReadError ->

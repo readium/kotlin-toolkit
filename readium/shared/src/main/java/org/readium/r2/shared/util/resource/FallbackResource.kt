@@ -9,7 +9,6 @@ package org.readium.r2.shared.util.resource
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.data.ReadError
-import org.readium.r2.shared.util.mediatype.MediaType
 
 /**
  * Resource that will act as a proxy to a fallback resource if the [originalResource] errors out.
@@ -20,9 +19,6 @@ public class FallbackResource(
 ) : Resource {
 
     override val source: AbsoluteUrl? = null
-
-    override suspend fun mediaType(): Try<MediaType, ReadError> =
-        withResource { mediaType() }
 
     override suspend fun properties(): Try<Resource.Properties, ReadError> =
         withResource { properties() }

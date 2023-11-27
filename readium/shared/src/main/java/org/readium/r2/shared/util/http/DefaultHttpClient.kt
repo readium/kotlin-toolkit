@@ -26,13 +26,17 @@ import org.readium.r2.shared.util.MessageError
 import org.readium.r2.shared.util.ThrowableError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
-import org.readium.r2.shared.util.data.InMemoryBlob
 import org.readium.r2.shared.util.flatMap
 import org.readium.r2.shared.util.getOrDefault
 import org.readium.r2.shared.util.http.HttpRequest.Method
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.mediatype.MediaTypeHints
+import org.readium.r2.shared.util.resource.InMemoryResource
 import org.readium.r2.shared.util.resource.MediaTypeRetriever
+import org.readium.r2.shared.util.resource.Resource
+import org.readium.r2.shared.util.resource.filename
+import org.readium.r2.shared.util.resource.mediaType
+import org.readium.r2.shared.util.toAbsoluteUrl
 import org.readium.r2.shared.util.toDebugDescription
 import org.readium.r2.shared.util.tryRecover
 import timber.log.Timber
@@ -176,10 +180,23 @@ public class DefaultHttpClient(
                         // Reads the full body, since it might contain an error representation such as
                         // JSON Problem Details or OPDS Authentication Document
                         val body = connection.errorStream?.use { it.readBytes() }
+
+                        val resourceProperties =
+                            Resource.Properties(
+                                Resource.Properties.Builder()
+                                    .apply {
+                                        mediaType = connection.contentType?.let { MediaType(it) }
+                                        filename = connection.url.file
+                                    }
+
+                            )
                         val mediaType = body?.let {
                             mediaTypeRetriever.retrieve(
-                                hints = MediaTypeHints(connection),
-                                blob = InMemoryBlob(it)
+                                InMemoryResource(
+                                    it,
+                                    connection.url.toAbsoluteUrl(),
+                                    resourceProperties
+                                )
                             ).getOrDefault(MediaType.BINARY)
                         }
                         return@withContext Try.failure(

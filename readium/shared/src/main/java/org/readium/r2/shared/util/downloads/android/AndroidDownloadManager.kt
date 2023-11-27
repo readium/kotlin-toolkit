@@ -26,7 +26,6 @@ import kotlinx.coroutines.withContext
 import org.readium.r2.shared.extensions.tryOr
 import org.readium.r2.shared.util.MessageError
 import org.readium.r2.shared.util.Try
-import org.readium.r2.shared.util.data.FileBlob
 import org.readium.r2.shared.util.downloads.DownloadManager
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.http.HttpError
@@ -254,7 +253,7 @@ public class AndroidDownloadManager internal constructor(
             SystemDownloadManager.STATUS_SUCCESSFUL -> {
                 prepareResult(
                     Uri.parse(facade.localUri!!)!!.toFile(),
-                    mediaTypeHint = facade.mediaType
+                    mediaTypeHint = facade.mediaType?.let { MediaType(it) }
                 )
                     .onSuccess { download ->
                         listenersForId.forEach { it.onDownloadCompleted(id, download) }
@@ -273,15 +272,11 @@ public class AndroidDownloadManager internal constructor(
         }
     }
 
-    private suspend fun prepareResult(destFile: File, mediaTypeHint: String?): Try<DownloadManager.Download, DownloadManager.Error> =
+    private suspend fun prepareResult(destFile: File, mediaTypeHint: MediaType?): Try<DownloadManager.Download, DownloadManager.Error> =
         withContext(Dispatchers.IO) {
             val mediaType = mediaTypeRetriever.retrieve(
-                hints = MediaTypeHints(
-                    mediaTypes = listOfNotNull(
-                        mediaTypeHint?.let { MediaType(it) }
-                    )
-                ),
-                blob = FileBlob(destFile)
+                destFile,
+                MediaTypeHints(mediaType = mediaTypeHint)
             ).getOrElse { MediaType.BINARY }
 
             val extension = formatRegistry.fileExtension(mediaType)

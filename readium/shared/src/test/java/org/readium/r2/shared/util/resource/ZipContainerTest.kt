@@ -20,7 +20,6 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.assertSuccess
-import org.readium.r2.shared.util.data.FileBlob
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.use
 import org.readium.r2.shared.util.zip.FileZipArchiveProvider
@@ -42,7 +41,7 @@ class ZipContainerTest(val sut: suspend () -> Container) {
                 assertNotNull(
                     FileZipArchiveProvider(MediaTypeRetriever())
                         .create(
-                            FileBlob(File(epubZip.path), mediaType = MediaType.EPUB),
+                            FileResource(File(epubZip.path), mediaType = MediaType.EPUB),
                             password = null
                         )
                         .getOrNull()

@@ -80,7 +80,7 @@ internal suspend fun<R, S> Try<S, DecoderError>.decodeMap(
  * It will extract the charset parameter from the media type hints to figure out an encoding.
  * Otherwise, fallback on UTF-8.
  */
-public suspend fun Blob.readAsString(
+public suspend fun Readable.readAsString(
     charset: Charset = Charsets.UTF_8
 ): Try<String, DecoderError> =
     read().decode(
@@ -89,7 +89,7 @@ public suspend fun Blob.readAsString(
     )
 
 /** Content as an XML document. */
-public suspend fun Blob.readAsXml(): Try<ElementNode, DecoderError> =
+public suspend fun Readable.readAsXml(): Try<ElementNode, DecoderError> =
     read().decode(
         { XmlParser().parse(ByteArrayInputStream(it)) },
         { MessageError("Content is not a valid XML document.", ThrowableError(it)) }
@@ -98,14 +98,14 @@ public suspend fun Blob.readAsXml(): Try<ElementNode, DecoderError> =
 /**
  * Content parsed from JSON.
  */
-public suspend fun Blob.readAsJson(): Try<JSONObject, DecoderError> =
+public suspend fun Readable.readAsJson(): Try<JSONObject, DecoderError> =
     readAsString().decodeMap(
         { JSONObject(it) },
         { MessageError("Content is not valid JSON.", ThrowableError(it)) }
     )
 
 /** Readium Web Publication Manifest parsed from the content. */
-public suspend fun Blob.readAsRwpm(): Try<Manifest, DecoderError> =
+public suspend fun Readable.readAsRwpm(): Try<Manifest, DecoderError> =
     readAsJson().flatMap { json ->
         Manifest.fromJSON(json)
             ?.let { Try.success(it) }
@@ -119,7 +119,7 @@ public suspend fun Blob.readAsRwpm(): Try<Manifest, DecoderError> =
 /**
  * Reads the full content as a [Bitmap].
  */
-public suspend fun Blob.readAsBitmap(): Try<Bitmap, DecoderError> =
+public suspend fun Readable.readAsBitmap(): Try<Bitmap, DecoderError> =
     read()
         .mapFailure { DecoderError.Read(it) }
         .flatMap { bytes ->
@@ -135,7 +135,7 @@ public suspend fun Blob.readAsBitmap(): Try<Bitmap, DecoderError> =
 /**
  * Returns whether the content is a JSON object containing all of the given root keys.
  */
-public suspend fun Blob.containsJsonKeys(
+public suspend fun Readable.containsJsonKeys(
     vararg keys: String
 ): Try<Boolean, DecoderError> {
     val json = readAsJson()

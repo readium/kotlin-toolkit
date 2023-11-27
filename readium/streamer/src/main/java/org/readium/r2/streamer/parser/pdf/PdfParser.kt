@@ -20,7 +20,6 @@ import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.pdf.PdfDocumentFactory
 import org.readium.r2.shared.util.pdf.toLinks
-import org.readium.r2.streamer.extensions.toLink
 import org.readium.r2.streamer.parser.PublicationParser
 
 /**
@@ -68,7 +67,7 @@ public class PdfParser(
                 readingProgression = document.readingProgression,
                 numberOfPages = document.pageCount
             ),
-            readingOrder = listOf(resource.toLink(url, MediaType.PDF)),
+            readingOrder = listOf(Link(href = url, mediaType = MediaType.PDF)),
             tableOfContents = tableOfContents
         )
 

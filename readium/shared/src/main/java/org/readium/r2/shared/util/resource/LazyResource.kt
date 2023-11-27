@@ -9,7 +9,6 @@ package org.readium.r2.shared.util.resource
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.data.ReadError
-import org.readium.r2.shared.util.mediatype.MediaType
 
 /**
  * Wraps a [Resource] which will be created only when first accessing one of its members.
@@ -28,9 +27,6 @@ public open class LazyResource(
 
         return _resource
     }
-
-    override suspend fun mediaType(): Try<MediaType, ReadError> =
-        resource().mediaType()
 
     override suspend fun properties(): Try<Resource.Properties, ReadError> =
         resource().properties()

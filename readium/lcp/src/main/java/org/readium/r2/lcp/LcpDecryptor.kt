@@ -20,22 +20,16 @@ import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.flatMap
 import org.readium.r2.shared.util.getOrElse
-import org.readium.r2.shared.util.mediatype.MediaType
-import org.readium.r2.shared.util.mediatype.MediaTypeHints
-import org.readium.r2.shared.util.mediatype.MediaTypeSnifferError
 import org.readium.r2.shared.util.resource.FailureResource
-import org.readium.r2.shared.util.resource.MediaTypeRetriever
 import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.shared.util.resource.TransformingResource
 import org.readium.r2.shared.util.resource.flatMap
-import org.readium.r2.shared.util.tryRecover
 
 /**
  * Decrypts a resource protected with LCP.
  */
 internal class LcpDecryptor(
     val license: LcpLicense?,
-    private val mediaTypeRetriever: MediaTypeRetriever,
     var encryptionData: Map<Url, Encryption> = emptyMap()
 ) {
 
@@ -59,21 +53,9 @@ internal class LcpDecryptor(
                         )
                     )
                 encryption.isDeflated || !encryption.isCbcEncrypted ->
-                    FullLcpResource(
-                        url,
-                        resource,
-                        encryption,
-                        license,
-                        mediaTypeRetriever
-                    )
+                    FullLcpResource(resource, encryption, license)
                 else ->
-                    CbcLcpResource(
-                        url,
-                        resource,
-                        encryption,
-                        license,
-                        mediaTypeRetriever
-                    )
+                    CbcLcpResource(resource, encryption, license)
             }
         }
     }
@@ -85,29 +67,13 @@ internal class LcpDecryptor(
      * resource, for example when the resource is deflated before encryption.
      */
     private class FullLcpResource(
-        private val url: Url,
         resource: Resource,
         private val encryption: Encryption,
-        private val license: LcpLicense,
-        private val mediaTypeRetriever: MediaTypeRetriever
+        private val license: LcpLicense
     ) : TransformingResource(resource) {
 
         override val source: AbsoluteUrl? =
             null
-        override suspend fun mediaType(): Try<MediaType, ReadError> =
-            mediaTypeRetriever
-                .retrieve(
-                    hints = MediaTypeHints(fileExtension = url.extension),
-                    blob = this
-                )
-                .tryRecover { error ->
-                    when (error) {
-                        is MediaTypeSnifferError.Read ->
-                            Try.failure(error.cause)
-                        MediaTypeSnifferError.NotRecognized ->
-                            Try.success(MediaType.BINARY)
-                    }
-                }
 
         override suspend fun transform(data: Try<ByteArray, ReadError>): Try<ByteArray, ReadError> =
             license.decryptFully(data, encryption.isDeflated)
@@ -123,11 +89,9 @@ internal class LcpDecryptor(
      * Supports random access for byte range requests, but the resource MUST NOT be deflated.
      */
     private class CbcLcpResource(
-        private val url: Url,
         private val resource: Resource,
         private val encryption: Encryption,
-        private val license: LcpLicense,
-        private val mediaTypeRetriever: MediaTypeRetriever
+        private val license: LcpLicense
     ) : Resource by resource {
 
         override val source: AbsoluteUrl? = null
@@ -149,20 +113,6 @@ internal class LcpDecryptor(
         * in the next call if possible.
         */
         private val _cache: Cache = Cache()
-
-        override suspend fun mediaType(): Try<MediaType, ReadError> =
-            mediaTypeRetriever
-                .retrieve(
-                    hints = MediaTypeHints(fileExtension = url.extension),
-                    blob = this
-                ).tryRecover { error ->
-                    when (error) {
-                        is MediaTypeSnifferError.Read ->
-                            Try.failure(error.cause)
-                        MediaTypeSnifferError.NotRecognized ->
-                            Try.success(MediaType.BINARY)
-                    }
-                }
 
         /** Plain text size. */
         override suspend fun length(): Try<Long, ReadError> {

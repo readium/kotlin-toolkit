@@ -6,6 +6,7 @@
 
 package org.readium.r2.streamer.parser.audio
 
+import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.LocalizedString
 import org.readium.r2.shared.publication.Manifest
 import org.readium.r2.shared.publication.Metadata
@@ -14,11 +15,14 @@ import org.readium.r2.shared.util.MessageError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.data.ReadError
+import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.shared.util.mediatype.MediaTypeSnifferError
+import org.readium.r2.shared.util.resource.MediaTypeRetriever
+import org.readium.r2.shared.util.use
 import org.readium.r2.streamer.extensions.guessTitle
 import org.readium.r2.streamer.extensions.isHiddenOrThumbs
-import org.readium.r2.streamer.extensions.linkForUrl
 import org.readium.r2.streamer.parser.PublicationParser
 
 /**
@@ -27,7 +31,9 @@ import org.readium.r2.streamer.parser.PublicationParser
  *
  * It can also work for a standalone audio file.
  */
-public class AudioParser : PublicationParser {
+public class AudioParser(
+    private val mediaTypeRetriever: MediaTypeRetriever
+) : PublicationParser {
 
     override suspend fun parse(
         asset: PublicationParser.Asset,
@@ -42,7 +48,6 @@ public class AudioParser : PublicationParser {
                 asset.container
                     .filter { zabCanContain(it) }
                     .sortedBy { it.toString() }
-                    .toMutableList()
             } else {
                 listOfNotNull(
                     asset.container.entries.firstOrNull()
@@ -59,12 +64,27 @@ public class AudioParser : PublicationParser {
             )
         }
 
+        val readingOrderLinks = readingOrder.map { url ->
+            val mediaType = asset.container[url]!!.use { resource ->
+                mediaTypeRetriever.retrieve(resource)
+                    .getOrElse { error ->
+                        when (error) {
+                            MediaTypeSnifferError.NotRecognized ->
+                                null
+                            is MediaTypeSnifferError.Read ->
+                                return Try.failure(PublicationParser.Error.ReadError(error.cause))
+                        }
+                    }
+            }
+            Link(href = url, mediaType = mediaType)
+        }
+
         val manifest = Manifest(
             metadata = Metadata(
                 conformsTo = setOf(Publication.Profile.AUDIOBOOK),
                 localizedTitle = asset.container.guessTitle()?.let { LocalizedString(it) }
             ),
-            readingOrder = readingOrder.map { asset.container.linkForUrl(it) }
+            readingOrder = readingOrderLinks
         )
 
         val publicationBuilder = Publication.Builder(
