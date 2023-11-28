@@ -47,6 +47,7 @@ import org.readium.r2.navigator.Decoration
 import org.readium.r2.navigator.DecorationId
 import org.readium.r2.navigator.ExperimentalDecorator
 import org.readium.r2.navigator.HyperlinkNavigator
+import org.readium.r2.navigator.NavigatorFragment
 import org.readium.r2.navigator.OverflowNavigator
 import org.readium.r2.navigator.R
 import org.readium.r2.navigator.R2BasicWebView
@@ -85,7 +86,6 @@ import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.ReadingProgression as PublicationReadingProgression
 import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.publication.presentation.presentation
-import org.readium.r2.shared.publication.services.isRestricted
 import org.readium.r2.shared.publication.services.positionsByReadingOrder
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
@@ -106,7 +106,7 @@ public typealias JavascriptInterfaceFactory = (resource: Link) -> Any?
  */
 @OptIn(ExperimentalDecorator::class, ExperimentalReadiumApi::class, DelicateReadiumApi::class)
 public class EpubNavigatorFragment internal constructor(
-    override val publication: Publication,
+    publication: Publication,
     private val initialLocator: Locator?,
     readingOrder: List<Link>?,
     private val initialPreferences: EpubPreferences,
@@ -115,7 +115,7 @@ public class EpubNavigatorFragment internal constructor(
     epubLayout: EpubLayout,
     private val defaults: EpubDefaults,
     configuration: Configuration
-) : Fragment(),
+) : NavigatorFragment(publication),
     OverflowNavigator,
     SelectableNavigator,
     DecorableNavigator,
@@ -260,10 +260,6 @@ public class EpubNavigatorFragment internal constructor(
     }
 
     public interface Listener : OverflowNavigator.Listener, HyperlinkNavigator.Listener
-
-    init {
-        require(!publication.isRestricted) { "The provided publication is restricted. Check that any DRM was properly unlocked using a Content Protection." }
-    }
 
     // Configurable
 
