@@ -19,12 +19,15 @@ import org.junit.runner.RunWith
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.firstWithRel
 import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.assertSuccess
+import org.readium.r2.shared.util.asset.DefaultMediaTypeSniffer
+import org.readium.r2.shared.util.asset.MediaTypeRetriever
+import org.readium.r2.shared.util.mediatype.FormatRegistry
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.resource.FileResource
-import org.readium.r2.shared.util.resource.MediaTypeRetriever
-import org.readium.r2.shared.util.resource.ResourceContainer
+import org.readium.r2.shared.util.resource.SingleResourceContainer
 import org.readium.r2.shared.util.toUrl
-import org.readium.r2.shared.util.zip.FileZipArchiveProvider
+import org.readium.r2.shared.util.zip.ZipArchiveFactory
 import org.readium.r2.streamer.parseBlocking
 import org.readium.r2.streamer.parser.PublicationParser
 import org.robolectric.RobolectricTestRunner
@@ -32,15 +35,20 @@ import org.robolectric.RobolectricTestRunner
 @RunWith(RobolectricTestRunner::class)
 class ImageParserTest {
 
-    private val parser = ImageParser()
+    private val mediaTypeRetriever =
+        MediaTypeRetriever(
+            DefaultMediaTypeSniffer(),
+            FormatRegistry(),
+            ZipArchiveFactory(),
+            null
+        )
+
+    private val parser = ImageParser(mediaTypeRetriever)
 
     private val cbzAsset = runBlocking {
         val file = fileForResource("futuristic_tales.cbz")
         val resource = FileResource(file, mediaType = MediaType.CBZ)
-        val archive = FileZipArchiveProvider(MediaTypeRetriever()).create(
-            resource,
-            password = null
-        ).getOrNull()!!
+        val archive = ZipArchiveFactory().create(MediaType.ZIP, resource).assertSuccess()
         PublicationParser.Asset(mediaType = MediaType.CBZ, archive)
     }
 
@@ -49,7 +57,7 @@ class ImageParserTest {
         val resource = FileResource(file, mediaType = MediaType.JPEG)
         PublicationParser.Asset(
             mediaType = MediaType.JPEG,
-            ResourceContainer(file.toUrl(), resource)
+            SingleResourceContainer(file.toUrl(), resource)
         )
     }
 

@@ -32,7 +32,6 @@ import org.readium.r2.shared.util.http.DefaultHttpClient
 import org.readium.r2.shared.util.http.HttpClient
 import org.readium.r2.shared.util.http.HttpRequest
 import org.readium.r2.shared.util.http.fetchWithDecoder
-import org.readium.r2.shared.util.resource.MediaTypeRetriever
 
 public enum class OPDS2ParserError {
     MetadataNotFound,
@@ -48,7 +47,7 @@ public class OPDS2Parser {
 
         public suspend fun parseUrlString(
             url: String,
-            client: HttpClient = DefaultHttpClient(MediaTypeRetriever())
+            client: HttpClient = DefaultHttpClient()
         ): Try<ParseData, Exception> =
             AbsoluteUrl(url)
                 ?.let { parseRequest(HttpRequest(it), client) }
@@ -56,7 +55,7 @@ public class OPDS2Parser {
 
         public suspend fun parseRequest(
             request: HttpRequest,
-            client: HttpClient = DefaultHttpClient(MediaTypeRetriever())
+            client: HttpClient = DefaultHttpClient()
         ): Try<ParseData, Exception> {
             return client.fetchWithDecoder(request) {
                 this.parse(it.body, request.url)
@@ -283,7 +282,5 @@ public class OPDS2Parser {
         private fun parseLink(json: JSONObject, baseUrl: Url): Link? =
             Link.fromJSON(json)
                 ?.normalizeHrefsToBase(baseUrl)
-
-        public var mediaTypeRetriever: MediaTypeRetriever = MediaTypeRetriever()
     }
 }

@@ -19,12 +19,10 @@ import kotlinx.coroutines.runBlocking
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.readium.r2.shared.publication.*
-import org.readium.r2.shared.readBlocking
 import org.readium.r2.shared.util.AbsoluteUrl
-import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.resource.FileResource
-import org.readium.r2.shared.util.resource.ResourceContainer
+import org.readium.r2.shared.util.resource.SingleResourceContainer
 import org.readium.r2.shared.util.toAbsoluteUrl
 import org.robolectric.RobolectricTestRunner
 
@@ -59,23 +57,11 @@ class CoverServiceTest {
                     Link(href = Href(coverPath), rels = setOf("cover"))
                 )
             ),
-            container = ResourceContainer(
+            container = SingleResourceContainer(
                 coverPath,
                 FileResource(coverPath.toFile()!!, mediaType = MediaType.JPEG)
             )
         )
-    }
-
-    @Test
-    fun `get works fine`() = runBlocking {
-        val service = InMemoryCoverService(coverBitmap)
-        val res = service.get(Url("/~readium/cover")!!)
-        assertNotNull(res)
-
-        val bytes = res.readBlocking().getOrNull()
-        assertNotNull(bytes)
-
-        assertTrue(BitmapFactory.decodeByteArray(bytes, 0, bytes.size).sameAs(coverBitmap))
     }
 
     @Test

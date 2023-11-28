@@ -16,7 +16,6 @@ import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.asset.Asset
 import org.readium.r2.shared.util.data.DecoderError
 import org.readium.r2.shared.util.data.ReadError
-import org.readium.r2.shared.util.data.readAsJson
 import org.readium.r2.shared.util.data.readAsRwpm
 import org.readium.r2.shared.util.data.readAsXml
 import org.readium.r2.shared.util.getOrElse
@@ -71,35 +70,28 @@ public class LcpFallbackContentProtection : ContentProtection {
     }
 
     private suspend fun isLcpProtected(container: ResourceContainer, mediaType: MediaType): Try<Boolean, ReadError> {
-        val isReadiumWebpub = mediaType.matches(MediaType.READIUM_WEBPUB) ||
-            mediaType.matches(MediaType.LCP_PROTECTED_PDF) ||
-            mediaType.matches(MediaType.LCP_PROTECTED_AUDIOBOOK)
-
+        val isRpf = mediaType.isRpf
         val isEpub = mediaType.matches(MediaType.EPUB)
 
-        if (!isReadiumWebpub && !isEpub) {
+        if (!isRpf && !isEpub) {
             return Try.success(false)
         }
 
-        container.get(Url("license.lcpl")!!)
-            ?.readAsJson()
-            ?.getOrElse {
-                when (it) {
-                    is DecoderError.Read ->
-                        Try.failure(it.cause.cause)
-                    is DecoderError.Decoding ->
-                        return Try.success(false)
-                }
-            }
+        val licenseUrl = when {
+            isRpf -> Url("license.lcpl")!!
+            else -> Url("META-INF/license.lcpl")!! // isEpub
+        }
+        container[licenseUrl]
+            ?.let { return Try.success(true) }
 
         return when {
-            isReadiumWebpub -> hasLcpSchemeInManifest(container)
+            isRpf -> hasLcpSchemeInManifest(container)
             else -> hasLcpSchemeInEncryptionXml(container) // isEpub
         }
     }
 
     private suspend fun hasLcpSchemeInManifest(container: ResourceContainer): Try<Boolean, ReadError> {
-        val manifest = container.get(Url("manifest.json")!!)
+        val manifest = container[Url("manifest.json")!!]
             ?.readAsRwpm()
             ?.getOrElse {
                 when (it) {

@@ -30,14 +30,10 @@ import org.readium.r2.shared.publication.services.WebPositionsService
 import org.readium.r2.shared.publication.services.content.ContentService
 import org.readium.r2.shared.publication.services.search.SearchService
 import org.readium.r2.shared.util.Closeable
-import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.data.Container
 import org.readium.r2.shared.util.data.EmptyContainer
 import org.readium.r2.shared.util.http.HttpClient
-import org.readium.r2.shared.util.http.HttpError
-import org.readium.r2.shared.util.http.HttpRequest
-import org.readium.r2.shared.util.http.HttpStreamResponse
 import org.readium.r2.shared.util.resource.Resource
 
 internal typealias ServiceFactory = (Publication.Service.Context) -> Publication.Service?
@@ -68,7 +64,7 @@ public class Publication(
     public val manifest: Manifest,
     private val container: PublicationContainer = EmptyContainer(),
     private val servicesBuilder: ServicesBuilder = ServicesBuilder(),
-    private val httpClient: HttpClient? = null,
+    httpClient: HttpClient? = null,
     @Deprecated(
         "Migrate to the new Settings API (see migration guide)",
         level = DeprecationLevel.ERROR
@@ -357,45 +353,6 @@ public class Publication(
         override fun close() {}
     }
 
-    public interface WebService : Service {
-
-        /**
-         * Links which will be added to [Publication.links].
-         * It can be used to expose a web API for the service, through [Publication.get].
-         *
-         * To disambiguate the href with a publication's local resources, you should use the prefix
-         * `/~readium/`. A custom media type or rel should be used to identify the service.
-         *
-         * You can use a templated URI to accept query parameters, e.g.:
-         *
-         * ```
-         * Link(
-         *     href = "/~readium/search{?text}",
-         *     type = "application/vnd.readium.search+json",
-         *     templated = true
-         * )
-         * ```
-         */
-        public val links: List<Link>
-
-        /**
-         * A service can return a Resource to:
-         *  - respond to a request to its web API declared in links,
-         *  - serve additional resources on behalf of the publication,
-         *  - replace a publication resource by its own version.
-         *
-         * Called by [Publication.get] for each request.
-         *
-         * Warning: If you need to request one of the publication resources to answer the request,
-         * use the [Container] provided by the [Publication.Service.Context] instead of
-         * [Publication.get], otherwise it will trigger an infinite loop.
-         *
-         * @return The [Resource] containing the response, or null if the service doesn't
-         * recognize this request.
-         */
-        public suspend fun handle(request: HttpRequest): Try<HttpStreamResponse, HttpError.Response>?
-    }
-
     /**
      * Builds a list of [Publication.Service] from a collection of service factories.
      *
@@ -428,7 +385,7 @@ public class Publication(
         )
 
         /** Builds the actual list of publication services to use in a Publication. */
-        public fun build(context: Service.Context, httpClient: HttpClient?): List<Service> {
+        public fun build(context: Service.Context, httpClient: HttpClient? = null): List<Service> {
             val serviceFactories =
                 buildMap<String, ServiceFactory> {
                     putAll(this@ServicesBuilder.serviceFactories)

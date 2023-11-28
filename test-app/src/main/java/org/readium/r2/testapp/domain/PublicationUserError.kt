@@ -19,7 +19,7 @@ sealed class PublicationUserError(
     constructor(@StringRes userMessageId: Int) :
         this(UserError.Content(userMessageId), null)
 
-    class ReadError(cause: UserError) :
+    class ReadError(override val cause: ReadUserError) :
         PublicationUserError(cause.content, cause.cause)
 
     class UnsupportedScheme(val error: Error) :

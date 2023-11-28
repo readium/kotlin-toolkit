@@ -7,10 +7,10 @@
 package org.readium.r2.shared.util.zip
 
 import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.archive.ArchiveFactory
 import org.readium.r2.shared.util.data.Container
 import org.readium.r2.shared.util.data.Readable
 import org.readium.r2.shared.util.mediatype.MediaType
-import org.readium.r2.shared.util.resource.ArchiveFactory
 import org.readium.r2.shared.util.resource.Resource
 
 public class ZipArchiveFactory : ArchiveFactory {

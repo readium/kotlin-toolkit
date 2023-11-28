@@ -28,8 +28,8 @@ public sealed class HttpError(
     public class Timeout(cause: Error) :
         HttpError("Request timed out.", cause)
 
-    public class UnreachableHost(cause: Error) :
-        HttpError("Host could not be reached.", cause)
+    public class Unreachable(cause: Error) :
+        HttpError("Server could not be reached.", cause)
 
     public class Redirection(cause: Error) :
         HttpError("Redirection failed.", cause)

@@ -11,13 +11,12 @@ import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.MessageError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.archive.ArchiveFactory
+import org.readium.r2.shared.util.archive.SmartArchiveFactory
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.mediatype.FormatRegistry
 import org.readium.r2.shared.util.mediatype.MediaType
-import org.readium.r2.shared.util.resource.ArchiveFactory
-import org.readium.r2.shared.util.resource.MediaTypeRetriever
 import org.readium.r2.shared.util.resource.Resource
-import org.readium.r2.shared.util.resource.SmartArchiveFactory
 import org.readium.r2.shared.util.toUrl
 
 /**

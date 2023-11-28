@@ -6,6 +6,9 @@
 
 package org.readium.r2.shared.util
 
+import org.readium.r2.shared.util.Try.Failure
+import org.readium.r2.shared.util.Try.Success
+
 /** A [Result] type which can be used as a return type. */
 public sealed class Try<out Success, out Failure> {
 
@@ -153,9 +156,10 @@ public fun <S, F> Try<S, F>.assertSuccess(): S =
     when (this) {
         is Try.Success ->
             value
-        is Try.Failure ->
+        is Try.Failure -> {
             throw IllegalStateException(
                 "Try was excepted to contain a success.",
                 value as? Throwable ?: (value as? Error)?.let { ErrorException(it) }
             )
+        }
     }

@@ -6,6 +6,8 @@ import org.junit.Assert.assertNull
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.readium.r2.shared.assertJSONEquals
+import org.readium.r2.shared.util.archive.ArchiveProperties
+import org.readium.r2.shared.util.archive.archive
 import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
@@ -13,14 +15,14 @@ class PropertiesTest {
 
     @Test
     fun `get no archive`() {
-        assertNull(Properties().archive)
+        assertNull(Resource.Properties().archive)
     }
 
     @Test
     fun `get full archive`() {
         assertEquals(
             ArchiveProperties(entryLength = 8273, isEntryCompressed = true),
-            Properties(
+            Resource.Properties(
                 mapOf(
                     "archive" to mapOf(
                         "entryLength" to 8273,
@@ -34,7 +36,7 @@ class PropertiesTest {
     @Test
     fun `get invalid archive`() {
         assertNull(
-            Properties(
+            Resource.Properties(
                 mapOf(
                     "archive" to mapOf(
                         "foo" to "bar"
@@ -47,7 +49,7 @@ class PropertiesTest {
     @Test
     fun `get incomplete archive`() {
         assertNull(
-            Properties(
+            Resource.Properties(
                 mapOf(
                     "archive" to mapOf(
                         "isEntryCompressed" to true
@@ -57,7 +59,7 @@ class PropertiesTest {
         )
 
         assertNull(
-            Properties(
+            Resource.Properties(
                 mapOf(
                     "archive" to mapOf(
                         "entryLength" to 8273

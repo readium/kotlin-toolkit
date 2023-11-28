@@ -931,7 +931,7 @@ internal class TtsSessionAdapter<E : TtsEngine.Error>(
                             ERROR_CODE_IO_BAD_HTTP_STATUS
                         is HttpError.Timeout ->
                             ERROR_CODE_IO_NETWORK_CONNECTION_TIMEOUT
-                        is HttpError.UnreachableHost ->
+                        is HttpError.Unreachable ->
                             ERROR_CODE_IO_NETWORK_CONNECTION_FAILED
                         else -> ERROR_CODE_UNSPECIFIED
                     }

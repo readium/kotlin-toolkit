@@ -24,9 +24,9 @@ internal suspend fun Container<*>.readAsXmlOrNull(path: String): ElementNode? =
 internal suspend fun Container<*>.readAsXmlOrNull(url: Url): ElementNode? =
     get(url)?.use { it.readAsXml().getOrNull() }
 
-internal fun Container<*>.guessTitle(): String? {
-    val firstEntry = entries.firstOrNull() ?: return null
-    val commonFirstComponent = entries.pathCommonFirstComponent() ?: return null
+internal fun Iterable<Url>.guessTitle(): String? {
+    val firstEntry = firstOrNull() ?: return null
+    val commonFirstComponent = pathCommonFirstComponent() ?: return null
 
     if (commonFirstComponent.name == firstEntry.path) {
         return null

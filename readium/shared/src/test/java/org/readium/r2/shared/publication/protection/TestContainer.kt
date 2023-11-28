@@ -6,52 +6,20 @@
 
 package org.readium.r2.shared.publication.protection
 
-import org.readium.r2.shared.util.AbsoluteUrl
-import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
-import org.readium.r2.shared.util.data.StringBlob
-import org.readium.r2.shared.util.mediatype.MediaType
-import org.readium.r2.shared.util.resource.Container
+import org.readium.r2.shared.util.data.Container
 import org.readium.r2.shared.util.resource.Resource
-import org.readium.r2.shared.util.resource.ResourceTry
+import org.readium.r2.shared.util.resource.StringResource
 
-class TestContainer(resources: Map<Url, String> = emptyMap()) : Container {
+class TestContainer(
+    private val resources: Map<Url, String> = emptyMap()
+) : Container<Resource> {
 
-    private val entries: Map<Url, Entry> =
-        resources.mapValues { Entry(it.key, StringBlob(it.value, MediaType.TEXT)) }
+    override val entries: Set<Url> =
+        resources.keys
 
-    override suspend fun entries(): Set<Container.Entry> =
-        entries.values.toSet()
-
-    override fun get(url: Url): Container.Entry =
-        entries[url] ?: NotFoundEntry(url)
+    override fun get(url: Url): Resource? =
+        resources[url]?.let { StringResource(it) }
 
     override suspend fun close() {}
-
-    private class NotFoundEntry(
-        override val url: Url
-    ) : Container.Entry {
-
-        override val source: AbsoluteUrl? = null
-
-        override suspend fun mediaType(): ResourceTry<MediaType> =
-            Try.failure(Resource.Error.NotFound())
-
-        override suspend fun properties(): ResourceTry<Properties> =
-            Try.failure(Resource.Error.NotFound())
-
-        override suspend fun length(): ResourceTry<Long> =
-            Try.failure(Resource.Error.NotFound())
-
-        override suspend fun read(range: LongRange?): ResourceTry<ByteArray> =
-            Try.failure(Resource.Error.NotFound())
-
-        override suspend fun close() {
-        }
-    }
-
-    private class Entry(
-        override val url: Url,
-        private val resource: StringBlob
-    ) : Resource by resource, Container.Entry
 }

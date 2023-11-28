@@ -13,25 +13,18 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.util.Size
 import org.readium.r2.shared.extensions.scaleToFit
-import org.readium.r2.shared.extensions.toPng
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.ServiceFactory
 import org.readium.r2.shared.publication.firstWithRel
 import org.readium.r2.shared.util.AbsoluteUrl
-import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.data.Container
 import org.readium.r2.shared.util.data.readAsBitmap
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.http.HttpClient
-import org.readium.r2.shared.util.http.HttpError
 import org.readium.r2.shared.util.http.HttpRequest
-import org.readium.r2.shared.util.http.HttpResponse
-import org.readium.r2.shared.util.http.HttpStatus
-import org.readium.r2.shared.util.http.HttpStreamResponse
 import org.readium.r2.shared.util.http.fetch
-import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.resource.Resource
 
 /**
@@ -131,7 +124,7 @@ internal class ResourceCoverService(
 ) : CoverService {
 
     override suspend fun cover(): Bitmap? {
-        val resource = container.get(coverUrl)
+        val resource = container[coverUrl]
             ?: return null
 
         return resource.readAsBitmap()
@@ -155,42 +148,8 @@ internal class ResourceCoverService(
 /**
  * A [CoverService] which provides a unique cover for each Publication.
  */
-public abstract class GeneratedCoverService : CoverService, Publication.WebService {
-
-    private val coverLink = Link(
-        href = Url("/~readium/cover")!!,
-        mediaType = MediaType.PNG,
-        rels = setOf("cover")
-    )
-
-    override val links: List<Link> = listOf(coverLink)
-
+public abstract class GeneratedCoverService : CoverService {
     abstract override suspend fun cover(): Bitmap
-
-    override suspend fun handle(request: HttpRequest): Try<HttpStreamResponse, HttpError.Response>? {
-        if (request.url != coverLink.url()) {
-            return null
-        }
-
-        val cover = cover()
-        val png = cover.toPng()
-            ?: return Try.failure(
-                HttpError.Response(
-                    HttpStatus(500),
-                    null,
-                    null
-                )
-            )
-
-        val response = HttpResponse(request, request.url, 200, emptyMap(), MediaType.PNG)
-
-        return Try.success(
-            HttpStreamResponse(
-                response = response,
-                body = png.inputStream()
-            )
-        )
-    }
 }
 
 /**

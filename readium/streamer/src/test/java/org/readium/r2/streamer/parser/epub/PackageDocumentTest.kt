@@ -22,15 +22,14 @@ import org.readium.r2.shared.publication.epub.layout
 import org.readium.r2.shared.publication.presentation.*
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
-import org.readium.r2.shared.util.resource.MediaTypeRetriever
 import org.readium.r2.shared.util.xml.XmlParser
 import org.robolectric.RobolectricTestRunner
 
 fun parsePackageDocument(path: String): Manifest {
     val pub = PackageDocument::class.java.getResourceAsStream(path)
         ?.let { XmlParser().parse(it) }
-        ?.let { PackageDocument.parse(it, Url("OEBPS/content.opf")!!, MediaTypeRetriever()) }
-        ?.let { ManifestAdapter(it, mediaTypeRetriever = MediaTypeRetriever()) }
+        ?.let { PackageDocument.parse(it, Url("OEBPS/content.opf")!!) }
+        ?.let { ManifestAdapter(it) }
         ?.adapt()
     checkNotNull(pub)
     return pub

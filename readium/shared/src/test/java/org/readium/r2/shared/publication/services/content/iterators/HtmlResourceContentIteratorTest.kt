@@ -19,15 +19,14 @@ import org.readium.r2.shared.publication.services.content.Content.TextElement
 import org.readium.r2.shared.publication.services.content.Content.TextElement.Segment
 import org.readium.r2.shared.util.Language
 import org.readium.r2.shared.util.Url
-import org.readium.r2.shared.util.data.StringBlob
 import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.shared.util.resource.StringResource
 import org.robolectric.RobolectricTestRunner
 
 @OptIn(ExperimentalReadiumApi::class)
 @RunWith(RobolectricTestRunner::class)
 class HtmlResourceContentIteratorTest {
 
-    private val link = Link(href = Href("/dir/res.xhtml")!!, mediaType = MediaType.XHTML)
     private val locator = Locator(href = Url("/dir/res.xhtml")!!, mediaType = MediaType.XHTML)
 
     private val html = """
@@ -182,7 +181,7 @@ class HtmlResourceContentIteratorTest {
         totalProgressionRange: ClosedRange<Double>? = null
     ): HtmlResourceContentIterator =
         HtmlResourceContentIterator(
-            StringBlob(html, MediaType.HTML),
+            StringResource(html),
             totalProgressionRange = totalProgressionRange,
             startLocator
         )

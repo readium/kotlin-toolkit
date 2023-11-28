@@ -14,12 +14,12 @@ import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.util.MessageError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.asset.MediaTypeRetriever
 import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.mediatype.MediaTypeSnifferError
-import org.readium.r2.shared.util.resource.MediaTypeRetriever
 import org.readium.r2.shared.util.use
 import org.readium.r2.streamer.extensions.guessTitle
 import org.readium.r2.streamer.extensions.isHiddenOrThumbs
@@ -82,7 +82,7 @@ public class AudioParser(
         val manifest = Manifest(
             metadata = Metadata(
                 conformsTo = setOf(Publication.Profile.AUDIOBOOK),
-                localizedTitle = asset.container.guessTitle()?.let { LocalizedString(it) }
+                localizedTitle = asset.container.entries.guessTitle()?.let { LocalizedString(it) }
             ),
             readingOrder = readingOrderLinks
         )

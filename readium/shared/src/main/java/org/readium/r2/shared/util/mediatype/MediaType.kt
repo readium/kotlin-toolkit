@@ -197,6 +197,13 @@ public class MediaType private constructor(
     public val isRwpm: Boolean get() =
         matchesAny(READIUM_AUDIOBOOK_MANIFEST, DIVINA_MANIFEST, READIUM_WEBPUB_MANIFEST)
 
+    public val isRpf: Boolean get() = matchesAny(
+        READIUM_WEBPUB,
+        READIUM_AUDIOBOOK,
+        LCP_PROTECTED_PDF,
+        LCP_PROTECTED_AUDIOBOOK
+    )
+
     /** Returns whether this media type is of a publication file. */
     public val isPublication: Boolean get() = matchesAny(
         READIUM_AUDIOBOOK, READIUM_AUDIOBOOK_MANIFEST, CBZ, DIVINA, DIVINA_MANIFEST, EPUB, LCP_PROTECTED_AUDIOBOOK,
@@ -284,6 +291,7 @@ public class MediaType private constructor(
         public val AVIF: MediaType = MediaType("image/avif")!!
         public val BINARY: MediaType = MediaType("application/octet-stream")!!
         public val BMP: MediaType = MediaType("image/bmp")!!
+        public val CBR: MediaType = MediaType("application/vnd.comicbook-rar")!!
         public val CBZ: MediaType = MediaType("application/vnd.comicbook+zip")!!
         public val CSS: MediaType = MediaType("text/css")!!
         public val DIVINA: MediaType = MediaType("application/divina+zip")!!
@@ -330,6 +338,7 @@ public class MediaType private constructor(
         public val OTF: MediaType = MediaType("font/otf")!!
         public val PDF: MediaType = MediaType("application/pdf")!!
         public val PNG: MediaType = MediaType("image/png")!!
+        public val RAR: MediaType = MediaType("application/vnd.rar")!!
         public val READIUM_AUDIOBOOK: MediaType = MediaType("application/audiobook+zip")!!
         public val READIUM_AUDIOBOOK_MANIFEST: MediaType = MediaType("application/audiobook+json")!!
         public val READIUM_WEBPUB: MediaType = MediaType("application/webpub+zip")!!

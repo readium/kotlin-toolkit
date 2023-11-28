@@ -9,12 +9,15 @@ package org.readium.r2.shared.util.data
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.SuspendingCloseable
 import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.resource.Resource
 
 /**
  * A container provides access to a list of [Resource] entries.
  */
 public interface Container<out E : Readable> : Iterable<Url>, SuspendingCloseable {
+
+    public val archiveMediaType: MediaType? get() = null
 
     /**
      * Direct source to this container, when available.

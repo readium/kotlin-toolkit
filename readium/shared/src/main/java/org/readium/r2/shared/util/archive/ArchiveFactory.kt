@@ -4,13 +4,14 @@
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.r2.shared.util.resource
+package org.readium.r2.shared.util.archive
 
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.data.Container
 import org.readium.r2.shared.util.data.Readable
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.shared.util.resource.Resource
 
 /**
  * A factory to create a [ResourceContainer]s from archive [Readable]s.

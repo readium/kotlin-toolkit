@@ -59,7 +59,7 @@ public interface BlobMediaTypeSniffer {
 
 public interface ContainerMediaTypeSniffer {
     public suspend fun sniffContainer(
-        container: Container<*>
+        container: Container<Readable>
     ): Try<MediaType, MediaTypeSnifferError>
 }
 
@@ -91,7 +91,7 @@ public interface MediaTypeSniffer :
      * Sniffs a [MediaType] from a [Container].
      */
     public override suspend fun sniffContainer(
-        container: Container<*>
+        container: Container<Readable>
     ): Try<MediaType, MediaTypeSnifferError> =
         Try.failure(MediaTypeSnifferError.NotRecognized)
 }
@@ -129,7 +129,7 @@ public class CompositeMediaTypeSniffer(
         return Try.failure(MediaTypeSnifferError.NotRecognized)
     }
 
-    override suspend fun sniffContainer(container: Container<*>): Try<MediaType, MediaTypeSnifferError> {
+    override suspend fun sniffContainer(container: Container<Readable>): Try<MediaType, MediaTypeSnifferError> {
         for (sniffer in sniffers) {
             sniffer.sniffContainer(container)
                 .getOrElse { error ->
@@ -531,7 +531,7 @@ public object WebPubMediaTypeSniffer : MediaTypeSniffer {
         return Try.failure(MediaTypeSnifferError.NotRecognized)
     }
 
-    override suspend fun sniffContainer(container: Container<*>): Try<MediaType, MediaTypeSnifferError> {
+    override suspend fun sniffContainer(container: Container<Readable>): Try<MediaType, MediaTypeSnifferError> {
         // Reads a RWPM from a manifest.json archive entry.
         val manifest: Manifest =
             container[RelativeUrl("manifest.json")!!]
@@ -611,7 +611,7 @@ public object EpubMediaTypeSniffer : MediaTypeSniffer {
         return Try.failure(MediaTypeSnifferError.NotRecognized)
     }
 
-    override suspend fun sniffContainer(container: Container<*>): Try<MediaType, MediaTypeSnifferError> {
+    override suspend fun sniffContainer(container: Container<Readable>): Try<MediaType, MediaTypeSnifferError> {
         val mimetype = container[RelativeUrl("mimetype")!!]
             ?.readAsString(charset = Charsets.US_ASCII)
             ?.getOrElse { error ->
@@ -649,7 +649,7 @@ public object LpfMediaTypeSniffer : MediaTypeSniffer {
         return Try.failure(MediaTypeSnifferError.NotRecognized)
     }
 
-    override suspend fun sniffContainer(container: Container<*>): Try<MediaType, MediaTypeSnifferError> {
+    override suspend fun sniffContainer(container: Container<Readable>): Try<MediaType, MediaTypeSnifferError> {
         if (RelativeUrl("index.html")!! in container) {
             return Try.success(MediaType.LPF)
         }
@@ -669,6 +669,22 @@ public object LpfMediaTypeSniffer : MediaTypeSniffer {
                     return Try.success(MediaType.LPF)
                 }
             }
+
+        return Try.failure(MediaTypeSnifferError.NotRecognized)
+    }
+}
+
+public object RarMediaTypeSniffer : MediaTypeSniffer {
+
+    override fun sniffHints(hints: MediaTypeHints): Try<MediaType, MediaTypeSnifferError.NotRecognized> {
+        if (
+            hints.hasFileExtension("rar") ||
+            hints.hasMediaType("application/vnd.rar") ||
+            hints.hasMediaType("application/x-rar") ||
+            hints.hasMediaType("application/x-rar-compressed")
+        ) {
+            return Try.success(MediaType.LPF)
+        }
 
         return Try.failure(MediaTypeSnifferError.NotRecognized)
     }
@@ -729,12 +745,20 @@ public object ArchiveMediaTypeSniffer : MediaTypeSniffer {
             hints.hasFileExtension("cbz") ||
             hints.hasMediaType(
                 "application/vnd.comicbook+zip",
-                "application/x-cbz",
-                "application/x-cbr"
+                "application/x-cbz"
             )
         ) {
             return Try.success(MediaType.CBZ)
         }
+
+        if (
+            hints.hasFileExtension("cbr") ||
+            hints.hasMediaType("application/vnd.comicbook-rar") ||
+            hints.hasMediaType("application/x-cbr")
+        ) {
+            return Try.success(MediaType.CBR)
+        }
+
         if (hints.hasFileExtension("zab")) {
             return Try.success(MediaType.ZAB)
         }
@@ -742,7 +766,7 @@ public object ArchiveMediaTypeSniffer : MediaTypeSniffer {
         return Try.failure(MediaTypeSnifferError.NotRecognized)
     }
 
-    override suspend fun sniffContainer(container: Container<*>): Try<MediaType, MediaTypeSnifferError> {
+    override suspend fun sniffContainer(container: Container<Readable>): Try<MediaType, MediaTypeSnifferError> {
         fun isIgnored(url: Url): Boolean =
             url.filename?.startsWith(".") == true || url.filename == "Thumbs.db"
 
@@ -755,10 +779,24 @@ public object ArchiveMediaTypeSniffer : MediaTypeSniffer {
                 } == true
             }
 
-        if (archiveContainsOnlyExtensions(cbzExtensions)) {
+        if (
+            archiveContainsOnlyExtensions(cbzExtensions) &&
+            container.archiveMediaType?.matches(MediaType.ZIP) == true
+        ) {
             return Try.success(MediaType.CBZ)
         }
-        if (archiveContainsOnlyExtensions(zabExtensions)) {
+
+        if (
+            archiveContainsOnlyExtensions(cbzExtensions) &&
+            container.archiveMediaType?.matches(MediaType.RAR) == true
+        ) {
+            return Try.success(MediaType.CBR)
+        }
+
+        if (
+            archiveContainsOnlyExtensions(zabExtensions) &&
+            container.archiveMediaType?.matches(MediaType.ZIP) == true
+        ) {
             return Try.success(MediaType.ZAB)
         }
 

@@ -42,10 +42,18 @@ public class ReadiumWebPubParser(
             return Try.failure(PublicationParser.Error.UnsupportedFormat())
         }
 
-        val manifest = asset.container
-            .get(Url("manifest.json")!!)
-            ?.readAsRwpm()
-            ?.getOrElse {
+        val manifestResource = asset.container[Url("manifest.json")!!]
+            ?: return Try.failure(
+                PublicationParser.Error.ReadError(
+                    ReadError.Decoding(
+                        MessageError("Missing manifest.")
+                    )
+                )
+            )
+
+        val manifest = manifestResource
+            .readAsRwpm()
+            .getOrElse {
                 when (it) {
                     is DecoderError.Read ->
                         return Try.failure(
@@ -53,6 +61,7 @@ public class ReadiumWebPubParser(
                                 ReadError.Decoding(it.cause)
                             )
                         )
+
                     is DecoderError.Decoding ->
                         return Try.failure(
                             PublicationParser.Error.ReadError(
@@ -62,13 +71,7 @@ public class ReadiumWebPubParser(
                             )
                         )
                 }
-            } ?: return Try.failure(
-            PublicationParser.Error.ReadError(
-                ReadError.Decoding(
-                    MessageError("Missing manifest.")
-                )
-            )
-        )
+            }
 
         // Checks the requirements from the LCPDF specification.
         // https://readium.org/lcp-specs/notes/lcp-for-pdf.html

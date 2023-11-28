@@ -11,9 +11,11 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.assertSuccess
+import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.mediatype.MediaType
-import org.readium.r2.shared.util.resource.MediaTypeRetriever
 import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
@@ -21,7 +23,7 @@ class LcpFallbackContentProtectionTest {
 
     @Test
     fun `Sniff no content protection`() {
-        assertFalse(supports(mediaType = MediaType.EPUB, resources = emptyMap()))
+        assertFalse(supports(mediaType = MediaType.EPUB, resources = emptyMap()).assertSuccess())
     }
 
     @Test
@@ -32,7 +34,7 @@ class LcpFallbackContentProtectionTest {
                 resources = mapOf(
                     "META-INF/encryption.xml" to """<?xml version='1.0' encoding='utf-8'?><encryption xmlns="urn:oasis:names:tc:opendocument:xmlns:container" xmlns:enc="http://www.w3.org/2001/04/xmlenc#"></encryption>"""
                 )
-            )
+            ).assertSuccess()
         )
     }
 
@@ -44,7 +46,7 @@ class LcpFallbackContentProtectionTest {
                 resources = mapOf(
                     "license.lcpl" to "{}"
                 )
-            )
+            ).assertSuccess()
         )
     }
 
@@ -56,7 +58,7 @@ class LcpFallbackContentProtectionTest {
                 resources = mapOf(
                     "META-INF/license.lcpl" to "{}"
                 )
-            )
+            ).assertSuccess()
         )
     }
 
@@ -84,15 +86,14 @@ class LcpFallbackContentProtectionTest {
   </EncryptedData>
 </encryption>"""
                 )
-            )
+            ).assertSuccess()
         )
     }
 
-    private fun supports(mediaType: MediaType, resources: Map<String, String>): Boolean = runBlocking {
-        LcpFallbackContentProtection(MediaTypeRetriever()).supports(
+    private fun supports(mediaType: MediaType, resources: Map<String, String>): Try<Boolean, ReadError> = runBlocking {
+        LcpFallbackContentProtection().supports(
             org.readium.r2.shared.util.asset.Asset.Container(
                 mediaType = mediaType,
-                exploded = false,
                 container = TestContainer(resources.mapKeys { Url(it.key)!! })
             )
         )

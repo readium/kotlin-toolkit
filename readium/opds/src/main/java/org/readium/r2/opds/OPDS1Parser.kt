@@ -24,7 +24,6 @@ import org.readium.r2.shared.util.http.HttpClient
 import org.readium.r2.shared.util.http.HttpRequest
 import org.readium.r2.shared.util.http.fetchWithDecoder
 import org.readium.r2.shared.util.mediatype.MediaType
-import org.readium.r2.shared.util.resource.MediaTypeRetriever
 import org.readium.r2.shared.util.xml.ElementNode
 import org.readium.r2.shared.util.xml.XmlParser
 
@@ -51,7 +50,7 @@ public class OPDS1Parser {
 
         public suspend fun parseUrlString(
             url: String,
-            client: HttpClient = DefaultHttpClient(MediaTypeRetriever())
+            client: HttpClient = DefaultHttpClient()
         ): Try<ParseData, Exception> =
             AbsoluteUrl(url)
                 ?.let { parseRequest(HttpRequest(it), client) }
@@ -59,7 +58,7 @@ public class OPDS1Parser {
 
         public suspend fun parseRequest(
             request: HttpRequest,
-            client: HttpClient = DefaultHttpClient(MediaTypeRetriever())
+            client: HttpClient = DefaultHttpClient()
         ): Try<ParseData, Exception> {
             return client.fetchWithDecoder(request) {
                 this.parse(it.body, request.url)
@@ -133,9 +132,7 @@ public class OPDS1Parser {
 
                         val newLink = Link(
                             href = feed.href.resolve(href),
-                            mediaType = mediaTypeRetriever.retrieve(
-                                mediaType = link.getAttr("type")
-                            ),
+                            mediaType = link.getAttr("type")?.let { MediaType(it) },
                             title = entry.getFirst("title", Namespaces.Atom)?.text,
                             rels = listOfNotNull(link.getAttr("rel")).toSet(),
                             properties = Properties(otherProperties = otherProperties)
@@ -154,7 +151,7 @@ public class OPDS1Parser {
                 val hrefAttr = link.getAttr("href")?.let { Url(it) } ?: continue
                 val href = feed.href.resolve(hrefAttr)
                 val title = link.getAttr("title")
-                val type = mediaTypeRetriever.retrieve(link.getAttr("type"))
+                val type = link.getAttr("type")?.let { MediaType(it) }
                 val rels = listOfNotNull(link.getAttr("rel")).toSet()
 
                 val facetGroupName = link.getAttrNs("facetGroup", Namespaces.Opds)
@@ -197,7 +194,7 @@ public class OPDS1Parser {
         @Suppress("unused")
         public suspend fun retrieveOpenSearchTemplate(
             feed: Feed,
-            client: HttpClient = DefaultHttpClient(MediaTypeRetriever())
+            client: HttpClient = DefaultHttpClient()
         ): Try<String?, Exception> {
             var openSearchURL: Href? = null
             var selfMimeType: MediaType? = null
@@ -280,7 +277,7 @@ public class OPDS1Parser {
 
                     Link(
                         href = baseUrl.resolve(href),
-                        mediaType = mediaTypeRetriever.retrieve(element.getAttr("type")),
+                        mediaType = element.getAttr("type")?.let { MediaType(it) },
                         title = element.getAttr("title"),
                         rels = listOfNotNull(rel).toSet(),
                         properties = Properties(otherProperties = properties)
@@ -428,7 +425,5 @@ public class OPDS1Parser {
                     children = fromXML(child)
                 )
             }
-
-        public var mediaTypeRetriever: MediaTypeRetriever = MediaTypeRetriever()
     }
 }

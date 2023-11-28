@@ -9,29 +9,17 @@
 
 package org.readium.r2.shared.publication.services
 
-import java.util.Locale
-import org.json.JSONObject
-import org.readium.r2.shared.publication.Href
-import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.LocalizedString
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.PublicationServicesHolder
 import org.readium.r2.shared.publication.ServiceFactory
 import org.readium.r2.shared.publication.protection.ContentProtection
 import org.readium.r2.shared.util.Error
-import org.readium.r2.shared.util.Try
-import org.readium.r2.shared.util.Url
-import org.readium.r2.shared.util.http.HttpError
-import org.readium.r2.shared.util.http.HttpRequest
-import org.readium.r2.shared.util.http.HttpResponse
-import org.readium.r2.shared.util.http.HttpStatus
-import org.readium.r2.shared.util.http.HttpStreamResponse
-import org.readium.r2.shared.util.mediatype.MediaType
 
 /**
  * Provides information about a publication's content protection and manages user rights.
  */
-public interface ContentProtectionService : Publication.WebService {
+public interface ContentProtectionService : Publication.Service {
 
     /**
      * Whether the [Publication] has a restricted access to its resources, and can't be rendered in
@@ -64,14 +52,6 @@ public interface ContentProtectionService : Publication.WebService {
      * It could be used in a sentence such as "Protected by {name}"
      */
     public val name: String? get() = null
-
-    override val links: List<Link>
-        get() = RouteHandler.links
-
-    override suspend fun handle(request: HttpRequest): Try<HttpStreamResponse, HttpError.Response>? {
-        val route = RouteHandler.route(request.url) ?: return null
-        return route.handleRequest(request, this)
-    }
 
     /**
      * Manages consumption of user rights and permissions.
@@ -238,182 +218,3 @@ public val Publication.protectionLocalizedName: LocalizedString
  */
 public val Publication.protectionName: String?
     get() = protectionService?.name
-
-private sealed class RouteHandler {
-
-    companion object {
-
-        private val handlers = listOf(
-            ContentProtectionHandler,
-            RightsCopyHandler,
-            RightsPrintHandler
-        )
-
-        val links = handlers.map { it.link }
-
-        fun route(url: Url): RouteHandler? = handlers.firstOrNull { it.acceptRequest(url) }
-    }
-
-    abstract val link: Link
-
-    abstract fun acceptRequest(url: Url): Boolean
-
-    abstract suspend fun handleRequest(request: HttpRequest, service: ContentProtectionService): Try<HttpStreamResponse, HttpError.Response>
-
-    object ContentProtectionHandler : RouteHandler() {
-
-        private val path = "/~readium/content-protection"
-        private val mediaType = MediaType("application/vnd.readium.content-protection+json")!!
-
-        override val link = Link(
-            href = Url(path)!!,
-            mediaType = mediaType
-        )
-
-        override fun acceptRequest(url: Url): Boolean =
-            url.path == path
-
-        override suspend fun handleRequest(request: HttpRequest, service: ContentProtectionService): Try<HttpStreamResponse, HttpError.Response> {
-            val json = JSONObject().apply {
-                put("isRestricted", service.isRestricted)
-                putOpt("error", service.error?.message)
-                putOpt("name", service.name)
-                put("rights", service.rights.toJSON())
-            }
-
-            val response = HttpResponse(
-                request = request,
-                url = request.url,
-                200,
-                emptyMap(),
-                mediaType
-            )
-
-            val body = json
-                .toString()
-                .byteInputStream(charset = Charsets.UTF_8)
-
-            return Try.success(
-                HttpStreamResponse(response, body)
-            )
-        }
-    }
-
-    object RightsCopyHandler : RouteHandler() {
-
-        private val mediaType = MediaType("application/vnd.readium.rights.copy+json")!!
-        private val path = "/~readium/rights/copy"
-
-        override val link: Link = Link(
-            href = Href("$path{?text,peek}", templated = true)!!,
-            mediaType = mediaType
-        )
-
-        override fun acceptRequest(url: Url): Boolean =
-            url.path == path
-
-        override suspend fun handleRequest(request: HttpRequest, service: ContentProtectionService): Try<HttpStreamResponse, HttpError.Response> {
-            val query = request.url.query
-            val text = query.firstNamedOrNull("text")
-                ?: return Try.failure(
-                    badRequestResponse("'text' parameter is required.")
-                )
-            val peek = (query.firstNamedOrNull("peek") ?: "false").toBooleanOrNull()
-                ?: return Try.failure(
-                    badRequestResponse("If present, 'peek' must be true or false.")
-                )
-
-            val copyAllowed = with(service.rights) { if (peek) canCopy(text) else copy(text) }
-
-            return if (!copyAllowed) {
-                Try.failure(forbiddenResponse())
-            } else {
-                Try.success(trueResponse(request))
-            }
-        }
-    }
-
-    object RightsPrintHandler : RouteHandler() {
-
-        private val mediaType = MediaType("application/vnd.readium.rights.print+json")!!
-        private val path = "/~readium/rights/print"
-
-        override val link = Link(
-            href = Href("$path{?pageCount,peek}", templated = true)!!,
-            mediaType = mediaType
-        )
-
-        override fun acceptRequest(url: Url): Boolean =
-            url.path == path
-
-        override suspend fun handleRequest(request: HttpRequest, service: ContentProtectionService): Try<HttpStreamResponse, HttpError.Response> {
-            val query = request.url.query
-            val pageCountString = query.firstNamedOrNull("pageCount")
-                ?: return Try.failure(
-                    badRequestResponse("'pageCount' parameter is required")
-                )
-
-            val pageCount = pageCountString.toIntOrNull()?.takeIf { it >= 0 }
-                ?: return Try.failure(
-                    badRequestResponse("'pageCount' must be a positive integer")
-                )
-            val peek = (query.firstNamedOrNull("peek") ?: "false").toBooleanOrNull()
-                ?: return Try.failure(
-                    badRequestResponse("If present, 'peek' must be true or false")
-                )
-
-            val printAllowed = with(service.rights) {
-                if (peek) {
-                    canPrint(pageCount)
-                } else {
-                    print(
-                        pageCount
-                    )
-                }
-            }
-
-            return if (!printAllowed) {
-                Try.failure(forbiddenResponse())
-            } else {
-                Try.success(trueResponse(request))
-            }
-        }
-    }
-
-    fun String.toBooleanOrNull(): Boolean? = when (this.lowercase(Locale.getDefault())) {
-        "true" -> true
-        "false" -> false
-        else -> null
-    }
-
-    fun ContentProtectionService.UserRights.toJSON() = JSONObject().apply {
-        put("canCopy", canCopy)
-        put("canPrint", canPrint)
-    }
-}
-
-private fun trueResponse(request: HttpRequest): HttpStreamResponse =
-    HttpStreamResponse(
-        response = HttpResponse(
-            request,
-            request.url,
-            200,
-            emptyMap(),
-            MediaType.JSON
-        ),
-        body = "true".byteInputStream()
-    )
-private fun forbiddenResponse(): HttpError.Response =
-    HttpError.Response(
-        HttpStatus.Forbidden
-    )
-
-private fun badRequestResponse(detail: String): HttpError.Response =
-    HttpError.Response(
-        HttpStatus.BadRequest,
-        MediaType.JSON_PROBLEM_DETAILS,
-        JSONObject().apply {
-            put("title", "Bad request")
-            put("detail", detail)
-        }.toString().encodeToByteArray()
-    )

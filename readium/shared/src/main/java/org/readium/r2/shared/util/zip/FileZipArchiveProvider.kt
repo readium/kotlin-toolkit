@@ -15,13 +15,13 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.util.MessageError
 import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.archive.ArchiveFactory
 import org.readium.r2.shared.util.data.Container
 import org.readium.r2.shared.util.data.FileSystemError
 import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.mediatype.MediaTypeSnifferError
-import org.readium.r2.shared.util.resource.ArchiveFactory
 import org.readium.r2.shared.util.resource.Resource
 
 /**

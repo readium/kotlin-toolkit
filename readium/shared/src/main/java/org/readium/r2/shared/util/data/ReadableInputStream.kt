@@ -19,7 +19,7 @@ import org.readium.r2.shared.util.Try
  */
 public class ReadableInputStream(
     private val readable: Readable,
-    private val wrapError: (ReadError) -> IOException,
+    private val wrapError: (ReadError) -> IOException = { ReadException(it) },
     private val range: LongRange? = null
 ) : InputStream() {
 

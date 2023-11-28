@@ -205,7 +205,7 @@ public class ExoMediaPlayer(
             var resourceError: ReadError? = error.asInstance<ReadError>()
             if (resourceError == null && (error.cause as? HttpDataSource.HttpDataSourceException)?.cause is UnknownHostException) {
                 resourceError = ReadError.Access(
-                    HttpError.UnreachableHost(ThrowableError(error.cause!!))
+                    HttpError.Unreachable(ThrowableError(error.cause!!))
                 )
             }
 

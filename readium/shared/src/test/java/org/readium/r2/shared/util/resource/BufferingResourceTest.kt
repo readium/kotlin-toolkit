@@ -7,6 +7,7 @@ import kotlinx.coroutines.runBlocking
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.readium.r2.shared.Fixtures
+import org.readium.r2.shared.util.assertSuccess
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.robolectric.RobolectricTestRunner
 
@@ -19,8 +20,8 @@ class BufferingResourceTest {
     }
 
     @Test
-    fun `get media type`() = runBlocking {
-        assertEquals(MediaType.EPUB, sut().mediaType().getOrNull())
+    fun `get properties`() = runBlocking {
+        assertEquals(resource.properties().assertSuccess(), sut().properties().assertSuccess())
     }
 
     @Test

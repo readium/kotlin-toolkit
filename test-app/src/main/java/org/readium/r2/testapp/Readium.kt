@@ -20,13 +20,13 @@ import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.asset.AssetRetriever
 import org.readium.r2.shared.util.asset.CompositeResourceFactory
 import org.readium.r2.shared.util.asset.ContentResourceFactory
+import org.readium.r2.shared.util.asset.DefaultMediaTypeSniffer
 import org.readium.r2.shared.util.asset.FileResourceFactory
 import org.readium.r2.shared.util.asset.HttpResourceFactory
+import org.readium.r2.shared.util.asset.MediaTypeRetriever
 import org.readium.r2.shared.util.downloads.android.AndroidDownloadManager
 import org.readium.r2.shared.util.http.DefaultHttpClient
-import org.readium.r2.shared.util.mediatype.DefaultMediaTypeSniffer
 import org.readium.r2.shared.util.mediatype.FormatRegistry
-import org.readium.r2.shared.util.resource.MediaTypeRetriever
 import org.readium.r2.shared.util.zip.ZipArchiveFactory
 import org.readium.r2.streamer.PublicationFactory
 
@@ -52,9 +52,7 @@ class Readium(context: Context) {
             context.contentResolver
         )
 
-    val httpClient = DefaultHttpClient(
-        mediaTypeRetriever
-    )
+    val httpClient = DefaultHttpClient()
 
     private val resourceFactory = CompositeResourceFactory(
         FileResourceFactory(),

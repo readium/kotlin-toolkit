@@ -76,7 +76,7 @@ sealed class ReadUserError(
                     HttpUnexpected(error)
                 is HttpError.Timeout ->
                     HttpConnectivity(error)
-                is HttpError.UnreachableHost ->
+                is HttpError.Unreachable ->
                     HttpConnectivity(error)
                 is HttpError.Response ->
                     when (error.status) {

@@ -12,6 +12,7 @@ package org.readium.r2.shared.util.mediatype
 public class FormatRegistry(
     fileExtensions: Map<MediaType, String> = mapOf(
         MediaType.ACSM to "acsm",
+        MediaType.CBR to "cbr",
         MediaType.CBZ to "cbz",
         MediaType.DIVINA to "divina",
         MediaType.DIVINA_MANIFEST to "json",
@@ -28,13 +29,20 @@ public class FormatRegistry(
         MediaType.ZAB to "zab"
     ),
     superTypes: Map<MediaType, MediaType> = mapOf(
+        MediaType.CBR to MediaType.RAR,
         MediaType.CBZ to MediaType.ZIP,
         MediaType.DIVINA to MediaType.READIUM_WEBPUB,
         MediaType.DIVINA_MANIFEST to MediaType.READIUM_WEBPUB_MANIFEST,
         MediaType.EPUB to MediaType.ZIP,
+        MediaType.XHTML to MediaType.XML,
+        MediaType.JSON_PROBLEM_DETAILS to MediaType.JSON,
         MediaType.LCP_LICENSE_DOCUMENT to MediaType.JSON,
         MediaType.LCP_PROTECTED_AUDIOBOOK to MediaType.READIUM_AUDIOBOOK,
         MediaType.LCP_PROTECTED_PDF to MediaType.READIUM_WEBPUB,
+        MediaType.OPDS1 to MediaType.XML,
+        MediaType.OPDS1_ENTRY to MediaType.XML,
+        MediaType.OPDS2 to MediaType.JSON,
+        MediaType.OPDS2_PUBLICATION to MediaType.JSON,
         MediaType.READIUM_AUDIOBOOK to MediaType.READIUM_WEBPUB,
         MediaType.READIUM_AUDIOBOOK_MANIFEST to MediaType.READIUM_WEBPUB_MANIFEST,
         MediaType.READIUM_WEBPUB to MediaType.ZIP,

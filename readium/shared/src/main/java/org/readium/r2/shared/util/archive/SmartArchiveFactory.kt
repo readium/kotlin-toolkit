@@ -4,13 +4,14 @@
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.r2.shared.util.resource
+package org.readium.r2.shared.util.archive
 
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.data.Container
 import org.readium.r2.shared.util.data.Readable
 import org.readium.r2.shared.util.mediatype.FormatRegistry
 import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.shared.util.tryRecover
 
 internal class SmartArchiveFactory(
@@ -27,7 +28,7 @@ internal class SmartArchiveFactory(
                 when (error) {
                     is ArchiveFactory.Error.FormatNotSupported -> {
                         formatRegistry.superType(mediaType)
-                            ?.let { archiveFactory.create(it, readable) }
+                            ?.let { create(it, readable) }
                             ?: Try.failure(error)
                     }
                     is ArchiveFactory.Error.ReadError ->
