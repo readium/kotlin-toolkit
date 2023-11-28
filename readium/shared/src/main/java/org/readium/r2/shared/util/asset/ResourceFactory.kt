@@ -30,12 +30,22 @@ public interface ResourceFactory {
         ) : Error("Url scheme $scheme is not supported.", cause)
     }
 
+    /**
+     * Creates a [Resource] to access [url].
+     *
+     * @param url The url the resource will access.
+     * @param mediaType media type of the resource if known.
+     */
     public suspend fun create(
         url: AbsoluteUrl,
         mediaType: MediaType? = null
     ): Try<Resource, Error>
 }
 
+/**
+ * A composite [ResourceFactory] which tries several factories until it finds one which supports
+ * the url scheme.
+ */
 public class CompositeResourceFactory(
     private val factories: List<ResourceFactory>
 ) : ResourceFactory {

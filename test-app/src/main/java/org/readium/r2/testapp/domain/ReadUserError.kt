@@ -8,7 +8,7 @@ package org.readium.r2.testapp.domain
 
 import androidx.annotation.StringRes
 import org.readium.r2.shared.util.Error
-import org.readium.r2.shared.util.data.ContentProviderError
+import org.readium.r2.shared.util.data.ContentResolverError
 import org.readium.r2.shared.util.data.FileSystemError
 import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.http.HttpError
@@ -58,7 +58,7 @@ sealed class ReadUserError(
                     when (val cause = error.cause) {
                         is HttpError -> ReadUserError(cause)
                         is FileSystemError -> ReadUserError(cause)
-                        is ContentProviderError -> ReadUserError(cause)
+                        is ContentResolverError -> ReadUserError(cause)
                         else -> Unexpected(cause)
                     }
                 is ReadError.Decoding -> InvalidPublication(error)
@@ -93,11 +93,11 @@ sealed class ReadUserError(
                 is FileSystemError.NotFound -> FsNotFound(error)
             }
 
-        private operator fun invoke(error: ContentProviderError): ReadUserError =
+        private operator fun invoke(error: ContentResolverError): ReadUserError =
             when (error) {
-                is ContentProviderError.FileNotFound -> FsNotFound(error)
-                is ContentProviderError.IO -> FsUnexpected(error)
-                is ContentProviderError.NotAvailable -> FsUnexpected(error)
+                is ContentResolverError.FileNotFound -> FsNotFound(error)
+                is ContentResolverError.IO -> FsUnexpected(error)
+                is ContentResolverError.NotAvailable -> FsUnexpected(error)
             }
     }
 }

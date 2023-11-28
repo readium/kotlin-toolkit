@@ -19,7 +19,7 @@ import org.readium.r2.shared.extensions.*
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.MessageError
 import org.readium.r2.shared.util.Try
-import org.readium.r2.shared.util.data.ContentProviderError
+import org.readium.r2.shared.util.data.ContentResolverError
 import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.flatMap
 import org.readium.r2.shared.util.mediatype.MediaType
@@ -119,7 +119,7 @@ public class ContentResource(
             val stream = contentResolver.openInputStream(uri)
                 ?: return Try.failure(
                     ReadError.Access(
-                        ContentProviderError.NotAvailable(
+                        ContentResolverError.NotAvailable(
                             MessageError("Content provider recently crashed.")
                         )
                     )
@@ -134,9 +134,9 @@ public class ContentResource(
         try {
             success(closure())
         } catch (e: FileNotFoundException) {
-            failure(ReadError.Access(ContentProviderError.FileNotFound(e)))
+            failure(ReadError.Access(ContentResolverError.FileNotFound(e)))
         } catch (e: IOException) {
-            failure(ReadError.Access(ContentProviderError.IO(e)))
+            failure(ReadError.Access(ContentResolverError.IO(e)))
         } catch (e: OutOfMemoryError) { // We don't want to catch any Error, only OOM.
             failure(ReadError.OutOfMemory(e))
         }

@@ -12,7 +12,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.extensions.unwrapInstance
 import org.readium.r2.shared.util.AbsoluteUrl
-import org.readium.r2.shared.util.MessageError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.archive.ArchiveFactory
 import org.readium.r2.shared.util.data.Container
@@ -53,9 +52,7 @@ internal class StreamingZipArchiveProvider {
     ): Try<Container<Resource>, ArchiveFactory.Error> {
         if (mediaType != MediaType.ZIP) {
             return Try.failure(
-                ArchiveFactory.Error.FormatNotSupported(
-                    MessageError("Archive type not supported")
-                )
+                ArchiveFactory.Error.FormatNotSupported(mediaType)
             )
         }
 

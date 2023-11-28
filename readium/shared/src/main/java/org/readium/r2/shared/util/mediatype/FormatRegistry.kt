@@ -83,9 +83,16 @@ public class FormatRegistry(
     public fun fileExtension(mediaType: MediaType): String? =
         fileExtensions[mediaType]
 
+    /**
+     * Returns the super type of the given [mediaType], if any.
+     */
     public fun superType(mediaType: MediaType): MediaType? =
         superTypes[mediaType]
 
+    /**
+     * Returns if [mediaType] is a generic type that could be used instead of more specific
+     * media types.
+     */
     public fun isSuperType(mediaType: MediaType): Boolean =
         superTypes.values.any { it.matches(mediaType) }
 }

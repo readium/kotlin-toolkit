@@ -81,8 +81,8 @@ public class MediaTypeRetriever(
         container: Container<Readable>,
         hints: MediaTypeHints = MediaTypeHints()
     ): Try<MediaType, MediaTypeSnifferError> {
-        simpleResourceMediaTypeRetriever.retrieve(hints)
-            ?.let { Try.success(it) }
+        simpleResourceMediaTypeRetriever.retrieveSafe(hints)
+            .let { Try.success(it) }
 
         mediaTypeSniffer.sniffContainer(container)
             .onSuccess { return Try.success(it) }

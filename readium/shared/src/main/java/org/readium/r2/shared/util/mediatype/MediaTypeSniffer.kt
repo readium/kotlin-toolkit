@@ -674,6 +674,11 @@ public object LpfMediaTypeSniffer : MediaTypeSniffer {
     }
 }
 
+/**
+ * Sniffs a RAR archive.
+ *
+ * At the moment, only hints are supported.
+ */
 public object RarMediaTypeSniffer : MediaTypeSniffer {
 
     override fun sniffHints(hints: MediaTypeHints): Try<MediaType, MediaTypeSnifferError.NotRecognized> {
@@ -691,7 +696,7 @@ public object RarMediaTypeSniffer : MediaTypeSniffer {
 }
 
 /**
- * Sniffs a simple Archive-based format, like Comic Book Archive or Zipped Audio Book.
+ * Sniffs a simple Archive-based publication format, like Comic Book Archive or Zipped Audio Book.
  *
  * Reference: https://wiki.mobileread.com/wiki/CBR_and_CBZ
  */

@@ -12,6 +12,9 @@ import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.resource.FileResource
 import org.readium.r2.shared.util.resource.Resource
 
+/**
+ * Creates [FileResource]s.
+ */
 public class FileResourceFactory : ResourceFactory {
 
     override suspend fun create(

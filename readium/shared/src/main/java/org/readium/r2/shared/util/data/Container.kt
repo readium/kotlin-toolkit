@@ -10,13 +10,15 @@ import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.SuspendingCloseable
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
-import org.readium.r2.shared.util.resource.Resource
 
 /**
- * A container provides access to a list of [Resource] entries.
+ * A container provides access to a list of [Readable] entries.
  */
 public interface Container<out E : Readable> : Iterable<Url>, SuspendingCloseable {
 
+    /**
+     * Media type of the archive the container offers access to if any.
+     */
     public val archiveMediaType: MediaType? get() = null
 
     /**
@@ -38,7 +40,7 @@ public interface Container<out E : Readable> : Iterable<Url>, SuspendingCloseabl
     public operator fun get(url: Url): E?
 }
 
-/** A [Container] providing no resources at all. */
+/** A [Container] providing no entries at all. */
 public class EmptyContainer<E : Readable> :
     Container<E> {
 

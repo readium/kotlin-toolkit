@@ -11,6 +11,7 @@ import android.provider.MediaStore
 import java.io.File
 import org.readium.r2.shared.extensions.queryProjection
 import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.flatMap
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.mediatype.FormatRegistry
 import org.readium.r2.shared.util.mediatype.MediaType
@@ -22,6 +23,9 @@ import org.readium.r2.shared.util.resource.invoke
 import org.readium.r2.shared.util.toUri
 import org.readium.r2.shared.util.tryRecover
 
+/**
+ * A [MediaTypeRetriever] which does not open archive resources.
+ */
 internal class SimpleResourceMediaTypeRetriever(
     private val mediaTypeSniffer: MediaTypeSniffer,
     private val contentResolver: ContentResolver?,
@@ -29,14 +33,24 @@ internal class SimpleResourceMediaTypeRetriever(
 ) {
 
     /**
-     * Retrieves a canonical [MediaType] for the provided media type and file extension [hints].
+     * Retrieves a canonical [MediaType] for the provided media type [hints].
+     *
+     * Does not recognize media types and file extensions for too generic types.
      */
-    fun retrieve(hints: MediaTypeHints): MediaType? =
+    fun retrieveSafe(hints: MediaTypeHints): Try<MediaType, MediaTypeSnifferError.NotRecognized> =
         retrieveUnsafe(hints)
-            .getOrNull()
-            ?.takeUnless { formatRegistry.isSuperType(it) }
+            .flatMap {
+                if (formatRegistry.isSuperType(it)) {
+                    Try.failure(MediaTypeSnifferError.NotRecognized)
+                } else {
+                    Try.success(it)
+                }
+            }
 
-    internal fun retrieveUnsafe(hints: MediaTypeHints): Try<MediaType, MediaTypeSnifferError.NotRecognized> =
+    /**
+     * Retrieves a [MediaType] as much canonical as possible without accessing the content.
+     */
+    fun retrieveUnsafe(hints: MediaTypeHints): Try<MediaType, MediaTypeSnifferError.NotRecognized> =
         mediaTypeSniffer.sniffHints(hints)
             .tryRecover {
                 hints.mediaTypes.firstOrNull()
@@ -44,12 +58,16 @@ internal class SimpleResourceMediaTypeRetriever(
                     ?: Try.failure(MediaTypeSnifferError.NotRecognized)
             }
 
+    /**
+     * Retrieves a [MediaType] for [resource] using [hints] added to those embedded in [resource]
+     * and reading content if necessary.
+     */
     suspend fun retrieve(resource: Resource, hints: MediaTypeHints): Try<MediaType, MediaTypeSnifferError> {
         val properties = resource.properties()
             .getOrElse { return Try.failure(MediaTypeSnifferError.Read(it)) }
 
-        retrieve(MediaTypeHints(properties) + hints)
-            ?.also { return Try.success(it) }
+        retrieveSafe(MediaTypeHints(properties) + hints)
+            .onSuccess { return Try.success(it) }
 
         if (contentResolver != null) {
             resource.source
@@ -64,8 +82,8 @@ internal class SimpleResourceMediaTypeRetriever(
                             ?.let { filename -> File(filename).extension }
                     )
 
-                    retrieve(contentHints)
-                        ?.let { return Try.success(it) }
+                    retrieveSafe(contentHints)
+                        .onSuccess { return Try.success(it) }
                 }
         }
 

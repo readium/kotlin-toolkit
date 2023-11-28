@@ -9,6 +9,9 @@ package org.readium.r2.shared.util.data
 import org.readium.r2.shared.util.Error
 import org.readium.r2.shared.util.ThrowableError
 
+/**
+ * Errors wrapping file system exceptions.
+ */
 public sealed class FileSystemError(
     override val message: String,
     override val cause: Error? = null

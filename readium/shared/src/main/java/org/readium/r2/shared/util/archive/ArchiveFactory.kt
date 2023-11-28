@@ -14,7 +14,7 @@ import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.resource.Resource
 
 /**
- * A factory to create a [ResourceContainer]s from archive [Readable]s.
+ * A factory to create [Container]s from archive [Resource].
  */
 public interface ArchiveFactory {
 
@@ -24,8 +24,9 @@ public interface ArchiveFactory {
     ) : org.readium.r2.shared.util.Error {
 
         public class FormatNotSupported(
+            public val mediaType: MediaType,
             cause: org.readium.r2.shared.util.Error? = null
-        ) : Error("Resource is not supported.", cause)
+        ) : Error("Media type not supported.", cause)
 
         public class ReadError(
             override val cause: org.readium.r2.shared.util.data.ReadError
@@ -63,6 +64,6 @@ public class CompositeArchiveFactory(
                 ?.let { return Try.success(it) }
         }
 
-        return Try.failure(ArchiveFactory.Error.FormatNotSupported())
+        return Try.failure(ArchiveFactory.Error.FormatNotSupported(mediaType))
     }
 }

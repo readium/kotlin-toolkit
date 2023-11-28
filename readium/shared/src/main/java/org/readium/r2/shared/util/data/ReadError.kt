@@ -13,7 +13,7 @@ import org.readium.r2.shared.util.MessageError
 import org.readium.r2.shared.util.ThrowableError
 
 /**
- * Errors occurring while accessing a resource.
+ * Errors occurring while reading a resource.
  */
 public sealed class ReadError(
     override val message: String,
@@ -43,8 +43,19 @@ public sealed class ReadError(
     }
 }
 
+/**
+ * Marker interface for source-specific access errors.
+ *
+ * At the moment, [AccessError]s constructed by the toolkit can be either a [FileSystemError],
+ * a [ContentResolverError] or an HttpError.
+ */
 public interface AccessError : Error
 
+/**
+ * An [IOException] wrapping a [ReadError].
+ *
+ * This is meant to be used in contexts where [IOException] are expected.
+ */
 public class ReadException(
     public val error: ReadError
 ) : IOException(error.message, ErrorException(error))

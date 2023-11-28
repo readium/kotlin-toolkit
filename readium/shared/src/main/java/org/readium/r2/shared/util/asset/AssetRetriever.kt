@@ -20,14 +20,14 @@ import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.shared.util.toUrl
 
 /**
- * Retrieves an [Asset] instance providing reading access to the resource(s) of an asset stored at a
- * given [Url].
+ * Retrieves an [Asset] instance providing reading access to the resource(s) of an asset stored at
+ * a given [Url] as well as a canonical media type.
  */
 public class AssetRetriever(
     private val mediaTypeRetriever: MediaTypeRetriever,
     private val resourceFactory: ResourceFactory,
     archiveFactory: ArchiveFactory,
-    formatRegistry: FormatRegistry = FormatRegistry()
+    formatRegistry: FormatRegistry
 ) {
 
     public sealed class Error(
@@ -38,7 +38,7 @@ public class AssetRetriever(
         public class SchemeNotSupported(
             public val scheme: Url.Scheme,
             cause: org.readium.r2.shared.util.Error? = null
-        ) : Error("Scheme $scheme is not supported.", cause)
+        ) : Error("Url scheme $scheme is not supported.", cause)
 
         public class FormatNotSupported(cause: org.readium.r2.shared.util.Error) :
             Error("Asset format is not supported.", cause)
@@ -51,7 +51,7 @@ public class AssetRetriever(
         SmartArchiveFactory(archiveFactory, formatRegistry)
 
     /**
-     * Retrieves an asset from a known media type.
+     * Retrieves an asset from an url and a known media type.
      */
     public suspend fun retrieve(
         url: AbsoluteUrl,
@@ -89,13 +89,13 @@ public class AssetRetriever(
     /* Sniff unknown assets */
 
     /**
-     * Retrieves an asset from a local file.
+     * Retrieves an asset from an unknown local file.
      */
     public suspend fun retrieve(file: File): Try<Asset, Error> =
         retrieve(file.toUrl())
 
     /**
-     * Retrieves an asset from a [Url].
+     * Retrieves an asset from an unknown [Url].
      */
     public suspend fun retrieve(url: AbsoluteUrl): Try<Asset, Error> {
         val resource = resourceFactory.create(url)

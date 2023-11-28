@@ -13,6 +13,9 @@ import org.readium.r2.shared.util.http.HttpResource
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.resource.Resource
 
+/**
+ * Creates [HttpResource]s.
+ */
 public class HttpResourceFactory(
     private val httpClient: HttpClient
 ) : ResourceFactory {

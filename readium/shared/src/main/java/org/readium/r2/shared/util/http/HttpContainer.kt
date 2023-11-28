@@ -17,8 +17,9 @@ import org.readium.r2.shared.util.resource.Resource
  * Since this container is used when doing progressive download streaming (e.g. audiobook), the HTTP
  * byte range requests are open-ended and reused. This helps to avoid issuing too many requests.
  *
- * @param client HTTP client used to perform HTTP requests.
  * @param baseUrl Base URL from which relative URLs are served.
+ * @param entries Entries of this container as Urls absolute or relative to [baseUrl].
+ * @param client HTTP client used to perform HTTP requests.
  */
 public class HttpContainer(
     private val baseUrl: Url? = null,
