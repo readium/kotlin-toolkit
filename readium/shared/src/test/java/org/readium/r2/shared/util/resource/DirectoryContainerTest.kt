@@ -23,6 +23,7 @@ import org.readium.r2.shared.readBlocking
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.assertSuccess
 import org.readium.r2.shared.util.data.Container
+import org.readium.r2.shared.util.file.DirectoryContainer
 import org.readium.r2.shared.util.toAbsoluteUrl
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows

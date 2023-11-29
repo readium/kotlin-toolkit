@@ -18,7 +18,7 @@ import org.junit.runner.RunWith
 import org.readium.r2.shared.publication.encryption.Encryption
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.assertSuccess
-import org.readium.r2.shared.util.resource.DirectoryContainer
+import org.readium.r2.shared.util.file.DirectoryContainer
 import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.streamer.readBlocking
 import org.robolectric.RobolectricTestRunner

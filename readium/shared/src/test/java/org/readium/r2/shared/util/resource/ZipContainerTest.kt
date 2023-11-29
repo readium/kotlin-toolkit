@@ -21,6 +21,7 @@ import org.junit.runner.RunWith
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.assertSuccess
 import org.readium.r2.shared.util.data.Container
+import org.readium.r2.shared.util.file.DirectoryContainer
 import org.readium.r2.shared.util.file.FileResource
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.use

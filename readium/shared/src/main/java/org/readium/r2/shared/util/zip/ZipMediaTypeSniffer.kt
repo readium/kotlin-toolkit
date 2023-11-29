@@ -16,6 +16,10 @@ import org.readium.r2.shared.util.resource.Resource
 
 public object ZipMediaTypeSniffer : MediaTypeSniffer {
 
+    private val fileZipArchiveProvider = FileZipArchiveProvider()
+
+    private val streamingZipArchiveProvider = StreamingZipArchiveProvider()
+
     override fun sniffHints(hints: MediaTypeHints): Try<MediaType, MediaTypeSnifferError.NotRecognized> {
         if (hints.hasMediaType("application/zip") ||
             hints.hasFileExtension("zip")
@@ -28,8 +32,8 @@ public object ZipMediaTypeSniffer : MediaTypeSniffer {
 
     override suspend fun sniffBlob(readable: Readable): Try<MediaType, MediaTypeSnifferError> {
         (readable as? Resource)?.source?.toFile()
-            ?.let { return FileZipArchiveProvider().sniffFile(it) }
+            ?.let { return fileZipArchiveProvider.sniffFile(it) }
 
-        return StreamingZipArchiveProvider().sniffBlob(readable)
+        return streamingZipArchiveProvider.sniffBlob(readable)
     }
 }

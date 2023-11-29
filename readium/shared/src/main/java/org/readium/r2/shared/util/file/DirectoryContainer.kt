@@ -4,7 +4,7 @@
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.r2.shared.util.resource
+package org.readium.r2.shared.util.file
 
 import java.io.File
 import kotlinx.coroutines.Dispatchers
@@ -13,8 +13,7 @@ import org.readium.r2.shared.util.RelativeUrl
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.data.Container
-import org.readium.r2.shared.util.file.FileResource
-import org.readium.r2.shared.util.file.FileSystemError
+import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.shared.util.toUrl
 
 /**
