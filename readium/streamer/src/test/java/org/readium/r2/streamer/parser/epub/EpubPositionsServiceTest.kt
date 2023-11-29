@@ -24,8 +24,8 @@ import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.archive.ArchiveProperties
 import org.readium.r2.shared.util.archive.archive
 import org.readium.r2.shared.util.data.Container
+import org.readium.r2.shared.util.data.ReadTry
 import org.readium.r2.shared.util.mediatype.MediaType
-import org.readium.r2.shared.util.resource.ReadTry
 import org.readium.r2.shared.util.resource.Resource
 import org.robolectric.RobolectricTestRunner
 

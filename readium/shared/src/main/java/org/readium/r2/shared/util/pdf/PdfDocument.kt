@@ -22,8 +22,8 @@ import org.readium.r2.shared.util.SuspendingCloseable
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.cache.Cache
 import org.readium.r2.shared.util.cache.getOrTryPut
+import org.readium.r2.shared.util.data.ReadTry
 import org.readium.r2.shared.util.mediatype.MediaType
-import org.readium.r2.shared.util.resource.ReadTry
 import org.readium.r2.shared.util.resource.Resource
 
 public interface PdfDocumentFactory<T : PdfDocument> {

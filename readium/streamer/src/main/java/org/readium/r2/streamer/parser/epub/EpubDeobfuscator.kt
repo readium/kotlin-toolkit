@@ -11,7 +11,7 @@ import com.mcxiaoke.koi.ext.toHexBytes
 import kotlin.experimental.xor
 import org.readium.r2.shared.publication.encryption.Encryption
 import org.readium.r2.shared.util.Url
-import org.readium.r2.shared.util.resource.ReadTry
+import org.readium.r2.shared.util.data.ReadTry
 import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.shared.util.resource.TransformingResource
 import org.readium.r2.shared.util.resource.flatMap

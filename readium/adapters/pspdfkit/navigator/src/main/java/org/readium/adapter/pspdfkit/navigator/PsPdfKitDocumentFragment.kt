@@ -55,8 +55,8 @@ import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.services.isProtected
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.data.ReadError
+import org.readium.r2.shared.util.data.ReadTry
 import org.readium.r2.shared.util.pdf.cachedIn
-import org.readium.r2.shared.util.resource.ReadTry
 import timber.log.Timber
 
 @ExperimentalReadiumApi

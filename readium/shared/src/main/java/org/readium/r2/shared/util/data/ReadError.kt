@@ -11,6 +11,7 @@ import org.readium.r2.shared.util.Error
 import org.readium.r2.shared.util.ErrorException
 import org.readium.r2.shared.util.MessageError
 import org.readium.r2.shared.util.ThrowableError
+import org.readium.r2.shared.util.Try
 
 /**
  * Errors occurring while reading a resource.
@@ -59,3 +60,4 @@ public interface AccessError : Error
 public class ReadException(
     public val error: ReadError
 ) : IOException(error.message, ErrorException(error))
+public typealias ReadTry<SuccessT> = Try<SuccessT, ReadError>

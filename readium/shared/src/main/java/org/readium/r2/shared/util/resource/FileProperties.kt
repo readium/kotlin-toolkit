@@ -36,6 +36,6 @@ public var Resource.Properties.Builder.mediaType: MediaType?
         if (value == null) {
             remove(MEDIA_TYPE_KEY)
         } else {
-            put(FILENAME_KEY, value.toString())
+            put(MEDIA_TYPE_KEY, value.toString())
         }
     }

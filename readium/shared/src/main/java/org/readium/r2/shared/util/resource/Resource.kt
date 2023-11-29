@@ -9,9 +9,8 @@ package org.readium.r2.shared.util.resource
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.data.ReadError
+import org.readium.r2.shared.util.data.ReadTry
 import org.readium.r2.shared.util.data.Readable
-
-public typealias ReadTry<SuccessT> = Try<SuccessT, ReadError>
 
 /**
  * Acts as a proxy to an actual resource by handling read access.
