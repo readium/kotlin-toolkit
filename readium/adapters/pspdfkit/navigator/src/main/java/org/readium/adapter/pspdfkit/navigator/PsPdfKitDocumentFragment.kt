@@ -56,7 +56,7 @@ import org.readium.r2.shared.publication.services.isProtected
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.pdf.cachedIn
-import org.readium.r2.shared.util.resource.ResourceTry
+import org.readium.r2.shared.util.resource.ReadTry
 import timber.log.Timber
 
 @ExperimentalReadiumApi
@@ -90,13 +90,13 @@ public class PsPdfKitDocumentFragment internal constructor(
     private val psPdfKitListener = PsPdfKitListener()
 
     private class DocumentViewModel(
-        document: suspend () -> ResourceTry<PsPdfKitDocument>
+        document: suspend () -> ReadTry<PsPdfKitDocument>
     ) : ViewModel() {
 
-        private val _document: Deferred<ResourceTry<PsPdfKitDocument>> =
+        private val _document: Deferred<ReadTry<PsPdfKitDocument>> =
             viewModelScope.async { document() }
 
-        suspend fun loadDocument(): ResourceTry<PsPdfKitDocument> =
+        suspend fun loadDocument(): ReadTry<PsPdfKitDocument> =
             _document.await()
 
         @OptIn(ExperimentalCoroutinesApi::class)

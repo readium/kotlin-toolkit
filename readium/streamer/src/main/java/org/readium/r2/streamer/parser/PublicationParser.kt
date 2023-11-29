@@ -8,10 +8,11 @@ package org.readium.r2.streamer.parser
 
 import kotlin.String
 import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.publication.PublicationContainer
 import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.data.Container
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.shared.util.resource.Resource
 
 /**
  *  Parses a Publication from an asset.
@@ -28,7 +29,7 @@ public interface PublicationParser {
      */
     public data class Asset(
         val mediaType: MediaType,
-        val container: PublicationContainer
+        val container: Container<Resource>
     )
 
     /**
@@ -52,7 +53,7 @@ public interface PublicationParser {
         public class UnsupportedFormat :
             Error("Asset format not supported.", null)
 
-        public class ReadError(override val cause: org.readium.r2.shared.util.data.ReadError) :
+        public class Reading(override val cause: org.readium.r2.shared.util.data.ReadError) :
             Error("An error occurred while trying to read asset.", cause)
     }
 }

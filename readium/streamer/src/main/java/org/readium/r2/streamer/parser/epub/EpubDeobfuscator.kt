@@ -11,8 +11,8 @@ import com.mcxiaoke.koi.ext.toHexBytes
 import kotlin.experimental.xor
 import org.readium.r2.shared.publication.encryption.Encryption
 import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.resource.ReadTry
 import org.readium.r2.shared.util.resource.Resource
-import org.readium.r2.shared.util.resource.ResourceTry
 import org.readium.r2.shared.util.resource.TransformingResource
 import org.readium.r2.shared.util.resource.flatMap
 
@@ -41,10 +41,10 @@ internal class EpubDeobfuscator(
     ) : TransformingResource(resource) {
 
         // The obfuscation doesn't change the length of the resource.
-        override suspend fun length(): ResourceTry<Long> =
+        override suspend fun length(): ReadTry<Long> =
             resource.length()
 
-        override suspend fun transform(data: ResourceTry<ByteArray>): ResourceTry<ByteArray> =
+        override suspend fun transform(data: ReadTry<ByteArray>): ReadTry<ByteArray> =
             data.map { bytes ->
                 val obfuscationLength: Int = algorithm2length[algorithm]
                     ?: return@map bytes

@@ -24,8 +24,8 @@ import org.readium.r2.shared.util.data.ReadException
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.io.CountingInputStream
 import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.shared.util.resource.ReadTry
 import org.readium.r2.shared.util.resource.Resource
-import org.readium.r2.shared.util.resource.ResourceTry
 import org.readium.r2.shared.util.resource.filename
 import org.readium.r2.shared.util.zip.compress.archivers.zip.ZipArchiveEntry
 import org.readium.r2.shared.util.zip.compress.archivers.zip.ZipFile
@@ -42,7 +42,7 @@ internal class StreamingZipContainer(
 
         override val source: AbsoluteUrl? get() = null
 
-        override suspend fun properties(): ResourceTry<Resource.Properties> =
+        override suspend fun properties(): ReadTry<Resource.Properties> =
             Try.success(
                 Resource.Properties {
                     filename = url.filename
@@ -54,7 +54,7 @@ internal class StreamingZipContainer(
                 }
             )
 
-        override suspend fun length(): ResourceTry<Long> =
+        override suspend fun length(): ReadTry<Long> =
             entry.size.takeUnless { it == -1L }
                 ?.let { Try.success(it) }
                 ?: Try.failure(
@@ -71,7 +71,7 @@ internal class StreamingZipContainer(
                     entry.compressedSize.takeUnless { it == -1L }
                 }
 
-        override suspend fun read(range: LongRange?): ResourceTry<ByteArray> =
+        override suspend fun read(range: LongRange?): ReadTry<ByteArray> =
             withContext(Dispatchers.IO) {
                 try {
                     val bytes =

@@ -21,7 +21,6 @@ import org.readium.r2.shared.util.data.Readable
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.mediatype.MediaTypeSnifferError
 import org.readium.r2.shared.util.resource.Resource
-import org.readium.r2.shared.util.resource.ResourceContainer
 import org.readium.r2.shared.util.toUrl
 import org.readium.r2.shared.util.zip.compress.archivers.zip.ZipFile
 import org.readium.r2.shared.util.zip.jvm.SeekableByteChannel
@@ -84,7 +83,7 @@ internal class StreamingZipArchiveProvider {
         StreamingZipContainer(zipFile, sourceUrl)
     }
 
-    internal suspend fun openFile(file: File): ResourceContainer = withContext(Dispatchers.IO) {
+    internal suspend fun openFile(file: File): Container<Resource> = withContext(Dispatchers.IO) {
         val fileChannel = FileChannelAdapter(file, "r")
         val channel = wrapBaseChannel(fileChannel)
         StreamingZipContainer(ZipFile(channel), file.toUrl())

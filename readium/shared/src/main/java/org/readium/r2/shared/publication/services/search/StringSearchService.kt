@@ -23,7 +23,9 @@ import org.readium.r2.shared.publication.services.search.SearchService.Options
 import org.readium.r2.shared.util.ThrowableError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.data.Container
 import org.readium.r2.shared.util.getOrElse
+import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.shared.util.resource.content.DefaultResourceContentExtractorFactory
 import org.readium.r2.shared.util.resource.content.ResourceContentExtractor
 import timber.log.Timber
@@ -41,7 +43,7 @@ import timber.log.Timber
 @ExperimentalReadiumApi
 public class StringSearchService(
     private val manifest: Manifest,
-    private val container: PublicationContainer,
+    private val container: Container<Resource>,
     private val services: PublicationServicesHolder,
     private val language: String?,
     private val snippetLength: Int,
@@ -91,7 +93,7 @@ public class StringSearchService(
 
     private inner class Iterator(
         val manifest: Manifest,
-        val container: PublicationContainer,
+        val container: Container<Resource>,
         val query: String,
         val options: Options,
         val locale: Locale

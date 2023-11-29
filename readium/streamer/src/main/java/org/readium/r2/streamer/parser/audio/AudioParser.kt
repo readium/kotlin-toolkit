@@ -56,7 +56,7 @@ public class AudioParser(
 
         if (readingOrder.isEmpty()) {
             return Try.failure(
-                PublicationParser.Error.ReadError(
+                PublicationParser.Error.Reading(
                     ReadError.Decoding(
                         MessageError("No audio file found in the publication.")
                     )
@@ -72,7 +72,7 @@ public class AudioParser(
                             MediaTypeSnifferError.NotRecognized ->
                                 null
                             is MediaTypeSnifferError.Reading ->
-                                return Try.failure(PublicationParser.Error.ReadError(error.cause))
+                                return Try.failure(PublicationParser.Error.Reading(error.cause))
                         }
                     }
             }

@@ -14,13 +14,14 @@ import org.readium.r2.shared.util.MessageError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.asset.Asset
+import org.readium.r2.shared.util.data.Container
 import org.readium.r2.shared.util.data.DecodeError
 import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.data.readAsRwpm
 import org.readium.r2.shared.util.data.readAsXml
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.mediatype.MediaType
-import org.readium.r2.shared.util.resource.ResourceContainer
+import org.readium.r2.shared.util.resource.Resource
 
 /**
  * [ContentProtection] implementation used as a fallback by the Streamer to detect LCP DRM
@@ -69,7 +70,7 @@ public class LcpFallbackContentProtection : ContentProtection {
         return Try.success(protectedFile)
     }
 
-    private suspend fun isLcpProtected(container: ResourceContainer, mediaType: MediaType): Try<Boolean, ReadError> {
+    private suspend fun isLcpProtected(container: Container<Resource>, mediaType: MediaType): Try<Boolean, ReadError> {
         val isRpf = mediaType.isRpf
         val isEpub = mediaType.matches(MediaType.EPUB)
 
@@ -90,7 +91,7 @@ public class LcpFallbackContentProtection : ContentProtection {
         }
     }
 
-    private suspend fun hasLcpSchemeInManifest(container: ResourceContainer): Try<Boolean, ReadError> {
+    private suspend fun hasLcpSchemeInManifest(container: Container<Resource>): Try<Boolean, ReadError> {
         val manifest = container[Url("manifest.json")!!]
             ?.readAsRwpm()
             ?.getOrElse {
@@ -110,7 +111,7 @@ public class LcpFallbackContentProtection : ContentProtection {
         return Try.success(manifestHasLcpScheme)
     }
 
-    private suspend fun hasLcpSchemeInEncryptionXml(container: ResourceContainer): Try<Boolean, ReadError> {
+    private suspend fun hasLcpSchemeInEncryptionXml(container: Container<Resource>): Try<Boolean, ReadError> {
         val encryptionXml = container
             .get(Url("META-INF/encryption.xml")!!)
             ?.readAsXml()

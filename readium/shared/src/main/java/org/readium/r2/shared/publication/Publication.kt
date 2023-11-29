@@ -48,8 +48,6 @@ internal typealias ServiceFactory = (Publication.Service.Context) -> Publication
  */
 public typealias PublicationId = String
 
-public typealias PublicationContainer = Container<Resource>
-
 /**
  * The Publication shared model is the entry-point for all the metadata and services
  * related to a Readium publication.
@@ -62,7 +60,7 @@ public typealias PublicationContainer = Container<Resource>
  */
 public class Publication(
     public val manifest: Manifest,
-    private val container: PublicationContainer = EmptyContainer(),
+    private val container: Container<Resource> = EmptyContainer(),
     private val servicesBuilder: ServicesBuilder = ServicesBuilder(),
     httpClient: HttpClient? = null,
     @Deprecated(
@@ -343,7 +341,7 @@ public class Publication(
          */
         public class Context(
             public val manifest: Manifest,
-            public val container: PublicationContainer,
+            public val container: Container<Resource>,
             public val services: PublicationServicesHolder
         )
 
@@ -459,7 +457,7 @@ public class Publication(
      */
     public class Builder(
         public var manifest: Manifest,
-        public var container: PublicationContainer,
+        public var container: Container<Resource>,
         public var servicesBuilder: ServicesBuilder = ServicesBuilder()
     ) {
 

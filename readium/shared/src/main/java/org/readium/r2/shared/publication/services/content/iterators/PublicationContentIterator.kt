@@ -10,11 +10,11 @@ import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Manifest
-import org.readium.r2.shared.publication.PublicationContainer
 import org.readium.r2.shared.publication.PublicationServicesHolder
 import org.readium.r2.shared.publication.indexOfFirstWithHref
 import org.readium.r2.shared.publication.services.content.Content
 import org.readium.r2.shared.util.Either
+import org.readium.r2.shared.util.data.Container
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.resource.Resource
 
@@ -55,7 +55,7 @@ public fun interface ResourceContentIteratorFactory {
 @ExperimentalReadiumApi
 public class PublicationContentIterator(
     private val manifest: Manifest,
-    private val container: PublicationContainer,
+    private val container: Container<Resource>,
     private val services: PublicationServicesHolder,
     private val startLocator: Locator?,
     private val resourceContentIteratorFactories: List<ResourceContentIteratorFactory>

@@ -23,8 +23,8 @@ import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.cache.Cache
 import org.readium.r2.shared.util.cache.getOrTryPut
 import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.shared.util.resource.ReadTry
 import org.readium.r2.shared.util.resource.Resource
-import org.readium.r2.shared.util.resource.ResourceTry
 
 public interface PdfDocumentFactory<T : PdfDocument> {
 
@@ -32,7 +32,7 @@ public interface PdfDocumentFactory<T : PdfDocument> {
     public val documentType: KClass<T>
 
     /** Opens a PDF from a [resource]. */
-    public suspend fun open(resource: Resource, password: String?): ResourceTry<T>
+    public suspend fun open(resource: Resource, password: String?): ReadTry<T>
 }
 
 /**
@@ -56,7 +56,7 @@ private class CachingPdfDocumentFactory<T : PdfDocument>(
     private val cache: Cache<T>
 ) : PdfDocumentFactory<T> by factory {
 
-    override suspend fun open(resource: Resource, password: String?): ResourceTry<T> {
+    override suspend fun open(resource: Resource, password: String?): ReadTry<T> {
         val key = resource.source?.toString() ?: return factory.open(resource, password)
         return cache.transaction {
             getOrTryPut(key) {

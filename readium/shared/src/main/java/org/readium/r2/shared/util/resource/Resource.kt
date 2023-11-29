@@ -8,13 +8,10 @@ package org.readium.r2.shared.util.resource
 
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Try
-import org.readium.r2.shared.util.data.Container
 import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.data.Readable
 
-public typealias ResourceTry<SuccessT> = Try<SuccessT, ReadError>
-
-public typealias ResourceContainer = Container<Resource>
+public typealias ReadTry<SuccessT> = Try<SuccessT, ReadError>
 
 /**
  * Acts as a proxy to an actual resource by handling read access.
@@ -71,9 +68,9 @@ public class FailureResource(
     replaceWith = ReplaceWith("map(transform)")
 )
 @Suppress("UnusedReceiverParameter")
-public fun <R, S, E> Try<S, E>.mapCatching(): ResourceTry<R> =
+public fun <R, S, E> Try<S, E>.mapCatching(): ReadTry<R> =
     throw NotImplementedError()
 
 @Suppress("UnusedReceiverParameter")
-public fun <R, S, E> Try<S, E>.flatMapCatching(): ResourceTry<R> =
+public fun <R, S, E> Try<S, E>.flatMapCatching(): ReadTry<R> =
     throw NotImplementedError()

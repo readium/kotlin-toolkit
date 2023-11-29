@@ -26,8 +26,8 @@ import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.pdf.PdfDocument
 import org.readium.r2.shared.util.pdf.PdfDocumentFactory
+import org.readium.r2.shared.util.resource.ReadTry
 import org.readium.r2.shared.util.resource.Resource
-import org.readium.r2.shared.util.resource.ResourceTry
 import timber.log.Timber
 
 public class PsPdfKitDocumentFactory(context: Context) : PdfDocumentFactory<PsPdfKitDocument> {
@@ -35,7 +35,7 @@ public class PsPdfKitDocumentFactory(context: Context) : PdfDocumentFactory<PsPd
 
     override val documentType: KClass<PsPdfKitDocument> = PsPdfKitDocument::class
 
-    override suspend fun open(resource: Resource, password: String?): ResourceTry<PsPdfKitDocument> =
+    override suspend fun open(resource: Resource, password: String?): ReadTry<PsPdfKitDocument> =
         withContext(Dispatchers.IO) {
             val dataProvider = ResourceDataProvider(resource)
             val documentSource = DocumentSource(dataProvider)

@@ -48,14 +48,14 @@ public class PdfParser(
         val resource = url
             ?.let { asset.container[it] }
             ?: return Try.failure(
-                PublicationParser.Error.ReadError(
+                PublicationParser.Error.Reading(
                     ReadError.Decoding(
                         MessageError("No PDF found in the publication.")
                     )
                 )
             )
         val document = pdfFactory.open(resource, password = null)
-            .getOrElse { return Try.failure(PublicationParser.Error.ReadError(it)) }
+            .getOrElse { return Try.failure(PublicationParser.Error.Reading(it)) }
         val tableOfContents = document.outline.toLinks(url)
 
         val manifest = Manifest(

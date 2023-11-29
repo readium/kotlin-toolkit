@@ -276,7 +276,7 @@ public class PublicationFactory(
         when (e) {
             is PublicationParser.Error.UnsupportedFormat ->
                 Error.UnsupportedAsset(MessageError("Cannot find a parser for this asset."))
-            is PublicationParser.Error.ReadError ->
+            is PublicationParser.Error.Reading ->
                 Error.ReadError(e.cause)
         }
 }

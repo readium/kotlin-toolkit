@@ -44,7 +44,7 @@ public class ReadiumWebPubParser(
 
         val manifestResource = asset.container[Url("manifest.json")!!]
             ?: return Try.failure(
-                PublicationParser.Error.ReadError(
+                PublicationParser.Error.Reading(
                     ReadError.Decoding(
                         MessageError("Missing manifest.")
                     )
@@ -57,14 +57,14 @@ public class ReadiumWebPubParser(
                 when (it) {
                     is DecodeError.Reading ->
                         return Try.failure(
-                            PublicationParser.Error.ReadError(
+                            PublicationParser.Error.Reading(
                                 ReadError.Decoding(it.cause)
                             )
                         )
 
                     is DecodeError.Decoding ->
                         return Try.failure(
-                            PublicationParser.Error.ReadError(
+                            PublicationParser.Error.Reading(
                                 ReadError.Decoding(
                                     MessageError("Failed to parse the RWPM Manifest.")
                                 )
@@ -80,7 +80,7 @@ public class ReadiumWebPubParser(
             (readingOrder.isEmpty() || !readingOrder.all { MediaType.PDF.matches(it.mediaType) })
         ) {
             return Try.failure(
-                PublicationParser.Error.ReadError(
+                PublicationParser.Error.Reading(
                     ReadError.Decoding("Invalid LCP Protected PDF.")
                 )
             )

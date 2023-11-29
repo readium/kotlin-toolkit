@@ -25,8 +25,8 @@ import org.readium.r2.shared.util.archive.ArchiveProperties
 import org.readium.r2.shared.util.archive.archive
 import org.readium.r2.shared.util.data.Container
 import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.shared.util.resource.ReadTry
 import org.readium.r2.shared.util.resource.Resource
-import org.readium.r2.shared.util.resource.ResourceTry
 import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
@@ -504,12 +504,12 @@ class EpubPositionsServiceTest {
 
                     override val source: AbsoluteUrl? = null
 
-                    override suspend fun properties(): ResourceTry<Resource.Properties> =
+                    override suspend fun properties(): ReadTry<Resource.Properties> =
                         Try.success(item.resourceProperties)
 
                     override suspend fun length() = Try.success(item.length)
 
-                    override suspend fun read(range: LongRange?): ResourceTry<ByteArray> =
+                    override suspend fun read(range: LongRange?): ReadTry<ByteArray> =
                         Try.success(ByteArray(0))
 
                     override suspend fun close() {}

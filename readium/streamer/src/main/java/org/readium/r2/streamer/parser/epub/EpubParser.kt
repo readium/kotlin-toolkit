@@ -54,7 +54,7 @@ public class EpubParser(
             .getOrElse { return Try.failure(it) }
         val opfResource = asset.container.get(opfPath)
             ?: return Try.failure(
-                PublicationParser.Error.ReadError(
+                PublicationParser.Error.Reading(
                     ReadError.Decoding(
                         MessageError("Missing OPF file.")
                     )
@@ -65,7 +65,7 @@ public class EpubParser(
             .getOrElse { return Try.failure(it) }
         val packageDocument = PackageDocument.parse(opfXmlDocument, opfPath)
             ?: return Try.failure(
-                PublicationParser.Error.ReadError(
+                PublicationParser.Error.Reading(
                     ReadError.Decoding(
                         MessageError("Invalid OPF file.")
                     )
@@ -112,7 +112,7 @@ public class EpubParser(
         val containerXmlResource = container
             .get(containerXmlUrl)
             ?: return Try.failure(
-                PublicationParser.Error.ReadError(
+                PublicationParser.Error.Reading(
                     ReadError.Decoding("container.xml not found.")
                 )
             )
@@ -126,7 +126,7 @@ public class EpubParser(
             ?.let { Url.fromEpubHref(it) }
             ?.let { Try.success(it) }
             ?: Try.failure(
-                PublicationParser.Error.ReadError(
+                PublicationParser.Error.Reading(
                     ReadError.Decoding("Cannot successfully parse OPF.")
                 )
             )
@@ -198,9 +198,9 @@ public class EpubParser(
             .mapFailure {
                 when (it) {
                     is DecodeError.Reading ->
-                        PublicationParser.Error.ReadError(it.cause)
+                        PublicationParser.Error.Reading(it.cause)
                     is DecodeError.Decoding ->
-                        PublicationParser.Error.ReadError(
+                        PublicationParser.Error.Reading(
                             ReadError.Decoding(
                                 MessageError(
                                     "Couldn't decode resource at $url",

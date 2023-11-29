@@ -17,7 +17,6 @@ import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.resource.Resource
-import org.readium.r2.shared.util.resource.ResourceTry
 import org.readium.r2.shared.util.resource.TransformingResource
 import timber.log.Timber
 
@@ -36,7 +35,7 @@ internal fun Resource.injectHtml(
 ): Resource =
     TransformingResource(this) { bytes ->
         if (!mediaType.isHtml) {
-            return@TransformingResource ResourceTry.success(bytes)
+            return@TransformingResource Try.success(bytes)
         }
 
         var content = bytes.toString(mediaType.charset ?: Charsets.UTF_8).trim()
