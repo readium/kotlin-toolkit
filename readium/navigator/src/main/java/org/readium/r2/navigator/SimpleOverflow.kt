@@ -13,8 +13,8 @@ import org.readium.r2.shared.InternalReadiumApi
 
 @InternalReadiumApi
 @OptIn(ExperimentalReadiumApi::class)
-public data class SimplePresentation(
+public data class SimpleOverflow(
     override val readingProgression: ReadingProgression,
     override val scroll: Boolean,
     override val axis: Axis
-) : OverflowNavigator.Presentation
+) : Overflowable.Overflow

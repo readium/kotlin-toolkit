@@ -48,7 +48,7 @@ import org.readium.r2.navigator.DecorationId
 import org.readium.r2.navigator.ExperimentalDecorator
 import org.readium.r2.navigator.HyperlinkNavigator
 import org.readium.r2.navigator.NavigatorFragment
-import org.readium.r2.navigator.OverflowNavigator
+import org.readium.r2.navigator.Overflowable
 import org.readium.r2.navigator.R
 import org.readium.r2.navigator.R2BasicWebView
 import org.readium.r2.navigator.SelectableNavigator
@@ -116,7 +116,7 @@ public class EpubNavigatorFragment internal constructor(
     private val defaults: EpubDefaults,
     configuration: Configuration
 ) : NavigatorFragment(publication),
-    OverflowNavigator,
+    Overflowable,
     SelectableNavigator,
     DecorableNavigator,
     HyperlinkNavigator,
@@ -259,7 +259,7 @@ public class EpubNavigatorFragment internal constructor(
         public fun onPageLoaded() {}
     }
 
-    public interface Listener : OverflowNavigator.Listener, HyperlinkNavigator.Listener
+    public interface Listener : Overflowable.Listener, HyperlinkNavigator.Listener
 
     // Configurable
 
@@ -476,7 +476,7 @@ public class EpubNavigatorFragment internal constructor(
         }
         adapter.listener = PagerAdapterListener()
         resourcePager.adapter = adapter
-        resourcePager.direction = presentation.value.readingProgression
+        resourcePager.direction = overflow.value.readingProgression
         resourcePager.layoutDirection = when (settings.value.readingProgression) {
             ReadingProgression.RTL -> LayoutDirection.RTL
             ReadingProgression.LTR -> LayoutDirection.LTR
@@ -663,8 +663,8 @@ public class EpubNavigatorFragment internal constructor(
     override val publicationView: View
         get() = requireView()
 
-    override val presentation: StateFlow<OverflowNavigator.Presentation>
-        get() = viewModel.presentation
+    override val overflow: StateFlow<Overflowable.Overflow>
+        get() = viewModel.overflow
 
     @Deprecated(
         "Use `presentation.value.readingProgression` instead",

@@ -39,8 +39,7 @@ class ImageParserTest {
         MediaTypeRetriever(
             DefaultMediaTypeSniffer(),
             FormatRegistry(),
-            ZipArchiveFactory(),
-            null
+            ZipArchiveFactory()
         )
 
     private val parser = ImageParser(mediaTypeRetriever)

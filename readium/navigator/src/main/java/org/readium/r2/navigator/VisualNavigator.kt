@@ -8,6 +8,7 @@ package org.readium.r2.navigator
 
 import android.graphics.PointF
 import android.view.View
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import org.readium.r2.navigator.input.InputListener
 import org.readium.r2.navigator.preferences.Axis
@@ -52,10 +53,10 @@ public interface VisualNavigator : Navigator {
      * Current presentation rendered by the navigator.
      */
     @Deprecated(
-        "Moved to DirectionalNavigator",
+        "Moved to OverflowableNavigator.overflow",
         level = DeprecationLevel.ERROR
     )
-    public val presentation: StateFlow<Any>
+    public val presentation: StateFlow<Any> get() = MutableStateFlow(Any())
 
     /**
      * Returns the [Locator] to the first content element that begins on the current screen.
@@ -129,7 +130,7 @@ public interface VisualNavigator : Navigator {
  * The user typically navigates through the publication by scrolling or tapping the viewport edges.
  */
 @ExperimentalReadiumApi
-public interface OverflowNavigator : VisualNavigator {
+public interface Overflowable : VisualNavigator {
 
     @ExperimentalReadiumApi
     public interface Listener : VisualNavigator.Listener
@@ -138,10 +139,10 @@ public interface OverflowNavigator : VisualNavigator {
      * Current presentation rendered by the navigator.
      */
     @ExperimentalReadiumApi
-    public override val presentation: StateFlow<Presentation>
+    public val overflow: StateFlow<Overflow>
 
     @ExperimentalReadiumApi
-    public interface Presentation {
+    public interface Overflow {
         /**
          * Horizontal direction of progression across resources.
          */

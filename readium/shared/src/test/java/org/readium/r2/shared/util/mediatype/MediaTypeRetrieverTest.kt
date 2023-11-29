@@ -23,8 +23,7 @@ class MediaTypeRetrieverTest {
     private val retriever = MediaTypeRetriever(
         DefaultMediaTypeSniffer(),
         FormatRegistry(),
-        ZipArchiveFactory(),
-        null
+        ZipArchiveFactory()
     )
 
     @Test
