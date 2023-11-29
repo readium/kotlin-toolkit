@@ -40,7 +40,7 @@ sealed class PublicationError(
 
         operator fun invoke(error: AssetRetriever.Error): PublicationError =
             when (error) {
-                is AssetRetriever.Error.ReadError ->
+                is AssetRetriever.Error.Reading ->
                     ReadError(error.cause)
                 is AssetRetriever.Error.FormatNotSupported ->
                     UnsupportedArchiveFormat(error)

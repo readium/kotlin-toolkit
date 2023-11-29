@@ -39,7 +39,7 @@ internal class StreamingZipArchiveProvider {
         } catch (exception: Exception) {
             when (val e = exception.unwrapInstance(ReadException::class.java)) {
                 is ReadException ->
-                    Try.failure(MediaTypeSnifferError.Read(e.error))
+                    Try.failure(MediaTypeSnifferError.Reading(e.error))
                 else ->
                     Try.failure(MediaTypeSnifferError.NotRecognized)
             }

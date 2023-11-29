@@ -23,23 +23,23 @@ import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.xml.ElementNode
 import org.readium.r2.shared.util.xml.XmlParser
 
-public sealed class DecoderError(
+public sealed class DecodeError(
     override val message: String
 ) : Error {
 
-    public class Read(
+    public class Reading(
         override val cause: ReadError
-    ) : DecoderError("Reading error")
+    ) : DecodeError("Reading error")
 
     public class Decoding(
         override val cause: Error?
-    ) : DecoderError("Decoding Error")
+    ) : DecodeError("Decoding Error")
 }
 
 internal suspend fun<R, S> Try<S, ReadError>.decode(
     block: (value: S) -> R,
     wrapError: (Exception) -> Error
-): Try<R, DecoderError> =
+): Try<R, DecodeError> =
     when (this) {
         is Try.Success ->
             try {
@@ -47,18 +47,18 @@ internal suspend fun<R, S> Try<S, ReadError>.decode(
                     Try.success(block(value))
                 }
             } catch (e: Exception) {
-                Try.failure(DecoderError.Decoding(wrapError(e)))
+                Try.failure(DecodeError.Decoding(wrapError(e)))
             } catch (e: OutOfMemoryError) {
-                Try.failure(DecoderError.Read(ReadError.OutOfMemory(e)))
+                Try.failure(DecodeError.Reading(ReadError.OutOfMemory(e)))
             }
         is Try.Failure ->
-            Try.failure(DecoderError.Read(value))
+            Try.failure(DecodeError.Reading(value))
     }
 
-internal suspend fun<R, S> Try<S, DecoderError>.decodeMap(
+internal suspend fun<R, S> Try<S, DecodeError>.decodeMap(
     block: (value: S) -> R,
     wrapError: (Exception) -> Error
-): Try<R, DecoderError> =
+): Try<R, DecodeError> =
     when (this) {
         is Try.Success ->
             try {
@@ -66,9 +66,9 @@ internal suspend fun<R, S> Try<S, DecoderError>.decodeMap(
                     Try.success(block(value))
                 }
             } catch (e: Exception) {
-                Try.failure(DecoderError.Decoding(wrapError(e)))
+                Try.failure(DecodeError.Decoding(wrapError(e)))
             } catch (e: OutOfMemoryError) {
-                Try.failure(DecoderError.Read(ReadError.OutOfMemory(e)))
+                Try.failure(DecodeError.Reading(ReadError.OutOfMemory(e)))
             }
         is Try.Failure ->
             Try.failure(value)
@@ -82,14 +82,14 @@ internal suspend fun<R, S> Try<S, DecoderError>.decodeMap(
  */
 public suspend fun Readable.readAsString(
     charset: Charset = Charsets.UTF_8
-): Try<String, DecoderError> =
+): Try<String, DecodeError> =
     read().decode(
         { String(it, charset = charset) },
         { MessageError("Content is not a valid $charset string.", ThrowableError(it)) }
     )
 
 /** Content as an XML document. */
-public suspend fun Readable.readAsXml(): Try<ElementNode, DecoderError> =
+public suspend fun Readable.readAsXml(): Try<ElementNode, DecodeError> =
     read().decode(
         { XmlParser().parse(ByteArrayInputStream(it)) },
         { MessageError("Content is not a valid XML document.", ThrowableError(it)) }
@@ -98,19 +98,19 @@ public suspend fun Readable.readAsXml(): Try<ElementNode, DecoderError> =
 /**
  * Content parsed from JSON.
  */
-public suspend fun Readable.readAsJson(): Try<JSONObject, DecoderError> =
+public suspend fun Readable.readAsJson(): Try<JSONObject, DecodeError> =
     readAsString().decodeMap(
         { JSONObject(it) },
         { MessageError("Content is not valid JSON.", ThrowableError(it)) }
     )
 
 /** Readium Web Publication Manifest parsed from the content. */
-public suspend fun Readable.readAsRwpm(): Try<Manifest, DecoderError> =
+public suspend fun Readable.readAsRwpm(): Try<Manifest, DecodeError> =
     readAsJson().flatMap { json ->
         Manifest.fromJSON(json)
             ?.let { Try.success(it) }
             ?: Try.failure(
-                DecoderError.Decoding(
+                DecodeError.Decoding(
                     MessageError("Content is not a valid RWPM.")
                 )
             )
@@ -119,14 +119,14 @@ public suspend fun Readable.readAsRwpm(): Try<Manifest, DecoderError> =
 /**
  * Reads the full content as a [Bitmap].
  */
-public suspend fun Readable.readAsBitmap(): Try<Bitmap, DecoderError> =
+public suspend fun Readable.readAsBitmap(): Try<Bitmap, DecodeError> =
     read()
-        .mapFailure { DecoderError.Read(it) }
+        .mapFailure { DecodeError.Reading(it) }
         .flatMap { bytes ->
             BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
                 ?.let { Try.success(it) }
                 ?: Try.failure(
-                    DecoderError.Decoding(
+                    DecodeError.Decoding(
                         MessageError("Could not decode resource as a bitmap.")
                     )
                 )
@@ -137,7 +137,7 @@ public suspend fun Readable.readAsBitmap(): Try<Bitmap, DecoderError> =
  */
 public suspend fun Readable.containsJsonKeys(
     vararg keys: String
-): Try<Boolean, DecoderError> {
+): Try<Boolean, DecodeError> {
     val json = readAsJson()
         .getOrElse { return Try.failure(it) }
     return Try.success(json.keys().asSequence().toSet().containsAll(keys.toList()))

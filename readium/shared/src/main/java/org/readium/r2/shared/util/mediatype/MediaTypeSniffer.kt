@@ -23,7 +23,7 @@ import org.readium.r2.shared.util.RelativeUrl
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.data.Container
-import org.readium.r2.shared.util.data.DecoderError
+import org.readium.r2.shared.util.data.DecodeError
 import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.data.Readable
 import org.readium.r2.shared.util.data.ReadableInputStream
@@ -42,7 +42,7 @@ public sealed class MediaTypeSnifferError(
     public data object NotRecognized :
         MediaTypeSnifferError("Media type of resource could not be inferred.", null)
 
-    public data class Read(override val cause: ReadError) :
+    public data class Reading(override val cause: ReadError) :
         MediaTypeSnifferError("An error occurred while trying to read content.", cause)
 }
 public interface HintMediaTypeSniffer {
@@ -172,11 +172,11 @@ public object XhtmlMediaTypeSniffer : MediaTypeSniffer {
         readable.readAsXml()
             .getOrElse {
                 when (it) {
-                    is DecoderError.Read ->
+                    is DecodeError.Reading ->
                         return Try.failure(
-                            MediaTypeSnifferError.Read(it.cause)
+                            MediaTypeSnifferError.Reading(it.cause)
                         )
-                    is DecoderError.Decoding ->
+                    is DecodeError.Decoding ->
                         null
                 }
             }
@@ -213,9 +213,9 @@ public object HtmlMediaTypeSniffer : MediaTypeSniffer {
         readable.readAsXml()
             .getOrElse {
                 when (it) {
-                    is DecoderError.Read ->
-                        return Try.failure(MediaTypeSnifferError.Read(it.cause))
-                    is DecoderError.Decoding ->
+                    is DecodeError.Reading ->
+                        return Try.failure(MediaTypeSnifferError.Reading(it.cause))
+                    is DecodeError.Decoding ->
                         null
                 }
             }
@@ -225,10 +225,10 @@ public object HtmlMediaTypeSniffer : MediaTypeSniffer {
         readable.readAsString()
             .getOrElse {
                 when (it) {
-                    is DecoderError.Read ->
-                        return Try.failure(MediaTypeSnifferError.Read(it.cause))
+                    is DecodeError.Reading ->
+                        return Try.failure(MediaTypeSnifferError.Reading(it.cause))
 
-                    is DecoderError.Decoding ->
+                    is DecodeError.Decoding ->
                         null
                 }
             }
@@ -285,9 +285,9 @@ public object OpdsMediaTypeSniffer : MediaTypeSniffer {
         readable.readAsXml()
             .getOrElse {
                 when (it) {
-                    is DecoderError.Read ->
-                        return Try.failure(MediaTypeSnifferError.Read(it.cause))
-                    is DecoderError.Decoding ->
+                    is DecodeError.Reading ->
+                        return Try.failure(MediaTypeSnifferError.Reading(it.cause))
+                    is DecodeError.Decoding ->
                         null
                 }
             }
@@ -304,9 +304,9 @@ public object OpdsMediaTypeSniffer : MediaTypeSniffer {
         readable.readAsRwpm()
             .getOrElse {
                 when (it) {
-                    is DecoderError.Read ->
-                        return Try.failure(MediaTypeSnifferError.Read(it.cause))
-                    is DecoderError.Decoding ->
+                    is DecodeError.Reading ->
+                        return Try.failure(MediaTypeSnifferError.Reading(it.cause))
+                    is DecodeError.Decoding ->
                         null
                 }
             }
@@ -336,10 +336,10 @@ public object OpdsMediaTypeSniffer : MediaTypeSniffer {
         readable.containsJsonKeys("id", "title", "authentication")
             .getOrElse {
                 when (it) {
-                    is DecoderError.Read ->
-                        return Try.failure(MediaTypeSnifferError.Read(it.cause))
+                    is DecodeError.Reading ->
+                        return Try.failure(MediaTypeSnifferError.Reading(it.cause))
 
-                    is DecoderError.Decoding ->
+                    is DecodeError.Decoding ->
                         null
                 }
             }
@@ -371,10 +371,10 @@ public object LcpLicenseMediaTypeSniffer : MediaTypeSniffer {
         readable.containsJsonKeys("id", "issued", "provider", "encryption")
             .getOrElse {
                 when (it) {
-                    is DecoderError.Read ->
-                        return Try.failure(MediaTypeSnifferError.Read(it.cause))
+                    is DecodeError.Reading ->
+                        return Try.failure(MediaTypeSnifferError.Reading(it.cause))
 
-                    is DecoderError.Decoding ->
+                    is DecodeError.Decoding ->
                         null
                 }
             }
@@ -467,10 +467,10 @@ public object WebPubManifestMediaTypeSniffer : MediaTypeSniffer {
             readable.readAsRwpm()
                 .getOrElse {
                     when (it) {
-                        is DecoderError.Read ->
-                            return Try.failure(MediaTypeSnifferError.Read(it.cause))
+                        is DecodeError.Reading ->
+                            return Try.failure(MediaTypeSnifferError.Reading(it.cause))
 
-                        is DecoderError.Decoding ->
+                        is DecodeError.Decoding ->
                             null
                     }
                 }
@@ -537,7 +537,7 @@ public object WebPubMediaTypeSniffer : MediaTypeSniffer {
             container[RelativeUrl("manifest.json")!!]
                 ?.read()
                 ?.getOrElse { error ->
-                    return Try.failure(MediaTypeSnifferError.Read(error))
+                    return Try.failure(MediaTypeSnifferError.Reading(error))
                 }
                 ?.let { tryOrNull { Manifest.fromJSON(JSONObject(String(it))) } }
                 ?: return Try.failure(MediaTypeSnifferError.NotRecognized)
@@ -576,10 +576,10 @@ public object W3cWpubMediaTypeSniffer : MediaTypeSniffer {
         val string = readable.readAsString()
             .getOrElse {
                 when (it) {
-                    is DecoderError.Read ->
-                        return Try.failure(MediaTypeSnifferError.Read(it.cause))
+                    is DecodeError.Reading ->
+                        return Try.failure(MediaTypeSnifferError.Reading(it.cause))
 
-                    is DecoderError.Decoding ->
+                    is DecodeError.Decoding ->
                         null
                 }
             } ?: ""
@@ -616,10 +616,10 @@ public object EpubMediaTypeSniffer : MediaTypeSniffer {
             ?.readAsString(charset = Charsets.US_ASCII)
             ?.getOrElse { error ->
                 when (error) {
-                    is DecoderError.Decoding ->
+                    is DecodeError.Decoding ->
                         null
-                    is DecoderError.Read ->
-                        return Try.failure(MediaTypeSnifferError.Read(error.cause))
+                    is DecodeError.Reading ->
+                        return Try.failure(MediaTypeSnifferError.Reading(error.cause))
                 }
             }?.trim()
         if (mimetype == "application/epub+zip") {
@@ -658,7 +658,7 @@ public object LpfMediaTypeSniffer : MediaTypeSniffer {
         container[RelativeUrl("publication.json")!!]
             ?.read()
             ?.getOrElse { error ->
-                return Try.failure(MediaTypeSnifferError.Read(error))
+                return Try.failure(MediaTypeSnifferError.Reading(error))
             }
             ?.let { tryOrNull { String(it) } }
             ?.let { manifest ->
@@ -829,7 +829,7 @@ public object PdfMediaTypeSniffer : MediaTypeSniffer {
     override suspend fun sniffBlob(readable: Readable): Try<MediaType, MediaTypeSnifferError> {
         readable.read(0L until 5L)
             .getOrElse { error ->
-                return Try.failure(MediaTypeSnifferError.Read(error))
+                return Try.failure(MediaTypeSnifferError.Reading(error))
             }
             .let { tryOrNull { it.toString(Charsets.UTF_8) } }
             .takeIf { it == "%PDF-" }
@@ -857,10 +857,10 @@ public object JsonMediaTypeSniffer : MediaTypeSniffer {
         readable.readAsJson()
             .getOrElse {
                 when (it) {
-                    is DecoderError.Read ->
-                        return Try.failure(MediaTypeSnifferError.Read(it.cause))
+                    is DecodeError.Reading ->
+                        return Try.failure(MediaTypeSnifferError.Reading(it.cause))
 
-                    is DecoderError.Decoding ->
+                    is DecodeError.Decoding ->
                         null
                 }
             }
@@ -904,7 +904,7 @@ public object SystemMediaTypeSniffer : MediaTypeSniffer {
                     e.asInstance(SystemSnifferException::class.java)
                         ?.let {
                             return Try.failure(
-                                MediaTypeSnifferError.Read(it.error)
+                                MediaTypeSnifferError.Reading(it.error)
                             )
                         }
                 }

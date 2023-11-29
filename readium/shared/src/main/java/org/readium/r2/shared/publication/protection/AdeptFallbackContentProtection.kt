@@ -13,7 +13,7 @@ import org.readium.r2.shared.util.MessageError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.asset.Asset
-import org.readium.r2.shared.util.data.DecoderError
+import org.readium.r2.shared.util.data.DecodeError
 import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.data.readAsXml
 import org.readium.r2.shared.util.getOrElse
@@ -70,9 +70,9 @@ public class AdeptFallbackContentProtection : ContentProtection {
             ?.readAsXml()
             ?.getOrElse {
                 when (it) {
-                    is DecoderError.Decoding ->
+                    is DecodeError.Decoding ->
                         return Try.success(false)
-                    is DecoderError.Read ->
+                    is DecodeError.Reading ->
                         return Try.failure(it.cause)
                 }
             }?.get("EncryptedData", EpubEncryption.ENC)
@@ -85,9 +85,9 @@ public class AdeptFallbackContentProtection : ContentProtection {
             ?.readAsXml()
             ?.getOrElse {
                 when (it) {
-                    is DecoderError.Decoding ->
+                    is DecodeError.Decoding ->
                         return Try.success(false)
-                    is DecoderError.Read ->
+                    is DecodeError.Reading ->
                         return Try.failure(it.cause)
                 }
             }?.takeIf { it.namespace == "http://ns.adobe.com/adept" }

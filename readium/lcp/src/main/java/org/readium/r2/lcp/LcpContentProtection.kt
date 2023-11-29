@@ -112,7 +112,7 @@ internal class LcpContentProtection(
                         LicenseDocument(it)
                     } catch (e: Exception) {
                         return Try.failure(
-                            ContentProtection.Error.ReadError(
+                            ContentProtection.Error.Reading(
                                 ReadError.Decoding(
                                     MessageError(
                                         "Failed to read the LCP license document",
@@ -125,14 +125,14 @@ internal class LcpContentProtection(
                 }
                 .getOrElse {
                     return Try.failure(
-                        ContentProtection.Error.ReadError(it)
+                        ContentProtection.Error.Reading(it)
                     )
                 }
 
         val link = licenseDoc.publicationLink
         val url = (link.url() as? AbsoluteUrl)
             ?: return Try.failure(
-                ContentProtection.Error.ReadError(
+                ContentProtection.Error.Reading(
                     ReadError.Decoding(
                         MessageError(
                             "The LCP license document does not contain a valid link to the publication"
@@ -174,8 +174,8 @@ internal class LcpContentProtection(
         when (this) {
             is AssetRetriever.Error.FormatNotSupported ->
                 ContentProtection.Error.UnsupportedAsset(this)
-            is AssetRetriever.Error.ReadError ->
-                ContentProtection.Error.ReadError(cause)
+            is AssetRetriever.Error.Reading ->
+                ContentProtection.Error.Reading(cause)
             is AssetRetriever.Error.SchemeNotSupported ->
                 ContentProtection.Error.UnsupportedAsset(this)
         }

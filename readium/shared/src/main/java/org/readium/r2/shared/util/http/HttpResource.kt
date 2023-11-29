@@ -10,6 +10,7 @@ import java.io.IOException
 import java.io.InputStream
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.extensions.read
 import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.util.AbsoluteUrl
@@ -23,6 +24,7 @@ import org.readium.r2.shared.util.resource.filename
 import org.readium.r2.shared.util.resource.mediaType
 
 /** Provides access to an external URL through HTTP. */
+@OptIn(ExperimentalReadiumApi::class)
 public class HttpResource(
     override val source: AbsoluteUrl,
     private val client: HttpClient,

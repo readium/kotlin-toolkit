@@ -37,13 +37,13 @@ internal class FileZipArchiveProvider {
                 Try.failure(MediaTypeSnifferError.NotRecognized)
             } catch (e: SecurityException) {
                 Try.failure(
-                    MediaTypeSnifferError.Read(
+                    MediaTypeSnifferError.Reading(
                         ReadError.Access(FileSystemError.Forbidden(e))
                     )
                 )
             } catch (e: IOException) {
                 Try.failure(
-                    MediaTypeSnifferError.Read(
+                    MediaTypeSnifferError.Reading(
                         ReadError.Access(FileSystemError.IO(e))
                     )
                 )

@@ -36,17 +36,7 @@ public class ContentResource(
 
     private lateinit var _length: Try<Long, ReadError>
 
-    private val filename =
-        contentResolver.queryProjection(uri, MediaStore.MediaColumns.DISPLAY_NAME)
-
-    private val properties =
-        Resource.Properties(
-            Resource.Properties.Builder()
-                .also {
-                    it.filename = filename
-                    it.mediaType = mediaType
-                }
-        )
+    private lateinit var _properties: Try<Resource.Properties, ReadError>
 
     override val source: AbsoluteUrl? = uri.toUrl() as? AbsoluteUrl
 
@@ -54,7 +44,30 @@ public class ContentResource(
     }
 
     override suspend fun properties(): Try<Resource.Properties, ReadError> {
-        return Try.success(properties)
+        if (::_properties.isInitialized) {
+            return _properties
+        }
+
+        val filename =
+            contentResolver.queryProjection(uri, MediaStore.MediaColumns.DISPLAY_NAME)
+
+        val mediaType: MediaType? = this.mediaType
+            ?: contentResolver.getType(uri)
+                ?.let { MediaType(it) }
+                ?.takeUnless { it.matches(MediaType.BINARY) }
+
+        val properties =
+            Resource.Properties(
+                Resource.Properties.Builder()
+                    .also {
+                        it.filename = filename
+                        it.mediaType = mediaType
+                    }
+            )
+
+        _properties = Try.success(properties)
+
+        return _properties
     }
 
     override suspend fun read(range: LongRange?): Try<ByteArray, ReadError> {

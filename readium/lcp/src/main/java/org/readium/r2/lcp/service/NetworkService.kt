@@ -149,7 +149,7 @@ internal class NetworkService(
                 when (it) {
                     is MediaTypeSnifferError.NotRecognized ->
                         MediaType.BINARY
-                    is MediaTypeSnifferError.Read ->
+                    is MediaTypeSnifferError.Reading ->
                         throw ReadException(it.cause)
                 }
             }

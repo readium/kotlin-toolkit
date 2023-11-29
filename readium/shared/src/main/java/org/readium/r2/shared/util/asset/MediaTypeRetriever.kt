@@ -6,7 +6,6 @@
 
 package org.readium.r2.shared.util.asset
 
-import android.content.ContentResolver
 import java.io.File
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.archive.ArchiveFactory
@@ -33,12 +32,11 @@ import org.readium.r2.shared.util.use
 public class MediaTypeRetriever(
     private val mediaTypeSniffer: MediaTypeSniffer,
     formatRegistry: FormatRegistry,
-    archiveFactory: ArchiveFactory,
-    contentResolver: ContentResolver?
+    archiveFactory: ArchiveFactory
 ) {
 
     private val simpleResourceMediaTypeRetriever: SimpleResourceMediaTypeRetriever =
-        SimpleResourceMediaTypeRetriever(mediaTypeSniffer, contentResolver, formatRegistry)
+        SimpleResourceMediaTypeRetriever(mediaTypeSniffer, formatRegistry)
 
     private val archiveFactory: ArchiveFactory =
         SmartArchiveFactory(archiveFactory, formatRegistry)
@@ -116,7 +114,7 @@ public class MediaTypeRetriever(
             .getOrElse {
                 when (it) {
                     is ArchiveFactory.Error.ReadError ->
-                        return Try.failure(MediaTypeSnifferError.Read(it.cause))
+                        return Try.failure(MediaTypeSnifferError.Reading(it.cause))
                     is ArchiveFactory.Error.FormatNotSupported ->
                         return Try.success(resourceMediaType)
                 }

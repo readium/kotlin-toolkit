@@ -16,7 +16,7 @@ import org.readium.r2.shared.publication.services.positionsServiceFactory
 import org.readium.r2.shared.util.MessageError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
-import org.readium.r2.shared.util.data.DecoderError
+import org.readium.r2.shared.util.data.DecodeError
 import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.data.readAsRwpm
 import org.readium.r2.shared.util.getOrElse
@@ -55,14 +55,14 @@ public class ReadiumWebPubParser(
             .readAsRwpm()
             .getOrElse {
                 when (it) {
-                    is DecoderError.Read ->
+                    is DecodeError.Reading ->
                         return Try.failure(
                             PublicationParser.Error.ReadError(
                                 ReadError.Decoding(it.cause)
                             )
                         )
 
-                    is DecoderError.Decoding ->
+                    is DecodeError.Decoding ->
                         return Try.failure(
                             PublicationParser.Error.ReadError(
                                 ReadError.Decoding(

@@ -6,10 +6,6 @@
 
 package org.readium.r2.shared.util.asset
 
-import android.content.ContentResolver
-import android.provider.MediaStore
-import java.io.File
-import org.readium.r2.shared.extensions.queryProjection
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.flatMap
 import org.readium.r2.shared.util.getOrElse
@@ -19,8 +15,8 @@ import org.readium.r2.shared.util.mediatype.MediaTypeHints
 import org.readium.r2.shared.util.mediatype.MediaTypeSniffer
 import org.readium.r2.shared.util.mediatype.MediaTypeSnifferError
 import org.readium.r2.shared.util.resource.Resource
-import org.readium.r2.shared.util.resource.invoke
-import org.readium.r2.shared.util.toUri
+import org.readium.r2.shared.util.resource.filename
+import org.readium.r2.shared.util.resource.mediaType
 import org.readium.r2.shared.util.tryRecover
 
 /**
@@ -28,7 +24,6 @@ import org.readium.r2.shared.util.tryRecover
  */
 internal class SimpleResourceMediaTypeRetriever(
     private val mediaTypeSniffer: MediaTypeSniffer,
-    private val contentResolver: ContentResolver?,
     private val formatRegistry: FormatRegistry
 ) {
 
@@ -64,28 +59,16 @@ internal class SimpleResourceMediaTypeRetriever(
      */
     suspend fun retrieve(resource: Resource, hints: MediaTypeHints): Try<MediaType, MediaTypeSnifferError> {
         val properties = resource.properties()
-            .getOrElse { return Try.failure(MediaTypeSnifferError.Read(it)) }
+            .getOrElse { return Try.failure(MediaTypeSnifferError.Reading(it)) }
 
-        retrieveSafe(MediaTypeHints(properties) + hints)
+        val embeddedHints = MediaTypeHints(
+            mediaType = properties.mediaType,
+            fileExtension = properties.filename
+                ?.substringAfterLast(".", "")
+        )
+
+        retrieveSafe(embeddedHints + hints)
             .onSuccess { return Try.success(it) }
-
-        if (contentResolver != null) {
-            resource.source
-                ?.takeIf { it.isContent }
-                ?.let { url ->
-                    val contentHints = MediaTypeHints(
-                        mediaType = contentResolver.getType(url.toUri())
-                            ?.let { MediaType(it) }
-                            ?.takeUnless { it.matches(MediaType.BINARY) },
-                        fileExtension = contentResolver
-                            .queryProjection(url.uri, MediaStore.MediaColumns.DISPLAY_NAME)
-                            ?.let { filename -> File(filename).extension }
-                    )
-
-                    retrieveSafe(contentHints)
-                        .onSuccess { return Try.success(it) }
-                }
-        }
 
         mediaTypeSniffer.sniffBlob(resource)
             .onSuccess { return Try.success(it) }

@@ -43,7 +43,7 @@ public class AssetRetriever(
         public class FormatNotSupported(cause: org.readium.r2.shared.util.Error) :
             Error("Asset format is not supported.", cause)
 
-        public class ReadError(override val cause: org.readium.r2.shared.util.data.ReadError) :
+        public class Reading(override val cause: org.readium.r2.shared.util.data.ReadError) :
             Error("An error occurred when trying to read asset.", cause)
     }
 
@@ -64,7 +64,7 @@ public class AssetRetriever(
             .getOrElse {
                 return when (it) {
                     is ArchiveFactory.Error.ReadError ->
-                        Try.failure(Error.ReadError(it.cause))
+                        Try.failure(Error.Reading(it.cause))
                     is ArchiveFactory.Error.FormatNotSupported ->
                         Try.success(Asset.Resource(mediaType, resource))
                 }
@@ -121,7 +121,7 @@ public class AssetRetriever(
             .getOrElse {
                 when (it) {
                     is ArchiveFactory.Error.ReadError ->
-                        return Try.failure(Error.ReadError(it.cause))
+                        return Try.failure(Error.Reading(it.cause))
                     is ArchiveFactory.Error.FormatNotSupported ->
                         return Try.success(Asset.Resource(mediaType, resource))
                 }

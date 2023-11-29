@@ -223,7 +223,7 @@ public class PublicationFactory(
             ?.open(asset, credentials, allowUserInteraction)
             ?.mapFailure {
                 when (it) {
-                    is ContentProtection.Error.ReadError ->
+                    is ContentProtection.Error.Reading ->
                         Error.ReadError(it.cause)
                     is ContentProtection.Error.UnsupportedAsset ->
                         Error.UnsupportedAsset(it)

@@ -18,7 +18,7 @@ import org.readium.r2.shared.util.MessageError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.data.Container
-import org.readium.r2.shared.util.data.DecoderError
+import org.readium.r2.shared.util.data.DecodeError
 import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.data.readAsXml
 import org.readium.r2.shared.util.getOrElse
@@ -192,14 +192,14 @@ public class EpubParser(
 
     private suspend fun<R> Resource.decodeOrFail(
         url: Url,
-        decode: suspend Resource.() -> Try<R, DecoderError>
+        decode: suspend Resource.() -> Try<R, DecodeError>
     ): Try<R, PublicationParser.Error> {
         return decode()
             .mapFailure {
                 when (it) {
-                    is DecoderError.Read ->
+                    is DecodeError.Reading ->
                         PublicationParser.Error.ReadError(it.cause)
-                    is DecoderError.Decoding ->
+                    is DecodeError.Decoding ->
                         PublicationParser.Error.ReadError(
                             ReadError.Decoding(
                                 MessageError(

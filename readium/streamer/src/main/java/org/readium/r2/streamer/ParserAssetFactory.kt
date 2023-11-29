@@ -13,7 +13,7 @@ import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.asset.Asset
 import org.readium.r2.shared.util.data.CompositeContainer
-import org.readium.r2.shared.util.data.DecoderError
+import org.readium.r2.shared.util.data.DecodeError
 import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.data.readAsRwpm
 import org.readium.r2.shared.util.getOrElse
@@ -80,8 +80,8 @@ internal class ParserAssetFactory(
         val manifest = asset.resource.readAsRwpm()
             .mapFailure {
                 when (it) {
-                    is DecoderError.Decoding -> ReadError.Decoding(it.cause)
-                    is DecoderError.Read -> it.cause
+                    is DecodeError.Decoding -> ReadError.Decoding(it.cause)
+                    is DecodeError.Reading -> it.cause
                 }
             }
             .getOrElse { return Try.failure(Error.ReadError(it)) }

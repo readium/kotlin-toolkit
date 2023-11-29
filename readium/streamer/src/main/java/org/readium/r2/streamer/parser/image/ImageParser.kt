@@ -70,7 +70,7 @@ public class ImageParser(
                         when (error) {
                             MediaTypeSnifferError.NotRecognized ->
                                 null
-                            is MediaTypeSnifferError.Read ->
+                            is MediaTypeSnifferError.Reading ->
                                 return Try.failure(PublicationParser.Error.ReadError(error.cause))
                         }
                     }

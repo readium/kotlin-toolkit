@@ -12,7 +12,7 @@ import org.jsoup.Jsoup
 import org.jsoup.parser.Parser
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.Try
-import org.readium.r2.shared.util.data.DecoderError
+import org.readium.r2.shared.util.data.DecodeError
 import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.data.readAsString
 import org.readium.r2.shared.util.mediatype.MediaType
@@ -62,9 +62,9 @@ public class HtmlResourceContentExtractor : ResourceContentExtractor {
                 .readAsString()
                 .tryRecover {
                     when (it) {
-                        is DecoderError.Read ->
+                        is DecodeError.Reading ->
                             return@withContext Try.failure(it.cause)
-                        is DecoderError.Decoding ->
+                        is DecodeError.Decoding ->
                             Try.success("")
                     }
                 }
