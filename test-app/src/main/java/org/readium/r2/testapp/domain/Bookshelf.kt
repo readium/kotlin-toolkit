@@ -18,8 +18,8 @@ import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.MessageError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.asset.AssetRetriever
-import org.readium.r2.shared.util.data.FileSystemError
 import org.readium.r2.shared.util.data.ReadError
+import org.readium.r2.shared.util.file.FileSystemError
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.toUrl
 import org.readium.r2.shared.util.tryRecover

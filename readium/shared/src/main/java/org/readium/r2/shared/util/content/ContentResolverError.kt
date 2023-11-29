@@ -4,10 +4,11 @@
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.r2.shared.util.data
+package org.readium.r2.shared.util.content
 
 import org.readium.r2.shared.util.Error
 import org.readium.r2.shared.util.ThrowableError
+import org.readium.r2.shared.util.data.AccessError
 
 /**
  * Errors wrapping Android Content Provider errors.

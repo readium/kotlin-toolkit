@@ -4,13 +4,13 @@
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.r2.shared.util.asset
+package org.readium.r2.shared.util.file
 
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.mediatype.MediaType
-import org.readium.r2.shared.util.resource.FileResource
 import org.readium.r2.shared.util.resource.Resource
+import org.readium.r2.shared.util.resource.ResourceFactory
 
 /**
  * Creates [FileResource]s.

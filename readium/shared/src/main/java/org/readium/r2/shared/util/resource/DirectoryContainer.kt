@@ -13,7 +13,8 @@ import org.readium.r2.shared.util.RelativeUrl
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.data.Container
-import org.readium.r2.shared.util.data.FileSystemError
+import org.readium.r2.shared.util.file.FileResource
+import org.readium.r2.shared.util.file.FileSystemError
 import org.readium.r2.shared.util.toUrl
 
 /**

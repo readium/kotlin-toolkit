@@ -8,9 +8,9 @@ package org.readium.r2.testapp.domain
 
 import androidx.annotation.StringRes
 import org.readium.r2.shared.util.Error
-import org.readium.r2.shared.util.data.ContentResolverError
-import org.readium.r2.shared.util.data.FileSystemError
+import org.readium.r2.shared.util.content.ContentResolverError
 import org.readium.r2.shared.util.data.ReadError
+import org.readium.r2.shared.util.file.FileSystemError
 import org.readium.r2.shared.util.http.HttpError
 import org.readium.r2.shared.util.http.HttpStatus
 import org.readium.r2.testapp.R

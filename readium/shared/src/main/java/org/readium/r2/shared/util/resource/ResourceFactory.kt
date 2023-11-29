@@ -4,7 +4,7 @@
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.r2.shared.util.asset
+package org.readium.r2.shared.util.resource
 
 import kotlin.String
 import kotlin.let
@@ -12,7 +12,6 @@ import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
-import org.readium.r2.shared.util.resource.Resource
 
 /**
  * A factory to read [Resource]s from [Url]s.

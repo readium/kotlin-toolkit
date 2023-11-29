@@ -12,13 +12,13 @@ import org.readium.r2.shared.util.archive.ArchiveFactory
 import org.readium.r2.shared.util.archive.SmartArchiveFactory
 import org.readium.r2.shared.util.data.Container
 import org.readium.r2.shared.util.data.Readable
+import org.readium.r2.shared.util.file.FileResource
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.mediatype.FormatRegistry
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.mediatype.MediaTypeHints
 import org.readium.r2.shared.util.mediatype.MediaTypeSniffer
 import org.readium.r2.shared.util.mediatype.MediaTypeSnifferError
-import org.readium.r2.shared.util.resource.FileResource
 import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.shared.util.use
 

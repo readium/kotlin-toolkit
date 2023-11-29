@@ -4,7 +4,7 @@
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.r2.shared.util.resource
+package org.readium.r2.shared.util.file
 
 import java.io.File
 import java.io.FileNotFoundException
@@ -17,11 +17,13 @@ import org.readium.r2.shared.extensions.*
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.MessageError
 import org.readium.r2.shared.util.Try
-import org.readium.r2.shared.util.data.FileSystemError
 import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.getOrThrow
 import org.readium.r2.shared.util.isLazyInitialized
 import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.shared.util.resource.Resource
+import org.readium.r2.shared.util.resource.filename
+import org.readium.r2.shared.util.resource.mediaType
 import org.readium.r2.shared.util.toUrl
 
 /**

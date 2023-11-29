@@ -7,6 +7,7 @@ import kotlin.test.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.readium.r2.shared.util.data.ReadableInputStream
+import org.readium.r2.shared.util.file.FileResource
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.robolectric.RobolectricTestRunner
 

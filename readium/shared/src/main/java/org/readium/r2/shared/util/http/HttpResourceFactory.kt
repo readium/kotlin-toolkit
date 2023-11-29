@@ -4,33 +4,30 @@
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.r2.shared.util.asset
+package org.readium.r2.shared.util.http
 
-import android.content.ContentResolver
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.mediatype.MediaType
-import org.readium.r2.shared.util.resource.ContentResource
 import org.readium.r2.shared.util.resource.Resource
-import org.readium.r2.shared.util.toUri
+import org.readium.r2.shared.util.resource.ResourceFactory
 
 /**
- * Creates [ContentResource]s.
+ * Creates [HttpResource]s.
  */
-public class ContentResourceFactory(
-    private val contentResolver: ContentResolver
+public class HttpResourceFactory(
+    private val httpClient: HttpClient
 ) : ResourceFactory {
 
     override suspend fun create(
         url: AbsoluteUrl,
         mediaType: MediaType?
     ): Try<Resource, ResourceFactory.Error> {
-        if (!url.isContent) {
+        if (!url.isHttp) {
             return Try.failure(ResourceFactory.Error.SchemeNotSupported(url.scheme))
         }
 
-        val resource = ContentResource(url.toUri(), contentResolver)
-
+        val resource = HttpResource(url, httpClient)
         return Try.success(resource)
     }
 }
