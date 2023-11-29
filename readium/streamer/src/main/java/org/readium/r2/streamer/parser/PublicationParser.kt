@@ -50,7 +50,7 @@ public interface PublicationParser {
         public override val cause: org.readium.r2.shared.util.Error?
     ) : org.readium.r2.shared.util.Error {
 
-        public class UnsupportedFormat :
+        public class FormatNotSupported :
             Error("Asset format not supported.", null)
 
         public class Reading(override val cause: org.readium.r2.shared.util.data.ReadError) :

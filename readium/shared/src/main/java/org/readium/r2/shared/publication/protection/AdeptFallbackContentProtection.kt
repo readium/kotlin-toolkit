@@ -43,7 +43,7 @@ public class AdeptFallbackContentProtection : ContentProtection {
     ): Try<ContentProtection.Asset, ContentProtection.Error> {
         if (asset !is Asset.Container) {
             return Try.failure(
-                ContentProtection.Error.UnsupportedAsset(
+                ContentProtection.Error.AssetNotSupported(
                     MessageError("A container asset was expected.")
                 )
             )

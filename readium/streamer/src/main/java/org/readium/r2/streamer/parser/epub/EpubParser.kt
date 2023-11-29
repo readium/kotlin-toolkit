@@ -47,7 +47,7 @@ public class EpubParser(
         warnings: WarningLogger?
     ): Try<Publication.Builder, PublicationParser.Error> {
         if (asset.mediaType != MediaType.EPUB) {
-            return Try.failure(PublicationParser.Error.UnsupportedFormat())
+            return Try.failure(PublicationParser.Error.FormatNotSupported())
         }
 
         val opfPath = getRootFilePath(asset.container)

@@ -65,15 +65,15 @@ public class PublicationFactory(
         override val cause: org.readium.r2.shared.util.Error?
     ) : org.readium.r2.shared.util.Error {
 
-        public class ReadError(
+        public class Reading(
             override val cause: org.readium.r2.shared.util.data.ReadError
         ) : Error("An error occurred while trying to read asset.", cause)
 
-        public class UnsupportedAsset(
+        public class FormatNotSupported(
             override val cause: org.readium.r2.shared.util.Error?
         ) : Error("Asset is not supported.", cause)
 
-        public class UnsupportedContentProtection(
+        public class ContentProtectionNotSupported(
             override val cause: org.readium.r2.shared.util.Error? = null
         ) : Error("No ContentProtection available to open asset.", cause)
     }
@@ -199,9 +199,9 @@ public class PublicationFactory(
             .mapFailure {
                 when (it) {
                     is ParserAssetFactory.Error.ReadError ->
-                        Error.ReadError(it.cause)
+                        Error.Reading(it.cause)
                     is ParserAssetFactory.Error.UnsupportedAsset ->
-                        Error.UnsupportedAsset(it.cause)
+                        Error.FormatNotSupported(it.cause)
                 }
             }
             .getOrElse { return Try.failure(it) }
@@ -221,13 +221,13 @@ public class PublicationFactory(
             ?.mapFailure {
                 when (it) {
                     is ContentProtection.Error.Reading ->
-                        Error.ReadError(it.cause)
-                    is ContentProtection.Error.UnsupportedAsset ->
-                        Error.UnsupportedAsset(it)
+                        Error.Reading(it.cause)
+                    is ContentProtection.Error.AssetNotSupported ->
+                        Error.FormatNotSupported(it)
                 }
             }
             ?.getOrElse { return Try.failure(it) }
-            ?: return Try.failure(Error.UnsupportedContentProtection())
+            ?: return Try.failure(Error.ContentProtectionNotSupported())
 
         val parserAsset = PublicationParser.Asset(
             protectedAsset.mediaType,
@@ -264,19 +264,19 @@ public class PublicationFactory(
             val result = parser.parse(publicationAsset, warnings)
             if (
                 result is Try.Success ||
-                result is Try.Failure && result.value !is PublicationParser.Error.UnsupportedFormat
+                result is Try.Failure && result.value !is PublicationParser.Error.FormatNotSupported
             ) {
                 return result
             }
         }
-        return Try.failure(PublicationParser.Error.UnsupportedFormat())
+        return Try.failure(PublicationParser.Error.FormatNotSupported())
     }
 
     private fun wrapParserException(e: PublicationParser.Error): Error =
         when (e) {
-            is PublicationParser.Error.UnsupportedFormat ->
-                Error.UnsupportedAsset(MessageError("Cannot find a parser for this asset."))
+            is PublicationParser.Error.FormatNotSupported ->
+                Error.FormatNotSupported(MessageError("Cannot find a parser for this asset."))
             is PublicationParser.Error.Reading ->
-                Error.ReadError(e.cause)
+                Error.Reading(e.cause)
         }
 }

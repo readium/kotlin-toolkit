@@ -137,9 +137,9 @@ class Bookshelf(
             protectionRetriever.retrieve(asset)
                 .tryRecover {
                     when (it) {
-                        ContentProtectionSchemeRetriever.Error.NoContentProtectionFound ->
+                        ContentProtectionSchemeRetriever.Error.NotRecognized ->
                             Try.success(null)
-                        is ContentProtectionSchemeRetriever.Error.ReadError ->
+                        is ContentProtectionSchemeRetriever.Error.Reading ->
                             Try.failure(it)
                     }
                 }.getOrElse {

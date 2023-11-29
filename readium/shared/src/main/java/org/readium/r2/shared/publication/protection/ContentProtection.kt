@@ -41,7 +41,7 @@ public interface ContentProtection {
             override val cause: ReadError
         ) : Error("An error occurred while trying to read asset.", cause)
 
-        public class UnsupportedAsset(
+        public class AssetNotSupported(
             override val cause: org.readium.r2.shared.util.Error?
         ) : Error("Asset is not supported.", cause)
     }

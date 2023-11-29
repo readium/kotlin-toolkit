@@ -157,7 +157,7 @@ internal class LcpContentProtection(
                             Try.success((it))
                         } else {
                             Try.failure(
-                                ContentProtection.Error.UnsupportedAsset(
+                                ContentProtection.Error.AssetNotSupported(
                                     MessageError(
                                         "LCP license points to an unsupported publication."
                                     )
@@ -173,10 +173,10 @@ internal class LcpContentProtection(
     private fun AssetRetriever.Error.wrap(): ContentProtection.Error =
         when (this) {
             is AssetRetriever.Error.FormatNotSupported ->
-                ContentProtection.Error.UnsupportedAsset(this)
+                ContentProtection.Error.AssetNotSupported(this)
             is AssetRetriever.Error.Reading ->
                 ContentProtection.Error.Reading(cause)
             is AssetRetriever.Error.SchemeNotSupported ->
-                ContentProtection.Error.UnsupportedAsset(this)
+                ContentProtection.Error.AssetNotSupported(this)
         }
 }

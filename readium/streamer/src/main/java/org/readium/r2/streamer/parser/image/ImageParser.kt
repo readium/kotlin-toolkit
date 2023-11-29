@@ -41,7 +41,7 @@ public class ImageParser(
         warnings: WarningLogger?
     ): Try<Publication.Builder, PublicationParser.Error> {
         if (!asset.mediaType.matches(MediaType.CBZ) && !asset.mediaType.isBitmap) {
-            return Try.failure(PublicationParser.Error.UnsupportedFormat())
+            return Try.failure(PublicationParser.Error.FormatNotSupported())
         }
 
         val readingOrder =

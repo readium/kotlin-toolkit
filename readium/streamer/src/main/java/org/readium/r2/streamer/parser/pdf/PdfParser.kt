@@ -39,7 +39,7 @@ public class PdfParser(
         warnings: WarningLogger?
     ): Try<Publication.Builder, PublicationParser.Error> {
         if (asset.mediaType != MediaType.PDF) {
-            return Try.failure(PublicationParser.Error.UnsupportedFormat())
+            return Try.failure(PublicationParser.Error.FormatNotSupported())
         }
 
         val url = asset.container.entries

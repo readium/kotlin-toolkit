@@ -50,19 +50,19 @@ sealed class PublicationError(
 
         operator fun invoke(error: ContentProtectionSchemeRetriever.Error): PublicationError =
             when (error) {
-                is ContentProtectionSchemeRetriever.Error.ReadError ->
+                is ContentProtectionSchemeRetriever.Error.Reading ->
                     ReadError(error.cause)
-                ContentProtectionSchemeRetriever.Error.NoContentProtectionFound ->
+                ContentProtectionSchemeRetriever.Error.NotRecognized ->
                     UnsupportedContentProtection(error)
             }
 
         operator fun invoke(error: PublicationFactory.Error): PublicationError =
             when (error) {
-                is PublicationFactory.Error.ReadError ->
+                is PublicationFactory.Error.Reading ->
                     ReadError(error.cause)
-                is PublicationFactory.Error.UnsupportedAsset ->
+                is PublicationFactory.Error.FormatNotSupported ->
                     UnsupportedPublication(error)
-                is PublicationFactory.Error.UnsupportedContentProtection ->
+                is PublicationFactory.Error.ContentProtectionNotSupported ->
                     UnsupportedContentProtection(error)
             }
     }

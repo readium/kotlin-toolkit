@@ -29,21 +29,21 @@ public class ContentProtectionSchemeRetriever(
         override val cause: org.readium.r2.shared.util.Error?
     ) : org.readium.r2.shared.util.Error {
 
-        public object NoContentProtectionFound :
+        public object NotRecognized :
             Error("No content protection recognized the given asset.", null)
 
-        public class ReadError(override val cause: org.readium.r2.shared.util.data.ReadError) :
+        public class Reading(override val cause: org.readium.r2.shared.util.data.ReadError) :
             Error("An error occurred while trying to read asset.", cause)
     }
 
     public suspend fun retrieve(asset: org.readium.r2.shared.util.asset.Asset): Try<ContentProtection.Scheme, Error> {
         for (protection in contentProtections) {
             protection.supports(asset)
-                .getOrElse { return Try.failure(Error.ReadError(it)) }
+                .getOrElse { return Try.failure(Error.Reading(it)) }
                 .takeIf { it }
                 ?.let { return Try.success(protection.scheme) }
         }
 
-        return Try.failure(Error.NoContentProtectionFound)
+        return Try.failure(Error.NotRecognized)
     }
 }
