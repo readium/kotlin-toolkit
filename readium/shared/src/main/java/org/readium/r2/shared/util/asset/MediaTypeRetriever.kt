@@ -23,11 +23,11 @@ import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.shared.util.use
 
 /**
- * Retrieves a canonical [MediaType] for the provided media type and file extension hints and/or
+ * Retrieves a canonical [MediaType] for the provided media type and file extension hints and
  * asset content.
  *
  * The actual format sniffing is mostly done by the provided [mediaTypeSniffer].
- * The [DefaultMediaTypeSniffer] cover the formats supported with Readium by default.
+ * The [DefaultMediaTypeSniffer] covers the formats supported with Readium by default.
  */
 public class MediaTypeRetriever(
     private val mediaTypeSniffer: MediaTypeSniffer,
@@ -43,6 +43,8 @@ public class MediaTypeRetriever(
 
     /**
      * Retrieves a canonical [MediaType] for the provided media type and file extension [hints].
+     *
+     * Useful for testing purpose.
      */
     internal fun retrieve(hints: MediaTypeHints): MediaType? =
         simpleResourceMediaTypeRetriever.retrieveUnsafe(hints)
@@ -50,6 +52,8 @@ public class MediaTypeRetriever(
 
     /**
      * Retrieves a canonical [MediaType] for the provided [mediaType] and [fileExtension] hints.
+     *
+     * Useful for testing purpose.
      */
     internal fun retrieve(mediaType: String? = null, fileExtension: String? = null): MediaType? =
         retrieve(
@@ -61,6 +65,8 @@ public class MediaTypeRetriever(
 
     /**
      * Retrieves a canonical [MediaType] for the provided [mediaType] and [fileExtension] hints.
+     *
+     * Useful for testing purpose.
      */
 
     internal fun retrieve(mediaType: MediaType, fileExtension: String? = null): MediaType =
@@ -68,6 +74,8 @@ public class MediaTypeRetriever(
 
     /**
      * Retrieves a canonical [MediaType] for the provided [mediaTypes] and [fileExtensions] hints.
+     *
+     * Useful for testing purpose.
      */
     internal fun retrieve(
         mediaTypes: List<String> = emptyList(),
@@ -75,6 +83,12 @@ public class MediaTypeRetriever(
     ): MediaType? =
         retrieve(MediaTypeHints(mediaTypes = mediaTypes, fileExtensions = fileExtensions))
 
+    /**
+     * Retrieves a canonical [MediaType] for [container].
+     *
+     * @param container the resource to retrieve the media type of
+     * @param hints media type hints
+     */
     public suspend fun retrieve(
         container: Container<Readable>,
         hints: MediaTypeHints = MediaTypeHints()
@@ -94,6 +108,12 @@ public class MediaTypeRetriever(
         return simpleResourceMediaTypeRetriever.retrieveUnsafe(hints)
     }
 
+    /**
+     * Retrieves a canonical [MediaType] for [file].
+     *
+     * @param file the file to retrieve the media type of
+     * @param hints additional hints which will be added to those provided by the resource
+     */
     public suspend fun retrieve(
         file: File,
         hints: MediaTypeHints = MediaTypeHints()
@@ -102,6 +122,9 @@ public class MediaTypeRetriever(
 
     /**
      * Retrieves a canonical [MediaType] for [resource].
+     *
+     * @param resource the resource to retrieve the media type of
+     * @param hints additional hints which will be added to those provided by the resource
      */
     public suspend fun retrieve(
         resource: Resource,
@@ -113,7 +136,7 @@ public class MediaTypeRetriever(
         val container = archiveFactory.create(resourceMediaType, resource)
             .getOrElse {
                 when (it) {
-                    is ArchiveFactory.Error.ReadError ->
+                    is ArchiveFactory.Error.Reading ->
                         return Try.failure(MediaTypeSnifferError.Reading(it.cause))
                     is ArchiveFactory.Error.FormatNotSupported ->
                         return Try.success(resourceMediaType)

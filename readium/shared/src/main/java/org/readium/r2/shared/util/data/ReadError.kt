@@ -46,8 +46,8 @@ public sealed class ReadError(
 /**
  * Marker interface for source-specific access errors.
  *
- * At the moment, [AccessError]s constructed by the toolkit can be either a [FileSystemError],
- * a [ContentResolverError] or an HttpError.
+ * At the moment, [AccessError]s constructed by the toolkit can be either a FileSystemError,
+ * a ContentResolverError or an HttpError.
  */
 public interface AccessError : Error
 

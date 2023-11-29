@@ -65,9 +65,9 @@ internal class StreamingZipArchiveProvider {
         } catch (exception: Exception) {
             when (val e = exception.unwrapInstance(ReadException::class.java)) {
                 is ReadException ->
-                    Try.failure(ArchiveFactory.Error.ReadError(e.error))
+                    Try.failure(ArchiveFactory.Error.Reading(e.error))
                 else ->
-                    Try.failure(ArchiveFactory.Error.ReadError(ReadError.Decoding(e)))
+                    Try.failure(ArchiveFactory.Error.Reading(ReadError.Decoding(e)))
             }
         }
     }

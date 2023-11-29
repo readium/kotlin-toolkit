@@ -14,6 +14,9 @@ import org.readium.r2.shared.util.mediatype.MediaTypeSniffer
 import org.readium.r2.shared.util.mediatype.MediaTypeSnifferError
 import org.readium.r2.shared.util.resource.Resource
 
+/**
+ * Sniffs a ZIP archive.
+ */
 public object ZipMediaTypeSniffer : MediaTypeSniffer {
 
     private val fileZipArchiveProvider = FileZipArchiveProvider()

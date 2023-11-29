@@ -28,6 +28,9 @@ import org.readium.r2.shared.util.toUrl
 
 /**
  * A [Resource] to access a [File].
+ *
+ * @param file the file to read.
+ * @param mediaType the file media type, if already known.
  */
 public class FileResource(
     private val file: File,

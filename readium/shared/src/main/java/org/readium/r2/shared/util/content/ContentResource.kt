@@ -29,6 +29,10 @@ import org.readium.r2.shared.util.toUrl
 
 /**
  * A [Resource] to access content [uri] thanks to a [ContentResolver].
+ *
+ * @param uri the [Uri] to read.
+ * @param contentResolver a ContentResolver.
+ * @param mediaType the file media type, if already known.
  */
 public class ContentResource(
     private val uri: Uri,

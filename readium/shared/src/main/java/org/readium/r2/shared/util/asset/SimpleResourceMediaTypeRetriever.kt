@@ -20,7 +20,7 @@ import org.readium.r2.shared.util.resource.mediaType
 import org.readium.r2.shared.util.tryRecover
 
 /**
- * A [MediaTypeRetriever] which does not open archive resources.
+ * A simple [MediaTypeRetriever] which does not open archive resources.
  */
 internal class SimpleResourceMediaTypeRetriever(
     private val mediaTypeSniffer: MediaTypeSniffer,

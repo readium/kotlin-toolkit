@@ -10,19 +10,17 @@ import kotlinx.coroutines.runBlocking
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.data.ReadError
-import org.readium.r2.shared.util.data.Readable
 
 /** Creates a Resource serving a [String]. */
-public class StringResource(
-    private val readable: Readable,
-    private val properties: Resource.Properties
-) : Resource, Readable by readable {
+public class StringResource private constructor(
+    private val resource: Resource
+) : Resource by resource {
 
     public constructor(
         source: AbsoluteUrl? = null,
         properties: Resource.Properties = Resource.Properties(),
         string: suspend () -> Try<String, ReadError>
-    ) : this(InMemoryResource(source, properties) { string().map { it.toByteArray() } }, properties)
+    ) : this(InMemoryResource(source, properties) { string().map { it.toByteArray() } })
 
     public constructor(
         string: String,
@@ -32,9 +30,6 @@ public class StringResource(
 
     override val source: AbsoluteUrl? =
         null
-
-    override suspend fun properties(): Try<Resource.Properties, ReadError> =
-        Try.success(properties)
 
     override fun toString(): String =
         "${javaClass.simpleName}(${runBlocking { read().map { it.decodeToString() } } }})"

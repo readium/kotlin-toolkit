@@ -15,7 +15,7 @@ import org.readium.r2.shared.util.resource.ResourceFactory
 import org.readium.r2.shared.util.toUri
 
 /**
- * Creates [ContentResource]s.
+ * Creates [ContentResource]s from Urls.
  */
 public class ContentResourceFactory(
     private val contentResolver: ContentResolver

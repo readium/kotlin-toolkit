@@ -57,7 +57,7 @@ public class FormatRegistry(
     private val superTypes: MutableMap<MediaType, MediaType> = superTypes.toMutableMap()
 
     /**
-     * Registers a new [fileExtension] for the given [mediaType].
+     * Registers format data for the given [mediaType].
      */
     public fun register(
         mediaType: MediaType,
@@ -90,7 +90,7 @@ public class FormatRegistry(
         superTypes[mediaType]
 
     /**
-     * Returns if [mediaType] is a generic type that could be used instead of more specific
+     * Returns if [mediaType] is a generic type that could have been used instead of more specific
      * media types.
      */
     public fun isSuperType(mediaType: MediaType): Boolean =

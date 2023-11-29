@@ -31,7 +31,7 @@ internal class SmartArchiveFactory(
                             ?.let { create(it, readable) }
                             ?: Try.failure(error)
                     }
-                    is ArchiveFactory.Error.ReadError ->
+                    is ArchiveFactory.Error.Reading ->
                         Try.failure(error)
                 }
             }

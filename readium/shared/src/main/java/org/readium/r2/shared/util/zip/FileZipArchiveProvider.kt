@@ -75,25 +75,25 @@ internal class FileZipArchiveProvider {
                 Try.success(archive)
             } catch (e: FileNotFoundException) {
                 Try.failure(
-                    ArchiveFactory.Error.ReadError(
+                    ArchiveFactory.Error.Reading(
                         ReadError.Access(FileSystemError.NotFound(e))
                     )
                 )
             } catch (e: ZipException) {
                 Try.failure(
-                    ArchiveFactory.Error.ReadError(
+                    ArchiveFactory.Error.Reading(
                         ReadError.Decoding(e)
                     )
                 )
             } catch (e: SecurityException) {
                 Try.failure(
-                    ArchiveFactory.Error.ReadError(
+                    ArchiveFactory.Error.Reading(
                         ReadError.Access(FileSystemError.Forbidden(e))
                     )
                 )
             } catch (e: IOException) {
                 Try.failure(
-                    ArchiveFactory.Error.ReadError(
+                    ArchiveFactory.Error.Reading(
                         ReadError.Access(FileSystemError.IO(e))
                     )
                 )

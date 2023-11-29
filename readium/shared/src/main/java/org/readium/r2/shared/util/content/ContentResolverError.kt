@@ -11,7 +11,7 @@ import org.readium.r2.shared.util.ThrowableError
 import org.readium.r2.shared.util.data.AccessError
 
 /**
- * Errors wrapping Android Content Provider errors.
+ * Errors wrapping Android ContentResolver errors.
  */
 public sealed class ContentResolverError(
     override val message: String,

@@ -14,7 +14,7 @@ import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.resource.Resource
 
 /**
- * A factory to create [Container]s from archive [Resource].
+ * A factory to create [Container]s from archive [Resource]s.
  */
 public interface ArchiveFactory {
 
@@ -28,7 +28,7 @@ public interface ArchiveFactory {
             cause: org.readium.r2.shared.util.Error? = null
         ) : Error("Media type not supported.", cause)
 
-        public class ReadError(
+        public class Reading(
             override val cause: org.readium.r2.shared.util.data.ReadError
         ) : Error("An error occurred while attempting to read the resource.", cause)
     }
@@ -42,6 +42,10 @@ public interface ArchiveFactory {
     ): Try<Container<Resource>, Error>
 }
 
+/**
+ * A composite [ArchiveFactory] which tries several factories until it finds one which supports
+ * the format.
+*/
 public class CompositeArchiveFactory(
     private val factories: List<ArchiveFactory>
 ) : ArchiveFactory {

@@ -64,7 +64,7 @@ public class AssetRetriever(
         val archive = archiveFactory.create(mediaType, resource)
             .getOrElse {
                 return when (it) {
-                    is ArchiveFactory.Error.ReadError ->
+                    is ArchiveFactory.Error.Reading ->
                         Try.failure(Error.Reading(it.cause))
                     is ArchiveFactory.Error.FormatNotSupported ->
                         Try.success(Asset.Resource(mediaType, resource))
@@ -96,7 +96,7 @@ public class AssetRetriever(
         retrieve(file.toUrl())
 
     /**
-     * Retrieves an asset from an unknown [Url].
+     * Retrieves an asset from an unknown [AbsoluteUrl].
      */
     public suspend fun retrieve(url: AbsoluteUrl): Try<Asset, Error> {
         val resource = resourceFactory.create(url)
@@ -121,7 +121,7 @@ public class AssetRetriever(
         val container = archiveFactory.create(mediaType, resource)
             .getOrElse {
                 when (it) {
-                    is ArchiveFactory.Error.ReadError ->
+                    is ArchiveFactory.Error.Reading ->
                         return Try.failure(Error.Reading(it.cause))
                     is ArchiveFactory.Error.FormatNotSupported ->
                         return Try.success(Asset.Resource(mediaType, resource))
