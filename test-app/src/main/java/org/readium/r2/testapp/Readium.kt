@@ -48,8 +48,7 @@ class Readium(context: Context) {
         MediaTypeRetriever(
             mediaTypeSniffer,
             formatRegistry,
-            archiveFactory,
-            context.contentResolver
+            archiveFactory
         )
 
     val httpClient = DefaultHttpClient()

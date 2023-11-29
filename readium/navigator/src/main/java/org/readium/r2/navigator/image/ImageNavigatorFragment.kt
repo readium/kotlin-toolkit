@@ -13,7 +13,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentFactory
 import androidx.viewpager.widget.ViewPager
@@ -21,6 +20,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.runBlocking
+import org.readium.r2.navigator.NavigatorFragment
 import org.readium.r2.navigator.OverflowNavigator
 import org.readium.r2.navigator.SimplePresentation
 import org.readium.r2.navigator.VisualNavigator
@@ -44,7 +44,6 @@ import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.ReadingProgression as PublicationReadingProgression
 import org.readium.r2.shared.publication.indexOfFirstWithHref
-import org.readium.r2.shared.publication.services.isRestricted
 import org.readium.r2.shared.publication.services.positions
 
 /**
@@ -52,16 +51,12 @@ import org.readium.r2.shared.publication.services.positions
  */
 @OptIn(ExperimentalReadiumApi::class, DelicateReadiumApi::class)
 public class ImageNavigatorFragment private constructor(
-    private val publication: Publication,
+    publication: Publication,
     private val initialLocator: Locator? = null,
     internal val listener: Listener? = null
-) : Fragment(), OverflowNavigator {
+) : NavigatorFragment(publication), OverflowNavigator {
 
     public interface Listener : VisualNavigator.Listener
-
-    init {
-        require(!publication.isRestricted) { "The provided publication is restricted. Check that any DRM was properly unlocked using a Content Protection." }
-    }
 
     internal lateinit var positions: List<Locator>
     internal lateinit var resourcePager: R2ViewPager

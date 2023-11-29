@@ -6,7 +6,6 @@
 
 package org.readium.r2.streamer
 
-import android.content.ContentResolver
 import android.content.Context
 import org.readium.r2.shared.PdfSupport
 import org.readium.r2.shared.publication.Publication
@@ -83,8 +82,7 @@ public class PublicationFactory(
         public operator fun invoke(
             context: Context,
             contentProtections: List<ContentProtection> = emptyList(),
-            onCreatePublication: Publication.Builder.() -> Unit,
-            contentResolver: ContentResolver? = null
+            onCreatePublication: Publication.Builder.() -> Unit
         ): PublicationFactory {
             val mediaTypeSniffer =
                 DefaultMediaTypeSniffer()
@@ -99,8 +97,7 @@ public class PublicationFactory(
                 MediaTypeRetriever(
                     mediaTypeSniffer,
                     FormatRegistry(),
-                    archiveFactory,
-                    contentResolver
+                    archiveFactory
                 )
 
             return PublicationFactory(
@@ -160,7 +157,7 @@ public class PublicationFactory(
      *   It can be used to modify the manifest, the root container or the list of service
      *   factories of the [Publication].
      * @param warnings Logger used to broadcast non-fatal parsing warnings.
-     * @return A [Publication] or a [AssetError] in case of failure.
+     * @return A [Publication] or a [Error] in case of failure.
      */
     public suspend fun open(
         asset: Asset,

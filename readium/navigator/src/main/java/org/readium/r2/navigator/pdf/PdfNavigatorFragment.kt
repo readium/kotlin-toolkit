@@ -22,6 +22,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import org.readium.r2.navigator.NavigatorFragment
 import org.readium.r2.navigator.OverflowNavigator
 import org.readium.r2.navigator.R
 import org.readium.r2.navigator.VisualNavigator
@@ -40,7 +41,6 @@ import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.ReadingProgression as PublicationReadingProgression
-import org.readium.r2.shared.publication.services.isRestricted
 import org.readium.r2.shared.util.mediatype.MediaType
 
 /**
@@ -54,12 +54,12 @@ import org.readium.r2.shared.util.mediatype.MediaType
 @ExperimentalReadiumApi
 @OptIn(DelicateReadiumApi::class)
 public class PdfNavigatorFragment<S : Configurable.Settings, P : Configurable.Preferences<P>> internal constructor(
-    private val publication: Publication,
+    publication: Publication,
     private val initialLocator: Locator? = null,
     private val initialPreferences: P,
     private val listener: Listener?,
     private val pdfEngineProvider: PdfEngineProvider<S, P, *>
-) : Fragment(), VisualNavigator, OverflowNavigator, Configurable<S, P> {
+) : NavigatorFragment(publication), VisualNavigator, OverflowNavigator, Configurable<S, P> {
 
     public interface Listener : VisualNavigator.Listener
 
@@ -94,8 +94,6 @@ public class PdfNavigatorFragment<S : Configurable.Settings, P : Configurable.Pr
     }
 
     init {
-        require(!publication.isRestricted) { "The provided publication is restricted. Check that any DRM was properly unlocked using a Content Protection." }
-
         require(
             publication.readingOrder.count() == 1 &&
                 publication.readingOrder.first().mediaType?.matches(MediaType.PDF) == true
