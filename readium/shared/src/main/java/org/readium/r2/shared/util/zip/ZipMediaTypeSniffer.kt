@@ -33,10 +33,10 @@ public object ZipMediaTypeSniffer : MediaTypeSniffer {
         return Try.failure(MediaTypeSnifferError.NotRecognized)
     }
 
-    override suspend fun sniffBlob(readable: Readable): Try<MediaType, MediaTypeSnifferError> {
-        (readable as? Resource)?.source?.toFile()
+    override suspend fun sniffBlob(source: Readable): Try<MediaType, MediaTypeSnifferError> {
+        (source as? Resource)?.source?.toFile()
             ?.let { return fileZipArchiveProvider.sniffFile(it) }
 
-        return streamingZipArchiveProvider.sniffBlob(readable)
+        return streamingZipArchiveProvider.sniffBlob(source)
     }
 }
