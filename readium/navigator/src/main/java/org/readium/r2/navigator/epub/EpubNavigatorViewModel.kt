@@ -85,7 +85,7 @@ internal class EpubNavigatorViewModel(
 
     val settings: StateFlow<EpubSettings> = _settings.asStateFlow()
 
-    val overflow: StateFlow<Overflowable.Overflow> = _settings
+    val overflow: StateFlow<OverflowableNavigator.Overflow> = _settings
         .mapStateIn(viewModelScope) { settings ->
             SimpleOverflow(
                 readingProgression = settings.readingProgression,

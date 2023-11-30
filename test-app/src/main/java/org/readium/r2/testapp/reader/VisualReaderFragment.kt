@@ -94,7 +94,7 @@ abstract class VisualReaderFragment : BaseReaderFragment() {
 
         navigatorFragment = navigator as Fragment
 
-        (navigator as Overflowable).apply {
+        (navigator as OverflowableNavigator).apply {
             // This will automatically turn pages when tapping the screen edges or arrow keys.
             addInputListener(DirectionalNavigationAdapter(this))
         }

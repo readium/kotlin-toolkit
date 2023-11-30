@@ -17,4 +17,4 @@ public data class SimpleOverflow(
     override val readingProgression: ReadingProgression,
     override val scroll: Boolean,
     override val axis: Axis
-) : Overflowable.Overflow
+) : OverflowableNavigator.Overflow

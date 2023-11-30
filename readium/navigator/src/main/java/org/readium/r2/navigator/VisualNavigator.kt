@@ -130,7 +130,7 @@ public interface VisualNavigator : Navigator {
  * The user typically navigates through the publication by scrolling or tapping the viewport edges.
  */
 @ExperimentalReadiumApi
-public interface Overflowable : VisualNavigator {
+public interface OverflowableNavigator : VisualNavigator {
 
     @ExperimentalReadiumApi
     public interface Listener : VisualNavigator.Listener
