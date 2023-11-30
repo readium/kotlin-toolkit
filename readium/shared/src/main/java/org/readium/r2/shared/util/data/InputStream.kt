@@ -12,15 +12,26 @@ import kotlinx.coroutines.runBlocking
 import org.readium.r2.shared.util.Try
 
 /**
- * Input stream reading through a [Readable].
+ * Wraps a [Readable] into an [InputStream].
+ *
+ * Ownership of the [Readable] is transferred to the returned [InputStream].
+ */
+public fun Readable.asInputStream(
+    range: LongRange? = null,
+    wrapError: (ReadError) -> IOException = { ReadException(it) }
+): InputStream =
+    ReadableInputStreamAdapter(this, range, wrapError)
+
+/**
+ * Input stream reading through a [Readable] and taking ownership of it.
  *
  * If you experience bad performances, consider wrapping the stream in a BufferedInputStream. This
  * is particularly useful when streaming deflated ZIP entries.
  */
-public class ReadableInputStream(
+private class ReadableInputStreamAdapter(
     private val readable: Readable,
-    private val wrapError: (ReadError) -> IOException = { ReadException(it) },
-    private val range: LongRange? = null
+    private val range: LongRange? = null,
+    private val wrapError: (ReadError) -> IOException = { ReadException(it) }
 ) : InputStream() {
 
     private var isClosed = false
@@ -122,6 +133,8 @@ public class ReadableInputStream(
                 return
             }
 
+            runBlocking { readable.close() }
+
             isClosed = true
         }
     }
@@ -141,4 +154,19 @@ public class ReadableInputStream(
                 throw wrapError(value)
             }
         }
+}
+
+/**
+ * Returns a new [Readable] accessing the same data but not owning them.
+ */
+public fun Readable.borrow(): Readable =
+    BorrowedReadable(this)
+
+private class BorrowedReadable(
+    private val readable: Readable
+) : Readable by readable {
+
+    override suspend fun close() {
+        // Do nothing
+    }
 }

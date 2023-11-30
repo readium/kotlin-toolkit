@@ -26,7 +26,8 @@ import org.readium.r2.shared.util.data.Container
 import org.readium.r2.shared.util.data.DecodeError
 import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.data.Readable
-import org.readium.r2.shared.util.data.ReadableInputStream
+import org.readium.r2.shared.util.data.asInputStream
+import org.readium.r2.shared.util.data.borrow
 import org.readium.r2.shared.util.data.containsJsonKeys
 import org.readium.r2.shared.util.data.readAsJson
 import org.readium.r2.shared.util.data.readAsRwpm
@@ -893,7 +894,8 @@ public object SystemMediaTypeSniffer : MediaTypeSniffer {
     }
 
     override suspend fun sniffBlob(readable: Readable): Try<MediaType, MediaTypeSnifferError> {
-        ReadableInputStream(readable, ::SystemSnifferException)
+        readable.borrow()
+            .asInputStream(wrapError = ::SystemSnifferException)
             .use { stream ->
                 try {
                     withContext(Dispatchers.IO) {

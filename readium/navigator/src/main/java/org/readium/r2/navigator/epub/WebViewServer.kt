@@ -22,8 +22,7 @@ import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.data.ReadError
-import org.readium.r2.shared.util.data.ReadException
-import org.readium.r2.shared.util.data.ReadableInputStream
+import org.readium.r2.shared.util.data.asInputStream
 import org.readium.r2.shared.util.http.HttpHeaders
 import org.readium.r2.shared.util.http.HttpRange
 import org.readium.r2.shared.util.resource.Resource
@@ -127,10 +126,10 @@ internal class WebViewServer(
                 200,
                 "OK",
                 headers,
-                ReadableInputStream(resource, ::ReadException)
+                resource.asInputStream()
             )
         } else { // Byte range request
-            val stream = ReadableInputStream(resource, ::ReadException)
+            val stream = resource.asInputStream()
             val length = stream.available()
             val longRange = range.toLongRange(length.toLong())
             headers["Content-Range"] = "bytes ${longRange.first}-${longRange.last}/$length"

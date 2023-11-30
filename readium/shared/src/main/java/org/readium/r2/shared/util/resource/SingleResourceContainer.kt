@@ -15,15 +15,6 @@ public class SingleResourceContainer(
     private val resource: Resource
 ) : Container<Resource> {
 
-    private class Entry(
-        private val resource: Resource
-    ) : Resource by resource {
-
-        override suspend fun close() {
-            // Do nothing
-        }
-    }
-
     override val entries: Set<Url> = setOf(entryUrl)
 
     override fun get(url: Url): Resource? {
@@ -31,7 +22,7 @@ public class SingleResourceContainer(
             return null
         }
 
-        return Entry(resource)
+        return resource.borrow()
     }
 
     override suspend fun close() {

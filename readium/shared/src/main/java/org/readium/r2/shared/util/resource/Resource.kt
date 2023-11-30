@@ -61,6 +61,21 @@ public class FailureResource(
         "${javaClass.simpleName}($error)"
 }
 
+private class BorrowedResource(
+    private val resource: Resource
+) : Resource by resource {
+
+    override suspend fun close() {
+        // Do nothing
+    }
+}
+
+/**
+ * Returns a new [Resource] accessing the same data but not owning them.
+ */
+public fun Resource.borrow(): Resource =
+    BorrowedResource(this)
+
 @Deprecated(
     "Catch exceptions yourself to the most suitable ReadError.",
     level = DeprecationLevel.ERROR,
