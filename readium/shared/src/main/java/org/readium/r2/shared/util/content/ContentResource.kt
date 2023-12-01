@@ -161,5 +161,5 @@ public class ContentResource(
         }
 
     override fun toString(): String =
-        "${javaClass.simpleName}(${runBlocking { length() } } bytes )"
+        "${javaClass.simpleName}(${runBlocking { length() } } bytes)"
 }

@@ -20,11 +20,11 @@ import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.firstWithRel
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.assertSuccess
-import org.readium.r2.shared.util.asset.DefaultMediaTypeSniffer
-import org.readium.r2.shared.util.asset.MediaTypeRetriever
 import org.readium.r2.shared.util.file.FileResource
+import org.readium.r2.shared.util.mediatype.DefaultMediaTypeSniffer
 import org.readium.r2.shared.util.mediatype.FormatRegistry
 import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 import org.readium.r2.shared.util.resource.SingleResourceContainer
 import org.readium.r2.shared.util.toUrl
 import org.readium.r2.shared.util.zip.ZipArchiveFactory

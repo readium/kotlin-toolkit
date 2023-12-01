@@ -8,8 +8,6 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.readium.r2.shared.Fixtures
 import org.readium.r2.shared.util.assertSuccess
-import org.readium.r2.shared.util.asset.DefaultMediaTypeSniffer
-import org.readium.r2.shared.util.asset.MediaTypeRetriever
 import org.readium.r2.shared.util.resource.StringResource
 import org.readium.r2.shared.util.zip.ZipArchiveFactory
 import org.robolectric.RobolectricTestRunner

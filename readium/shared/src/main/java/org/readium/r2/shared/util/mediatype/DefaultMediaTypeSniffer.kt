@@ -4,31 +4,11 @@
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.r2.shared.util.asset
+package org.readium.r2.shared.util.mediatype
 
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.data.Container
 import org.readium.r2.shared.util.data.Readable
-import org.readium.r2.shared.util.mediatype.ArchiveMediaTypeSniffer
-import org.readium.r2.shared.util.mediatype.BitmapMediaTypeSniffer
-import org.readium.r2.shared.util.mediatype.CompositeMediaTypeSniffer
-import org.readium.r2.shared.util.mediatype.EpubMediaTypeSniffer
-import org.readium.r2.shared.util.mediatype.HtmlMediaTypeSniffer
-import org.readium.r2.shared.util.mediatype.JsonMediaTypeSniffer
-import org.readium.r2.shared.util.mediatype.LcpLicenseMediaTypeSniffer
-import org.readium.r2.shared.util.mediatype.LpfMediaTypeSniffer
-import org.readium.r2.shared.util.mediatype.MediaType
-import org.readium.r2.shared.util.mediatype.MediaTypeHints
-import org.readium.r2.shared.util.mediatype.MediaTypeSniffer
-import org.readium.r2.shared.util.mediatype.MediaTypeSnifferError
-import org.readium.r2.shared.util.mediatype.OpdsMediaTypeSniffer
-import org.readium.r2.shared.util.mediatype.PdfMediaTypeSniffer
-import org.readium.r2.shared.util.mediatype.RarMediaTypeSniffer
-import org.readium.r2.shared.util.mediatype.SystemMediaTypeSniffer
-import org.readium.r2.shared.util.mediatype.W3cWpubMediaTypeSniffer
-import org.readium.r2.shared.util.mediatype.WebPubManifestMediaTypeSniffer
-import org.readium.r2.shared.util.mediatype.WebPubMediaTypeSniffer
-import org.readium.r2.shared.util.mediatype.XhtmlMediaTypeSniffer
 import org.readium.r2.shared.util.zip.ZipMediaTypeSniffer
 
 /**
