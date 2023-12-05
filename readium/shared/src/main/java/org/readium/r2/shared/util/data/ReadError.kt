@@ -7,9 +7,9 @@
 package org.readium.r2.shared.util.data
 
 import java.io.IOException
+import org.readium.r2.shared.util.DebugError
 import org.readium.r2.shared.util.Error
 import org.readium.r2.shared.util.ErrorException
-import org.readium.r2.shared.util.MessageError
 import org.readium.r2.shared.util.ThrowableError
 import org.readium.r2.shared.util.Try
 
@@ -27,7 +27,7 @@ public sealed class ReadError(
     public class Decoding(cause: Error? = null) :
         ReadError("An error occurred while attempting to decode the content.", cause) {
 
-        public constructor(message: String) : this(MessageError(message))
+        public constructor(message: String) : this(DebugError(message))
         public constructor(exception: Exception) : this(ThrowableError(exception))
     }
 
@@ -40,7 +40,7 @@ public sealed class ReadError(
     public class UnsupportedOperation(cause: Error? = null) :
         ReadError("Could not proceed because an operation was not supported.", cause) {
 
-        public constructor(message: String) : this(MessageError(message))
+        public constructor(message: String) : this(DebugError(message))
     }
 }
 
@@ -60,4 +60,5 @@ public interface AccessError : Error
 public class ReadException(
     public val error: ReadError
 ) : IOException(error.message, ErrorException(error))
+
 public typealias ReadTry<SuccessT> = Try<SuccessT, ReadError>

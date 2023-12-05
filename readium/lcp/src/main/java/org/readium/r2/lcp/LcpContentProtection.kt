@@ -13,11 +13,13 @@ import org.readium.r2.shared.publication.flatten
 import org.readium.r2.shared.publication.protection.ContentProtection
 import org.readium.r2.shared.publication.services.contentProtectionServiceFactory
 import org.readium.r2.shared.util.AbsoluteUrl
-import org.readium.r2.shared.util.MessageError
+import org.readium.r2.shared.util.DebugError
 import org.readium.r2.shared.util.ThrowableError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.asset.Asset
 import org.readium.r2.shared.util.asset.AssetRetriever
+import org.readium.r2.shared.util.asset.ContainerAsset
+import org.readium.r2.shared.util.asset.ResourceAsset
 import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.flatMap
 import org.readium.r2.shared.util.getOrElse
@@ -43,13 +45,13 @@ internal class LcpContentProtection(
         allowUserInteraction: Boolean
     ): Try<ContentProtection.Asset, ContentProtection.Error> {
         return when (asset) {
-            is Asset.Container -> openPublication(asset, credentials, allowUserInteraction)
-            is Asset.Resource -> openLicense(asset, credentials, allowUserInteraction)
+            is ContainerAsset -> openPublication(asset, credentials, allowUserInteraction)
+            is ResourceAsset -> openLicense(asset, credentials, allowUserInteraction)
         }
     }
 
     private suspend fun openPublication(
-        asset: Asset.Container,
+        asset: ContainerAsset,
         credentials: String?,
         allowUserInteraction: Boolean
     ): Try<ContentProtection.Asset, ContentProtection.Error> {
@@ -70,7 +72,7 @@ internal class LcpContentProtection(
     }
 
     private fun createResultAsset(
-        asset: Asset.Container,
+        asset: ContainerAsset,
         license: Try<LcpLicense, LcpError>
     ): Try<ContentProtection.Asset, ContentProtection.Error> {
         val serviceFactory = LcpContentProtectionService
@@ -99,7 +101,7 @@ internal class LcpContentProtection(
     }
 
     private suspend fun openLicense(
-        licenseAsset: Asset.Resource,
+        licenseAsset: ResourceAsset,
         credentials: String?,
         allowUserInteraction: Boolean
     ): Try<ContentProtection.Asset, ContentProtection.Error> {
@@ -114,7 +116,7 @@ internal class LcpContentProtection(
                         return Try.failure(
                             ContentProtection.Error.Reading(
                                 ReadError.Decoding(
-                                    MessageError(
+                                    DebugError(
                                         "Failed to read the LCP license document",
                                         cause = ThrowableError(e)
                                     )
@@ -134,7 +136,7 @@ internal class LcpContentProtection(
             ?: return Try.failure(
                 ContentProtection.Error.Reading(
                     ReadError.Decoding(
-                        MessageError(
+                        DebugError(
                             "The LCP license document does not contain a valid link to the publication"
                         )
                     )
@@ -147,18 +149,18 @@ internal class LcpContentProtection(
                     url,
                     mediaType = link.mediaType
                 )
-                    .map { it as Asset.Container }
+                    .map { it as ContainerAsset }
                     .mapFailure { it.wrap() }
             } else {
                 assetRetriever.retrieve(url)
                     .mapFailure { it.wrap() }
                     .flatMap {
-                        if (it is Asset.Container) {
+                        if (it is ContainerAsset) {
                             Try.success((it))
                         } else {
                             Try.failure(
                                 ContentProtection.Error.AssetNotSupported(
-                                    MessageError(
+                                    DebugError(
                                         "LCP license points to an unsupported publication."
                                     )
                                 )

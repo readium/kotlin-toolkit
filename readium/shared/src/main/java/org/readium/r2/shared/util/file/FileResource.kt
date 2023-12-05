@@ -15,7 +15,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.extensions.*
 import org.readium.r2.shared.util.AbsoluteUrl
-import org.readium.r2.shared.util.MessageError
+import org.readium.r2.shared.util.DebugError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.getOrThrow
@@ -107,7 +107,7 @@ public class FileResource(
         metadataLength?.let { Try.success(it) }
             ?: Try.failure(
                 ReadError.UnsupportedOperation(
-                    MessageError("Length not available for file at ${file.path}.")
+                    DebugError("Length not available for file at ${file.path}.")
                 )
             )
 

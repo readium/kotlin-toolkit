@@ -14,8 +14,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import org.readium.r2.shared.publication.Manifest
+import org.readium.r2.shared.util.DebugError
 import org.readium.r2.shared.util.Error
-import org.readium.r2.shared.util.MessageError
 import org.readium.r2.shared.util.ThrowableError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.flatMap
@@ -85,14 +85,14 @@ public suspend fun Readable.readAsString(
 ): Try<String, DecodeError> =
     read().decode(
         { String(it, charset = charset) },
-        { MessageError("Content is not a valid $charset string.", ThrowableError(it)) }
+        { DebugError("Content is not a valid $charset string.", ThrowableError(it)) }
     )
 
 /** Content as an XML document. */
 public suspend fun Readable.readAsXml(): Try<ElementNode, DecodeError> =
     read().decode(
         { XmlParser().parse(ByteArrayInputStream(it)) },
-        { MessageError("Content is not a valid XML document.", ThrowableError(it)) }
+        { DebugError("Content is not a valid XML document.", ThrowableError(it)) }
     )
 
 /**
@@ -101,7 +101,7 @@ public suspend fun Readable.readAsXml(): Try<ElementNode, DecodeError> =
 public suspend fun Readable.readAsJson(): Try<JSONObject, DecodeError> =
     readAsString().decodeMap(
         { JSONObject(it) },
-        { MessageError("Content is not valid JSON.", ThrowableError(it)) }
+        { DebugError("Content is not valid JSON.", ThrowableError(it)) }
     )
 
 /** Readium Web Publication Manifest parsed from the content. */
@@ -111,7 +111,7 @@ public suspend fun Readable.readAsRwpm(): Try<Manifest, DecodeError> =
             ?.let { Try.success(it) }
             ?: Try.failure(
                 DecodeError.Decoding(
-                    MessageError("Content is not a valid RWPM.")
+                    DebugError("Content is not a valid RWPM.")
                 )
             )
     }
@@ -127,7 +127,7 @@ public suspend fun Readable.readAsBitmap(): Try<Bitmap, DecodeError> =
                 ?.let { Try.success(it) }
                 ?: Try.failure(
                     DecodeError.Decoding(
-                        MessageError("Could not decode resource as a bitmap.")
+                        DebugError("Could not decode resource as a bitmap.")
                     )
                 )
         }

@@ -21,7 +21,7 @@ import org.readium.r2.shared.util.mediatype.MediaType
 public data class HttpResponse(
     val request: HttpRequest,
     val url: AbsoluteUrl,
-    val statusCode: Int,
+    val statusCode: HttpStatus,
     val headers: Map<String, List<String>>,
     val mediaType: MediaType?
 ) {

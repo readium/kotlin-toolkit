@@ -22,8 +22,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.extensions.joinValues
 import org.readium.r2.shared.extensions.lowerCaseKeys
-import org.readium.r2.shared.util.AbsoluteUrl
-import org.readium.r2.shared.util.MessageError
+import org.readium.r2.shared.util.DebugError
 import org.readium.r2.shared.util.ThrowableError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
@@ -121,7 +120,7 @@ public class DefaultHttpClient(
         ): HttpTry<HttpRequest> =
             Try.failure(
                 HttpError.Redirection(
-                    MessageError("Request cancelled because of an unsafe redirect.")
+                    DebugError("Request cancelled because of an unsafe redirect.")
                 )
             )
 
@@ -171,18 +170,18 @@ public class DefaultHttpClient(
                         // JSON Problem Details or OPDS Authentication Document
                         val body = connection.errorStream?.use { it.readBytes() }
 
-                        val mediaType = MediaType(connection.contentType)
+                        val mediaType = connection.contentType?.let { MediaType(it) }
                         return@withContext Try.failure(
-                            HttpError.Response(HttpStatus(statusCode), mediaType, body)
+                            HttpError.ErrorResponse(HttpStatus(statusCode), mediaType, body)
                         )
                     }
 
                     val response = HttpResponse(
                         request = request,
                         url = request.url,
-                        statusCode = statusCode,
+                        statusCode = HttpStatus(statusCode),
                         headers = connection.safeHeaders,
-                        mediaType = MediaType(connection.contentType)
+                        mediaType = connection.contentType?.let { MediaType(it) }
                     )
 
                     callback.onResponseReceived(request, response)
@@ -205,16 +204,12 @@ public class DefaultHttpClient(
         return callback.onStartRequest(request)
             .flatMap { tryStream(it) }
             .tryRecover { error ->
-                if (error !is HttpError.Redirection) {
-                    callback.onRecoverRequest(request, error)
-                        .flatMap { stream(it) }
-                } else {
-                    Try.failure(error)
-                }
+                callback.onRecoverRequest(request, error)
+                    .flatMap { stream(it) }
             }
             .onFailure {
                 callback.onRequestFailed(request, it)
-                val error = MessageError("HTTP request failed ${request.url}", it)
+                val error = DebugError("HTTP request failed ${request.url}", it)
                 Timber.e(error.toDebugDescription())
             }
     }
@@ -236,16 +231,17 @@ public class DefaultHttpClient(
         if (redirectCount > 5) {
             return Try.failure(
                 HttpError.Redirection(
-                    MessageError("There were too many redirects to follow.")
+                    DebugError("There were too many redirects to follow.")
                 )
             )
         }
 
         val location = response.header("Location")
-            ?.let { Url(it)?.resolve(request.url) as? AbsoluteUrl }
+            ?.let { Url(it) }
+            ?.let { request.url.resolve(it) }
             ?: return Try.failure(
                 HttpError.MalformedResponse(
-                    MessageError("Location of redirect is missing or invalid.")
+                    DebugError("Location of redirect is missing or invalid.")
                 )
             )
 

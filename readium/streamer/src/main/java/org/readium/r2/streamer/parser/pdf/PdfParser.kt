@@ -12,7 +12,7 @@ import org.readium.r2.shared.PdfSupport
 import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.publication.services.InMemoryCacheService
 import org.readium.r2.shared.publication.services.InMemoryCoverService
-import org.readium.r2.shared.util.MessageError
+import org.readium.r2.shared.util.DebugError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.getOrElse
@@ -50,7 +50,7 @@ public class PdfParser(
             ?: return Try.failure(
                 PublicationParser.Error.Reading(
                     ReadError.Decoding(
-                        MessageError("No PDF found in the publication.")
+                        DebugError("No PDF found in the publication.")
                     )
                 )
             )

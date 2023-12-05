@@ -221,7 +221,7 @@ public class PdfNavigatorFragment<S : Configurable.Settings, P : Configurable.Pr
     @ExperimentalReadiumApi
     override val overflow: StateFlow<OverflowableNavigator.Overflow>
         get() = settings.mapStateIn(lifecycleScope) { settings ->
-            pdfEngineProvider.computePresentation(settings)
+            pdfEngineProvider.computeOverflow(settings)
         }
 
     @Deprecated(

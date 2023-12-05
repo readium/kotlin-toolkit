@@ -22,7 +22,6 @@ import org.readium.r2.shared.publication.services.CacheService
 import org.readium.r2.shared.publication.services.ContentProtectionService
 import org.readium.r2.shared.publication.services.CoverService
 import org.readium.r2.shared.publication.services.DefaultLocatorService
-import org.readium.r2.shared.publication.services.ExternalCoverService
 import org.readium.r2.shared.publication.services.LocatorService
 import org.readium.r2.shared.publication.services.PositionsService
 import org.readium.r2.shared.publication.services.ResourceCoverService
@@ -33,6 +32,7 @@ import org.readium.r2.shared.util.Closeable
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.data.Container
 import org.readium.r2.shared.util.data.EmptyContainer
+import org.readium.r2.shared.util.http.DefaultHttpClient
 import org.readium.r2.shared.util.http.HttpClient
 import org.readium.r2.shared.util.resource.Resource
 
@@ -57,12 +57,13 @@ public typealias PublicationId = String
  * The default implementation returns Resource.Exception.NotFound for all HREFs.
  * @param servicesBuilder Holds the list of service factories used to create the instances of
  * Publication.Service attached to this Publication.
+ * @param httpClient An [HttpClient] to access remote services.
  */
 public class Publication(
     public val manifest: Manifest,
     private val container: Container<Resource> = EmptyContainer(),
     private val servicesBuilder: ServicesBuilder = ServicesBuilder(),
-    httpClient: HttpClient? = null,
+    httpClient: HttpClient = DefaultHttpClient(),
     @Deprecated(
         "Migrate to the new Settings API (see migration guide)",
         level = DeprecationLevel.ERROR
@@ -401,11 +402,7 @@ public class Publication(
                     }
 
                     if (!containsKey(CoverService::class.java.simpleName)) {
-                        val factory = { context: Service.Context ->
-                            ResourceCoverService.createFactory()(context)
-                                ?: httpClient
-                                    ?.let { ExternalCoverService.createFactory(it)(context) }
-                        }
+                        val factory = ResourceCoverService.createFactory()
                         put(CoverService::class.java.simpleName, factory)
                     }
                 }

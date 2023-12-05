@@ -133,7 +133,7 @@ public suspend fun HttpClient.head(request: HttpRequest): HttpTry<HttpResponse> 
         .copy { method = HttpRequest.Method.HEAD }
         .response()
         .tryRecover { error ->
-            if (error !is HttpError.Response || error.status != HttpStatus.MethodNotAllowed) {
+            if (error !is HttpError.ErrorResponse || error.status != HttpStatus.MethodNotAllowed) {
                 return@tryRecover Try.failure(error)
             }
 

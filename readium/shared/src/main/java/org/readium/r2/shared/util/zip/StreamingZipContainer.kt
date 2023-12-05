@@ -12,7 +12,7 @@ import org.readium.r2.shared.extensions.readFully
 import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.extensions.unwrapInstance
 import org.readium.r2.shared.util.AbsoluteUrl
-import org.readium.r2.shared.util.MessageError
+import org.readium.r2.shared.util.DebugError
 import org.readium.r2.shared.util.RelativeUrl
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
@@ -59,7 +59,7 @@ internal class StreamingZipContainer(
                 ?.let { Try.success(it) }
                 ?: Try.failure(
                     ReadError.UnsupportedOperation(
-                        MessageError("ZIP entry doesn't provide length for entry $url.")
+                        DebugError("ZIP entry doesn't provide length for entry $url.")
                     )
                 )
 

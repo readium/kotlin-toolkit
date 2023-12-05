@@ -10,21 +10,15 @@
 package org.readium.r2.shared.publication.services
 
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.util.Size
 import org.readium.r2.shared.extensions.scaleToFit
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.ServiceFactory
 import org.readium.r2.shared.publication.firstWithRel
-import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.data.Container
 import org.readium.r2.shared.util.data.readAsBitmap
-import org.readium.r2.shared.util.getOrElse
-import org.readium.r2.shared.util.http.HttpClient
-import org.readium.r2.shared.util.http.HttpRequest
-import org.readium.r2.shared.util.http.fetch
 import org.readium.r2.shared.util.resource.Resource
 
 /**
@@ -59,64 +53,22 @@ public interface CoverService : Publication.Service {
     public suspend fun coverFitting(maxSize: Size): Bitmap? = cover()?.scaleToFit(maxSize)
 }
 
-private suspend fun Publication.coverFromManifest(): Bitmap? {
-    for (link in linksWithRel("cover")) {
-        val data = get(link)?.read()?.getOrNull() ?: continue
-        return BitmapFactory.decodeByteArray(data, 0, data.size) ?: continue
-    }
-    return null
-}
-
 /**
  * Returns the publication cover as a [Bitmap] at its maximum size.
  */
-public suspend fun Publication.cover(): Bitmap? {
+public suspend fun Publication.cover(): Bitmap? =
     findService(CoverService::class)?.cover()?.let { return it }
-    return coverFromManifest()
-}
 
 /**
  * Returns the publication cover as a [Bitmap], scaled down to fit the given [maxSize].
  */
-public suspend fun Publication.coverFitting(maxSize: Size): Bitmap? {
+public suspend fun Publication.coverFitting(maxSize: Size): Bitmap? =
     findService(CoverService::class)?.coverFitting(maxSize)?.let { return it }
-    return coverFromManifest()?.scaleToFit(maxSize)
-}
 
 /** Factory to build a [CoverService]. */
 public var Publication.ServicesBuilder.coverServiceFactory: ServiceFactory?
     get() = get(CoverService::class)
     set(value) = set(CoverService::class, value)
-
-internal class ExternalCoverService(
-    private val coverUrl: AbsoluteUrl,
-    private val httpClient: HttpClient
-) : CoverService {
-
-    override suspend fun cover(): Bitmap? {
-        val request = HttpRequest(coverUrl)
-
-        val response = httpClient.fetch(request)
-            .getOrElse { return null }
-
-        return BitmapFactory.decodeByteArray(response.body, 0, response.body.size)
-    }
-
-    companion object {
-
-        fun createFactory(httpClient: HttpClient): (Publication.Service.Context) -> ExternalCoverService? = {
-            val manifestUrl = it.manifest
-                .links
-                .firstWithRel("self")
-                ?.url()
-
-            it.manifest
-                .linksWithRel("cover")
-                .firstNotNullOfOrNull { link -> link.url(base = manifestUrl) as? AbsoluteUrl }
-                ?.let { url -> ExternalCoverService(url, httpClient) }
-        }
-    }
-}
 
 internal class ResourceCoverService(
     private val coverUrl: Url,
@@ -146,26 +98,15 @@ internal class ResourceCoverService(
 }
 
 /**
- * A [CoverService] which provides a unique cover for each Publication.
- */
-public abstract class GeneratedCoverService : CoverService {
-    abstract override suspend fun cover(): Bitmap
-}
-
-/**
  * A [CoverService] which uses a provided in-memory bitmap.
  */
-public class InMemoryCoverService internal constructor(private val cover: Bitmap) : GeneratedCoverService() {
+public class InMemoryCoverService internal constructor(private val cover: Bitmap) : CoverService {
 
     public companion object {
         public fun createFactory(cover: Bitmap?): ServiceFactory = {
-            cover?.let {
-                InMemoryCoverService(
-                    it
-                )
-            }
+            cover?.let { InMemoryCoverService(it) }
         }
     }
 
-    override suspend fun cover(): Bitmap = cover
+    public override suspend fun cover(): Bitmap = cover
 }

@@ -21,9 +21,9 @@ public class ZipArchiveFactory : ArchiveFactory {
 
     override suspend fun create(
         mediaType: MediaType,
-        readable: Readable
+        source: Readable
     ): Try<Container<Resource>, ArchiveFactory.Error> =
-        (readable as? Resource)?.source?.toFile()
+        (source as? Resource)?.source?.toFile()
             ?.let { fileZipArchiveProvider.create(mediaType, it) }
-            ?: streamingZipArchiveProvider.create(mediaType, readable)
+            ?: streamingZipArchiveProvider.create(mediaType, source)
 }

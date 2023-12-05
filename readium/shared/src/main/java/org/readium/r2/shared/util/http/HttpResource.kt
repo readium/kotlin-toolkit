@@ -14,7 +14,7 @@ import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.extensions.read
 import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.util.AbsoluteUrl
-import org.readium.r2.shared.util.MessageError
+import org.readium.r2.shared.util.DebugError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.flatMap
@@ -50,7 +50,7 @@ public class HttpResource(
             } else {
                 Try.failure(
                     ReadError.UnsupportedOperation(
-                        MessageError(
+                        DebugError(
                             "Server did not provide content length in its response to request to $source."
                         )
                     )
@@ -116,9 +116,8 @@ public class HttpResource(
         return client.stream(request)
             .mapFailure { ReadError.Access(it) }
             .flatMap { response ->
-                if (from != null && response.response.statusCode != 206
-                ) {
-                    val error = MessageError(
+                if (from != null && response.response.statusCode.code != 206) {
+                    val error = DebugError(
                         "Server seems not to support range requests to $source."
                     )
                     Try.failure(ReadError.UnsupportedOperation(error))

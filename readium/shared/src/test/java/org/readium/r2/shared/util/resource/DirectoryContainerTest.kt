@@ -21,7 +21,7 @@ import org.junit.runner.RunWith
 import org.readium.r2.shared.lengthBlocking
 import org.readium.r2.shared.readBlocking
 import org.readium.r2.shared.util.Url
-import org.readium.r2.shared.util.assertSuccess
+import org.readium.r2.shared.util.checkSuccess
 import org.readium.r2.shared.util.data.Container
 import org.readium.r2.shared.util.file.DirectoryContainer
 import org.readium.r2.shared.util.toAbsoluteUrl
@@ -37,7 +37,7 @@ class DirectoryContainerTest {
 
     private fun sut(): Container<Resource> = runBlocking {
         assertNotNull(
-            DirectoryContainer(directory).assertSuccess()
+            DirectoryContainer(directory).checkSuccess()
         )
     }
 

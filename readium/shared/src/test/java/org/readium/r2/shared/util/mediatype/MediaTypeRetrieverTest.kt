@@ -7,7 +7,7 @@ import kotlinx.coroutines.runBlocking
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.readium.r2.shared.Fixtures
-import org.readium.r2.shared.util.assertSuccess
+import org.readium.r2.shared.util.checkSuccess
 import org.readium.r2.shared.util.resource.StringResource
 import org.readium.r2.shared.util.zip.ZipArchiveFactory
 import org.robolectric.RobolectricTestRunner
@@ -81,7 +81,7 @@ class MediaTypeRetrieverTest {
     fun `sniff from bytes`() = runBlocking {
         assertEquals(
             MediaType.READIUM_AUDIOBOOK_MANIFEST,
-            retriever.retrieve(fixtures.fileAt("audiobook.json")).assertSuccess()
+            retriever.retrieve(fixtures.fileAt("audiobook.json")).checkSuccess()
         )
     }
 
@@ -106,7 +106,7 @@ class MediaTypeRetrieverTest {
         )
         assertEquals(
             MediaType.READIUM_AUDIOBOOK,
-            retriever.retrieve(fixtures.fileAt("audiobook-package.unknown")).assertSuccess()
+            retriever.retrieve(fixtures.fileAt("audiobook-package.unknown")).checkSuccess()
         )
     }
 
@@ -118,11 +118,11 @@ class MediaTypeRetrieverTest {
         )
         assertEquals(
             MediaType.READIUM_AUDIOBOOK_MANIFEST,
-            retriever.retrieve(fixtures.fileAt("audiobook.json")).assertSuccess()
+            retriever.retrieve(fixtures.fileAt("audiobook.json")).checkSuccess()
         )
         assertEquals(
             MediaType.READIUM_AUDIOBOOK_MANIFEST,
-            retriever.retrieve(fixtures.fileAt("audiobook-wrongtype.json")).assertSuccess()
+            retriever.retrieve(fixtures.fileAt("audiobook-wrongtype.json")).checkSuccess()
         )
     }
 
@@ -146,7 +146,7 @@ class MediaTypeRetrieverTest {
 
         assertEquals(
             MediaType.CBZ,
-            retriever.retrieve(fixtures.fileAt("cbz.unknown")).assertSuccess()
+            retriever.retrieve(fixtures.fileAt("cbz.unknown")).checkSuccess()
         )
     }
 
@@ -159,7 +159,7 @@ class MediaTypeRetrieverTest {
         )
         assertEquals(
             MediaType.DIVINA,
-            retriever.retrieve(fixtures.fileAt("divina-package.unknown")).assertSuccess()
+            retriever.retrieve(fixtures.fileAt("divina-package.unknown")).checkSuccess()
         )
     }
 
@@ -171,7 +171,7 @@ class MediaTypeRetrieverTest {
         )
         assertEquals(
             MediaType.DIVINA_MANIFEST,
-            retriever.retrieve(fixtures.fileAt("divina.json")).assertSuccess()
+            retriever.retrieve(fixtures.fileAt("divina.json")).checkSuccess()
         )
     }
 
@@ -184,7 +184,7 @@ class MediaTypeRetrieverTest {
         )
         assertEquals(
             MediaType.EPUB,
-            retriever.retrieve(fixtures.fileAt("epub.unknown")).assertSuccess()
+            retriever.retrieve(fixtures.fileAt("epub.unknown")).checkSuccess()
         )
     }
 
@@ -207,11 +207,11 @@ class MediaTypeRetrieverTest {
         assertEquals(MediaType.HTML, retriever.retrieve(mediaType = "text/html"))
         assertEquals(
             MediaType.HTML,
-            retriever.retrieve(fixtures.fileAt("html.unknown")).assertSuccess()
+            retriever.retrieve(fixtures.fileAt("html.unknown")).checkSuccess()
         )
         assertEquals(
             MediaType.HTML,
-            retriever.retrieve(fixtures.fileAt("html-doctype-case.unknown")).assertSuccess()
+            retriever.retrieve(fixtures.fileAt("html-doctype-case.unknown")).checkSuccess()
         )
     }
 
@@ -225,7 +225,7 @@ class MediaTypeRetrieverTest {
         )
         assertEquals(
             MediaType.XHTML,
-            retriever.retrieve(fixtures.fileAt("xhtml.unknown")).assertSuccess()
+            retriever.retrieve(fixtures.fileAt("xhtml.unknown")).checkSuccess()
         )
     }
 
@@ -262,7 +262,7 @@ class MediaTypeRetrieverTest {
         )
         assertEquals(
             MediaType.OPDS1,
-            retriever.retrieve(fixtures.fileAt("opds1-feed.unknown")).assertSuccess()
+            retriever.retrieve(fixtures.fileAt("opds1-feed.unknown")).checkSuccess()
         )
     }
 
@@ -276,7 +276,7 @@ class MediaTypeRetrieverTest {
         )
         assertEquals(
             MediaType.OPDS1_ENTRY,
-            retriever.retrieve(fixtures.fileAt("opds1-entry.unknown")).assertSuccess()
+            retriever.retrieve(fixtures.fileAt("opds1-entry.unknown")).checkSuccess()
         )
     }
 
@@ -288,7 +288,7 @@ class MediaTypeRetrieverTest {
         )
         assertEquals(
             MediaType.OPDS2,
-            retriever.retrieve(fixtures.fileAt("opds2-feed.json")).assertSuccess()
+            retriever.retrieve(fixtures.fileAt("opds2-feed.json")).checkSuccess()
         )
     }
 
@@ -300,7 +300,7 @@ class MediaTypeRetrieverTest {
         )
         assertEquals(
             MediaType.OPDS2_PUBLICATION,
-            retriever.retrieve(fixtures.fileAt("opds2-publication.json")).assertSuccess()
+            retriever.retrieve(fixtures.fileAt("opds2-publication.json")).checkSuccess()
         )
     }
 
@@ -316,7 +316,7 @@ class MediaTypeRetrieverTest {
         )
         assertEquals(
             MediaType.OPDS_AUTHENTICATION,
-            retriever.retrieve(fixtures.fileAt("opds-authentication.json")).assertSuccess()
+            retriever.retrieve(fixtures.fileAt("opds-authentication.json")).checkSuccess()
         )
     }
 
@@ -332,7 +332,7 @@ class MediaTypeRetrieverTest {
         )
         assertEquals(
             MediaType.LCP_PROTECTED_AUDIOBOOK,
-            retriever.retrieve(fixtures.fileAt("audiobook-lcp.unknown")).assertSuccess()
+            retriever.retrieve(fixtures.fileAt("audiobook-lcp.unknown")).checkSuccess()
         )
     }
 
@@ -348,7 +348,7 @@ class MediaTypeRetrieverTest {
         )
         assertEquals(
             MediaType.LCP_PROTECTED_PDF,
-            retriever.retrieve(fixtures.fileAt("pdf-lcp.unknown")).assertSuccess()
+            retriever.retrieve(fixtures.fileAt("pdf-lcp.unknown")).checkSuccess()
         )
     }
 
@@ -364,7 +364,7 @@ class MediaTypeRetrieverTest {
         )
         assertEquals(
             MediaType.LCP_LICENSE_DOCUMENT,
-            retriever.retrieve(fixtures.fileAt("lcpl.unknown")).assertSuccess()
+            retriever.retrieve(fixtures.fileAt("lcpl.unknown")).checkSuccess()
         )
     }
 
@@ -374,11 +374,11 @@ class MediaTypeRetrieverTest {
         assertEquals(MediaType.LPF, retriever.retrieve(mediaType = "application/lpf+zip"))
         assertEquals(
             MediaType.LPF,
-            retriever.retrieve(fixtures.fileAt("lpf.unknown")).assertSuccess()
+            retriever.retrieve(fixtures.fileAt("lpf.unknown")).checkSuccess()
         )
         assertEquals(
             MediaType.LPF,
-            retriever.retrieve(fixtures.fileAt("lpf-index-html.unknown")).assertSuccess()
+            retriever.retrieve(fixtures.fileAt("lpf-index-html.unknown")).checkSuccess()
         )
     }
 
@@ -388,7 +388,7 @@ class MediaTypeRetrieverTest {
         assertEquals(MediaType.PDF, retriever.retrieve(mediaType = "application/pdf"))
         assertEquals(
             MediaType.PDF,
-            retriever.retrieve(fixtures.fileAt("pdf.unknown")).assertSuccess()
+            retriever.retrieve(fixtures.fileAt("pdf.unknown")).checkSuccess()
         )
     }
 
@@ -424,7 +424,7 @@ class MediaTypeRetrieverTest {
         )
         assertEquals(
             MediaType.READIUM_WEBPUB,
-            retriever.retrieve(fixtures.fileAt("webpub-package.unknown")).assertSuccess()
+            retriever.retrieve(fixtures.fileAt("webpub-package.unknown")).checkSuccess()
         )
     }
 
@@ -436,7 +436,7 @@ class MediaTypeRetrieverTest {
         )
         assertEquals(
             MediaType.READIUM_WEBPUB_MANIFEST,
-            retriever.retrieve(fixtures.fileAt("webpub.json")).assertSuccess()
+            retriever.retrieve(fixtures.fileAt("webpub.json")).checkSuccess()
         )
     }
 
@@ -444,7 +444,7 @@ class MediaTypeRetrieverTest {
     fun `sniff W3C WPUB manifest`() = runBlocking {
         assertEquals(
             MediaType.W3C_WPUB_MANIFEST,
-            retriever.retrieve(fixtures.fileAt("w3c-wpub.json")).assertSuccess()
+            retriever.retrieve(fixtures.fileAt("w3c-wpub.json")).checkSuccess()
         )
     }
 
@@ -453,7 +453,7 @@ class MediaTypeRetrieverTest {
         assertEquals(MediaType.ZAB, retriever.retrieve(fileExtension = "zab"))
         assertEquals(
             MediaType.ZAB,
-            retriever.retrieve(fixtures.fileAt("zab.unknown")).assertSuccess()
+            retriever.retrieve(fixtures.fileAt("zab.unknown")).checkSuccess()
         )
     }
 
@@ -461,7 +461,7 @@ class MediaTypeRetrieverTest {
     fun `sniff JSON`() = runBlocking {
         assertEquals(
             MediaType.JSON,
-            retriever.retrieve(fixtures.fileAt("any.json")).assertSuccess()
+            retriever.retrieve(fixtures.fileAt("any.json")).checkSuccess()
         )
     }
 
@@ -482,7 +482,7 @@ class MediaTypeRetrieverTest {
             retriever.retrieve(
                 resource = StringResource("""{"title": "Message"}"""),
                 hints = MediaTypeHints(mediaType = MediaType("application/problem+json")!!)
-            ).assertSuccess()
+            ).checkSuccess()
         )
     }
 
@@ -516,6 +516,6 @@ class MediaTypeRetrieverTest {
     fun `sniff system media types from bytes`() = runBlocking {
         shadowOf(MimeTypeMap.getSingleton()).addExtensionMimeTypMapping("png", "image/png")
         val png = MediaType("image/png")!!
-        assertEquals(png, retriever.retrieve(fixtures.fileAt("png.unknown")).assertSuccess())
+        assertEquals(png, retriever.retrieve(fixtures.fileAt("png.unknown")).checkSuccess())
     }
 }

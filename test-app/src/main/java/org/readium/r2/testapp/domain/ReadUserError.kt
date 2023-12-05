@@ -78,7 +78,7 @@ sealed class ReadUserError(
                     HttpConnectivity(error)
                 is HttpError.Unreachable ->
                     HttpConnectivity(error)
-                is HttpError.Response ->
+                is HttpError.ErrorResponse ->
                     when (error.status) {
                         HttpStatus.Forbidden -> HttpForbidden(error)
                         HttpStatus.NotFound -> HttpNotFound(error)

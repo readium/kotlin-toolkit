@@ -18,10 +18,8 @@ import kotlinx.coroutines.withContext
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.extensions.md5
 import org.readium.r2.shared.extensions.tryOrNull
-import org.readium.r2.shared.extensions.unwrapInstance
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.data.ReadError
-import org.readium.r2.shared.util.data.ReadException
 import org.readium.r2.shared.util.data.ReadTry
 import org.readium.r2.shared.util.flatMap
 import org.readium.r2.shared.util.pdf.PdfDocument
@@ -114,15 +112,7 @@ public class PdfiumDocumentFactory(context: Context) : PdfDocumentFactory<Pdfium
                             core.fromBytes(bytes, password)
                         )
                     } catch (e: Exception) {
-                        val error = when (
-                            val exception = e.unwrapInstance(
-                                ReadException::class.java
-                            )
-                        ) {
-                            is ReadException -> exception.error
-                            else -> ReadError.Decoding("Pdfium could not read data.")
-                        }
-                        Try.failure(error)
+                        Try.failure(ReadError.Decoding(e))
                     }
                 }
         }

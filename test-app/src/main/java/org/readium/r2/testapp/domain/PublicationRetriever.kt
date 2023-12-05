@@ -20,11 +20,11 @@ import org.readium.r2.lcp.license.model.LicenseDocument
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.opds.images
 import org.readium.r2.shared.util.AbsoluteUrl
+import org.readium.r2.shared.util.DebugError
 import org.readium.r2.shared.util.Error
-import org.readium.r2.shared.util.MessageError
 import org.readium.r2.shared.util.Try
-import org.readium.r2.shared.util.asset.Asset
 import org.readium.r2.shared.util.asset.AssetRetriever
+import org.readium.r2.shared.util.asset.ResourceAsset
 import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.downloads.DownloadManager
 import org.readium.r2.shared.util.file.FileSystemError
@@ -161,14 +161,14 @@ class LocalPublicationRetriever(
             }
 
         if (
-            sourceAsset is Asset.Resource &&
+            sourceAsset is ResourceAsset &&
             sourceAsset.mediaType.matches(MediaType.LCP_LICENSE_DOCUMENT)
         ) {
             if (lcpPublicationRetriever == null) {
                 listener.onError(
                     ImportError.PublicationError(
                         PublicationError.UnsupportedContentProtection(
-                            MessageError("LCP support is missing.")
+                            DebugError("LCP support is missing.")
                         )
                     )
                 )
@@ -272,7 +272,7 @@ class OpdsPublicationRetriever(
         val acquisitionUrl = links
             .filter { it.mediaType?.isPublication == true || it.mediaType == MediaType.LCP_LICENSE_DOCUMENT }
             .firstNotNullOfOrNull { it.url() as? AbsoluteUrl }
-            ?: return Try.failure(MessageError("No supported link to acquire publication."))
+            ?: return Try.failure(DebugError("No supported link to acquire publication."))
 
         return Try.success(acquisitionUrl)
     }
@@ -349,7 +349,7 @@ class LcpPublicationRetriever(
      * Retrieves a publication protected with the given license.
      */
     fun retrieve(
-        licenceAsset: Asset.Resource,
+        licenceAsset: ResourceAsset,
         licenceFile: File,
         coverUrl: AbsoluteUrl?
     ) {

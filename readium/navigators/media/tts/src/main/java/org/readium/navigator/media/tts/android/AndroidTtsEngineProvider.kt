@@ -13,8 +13,8 @@ import androidx.media3.common.PlaybackParameters
 import org.readium.navigator.media.tts.TtsEngineProvider
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.util.DebugError
 import org.readium.r2.shared.util.Error
-import org.readium.r2.shared.util.MessageError
 import org.readium.r2.shared.util.Try
 
 @ExperimentalReadiumApi
@@ -39,7 +39,7 @@ public class AndroidTtsEngineProvider(
             voiceSelector,
             initialPreferences
         ) ?: return Try.failure(
-            MessageError("Initialization of Android Tts service failed.")
+            DebugError("Initialization of Android Tts service failed.")
         )
 
         return Try.success(engine)

@@ -52,7 +52,7 @@ public class EmptyContainer<E : Readable> :
 }
 
 /**
- * Routes requests to child containers, depending on a provided predicate.
+ * Concatenates several containers.
  *
  * This can be used for example to serve a publication containing both local and remote resources,
  * and more generally to concatenate different content sources.

@@ -54,9 +54,6 @@ public data class Properties(
      */
     public operator fun get(key: String): Any? = otherProperties[key]
 
-    internal fun toResourceProperties(): Properties =
-        Properties(otherProperties)
-
     public companion object {
 
         /**

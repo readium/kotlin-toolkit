@@ -38,7 +38,7 @@ public class PsPdfKitDocumentFactory(context: Context) : PdfDocumentFactory<PsPd
     override suspend fun open(resource: Resource, password: String?): ReadTry<PsPdfKitDocument> =
         withContext(Dispatchers.IO) {
             val dataProvider = ResourceDataProvider(resource)
-            val documentSource = DocumentSource(dataProvider)
+            val documentSource = DocumentSource(dataProvider, password)
             try {
                 val innerDocument = PdfDocumentLoader.openDocument(context, documentSource)
                 Try.success(PsPdfKitDocument(innerDocument))

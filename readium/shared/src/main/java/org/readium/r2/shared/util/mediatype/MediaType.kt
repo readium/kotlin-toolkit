@@ -200,6 +200,7 @@ public class MediaType private constructor(
     public val isRpf: Boolean get() = matchesAny(
         READIUM_WEBPUB,
         READIUM_AUDIOBOOK,
+        DIVINA,
         LCP_PROTECTED_PDF,
         LCP_PROTECTED_AUDIOBOOK
     )

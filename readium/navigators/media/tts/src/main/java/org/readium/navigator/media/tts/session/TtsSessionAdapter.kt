@@ -927,7 +927,7 @@ internal class TtsSessionAdapter<E : TtsEngine.Error>(
             val errorCode = when (error) {
                 is ReadError.Access ->
                     when (error.cause) {
-                        is HttpError.Response ->
+                        is HttpError.ErrorResponse ->
                             ERROR_CODE_IO_BAD_HTTP_STATUS
                         is HttpError.Timeout ->
                             ERROR_CODE_IO_NETWORK_CONNECTION_TIMEOUT

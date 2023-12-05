@@ -24,7 +24,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.extensions.tryOr
-import org.readium.r2.shared.util.MessageError
+import org.readium.r2.shared.util.DebugError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.downloads.DownloadManager
 import org.readium.r2.shared.util.getOrElse
@@ -294,7 +294,7 @@ public class AndroidDownloadManager internal constructor(
             } else {
                 Try.failure(
                     DownloadManager.Error.FileSystemError(
-                        MessageError("Failed to rename the downloaded file.")
+                        DebugError("Failed to rename the downloaded file.")
                     )
                 )
             }
@@ -310,7 +310,7 @@ public class AndroidDownloadManager internal constructor(
                 DownloadManager.Error.HttpError(HttpError.MalformedResponse(null))
             SystemDownloadManager.ERROR_TOO_MANY_REDIRECTS ->
                 DownloadManager.Error.HttpError(
-                    HttpError.Redirection(MessageError("Too many redirects."))
+                    HttpError.Redirection(DebugError("Too many redirects."))
                 )
             SystemDownloadManager.ERROR_CANNOT_RESUME ->
                 DownloadManager.Error.CannotResume()
@@ -328,8 +328,8 @@ public class AndroidDownloadManager internal constructor(
 
     private fun httpErrorForCode(code: Int): HttpError =
         when (code) {
-            in 0 until 1000 -> HttpError.Response(HttpStatus(code))
-            else -> HttpError.MalformedResponse(MessageError("Unknown HTTP status code."))
+            in 0 until 1000 -> HttpError.ErrorResponse(HttpStatus(code))
+            else -> HttpError.MalformedResponse(DebugError("Unknown HTTP status code."))
         }
 
     public override fun close() {

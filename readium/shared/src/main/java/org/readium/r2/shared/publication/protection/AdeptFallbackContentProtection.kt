@@ -9,10 +9,11 @@ package org.readium.r2.shared.publication.protection
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.publication.protection.ContentProtection.Scheme
 import org.readium.r2.shared.publication.services.contentProtectionServiceFactory
-import org.readium.r2.shared.util.MessageError
+import org.readium.r2.shared.util.DebugError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.asset.Asset
+import org.readium.r2.shared.util.asset.ContainerAsset
 import org.readium.r2.shared.util.data.DecodeError
 import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.data.readAsXml
@@ -29,7 +30,7 @@ public class AdeptFallbackContentProtection : ContentProtection {
     override val scheme: Scheme = Scheme.Adept
 
     override suspend fun supports(asset: Asset): Try<Boolean, ReadError> {
-        if (asset !is Asset.Container) {
+        if (asset !is ContainerAsset) {
             return Try.success(false)
         }
 
@@ -41,10 +42,10 @@ public class AdeptFallbackContentProtection : ContentProtection {
         credentials: String?,
         allowUserInteraction: Boolean
     ): Try<ContentProtection.Asset, ContentProtection.Error> {
-        if (asset !is Asset.Container) {
+        if (asset !is ContainerAsset) {
             return Try.failure(
                 ContentProtection.Error.AssetNotSupported(
-                    MessageError("A container asset was expected.")
+                    DebugError("A container asset was expected.")
                 )
             )
         }
@@ -61,7 +62,7 @@ public class AdeptFallbackContentProtection : ContentProtection {
         return Try.success(protectedFile)
     }
 
-    private suspend fun isAdept(asset: Asset.Container): Try<Boolean, ReadError> {
+    private suspend fun isAdept(asset: ContainerAsset): Try<Boolean, ReadError> {
         if (!asset.mediaType.matches(MediaType.EPUB)) {
             return Try.success(false)
         }

@@ -13,7 +13,7 @@ import org.readium.r2.shared.publication.services.PerResourcePositionsService
 import org.readium.r2.shared.publication.services.cacheServiceFactory
 import org.readium.r2.shared.publication.services.locatorServiceFactory
 import org.readium.r2.shared.publication.services.positionsServiceFactory
-import org.readium.r2.shared.util.MessageError
+import org.readium.r2.shared.util.DebugError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.data.DecodeError
@@ -46,7 +46,7 @@ public class ReadiumWebPubParser(
             ?: return Try.failure(
                 PublicationParser.Error.Reading(
                     ReadError.Decoding(
-                        MessageError("Missing manifest.")
+                        DebugError("Missing manifest.")
                     )
                 )
             )
@@ -66,7 +66,7 @@ public class ReadiumWebPubParser(
                         return Try.failure(
                             PublicationParser.Error.Reading(
                                 ReadError.Decoding(
-                                    MessageError("Failed to parse the RWPM Manifest.")
+                                    DebugError("Failed to parse the RWPM Manifest.")
                                 )
                             )
                         )

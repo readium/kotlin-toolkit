@@ -68,7 +68,7 @@ public class PdfiumEngineProvider(
         return settingsPolicy.settings(preferences)
     }
 
-    override fun computePresentation(settings: PdfiumSettings): OverflowableNavigator.Overflow =
+    override fun computeOverflow(settings: PdfiumSettings): OverflowableNavigator.Overflow =
         SimpleOverflow(
             readingProgression = settings.readingProgression,
             scroll = true,

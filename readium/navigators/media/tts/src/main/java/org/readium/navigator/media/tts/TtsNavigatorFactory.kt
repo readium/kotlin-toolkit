@@ -26,8 +26,8 @@ import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.services.content.Content
 import org.readium.r2.shared.publication.services.content.ContentService
 import org.readium.r2.shared.publication.services.content.content
+import org.readium.r2.shared.util.DebugError
 import org.readium.r2.shared.util.Language
-import org.readium.r2.shared.util.MessageError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.tokenizer.DefaultTextContentTokenizer
@@ -140,7 +140,7 @@ public class TtsNavigatorFactory<S : TtsEngine.Settings, P : TtsEngine.Preferenc
         if (publication.findService(ContentService::class) == null) {
             return Try.failure(
                 Error.UnsupportedPublication(
-                    MessageError("No content service found in publication.")
+                    DebugError("No content service found in publication.")
                 )
             )
         }
@@ -158,7 +158,7 @@ public class TtsNavigatorFactory<S : TtsEngine.Settings, P : TtsEngine.Preferenc
         if (!contentIterator.hasNext()) {
             return Try.failure(
                 Error.UnsupportedPublication(
-                    MessageError("Content iterator is empty.")
+                    DebugError("Content iterator is empty.")
                 )
             )
         }
@@ -188,7 +188,7 @@ public class TtsNavigatorFactory<S : TtsEngine.Settings, P : TtsEngine.Preferenc
         val ttsPlayer =
             TtsPlayer(ttsEngine, contentIterator, actualInitialPreferences)
                 ?: return Try.failure(
-                    Error.UnsupportedPublication(MessageError("Empty content."))
+                    Error.UnsupportedPublication(DebugError("Empty content."))
                 )
 
         val coroutineScope =

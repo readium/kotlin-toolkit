@@ -14,7 +14,7 @@ import org.readium.r2.shared.publication.encryption.encryption
 import org.readium.r2.shared.publication.services.content.DefaultContentService
 import org.readium.r2.shared.publication.services.content.iterators.HtmlResourceContentIterator
 import org.readium.r2.shared.publication.services.search.StringSearchService
-import org.readium.r2.shared.util.MessageError
+import org.readium.r2.shared.util.DebugError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.data.Container
@@ -56,7 +56,7 @@ public class EpubParser(
             ?: return Try.failure(
                 PublicationParser.Error.Reading(
                     ReadError.Decoding(
-                        MessageError("Missing OPF file.")
+                        DebugError("Missing OPF file.")
                     )
                 )
             )
@@ -67,7 +67,7 @@ public class EpubParser(
             ?: return Try.failure(
                 PublicationParser.Error.Reading(
                     ReadError.Decoding(
-                        MessageError("Invalid OPF file.")
+                        DebugError("Invalid OPF file.")
                     )
                 )
             )
@@ -202,7 +202,7 @@ public class EpubParser(
                     is DecodeError.Decoding ->
                         PublicationParser.Error.Reading(
                             ReadError.Decoding(
-                                MessageError(
+                                DebugError(
                                     "Couldn't decode resource at $url",
                                     it.cause
                                 )

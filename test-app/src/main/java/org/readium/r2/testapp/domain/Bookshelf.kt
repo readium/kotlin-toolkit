@@ -15,7 +15,7 @@ import kotlinx.coroutines.launch
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.protection.ContentProtectionSchemeRetriever
 import org.readium.r2.shared.util.AbsoluteUrl
-import org.readium.r2.shared.util.MessageError
+import org.readium.r2.shared.util.DebugError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.asset.AssetRetriever
 import org.readium.r2.shared.util.data.ReadError
@@ -174,7 +174,7 @@ class Bookshelf(
                 coverFile.delete()
                 return Try.failure(
                     ImportError.DatabaseError(
-                        MessageError("Could not insert book into database.")
+                        DebugError("Could not insert book into database.")
                     )
                 )
             }

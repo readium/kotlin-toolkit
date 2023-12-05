@@ -73,7 +73,7 @@ public class HttpRequest(
     }
 
     public class Builder(
-        public var url: AbsoluteUrl,
+        public val url: AbsoluteUrl,
         public var method: Method = Method.GET,
         public var headers: MutableMap<String, MutableList<String>> = mutableMapOf(),
         public var body: Body? = null,

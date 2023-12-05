@@ -16,6 +16,8 @@ import org.readium.r2.lcp.LcpException
 import org.readium.r2.lcp.license.model.LicenseDocument
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.asset.Asset
+import org.readium.r2.shared.util.asset.ContainerAsset
+import org.readium.r2.shared.util.asset.ResourceAsset
 import org.readium.r2.shared.util.data.Container
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.resource.Resource
@@ -51,8 +53,8 @@ internal fun createLicenseContainer(
     asset: Asset
 ): LicenseContainer =
     when (asset) {
-        is Asset.Resource -> createLicenseContainer(asset.resource, asset.mediaType)
-        is Asset.Container -> createLicenseContainer(context, asset.container, asset.mediaType)
+        is ResourceAsset -> createLicenseContainer(asset.resource, asset.mediaType)
+        is ContainerAsset -> createLicenseContainer(context, asset.container, asset.mediaType)
     }
 
 internal fun createLicenseContainer(

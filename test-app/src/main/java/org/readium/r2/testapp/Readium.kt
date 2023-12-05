@@ -15,7 +15,7 @@ import org.readium.r2.lcp.auth.LcpDialogAuthentication
 import org.readium.r2.navigator.preferences.FontFamily
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.protection.ContentProtectionSchemeRetriever
-import org.readium.r2.shared.util.MessageError
+import org.readium.r2.shared.util.DebugError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.asset.AssetRetriever
 import org.readium.r2.shared.util.content.ContentResourceFactory
@@ -83,7 +83,7 @@ class Readium(context: Context) {
         mediaTypeRetriever,
         downloadManager
     )?.let { Try.success(it) }
-        ?: Try.failure(LcpError.Unknown(MessageError("liblcp is missing on the classpath")))
+        ?: Try.failure(LcpError.Unknown(DebugError("liblcp is missing on the classpath")))
 
     private val lcpDialogAuthentication = LcpDialogAuthentication()
 

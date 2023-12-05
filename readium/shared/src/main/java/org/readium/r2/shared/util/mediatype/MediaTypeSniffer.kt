@@ -693,7 +693,7 @@ public object RarMediaTypeSniffer : MediaTypeSniffer {
             hints.hasMediaType("application/x-rar") ||
             hints.hasMediaType("application/x-rar-compressed")
         ) {
-            return Try.success(MediaType.LPF)
+            return Try.success(MediaType.RAR)
         }
 
         return Try.failure(MediaTypeSnifferError.NotRecognized)

@@ -68,7 +68,7 @@ public class PsPdfKitEngineProvider(
         return settingsPolicy.settings(preferences)
     }
 
-    override fun computePresentation(settings: PsPdfKitSettings): OverflowableNavigator.Overflow =
+    override fun computeOverflow(settings: PsPdfKitSettings): OverflowableNavigator.Overflow =
         SimpleOverflow(
             readingProgression = settings.readingProgression,
             scroll = settings.scroll,

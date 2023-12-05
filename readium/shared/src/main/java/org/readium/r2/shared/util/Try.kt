@@ -152,7 +152,10 @@ public inline fun <R, S : R, F, T> Try<S, F>.tryRecover(transform: (exception: F
         is Failure -> transform(value)
     }
 
-public fun <S, F> Try<S, F>.assertSuccess(): S =
+/**
+ * Returns value in case of success and throws an [IllegalStateException] in case of failure.
+ */
+public fun <S, F> Try<S, F>.checkSuccess(): S =
     when (this) {
         is Success ->
             value

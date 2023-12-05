@@ -21,14 +21,14 @@ internal class SmartArchiveFactory(
 
     override suspend fun create(
         mediaType: MediaType,
-        readable: Readable
+        source: Readable
     ): Try<Container<Resource>, ArchiveFactory.Error> =
-        archiveFactory.create(mediaType, readable)
+        archiveFactory.create(mediaType, source)
             .tryRecover { error ->
                 when (error) {
                     is ArchiveFactory.Error.FormatNotSupported -> {
                         formatRegistry.superType(mediaType)
-                            ?.let { create(it, readable) }
+                            ?.let { create(it, source) }
                             ?: Try.failure(error)
                     }
                     is ArchiveFactory.Error.Reading ->

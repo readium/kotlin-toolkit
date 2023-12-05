@@ -46,7 +46,7 @@ public sealed class HttpError(
      * @param mediaType Response media type.
      * @param body Response body.
      */
-    public class Response(
+    public class ErrorResponse(
         public val status: HttpStatus,
         public val mediaType: MediaType? = null,
         public val body: ByteArray? = null

@@ -19,14 +19,14 @@ public sealed class ContentResolverError(
 ) : AccessError {
 
     public class FileNotFound(
-        cause: Error?
+        cause: Error? = null
     ) : ContentResolverError("File not found.", cause) {
 
         public constructor(exception: Exception) : this(ThrowableError(exception))
     }
 
     public class NotAvailable(
-        cause: Error?
+        cause: Error? = null
     ) : ContentResolverError("Content Provider recently crashed.", cause) {
 
         public constructor(exception: Exception) : this(ThrowableError(exception))

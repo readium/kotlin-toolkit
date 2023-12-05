@@ -17,7 +17,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.extensions.*
 import org.readium.r2.shared.util.AbsoluteUrl
-import org.readium.r2.shared.util.MessageError
+import org.readium.r2.shared.util.DebugError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.flatMap
@@ -122,7 +122,7 @@ public class ContentResource(
                 when (it) {
                     null -> Try.failure(
                         ReadError.UnsupportedOperation(
-                            MessageError("Content provider does not provide length for uri $uri.")
+                            DebugError("Content provider does not provide length for uri $uri.")
                         )
                     )
                     else -> Try.success(it)
@@ -138,9 +138,7 @@ public class ContentResource(
             val stream = contentResolver.openInputStream(uri)
                 ?: return Try.failure(
                     ReadError.Access(
-                        ContentResolverError.NotAvailable(
-                            MessageError("Content provider recently crashed.")
-                        )
+                        ContentResolverError.NotAvailable()
                     )
                 )
             val result = block(stream)

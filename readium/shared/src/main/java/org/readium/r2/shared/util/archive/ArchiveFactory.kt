@@ -38,7 +38,7 @@ public interface ArchiveFactory {
      */
     public suspend fun create(
         mediaType: MediaType,
-        readable: Readable
+        source: Readable
     ): Try<Container<Resource>, Error>
 }
 
@@ -55,10 +55,10 @@ public class CompositeArchiveFactory(
 
     override suspend fun create(
         mediaType: MediaType,
-        readable: Readable
+        source: Readable
     ): Try<Container<Resource>, ArchiveFactory.Error> {
         for (factory in factories) {
-            factory.create(mediaType, readable)
+            factory.create(mediaType, source)
                 .getOrElse { error ->
                     when (error) {
                         is ArchiveFactory.Error.FormatNotSupported -> null

@@ -31,8 +31,8 @@ import org.readium.r2.shared.publication.services.content.Content.ImageElement
 import org.readium.r2.shared.publication.services.content.Content.TextElement
 import org.readium.r2.shared.publication.services.content.Content.VideoElement
 import org.readium.r2.shared.publication.services.positionsByReadingOrder
+import org.readium.r2.shared.util.DebugError
 import org.readium.r2.shared.util.Language
-import org.readium.r2.shared.util.MessageError
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.data.readAsString
 import org.readium.r2.shared.util.getOrElse
@@ -156,7 +156,7 @@ public class HtmlResourceContentIterator internal constructor(
         withContext(Dispatchers.Default) {
             val document = resource.use { res ->
                 val html = res.readAsString().getOrElse {
-                    val error = MessageError("Failed to read HTML resource", it.cause)
+                    val error = DebugError("Failed to read HTML resource", it.cause)
                     Timber.w(error.toDebugDescription())
                     return@withContext ParsedElements()
                 }

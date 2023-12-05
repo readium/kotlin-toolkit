@@ -22,7 +22,7 @@ import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.allAreHtml
 import org.readium.r2.shared.publication.services.isRestricted
 import org.readium.r2.shared.publication.services.protectionError
-import org.readium.r2.shared.util.MessageError
+import org.readium.r2.shared.util.DebugError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.testapp.Readium
@@ -100,7 +100,7 @@ class ReaderRepository(
             return Try.failure(
                 OpeningError.RestrictedPublication(
                     publication.protectionError
-                        ?: MessageError("Publication is restricted.")
+                        ?: DebugError("Publication is restricted.")
                 )
             )
         }
@@ -121,7 +121,7 @@ class ReaderRepository(
                 Try.failure(
                     OpeningError.PublicationError(
                         PublicationError.UnsupportedPublication(
-                            MessageError("No navigator supports this publication.")
+                            DebugError("No navigator supports this publication.")
                         )
                     )
                 )
@@ -145,7 +145,7 @@ class ReaderRepository(
         ) ?: return Try.failure(
             OpeningError.PublicationError(
                 PublicationError.UnsupportedPublication(
-                    MessageError("Cannot create audio navigator factory.")
+                    DebugError("Cannot create audio navigator factory.")
                 )
             )
         )

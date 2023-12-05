@@ -13,8 +13,7 @@ import org.readium.r2.shared.extensions.coerceFirstNonNegative
 import org.readium.r2.shared.extensions.inflate
 import org.readium.r2.shared.extensions.requireLengthFitInt
 import org.readium.r2.shared.publication.encryption.Encryption
-import org.readium.r2.shared.util.AbsoluteUrl
-import org.readium.r2.shared.util.MessageError
+import org.readium.r2.shared.util.DebugError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.data.ReadError
@@ -47,7 +46,7 @@ internal class LcpDecryptor(
                 license == null ->
                     FailureResource(
                         ReadError.Decoding(
-                            MessageError(
+                            DebugError(
                                 "Cannot decipher content because the publication is locked."
                             )
                         )
@@ -72,9 +71,6 @@ internal class LcpDecryptor(
         private val license: LcpLicense
     ) : TransformingResource(resource) {
 
-        override val source: AbsoluteUrl? =
-            null
-
         override suspend fun transform(data: Try<ByteArray, ReadError>): Try<ByteArray, ReadError> =
             license.decryptFully(data, encryption.isDeflated)
 
@@ -93,8 +89,6 @@ internal class LcpDecryptor(
         private val encryption: Encryption,
         private val license: LcpLicense
     ) : Resource by resource {
-
-        override val source: AbsoluteUrl? = null
 
         private class Cache(
             var startIndex: Int? = null,
@@ -133,7 +127,7 @@ internal class LcpDecryptor(
             if (length < 2 * AES_BLOCK_SIZE) {
                 return Try.failure(
                     ReadError.Decoding(
-                        MessageError("Invalid CBC-encrypted stream.")
+                        DebugError("Invalid CBC-encrypted stream.")
                     )
                 )
             }
@@ -146,7 +140,7 @@ internal class LcpDecryptor(
                 .getOrElse {
                     return Try.failure(
                         ReadError.Decoding(
-                            MessageError("Can't decrypt trailing size of CBC-encrypted stream")
+                            DebugError("Can't decrypt trailing size of CBC-encrypted stream")
                         )
                     )
                 }
@@ -196,7 +190,7 @@ internal class LcpDecryptor(
                 .getOrElse {
                     return Try.failure(
                         ReadError.Decoding(
-                            MessageError(
+                            DebugError(
                                 "Can't decrypt the content for resource with key: ${resource.source}",
                                 it
                             )
@@ -261,7 +255,7 @@ private suspend fun LcpLicense.decryptFully(
             .getOrElse {
                 return Try.failure(
                     ReadError.Decoding(
-                        MessageError("Failed to decrypt the resource", it)
+                        DebugError("Failed to decrypt the resource", it)
                     )
                 )
             }

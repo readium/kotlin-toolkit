@@ -8,7 +8,7 @@ package org.readium.r2.shared.util.asset
 
 import java.io.File
 import org.readium.r2.shared.util.AbsoluteUrl
-import org.readium.r2.shared.util.MessageError
+import org.readium.r2.shared.util.DebugError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.archive.ArchiveFactory
@@ -68,11 +68,11 @@ public class AssetRetriever(
                     is ArchiveFactory.Error.Reading ->
                         Try.failure(Error.Reading(it.cause))
                     is ArchiveFactory.Error.FormatNotSupported ->
-                        Try.success(Asset.Resource(mediaType, resource))
+                        Try.success(ResourceAsset(mediaType, resource))
                 }
             }
 
-        return Try.success(Asset.Container(mediaType, archive))
+        return Try.success(ContainerAsset(mediaType, archive))
     }
 
     private suspend fun retrieveResource(
@@ -114,7 +114,7 @@ public class AssetRetriever(
             .getOrElse {
                 return Try.failure(
                     Error.FormatNotSupported(
-                        MessageError("Cannot determine asset media type.")
+                        DebugError("Cannot determine asset media type.")
                     )
                 )
             }
@@ -125,10 +125,10 @@ public class AssetRetriever(
                     is ArchiveFactory.Error.Reading ->
                         return Try.failure(Error.Reading(it.cause))
                     is ArchiveFactory.Error.FormatNotSupported ->
-                        return Try.success(Asset.Resource(mediaType, resource))
+                        return Try.success(ResourceAsset(mediaType, resource))
                 }
             }
 
-        return Try.success(Asset.Container(mediaType, container))
+        return Try.success(ContainerAsset(mediaType, container))
     }
 }

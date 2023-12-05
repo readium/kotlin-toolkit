@@ -23,9 +23,9 @@ public interface Error {
 }
 
 /**
- * A basic [Error] implementation with a message.
+ * A basic [Error] implementation with a debug message.
  */
-public class MessageError(
+public class DebugError(
     override val message: String,
     override val cause: Error? = null
 ) : Error

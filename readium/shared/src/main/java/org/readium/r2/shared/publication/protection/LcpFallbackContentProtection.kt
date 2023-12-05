@@ -10,10 +10,12 @@ import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.publication.encryption.encryption
 import org.readium.r2.shared.publication.protection.ContentProtection.Scheme
 import org.readium.r2.shared.publication.services.contentProtectionServiceFactory
-import org.readium.r2.shared.util.MessageError
+import org.readium.r2.shared.util.DebugError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.asset.Asset
+import org.readium.r2.shared.util.asset.ContainerAsset
+import org.readium.r2.shared.util.asset.ResourceAsset
 import org.readium.r2.shared.util.data.Container
 import org.readium.r2.shared.util.data.DecodeError
 import org.readium.r2.shared.util.data.ReadError
@@ -35,11 +37,11 @@ public class LcpFallbackContentProtection : ContentProtection {
 
     override suspend fun supports(asset: Asset): Try<Boolean, ReadError> =
         when (asset) {
-            is Asset.Container -> isLcpProtected(
+            is ContainerAsset -> isLcpProtected(
                 asset.container,
                 asset.mediaType
             )
-            is Asset.Resource ->
+            is ResourceAsset ->
                 Try.success(
                     asset.mediaType.matches(MediaType.LCP_LICENSE_DOCUMENT)
                 )
@@ -50,10 +52,10 @@ public class LcpFallbackContentProtection : ContentProtection {
         credentials: String?,
         allowUserInteraction: Boolean
     ): Try<ContentProtection.Asset, ContentProtection.Error> {
-        if (asset !is Asset.Container) {
+        if (asset !is ContainerAsset) {
             return Try.failure(
                 ContentProtection.Error.AssetNotSupported(
-                    MessageError("A container asset was expected.")
+                    DebugError("A container asset was expected.")
                 )
             )
         }

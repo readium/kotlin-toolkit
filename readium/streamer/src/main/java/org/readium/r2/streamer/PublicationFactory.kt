@@ -12,7 +12,7 @@ import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.protection.AdeptFallbackContentProtection
 import org.readium.r2.shared.publication.protection.ContentProtection
 import org.readium.r2.shared.publication.protection.LcpFallbackContentProtection
-import org.readium.r2.shared.util.MessageError
+import org.readium.r2.shared.util.DebugError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.asset.Asset
 import org.readium.r2.shared.util.getOrElse
@@ -275,7 +275,7 @@ public class PublicationFactory(
     private fun wrapParserException(e: PublicationParser.Error): Error =
         when (e) {
             is PublicationParser.Error.FormatNotSupported ->
-                Error.FormatNotSupported(MessageError("Cannot find a parser for this asset."))
+                Error.FormatNotSupported(DebugError("Cannot find a parser for this asset."))
             is PublicationParser.Error.Reading ->
                 Error.Reading(e.cause)
         }

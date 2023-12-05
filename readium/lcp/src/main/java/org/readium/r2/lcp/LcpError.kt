@@ -9,9 +9,9 @@ package org.readium.r2.lcp
 import java.net.SocketTimeoutException
 import java.util.*
 import org.readium.r2.lcp.service.NetworkException
+import org.readium.r2.shared.util.DebugError
 import org.readium.r2.shared.util.Error
 import org.readium.r2.shared.util.ErrorException
-import org.readium.r2.shared.util.MessageError
 import org.readium.r2.shared.util.ThrowableError
 import org.readium.r2.shared.util.Url
 
@@ -46,7 +46,7 @@ public sealed class LcpError(
      * message and how to reproduce it.
      */
     public class Runtime(message: String) :
-        LcpError("Unexpected LCP error", MessageError(message))
+        LcpError("Unexpected LCP error", DebugError(message))
 
     /** An unknown low-level exception was reported. */
     public class Unknown(override val cause: Error?) :

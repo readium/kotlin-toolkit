@@ -12,7 +12,7 @@ import org.readium.r2.shared.publication.Manifest
 import org.readium.r2.shared.publication.Metadata
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.services.PerResourcePositionsService
-import org.readium.r2.shared.util.MessageError
+import org.readium.r2.shared.util.DebugError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.data.ReadError
@@ -57,7 +57,7 @@ public class ImageParser(
             return Try.failure(
                 PublicationParser.Error.Reading(
                     ReadError.Decoding(
-                        MessageError("No bitmap found in the publication.")
+                        DebugError("No bitmap found in the publication.")
                     )
                 )
             )

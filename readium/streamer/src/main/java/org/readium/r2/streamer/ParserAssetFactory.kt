@@ -8,10 +8,12 @@ package org.readium.r2.streamer
 
 import org.readium.r2.shared.extensions.addPrefix
 import org.readium.r2.shared.util.AbsoluteUrl
-import org.readium.r2.shared.util.MessageError
+import org.readium.r2.shared.util.DebugError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.asset.Asset
+import org.readium.r2.shared.util.asset.ContainerAsset
+import org.readium.r2.shared.util.asset.ResourceAsset
 import org.readium.r2.shared.util.data.CompositeContainer
 import org.readium.r2.shared.util.data.DecodeError
 import org.readium.r2.shared.util.data.ReadError
@@ -48,15 +50,15 @@ internal class ParserAssetFactory(
         asset: Asset
     ): Try<PublicationParser.Asset, Error> {
         return when (asset) {
-            is Asset.Container ->
+            is ContainerAsset ->
                 createParserAssetForContainer(asset)
-            is Asset.Resource ->
+            is ResourceAsset ->
                 createParserAssetForResource(asset)
         }
     }
 
     private fun createParserAssetForContainer(
-        asset: Asset.Container
+        asset: ContainerAsset
     ): Try<PublicationParser.Asset, Error> =
         Try.success(
             PublicationParser.Asset(
@@ -66,7 +68,7 @@ internal class ParserAssetFactory(
         )
 
     private suspend fun createParserAssetForResource(
-        asset: Asset.Resource
+        asset: ResourceAsset
     ): Try<PublicationParser.Asset, Error> =
         if (asset.mediaType.isRwpm) {
             createParserAssetForManifest(asset)
@@ -75,7 +77,7 @@ internal class ParserAssetFactory(
         }
 
     private suspend fun createParserAssetForManifest(
-        asset: Asset.Resource
+        asset: ResourceAsset
     ): Try<PublicationParser.Asset, Error> {
         val manifest = asset.resource.readAsRwpm()
             .mapFailure {
@@ -100,7 +102,7 @@ internal class ParserAssetFactory(
             if (!baseUrl.isHttp) {
                 return Try.failure(
                     Error.UnsupportedAsset(
-                        MessageError("Self link doesn't use the HTTP(S) scheme.")
+                        DebugError("Self link doesn't use the HTTP(S) scheme.")
                     )
                 )
             }
@@ -128,7 +130,7 @@ internal class ParserAssetFactory(
     }
 
     private fun createParserAssetForContent(
-        asset: Asset.Resource
+        asset: ResourceAsset
     ): Try<PublicationParser.Asset, Error> {
         // Historically, the reading order of a standalone file contained a single link with the
         // HREF "/$assetName". This was fragile if the asset named changed, or was different on

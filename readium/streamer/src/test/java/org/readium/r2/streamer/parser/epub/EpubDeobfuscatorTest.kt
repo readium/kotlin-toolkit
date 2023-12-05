@@ -17,7 +17,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.readium.r2.shared.publication.encryption.Encryption
 import org.readium.r2.shared.util.Url
-import org.readium.r2.shared.util.assertSuccess
+import org.readium.r2.shared.util.checkSuccess
 import org.readium.r2.shared.util.file.DirectoryContainer
 import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.streamer.readBlocking
@@ -36,12 +36,12 @@ class EpubDeobfuscatorTest {
     )
 
     private val container = runBlocking {
-        DirectoryContainer(deobfuscationDir).assertSuccess()
+        DirectoryContainer(deobfuscationDir).checkSuccess()
     }
 
     private val font = requireNotNull(container[Url("cut-cut.woff")!!])
         .readBlocking()
-        .assertSuccess()
+        .checkSuccess()
 
     private fun deobfuscate(url: Url, resource: Resource, algorithm: String?): Resource {
         val deobfuscator = EpubDeobfuscator(identifier) {
@@ -78,7 +78,7 @@ class EpubDeobfuscatorTest {
                 url,
                 resource,
                 "http://www.idpf.org/2008/embedding"
-            ).read(20L until 40L).assertSuccess()
+            ).read(20L until 40L).checkSuccess()
             assertThat(deobfuscatedRes).isEqualTo(font.copyOfRange(20, 40))
         }
     }
