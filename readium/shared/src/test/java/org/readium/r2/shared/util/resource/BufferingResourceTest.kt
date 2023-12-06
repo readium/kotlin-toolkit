@@ -126,7 +126,7 @@ class BufferingResourceTest {
     private val data = file.readBytes()
     private val resource = FileResource(file, MediaType.EPUB)
 
-    private fun sut(bufferSize: Long = 1024): BufferingResource =
+    private fun sut(bufferSize: Int = 1024): BufferingResource =
         BufferingResource(resource, bufferSize = bufferSize)
 
     private fun testRead(sut: BufferingResource, range: LongRange? = null) {

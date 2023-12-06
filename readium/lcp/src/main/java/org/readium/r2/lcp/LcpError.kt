@@ -259,4 +259,4 @@ public typealias LCPError = LcpError
     replaceWith = ReplaceWith("getUserMessage(context)"),
     level = DeprecationLevel.ERROR
 )
-public val LcpError.errorDescription: String? get() = message
+public val LcpError.errorDescription: String get() = message

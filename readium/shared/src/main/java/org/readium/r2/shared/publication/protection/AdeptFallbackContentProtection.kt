@@ -67,7 +67,7 @@ public class AdeptFallbackContentProtection : ContentProtection {
             return Try.success(false)
         }
 
-        asset.container.get(Url("META-INF/encryption.xml")!!)
+        asset.container[Url("META-INF/encryption.xml")!!]
             ?.readAsXml()
             ?.getOrElse {
                 when (it) {
