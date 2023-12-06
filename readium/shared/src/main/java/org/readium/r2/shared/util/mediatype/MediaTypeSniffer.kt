@@ -28,7 +28,6 @@ import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.data.Readable
 import org.readium.r2.shared.util.data.asInputStream
 import org.readium.r2.shared.util.data.borrow
-import org.readium.r2.shared.util.data.containsJsonKeys
 import org.readium.r2.shared.util.data.readAsJson
 import org.readium.r2.shared.util.data.readAsRwpm
 import org.readium.r2.shared.util.data.readAsString
@@ -939,3 +938,15 @@ public object SystemMediaTypeSniffer : MediaTypeSniffer {
 
 private suspend fun Readable.canReadWholeBlob() =
     length().getOrDefault(0) < 5 * 1000 * 1000
+
+/**
+ * Returns whether the content is a JSON object containing all of the given root keys.
+ */
+@Suppress("SameParameterValue")
+private suspend fun Readable.containsJsonKeys(
+    vararg keys: String
+): Try<Boolean, DecodeError> {
+    val json = readAsJson()
+        .getOrElse { return Try.failure(it) }
+    return Try.success(json.keys().asSequence().toSet().containsAll(keys.toList()))
+}

@@ -27,7 +27,6 @@ import org.readium.r2.shared.extensions.tryOr
 import org.readium.r2.shared.util.DebugError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.downloads.DownloadManager
-import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.http.HttpError
 import org.readium.r2.shared.util.http.HttpStatus
 import org.readium.r2.shared.util.mediatype.FormatRegistry
@@ -272,14 +271,14 @@ public class AndroidDownloadManager internal constructor(
         }
     }
 
-    private suspend fun prepareResult(destFile: File, mediaTypeHint: MediaType?): Try<DownloadManager.Download, DownloadManager.Error> =
+    private suspend fun prepareResult(destFile: File, mediaTypeHint: MediaType?): Try<DownloadManager.Download, DownloadManager.DownloadError> =
         withContext(Dispatchers.IO) {
             val mediaType = mediaTypeRetriever.retrieve(
                 destFile,
                 MediaTypeHints(mediaType = mediaTypeHint)
-            ).getOrElse { MediaType.BINARY }
+            ).getOrNull()
 
-            val extension = formatRegistry.fileExtension(mediaType)
+            val extension = mediaType?.let { formatRegistry.fileExtension(it) }
                 ?: destFile.extension.takeUnless { it.isEmpty() }
 
             val newDest = File(destFile.parent, generateFileName(extension))
@@ -293,37 +292,37 @@ public class AndroidDownloadManager internal constructor(
                 Try.success(download)
             } else {
                 Try.failure(
-                    DownloadManager.Error.FileSystemError(
+                    DownloadManager.DownloadError.FileSystemError(
                         DebugError("Failed to rename the downloaded file.")
                     )
                 )
             }
         }
 
-    private fun mapErrorCode(code: Int): DownloadManager.Error =
+    private fun mapErrorCode(code: Int): DownloadManager.DownloadError =
         when (code) {
             in 400 until 1000 ->
-                DownloadManager.Error.HttpError(httpErrorForCode(code))
+                DownloadManager.DownloadError.HttpError(httpErrorForCode(code))
             SystemDownloadManager.ERROR_UNHANDLED_HTTP_CODE ->
-                DownloadManager.Error.HttpError(httpErrorForCode(code))
+                DownloadManager.DownloadError.HttpError(httpErrorForCode(code))
             SystemDownloadManager.ERROR_HTTP_DATA_ERROR ->
-                DownloadManager.Error.HttpError(HttpError.MalformedResponse(null))
+                DownloadManager.DownloadError.HttpError(HttpError.MalformedResponse(null))
             SystemDownloadManager.ERROR_TOO_MANY_REDIRECTS ->
-                DownloadManager.Error.HttpError(
+                DownloadManager.DownloadError.HttpError(
                     HttpError.Redirection(DebugError("Too many redirects."))
                 )
             SystemDownloadManager.ERROR_CANNOT_RESUME ->
-                DownloadManager.Error.CannotResume()
+                DownloadManager.DownloadError.CannotResume()
             SystemDownloadManager.ERROR_DEVICE_NOT_FOUND ->
-                DownloadManager.Error.DeviceNotFound()
+                DownloadManager.DownloadError.DeviceNotFound()
             SystemDownloadManager.ERROR_FILE_ERROR ->
-                DownloadManager.Error.FileSystemError()
+                DownloadManager.DownloadError.FileSystemError()
             SystemDownloadManager.ERROR_INSUFFICIENT_SPACE ->
-                DownloadManager.Error.InsufficientSpace()
+                DownloadManager.DownloadError.InsufficientSpace()
             SystemDownloadManager.ERROR_UNKNOWN ->
-                DownloadManager.Error.Unknown()
+                DownloadManager.DownloadError.Unknown()
             else ->
-                DownloadManager.Error.Unknown()
+                DownloadManager.DownloadError.Unknown()
         }
 
     private fun httpErrorForCode(code: Int): HttpError =

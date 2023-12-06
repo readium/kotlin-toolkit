@@ -51,10 +51,10 @@ public class LcpFallbackContentProtection : ContentProtection {
         asset: Asset,
         credentials: String?,
         allowUserInteraction: Boolean
-    ): Try<ContentProtection.Asset, ContentProtection.Error> {
+    ): Try<ContentProtection.Asset, ContentProtection.OpenError> {
         if (asset !is ContainerAsset) {
             return Try.failure(
-                ContentProtection.Error.AssetNotSupported(
+                ContentProtection.OpenError.AssetNotSupported(
                     DebugError("A container asset was expected.")
                 )
             )

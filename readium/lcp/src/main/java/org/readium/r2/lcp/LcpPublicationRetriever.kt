@@ -259,7 +259,7 @@ public class LcpPublicationRetriever(
 
         override fun onDownloadFailed(
             requestId: DownloadManager.RequestId,
-            error: DownloadManager.Error
+            error: DownloadManager.DownloadError
         ) {
             val lcpRequestId = RequestId(requestId.value)
             val listenersForId = checkNotNull(listeners[lcpRequestId])

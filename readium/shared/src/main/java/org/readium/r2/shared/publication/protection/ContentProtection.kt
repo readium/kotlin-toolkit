@@ -17,6 +17,7 @@ import kotlin.Unit
 import org.readium.r2.shared.publication.LocalizedString
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.services.ContentProtectionService
+import org.readium.r2.shared.util.Error
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.data.Container
 import org.readium.r2.shared.util.data.ReadError
@@ -32,18 +33,18 @@ import org.readium.r2.shared.util.resource.Resource
  */
 public interface ContentProtection {
 
-    public sealed class Error(
+    public sealed class OpenError(
         override val message: String,
-        override val cause: org.readium.r2.shared.util.Error?
-    ) : org.readium.r2.shared.util.Error {
+        override val cause: Error?
+    ) : Error {
 
         public class Reading(
             override val cause: ReadError
-        ) : Error("An error occurred while trying to read asset.", cause)
+        ) : OpenError("An error occurred while trying to read asset.", cause)
 
         public class AssetNotSupported(
-            override val cause: org.readium.r2.shared.util.Error?
-        ) : Error("Asset is not supported.", cause)
+            override val cause: Error?
+        ) : OpenError("Asset is not supported.", cause)
     }
 
     public val scheme: Scheme
@@ -65,7 +66,7 @@ public interface ContentProtection {
         asset: org.readium.r2.shared.util.asset.Asset,
         credentials: String?,
         allowUserInteraction: Boolean
-    ): Try<Asset, Error>
+    ): Try<Asset, OpenError>
 
     /**
      * Holds the result of opening an [Asset] with a [ContentProtection].

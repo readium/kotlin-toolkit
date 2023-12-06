@@ -10,6 +10,7 @@ import android.content.Context
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.services.InMemoryCacheService
 import org.readium.r2.shared.publication.services.PerResourcePositionsService
+import org.readium.r2.shared.publication.services.WebPositionsService
 import org.readium.r2.shared.publication.services.cacheServiceFactory
 import org.readium.r2.shared.publication.services.locatorServiceFactory
 import org.readium.r2.shared.publication.services.positionsServiceFactory
@@ -20,6 +21,7 @@ import org.readium.r2.shared.util.data.DecodeError
 import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.data.readAsRwpm
 import org.readium.r2.shared.util.getOrElse
+import org.readium.r2.shared.util.http.HttpClient
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.pdf.PdfDocumentFactory
@@ -31,6 +33,7 @@ import org.readium.r2.streamer.parser.audio.AudioLocatorService
  */
 public class ReadiumWebPubParser(
     private val context: Context? = null,
+    private val httpClient: HttpClient,
     private val pdfFactory: PdfDocumentFactory<*>?
 ) : PublicationParser {
 
@@ -89,17 +92,20 @@ public class ReadiumWebPubParser(
         val servicesBuilder = Publication.ServicesBuilder().apply {
             cacheServiceFactory = InMemoryCacheService.createFactory(context)
 
-            when (asset.mediaType) {
+            positionsServiceFactory = when (asset.mediaType) {
                 MediaType.LCP_PROTECTED_PDF ->
-                    positionsServiceFactory = pdfFactory?.let { LcpdfPositionsService.create(it) }
-
+                    pdfFactory?.let { LcpdfPositionsService.create(it) }
                 MediaType.DIVINA ->
-                    positionsServiceFactory = PerResourcePositionsService.createFactory(
-                        MediaType("image/*")!!
-                    )
+                    PerResourcePositionsService.createFactory(MediaType("image/*")!!)
+                else ->
+                    WebPositionsService.createFactory(httpClient)
+            }
 
+            locatorServiceFactory = when (asset.mediaType) {
                 MediaType.READIUM_AUDIOBOOK, MediaType.LCP_PROTECTED_AUDIOBOOK ->
-                    locatorServiceFactory = AudioLocatorService.createFactory()
+                    AudioLocatorService.createFactory()
+                else ->
+                    null
             }
         }
 

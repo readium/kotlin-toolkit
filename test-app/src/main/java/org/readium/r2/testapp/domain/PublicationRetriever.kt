@@ -305,7 +305,7 @@ class OpdsPublicationRetriever(
 
         override fun onDownloadFailed(
             requestId: DownloadManager.RequestId,
-            error: DownloadManager.Error
+            error: DownloadManager.DownloadError
         ) {
             coroutineScope.launch {
                 downloadRepository.remove(requestId.value)

@@ -13,6 +13,7 @@ import org.readium.r2.shared.publication.protection.AdeptFallbackContentProtecti
 import org.readium.r2.shared.publication.protection.ContentProtection
 import org.readium.r2.shared.publication.protection.LcpFallbackContentProtection
 import org.readium.r2.shared.util.DebugError
+import org.readium.r2.shared.util.Error
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.asset.Asset
 import org.readium.r2.shared.util.getOrElse
@@ -55,27 +56,27 @@ public class PublicationFactory(
     ignoreDefaultParsers: Boolean = false,
     contentProtections: List<ContentProtection>,
     formatRegistry: FormatRegistry,
-    httpClient: HttpClient,
+    private val httpClient: HttpClient,
     pdfFactory: PdfDocumentFactory<*>?,
     private val mediaTypeRetriever: MediaTypeRetriever,
     private val onCreatePublication: Publication.Builder.() -> Unit = {}
 ) {
-    public sealed class Error(
+    public sealed class OpenError(
         override val message: String,
-        override val cause: org.readium.r2.shared.util.Error?
-    ) : org.readium.r2.shared.util.Error {
+        override val cause: Error?
+    ) : Error {
 
         public class Reading(
             override val cause: org.readium.r2.shared.util.data.ReadError
-        ) : Error("An error occurred while trying to read asset.", cause)
+        ) : OpenError("An error occurred while trying to read asset.", cause)
 
         public class FormatNotSupported(
-            override val cause: org.readium.r2.shared.util.Error?
-        ) : Error("Asset is not supported.", cause)
+            override val cause: Error?
+        ) : OpenError("Asset is not supported.", cause)
 
         public class ContentProtectionNotSupported(
-            override val cause: org.readium.r2.shared.util.Error? = null
-        ) : Error("No ContentProtection available to open asset.", cause)
+            override val cause: Error? = null
+        ) : OpenError("No ContentProtection available to open asset.", cause)
     }
 
     public companion object {
@@ -123,7 +124,7 @@ public class PublicationFactory(
         listOfNotNull(
             EpubParser(),
             pdfFactory?.let { PdfParser(context, it) },
-            ReadiumWebPubParser(context, pdfFactory),
+            ReadiumWebPubParser(context, httpClient, pdfFactory),
             ImageParser(mediaTypeRetriever),
             AudioParser(mediaTypeRetriever)
         )
@@ -157,7 +158,7 @@ public class PublicationFactory(
      *   It can be used to modify the manifest, the root container or the list of service
      *   factories of the [Publication].
      * @param warnings Logger used to broadcast non-fatal parsing warnings.
-     * @return A [Publication] or a [Error] in case of failure.
+     * @return A [Publication] or a [OpenError] in case of failure.
      */
     public suspend fun open(
         asset: Asset,
@@ -166,7 +167,7 @@ public class PublicationFactory(
         allowUserInteraction: Boolean,
         onCreatePublication: Publication.Builder.() -> Unit = {},
         warnings: WarningLogger? = null
-    ): Try<Publication, Error> {
+    ): Try<Publication, OpenError> {
         val compositeOnCreatePublication: Publication.Builder.() -> Unit = {
             this@PublicationFactory.onCreatePublication(this)
             onCreatePublication(this)
@@ -194,14 +195,14 @@ public class PublicationFactory(
         asset: Asset,
         onCreatePublication: Publication.Builder.() -> Unit,
         warnings: WarningLogger?
-    ): Try<Publication, Error> {
+    ): Try<Publication, OpenError> {
         val parserAsset = parserAssetFactory.createParserAsset(asset)
             .mapFailure {
                 when (it) {
                     is ParserAssetFactory.Error.ReadError ->
-                        Error.Reading(it.cause)
+                        OpenError.Reading(it.cause)
                     is ParserAssetFactory.Error.UnsupportedAsset ->
-                        Error.FormatNotSupported(it.cause)
+                        OpenError.FormatNotSupported(it.cause)
                 }
             }
             .getOrElse { return Try.failure(it) }
@@ -215,19 +216,19 @@ public class PublicationFactory(
         allowUserInteraction: Boolean,
         onCreatePublication: Publication.Builder.() -> Unit,
         warnings: WarningLogger?
-    ): Try<Publication, Error> {
+    ): Try<Publication, OpenError> {
         val protectedAsset = contentProtections[contentProtectionScheme]
             ?.open(asset, credentials, allowUserInteraction)
             ?.mapFailure {
                 when (it) {
-                    is ContentProtection.Error.Reading ->
-                        Error.Reading(it.cause)
-                    is ContentProtection.Error.AssetNotSupported ->
-                        Error.FormatNotSupported(it)
+                    is ContentProtection.OpenError.Reading ->
+                        OpenError.Reading(it.cause)
+                    is ContentProtection.OpenError.AssetNotSupported ->
+                        OpenError.FormatNotSupported(it)
                 }
             }
             ?.getOrElse { return Try.failure(it) }
-            ?: return Try.failure(Error.ContentProtectionNotSupported())
+            ?: return Try.failure(OpenError.ContentProtectionNotSupported())
 
         val parserAsset = PublicationParser.Asset(
             protectedAsset.mediaType,
@@ -246,7 +247,7 @@ public class PublicationFactory(
         publicationAsset: PublicationParser.Asset,
         onCreatePublication: Publication.Builder.() -> Unit = {},
         warnings: WarningLogger? = null
-    ): Try<Publication, Error> {
+    ): Try<Publication, OpenError> {
         val builder = parse(publicationAsset, warnings)
             .getOrElse { return Try.failure(wrapParserException(it)) }
 
@@ -272,11 +273,11 @@ public class PublicationFactory(
         return Try.failure(PublicationParser.Error.FormatNotSupported())
     }
 
-    private fun wrapParserException(e: PublicationParser.Error): Error =
+    private fun wrapParserException(e: PublicationParser.Error): OpenError =
         when (e) {
             is PublicationParser.Error.FormatNotSupported ->
-                Error.FormatNotSupported(DebugError("Cannot find a parser for this asset."))
+                OpenError.FormatNotSupported(DebugError("Cannot find a parser for this asset."))
             is PublicationParser.Error.Reading ->
-                Error.Reading(e.cause)
+                OpenError.Reading(e.cause)
         }
 }

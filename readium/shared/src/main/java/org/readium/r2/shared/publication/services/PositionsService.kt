@@ -11,6 +11,7 @@ package org.readium.r2.shared.publication.services
 
 import kotlinx.coroutines.runBlocking
 import org.json.JSONObject
+import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.extensions.mapNotNull
 import org.readium.r2.shared.extensions.toJsonOrNull
 import org.readium.r2.shared.publication.Link
@@ -119,7 +120,8 @@ public class PerResourcePositionsService(
     }
 }
 
-internal class WebPositionsService(
+@InternalReadiumApi
+public class WebPositionsService(
     private val manifest: Manifest,
     private val httpClient: HttpClient
 ) : PositionsService {
@@ -162,9 +164,9 @@ internal class WebPositionsService(
             .orEmpty()
     }
 
-    companion object {
+    public companion object {
 
-        fun createFactory(httpClient: HttpClient): (Publication.Service.Context) -> WebPositionsService = {
+        public fun createFactory(httpClient: HttpClient): (Publication.Service.Context) -> WebPositionsService = {
             WebPositionsService(it.manifest, httpClient)
         }
     }

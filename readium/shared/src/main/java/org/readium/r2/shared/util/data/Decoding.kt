@@ -19,7 +19,6 @@ import org.readium.r2.shared.util.Error
 import org.readium.r2.shared.util.ThrowableError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.flatMap
-import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.xml.ElementNode
 import org.readium.r2.shared.util.xml.XmlParser
 
@@ -131,14 +130,3 @@ public suspend fun Readable.readAsBitmap(): Try<Bitmap, DecodeError> =
                     )
                 )
         }
-
-/**
- * Returns whether the content is a JSON object containing all of the given root keys.
- */
-public suspend fun Readable.containsJsonKeys(
-    vararg keys: String
-): Try<Boolean, DecodeError> {
-    val json = readAsJson()
-        .getOrElse { return Try.failure(it) }
-    return Try.success(json.keys().asSequence().toSet().containsAll(keys.toList()))
-}

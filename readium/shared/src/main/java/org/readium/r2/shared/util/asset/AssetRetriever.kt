@@ -9,6 +9,7 @@ package org.readium.r2.shared.util.asset
 import java.io.File
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.DebugError
+import org.readium.r2.shared.util.Error
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.archive.ArchiveFactory
@@ -32,21 +33,21 @@ public class AssetRetriever(
     formatRegistry: FormatRegistry
 ) {
 
-    public sealed class Error(
+    public sealed class RetrieveError(
         override val message: String,
-        override val cause: org.readium.r2.shared.util.Error?
-    ) : org.readium.r2.shared.util.Error {
+        override val cause: Error?
+    ) : Error {
 
         public class SchemeNotSupported(
             public val scheme: Url.Scheme,
-            cause: org.readium.r2.shared.util.Error? = null
-        ) : Error("Url scheme $scheme is not supported.", cause)
+            cause: Error? = null
+        ) : RetrieveError("Url scheme $scheme is not supported.", cause)
 
-        public class FormatNotSupported(cause: org.readium.r2.shared.util.Error) :
-            Error("Asset format is not supported.", cause)
+        public class FormatNotSupported(cause: Error) :
+            RetrieveError("Asset format is not supported.", cause)
 
         public class Reading(override val cause: org.readium.r2.shared.util.data.ReadError) :
-            Error("An error occurred when trying to read asset.", cause)
+            RetrieveError("An error occurred when trying to read asset.", cause)
     }
 
     private val archiveFactory: ArchiveFactory =
@@ -58,7 +59,7 @@ public class AssetRetriever(
     public suspend fun retrieve(
         url: AbsoluteUrl,
         mediaType: MediaType
-    ): Try<Asset, Error> {
+    ): Try<Asset, RetrieveError> {
         val resource = retrieveResource(url, mediaType)
             .getOrElse { return Try.failure(it) }
 
@@ -66,7 +67,7 @@ public class AssetRetriever(
             .getOrElse {
                 return when (it) {
                     is ArchiveFactory.Error.Reading ->
-                        Try.failure(Error.Reading(it.cause))
+                        Try.failure(RetrieveError.Reading(it.cause))
                     is ArchiveFactory.Error.FormatNotSupported ->
                         Try.success(ResourceAsset(mediaType, resource))
                 }
@@ -78,12 +79,12 @@ public class AssetRetriever(
     private suspend fun retrieveResource(
         url: AbsoluteUrl,
         mediaType: MediaType
-    ): Try<Resource, Error> {
+    ): Try<Resource, RetrieveError> {
         return resourceFactory.create(url, mediaType)
             .mapFailure { error ->
                 when (error) {
                     is ResourceFactory.Error.SchemeNotSupported ->
-                        Error.SchemeNotSupported(error.scheme, error)
+                        RetrieveError.SchemeNotSupported(error.scheme, error)
                 }
             }
     }
@@ -93,19 +94,19 @@ public class AssetRetriever(
     /**
      * Retrieves an asset from an unknown local file.
      */
-    public suspend fun retrieve(file: File): Try<Asset, Error> =
+    public suspend fun retrieve(file: File): Try<Asset, RetrieveError> =
         retrieve(file.toUrl())
 
     /**
      * Retrieves an asset from an unknown [AbsoluteUrl].
      */
-    public suspend fun retrieve(url: AbsoluteUrl): Try<Asset, Error> {
+    public suspend fun retrieve(url: AbsoluteUrl): Try<Asset, RetrieveError> {
         val resource = resourceFactory.create(url)
             .getOrElse {
                 return Try.failure(
                     when (it) {
                         is ResourceFactory.Error.SchemeNotSupported ->
-                            Error.SchemeNotSupported(it.scheme)
+                            RetrieveError.SchemeNotSupported(it.scheme)
                     }
                 )
             }
@@ -113,7 +114,7 @@ public class AssetRetriever(
         val mediaType = mediaTypeRetriever.retrieve(resource)
             .getOrElse {
                 return Try.failure(
-                    Error.FormatNotSupported(
+                    RetrieveError.FormatNotSupported(
                         DebugError("Cannot determine asset media type.")
                     )
                 )
@@ -123,7 +124,7 @@ public class AssetRetriever(
             .getOrElse {
                 when (it) {
                     is ArchiveFactory.Error.Reading ->
-                        return Try.failure(Error.Reading(it.cause))
+                        return Try.failure(RetrieveError.Reading(it.cause))
                     is ArchiveFactory.Error.FormatNotSupported ->
                         return Try.success(ResourceAsset(mediaType, resource))
                 }

@@ -38,13 +38,13 @@ sealed class PublicationError(
 
     companion object {
 
-        operator fun invoke(error: AssetRetriever.Error): PublicationError =
+        operator fun invoke(error: AssetRetriever.RetrieveError): PublicationError =
             when (error) {
-                is AssetRetriever.Error.Reading ->
+                is AssetRetriever.RetrieveError.Reading ->
                     ReadError(error.cause)
-                is AssetRetriever.Error.FormatNotSupported ->
+                is AssetRetriever.RetrieveError.FormatNotSupported ->
                     UnsupportedArchiveFormat(error)
-                is AssetRetriever.Error.SchemeNotSupported ->
+                is AssetRetriever.RetrieveError.SchemeNotSupported ->
                     UnsupportedScheme(error)
             }
 
@@ -56,13 +56,13 @@ sealed class PublicationError(
                     UnsupportedContentProtection(error)
             }
 
-        operator fun invoke(error: PublicationFactory.Error): PublicationError =
+        operator fun invoke(error: PublicationFactory.OpenError): PublicationError =
             when (error) {
-                is PublicationFactory.Error.Reading ->
+                is PublicationFactory.OpenError.Reading ->
                     ReadError(error.cause)
-                is PublicationFactory.Error.FormatNotSupported ->
+                is PublicationFactory.OpenError.FormatNotSupported ->
                     UnsupportedPublication(error)
-                is PublicationFactory.Error.ContentProtectionNotSupported ->
+                is PublicationFactory.OpenError.ContentProtectionNotSupported ->
                     UnsupportedContentProtection(error)
             }
     }

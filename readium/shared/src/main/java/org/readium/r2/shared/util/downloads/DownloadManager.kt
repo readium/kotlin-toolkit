@@ -8,6 +8,7 @@ package org.readium.r2.shared.util.downloads
 
 import java.io.File
 import org.readium.r2.shared.util.AbsoluteUrl
+import org.readium.r2.shared.util.Error
 import org.readium.r2.shared.util.downloads.android.AndroidDownloadManager
 import org.readium.r2.shared.util.downloads.foreground.ForegroundDownloadManager
 import org.readium.r2.shared.util.mediatype.MediaType
@@ -36,38 +37,34 @@ public interface DownloadManager {
     @JvmInline
     public value class RequestId(public val value: String)
 
-    public sealed class Error(
+    public sealed class DownloadError(
         override val message: String,
-        override val cause: org.readium.r2.shared.util.Error? = null
-    ) : org.readium.r2.shared.util.Error {
+        override val cause: Error? = null
+    ) : Error {
 
         public class HttpError(
             cause: org.readium.r2.shared.util.http.HttpError
-        ) : Error(cause.message, cause)
+        ) : DownloadError(cause.message, cause)
 
         public class DeviceNotFound(
-            cause: org.readium.r2.shared.util.Error? = null
-        ) : Error("The storage device is missing.", cause)
+            cause: Error? = null
+        ) : DownloadError("The storage device is missing.", cause)
 
         public class CannotResume(
-            cause: org.readium.r2.shared.util.Error? = null
-        ) : Error("Download couldn't be resumed.", cause)
+            cause: Error? = null
+        ) : DownloadError("Download couldn't be resumed.", cause)
 
         public class InsufficientSpace(
-            cause: org.readium.r2.shared.util.Error? = null
-        ) : Error("There is not enough space to complete the download.", cause)
+            cause: Error? = null
+        ) : DownloadError("There is not enough space to complete the download.", cause)
 
         public class FileSystemError(
-            cause: org.readium.r2.shared.util.Error? = null
-        ) : Error("IO error on the local device.", cause)
-
-        public class TooManyRedirects(
-            cause: org.readium.r2.shared.util.Error? = null
-        ) : Error("Too many redirects.", cause)
+            cause: Error? = null
+        ) : DownloadError("IO error on the local device.", cause)
 
         public class Unknown(
-            cause: org.readium.r2.shared.util.Error? = null
-        ) : Error("An unknown error occurred.", cause)
+            cause: Error? = null
+        ) : DownloadError("An unknown error occurred.", cause)
     }
 
     public interface Listener {
@@ -85,7 +82,7 @@ public interface DownloadManager {
         /**
          * The download with ID [requestId] failed due to [error].
          */
-        public fun onDownloadFailed(requestId: RequestId, error: Error)
+        public fun onDownloadFailed(requestId: RequestId, error: DownloadError)
 
         /**
          * The download with ID [requestId] has been cancelled.

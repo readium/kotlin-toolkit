@@ -26,7 +26,7 @@ sealed class ImportError(
     ) : ImportError(cause)
 
     class DownloadFailed(
-        override val cause: DownloadManager.Error
+        override val cause: DownloadManager.DownloadError
     ) : ImportError(cause)
 
     class OpdsError(override val cause: Error) :

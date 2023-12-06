@@ -32,7 +32,7 @@ sealed class ImportUserError(
     ) : ImportUserError(cause)
 
     class DownloadFailed(
-        val error: DownloadManager.Error
+        val error: DownloadManager.DownloadError
     ) : ImportUserError(R.string.import_publication_download_failed)
 
     class OpdsError(

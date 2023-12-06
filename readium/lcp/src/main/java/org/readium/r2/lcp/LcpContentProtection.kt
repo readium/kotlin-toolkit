@@ -43,7 +43,7 @@ internal class LcpContentProtection(
         asset: Asset,
         credentials: String?,
         allowUserInteraction: Boolean
-    ): Try<ContentProtection.Asset, ContentProtection.Error> {
+    ): Try<ContentProtection.Asset, ContentProtection.OpenError> {
         return when (asset) {
             is ContainerAsset -> openPublication(asset, credentials, allowUserInteraction)
             is ResourceAsset -> openLicense(asset, credentials, allowUserInteraction)
@@ -54,7 +54,7 @@ internal class LcpContentProtection(
         asset: ContainerAsset,
         credentials: String?,
         allowUserInteraction: Boolean
-    ): Try<ContentProtection.Asset, ContentProtection.Error> {
+    ): Try<ContentProtection.Asset, ContentProtection.OpenError> {
         val license = retrieveLicense(asset, credentials, allowUserInteraction)
         return createResultAsset(asset, license)
     }
@@ -74,7 +74,7 @@ internal class LcpContentProtection(
     private fun createResultAsset(
         asset: ContainerAsset,
         license: Try<LcpLicense, LcpError>
-    ): Try<ContentProtection.Asset, ContentProtection.Error> {
+    ): Try<ContentProtection.Asset, ContentProtection.OpenError> {
         val serviceFactory = LcpContentProtectionService
             .createFactory(license.getOrNull(), license.failureOrNull())
 
@@ -104,7 +104,7 @@ internal class LcpContentProtection(
         licenseAsset: ResourceAsset,
         credentials: String?,
         allowUserInteraction: Boolean
-    ): Try<ContentProtection.Asset, ContentProtection.Error> {
+    ): Try<ContentProtection.Asset, ContentProtection.OpenError> {
         val license = retrieveLicense(licenseAsset, credentials, allowUserInteraction)
 
         val licenseDoc = license.getOrNull()?.license
@@ -114,7 +114,7 @@ internal class LcpContentProtection(
                         LicenseDocument(it)
                     } catch (e: Exception) {
                         return Try.failure(
-                            ContentProtection.Error.Reading(
+                            ContentProtection.OpenError.Reading(
                                 ReadError.Decoding(
                                     DebugError(
                                         "Failed to read the LCP license document",
@@ -127,14 +127,14 @@ internal class LcpContentProtection(
                 }
                 .getOrElse {
                     return Try.failure(
-                        ContentProtection.Error.Reading(it)
+                        ContentProtection.OpenError.Reading(it)
                     )
                 }
 
         val link = licenseDoc.publicationLink
         val url = (link.url() as? AbsoluteUrl)
             ?: return Try.failure(
-                ContentProtection.Error.Reading(
+                ContentProtection.OpenError.Reading(
                     ReadError.Decoding(
                         DebugError(
                             "The LCP license document does not contain a valid link to the publication"
@@ -159,7 +159,7 @@ internal class LcpContentProtection(
                             Try.success((it))
                         } else {
                             Try.failure(
-                                ContentProtection.Error.AssetNotSupported(
+                                ContentProtection.OpenError.AssetNotSupported(
                                     DebugError(
                                         "LCP license points to an unsupported publication."
                                     )
@@ -172,13 +172,13 @@ internal class LcpContentProtection(
         return asset.flatMap { createResultAsset(it, license) }
     }
 
-    private fun AssetRetriever.Error.wrap(): ContentProtection.Error =
+    private fun AssetRetriever.RetrieveError.wrap(): ContentProtection.OpenError =
         when (this) {
-            is AssetRetriever.Error.FormatNotSupported ->
-                ContentProtection.Error.AssetNotSupported(this)
-            is AssetRetriever.Error.Reading ->
-                ContentProtection.Error.Reading(cause)
-            is AssetRetriever.Error.SchemeNotSupported ->
-                ContentProtection.Error.AssetNotSupported(this)
+            is AssetRetriever.RetrieveError.FormatNotSupported ->
+                ContentProtection.OpenError.AssetNotSupported(this)
+            is AssetRetriever.RetrieveError.Reading ->
+                ContentProtection.OpenError.Reading(cause)
+            is AssetRetriever.RetrieveError.SchemeNotSupported ->
+                ContentProtection.OpenError.AssetNotSupported(this)
         }
 }

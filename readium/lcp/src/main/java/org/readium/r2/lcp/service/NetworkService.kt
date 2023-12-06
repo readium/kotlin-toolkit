@@ -148,7 +148,7 @@ internal class NetworkService(
             ).getOrElse {
                 when (it) {
                     is MediaTypeSnifferError.NotRecognized ->
-                        MediaType.BINARY
+                        null
                     is MediaTypeSnifferError.Reading ->
                         throw ReadException(it.cause)
                 }
