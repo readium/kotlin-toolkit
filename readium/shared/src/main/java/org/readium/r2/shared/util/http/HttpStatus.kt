@@ -35,5 +35,8 @@ public value class HttpStatus(
 
         /** (405) Method not allowed. */
         public val MethodNotAllowed: HttpStatus = HttpStatus(405)
+
+        /** (500) Internal Server Error */
+        public val InternalServerError: HttpStatus = HttpStatus(500)
     }
 }

@@ -26,6 +26,7 @@ import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.http.HttpClient
 import org.readium.r2.shared.util.http.HttpRequest
+import org.readium.r2.shared.util.http.fetchString
 import org.readium.r2.shared.util.mediatype.MediaType
 
 private val positionsMediaType =
@@ -153,11 +154,8 @@ public class WebPositionsService(
         val positionsUrl = (positionsLink.url(base = selfLink?.url()) as? AbsoluteUrl)
             ?: return emptyList()
 
-        return httpClient.stream(HttpRequest(positionsUrl))
+        return httpClient.fetchString(HttpRequest(positionsUrl))
             .getOrNull()
-            ?.body
-            ?.readBytes()
-            ?.decodeToString()
             ?.toJsonOrNull()
             ?.optJSONArray("positions")
             ?.mapNotNull { Locator.fromJSON(it as? JSONObject) }

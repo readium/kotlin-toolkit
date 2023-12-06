@@ -33,10 +33,8 @@ import com.google.android.exoplayer2.ext.mediasession.TimelineQueueNavigator
 import com.google.android.exoplayer2.source.DefaultMediaSourceFactory
 import com.google.android.exoplayer2.ui.PlayerNotificationManager
 import com.google.android.exoplayer2.upstream.DataSource
-import com.google.android.exoplayer2.upstream.HttpDataSource
 import com.google.android.exoplayer2.upstream.cache.Cache
 import com.google.android.exoplayer2.upstream.cache.CacheDataSource
-import java.net.UnknownHostException
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
@@ -46,7 +44,6 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import org.readium.r2.navigator.ExperimentalAudiobook
 import org.readium.r2.navigator.R
-import org.readium.r2.navigator.audio.PublicationDataSource
 import org.readium.r2.navigator.extensions.timeWithDuration
 import org.readium.r2.shared.extensions.asInstance
 import org.readium.r2.shared.publication.Link
@@ -54,10 +51,8 @@ import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.PublicationId
 import org.readium.r2.shared.publication.indexOfFirstWithHref
-import org.readium.r2.shared.util.ThrowableError
 import org.readium.r2.shared.util.Url
-import org.readium.r2.shared.util.data.ReadError
-import org.readium.r2.shared.util.http.HttpError
+import org.readium.r2.shared.util.data.ReadException
 import org.readium.r2.shared.util.toUri
 import timber.log.Timber
 
@@ -202,19 +197,14 @@ public class ExoMediaPlayer(
         }
 
         override fun onPlayerError(error: PlaybackException) {
-            var resourceError: ReadError? = error.asInstance<ReadError>()
-            if (resourceError == null && (error.cause as? HttpDataSource.HttpDataSourceException)?.cause is UnknownHostException) {
-                resourceError = ReadError.Access(
-                    HttpError.Unreachable(ThrowableError(error.cause!!))
-                )
-            }
+            val readError = error.asInstance<ReadException>()?.error
 
-            if (resourceError != null) {
+            if (readError != null) {
                 player.currentMediaItem?.mediaId
                     ?.let { Url(it) }
                     ?.let { href -> publication.linkWithHref(href) }
                     ?.let { link ->
-                        listener?.onResourceLoadFailed(link, resourceError)
+                        listener?.onResourceLoadFailed(link, readError)
                     }
             } else {
                 Timber.e(error)

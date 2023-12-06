@@ -7,7 +7,7 @@
 // Everything in this file will be deprecated
 @file:Suppress("DEPRECATION")
 
-package org.readium.r2.navigator.audio
+package org.readium.r2.navigator.media
 
 import android.net.Uri
 import com.google.android.exoplayer2.C.LENGTH_UNSET
@@ -16,7 +16,6 @@ import com.google.android.exoplayer2.upstream.BaseDataSource
 import com.google.android.exoplayer2.upstream.DataSource
 import com.google.android.exoplayer2.upstream.DataSpec
 import com.google.android.exoplayer2.upstream.TransferListener
-import java.io.IOException
 import kotlinx.coroutines.runBlocking
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.util.data.ReadException
@@ -24,18 +23,6 @@ import org.readium.r2.shared.util.getOrThrow
 import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.shared.util.resource.buffered
 import org.readium.r2.shared.util.toUrl
-
-internal sealed class PublicationDataSourceException(message: String, cause: Throwable?) : IOException(
-    message,
-    cause
-) {
-    class NotOpened(message: String) : PublicationDataSourceException(message, null)
-    class NotFound(message: String) : PublicationDataSourceException(message, null)
-    class ReadFailed(uri: Uri, offset: Int, readLength: Int, cause: Throwable) : PublicationDataSourceException(
-        "Failed to read $readLength bytes of URI $uri at offset $offset.",
-        cause
-    )
-}
 
 /**
  * An ExoPlayer's [DataSource] which retrieves resources from a [Publication].
@@ -71,7 +58,7 @@ internal class PublicationDataSource(private val publication: Publication) : Bas
             ?.let { publication.get(it) }
             // Significantly improves performances, in particular with deflated ZIP entries.
             ?.buffered(resourceLength = cachedLengths[dataSpec.uri.toString()])
-            ?: throw PublicationDataSourceException.NotFound(
+            ?: throw IllegalStateException(
                 "Can't find a [Link] for URI: ${dataSpec.uri}. Make sure you only request resources declared in the manifest."
             )
 
@@ -111,42 +98,29 @@ internal class PublicationDataSource(private val publication: Publication) : Bas
             return 0
         }
 
-        val openedResource = openedResource ?: throw PublicationDataSourceException.NotOpened(
-            "No opened resource to read from. Did you call open()?"
+        val openedResource = openedResource
+            ?: throw IllegalStateException("No opened resource to read from. Did you call open()?")
+
+        val data = runBlocking {
+            openedResource.resource
+                .read(range = openedResource.position until (openedResource.position + length))
+                .mapFailure { ReadException(it) }
+                .getOrThrow()
+        }
+
+        if (data.isEmpty()) {
+            return RESULT_END_OF_INPUT
+        }
+
+        data.copyInto(
+            destination = target,
+            destinationOffset = offset,
+            startIndex = 0,
+            endIndex = data.size
         )
 
-        try {
-            val data = runBlocking {
-                openedResource.resource
-                    .read(range = openedResource.position until (openedResource.position + length))
-                    .mapFailure { ReadException(it) }
-                    .getOrThrow()
-            }
-
-            if (data.isEmpty()) {
-                return RESULT_END_OF_INPUT
-            }
-
-            data.copyInto(
-                destination = target,
-                destinationOffset = offset,
-                startIndex = 0,
-                endIndex = data.size
-            )
-
-            openedResource.position += data.count()
-            return data.count()
-        } catch (e: Exception) {
-            if (e is InterruptedException) {
-                return 0
-            }
-            throw PublicationDataSourceException.ReadFailed(
-                uri = openedResource.uri,
-                offset = offset,
-                readLength = length,
-                cause = e
-            )
-        }
+        openedResource.position += data.count()
+        return data.count()
     }
 
     override fun getUri(): Uri? = openedResource?.uri
