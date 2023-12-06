@@ -26,7 +26,7 @@ import org.readium.r2.shared.util.use
  */
 public class MediaTypeRetriever(
     private val mediaTypeSniffer: MediaTypeSniffer,
-    formatRegistry: FormatRegistry,
+    private val formatRegistry: FormatRegistry,
     archiveFactory: ArchiveFactory
 ) {
 
@@ -88,8 +88,12 @@ public class MediaTypeRetriever(
         container: Container<Readable>,
         hints: MediaTypeHints = MediaTypeHints()
     ): Try<MediaType, MediaTypeSnifferError> {
-        simpleResourceMediaTypeRetriever.retrieveSafe(hints)
-            .let { Try.success(it) }
+        val unsafeMediaType = simpleResourceMediaTypeRetriever.retrieveUnsafe(hints)
+            .getOrNull()
+
+        if (unsafeMediaType != null && !formatRegistry.isSuperType(unsafeMediaType)) {
+            return Try.success(unsafeMediaType)
+        }
 
         mediaTypeSniffer.sniffContainer(container)
             .onSuccess { return Try.success(it) }
@@ -100,7 +104,9 @@ public class MediaTypeRetriever(
                 }
             }
 
-        return simpleResourceMediaTypeRetriever.retrieveUnsafe(hints)
+        return (unsafeMediaType ?: hints.mediaTypes.firstOrNull())
+            ?.let { Try.success(it) }
+            ?: Try.failure(MediaTypeSnifferError.NotRecognized)
     }
 
     /**

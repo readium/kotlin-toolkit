@@ -7,7 +7,6 @@
 package org.readium.r2.shared.util.mediatype
 
 import org.readium.r2.shared.util.Try
-import org.readium.r2.shared.util.flatMap
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.shared.util.resource.filename
@@ -21,21 +20,6 @@ internal class SimpleResourceMediaTypeRetriever(
     private val mediaTypeSniffer: MediaTypeSniffer,
     private val formatRegistry: FormatRegistry
 ) {
-
-    /**
-     * Retrieves a canonical [MediaType] for the provided media type [hints].
-     *
-     * Does not recognize media types and file extensions for too generic types.
-     */
-    fun retrieveSafe(hints: MediaTypeHints): Try<MediaType, MediaTypeSnifferError.NotRecognized> =
-        retrieveUnsafe(hints)
-            .flatMap {
-                if (formatRegistry.isSuperType(it)) {
-                    Try.failure(MediaTypeSnifferError.NotRecognized)
-                } else {
-                    Try.success(it)
-                }
-            }
 
     /**
      * Retrieves a [MediaType] as much canonical as possible without accessing the content.
@@ -62,8 +46,12 @@ internal class SimpleResourceMediaTypeRetriever(
                 ?.substringAfterLast(".", "")
         )
 
-        retrieveSafe(embeddedHints + hints)
-            .onSuccess { return Try.success(it) }
+        val unsafeMediaType = retrieveUnsafe(embeddedHints + hints)
+            .getOrNull()
+
+        if (unsafeMediaType != null && !formatRegistry.isSuperType(unsafeMediaType)) {
+            return Try.success(unsafeMediaType)
+        }
 
         mediaTypeSniffer.sniffBlob(resource)
             .onSuccess { return Try.success(it) }
@@ -74,6 +62,8 @@ internal class SimpleResourceMediaTypeRetriever(
                 }
             }
 
-        return retrieveUnsafe(hints)
+        return (unsafeMediaType ?: hints.mediaTypes.firstOrNull())
+            ?.let { Try.success(it) }
+            ?: Try.failure(MediaTypeSnifferError.NotRecognized)
     }
 }
