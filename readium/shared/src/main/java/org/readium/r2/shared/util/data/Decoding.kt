@@ -23,16 +23,17 @@ import org.readium.r2.shared.util.xml.ElementNode
 import org.readium.r2.shared.util.xml.XmlParser
 
 public sealed class DecodeError(
-    override val message: String
+    override val message: String,
+    override val cause: Error
 ) : Error {
 
     public class Reading(
         override val cause: ReadError
-    ) : DecodeError("Reading error")
+    ) : DecodeError("Reading error", cause)
 
     public class Decoding(
-        override val cause: Error?
-    ) : DecodeError("Decoding Error")
+        cause: Error
+    ) : DecodeError("Decoding Error", cause)
 }
 
 internal suspend fun<R, S> Try<S, ReadError>.decode(

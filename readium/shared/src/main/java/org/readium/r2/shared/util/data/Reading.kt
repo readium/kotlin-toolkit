@@ -43,7 +43,7 @@ public typealias ReadTry<SuccessT> = Try<SuccessT, ReadError>
  */
 public sealed class ReadError(
     override val message: String,
-    override val cause: Error? = null
+    override val cause: Error
 ) : Error {
 
     /**
@@ -61,7 +61,7 @@ public sealed class ReadError(
      * For instance, this error can be reported if an ZIP archive looks invalid,
      * a publication doesn't conform to its format, or a JSON resource cannot be decoded.
      */
-    public class Decoding(cause: Error? = null) :
+    public class Decoding(cause: Error) :
         ReadError("An error occurred while attempting to decode the content.", cause) {
 
         public constructor(message: String) : this(DebugError(message))
@@ -84,10 +84,10 @@ public sealed class ReadError(
      * An operation could not be performed at some point.
      *
      * For instance, this error can occur no matter the level of indirection when trying
-     * to read ranges of getting length if any component the data has to pass through
+     * to read ranges or getting length if any component the data has to pass through
      * doesn't support that.
      */
-    public class UnsupportedOperation(cause: Error? = null) :
+    public class UnsupportedOperation(cause: Error) :
         ReadError("Could not proceed because an operation was not supported.", cause) {
 
         public constructor(message: String) : this(DebugError(message))
