@@ -155,18 +155,3 @@ private class ReadableInputStreamAdapter(
             }
         }
 }
-
-/**
- * Returns a new [Readable] accessing the same data but not owning them.
- */
-public fun Readable.borrow(): Readable =
-    BorrowedReadable(this)
-
-private class BorrowedReadable(
-    private val readable: Readable
-) : Readable by readable {
-
-    override suspend fun close() {
-        // Do nothing
-    }
-}

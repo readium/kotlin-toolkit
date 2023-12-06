@@ -71,8 +71,10 @@ class MediaTypeRetrieverTest {
         assertEquals(
             MediaType.READIUM_AUDIOBOOK,
             retriever.retrieve(
-                mediaTypes = listOf("application/audiobook+zip"),
-                fileExtensions = listOf("audiobook")
+                MediaTypeHints(
+                    mediaTypes = listOf("application/audiobook+zip"),
+                    fileExtensions = listOf("audiobook")
+                )
             )
         )
     }
@@ -496,18 +498,22 @@ class MediaTypeRetrieverTest {
         assertEquals(
             xlsx,
             retriever.retrieve(
-                mediaTypes = emptyList(),
-                fileExtensions = listOf("foobar", "xlsx")
+                MediaTypeHints(
+                    mediaTypes = emptyList(),
+                    fileExtensions = listOf("foobar", "xlsx")
+                )
             )
         )
         assertEquals(
             xlsx,
             retriever.retrieve(
-                mediaTypes = listOf(
-                    "applicaton/foobar",
-                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-                ),
-                fileExtensions = emptyList()
+                MediaTypeHints(
+                    mediaTypes = listOf(
+                        "applicaton/foobar",
+                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                    ),
+                    fileExtensions = emptyList()
+                )
             )
         )
     }

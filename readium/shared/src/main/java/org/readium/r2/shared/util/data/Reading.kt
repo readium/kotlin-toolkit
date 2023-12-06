@@ -10,8 +10,33 @@ import java.io.IOException
 import org.readium.r2.shared.util.DebugError
 import org.readium.r2.shared.util.Error
 import org.readium.r2.shared.util.ErrorException
+import org.readium.r2.shared.util.SuspendingCloseable
 import org.readium.r2.shared.util.ThrowableError
 import org.readium.r2.shared.util.Try
+
+/**
+ * Acts as a proxy to an actual data source by handling read access.
+ */
+public interface Readable : SuspendingCloseable {
+
+    /**
+     * Returns data length from metadata if available, or calculated from reading the bytes otherwise.
+     *
+     * This value must be treated as a hint, as it might not reflect the actual bytes length. To get
+     * the real length, you need to read the whole resource.
+     */
+    public suspend fun length(): Try<Long, ReadError>
+
+    /**
+     * Reads the bytes at the given range.
+     *
+     * When [range] is null, the whole content is returned. Out-of-range indexes are clamped to the
+     * available length automatically.
+     */
+    public suspend fun read(range: LongRange? = null): Try<ByteArray, ReadError>
+}
+
+public typealias ReadTry<SuccessT> = Try<SuccessT, ReadError>
 
 /**
  * Errors occurring while reading a resource.
@@ -61,4 +86,17 @@ public class ReadException(
     public val error: ReadError
 ) : IOException(error.message, ErrorException(error))
 
-public typealias ReadTry<SuccessT> = Try<SuccessT, ReadError>
+/**
+ * Returns a new [Readable] accessing the same data but not owning them.
+ */
+public fun Readable.borrow(): Readable =
+    BorrowedReadable(this)
+
+private class BorrowedReadable(
+    private val readable: Readable
+) : Readable by readable {
+
+    override suspend fun close() {
+        // Do nothing
+    }
+}

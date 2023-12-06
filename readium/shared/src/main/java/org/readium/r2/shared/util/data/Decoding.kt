@@ -75,9 +75,6 @@ internal suspend fun<R, S> Try<S, DecodeError>.decodeMap(
 
 /**
  * Content as plain text.
- *
- * It will extract the charset parameter from the media type hints to figure out an encoding.
- * Otherwise, fallback on UTF-8.
  */
 public suspend fun Readable.readAsString(
     charset: Charset = Charsets.UTF_8

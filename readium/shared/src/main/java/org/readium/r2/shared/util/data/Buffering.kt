@@ -12,6 +12,28 @@ import org.readium.r2.shared.extensions.requireLengthFitInt
 import org.readium.r2.shared.util.Try
 
 /**
+ * Wraps this resource into a buffer to improve reading performances.
+ *
+ * Expensive interaction with the underlying resource is minimized, since most (smaller) requests
+ * can be satisfied by accessing the buffer alone. The drawback is that some extra space is required
+ * to hold the buffer and that copying takes place when filling that buffer, but this is usually
+ * outweighed by the performance benefits.
+ *
+ * Note that this implementation is pretty limited and the benefits are only apparent when reading
+ * forward and consecutively – e.g. when downloading the resource by chunks. The buffer is ignored
+ * when reading backward or far ahead.
+ *
+ * @param contentLength The total length of the resource, when known. This can improve performance
+ *        by avoiding requesting the length from the underlying resource.
+ * @param size Size of the buffer chunks to read.
+ */
+public fun Readable.buffered(
+    contentLength: Long? = null,
+    size: Int = DEFAULT_BUFFER_SIZE
+): Readable =
+    ReadableBuffer(source = this, contentLength = contentLength, bufferSize = size)
+
+/**
  * Wraps a [Readable] and buffers its content.
  *
  * @param source Underlying readable which will be buffered.
@@ -131,25 +153,3 @@ internal class ReadableBuffer internal constructor(
     private fun Long.ceilMultipleOf(divisor: Long) =
         divisor * (this / divisor + if (this % divisor == 0L) 0 else 1)
 }
-
-/**
- * Wraps this resource into a buffer to improve reading performances.
- *
- * Expensive interaction with the underlying resource is minimized, since most (smaller) requests
- * can be satisfied by accessing the buffer alone. The drawback is that some extra space is required
- * to hold the buffer and that copying takes place when filling that buffer, but this is usually
- * outweighed by the performance benefits.
- *
- * Note that this implementation is pretty limited and the benefits are only apparent when reading
- * forward and consecutively – e.g. when downloading the resource by chunks. The buffer is ignored
- * when reading backward or far ahead.
- *
- * @param contentLength The total length of the resource, when known. This can improve performance
- *        by avoiding requesting the length from the underlying resource.
- * @param size Size of the buffer chunks to read.
- */
-public fun Readable.buffered(
-    contentLength: Long? = null,
-    size: Int = DEFAULT_BUFFER_SIZE
-): Readable =
-    ReadableBuffer(source = this, contentLength = contentLength, bufferSize = size)
