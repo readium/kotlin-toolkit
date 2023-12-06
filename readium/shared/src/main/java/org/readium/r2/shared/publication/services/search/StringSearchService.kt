@@ -299,12 +299,12 @@ public class StringSearchService(
             val collator = Collator.getInstance(locale) as RuleBasedCollator
             if (!diacriticSensitive) {
                 collator.strength = Collator.PRIMARY
-                if (caseSensitive) {
-                    // FIXME: This doesn't seem to work despite the documentation indicating:
-                    // > To ignore accents but take cases into account, set strength to primary and case level to on.
-                    // > http://userguide.icu-project.org/collation/customization
-                    collator.isCaseLevel = true
-                }
+                // if (caseSensitive) {
+                // FIXME: This doesn't seem to work despite the documentation indicating:
+                // > To ignore accents but take cases into account, set strength to primary and case level to on.
+                // > http://userguide.icu-project.org/collation/customization
+                // collator.isCaseLevel = true
+                // }
             } else if (!caseSensitive) {
                 collator.strength = Collator.SECONDARY
             }

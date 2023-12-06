@@ -22,11 +22,10 @@ import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.checkSuccess
 import org.readium.r2.shared.util.data.Container
 import org.readium.r2.shared.util.file.DirectoryContainer
-import org.readium.r2.shared.util.file.FileResource
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.use
+import org.readium.r2.shared.util.zip.FileZipArchiveProvider
 import org.readium.r2.shared.util.zip.StreamingZipArchiveProvider
-import org.readium.r2.shared.util.zip.ZipArchiveFactory
 import org.robolectric.ParameterizedRobolectricTestRunner
 
 @RunWith(ParameterizedRobolectricTestRunner::class)
@@ -42,10 +41,10 @@ class ZipContainerTest(val sut: suspend () -> Container<Resource>) {
 
             val zipArchive = suspend {
                 assertNotNull(
-                    ZipArchiveFactory()
+                    FileZipArchiveProvider()
                         .create(
                             mediaType = MediaType.ZIP,
-                            FileResource(File(epubZip.path))
+                            file = File(epubZip.path)
                         )
                         .getOrNull()
                 )
@@ -124,6 +123,7 @@ class ZipContainerTest(val sut: suspend () -> Container<Resource>) {
         }
     }
 
+    @Suppress("EmptyRange")
     @Test
     fun `Decreasing ranges are understood as empty ones`(): Unit = runBlocking {
         sut().use { container ->
