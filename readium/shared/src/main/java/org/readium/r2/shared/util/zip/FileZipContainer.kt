@@ -39,7 +39,7 @@ internal class FileZipContainer(
     private inner class Entry(private val url: Url, private val entry: ZipEntry) :
         Resource {
 
-        override val source: AbsoluteUrl? = null
+        override val sourceUrl: AbsoluteUrl? = null
 
         override suspend fun properties(): Try<Resource.Properties, ReadError> =
             Try.success(
@@ -129,7 +129,7 @@ internal class FileZipContainer(
 
     override val archiveMediaType: MediaType = MediaType.ZIP
 
-    override val source: AbsoluteUrl = file.toUrl()
+    override val sourceUrl: AbsoluteUrl = file.toUrl()
 
     override val entries: Set<Url> =
         tryOrLog { archive.entries().toList() }

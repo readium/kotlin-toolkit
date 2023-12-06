@@ -66,8 +66,8 @@ internal fun createLicenseContainer(
     }
 
     return when {
-        resource.source?.isFile == true ->
-            LcplLicenseContainer(resource.source!!.toFile()!!)
+        resource.sourceUrl?.isFile == true ->
+            LcplLicenseContainer(resource.sourceUrl!!.toFile()!!)
         else ->
             LcplResourceLicenseContainer(resource)
     }
@@ -85,9 +85,9 @@ internal fun createLicenseContainer(
     }
 
     return when {
-        container.source?.isFile == true ->
-            FileZipLicenseContainer(container.source!!.path!!, licensePath)
-        container.source?.isContent == true ->
+        container.sourceUrl?.isFile == true ->
+            FileZipLicenseContainer(container.sourceUrl!!.path!!, licensePath)
+        container.sourceUrl?.isContent == true ->
             ContentZipLicenseContainer(context, container, licensePath)
         else ->
             ContainerLicenseContainer(container, licensePath)

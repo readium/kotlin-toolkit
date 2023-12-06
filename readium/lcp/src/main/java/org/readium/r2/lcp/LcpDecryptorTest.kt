@@ -150,7 +150,7 @@ internal suspend fun Resource.readByChunks(
             Timber.d("block index ${it.first}: ${it.second}")
             val decryptedBytes = read(it.second).getOrElse { error ->
                 throw IllegalStateException(
-                    "unable to decrypt chunk ${it.second} from $source",
+                    "unable to decrypt chunk ${it.second} from $sourceUrl",
                     ErrorException(error)
                 )
             }
@@ -160,7 +160,7 @@ internal suspend fun Resource.readByChunks(
                 Timber.d(
                     "expected length: ${groundTruth.sliceArray(it.second.map(Long::toInt)).size}"
                 )
-                "decrypted chunk ${it.first}: ${it.second} seems to be wrong in $source"
+                "decrypted chunk ${it.first}: ${it.second} seems to be wrong in $sourceUrl"
             }
             Pair(it.first, decryptedBytes)
         }

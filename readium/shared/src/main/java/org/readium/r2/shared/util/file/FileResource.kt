@@ -54,7 +54,7 @@ public class FileResource(
                 }
         )
 
-    override val source: AbsoluteUrl = file.toUrl()
+    override val sourceUrl: AbsoluteUrl = file.toUrl()
 
     public override suspend fun properties(): Try<Resource.Properties, ReadError> {
         return Try.success(properties)

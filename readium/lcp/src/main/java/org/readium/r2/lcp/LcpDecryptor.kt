@@ -191,7 +191,7 @@ internal class LcpDecryptor(
                     return Try.failure(
                         ReadError.Decoding(
                             DebugError(
-                                "Can't decrypt the content for resource with key: ${resource.source}",
+                                "Can't decrypt the content for resource with key: ${resource.sourceUrl}",
                                 it
                             )
                         )

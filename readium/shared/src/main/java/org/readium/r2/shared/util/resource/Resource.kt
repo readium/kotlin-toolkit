@@ -20,7 +20,7 @@ public interface Resource : Readable {
     /**
      * URL locating this resource, if any.
      */
-    public val source: AbsoluteUrl?
+    public val sourceUrl: AbsoluteUrl?
 
     /**
      * Properties associated to the resource.
@@ -51,7 +51,7 @@ public class FailureResource(
     private val error: ReadError
 ) : Resource {
 
-    override val source: AbsoluteUrl? = null
+    override val sourceUrl: AbsoluteUrl? = null
     override suspend fun properties(): Try<Resource.Properties, ReadError> = Try.failure(error)
     override suspend fun length(): Try<Long, ReadError> = Try.failure(error)
     override suspend fun read(range: LongRange?): Try<ByteArray, ReadError> = Try.failure(error)
@@ -61,6 +61,12 @@ public class FailureResource(
         "${javaClass.simpleName}($error)"
 }
 
+/**
+ * Returns a new [Resource] accessing the same data but not owning them.
+ */
+public fun Resource.borrow(): Resource =
+    BorrowedResource(this)
+
 private class BorrowedResource(
     private val resource: Resource
 ) : Resource by resource {
@@ -69,12 +75,6 @@ private class BorrowedResource(
         // Do nothing
     }
 }
-
-/**
- * Returns a new [Resource] accessing the same data but not owning them.
- */
-public fun Resource.borrow(): Resource =
-    BorrowedResource(this)
 
 @Deprecated(
     "Catch exceptions yourself to the most suitable ReadError.",

@@ -47,7 +47,7 @@ public abstract class TransformingResource(
             }
     }
 
-    override val source: AbsoluteUrl? = null
+    override val sourceUrl: AbsoluteUrl? = null
 
     private lateinit var _bytes: Try<ByteArray, ReadError>
 

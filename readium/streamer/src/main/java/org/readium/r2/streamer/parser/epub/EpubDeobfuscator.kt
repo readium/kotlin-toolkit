@@ -27,7 +27,7 @@ internal class EpubDeobfuscator(
     @Suppress("Unused_parameter")
     fun transform(url: Url, resource: Resource): Resource =
         resource.flatMap {
-            val algorithm = resource.source?.let(retrieveEncryption)?.algorithm
+            val algorithm = resource.sourceUrl?.let(retrieveEncryption)?.algorithm
             if (algorithm != null && algorithm2length.containsKey(algorithm)) {
                 DeobfuscatingResource(resource, algorithm)
             } else {

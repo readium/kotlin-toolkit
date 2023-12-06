@@ -24,7 +24,7 @@ public interface Container<out E : Readable> : Iterable<Url>, SuspendingCloseabl
     /**
      * Direct source to this container, when available.
      */
-    public val source: AbsoluteUrl? get() = null
+    public val sourceUrl: AbsoluteUrl? get() = null
 
     /**
      * List of all the container entries.

@@ -199,9 +199,9 @@ public class PublicationFactory(
         val parserAsset = parserAssetFactory.createParserAsset(asset)
             .mapFailure {
                 when (it) {
-                    is ParserAssetFactory.Error.ReadError ->
+                    is ParserAssetFactory.CreateError.Reading ->
                         OpenError.Reading(it.cause)
-                    is ParserAssetFactory.Error.UnsupportedAsset ->
+                    is ParserAssetFactory.CreateError.FormatNotSupported ->
                         OpenError.FormatNotSupported(it.cause)
                 }
             }

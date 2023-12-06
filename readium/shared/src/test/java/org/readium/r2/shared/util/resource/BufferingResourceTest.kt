@@ -17,7 +17,7 @@ class BufferingResourceTest {
 
     @Test
     fun `get file`() {
-        assertEquals(file, sut().source?.toFile())
+        assertEquals(file, sut().sourceUrl?.toFile())
     }
 
     @Test

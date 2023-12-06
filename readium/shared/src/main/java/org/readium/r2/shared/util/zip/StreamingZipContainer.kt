@@ -32,7 +32,7 @@ import org.readium.r2.shared.util.zip.compress.archivers.zip.ZipFile
 
 internal class StreamingZipContainer(
     private val zipFile: ZipFile,
-    override val source: AbsoluteUrl?
+    override val sourceUrl: AbsoluteUrl?
 ) : Container<Resource> {
 
     private inner class Entry(
@@ -40,7 +40,7 @@ internal class StreamingZipContainer(
         private val entry: ZipArchiveEntry
     ) : Resource {
 
-        override val source: AbsoluteUrl? get() = null
+        override val sourceUrl: AbsoluteUrl? get() = null
 
         override suspend fun properties(): ReadTry<Resource.Properties> =
             Try.success(

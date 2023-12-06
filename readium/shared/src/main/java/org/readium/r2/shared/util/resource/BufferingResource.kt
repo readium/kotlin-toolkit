@@ -45,10 +45,10 @@ public class BufferingResource(
  *
  * @param resourceLength The total length of the resource, when known. This can improve performance
  *        by avoiding requesting the length from the underlying resource.
- * @param size Size of the buffer chunks to read.
+ * @param bufferSize Size of the buffer chunks to read.
  */
 public fun Resource.buffered(
     resourceLength: Long? = null,
-    size: Int = DEFAULT_BUFFER_SIZE
+    bufferSize: Int = DEFAULT_BUFFER_SIZE
 ): BufferingResource =
-    BufferingResource(resource = this, resourceLength = resourceLength, bufferSize = size)
+    BufferingResource(resource = this, resourceLength = resourceLength, bufferSize = bufferSize)

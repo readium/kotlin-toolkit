@@ -14,7 +14,7 @@ import org.readium.r2.shared.util.data.ReadError
  * Wraps a [Resource] which will be created only when first accessing one of its members.
  */
 public open class LazyResource(
-    override val source: AbsoluteUrl? = null,
+    override val sourceUrl: AbsoluteUrl? = null,
     private val factory: suspend () -> Resource
 ) : Resource {
 

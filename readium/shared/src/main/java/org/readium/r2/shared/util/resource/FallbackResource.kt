@@ -18,7 +18,7 @@ public class FallbackResource(
     private val fallbackResourceFactory: (ReadError) -> Resource?
 ) : Resource {
 
-    override val source: AbsoluteUrl? = null
+    override val sourceUrl: AbsoluteUrl? = null
 
     override suspend fun properties(): Try<Resource.Properties, ReadError> =
         withResource { properties() }

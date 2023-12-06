@@ -26,7 +26,7 @@ import org.readium.r2.shared.util.resource.mediaType
 /** Provides access to an external URL through HTTP. */
 @OptIn(ExperimentalReadiumApi::class)
 public class HttpResource(
-    override val source: AbsoluteUrl,
+    override val sourceUrl: AbsoluteUrl,
     private val client: HttpClient,
     private val maxSkipBytes: Long = MAX_SKIP_BYTES
 ) : Resource {
@@ -51,7 +51,7 @@ public class HttpResource(
                 Try.failure(
                     ReadError.UnsupportedOperation(
                         DebugError(
-                            "Server did not provide content length in its response to request to $source."
+                            "Server did not provide content length in its response to request to $sourceUrl."
                         )
                     )
                 )
@@ -84,7 +84,7 @@ public class HttpResource(
             return _headResponse
         }
 
-        _headResponse = client.head(HttpRequest(source))
+        _headResponse = client.head(HttpRequest(sourceUrl))
             .mapFailure { ReadError.Access(it) }
 
         return _headResponse
@@ -109,7 +109,7 @@ public class HttpResource(
         }
         tryOrLog { inputStream?.close() }
 
-        val request = HttpRequest(source) {
+        val request = HttpRequest(sourceUrl) {
             from?.let { setRange(from..-1) }
         }
 
@@ -118,7 +118,7 @@ public class HttpResource(
             .flatMap { response ->
                 if (from != null && response.response.statusCode.code != 206) {
                     val error = DebugError(
-                        "Server seems not to support range requests to $source."
+                        "Server seems not to support range requests to $sourceUrl."
                     )
                     Try.failure(ReadError.UnsupportedOperation(error))
                 } else {

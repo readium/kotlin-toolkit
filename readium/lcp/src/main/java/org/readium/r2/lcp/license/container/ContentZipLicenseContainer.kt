@@ -29,7 +29,7 @@ internal class ContentZipLicenseContainer(
 ) : LicenseContainer by ContainerLicenseContainer(container, pathInZip), WritableLicenseContainer {
 
     private val zipUri: Uri =
-        requireNotNull(container.source).toUri()
+        requireNotNull(container.sourceUrl).toUri()
 
     private val contentResolver: ContentResolver =
         context.contentResolver

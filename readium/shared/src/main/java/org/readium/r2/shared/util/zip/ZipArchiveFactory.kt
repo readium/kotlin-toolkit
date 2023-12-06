@@ -23,7 +23,7 @@ public class ZipArchiveFactory : ArchiveFactory {
         mediaType: MediaType,
         source: Readable
     ): Try<Container<Resource>, ArchiveFactory.Error> =
-        (source as? Resource)?.source?.toFile()
+        (source as? Resource)?.sourceUrl?.toFile()
             ?.let { fileZipArchiveProvider.create(mediaType, it) }
             ?: streamingZipArchiveProvider.create(mediaType, source)
 }

@@ -9,6 +9,7 @@ package org.readium.r2.streamer
 import org.readium.r2.shared.extensions.addPrefix
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.DebugError
+import org.readium.r2.shared.util.Error
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.asset.Asset
@@ -32,23 +33,23 @@ internal class ParserAssetFactory(
     private val formatRegistry: FormatRegistry
 ) {
 
-    sealed class Error(
+    sealed class CreateError(
         override val message: String,
-        override val cause: org.readium.r2.shared.util.Error?
-    ) : org.readium.r2.shared.util.Error {
+        override val cause: Error?
+    ) : Error {
 
-        class ReadError(
-            override val cause: org.readium.r2.shared.util.data.ReadError
-        ) : Error("An error occurred while trying to read asset.", cause)
+        class Reading(
+            override val cause: ReadError
+        ) : CreateError("An error occurred while trying to read asset.", cause)
 
-        class UnsupportedAsset(
-            override val cause: org.readium.r2.shared.util.Error?
-        ) : Error("Asset is not supported.", cause)
+        class FormatNotSupported(
+            override val cause: Error?
+        ) : CreateError("Asset is not supported.", cause)
     }
 
     suspend fun createParserAsset(
         asset: Asset
-    ): Try<PublicationParser.Asset, Error> {
+    ): Try<PublicationParser.Asset, CreateError> {
         return when (asset) {
             is ContainerAsset ->
                 createParserAssetForContainer(asset)
@@ -59,7 +60,7 @@ internal class ParserAssetFactory(
 
     private fun createParserAssetForContainer(
         asset: ContainerAsset
-    ): Try<PublicationParser.Asset, Error> =
+    ): Try<PublicationParser.Asset, CreateError> =
         Try.success(
             PublicationParser.Asset(
                 mediaType = asset.mediaType,
@@ -69,7 +70,7 @@ internal class ParserAssetFactory(
 
     private suspend fun createParserAssetForResource(
         asset: ResourceAsset
-    ): Try<PublicationParser.Asset, Error> =
+    ): Try<PublicationParser.Asset, CreateError> =
         if (asset.mediaType.isRwpm) {
             createParserAssetForManifest(asset)
         } else {
@@ -78,7 +79,7 @@ internal class ParserAssetFactory(
 
     private suspend fun createParserAssetForManifest(
         asset: ResourceAsset
-    ): Try<PublicationParser.Asset, Error> {
+    ): Try<PublicationParser.Asset, CreateError> {
         val manifest = asset.resource.readAsRwpm()
             .mapFailure {
                 when (it) {
@@ -86,22 +87,22 @@ internal class ParserAssetFactory(
                     is DecodeError.Reading -> it.cause
                 }
             }
-            .getOrElse { return Try.failure(Error.ReadError(it)) }
+            .getOrElse { return Try.failure(CreateError.Reading(it)) }
 
         val baseUrl = manifest.linkWithRel("self")?.href?.resolve()
         if (baseUrl == null) {
-            Timber.w("No self link found in the manifest at ${asset.resource.source}")
+            Timber.w("No self link found in the manifest at ${asset.resource.sourceUrl}")
         } else {
             if (baseUrl !is AbsoluteUrl) {
                 return Try.failure(
-                    Error.ReadError(
+                    CreateError.Reading(
                         ReadError.Decoding("Self link is not absolute.")
                     )
                 )
             }
             if (!baseUrl.isHttp) {
                 return Try.failure(
-                    Error.UnsupportedAsset(
+                    CreateError.FormatNotSupported(
                         DebugError("Self link doesn't use the HTTP(S) scheme.")
                     )
                 )
@@ -131,7 +132,7 @@ internal class ParserAssetFactory(
 
     private fun createParserAssetForContent(
         asset: ResourceAsset
-    ): Try<PublicationParser.Asset, Error> {
+    ): Try<PublicationParser.Asset, CreateError> {
         // Historically, the reading order of a standalone file contained a single link with the
         // HREF "/$assetName". This was fragile if the asset named changed, or was different on
         // other devices. To avoid this, we now use a single link with the HREF

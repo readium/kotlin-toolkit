@@ -502,7 +502,7 @@ class EpubPositionsServiceTest {
 
                 return object : Resource {
 
-                    override val source: AbsoluteUrl? = null
+                    override val sourceUrl: AbsoluteUrl? = null
 
                     override suspend fun properties(): ReadTry<Resource.Properties> =
                         Try.success(item.resourceProperties)

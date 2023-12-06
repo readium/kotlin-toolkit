@@ -16,7 +16,7 @@ import org.readium.r2.shared.util.data.ReadError
 
 /** Creates a [Resource] serving a [ByteArray]. */
 public class InMemoryResource(
-    override val source: AbsoluteUrl?,
+    override val sourceUrl: AbsoluteUrl?,
     private val properties: Resource.Properties,
     private val bytes: suspend () -> Try<ByteArray, ReadError>
 ) : Resource {
@@ -25,7 +25,7 @@ public class InMemoryResource(
         bytes: ByteArray,
         source: AbsoluteUrl? = null,
         properties: Resource.Properties = Resource.Properties()
-    ) : this(source = source, properties = properties, { Try.success(bytes) })
+    ) : this(sourceUrl = source, properties = properties, { Try.success(bytes) })
 
     private lateinit var _bytes: Try<ByteArray, ReadError>
 

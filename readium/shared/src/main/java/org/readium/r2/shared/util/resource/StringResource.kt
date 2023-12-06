@@ -28,9 +28,6 @@ public class StringResource private constructor(
         properties: Resource.Properties = Resource.Properties()
     ) : this(source, properties, { Try.success(string) })
 
-    override val source: AbsoluteUrl? =
-        null
-
     override fun toString(): String =
         "${javaClass.simpleName}(${runBlocking { read().map { it.decodeToString() } } }})"
 }

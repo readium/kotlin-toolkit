@@ -21,7 +21,7 @@ import org.readium.r2.shared.util.zip.jvm.ClosedChannelException
 import org.readium.r2.shared.util.zip.jvm.NonWritableChannelException
 import org.readium.r2.shared.util.zip.jvm.SeekableByteChannel
 
-internal class ReadableChannel(
+internal class ReadableChannelAdapter(
     private val readable: Readable,
     private val wrapError: (ReadError) -> IOException
 ) : SeekableByteChannel {

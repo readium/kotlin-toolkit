@@ -25,13 +25,13 @@ import org.readium.r2.shared.util.Try
  *
  * @param contentLength The total length of the resource, when known. This can improve performance
  *        by avoiding requesting the length from the underlying resource.
- * @param size Size of the buffer chunks to read.
+ * @param bufferSize Size of the buffer chunks to read.
  */
 public fun Readable.buffered(
     contentLength: Long? = null,
-    size: Int = DEFAULT_BUFFER_SIZE
+    bufferSize: Int = DEFAULT_BUFFER_SIZE
 ): Readable =
-    ReadableBuffer(source = this, contentLength = contentLength, bufferSize = size)
+    ReadableBuffer(source = this, contentLength = contentLength, bufferSize = bufferSize)
 
 /**
  * Wraps a [Readable] and buffers its content.

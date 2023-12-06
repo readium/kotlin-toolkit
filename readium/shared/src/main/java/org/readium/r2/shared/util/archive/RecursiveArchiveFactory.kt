@@ -15,7 +15,7 @@ import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.shared.util.tryRecover
 
 /**
- * Extends an [ArchiveFactory] to accept media types that [formatRegistry] claims to be
+ * Decorates an [ArchiveFactory] to accept media types that [formatRegistry] claims to be
  * subtypes of the one given in [create].
  */
 internal class RecursiveArchiveFactory(
