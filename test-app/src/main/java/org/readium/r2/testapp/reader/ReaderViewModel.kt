@@ -221,11 +221,12 @@ class ReaderViewModel(
         lastSearchQuery = query
         _searchLocators.value = emptyList()
         searchIterator = publication.search(query)
-            .onFailure {
-                Timber.e(it.toDebugDescription())
-                activityChannel.send(ActivityCommand.ToastError(SearchUserError(it)))
+            ?: run {
+                activityChannel.send(
+                    ActivityCommand.ToastError(SearchUserError.PublicationNotSearchable)
+                )
+                null
             }
-            .getOrNull()
         pagingSourceFactory.invalidate()
         searchChannel.send(SearchCommand.StartNewSearch)
     }

@@ -22,19 +22,10 @@ sealed class SearchUserError(
     object PublicationNotSearchable :
         SearchUserError(R.string.search_error_not_searchable)
 
-    class BadQuery(val error: Error) :
-        SearchUserError(R.string.search_error_not_searchable)
-
-    class ResourceError(val error: Error) :
+    class Reading(val error: Error) :
         SearchUserError(R.string.search_error_other)
 
-    class NetworkError(val error: Error) :
-        SearchUserError(R.string.search_error_other)
-
-    object Cancelled :
-        SearchUserError(R.string.search_error_cancelled)
-
-    class Other(val error: Error) :
+    class Engine(val error: Error) :
         SearchUserError(R.string.search_error_other)
 
     companion object {
@@ -42,23 +33,10 @@ sealed class SearchUserError(
         @OptIn(ExperimentalReadiumApi::class)
         operator fun invoke(error: SearchError): SearchUserError =
             when (error) {
-                is SearchError.BadQuery ->
-                    BadQuery(error)
-
-                SearchError.Cancelled ->
-                    Cancelled
-
-                is SearchError.NetworkError ->
-                    NetworkError(error)
-
-                is SearchError.Other ->
-                    Other(error)
-
-                SearchError.PublicationNotSearchable ->
-                    PublicationNotSearchable
-
-                is SearchError.ResourceError ->
-                    ResourceError(error)
+                is SearchError.Reading ->
+                    Reading(error)
+                is SearchError.Engine ->
+                    Engine(error)
             }
     }
 }

@@ -15,7 +15,7 @@ import org.readium.r2.shared.publication.ServiceFactory
 import org.readium.r2.shared.util.Error
 import org.readium.r2.shared.util.SuspendingCloseable
 import org.readium.r2.shared.util.Try
-import org.readium.r2.shared.util.http.HttpError
+import org.readium.r2.shared.util.data.ReadError
 
 @ExperimentalReadiumApi
 public typealias SearchTry<SuccessT> = Try<SuccessT, SearchError>
@@ -30,42 +30,18 @@ public sealed class SearchError(
 ) : Error {
 
     /**
-     * The publication is not searchable.
-     */
-    public object PublicationNotSearchable :
-        SearchError("This publication is not searchable.")
-
-    /**
-     * The provided search query cannot be handled by the service.
-     */
-    public class BadQuery(cause: Error) :
-        SearchError("The provided search query cannot be handled by the service.", cause)
-
-    /**
      * An error occurred while accessing one of the publication's resources.
      */
-    public class ResourceError(cause: Error) :
+    public class Reading(override val cause: ReadError) :
         SearchError(
             "An error occurred while accessing one of the publication's resources.",
             cause
         )
 
     /**
-     * An error occurred while performing an HTTP request.
-     */
-    public class NetworkError(cause: HttpError) :
-        SearchError("An error occurred while performing an HTTP request.", cause)
-
-    /**
-     * The search was cancelled by the caller.
-     *
-     * For example, when a coroutine or a network request is cancelled.
-     */
-    public object Cancelled :
-        SearchError("The search was cancelled.")
-
-    /** For any other custom service error. */
-    public class Other(cause: Error) :
+     * An error occurring in the search engine.
+     * */
+    public class Engine(cause: Error) :
         SearchError("An error occurred while searching.", cause)
 }
 
@@ -119,7 +95,7 @@ public interface SearchService : Publication.Service {
      *
      * If an option is nil when calling search(), its value is assumed to be the default one.
      */
-    public suspend fun search(query: String, options: Options? = null): SearchTry<SearchIterator>
+    public suspend fun search(query: String, options: Options? = null): SearchIterator
 }
 
 /**
@@ -141,11 +117,12 @@ public val Publication.searchOptions: SearchService.Options get() =
  *
  * If an option is nil when calling [search], its value is assumed to be the default one for the
  * search service.
+ *
+ * Returns null if the publication is not searchable.
  */
 @ExperimentalReadiumApi
-public suspend fun Publication.search(query: String, options: SearchService.Options? = null): SearchTry<SearchIterator> =
+public suspend fun Publication.search(query: String, options: SearchService.Options? = null): SearchIterator? =
     findService(SearchService::class)?.search(query, options)
-        ?: Try.failure(SearchError.PublicationNotSearchable)
 
 /** Factory to build a [SearchService] */
 @ExperimentalReadiumApi

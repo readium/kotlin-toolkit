@@ -14,6 +14,7 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import java.text.StringCharacterIterator
 import java.util.*
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.ExperimentalReadiumApi
@@ -76,20 +77,14 @@ public class StringSearchService(
     override val options: Options = searchAlgorithm.options
         .copy(language = locale.toLanguageTag())
 
-    override suspend fun search(query: String, options: Options?): SearchTry<SearchIterator> =
-        try {
-            Try.success(
-                Iterator(
-                    manifest = manifest,
-                    container = container,
-                    query = query,
-                    options = options ?: Options(),
-                    locale = options?.language?.let { Locale.forLanguageTag(it) } ?: locale
-                )
-            )
-        } catch (e: Exception) {
-            Try.failure(SearchError.Other(ThrowableError(e)))
-        }
+    override suspend fun search(query: String, options: Options?): SearchIterator =
+        Iterator(
+            manifest = manifest,
+            container = container,
+            query = query,
+            options = options ?: Options(),
+            locale = options?.language?.let { Locale.forLanguageTag(it) } ?: locale
+        )
 
     private inner class Iterator(
         val manifest: Manifest,
@@ -120,7 +115,7 @@ public class StringSearchService(
                 val text =
                     container[link.url()]
                         ?.let { extractorFactory.createExtractor(it, mediaType)?.extractText(it) }
-                        ?.getOrElse { return Try.failure(SearchError.ResourceError(it)) }
+                        ?.getOrElse { return Try.failure(SearchError.Reading(it)) }
 
                 if (text == null) {
                     Timber.w("Cannot extract text from resource: ${link.href}")
@@ -137,8 +132,12 @@ public class StringSearchService(
                 }
 
                 return Try.success(LocatorCollection(locators = locators))
+            } catch (
+                e: CancellationException
+            ) {
+                throw e
             } catch (e: Exception) {
-                return Try.failure(SearchError.Other(ThrowableError(e)))
+                return Try.failure(SearchError.Engine(ThrowableError(e)))
             }
         }
 
