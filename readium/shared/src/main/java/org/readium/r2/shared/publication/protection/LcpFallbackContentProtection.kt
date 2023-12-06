@@ -99,7 +99,7 @@ public class LcpFallbackContentProtection : ContentProtection {
             ?.getOrElse {
                 when (it) {
                     is DecodeError.Reading ->
-                        return Try.failure(ReadError.Decoding(it))
+                        return Try.failure(it.cause)
                     is DecodeError.Decoding ->
                         return Try.success(false)
                 }
@@ -114,13 +114,12 @@ public class LcpFallbackContentProtection : ContentProtection {
     }
 
     private suspend fun hasLcpSchemeInEncryptionXml(container: Container<Resource>): Try<Boolean, ReadError> {
-        val encryptionXml = container
-            .get(Url("META-INF/encryption.xml")!!)
+        val encryptionXml = container[Url("META-INF/encryption.xml")!!]
             ?.readAsXml()
             ?.getOrElse {
                 when (it) {
                     is DecodeError.Reading ->
-                        return Try.failure(ReadError.Decoding(it.cause.cause))
+                        return Try.failure(it.cause)
                     is DecodeError.Decoding ->
                         return Try.failure(ReadError.Decoding(it.cause))
                 }
