@@ -46,9 +46,21 @@ public sealed class ReadError(
     override val cause: Error? = null
 ) : Error {
 
+    /**
+     * An error occurred while trying to access the content.
+     *
+     * At the moment, [AccessError]s constructed by the toolkit can be either a FileSystemError,
+     * a ContentResolverError or an HttpError.
+     */
     public class Access(public override val cause: AccessError) :
         ReadError("An error occurred while attempting to access data.", cause)
 
+    /**
+     * Content doesn't match what was expected and cannot be interpreted.
+     *
+     * For instance, this error can be reported if an ZIP archive looks invalid,
+     * a publication doesn't conform to its format, or a JSON resource cannot be decoded.
+     */
     public class Decoding(cause: Error? = null) :
         ReadError("An error occurred while attempting to decode the content.", cause) {
 
@@ -56,12 +68,25 @@ public sealed class ReadError(
         public constructor(exception: Exception) : this(ThrowableError(exception))
     }
 
+    /**
+     * Content could not be successfully read because there is not enough memory available.
+     *
+     * This error can be produced while trying to put the content into memory or while
+     * trying to decode it.
+     */
     public class OutOfMemory(override val cause: ThrowableError<OutOfMemoryError>) :
         ReadError("The resource is too large to be read on this device.", cause) {
 
         public constructor(error: OutOfMemoryError) : this(ThrowableError(error))
     }
 
+    /**
+     * An operation could not be performed at some point.
+     *
+     * For instance, this error can occur no matter the level of indirection when trying
+     * to read ranges of getting length if any component the data has to pass through
+     * doesn't support that.
+     */
     public class UnsupportedOperation(cause: Error? = null) :
         ReadError("Could not proceed because an operation was not supported.", cause) {
 
@@ -71,9 +96,6 @@ public sealed class ReadError(
 
 /**
  * Marker interface for source-specific access errors.
- *
- * At the moment, [AccessError]s constructed by the toolkit can be either a FileSystemError,
- * a ContentResolverError or an HttpError.
  */
 public interface AccessError : Error
 
