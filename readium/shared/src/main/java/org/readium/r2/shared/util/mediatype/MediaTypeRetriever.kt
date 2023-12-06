@@ -9,7 +9,7 @@ package org.readium.r2.shared.util.mediatype
 import java.io.File
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.archive.ArchiveFactory
-import org.readium.r2.shared.util.archive.SmartArchiveFactory
+import org.readium.r2.shared.util.archive.RecursiveArchiveFactory
 import org.readium.r2.shared.util.data.Container
 import org.readium.r2.shared.util.data.Readable
 import org.readium.r2.shared.util.file.FileResource
@@ -34,7 +34,7 @@ public class MediaTypeRetriever(
         SimpleResourceMediaTypeRetriever(mediaTypeSniffer, formatRegistry)
 
     private val archiveFactory: ArchiveFactory =
-        SmartArchiveFactory(archiveFactory, formatRegistry)
+        RecursiveArchiveFactory(archiveFactory, formatRegistry)
 
     /**
      * Retrieves a canonical [MediaType] for the provided media type and file extension [hints].

@@ -13,7 +13,7 @@ import org.readium.r2.shared.util.Error
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.archive.ArchiveFactory
-import org.readium.r2.shared.util.archive.SmartArchiveFactory
+import org.readium.r2.shared.util.archive.RecursiveArchiveFactory
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.mediatype.FormatRegistry
 import org.readium.r2.shared.util.mediatype.MediaType
@@ -51,7 +51,7 @@ public class AssetRetriever(
     }
 
     private val archiveFactory: ArchiveFactory =
-        SmartArchiveFactory(archiveFactory, formatRegistry)
+        RecursiveArchiveFactory(archiveFactory, formatRegistry)
 
     /**
      * Retrieves an asset from an url and a known media type.

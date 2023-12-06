@@ -14,7 +14,11 @@ import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.shared.util.tryRecover
 
-internal class SmartArchiveFactory(
+/**
+ * Extends an [ArchiveFactory] to accept media types that [formatRegistry] claims to be
+ * subtypes of the one given in [create].
+ */
+internal class RecursiveArchiveFactory(
     private val archiveFactory: ArchiveFactory,
     private val formatRegistry: FormatRegistry
 ) : ArchiveFactory {
