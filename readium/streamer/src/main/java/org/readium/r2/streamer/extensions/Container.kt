@@ -12,7 +12,8 @@ package org.readium.r2.streamer.extensions
 import java.io.File
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.data.Container
-import org.readium.r2.shared.util.data.readAsXml
+import org.readium.r2.shared.util.data.decodeXml
+import org.readium.r2.shared.util.data.flatDecode
 import org.readium.r2.shared.util.use
 import org.readium.r2.shared.util.xml.ElementNode
 
@@ -22,7 +23,7 @@ internal suspend fun Container<*>.readAsXmlOrNull(path: String): ElementNode? =
 
 /** Returns the resource data as an XML Document at the given [url], or null. */
 internal suspend fun Container<*>.readAsXmlOrNull(url: Url): ElementNode? =
-    get(url)?.use { it.readAsXml().getOrNull() }
+    get(url)?.use { resource -> resource.flatDecode { it.decodeXml() }.getOrNull() }
 
 internal fun Iterable<Url>.guessTitle(): String? {
     val firstEntry = firstOrNull() ?: return null

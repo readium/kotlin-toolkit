@@ -16,10 +16,9 @@ import org.readium.r2.shared.util.asset.Asset
 import org.readium.r2.shared.util.asset.ContainerAsset
 import org.readium.r2.shared.util.asset.ResourceAsset
 import org.readium.r2.shared.util.data.CompositeContainer
-import org.readium.r2.shared.util.data.DecodeError
 import org.readium.r2.shared.util.data.ReadError
-import org.readium.r2.shared.util.data.readAsRwpm
-import org.readium.r2.shared.util.getOrElse
+import org.readium.r2.shared.util.data.decodeRwpm
+import org.readium.r2.shared.util.data.readDecodeOrElse
 import org.readium.r2.shared.util.http.HttpClient
 import org.readium.r2.shared.util.http.HttpContainer
 import org.readium.r2.shared.util.mediatype.FormatRegistry
@@ -80,14 +79,11 @@ internal class ParserAssetFactory(
     private suspend fun createParserAssetForManifest(
         asset: ResourceAsset
     ): Try<PublicationParser.Asset, CreateError> {
-        val manifest = asset.resource.readAsRwpm()
-            .mapFailure {
-                when (it) {
-                    is DecodeError.Decoding -> ReadError.Decoding(it.cause)
-                    is DecodeError.Reading -> it.cause
-                }
-            }
-            .getOrElse { return Try.failure(CreateError.Reading(it)) }
+        val manifest = asset.resource
+            .readDecodeOrElse(
+                decode = { it.decodeRwpm() },
+                recover = { return Try.failure(CreateError.Reading(it)) }
+            )
 
         val baseUrl = manifest.linkWithRel("self")?.href?.resolve()
         if (baseUrl == null) {

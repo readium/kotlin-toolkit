@@ -17,10 +17,9 @@ import org.readium.r2.shared.publication.services.positionsServiceFactory
 import org.readium.r2.shared.util.DebugError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
-import org.readium.r2.shared.util.data.DecodeError
 import org.readium.r2.shared.util.data.ReadError
-import org.readium.r2.shared.util.data.readAsRwpm
-import org.readium.r2.shared.util.getOrElse
+import org.readium.r2.shared.util.data.decodeRwpm
+import org.readium.r2.shared.util.data.readDecodeOrElse
 import org.readium.r2.shared.util.http.HttpClient
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.mediatype.MediaType
@@ -55,26 +54,10 @@ public class ReadiumWebPubParser(
             )
 
         val manifest = manifestResource
-            .readAsRwpm()
-            .getOrElse {
-                when (it) {
-                    is DecodeError.Reading ->
-                        return Try.failure(
-                            PublicationParser.Error.Reading(
-                                ReadError.Decoding(it.cause)
-                            )
-                        )
-
-                    is DecodeError.Decoding ->
-                        return Try.failure(
-                            PublicationParser.Error.Reading(
-                                ReadError.Decoding(
-                                    DebugError("Failed to parse the RWPM Manifest.")
-                                )
-                            )
-                        )
-                }
-            }
+            .readDecodeOrElse(
+                decode = { it.decodeRwpm() },
+                recover = { return Try.failure(PublicationParser.Error.Reading(it)) }
+            )
 
         // Checks the requirements from the LCPDF specification.
         // https://readium.org/lcp-specs/notes/lcp-for-pdf.html

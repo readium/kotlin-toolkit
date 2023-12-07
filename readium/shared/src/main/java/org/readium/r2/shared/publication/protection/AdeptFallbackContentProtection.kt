@@ -14,10 +14,9 @@ import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.asset.Asset
 import org.readium.r2.shared.util.asset.ContainerAsset
-import org.readium.r2.shared.util.data.DecodeError
 import org.readium.r2.shared.util.data.ReadError
-import org.readium.r2.shared.util.data.readAsXml
-import org.readium.r2.shared.util.getOrElse
+import org.readium.r2.shared.util.data.decodeXml
+import org.readium.r2.shared.util.data.readDecodeOrElse
 import org.readium.r2.shared.util.mediatype.MediaType
 
 /**
@@ -68,30 +67,24 @@ public class AdeptFallbackContentProtection : ContentProtection {
         }
 
         asset.container[Url("META-INF/encryption.xml")!!]
-            ?.readAsXml()
-            ?.getOrElse {
-                when (it) {
-                    is DecodeError.Decoding ->
-                        return Try.success(false)
-                    is DecodeError.Reading ->
-                        return Try.failure(it.cause)
-                }
-            }?.get("EncryptedData", EpubEncryption.ENC)
+            ?.readDecodeOrElse(
+                decode = { it.decodeXml() },
+                recoverRead = { return Try.success(false) },
+                recoverDecode = { return Try.success(false) }
+            )
+            ?.get("EncryptedData", EpubEncryption.ENC)
             ?.flatMap { it.get("KeyInfo", EpubEncryption.SIG) }
             ?.flatMap { it.get("resource", "http://ns.adobe.com/adept") }
             ?.takeIf { it.isNotEmpty() }
             ?.let { return Try.success(true) }
 
-        return asset.container.get(Url("META-INF/rights.xml")!!)
-            ?.readAsXml()
-            ?.getOrElse {
-                when (it) {
-                    is DecodeError.Decoding ->
-                        return Try.success(false)
-                    is DecodeError.Reading ->
-                        return Try.failure(it.cause)
-                }
-            }?.takeIf { it.namespace == "http://ns.adobe.com/adept" }
+        return asset.container[Url("META-INF/rights.xml")!!]
+            ?.readDecodeOrElse(
+                decode = { it.decodeXml() },
+                recoverRead = { return Try.success(false) },
+                recoverDecode = { return Try.success(false) }
+            )
+            ?.takeIf { it.namespace == "http://ns.adobe.com/adept" }
             ?.let { Try.success(true) }
             ?: Try.success(false)
     }

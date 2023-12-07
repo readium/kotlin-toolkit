@@ -18,7 +18,8 @@ import org.readium.r2.shared.publication.ServiceFactory
 import org.readium.r2.shared.publication.firstWithRel
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.data.Container
-import org.readium.r2.shared.util.data.readAsBitmap
+import org.readium.r2.shared.util.data.decodeBitmap
+import org.readium.r2.shared.util.flatMap
 import org.readium.r2.shared.util.resource.Resource
 
 /**
@@ -79,7 +80,9 @@ internal class ResourceCoverService(
         val resource = container[coverUrl]
             ?: return null
 
-        return resource.readAsBitmap()
+        return resource
+            .read()
+            .flatMap { it.decodeBitmap() }
             .getOrNull()
     }
 

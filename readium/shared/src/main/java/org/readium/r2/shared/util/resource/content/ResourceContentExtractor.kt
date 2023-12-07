@@ -14,7 +14,8 @@ import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.data.DecodeError
 import org.readium.r2.shared.util.data.ReadError
-import org.readium.r2.shared.util.data.readAsString
+import org.readium.r2.shared.util.data.decodeString
+import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.shared.util.tryRecover
@@ -59,11 +60,13 @@ public class HtmlResourceContentExtractor : ResourceContentExtractor {
     override suspend fun extractText(resource: Resource): Try<String, ReadError> =
         withContext(Dispatchers.IO) {
             resource
-                .readAsString()
+                .read()
+                .getOrElse { return@withContext Try.failure(it) }
+                .decodeString()
                 .tryRecover {
                     when (it) {
-                        is DecodeError.Reading ->
-                            return@withContext Try.failure(it.cause)
+                        is DecodeError.OutOfMemory ->
+                            return@withContext Try.failure(ReadError.OutOfMemory(it.cause))
                         is DecodeError.Decoding ->
                             Try.success("")
                     }

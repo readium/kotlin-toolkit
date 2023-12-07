@@ -23,15 +23,15 @@ import org.readium.r2.shared.util.RelativeUrl
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.data.Container
-import org.readium.r2.shared.util.data.DecodeError
 import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.data.Readable
 import org.readium.r2.shared.util.data.asInputStream
 import org.readium.r2.shared.util.data.borrow
-import org.readium.r2.shared.util.data.readAsJson
-import org.readium.r2.shared.util.data.readAsRwpm
-import org.readium.r2.shared.util.data.readAsString
-import org.readium.r2.shared.util.data.readAsXml
+import org.readium.r2.shared.util.data.decodeJson
+import org.readium.r2.shared.util.data.decodeRwpm
+import org.readium.r2.shared.util.data.decodeString
+import org.readium.r2.shared.util.data.decodeXml
+import org.readium.r2.shared.util.data.readDecodeOrElse
 import org.readium.r2.shared.util.getOrDefault
 import org.readium.r2.shared.util.getOrElse
 
@@ -173,23 +173,16 @@ public object XhtmlMediaTypeSniffer : MediaTypeSniffer {
             return Try.failure(MediaTypeSnifferError.NotRecognized)
         }
 
-        source.readAsXml()
-            .getOrElse {
-                when (it) {
-                    is DecodeError.Reading ->
-                        return Try.failure(
-                            MediaTypeSnifferError.Reading(it.cause)
-                        )
-                    is DecodeError.Decoding ->
-                        null
-                }
-            }
-            ?.takeIf {
-                it.name.lowercase(Locale.ROOT) == "html" &&
-                    it.namespace.lowercase(Locale.ROOT).contains("xhtml")
-            }?.let {
-                return Try.success(MediaType.XHTML)
-            }
+        source.readDecodeOrElse(
+            decode = { it.decodeXml() },
+            recoverRead = { return Try.failure(MediaTypeSnifferError.Reading(it)) },
+            recoverDecode = { null }
+        )?.takeIf {
+            it.name.lowercase(Locale.ROOT) == "html" &&
+                it.namespace.lowercase(Locale.ROOT).contains("xhtml")
+        }?.let {
+            return Try.success(MediaType.XHTML)
+        }
 
         return Try.failure(MediaTypeSnifferError.NotRecognized)
     }
@@ -214,28 +207,19 @@ public object HtmlMediaTypeSniffer : MediaTypeSniffer {
         }
 
         // [contentAsXml] will fail if the HTML is not a proper XML document, hence the doctype check.
-        source.readAsXml()
-            .getOrElse {
-                when (it) {
-                    is DecodeError.Reading ->
-                        return Try.failure(MediaTypeSnifferError.Reading(it.cause))
-                    is DecodeError.Decoding ->
-                        null
-                }
-            }
+        source.readDecodeOrElse(
+            decode = { it.decodeXml() },
+            recoverRead = { return Try.failure(MediaTypeSnifferError.Reading(it)) },
+            recoverDecode = { null }
+        )
             ?.takeIf { it.name.lowercase(Locale.ROOT) == "html" }
             ?.let { return Try.success(MediaType.HTML) }
 
-        source.readAsString()
-            .getOrElse {
-                when (it) {
-                    is DecodeError.Reading ->
-                        return Try.failure(MediaTypeSnifferError.Reading(it.cause))
-
-                    is DecodeError.Decoding ->
-                        null
-                }
-            }
+        source.readDecodeOrElse(
+            decode = { it.decodeString() },
+            recoverRead = { return Try.failure(MediaTypeSnifferError.Reading(it)) },
+            recoverDecode = { null }
+        )
             ?.takeIf { it.trimStart().take(15).lowercase() == "<!doctype html>" }
             ?.let { return Try.success(MediaType.HTML) }
 
@@ -286,16 +270,11 @@ public object OpdsMediaTypeSniffer : MediaTypeSniffer {
         }
 
         // OPDS 1
-        source.readAsXml()
-            .getOrElse {
-                when (it) {
-                    is DecodeError.Reading ->
-                        return Try.failure(MediaTypeSnifferError.Reading(it.cause))
-                    is DecodeError.Decoding ->
-                        null
-                }
-            }
-            ?.takeIf { it.namespace == "http://www.w3.org/2005/Atom" }
+        source.readDecodeOrElse(
+            decode = { it.decodeXml() },
+            recoverRead = { return Try.failure(MediaTypeSnifferError.Reading(it)) },
+            recoverDecode = { null }
+        )?.takeIf { it.namespace == "http://www.w3.org/2005/Atom" }
             ?.let { xml ->
                 if (xml.name == "feed") {
                     return Try.success(MediaType.OPDS1)
@@ -305,15 +284,11 @@ public object OpdsMediaTypeSniffer : MediaTypeSniffer {
             }
 
         // OPDS 2
-        source.readAsRwpm()
-            .getOrElse {
-                when (it) {
-                    is DecodeError.Reading ->
-                        return Try.failure(MediaTypeSnifferError.Reading(it.cause))
-                    is DecodeError.Decoding ->
-                        null
-                }
-            }
+        source.readDecodeOrElse(
+            decode = { it.decodeRwpm() },
+            recoverRead = { return Try.failure(MediaTypeSnifferError.Reading(it)) },
+            recoverDecode = { null }
+        )
             ?.let { rwpm ->
                 if (rwpm.linkWithRel("self")?.mediaType?.matches("application/opds+json") == true
                 ) {
@@ -338,16 +313,8 @@ public object OpdsMediaTypeSniffer : MediaTypeSniffer {
 
         // OPDS Authentication Document.
         source.containsJsonKeys("id", "title", "authentication")
-            .getOrElse {
-                when (it) {
-                    is DecodeError.Reading ->
-                        return Try.failure(MediaTypeSnifferError.Reading(it.cause))
-
-                    is DecodeError.Decoding ->
-                        null
-                }
-            }
-            ?.takeIf { it }
+            .getOrElse { return Try.failure(MediaTypeSnifferError.Reading(it)) }
+            .takeIf { it }
             ?.let { return Try.success(MediaType.OPDS_AUTHENTICATION) }
 
         return Try.failure(MediaTypeSnifferError.NotRecognized)
@@ -373,16 +340,8 @@ public object LcpLicenseMediaTypeSniffer : MediaTypeSniffer {
         }
 
         source.containsJsonKeys("id", "issued", "provider", "encryption")
-            .getOrElse {
-                when (it) {
-                    is DecodeError.Reading ->
-                        return Try.failure(MediaTypeSnifferError.Reading(it.cause))
-
-                    is DecodeError.Decoding ->
-                        null
-                }
-            }
-            ?.takeIf { it }
+            .getOrElse { return Try.failure(MediaTypeSnifferError.Reading(it)) }
+            .takeIf { it }
             ?.let { return Try.success(MediaType.LCP_LICENSE_DOCUMENT) }
 
         return Try.failure(MediaTypeSnifferError.NotRecognized)
@@ -468,17 +427,11 @@ public object WebPubManifestMediaTypeSniffer : MediaTypeSniffer {
         }
 
         val manifest: Manifest =
-            source.readAsRwpm()
-                .getOrElse {
-                    when (it) {
-                        is DecodeError.Reading ->
-                            return Try.failure(MediaTypeSnifferError.Reading(it.cause))
-
-                        is DecodeError.Decoding ->
-                            null
-                    }
-                }
-                ?: return Try.failure(MediaTypeSnifferError.NotRecognized)
+            source.readDecodeOrElse(
+                decode = { it.decodeRwpm() },
+                recoverRead = { return Try.failure(MediaTypeSnifferError.Reading(it)) },
+                recoverDecode = { null }
+            ) ?: return Try.failure(MediaTypeSnifferError.NotRecognized)
 
         if (manifest.conformsTo(Publication.Profile.AUDIOBOOK)) {
             return Try.success(MediaType.READIUM_AUDIOBOOK_MANIFEST)
@@ -577,16 +530,11 @@ public object W3cWpubMediaTypeSniffer : MediaTypeSniffer {
         }
 
         // Somehow, [JSONObject] can't access JSON-LD keys such as `@content`.
-        val string = source.readAsString()
-            .getOrElse {
-                when (it) {
-                    is DecodeError.Reading ->
-                        return Try.failure(MediaTypeSnifferError.Reading(it.cause))
-
-                    is DecodeError.Decoding ->
-                        null
-                }
-            } ?: ""
+        val string = source.readDecodeOrElse(
+            decode = { it.decodeString() },
+            recoverRead = { return Try.failure(MediaTypeSnifferError.Reading(it)) },
+            recoverDecode = { "" }
+        )
         if (
             string.contains("@context") &&
             string.contains("https://www.w3.org/ns/wp-context")
@@ -617,15 +565,12 @@ public object EpubMediaTypeSniffer : MediaTypeSniffer {
 
     override suspend fun sniffContainer(container: Container<Readable>): Try<MediaType, MediaTypeSnifferError> {
         val mimetype = container[RelativeUrl("mimetype")!!]
-            ?.readAsString(charset = Charsets.US_ASCII)
-            ?.getOrElse { error ->
-                when (error) {
-                    is DecodeError.Decoding ->
-                        null
-                    is DecodeError.Reading ->
-                        return Try.failure(MediaTypeSnifferError.Reading(error.cause))
-                }
-            }?.trim()
+            ?.readDecodeOrElse(
+                decode = { it.decodeString() },
+                recoverRead = { return Try.failure(MediaTypeSnifferError.Reading(it)) },
+                recoverDecode = { null }
+            )?.trim()
+
         if (mimetype == "application/epub+zip") {
             return Try.success(MediaType.EPUB)
         }
@@ -858,17 +803,11 @@ public object JsonMediaTypeSniffer : MediaTypeSniffer {
             return Try.failure(MediaTypeSnifferError.NotRecognized)
         }
 
-        source.readAsJson()
-            .getOrElse {
-                when (it) {
-                    is DecodeError.Reading ->
-                        return Try.failure(MediaTypeSnifferError.Reading(it.cause))
-
-                    is DecodeError.Decoding ->
-                        null
-                }
-            }
-            ?.let { return Try.success(MediaType.JSON) }
+        source.readDecodeOrElse(
+            decode = { it.decodeJson() },
+            recoverRead = { return Try.failure(MediaTypeSnifferError.Reading(it)) },
+            recoverDecode = { null }
+        )?.let { return Try.success(MediaType.JSON) }
 
         return Try.failure(MediaTypeSnifferError.NotRecognized)
     }
@@ -945,8 +884,11 @@ private suspend fun Readable.canReadWholeBlob() =
 @Suppress("SameParameterValue")
 private suspend fun Readable.containsJsonKeys(
     vararg keys: String
-): Try<Boolean, DecodeError> {
-    val json = readAsJson()
-        .getOrElse { return Try.failure(it) }
+): Try<Boolean, ReadError> {
+    val json = readDecodeOrElse(
+        decode = { it.decodeJson() },
+        recoverRead = { return Try.failure(it) },
+        recoverDecode = { return Try.success(false) }
+    )
     return Try.success(json.keys().asSequence().toSet().containsAll(keys.toList()))
 }

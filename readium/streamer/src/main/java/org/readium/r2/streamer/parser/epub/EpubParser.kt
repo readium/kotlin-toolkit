@@ -20,7 +20,9 @@ import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.data.Container
 import org.readium.r2.shared.util.data.DecodeError
 import org.readium.r2.shared.util.data.ReadError
-import org.readium.r2.shared.util.data.readAsXml
+import org.readium.r2.shared.util.data.Readable
+import org.readium.r2.shared.util.data.decodeXml
+import org.readium.r2.shared.util.data.readDecodeOrElse
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.mediatype.MediaType
@@ -52,7 +54,7 @@ public class EpubParser(
 
         val opfPath = getRootFilePath(asset.container)
             .getOrElse { return Try.failure(it) }
-        val opfResource = asset.container.get(opfPath)
+        val opfResource = asset.container[opfPath]
             ?: return Try.failure(
                 PublicationParser.Error.Reading(
                     ReadError.Decoding(
@@ -60,9 +62,12 @@ public class EpubParser(
                     )
                 )
             )
-        val opfXmlDocument = opfResource
-            .use { it.decodeOrFail(opfPath) { readAsXml() } }
-            .getOrElse { return Try.failure(it) }
+        val opfXmlDocument = opfResource.use { resource ->
+            resource.readDecodeOrElse(
+                decode = { it.decodeXml() },
+                recover = { return Try.failure(PublicationParser.Error.Reading(it)) }
+            )
+        }
         val packageDocument = PackageDocument.parse(opfXmlDocument, opfPath)
             ?: return Try.failure(
                 PublicationParser.Error.Reading(
@@ -109,8 +114,7 @@ public class EpubParser(
     private suspend fun getRootFilePath(container: Container<Resource>): Try<Url, PublicationParser.Error> {
         val containerXmlUrl = Url("META-INF/container.xml")!!
 
-        val containerXmlResource = container
-            .get(containerXmlUrl)
+        val containerXmlResource = container[containerXmlUrl]
             ?: return Try.failure(
                 PublicationParser.Error.Reading(
                     ReadError.Decoding("container.xml not found.")
@@ -118,8 +122,10 @@ public class EpubParser(
             )
 
         return containerXmlResource
-            .use { it.decodeOrFail(containerXmlUrl) { readAsXml() } }
-            .getOrElse { return Try.failure(it) }
+            .readDecodeOrElse(
+                decode = { it.decodeXml() },
+                recover = { return Try.failure(PublicationParser.Error.Reading(it)) }
+            )
             .getFirst("rootfiles", Namespaces.OPC)
             ?.getFirst("rootfile", Namespaces.OPC)
             ?.getAttr("full-path")
@@ -190,25 +196,16 @@ public class EpubParser(
             ?.toMap().orEmpty()
     }
 
-    private suspend fun<R> Resource.decodeOrFail(
+    public suspend inline fun<R> Readable.readDecodeOrElse(
         url: Url,
-        decode: suspend Resource.() -> Try<R, DecodeError>
-    ): Try<R, PublicationParser.Error> {
-        return decode()
-            .mapFailure {
-                when (it) {
-                    is DecodeError.Reading ->
-                        PublicationParser.Error.Reading(it.cause)
-                    is DecodeError.Decoding ->
-                        PublicationParser.Error.Reading(
-                            ReadError.Decoding(
-                                DebugError(
-                                    "Couldn't decode resource at $url",
-                                    it.cause
-                                )
-                            )
-                        )
-                }
-            }
-    }
+        decode: (value: ByteArray) -> Try<R, DecodeError>,
+        recover: (ReadError) -> R
+    ): R =
+        readDecodeOrElse(decode, recover) {
+            recover(
+                ReadError.Decoding(
+                    DebugError("Couldn't decode resource at $url", it.cause)
+                )
+            )
+        }
 }

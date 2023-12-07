@@ -17,11 +17,10 @@ import org.readium.r2.shared.util.asset.Asset
 import org.readium.r2.shared.util.asset.ContainerAsset
 import org.readium.r2.shared.util.asset.ResourceAsset
 import org.readium.r2.shared.util.data.Container
-import org.readium.r2.shared.util.data.DecodeError
 import org.readium.r2.shared.util.data.ReadError
-import org.readium.r2.shared.util.data.readAsRwpm
-import org.readium.r2.shared.util.data.readAsXml
-import org.readium.r2.shared.util.getOrElse
+import org.readium.r2.shared.util.data.decodeRwpm
+import org.readium.r2.shared.util.data.decodeXml
+import org.readium.r2.shared.util.data.readDecodeOrElse
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.resource.Resource
 
@@ -95,16 +94,11 @@ public class LcpFallbackContentProtection : ContentProtection {
 
     private suspend fun hasLcpSchemeInManifest(container: Container<Resource>): Try<Boolean, ReadError> {
         val manifest = container[Url("manifest.json")!!]
-            ?.readAsRwpm()
-            ?.getOrElse {
-                when (it) {
-                    is DecodeError.Reading ->
-                        return Try.failure(it.cause)
-                    is DecodeError.Decoding ->
-                        return Try.success(false)
-                }
-            }
-            ?: return Try.success(false)
+            ?.readDecodeOrElse(
+                decode = { it.decodeRwpm() },
+                recoverRead = { return Try.success(false) },
+                recoverDecode = { return Try.success(false) }
+            ) ?: return Try.success(false)
 
         val manifestHasLcpScheme = manifest
             .readingOrder
@@ -115,16 +109,10 @@ public class LcpFallbackContentProtection : ContentProtection {
 
     private suspend fun hasLcpSchemeInEncryptionXml(container: Container<Resource>): Try<Boolean, ReadError> {
         val encryptionXml = container[Url("META-INF/encryption.xml")!!]
-            ?.readAsXml()
-            ?.getOrElse {
-                when (it) {
-                    is DecodeError.Reading ->
-                        return Try.failure(it.cause)
-                    is DecodeError.Decoding ->
-                        return Try.failure(ReadError.Decoding(it.cause))
-                }
-            }
-            ?: return Try.success(false)
+            ?.readDecodeOrElse(
+                decode = { it.decodeXml() },
+                recover = { return Try.failure(it) }
+            ) ?: return Try.success(false)
 
         val hasLcpScheme = encryptionXml
             .get("EncryptedData", EpubEncryption.ENC)
