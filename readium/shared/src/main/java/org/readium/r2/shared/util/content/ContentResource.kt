@@ -141,9 +141,7 @@ public class ContentResource(
                         ContentResolverError.NotAvailable()
                     )
                 )
-            val result = block(stream)
-            stream.close()
-            result
+            stream.use { block(stream) }
         }
     }
 
