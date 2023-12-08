@@ -81,7 +81,7 @@ public class CompositeContainer<E : Readable>(
 }
 
 @InternalReadiumApi
-public suspend inline fun<S> Container<*>.readDecodeOrNull(
+public suspend inline fun<S> Container<Readable>.readDecodeOrNull(
     url: Url,
     decode: (ByteArray) -> Try<S, DecodeError>
 ): S? =

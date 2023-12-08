@@ -211,13 +211,13 @@ public class EpubParser(
             )
         }
 
-    private suspend inline fun Container<*>.readDecodeXmlOrNull(
+    private suspend inline fun Container<Readable>.readDecodeXmlOrNull(
         path: String
     ): ElementNode? =
         Url.fromDecodedPath(path)?.let { url -> readDecodeXmlOrNull(url) }
 
     /** Returns the resource data as an XML Document at the given [url], or null. */
-    private suspend inline fun Container<*>.readDecodeXmlOrNull(
+    private suspend inline fun Container<Readable>.readDecodeXmlOrNull(
         url: Url
     ): ElementNode? =
         readDecodeOrNull(url) { it.decodeXml() }

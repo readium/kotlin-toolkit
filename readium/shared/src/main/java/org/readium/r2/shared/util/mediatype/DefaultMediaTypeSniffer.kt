@@ -45,6 +45,6 @@ public class DefaultMediaTypeSniffer : MediaTypeSniffer {
     override suspend fun sniffBlob(source: Readable): Try<MediaType, MediaTypeSnifferError> =
         sniffer.sniffBlob(source)
 
-    override suspend fun sniffContainer(container: Container<*>): Try<MediaType, MediaTypeSnifferError> =
+    override suspend fun sniffContainer(container: Container<Readable>): Try<MediaType, MediaTypeSnifferError> =
         sniffer.sniffContainer(container)
 }
