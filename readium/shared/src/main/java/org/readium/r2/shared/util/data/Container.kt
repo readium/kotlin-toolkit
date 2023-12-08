@@ -6,10 +6,13 @@
 
 package org.readium.r2.shared.util.data
 
+import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.SuspendingCloseable
+import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.shared.util.use
 
 /**
  * A container provides access to a list of [Readable] entries.
@@ -76,3 +79,12 @@ public class CompositeContainer<E : Readable>(
         containers.forEach { it.close() }
     }
 }
+
+@InternalReadiumApi
+public suspend inline fun<S> Container<*>.readDecodeOrNull(
+    url: Url,
+    decode: (ByteArray) -> Try<S, DecodeError>
+): S? =
+    get(url)?.use { resource ->
+        resource.readDecodeOrNull(decode)
+    }

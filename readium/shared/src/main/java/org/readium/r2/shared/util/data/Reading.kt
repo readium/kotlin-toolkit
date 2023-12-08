@@ -7,12 +7,14 @@
 package org.readium.r2.shared.util.data
 
 import java.io.IOException
+import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.util.DebugError
 import org.readium.r2.shared.util.Error
 import org.readium.r2.shared.util.ErrorException
 import org.readium.r2.shared.util.SuspendingCloseable
 import org.readium.r2.shared.util.ThrowableError
 import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.getOrElse
 
 /**
  * Acts as a proxy to an actual data source by handling read access.
@@ -122,3 +124,9 @@ private class BorrowedReadable(
         // Do nothing
     }
 }
+
+@InternalReadiumApi
+public suspend inline fun Readable.readOrElse(
+    recover: (ReadError) -> ByteArray
+): ByteArray =
+    read().getOrElse(recover)
