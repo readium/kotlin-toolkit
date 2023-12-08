@@ -52,6 +52,7 @@ public sealed class DecodeError(
 /**
  * Decodes receiver properly wrapping exceptions into [DecodeError]s.
  */
+@InternalReadiumApi
 public suspend fun<R, S> S.decode(
     block: (value: S) -> R,
     wrapError: (Exception) -> Error

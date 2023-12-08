@@ -126,9 +126,7 @@ class LocalPublicationRetriever(
             val tempFile = uri.copyToTempFile(context, storageDir)
                 .getOrElse {
                     listener.onError(
-                        ImportError.PublicationError(
-                            PublicationError.ReadError(ReadError.Access(FileSystemError.IO(it)))
-                        )
+                        ImportError.FileSystem(FileSystemError.IO(it))
                     )
                     return@launch
                 }
@@ -155,7 +153,7 @@ class LocalPublicationRetriever(
         val sourceAsset = assetRetriever.retrieve(tempFile)
             .getOrElse {
                 listener.onError(
-                    ImportError.PublicationError(PublicationError(it))
+                    ImportError.Publication(PublicationError(it))
                 )
                 return
             }
@@ -166,7 +164,7 @@ class LocalPublicationRetriever(
         ) {
             if (lcpPublicationRetriever == null) {
                 listener.onError(
-                    ImportError.PublicationError(
+                    ImportError.Publication(
                         PublicationError.UnsupportedContentProtection(
                             DebugError("LCP support is missing.")
                         )
@@ -188,7 +186,7 @@ class LocalPublicationRetriever(
             Timber.d(e)
             tryOrNull { libraryFile.delete() }
             listener.onError(
-                ImportError.PublicationError(
+                ImportError.Publication(
                     PublicationError.ReadError(
                         ReadError.Access(FileSystemError.IO(e))
                     )
@@ -247,7 +245,7 @@ class OpdsPublicationRetriever(
         coroutineScope.launch {
             val publicationUrl = publication.acquisitionUrl()
                 .getOrElse {
-                    listener.onError(ImportError.OpdsError(it))
+                    listener.onError(ImportError.Opds(it))
                     return@launch
                 }
 
@@ -356,7 +354,7 @@ class LcpPublicationRetriever(
         coroutineScope.launch {
             val license = licenceAsset.resource.read()
                 .getOrElse {
-                    listener.onError(ImportError.PublicationError(PublicationError.ReadError(it)))
+                    listener.onError(ImportError.Publication(PublicationError.ReadError(it)))
                     return@launch
                 }
                 .let {

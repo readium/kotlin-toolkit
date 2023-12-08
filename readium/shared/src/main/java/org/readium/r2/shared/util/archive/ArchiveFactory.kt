@@ -18,7 +18,7 @@ import org.readium.r2.shared.util.resource.Resource
  */
 public interface ArchiveFactory {
 
-    public sealed class Error(
+    public sealed class CreateError(
         override val message: String,
         override val cause: org.readium.r2.shared.util.Error?
     ) : org.readium.r2.shared.util.Error {
@@ -26,11 +26,11 @@ public interface ArchiveFactory {
         public class FormatNotSupported(
             public val mediaType: MediaType,
             cause: org.readium.r2.shared.util.Error? = null
-        ) : Error("Media type not supported.", cause)
+        ) : CreateError("Media type not supported.", cause)
 
         public class Reading(
             override val cause: org.readium.r2.shared.util.data.ReadError
-        ) : Error("An error occurred while attempting to read the resource.", cause)
+        ) : CreateError("An error occurred while attempting to read the resource.", cause)
     }
 
     /**
@@ -39,7 +39,7 @@ public interface ArchiveFactory {
     public suspend fun create(
         mediaType: MediaType,
         source: Readable
-    ): Try<Container<Resource>, Error>
+    ): Try<Container<Resource>, CreateError>
 }
 
 /**
@@ -56,18 +56,18 @@ public class CompositeArchiveFactory(
     override suspend fun create(
         mediaType: MediaType,
         source: Readable
-    ): Try<Container<Resource>, ArchiveFactory.Error> {
+    ): Try<Container<Resource>, ArchiveFactory.CreateError> {
         for (factory in factories) {
             factory.create(mediaType, source)
                 .getOrElse { error ->
                     when (error) {
-                        is ArchiveFactory.Error.FormatNotSupported -> null
+                        is ArchiveFactory.CreateError.FormatNotSupported -> null
                         else -> return Try.failure(error)
                     }
                 }
                 ?.let { return Try.success(it) }
         }
 
-        return Try.failure(ArchiveFactory.Error.FormatNotSupported(mediaType))
+        return Try.failure(ArchiveFactory.CreateError.FormatNotSupported(mediaType))
     }
 }

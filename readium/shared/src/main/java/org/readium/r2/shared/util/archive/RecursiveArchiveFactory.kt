@@ -26,16 +26,16 @@ internal class RecursiveArchiveFactory(
     override suspend fun create(
         mediaType: MediaType,
         source: Readable
-    ): Try<Container<Resource>, ArchiveFactory.Error> =
+    ): Try<Container<Resource>, ArchiveFactory.CreateError> =
         archiveFactory.create(mediaType, source)
             .tryRecover { error ->
                 when (error) {
-                    is ArchiveFactory.Error.FormatNotSupported -> {
+                    is ArchiveFactory.CreateError.FormatNotSupported -> {
                         formatRegistry.superType(mediaType)
                             ?.let { create(it, source) }
                             ?: Try.failure(error)
                     }
-                    is ArchiveFactory.Error.Reading ->
+                    is ArchiveFactory.CreateError.Reading ->
                         Try.failure(error)
                 }
             }

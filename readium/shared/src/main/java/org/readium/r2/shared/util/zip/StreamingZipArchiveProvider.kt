@@ -10,7 +10,7 @@ import java.io.File
 import java.io.IOException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.readium.r2.shared.extensions.unwrapInstance
+import org.readium.r2.shared.extensions.findInstance
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.archive.ArchiveFactory
@@ -36,22 +36,19 @@ internal class StreamingZipArchiveProvider {
             openBlob(readable, ::ReadException, null)
             Try.success(MediaType.ZIP)
         } catch (exception: Exception) {
-            when (val e = exception.unwrapInstance(ReadException::class.java)) {
-                is ReadException ->
-                    Try.failure(MediaTypeSnifferError.Reading(e.error))
-                else ->
-                    Try.failure(MediaTypeSnifferError.NotRecognized)
-            }
+            exception.findInstance(ReadException::class.java)
+                ?.let { Try.failure(MediaTypeSnifferError.Reading(it.error)) }
+                ?: Try.failure(MediaTypeSnifferError.NotRecognized)
         }
     }
 
     suspend fun create(
         mediaType: MediaType,
         readable: Readable
-    ): Try<Container<Resource>, ArchiveFactory.Error> {
+    ): Try<Container<Resource>, ArchiveFactory.CreateError> {
         if (mediaType != MediaType.ZIP) {
             return Try.failure(
-                ArchiveFactory.Error.FormatNotSupported(mediaType)
+                ArchiveFactory.CreateError.FormatNotSupported(mediaType)
             )
         }
 
@@ -63,12 +60,9 @@ internal class StreamingZipArchiveProvider {
             )
             Try.success(container)
         } catch (exception: Exception) {
-            when (val e = exception.unwrapInstance(ReadException::class.java)) {
-                is ReadException ->
-                    Try.failure(ArchiveFactory.Error.Reading(e.error))
-                else ->
-                    Try.failure(ArchiveFactory.Error.Reading(ReadError.Decoding(e)))
-            }
+            exception.findInstance(ReadException::class.java)
+                ?.let { Try.failure(ArchiveFactory.CreateError.Reading(it.error)) }
+                ?: Try.failure(ArchiveFactory.CreateError.Reading(ReadError.Decoding(exception)))
         }
     }
 

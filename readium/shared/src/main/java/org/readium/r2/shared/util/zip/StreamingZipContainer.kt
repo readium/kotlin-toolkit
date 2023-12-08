@@ -8,9 +8,9 @@ package org.readium.r2.shared.util.zip
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.readium.r2.shared.extensions.findInstance
 import org.readium.r2.shared.extensions.readFully
 import org.readium.r2.shared.extensions.tryOrLog
-import org.readium.r2.shared.extensions.unwrapInstance
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.DebugError
 import org.readium.r2.shared.util.RelativeUrl
@@ -82,12 +82,9 @@ internal class StreamingZipContainer(
                         }
                     Try.success(bytes)
                 } catch (exception: Exception) {
-                    when (val e = exception.unwrapInstance(ReadException::class.java)) {
-                        is ReadException ->
-                            Try.failure(e.error)
-                        else ->
-                            Try.failure(ReadError.Decoding(e))
-                    }
+                    exception.findInstance(ReadException::class.java)
+                        ?.let { Try.failure(it.error) }
+                        ?: Try.failure(ReadError.Decoding(exception))
                 }
             }
 

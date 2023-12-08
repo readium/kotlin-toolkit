@@ -13,7 +13,7 @@ import java.util.Locale
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
-import org.readium.r2.shared.extensions.asInstance
+import org.readium.r2.shared.extensions.findInstance
 import org.readium.r2.shared.extensions.tryOrNull
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Manifest
@@ -845,7 +845,7 @@ public object SystemMediaTypeSniffer : MediaTypeSniffer {
                             ?.let { sniffType(it) }
                     }
                 } catch (e: Exception) {
-                    e.asInstance(SystemSnifferException::class.java)
+                    e.findInstance(SystemSnifferException::class.java)
                         ?.let {
                             return Try.failure(
                                 MediaTypeSnifferError.Reading(it.error)

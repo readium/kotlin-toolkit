@@ -66,9 +66,9 @@ public class AssetRetriever(
         val archive = archiveFactory.create(mediaType, resource)
             .getOrElse {
                 return when (it) {
-                    is ArchiveFactory.Error.Reading ->
+                    is ArchiveFactory.CreateError.Reading ->
                         Try.failure(RetrieveError.Reading(it.cause))
-                    is ArchiveFactory.Error.FormatNotSupported ->
+                    is ArchiveFactory.CreateError.FormatNotSupported ->
                         Try.success(ResourceAsset(mediaType, resource))
                 }
             }
@@ -123,9 +123,9 @@ public class AssetRetriever(
         val container = archiveFactory.create(mediaType, resource)
             .getOrElse {
                 when (it) {
-                    is ArchiveFactory.Error.Reading ->
+                    is ArchiveFactory.CreateError.Reading ->
                         return Try.failure(RetrieveError.Reading(it.cause))
-                    is ArchiveFactory.Error.FormatNotSupported ->
+                    is ArchiveFactory.CreateError.FormatNotSupported ->
                         return Try.success(ResourceAsset(mediaType, resource))
                 }
             }

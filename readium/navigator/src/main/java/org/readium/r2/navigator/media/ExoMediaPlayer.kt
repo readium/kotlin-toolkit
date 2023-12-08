@@ -45,7 +45,7 @@ import kotlinx.coroutines.launch
 import org.readium.r2.navigator.ExperimentalAudiobook
 import org.readium.r2.navigator.R
 import org.readium.r2.navigator.extensions.timeWithDuration
-import org.readium.r2.shared.extensions.asInstance
+import org.readium.r2.shared.extensions.findInstance
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
@@ -197,7 +197,7 @@ public class ExoMediaPlayer(
         }
 
         override fun onPlayerError(error: PlaybackException) {
-            val readError = error.asInstance<ReadException>()?.error
+            val readError = error.findInstance<ReadException>()?.error
 
             if (readError != null) {
                 player.currentMediaItem?.mediaId

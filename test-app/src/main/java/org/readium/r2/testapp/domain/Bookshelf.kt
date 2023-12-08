@@ -129,7 +129,7 @@ class Bookshelf(
             assetRetriever.retrieve(url)
                 .getOrElse {
                     return Try.failure(
-                        ImportError.PublicationError(PublicationError(it))
+                        ImportError.Publication(PublicationError(it))
                     )
                 }
 
@@ -144,7 +144,7 @@ class Bookshelf(
                     }
                 }.getOrElse {
                     return Try.failure(
-                        ImportError.PublicationError(PublicationError(it))
+                        ImportError.Publication(PublicationError(it))
                     )
                 }
 
@@ -157,7 +157,7 @@ class Bookshelf(
                 coverStorage.storeCover(publication, coverUrl)
                     .getOrElse {
                         return Try.failure(
-                            ImportError.PublicationError(
+                            ImportError.Publication(
                                 PublicationError.ReadError(ReadError.Access(FileSystemError.IO(it)))
                             )
                         )
@@ -173,7 +173,7 @@ class Bookshelf(
             if (id == -1L) {
                 coverFile.delete()
                 return Try.failure(
-                    ImportError.DatabaseError(
+                    ImportError.Database(
                         DebugError("Could not insert book into database.")
                     )
                 )
@@ -182,7 +182,7 @@ class Bookshelf(
             .onFailure {
                 Timber.e("Cannot open publication: $it.")
                 return Try.failure(
-                    ImportError.PublicationError(PublicationError(it))
+                    ImportError.Publication(PublicationError(it))
                 )
             }
 

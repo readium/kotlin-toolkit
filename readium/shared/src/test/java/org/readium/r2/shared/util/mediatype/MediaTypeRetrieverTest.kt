@@ -249,6 +249,14 @@ class MediaTypeRetrieverTest {
     }
 
     @Test
+    fun `sniff RAR`() = runBlocking {
+        assertEquals(MediaType.RAR, retriever.retrieve(fileExtension = "rar"))
+        assertEquals(MediaType.RAR, retriever.retrieve(mediaType = "application/vnd.rar"))
+        assertEquals(MediaType.RAR, retriever.retrieve(mediaType = "application/x-rar"))
+        assertEquals(MediaType.RAR, retriever.retrieve(mediaType = "application/x-rar-compressed"))
+    }
+
+    @Test
     fun `sniff OPDS 1 feed`() = runBlocking {
         assertEquals(
             MediaType.OPDS1,

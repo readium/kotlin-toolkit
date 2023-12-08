@@ -94,13 +94,13 @@ internal class WebViewServer(
             .get(urlWithoutAnchor)
             ?.fallback {
                 onResourceLoadFailed(urlWithoutAnchor, it)
-                errorResource(urlWithoutAnchor, it)
+                errorResource()
             } ?: run {
             val error = ReadError.Decoding(
                 "Resource not found at $urlWithoutAnchor in publication."
             )
             onResourceLoadFailed(urlWithoutAnchor, error)
-            errorResource(urlWithoutAnchor, error)
+            errorResource()
         }
 
         link.mediaType
@@ -146,15 +146,14 @@ internal class WebViewServer(
             )
         }
     }
-    private fun errorResource(url: Url, error: ReadError): Resource =
+    private fun errorResource(): Resource =
         StringResource {
             withContext(Dispatchers.IO) {
                 Try.success(
                     application.assets
-                        .open("readium/error.xhtml").bufferedReader()
+                        .open("readium/error.xhtml")
+                        .bufferedReader()
                         .use { it.readText() }
-                        .replace("\${error}", error.message)
-                        .replace("\${href}", url.toString())
                 )
             }
         }

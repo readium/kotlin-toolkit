@@ -74,9 +74,9 @@ public class MediaTypeRetriever(
         val container = archiveFactory.create(resourceMediaType, resource)
             .getOrElse {
                 when (it) {
-                    is ArchiveFactory.Error.Reading ->
+                    is ArchiveFactory.CreateError.Reading ->
                         return Try.failure(MediaTypeSnifferError.Reading(it.cause))
-                    is ArchiveFactory.Error.FormatNotSupported ->
+                    is ArchiveFactory.CreateError.FormatNotSupported ->
                         return Try.success(resourceMediaType)
                 }
             }

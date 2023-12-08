@@ -54,10 +54,10 @@ internal class FileZipArchiveProvider {
     suspend fun create(
         mediaType: MediaType,
         file: File
-    ): Try<Container<Resource>, ArchiveFactory.Error> {
+    ): Try<Container<Resource>, ArchiveFactory.CreateError> {
         if (mediaType != MediaType.ZIP) {
             return Try.failure(
-                ArchiveFactory.Error.FormatNotSupported(mediaType)
+                ArchiveFactory.CreateError.FormatNotSupported(mediaType)
             )
         }
 
@@ -68,32 +68,32 @@ internal class FileZipArchiveProvider {
     }
 
     // Internal for testing purpose
-    internal suspend fun open(file: File): Try<Container<Resource>, ArchiveFactory.Error> =
+    internal suspend fun open(file: File): Try<Container<Resource>, ArchiveFactory.CreateError> =
         withContext(Dispatchers.IO) {
             try {
                 val archive = FileZipContainer(ZipFile(file), file)
                 Try.success(archive)
             } catch (e: FileNotFoundException) {
                 Try.failure(
-                    ArchiveFactory.Error.Reading(
+                    ArchiveFactory.CreateError.Reading(
                         ReadError.Access(FileSystemError.FileNotFound(e))
                     )
                 )
             } catch (e: ZipException) {
                 Try.failure(
-                    ArchiveFactory.Error.Reading(
+                    ArchiveFactory.CreateError.Reading(
                         ReadError.Decoding(e)
                     )
                 )
             } catch (e: SecurityException) {
                 Try.failure(
-                    ArchiveFactory.Error.Reading(
+                    ArchiveFactory.CreateError.Reading(
                         ReadError.Access(FileSystemError.Forbidden(e))
                     )
                 )
             } catch (e: IOException) {
                 Try.failure(
-                    ArchiveFactory.Error.Reading(
+                    ArchiveFactory.CreateError.Reading(
                         ReadError.Access(FileSystemError.IO(e))
                     )
                 )
