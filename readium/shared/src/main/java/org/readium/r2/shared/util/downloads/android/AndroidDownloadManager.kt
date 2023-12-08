@@ -27,6 +27,7 @@ import org.readium.r2.shared.extensions.tryOr
 import org.readium.r2.shared.util.DebugError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.downloads.DownloadManager
+import org.readium.r2.shared.util.file.FileSystemError
 import org.readium.r2.shared.util.http.HttpError
 import org.readium.r2.shared.util.http.HttpStatus
 import org.readium.r2.shared.util.mediatype.FormatRegistry
@@ -292,8 +293,8 @@ public class AndroidDownloadManager internal constructor(
                 Try.success(download)
             } else {
                 Try.failure(
-                    DownloadManager.DownloadError.FileSystemError(
-                        DebugError("Failed to rename the downloaded file.")
+                    DownloadManager.DownloadError.FileSystem(
+                        FileSystemError.IO(DebugError("Failed to rename the downloaded file."))
                     )
                 )
             }
@@ -302,23 +303,29 @@ public class AndroidDownloadManager internal constructor(
     private fun mapErrorCode(code: Int): DownloadManager.DownloadError =
         when (code) {
             in 400 until 1000 ->
-                DownloadManager.DownloadError.HttpError(httpErrorForCode(code))
+                DownloadManager.DownloadError.Http(httpErrorForCode(code))
             SystemDownloadManager.ERROR_UNHANDLED_HTTP_CODE ->
-                DownloadManager.DownloadError.HttpError(httpErrorForCode(code))
+                DownloadManager.DownloadError.Http(httpErrorForCode(code))
             SystemDownloadManager.ERROR_HTTP_DATA_ERROR ->
-                DownloadManager.DownloadError.HttpError(HttpError.MalformedResponse(null))
+                DownloadManager.DownloadError.Http(HttpError.MalformedResponse(null))
             SystemDownloadManager.ERROR_TOO_MANY_REDIRECTS ->
-                DownloadManager.DownloadError.HttpError(
+                DownloadManager.DownloadError.Http(
                     HttpError.Redirection(DebugError("Too many redirects."))
                 )
             SystemDownloadManager.ERROR_CANNOT_RESUME ->
                 DownloadManager.DownloadError.CannotResume()
             SystemDownloadManager.ERROR_DEVICE_NOT_FOUND ->
-                DownloadManager.DownloadError.DeviceNotFound()
+                DownloadManager.DownloadError.FileSystem(
+                    FileSystemError.FileNotFound(
+                        DebugError("Missing device.")
+                    )
+                )
             SystemDownloadManager.ERROR_FILE_ERROR ->
-                DownloadManager.DownloadError.FileSystemError()
+                DownloadManager.DownloadError.FileSystem(
+                    FileSystemError.IO(DebugError("An error occurred on the filesystem."))
+                )
             SystemDownloadManager.ERROR_INSUFFICIENT_SPACE ->
-                DownloadManager.DownloadError.InsufficientSpace()
+                DownloadManager.DownloadError.FileSystem(FileSystemError.InsufficientSpace())
             SystemDownloadManager.ERROR_UNKNOWN ->
                 DownloadManager.DownloadError.Unknown()
             else ->

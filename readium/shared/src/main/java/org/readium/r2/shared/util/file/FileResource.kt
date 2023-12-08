@@ -124,7 +124,7 @@ public class FileResource(
         try {
             success(closure())
         } catch (e: FileNotFoundException) {
-            failure(ReadError.Access(FileSystemError.NotFound(e)))
+            failure(ReadError.Access(FileSystemError.FileNotFound(e)))
         } catch (e: SecurityException) {
             failure(ReadError.Access(FileSystemError.Forbidden(e)))
         } catch (e: IOException) {

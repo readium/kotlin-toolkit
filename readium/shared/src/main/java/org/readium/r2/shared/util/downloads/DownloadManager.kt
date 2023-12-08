@@ -11,6 +11,7 @@ import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Error
 import org.readium.r2.shared.util.downloads.android.AndroidDownloadManager
 import org.readium.r2.shared.util.downloads.foreground.ForegroundDownloadManager
+import org.readium.r2.shared.util.file.FileSystemError
 import org.readium.r2.shared.util.mediatype.MediaType
 
 /**
@@ -42,24 +43,16 @@ public interface DownloadManager {
         override val cause: Error? = null
     ) : Error {
 
-        public class HttpError(
+        public class Http(
             cause: org.readium.r2.shared.util.http.HttpError
         ) : DownloadError(cause.message, cause)
-
-        public class DeviceNotFound(
-            cause: Error? = null
-        ) : DownloadError("The storage device is missing.", cause)
 
         public class CannotResume(
             cause: Error? = null
         ) : DownloadError("Download couldn't be resumed.", cause)
 
-        public class InsufficientSpace(
-            cause: Error? = null
-        ) : DownloadError("There is not enough space to complete the download.", cause)
-
-        public class FileSystemError(
-            cause: Error? = null
+        public class FileSystem(
+            override val cause: FileSystemError
         ) : DownloadError("IO error on the local device.", cause)
 
         public class Unknown(

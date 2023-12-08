@@ -76,7 +76,7 @@ internal class FileZipArchiveProvider {
             } catch (e: FileNotFoundException) {
                 Try.failure(
                     ArchiveFactory.Error.Reading(
-                        ReadError.Access(FileSystemError.NotFound(e))
+                        ReadError.Access(FileSystemError.FileNotFound(e))
                     )
                 )
             } catch (e: ZipException) {

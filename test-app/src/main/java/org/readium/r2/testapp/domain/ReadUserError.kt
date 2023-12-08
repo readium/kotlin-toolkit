@@ -44,7 +44,10 @@ fun HttpError.toUserError(): UserError = when (this) {
 fun FileSystemError.toUserError(): UserError = when (this) {
     is FileSystemError.Forbidden -> UserError(R.string.publication_error_filesystem_unexpected)
     is FileSystemError.IO -> UserError(R.string.publication_error_filesystem_unexpected)
-    is FileSystemError.NotFound -> UserError(R.string.publication_error_filesystem_not_found)
+    is FileSystemError.InsufficientSpace -> UserError(
+        R.string.publication_error_filesystem_insufficient_space
+    )
+    is FileSystemError.FileNotFound -> UserError(R.string.publication_error_filesystem_not_found)
 }
 
 fun ContentResolverError.toUserError(): UserError = when (this) {

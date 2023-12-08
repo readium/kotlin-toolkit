@@ -18,7 +18,7 @@ public sealed class FileSystemError(
     override val cause: Error? = null
 ) : AccessError {
 
-    public class NotFound(
+    public class FileNotFound(
         cause: Error?
     ) : FileSystemError("File not found.", cause) {
 
@@ -38,4 +38,10 @@ public sealed class FileSystemError(
 
         public constructor(exception: Exception) : this(ThrowableError(exception))
     }
+
+    public class InsufficientSpace(
+        public val requiredSpace: Long? = null,
+        public val freespace: Long? = null,
+        cause: Error? = null
+    ) : FileSystemError("There is not enough space to do the operation.", cause)
 }
