@@ -130,21 +130,21 @@ public class ForegroundDownloadManager(
                 .mapFailure { DownloadManager.DownloadError.Http(it) }
                 .flatMap { res ->
                     withContext(Dispatchers.IO) {
-                        val expected = res.response.contentLength?.takeIf { it > 0 }
-                        val freespace = destination.freeSpace.takeUnless { it == 0L }
+                        res.body.use { input ->
+                            val expected = res.response.contentLength?.takeIf { it > 0 }
+                            val freespace = destination.freeSpace.takeUnless { it == 0L }
 
-                        if (expected != null && freespace != null && destination.freeSpace < expected) {
-                            return@withContext Try.failure(
-                                DownloadManager.DownloadError.FileSystem(
-                                    FileSystemError.InsufficientSpace(
-                                        requiredSpace = expected,
-                                        freespace = freespace
+                            if (expected != null && freespace != null && destination.freeSpace < expected) {
+                                return@withContext Try.failure(
+                                    DownloadManager.DownloadError.FileSystem(
+                                        FileSystemError.InsufficientSpace(
+                                            requiredSpace = expected,
+                                            freespace = freespace
+                                        )
                                     )
                                 )
-                            )
-                        }
+                            }
 
-                        res.body.use { input ->
                             FileOutputStream(destination).use { output ->
                                 val buf = ByteArray(DEFAULT_BUFFER_SIZE)
                                 var n: Int
