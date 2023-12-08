@@ -14,13 +14,37 @@ import java.util.Date
 import org.joda.time.DateTime
 
 /**
- * An exception that can be presented to the user using a localized message.
+ * An error that can be presented to the user using a localized message.
  */
-interface UserError {
-
-    val content: Content
-
+class UserError private constructor(
+    val content: Content,
     val cause: UserError?
+) {
+
+    constructor(@StringRes userMessageId: Int, vararg args: Any?, cause: UserError? = null) :
+        this(Content(userMessageId, *args), cause)
+
+    constructor(
+        @PluralsRes userMessageId: Int,
+        quantity: Int?,
+        vararg args: Any?,
+        cause: UserError? = null
+    ) :
+        this(Content(userMessageId, quantity, *args), cause)
+
+    constructor(message: String, cause: UserError? = null) :
+        this(Content(message), cause)
+
+    constructor(cause: UserError) :
+        this(Content.CauseUserError(cause), cause)
+
+    /**
+     * Gets the localized user-facing message for this exception.
+     *
+     * @param includesCauses Includes nested [UserError] causes in the user message when true.
+     */
+    fun getUserMessage(context: Context, includesCauses: Boolean = true): String =
+        content.getUserMessage(context, cause, includesCauses)
 
     /**
      * Provides a way to generate a localized user message.
@@ -36,13 +60,13 @@ interface UserError {
         /**
          * Holds a nested [UserError].
          */
-        class Error(val error: UserError) : Content() {
+        class CauseUserError(val exception: UserError) : Content() {
             override fun getUserMessage(
                 context: Context,
                 cause: UserError?,
                 includesCauses: Boolean
             ): String =
-                error.getUserMessage(context, includesCauses)
+                exception.getUserMessage(context, includesCauses)
         }
 
         /**
@@ -83,7 +107,7 @@ interface UserError {
                     }
 
                 if (cause != null && includesCauses) {
-                    message += ": ${cause.getUserMessage(context, true)}"
+                    message += ": ${cause.getUserMessage(context, includesCauses)}"
                 }
 
                 return message
@@ -111,18 +135,9 @@ interface UserError {
                 vararg args: Any?
             ): Content =
                 LocalizedString(userMessageId, args, quantity)
-            operator fun invoke(cause: UserError): Content =
-                Error(cause)
+
             operator fun invoke(message: String): Content =
                 Message(message)
         }
     }
 }
-
-/**
- * Gets the localized user-facing message for this exception.
- *
- * @param includesCauses Includes nested [UserError] causes in the user message when true.
- */
-fun UserError.getUserMessage(context: Context, includesCauses: Boolean = true): String =
-    content.getUserMessage(context, cause, includesCauses)

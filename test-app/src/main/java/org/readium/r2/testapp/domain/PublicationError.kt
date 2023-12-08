@@ -10,6 +10,8 @@ import org.readium.r2.shared.publication.protection.ContentProtectionSchemeRetri
 import org.readium.r2.shared.util.Error
 import org.readium.r2.shared.util.asset.AssetRetriever
 import org.readium.r2.streamer.PublicationFactory
+import org.readium.r2.testapp.R
+import org.readium.r2.testapp.utils.UserError
 
 sealed class PublicationError(
     override val message: String,
@@ -35,6 +37,24 @@ sealed class PublicationError(
 
     class Unexpected(cause: Error) :
         PublicationError(cause.message, cause.cause)
+
+    fun toUserError(): UserError =
+        when (this) {
+            is InvalidPublication ->
+                UserError(R.string.publication_error_invalid_publication)
+            is Unexpected ->
+                UserError(R.string.publication_error_unexpected)
+            is UnsupportedArchiveFormat ->
+                UserError(R.string.publication_error_unsupported_archive)
+            is UnsupportedContentProtection ->
+                UserError(R.string.publication_error_unsupported_protection)
+            is UnsupportedPublication ->
+                UserError(R.string.publication_error_unsupported_asset)
+            is UnsupportedScheme ->
+                UserError(R.string.publication_error_scheme_not_supported)
+            is ReadError ->
+                cause.toUserError()
+        }
 
     companion object {
 

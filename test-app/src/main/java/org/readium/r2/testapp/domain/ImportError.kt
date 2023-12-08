@@ -9,6 +9,8 @@ package org.readium.r2.testapp.domain
 import org.readium.r2.lcp.LcpError
 import org.readium.r2.shared.util.Error
 import org.readium.r2.shared.util.downloads.DownloadManager
+import org.readium.r2.testapp.R
+import org.readium.r2.testapp.utils.UserError
 
 sealed class ImportError(
     override val cause: Error?
@@ -34,4 +36,12 @@ sealed class ImportError(
 
     class DatabaseError(override val cause: Error) :
         ImportError(cause)
+
+    fun toUserError(): UserError = when (this) {
+        is DatabaseError -> UserError(R.string.import_publication_unable_add_pub_database)
+        is DownloadFailed -> UserError(R.string.import_publication_download_failed)
+        is LcpAcquisitionFailed -> cause.toUserError()
+        is OpdsError -> UserError(R.string.import_publication_no_acquisition)
+        is PublicationError -> cause.toUserError()
+    }
 }

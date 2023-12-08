@@ -12,6 +12,8 @@ import org.readium.navigator.media.tts.android.AndroidTtsEngine
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.Error
 import org.readium.r2.shared.util.ThrowableError
+import org.readium.r2.testapp.R
+import org.readium.r2.testapp.utils.UserError
 
 @OptIn(ExperimentalReadiumApi::class)
 sealed class TtsError(
@@ -37,4 +39,12 @@ sealed class TtsError(
 
     class Initialization(override val cause: TtsNavigatorFactory.Error) :
         TtsError(cause.message, cause)
+
+    fun toUserError(): UserError = when (this) {
+        is ContentError -> UserError(R.string.tts_error_other)
+        is EngineError.Network -> UserError(R.string.tts_error_network)
+        is EngineError.Other -> UserError(R.string.tts_error_other)
+        is Initialization -> UserError(R.string.tts_error_initialization)
+        is ServiceError -> UserError(R.string.error_unexpected)
+    }
 }

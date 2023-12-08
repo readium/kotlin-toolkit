@@ -25,7 +25,6 @@ import org.readium.r2.shared.publication.Publication
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.reader.preferences.UserPreferencesBottomSheetDialogFragment
 import org.readium.r2.testapp.utils.UserError
-import org.readium.r2.testapp.utils.getUserMessage
 
 /*
  * Base reader fragment class

@@ -28,7 +28,6 @@ import org.readium.r2.testapp.drm.DrmManagementFragment
 import org.readium.r2.testapp.outline.OutlineContract
 import org.readium.r2.testapp.outline.OutlineFragment
 import org.readium.r2.testapp.utils.UserError
-import org.readium.r2.testapp.utils.getUserMessage
 import org.readium.r2.testapp.utils.launchWebBrowser
 
 /*

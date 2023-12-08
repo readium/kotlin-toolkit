@@ -29,9 +29,7 @@ import org.readium.r2.testapp.R
 import org.readium.r2.testapp.data.model.Book
 import org.readium.r2.testapp.databinding.FragmentBookshelfBinding
 import org.readium.r2.testapp.opds.GridAutoFitLayoutManager
-import org.readium.r2.testapp.reader.OpeningUserError
 import org.readium.r2.testapp.reader.ReaderActivityContract
-import org.readium.r2.testapp.utils.getUserMessage
 import org.readium.r2.testapp.utils.viewLifecycle
 import timber.log.Timber
 
@@ -160,7 +158,7 @@ class BookshelfFragment : Fragment() {
             when (event) {
                 is BookshelfViewModel.Event.OpenPublicationError -> {
                     Timber.e(event.error.toDebugDescription())
-                    OpeningUserError(event.error).getUserMessage(requireContext())
+                    (event.error).toUserError().getUserMessage(requireContext())
                 }
 
                 is BookshelfViewModel.Event.LaunchReader -> {

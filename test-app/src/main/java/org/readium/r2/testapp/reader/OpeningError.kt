@@ -7,6 +7,8 @@
 package org.readium.r2.testapp.reader
 
 import org.readium.r2.shared.util.Error
+import org.readium.r2.testapp.R
+import org.readium.r2.testapp.utils.UserError
 
 sealed class OpeningError(
     override val cause: Error?
@@ -26,4 +28,14 @@ sealed class OpeningError(
     class AudioEngineInitialization(
         cause: Error
     ) : OpeningError(cause)
+
+    fun toUserError(): UserError =
+        when (this) {
+            is AudioEngineInitialization ->
+                UserError(R.string.opening_publication_audio_engine_initialization)
+            is PublicationError ->
+                cause.toUserError()
+            is RestrictedPublication ->
+                UserError(R.string.publication_error_restricted)
+        }
 }
