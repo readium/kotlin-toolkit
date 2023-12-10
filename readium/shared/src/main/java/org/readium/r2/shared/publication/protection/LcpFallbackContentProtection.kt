@@ -35,12 +35,13 @@ public class LcpFallbackContentProtection : ContentProtection {
             !asset.format.conformsTo(Format.RPF_AUDIO_LCP) &&
             !asset.format.conformsTo(Format.RPF_IMAGE_LCP) &&
             !asset.format.conformsTo(Format.RPF_PDF_LCP)
-            ) {
+        ) {
             return Try.failure(ContentProtection.OpenError.AssetNotSupported())
         }
 
         if (asset !is ContainerAsset) {
-            return Try.failure(ContentProtection.OpenError.AssetNotSupported()
+            return Try.failure(
+                ContentProtection.OpenError.AssetNotSupported()
             )
         }
 

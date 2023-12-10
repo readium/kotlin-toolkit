@@ -16,13 +16,13 @@ import kotlinx.coroutines.withContext
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.asset.ArchiveOpener
 import org.readium.r2.shared.util.asset.ContainerAsset
+import org.readium.r2.shared.util.asset.SniffError
 import org.readium.r2.shared.util.data.Container
 import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.file.FileSystemError
 import org.readium.r2.shared.util.format.Format
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.resource.Resource
-import org.readium.r2.shared.util.asset.SniffError
 
 /**
  * An [ArchiveOpener] to open local ZIP files with Java's [ZipFile].

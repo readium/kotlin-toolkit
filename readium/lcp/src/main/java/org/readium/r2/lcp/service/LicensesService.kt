@@ -42,9 +42,9 @@ import org.readium.r2.shared.util.asset.ContainerAsset
 import org.readium.r2.shared.util.asset.ResourceAsset
 import org.readium.r2.shared.util.downloads.DownloadManager
 import org.readium.r2.shared.util.format.Format
+import org.readium.r2.shared.util.format.FormatHints
 import org.readium.r2.shared.util.format.FormatRegistry
 import org.readium.r2.shared.util.getOrElse
-import org.readium.r2.shared.util.sniff.FormatHints
 import timber.log.Timber
 
 internal class LicensesService(

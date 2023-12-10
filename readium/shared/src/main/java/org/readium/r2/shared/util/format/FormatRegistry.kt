@@ -27,7 +27,10 @@ public class FormatRegistry(
         Format.RPF_IMAGE to FormatInfo(MediaType.DIVINA, FileExtension("divina")),
         Format.RWPM_IMAGE to FormatInfo(MediaType.DIVINA_MANIFEST, FileExtension("json")),
         Format.EPUB to FormatInfo(MediaType.EPUB, FileExtension("epub")),
-        Format.LCP_LICENSE_DOCUMENT to FormatInfo(MediaType.LCP_LICENSE_DOCUMENT, FileExtension("lcpl")),
+        Format.LCP_LICENSE_DOCUMENT to FormatInfo(
+            MediaType.LCP_LICENSE_DOCUMENT,
+            FileExtension("lcpl")
+        ),
         Format.RPF_AUDIO_LCP to FormatInfo(MediaType.LCP_PROTECTED_AUDIOBOOK, FileExtension("lcpa")),
         Format.RPF_PDF_LCP to FormatInfo(MediaType.LCP_PROTECTED_PDF, FileExtension("lcpdf")),
         Format.PDF to FormatInfo(MediaType.PDF, FileExtension("pdf")),

@@ -25,7 +25,6 @@ import org.readium.r2.shared.util.format.FormatRegistry
 import org.readium.r2.shared.util.http.DefaultHttpClient
 import org.readium.r2.shared.util.http.HttpResourceFactory
 import org.readium.r2.shared.util.resource.CompositeResourceFactory
-import org.readium.r2.shared.util.sniff.DefaultContentSniffer
 import org.readium.r2.shared.util.zip.ZipArchiveOpener
 import org.readium.r2.streamer.PublicationFactory
 
@@ -41,7 +40,7 @@ class Readium(context: Context) {
         FormatRegistry()
 
     private val assetSniffer =
-        AssetSniffer(DefaultContentSniffer, archiveOpener)
+        AssetSniffer(archiveOpener = archiveOpener)
 
     val httpClient = DefaultHttpClient()
 
@@ -54,7 +53,7 @@ class Readium(context: Context) {
     val assetOpener = AssetOpener(
         assetSniffer,
         resourceFactory,
-        archiveOpener,
+        archiveOpener
     )
 
     val downloadManager = AndroidDownloadManager(

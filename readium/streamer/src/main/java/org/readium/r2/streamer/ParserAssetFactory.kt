@@ -20,9 +20,9 @@ import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.data.decodeRwpm
 import org.readium.r2.shared.util.data.readDecodeOrElse
 import org.readium.r2.shared.util.format.Format
+import org.readium.r2.shared.util.format.FormatRegistry
 import org.readium.r2.shared.util.http.HttpClient
 import org.readium.r2.shared.util.http.HttpContainer
-import org.readium.r2.shared.util.format.FormatRegistry
 import org.readium.r2.shared.util.resource.SingleResourceContainer
 import org.readium.r2.streamer.parser.PublicationParser
 import timber.log.Timber

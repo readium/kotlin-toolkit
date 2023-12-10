@@ -21,8 +21,8 @@ sealed class ImportError(
     override val message: String =
         "Import failed"
 
-    object MissingLcpSupport
-        : ImportError(DebugError("Lcp support is missing."))
+    object MissingLcpSupport :
+        ImportError(DebugError("Lcp support is missing."))
 
     class LcpAcquisitionFailed(
         override val cause: LcpError

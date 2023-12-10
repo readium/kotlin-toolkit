@@ -47,7 +47,7 @@ public class CompositeResourceFactory(
     public constructor(vararg factories: ResourceFactory) : this(factories.toList())
 
     override suspend fun create(
-        url: AbsoluteUrl,
+        url: AbsoluteUrl
     ): Try<Resource, ResourceFactory.Error> {
         for (factory in factories) {
             factory.create(url)

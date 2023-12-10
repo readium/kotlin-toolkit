@@ -109,7 +109,7 @@ internal class LcpdfPositionsService(
             }
     }
 
-    companion   object {
+    companion object {
 
         fun create(pdfFactory: PdfDocumentFactory<*>): (Publication.Service.Context) -> LcpdfPositionsService = { serviceContext ->
             LcpdfPositionsService(

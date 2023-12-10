@@ -141,7 +141,8 @@ class Bookshelf(
                     .getOrElse {
                         return Try.failure(
                             ImportError.FileSystem(
-                                FileSystemError.IO(it))
+                                FileSystemError.IO(it)
+                            )
                         )
                     }
 

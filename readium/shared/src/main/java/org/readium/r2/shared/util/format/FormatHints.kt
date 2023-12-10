@@ -4,10 +4,9 @@
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.r2.shared.util.sniff
+package org.readium.r2.shared.util.format
 
 import java.nio.charset.Charset
-import org.readium.r2.shared.util.format.Format
 import org.readium.r2.shared.util.mediatype.MediaType
 
 /**

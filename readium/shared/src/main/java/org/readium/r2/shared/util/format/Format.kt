@@ -60,7 +60,6 @@ public value class Format(public val id: String) {
         public val TIFF: Format = Format("tiff")
         public val WEBP: Format = Format("webp")
 
-
         public val XML: Format = Format("xml")
         public val XHTML: Format = Format("xml.html")
         public val ATOM: Format = Format("xml.atom")

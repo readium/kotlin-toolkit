@@ -242,7 +242,7 @@ public class AndroidDownloadManager internal constructor(
             SystemDownloadManager.STATUS_SUCCESSFUL -> {
                 prepareResult(
                     Uri.parse(facade.localUri!!)!!.toFile(),
-                    mediaType= facade.mediaType?.let { MediaType(it) }
+                    mediaType = facade.mediaType?.let { MediaType(it) }
                 )
                     .onSuccess { download ->
                         listenersForId.forEach { it.onDownloadCompleted(id, download) }

@@ -119,8 +119,8 @@ class ReaderRepository(
             else ->
                 Try.failure(
                     OpeningError.CannotRender(
-                            DebugError("No navigator supports this publication.")
-                        )
+                        DebugError("No navigator supports this publication.")
+                    )
                 )
         }
 

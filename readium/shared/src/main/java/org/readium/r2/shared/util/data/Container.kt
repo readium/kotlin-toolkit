@@ -11,7 +11,6 @@ import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.SuspendingCloseable
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
-import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.use
 
 /**

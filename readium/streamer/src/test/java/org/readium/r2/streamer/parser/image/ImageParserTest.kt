@@ -22,11 +22,11 @@ import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.asset.AssetSniffer
 import org.readium.r2.shared.util.checkSuccess
 import org.readium.r2.shared.util.file.FileResource
+import org.readium.r2.shared.util.format.DefaultContentSniffer
 import org.readium.r2.shared.util.format.Format
 import org.readium.r2.shared.util.format.FormatRegistry
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.resource.SingleResourceContainer
-import org.readium.r2.shared.util.sniff.DefaultContentSniffer
 import org.readium.r2.shared.util.toUrl
 import org.readium.r2.shared.util.zip.ZipArchiveOpener
 import org.readium.r2.streamer.parseBlocking

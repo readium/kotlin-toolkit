@@ -18,9 +18,9 @@ import org.readium.r2.shared.util.ErrorException
 import org.readium.r2.shared.util.asset.AssetSniffer
 import org.readium.r2.shared.util.downloads.DownloadManager
 import org.readium.r2.shared.util.format.Format
+import org.readium.r2.shared.util.format.FormatHints
 import org.readium.r2.shared.util.format.FormatRegistry
 import org.readium.r2.shared.util.getOrElse
-import org.readium.r2.shared.util.sniff.FormatHints
 
 /**
  * Utility to acquire a protected publication from an LCP License Document.
@@ -28,7 +28,7 @@ import org.readium.r2.shared.util.sniff.FormatHints
 public class LcpPublicationRetriever(
     context: Context,
     private val downloadManager: DownloadManager,
-    private val assetSniffer: AssetSniffer,
+    private val assetSniffer: AssetSniffer
 ) {
 
     @JvmInline

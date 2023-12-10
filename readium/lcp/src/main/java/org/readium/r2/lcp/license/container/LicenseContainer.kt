@@ -79,7 +79,7 @@ internal fun createLicenseContainer(
     format: Format
 ): LicenseContainer {
     val licensePath = when {
-         format.conformsTo(Format.EPUB) -> LICENSE_IN_EPUB
+        format.conformsTo(Format.EPUB) -> LICENSE_IN_EPUB
         // Assuming it's a Readium WebPub package (e.g. audiobook, LCPDF, etc.) as a fallback
         else -> LICENSE_IN_RPF
     }

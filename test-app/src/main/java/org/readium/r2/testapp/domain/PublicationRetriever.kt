@@ -6,7 +6,6 @@
 
 package org.readium.r2.testapp.domain
 
-import org.readium.r2.lcp.LcpPublicationRetriever as ReadiumLcpPublicationRetriever
 import android.content.Context
 import android.net.Uri
 import java.io.File
@@ -15,6 +14,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import org.readium.r2.lcp.LcpError
+import org.readium.r2.lcp.LcpPublicationRetriever as ReadiumLcpPublicationRetriever
 import org.readium.r2.lcp.LcpService
 import org.readium.r2.lcp.license.model.LicenseDocument
 import org.readium.r2.shared.publication.Publication

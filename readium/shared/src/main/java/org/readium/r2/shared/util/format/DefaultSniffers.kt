@@ -4,7 +4,7 @@
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.r2.shared.util.sniff
+package org.readium.r2.shared.util.format
 
 import java.util.Locale
 import org.json.JSONObject
@@ -25,31 +25,8 @@ import org.readium.r2.shared.util.data.decodeRwpm
 import org.readium.r2.shared.util.data.decodeString
 import org.readium.r2.shared.util.data.decodeXml
 import org.readium.r2.shared.util.data.readDecodeOrElse
-import org.readium.r2.shared.util.format.Format
 import org.readium.r2.shared.util.getOrDefault
 import org.readium.r2.shared.util.getOrElse
-
-public object DefaultContentSniffer
-    : ContentSniffer by CompositeContentSniffer(
-    listOf(
-        RpfSniffer,
-        EpubSniffer,
-        LpfSniffer,
-        ArchiveSniffer,
-        PdfSniffer,
-        BitmapSniffer,
-        XhtmlSniffer,
-        HtmlSniffer,
-        OpdsSniffer,
-        LcpLicenseSniffer,
-        LcpSniffer,
-        W3cWpubSniffer,
-        RwpmSniffer,
-        JsonSniffer,
-        ZipSniffer,
-        RarSniffer
-    )
-)
 
 /**
  * Sniffs an XHTML document.
@@ -76,7 +53,7 @@ public object XhtmlSniffer : ContentSniffer {
         source: Readable
     ): Try<Format?, ReadError> {
         if (format?.conformsTo(Format.XML) == false || !source.canReadWholeBlob()) {
-                return Try.success(format)
+            return Try.success(format)
         }
 
         source.readDecodeOrElse(
@@ -192,7 +169,7 @@ public object OpdsSniffer : ContentSniffer {
         format: Format?,
         source: Readable
     ): Try<Format?, ReadError> {
-        if (!source.canReadWholeBlob() ) {
+        if (!source.canReadWholeBlob()) {
             return Try.success(format)
         }
 
@@ -253,10 +230,10 @@ public object OpdsSniffer : ContentSniffer {
                     firstOrNull { it.rels.any(predicate) }
 
                 if (rwpm.links.firstWithRelMatching {
-                        it.startsWith(
+                    it.startsWith(
                             "http://opds-spec.org/acquisition"
                         )
-                    } != null
+                } != null
                 ) {
                     return Try.success(Format.OPDS2_PUBLICATION)
                 }
@@ -295,8 +272,8 @@ public object LcpLicenseSniffer : ContentSniffer {
         if (
             format?.conformsTo(Format.JSON) == false ||
             !source.canReadWholeBlob()
-            ) {
-                return Try.success(format)
+        ) {
+            return Try.success(format)
         }
 
         source.containsJsonKeys("id", "issued", "provider", "encryption")
@@ -394,8 +371,8 @@ public object RwpmSniffer : ContentSniffer {
         if (
             format?.conformsTo(Format.JSON) == false ||
             !source.canReadWholeBlob()
-            ) {
-                return Try.success(format)
+        ) {
+            return Try.success(format)
         }
 
         val manifest: Manifest =
@@ -826,7 +803,8 @@ public object JsonSniffer : ContentSniffer {
         hints: FormatHints
     ): Format? {
         if (hints.hasFileExtension("json") ||
-            hints.hasMediaType("application/json")) {
+            hints.hasMediaType("application/json")
+        ) {
             return Format.JSON
         }
 
@@ -900,34 +878,34 @@ public object LcpSniffer : ContentSniffer {
         format: Format?,
         container: Container<Readable>
     ): Try<Format?, ReadError> {
-       when {
-           format?.conformsTo(Format.RPF) == true -> {
-               val isLcpProtected = RelativeUrl("license.lcpl")!! in container ||
-                   hasLcpSchemeInManifest(container)
-                       .getOrElse { return Try.failure(it) }
+        when {
+            format?.conformsTo(Format.RPF) == true -> {
+                val isLcpProtected = RelativeUrl("license.lcpl")!! in container ||
+                    hasLcpSchemeInManifest(container)
+                        .getOrElse { return Try.failure(it) }
 
-               if (isLcpProtected) {
-                   val newFormat = when (format) {
-                       Format.RPF_IMAGE -> Format.RPF_IMAGE_LCP
-                       Format.RPF_AUDIO -> Format.RPF_AUDIO_LCP
-                       Format.RPF_PDF -> Format.RPF_PDF_LCP
-                       Format.RPF -> Format.RPF_LCP
-                       else -> null
-                   }
-                   newFormat?.let { return Try.success(it) }
-               }
-           }
+                if (isLcpProtected) {
+                    val newFormat = when (format) {
+                        Format.RPF_IMAGE -> Format.RPF_IMAGE_LCP
+                        Format.RPF_AUDIO -> Format.RPF_AUDIO_LCP
+                        Format.RPF_PDF -> Format.RPF_PDF_LCP
+                        Format.RPF -> Format.RPF_LCP
+                        else -> null
+                    }
+                    newFormat?.let { return Try.success(it) }
+                }
+            }
 
-           format?.conformsTo(Format.EPUB) == true -> {
-               val isLcpProtected = RelativeUrl("META-INF/license.lcpl")!! in container ||
-                   hasLcpSchemeInEncryptionXml(container)
-                       .getOrElse { return Try.failure(it) }
+            format?.conformsTo(Format.EPUB) == true -> {
+                val isLcpProtected = RelativeUrl("META-INF/license.lcpl")!! in container ||
+                    hasLcpSchemeInEncryptionXml(container)
+                        .getOrElse { return Try.failure(it) }
 
-               if (isLcpProtected) {
-                   return Try.success(Format.EPUB_LCP)
-               }
-           }
-       }
+                if (isLcpProtected) {
+                    return Try.success(Format.EPUB_LCP)
+                }
+            }
+        }
 
         return Try.success(format)
     }

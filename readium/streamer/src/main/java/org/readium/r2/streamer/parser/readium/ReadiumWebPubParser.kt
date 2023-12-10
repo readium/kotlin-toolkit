@@ -97,4 +97,3 @@ public class ReadiumWebPubParser(
         return Try.success(publicationBuilder)
     }
 }
-

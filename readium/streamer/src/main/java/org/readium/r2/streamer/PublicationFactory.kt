@@ -171,7 +171,6 @@ public class PublicationFactory(
 
         val parserAsset = PublicationParser.Asset(asset.format, asset.container)
 
-
         return openParserAsset(parserAsset, compositeOnCreatePublication, warnings)
     }
 
