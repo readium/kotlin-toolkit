@@ -19,10 +19,10 @@ import org.readium.r2.shared.util.data.CompositeContainer
 import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.data.decodeRwpm
 import org.readium.r2.shared.util.data.readDecodeOrElse
+import org.readium.r2.shared.util.format.Format
 import org.readium.r2.shared.util.http.HttpClient
 import org.readium.r2.shared.util.http.HttpContainer
-import org.readium.r2.shared.util.mediatype.FormatRegistry
-import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.shared.util.format.FormatRegistry
 import org.readium.r2.shared.util.resource.SingleResourceContainer
 import org.readium.r2.streamer.parser.PublicationParser
 import timber.log.Timber
@@ -62,7 +62,7 @@ internal class ParserAssetFactory(
     ): Try<PublicationParser.Asset, CreateError> =
         Try.success(
             PublicationParser.Asset(
-                mediaType = asset.mediaType,
+                format = asset.format,
                 container = asset.container
             )
         )
@@ -70,7 +70,7 @@ internal class ParserAssetFactory(
     private suspend fun createParserAssetForResource(
         asset: ResourceAsset
     ): Try<PublicationParser.Asset, CreateError> =
-        if (asset.mediaType.isRwpm) {
+        if (asset.format.conformsTo(Format.RWPM)) {
             createParserAssetForManifest(asset)
         } else {
             createParserAssetForContent(asset)
@@ -120,7 +120,7 @@ internal class ParserAssetFactory(
 
         return Try.success(
             PublicationParser.Asset(
-                mediaType = MediaType.READIUM_WEBPUB,
+                format = Format.RPF,
                 container = container
             )
         )
@@ -133,7 +133,9 @@ internal class ParserAssetFactory(
         // HREF "/$assetName". This was fragile if the asset named changed, or was different on
         // other devices. To avoid this, we now use a single link with the HREF
         // "publication.extension".
-        val extension = formatRegistry.fileExtension(asset.mediaType)?.addPrefix(".") ?: ""
+        val extension = formatRegistry[asset.format]
+            ?.fileExtension?.value?.addPrefix(".")
+            ?: ""
         val container = SingleResourceContainer(
             Url("publication$extension")!!,
             asset.resource
@@ -141,7 +143,7 @@ internal class ParserAssetFactory(
 
         return Try.success(
             PublicationParser.Asset(
-                mediaType = asset.mediaType,
+                format = asset.format,
                 container = container
             )
         )

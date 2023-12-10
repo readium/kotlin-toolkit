@@ -14,8 +14,8 @@ import org.joda.time.DateTime
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.indexOfFirstWithHref
-import org.readium.r2.shared.publication.protection.ContentProtection
 import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.format.Format
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.testapp.data.db.BooksDao
 import org.readium.r2.testapp.data.model.Book
@@ -81,8 +81,8 @@ class BookRepository(
 
     suspend fun insertBook(
         url: Url,
+        format: Format,
         mediaType: MediaType,
-        drm: ContentProtection.Scheme?,
         publication: Publication,
         cover: File
     ): Long {
@@ -92,8 +92,8 @@ class BookRepository(
             author = publication.metadata.authorName,
             href = url.toString(),
             identifier = publication.metadata.identifier ?: "",
+            format = format,
             mediaType = mediaType,
-            drm = drm,
             progression = "{}",
             cover = cover.path
         )

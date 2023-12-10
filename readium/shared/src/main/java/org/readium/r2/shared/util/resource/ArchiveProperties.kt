@@ -4,14 +4,13 @@
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.r2.shared.util.archive
+package org.readium.r2.shared.util.resource
 
 import org.json.JSONObject
 import org.readium.r2.shared.JSONable
 import org.readium.r2.shared.extensions.optNullableBoolean
 import org.readium.r2.shared.extensions.optNullableLong
 import org.readium.r2.shared.extensions.toMap
-import org.readium.r2.shared.util.resource.Resource
 
 /**
  * Holds information about how the resource is stored in the archive.

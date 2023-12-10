@@ -72,7 +72,7 @@ class ReaderRepository(
 
         val book = checkNotNull(bookRepository.get(bookId)) { "Cannot find book in database." }
 
-        val asset = readium.assetRetriever.retrieve(
+        val asset = readium.assetOpener.open(
             book.url,
             book.mediaType
         ).getOrElse {
@@ -85,7 +85,6 @@ class ReaderRepository(
 
         val publication = readium.publicationFactory.open(
             asset,
-            contentProtectionScheme = book.drmScheme,
             allowUserInteraction = true
         ).getOrElse {
             return Try.failure(
@@ -119,11 +118,9 @@ class ReaderRepository(
                 openImage(bookId, publication, initialLocator)
             else ->
                 Try.failure(
-                    OpeningError.PublicationError(
-                        PublicationError.UnsupportedPublication(
+                    OpeningError.CannotRender(
                             DebugError("No navigator supports this publication.")
                         )
-                    )
                 )
         }
 
@@ -143,10 +140,8 @@ class ReaderRepository(
             publication,
             ExoPlayerEngineProvider(application)
         ) ?: return Try.failure(
-            OpeningError.PublicationError(
-                PublicationError.UnsupportedPublication(
-                    DebugError("Cannot create audio navigator factory.")
-                )
+            OpeningError.CannotRender(
+                DebugError("Cannot create audio navigator factory.")
             )
         )
 
@@ -159,7 +154,7 @@ class ReaderRepository(
                     is AudioNavigatorFactory.Error.EngineInitialization ->
                         OpeningError.AudioEngineInitialization(it)
                     is AudioNavigatorFactory.Error.UnsupportedPublication ->
-                        OpeningError.PublicationError(PublicationError.UnsupportedPublication(it))
+                        OpeningError.CannotRender(it)
                 }
             )
         }

@@ -8,8 +8,10 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.readium.r2.shared.Fixtures
 import org.readium.r2.shared.util.checkSuccess
+import org.readium.r2.shared.util.format.FormatRegistry
 import org.readium.r2.shared.util.resource.StringResource
-import org.readium.r2.shared.util.zip.ZipArchiveFactory
+import org.readium.r2.shared.util.sniff.SniffError
+import org.readium.r2.shared.util.zip.ZipArchiveOpener
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows.shadowOf
 
@@ -21,7 +23,7 @@ class MediaTypeRetrieverTest {
     private val retriever = MediaTypeRetriever(
         DefaultMediaTypeSniffer(),
         FormatRegistry(),
-        ZipArchiveFactory()
+        ZipArchiveOpener()
     )
 
     @Test
@@ -92,7 +94,7 @@ class MediaTypeRetrieverTest {
         assertNull(retriever.retrieve(mediaType = "invalid"))
         assertEquals(
             retriever.retrieve(fixtures.fileAt("unknown")).failureOrNull(),
-            MediaTypeSnifferError.NotRecognized
+            SniffError.NotRecognized
         )
     }
 

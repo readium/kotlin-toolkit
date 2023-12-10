@@ -15,6 +15,7 @@ import org.readium.r2.shared.publication.services.InMemoryCoverService
 import org.readium.r2.shared.util.DebugError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.data.ReadError
+import org.readium.r2.shared.util.format.Format
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.mediatype.MediaType
@@ -38,7 +39,7 @@ public class PdfParser(
         asset: PublicationParser.Asset,
         warnings: WarningLogger?
     ): Try<Publication.Builder, PublicationParser.Error> {
-        if (asset.mediaType != MediaType.PDF) {
+        if (!asset.format.conformsTo(Format.PDF)) {
             return Try.failure(PublicationParser.Error.FormatNotSupported())
         }
 

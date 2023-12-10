@@ -9,11 +9,6 @@
 
 package org.readium.r2.shared.publication.protection
 
-import kotlin.Boolean
-import kotlin.Deprecated
-import kotlin.DeprecationLevel
-import kotlin.String
-import kotlin.Unit
 import org.readium.r2.shared.publication.LocalizedString
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.services.ContentProtectionService
@@ -21,7 +16,7 @@ import org.readium.r2.shared.util.Error
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.data.Container
 import org.readium.r2.shared.util.data.ReadError
-import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.shared.util.format.Format
 import org.readium.r2.shared.util.resource.Resource
 
 /**
@@ -43,18 +38,11 @@ public interface ContentProtection {
         ) : OpenError("An error occurred while trying to read asset.", cause)
 
         public class AssetNotSupported(
-            override val cause: Error?
+            override val cause: Error? = null
         ) : OpenError("Asset is not supported.", cause)
     }
 
     public val scheme: Scheme
-
-    /**
-     * Returns if this [ContentProtection] supports the given [asset].
-     */
-    public suspend fun supports(
-        asset: org.readium.r2.shared.util.asset.Asset
-    ): Try<Boolean, ReadError>
 
     /**
      * Attempts to unlock a potentially protected publication asset.
@@ -71,14 +59,14 @@ public interface ContentProtection {
     /**
      * Holds the result of opening an [Asset] with a [ContentProtection].
      *
-     * @property mediaType Media type of the asset
+     * @property format Format of the asset
      * @property container Container to access the publication through
      * @property onCreatePublication Called on every parsed Publication.Builder
      * It can be used to modify the `Manifest`, the root [Container] or the list of service
      * factories of a [Publication].
      */
     public data class Asset(
-        val mediaType: MediaType,
+        val format: Format,
         val container: Container<Resource>,
         val onCreatePublication: Publication.Builder.() -> Unit = {}
     )

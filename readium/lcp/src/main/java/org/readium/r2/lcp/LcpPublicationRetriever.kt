@@ -15,12 +15,12 @@ import org.readium.r2.lcp.license.model.LicenseDocument
 import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.ErrorException
+import org.readium.r2.shared.util.asset.AssetSniffer
 import org.readium.r2.shared.util.downloads.DownloadManager
+import org.readium.r2.shared.util.format.Format
+import org.readium.r2.shared.util.format.FormatRegistry
 import org.readium.r2.shared.util.getOrElse
-import org.readium.r2.shared.util.mediatype.FormatRegistry
-import org.readium.r2.shared.util.mediatype.MediaType
-import org.readium.r2.shared.util.mediatype.MediaTypeHints
-import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
+import org.readium.r2.shared.util.sniff.FormatHints
 
 /**
  * Utility to acquire a protected publication from an LCP License Document.
@@ -28,7 +28,7 @@ import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 public class LcpPublicationRetriever(
     context: Context,
     private val downloadManager: DownloadManager,
-    private val mediaTypeRetriever: MediaTypeRetriever
+    private val assetSniffer: AssetSniffer,
 ) {
 
     @JvmInline
@@ -194,19 +194,20 @@ public class LcpPublicationRetriever(
                     }
                 downloadsRepository.removeDownload(requestId.value)
 
-                val mediaTypeWithoutLicense = mediaTypeRetriever.retrieve(
-                    download.file,
-                    MediaTypeHints(
-                        mediaTypes = listOfNotNull(
-                            license.publicationLink.mediaType,
-                            download.mediaType
+                val formatWithoutLicense =
+                    assetSniffer.sniff(
+                        download.file,
+                        FormatHints(
+                            mediaTypes = listOfNotNull(
+                                license.publicationLink.mediaType,
+                                download.mediaType
+                            )
                         )
-                    )
-                ).getOrElse { MediaType.EPUB }
+                    ).getOrElse { Format.EPUB }
 
                 try {
                     // Saves the License Document into the downloaded publication
-                    val container = createLicenseContainer(download.file, mediaTypeWithoutLicense)
+                    val container = createLicenseContainer(download.file, formatWithoutLicense)
                     container.write(license)
                 } catch (e: Exception) {
                     tryOrLog { download.file.delete() }
@@ -216,20 +217,21 @@ public class LcpPublicationRetriever(
                     return@launch
                 }
 
-                val mediaType = mediaTypeRetriever.retrieve(
+                val format = assetSniffer.sniff(
                     download.file,
-                    MediaTypeHints(
+                    FormatHints(
+                        format = formatWithoutLicense,
                         mediaTypes = listOfNotNull(
                             license.publicationLink.mediaType,
                             download.mediaType
                         )
                     )
-                ).getOrElse { MediaType.EPUB }
+                ).getOrElse { formatWithoutLicense }
 
                 val acquiredPublication = LcpService.AcquiredPublication(
                     localFile = download.file,
-                    suggestedFilename = "${license.id}.${formatRegistry.fileExtension(mediaType) ?: "epub"}",
-                    mediaType = mediaType,
+                    suggestedFilename = "${license.id}.${format.fileExtension}",
+                    format,
                     licenseDocument = license
                 )
 
@@ -285,4 +287,7 @@ public class LcpPublicationRetriever(
             listeners.remove(lcpRequestId)
         }
     }
+
+    private val Format.fileExtension: String get() =
+        formatRegistry[this]?.fileExtension?.value ?: "epub"
 }

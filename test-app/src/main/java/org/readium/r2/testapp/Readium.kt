@@ -14,20 +14,19 @@ import org.readium.r2.lcp.LcpService
 import org.readium.r2.lcp.auth.LcpDialogAuthentication
 import org.readium.r2.navigator.preferences.FontFamily
 import org.readium.r2.shared.ExperimentalReadiumApi
-import org.readium.r2.shared.publication.protection.ContentProtectionSchemeRetriever
 import org.readium.r2.shared.util.DebugError
 import org.readium.r2.shared.util.Try
-import org.readium.r2.shared.util.asset.AssetRetriever
+import org.readium.r2.shared.util.asset.AssetOpener
+import org.readium.r2.shared.util.asset.AssetSniffer
 import org.readium.r2.shared.util.content.ContentResourceFactory
 import org.readium.r2.shared.util.downloads.android.AndroidDownloadManager
 import org.readium.r2.shared.util.file.FileResourceFactory
+import org.readium.r2.shared.util.format.FormatRegistry
 import org.readium.r2.shared.util.http.DefaultHttpClient
 import org.readium.r2.shared.util.http.HttpResourceFactory
-import org.readium.r2.shared.util.mediatype.DefaultMediaTypeSniffer
-import org.readium.r2.shared.util.mediatype.FormatRegistry
-import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 import org.readium.r2.shared.util.resource.CompositeResourceFactory
-import org.readium.r2.shared.util.zip.ZipArchiveFactory
+import org.readium.r2.shared.util.sniff.DefaultContentSniffer
+import org.readium.r2.shared.util.zip.ZipArchiveOpener
 import org.readium.r2.streamer.PublicationFactory
 
 /**
@@ -35,21 +34,14 @@ import org.readium.r2.streamer.PublicationFactory
  */
 class Readium(context: Context) {
 
-    private val mediaTypeSniffer =
-        DefaultMediaTypeSniffer()
-
-    private val archiveFactory =
-        ZipArchiveFactory()
+    private val archiveOpener =
+        ZipArchiveOpener()
 
     val formatRegistry =
         FormatRegistry()
 
-    private val mediaTypeRetriever =
-        MediaTypeRetriever(
-            mediaTypeSniffer,
-            formatRegistry,
-            archiveFactory
-        )
+    private val assetSniffer =
+        AssetSniffer(DefaultContentSniffer, archiveOpener)
 
     val httpClient = DefaultHttpClient()
 
@@ -59,17 +51,14 @@ class Readium(context: Context) {
         HttpResourceFactory(httpClient)
     )
 
-    val assetRetriever = AssetRetriever(
-        mediaTypeRetriever,
+    val assetOpener = AssetOpener(
+        assetSniffer,
         resourceFactory,
-        archiveFactory,
-        formatRegistry
+        archiveOpener,
     )
 
     val downloadManager = AndroidDownloadManager(
         context = context,
-        mediaTypeRetriever = mediaTypeRetriever,
-        formatRegistry = formatRegistry,
         destStorage = AndroidDownloadManager.Storage.App
     )
 
@@ -79,8 +68,8 @@ class Readium(context: Context) {
      */
     val lcpService = LcpService(
         context,
-        assetRetriever,
-        mediaTypeRetriever,
+        assetOpener,
+        assetSniffer,
         downloadManager
     )?.let { Try.success(it) }
         ?: Try.failure(LcpError.Unknown(DebugError("liblcp is missing on the classpath")))
@@ -91,10 +80,6 @@ class Readium(context: Context) {
         lcpService.getOrNull()?.contentProtection(lcpDialogAuthentication)
     )
 
-    val protectionRetriever = ContentProtectionSchemeRetriever(
-        contentProtections
-    )
-
     /**
      * The PublicationFactory is used to parse and open publications.
      */
@@ -102,7 +87,7 @@ class Readium(context: Context) {
         context,
         contentProtections = contentProtections,
         formatRegistry = formatRegistry,
-        mediaTypeRetriever = mediaTypeRetriever,
+        assetSniffer = assetSniffer,
         httpClient = httpClient,
         // Only required if you want to support PDF files using the PDFium adapter.
         pdfFactory = PdfiumDocumentFactory(context)

@@ -9,8 +9,8 @@ package org.readium.r2.testapp.data.model
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import org.readium.r2.shared.publication.protection.ContentProtection
 import org.readium.r2.shared.util.AbsoluteUrl
+import org.readium.r2.shared.util.format.Format
 import org.readium.r2.shared.util.mediatype.MediaType
 
 @Entity(tableName = Book.TABLE_NAME)
@@ -32,8 +32,8 @@ data class Book(
     val progression: String? = null,
     @ColumnInfo(name = MEDIA_TYPE)
     val rawMediaType: String,
-    @ColumnInfo(name = DRM)
-    val drm: String? = null,
+    @ColumnInfo(name = FORMAT_ID)
+    val formatId: String,
     @ColumnInfo(name = COVER)
     val cover: String
 ) {
@@ -46,8 +46,8 @@ data class Book(
         author: String? = null,
         identifier: String,
         progression: String? = null,
+        format: Format,
         mediaType: MediaType,
-        drm: ContentProtection.Scheme?,
         cover: String
     ) : this(
         id = id,
@@ -57,18 +57,18 @@ data class Book(
         author = author,
         identifier = identifier,
         progression = progression,
+        formatId = format.id,
         rawMediaType = mediaType.toString(),
-        drm = drm?.uri,
         cover = cover
     )
 
     val url: AbsoluteUrl get() = AbsoluteUrl(href)!!
 
     val mediaType: MediaType get() =
-        MediaType(rawMediaType) ?: MediaType.BINARY
+        MediaType(rawMediaType)!!
 
-    val drmScheme: ContentProtection.Scheme? get() =
-        drm?.let { ContentProtection.Scheme(it) }
+    val format: Format get() =
+        Format(formatId)
 
     companion object {
 
@@ -82,6 +82,6 @@ data class Book(
         const val PROGRESSION = "progression"
         const val MEDIA_TYPE = "media_type"
         const val COVER = "cover"
-        const val DRM = "drm"
+        const val FORMAT_ID = "format_id"
     }
 }

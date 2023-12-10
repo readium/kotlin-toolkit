@@ -3,16 +3,18 @@ package org.readium.r2.shared.util.mediatype
 import kotlin.test.assertEquals
 import kotlinx.coroutines.runBlocking
 import org.junit.Test
+import org.readium.r2.shared.util.format.Format
+import org.readium.r2.shared.util.format.FormatRegistry
 
 class FormatRegistryTest {
 
     private fun sut() = FormatRegistry()
 
     @Test
-    fun `get known file extension from canonical media type`() = runBlocking {
+    fun `get known file extension from format`() = runBlocking {
         assertEquals(
             "epub",
-            sut().fileExtension(MediaType.EPUB)
+            sut()[Format.EPUB]?.fileExtension.value
         )
     }
 

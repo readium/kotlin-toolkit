@@ -17,33 +17,40 @@ import org.readium.r2.shared.util.DebugError
 import org.readium.r2.shared.util.ThrowableError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.asset.Asset
-import org.readium.r2.shared.util.asset.AssetRetriever
+import org.readium.r2.shared.util.asset.AssetOpener
 import org.readium.r2.shared.util.asset.ContainerAsset
 import org.readium.r2.shared.util.asset.ResourceAsset
 import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.flatMap
+import org.readium.r2.shared.util.format.Format
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.resource.TransformingContainer
 
 internal class LcpContentProtection(
     private val lcpService: LcpService,
     private val authentication: LcpAuthenticating,
-    private val assetRetriever: AssetRetriever
+    private val assetOpener: AssetOpener
 ) : ContentProtection {
 
     override val scheme: ContentProtection.Scheme =
         ContentProtection.Scheme.Lcp
-
-    override suspend fun supports(
-        asset: Asset
-    ): Try<Boolean, Nothing> =
-        Try.success(lcpService.isLcpProtected(asset))
 
     override suspend fun open(
         asset: Asset,
         credentials: String?,
         allowUserInteraction: Boolean
     ): Try<ContentProtection.Asset, ContentProtection.OpenError> {
+        if (
+            !asset.format.conformsTo(Format.EPUB_LCP) &&
+            !asset.format.conformsTo(Format.RPF_LCP) &&
+            !asset.format.conformsTo(Format.RPF_AUDIO_LCP) &&
+            !asset.format.conformsTo(Format.RPF_IMAGE_LCP) &&
+            !asset.format.conformsTo(Format.RPF_PDF_LCP) &&
+            !asset.format.conformsTo(Format.LCP_LICENSE_DOCUMENT)
+        ) {
+            return Try.failure(ContentProtection.OpenError.AssetNotSupported())
+        }
+
         return when (asset) {
             is ContainerAsset -> openPublication(asset, credentials, allowUserInteraction)
             is ResourceAsset -> openLicense(asset, credentials, allowUserInteraction)
@@ -83,7 +90,7 @@ internal class LcpContentProtection(
         val container = TransformingContainer(asset.container, decryptor::transform)
 
         val protectedFile = ContentProtection.Asset(
-            mediaType = asset.mediaType,
+            format = asset.format,
             container = container,
             onCreatePublication = {
                 decryptor.encryptionData = (manifest.readingOrder + manifest.resources + manifest.links)
@@ -145,14 +152,14 @@ internal class LcpContentProtection(
 
         val asset =
             if (link.mediaType != null) {
-                assetRetriever.retrieve(
+                assetOpener.open(
                     url,
                     mediaType = link.mediaType
                 )
                     .map { it as ContainerAsset }
                     .mapFailure { it.wrap() }
             } else {
-                assetRetriever.retrieve(url)
+                assetOpener.open(url)
                     .mapFailure { it.wrap() }
                     .flatMap {
                         if (it is ContainerAsset) {
@@ -172,13 +179,13 @@ internal class LcpContentProtection(
         return asset.flatMap { createResultAsset(it, license) }
     }
 
-    private fun AssetRetriever.RetrieveError.wrap(): ContentProtection.OpenError =
+    private fun AssetOpener.OpenError.wrap(): ContentProtection.OpenError =
         when (this) {
-            is AssetRetriever.RetrieveError.FormatNotSupported ->
+            is AssetOpener.OpenError.FormatNotSupported ->
                 ContentProtection.OpenError.AssetNotSupported(this)
-            is AssetRetriever.RetrieveError.Reading ->
+            is AssetOpener.OpenError.Reading ->
                 ContentProtection.OpenError.Reading(cause)
-            is AssetRetriever.RetrieveError.SchemeNotSupported ->
+            is AssetOpener.OpenError.SchemeNotSupported ->
                 ContentProtection.OpenError.AssetNotSupported(this)
         }
 }

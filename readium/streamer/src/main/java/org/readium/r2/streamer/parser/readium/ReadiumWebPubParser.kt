@@ -20,6 +20,7 @@ import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.data.decodeRwpm
 import org.readium.r2.shared.util.data.readDecodeOrElse
+import org.readium.r2.shared.util.format.Format
 import org.readium.r2.shared.util.http.HttpClient
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.mediatype.MediaType
@@ -40,7 +41,7 @@ public class ReadiumWebPubParser(
         asset: PublicationParser.Asset,
         warnings: WarningLogger?
     ): Try<Publication.Builder, PublicationParser.Error> {
-        if (!asset.mediaType.isReadiumWebPublication) {
+        if (!asset.format.conformsTo(Format.RPF)) {
             return Try.failure(PublicationParser.Error.FormatNotSupported())
         }
 
@@ -62,7 +63,7 @@ public class ReadiumWebPubParser(
         // Checks the requirements from the LCPDF specification.
         // https://readium.org/lcp-specs/notes/lcp-for-pdf.html
         val readingOrder = manifest.readingOrder
-        if (asset.mediaType == MediaType.LCP_PROTECTED_PDF &&
+        if (asset.format.conformsTo(Format.RPF_PDF_LCP) &&
             (readingOrder.isEmpty() || !readingOrder.all { MediaType.PDF.matches(it.mediaType) })
         ) {
             return Try.failure(
@@ -75,17 +76,17 @@ public class ReadiumWebPubParser(
         val servicesBuilder = Publication.ServicesBuilder().apply {
             cacheServiceFactory = InMemoryCacheService.createFactory(context)
 
-            positionsServiceFactory = when (asset.mediaType) {
-                MediaType.LCP_PROTECTED_PDF ->
+            positionsServiceFactory = when (asset.format) {
+                Format.RPF_PDF_LCP ->
                     pdfFactory?.let { LcpdfPositionsService.create(it) }
-                MediaType.DIVINA ->
+                Format.RPF_IMAGE ->
                     PerResourcePositionsService.createFactory(MediaType("image/*")!!)
                 else ->
                     WebPositionsService.createFactory(httpClient)
             }
 
-            locatorServiceFactory = when (asset.mediaType) {
-                MediaType.READIUM_AUDIOBOOK, MediaType.LCP_PROTECTED_AUDIOBOOK ->
+            locatorServiceFactory = when {
+                asset.format.conformsTo(Format.RPF_AUDIO) ->
                     AudioLocatorService.createFactory()
                 else ->
                     null
@@ -97,11 +98,3 @@ public class ReadiumWebPubParser(
     }
 }
 
-/** Returns whether this media type is of a Readium Web Publication profile. */
-private val MediaType.isReadiumWebPublication: Boolean get() = matchesAny(
-    MediaType.READIUM_WEBPUB,
-    MediaType.DIVINA,
-    MediaType.LCP_PROTECTED_PDF,
-    MediaType.READIUM_AUDIOBOOK,
-    MediaType.LCP_PROTECTED_AUDIOBOOK
-)

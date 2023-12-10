@@ -20,15 +20,14 @@ import org.readium.r2.shared.util.DebugError
 import org.readium.r2.shared.util.RelativeUrl
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
-import org.readium.r2.shared.util.archive.ArchiveProperties
-import org.readium.r2.shared.util.archive.archive
 import org.readium.r2.shared.util.data.Container
 import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.file.FileSystemError
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.io.CountingInputStream
-import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.shared.util.resource.ArchiveProperties
 import org.readium.r2.shared.util.resource.Resource
+import org.readium.r2.shared.util.resource.archive
 import org.readium.r2.shared.util.toUrl
 
 internal class FileZipContainer(
@@ -126,8 +125,6 @@ internal class FileZipContainer(
             }
         }
     }
-
-    override val archiveMediaType: MediaType = MediaType.ZIP
 
     override val sourceUrl: AbsoluteUrl = file.toUrl()
 

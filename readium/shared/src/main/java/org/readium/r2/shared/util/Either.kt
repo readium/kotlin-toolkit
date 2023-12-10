@@ -9,7 +9,7 @@ package org.readium.r2.shared.util
 /**
  * Generic wrapper to store two mutually exclusive types.
  */
-public sealed class Either<A, B> {
+public sealed class Either<out A, out B> {
     public data class Left<A, B>(val value: A) : Either<A, B>()
     public data class Right<A, B>(val value: B) : Either<A, B>()
 

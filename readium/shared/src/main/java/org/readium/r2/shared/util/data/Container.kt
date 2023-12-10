@@ -20,11 +20,6 @@ import org.readium.r2.shared.util.use
 public interface Container<out E : Readable> : Iterable<Url>, SuspendingCloseable {
 
     /**
-     * Media type of the archive the container offers access to if any.
-     */
-    public val archiveMediaType: MediaType? get() = null
-
-    /**
      * Direct source to this container, when available.
      */
     public val sourceUrl: AbsoluteUrl? get() = null

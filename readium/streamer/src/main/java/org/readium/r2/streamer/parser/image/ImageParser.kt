@@ -15,12 +15,14 @@ import org.readium.r2.shared.publication.services.PerResourcePositionsService
 import org.readium.r2.shared.util.DebugError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.asset.AssetSniffer
 import org.readium.r2.shared.util.data.ReadError
+import org.readium.r2.shared.util.format.Format
+import org.readium.r2.shared.util.format.FormatRegistry
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.mediatype.MediaType
-import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
-import org.readium.r2.shared.util.mediatype.MediaTypeSnifferError
+import org.readium.r2.shared.util.asset.SniffError
 import org.readium.r2.shared.util.use
 import org.readium.r2.streamer.extensions.guessTitle
 import org.readium.r2.streamer.extensions.isHiddenOrThumbs
@@ -33,19 +35,20 @@ import org.readium.r2.streamer.parser.PublicationParser
  * It can also work for a standalone bitmap file.
  */
 public class ImageParser(
-    private val mediaTypeRetriever: MediaTypeRetriever
+    private val assetSniffer: AssetSniffer,
+    private val formatRegistry: FormatRegistry
 ) : PublicationParser {
 
     override suspend fun parse(
         asset: PublicationParser.Asset,
         warnings: WarningLogger?
     ): Try<Publication.Builder, PublicationParser.Error> {
-        if (!asset.mediaType.matches(MediaType.CBZ) && !asset.mediaType.isBitmap) {
+        if (!asset.format.conformsTo(Format.CBZ) && formatRegistry[asset.format]?.mediaType?.isBitmap != true) {
             return Try.failure(PublicationParser.Error.FormatNotSupported())
         }
 
         val readingOrder =
-            if (asset.mediaType.matches(MediaType.CBZ)) {
+            if (asset.format.conformsTo(Format.CBZ)) {
                 (asset.container)
                     .filter { cbzCanContain(it) }
                     .sortedBy { it.toString() }
@@ -65,12 +68,13 @@ public class ImageParser(
 
         val readingOrderLinks = readingOrder.map { url ->
             val mediaType = asset.container[url]!!.use { resource ->
-                mediaTypeRetriever.retrieve(resource)
+                assetSniffer.sniff(resource)
+                    .map { formatRegistry[it]?.mediaType }
                     .getOrElse { error ->
                         when (error) {
-                            MediaTypeSnifferError.NotRecognized ->
+                            SniffError.NotRecognized ->
                                 null
-                            is MediaTypeSnifferError.Reading ->
+                            is SniffError.Reading ->
                                 return Try.failure(PublicationParser.Error.Reading(error.cause))
                         }
                     }

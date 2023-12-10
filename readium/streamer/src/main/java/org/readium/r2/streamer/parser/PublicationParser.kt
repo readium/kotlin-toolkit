@@ -6,12 +6,11 @@
 
 package org.readium.r2.streamer.parser
 
-import kotlin.String
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.data.Container
+import org.readium.r2.shared.util.format.Format
 import org.readium.r2.shared.util.logging.WarningLogger
-import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.resource.Resource
 
 /**
@@ -22,13 +21,13 @@ public interface PublicationParser {
     /**
      * Full publication asset.
      *
-     * @param mediaType Media type of the "virtual" publication asset, built from the source asset.
-     * For example, if the source asset was a `application/audiobook+json`, the "virtual" asset
+     * @param format Format of the "virtual" publication asset, built from the source asset.
+     * For example, if the source asset media type was a `application/audiobook+json`, the "virtual" asset
      * media type will be `application/audiobook+zip`.
      * @param container Container granting access to the resources of the publication.
      */
     public data class Asset(
-        val mediaType: MediaType,
+        val format: Format,
         val container: Container<Resource>
     )
 

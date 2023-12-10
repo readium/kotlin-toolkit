@@ -29,10 +29,10 @@ import org.readium.r2.lcp.service.PassphrasesService
 import org.readium.r2.shared.publication.protection.ContentProtection
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.asset.Asset
-import org.readium.r2.shared.util.asset.AssetRetriever
+import org.readium.r2.shared.util.asset.AssetOpener
+import org.readium.r2.shared.util.asset.AssetSniffer
 import org.readium.r2.shared.util.downloads.DownloadManager
-import org.readium.r2.shared.util.mediatype.MediaType
-import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
+import org.readium.r2.shared.util.format.Format
 
 /**
  * Service used to acquire and open publications protected with LCP.
@@ -92,7 +92,7 @@ public interface LcpService {
      */
     public suspend fun retrieveLicense(
         file: File,
-        mediaType: MediaType,
+        format: Format,
         authentication: LcpAuthenticating,
         allowUserInteraction: Boolean
     ): Try<LcpLicense, LcpError>
@@ -146,7 +146,7 @@ public interface LcpService {
     public data class AcquiredPublication(
         val localFile: File,
         val suggestedFilename: String,
-        val mediaType: MediaType,
+        val format: Format,
         val licenseDocument: LicenseDocument
     ) {
         @Deprecated(
@@ -164,8 +164,8 @@ public interface LcpService {
          */
         public operator fun invoke(
             context: Context,
-            assetRetriever: AssetRetriever,
-            mediaTypeRetriever: MediaTypeRetriever,
+            assetOpener: AssetOpener,
+            assetSniffer: AssetSniffer,
             downloadManager: DownloadManager
         ): LcpService? {
             if (!LcpClient.isAvailable()) {
@@ -176,7 +176,7 @@ public interface LcpService {
             val deviceRepository = DeviceRepository(db)
             val passphraseRepository = PassphrasesRepository(db)
             val licenseRepository = LicensesRepository(db)
-            val network = NetworkService(mediaTypeRetriever)
+            val network = NetworkService()
             val device = DeviceService(
                 repository = deviceRepository,
                 network = network,
@@ -191,8 +191,8 @@ public interface LcpService {
                 network = network,
                 passphrases = passphrases,
                 context = context,
-                assetRetriever = assetRetriever,
-                mediaTypeRetriever = mediaTypeRetriever,
+                assetOpener = assetOpener,
+                assetSniffer = assetSniffer,
                 downloadManager = downloadManager
             )
         }
@@ -203,7 +203,7 @@ public interface LcpService {
             ReplaceWith("LcpService(context, AssetRetriever(), MediaTypeRetriever())"),
             level = DeprecationLevel.ERROR
         )
-        public fun create(context: Context): LcpService? = throw NotImplementedError()
+        public fun create(context: Context): LcpService = throw NotImplementedError()
     }
 
     @Deprecated(
