@@ -13,7 +13,7 @@ import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.shared.util.resource.ResourceFactory
 
 /**
- * Creates [FileResource]s from Urls.
+ * Creates [FileResource] instances granting access to `file://` URLs stored on the file system.
  */
 public class FileResourceFactory : ResourceFactory {
 

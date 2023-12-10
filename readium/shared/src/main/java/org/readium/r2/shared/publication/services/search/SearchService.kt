@@ -40,7 +40,7 @@ public sealed class SearchError(
 
     /**
      * An error occurring in the search engine.
-     * */
+     */
     public class Engine(cause: Error) :
         SearchError("An error occurred while searching.", cause)
 }

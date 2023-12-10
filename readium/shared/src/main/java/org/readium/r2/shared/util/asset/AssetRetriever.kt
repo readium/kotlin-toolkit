@@ -38,14 +38,25 @@ public class AssetRetriever(
         override val cause: Error?
     ) : Error {
 
+        /**
+         * The scheme (e.g. http, file, content) for the requested [Url] is not supported by the
+         * [resourceFactory].
+         */
         public class SchemeNotSupported(
             public val scheme: Url.Scheme,
             cause: Error? = null
         ) : RetrieveError("Url scheme $scheme is not supported.", cause)
 
+        /**
+         * The format of the resource at the requested [Url] is not recognized by the
+         * [mediaTypeRetriever] and [archiveFactory].
+         */
         public class FormatNotSupported(cause: Error) :
             RetrieveError("Asset format is not supported.", cause)
 
+        /**
+         * An error occurred when trying to read the asset.
+         */
         public class Reading(override val cause: org.readium.r2.shared.util.data.ReadError) :
             RetrieveError("An error occurred when trying to read asset.", cause)
     }

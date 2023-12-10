@@ -158,7 +158,7 @@ public class PublicationFactory(
      *   It can be used to modify the manifest, the root container or the list of service
      *   factories of the [Publication].
      * @param warnings Logger used to broadcast non-fatal parsing warnings.
-     * @return A [Publication] or a [OpenError] in case of failure.
+     * @return A [Publication] or an [OpenError] in case of failure.
      */
     public suspend fun open(
         asset: Asset,

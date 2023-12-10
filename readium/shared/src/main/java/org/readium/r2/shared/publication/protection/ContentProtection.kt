@@ -59,7 +59,7 @@ public interface ContentProtection {
     /**
      * Attempts to unlock a potentially protected publication asset.
      *
-     * @return A [Asset] in case of success or a [OpenError] if the
+     * @return A [Asset] in case of success or an [OpenError] if the
      * asset can't be successfully opened even in restricted mode.
      */
     public suspend fun open(

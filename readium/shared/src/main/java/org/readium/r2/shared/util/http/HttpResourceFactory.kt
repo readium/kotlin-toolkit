@@ -13,7 +13,7 @@ import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.shared.util.resource.ResourceFactory
 
 /**
- * Creates [HttpResource]s.
+ * Creates [HttpResource] instances granting access to `http://` URLs using an [HttpClient].
  */
 public class HttpResourceFactory(
     private val httpClient: HttpClient

@@ -98,7 +98,7 @@ public suspend fun ByteArray.decodeJson(): Try<JSONObject, DecodeError> =
 
 /**
  * Readium Web Publication Manifest parsed from the content.
- * */
+ */
 public suspend fun ByteArray.decodeRwpm(): Try<Manifest, DecodeError> =
     decodeJson().flatMap { json ->
         Manifest.fromJSON(json)

@@ -206,10 +206,8 @@ public class MediaType private constructor(
     )
 
     /** Returns whether this media type is of a publication file. */
-    public val isPublication: Boolean get() = matchesAny(
-        READIUM_AUDIOBOOK, READIUM_AUDIOBOOK_MANIFEST, CBZ, DIVINA, DIVINA_MANIFEST, EPUB, LCP_PROTECTED_AUDIOBOOK,
-        LCP_PROTECTED_PDF, LPF, PDF, W3C_WPUB_MANIFEST, READIUM_WEBPUB, READIUM_WEBPUB_MANIFEST, ZAB
-    )
+    public val isPublication: Boolean get() =
+        matchesAny(CBZ, EPUB, LPF, PDF, W3C_WPUB_MANIFEST, ZAB) || isRwpm || isRpf
 
     @Deprecated(
         "Format and MediaType got merged together",

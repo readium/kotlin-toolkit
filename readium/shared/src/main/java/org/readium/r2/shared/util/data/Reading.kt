@@ -60,7 +60,7 @@ public sealed class ReadError(
     /**
      * Content doesn't match what was expected and cannot be interpreted.
      *
-     * For instance, this error can be reported if an ZIP archive looks invalid,
+     * For instance, this error can be reported if a ZIP archive looks invalid,
      * a publication doesn't conform to its format, or a JSON resource cannot be decoded.
      */
     public class Decoding(cause: Error) :
