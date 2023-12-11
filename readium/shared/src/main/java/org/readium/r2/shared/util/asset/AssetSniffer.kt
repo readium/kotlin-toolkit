@@ -13,6 +13,7 @@ import org.readium.r2.shared.util.data.Container
 import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.data.Readable
 import org.readium.r2.shared.util.file.FileResource
+import org.readium.r2.shared.util.format.AdeptSniffer
 import org.readium.r2.shared.util.format.ArchiveSniffer
 import org.readium.r2.shared.util.format.BitmapSniffer
 import org.readium.r2.shared.util.format.BlobSniffer
@@ -41,6 +42,7 @@ import org.readium.r2.shared.util.resource.borrow
 import org.readium.r2.shared.util.tryRecover
 import org.readium.r2.shared.util.use
 import org.readium.r2.shared.util.zip.ZipArchiveOpener
+import timber.log.Timber
 
 public class AssetSniffer(
     private val contentSniffers: List<ContentSniffer> = defaultContentSniffers,
@@ -64,6 +66,7 @@ public class AssetSniffer(
             OpdsSniffer,
             LcpLicenseSniffer,
             LcpSniffer,
+            AdeptSniffer,
             W3cWpubSniffer,
             RwpmSniffer
         )
@@ -74,7 +77,10 @@ public class AssetSniffer(
     ): Try<Asset, SniffError> =
         sniff(null, Either.Left(source), hints)
 
-    public suspend fun sniffOpen(file: File, hints: FormatHints): Try<Asset, SniffError> =
+    public suspend fun sniffOpen(
+        file: File,
+        hints: FormatHints = FormatHints()
+    ): Try<Asset, SniffError> =
         sniff(null, Either.Left(FileResource(file)), hints)
 
     public suspend fun sniff(
@@ -83,7 +89,10 @@ public class AssetSniffer(
     ): Try<Format, SniffError> =
         sniffOpen(source.borrow(), hints).map { it.format }
 
-    public suspend fun sniff(file: File, hints: FormatHints): Try<Format, SniffError> =
+    public suspend fun sniff(
+        file: File,
+        hints: FormatHints = FormatHints()
+    ): Try<Format, SniffError> =
         FileResource(file).use { sniff(it, hints) }
 
     public suspend fun sniff(
@@ -103,6 +112,7 @@ public class AssetSniffer(
         for (sniffer in contentSniffers) {
             sniffer
                 .takeIf { it != excludeHintsSniffer }
+                .also { Timber.d("Trying $sniffer hints") }
                 ?.sniffHints(format, hints)
                 ?.takeIf { format == null || it.conformsTo(format) }
                 ?.takeIf { it != format }
@@ -114,6 +124,7 @@ public class AssetSniffer(
                 for (sniffer in contentSniffers) {
                     sniffer
                         .takeIf { it != excludeBlobSniffer }
+                        .also { Timber.d("Trying $sniffer blob") }
                         ?.sniffBlob(format, source.value)
                         ?.getOrElse { return Try.failure(SniffError.Reading(it)) }
                         ?.takeIf { format == null || it.conformsTo(format) }
@@ -125,6 +136,7 @@ public class AssetSniffer(
                 for (sniffer in contentSniffers) {
                     sniffer
                         .takeIf { it != excludeContainerSniffer }
+                        .also { Timber.d("Trying $sniffer container") }
                         ?.sniffContainer(format, source.value)
                         ?.getOrElse { return Try.failure(SniffError.Reading(it)) }
                         ?.takeIf { format == null || it.conformsTo(format) }

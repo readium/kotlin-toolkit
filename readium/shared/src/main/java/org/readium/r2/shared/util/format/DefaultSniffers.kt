@@ -25,6 +25,7 @@ import org.readium.r2.shared.util.data.decodeRwpm
 import org.readium.r2.shared.util.data.decodeString
 import org.readium.r2.shared.util.data.decodeXml
 import org.readium.r2.shared.util.data.readDecodeOrElse
+import org.readium.r2.shared.util.flatMap
 import org.readium.r2.shared.util.getOrDefault
 import org.readium.r2.shared.util.getOrElse
 
@@ -52,7 +53,7 @@ public object XhtmlSniffer : ContentSniffer {
         format: Format?,
         source: Readable
     ): Try<Format?, ReadError> {
-        if (format?.conformsTo(Format.XML) == false || !source.canReadWholeBlob()) {
+        if (format != null && format != Format.XML || !source.canReadWholeBlob()) {
             return Try.success(format)
         }
 
@@ -91,7 +92,7 @@ public object HtmlSniffer : ContentSniffer {
         format: Format?,
         source: Readable
     ): Try<Format?, ReadError> {
-        if (!source.canReadWholeBlob()) {
+        if (format != null || !source.canReadWholeBlob()) {
             return Try.success(format)
         }
 
@@ -174,10 +175,7 @@ public object OpdsSniffer : ContentSniffer {
         }
 
         sniffBlobXml(format, source)
-            .getOrElse { return Try.failure(it) }
-            ?.let { return Try.success(it) }
-
-        sniffBlobJson(format, source)
+            .flatMap { sniffBlobJson(it, source) }
             .getOrElse { return Try.failure(it) }
             ?.let { return Try.success(it) }
 
@@ -185,7 +183,7 @@ public object OpdsSniffer : ContentSniffer {
     }
 
     private suspend fun sniffBlobXml(format: Format?, source: Readable): Try<Format?, ReadError> {
-        if (format?.conformsTo(Format.XML) == false) {
+        if (format != null && format != Format.XML) {
             return Try.success(format)
         }
 
@@ -207,7 +205,7 @@ public object OpdsSniffer : ContentSniffer {
     }
 
     private suspend fun sniffBlobJson(format: Format?, source: Readable): Try<Format?, ReadError> {
-        if (format?.conformsTo(Format.JSON) == false) {
+        if (format !in listOf(null, Format.JSON, Format.RWPM)) {
             return Try.success(format)
         }
 
@@ -270,7 +268,7 @@ public object LcpLicenseSniffer : ContentSniffer {
         source: Readable
     ): Try<Format?, ReadError> {
         if (
-            format?.conformsTo(Format.JSON) == false ||
+            format != null && format != Format.JSON ||
             !source.canReadWholeBlob()
         ) {
             return Try.success(format)
@@ -369,7 +367,7 @@ public object RwpmSniffer : ContentSniffer {
         source: Readable
     ): Try<Format?, ReadError> {
         if (
-            format?.conformsTo(Format.JSON) == false ||
+            format != null && format != Format.JSON ||
             !source.canReadWholeBlob()
         ) {
             return Try.success(format)
@@ -399,6 +397,7 @@ public object RwpmSniffer : ContentSniffer {
 
 /** Sniffs a Readium Web Publication, protected or not by LCP. */
 public object RpfSniffer : ContentSniffer {
+
     override fun sniffHints(
         format: Format?,
         hints: FormatHints
@@ -445,7 +444,14 @@ public object RpfSniffer : ContentSniffer {
         container: Container<Readable>
     ): Try<Format?, ReadError> {
         // Recognize exploded RPF.
-        if (format?.conformsTo(Format.ZIP) == false) {
+        if (
+            format != null && format != Format.ZIP && format != Format.RPF ||
+            format in listOf(
+                Format.RPF_AUDIO,
+                Format.RPF_IMAGE,
+                Format.RPF_PDF
+            )
+        ) {
             return Try.success(format)
         }
 
@@ -466,11 +472,8 @@ public object RpfSniffer : ContentSniffer {
         if (manifest.conformsTo(Publication.Profile.PDF)) {
             return Try.success(Format.RPF_PDF)
         }
-        if (manifest.linkWithRel("self")?.mediaType?.matches("application/webpub+json") == true) {
-            Try.success(Format.RPF)
-        }
 
-        return Try.success(format)
+        return Try.success(Format.RPF)
     }
 }
 
@@ -481,7 +484,7 @@ public object W3cWpubSniffer : ContentSniffer {
         format: Format?,
         source: Readable
     ): Try<Format?, ReadError> {
-        if (!source.canReadWholeBlob() || format?.conformsTo(Format.JSON) == false) {
+        if (format != null && format != Format.JSON || !source.canReadWholeBlob()) {
             return Try.success(format)
         }
 
@@ -527,7 +530,7 @@ public object EpubSniffer : ContentSniffer {
         container: Container<Readable>
     ): Try<Format?, ReadError> {
         // Recognize exploded EPUBs.
-        if (format?.conformsTo(Format.ZIP) == false) {
+        if (format != null && format != Format.ZIP || format == Format.EPUB) {
             return Try.success(format)
         }
 
@@ -573,7 +576,7 @@ public object LpfSniffer : ContentSniffer {
         container: Container<Readable>
     ): Try<Format?, ReadError> {
         // Recognize exploded LPFs.
-        if (format?.conformsTo(Format.ZIP) == false) {
+        if (format != null && format != Format.ZIP || format == Format.LPF) {
             return Try.success(format)
         }
 
@@ -737,6 +740,10 @@ public object ArchiveSniffer : ContentSniffer {
                 } == true
             }
 
+        if (container.entries.isEmpty()) {
+            return Try.success(format)
+        }
+
         if (
             archiveContainsOnlyExtensions(cbzExtensions) &&
             format?.conformsTo(Format.ZIP) != false // Recognize exploded CBZ/CBR
@@ -786,6 +793,10 @@ public object PdfSniffer : ContentSniffer {
         format: Format?,
         source: Readable
     ): Try<Format?, ReadError> {
+        if (format != null) {
+            return Try.success(format)
+        }
+
         source.read(0L until 5L)
             .getOrElse { return Try.failure(it) }
             .let { tryOrNull { it.toString(Charsets.UTF_8) } }
@@ -819,7 +830,7 @@ public object JsonSniffer : ContentSniffer {
         format: Format?,
         source: Readable
     ): Try<Format?, ReadError> {
-        if (!source.canReadWholeBlob()) {
+        if (format != null || !source.canReadWholeBlob()) {
             return Try.success(format)
         }
 
@@ -842,7 +853,7 @@ public object AdeptSniffer : ContentSniffer {
         format: Format?,
         container: Container<Readable>
     ): Try<Format?, ReadError> {
-        if (format?.conformsTo(Format.EPUB) != true) {
+        if (format != Format.EPUB) {
             return Try.success(format)
         }
 
@@ -896,7 +907,7 @@ public object LcpSniffer : ContentSniffer {
                 }
             }
 
-            format?.conformsTo(Format.EPUB) == true -> {
+            format == Format.EPUB -> {
                 val isLcpProtected = RelativeUrl("META-INF/license.lcpl")!! in container ||
                     hasLcpSchemeInEncryptionXml(container)
                         .getOrElse { return Try.failure(it) }

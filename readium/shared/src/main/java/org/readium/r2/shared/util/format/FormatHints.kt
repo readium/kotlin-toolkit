@@ -15,10 +15,13 @@ import org.readium.r2.shared.util.mediatype.MediaType
 public data class FormatHints(
     val format: Format? = null,
     val mediaTypes: List<MediaType> = emptyList(),
-    val fileExtensions: List<String> = emptyList()
+    val fileExtensions: List<FileExtension> = emptyList()
 ) {
     public companion object {
-        public operator fun invoke(mediaType: MediaType? = null, fileExtension: String? = null): FormatHints =
+        public operator fun invoke(
+            mediaType: MediaType? = null,
+            fileExtension: FileExtension? = null
+        ): FormatHints =
             FormatHints(
                 mediaTypes = listOfNotNull(mediaType),
                 fileExtensions = listOfNotNull(fileExtension)
@@ -30,7 +33,7 @@ public data class FormatHints(
         ): FormatHints =
             FormatHints(
                 mediaTypes = mediaTypes.mapNotNull { MediaType(it) },
-                fileExtensions = fileExtensions
+                fileExtensions = fileExtensions.map { FileExtension(it) }
             )
     }
 
@@ -45,7 +48,7 @@ public data class FormatHints(
      */
     public fun addFileExtension(fileExtension: String?): FormatHints {
         fileExtension ?: return this
-        return copy(fileExtensions = fileExtensions + fileExtension)
+        return copy(fileExtensions = fileExtensions + FileExtension(fileExtension))
     }
 
     /** Finds the first [Charset] declared in the media types' `charset` parameter. */
@@ -54,7 +57,7 @@ public data class FormatHints(
 
     /** Returns whether this context has any of the given file extensions, ignoring case. */
     public fun hasFileExtension(vararg fileExtensions: String): Boolean {
-        val fileExtensionsHints = this.fileExtensions.map { it.lowercase() }
+        val fileExtensionsHints = this.fileExtensions.map { it.value.lowercase() }
         for (fileExtension in fileExtensions.map { it.lowercase() }) {
             if (fileExtensionsHints.contains(fileExtension)) {
                 return true
