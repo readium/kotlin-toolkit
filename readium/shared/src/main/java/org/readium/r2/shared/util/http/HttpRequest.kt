@@ -13,7 +13,6 @@ import java.net.URLEncoder
 import kotlin.time.Duration
 import org.readium.r2.shared.extensions.toMutable
 import org.readium.r2.shared.util.AbsoluteUrl
-import org.readium.r2.shared.util.toAbsoluteUrl
 import org.readium.r2.shared.util.toUri
 
 /**
@@ -74,7 +73,7 @@ public class HttpRequest(
     }
 
     public class Builder(
-        url: AbsoluteUrl,
+        public val url: AbsoluteUrl,
         public var method: Method = Method.GET,
         public var headers: MutableMap<String, MutableList<String>> = mutableMapOf(),
         public var body: Body? = null,
@@ -83,10 +82,6 @@ public class HttpRequest(
         public var readTimeout: Duration? = null,
         public var allowUserInteraction: Boolean = false
     ) {
-
-        public var url: AbsoluteUrl
-            get() = checkNotNull(uriBuilder.build().toAbsoluteUrl())
-            set(value) { uriBuilder = value.toUri().buildUpon() }
 
         private var uriBuilder: Uri.Builder = url.toUri().buildUpon()
 
