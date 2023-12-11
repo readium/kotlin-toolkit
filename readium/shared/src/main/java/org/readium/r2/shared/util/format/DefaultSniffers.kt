@@ -849,7 +849,7 @@ public object AdeptSniffer : ContentSniffer {
         container[Url("META-INF/encryption.xml")!!]
             ?.readDecodeOrElse(
                 decode = { it.decodeXml() },
-                recover = { null }
+                recover = { return Try.failure(it) }
             )
             ?.get("EncryptedData", EpubEncryption.ENC)
             ?.flatMap { it.get("KeyInfo", EpubEncryption.SIG) }
@@ -914,8 +914,7 @@ public object LcpSniffer : ContentSniffer {
         val manifest = container[Url("manifest.json")!!]
             ?.readDecodeOrElse(
                 decode = { it.decodeRwpm() },
-                recoverRead = { return Try.success(false) },
-                recoverDecode = { return Try.success(false) }
+                recover = { return Try.failure(it) }
             ) ?: return Try.success(false)
 
         val manifestHasLcpScheme = manifest
