@@ -12,6 +12,7 @@ import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.LocatorCollection
 import org.readium.r2.shared.publication.services.search.SearchTry
+import org.readium.r2.shared.util.ErrorException
 import org.readium.r2.shared.util.getOrThrow
 
 @OptIn(ExperimentalReadiumApi::class)
@@ -31,7 +32,9 @@ class SearchPagingSource(
         listener ?: return LoadResult.Page(data = emptyList(), prevKey = null, nextKey = null)
 
         return try {
-            val page = listener.next().getOrThrow()
+            val page = listener.next()
+                .mapFailure { ErrorException(it) }
+                .getOrThrow()
             LoadResult.Page(
                 data = page?.locators ?: emptyList(),
                 prevKey = null,

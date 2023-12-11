@@ -11,7 +11,8 @@ import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.publication.ServiceFactory
 import org.readium.r2.shared.publication.services.content.iterators.PublicationContentIterator
 import org.readium.r2.shared.publication.services.content.iterators.ResourceContentIteratorFactory
-import org.readium.r2.shared.util.resource.Container
+import org.readium.r2.shared.util.data.Container
+import org.readium.r2.shared.util.resource.Resource
 
 /**
  * Provides a way to extract the raw [Content] of a [Publication].
@@ -52,7 +53,7 @@ public var Publication.ServicesBuilder.contentServiceFactory: ServiceFactory?
 @ExperimentalReadiumApi
 public class DefaultContentService(
     private val manifest: Manifest,
-    private val container: Container,
+    private val container: Container<Resource>,
     private val services: PublicationServicesHolder,
     private val resourceContentIteratorFactories: List<ResourceContentIteratorFactory>
 ) : ContentService {
@@ -76,7 +77,7 @@ public class DefaultContentService(
 
     private inner class ContentImpl(
         val manifest: Manifest,
-        val container: Container,
+        val container: Container<Resource>,
         val services: PublicationServicesHolder,
         val start: Locator?
     ) : Content {

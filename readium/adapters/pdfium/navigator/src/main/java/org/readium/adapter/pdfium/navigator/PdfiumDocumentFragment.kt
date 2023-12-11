@@ -26,8 +26,9 @@ import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.util.SingleJob
 import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.getOrElse
-import org.readium.r2.shared.util.resource.Resource
+import org.readium.r2.shared.util.toDebugDescription
 import timber.log.Timber
 
 @ExperimentalReadiumApi
@@ -40,7 +41,7 @@ public class PdfiumDocumentFragment internal constructor(
 ) : PdfDocumentFragment<PdfiumSettings>() {
 
     internal interface Listener {
-        fun onResourceLoadFailed(href: Url, error: Resource.Exception)
+        fun onResourceLoadFailed(href: Url, error: ReadError)
         fun onConfigurePdfView(configurator: PDFView.Configurator)
         fun onTap(point: PointF): Boolean
     }
@@ -69,12 +70,13 @@ public class PdfiumDocumentFragment internal constructor(
         val context = context?.applicationContext ?: return
 
         resetJob.launch {
+            val resource = requireNotNull(publication.get(href))
             val document = PdfiumDocumentFactory(context)
                 // PDFium crashes when reusing the same PdfDocument, so we must not cache it.
 //                    .cachedIn(publication)
-                .open(publication.get(href), null)
+                .open(resource, null)
                 .getOrElse { error ->
-                    Timber.e(error)
+                    Timber.e(error.toDebugDescription())
                     listener?.onResourceLoadFailed(href, error)
                     return@launch
                 }

@@ -6,19 +6,14 @@
 
 package org.readium.r2.shared.util.asset
 
+import org.readium.r2.shared.util.data.Container
 import org.readium.r2.shared.util.mediatype.MediaType
-import org.readium.r2.shared.util.resource.Container as SharedContainer
-import org.readium.r2.shared.util.resource.Resource as SharedResource
+import org.readium.r2.shared.util.resource.Resource
 
 /**
  * An asset which is either a single resource or a container that holds multiple resources.
  */
 public sealed class Asset {
-
-    /**
-     * Type of the asset source.
-     */
-    public abstract val assetType: org.readium.r2.shared.util.asset.AssetType
 
     /**
      * Media type of the asset.
@@ -29,48 +24,36 @@ public sealed class Asset {
      * Releases in-memory resources related to this asset.
      */
     public abstract suspend fun close()
+}
 
-    /**
-     * A single resource asset.
-     *
-     * @param mediaType Media type of the asset.
-     * @param resource Opened resource to access the asset.
-     */
-    public class Resource(
-        override val mediaType: MediaType,
-        public val resource: SharedResource
-    ) : org.readium.r2.shared.util.asset.Asset() {
+/**
+ * A container asset providing access to several resources.
+ *
+ * @param mediaType Media type of the asset.
+ * @param container Opened container to access asset resources.
+ */
+public class ContainerAsset(
+    override val mediaType: MediaType,
+    public val container: Container<Resource>
+) : Asset() {
 
-        override val assetType: org.readium.r2.shared.util.asset.AssetType =
-            org.readium.r2.shared.util.asset.AssetType.Resource
-
-        override suspend fun close() {
-            resource.close()
-        }
+    override suspend fun close() {
+        container.close()
     }
+}
 
-    /**
-     * A container asset providing access to several resources.
-     *
-     * @param mediaType Media type of the asset.
-     * @param exploded If this container is an exploded or packaged container.
-     * @param container Opened container to access asset resources.
-     */
-    public class Container(
-        override val mediaType: MediaType,
-        exploded: Boolean,
-        public val container: SharedContainer
-    ) : org.readium.r2.shared.util.asset.Asset() {
+/**
+ * A single resource asset.
+ *
+ * @param mediaType Media type of the asset.
+ * @param resource Opened resource to access the asset.
+ */
+public class ResourceAsset(
+    override val mediaType: MediaType,
+    public val resource: Resource
+) : Asset() {
 
-        override val assetType: org.readium.r2.shared.util.asset.AssetType =
-            if (exploded) {
-                org.readium.r2.shared.util.asset.AssetType.Directory
-            } else {
-                org.readium.r2.shared.util.asset.AssetType.Archive
-            }
-
-        override suspend fun close() {
-            container.close()
-        }
+    override suspend fun close() {
+        resource.close()
     }
 }

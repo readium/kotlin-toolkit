@@ -10,7 +10,7 @@
 package org.readium.r2.lcp.license
 
 import java.net.HttpURLConnection
-import java.util.*
+import java.util.Date
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -20,6 +20,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.withContext
 import org.readium.r2.lcp.BuildConfig.DEBUG
+import org.readium.r2.lcp.LcpError
 import org.readium.r2.lcp.LcpException
 import org.readium.r2.lcp.LcpLicense
 import org.readium.r2.lcp.license.model.LicenseDocument
@@ -85,7 +86,7 @@ internal class License private constructor(
     override val status: StatusDocument?
         get() = documents.status
 
-    override suspend fun decrypt(data: ByteArray): Try<ByteArray, LcpException> = withContext(
+    override suspend fun decrypt(data: ByteArray): Try<ByteArray, LcpError> = withContext(
         Dispatchers.Default
     ) {
         try {
@@ -98,7 +99,7 @@ internal class License private constructor(
                 Try.success(decryptedData)
             }
         } catch (e: Exception) {
-            Try.failure(LcpException.wrap(e))
+            Try.failure(LcpError.wrap(e))
         }
     }
 
@@ -146,7 +147,7 @@ internal class License private constructor(
     override val maxRenewDate: Date?
         get() = status?.potentialRights?.end
 
-    override suspend fun renewLoan(listener: LcpLicense.RenewListener, prefersWebPage: Boolean): Try<Date?, LcpException> {
+    override suspend fun renewLoan(listener: LcpLicense.RenewListener, prefersWebPage: Boolean): Try<Date?, LcpError> {
         // Finds the renew link according to `prefersWebPage`.
         fun findRenewLink(): Link? {
             val status = documents.status ?: return null
@@ -186,11 +187,16 @@ internal class License private constructor(
             return network.fetch(url.toString(), NetworkService.Method.PUT)
                 .getOrElse { error ->
                     when (error.status) {
-                        HttpURLConnection.HTTP_BAD_REQUEST -> throw LcpException.Renew.RenewFailed
-                        HttpURLConnection.HTTP_FORBIDDEN -> throw LcpException.Renew.InvalidRenewalPeriod(
-                            maxRenewDate = this.maxRenewDate
-                        )
-                        else -> throw LcpException.Renew.UnexpectedServerError
+                        HttpURLConnection.HTTP_BAD_REQUEST ->
+                            throw LcpException(LcpError.Renew.RenewFailed)
+                        HttpURLConnection.HTTP_FORBIDDEN ->
+                            throw LcpException(
+                                LcpError.Renew.InvalidRenewalPeriod(
+                                    maxRenewDate = this.maxRenewDate
+                                )
+                            )
+                        else ->
+                            throw LcpException(LcpError.Renew.UnexpectedServerError)
                     }
                 }
         }
@@ -205,7 +211,7 @@ internal class License private constructor(
                     LicenseDocument.Rel.Status,
                     preferredType = MediaType.LCP_STATUS_DOCUMENT
                 )
-            } ?: throw LcpException.LicenseInteractionNotAvailable
+            } ?: throw LcpException(LcpError.LicenseInteractionNotAvailable)
 
             return network.fetch(
                 statusURL.toString(),
@@ -215,7 +221,7 @@ internal class License private constructor(
 
         try {
             val link = findRenewLink()
-                ?: throw LcpException.LicenseInteractionNotAvailable
+                ?: throw LcpException(LcpError.LicenseInteractionNotAvailable)
 
             val data =
                 if (link.mediaType?.isHtml == true) {
@@ -231,14 +237,14 @@ internal class License private constructor(
             // Passthrough for cancelled coroutines
             throw e
         } catch (e: Exception) {
-            return Try.failure(LcpException.wrap(e))
+            return Try.failure(LcpError.wrap(e))
         }
     }
 
     override val canReturnPublication: Boolean
         get() = status?.link(StatusDocument.Rel.Return) != null
 
-    override suspend fun returnPublication(): Try<Unit, LcpException> {
+    override suspend fun returnPublication(): Try<Unit, LcpError> {
         try {
             val status = this.documents.status
             val url = try {
@@ -251,22 +257,26 @@ internal class License private constructor(
                 null
             }
             if (status == null || url == null) {
-                throw LcpException.LicenseInteractionNotAvailable
+                throw LcpException(LcpError.LicenseInteractionNotAvailable)
             }
 
             network.fetch(url.toString(), method = NetworkService.Method.PUT)
                 .onSuccess { validateStatusDocument(it) }
                 .onFailure { error ->
                     when (error.status) {
-                        HttpURLConnection.HTTP_BAD_REQUEST -> throw LcpException.Return.ReturnFailed
-                        HttpURLConnection.HTTP_FORBIDDEN -> throw LcpException.Return.AlreadyReturnedOrExpired
-                        else -> throw LcpException.Return.UnexpectedServerError
+                        HttpURLConnection.HTTP_BAD_REQUEST -> throw LcpException(
+                            LcpError.Return.ReturnFailed
+                        )
+                        HttpURLConnection.HTTP_FORBIDDEN -> throw LcpException(
+                            LcpError.Return.AlreadyReturnedOrExpired
+                        )
+                        else -> throw LcpException(LcpError.Return.UnexpectedServerError)
                     }
                 }
 
             return Try.success(Unit)
         } catch (e: Exception) {
-            return Try.failure(LcpException.wrap(e))
+            return Try.failure(LcpError.wrap(e))
         }
     }
 

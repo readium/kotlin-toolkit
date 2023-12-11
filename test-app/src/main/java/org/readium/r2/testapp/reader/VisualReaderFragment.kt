@@ -50,6 +50,7 @@ import org.readium.r2.navigator.util.DirectionalNavigationAdapter
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.util.Language
+import org.readium.r2.shared.util.toDebugDescription
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.data.model.Highlight
 import org.readium.r2.testapp.databinding.FragmentReaderBinding
@@ -59,6 +60,7 @@ import org.readium.r2.testapp.reader.tts.TtsViewModel
 import org.readium.r2.testapp.utils.*
 import org.readium.r2.testapp.utils.extensions.confirmDialog
 import org.readium.r2.testapp.utils.extensions.throttleLatest
+import timber.log.Timber
 
 /*
  * Base reader fragment class
@@ -91,7 +93,7 @@ abstract class VisualReaderFragment : BaseReaderFragment() {
 
         navigatorFragment = navigator as Fragment
 
-        (navigator as OverflowNavigator).apply {
+        (navigator as OverflowableNavigator).apply {
             // This will automatically turn pages when tapping the screen edges or arrow keys.
             addInputListener(DirectionalNavigationAdapter(this))
         }
@@ -215,9 +217,10 @@ abstract class VisualReaderFragment : BaseReaderFragment() {
             events
                 .onEach { event ->
                     when (event) {
-                        is TtsViewModel.Event.OnError ->
-                            showError(event.error)
-
+                        is TtsViewModel.Event.OnError -> {
+                            Timber.e(event.error.toDebugDescription())
+                            showError(event.error.toUserError())
+                        }
                         is TtsViewModel.Event.OnMissingVoiceData ->
                             confirmAndInstallTtsVoice(event.language)
                     }

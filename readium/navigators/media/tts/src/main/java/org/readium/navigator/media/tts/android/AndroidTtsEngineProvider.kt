@@ -13,6 +13,9 @@ import androidx.media3.common.PlaybackParameters
 import org.readium.navigator.media.tts.TtsEngineProvider
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.util.DebugError
+import org.readium.r2.shared.util.Error
+import org.readium.r2.shared.util.Try
 
 @ExperimentalReadiumApi
 @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
@@ -26,16 +29,20 @@ public class AndroidTtsEngineProvider(
     override suspend fun createEngine(
         publication: Publication,
         initialPreferences: AndroidTtsPreferences
-    ): AndroidTtsEngine? {
+    ): Try<AndroidTtsEngine, Error> {
         val settingsResolver =
             AndroidTtsSettingsResolver(publication.metadata, defaults)
 
-        return AndroidTtsEngine(
+        val engine = AndroidTtsEngine(
             context,
             settingsResolver,
             voiceSelector,
             initialPreferences
+        ) ?: return Try.failure(
+            DebugError("Initialization of Android Tts service failed.")
         )
+
+        return Try.success(engine)
     }
 
     override fun createPreferencesEditor(

@@ -20,8 +20,17 @@ class FormatRegistryTest {
     fun `register new file extensions`() = runBlocking {
         val mediaType = MediaType("application/test")!!
         val sut = sut()
-        sut.register(mediaType, fileExtension = "tst")
+        sut.register(mediaType, fileExtension = "tst", superType = null)
 
         assertEquals(sut.fileExtension(mediaType), "tst")
+    }
+
+    @Test
+    fun `register new format with supertype`() = runBlocking {
+        val mediaType = MediaType("application/test")!!
+        val sut = sut()
+        sut.register(mediaType, fileExtension = null, superType = MediaType.ZIP)
+
+        assertEquals(sut.superType(mediaType), MediaType.ZIP)
     }
 }

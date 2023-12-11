@@ -14,20 +14,22 @@ import java.io.File
 import java.io.FileOutputStream
 import java.util.UUID
 import java.util.zip.ZipFile
+import org.readium.r2.lcp.LcpError
 import org.readium.r2.lcp.LcpException
 import org.readium.r2.lcp.license.model.LicenseDocument
 import org.readium.r2.shared.util.Url
-import org.readium.r2.shared.util.resource.Container
+import org.readium.r2.shared.util.data.Container
+import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.shared.util.toUri
 
 internal class ContentZipLicenseContainer(
     context: Context,
-    private val container: Container,
+    private val container: Container<Resource>,
     private val pathInZip: Url
 ) : LicenseContainer by ContainerLicenseContainer(container, pathInZip), WritableLicenseContainer {
 
     private val zipUri: Uri =
-        requireNotNull(container.source).toUri()
+        requireNotNull(container.sourceUrl).toUri()
 
     private val contentResolver: ContentResolver =
         context.contentResolver
@@ -40,11 +42,11 @@ internal class ContentZipLicenseContainer(
             val tmpZip = File(cache, UUID.randomUUID().toString())
             contentResolver.openInputStream(zipUri)
                 ?.use { it.copyTo(FileOutputStream(tmpZip)) }
-                ?: throw LcpException.Container.WriteFailed(pathInZip)
+                ?: throw LcpException(LcpError.Container.WriteFailed(pathInZip))
             val tmpZipFile = ZipFile(tmpZip)
 
             val outStream = contentResolver.openOutputStream(zipUri, "wt")
-                ?: throw LcpException.Container.WriteFailed(pathInZip)
+                ?: throw LcpException(LcpError.Container.WriteFailed(pathInZip))
             tmpZipFile.addOrReplaceEntry(
                 pathInZip.toString(),
                 ByteArrayInputStream(license.toByteArray()),
@@ -55,7 +57,7 @@ internal class ContentZipLicenseContainer(
             tmpZipFile.close()
             tmpZip.delete()
         } catch (e: Exception) {
-            throw LcpException.Container.WriteFailed(pathInZip)
+            throw LcpException(LcpError.Container.WriteFailed(pathInZip))
         }
     }
 }

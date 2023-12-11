@@ -7,9 +7,11 @@
 package org.readium.r2.shared.util.downloads
 
 import java.io.File
-import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.AbsoluteUrl
+import org.readium.r2.shared.util.Error
 import org.readium.r2.shared.util.downloads.android.AndroidDownloadManager
 import org.readium.r2.shared.util.downloads.foreground.ForegroundDownloadManager
+import org.readium.r2.shared.util.file.FileSystemError
 import org.readium.r2.shared.util.mediatype.MediaType
 
 /**
@@ -24,67 +26,38 @@ import org.readium.r2.shared.util.mediatype.MediaType
 public interface DownloadManager {
 
     public data class Request(
-        val url: Url,
+        val url: AbsoluteUrl,
         val headers: Map<String, List<String>> = emptyMap()
     )
 
     public data class Download(
         val file: File,
-        val mediaType: MediaType
+        val mediaType: MediaType?
     )
 
     @JvmInline
     public value class RequestId(public val value: String)
 
-    public sealed class Error(
+    public sealed class DownloadError(
         override val message: String,
-        override val cause: org.readium.r2.shared.util.Error? = null
-    ) : org.readium.r2.shared.util.Error {
+        override val cause: Error? = null
+    ) : Error {
 
-        public class NotFound(
-            cause: org.readium.r2.shared.util.Error? = null
-        ) : Error("File not found.", cause)
-
-        public class Unreachable(
-            cause: org.readium.r2.shared.util.Error? = null
-        ) : Error("Server is not reachable.", cause)
-
-        public class Server(
-            cause: org.readium.r2.shared.util.Error? = null
-        ) : Error("An error occurred on the server-side.", cause)
-
-        public class Forbidden(
-            cause: org.readium.r2.shared.util.Error? = null
-        ) : Error("Access to the resource was denied.", cause)
-
-        public class DeviceNotFound(
-            cause: org.readium.r2.shared.util.Error? = null
-        ) : Error("The storage device is missing.", cause)
+        public class Http(
+            cause: org.readium.r2.shared.util.http.HttpError
+        ) : DownloadError(cause.message, cause)
 
         public class CannotResume(
-            cause: org.readium.r2.shared.util.Error? = null
-        ) : Error("Download couldn't be resumed.", cause)
+            cause: Error? = null
+        ) : DownloadError("Download couldn't be resumed.", cause)
 
-        public class InsufficientSpace(
-            cause: org.readium.r2.shared.util.Error? = null
-        ) : Error("There is not enough space to complete the download.", cause)
-
-        public class FileError(
-            message: String,
-            cause: org.readium.r2.shared.util.Error? = null
-        ) : Error(message, cause)
-
-        public class HttpData(
-            cause: org.readium.r2.shared.util.Error? = null
-        ) : Error("A data error occurred at the HTTP level.", cause)
-
-        public class TooManyRedirects(
-            cause: org.readium.r2.shared.util.Error? = null
-        ) : Error("Too many redirects.", cause)
+        public class FileSystem(
+            override val cause: FileSystemError
+        ) : DownloadError("IO error on the local device.", cause)
 
         public class Unknown(
-            cause: org.readium.r2.shared.util.Error? = null
-        ) : Error("An unknown error occurred.", cause)
+            cause: Error? = null
+        ) : DownloadError("An unknown error occurred.", cause)
     }
 
     public interface Listener {
@@ -102,7 +75,7 @@ public interface DownloadManager {
         /**
          * The download with ID [requestId] failed due to [error].
          */
-        public fun onDownloadFailed(requestId: RequestId, error: Error)
+        public fun onDownloadFailed(requestId: RequestId, error: DownloadError)
 
         /**
          * The download with ID [requestId] has been cancelled.

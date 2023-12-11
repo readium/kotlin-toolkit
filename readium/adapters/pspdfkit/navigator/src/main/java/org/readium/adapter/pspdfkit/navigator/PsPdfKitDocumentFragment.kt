@@ -54,9 +54,9 @@ import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.services.isProtected
 import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.data.ReadError
+import org.readium.r2.shared.util.data.ReadTry
 import org.readium.r2.shared.util.pdf.cachedIn
-import org.readium.r2.shared.util.resource.Resource
-import org.readium.r2.shared.util.resource.ResourceTry
 import timber.log.Timber
 
 @ExperimentalReadiumApi
@@ -69,7 +69,7 @@ public class PsPdfKitDocumentFragment internal constructor(
 ) : PdfDocumentFragment<PsPdfKitSettings>() {
 
     internal interface Listener {
-        fun onResourceLoadFailed(href: Url, error: Resource.Exception)
+        fun onResourceLoadFailed(href: Url, error: ReadError)
         fun onConfigurePdfView(builder: PdfConfiguration.Builder): PdfConfiguration.Builder
         fun onTap(point: PointF): Boolean
     }
@@ -90,13 +90,13 @@ public class PsPdfKitDocumentFragment internal constructor(
     private val psPdfKitListener = PsPdfKitListener()
 
     private class DocumentViewModel(
-        document: suspend () -> ResourceTry<PsPdfKitDocument>
+        document: suspend () -> ReadTry<PsPdfKitDocument>
     ) : ViewModel() {
 
-        private val _document: Deferred<ResourceTry<PsPdfKitDocument>> =
+        private val _document: Deferred<ReadTry<PsPdfKitDocument>> =
             viewModelScope.async { document() }
 
-        suspend fun loadDocument(): ResourceTry<PsPdfKitDocument> =
+        suspend fun loadDocument(): ReadTry<PsPdfKitDocument> =
             _document.await()
 
         @OptIn(ExperimentalCoroutinesApi::class)
@@ -114,9 +114,10 @@ public class PsPdfKitDocumentFragment internal constructor(
         createViewModelFactory {
             DocumentViewModel(
                 document = {
+                    val resource = requireNotNull(publication.get(href))
                     PsPdfKitDocumentFactory(requireContext())
                         .cachedIn(publication)
-                        .open(publication.get(href), null)
+                        .open(resource, null)
                 }
             )
         }

@@ -85,9 +85,9 @@ internal class EpubNavigatorViewModel(
 
     val settings: StateFlow<EpubSettings> = _settings.asStateFlow()
 
-    val presentation: StateFlow<OverflowNavigator.Presentation> = _settings
+    val overflow: StateFlow<OverflowableNavigator.Overflow> = _settings
         .mapStateIn(viewModelScope) { settings ->
-            SimplePresentation(
+            SimpleOverflow(
                 readingProgression = settings.readingProgression,
                 scroll = settings.scroll,
                 axis = if (settings.scroll && !settings.verticalText) {
@@ -357,7 +357,10 @@ internal class EpubNavigatorViewModel(
                     application,
                     publication,
                     servedAssets = config.servedAssets,
-                    disableSelectionWhenProtected = config.disableSelectionWhenProtected
+                    disableSelectionWhenProtected = config.disableSelectionWhenProtected,
+                    onResourceLoadFailed = { url, error ->
+                        listener?.onResourceLoadFailed(url, error)
+                    }
                 )
             )
         }

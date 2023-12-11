@@ -11,7 +11,7 @@ package org.readium.r2.lcp.public
 
 import android.content.Context
 import org.readium.r2.lcp.LcpAuthenticating
-import org.readium.r2.lcp.LcpException
+import org.readium.r2.lcp.LcpError
 import org.readium.r2.lcp.LcpLicense
 import org.readium.r2.lcp.LcpService
 
@@ -68,7 +68,7 @@ public typealias LCPAuthenticatedLicense = LcpAuthenticating.AuthenticatedLicens
     ReplaceWith("org.readium.r2.lcp.LcpException"),
     level = DeprecationLevel.ERROR
 )
-public typealias LCPError = LcpException
+public typealias LCPError = LcpError
 
 @Deprecated(
     "Renamed to `LcpService()`",

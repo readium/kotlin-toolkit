@@ -1,6 +1,7 @@
 package org.readium.r2.lcp.service
 
 import java.lang.reflect.InvocationTargetException
+import org.readium.r2.lcp.LcpError
 import org.readium.r2.lcp.LcpException
 import org.readium.r2.shared.extensions.tryOr
 
@@ -91,7 +92,7 @@ internal object LcpClient {
         val drmExceptionClass = Class.forName("org.readium.lcp.sdk.DRMException")
 
         if (!drmExceptionClass.isInstance(e)) {
-            return LcpException.Runtime("the Lcp client threw an unhandled exception")
+            return LcpException(LcpError.Runtime("the Lcp client threw an unhandled exception"))
         }
 
         val drmError = drmExceptionClass
@@ -103,19 +104,21 @@ internal object LcpClient {
             .getMethod("getCode")
             .invoke(drmError) as Int
 
-        return when (errorCode) {
+        val error = when (errorCode) {
             // Error code 11 should never occur since we check the start/end date before calling createContext
-            11 -> LcpException.Runtime("License is out of date (check start and end date).")
-            101 -> LcpException.LicenseIntegrity.CertificateRevoked
-            102 -> LcpException.LicenseIntegrity.InvalidCertificateSignature
-            111 -> LcpException.LicenseIntegrity.InvalidLicenseSignatureDate
-            112 -> LcpException.LicenseIntegrity.InvalidLicenseSignature
+            11 -> LcpError.Runtime("License is out of date (check start and end date).")
+            101 -> LcpError.LicenseIntegrity.CertificateRevoked
+            102 -> LcpError.LicenseIntegrity.InvalidCertificateSignature
+            111 -> LcpError.LicenseIntegrity.InvalidLicenseSignatureDate
+            112 -> LcpError.LicenseIntegrity.InvalidLicenseSignature
             // Error code 121 seems to be unused in the C++ lib.
-            121 -> LcpException.Runtime("The drm context is invalid.")
-            131 -> LcpException.Decryption.ContentKeyDecryptError
-            141 -> LcpException.LicenseIntegrity.InvalidUserKeyCheck
-            151 -> LcpException.Decryption.ContentDecryptError
-            else -> LcpException.Unknown(e)
+            121 -> LcpError.Runtime("The drm context is invalid.")
+            131 -> LcpError.Decryption.ContentKeyDecryptError
+            141 -> LcpError.LicenseIntegrity.InvalidUserKeyCheck
+            151 -> LcpError.Decryption.ContentDecryptError
+            else -> LcpError.Unknown(e)
         }
+
+        return LcpException(error)
     }
 }

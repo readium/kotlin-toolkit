@@ -9,8 +9,7 @@ package org.readium.r2.navigator.pdf
 import androidx.fragment.app.Fragment
 import kotlinx.coroutines.flow.StateFlow
 import org.readium.r2.navigator.Navigator
-import org.readium.r2.navigator.OverflowNavigator
-import org.readium.r2.navigator.VisualNavigator
+import org.readium.r2.navigator.OverflowableNavigator
 import org.readium.r2.navigator.input.InputListener
 import org.readium.r2.navigator.preferences.Configurable
 import org.readium.r2.navigator.preferences.PreferencesEditor
@@ -38,10 +37,18 @@ public interface PdfEngineProvider<S : Configurable.Settings, P : Configurable.P
      */
     public fun computeSettings(metadata: Metadata, preferences: P): S
 
+    @Deprecated(
+        "Renamed to computeOverflow",
+        replaceWith = ReplaceWith("computeOverflow"),
+        level = DeprecationLevel.ERROR
+    )
+    public fun computePresentation(settings: S): Any =
+        throw NotImplementedError()
+
     /**
-     * Infers a [VisualNavigator.Presentation] from [settings].
+     * Infers a [OverflowableNavigator.Overflow] from [settings].
      */
-    public fun computePresentation(settings: S): OverflowNavigator.Presentation
+    public fun computeOverflow(settings: S): OverflowableNavigator.Overflow
 
     /**
      * Creates a preferences editor for [publication] and [initialPreferences].

@@ -7,21 +7,23 @@
 package org.readium.r2.streamer.parser.readium
 
 import android.content.Context
-import org.readium.r2.shared.publication.Manifest
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.services.InMemoryCacheService
 import org.readium.r2.shared.publication.services.PerResourcePositionsService
+import org.readium.r2.shared.publication.services.WebPositionsService
 import org.readium.r2.shared.publication.services.cacheServiceFactory
 import org.readium.r2.shared.publication.services.locatorServiceFactory
 import org.readium.r2.shared.publication.services.positionsServiceFactory
+import org.readium.r2.shared.util.DebugError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
-import org.readium.r2.shared.util.getOrElse
+import org.readium.r2.shared.util.data.ReadError
+import org.readium.r2.shared.util.data.decodeRwpm
+import org.readium.r2.shared.util.data.readDecodeOrElse
+import org.readium.r2.shared.util.http.HttpClient
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.mediatype.MediaType
-import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 import org.readium.r2.shared.util.pdf.PdfDocumentFactory
-import org.readium.r2.shared.util.resource.readAsJson
 import org.readium.r2.streamer.parser.PublicationParser
 import org.readium.r2.streamer.parser.audio.AudioLocatorService
 
@@ -30,8 +32,8 @@ import org.readium.r2.streamer.parser.audio.AudioLocatorService
  */
 public class ReadiumWebPubParser(
     private val context: Context? = null,
-    private val pdfFactory: PdfDocumentFactory<*>?,
-    private val mediaTypeRetriever: MediaTypeRetriever
+    private val httpClient: HttpClient,
+    private val pdfFactory: PdfDocumentFactory<*>?
 ) : PublicationParser {
 
     override suspend fun parse(
@@ -42,17 +44,19 @@ public class ReadiumWebPubParser(
             return Try.failure(PublicationParser.Error.FormatNotSupported())
         }
 
-        val manifestJson = asset.container
-            .get(Url("manifest.json")!!)
-            .readAsJson()
-            .getOrElse { return Try.failure(PublicationParser.Error.IO(it)) }
-
-        val manifest = Manifest.fromJSON(
-            manifestJson,
-            mediaTypeRetriever = mediaTypeRetriever
-        )
+        val manifestResource = asset.container[Url("manifest.json")!!]
             ?: return Try.failure(
-                PublicationParser.Error.ParsingFailed("Failed to parse the RWPM Manifest")
+                PublicationParser.Error.Reading(
+                    ReadError.Decoding(
+                        DebugError("Missing manifest.")
+                    )
+                )
+            )
+
+        val manifest = manifestResource
+            .readDecodeOrElse(
+                decode = { it.decodeRwpm() },
+                recover = { return Try.failure(PublicationParser.Error.Reading(it)) }
             )
 
         // Checks the requirements from the LCPDF specification.
@@ -61,23 +65,30 @@ public class ReadiumWebPubParser(
         if (asset.mediaType == MediaType.LCP_PROTECTED_PDF &&
             (readingOrder.isEmpty() || !readingOrder.all { MediaType.PDF.matches(it.mediaType) })
         ) {
-            return Try.failure(PublicationParser.Error.ParsingFailed("Invalid LCP Protected PDF."))
+            return Try.failure(
+                PublicationParser.Error.Reading(
+                    ReadError.Decoding("Invalid LCP Protected PDF.")
+                )
+            )
         }
 
         val servicesBuilder = Publication.ServicesBuilder().apply {
             cacheServiceFactory = InMemoryCacheService.createFactory(context)
 
-            when (asset.mediaType) {
+            positionsServiceFactory = when (asset.mediaType) {
                 MediaType.LCP_PROTECTED_PDF ->
-                    positionsServiceFactory = pdfFactory?.let { LcpdfPositionsService.create(it) }
-
+                    pdfFactory?.let { LcpdfPositionsService.create(it) }
                 MediaType.DIVINA ->
-                    positionsServiceFactory = PerResourcePositionsService.createFactory(
-                        MediaType("image/*")!!
-                    )
+                    PerResourcePositionsService.createFactory(MediaType("image/*")!!)
+                else ->
+                    WebPositionsService.createFactory(httpClient)
+            }
 
+            locatorServiceFactory = when (asset.mediaType) {
                 MediaType.READIUM_AUDIOBOOK, MediaType.LCP_PROTECTED_AUDIOBOOK ->
-                    locatorServiceFactory = AudioLocatorService.createFactory()
+                    AudioLocatorService.createFactory()
+                else ->
+                    null
             }
         }
 

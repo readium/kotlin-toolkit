@@ -41,16 +41,16 @@ public inline fun <T> tryOrLog(closure: () -> T): T? =
  * Finds the first cause instance of the given type.
  */
 @InternalReadiumApi
-public inline fun <reified T> Throwable.asInstance(): T? =
-    asInstance(T::class.java)
+public inline fun <reified T : Throwable> Throwable.findInstance(): T? =
+    findInstance(T::class.java)
 
 /**
  * Finds the first cause instance of the given type.
  */
 @InternalReadiumApi
-public fun <R> Throwable.asInstance(klass: Class<R>): R? =
+public fun <R : Throwable> Throwable.findInstance(klass: Class<R>): R? =
     @Suppress("UNCHECKED_CAST")
     when {
         klass.isInstance(this) -> this as R
-        else -> cause?.asInstance(klass)
+        else -> cause?.findInstance(klass)
     }

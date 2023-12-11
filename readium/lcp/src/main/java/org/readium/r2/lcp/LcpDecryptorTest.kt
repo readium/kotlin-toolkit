@@ -7,15 +7,19 @@
  * LICENSE file present in the project repository where this source code is maintained.
  */
 
+@file:Suppress("unused")
+
 package org.readium.r2.lcp
 
 import kotlin.math.ceil
 import org.readium.r2.shared.extensions.coerceIn
 import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.util.ErrorException
+import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.checkSuccess
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.getOrThrow
 import org.readium.r2.shared.util.resource.Resource
-import org.readium.r2.shared.util.resource.mapCatching
 import org.readium.r2.shared.util.use
 import timber.log.Timber
 
@@ -35,7 +39,7 @@ internal suspend fun checkResourcesAreReadableInOneBlock(publication: Publicatio
     (publication.readingOrder + publication.resources)
         .forEach { link ->
             Timber.d("attempting to read ${link.href} in one block")
-            publication.get(link).use { resource ->
+            publication.get(link)!!.use { resource ->
                 val bytes = resource.read()
                 check(bytes.isSuccess) { "failed to read ${link.href} in one block" }
             }
@@ -47,11 +51,14 @@ internal suspend fun checkLengthComputationIsCorrect(publication: Publication) {
 
     (publication.readingOrder + publication.resources)
         .forEach { link ->
-            val trueLength = publication.get(link).use { it.read().getOrThrow().size.toLong() }
-            publication.get(link).use { resource ->
+            val trueLength = publication.get(link)!!.use { it.read().checkSuccess().size.toLong() }
+            publication.get(link)!!.use { resource ->
                 resource.length()
                     .onFailure {
-                        throw IllegalStateException("failed to compute length of ${link.href}", it)
+                        throw IllegalStateException(
+                            "failed to compute length of ${link.href}",
+                            ErrorException(it)
+                        )
                     }.onSuccess {
                         check(it == trueLength) { "computed length of ${link.href} seems to be wrong" }
                     }
@@ -65,10 +72,10 @@ internal suspend fun checkAllResourcesAreReadableByChunks(publication: Publicati
     (publication.readingOrder + publication.resources)
         .forEach { link ->
             Timber.d("attempting to read ${link.href} by chunks ")
-            val groundTruth = publication.get(link).use { it.read() }.getOrThrow()
+            val groundTruth = publication.get(link)!!.use { it.read() }.checkSuccess()
             for (chunkSize in listOf(4096L, 2050L)) {
                 publication.get(link).use { resource ->
-                    resource.readByChunks(chunkSize, groundTruth).onFailure {
+                    resource!!.readByChunks(chunkSize, groundTruth).onFailure {
                         throw IllegalStateException(
                             "failed to read ${link.href} by chunks of size $chunkSize",
                             it
@@ -85,8 +92,8 @@ internal suspend fun checkExceedingRangesAreAllowed(publication: Publication) {
     (publication.readingOrder + publication.resources)
         .forEach { link ->
             publication.get(link).use { resource ->
-                val length = resource.length().getOrThrow()
-                val fullTruth = resource.read().getOrThrow()
+                val length = resource!!.length().checkSuccess()
+                val fullTruth = resource.read().checkSuccess()
                 for (
                 range in listOf(
                     0 until length + 100,
@@ -122,7 +129,11 @@ internal suspend fun Resource.readByChunks(
     groundTruth: ByteArray,
     shuffle: Boolean = true
 ) =
-    length().mapCatching { length ->
+    try {
+        val length = length()
+            .mapFailure { ErrorException(it) }
+            .getOrThrow()
+
         val blockNb = ceil(length / chunkSize.toDouble()).toInt()
         val blocks = (0 until blockNb)
             .map { Pair(it, it * chunkSize until kotlin.math.min(length, (it + 1) * chunkSize)) }
@@ -139,8 +150,8 @@ internal suspend fun Resource.readByChunks(
             Timber.d("block index ${it.first}: ${it.second}")
             val decryptedBytes = read(it.second).getOrElse { error ->
                 throw IllegalStateException(
-                    "unable to decrypt chunk ${it.second} from $source",
-                    error
+                    "unable to decrypt chunk ${it.second} from $sourceUrl",
+                    ErrorException(error)
                 )
             }
             check(decryptedBytes.isNotEmpty()) { "empty decrypted bytearray" }
@@ -149,8 +160,11 @@ internal suspend fun Resource.readByChunks(
                 Timber.d(
                     "expected length: ${groundTruth.sliceArray(it.second.map(Long::toInt)).size}"
                 )
-                "decrypted chunk ${it.first}: ${it.second} seems to be wrong in $source"
+                "decrypted chunk ${it.first}: ${it.second} seems to be wrong in $sourceUrl"
             }
             Pair(it.first, decryptedBytes)
         }
+        Try.success(Unit)
+    } catch (e: Exception) {
+        Try.failure(e)
     }

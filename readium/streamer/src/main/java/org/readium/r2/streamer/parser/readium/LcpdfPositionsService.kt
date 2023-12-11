@@ -19,6 +19,7 @@ import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.pdf.PdfDocument
 import org.readium.r2.shared.util.pdf.PdfDocumentFactory
 import org.readium.r2.shared.util.pdf.cachedIn
+import org.readium.r2.shared.util.toDebugDescription
 import timber.log.Timber
 
 /**
@@ -95,14 +96,18 @@ internal class LcpdfPositionsService(
         }
     }
 
-    private suspend fun openPdfAt(link: Link): PdfDocument? =
-        pdfFactory
+    private suspend fun openPdfAt(link: Link): PdfDocument? {
+        val resource = context.container.get(link.url())
+            ?: return null
+
+        return pdfFactory
             .cachedIn(context.services)
-            .open(context.container.get(link.url()), password = null)
+            .open(resource, password = null)
             .getOrElse {
-                Timber.e(it)
+                Timber.e(it.toDebugDescription())
                 null
             }
+    }
 
     companion object {
 

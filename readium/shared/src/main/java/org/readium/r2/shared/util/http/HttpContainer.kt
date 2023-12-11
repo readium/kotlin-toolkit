@@ -8,40 +8,35 @@ package org.readium.r2.shared.util.http
 
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Url
-import org.readium.r2.shared.util.resource.Container
-import org.readium.r2.shared.util.resource.FailureResource
+import org.readium.r2.shared.util.data.Container
 import org.readium.r2.shared.util.resource.Resource
-import org.readium.r2.shared.util.resource.toEntry
 
 /**
  * Fetches remote resources through HTTP.
  *
- * Since this fetcher is used when doing progressive download streaming (e.g. audiobook), the HTTP
+ * Since this container is used when doing progressive download streaming (e.g. audiobook), the HTTP
  * byte range requests are open-ended and reused. This helps to avoid issuing too many requests.
  *
- * @param client HTTP client used to perform HTTP requests.
  * @param baseUrl Base URL from which relative URLs are served.
+ * @param entries Entries of this container as Urls absolute or relative to [baseUrl].
+ * @param client HTTP client used to perform HTTP requests.
  */
 public class HttpContainer(
-    private val client: HttpClient,
-    private val baseUrl: Url? = null
-) : Container {
+    private val baseUrl: Url? = null,
+    override val entries: Set<Url>,
+    private val client: HttpClient
+) : Container<Resource> {
 
-    override suspend fun entries(): Set<Container.Entry>? = null
+    override fun get(url: Url): Resource? {
+        // We don't check that url matches any entry because that might save us from edge cases.
 
-    override fun get(url: Url): Container.Entry {
         val absoluteUrl = (baseUrl?.resolve(url) ?: url) as? AbsoluteUrl
 
         return if (absoluteUrl == null || !absoluteUrl.isHttp) {
-            FailureResource(
-                Resource.Exception.NotFound(
-                    Exception("URL scheme is not supported: ${absoluteUrl?.scheme}.")
-                )
-            )
+            null
         } else {
-            HttpResource(client, absoluteUrl)
+            HttpResource(absoluteUrl, client)
         }
-            .toEntry(url)
     }
 
     override suspend fun close() {}

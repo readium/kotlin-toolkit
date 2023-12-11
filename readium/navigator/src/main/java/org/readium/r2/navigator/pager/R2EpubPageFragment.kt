@@ -364,7 +364,7 @@ internal class R2EpubPageFragment : Fragment() {
                     ?.let { locator ->
                         loadLocator(
                             webView,
-                            requireNotNull(navigator).presentation.value.readingProgression,
+                            requireNotNull(navigator).overflow.value.readingProgression,
                             locator
                         )
                     }
@@ -385,7 +385,7 @@ internal class R2EpubPageFragment : Fragment() {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.CREATED) {
                 val webView = requireNotNull(webView)
                 val epubNavigator = requireNotNull(navigator)
-                loadLocator(webView, epubNavigator.presentation.value.readingProgression, locator)
+                loadLocator(webView, epubNavigator.overflow.value.readingProgression, locator)
                 webView.listener?.onProgressionChanged()
             }
         }

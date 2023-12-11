@@ -14,6 +14,7 @@ import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.runBlocking
 import org.readium.r2.lcp.BuildConfig.DEBUG
 import org.readium.r2.lcp.LcpAuthenticating
+import org.readium.r2.lcp.LcpError
 import org.readium.r2.lcp.LcpException
 import org.readium.r2.lcp.license.model.LicenseDocument
 import org.readium.r2.lcp.license.model.StatusDocument
@@ -37,7 +38,7 @@ private val supportedProfiles = listOf(
     "http://readium.org/lcp/profile-1.0"
 )
 
-internal typealias Context = Either<LcpClient.Context, LcpException.LicenseStatus>
+internal typealias Context = Either<LcpClient.Context, LcpError.LicenseStatus>
 
 internal typealias Observer = (ValidatedDocuments?, Exception?) -> Unit
 
@@ -56,7 +57,7 @@ internal data class ValidatedDocuments constructor(
     fun getContext(): LcpClient.Context {
         when (context) {
             is Either.Left -> return context.left
-            is Either.Right -> throw context.right
+            is Either.Right -> throw LcpException(context.right)
         }
     }
 }
@@ -89,7 +90,7 @@ internal sealed class Event {
     data class validatedLicense(val license: LicenseDocument) : Event()
     data class retrievedStatusData(val data: ByteArray) : Event()
     data class validatedStatus(val status: StatusDocument) : Event()
-    data class checkedLicenseStatus(val error: LcpException.LicenseStatus?) : Event()
+    data class checkedLicenseStatus(val error: LcpError.LicenseStatus?) : Event()
     data class retrievedPassphrase(val passphrase: String) : Event()
     data class validatedIntegrity(val context: LcpClient.Context) : Event()
     data class registeredDevice(val statusData: ByteArray?) : Event()
@@ -98,7 +99,7 @@ internal sealed class Event {
 }
 
 /**
- * If [ignoreInternetErrors] is true, then the validation won't fail on [LcpException.Network] errors.
+ * If [ignoreInternetErrors] is true, then the validation won't fail on [LcpError.Network] errors.
  * This should be the case with writable licenses (such as local ones) but not with read-only licences.
  */
 internal class LicenseValidation(
@@ -172,7 +173,7 @@ internal class LicenseValidation(
                 transitionTo(State.validateStatus(license, it.data))
             }
             on<Event.failed> {
-                if (!ignoreInternetErrors && it.error is LcpException.Network) {
+                if (!ignoreInternetErrors && it.error is LcpException && it.error.error is LcpError.Network) {
                     if (DEBUG) Timber.d("State.failure(it.error)")
                     transitionTo(State.failure(it.error))
                 } else {
@@ -341,7 +342,7 @@ internal class LicenseValidation(
     private fun validateLicense(data: ByteArray) {
         val license = LicenseDocument(data = data)
         if (!isProduction && license.encryption.profile != "http://readium.org/lcp/basic-profile") {
-            throw LcpException.LicenseProfileNotSupported
+            throw LcpException(LcpError.LicenseProfileNotSupported)
         }
         onLicenseValidated(license)
         raise(Event.validatedLicense(license))
@@ -359,7 +360,7 @@ internal class LicenseValidation(
             timeout = timeout,
             headers = mapOf("Accept" to MediaType.LCP_STATUS_DOCUMENT.toString())
         )
-            .getOrElse { throw LcpException.Network(it) }
+            .getOrElse { throw LcpException(LcpError.Network(it)) }
 
         raise(Event.retrievedStatusData(data))
     }
@@ -376,7 +377,7 @@ internal class LicenseValidation(
         ).toString()
         // Short timeout to avoid blocking the License, since it can be updated next time.
         val data = network.fetch(url, timeout = 5.seconds)
-            .getOrElse { throw LcpException.Network(it) }
+            .getOrElse { throw LcpException(LcpError.Network(it)) }
 
         raise(Event.retrievedLicenseData(data))
     }
@@ -386,7 +387,7 @@ internal class LicenseValidation(
         status: StatusDocument?,
         statusDocumentTakesPrecedence: Boolean
     ) {
-        var error: LcpException.LicenseStatus? = null
+        var error: LcpError.LicenseStatus? = null
         val now = Date()
         val start = license.rights.start ?: now
         val end = license.rights.end ?: now
@@ -406,24 +407,24 @@ internal class LicenseValidation(
                 when (status.status) {
                     StatusDocument.Status.Ready, StatusDocument.Status.Active, StatusDocument.Status.Expired ->
                         if (start > now) {
-                            LcpException.LicenseStatus.NotStarted(start)
+                            LcpError.LicenseStatus.NotStarted(start)
                         } else {
-                            LcpException.LicenseStatus.Expired(end)
+                            LcpError.LicenseStatus.Expired(end)
                         }
-                    StatusDocument.Status.Returned -> LcpException.LicenseStatus.Returned(date)
+                    StatusDocument.Status.Returned -> LcpError.LicenseStatus.Returned(date)
                     StatusDocument.Status.Revoked -> {
                         val devicesCount = status.events(
                             org.readium.r2.lcp.license.model.components.lsd.Event.EventType.Register
                         ).size
-                        LcpException.LicenseStatus.Revoked(date, devicesCount = devicesCount)
+                        LcpError.LicenseStatus.Revoked(date, devicesCount = devicesCount)
                     }
-                    StatusDocument.Status.Cancelled -> LcpException.LicenseStatus.Cancelled(date)
+                    StatusDocument.Status.Cancelled -> LcpError.LicenseStatus.Cancelled(date)
                 }
             } else {
                 if (start > now) {
-                    LcpException.LicenseStatus.NotStarted(start)
+                    LcpError.LicenseStatus.NotStarted(start)
                 } else {
-                    LcpException.LicenseStatus.Expired(end)
+                    LcpError.LicenseStatus.Expired(end)
                 }
             }
         }
@@ -444,7 +445,7 @@ internal class LicenseValidation(
         if (DEBUG) Timber.d("validateIntegrity")
         val profile = license.encryption.profile
         if (!supportedProfiles.contains(profile)) {
-            throw LcpException.LicenseProfileNotSupported
+            throw LcpException(LcpError.LicenseProfileNotSupported)
         }
         val context = LcpClient.createContext(license.json.toString(), passphrase, crl.retrieve())
         raise(Event.validatedIntegrity(context))

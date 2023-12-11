@@ -11,12 +11,15 @@ package org.readium.r2.lcp.license.container
 
 import android.content.Context
 import java.io.File
+import org.readium.r2.lcp.LcpError
 import org.readium.r2.lcp.LcpException
 import org.readium.r2.lcp.license.model.LicenseDocument
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.asset.Asset
+import org.readium.r2.shared.util.asset.ContainerAsset
+import org.readium.r2.shared.util.asset.ResourceAsset
+import org.readium.r2.shared.util.data.Container
 import org.readium.r2.shared.util.mediatype.MediaType
-import org.readium.r2.shared.util.resource.Container
 import org.readium.r2.shared.util.resource.Resource
 
 private val LICENSE_IN_EPUB = Url("META-INF/license.lcpl")!!
@@ -50,8 +53,8 @@ internal fun createLicenseContainer(
     asset: Asset
 ): LicenseContainer =
     when (asset) {
-        is Asset.Resource -> createLicenseContainer(asset.resource, asset.mediaType)
-        is Asset.Container -> createLicenseContainer(context, asset.container, asset.mediaType)
+        is ResourceAsset -> createLicenseContainer(asset.resource, asset.mediaType)
+        is ContainerAsset -> createLicenseContainer(context, asset.container, asset.mediaType)
     }
 
 internal fun createLicenseContainer(
@@ -59,12 +62,12 @@ internal fun createLicenseContainer(
     mediaType: MediaType
 ): LicenseContainer {
     if (mediaType != MediaType.LCP_LICENSE_DOCUMENT) {
-        throw LcpException.Container.OpenFailed
+        throw LcpException(LcpError.Container.OpenFailed)
     }
 
     return when {
-        resource.source?.isFile == true ->
-            LcplLicenseContainer(resource.source!!.toFile()!!)
+        resource.sourceUrl?.isFile == true ->
+            LcplLicenseContainer(resource.sourceUrl!!.toFile()!!)
         else ->
             LcplResourceLicenseContainer(resource)
     }
@@ -72,7 +75,7 @@ internal fun createLicenseContainer(
 
 internal fun createLicenseContainer(
     context: Context,
-    container: Container,
+    container: Container<Resource>,
     mediaType: MediaType
 ): LicenseContainer {
     val licensePath = when (mediaType) {
@@ -82,9 +85,9 @@ internal fun createLicenseContainer(
     }
 
     return when {
-        container.source?.isFile == true ->
-            FileZipLicenseContainer(container.source!!.path!!, licensePath)
-        container.source?.isContent == true ->
+        container.sourceUrl?.isFile == true ->
+            FileZipLicenseContainer(container.sourceUrl!!.path!!, licensePath)
+        container.sourceUrl?.isContent == true ->
             ContentZipLicenseContainer(context, container, licensePath)
         else ->
             ContainerLicenseContainer(container, licensePath)

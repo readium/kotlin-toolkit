@@ -6,7 +6,7 @@
 
 package org.readium.r2.navigator.util
 
-import org.readium.r2.navigator.OverflowNavigator
+import org.readium.r2.navigator.OverflowableNavigator
 import org.readium.r2.navigator.input.InputListener
 import org.readium.r2.navigator.input.Key
 import org.readium.r2.navigator.input.KeyEvent
@@ -38,7 +38,7 @@ import org.readium.r2.shared.ExperimentalReadiumApi
  */
 @ExperimentalReadiumApi
 public class DirectionalNavigationAdapter(
-    private val navigator: OverflowNavigator,
+    private val navigator: OverflowableNavigator,
     private val tapEdges: Set<TapEdge> = setOf(TapEdge.Horizontal),
     private val handleTapsWhileScrolling: Boolean = false,
     private val minimumHorizontalEdgeSize: Double = 80.0,
@@ -56,7 +56,7 @@ public class DirectionalNavigationAdapter(
     }
 
     override fun onTap(event: TapEvent): Boolean {
-        if (navigator.presentation.value.scroll && !handleTapsWhileScrolling) {
+        if (navigator.overflow.value.scroll && !handleTapsWhileScrolling) {
             return false
         }
 
@@ -112,8 +112,8 @@ public class DirectionalNavigationAdapter(
     /**
      * Moves to the left content portion (eg. page) relative to the reading progression direction.
      */
-    private fun OverflowNavigator.goLeft(animated: Boolean = false): Boolean {
-        return when (presentation.value.readingProgression) {
+    private fun OverflowableNavigator.goLeft(animated: Boolean = false): Boolean {
+        return when (overflow.value.readingProgression) {
             ReadingProgression.LTR ->
                 goBackward(animated = animated)
 
@@ -125,8 +125,8 @@ public class DirectionalNavigationAdapter(
     /**
      * Moves to the right content portion (eg. page) relative to the reading progression direction.
      */
-    private fun OverflowNavigator.goRight(animated: Boolean = false): Boolean {
-        return when (presentation.value.readingProgression) {
+    private fun OverflowableNavigator.goRight(animated: Boolean = false): Boolean {
+        return when (overflow.value.readingProgression) {
             ReadingProgression.LTR ->
                 goForward(animated = animated)
 

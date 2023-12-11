@@ -12,15 +12,14 @@ import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Properties
 import org.readium.r2.shared.publication.encryption.Encryption
 import org.readium.r2.shared.util.Url
-import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
+import org.readium.r2.shared.util.mediatype.MediaType
 
 internal class ResourceAdapter(
     private val spine: Spine,
     private val manifest: List<Item>,
     private val encryptionData: Map<Url, Encryption>,
     private val coverId: String?,
-    private val durationById: Map<String, Double?>,
-    private val mediaTypeRetriever: MediaTypeRetriever
+    private val durationById: Map<String, Double?>
 ) {
     data class Links(
         val readingOrder: List<Link>,
@@ -50,14 +49,14 @@ internal class ResourceAdapter(
         return Links(readingOrder, resources)
     }
 
-    /** Recursively find the ids of the fallback items in [items] */
+    /** Recursively find the ids contained in fallback chains of items with [ids]. */
     private fun computeIdsWithFallbacks(ids: List<String>): Set<String> {
         val fallbackIds: MutableSet<String> = mutableSetOf()
         ids.forEach { fallbackIds.addAll(computeFallbackChain(it)) }
         return fallbackIds
     }
 
-    /** Compute the ids contained in the fallback chain of [item] */
+    /** Compute the ids contained in the fallback chain of item with [id]. */
     private fun computeFallbackChain(id: String): Set<String> {
         // The termination has already been checked while computing links
         val ids: MutableSet<String> = mutableSetOf()
@@ -73,7 +72,7 @@ internal class ResourceAdapter(
 
         return Link(
             href = Href(item.href),
-            mediaType = mediaTypeRetriever.retrieve(item.mediaType),
+            mediaType = item.mediaType?.let { MediaType(it) },
             duration = durationById[item.id],
             rels = rels,
             properties = properties,

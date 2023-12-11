@@ -58,7 +58,7 @@ import timber.log.Timber
 @Deprecated("Use the new AudioNavigator from the readium-navigator-media-audio module.")
 @OptIn(ExperimentalTime::class)
 public class MediaNavigator private constructor(
-    override val publication: Publication,
+    public val publication: Publication,
     private val playerFacade: SessionPlayerFacade,
     private val playerCallback: SessionPlayerCallback,
     private val configuration: Configuration

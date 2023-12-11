@@ -24,12 +24,16 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.extensions.tryOr
+import org.readium.r2.shared.util.DebugError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.downloads.DownloadManager
+import org.readium.r2.shared.util.file.FileSystemError
+import org.readium.r2.shared.util.http.HttpError
+import org.readium.r2.shared.util.http.HttpStatus
 import org.readium.r2.shared.util.mediatype.FormatRegistry
 import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.shared.util.mediatype.MediaTypeHints
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
-import org.readium.r2.shared.util.resource.FileResource
 import org.readium.r2.shared.util.toUri
 import org.readium.r2.shared.util.units.Hz
 import org.readium.r2.shared.util.units.hz
@@ -249,7 +253,7 @@ public class AndroidDownloadManager internal constructor(
             SystemDownloadManager.STATUS_SUCCESSFUL -> {
                 prepareResult(
                     Uri.parse(facade.localUri!!)!!.toFile(),
-                    mediaTypeHint = facade.mediaType
+                    mediaTypeHint = facade.mediaType?.let { MediaType(it) }
                 )
                     .onSuccess { download ->
                         listenersForId.forEach { it.onDownloadCompleted(id, download) }
@@ -268,13 +272,14 @@ public class AndroidDownloadManager internal constructor(
         }
     }
 
-    private suspend fun prepareResult(destFile: File, mediaTypeHint: String?): Try<DownloadManager.Download, DownloadManager.Error> =
+    private suspend fun prepareResult(destFile: File, mediaTypeHint: MediaType?): Try<DownloadManager.Download, DownloadManager.DownloadError> =
         withContext(Dispatchers.IO) {
-            val mediaType = mediaTypeHint?.let { mediaTypeRetriever.retrieve(it) }
-                ?: FileResource(destFile, mediaTypeRetriever).mediaType().getOrNull()
-                ?: MediaType.BINARY
+            val mediaType = mediaTypeRetriever.retrieve(
+                destFile,
+                MediaTypeHints(mediaType = mediaTypeHint)
+            ).getOrNull()
 
-            val extension = formatRegistry.fileExtension(mediaType)
+            val extension = mediaType?.let { formatRegistry.fileExtension(it) }
                 ?: destFile.extension.takeUnless { it.isEmpty() }
 
             val newDest = File(destFile.parent, generateFileName(extension))
@@ -288,39 +293,49 @@ public class AndroidDownloadManager internal constructor(
                 Try.success(download)
             } else {
                 Try.failure(
-                    DownloadManager.Error.FileError("Failed to rename the downloaded file.")
+                    DownloadManager.DownloadError.FileSystem(
+                        FileSystemError.IO(DebugError("Failed to rename the downloaded file."))
+                    )
                 )
             }
         }
 
-    private fun mapErrorCode(code: Int): DownloadManager.Error =
+    private fun mapErrorCode(code: Int): DownloadManager.DownloadError =
         when (code) {
-            401, 403 ->
-                DownloadManager.Error.Forbidden()
-            404 ->
-                DownloadManager.Error.NotFound()
-            500, 501 ->
-                DownloadManager.Error.Server()
-            502, 503, 504 ->
-                DownloadManager.Error.Unreachable()
-            SystemDownloadManager.ERROR_CANNOT_RESUME ->
-                DownloadManager.Error.CannotResume()
-            SystemDownloadManager.ERROR_DEVICE_NOT_FOUND ->
-                DownloadManager.Error.DeviceNotFound()
-            SystemDownloadManager.ERROR_FILE_ERROR ->
-                DownloadManager.Error.FileError("IO error on the local device.")
-            SystemDownloadManager.ERROR_HTTP_DATA_ERROR ->
-                DownloadManager.Error.HttpData()
-            SystemDownloadManager.ERROR_INSUFFICIENT_SPACE ->
-                DownloadManager.Error.InsufficientSpace()
-            SystemDownloadManager.ERROR_TOO_MANY_REDIRECTS ->
-                DownloadManager.Error.TooManyRedirects()
+            in 400 until 1000 ->
+                DownloadManager.DownloadError.Http(httpErrorForCode(code))
             SystemDownloadManager.ERROR_UNHANDLED_HTTP_CODE ->
-                DownloadManager.Error.Unknown()
+                DownloadManager.DownloadError.Http(httpErrorForCode(code))
+            SystemDownloadManager.ERROR_HTTP_DATA_ERROR ->
+                DownloadManager.DownloadError.Http(HttpError.MalformedResponse(null))
+            SystemDownloadManager.ERROR_TOO_MANY_REDIRECTS ->
+                DownloadManager.DownloadError.Http(
+                    HttpError.Redirection(DebugError("Too many redirects."))
+                )
+            SystemDownloadManager.ERROR_CANNOT_RESUME ->
+                DownloadManager.DownloadError.CannotResume()
+            SystemDownloadManager.ERROR_DEVICE_NOT_FOUND ->
+                DownloadManager.DownloadError.FileSystem(
+                    FileSystemError.FileNotFound(
+                        DebugError("Missing device.")
+                    )
+                )
+            SystemDownloadManager.ERROR_FILE_ERROR ->
+                DownloadManager.DownloadError.FileSystem(
+                    FileSystemError.IO(DebugError("An error occurred on the filesystem."))
+                )
+            SystemDownloadManager.ERROR_INSUFFICIENT_SPACE ->
+                DownloadManager.DownloadError.FileSystem(FileSystemError.InsufficientSpace())
             SystemDownloadManager.ERROR_UNKNOWN ->
-                DownloadManager.Error.Unknown()
+                DownloadManager.DownloadError.Unknown()
             else ->
-                DownloadManager.Error.Unknown()
+                DownloadManager.DownloadError.Unknown()
+        }
+
+    private fun httpErrorForCode(code: Int): HttpError =
+        when (code) {
+            in 0 until 1000 -> HttpError.ErrorResponse(HttpStatus(code))
+            else -> HttpError.MalformedResponse(DebugError("Unknown HTTP status code."))
         }
 
     public override fun close() {

@@ -12,6 +12,7 @@ package org.readium.r2.lcp.license.model
 import java.nio.charset.Charset
 import java.util.*
 import org.json.JSONObject
+import org.readium.r2.lcp.LcpError
 import org.readium.r2.lcp.LcpException
 import org.readium.r2.lcp.license.model.components.Link
 import org.readium.r2.lcp.license.model.components.Links
@@ -22,23 +23,50 @@ import org.readium.r2.lcp.license.model.components.lcp.User
 import org.readium.r2.lcp.service.URLParameters
 import org.readium.r2.shared.extensions.iso8601ToDate
 import org.readium.r2.shared.extensions.optNullableString
+import org.readium.r2.shared.util.AbsoluteUrl
+import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
 
 public class LicenseDocument internal constructor(public val json: JSONObject) {
 
+    public companion object {
+
+        public fun fromJSON(json: JSONObject): Try<LicenseDocument, LcpError.Parsing> {
+            val document = try {
+                LicenseDocument(json)
+            } catch (e: Exception) {
+                check(e is LcpException)
+                check(e.error is LcpError.Parsing)
+                return Try.failure(e.error)
+            }
+
+            return Try.success(document)
+        }
+
+        public fun fromBytes(data: ByteArray): Try<LicenseDocument, LcpError.Parsing> {
+            val json = try {
+                JSONObject(data.decodeToString())
+            } catch (e: Exception) {
+                return Try.failure(LcpError.Parsing.MalformedJSON)
+            }
+
+            return fromJSON(json)
+        }
+    }
+
     public val provider: String =
         json.optNullableString("provider")
-            ?: throw LcpException.Parsing.LicenseDocument
+            ?: throw LcpException(LcpError.Parsing.LicenseDocument)
 
     public val id: String =
         json.optNullableString("id")
-            ?: throw LcpException.Parsing.LicenseDocument
+            ?: throw LcpException(LcpError.Parsing.LicenseDocument)
 
     public val issued: Date =
         json.optNullableString("issued")
             ?.iso8601ToDate()
-            ?: throw LcpException.Parsing.LicenseDocument
+            ?: throw LcpException(LcpError.Parsing.LicenseDocument)
 
     public val updated: Date =
         json.optNullableString("updated")
@@ -48,12 +76,12 @@ public class LicenseDocument internal constructor(public val json: JSONObject) {
     public val encryption: Encryption =
         json.optJSONObject("encryption")
             ?.let { Encryption(it) }
-            ?: throw LcpException.Parsing.LicenseDocument
+            ?: throw LcpException(LcpError.Parsing.LicenseDocument)
 
     public val links: Links =
         json.optJSONArray("links")
             ?.let { Links(it) }
-            ?: throw LcpException.Parsing.LicenseDocument
+            ?: throw LcpException(LcpError.Parsing.LicenseDocument)
 
     public val user: User =
         User(json.optJSONObject("user") ?: JSONObject())
@@ -64,26 +92,26 @@ public class LicenseDocument internal constructor(public val json: JSONObject) {
     public val signature: Signature =
         json.optJSONObject("signature")
             ?.let { Signature(it) }
-            ?: throw LcpException.Parsing.LicenseDocument
+            ?: throw LcpException(LcpError.Parsing.LicenseDocument)
 
     init {
         if (link(Rel.Hint) == null || link(Rel.Publication) == null) {
-            throw LcpException.Parsing.LicenseDocument
+            throw LcpException(LcpError.Parsing.LicenseDocument)
         }
 
         // Check that the acquisition link has a valid URL.
         try {
-            link(Rel.Publication)!!.url()
+            link(Rel.Publication)!!.url() as AbsoluteUrl
         } catch (e: Exception) {
-            throw LcpException.Parsing.Url(rel = LicenseDocument.Rel.Publication.value)
+            throw LcpException(LcpError.Parsing.Url(rel = LicenseDocument.Rel.Publication.value))
         }
     }
 
-    public constructor(data: ByteArray) : this(
+    internal constructor(data: ByteArray) : this(
         try {
             JSONObject(data.decodeToString())
         } catch (e: Exception) {
-            throw LcpException.Parsing.MalformedJSON
+            throw LcpException(LcpError.Parsing.MalformedJSON)
         }
     )
 
@@ -118,7 +146,7 @@ public class LicenseDocument internal constructor(public val json: JSONObject) {
     ): Url {
         val link = link(rel, preferredType)
             ?: links.firstWithRelAndNoType(rel.value)
-            ?: throw LcpException.Parsing.Url(rel = rel.value)
+            ?: throw LcpException(LcpError.Parsing.Url(rel = rel.value))
 
         return link.url(parameters = parameters)
     }

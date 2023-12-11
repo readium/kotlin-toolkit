@@ -25,7 +25,6 @@ import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.logging.log
 import org.readium.r2.shared.util.mediatype.MediaType
-import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 
 /**
  * Link Object for the Readium Web Publication Manifest.
@@ -162,7 +161,6 @@ public data class Link(
          */
         public fun fromJSON(
             json: JSONObject?,
-            mediaTypeRetriever: MediaTypeRetriever = MediaTypeRetriever(),
             warnings: WarningLogger? = null
         ): Link? {
             json ?: return null
@@ -170,7 +168,7 @@ public data class Link(
             return Link(
                 href = parseHref(json, warnings) ?: return null,
                 mediaType = json.optNullableString("type")
-                    ?.let { mediaTypeRetriever.retrieve(it) },
+                    ?.let { MediaType(it) },
                 title = json.optNullableString("title"),
                 rels = json.optStringsFromArrayOrSingle("rel").toSet(),
                 properties = Properties.fromJSON(json.optJSONObject("properties")),
@@ -180,12 +178,10 @@ public data class Link(
                 duration = json.optPositiveDouble("duration"),
                 languages = json.optStringsFromArrayOrSingle("language"),
                 alternates = fromJSONArray(
-                    json.optJSONArray("alternate"),
-                    mediaTypeRetriever
+                    json.optJSONArray("alternate")
                 ),
                 children = fromJSONArray(
-                    json.optJSONArray("children"),
-                    mediaTypeRetriever
+                    json.optJSONArray("children")
                 )
             )
         }
@@ -232,13 +228,11 @@ public data class Link(
          */
         public fun fromJSONArray(
             json: JSONArray?,
-            mediaTypeRetriever: MediaTypeRetriever = MediaTypeRetriever(),
             warnings: WarningLogger? = null
         ): List<Link> {
             return json.parseObjects {
                 fromJSON(
                     it as? JSONObject,
-                    mediaTypeRetriever,
                     warnings
                 )
             }

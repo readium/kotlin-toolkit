@@ -23,7 +23,6 @@ import org.readium.r2.navigator.epub.EpubNavigatorFragment
 import org.readium.r2.navigator.image.ImageNavigatorFragment
 import org.readium.r2.navigator.pdf.PdfNavigatorFragment
 import org.readium.r2.shared.ExperimentalReadiumApi
-import org.readium.r2.shared.UserException
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.LocatorCollection
 import org.readium.r2.shared.publication.Publication
@@ -33,18 +32,26 @@ import org.readium.r2.shared.publication.services.search.search
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
-import org.readium.r2.shared.util.resource.Resource
+import org.readium.r2.shared.util.data.ReadError
+import org.readium.r2.shared.util.toDebugDescription
 import org.readium.r2.testapp.Application
+import org.readium.r2.testapp.R
 import org.readium.r2.testapp.data.BookRepository
 import org.readium.r2.testapp.data.model.Highlight
+import org.readium.r2.testapp.domain.toUserError
 import org.readium.r2.testapp.reader.preferences.UserPreferencesViewModel
 import org.readium.r2.testapp.reader.tts.TtsViewModel
 import org.readium.r2.testapp.search.SearchPagingSource
 import org.readium.r2.testapp.utils.EventChannel
+import org.readium.r2.testapp.utils.UserError
 import org.readium.r2.testapp.utils.createViewModelFactory
 import timber.log.Timber
 
-@OptIn(ExperimentalDecorator::class, ExperimentalCoroutinesApi::class)
+@OptIn(
+    ExperimentalDecorator::class,
+    ExperimentalCoroutinesApi::class,
+    ExperimentalReadiumApi::class
+)
 class ReaderViewModel(
     private val bookId: Long,
     private val readerRepository: ReaderRepository,
@@ -205,8 +212,14 @@ class ReaderViewModel(
         lastSearchQuery = query
         _searchLocators.value = emptyList()
         searchIterator = publication.search(query)
-            .onFailure { activityChannel.send(ActivityCommand.ToastError(it)) }
-            .getOrNull()
+            ?: run {
+                activityChannel.send(
+                    ActivityCommand.ToastError(
+                        UserError(R.string.search_error_not_searchable)
+                    )
+                )
+                null
+            }
         pagingSourceFactory.invalidate()
         searchChannel.send(SearchCommand.StartNewSearch)
     }
@@ -249,12 +262,11 @@ class ReaderViewModel(
 
     // Navigator.Listener
 
-    override fun onResourceLoadFailed(href: Url, error: Resource.Exception) {
-        val message = when (error) {
-            is Resource.Exception.OutOfMemory -> "The resource is too large to be rendered on this device: $href"
-            else -> "Failed to render the resource: $href"
-        }
-        activityChannel.send(ActivityCommand.ToastError(UserException(message, error)))
+    override fun onResourceLoadFailed(href: Url, error: ReadError) {
+        Timber.e(error.toDebugDescription())
+        activityChannel.send(
+            ActivityCommand.ToastError(error.toUserError())
+        )
     }
 
     // HyperlinkNavigator.Listener
@@ -283,7 +295,7 @@ class ReaderViewModel(
         object OpenOutlineRequested : ActivityCommand()
         object OpenDrmManagementRequested : ActivityCommand()
         class OpenExternalLink(val url: AbsoluteUrl) : ActivityCommand()
-        class ToastError(val error: UserException) : ActivityCommand()
+        class ToastError(val error: UserError) : ActivityCommand()
     }
 
     sealed class FeedbackEvent {

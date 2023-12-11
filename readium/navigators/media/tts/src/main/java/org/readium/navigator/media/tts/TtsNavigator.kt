@@ -6,15 +6,10 @@
 
 package org.readium.navigator.media.tts
 
-import android.app.Application
-import androidx.media3.common.MediaItem
-import androidx.media3.common.PlaybackParameters
 import androidx.media3.common.Player
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.flow.StateFlow
 import org.readium.navigator.media.common.Media3Adapter
-import org.readium.navigator.media.common.MediaMetadataProvider
 import org.readium.navigator.media.common.MediaNavigator
 import org.readium.navigator.media.common.TextAwareMediaNavigator
 import org.readium.navigator.media.tts.session.TtsSessionAdapter
@@ -27,10 +22,7 @@ import org.readium.r2.shared.extensions.mapStateIn
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.publication.services.content.ContentService
-import org.readium.r2.shared.util.Language
 import org.readium.r2.shared.util.Url
-import org.readium.r2.shared.util.tokenizer.TextTokenizer
 
 /**
  * A navigator to read aloud a [Publication] with a TTS engine.
@@ -38,9 +30,9 @@ import org.readium.r2.shared.util.tokenizer.TextTokenizer
 @ExperimentalReadiumApi
 @OptIn(DelicateReadiumApi::class)
 public class TtsNavigator<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
-    E : TtsEngine.Error, V : TtsEngine.Voice> private constructor(
+    E : TtsEngine.Error, V : TtsEngine.Voice> internal constructor(
     coroutineScope: CoroutineScope,
-    override val publication: Publication,
+    private val publication: Publication,
     private val player: TtsPlayer<S, P, E, V>,
     private val sessionAdapter: TtsSessionAdapter<E>
 ) :
@@ -48,91 +40,6 @@ public class TtsNavigator<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
     TextAwareMediaNavigator<TtsNavigator.Location, TtsNavigator.Playback, TtsNavigator.ReadingOrder>,
     Media3Adapter,
     Configurable<S, P> {
-
-    public companion object {
-
-        public suspend operator fun <S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
-            E : TtsEngine.Error, V : TtsEngine.Voice> invoke(
-            application: Application,
-            publication: Publication,
-            ttsEngineProvider: TtsEngineProvider<S, P, *, E, V>,
-            tokenizerFactory: (language: Language?) -> TextTokenizer,
-            metadataProvider: MediaMetadataProvider,
-            listener: Listener,
-            initialLocator: Locator? = null,
-            initialPreferences: P? = null
-        ): TtsNavigator<S, P, E, V>? {
-            if (publication.findService(ContentService::class) == null) {
-                return null
-            }
-
-            @Suppress("NAME_SHADOWING")
-            val initialLocator =
-                initialLocator?.let { publication.normalizeLocator(it) }
-
-            val actualInitialPreferences =
-                initialPreferences
-                    ?: ttsEngineProvider.createEmptyPreferences()
-
-            val contentIterator =
-                TtsUtteranceIterator(publication, tokenizerFactory, initialLocator)
-            if (!contentIterator.hasNext()) {
-                return null
-            }
-
-            val ttsEngine =
-                ttsEngineProvider.createEngine(publication, actualInitialPreferences)
-                    ?: return null
-
-            val metadataFactory =
-                metadataProvider.createMetadataFactory(publication)
-
-            val playlistMetadata =
-                metadataFactory.publicationMetadata()
-
-            val mediaItems =
-                publication.readingOrder.indices.map { index ->
-                    val metadata = metadataFactory.resourceMetadata(index)
-                    MediaItem.Builder()
-                        .setMediaMetadata(metadata)
-                        .build()
-                }
-
-            val ttsPlayer =
-                TtsPlayer(ttsEngine, contentIterator, actualInitialPreferences)
-                    ?: return null
-
-            val coroutineScope =
-                MainScope()
-
-            val playbackParameters =
-                ttsPlayer.settings.mapStateIn(coroutineScope) {
-                    ttsEngineProvider.getPlaybackParameters(it)
-                }
-
-            val onSetPlaybackParameters = { parameters: PlaybackParameters ->
-                val newPreferences = ttsEngineProvider.updatePlaybackParameters(
-                    ttsPlayer.lastPreferences,
-                    parameters
-                )
-                ttsPlayer.submitPreferences(newPreferences)
-            }
-
-            val sessionAdapter =
-                TtsSessionAdapter(
-                    application,
-                    ttsPlayer,
-                    playlistMetadata,
-                    mediaItems,
-                    listener::onStopRequested,
-                    playbackParameters,
-                    onSetPlaybackParameters,
-                    ttsEngineProvider::mapEngineError
-                )
-
-            return TtsNavigator(coroutineScope, publication, ttsPlayer, sessionAdapter)
-        }
-    }
 
     public interface Listener {
 
@@ -172,12 +79,19 @@ public class TtsNavigator<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
 
         public object Ended : MediaNavigator.State.Ended
 
-        public sealed class Error : MediaNavigator.State.Error {
+        public data class Error(val error: TtsNavigator.Error) : MediaNavigator.State.Error
+    }
 
-            public data class EngineError<E : TtsEngine.Error> (val error: E) : Error()
+    public sealed class Error(
+        override val message: String,
+        override val cause: org.readium.r2.shared.util.Error?
+    ) : org.readium.r2.shared.util.Error {
 
-            public data class ContentError(val exception: Exception) : Error()
-        }
+        public class EngineError<E : TtsEngine.Error> (override val cause: E) :
+            Error("An error occurred in the TTS engine.", cause)
+
+        public class ContentError(cause: org.readium.r2.shared.util.Error) :
+            Error("An error occurred while trying to read publication content.", cause)
     }
 
     public val voices: Set<V> get() =
@@ -274,8 +188,8 @@ public class TtsNavigator<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
 
     private fun TtsPlayer.State.Error.toError(): State.Error =
         when (this) {
-            is TtsPlayer.State.Error.ContentError -> State.Error.ContentError(exception)
-            is TtsPlayer.State.Error.EngineError<*> -> State.Error.EngineError(error)
+            is TtsPlayer.State.Error.ContentError -> State.Error(Error.ContentError(error))
+            is TtsPlayer.State.Error.EngineError<*> -> State.Error(Error.EngineError(error))
         }
 
     private fun TtsPlayer.Utterance.toPosition(): Location {

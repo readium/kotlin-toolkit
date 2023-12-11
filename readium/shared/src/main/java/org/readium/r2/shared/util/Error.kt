@@ -23,9 +23,9 @@ public interface Error {
 }
 
 /**
- * A basic [Error] implementation with a message.
+ * A basic [Error] implementation with a debug message.
  */
-public class MessageError(
+public class DebugError(
     override val message: String,
     override val cause: Error? = null
 ) : Error
@@ -33,11 +33,11 @@ public class MessageError(
 /**
  * An error caused by the catch of a throwable.
  */
-public class ThrowableError(
-    public val throwable: Throwable
+public class ThrowableError<E : Throwable>(
+    public val throwable: E
 ) : Error {
     override val message: String = throwable.message ?: throwable.toString()
-    override val cause: Error? = null
+    override val cause: Error? = throwable.cause?.let { ThrowableError(it) }
 }
 
 /**
@@ -45,4 +45,37 @@ public class ThrowableError(
  */
 public class ErrorException(
     public val error: Error
-) : Exception(error.message)
+) : Exception(error.message, error.cause?.let { ErrorException(it) })
+
+/**
+ * Convenience function to get the description of an error with its cause.
+ */
+public fun Error.toDebugDescription(): String =
+    if (this is ThrowableError<*>) {
+        throwable.toDebugDescription()
+    } else {
+        var desc = "${javaClass.nameWithEnclosingClasses()}: $message"
+        cause?.let { cause ->
+            desc += "\n\n${cause.toDebugDescription()}"
+        }
+        desc
+    }
+
+private fun Throwable.toDebugDescription(): String {
+    var desc = "${javaClass.nameWithEnclosingClasses()}: "
+
+    desc += message ?: ""
+    desc += "\n" + stackTrace.take(2).joinToString("\n").prependIndent("  ")
+    cause?.let { cause ->
+        desc += "\n\n${cause.toDebugDescription()}"
+    }
+    return desc
+}
+
+private fun Class<*>.nameWithEnclosingClasses(): String {
+    var name = simpleName
+    enclosingClass?.let {
+        name = "${it.nameWithEnclosingClasses()}.$name"
+    }
+    return name
+}

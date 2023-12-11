@@ -15,11 +15,14 @@ import kotlinx.coroutines.launch
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.protection.ContentProtectionSchemeRetriever
 import org.readium.r2.shared.util.AbsoluteUrl
+import org.readium.r2.shared.util.DebugError
 import org.readium.r2.shared.util.Try
-import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.asset.AssetRetriever
+import org.readium.r2.shared.util.data.ReadError
+import org.readium.r2.shared.util.file.FileSystemError
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.toUrl
+import org.readium.r2.shared.util.tryRecover
 import org.readium.r2.streamer.PublicationFactory
 import org.readium.r2.testapp.data.BookRepository
 import org.readium.r2.testapp.data.model.Book
@@ -94,7 +97,7 @@ class Bookshelf(
     }
 
     fun addPublicationFromWeb(
-        url: Url
+        url: AbsoluteUrl
     ) {
         coroutineScope.launch {
             addBookFeedback(url)
@@ -102,7 +105,7 @@ class Bookshelf(
     }
 
     fun addPublicationFromStorage(
-        url: Url
+        url: AbsoluteUrl
     ) {
         coroutineScope.launch {
             addBookFeedback(url)
@@ -110,7 +113,7 @@ class Bookshelf(
     }
 
     private suspend fun addBookFeedback(
-        url: Url,
+        url: AbsoluteUrl,
         coverUrl: AbsoluteUrl? = null
     ) {
         addBook(url, coverUrl)
@@ -119,17 +122,31 @@ class Bookshelf(
     }
 
     private suspend fun addBook(
-        url: Url,
+        url: AbsoluteUrl,
         coverUrl: AbsoluteUrl? = null
     ): Try<Unit, ImportError> {
         val asset =
             assetRetriever.retrieve(url)
-                ?: return Try.failure(
-                    ImportError.PublicationError(PublicationError.UnsupportedAsset())
-                )
+                .getOrElse {
+                    return Try.failure(
+                        ImportError.Publication(PublicationError(it))
+                    )
+                }
 
         val drmScheme =
             protectionRetriever.retrieve(asset)
+                .tryRecover {
+                    when (it) {
+                        ContentProtectionSchemeRetriever.Error.NotRecognized ->
+                            Try.success(null)
+                        is ContentProtectionSchemeRetriever.Error.Reading ->
+                            Try.failure(it)
+                    }
+                }.getOrElse {
+                    return Try.failure(
+                        ImportError.Publication(PublicationError(it))
+                    )
+                }
 
         publicationFactory.open(
             asset,
@@ -139,26 +156,33 @@ class Bookshelf(
             val coverFile =
                 coverStorage.storeCover(publication, coverUrl)
                     .getOrElse {
-                        return Try.failure(ImportError.StorageError(it))
+                        return Try.failure(
+                            ImportError.Publication(
+                                PublicationError.ReadError(ReadError.Access(FileSystemError.IO(it)))
+                            )
+                        )
                     }
 
             val id = bookRepository.insertBook(
-                url.toString(),
+                url,
                 asset.mediaType,
-                asset.assetType,
                 drmScheme,
                 publication,
                 coverFile
             )
             if (id == -1L) {
                 coverFile.delete()
-                return Try.failure(ImportError.DatabaseError())
+                return Try.failure(
+                    ImportError.Database(
+                        DebugError("Could not insert book into database.")
+                    )
+                )
             }
         }
             .onFailure {
                 Timber.e("Cannot open publication: $it.")
                 return Try.failure(
-                    ImportError.PublicationError(PublicationError(it))
+                    ImportError.Publication(PublicationError(it))
                 )
             }
 

@@ -6,10 +6,8 @@
 
 package org.readium.navigator.media.audio
 
-import android.os.Build
 import androidx.media3.common.Player
 import kotlin.time.Duration
-import kotlin.time.Duration.Companion.seconds
 import kotlin.time.ExperimentalTime
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.MainScope
@@ -32,8 +30,8 @@ import timber.log.Timber
 
 @ExperimentalReadiumApi
 @OptIn(ExperimentalTime::class, DelicateReadiumApi::class)
-public class AudioNavigator<S : Configurable.Settings, P : Configurable.Preferences<P>> private constructor(
-    override val publication: Publication,
+public class AudioNavigator<S : Configurable.Settings, P : Configurable.Preferences<P>> internal constructor(
+    private val publication: Publication,
     private val audioEngine: AudioEngine<S, P>,
     override val readingOrder: ReadingOrder
 ) :
@@ -41,61 +39,6 @@ public class AudioNavigator<S : Configurable.Settings, P : Configurable.Preferen
     TimeBasedMediaNavigator<AudioNavigator.Location, AudioNavigator.Playback, AudioNavigator.ReadingOrder>,
     Media3Adapter,
     Configurable<S, P> by audioEngine {
-
-    public companion object {
-
-        public suspend operator fun <S : Configurable.Settings, P : Configurable.Preferences<P>> invoke(
-            publication: Publication,
-            audioEngineProvider: AudioEngineProvider<S, P, *>,
-            readingOrder: List<Link> = publication.readingOrder,
-            initialLocator: Locator? = null,
-            initialPreferences: P? = null
-        ): AudioNavigator<S, P>? {
-            if (readingOrder.isEmpty()) {
-                return null
-            }
-
-            val items = readingOrder.map {
-                ReadingOrder.Item(
-                    href = it.url(),
-                    duration = duration(it, publication)
-                )
-            }
-            val totalDuration = publication.metadata.duration?.seconds
-                ?: items.mapNotNull { it.duration }
-                    .takeIf { it.size == items.size }
-                    ?.sum()
-
-            val actualReadingOrder = ReadingOrder(totalDuration, items)
-
-            val actualInitialLocator =
-                initialLocator?.let { publication.normalizeLocator(it) }
-                    ?: publication.locatorFromLink(publication.readingOrder[0])!!
-
-            val audioEngine =
-                audioEngineProvider.createEngine(
-                    publication,
-                    actualInitialLocator,
-                    initialPreferences ?: audioEngineProvider.createEmptyPreferences()
-                ) ?: return null
-
-            return AudioNavigator(publication, audioEngine, actualReadingOrder)
-        }
-
-        private fun duration(link: Link, publication: Publication): Duration? {
-            var duration: Duration? = link.duration?.seconds
-                .takeUnless { it == Duration.ZERO }
-
-            if (duration == null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                val resource = publication.get(link)
-                val metadataRetriever = MetadataRetriever(resource)
-                duration = metadataRetriever.duration()
-                metadataRetriever.close()
-            }
-
-            return duration
-        }
-    }
 
     public data class Location(
         override val href: Url,

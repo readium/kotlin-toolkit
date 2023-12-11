@@ -12,13 +12,14 @@ import org.readium.r2.shared.PdfSupport
 import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.publication.services.InMemoryCacheService
 import org.readium.r2.shared.publication.services.InMemoryCoverService
+import org.readium.r2.shared.util.DebugError
 import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.pdf.PdfDocumentFactory
 import org.readium.r2.shared.util.pdf.toLinks
-import org.readium.r2.streamer.extensions.toLink
 import org.readium.r2.streamer.parser.PublicationParser
 
 /**
@@ -41,15 +42,21 @@ public class PdfParser(
             return Try.failure(PublicationParser.Error.FormatNotSupported())
         }
 
-        val resource = asset.container.entries()?.firstOrNull()
+        val url = asset.container.entries
+            .firstOrNull()
+
+        val resource = url
+            ?.let { asset.container[it] }
             ?: return Try.failure(
-                PublicationParser.Error.ParsingFailed("No PDF found in the publication.")
+                PublicationParser.Error.Reading(
+                    ReadError.Decoding(
+                        DebugError("No PDF found in the publication.")
+                    )
+                )
             )
         val document = pdfFactory.open(resource, password = null)
-            .getOrElse {
-                return Try.failure(PublicationParser.Error.IO(it))
-            }
-        val tableOfContents = document.outline.toLinks(resource.url)
+            .getOrElse { return Try.failure(PublicationParser.Error.Reading(it)) }
+        val tableOfContents = document.outline.toLinks(url)
 
         val manifest = Manifest(
             metadata = Metadata(
@@ -60,7 +67,7 @@ public class PdfParser(
                 readingProgression = document.readingProgression,
                 numberOfPages = document.pageCount
             ),
-            readingOrder = listOf(resource.toLink(MediaType.PDF)),
+            readingOrder = listOf(Link(href = url, mediaType = MediaType.PDF)),
             tableOfContents = tableOfContents
         )
 

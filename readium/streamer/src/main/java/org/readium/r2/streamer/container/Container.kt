@@ -10,6 +10,7 @@
 package org.readium.r2.streamer.container
 
 import java.io.InputStream
+import java.lang.Error
 
 /**
  * Container of a publication

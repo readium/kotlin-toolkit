@@ -11,88 +11,19 @@ package org.readium.r2.shared.publication.services
 
 import kotlin.test.assertEquals
 import kotlinx.coroutines.runBlocking
-import org.json.JSONObject
 import org.junit.Assert
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.readium.r2.shared.extensions.mapNotNull
-import org.readium.r2.shared.extensions.optNullableInt
 import org.readium.r2.shared.publication.Href
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
-import org.readium.r2.shared.util.resource.readAsString
 import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
 class PositionsServiceTest {
-
-    @Test
-    fun `get works fine`() {
-        val positions = listOf(
-            listOf(
-                Locator(
-                    href = Url("res")!!,
-                    mediaType = MediaType.XML,
-                    locations = Locator.Locations(
-                        position = 1,
-                        totalProgression = 0.0
-                    )
-                )
-            ),
-            listOf(
-                Locator(
-                    href = Url("chap1")!!,
-                    mediaType = MediaType.PNG,
-                    locations = Locator.Locations(
-                        position = 2,
-                        totalProgression = 1.0 / 4.0
-                    )
-                )
-            ),
-            listOf(
-                Locator(
-                    href = Url("chap2")!!,
-                    mediaType = MediaType.PNG,
-                    title = "Chapter 2",
-                    locations = Locator.Locations(
-                        position = 3,
-                        totalProgression = 3.0 / 4.0
-                    )
-                ),
-                Locator(
-                    href = Url("chap2")!!,
-                    mediaType = MediaType.PNG,
-                    title = "Chapter 2.5",
-                    locations = Locator.Locations(
-                        position = 4,
-                        totalProgression = 3.0 / 4.0
-                    )
-                )
-            )
-        )
-
-        val service = object : PositionsService {
-            override suspend fun positionsByReadingOrder(): List<List<Locator>> = positions
-        }
-
-        val json = service.get(Url("/~readium/positions")!!)
-            ?.let { runBlocking { it.readAsString() } }
-            ?.getOrNull()
-            ?.let { JSONObject(it) }
-        val total = json
-            ?.optNullableInt("total")
-        val locators = json
-            ?.optJSONArray("positions")
-            ?.mapNotNull { locator ->
-                (locator as? JSONObject)?.let { Locator.fromJSON(it) }
-            }
-
-        assertEquals(positions.flatten().size, total)
-        assertEquals(positions.flatten(), locators)
-    }
 
     @Test
     fun `helper for ServicesBuilder works fine`() {

@@ -13,18 +13,21 @@ import java.util.UUID
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
-import org.readium.r2.lcp.LcpException
+import org.readium.r2.lcp.LcpError
 import org.readium.r2.lcp.LcpPublicationRetriever as ReadiumLcpPublicationRetriever
 import org.readium.r2.lcp.LcpService
 import org.readium.r2.lcp.license.model.LicenseDocument
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.opds.images
 import org.readium.r2.shared.util.AbsoluteUrl
+import org.readium.r2.shared.util.DebugError
+import org.readium.r2.shared.util.Error
 import org.readium.r2.shared.util.Try
-import org.readium.r2.shared.util.Url
-import org.readium.r2.shared.util.asset.Asset
 import org.readium.r2.shared.util.asset.AssetRetriever
+import org.readium.r2.shared.util.asset.ResourceAsset
+import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.downloads.DownloadManager
+import org.readium.r2.shared.util.file.FileSystemError
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.mediatype.FormatRegistry
 import org.readium.r2.shared.util.mediatype.MediaType
@@ -122,10 +125,11 @@ class LocalPublicationRetriever(
         coroutineScope.launch {
             val tempFile = uri.copyToTempFile(context, storageDir)
                 .getOrElse {
-                    listener.onError(ImportError.StorageError(it))
+                    listener.onError(
+                        ImportError.FileSystem(FileSystemError.IO(it))
+                    )
                     return@launch
                 }
-
             retrieveFromStorage(tempFile)
         }
     }
@@ -147,20 +151,24 @@ class LocalPublicationRetriever(
         coverUrl: AbsoluteUrl? = null
     ) {
         val sourceAsset = assetRetriever.retrieve(tempFile)
-            ?: run {
+            .getOrElse {
                 listener.onError(
-                    ImportError.PublicationError(PublicationError.UnsupportedAsset())
+                    ImportError.Publication(PublicationError(it))
                 )
                 return
             }
 
         if (
-            sourceAsset is org.readium.r2.shared.util.asset.Asset.Resource &&
+            sourceAsset is ResourceAsset &&
             sourceAsset.mediaType.matches(MediaType.LCP_LICENSE_DOCUMENT)
         ) {
             if (lcpPublicationRetriever == null) {
                 listener.onError(
-                    ImportError.PublicationError(PublicationError.UnsupportedAsset())
+                    ImportError.Publication(
+                        PublicationError.UnsupportedContentProtection(
+                            DebugError("LCP support is missing.")
+                        )
+                    )
                 )
             } else {
                 lcpPublicationRetriever.retrieve(sourceAsset, tempFile, coverUrl)
@@ -168,7 +176,7 @@ class LocalPublicationRetriever(
             return
         }
 
-        val fileExtension = formatRegistry.fileExtension(sourceAsset.mediaType) ?: "epub"
+        val fileExtension = formatRegistry.fileExtension(sourceAsset.mediaType) ?: tempFile.extension
         val fileName = "${UUID.randomUUID()}.$fileExtension"
         val libraryFile = File(storageDir, fileName)
 
@@ -177,7 +185,13 @@ class LocalPublicationRetriever(
         } catch (e: Exception) {
             Timber.d(e)
             tryOrNull { libraryFile.delete() }
-            listener.onError(ImportError.StorageError(e))
+            listener.onError(
+                ImportError.Publication(
+                    PublicationError.ReadError(
+                        ReadError.Access(FileSystemError.IO(e))
+                    )
+                )
+            )
             return
         }
 
@@ -231,7 +245,7 @@ class OpdsPublicationRetriever(
         coroutineScope.launch {
             val publicationUrl = publication.acquisitionUrl()
                 .getOrElse {
-                    listener.onError(ImportError.OpdsError(it))
+                    listener.onError(ImportError.Opds(it))
                     return@launch
                 }
 
@@ -252,12 +266,13 @@ class OpdsPublicationRetriever(
         }
     }
 
-    private fun Publication.acquisitionUrl(): Try<Url, Exception> {
-        val acquisitionLink = links
-            .firstOrNull { it.mediaType?.isPublication == true || it.mediaType == MediaType.LCP_LICENSE_DOCUMENT }
-            ?: return Try.failure(Exception("No supported link to acquire publication."))
+    private fun Publication.acquisitionUrl(): Try<AbsoluteUrl, Error> {
+        val acquisitionUrl = links
+            .filter { it.mediaType?.isPublication == true || it.mediaType == MediaType.LCP_LICENSE_DOCUMENT }
+            .firstNotNullOfOrNull { it.url() as? AbsoluteUrl }
+            ?: return Try.failure(DebugError("No supported link to acquire publication."))
 
-        return Try.success(acquisitionLink.url())
+        return Try.success(acquisitionUrl)
     }
 
     private val downloadListener: DownloadListener =
@@ -288,7 +303,7 @@ class OpdsPublicationRetriever(
 
         override fun onDownloadFailed(
             requestId: DownloadManager.RequestId,
-            error: DownloadManager.Error
+            error: DownloadManager.DownloadError
         ) {
             coroutineScope.launch {
                 downloadRepository.remove(requestId.value)
@@ -332,23 +347,24 @@ class LcpPublicationRetriever(
      * Retrieves a publication protected with the given license.
      */
     fun retrieve(
-        licenceAsset: org.readium.r2.shared.util.asset.Asset.Resource,
+        licenceAsset: ResourceAsset,
         licenceFile: File,
         coverUrl: AbsoluteUrl?
     ) {
         coroutineScope.launch {
             val license = licenceAsset.resource.read()
                 .getOrElse {
-                    listener.onError(ImportError.StorageError(it))
+                    listener.onError(ImportError.Publication(PublicationError.ReadError(it)))
                     return@launch
                 }
                 .let {
-                    try {
-                        LicenseDocument(it)
-                    } catch (e: LcpException) {
-                        listener.onError(ImportError.LcpAcquisitionFailed(e))
-                        return@launch
-                    }
+                    LicenseDocument.fromBytes(it)
+                        .getOrElse { error ->
+                            listener.onError(
+                                ImportError.LcpAcquisitionFailed(error)
+                            )
+                            return@launch
+                        }
                 }
 
             tryOrNull { licenceFile.delete() }
@@ -390,11 +406,13 @@ class LcpPublicationRetriever(
 
         override fun onAcquisitionFailed(
             requestId: ReadiumLcpPublicationRetriever.RequestId,
-            error: LcpException
+            error: LcpError
         ) {
             coroutineScope.launch {
                 downloadRepository.remove(requestId.value)
-                listener.onError(ImportError.LcpAcquisitionFailed(error))
+                listener.onError(
+                    ImportError.LcpAcquisitionFailed(error)
+                )
             }
         }
 

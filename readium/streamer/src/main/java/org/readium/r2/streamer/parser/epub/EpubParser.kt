@@ -14,17 +14,23 @@ import org.readium.r2.shared.publication.encryption.encryption
 import org.readium.r2.shared.publication.services.content.DefaultContentService
 import org.readium.r2.shared.publication.services.content.iterators.HtmlResourceContentIterator
 import org.readium.r2.shared.publication.services.search.StringSearchService
+import org.readium.r2.shared.util.DebugError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.data.Container
+import org.readium.r2.shared.util.data.DecodeError
+import org.readium.r2.shared.util.data.ReadError
+import org.readium.r2.shared.util.data.Readable
+import org.readium.r2.shared.util.data.decodeXml
+import org.readium.r2.shared.util.data.readDecodeOrElse
+import org.readium.r2.shared.util.data.readDecodeOrNull
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.mediatype.MediaType
-import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
-import org.readium.r2.shared.util.resource.Container
+import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.shared.util.resource.TransformingContainer
-import org.readium.r2.shared.util.resource.readAsXml
 import org.readium.r2.shared.util.use
-import org.readium.r2.streamer.extensions.readAsXmlOrNull
+import org.readium.r2.shared.util.xml.ElementNode
 import org.readium.r2.streamer.parser.PublicationParser
 import org.readium.r2.streamer.parser.epub.extensions.fromEpubHref
 
@@ -36,7 +42,6 @@ import org.readium.r2.streamer.parser.epub.extensions.fromEpubHref
  */
 @OptIn(ExperimentalReadiumApi::class)
 public class EpubParser(
-    private val mediaTypeRetriever: MediaTypeRetriever,
     private val reflowablePositionsStrategy: EpubPositionsService.ReflowableStrategy = EpubPositionsService.ReflowableStrategy.recommended
 ) : PublicationParser {
 
@@ -50,18 +55,34 @@ public class EpubParser(
 
         val opfPath = getRootFilePath(asset.container)
             .getOrElse { return Try.failure(it) }
-        val opfResource = asset.container.get(opfPath)
-        val opfXmlDocument = opfResource.readAsXml()
-            .getOrElse { return Try.failure(PublicationParser.Error.IO(it)) }
-        val packageDocument = PackageDocument.parse(opfXmlDocument, opfPath, mediaTypeRetriever)
-            ?: return Try.failure(PublicationParser.Error.ParsingFailed("Invalid OPF file."))
+        val opfResource = asset.container[opfPath]
+            ?: return Try.failure(
+                PublicationParser.Error.Reading(
+                    ReadError.Decoding(
+                        DebugError("Missing OPF file.")
+                    )
+                )
+            )
+        val opfXmlDocument = opfResource.use { resource ->
+            resource.readDecodeOrElse(
+                decode = { it.decodeXml() },
+                recover = { return Try.failure(PublicationParser.Error.Reading(it)) }
+            )
+        }
+        val packageDocument = PackageDocument.parse(opfXmlDocument, opfPath)
+            ?: return Try.failure(
+                PublicationParser.Error.Reading(
+                    ReadError.Decoding(
+                        DebugError("Invalid OPF file.")
+                    )
+                )
+            )
 
         val manifest = ManifestAdapter(
             packageDocument = packageDocument,
             navigationData = parseNavigationData(packageDocument, asset.container),
             encryptionData = parseEncryptionData(asset.container),
-            displayOptions = parseDisplayOptions(asset.container),
-            mediaTypeRetriever = mediaTypeRetriever
+            displayOptions = parseDisplayOptions(asset.container)
         ).adapt()
 
         var container = asset.container
@@ -91,41 +112,62 @@ public class EpubParser(
         return Try.success(builder)
     }
 
-    private suspend fun getRootFilePath(container: Container): Try<Url, PublicationParser.Error> =
-        container
-            .get(Url("META-INF/container.xml")!!)
-            .use { it.readAsXml() }
-            .getOrElse { return Try.failure(PublicationParser.Error.IO(it)) }
+    private suspend fun getRootFilePath(container: Container<Resource>): Try<Url, PublicationParser.Error> {
+        val containerXmlUrl = Url("META-INF/container.xml")!!
+
+        val containerXmlResource = container[containerXmlUrl]
+            ?: return Try.failure(
+                PublicationParser.Error.Reading(
+                    ReadError.Decoding("container.xml not found.")
+                )
+            )
+
+        return containerXmlResource
+            .readDecodeOrElse(
+                decode = { it.decodeXml() },
+                recover = { return Try.failure(PublicationParser.Error.Reading(it)) }
+            )
             .getFirst("rootfiles", Namespaces.OPC)
             ?.getFirst("rootfile", Namespaces.OPC)
             ?.getAttr("full-path")
             ?.let { Url.fromEpubHref(it) }
             ?.let { Try.success(it) }
-            ?: Try.failure(PublicationParser.Error.ParsingFailed("Cannot successfully parse OPF."))
+            ?: Try.failure(
+                PublicationParser.Error.Reading(
+                    ReadError.Decoding("Cannot successfully parse OPF.")
+                )
+            )
+    }
 
-    private suspend fun parseEncryptionData(container: Container): Map<Url, Encryption> =
-        container.readAsXmlOrNull("META-INF/encryption.xml")
+    private suspend fun parseEncryptionData(container: Container<Resource>): Map<Url, Encryption> =
+        container.readDecodeXmlOrNull(path = "META-INF/encryption.xml")
             ?.let { EncryptionParser.parse(it) }
             ?: emptyMap()
 
-    private suspend fun parseNavigationData(packageDocument: PackageDocument, container: Container): Map<String, List<Link>> =
+    private suspend fun parseNavigationData(
+        packageDocument: PackageDocument,
+        container: Container<Resource>
+    ): Map<String, List<Link>> =
         parseNavigationDocument(packageDocument, container)
             ?: parseNcx(packageDocument, container)
             ?: emptyMap()
 
     private suspend fun parseNavigationDocument(
         packageDocument: PackageDocument,
-        container: Container
+        container: Container<Resource>
     ): Map<String, List<Link>>? =
         packageDocument.manifest
             .firstOrNull { it.properties.contains(Vocabularies.ITEM + "nav") }
             ?.let { navItem ->
-                container.readAsXmlOrNull(navItem.href)
+                container.readDecodeXmlOrNull(navItem.href)
                     ?.let { NavigationDocumentParser.parse(it, navItem.href) }
             }
             ?.takeUnless { it.isEmpty() }
 
-    private suspend fun parseNcx(packageDocument: PackageDocument, container: Container): Map<String, List<Link>>? {
+    private suspend fun parseNcx(
+        packageDocument: PackageDocument,
+        container: Container<Resource>
+    ): Map<String, List<Link>>? {
         val ncxItem =
             if (packageDocument.spine.toc != null) {
                 packageDocument.manifest.firstOrNull { it.id == packageDocument.spine.toc }
@@ -135,15 +177,16 @@ public class EpubParser(
 
         return ncxItem
             ?.let { item ->
-                container.readAsXmlOrNull(item.href)?.let { NcxParser.parse(it, item.href) }
+                container.readDecodeXmlOrNull(item.href)
+                    ?.let { NcxParser.parse(it, item.href) }
             }
             ?.takeUnless { it.isEmpty() }
     }
 
-    private suspend fun parseDisplayOptions(container: Container): Map<String, String> {
+    private suspend fun parseDisplayOptions(container: Container<Resource>): Map<String, String> {
         val displayOptionsXml =
-            container.readAsXmlOrNull("META-INF/com.apple.ibooks.display-options.xml")
-                ?: container.readAsXmlOrNull("META-INF/com.kobobooks.display-options.xml")
+            container.readDecodeXmlOrNull("META-INF/com.apple.ibooks.display-options.xml")
+                ?: container.readDecodeXmlOrNull("META-INF/com.kobobooks.display-options.xml")
 
         return displayOptionsXml?.getFirst("platform", "")
             ?.get("option", "")
@@ -154,4 +197,28 @@ public class EpubParser(
             }
             ?.toMap().orEmpty()
     }
+
+    public suspend inline fun<R> Readable.readDecodeOrElse(
+        url: Url,
+        decode: (value: ByteArray) -> Try<R, DecodeError>,
+        recover: (ReadError) -> R
+    ): R =
+        readDecodeOrElse(decode, recover) {
+            recover(
+                ReadError.Decoding(
+                    DebugError("Couldn't decode resource at $url", it.cause)
+                )
+            )
+        }
+
+    private suspend inline fun Container<Readable>.readDecodeXmlOrNull(
+        path: String
+    ): ElementNode? =
+        Url.fromDecodedPath(path)?.let { url -> readDecodeXmlOrNull(url) }
+
+    /** Returns the resource data as an XML Document at the given [url], or null. */
+    private suspend inline fun Container<Readable>.readDecodeXmlOrNull(
+        url: Url
+    ): ElementNode? =
+        readDecodeOrNull(url) { it.decodeXml() }
 }

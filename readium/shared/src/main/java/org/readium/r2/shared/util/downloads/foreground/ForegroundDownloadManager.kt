@@ -8,6 +8,7 @@ package org.readium.r2.shared.util.downloads.foreground
 
 import java.io.File
 import java.io.FileOutputStream
+import java.io.IOException
 import java.util.UUID
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -17,15 +18,14 @@ import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.extensions.tryOrLog
-import org.readium.r2.shared.util.ThrowableError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.downloads.DownloadManager
+import org.readium.r2.shared.util.file.FileSystemError
 import org.readium.r2.shared.util.flatMap
 import org.readium.r2.shared.util.http.HttpClient
-import org.readium.r2.shared.util.http.HttpException
+import org.readium.r2.shared.util.http.HttpError
 import org.readium.r2.shared.util.http.HttpRequest
 import org.readium.r2.shared.util.http.HttpResponse
-import org.readium.r2.shared.util.http.HttpTry
 
 /**
  * A [DownloadManager] implementation using a [HttpClient].
@@ -34,7 +34,7 @@ import org.readium.r2.shared.util.http.HttpTry
  */
 public class ForegroundDownloadManager(
     private val httpClient: HttpClient,
-    private val bufferLength: Int = 1024 * 8
+    private val downloadsDirectory: File
 ) : DownloadManager {
 
     private val coroutineScope: CoroutineScope =
@@ -58,13 +58,13 @@ public class ForegroundDownloadManager(
 
     private suspend fun doRequest(request: DownloadManager.Request, id: DownloadManager.RequestId) {
         val destination = withContext(Dispatchers.IO) {
-            File.createTempFile(UUID.randomUUID().toString(), null)
+            File.createTempFile(UUID.randomUUID().toString(), null, downloadsDirectory)
         }
 
         httpClient
             .download(
                 request = HttpRequest(
-                    url = request.url.toString(),
+                    url = request.url,
                     headers = request.headers
                 ),
                 destination = destination,
@@ -87,7 +87,7 @@ public class ForegroundDownloadManager(
             }
             .onFailure { error ->
                 forEachListener(id) {
-                    onDownloadFailed(id, mapError(error))
+                    onDownloadFailed(id, error)
                 }
             }
 
@@ -124,74 +124,44 @@ public class ForegroundDownloadManager(
         request: HttpRequest,
         destination: File,
         onProgress: (downloaded: Long, expected: Long?) -> Unit
-    ): HttpTry<HttpResponse> =
+    ): Try<HttpResponse, DownloadManager.DownloadError> =
         try {
-            stream(request).flatMap { res ->
-                withContext(Dispatchers.IO) {
-                    val expected = res.response.contentLength?.takeIf { it > 0 }
+            stream(request)
+                .mapFailure { DownloadManager.DownloadError.Http(it) }
+                .flatMap { res ->
+                    withContext(Dispatchers.IO) {
+                        res.body.use { input ->
+                            val expected = res.response.contentLength?.takeIf { it > 0 }
+                            val freespace = destination.freeSpace.takeUnless { it == 0L }
 
-                    res.body.use { input ->
-                        FileOutputStream(destination).use { output ->
-                            val buf = ByteArray(bufferLength)
-                            var n: Int
-                            var downloadedBytes = 0L
-                            while (-1 != input.read(buf).also { n = it }) {
-                                ensureActive()
-                                downloadedBytes += n
-                                output.write(buf, 0, n)
-                                onProgress(downloadedBytes, expected)
+                            if (expected != null && freespace != null && destination.freeSpace < expected) {
+                                return@withContext Try.failure(
+                                    DownloadManager.DownloadError.FileSystem(
+                                        FileSystemError.InsufficientSpace(
+                                            requiredSpace = expected,
+                                            freespace = freespace
+                                        )
+                                    )
+                                )
+                            }
+
+                            FileOutputStream(destination).use { output ->
+                                val buf = ByteArray(DEFAULT_BUFFER_SIZE)
+                                var n: Int
+                                var downloadedBytes = 0L
+                                while (-1 != input.read(buf).also { n = it }) {
+                                    ensureActive()
+                                    downloadedBytes += n
+                                    output.write(buf, 0, n)
+                                    onProgress(downloadedBytes, expected)
+                                }
                             }
                         }
+
+                        Try.success(res.response)
                     }
-
-                    Try.success(res.response)
                 }
-            }
-        } catch (e: Exception) {
-            Try.failure(HttpException.wrap(e))
+        } catch (e: IOException) {
+            Try.failure(DownloadManager.DownloadError.Http(HttpError.IO(e)))
         }
-
-    private fun mapError(httpException: HttpException): DownloadManager.Error {
-        val httpError = ThrowableError(httpException)
-        return when (httpException.kind) {
-            HttpException.Kind.MalformedRequest ->
-                DownloadManager.Error.Unknown(httpError)
-
-            HttpException.Kind.MalformedResponse ->
-                DownloadManager.Error.HttpData(httpError)
-
-            HttpException.Kind.Timeout ->
-                DownloadManager.Error.Unreachable(httpError)
-
-            HttpException.Kind.BadRequest ->
-                DownloadManager.Error.Unknown(httpError)
-
-            HttpException.Kind.Unauthorized ->
-                DownloadManager.Error.Forbidden(httpError)
-
-            HttpException.Kind.Forbidden ->
-                DownloadManager.Error.Forbidden(httpError)
-
-            HttpException.Kind.MethodNotAllowed ->
-                DownloadManager.Error.Unknown(httpError)
-
-            HttpException.Kind.NotFound ->
-                DownloadManager.Error.NotFound(httpError)
-
-            HttpException.Kind.ClientError ->
-                DownloadManager.Error.HttpData(httpError)
-
-            HttpException.Kind.ServerError ->
-                DownloadManager.Error.Server(httpError)
-
-            HttpException.Kind.Offline ->
-                DownloadManager.Error.Unreachable(httpError)
-
-            HttpException.Kind.Cancelled ->
-                DownloadManager.Error.Unknown(httpError)
-
-            HttpException.Kind.Other ->
-                DownloadManager.Error.Unknown(httpError)
-        }
-    }
 }

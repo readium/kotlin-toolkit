@@ -21,49 +21,4 @@
     <string name="readium_lcp_dialog_support_phone">Phone</string>
     <string name="readium_lcp_dialog_support_mail">Mail</string>
 
-    <!-- LCP Exceptions User Messages -->
-
-    <string name="readium_lcp_exception_license_interaction_not_available">This interaction is not available</string>
-    <string name="readium_lcp_exception_license_profile_not_supported">This License has a profile identifier that this app cannot handle, the publication cannot be processed</string>
-    <string name="readium_lcp_exception_crl_fetching">Can\'t retrieve the Certificate Revocation List</string>
-    <string name="readium_lcp_exception_network">Network error</string>
-    <string name="readium_lcp_exception_runtime">Unexpected LCP error</string>
-    <string name="readium_lcp_exception_unknown">Unknown LCP error</string>
-
-    <string name="readium_lcp_exception_license_status.cancelled">This license was cancelled on %1$s</string>
-    <string name="readium_lcp_exception_license_status.returned">This license has been returned on %1$s</string>
-    <string name="readium_lcp_exception_license_status.not_started">This license starts on %1$s</string>
-    <string name="readium_lcp_exception_license_status.expired">This license expired on %1$s</string>
-    <plurals name="readium_lcp_exception_license_status.revoked">
-        <item quantity="one">This license was revoked by its provider on %1$s. It was registered by %2$d device.</item>
-        <item quantity="other">This license was revoked by its provider on %1$s. It was registered by %2$d devices.</item>
-    </plurals>
-
-    <string name="readium_lcp_exception_renew.renew_failed">Your publication could not be renewed properly</string>
-    <string name="readium_lcp_exception_renew.invalid_renewal_period">Incorrect renewal period, your publication could not be renewed</string>
-    <string name="readium_lcp_exception_renew.unexpected_server_error">An unexpected error has occurred on the server</string>
-
-    <string name="readium_lcp_exception_return.return_failed">Your publication could not be returned properly</string>
-    <string name="readium_lcp_exception_return.already_returned_or_expired">Your publication has already been returned before or is expired</string>
-    <string name="readium_lcp_exception_return.unexpected_server_error">An unexpected error has occurred on the server</string>
-
-    <string name="readium_lcp_exception_parsing">The JSON is not representing a valid document</string>
-    <string name="readium_lcp_exception_parsing.malformed_json">The JSON is malformed and can\'t be parsed</string>
-    <string name="readium_lcp_exception_parsing.license_document">The JSON is not representing a valid License Document</string>
-    <string name="readium_lcp_exception_parsing.status_document">The JSON is not representing a valid Status Document</string>
-
-    <string name="readium_lcp_exception_container.open_failed">Can\'t open the license container</string>
-    <string name="readium_lcp_exception_container.file_not_found">License not found in container</string>
-    <string name="readium_lcp_exception_container.read_failed">Can\'t read license from container</string>
-    <string name="readium_lcp_exception_container.write_failed">Can\'t write license in container</string>
-
-    <string name="readium_lcp_exception_license_integrity.certificate_revoked">Certificate has been revoked in the CRL</string>
-    <string name="readium_lcp_exception_license_integrity.invalid_certificate_signature">Certificate has not been signed by CA</string>
-    <string name="readium_lcp_exception_license_integrity.invalid_license_signature_date">License has been issued by an expired certificate</string>
-    <string name="readium_lcp_exception_license_integrity.invalid_license_signature">License signature does not match</string>
-    <string name="readium_lcp_exception_license_integrity.invalid_user_key_check">User key check invalid</string>
-
-    <string name="readium_lcp_exception_decryption.content_key_decrypt_error">Unable to decrypt encrypted content key from user key</string>
-    <string name="readium_lcp_exception_decryption.content_decrypt_error">Unable to decrypt encrypted content from content key</string>
-
 </resources>

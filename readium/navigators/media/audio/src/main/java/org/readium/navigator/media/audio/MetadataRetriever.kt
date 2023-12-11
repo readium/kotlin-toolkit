@@ -16,6 +16,7 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.runBlocking
 import org.readium.r2.shared.extensions.tryOrLog
+import org.readium.r2.shared.util.ErrorException
 import org.readium.r2.shared.util.getOrThrow
 import org.readium.r2.shared.util.resource.Resource
 
@@ -53,7 +54,7 @@ internal class MetadataRetriever(
 
             val data = runBlocking {
                 resource.read(position until position + size)
-                    .mapFailure { IOException("Resource error", it) }
+                    .mapFailure { IOException("Resource error", ErrorException(it)) }
                     .getOrThrow()
             }
 
@@ -68,7 +69,7 @@ internal class MetadataRetriever(
         override fun getSize(): Long {
             return runBlocking {
                 resource.length()
-                    .mapFailure { IOException("Resource error", it) }
+                    .mapFailure { IOException("Resource error", ErrorException(it)) }
                     .getOrThrow()
             }
         }

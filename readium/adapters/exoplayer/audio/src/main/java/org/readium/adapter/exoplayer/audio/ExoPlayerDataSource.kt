@@ -16,6 +16,7 @@ import androidx.media3.datasource.TransferListener
 import java.io.IOException
 import kotlinx.coroutines.runBlocking
 import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.util.data.ReadException
 import org.readium.r2.shared.util.getOrThrow
 import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.shared.util.resource.buffered
@@ -63,15 +64,14 @@ internal class ExoPlayerDataSource internal constructor(
     private var openedResource: OpenedResource? = null
 
     override fun open(dataSpec: DataSpec): Long {
-        val link = dataSpec.uri.toUrl()
+        val resource = dataSpec.uri.toUrl()
             ?.let { publication.linkWithHref(it) }
+            ?.let { publication.get(it) }
+            // Significantly improves performances, in particular with deflated ZIP entries.
+            ?.buffered(resourceLength = cachedLengths[dataSpec.uri.toString()])
             ?: throw ExoPlayerDataSourceException.NotFound(
                 "Can't find a [Link] for URI: ${dataSpec.uri}. Make sure you only request resources declared in the manifest."
             )
-
-        val resource = publication.get(link)
-            // Significantly improves performances, in particular with deflated ZIP entries.
-            .buffered(resourceLength = cachedLengths[dataSpec.uri.toString()])
 
         openedResource = OpenedResource(
             resource = resource,
@@ -117,6 +117,7 @@ internal class ExoPlayerDataSource internal constructor(
             val data = runBlocking {
                 openedResource.resource
                     .read(range = openedResource.position until (openedResource.position + length))
+                    .mapFailure { ReadException(it) }
                     .getOrThrow()
             }
 

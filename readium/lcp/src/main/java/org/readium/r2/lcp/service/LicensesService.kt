@@ -21,7 +21,7 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 import org.readium.r2.lcp.LcpAuthenticating
 import org.readium.r2.lcp.LcpContentProtection
-import org.readium.r2.lcp.LcpException
+import org.readium.r2.lcp.LcpError
 import org.readium.r2.lcp.LcpLicense
 import org.readium.r2.lcp.LcpPublicationRetriever
 import org.readium.r2.lcp.LcpService
@@ -37,7 +37,10 @@ import org.readium.r2.shared.publication.protection.ContentProtection
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.asset.Asset
 import org.readium.r2.shared.util.asset.AssetRetriever
+import org.readium.r2.shared.util.asset.ContainerAsset
+import org.readium.r2.shared.util.asset.ResourceAsset
 import org.readium.r2.shared.util.downloads.DownloadManager
+import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.mediatype.FormatRegistry
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
@@ -56,16 +59,17 @@ internal class LicensesService(
 ) : LcpService, CoroutineScope by MainScope() {
 
     override suspend fun isLcpProtected(file: File): Boolean {
-        val asset = assetRetriever.retrieve(file) ?: return false
+        val asset = assetRetriever.retrieve(file)
+            .getOrElse { return false }
         return isLcpProtected(asset)
     }
 
     override suspend fun isLcpProtected(asset: Asset): Boolean =
         tryOr(false) {
             when (asset) {
-                is Asset.Resource ->
+                is ResourceAsset ->
                     asset.mediaType == MediaType.LCP_LICENSE_DOCUMENT
-                is Asset.Container -> {
+                is ContainerAsset -> {
                     createLicenseContainer(context, asset.container, asset.mediaType).read()
                     true
                 }
@@ -90,13 +94,13 @@ internal class LicensesService(
         ReplaceWith("publicationRetriever()"),
         level = DeprecationLevel.ERROR
     )
-    override suspend fun acquirePublication(lcpl: ByteArray, onProgress: (Double) -> Unit): Try<LcpService.AcquiredPublication, LcpException> =
+    override suspend fun acquirePublication(lcpl: ByteArray, onProgress: (Double) -> Unit): Try<LcpService.AcquiredPublication, LcpError> =
         try {
             val licenseDocument = LicenseDocument(lcpl)
             Timber.d("license ${licenseDocument.json}")
             fetchPublication(licenseDocument, onProgress).let { Try.success(it) }
         } catch (e: Exception) {
-            Try.failure(LcpException.wrap(e))
+            Try.failure(LcpError.wrap(e))
         }
 
     override suspend fun retrieveLicense(
@@ -104,7 +108,7 @@ internal class LicensesService(
         mediaType: MediaType,
         authentication: LcpAuthenticating,
         allowUserInteraction: Boolean
-    ): Try<LcpLicense, LcpException> =
+    ): Try<LcpLicense, LcpError> =
         try {
             val container = createLicenseContainer(file, mediaType)
             val license = retrieveLicense(
@@ -114,14 +118,14 @@ internal class LicensesService(
             )
             Try.success(license)
         } catch (e: Exception) {
-            Try.failure(LcpException.wrap(e))
+            Try.failure(LcpError.wrap(e))
         }
 
     override suspend fun retrieveLicense(
         asset: Asset,
         authentication: LcpAuthenticating,
         allowUserInteraction: Boolean
-    ): Try<LcpLicense, LcpException> =
+    ): Try<LcpLicense, LcpError> =
         try {
             val licenseContainer = createLicenseContainer(context, asset)
             val license = retrieveLicense(
@@ -131,7 +135,7 @@ internal class LicensesService(
             )
             Try.success(license)
         } catch (e: Exception) {
-            Try.failure(LcpException.wrap(e))
+            Try.failure(LcpError.wrap(e))
         }
 
     private suspend fun retrieveLicense(

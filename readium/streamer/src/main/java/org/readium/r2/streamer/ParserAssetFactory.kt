@@ -6,49 +6,60 @@
 
 package org.readium.r2.streamer
 
-import java.nio.charset.Charset
-import org.json.JSONObject
 import org.readium.r2.shared.extensions.addPrefix
-import org.readium.r2.shared.publication.Manifest
-import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.util.AbsoluteUrl
-import org.readium.r2.shared.util.ThrowableError
+import org.readium.r2.shared.util.DebugError
+import org.readium.r2.shared.util.Error
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.asset.Asset
-import org.readium.r2.shared.util.getOrElse
-import org.readium.r2.shared.util.getOrThrow
+import org.readium.r2.shared.util.asset.ContainerAsset
+import org.readium.r2.shared.util.asset.ResourceAsset
+import org.readium.r2.shared.util.data.CompositeContainer
+import org.readium.r2.shared.util.data.ReadError
+import org.readium.r2.shared.util.data.decodeRwpm
+import org.readium.r2.shared.util.data.readDecodeOrElse
 import org.readium.r2.shared.util.http.HttpClient
 import org.readium.r2.shared.util.http.HttpContainer
 import org.readium.r2.shared.util.mediatype.FormatRegistry
 import org.readium.r2.shared.util.mediatype.MediaType
-import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
-import org.readium.r2.shared.util.resource.Resource
-import org.readium.r2.shared.util.resource.ResourceContainer
-import org.readium.r2.shared.util.resource.RoutingContainer
+import org.readium.r2.shared.util.resource.SingleResourceContainer
 import org.readium.r2.streamer.parser.PublicationParser
 import timber.log.Timber
 
 internal class ParserAssetFactory(
     private val httpClient: HttpClient,
-    private val mediaTypeRetriever: MediaTypeRetriever,
     private val formatRegistry: FormatRegistry
 ) {
 
+    sealed class CreateError(
+        override val message: String,
+        override val cause: Error?
+    ) : Error {
+
+        class Reading(
+            override val cause: ReadError
+        ) : CreateError("An error occurred while trying to read asset.", cause)
+
+        class FormatNotSupported(
+            override val cause: Error?
+        ) : CreateError("Asset is not supported.", cause)
+    }
+
     suspend fun createParserAsset(
         asset: Asset
-    ): Try<PublicationParser.Asset, Publication.OpenError> {
+    ): Try<PublicationParser.Asset, CreateError> {
         return when (asset) {
-            is Asset.Container ->
+            is ContainerAsset ->
                 createParserAssetForContainer(asset)
-            is Asset.Resource ->
+            is ResourceAsset ->
                 createParserAssetForResource(asset)
         }
     }
 
     private fun createParserAssetForContainer(
-        asset: Asset.Container
-    ): Try<PublicationParser.Asset, Publication.OpenError> =
+        asset: ContainerAsset
+    ): Try<PublicationParser.Asset, CreateError> =
         Try.success(
             PublicationParser.Asset(
                 mediaType = asset.mediaType,
@@ -57,8 +68,8 @@ internal class ParserAssetFactory(
         )
 
     private suspend fun createParserAssetForResource(
-        asset: Asset.Resource
-    ): Try<PublicationParser.Asset, Publication.OpenError> =
+        asset: ResourceAsset
+    ): Try<PublicationParser.Asset, CreateError> =
         if (asset.mediaType.isRwpm) {
             createParserAssetForManifest(asset)
         } else {
@@ -66,42 +77,45 @@ internal class ParserAssetFactory(
         }
 
     private suspend fun createParserAssetForManifest(
-        asset: Asset.Resource
-    ): Try<PublicationParser.Asset, Publication.OpenError> {
-        val manifest = asset.resource.readAsRwpm()
-            .mapFailure {
-                Publication.OpenError.InvalidAsset(
-                    "Failed to read the publication as a RWPM",
-                    ThrowableError(it)
-                )
-            }
-            .getOrElse { return Try.failure(it) }
+        asset: ResourceAsset
+    ): Try<PublicationParser.Asset, CreateError> {
+        val manifest = asset.resource
+            .readDecodeOrElse(
+                decode = { it.decodeRwpm() },
+                recover = { return Try.failure(CreateError.Reading(it)) }
+            )
 
         val baseUrl = manifest.linkWithRel("self")?.href?.resolve()
         if (baseUrl == null) {
-            Timber.w("No self link found in the manifest at ${asset.resource.source}")
+            Timber.w("No self link found in the manifest at ${asset.resource.sourceUrl}")
         } else {
             if (baseUrl !is AbsoluteUrl) {
                 return Try.failure(
-                    Publication.OpenError.InvalidAsset("Self link is not absolute.")
+                    CreateError.Reading(
+                        ReadError.Decoding("Self link is not absolute.")
+                    )
                 )
             }
             if (!baseUrl.isHttp) {
                 return Try.failure(
-                    Publication.OpenError.UnsupportedAsset(
-                        "Self link doesn't use the HTTP(S) scheme."
+                    CreateError.FormatNotSupported(
+                        DebugError("Self link doesn't use the HTTP(S) scheme.")
                     )
                 )
             }
         }
 
+        val resources = (manifest.readingOrder + manifest.resources)
+            .map { it.url() }
+            .toSet()
+
         val container =
-            RoutingContainer(
-                local = ResourceContainer(
-                    url = Url("manifest.json")!!,
+            CompositeContainer(
+                SingleResourceContainer(
+                    Url("manifest.json")!!,
                     asset.resource
                 ),
-                remote = HttpContainer(httpClient, baseUrl)
+                HttpContainer(baseUrl, resources, httpClient)
             )
 
         return Try.success(
@@ -113,14 +127,14 @@ internal class ParserAssetFactory(
     }
 
     private fun createParserAssetForContent(
-        asset: Asset.Resource
-    ): Try<PublicationParser.Asset, Publication.OpenError> {
+        asset: ResourceAsset
+    ): Try<PublicationParser.Asset, CreateError> {
         // Historically, the reading order of a standalone file contained a single link with the
         // HREF "/$assetName". This was fragile if the asset named changed, or was different on
         // other devices. To avoid this, we now use a single link with the HREF
         // "publication.extension".
         val extension = formatRegistry.fileExtension(asset.mediaType)?.addPrefix(".") ?: ""
-        val container = ResourceContainer(
+        val container = SingleResourceContainer(
             Url("publication$extension")!!,
             asset.resource
         )
@@ -132,19 +146,4 @@ internal class ParserAssetFactory(
             )
         )
     }
-
-    private suspend fun Resource.readAsRwpm(): Try<Manifest, Exception> =
-        try {
-            val bytes = read().getOrThrow()
-            val string = String(bytes, Charset.defaultCharset())
-            val json = JSONObject(string)
-            val manifest = Manifest.fromJSON(
-                json,
-                mediaTypeRetriever = mediaTypeRetriever
-            )
-                ?: throw Exception("Failed to parse the RWPM Manifest")
-            Try.success(manifest)
-        } catch (e: Exception) {
-            Try.failure(e)
-        }
 }

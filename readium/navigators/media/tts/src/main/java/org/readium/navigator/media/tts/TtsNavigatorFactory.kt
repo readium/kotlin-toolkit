@@ -7,23 +7,35 @@
 package org.readium.navigator.media.tts
 
 import android.app.Application
+import androidx.media3.common.MediaItem
+import androidx.media3.common.PlaybackParameters
+import kotlinx.coroutines.MainScope
 import org.readium.navigator.media.common.DefaultMediaMetadataProvider
 import org.readium.navigator.media.common.MediaMetadataProvider
 import org.readium.navigator.media.tts.android.AndroidTtsDefaults
 import org.readium.navigator.media.tts.android.AndroidTtsEngine
 import org.readium.navigator.media.tts.android.AndroidTtsEngineProvider
+import org.readium.navigator.media.tts.session.TtsSessionAdapter
+import org.readium.r2.navigator.extensions.normalizeLocator
 import org.readium.r2.navigator.preferences.PreferencesEditor
+import org.readium.r2.shared.DelicateReadiumApi
 import org.readium.r2.shared.ExperimentalReadiumApi
+import org.readium.r2.shared.extensions.mapStateIn
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.services.content.Content
+import org.readium.r2.shared.publication.services.content.ContentService
 import org.readium.r2.shared.publication.services.content.content
+import org.readium.r2.shared.util.DebugError
 import org.readium.r2.shared.util.Language
+import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.tokenizer.DefaultTextContentTokenizer
 import org.readium.r2.shared.util.tokenizer.TextTokenizer
 import org.readium.r2.shared.util.tokenizer.TextUnit
 
 @ExperimentalReadiumApi
+@OptIn(DelicateReadiumApi::class)
 public class TtsNavigatorFactory<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>, E : PreferencesEditor<P>,
     F : TtsEngine.Error, V : TtsEngine.Voice> private constructor(
     private val application: Application,
@@ -106,21 +118,111 @@ public class TtsNavigatorFactory<S : TtsEngine.Settings, P : TtsEngine.Preferenc
             { _, _ -> null }
     }
 
+    public sealed class Error(
+        override val message: String,
+        override val cause: org.readium.r2.shared.util.Error?
+    ) : org.readium.r2.shared.util.Error {
+
+        public class UnsupportedPublication(
+            cause: org.readium.r2.shared.util.Error? = null
+        ) : Error("Publication is not supported.", cause)
+
+        public class EngineInitialization(
+            cause: org.readium.r2.shared.util.Error? = null
+        ) : Error("Failed to initialize TTS engine.", cause)
+    }
+
     public suspend fun createNavigator(
         listener: TtsNavigator.Listener,
         initialLocator: Locator? = null,
         initialPreferences: P? = null
-    ): TtsNavigator<S, P, F, V>? {
-        return TtsNavigator(
-            application,
-            publication,
-            ttsEngineProvider,
-            tokenizerFactory,
-            metadataProvider,
-            listener,
-            initialLocator,
+    ): Try<TtsNavigator<S, P, F, V>, Error> {
+        if (publication.findService(ContentService::class) == null) {
+            return Try.failure(
+                Error.UnsupportedPublication(
+                    DebugError("No content service found in publication.")
+                )
+            )
+        }
+
+        @Suppress("NAME_SHADOWING")
+        val initialLocator =
+            initialLocator?.let { publication.normalizeLocator(it) }
+
+        val actualInitialPreferences =
             initialPreferences
-        )
+                ?: ttsEngineProvider.createEmptyPreferences()
+
+        val contentIterator =
+            TtsUtteranceIterator(publication, tokenizerFactory, initialLocator)
+        if (!contentIterator.hasNext()) {
+            return Try.failure(
+                Error.UnsupportedPublication(
+                    DebugError("Content iterator is empty.")
+                )
+            )
+        }
+
+        val ttsEngine =
+            ttsEngineProvider.createEngine(publication, actualInitialPreferences)
+                .getOrElse {
+                    return Try.failure(
+                        Error.EngineInitialization()
+                    )
+                }
+
+        val metadataFactory =
+            metadataProvider.createMetadataFactory(publication)
+
+        val playlistMetadata =
+            metadataFactory.publicationMetadata()
+
+        val mediaItems =
+            publication.readingOrder.indices.map { index ->
+                val metadata = metadataFactory.resourceMetadata(index)
+                MediaItem.Builder()
+                    .setMediaMetadata(metadata)
+                    .build()
+            }
+
+        val ttsPlayer =
+            TtsPlayer(ttsEngine, contentIterator, actualInitialPreferences)
+                ?: return Try.failure(
+                    Error.UnsupportedPublication(DebugError("Empty content."))
+                )
+
+        val coroutineScope =
+            MainScope()
+
+        val playbackParameters =
+            ttsPlayer.settings.mapStateIn(coroutineScope) {
+                ttsEngineProvider.getPlaybackParameters(it)
+            }
+
+        val onSetPlaybackParameters = { parameters: PlaybackParameters ->
+            val newPreferences = ttsEngineProvider.updatePlaybackParameters(
+                ttsPlayer.lastPreferences,
+                parameters
+            )
+            ttsPlayer.submitPreferences(newPreferences)
+        }
+
+        val sessionAdapter =
+            TtsSessionAdapter(
+                application,
+                ttsPlayer,
+                playlistMetadata,
+                mediaItems,
+                listener::onStopRequested,
+                playbackParameters,
+                onSetPlaybackParameters,
+                ttsEngineProvider::mapEngineError
+            )
+
+        val ttsNavigator =
+            TtsNavigator(coroutineScope, publication, ttsPlayer, sessionAdapter)
+
+        return Try.success(ttsNavigator)
     }
 
     public fun createPreferencesEditor(preferences: P): E =

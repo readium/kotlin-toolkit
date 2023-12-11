@@ -10,6 +10,7 @@
 package org.readium.r2.lcp.license.model.components.lcp
 
 import org.json.JSONObject
+import org.readium.r2.lcp.LcpError
 import org.readium.r2.lcp.LcpException
 
 public data class Encryption(val json: JSONObject) {
@@ -18,8 +19,26 @@ public data class Encryption(val json: JSONObject) {
     val userKey: UserKey
 
     init {
-        profile = if (json.has("profile")) json.getString("profile") else throw LcpException.Parsing.Encryption
-        contentKey = if (json.has("content_key")) ContentKey(json.getJSONObject("content_key")) else throw LcpException.Parsing.Encryption
-        userKey = if (json.has("user_key")) UserKey(json.getJSONObject("user_key")) else throw LcpException.Parsing.Encryption
+        profile = if (json.has("profile")) {
+            json.getString("profile")
+        } else {
+            throw LcpException(
+                LcpError.Parsing.Encryption
+            )
+        }
+        contentKey = if (json.has("content_key")) {
+            ContentKey(json.getJSONObject("content_key"))
+        } else {
+            throw LcpException(
+                LcpError.Parsing.Encryption
+            )
+        }
+        userKey = if (json.has("user_key")) {
+            UserKey(json.getJSONObject("user_key"))
+        } else {
+            throw LcpException(
+                LcpError.Parsing.Encryption
+            )
+        }
     }
 }

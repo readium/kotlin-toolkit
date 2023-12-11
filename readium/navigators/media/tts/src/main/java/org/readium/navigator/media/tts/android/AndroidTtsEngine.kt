@@ -23,6 +23,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import org.readium.navigator.media.tts.TtsEngine
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.extensions.tryOrNull
+import org.readium.r2.shared.util.Error
 import org.readium.r2.shared.util.Language
 
 /*
@@ -141,31 +142,34 @@ public class AndroidTtsEngine private constructor(
         public fun voice(language: Language?, availableVoices: Set<Voice>): Voice?
     }
 
-    public sealed class Error : TtsEngine.Error {
+    public sealed class Error(
+        override val message: String,
+        override val cause: org.readium.r2.shared.util.Error? = null
+    ) : TtsEngine.Error {
 
         /** Denotes a generic operation failure. */
-        public object Unknown : Error()
+        public object Unknown : Error("An unknown error occurred.")
 
         /** Denotes a failure caused by an invalid request. */
-        public object InvalidRequest : Error()
+        public object InvalidRequest : Error("Invalid request")
 
         /** Denotes a failure caused by a network connectivity problems. */
-        public object Network : Error()
+        public object Network : Error("A network error occurred.")
 
         /** Denotes a failure caused by network timeout. */
-        public object NetworkTimeout : Error()
+        public object NetworkTimeout : Error("Network timeout")
 
         /** Denotes a failure caused by an unfinished download of the voice data. */
-        public object NotInstalledYet : Error()
+        public object NotInstalledYet : Error("Voice not installed yet.")
 
         /** Denotes a failure related to the output (audio device or a file). */
-        public object Output : Error()
+        public object Output : Error("An error related to the output occurred.")
 
         /** Denotes a failure of a TTS service. */
-        public object Service : Error()
+        public object Service : Error("An error occurred with the TTS service.")
 
         /** Denotes a failure of a TTS engine to synthesize the given input. */
-        public object Synthesis : Error()
+        public object Synthesis : Error("Synthesis failed.")
 
         /**
          * Denotes the language data is missing.
@@ -173,7 +177,8 @@ public class AndroidTtsEngine private constructor(
          * You can open the Android settings to install the missing data with:
          * AndroidTtsEngine.requestInstallVoice(context)
          */
-        public data class LanguageMissingData(val language: Language) : Error()
+        public data class LanguageMissingData(val language: Language) :
+            Error("Language data is missing.")
 
         /**
          * Android's TTS error code.

@@ -61,7 +61,7 @@ public interface LcpService {
         ReplaceWith("publicationRetriever()"),
         level = DeprecationLevel.ERROR
     )
-    public suspend fun acquirePublication(lcpl: ByteArray, onProgress: (Double) -> Unit = {}): Try<AcquiredPublication, LcpException>
+    public suspend fun acquirePublication(lcpl: ByteArray, onProgress: (Double) -> Unit = {}): Try<AcquiredPublication, LcpError>
 
     /**
      * Acquires a protected publication from a standalone LCPL file.
@@ -75,7 +75,7 @@ public interface LcpService {
         ReplaceWith("publicationRetriever()"),
         level = DeprecationLevel.ERROR
     )
-    public suspend fun acquirePublication(lcpl: File, onProgress: (Double) -> Unit = {}): Try<AcquiredPublication, LcpException> = withContext(
+    public suspend fun acquirePublication(lcpl: File, onProgress: (Double) -> Unit = {}): Try<AcquiredPublication, LcpError> = withContext(
         Dispatchers.IO
     ) {
         throw NotImplementedError()
@@ -95,7 +95,7 @@ public interface LcpService {
         mediaType: MediaType,
         authentication: LcpAuthenticating,
         allowUserInteraction: Boolean
-    ): Try<LcpLicense, LcpException>
+    ): Try<LcpLicense, LcpError>
 
     /**
      * Opens the LCP license of a protected publication, to access its DRM metadata and decipher
@@ -115,7 +115,7 @@ public interface LcpService {
         asset: Asset,
         authentication: LcpAuthenticating,
         allowUserInteraction: Boolean
-    ): Try<LcpLicense, LcpException>
+    ): Try<LcpLicense, LcpError>
 
     /**
      * Creates an [LcpPublicationRetriever] instance which can be used to acquire a protected
@@ -215,7 +215,7 @@ public interface LcpService {
     public fun importPublication(
         lcpl: ByteArray,
         authentication: LcpAuthenticating?,
-        completion: (AcquiredPublication?, LcpException?) -> Unit
+        completion: (AcquiredPublication?, LcpError?) -> Unit
     ) {
         throw NotImplementedError()
     }
@@ -231,7 +231,7 @@ public interface LcpService {
     public fun retrieveLicense(
         publication: String,
         authentication: LcpAuthenticating?,
-        completion: (LcpLicense?, LcpException?) -> Unit
+        completion: (LcpLicense?, LcpError?) -> Unit
     ) {
         throw NotImplementedError()
     }

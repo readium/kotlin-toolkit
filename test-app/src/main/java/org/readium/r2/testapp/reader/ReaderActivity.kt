@@ -18,8 +18,6 @@ import androidx.fragment.app.FragmentResultListener
 import androidx.fragment.app.commit
 import androidx.fragment.app.commitNow
 import androidx.lifecycle.ViewModelProvider
-import org.readium.navigator.media2.ExperimentalMedia2
-import org.readium.r2.shared.UserException
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.util.toUri
 import org.readium.r2.testapp.Application
@@ -29,9 +27,8 @@ import org.readium.r2.testapp.drm.DrmManagementContract
 import org.readium.r2.testapp.drm.DrmManagementFragment
 import org.readium.r2.testapp.outline.OutlineContract
 import org.readium.r2.testapp.outline.OutlineFragment
-import org.readium.r2.testapp.utils.extensions.readium.toDebugDescription
+import org.readium.r2.testapp.utils.UserError
 import org.readium.r2.testapp.utils.launchWebBrowser
-import timber.log.Timber
 
 /*
  * An activity to read a publication
@@ -112,7 +109,6 @@ open class ReaderActivity : AppCompatActivity() {
         }
     }
 
-    @OptIn(ExperimentalMedia2::class)
     private fun createReaderFragment(readerData: ReaderInitData): BaseReaderFragment? {
         val readerClass: Class<out Fragment>? = when (readerData) {
             is EpubReaderInitData -> EpubReaderFragment::class.java
@@ -171,8 +167,7 @@ open class ReaderActivity : AppCompatActivity() {
         }
     }
 
-    private fun showError(error: UserException) {
-        Timber.e(error.toDebugDescription(this))
+    private fun showError(error: UserError) {
         Toast.makeText(this, error.getUserMessage(this), Toast.LENGTH_LONG).show()
     }
 

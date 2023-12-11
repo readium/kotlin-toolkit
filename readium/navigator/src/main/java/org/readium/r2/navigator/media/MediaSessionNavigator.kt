@@ -47,7 +47,7 @@ private val skipBackwardInterval: Duration = 30.seconds
 @Deprecated("Use the new AudioNavigator from the readium-navigator-media-audio module.")
 @OptIn(ExperimentalTime::class)
 public class MediaSessionNavigator(
-    override val publication: Publication,
+    public val publication: Publication,
     public val publicationId: PublicationId,
     public val controller: MediaControllerCompat,
     public var listener: Listener? = null

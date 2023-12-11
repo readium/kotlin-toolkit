@@ -9,28 +9,33 @@ package org.readium.r2.shared.util.http
 import android.os.Bundle
 import java.io.ByteArrayInputStream
 import java.io.FileInputStream
+import java.io.IOException
 import java.io.InputStream
+import java.net.ConnectException
 import java.net.HttpURLConnection
+import java.net.NoRouteToHostException
+import java.net.SocketTimeoutException
 import java.net.URL
+import java.net.UnknownHostException
 import kotlin.time.Duration
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.extensions.joinValues
 import org.readium.r2.shared.extensions.lowerCaseKeys
+import org.readium.r2.shared.util.DebugError
+import org.readium.r2.shared.util.ThrowableError
 import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.flatMap
 import org.readium.r2.shared.util.http.HttpRequest.Method
-import org.readium.r2.shared.util.mediatype.BytesResourceMediaTypeSnifferContent
 import org.readium.r2.shared.util.mediatype.MediaType
-import org.readium.r2.shared.util.mediatype.MediaTypeHints
-import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
+import org.readium.r2.shared.util.toDebugDescription
 import org.readium.r2.shared.util.tryRecover
 import timber.log.Timber
 
 /**
  * An implementation of [HttpClient] using the native [HttpURLConnection].
  *
- * @param mediaTypeRetriever Component used to sniff the media type of the HTTP response.
  * @param userAgent Custom user agent to use for requests.
  * @param connectTimeout Timeout used when establishing a connection to the resource. A null timeout
  *        is interpreted as the default value, while a timeout of zero as an infinite timeout.
@@ -38,7 +43,6 @@ import timber.log.Timber
  *        as the default value, while a timeout of zero as an infinite timeout.
  */
 public class DefaultHttpClient(
-    private val mediaTypeRetriever: MediaTypeRetriever,
     private val userAgent: String? = null,
     private val connectTimeout: Duration? = null,
     private val readTimeout: Duration? = null,
@@ -47,7 +51,7 @@ public class DefaultHttpClient(
 
     @Suppress("UNUSED_PARAMETER")
     @Deprecated(
-        "You need to provide a [mediaTypeRetriever]. If you used [additionalHeaders], pass all headers when building your request or modify it in Callback.onStartRequest instead.",
+        "If you used [additionalHeaders], pass all headers when building your request or modify it in Callback.onStartRequest instead.",
         level = DeprecationLevel.ERROR,
         replaceWith = ReplaceWith("DefaultHttpClient(mediaTypeRetriever = MediaTypeRetriever())")
     )
@@ -58,7 +62,6 @@ public class DefaultHttpClient(
         readTimeout: Duration? = null,
         callback: Callback = object : Callback {}
     ) : this(
-        mediaTypeRetriever = MediaTypeRetriever(),
         userAgent = userAgent,
         connectTimeout = connectTimeout,
         readTimeout = readTimeout,
@@ -93,9 +96,9 @@ public class DefaultHttpClient(
          * You can return either:
          *   - a new recovery request to start
          *   - the [error] argument, if you cannot recover from it
-         *   - a new [HttpException] to provide additional information
+         *   - a new [HttpError] to provide additional information
          */
-        public suspend fun onRecoverRequest(request: HttpRequest, error: HttpException): HttpTry<HttpRequest> =
+        public suspend fun onRecoverRequest(request: HttpRequest, error: HttpError): HttpTry<HttpRequest> =
             Try.failure(error)
 
         /**
@@ -109,14 +112,17 @@ public class DefaultHttpClient(
          * You can return either:
          *   - the provided [newRequest] to proceed with the redirection
          *   - a different redirection request
-         *   - a [HttpException.CANCELLED] error to abort the redirection
          */
         public suspend fun onFollowUnsafeRedirect(
             request: HttpRequest,
             response: HttpResponse,
             newRequest: HttpRequest
         ): HttpTry<HttpRequest> =
-            Try.failure(HttpException.CANCELLED)
+            Try.failure(
+                HttpError.Redirection(
+                    DebugError("Request cancelled because of an unsafe redirect.")
+                )
+            )
 
         /**
          * Called when the HTTP client received an HTTP response for the given [request].
@@ -135,7 +141,7 @@ public class DefaultHttpClient(
          *
          * This will be called only if [onRecoverRequest] is not implemented, or returns an error.
          */
-        public suspend fun onRequestFailed(request: HttpRequest, error: HttpException) {}
+        public suspend fun onRequestFailed(request: HttpRequest, error: HttpError) {}
     }
 
     // We are using Dispatchers.IO but we still get this warning...
@@ -148,7 +154,7 @@ public class DefaultHttpClient(
                     var connection = request.toHttpURLConnection()
 
                     val statusCode = connection.responseCode
-                    HttpException.Kind.ofStatusCode(statusCode)?.let { kind ->
+                    if (statusCode >= 400) {
                         // It was a HEAD request? We need to query the resource again to get the error body.
                         // The body is needed for example when the response is an OPDS Authentication
                         // Document.
@@ -163,23 +169,19 @@ public class DefaultHttpClient(
                         // Reads the full body, since it might contain an error representation such as
                         // JSON Problem Details or OPDS Authentication Document
                         val body = connection.errorStream?.use { it.readBytes() }
-                        val mediaType = body?.let {
-                            mediaTypeRetriever.retrieve(
-                                hints = MediaTypeHints(connection),
-                                content = BytesResourceMediaTypeSnifferContent { it }
-                            )
-                        }
-                        throw HttpException(kind, mediaType, body)
-                    }
 
-                    val mediaType = mediaTypeRetriever.retrieve(MediaTypeHints(connection))
+                        val mediaType = connection.contentType?.let { MediaType(it) }
+                        return@withContext Try.failure(
+                            HttpError.ErrorResponse(HttpStatus(statusCode), mediaType, body)
+                        )
+                    }
 
                     val response = HttpResponse(
                         request = request,
-                        url = connection.url.toString(),
-                        statusCode = statusCode,
+                        url = request.url,
+                        statusCode = HttpStatus(statusCode),
                         headers = connection.safeHeaders,
-                        mediaType = mediaType ?: MediaType.BINARY
+                        mediaType = connection.contentType?.let { MediaType(it) }
                     )
 
                     callback.onResponseReceived(request, response)
@@ -194,24 +196,21 @@ public class DefaultHttpClient(
                             )
                         )
                     }
-                } catch (e: Exception) {
-                    Try.failure(HttpException.wrap(e))
+                } catch (e: IOException) {
+                    Try.failure(wrap(e))
                 }
             }
 
         return callback.onStartRequest(request)
             .flatMap { tryStream(it) }
             .tryRecover { error ->
-                if (error.kind != HttpException.Kind.Cancelled) {
-                    callback.onRecoverRequest(request, error)
-                        .flatMap { stream(it) }
-                } else {
-                    Try.failure(error)
-                }
+                callback.onRecoverRequest(request, error)
+                    .flatMap { stream(it) }
             }
             .onFailure {
                 callback.onRequestFailed(request, it)
-                Timber.e(it, "HTTP request failed ${request.url}")
+                val error = DebugError("HTTP request failed ${request.url}", it)
+                Timber.e(error.toDebugDescription())
             }
     }
 
@@ -230,11 +229,21 @@ public class DefaultHttpClient(
         // > https://www.rfc-editor.org/rfc/rfc1945.html#section-9.3
         val redirectCount = request.extras.getInt(EXTRA_REDIRECT_COUNT)
         if (redirectCount > 5) {
-            return Try.failure(HttpException.CANCELLED)
+            return Try.failure(
+                HttpError.Redirection(
+                    DebugError("There were too many redirects to follow.")
+                )
+            )
         }
 
         val location = response.header("Location")
-            ?: return Try.failure(HttpException(kind = HttpException.Kind.MalformedResponse))
+            ?.let { Url(it) }
+            ?.let { request.url.resolve(it) }
+            ?: return Try.failure(
+                HttpError.MalformedResponse(
+                    DebugError("Location of redirect is missing or invalid.")
+                )
+            )
 
         val newRequest = HttpRequest(
             url = location,
@@ -256,7 +265,7 @@ public class DefaultHttpClient(
     }
 
     private fun HttpRequest.toHttpURLConnection(): HttpURLConnection {
-        val url = URL(url)
+        val url = URL(url.toString())
         val connection = (url.openConnection() as HttpURLConnection)
         connection.requestMethod = method.name
 
@@ -308,6 +317,19 @@ public class DefaultHttpClient(
             key == null || value == null
         }
 }
+
+/**
+ * Creates an HTTP error from a generic exception.
+ */
+private fun wrap(cause: IOException): HttpError =
+    when (cause) {
+        is UnknownHostException, is NoRouteToHostException, is ConnectException ->
+            HttpError.Unreachable(ThrowableError(cause))
+        is SocketTimeoutException ->
+            HttpError.Timeout(ThrowableError(cause))
+        else ->
+            HttpError.IO(cause)
+    }
 
 /**
  * [HttpURLConnection]'s input stream which disconnects when closed.

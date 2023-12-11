@@ -6,55 +6,56 @@
 
 package org.readium.r2.shared.publication.protection
 
-import org.json.JSONObject
 import org.readium.r2.shared.InternalReadiumApi
-import org.readium.r2.shared.publication.Manifest
-import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.encryption.encryption
 import org.readium.r2.shared.publication.protection.ContentProtection.Scheme
 import org.readium.r2.shared.publication.services.contentProtectionServiceFactory
+import org.readium.r2.shared.util.DebugError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.asset.Asset
+import org.readium.r2.shared.util.asset.ContainerAsset
+import org.readium.r2.shared.util.asset.ResourceAsset
+import org.readium.r2.shared.util.data.Container
+import org.readium.r2.shared.util.data.ReadError
+import org.readium.r2.shared.util.data.decodeRwpm
+import org.readium.r2.shared.util.data.decodeXml
+import org.readium.r2.shared.util.data.readDecodeOrElse
 import org.readium.r2.shared.util.mediatype.MediaType
-import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
-import org.readium.r2.shared.util.resource.Container
 import org.readium.r2.shared.util.resource.Resource
-import org.readium.r2.shared.util.resource.readAsJson
-import org.readium.r2.shared.util.resource.readAsXml
-import org.readium.r2.shared.util.xml.ElementNode
 
 /**
  * [ContentProtection] implementation used as a fallback by the Streamer to detect LCP DRM
  * if it is not supported by the app.
  */
 @InternalReadiumApi
-public class LcpFallbackContentProtection(
-    private val mediaTypeRetriever: MediaTypeRetriever
-) : ContentProtection {
+public class LcpFallbackContentProtection : ContentProtection {
 
     override val scheme: Scheme =
         Scheme.Lcp
 
-    override suspend fun supports(asset: org.readium.r2.shared.util.asset.Asset): Boolean =
+    override suspend fun supports(asset: Asset): Try<Boolean, ReadError> =
         when (asset) {
-            is org.readium.r2.shared.util.asset.Asset.Container -> isLcpProtected(
+            is ContainerAsset -> isLcpProtected(
                 asset.container,
                 asset.mediaType
             )
-            is org.readium.r2.shared.util.asset.Asset.Resource -> asset.mediaType.matches(
-                MediaType.LCP_LICENSE_DOCUMENT
-            )
+            is ResourceAsset ->
+                Try.success(
+                    asset.mediaType.matches(MediaType.LCP_LICENSE_DOCUMENT)
+                )
         }
 
     override suspend fun open(
-        asset: org.readium.r2.shared.util.asset.Asset,
+        asset: Asset,
         credentials: String?,
         allowUserInteraction: Boolean
-    ): Try<ContentProtection.Asset, Publication.OpenError> {
-        if (asset !is org.readium.r2.shared.util.asset.Asset.Container) {
+    ): Try<ContentProtection.Asset, ContentProtection.OpenError> {
+        if (asset !is ContainerAsset) {
             return Try.failure(
-                Publication.OpenError.UnsupportedAsset("A container asset was expected.")
+                ContentProtection.OpenError.AssetNotSupported(
+                    DebugError("A container asset was expected.")
+                )
             )
         }
 
@@ -70,49 +71,55 @@ public class LcpFallbackContentProtection(
         return Try.success(protectedFile)
     }
 
-    private suspend fun isLcpProtected(container: Container, mediaType: MediaType): Boolean {
+    private suspend fun isLcpProtected(container: Container<Resource>, mediaType: MediaType): Try<Boolean, ReadError> {
+        val isRpf = mediaType.isRpf
+        val isEpub = mediaType.matches(MediaType.EPUB)
+
+        if (!isRpf && !isEpub) {
+            return Try.success(false)
+        }
+
+        val licenseUrl = when {
+            isRpf -> Url("license.lcpl")!!
+            else -> Url("META-INF/license.lcpl")!! // isEpub
+        }
+        container[licenseUrl]
+            ?.let { return Try.success(true) }
+
         return when {
-            mediaType.matches(MediaType.READIUM_WEBPUB) ||
-                mediaType.matches(MediaType.LCP_PROTECTED_PDF) ||
-                mediaType.matches(MediaType.LCP_PROTECTED_AUDIOBOOK) -> {
-                if (container.get(Url("license.lcpl")!!).readAsJsonOrNull() != null) {
-                    return true
-                }
-
-                val manifestAsJson = container.get(Url("manifest.json")!!).readAsJsonOrNull()
-                    ?: return false
-
-                val manifest = Manifest.fromJSON(
-                    manifestAsJson,
-                    mediaTypeRetriever = mediaTypeRetriever
-                )
-                    ?: return false
-
-                return manifest
-                    .readingOrder
-                    .any { it.properties.encryption?.scheme == "http://readium.org/2014/01/lcp" }
-            }
-            mediaType.matches(MediaType.EPUB) -> {
-                if (container.get(Url("META-INF/license.lcpl")!!).readAsJsonOrNull() != null) {
-                    return true
-                }
-
-                val encryptionXml = container.get(Url("META-INF/encryption.xml")!!).readAsXmlOrNull()
-                    ?: return false
-
-                return encryptionXml
-                    .get("EncryptedData", EpubEncryption.ENC)
-                    .flatMap { it.get("KeyInfo", EpubEncryption.SIG) }
-                    .flatMap { it.get("RetrievalMethod", EpubEncryption.SIG) }
-                    .any { it.getAttr("URI") == "license.lcpl#/encryption/content_key" }
-            }
-            else -> false
+            isRpf -> hasLcpSchemeInManifest(container)
+            else -> hasLcpSchemeInEncryptionXml(container) // isEpub
         }
     }
+
+    private suspend fun hasLcpSchemeInManifest(container: Container<Resource>): Try<Boolean, ReadError> {
+        val manifest = container[Url("manifest.json")!!]
+            ?.readDecodeOrElse(
+                decode = { it.decodeRwpm() },
+                recoverRead = { return Try.success(false) },
+                recoverDecode = { return Try.success(false) }
+            ) ?: return Try.success(false)
+
+        val manifestHasLcpScheme = manifest
+            .readingOrder
+            .any { it.properties.encryption?.scheme == "http://readium.org/2014/01/lcp" }
+
+        return Try.success(manifestHasLcpScheme)
+    }
+
+    private suspend fun hasLcpSchemeInEncryptionXml(container: Container<Resource>): Try<Boolean, ReadError> {
+        val encryptionXml = container[Url("META-INF/encryption.xml")!!]
+            ?.readDecodeOrElse(
+                decode = { it.decodeXml() },
+                recover = { return Try.failure(it) }
+            ) ?: return Try.success(false)
+
+        val hasLcpScheme = encryptionXml
+            .get("EncryptedData", EpubEncryption.ENC)
+            .flatMap { it.get("KeyInfo", EpubEncryption.SIG) }
+            .flatMap { it.get("RetrievalMethod", EpubEncryption.SIG) }
+            .any { it.getAttr("URI") == "license.lcpl#/encryption/content_key" }
+
+        return Try.success(hasLcpScheme)
+    }
 }
-
-private suspend inline fun Resource.readAsJsonOrNull(): JSONObject? =
-    readAsJson().getOrNull()
-
-private suspend inline fun Resource.readAsXmlOrNull(): ElementNode? =
-    readAsXml().getOrNull()

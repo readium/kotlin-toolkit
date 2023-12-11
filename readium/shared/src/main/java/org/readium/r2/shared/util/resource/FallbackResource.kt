@@ -7,28 +7,26 @@
 package org.readium.r2.shared.util.resource
 
 import org.readium.r2.shared.util.AbsoluteUrl
-import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.data.ReadError
 
 /**
  * Resource that will act as a proxy to a fallback resource if the [originalResource] errors out.
  */
 public class FallbackResource(
     private val originalResource: Resource,
-    private val fallbackResourceFactory: (Resource.Exception) -> Resource?
+    private val fallbackResourceFactory: (ReadError) -> Resource?
 ) : Resource {
 
-    override val source: AbsoluteUrl? = null
+    override val sourceUrl: AbsoluteUrl? = null
 
-    override suspend fun mediaType(): ResourceTry<MediaType> =
-        withResource { mediaType() }
-
-    override suspend fun properties(): ResourceTry<Resource.Properties> =
+    override suspend fun properties(): Try<Resource.Properties, ReadError> =
         withResource { properties() }
 
-    override suspend fun length(): ResourceTry<Long> =
+    override suspend fun length(): Try<Long, ReadError> =
         withResource { length() }
 
-    override suspend fun read(range: LongRange?): ResourceTry<ByteArray> =
+    override suspend fun read(range: LongRange?): Try<ByteArray, ReadError> =
         withResource { read(range) }
 
     override suspend fun close() {
@@ -39,7 +37,7 @@ public class FallbackResource(
 
     private lateinit var _resource: Resource
 
-    private suspend fun <T> withResource(action: suspend Resource.() -> ResourceTry<T>): ResourceTry<T> {
+    private suspend fun <T> withResource(action: suspend Resource.() -> Try<T, ReadError>): Try<T, ReadError> {
         if (::_resource.isInitialized) {
             return _resource.action()
         }
@@ -63,7 +61,7 @@ public class FallbackResource(
  * Falls back to alternative resources when the receiver fails.
  */
 public fun Resource.fallback(
-    fallbackResourceFactory: (Resource.Exception) -> Resource?
+    fallbackResourceFactory: (ReadError) -> Resource?
 ): Resource =
     FallbackResource(this, fallbackResourceFactory)
 

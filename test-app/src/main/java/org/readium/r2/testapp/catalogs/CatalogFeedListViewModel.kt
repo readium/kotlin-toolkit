@@ -15,8 +15,10 @@ import org.json.JSONObject
 import org.readium.r2.opds.OPDS1Parser
 import org.readium.r2.opds.OPDS2Parser
 import org.readium.r2.shared.opds.ParseData
+import org.readium.r2.shared.util.AbsoluteUrl
+import org.readium.r2.shared.util.DebugError
+import org.readium.r2.shared.util.Error
 import org.readium.r2.shared.util.Try
-import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.http.HttpRequest
 import org.readium.r2.shared.util.http.fetchWithDecoder
 import org.readium.r2.testapp.data.CatalogRepository
@@ -56,11 +58,11 @@ class CatalogFeedListViewModel(application: Application) : AndroidViewModel(appl
         }
     }
 
-    private suspend fun parseURL(urlString: String): Try<ParseData, Exception> {
-        val url = Url(urlString)
-            ?: return Try.failure(IllegalArgumentException("Invalid URL"))
+    private suspend fun parseURL(urlString: String): Try<ParseData, Error> {
+        val url = AbsoluteUrl(urlString)
+            ?: return Try.failure(DebugError("Invalid URL"))
 
-        return httpClient.fetchWithDecoder(HttpRequest(url.toString())) {
+        return httpClient.fetchWithDecoder(HttpRequest(url)) {
             val result = it.body
             if (isJson(result)) {
                 OPDS2Parser.parse(result, url)

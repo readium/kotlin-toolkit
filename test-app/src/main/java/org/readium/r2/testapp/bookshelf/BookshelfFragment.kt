@@ -22,7 +22,8 @@ import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
-import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.AbsoluteUrl
+import org.readium.r2.shared.util.toDebugDescription
 import org.readium.r2.testapp.Application
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.data.model.Book
@@ -30,6 +31,7 @@ import org.readium.r2.testapp.databinding.FragmentBookshelfBinding
 import org.readium.r2.testapp.opds.GridAutoFitLayoutManager
 import org.readium.r2.testapp.reader.ReaderActivityContract
 import org.readium.r2.testapp.utils.viewLifecycle
+import timber.log.Timber
 
 class BookshelfFragment : Fragment() {
 
@@ -140,7 +142,7 @@ class BookshelfFragment : Fragment() {
                 dialog.cancel()
             }
             .setPositiveButton(getString(R.string.ok)) { _, _ ->
-                val url = Url(urlEditText.text.toString())
+                val url = AbsoluteUrl(urlEditText.text.toString())
                 if (url == null || !URLUtil.isValidUrl(urlEditText.text.toString())) {
                     urlEditText.error = getString(R.string.invalid_url)
                     return@setPositiveButton
@@ -155,7 +157,8 @@ class BookshelfFragment : Fragment() {
         val message =
             when (event) {
                 is BookshelfViewModel.Event.OpenPublicationError -> {
-                    event.errorMessage
+                    Timber.e(event.error.toDebugDescription())
+                    (event.error).toUserError().getUserMessage(requireContext())
                 }
 
                 is BookshelfViewModel.Event.LaunchReader -> {

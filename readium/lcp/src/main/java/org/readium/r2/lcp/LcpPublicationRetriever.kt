@@ -13,8 +13,10 @@ import kotlinx.coroutines.launch
 import org.readium.r2.lcp.license.container.createLicenseContainer
 import org.readium.r2.lcp.license.model.LicenseDocument
 import org.readium.r2.shared.extensions.tryOrLog
+import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.ErrorException
 import org.readium.r2.shared.util.downloads.DownloadManager
+import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.mediatype.FormatRegistry
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.mediatype.MediaTypeHints
@@ -56,7 +58,7 @@ public class LcpPublicationRetriever(
          */
         public fun onAcquisitionFailed(
             requestId: RequestId,
-            error: LcpException
+            error: LcpError
         )
 
         /**
@@ -153,7 +155,7 @@ public class LcpPublicationRetriever(
     private fun fetchPublication(
         license: LicenseDocument
     ): RequestId {
-        val url = license.publicationLink.url()
+        val url = license.publicationLink.url() as AbsoluteUrl
 
         val requestId = downloadManager.submit(
             request = DownloadManager.Request(
@@ -183,7 +185,7 @@ public class LcpPublicationRetriever(
                         listenersForId.forEach {
                             it.onAcquisitionFailed(
                                 lcpRequestId,
-                                LcpException.wrap(
+                                LcpError.wrap(
                                     Exception("Couldn't retrieve license from local storage.")
                                 )
                             )
@@ -192,31 +194,42 @@ public class LcpPublicationRetriever(
                     }
                 downloadsRepository.removeDownload(requestId.value)
 
-                val mt = mediaTypeRetriever.retrieve(
+                val mediaTypeWithoutLicense = mediaTypeRetriever.retrieve(
+                    download.file,
                     MediaTypeHints(
                         mediaTypes = listOfNotNull(
                             license.publicationLink.mediaType,
                             download.mediaType
                         )
                     )
-                ) ?: MediaType.EPUB
+                ).getOrElse { MediaType.EPUB }
 
                 try {
                     // Saves the License Document into the downloaded publication
-                    val container = createLicenseContainer(download.file, mt)
+                    val container = createLicenseContainer(download.file, mediaTypeWithoutLicense)
                     container.write(license)
                 } catch (e: Exception) {
                     tryOrLog { download.file.delete() }
                     listenersForId.forEach {
-                        it.onAcquisitionFailed(lcpRequestId, LcpException.wrap(e))
+                        it.onAcquisitionFailed(lcpRequestId, LcpError.wrap(e))
                     }
                     return@launch
                 }
 
+                val mediaType = mediaTypeRetriever.retrieve(
+                    download.file,
+                    MediaTypeHints(
+                        mediaTypes = listOfNotNull(
+                            license.publicationLink.mediaType,
+                            download.mediaType
+                        )
+                    )
+                ).getOrElse { MediaType.EPUB }
+
                 val acquiredPublication = LcpService.AcquiredPublication(
                     localFile = download.file,
-                    suggestedFilename = "${license.id}.${formatRegistry.fileExtension(mt) ?: "epub"}",
-                    mediaType = mt,
+                    suggestedFilename = "${license.id}.${formatRegistry.fileExtension(mediaType) ?: "epub"}",
+                    mediaType = mediaType,
                     licenseDocument = license
                 )
 
@@ -246,7 +259,7 @@ public class LcpPublicationRetriever(
 
         override fun onDownloadFailed(
             requestId: DownloadManager.RequestId,
-            error: DownloadManager.Error
+            error: DownloadManager.DownloadError
         ) {
             val lcpRequestId = RequestId(requestId.value)
             val listenersForId = checkNotNull(listeners[lcpRequestId])
@@ -256,7 +269,7 @@ public class LcpPublicationRetriever(
             listenersForId.forEach {
                 it.onAcquisitionFailed(
                     lcpRequestId,
-                    LcpException.Network(ErrorException(error))
+                    LcpError.Network(ErrorException(error))
                 )
             }
 

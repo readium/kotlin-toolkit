@@ -7,19 +7,20 @@
 package org.readium.r2.shared.util.resource
 
 import org.readium.r2.shared.util.AbsoluteUrl
-import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.data.ReadError
 
 /**
  * Wraps a [Resource] which will be created only when first accessing one of its members.
  */
-public open class LazyResource<R : Resource>(
-    override val source: AbsoluteUrl? = null,
-    private val factory: suspend () -> R
+public open class LazyResource(
+    override val sourceUrl: AbsoluteUrl? = null,
+    private val factory: suspend () -> Resource
 ) : Resource {
 
-    private lateinit var _resource: R
+    private lateinit var _resource: Resource
 
-    protected suspend fun resource(): R {
+    protected suspend fun resource(): Resource {
         if (!::_resource.isInitialized) {
             _resource = factory()
         }
@@ -27,16 +28,13 @@ public open class LazyResource<R : Resource>(
         return _resource
     }
 
-    override suspend fun mediaType(): ResourceTry<MediaType> =
-        resource().mediaType()
-
-    override suspend fun properties(): ResourceTry<Resource.Properties> =
+    override suspend fun properties(): Try<Resource.Properties, ReadError> =
         resource().properties()
 
-    override suspend fun length(): ResourceTry<Long> =
+    override suspend fun length(): Try<Long, ReadError> =
         resource().length()
 
-    override suspend fun read(range: LongRange?): ResourceTry<ByteArray> =
+    override suspend fun read(range: LongRange?): Try<ByteArray, ReadError> =
         resource().read(range)
 
     override suspend fun close() {
@@ -53,5 +51,5 @@ public open class LazyResource<R : Resource>(
         }
 }
 
-public fun <R : Resource> Resource.flatMap(transform: suspend (Resource) -> R): LazyResource<R> =
+public fun <R : Resource> Resource.flatMap(transform: suspend (Resource) -> R): LazyResource =
     LazyResource { transform(this) }

@@ -12,11 +12,13 @@ import org.jsoup.Jsoup
 import org.jsoup.parser.Parser
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.data.DecodeError
+import org.readium.r2.shared.util.data.ReadError
+import org.readium.r2.shared.util.data.decodeString
+import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.resource.Resource
-import org.readium.r2.shared.util.resource.ResourceTry
-import org.readium.r2.shared.util.resource.mapCatching
-import org.readium.r2.shared.util.resource.readAsString
+import org.readium.r2.shared.util.tryRecover
 
 /**
  * Extracts pure content from a marked-up (e.g. HTML) or binary (e.g. PDF) resource.
@@ -27,7 +29,7 @@ public interface ResourceContentExtractor {
     /**
      * Extracts the text content of the given [resource].
      */
-    public suspend fun extractText(resource: Resource): ResourceTry<String> = Try.success("")
+    public suspend fun extractText(resource: Resource): Try<String, ReadError> = Try.success("")
 
     public interface Factory {
         /**
@@ -35,15 +37,15 @@ public interface ResourceContentExtractor {
          *
          * Return null if the resource format is not supported.
          */
-        public suspend fun createExtractor(resource: Resource): ResourceContentExtractor?
+        public suspend fun createExtractor(resource: Resource, mediaType: MediaType): ResourceContentExtractor?
     }
 }
 
 @ExperimentalReadiumApi
 public class DefaultResourceContentExtractorFactory : ResourceContentExtractor.Factory {
 
-    override suspend fun createExtractor(resource: Resource): ResourceContentExtractor? =
-        when (resource.mediaType().getOrNull()) {
+    override suspend fun createExtractor(resource: Resource, mediaType: MediaType): ResourceContentExtractor? =
+        when (mediaType) {
             MediaType.HTML, MediaType.XHTML -> HtmlResourceContentExtractor()
             else -> null
         }
@@ -55,13 +57,24 @@ public class DefaultResourceContentExtractorFactory : ResourceContentExtractor.F
 @ExperimentalReadiumApi
 public class HtmlResourceContentExtractor : ResourceContentExtractor {
 
-    override suspend fun extractText(resource: Resource): ResourceTry<String> = withContext(
-        Dispatchers.IO
-    ) {
-        resource.readAsString().mapCatching { html ->
-            val body = Jsoup.parse(html).body().text()
-            // Transform HTML entities into their actual characters.
-            Parser.unescapeEntities(body, false)
+    override suspend fun extractText(resource: Resource): Try<String, ReadError> =
+        withContext(Dispatchers.IO) {
+            resource
+                .read()
+                .getOrElse { return@withContext Try.failure(it) }
+                .decodeString()
+                .tryRecover {
+                    when (it) {
+                        is DecodeError.OutOfMemory ->
+                            return@withContext Try.failure(ReadError.OutOfMemory(it.cause))
+                        is DecodeError.Decoding ->
+                            Try.success("")
+                    }
+                }
+                .map { html ->
+                    val body = Jsoup.parse(html).body().text()
+                    // Transform HTML entities into their actual characters.
+                    Parser.unescapeEntities(body, false)
+                }
         }
-    }
 }

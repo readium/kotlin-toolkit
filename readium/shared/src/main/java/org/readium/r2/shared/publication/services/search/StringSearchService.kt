@@ -14,16 +14,19 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import java.text.StringCharacterIterator
 import java.util.*
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.publication.services.positionsByReadingOrder
 import org.readium.r2.shared.publication.services.search.SearchService.Options
+import org.readium.r2.shared.util.ThrowableError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
-import org.readium.r2.shared.util.getOrThrow
-import org.readium.r2.shared.util.resource.Container
+import org.readium.r2.shared.util.data.Container
+import org.readium.r2.shared.util.getOrElse
+import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.shared.util.resource.content.DefaultResourceContentExtractorFactory
 import org.readium.r2.shared.util.resource.content.ResourceContentExtractor
 import timber.log.Timber
@@ -41,7 +44,7 @@ import timber.log.Timber
 @ExperimentalReadiumApi
 public class StringSearchService(
     private val manifest: Manifest,
-    private val container: Container,
+    private val container: Container<Resource>,
     private val services: PublicationServicesHolder,
     private val language: String?,
     private val snippetLength: Int,
@@ -74,24 +77,18 @@ public class StringSearchService(
     override val options: Options = searchAlgorithm.options
         .copy(language = locale.toLanguageTag())
 
-    override suspend fun search(query: String, options: Options?): SearchTry<SearchIterator> =
-        try {
-            Try.success(
-                Iterator(
-                    manifest = manifest,
-                    container = container,
-                    query = query,
-                    options = options ?: Options(),
-                    locale = options?.language?.let { Locale.forLanguageTag(it) } ?: locale
-                )
-            )
-        } catch (e: Exception) {
-            Try.failure(SearchException.wrap(e))
-        }
+    override suspend fun search(query: String, options: Options?): SearchIterator =
+        Iterator(
+            manifest = manifest,
+            container = container,
+            query = query,
+            options = options ?: Options(),
+            locale = options?.language?.let { Locale.forLanguageTag(it) } ?: locale
+        )
 
     private inner class Iterator(
         val manifest: Manifest,
-        val container: Container,
+        val container: Container<Resource>,
         val query: String,
         val options: Options,
         val locale: Locale
@@ -114,9 +111,12 @@ public class StringSearchService(
                 index += 1
 
                 val link = manifest.readingOrder[index]
+                val mediaType = link.mediaType ?: return next()
                 val text =
-                    container.get(link.url())
-                        .let { extractorFactory.createExtractor(it)?.extractText(it)?.getOrThrow() }
+                    container[link.url()]
+                        ?.let { extractorFactory.createExtractor(it, mediaType)?.extractText(it) }
+                        ?.getOrElse { return Try.failure(SearchError.Reading(it)) }
+
                 if (text == null) {
                     Timber.w("Cannot extract text from resource: ${link.href}")
                     return next()
@@ -132,8 +132,12 @@ public class StringSearchService(
                 }
 
                 return Try.success(LocatorCollection(locators = locators))
+            } catch (
+                e: CancellationException
+            ) {
+                throw e
             } catch (e: Exception) {
-                return Try.failure(SearchException.wrap(e))
+                return Try.failure(SearchError.Engine(ThrowableError(e)))
             }
         }
 
@@ -295,12 +299,12 @@ public class StringSearchService(
             val collator = Collator.getInstance(locale) as RuleBasedCollator
             if (!diacriticSensitive) {
                 collator.strength = Collator.PRIMARY
-                if (caseSensitive) {
-                    // FIXME: This doesn't seem to work despite the documentation indicating:
-                    // > To ignore accents but take cases into account, set strength to primary and case level to on.
-                    // > http://userguide.icu-project.org/collation/customization
-                    collator.isCaseLevel = true
-                }
+                // if (caseSensitive) {
+                // FIXME: This doesn't seem to work despite the documentation indicating:
+                // > To ignore accents but take cases into account, set strength to primary and case level to on.
+                // > http://userguide.icu-project.org/collation/customization
+                // collator.isCaseLevel = true
+                // }
             } else if (!caseSensitive) {
                 collator.strength = Collator.SECONDARY
             }

@@ -6,60 +6,51 @@
 
 package org.readium.r2.shared.util.mediatype
 
+import java.io.File
+import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.archive.ArchiveFactory
+import org.readium.r2.shared.util.archive.RecursiveArchiveFactory
+import org.readium.r2.shared.util.data.Container
+import org.readium.r2.shared.util.data.Readable
+import org.readium.r2.shared.util.file.FileResource
+import org.readium.r2.shared.util.getOrElse
+import org.readium.r2.shared.util.resource.Resource
+import org.readium.r2.shared.util.resource.filename
+import org.readium.r2.shared.util.resource.mediaType
+import org.readium.r2.shared.util.tryRecover
+import org.readium.r2.shared.util.use
+
 /**
- * Retrieves a canonical [MediaType] for the provided media type and file extension hints and/or
+ * Retrieves a canonical [MediaType] for the provided media type and file extension hints and
  * asset content.
  *
- * The actual format sniffing is done by the provided [sniffers]. The [defaultSniffers] cover the
- * formats supported with Readium by default.
+ * The actual format sniffing is done by the provided [mediaTypeSniffer].
+ * The [DefaultMediaTypeSniffer] covers the formats supported with Readium by default.
  */
 public class MediaTypeRetriever(
-    private val sniffers: List<MediaTypeSniffer> = defaultSniffers
+    private val mediaTypeSniffer: MediaTypeSniffer,
+    private val formatRegistry: FormatRegistry,
+    archiveFactory: ArchiveFactory
 ) {
 
-    public companion object {
-        /**
-         * The default sniffers provided by Readium 2 for all known formats.
-         * The sniffers order is important, because some formats are subsets of other formats.
-         */
-        public val defaultSniffers: List<MediaTypeSniffer> = listOf(
-            XhtmlMediaTypeSniffer,
-            HtmlMediaTypeSniffer,
-            OpdsMediaTypeSniffer,
-            LcpLicenseMediaTypeSniffer,
-            BitmapMediaTypeSniffer,
-            WebPubManifestMediaTypeSniffer,
-            WebPubMediaTypeSniffer,
-            W3cWpubMediaTypeSniffer,
-            EpubMediaTypeSniffer,
-            LpfMediaTypeSniffer,
-            ArchiveMediaTypeSniffer,
-            PdfMediaTypeSniffer,
-            JsonMediaTypeSniffer
-        )
-    }
+    private val archiveFactory: ArchiveFactory =
+        RecursiveArchiveFactory(archiveFactory, formatRegistry)
 
     /**
      * Retrieves a canonical [MediaType] for the provided media type and file extension [hints].
+     *
+     * Useful for testing purpose.
      */
-    public fun retrieve(hints: MediaTypeHints): MediaType? {
-        sniffers.firstNotNullOfOrNull { it.sniffHints(hints) }
-            ?.let { return it }
-
-        // Falls back on the system-wide registered media types using MimeTypeMap.
-        // Note: This is done after the default sniffers, because otherwise it will detect
-        // JSON, XML or ZIP formats before we have a chance of sniffing their content (for example,
-        // for RWPM).
-        SystemMediaTypeSniffer.sniffHints(hints)
-            ?.let { return it }
-
-        return hints.mediaTypes.firstOrNull()
-    }
+    internal fun retrieve(hints: MediaTypeHints): MediaType? =
+        retrieveUnsafe(hints)
+            .getOrNull()
 
     /**
      * Retrieves a canonical [MediaType] for the provided [mediaType] and [fileExtension] hints.
+     *
+     * Useful for testing purpose.
      */
-    public fun retrieve(mediaType: String? = null, fileExtension: String? = null): MediaType? =
+    internal fun retrieve(mediaType: String? = null, fileExtension: String? = null): MediaType? =
         retrieve(
             MediaTypeHints(
                 mediaType = mediaType?.let { MediaType(it) },
@@ -68,41 +59,126 @@ public class MediaTypeRetriever(
         )
 
     /**
-     * Retrieves a canonical [MediaType] for the provided [mediaType] and [fileExtension] hints.
-     */
-    public fun retrieve(mediaType: MediaType, fileExtension: String? = null): MediaType =
-        retrieve(MediaTypeHints(mediaType = mediaType, fileExtension = fileExtension)) ?: mediaType
-
-    /**
-     * Retrieves a canonical [MediaType] for the provided [mediaTypes] and [fileExtensions] hints.
-     */
-    public fun retrieve(
-        mediaTypes: List<String> = emptyList(),
-        fileExtensions: List<String> = emptyList()
-    ): MediaType? =
-        retrieve(MediaTypeHints(mediaTypes = mediaTypes, fileExtensions = fileExtensions))
-
-    /**
-     * Retrieves a canonical [MediaType] for the provided media type and file extensions [hints] and
-     * asset [content].
+     * Retrieves a canonical [MediaType] for [resource].
+     *
+     * @param resource the resource to retrieve the media type of
+     * @param hints additional hints which will be added to those provided by the resource
      */
     public suspend fun retrieve(
-        hints: MediaTypeHints = MediaTypeHints(),
-        content: MediaTypeSnifferContent? = null
-    ): MediaType? {
-        sniffers.run {
-            firstNotNullOfOrNull { it.sniffHints(hints) }
-                ?: content?.let { firstNotNullOfOrNull { it.sniffContent(content) } }
-        }?.let { return it }
+        resource: Resource,
+        hints: MediaTypeHints = MediaTypeHints()
+    ): Try<MediaType, MediaTypeSnifferError> {
+        val resourceMediaType = retrieveUnsafe(resource, hints)
+            .getOrElse { return Try.failure(it) }
 
-        // Falls back on the system-wide registered media types using MimeTypeMap.
-        // Note: This is done after the default sniffers, because otherwise it will detect
-        // JSON, XML or ZIP formats before we have a chance of sniffing their content (for example,
-        // for RWPM).
-        SystemMediaTypeSniffer.run {
-            sniffHints(hints) ?: content?.let { sniffContent(it) }
-        }?.let { return it }
+        val container = archiveFactory.create(resourceMediaType, resource)
+            .getOrElse {
+                when (it) {
+                    is ArchiveFactory.CreateError.Reading ->
+                        return Try.failure(MediaTypeSnifferError.Reading(it.cause))
+                    is ArchiveFactory.CreateError.FormatNotSupported ->
+                        return Try.success(resourceMediaType)
+                }
+            }
 
-        return hints.mediaTypes.firstOrNull()
+        return retrieve(container, hints)
+    }
+
+    /**
+     * Retrieves a canonical [MediaType] for [file].
+     *
+     * @param file the file to retrieve the media type of
+     * @param hints additional hints which will be added to those provided by the resource
+     */
+    public suspend fun retrieve(
+        file: File,
+        hints: MediaTypeHints = MediaTypeHints()
+    ): Try<MediaType, MediaTypeSnifferError> =
+        FileResource(file).use { retrieve(it, hints) }
+
+    /**
+     * Retrieves a canonical [MediaType] for [container].
+     *
+     * @param container the resource to retrieve the media type of
+     * @param hints media type hints
+     */
+    public suspend fun retrieve(
+        container: Container<Readable>,
+        hints: MediaTypeHints = MediaTypeHints()
+    ): Try<MediaType, MediaTypeSnifferError> {
+        val unsafeMediaType = retrieveUnsafe(hints)
+            .getOrNull()
+
+        if (unsafeMediaType != null && !formatRegistry.isSuperType(unsafeMediaType)) {
+            return Try.success(unsafeMediaType)
+        }
+
+        mediaTypeSniffer.sniffContainer(container)
+            .onSuccess { return Try.success(it) }
+            .onFailure { error ->
+                when (error) {
+                    is MediaTypeSnifferError.NotRecognized -> {}
+                    else -> return Try.failure(error)
+                }
+            }
+
+        return (unsafeMediaType ?: hints.mediaTypes.firstOrNull())
+            ?.let { Try.success(it) }
+            ?: Try.failure(MediaTypeSnifferError.NotRecognized)
+    }
+
+    /**
+     * Retrieves a [MediaType] as much canonical as possible without accessing the content.
+     *
+     * Does not refuse too generic types.
+     */
+    private fun retrieveUnsafe(
+        hints: MediaTypeHints
+    ): Try<MediaType, MediaTypeSnifferError.NotRecognized> =
+        mediaTypeSniffer.sniffHints(hints)
+            .tryRecover {
+                hints.mediaTypes.firstOrNull()
+                    ?.let { Try.success(it) }
+                    ?: Try.failure(MediaTypeSnifferError.NotRecognized)
+            }
+
+    /**
+     * Retrieves a [MediaType] for [resource] using [hints] added to those embedded in [resource]
+     * and reading content if necessary.
+     *
+     * Does not open archive resources.
+     */
+    private suspend fun retrieveUnsafe(
+        resource: Resource,
+        hints: MediaTypeHints
+    ): Try<MediaType, MediaTypeSnifferError> {
+        val properties = resource.properties()
+            .getOrElse { return Try.failure(MediaTypeSnifferError.Reading(it)) }
+
+        val embeddedHints = MediaTypeHints(
+            mediaType = properties.mediaType,
+            fileExtension = properties.filename
+                ?.substringAfterLast(".", "")
+        )
+
+        val unsafeMediaType = retrieveUnsafe(embeddedHints + hints)
+            .getOrNull()
+
+        if (unsafeMediaType != null && !formatRegistry.isSuperType(unsafeMediaType)) {
+            return Try.success(unsafeMediaType)
+        }
+
+        mediaTypeSniffer.sniffBlob(resource)
+            .onSuccess { return Try.success(it) }
+            .onFailure { error ->
+                when (error) {
+                    is MediaTypeSnifferError.NotRecognized -> {}
+                    else -> return Try.failure(error)
+                }
+            }
+
+        return (unsafeMediaType ?: hints.mediaTypes.firstOrNull())
+            ?.let { Try.success(it) }
+            ?: Try.failure(MediaTypeSnifferError.NotRecognized)
     }
 }

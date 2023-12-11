@@ -9,13 +9,13 @@ package org.readium.r2.testapp.catalogs
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import java.net.MalformedURLException
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
 import org.readium.r2.opds.OPDS1Parser
 import org.readium.r2.opds.OPDS2Parser
 import org.readium.r2.shared.opds.ParseData
 import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.http.HttpRequest
 import org.readium.r2.testapp.data.model.Catalog
@@ -31,17 +31,16 @@ class CatalogViewModel(application: Application) : AndroidViewModel(application)
 
     fun parseCatalog(catalog: Catalog) = viewModelScope.launch {
         var parseRequest: Try<ParseData, Exception>? = null
-        catalog.href.let {
-            val request = HttpRequest(it)
-            try {
-                parseRequest = if (catalog.type == 1) {
-                    OPDS1Parser.parseRequest(request, app.readium.httpClient)
-                } else {
-                    OPDS2Parser.parseRequest(request, app.readium.httpClient)
+        catalog.href.let { href ->
+            AbsoluteUrl(href)
+                ?.let { HttpRequest(it) }
+                ?.let { request ->
+                    parseRequest = if (catalog.type == 1) {
+                        OPDS1Parser.parseRequest(request, app.readium.httpClient)
+                    } else {
+                        OPDS2Parser.parseRequest(request, app.readium.httpClient)
+                    }
                 }
-            } catch (e: MalformedURLException) {
-                channel.send(Event.CatalogParseFailed)
-            }
         }
         parseRequest?.onSuccess {
             channel.send(Event.CatalogParseSuccess(it))

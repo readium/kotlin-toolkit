@@ -9,9 +9,8 @@ package org.readium.r2.navigator
 import kotlinx.coroutines.flow.StateFlow
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
-import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.util.Url
-import org.readium.r2.shared.util.resource.Resource
+import org.readium.r2.shared.util.data.ReadError
 
 /**
  * Base interface for a navigator rendering a publication.
@@ -34,11 +33,6 @@ import org.readium.r2.shared.util.resource.Resource
 public interface Navigator {
 
     /**
-     * Publication rendered by this navigator.
-     */
-    public val publication: Publication
-
-    /**
      * Current position in the publication.
      * Can be used to save a bookmark to the current position.
      */
@@ -59,7 +53,7 @@ public interface Navigator {
         /**
          * Called when a publication resource failed to be loaded.
          */
-        public fun onResourceLoadFailed(href: Url, error: Resource.Exception) {}
+        public fun onResourceLoadFailed(href: Url, error: ReadError) {}
 
         /**
          * Called when the navigator jumps to an explicit location, which might break the linear

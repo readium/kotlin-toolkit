@@ -6,13 +6,12 @@
 
 package org.readium.r2.streamer.parser
 
+import kotlin.String
 import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.util.MessageError
-import org.readium.r2.shared.util.ThrowableError
 import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.data.Container
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.mediatype.MediaType
-import org.readium.r2.shared.util.resource.Container
 import org.readium.r2.shared.util.resource.Resource
 
 /**
@@ -30,7 +29,7 @@ public interface PublicationParser {
      */
     public data class Asset(
         val mediaType: MediaType,
-        val container: Container
+        val container: Container<Resource>
     )
 
     /**
@@ -46,42 +45,15 @@ public interface PublicationParser {
         warnings: WarningLogger? = null
     ): Try<Publication.Builder, Error>
 
-    public sealed class Error : org.readium.r2.shared.util.Error {
+    public sealed class Error(
+        public override val message: String,
+        public override val cause: org.readium.r2.shared.util.Error?
+    ) : org.readium.r2.shared.util.Error {
 
-        public class FormatNotSupported : Error() {
+        public class FormatNotSupported :
+            Error("Asset format not supported.", null)
 
-            override val message: String =
-                "Asset format not supported."
-
-            override val cause: org.readium.r2.shared.util.Error? =
-                null
-        }
-
-        public class ParsingFailed(override val cause: org.readium.r2.shared.util.Error?) : Error() {
-
-            public constructor(message: String) : this(MessageError(message))
-
-            override val message: String =
-                "An error occurred while parsing the publication."
-        }
-
-        public class IO(
-            public val resourceError: Resource.Exception
-        ) : Error() {
-
-            override val message: String =
-                "An IO error occurred."
-
-            override val cause: org.readium.r2.shared.util.Error =
-                ThrowableError(resourceError)
-        }
-
-        public class OutOfMemory(
-            override val cause: org.readium.r2.shared.util.Error?
-        ) : Error() {
-
-            override val message: String =
-                "There is not enough memory on the device to parse the publication."
-        }
+        public class Reading(override val cause: org.readium.r2.shared.util.data.ReadError) :
+            Error("An error occurred while trying to read asset.", cause)
     }
 }

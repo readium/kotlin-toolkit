@@ -15,16 +15,19 @@ import com.pspdfkit.document.PageBinding
 import com.pspdfkit.document.PdfDocument as _PsPdfKitDocument
 import com.pspdfkit.document.PdfDocumentLoader
 import com.pspdfkit.exceptions.InvalidPasswordException
+import com.pspdfkit.exceptions.InvalidSignatureException
+import java.io.IOException
 import kotlin.reflect.KClass
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.publication.ReadingProgression
+import org.readium.r2.shared.util.ThrowableError
 import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.data.ReadError
+import org.readium.r2.shared.util.data.ReadTry
 import org.readium.r2.shared.util.pdf.PdfDocument
 import org.readium.r2.shared.util.pdf.PdfDocumentFactory
 import org.readium.r2.shared.util.resource.Resource
-import org.readium.r2.shared.util.resource.ResourceTry
 import timber.log.Timber
 
 public class PsPdfKitDocumentFactory(context: Context) : PdfDocumentFactory<PsPdfKitDocument> {
@@ -32,21 +35,19 @@ public class PsPdfKitDocumentFactory(context: Context) : PdfDocumentFactory<PsPd
 
     override val documentType: KClass<PsPdfKitDocument> = PsPdfKitDocument::class
 
-    override suspend fun open(resource: Resource, password: String?): ResourceTry<PsPdfKitDocument> =
-        open(context, DocumentSource(ResourceDataProvider(resource), password))
-
-    private suspend fun open(context: Context, documentSource: DocumentSource): ResourceTry<PsPdfKitDocument> =
+    override suspend fun open(resource: Resource, password: String?): ReadTry<PsPdfKitDocument> =
         withContext(Dispatchers.IO) {
+            val dataProvider = ResourceDataProvider(resource)
+            val documentSource = DocumentSource(dataProvider, password)
             try {
-                Try.success(
-                    PsPdfKitDocument(PdfDocumentLoader.openDocument(context, documentSource))
-                )
+                val innerDocument = PdfDocumentLoader.openDocument(context, documentSource)
+                Try.success(PsPdfKitDocument(innerDocument))
             } catch (e: InvalidPasswordException) {
-                Try.failure(Resource.Exception.Forbidden(e))
-            } catch (e: CancellationException) {
-                throw e
-            } catch (e: Throwable) {
-                Try.failure(Resource.Exception.wrap(e))
+                Try.failure(ReadError.Decoding(ThrowableError(e)))
+            } catch (e: InvalidSignatureException) {
+                Try.failure(ReadError.Decoding(ThrowableError(e)))
+            } catch (e: IOException) {
+                Try.failure(dataProvider.error!!)
             }
         }
 }

@@ -15,7 +15,7 @@ public suspend fun HttpURLConnection.sniffMediaType(
     bytes: (() -> ByteArray)? = null,
     mediaTypes: List<String> = emptyList(),
     fileExtensions: List<String> = emptyList()
-): MediaType? = throw NotImplementedError()
+): MediaType = throw NotImplementedError()
 
 @Suppress("UnusedReceiverParameter", "RedundantSuspendModifier", "UNUSED_PARAMETER")
 @Deprecated("Use your own solution instead", level = DeprecationLevel.ERROR)

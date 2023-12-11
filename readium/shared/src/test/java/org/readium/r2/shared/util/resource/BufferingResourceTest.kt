@@ -7,6 +7,8 @@ import kotlinx.coroutines.runBlocking
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.readium.r2.shared.Fixtures
+import org.readium.r2.shared.util.checkSuccess
+import org.readium.r2.shared.util.file.FileResource
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.robolectric.RobolectricTestRunner
 
@@ -15,12 +17,12 @@ class BufferingResourceTest {
 
     @Test
     fun `get file`() {
-        assertEquals(file, sut().source?.toFile())
+        assertEquals(file, sut().sourceUrl?.toFile())
     }
 
     @Test
-    fun `get media type`() = runBlocking {
-        assertEquals(MediaType.EPUB, sut().mediaType().getOrNull())
+    fun `get properties`() = runBlocking {
+        assertEquals(resource.properties().checkSuccess(), sut().properties().checkSuccess())
     }
 
     @Test
@@ -124,7 +126,7 @@ class BufferingResourceTest {
     private val data = file.readBytes()
     private val resource = FileResource(file, MediaType.EPUB)
 
-    private fun sut(bufferSize: Long = 1024): BufferingResource =
+    private fun sut(bufferSize: Int = 1024): BufferingResource =
         BufferingResource(resource, bufferSize = bufferSize)
 
     private fun testRead(sut: BufferingResource, range: LongRange? = null) {

@@ -27,7 +27,6 @@ import org.robolectric.RobolectricTestRunner
 @RunWith(RobolectricTestRunner::class)
 class HtmlResourceContentIteratorTest {
 
-    private val link = Link(href = Href("/dir/res.xhtml")!!, mediaType = MediaType.XHTML)
     private val locator = Locator(href = Url("/dir/res.xhtml")!!, mediaType = MediaType.XHTML)
 
     private val html = """
@@ -182,7 +181,7 @@ class HtmlResourceContentIteratorTest {
         totalProgressionRange: ClosedRange<Double>? = null
     ): HtmlResourceContentIterator =
         HtmlResourceContentIterator(
-            StringResource(html, MediaType.HTML),
+            StringResource(html),
             totalProgressionRange = totalProgressionRange,
             startLocator
         )

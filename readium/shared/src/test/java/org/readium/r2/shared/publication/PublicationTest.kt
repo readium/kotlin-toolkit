@@ -16,15 +16,11 @@ import org.junit.runner.RunWith
 import org.readium.r2.shared.publication.Publication.Profile
 import org.readium.r2.shared.publication.services.DefaultLocatorService
 import org.readium.r2.shared.publication.services.PositionsService
-import org.readium.r2.shared.publication.services.WebPositionsService
 import org.readium.r2.shared.publication.services.positions
 import org.readium.r2.shared.publication.services.positionsByReadingOrder
 import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.data.EmptyContainer
 import org.readium.r2.shared.util.mediatype.MediaType
-import org.readium.r2.shared.util.resource.EmptyContainer
-import org.readium.r2.shared.util.resource.Resource
-import org.readium.r2.shared.util.resource.StringResource
-import org.readium.r2.shared.util.resource.readAsString
 import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
@@ -383,27 +379,6 @@ class PublicationTest {
         assertNull(createPublication().linkWithHref(Url("foobar")!!))
     }
 
-    @Test fun `get method passes on href parameters to services`() {
-        val service = object : Publication.Service {
-            override fun get(href: Url): Resource {
-                assertEquals("link?param1=a&param2=b", href.toString())
-                return StringResource("test passed", MediaType.TEXT)
-            }
-        }
-
-        val link = Link(href = Href("link?param1=a&param2=b")!!)
-        val publication = createPublication(
-            resources = listOf(link),
-            servicesBuilder = Publication.ServicesBuilder(
-                positions = { service }
-            )
-        )
-        assertEquals(
-            "test passed",
-            runBlocking { publication.get(link).readAsString().getOrNull() }
-        )
-    }
-
     @Test fun `find the first resource {Link} with the given {href}`() {
         val link1 = Link(href = Href("href1")!!)
         val link2 = Link(href = Href("href2")!!)
@@ -458,9 +433,8 @@ class ServicesBuilderTest {
     fun testBuildEmpty() {
         val builder = Publication.ServicesBuilder(cover = null)
         val services = builder.build(context)
-        assertEquals(2, services.size)
+        assertEquals(1, services.size)
         assertNotNull(services.find<DefaultLocatorService>())
-        assertNotNull(services.find<WebPositionsService>())
     }
 
     @Test

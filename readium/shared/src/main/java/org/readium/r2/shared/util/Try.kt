@@ -6,6 +6,9 @@
 
 package org.readium.r2.shared.util
 
+import org.readium.r2.shared.util.Try.Failure
+import org.readium.r2.shared.util.Try.Success
+
 /** A [Result] type which can be used as a return type. */
 public sealed class Try<out Success, out Failure> {
 
@@ -106,8 +109,8 @@ public sealed class Try<out Success, out Failure> {
  */
 public fun <S, F : Throwable> Try<S, F>.getOrThrow(): S =
     when (this) {
-        is Try.Success -> value
-        is Try.Failure -> throw value
+        is Success -> value
+        is Failure -> throw value
     }
 
 /**
@@ -115,8 +118,8 @@ public fun <S, F : Throwable> Try<S, F>.getOrThrow(): S =
  */
 public fun <R, S : R, F> Try<S, F>.getOrDefault(defaultValue: R): R =
     when (this) {
-        is Try.Success -> value
-        is Try.Failure -> defaultValue
+        is Success -> value
+        is Failure -> defaultValue
     }
 
 /**
@@ -125,8 +128,8 @@ public fun <R, S : R, F> Try<S, F>.getOrDefault(defaultValue: R): R =
  */
 public inline fun <R, S : R, F> Try<S, F>.getOrElse(onFailure: (exception: F) -> R): R =
     when (this) {
-        is Try.Success -> value
-        is Try.Failure -> onFailure(value)
+        is Success -> value
+        is Failure -> onFailure(value)
     }
 
 /**
@@ -135,16 +138,31 @@ public inline fun <R, S : R, F> Try<S, F>.getOrElse(onFailure: (exception: F) ->
  */
 public inline fun <R, S, F> Try<S, F>.flatMap(transform: (value: S) -> Try<R, F>): Try<R, F> =
     when (this) {
-        is Try.Success -> transform(value)
-        is Try.Failure -> Try.failure(value)
+        is Success -> transform(value)
+        is Failure -> Try.failure(value)
     }
 
 /**
  * Returns the encapsulated result of the given transform function applied to the encapsulated value
  * if this instance represents failure or the original encapsulated value if it is success.
  */
-public inline fun <R, S : R, F> Try<S, F>.tryRecover(transform: (exception: F) -> Try<R, F>): Try<R, F> =
+public inline fun <R, S : R, F, T> Try<S, F>.tryRecover(transform: (exception: F) -> Try<R, T>): Try<R, T> =
     when (this) {
-        is Try.Success -> Try.success(value)
-        is Try.Failure -> transform(value)
+        is Success -> Try.success(value)
+        is Failure -> transform(value)
+    }
+
+/**
+ * Returns value in case of success and throws an [IllegalStateException] in case of failure.
+ */
+public fun <S, F> Try<S, F>.checkSuccess(): S =
+    when (this) {
+        is Success ->
+            value
+        is Failure -> {
+            throw IllegalStateException(
+                "Try was excepted to contain a success.",
+                value as? Throwable ?: (value as? Error)?.let { ErrorException(it) }
+            )
+        }
     }

@@ -47,9 +47,9 @@ import org.readium.r2.shared.extensions.tryOrNull
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.util.Url
-import org.readium.r2.shared.util.getOrThrow
+import org.readium.r2.shared.util.data.decodeString
+import org.readium.r2.shared.util.flatMap
 import org.readium.r2.shared.util.resource.Resource
-import org.readium.r2.shared.util.resource.readAsString
 import org.readium.r2.shared.util.toUrl
 import org.readium.r2.shared.util.use
 import timber.log.Timber
@@ -350,9 +350,10 @@ internal open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebV
             tryOrLog {
                 listener?.resourceAtUrl(absoluteUrl)
                     ?.use { res ->
-                        res.readAsString()
+                        res.read()
+                            .flatMap { it.decodeString() }
                             .map { Jsoup.parse(it) }
-                            .getOrThrow()
+                            .getOrNull()
                     }
                     ?.select("#$id")
                     ?.first()?.html()

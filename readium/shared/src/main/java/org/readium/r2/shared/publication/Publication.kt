@@ -24,19 +24,14 @@ import org.readium.r2.shared.publication.services.CoverService
 import org.readium.r2.shared.publication.services.DefaultLocatorService
 import org.readium.r2.shared.publication.services.LocatorService
 import org.readium.r2.shared.publication.services.PositionsService
-import org.readium.r2.shared.publication.services.WebPositionsService
+import org.readium.r2.shared.publication.services.ResourceCoverService
 import org.readium.r2.shared.publication.services.content.ContentService
 import org.readium.r2.shared.publication.services.search.SearchService
 import org.readium.r2.shared.util.Closeable
-import org.readium.r2.shared.util.Error
-import org.readium.r2.shared.util.ThrowableError
 import org.readium.r2.shared.util.Url
-import org.readium.r2.shared.util.mediatype.MediaType
-import org.readium.r2.shared.util.resource.Container
-import org.readium.r2.shared.util.resource.EmptyContainer
+import org.readium.r2.shared.util.data.Container
+import org.readium.r2.shared.util.data.EmptyContainer
 import org.readium.r2.shared.util.resource.Resource
-import org.readium.r2.shared.util.resource.ResourceTry
-import org.readium.r2.shared.util.resource.fallback
 
 internal typealias ServiceFactory = (Publication.Service.Context) -> Publication.Service?
 
@@ -61,8 +56,8 @@ public typealias PublicationId = String
  * Publication.Service attached to this Publication.
  */
 public class Publication(
-    manifest: Manifest,
-    private val container: Container = EmptyContainer(),
+    public val manifest: Manifest,
+    private val container: Container<Resource> = EmptyContainer(),
     private val servicesBuilder: ServicesBuilder = ServicesBuilder(),
     @Deprecated(
         "Migrate to the new Settings API (see migration guide)",
@@ -76,14 +71,11 @@ public class Publication(
     public var cssStyle: String? = null
 ) : PublicationServicesHolder {
 
-    public val manifest: Manifest
-
     private val services = ListPublicationServicesHolder()
 
     init {
-        services.services = servicesBuilder.build(Service.Context(manifest, container, services))
-        this.manifest = manifest.copy(
-            links = manifest.links + services.services.map(Service::links).flatten()
+        services.services = servicesBuilder.build(
+            context = Service.Context(manifest, container, services)
         )
     }
 
@@ -195,29 +187,15 @@ public class Publication(
     /**
      * Returns the resource targeted by the given non-templated [link].
      */
-    public fun get(link: Link): Resource =
-        get(link.url(), link.mediaType)
+    public fun get(link: Link): Resource? =
+        get(link.url())
 
     /**
      * Returns the resource targeted by the given [href].
      */
-    public fun get(href: Url): Resource =
-        get(href, linkWithHref(href)?.mediaType)
-
-    private fun get(href: Url, mediaType: MediaType?): Resource {
-        services.services.forEach { service -> service.get(href)?.let { return it } }
-
-        return container.get(href)
-            .fallback { error ->
-                if (error is Resource.Exception.NotFound) {
-                    // Try again after removing query and fragment.
-                    container.get(href.removeQuery().removeFragment())
-                } else {
-                    null
-                }
-            }
-            .withMediaType(mediaType)
-    }
+    public fun get(href: Url): Resource? =
+        // Try first the original href and falls back to href without query and fragment.
+        container[href] ?: container[href.removeQuery().removeFragment()]
 
     /**
      * Closes any opened resource associated with the [Publication], including services.
@@ -358,45 +336,9 @@ public class Publication(
          */
         public class Context(
             public val manifest: Manifest,
-            public val container: Container,
+            public val container: Container<Resource>,
             public val services: PublicationServicesHolder
         )
-
-        /**
-         * Links which will be added to [Publication.links].
-         * It can be used to expose a web API for the service, through [Publication.get].
-         *
-         * To disambiguate the href with a publication's local resources, you should use the prefix
-         * `/~readium/`. A custom media type or rel should be used to identify the service.
-         *
-         * You can use a templated URI to accept query parameters, e.g.:
-         *
-         * ```
-         * Link(
-         *     href = "/~readium/search{?text}",
-         *     type = "application/vnd.readium.search+json",
-         *     templated = true
-         * )
-         * ```
-         */
-        public val links: List<Link> get() = emptyList()
-
-        /**
-         * A service can return a Resource to:
-         *  - respond to a request to its web API declared in links,
-         *  - serve additional resources on behalf of the publication,
-         *  - replace a publication resource by its own version.
-         *
-         * Called by [Publication.get] for each request.
-         *
-         * Warning: If you need to request one of the publication resources to answer the request,
-         * use the [Container] provided by the [Publication.Service.Context] instead of
-         * [Publication.get], otherwise it will trigger an infinite loop.
-         *
-         * @return The [Resource] containing the response, or null if the service doesn't
-         * recognize this request.
-         */
-        public fun get(href: Url): Resource? = null
 
         /**
          * Closes any opened file handles, removes temporary files, etc.
@@ -448,9 +390,9 @@ public class Publication(
                         put(LocatorService::class.java.simpleName, factory)
                     }
 
-                    if (!containsKey(PositionsService::class.java.simpleName)) {
-                        val factory = WebPositionsService.createFactory()
-                        put(PositionsService::class.java.simpleName, factory)
+                    if (!containsKey(CoverService::class.java.simpleName)) {
+                        val factory = ResourceCoverService.createFactory()
+                        put(CoverService::class.java.simpleName, factory)
                     }
                 }
 
@@ -494,80 +436,6 @@ public class Publication(
     }
 
     /**
-     * Errors occurring while opening a Publication.
-     */
-    public sealed class OpenError(
-        override val message: String,
-        override val cause: Error? = null
-    ) : Error {
-
-        /**
-         * The file format could not be recognized by any parser.
-         */
-        public class UnsupportedAsset(
-            message: String,
-            cause: Error?
-        ) : OpenError(message, cause) {
-            public constructor(message: String) : this(message, null)
-            public constructor(cause: Error? = null) : this("Asset is not supported.", cause)
-        }
-
-        /**
-         * The publication parsing failed with the given underlying error.
-         */
-        public class InvalidAsset(
-            message: String,
-            cause: Error? = null
-        ) : OpenError(message, cause) {
-            public constructor(cause: Error?) : this(
-                "The asset seems corrupted so the publication cannot be opened.",
-                cause
-            )
-        }
-
-        /**
-         * The publication file was not found on the file system.
-         */
-        public class NotFound(cause: Error? = null) :
-            OpenError("Asset could not be found.", cause)
-
-        /**
-         * We're not allowed to open the publication at all, for example because it expired.
-         */
-        public class Forbidden(cause: Error? = null) :
-            OpenError("You are not allowed to open this publication.", cause)
-
-        /**
-         * The publication can't be opened at the moment, for example because of a networking error.
-         * This error is generally temporary, so the operation may be retried or postponed.
-         */
-        public class Unavailable(cause: Error? = null) :
-            OpenError("The publication is not available at the moment.", cause)
-
-        /**
-         * The provided credentials are incorrect and we can't open the publication in a
-         * `restricted` state (e.g. for a password-protected ZIP).
-         */
-        public class IncorrectCredentials(cause: Error? = null) :
-            OpenError("Provided credentials were incorrect.", cause)
-
-        /**
-         * Opening the publication exceeded the available device memory.
-         */
-        public class OutOfMemory(cause: Error? = null) :
-            OpenError("There is not enough memory available to open the publication.", cause)
-
-        /**
-         * An unexpected error occurred.
-         */
-        public class Unknown(cause: Error? = null) :
-            OpenError("An unexpected error occurred.", cause) {
-
-            public constructor(exception: Exception) : this(ThrowableError(exception))
-        }
-    }
-
-    /**
      * Builds a Publication from its components.
      *
      * A Publication's construction is distributed over the Streamer and its parsers,
@@ -575,7 +443,7 @@ public class Publication(
      */
     public class Builder(
         public var manifest: Manifest,
-        public var container: Container,
+        public var container: Container<Resource>,
         public var servicesBuilder: ServicesBuilder = ServicesBuilder()
     ) {
 
@@ -630,10 +498,10 @@ public class Publication(
         level = DeprecationLevel.ERROR
     )
     @Suppress("UNUSED_PARAMETER")
-    public fun resource(href: String): Link? = throw NotImplementedError()
+    public fun resource(href: String): Link = throw NotImplementedError()
 
     @Deprecated("Refactored as a property", ReplaceWith("baseUrl"), level = DeprecationLevel.ERROR)
-    public fun baseUrl(): URL? = throw NotImplementedError()
+    public fun baseUrl(): URL = throw NotImplementedError()
 
     @Deprecated(
         "Renamed [subcollections]",
@@ -658,7 +526,7 @@ public class Publication(
         level = DeprecationLevel.ERROR
     )
     @Suppress("UNUSED_PARAMETER")
-    public fun resourceWithHref(href: String): Link? = throw NotImplementedError()
+    public fun resourceWithHref(href: String): Link = throw NotImplementedError()
 
     @Deprecated(
         "Use a [ServiceFactory] for a [PositionsService] instead.",
@@ -704,15 +572,4 @@ public class Publication(
         level = DeprecationLevel.ERROR
     )
     public sealed class OpeningException
-}
-
-private fun Resource.withMediaType(mediaType: MediaType?): Resource {
-    if (mediaType == null) {
-        return this
-    }
-
-    return object : Resource by this {
-        override suspend fun mediaType(): ResourceTry<MediaType> =
-            ResourceTry.success(mediaType)
-    }
 }
