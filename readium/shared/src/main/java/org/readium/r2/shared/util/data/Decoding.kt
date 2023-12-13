@@ -100,15 +100,19 @@ public suspend fun ByteArray.decodeJson(): Try<JSONObject, DecodeError> =
  * Readium Web Publication Manifest parsed from the content.
  */
 public suspend fun ByteArray.decodeRwpm(): Try<Manifest, DecodeError> =
-    decodeJson().flatMap { json ->
-        Manifest.fromJSON(json)
-            ?.let { Try.success(it) }
-            ?: Try.failure(
-                DecodeError.Decoding(
-                    DebugError("Content is not a valid RWPM.")
-                )
-            )
-    }
+    decodeJson().flatMap { it.decodeRwpm() }
+
+/**
+ * Readium Web Publication Manifest parsed from JSON.
+ */
+public suspend fun JSONObject.decodeRwpm(): Try<Manifest, DecodeError> =
+    decode(
+        {
+            Manifest.fromJSON(this)
+                ?: throw Exception("Manifest.fromJSON returned null")
+        },
+        { DebugError("Content is not a valid RWPM.") }
+    )
 
 /**
  * Reads the full content as a [Bitmap].
