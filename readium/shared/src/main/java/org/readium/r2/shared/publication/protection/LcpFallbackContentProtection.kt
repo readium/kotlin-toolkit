@@ -28,7 +28,7 @@ public class LcpFallbackContentProtection : ContentProtection {
         asset: Asset,
         credentials: String?,
         allowUserInteraction: Boolean
-    ): Try<ContentProtection.Asset, ContentProtection.OpenError> {
+    ): Try<ContentProtection.OpenResult, ContentProtection.OpenError> {
         if (
             !asset.format.conformsTo(Format.EPUB_LCP) &&
             !asset.format.conformsTo(Format.RPF_LCP) &&
@@ -45,9 +45,8 @@ public class LcpFallbackContentProtection : ContentProtection {
             )
         }
 
-        val protectedFile = ContentProtection.Asset(
-            asset.format,
-            asset.container,
+        val protectedFile = ContentProtection.OpenResult(
+            asset = asset,
             onCreatePublication = {
                 servicesBuilder.contentProtectionServiceFactory =
                     FallbackContentProtectionService.createFactory(scheme, "Readium LCP")

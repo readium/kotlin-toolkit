@@ -17,7 +17,7 @@ import org.readium.r2.shared.util.Error
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.asset.Asset
 import org.readium.r2.shared.util.asset.AssetSniffer
-import org.readium.r2.shared.util.asset.ContainerAsset
+import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.format.FormatRegistry
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.http.HttpClient
@@ -65,7 +65,7 @@ public class PublicationFactory(
     ) : Error {
 
         public class Reading(
-            override val cause: org.readium.r2.shared.util.data.ReadError
+            override val cause: ReadError
         ) : OpenError("An error occurred while trying to read asset.", cause)
 
         public class FormatNotSupported(
@@ -91,9 +91,6 @@ public class PublicationFactory(
 
     private val parsers: List<PublicationParser> = parsers +
         if (!ignoreDefaultParsers) defaultParsers else emptyList()
-
-    private val parserAssetFactory: ParserAssetFactory =
-        ParserAssetFactory(httpClient, formatRegistry)
 
     /**
      * Opens a [Publication] from the given asset.
@@ -125,21 +122,12 @@ public class PublicationFactory(
         onCreatePublication: Publication.Builder.() -> Unit = {},
         warnings: WarningLogger? = null
     ): Try<Publication, OpenError> {
-        val compositeOnCreatePublication: Publication.Builder.() -> Unit = {
+        var compositeOnCreatePublication: Publication.Builder.() -> Unit = {
             this@PublicationFactory.onCreatePublication(this)
             onCreatePublication(this)
         }
 
-        parserAssetFactory.createParserAsset(asset)
-            .getOrElse {
-                when (it) {
-                    is ParserAssetFactory.CreateError.Reading ->
-                        return Try.failure(OpenError.Reading(it.cause))
-                    is ParserAssetFactory.CreateError.FormatNotSupported ->
-                        null
-                }
-            }
-            ?.let { openParserAsset(it, compositeOnCreatePublication, warnings) }
+        var transformedAsset: Asset = asset
 
         for (protection in contentProtections) {
             protection.open(asset, credentials, allowUserInteraction)
@@ -150,36 +138,16 @@ public class PublicationFactory(
                         is ContentProtection.OpenError.AssetNotSupported ->
                             null
                     }
-                }?.let { protectedAsset ->
-                    val parserAsset = PublicationParser.Asset(
-                        protectedAsset.format,
-                        protectedAsset.container
-                    )
-
-                    val fullOnCreatePublication: Publication.Builder.() -> Unit = {
-                        protectedAsset.onCreatePublication.invoke(this)
-                        onCreatePublication(this)
+                }?.let { openResult ->
+                    transformedAsset = openResult.asset
+                    compositeOnCreatePublication = {
+                        openResult.onCreatePublication.invoke(this)
+                        compositeOnCreatePublication(this)
                     }
-
-                    return openParserAsset(parserAsset, fullOnCreatePublication)
                 }
         }
 
-        if (asset !is ContainerAsset) {
-            return Try.failure(OpenError.FormatNotSupported())
-        }
-
-        val parserAsset = PublicationParser.Asset(asset.format, asset.container)
-
-        return openParserAsset(parserAsset, compositeOnCreatePublication, warnings)
-    }
-
-    private suspend fun openParserAsset(
-        publicationAsset: PublicationParser.Asset,
-        onCreatePublication: Publication.Builder.() -> Unit = {},
-        warnings: WarningLogger? = null
-    ): Try<Publication, OpenError> {
-        val builder = parse(publicationAsset, warnings)
+        val builder = parse(transformedAsset, warnings)
             .getOrElse { return Try.failure(wrapParserException(it)) }
 
         builder.apply(onCreatePublication)
@@ -189,7 +157,7 @@ public class PublicationFactory(
     }
 
     private suspend fun parse(
-        publicationAsset: PublicationParser.Asset,
+        publicationAsset: Asset,
         warnings: WarningLogger?
     ): Try<Publication.Builder, PublicationParser.Error> {
         for (parser in parsers) {

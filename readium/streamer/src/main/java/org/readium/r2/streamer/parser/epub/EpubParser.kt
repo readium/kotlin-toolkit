@@ -17,6 +17,8 @@ import org.readium.r2.shared.publication.services.search.StringSearchService
 import org.readium.r2.shared.util.DebugError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.asset.Asset
+import org.readium.r2.shared.util.asset.ContainerAsset
 import org.readium.r2.shared.util.data.Container
 import org.readium.r2.shared.util.data.DecodeError
 import org.readium.r2.shared.util.data.ReadError
@@ -47,10 +49,10 @@ public class EpubParser(
 ) : PublicationParser {
 
     override suspend fun parse(
-        asset: PublicationParser.Asset,
+        asset: Asset,
         warnings: WarningLogger?
     ): Try<Publication.Builder, PublicationParser.Error> {
-        if (!asset.format.conformsTo(Format.EPUB)) {
+        if (asset !is ContainerAsset || !asset.format.conformsTo(Format.EPUB)) {
             return Try.failure(PublicationParser.Error.FormatNotSupported())
         }
 

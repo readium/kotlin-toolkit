@@ -14,10 +14,9 @@ import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.services.ContentProtectionService
 import org.readium.r2.shared.util.Error
 import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.asset.Asset
 import org.readium.r2.shared.util.data.Container
 import org.readium.r2.shared.util.data.ReadError
-import org.readium.r2.shared.util.format.Format
-import org.readium.r2.shared.util.resource.Resource
 
 /**
  * Bridge between a Content Protection technology and the Readium toolkit.
@@ -42,6 +41,19 @@ public interface ContentProtection {
         ) : OpenError("Asset is not supported.", cause)
     }
 
+    /**
+     * Holds the result of opening an [OpenResult] with a [ContentProtection].
+     *
+     * @property asset Asset pointing to a publication.
+     * @property onCreatePublication Called on every parsed Publication.Builder
+     * It can be used to modify the `Manifest`, the root [Container] or the list of service
+     * factories of a [Publication].
+     */
+    public data class OpenResult(
+        val asset: Asset,
+        val onCreatePublication: Publication.Builder.() -> Unit = {}
+    )
+
     public val scheme: Scheme
 
     /**
@@ -51,25 +63,10 @@ public interface ContentProtection {
      * asset can't be successfully opened even in restricted mode.
      */
     public suspend fun open(
-        asset: org.readium.r2.shared.util.asset.Asset,
+        asset: Asset,
         credentials: String?,
         allowUserInteraction: Boolean
-    ): Try<Asset, OpenError>
-
-    /**
-     * Holds the result of opening an [Asset] with a [ContentProtection].
-     *
-     * @property format Format of the asset
-     * @property container Container to access the publication through
-     * @property onCreatePublication Called on every parsed Publication.Builder
-     * It can be used to modify the `Manifest`, the root [Container] or the list of service
-     * factories of a [Publication].
-     */
-    public data class Asset(
-        val format: Format,
-        val container: Container<Resource>,
-        val onCreatePublication: Publication.Builder.() -> Unit = {}
-    )
+    ): Try<OpenResult, OpenError>
 
     /**
      * Represents a specific Content Protection technology, uniquely identified with an [uri].

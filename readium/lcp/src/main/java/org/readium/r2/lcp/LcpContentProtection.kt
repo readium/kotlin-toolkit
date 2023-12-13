@@ -39,7 +39,7 @@ internal class LcpContentProtection(
         asset: Asset,
         credentials: String?,
         allowUserInteraction: Boolean
-    ): Try<ContentProtection.Asset, ContentProtection.OpenError> {
+    ): Try<ContentProtection.OpenResult, ContentProtection.OpenError> {
         if (
             !asset.format.conformsTo(Format.EPUB_LCP) &&
             !asset.format.conformsTo(Format.RPF_LCP) &&
@@ -61,7 +61,7 @@ internal class LcpContentProtection(
         asset: ContainerAsset,
         credentials: String?,
         allowUserInteraction: Boolean
-    ): Try<ContentProtection.Asset, ContentProtection.OpenError> {
+    ): Try<ContentProtection.OpenResult, ContentProtection.OpenError> {
         val license = retrieveLicense(asset, credentials, allowUserInteraction)
         return createResultAsset(asset, license)
     }
@@ -81,7 +81,7 @@ internal class LcpContentProtection(
     private fun createResultAsset(
         asset: ContainerAsset,
         license: Try<LcpLicense, LcpError>
-    ): Try<ContentProtection.Asset, ContentProtection.OpenError> {
+    ): Try<ContentProtection.OpenResult, ContentProtection.OpenError> {
         val serviceFactory = LcpContentProtectionService
             .createFactory(license.getOrNull(), license.failureOrNull())
 
@@ -89,9 +89,11 @@ internal class LcpContentProtection(
 
         val container = TransformingContainer(asset.container, decryptor::transform)
 
-        val protectedFile = ContentProtection.Asset(
-            format = asset.format,
-            container = container,
+        val protectedFile = ContentProtection.OpenResult(
+            asset = ContainerAsset(
+                format = asset.format,
+                container = container
+            ),
             onCreatePublication = {
                 decryptor.encryptionData = (manifest.readingOrder + manifest.resources + manifest.links)
                     .flatten()
@@ -111,7 +113,7 @@ internal class LcpContentProtection(
         licenseAsset: ResourceAsset,
         credentials: String?,
         allowUserInteraction: Boolean
-    ): Try<ContentProtection.Asset, ContentProtection.OpenError> {
+    ): Try<ContentProtection.OpenResult, ContentProtection.OpenError> {
         val license = retrieveLicense(licenseAsset, credentials, allowUserInteraction)
 
         val licenseDoc = license.getOrNull()?.license

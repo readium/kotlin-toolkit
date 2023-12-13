@@ -8,28 +8,13 @@ package org.readium.r2.streamer.parser
 
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.util.Try
-import org.readium.r2.shared.util.data.Container
-import org.readium.r2.shared.util.format.Format
+import org.readium.r2.shared.util.asset.Asset
 import org.readium.r2.shared.util.logging.WarningLogger
-import org.readium.r2.shared.util.resource.Resource
 
 /**
  *  Parses a Publication from an asset.
  */
 public interface PublicationParser {
-
-    /**
-     * Full publication asset.
-     *
-     * @param format Format of the "virtual" publication asset, built from the source asset.
-     * For example, if the source asset media type was a `application/audiobook+json`, the "virtual" asset
-     * media type will be `application/audiobook+zip`.
-     * @param container Container granting access to the resources of the publication.
-     */
-    public data class Asset(
-        val format: Format,
-        val container: Container<Resource>
-    )
 
     /**
      * Constructs a [Publication.Builder] to build a [Publication] from a publication asset.

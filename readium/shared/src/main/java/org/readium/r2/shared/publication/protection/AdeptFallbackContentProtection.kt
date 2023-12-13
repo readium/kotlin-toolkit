@@ -27,14 +27,13 @@ public class AdeptFallbackContentProtection : ContentProtection {
         asset: Asset,
         credentials: String?,
         allowUserInteraction: Boolean
-    ): Try<ContentProtection.Asset, ContentProtection.OpenError> {
+    ): Try<ContentProtection.OpenResult, ContentProtection.OpenError> {
         if (asset !is ContainerAsset || !asset.format.conformsTo(Format.EPUB_ADEPT)) {
             return Try.failure(ContentProtection.OpenError.AssetNotSupported())
         }
 
-        val protectedFile = ContentProtection.Asset(
-            asset.format,
-            asset.container,
+        val protectedFile = ContentProtection.OpenResult(
+            asset = asset,
             onCreatePublication = {
                 servicesBuilder.contentProtectionServiceFactory =
                     FallbackContentProtectionService.createFactory(scheme, "Adobe ADEPT")

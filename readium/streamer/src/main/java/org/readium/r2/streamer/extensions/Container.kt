@@ -10,7 +10,12 @@
 package org.readium.r2.streamer.extensions
 
 import java.io.File
+import org.readium.r2.shared.extensions.addPrefix
 import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.data.Container
+import org.readium.r2.shared.util.format.FileExtension
+import org.readium.r2.shared.util.resource.Resource
+import org.readium.r2.shared.util.resource.SingleResourceContainer
 
 internal fun Iterable<Url>.guessTitle(): String? {
     val firstEntry = firstOrNull() ?: return null
@@ -30,3 +35,20 @@ internal fun Iterable<Url>.pathCommonFirstComponent(): File? =
         .takeIf { it.size == 1 }
         ?.firstOrNull()
         ?.let { File(it) }
+
+internal fun Resource.toContainer(
+    entryExtension: FileExtension? = sourceUrl?.extension?.let { FileExtension((it)) }
+): Container<Resource> {
+    // Historically, the reading order of a standalone file contained a single link with the
+    // HREF "/$assetName". This was fragile if the asset named changed, or was different on
+    // other devices. To avoid this, we now use a single link with the HREF
+    // "publication.extension".
+    val extension = entryExtension?.value
+        ?.addPrefix(".")
+        ?: ""
+
+    return SingleResourceContainer(
+        Url("publication$extension")!!,
+        this
+    )
+}

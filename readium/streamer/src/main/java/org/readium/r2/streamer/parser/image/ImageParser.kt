@@ -15,7 +15,10 @@ import org.readium.r2.shared.publication.services.PerResourcePositionsService
 import org.readium.r2.shared.util.DebugError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.asset.Asset
 import org.readium.r2.shared.util.asset.AssetSniffer
+import org.readium.r2.shared.util.asset.ContainerAsset
+import org.readium.r2.shared.util.asset.ResourceAsset
 import org.readium.r2.shared.util.asset.SniffError
 import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.format.Format
@@ -26,6 +29,7 @@ import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.use
 import org.readium.r2.streamer.extensions.guessTitle
 import org.readium.r2.streamer.extensions.isHiddenOrThumbs
+import org.readium.r2.streamer.extensions.toContainer
 import org.readium.r2.streamer.parser.PublicationParser
 
 /**
@@ -40,20 +44,27 @@ public class ImageParser(
 ) : PublicationParser {
 
     override suspend fun parse(
-        asset: PublicationParser.Asset,
+        asset: Asset,
         warnings: WarningLogger?
     ): Try<Publication.Builder, PublicationParser.Error> {
         if (!asset.format.conformsTo(Format.CBZ) && formatRegistry[asset.format]?.mediaType?.isBitmap != true) {
             return Try.failure(PublicationParser.Error.FormatNotSupported())
         }
 
+        val container = when (asset) {
+            is ResourceAsset ->
+                asset.resource.toContainer()
+            is ContainerAsset ->
+                asset.container
+        }
+
         val readingOrder =
             if (asset.format.conformsTo(Format.CBZ)) {
-                (asset.container)
+                (container)
                     .filter { cbzCanContain(it) }
                     .sortedBy { it.toString() }
             } else {
-                listOfNotNull(asset.container.firstOrNull())
+                listOfNotNull(container.firstOrNull())
             }
 
         if (readingOrder.isEmpty()) {
@@ -67,7 +78,7 @@ public class ImageParser(
         }
 
         val readingOrderLinks = readingOrder.map { url ->
-            val mediaType = asset.container[url]!!.use { resource ->
+            val mediaType = container[url]!!.use { resource ->
                 assetSniffer.sniff(resource)
                     .map { formatRegistry[it]?.mediaType }
                     .getOrElse { error ->
@@ -88,14 +99,14 @@ public class ImageParser(
         val manifest = Manifest(
             metadata = Metadata(
                 conformsTo = setOf(Publication.Profile.DIVINA),
-                localizedTitle = asset.container.guessTitle()?.let { LocalizedString(it) }
+                localizedTitle = container.guessTitle()?.let { LocalizedString(it) }
             ),
             readingOrder = readingOrderLinks
         )
 
         val publicationBuilder = Publication.Builder(
             manifest = manifest,
-            container = asset.container,
+            container = container,
             servicesBuilder = Publication.ServicesBuilder(
                 positions = PerResourcePositionsService.createFactory(
                     fallbackMediaType = MediaType("image/*")!!
