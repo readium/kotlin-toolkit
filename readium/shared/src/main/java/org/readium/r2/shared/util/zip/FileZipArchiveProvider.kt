@@ -21,6 +21,7 @@ import org.readium.r2.shared.util.data.Container
 import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.file.FileSystemError
 import org.readium.r2.shared.util.format.Format
+import org.readium.r2.shared.util.format.Trait
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.resource.Resource
 
@@ -56,7 +57,7 @@ internal class FileZipArchiveProvider {
         format: Format,
         file: File
     ): Try<Container<Resource>, ArchiveOpener.OpenError> {
-        if (!format.conformsTo(Format.ZIP)) {
+        if (!format.conformsTo(Trait.ZIP)) {
             return Try.failure(
                 ArchiveOpener.OpenError.FormatNotSupported(format)
             )

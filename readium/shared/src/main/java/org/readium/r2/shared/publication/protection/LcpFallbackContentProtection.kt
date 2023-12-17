@@ -12,7 +12,7 @@ import org.readium.r2.shared.publication.services.contentProtectionServiceFactor
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.asset.Asset
 import org.readium.r2.shared.util.asset.ContainerAsset
-import org.readium.r2.shared.util.format.Format
+import org.readium.r2.shared.util.format.Trait
 
 /**
  * [ContentProtection] implementation used as a fallback by the Streamer to detect LCP DRM
@@ -30,11 +30,7 @@ public class LcpFallbackContentProtection : ContentProtection {
         allowUserInteraction: Boolean
     ): Try<ContentProtection.OpenResult, ContentProtection.OpenError> {
         if (
-            !asset.format.conformsTo(Format.EPUB_LCP) &&
-            !asset.format.conformsTo(Format.RPF_LCP) &&
-            !asset.format.conformsTo(Format.RPF_AUDIO_LCP) &&
-            !asset.format.conformsTo(Format.RPF_IMAGE_LCP) &&
-            !asset.format.conformsTo(Format.RPF_PDF_LCP)
+            !asset.format.conformsTo(Trait.LCP_PROTECTED)
         ) {
             return Try.failure(ContentProtection.OpenError.AssetNotSupported())
         }

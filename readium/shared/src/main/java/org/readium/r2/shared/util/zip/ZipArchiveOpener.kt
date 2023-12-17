@@ -29,7 +29,9 @@ public class ZipArchiveOpener : ArchiveOpener {
             ?.let { fileZipArchiveProvider.open(format, it) }
             ?: streamingZipArchiveProvider.open(format, source)
 
-    override suspend fun sniffOpen(source: Readable): Try<ContainerAsset, SniffError> {
+    override suspend fun sniffOpen(
+        source: Readable
+    ): Try<ContainerAsset, SniffError> {
         (source as? Resource)?.sourceUrl?.toFile()
             ?.let { return fileZipArchiveProvider.sniff(it) }
 

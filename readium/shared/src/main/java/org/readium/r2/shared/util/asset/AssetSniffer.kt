@@ -34,7 +34,6 @@ import org.readium.r2.shared.util.format.RarSniffer
 import org.readium.r2.shared.util.format.RpfSniffer
 import org.readium.r2.shared.util.format.RwpmSniffer
 import org.readium.r2.shared.util.format.W3cWpubSniffer
-import org.readium.r2.shared.util.format.XhtmlSniffer
 import org.readium.r2.shared.util.format.ZipSniffer
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.resource.Resource
@@ -59,7 +58,6 @@ public class AssetSniffer(
             ArchiveSniffer,
             RpfSniffer,
             PdfSniffer,
-            XhtmlSniffer,
             HtmlSniffer,
             BitmapSniffer,
             JsonSniffer,

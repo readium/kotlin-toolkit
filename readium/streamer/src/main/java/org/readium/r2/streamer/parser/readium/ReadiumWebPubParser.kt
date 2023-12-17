@@ -26,6 +26,7 @@ import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.data.decodeRwpm
 import org.readium.r2.shared.util.data.readDecodeOrElse
 import org.readium.r2.shared.util.format.Format
+import org.readium.r2.shared.util.format.Trait
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.http.HttpClient
 import org.readium.r2.shared.util.http.HttpContainer
@@ -50,13 +51,21 @@ public class ReadiumWebPubParser(
         asset: Asset,
         warnings: WarningLogger?
     ): Try<Publication.Builder, PublicationParser.Error> {
-        if (asset is ResourceAsset && asset.format.conformsTo(Format.RWPM)) {
+        if (
+            asset is ResourceAsset &&
+            (
+                asset.format.conformsTo(Format.READIUM_WEBPUB_MANIFEST) ||
+                    asset.format.conformsTo(Trait.READIUM_PDF_MANIFEST) ||
+                    asset.format.conformsTo(Trait.READIUM_AUDIOBOOK_MANIFEST) ||
+                    asset.format.conformsTo(Trait.READIUM_COMICS_MANIFEST)
+                )
+        ) {
             val packageAsset = createPackage(asset)
                 .getOrElse { return Try.failure(it) }
             return parse(packageAsset, warnings)
         }
 
-        if (asset !is ContainerAsset || !asset.format.conformsTo(Format.RPF)) {
+        if (asset !is ContainerAsset || !asset.format.conformsTo(Trait.RPF)) {
             return Try.failure(PublicationParser.Error.FormatNotSupported())
         }
 
@@ -78,7 +87,7 @@ public class ReadiumWebPubParser(
         // Checks the requirements from the LCPDF specification.
         // https://readium.org/lcp-specs/notes/lcp-for-pdf.html
         val readingOrder = manifest.readingOrder
-        if (asset.format.conformsTo(Format.RPF_PDF_LCP) &&
+        if (asset.format.conformsTo(Trait.PDFBOOK) && asset.format.conformsTo(Trait.LCP_PROTECTED) &&
             (readingOrder.isEmpty() || !readingOrder.all { MediaType.PDF.matches(it.mediaType) })
         ) {
             return Try.failure(
@@ -91,17 +100,19 @@ public class ReadiumWebPubParser(
         val servicesBuilder = Publication.ServicesBuilder().apply {
             cacheServiceFactory = InMemoryCacheService.createFactory(context)
 
-            positionsServiceFactory = when (asset.format) {
-                Format.RPF_PDF_LCP ->
+            positionsServiceFactory = when {
+                asset.format.conformsTo(Trait.PDFBOOK) && asset.format.conformsTo(
+                    Trait.LCP_PROTECTED
+                ) ->
                     pdfFactory?.let { LcpdfPositionsService.create(it) }
-                Format.RPF_IMAGE ->
+                asset.format.conformsTo(Trait.COMICS) ->
                     PerResourcePositionsService.createFactory(MediaType("image/*")!!)
                 else ->
                     WebPositionsService.createFactory(httpClient)
             }
 
             locatorServiceFactory = when {
-                asset.format.conformsTo(Format.RPF_AUDIO) ->
+                asset.format.conformsTo(Trait.AUDIOBOOK) ->
                     AudioLocatorService.createFactory()
                 else ->
                     null
@@ -154,7 +165,18 @@ public class ReadiumWebPubParser(
 
         return Try.success(
             ContainerAsset(
-                format = Format.RPF,
+                format = when {
+                    asset.format.conformsTo(Trait.READIUM_AUDIOBOOK_MANIFEST) ->
+                        Format.READIUM_AUDIOBOOK
+                    asset.format.conformsTo(Trait.READIUM_COMICS_MANIFEST) ->
+                        Format.READIUM_COMICS
+                    asset.format.conformsTo(Trait.READIUM_WEBPUB_MANIFEST) ->
+                        Format.READIUM_WEBPUB
+                    asset.format.conformsTo(Trait.READIUM_PDF_MANIFEST) ->
+                        Format.READIUM_PDF
+                    else ->
+                        throw IllegalStateException()
+                },
                 container = container
             )
         )

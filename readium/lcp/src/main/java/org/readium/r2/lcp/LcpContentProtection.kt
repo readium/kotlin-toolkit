@@ -23,6 +23,7 @@ import org.readium.r2.shared.util.asset.ResourceAsset
 import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.flatMap
 import org.readium.r2.shared.util.format.Format
+import org.readium.r2.shared.util.format.Trait
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.resource.TransformingContainer
 
@@ -41,11 +42,7 @@ internal class LcpContentProtection(
         allowUserInteraction: Boolean
     ): Try<ContentProtection.OpenResult, ContentProtection.OpenError> {
         if (
-            !asset.format.conformsTo(Format.EPUB_LCP) &&
-            !asset.format.conformsTo(Format.RPF_LCP) &&
-            !asset.format.conformsTo(Format.RPF_AUDIO_LCP) &&
-            !asset.format.conformsTo(Format.RPF_IMAGE_LCP) &&
-            !asset.format.conformsTo(Format.RPF_PDF_LCP) &&
+            !asset.format.conformsTo(Trait.LCP_PROTECTED) &&
             !asset.format.conformsTo(Format.LCP_LICENSE_DOCUMENT)
         ) {
             return Try.failure(ContentProtection.OpenError.AssetNotSupported())

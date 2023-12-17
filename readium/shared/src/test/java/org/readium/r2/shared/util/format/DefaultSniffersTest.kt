@@ -33,7 +33,7 @@ class DefaultSniffersTest {
     @Test
     fun `Sniff Adobe ADEPT`() = runBlocking {
         assertEquals(
-            Format.EPUB_ADEPT,
+            Format.EPUB + Trait.ADEPT_PROTECTED,
             AdeptSniffer.sniffContainer(
                 format = Format.EPUB,
                 container = TestContainer(
@@ -56,7 +56,7 @@ class DefaultSniffersTest {
     @Test
     fun `Sniff Adobe ADEPT from rights xml`() = runBlocking {
         assertEquals(
-            Format.EPUB_ADEPT,
+            Format.EPUB + Trait.ADEPT_PROTECTED,
             AdeptSniffer.sniffContainer(
                 format = Format.EPUB,
                 container = TestContainer(
@@ -84,9 +84,9 @@ class DefaultSniffersTest {
     @Test
     fun `Sniff LCP protected Readium package`() = runBlocking {
         assertEquals(
-            Format.RPF_LCP,
+            Format.READIUM_WEBPUB + Trait.LCP_PROTECTED,
             LcpSniffer.sniffContainer(
-                format = Format.RPF,
+                format = Format.READIUM_WEBPUB,
                 container = TestContainer(Url("license.lcpl")!! to "{}")
             ).checkSuccess()
         )
@@ -95,7 +95,7 @@ class DefaultSniffersTest {
     @Test
     fun `Sniff LCP protected EPUB`() = runBlocking {
         assertEquals(
-            Format.EPUB_LCP,
+            Format.EPUB + Trait.LCP_PROTECTED,
             LcpSniffer.sniffContainer(
                 format = Format.EPUB,
                 container = TestContainer(Url("META-INF/license.lcpl")!! to "{}")
@@ -106,7 +106,7 @@ class DefaultSniffersTest {
     @Test
     fun `Sniff LCP protected EPUB missing the license`() = runBlocking {
         assertEquals(
-            Format.EPUB_LCP,
+            Format.EPUB + Trait.LCP_PROTECTED,
             LcpSniffer.sniffContainer(
                 format = Format.EPUB,
                 container = TestContainer(

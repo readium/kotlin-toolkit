@@ -12,7 +12,7 @@ import org.readium.r2.shared.publication.services.contentProtectionServiceFactor
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.asset.Asset
 import org.readium.r2.shared.util.asset.ContainerAsset
-import org.readium.r2.shared.util.format.Format
+import org.readium.r2.shared.util.format.Trait
 
 /**
  * [ContentProtection] implementation used as a fallback by the Streamer to detect Adept DRM,
@@ -28,7 +28,7 @@ public class AdeptFallbackContentProtection : ContentProtection {
         credentials: String?,
         allowUserInteraction: Boolean
     ): Try<ContentProtection.OpenResult, ContentProtection.OpenError> {
-        if (asset !is ContainerAsset || !asset.format.conformsTo(Format.EPUB_ADEPT)) {
+        if (asset !is ContainerAsset || !asset.format.conformsTo(Trait.ADEPT_PROTECTED)) {
             return Try.failure(ContentProtection.OpenError.AssetNotSupported())
         }
 

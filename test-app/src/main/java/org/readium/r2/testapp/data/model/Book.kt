@@ -57,7 +57,7 @@ data class Book(
         author = author,
         identifier = identifier,
         progression = progression,
-        formatId = format.id,
+        formatId = format.toString(),
         rawMediaType = mediaType.toString(),
         cover = cover
     )

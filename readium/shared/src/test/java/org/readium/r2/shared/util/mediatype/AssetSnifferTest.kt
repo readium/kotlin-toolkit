@@ -19,6 +19,7 @@ import org.readium.r2.shared.util.data.EmptyContainer
 import org.readium.r2.shared.util.format.FileExtension
 import org.readium.r2.shared.util.format.Format
 import org.readium.r2.shared.util.format.FormatHints
+import org.readium.r2.shared.util.format.Trait
 import org.readium.r2.shared.util.resource.StringResource
 import org.robolectric.RobolectricTestRunner
 
@@ -72,7 +73,7 @@ class AssetSnifferTest {
             SniffError.NotRecognized
         )
         assertEquals(
-            Format.RPF_AUDIO,
+            Format.READIUM_AUDIOBOOK,
             sniffer.sniffFileExtension("audiobook").checkSuccess()
         )
         assertEquals(
@@ -80,11 +81,11 @@ class AssetSnifferTest {
             SniffError.NotRecognized
         )
         assertEquals(
-            Format.RPF_AUDIO,
+            Format.READIUM_AUDIOBOOK,
             sniffer.sniffMediaType("application/audiobook+zip").checkSuccess()
         )
         assertEquals(
-            Format.RPF_AUDIO,
+            Format.READIUM_AUDIOBOOK,
             sniffer.sniffHints(
                 FormatHints(
                     mediaTypes = listOf("application/audiobook+zip"),
@@ -97,7 +98,7 @@ class AssetSnifferTest {
     @Test
     fun `sniff from bytes`() = runBlocking {
         assertEquals(
-            Format.RWPM_AUDIO,
+            Format.READIUM_AUDIOBOOK_MANIFEST,
             sniffer.sniff(fixtures.fileAt("audiobook.json")).checkSuccess()
         )
     }
@@ -117,15 +118,15 @@ class AssetSnifferTest {
     @Test
     fun `sniff audiobook`() = runBlocking {
         assertEquals(
-            Format.RPF_AUDIO,
+            Format.READIUM_AUDIOBOOK,
             sniffer.sniffFileExtension("audiobook").checkSuccess()
         )
         assertEquals(
-            Format.RPF_AUDIO,
+            Format.READIUM_AUDIOBOOK,
             sniffer.sniffMediaType("application/audiobook+zip").checkSuccess()
         )
         assertEquals(
-            Format.RPF_AUDIO,
+            Format.READIUM_AUDIOBOOK,
             sniffer.sniff(fixtures.fileAt("audiobook-package.unknown")).checkSuccess()
         )
     }
@@ -133,15 +134,15 @@ class AssetSnifferTest {
     @Test
     fun `sniff audiobook manifest`() = runBlocking {
         assertEquals(
-            Format.RWPM_AUDIO,
+            Format.READIUM_AUDIOBOOK_MANIFEST,
             sniffer.sniffMediaType("application/audiobook+json").checkSuccess()
         )
         assertEquals(
-            Format.RWPM_AUDIO,
+            Format.READIUM_AUDIOBOOK_MANIFEST,
             sniffer.sniff(fixtures.fileAt("audiobook.json")).checkSuccess()
         )
         assertEquals(
-            Format.RWPM_AUDIO,
+            Format.READIUM_AUDIOBOOK_MANIFEST,
             sniffer.sniff(fixtures.fileAt("audiobook-wrongtype.json")).checkSuccess()
         )
     }
@@ -181,15 +182,15 @@ class AssetSnifferTest {
     @Test
     fun `sniff DiViNa`() = runBlocking {
         assertEquals(
-            Format.RPF_IMAGE,
+            Format.READIUM_COMICS,
             sniffer.sniffFileExtension("divina").checkSuccess()
         )
         assertEquals(
-            Format.RPF_IMAGE,
+            Format.READIUM_COMICS,
             sniffer.sniffMediaType("application/divina+zip").checkSuccess()
         )
         assertEquals(
-            Format.RPF_IMAGE,
+            Format.READIUM_COMICS,
             sniffer.sniff(fixtures.fileAt("divina-package.unknown")).checkSuccess()
         )
     }
@@ -197,11 +198,11 @@ class AssetSnifferTest {
     @Test
     fun `sniff DiViNa manifest`() = runBlocking {
         assertEquals(
-            Format.RWPM_IMAGE,
+            Format.READIUM_COMICS_MANIFEST,
             sniffer.sniffMediaType("application/divina+json").checkSuccess()
         )
         assertEquals(
-            Format.RWPM_IMAGE,
+            Format.READIUM_COMICS_MANIFEST,
             sniffer.sniff(fixtures.fileAt("divina.json")).checkSuccess()
         )
     }
@@ -318,7 +319,7 @@ class AssetSnifferTest {
     @Test
     fun `sniff OPDS 1 feed`() = runBlocking {
         assertEquals(
-            Format.OPDS1,
+            Format.OPDS1_CATALOG,
             sniffer.sniffMediaType("application/atom+xml;profile=opds-catalog").checkSuccess()
         )
         assertEquals(
@@ -330,7 +331,7 @@ class AssetSnifferTest {
             sniffer.sniffMediaType("application/atom+xml;profile=opds-catalog;kind=acquisition").checkSuccess()
         )
         assertEquals(
-            Format.OPDS1,
+            Format.OPDS1_CATALOG,
             sniffer.sniff(fixtures.fileAt("opds1-feed.unknown")).checkSuccess()
         )
     }
@@ -350,11 +351,11 @@ class AssetSnifferTest {
     @Test
     fun `sniff OPDS 2 feed`() = runBlocking {
         assertEquals(
-            Format.OPDS2,
+            Format.OPDS2_CATALOG,
             sniffer.sniffMediaType("application/opds+json").checkSuccess()
         )
         assertEquals(
-            Format.OPDS2,
+            Format.OPDS2_CATALOG,
             sniffer.sniff(fixtures.fileAt("opds2-feed.json")).checkSuccess()
         )
     }
@@ -390,15 +391,15 @@ class AssetSnifferTest {
     @Test
     fun `sniff LCP protected audiobook`() = runBlocking {
         assertEquals(
-            Format.RPF_AUDIO_LCP,
+            Format.READIUM_AUDIOBOOK + Trait.LCP_PROTECTED,
             sniffer.sniffFileExtension("lcpa").checkSuccess()
         )
         assertEquals(
-            Format.RPF_AUDIO_LCP,
+            Format.READIUM_AUDIOBOOK + Trait.LCP_PROTECTED,
             sniffer.sniffMediaType("application/audiobook+lcp").checkSuccess()
         )
         assertEquals(
-            Format.RPF_AUDIO_LCP,
+            Format.READIUM_AUDIOBOOK + Trait.LCP_PROTECTED,
             sniffer.sniff(fixtures.fileAt("audiobook-lcp.unknown")).checkSuccess()
         )
     }
@@ -406,15 +407,15 @@ class AssetSnifferTest {
     @Test
     fun `sniff LCP protected PDF`() = runBlocking {
         assertEquals(
-            Format.RPF_PDF_LCP,
+            Format.READIUM_PDF + Trait.LCP_PROTECTED,
             sniffer.sniffFileExtension("lcpdf").checkSuccess()
         )
         assertEquals(
-            Format.RPF_PDF_LCP,
+            Format.READIUM_PDF + Trait.LCP_PROTECTED,
             sniffer.sniffMediaType("application/pdf+lcp").checkSuccess()
         )
         assertEquals(
-            Format.RPF_PDF_LCP,
+            Format.READIUM_PDF + Trait.LCP_PROTECTED,
             sniffer.sniff(fixtures.fileAt("pdf-lcp.unknown")).checkSuccess()
         )
     }
@@ -438,19 +439,19 @@ class AssetSnifferTest {
     @Test
     fun `sniff LPF`() = runBlocking {
         assertEquals(
-            Format.LPF,
+            Format(setOf(Trait.ZIP, Trait.LPF)),
             sniffer.sniffFileExtension("lpf").checkSuccess()
         )
         assertEquals(
-            Format.LPF,
+            Format(setOf(Trait.ZIP, Trait.LPF)),
             sniffer.sniffMediaType("application/lpf+zip").checkSuccess()
         )
         assertEquals(
-            Format.LPF,
+            Format(setOf(Trait.ZIP, Trait.LPF)),
             sniffer.sniff(fixtures.fileAt("lpf.unknown")).checkSuccess()
         )
         assertEquals(
-            Format.LPF,
+            Format(setOf(Trait.ZIP, Trait.LPF)),
             sniffer.sniff(fixtures.fileAt("lpf-index-html.unknown")).checkSuccess()
         )
     }
@@ -494,15 +495,15 @@ class AssetSnifferTest {
     @Test
     fun `sniff WebPub`() = runBlocking {
         assertEquals(
-            Format.RPF,
+            Format.READIUM_WEBPUB,
             sniffer.sniffFileExtension("webpub").checkSuccess()
         )
         assertEquals(
-            Format.RPF,
+            Format.READIUM_WEBPUB,
             sniffer.sniffMediaType("application/webpub+zip").checkSuccess()
         )
         assertEquals(
-            Format.RPF,
+            Format.READIUM_WEBPUB,
             sniffer.sniff(fixtures.fileAt("webpub-package.unknown")).checkSuccess()
         )
     }
@@ -510,11 +511,11 @@ class AssetSnifferTest {
     @Test
     fun `sniff WebPub manifest`() = runBlocking {
         assertEquals(
-            Format.RWPM,
+            Format.READIUM_WEBPUB_MANIFEST,
             sniffer.sniffMediaType("application/webpub+json").checkSuccess()
         )
         assertEquals(
-            Format.RWPM,
+            Format.READIUM_WEBPUB_MANIFEST,
             sniffer.sniff(fixtures.fileAt("webpub.json")).checkSuccess()
         )
     }
@@ -522,7 +523,7 @@ class AssetSnifferTest {
     @Test
     fun `sniff W3C WPUB manifest`() = runBlocking {
         assertEquals(
-            Format.W3C_WPUB_MANIFEST,
+            Format(setOf(Trait.JSON, Trait.W3C_PUB_MANIFEST)),
             sniffer.sniff(fixtures.fileAt("w3c-wpub.json")).checkSuccess()
         )
     }
