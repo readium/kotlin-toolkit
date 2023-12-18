@@ -39,9 +39,6 @@ internal class LcpContentProtection(
     private val assetOpener: AssetOpener
 ) : ContentProtection {
 
-    override val scheme: ContentProtection.Scheme =
-        ContentProtection.Scheme.Lcp
-
     override suspend fun open(
         asset: Asset,
         credentials: String?,

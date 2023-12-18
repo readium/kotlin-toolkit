@@ -19,33 +19,32 @@ import org.readium.r2.shared.util.format.Trait
  * if it is not supported by the app.
  */
 @InternalReadiumApi
-public class LcpFallbackContentProtection : ContentProtection {
-
-    override val scheme: Scheme =
-        Scheme.Lcp
+public class FallbackContentProtection : ContentProtection {
 
     override suspend fun open(
         asset: Asset,
         credentials: String?,
         allowUserInteraction: Boolean
     ): Try<ContentProtection.OpenResult, ContentProtection.OpenError> {
-        if (
-            !asset.format.conformsTo(Trait.LCP_PROTECTED)
-        ) {
-            return Try.failure(ContentProtection.OpenError.AssetNotSupported())
-        }
-
         if (asset !is ContainerAsset) {
             return Try.failure(
                 ContentProtection.OpenError.AssetNotSupported()
             )
         }
 
+        val protectionServiceFactory = when {
+            asset.format.conformsTo(Trait.LCP_PROTECTED) ->
+                FallbackContentProtectionService.createFactory(Scheme.Lcp, "Readium LCP")
+            asset.format.conformsTo(Trait.ADEPT_PROTECTED) ->
+                FallbackContentProtectionService.createFactory(Scheme.Adept, "Adobe ADEPT")
+            else ->
+                return Try.failure(ContentProtection.OpenError.AssetNotSupported())
+        }
+
         val protectedFile = ContentProtection.OpenResult(
             asset = asset,
             onCreatePublication = {
-                servicesBuilder.contentProtectionServiceFactory =
-                    FallbackContentProtectionService.createFactory(scheme, "Readium LCP")
+                servicesBuilder.contentProtectionServiceFactory = protectionServiceFactory
             }
         )
 

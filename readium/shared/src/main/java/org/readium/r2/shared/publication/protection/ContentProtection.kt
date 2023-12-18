@@ -54,8 +54,6 @@ public interface ContentProtection {
         val onCreatePublication: Publication.Builder.() -> Unit = {}
     )
 
-    public val scheme: Scheme
-
     /**
      * Attempts to unlock a potentially protected publication asset.
      *

@@ -9,9 +9,8 @@ package org.readium.r2.streamer
 import android.content.Context
 import org.readium.r2.shared.PdfSupport
 import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.publication.protection.AdeptFallbackContentProtection
 import org.readium.r2.shared.publication.protection.ContentProtection
-import org.readium.r2.shared.publication.protection.LcpFallbackContentProtection
+import org.readium.r2.shared.publication.protection.FallbackContentProtection
 import org.readium.r2.shared.util.DebugError
 import org.readium.r2.shared.util.Error
 import org.readium.r2.shared.util.Try
@@ -74,11 +73,7 @@ public class PublicationFactory(
     }
 
     private val contentProtections: List<ContentProtection> =
-        buildList {
-            add(LcpFallbackContentProtection())
-            add(AdeptFallbackContentProtection())
-            addAll(contentProtections.asReversed())
-        }
+        contentProtections + FallbackContentProtection()
 
     private val defaultParsers: List<PublicationParser> =
         listOfNotNull(
@@ -130,7 +125,8 @@ public class PublicationFactory(
         var transformedAsset: Asset = asset
 
         for (protection in contentProtections) {
-            protection.open(asset, credentials, allowUserInteraction)
+            val openResult = protection
+                .open(asset, credentials, allowUserInteraction)
                 .getOrElse {
                     when (it) {
                         is ContentProtection.OpenError.Reading ->
@@ -138,13 +134,16 @@ public class PublicationFactory(
                         is ContentProtection.OpenError.AssetNotSupported ->
                             null
                     }
-                }?.let { openResult ->
-                    transformedAsset = openResult.asset
-                    compositeOnCreatePublication = {
-                        openResult.onCreatePublication.invoke(this)
-                        compositeOnCreatePublication(this)
-                    }
                 }
+
+            if (openResult != null) {
+                transformedAsset = openResult.asset
+                compositeOnCreatePublication = {
+                    openResult.onCreatePublication.invoke(this)
+                    compositeOnCreatePublication(this)
+                }
+                break
+            }
         }
 
         val builder = parse(transformedAsset, warnings)
