@@ -44,15 +44,14 @@ class EpubDeobfuscatorTest {
         .checkSuccess()
 
     private fun deobfuscate(url: Url, resource: Resource, algorithm: String?): Resource {
-        val deobfuscator = EpubDeobfuscator(identifier) {
-            if (resource.sourceUrl == it) {
-                algorithm?.let {
-                    Encryption(algorithm = algorithm)
-                }
+        val encryptionData =
+            if (resource.sourceUrl != null && algorithm != null) {
+                mapOf(resource.sourceUrl as Url to Encryption(algorithm = algorithm))
             } else {
-                null
+                emptyMap()
             }
-        }
+
+        val deobfuscator = EpubDeobfuscator(identifier, encryptionData)
 
         return deobfuscator.transform(url, resource)
     }

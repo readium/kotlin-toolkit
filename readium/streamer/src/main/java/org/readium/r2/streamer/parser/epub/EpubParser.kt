@@ -10,7 +10,6 @@ import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.encryption.Encryption
-import org.readium.r2.shared.publication.encryption.encryption
 import org.readium.r2.shared.publication.services.content.DefaultContentService
 import org.readium.r2.shared.publication.services.content.iterators.HtmlResourceContentIterator
 import org.readium.r2.shared.publication.services.search.StringSearchService
@@ -81,20 +80,18 @@ public class EpubParser(
                 )
             )
 
+        val encryptionData = parseEncryptionData(asset.container)
+
         val manifest = ManifestAdapter(
             packageDocument = packageDocument,
             navigationData = parseNavigationData(packageDocument, asset.container),
-            encryptionData = parseEncryptionData(asset.container),
+            encryptionData = encryptionData,
             displayOptions = parseDisplayOptions(asset.container)
         ).adapt()
 
         var container = asset.container
         manifest.metadata.identifier?.let { id ->
-            val deobfuscator = EpubDeobfuscator(id) { url ->
-                manifest.linkWithHref(url)
-                    ?.properties?.encryption
-            }
-
+            val deobfuscator = EpubDeobfuscator(id, encryptionData)
             container = TransformingContainer(container, deobfuscator::transform)
         }
 

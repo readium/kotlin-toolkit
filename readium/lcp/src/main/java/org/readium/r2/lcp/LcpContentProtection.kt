@@ -8,23 +8,29 @@ package org.readium.r2.lcp
 
 import org.readium.r2.lcp.auth.LcpPassphraseAuthentication
 import org.readium.r2.lcp.license.model.LicenseDocument
+import org.readium.r2.shared.publication.encryption.Encryption
 import org.readium.r2.shared.publication.encryption.encryption
-import org.readium.r2.shared.publication.flatten
 import org.readium.r2.shared.publication.protection.ContentProtection
 import org.readium.r2.shared.publication.services.contentProtectionServiceFactory
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.DebugError
 import org.readium.r2.shared.util.ThrowableError
 import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.asset.Asset
 import org.readium.r2.shared.util.asset.AssetOpener
 import org.readium.r2.shared.util.asset.ContainerAsset
 import org.readium.r2.shared.util.asset.ResourceAsset
+import org.readium.r2.shared.util.data.Container
 import org.readium.r2.shared.util.data.ReadError
+import org.readium.r2.shared.util.data.decodeRwpm
+import org.readium.r2.shared.util.data.decodeXml
+import org.readium.r2.shared.util.data.readDecodeOrElse
 import org.readium.r2.shared.util.flatMap
 import org.readium.r2.shared.util.format.Format
 import org.readium.r2.shared.util.format.Trait
 import org.readium.r2.shared.util.getOrElse
+import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.shared.util.resource.TransformingContainer
 
 internal class LcpContentProtection(
@@ -75,14 +81,21 @@ internal class LcpContentProtection(
         return lcpService.retrieveLicense(asset, authentication, allowUserInteraction)
     }
 
-    private fun createResultAsset(
+    private suspend fun createResultAsset(
         asset: ContainerAsset,
         license: Try<LcpLicense, LcpError>
     ): Try<ContentProtection.OpenResult, ContentProtection.OpenError> {
         val serviceFactory = LcpContentProtectionService
             .createFactory(license.getOrNull(), license.failureOrNull())
 
-        val decryptor = LcpDecryptor(license.getOrNull())
+        val encryptionData =
+            when {
+                asset.format.conformsTo(Trait.EPUB) -> parseEncryptionDataEpub(asset.container)
+                else -> parseEncryptionDataRpf(asset.container)
+            }
+                .getOrElse { return Try.failure(ContentProtection.OpenError.Reading(it)) }
+
+        val decryptor = LcpDecryptor(license.getOrNull(), encryptionData)
 
         val container = TransformingContainer(asset.container, decryptor::transform)
 
@@ -92,18 +105,42 @@ internal class LcpContentProtection(
                 container = container
             ),
             onCreatePublication = {
-                decryptor.encryptionData = (manifest.readingOrder + manifest.resources + manifest.links)
-                    .flatten()
-                    .mapNotNull {
-                        it.properties.encryption?.let { enc -> it.url() to enc }
-                    }
-                    .toMap()
-
                 servicesBuilder.contentProtectionServiceFactory = serviceFactory
             }
         )
 
         return Try.success(protectedFile)
+    }
+
+    private suspend fun parseEncryptionDataEpub(container: Container<Resource>): Try<Map<Url, Encryption>, ReadError> {
+        val encryptionResource = container[Url("META-INF/encryption.xml")!!]
+            ?: return Try.failure(ReadError.Decoding("Missing encryption.xml"))
+
+        val encryptionDocument = encryptionResource
+            .readDecodeOrElse(
+                decode = { it.decodeXml() },
+                recover = { return Try.failure(it) }
+            )
+
+        return Try.success(EpubEncryptionParser.parse(encryptionDocument))
+    }
+
+    private suspend fun parseEncryptionDataRpf(container: Container<Resource>): Try<Map<Url, Encryption>, ReadError> {
+        val manifestResource = container[Url("manifest.json")!!]
+            ?: return Try.failure(ReadError.Decoding("Missing manifest"))
+
+        val manifest = manifestResource
+            .readDecodeOrElse(
+                decode = { it.decodeRwpm() },
+                recover = { return Try.failure(it) }
+            )
+
+        val encryptionData = manifest
+            .let { (it.readingOrder + it.resources) }
+            .mapNotNull { link -> link.properties.encryption?.let { link.url() to it } }
+            .toMap()
+
+        return Try.success(encryptionData)
     }
 
     private suspend fun openLicense(

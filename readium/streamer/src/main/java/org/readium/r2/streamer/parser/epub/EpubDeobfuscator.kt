@@ -21,13 +21,15 @@ import org.readium.r2.shared.util.resource.flatMap
  */
 internal class EpubDeobfuscator(
     private val pubId: String,
-    private val retrieveEncryption: (Url) -> Encryption?
+    private val encryptionData: Map<Url, Encryption>
 ) {
 
     @Suppress("Unused_parameter")
     fun transform(url: Url, resource: Resource): Resource =
         resource.flatMap {
-            val algorithm = resource.sourceUrl?.let(retrieveEncryption)?.algorithm
+            val algorithm = resource.sourceUrl
+                ?.let { encryptionData[it] }
+                ?.algorithm
             if (algorithm != null && algorithm2length.containsKey(algorithm)) {
                 DeobfuscatingResource(resource, algorithm)
             } else {
