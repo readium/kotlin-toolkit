@@ -72,6 +72,9 @@ public value class Format(private val traits: Set<Trait>) {
     public operator fun plus(trait: Trait): Format =
         Format(traits + trait)
 
+    public operator fun plus(other: Format): Format =
+        Format(traits + other.traits)
+
     public operator fun minus(trait: Trait): Format =
         Format(traits - trait)
 

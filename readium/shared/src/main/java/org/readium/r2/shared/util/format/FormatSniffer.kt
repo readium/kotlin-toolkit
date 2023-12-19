@@ -53,7 +53,7 @@ public interface FormatSniffer :
         format: Format?,
         hints: FormatHints
     ): Format? =
-        null
+        format
 
     public override suspend fun sniffBlob(
         format: Format?,
@@ -66,4 +66,35 @@ public interface FormatSniffer :
         container: Container<Readable>
     ): Try<Format?, ReadError> =
         Try.success(format)
+}
+
+public class CompositeFormatSniffer(
+    private val sniffers: List<FormatSniffer>
+) : FormatSniffer {
+
+    public constructor(vararg sniffers: FormatSniffer) : this(sniffers.toList())
+
+    override fun sniffHints(format: Format?, hints: FormatHints): Format? =
+        sniffers.fold(format) { acc, sniffer ->
+            sniffer.sniffHints(acc, hints)
+        }
+
+    override suspend fun sniffBlob(format: Format?, source: Readable): Try<Format?, ReadError> =
+        sniffers.fold(Try.success(format)) { acc: Try<Format?, ReadError>, sniffer ->
+            when (acc) {
+                is Try.Failure -> acc
+                is Try.Success -> sniffer.sniffBlob(acc.value, source)
+            }
+        }
+
+    override suspend fun sniffContainer(
+        format: Format?,
+        container: Container<Readable>
+    ): Try<Format?, ReadError> =
+        sniffers.fold(Try.success(format)) { acc: Try<Format?, ReadError>, sniffer ->
+            when (acc) {
+                is Try.Failure -> acc
+                is Try.Success -> sniffer.sniffContainer(acc.value, container)
+            }
+        }
 }

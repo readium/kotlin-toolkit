@@ -65,7 +65,7 @@ internal suspend fun AssetSniffer.sniffContainerEntries(
 ): Try<Map<Url, Format>, ReadError> =
     container
         .filter(filter)
-        .fold<Url, Try<Map<Url, Format>, ReadError>>(Try.success(emptyMap())) { acc, url ->
+        .fold(Try.success(emptyMap())) { acc: Try<Map<Url, Format>, ReadError>, url ->
             when (acc) {
                 is Try.Failure ->
                     acc

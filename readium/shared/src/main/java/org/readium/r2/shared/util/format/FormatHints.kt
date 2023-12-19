@@ -13,7 +13,6 @@ import org.readium.r2.shared.util.mediatype.MediaType
  * Bundle of media type and file extension hints for the [FormatHintsSniffer].
  */
 public data class FormatHints(
-    val format: Format? = null,
     val mediaTypes: List<MediaType> = emptyList(),
     val fileExtensions: List<FileExtension> = emptyList()
 ) {

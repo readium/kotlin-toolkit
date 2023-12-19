@@ -29,6 +29,27 @@ import org.readium.r2.shared.util.format.Format.Companion.orEmpty
 import org.readium.r2.shared.util.getOrDefault
 import org.readium.r2.shared.util.getOrElse
 
+public class DefaultFormatSniffer :
+    FormatSniffer by CompositeFormatSniffer(
+        ZipSniffer,
+        RarSniffer,
+        EpubSniffer,
+        LpfSniffer,
+        ArchiveSniffer,
+        RpfSniffer,
+        PdfSniffer,
+        HtmlSniffer,
+        BitmapSniffer,
+        AudioSniffer,
+        JsonSniffer,
+        OpdsSniffer,
+        LcpLicenseSniffer,
+        LcpSniffer,
+        AdeptSniffer,
+        W3cWpubSniffer,
+        RwpmSniffer
+    )
+
 /** Sniffs an HTML or XHTML document. */
 public object HtmlSniffer : FormatSniffer {
     override fun sniffHints(
@@ -39,14 +60,14 @@ public object HtmlSniffer : FormatSniffer {
             hints.hasFileExtension("htm", "html") ||
             hints.hasMediaType("text/html")
         ) {
-            return Format.HTML
+            return format.orEmpty() + Format.HTML
         }
 
         if (
             hints.hasFileExtension("xht", "xhtml") ||
             hints.hasMediaType("application/xhtml+xml")
         ) {
-            return Format.XHTML
+            return format.orEmpty() + Format.XHTML
         }
 
         return format
@@ -103,16 +124,16 @@ public object OpdsSniffer : FormatSniffer {
     private fun sniffHintsXml(format: Format?, hints: FormatHints): Format? {
         // OPDS 1
         if (hints.hasMediaType("application/atom+xml;type=entry;profile=opds-catalog")) {
-            return Format.OPDS1_ENTRY
+            return format.orEmpty() + Format.OPDS1_ENTRY
         }
         if (hints.hasMediaType("application/atom+xml;profile=opds-catalog;kind=navigation")) {
-            return Format.OPDS1_NAVIGATION_FEED
+            return format.orEmpty() + Format.OPDS1_NAVIGATION_FEED
         }
         if (hints.hasMediaType("application/atom+xml;profile=opds-catalog;kind=acquisition")) {
-            return Format.OPDS1_ACQUISITION_FEED
+            return format.orEmpty() + Format.OPDS1_ACQUISITION_FEED
         }
         if (hints.hasMediaType("application/atom+xml;profile=opds-catalog")) {
-            return Format.OPDS1_CATALOG
+            return format.orEmpty() + Format.OPDS1_CATALOG
         }
 
         return format
@@ -121,10 +142,10 @@ public object OpdsSniffer : FormatSniffer {
     private fun sniffHintsJson(format: Format?, hints: FormatHints): Format? {
         // OPDS 2
         if (hints.hasMediaType("application/opds+json")) {
-            return Format.OPDS2_CATALOG
+            return format.orEmpty() + Format.OPDS2_CATALOG
         }
         if (hints.hasMediaType("application/opds-publication+json")) {
-            return Format.OPDS2_PUBLICATION
+            return format.orEmpty() + Format.OPDS2_PUBLICATION
         }
 
         // OPDS Authentication Document.
@@ -132,7 +153,7 @@ public object OpdsSniffer : FormatSniffer {
             hints.hasMediaType("application/opds-authentication+json") ||
             hints.hasMediaType("application/vnd.opds.authentication.v1.0+json")
         ) {
-            return Format.OPDS_AUTHENTICATION
+            return format.orEmpty() + Format.OPDS_AUTHENTICATION
         }
 
         return format
@@ -229,7 +250,7 @@ public object LcpLicenseSniffer : FormatSniffer {
             hints.hasFileExtension("lcpl") ||
             hints.hasMediaType("application/vnd.readium.lcp.license.v1.0+json")
         ) {
-            return Format.LCP_LICENSE_DOCUMENT
+            return format.orEmpty() + Format.LCP_LICENSE_DOCUMENT
         }
 
         return format
@@ -266,49 +287,49 @@ public object BitmapSniffer : FormatSniffer {
             hints.hasFileExtension("avif") ||
             hints.hasMediaType("image/avif")
         ) {
-            return Format(setOf(Trait.BITMAP, Trait.AVIF))
+            return format.orEmpty() + Format(setOf(Trait.BITMAP, Trait.AVIF))
         }
         if (
             hints.hasFileExtension("bmp", "dib") ||
             hints.hasMediaType("image/bmp", "image/x-bmp")
         ) {
-            return Format(setOf(Trait.BITMAP, Trait.BMP))
+            return format.orEmpty() + Format(setOf(Trait.BITMAP, Trait.BMP))
         }
         if (
             hints.hasFileExtension("gif") ||
             hints.hasMediaType("image/gif")
         ) {
-            return Format(setOf(Trait.BITMAP, Trait.GIF))
+            return format.orEmpty() + Format(setOf(Trait.BITMAP, Trait.GIF))
         }
         if (
             hints.hasFileExtension("jpg", "jpeg", "jpe", "jif", "jfif", "jfi") ||
             hints.hasMediaType("image/jpeg")
         ) {
-            return Format(setOf(Trait.BITMAP, Trait.JPEG))
+            return format.orEmpty() + Format(setOf(Trait.BITMAP, Trait.JPEG))
         }
         if (
             hints.hasFileExtension("jxl") ||
             hints.hasMediaType("image/jxl")
         ) {
-            return Format(setOf(Trait.BITMAP, Trait.JXL))
+            return format.orEmpty() + Format(setOf(Trait.BITMAP, Trait.JXL))
         }
         if (
             hints.hasFileExtension("png") ||
             hints.hasMediaType("image/png")
         ) {
-            return Format(setOf(Trait.BITMAP, Trait.PNG))
+            return format.orEmpty() + Format(setOf(Trait.BITMAP, Trait.PNG))
         }
         if (
             hints.hasFileExtension("tiff", "tif") ||
             hints.hasMediaType("image/tiff", "image/tiff-fx")
         ) {
-            return Format(setOf(Trait.BITMAP, Trait.TIFF))
+            return format.orEmpty() + Format(setOf(Trait.BITMAP, Trait.TIFF))
         }
         if (
             hints.hasFileExtension("webp") ||
             hints.hasMediaType("image/webp")
         ) {
-            return Format(setOf(Trait.BITMAP, Trait.WEBP))
+            return format.orEmpty() + Format(setOf(Trait.BITMAP, Trait.WEBP))
         }
 
         return format
@@ -324,10 +345,10 @@ public object AudioSniffer : FormatSniffer {
                 "ogg", "oga", "mogg", "opus", "wav", "webm"
             )
         ) {
-            return Format(setOf(Trait.AUDIO))
+            return format.orEmpty() + Format(setOf(Trait.AUDIO))
         }
 
-        return null
+        return format
     }
 }
 
@@ -338,15 +359,15 @@ public object RwpmSniffer : FormatSniffer {
         hints: FormatHints
     ): Format? {
         if (hints.hasMediaType("application/audiobook+json")) {
-            return Format.READIUM_AUDIOBOOK_MANIFEST
+            return format.orEmpty() + Format.READIUM_AUDIOBOOK_MANIFEST
         }
 
         if (hints.hasMediaType("application/divina+json")) {
-            return Format.READIUM_COMICS_MANIFEST
+            return format.orEmpty() + Format.READIUM_COMICS_MANIFEST
         }
 
         if (hints.hasMediaType("application/webpub+json")) {
-            return Format.READIUM_WEBPUB_MANIFEST
+            return format.orEmpty() + Format.READIUM_WEBPUB_MANIFEST
         }
 
         return format
@@ -396,34 +417,34 @@ public object RpfSniffer : FormatSniffer {
             hints.hasFileExtension("audiobook") ||
             hints.hasMediaType("application/audiobook+zip")
         ) {
-            return Format.READIUM_AUDIOBOOK
+            return format.orEmpty() + Format.READIUM_AUDIOBOOK
         }
 
         if (
             hints.hasFileExtension("divina") ||
             hints.hasMediaType("application/divina+zip")
         ) {
-            return Format.READIUM_COMICS
+            return format.orEmpty() + Format.READIUM_COMICS
         }
 
         if (
             hints.hasFileExtension("webpub") ||
             hints.hasMediaType("application/webpub+zip")
         ) {
-            return Format.READIUM_WEBPUB
+            return format.orEmpty() + Format.READIUM_WEBPUB
         }
 
         if (
             hints.hasFileExtension("lcpa") ||
             hints.hasMediaType("application/audiobook+lcp")
         ) {
-            return Format.READIUM_AUDIOBOOK + Trait.LCP_PROTECTED
+            return format.orEmpty() + Format.READIUM_AUDIOBOOK + Trait.LCP_PROTECTED
         }
         if (
             hints.hasFileExtension("lcpdf") ||
             hints.hasMediaType("application/pdf+lcp")
         ) {
-            return Format.READIUM_PDF + Trait.LCP_PROTECTED
+            return format.orEmpty() + Format.READIUM_PDF + Trait.LCP_PROTECTED
         }
 
         return format
@@ -509,7 +530,7 @@ public object EpubSniffer : FormatSniffer {
             hints.hasFileExtension("epub") ||
             hints.hasMediaType("application/epub+zip")
         ) {
-            return Format.EPUB
+            return format.orEmpty() + Format.EPUB
         }
 
         return format
@@ -554,7 +575,7 @@ public object LpfSniffer : FormatSniffer {
             hints.hasFileExtension("lpf") ||
             hints.hasMediaType("application/lpf+zip")
         ) {
-            return Format(setOf(Trait.ZIP, Trait.LPF))
+            return format.orEmpty() + Trait.ZIP + Trait.LPF
         }
 
         return format
@@ -613,7 +634,7 @@ public object RarSniffer : FormatSniffer {
             hints.hasMediaType("application/x-rar") ||
             hints.hasMediaType("application/x-rar-compressed")
         ) {
-            return Format.RAR
+            return format.orEmpty() + Format.RAR
         }
 
         return format
@@ -632,7 +653,7 @@ public object ZipSniffer : FormatSniffer {
         if (hints.hasMediaType("application/zip") ||
             hints.hasFileExtension("zip")
         ) {
-            return Format.ZIP
+            return format.orEmpty() + Format.ZIP
         }
 
         return format
