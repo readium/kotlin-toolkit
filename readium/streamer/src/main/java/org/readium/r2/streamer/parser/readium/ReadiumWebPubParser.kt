@@ -50,7 +50,7 @@ public class ReadiumWebPubParser(
     override suspend fun parse(
         asset: Asset,
         warnings: WarningLogger?
-    ): Try<Publication.Builder, PublicationParser.Error> {
+    ): Try<Publication.Builder, PublicationParser.ParseError> {
         if (
             asset is ResourceAsset &&
             (
@@ -66,12 +66,12 @@ public class ReadiumWebPubParser(
         }
 
         if (asset !is ContainerAsset || !asset.format.conformsTo(Trait.RPF)) {
-            return Try.failure(PublicationParser.Error.FormatNotSupported())
+            return Try.failure(PublicationParser.ParseError.FormatNotSupported())
         }
 
         val manifestResource = asset.container[Url("manifest.json")!!]
             ?: return Try.failure(
-                PublicationParser.Error.Reading(
+                PublicationParser.ParseError.Reading(
                     ReadError.Decoding(
                         DebugError("Missing manifest.")
                     )
@@ -81,7 +81,7 @@ public class ReadiumWebPubParser(
         val manifest = manifestResource
             .readDecodeOrElse(
                 decode = { it.decodeRwpm() },
-                recover = { return Try.failure(PublicationParser.Error.Reading(it)) }
+                recover = { return Try.failure(PublicationParser.ParseError.Reading(it)) }
             )
 
         // Checks the requirements from the LCPDF specification.
@@ -91,7 +91,7 @@ public class ReadiumWebPubParser(
             (readingOrder.isEmpty() || !readingOrder.all { MediaType.PDF.matches(it.mediaType) })
         ) {
             return Try.failure(
-                PublicationParser.Error.Reading(
+                PublicationParser.ParseError.Reading(
                     ReadError.Decoding("Invalid LCP Protected PDF.")
                 )
             )
@@ -123,11 +123,11 @@ public class ReadiumWebPubParser(
         return Try.success(publicationBuilder)
     }
 
-    private suspend fun createPackage(asset: ResourceAsset): Try<ContainerAsset, PublicationParser.Error> {
+    private suspend fun createPackage(asset: ResourceAsset): Try<ContainerAsset, PublicationParser.ParseError> {
         val manifest = asset.resource
             .readDecodeOrElse(
                 decode = { it.decodeRwpm() },
-                recover = { return Try.failure(PublicationParser.Error.Reading(it)) }
+                recover = { return Try.failure(PublicationParser.ParseError.Reading(it)) }
             )
 
         val baseUrl = manifest.linkWithRel("self")?.href?.resolve()
@@ -136,14 +136,14 @@ public class ReadiumWebPubParser(
         } else {
             if (baseUrl !is AbsoluteUrl) {
                 return Try.failure(
-                    PublicationParser.Error.Reading(
+                    PublicationParser.ParseError.Reading(
                         ReadError.Decoding("Self link is not absolute.")
                     )
                 )
             }
             if (!baseUrl.isHttp) {
                 return Try.failure(
-                    PublicationParser.Error.Reading(
+                    PublicationParser.ParseError.Reading(
                         ReadError.Decoding("Self link doesn't use the HTTP(S) scheme.")
                     )
                 )

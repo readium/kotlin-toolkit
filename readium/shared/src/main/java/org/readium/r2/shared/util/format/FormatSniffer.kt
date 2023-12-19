@@ -44,7 +44,7 @@ public interface ContainerSniffer {
     ): Try<Format?, ReadError>
 }
 
-public interface ContentSniffer :
+public interface FormatSniffer :
     FormatHintsSniffer,
     BlobSniffer,
     ContainerSniffer {

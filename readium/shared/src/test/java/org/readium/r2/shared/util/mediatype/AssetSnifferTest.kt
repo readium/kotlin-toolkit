@@ -563,7 +563,7 @@ class AssetSnifferTest {
         assertEquals(
             Format.JSON_PROBLEM_DETAILS,
             sniffer.sniff(
-                source = StringResource("""{"title": "Message"}"""),
+                resource = StringResource("""{"title": "Message"}"""),
                 hints = FormatHints(mediaType = MediaType("application/problem+json")!!)
             ).checkSuccess()
         )

@@ -42,12 +42,11 @@ public interface LcpService {
     /**
      * Returns if the file is a LCP license document or a publication protected by LCP.
      */
+    @Deprecated(
+        "Use an AssetSniffer and check the returned format for Trait.LCP_PROTECTED",
+        level = DeprecationLevel.ERROR
+    )
     public suspend fun isLcpProtected(file: File): Boolean
-
-    /**
-     * Returns if the asset is a LCP license document or a publication protected by LCP.
-     */
-    public suspend fun isLcpProtected(asset: Asset): Boolean
 
     /**
      * Acquires a protected publication from a standalone LCPL's bytes.

@@ -27,17 +27,17 @@ public interface PublicationParser {
     public suspend fun parse(
         asset: Asset,
         warnings: WarningLogger? = null
-    ): Try<Publication.Builder, Error>
+    ): Try<Publication.Builder, ParseError>
 
-    public sealed class Error(
+    public sealed class ParseError(
         public override val message: String,
         public override val cause: org.readium.r2.shared.util.Error?
     ) : org.readium.r2.shared.util.Error {
 
         public class FormatNotSupported :
-            Error("Asset format not supported.", null)
+            ParseError("Asset format not supported.", null)
 
         public class Reading(override val cause: org.readium.r2.shared.util.data.ReadError) :
-            Error("An error occurred while trying to read asset.", cause)
+            ParseError("An error occurred while trying to read asset.", cause)
     }
 }

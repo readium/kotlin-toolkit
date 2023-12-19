@@ -40,9 +40,9 @@ public class PdfParser(
     override suspend fun parse(
         asset: Asset,
         warnings: WarningLogger?
-    ): Try<Publication.Builder, PublicationParser.Error> {
+    ): Try<Publication.Builder, PublicationParser.ParseError> {
         if (asset !is ResourceAsset || !asset.format.conformsTo(Format.PDF)) {
-            return Try.failure(PublicationParser.Error.FormatNotSupported())
+            return Try.failure(PublicationParser.ParseError.FormatNotSupported())
         }
 
         val container = asset.resource
@@ -52,7 +52,7 @@ public class PdfParser(
             .first()
 
         val document = pdfFactory.open(container[url]!!, password = null)
-            .getOrElse { return Try.failure(PublicationParser.Error.Reading(it)) }
+            .getOrElse { return Try.failure(PublicationParser.ParseError.Reading(it)) }
         val tableOfContents = document.outline.toLinks(url)
 
         val manifest = Manifest(

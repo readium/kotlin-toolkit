@@ -19,16 +19,16 @@ import org.readium.r2.shared.util.asset.Asset
 import org.readium.r2.shared.util.asset.AssetSniffer
 import org.readium.r2.shared.util.asset.ContainerAsset
 import org.readium.r2.shared.util.asset.ResourceAsset
-import org.readium.r2.shared.util.asset.SniffError
 import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.format.Format
 import org.readium.r2.shared.util.format.FormatRegistry
+import org.readium.r2.shared.util.format.Trait
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.mediatype.MediaType
-import org.readium.r2.shared.util.use
 import org.readium.r2.streamer.extensions.guessTitle
 import org.readium.r2.streamer.extensions.isHiddenOrThumbs
+import org.readium.r2.streamer.extensions.sniffContainerEntries
 import org.readium.r2.streamer.extensions.toContainer
 import org.readium.r2.streamer.parser.PublicationParser
 
@@ -46,9 +46,9 @@ public class ImageParser(
     override suspend fun parse(
         asset: Asset,
         warnings: WarningLogger?
-    ): Try<Publication.Builder, PublicationParser.Error> {
-        if (!asset.format.conformsTo(Format.CBZ) && formatRegistry[asset.format]?.mediaType?.isBitmap != true) {
-            return Try.failure(PublicationParser.Error.FormatNotSupported())
+    ): Try<Publication.Builder, PublicationParser.ParseError> {
+        if (!asset.format.conformsTo(Trait.COMICS) && !asset.format.conformsTo(Trait.BITMAP)) {
+            return Try.failure(PublicationParser.ParseError.FormatNotSupported())
         }
 
         val container = when (asset) {
@@ -58,18 +58,23 @@ public class ImageParser(
                 asset.container
         }
 
-        val readingOrder =
-            if (asset.format.conformsTo(Format.CBZ)) {
-                (container)
-                    .filter { cbzCanContain(it) }
-                    .sortedBy { it.toString() }
+        val entryFormats: Map<Url, Format> = assetSniffer
+            .sniffContainerEntries(container) { !it.isHiddenOrThumbs }
+            .getOrElse { return Try.failure(PublicationParser.ParseError.Reading(it)) }
+
+        val readingOrderWithFormat =
+            if (asset.format.conformsTo(Trait.COMICS)) {
+                container
+                    .mapNotNull { url -> entryFormats[url]?.let { url to it } }
+                    .filter { it.second.conformsTo(Trait.BITMAP) }
+                    .sortedBy { it.first.toString() }
             } else {
-                listOfNotNull(container.firstOrNull())
+                listOfNotNull(container.first() to asset.format)
             }
 
-        if (readingOrder.isEmpty()) {
+        if (readingOrderWithFormat.isEmpty()) {
             return Try.failure(
-                PublicationParser.Error.Reading(
+                PublicationParser.ParseError.Reading(
                     ReadError.Decoding(
                         DebugError("No bitmap found in the publication.")
                     )
@@ -77,19 +82,8 @@ public class ImageParser(
             )
         }
 
-        val readingOrderLinks = readingOrder.map { url ->
-            val mediaType = container[url]!!.use { resource ->
-                assetSniffer.sniff(resource)
-                    .map { formatRegistry[it]?.mediaType }
-                    .getOrElse { error ->
-                        when (error) {
-                            SniffError.NotRecognized ->
-                                null
-                            is SniffError.Reading ->
-                                return Try.failure(PublicationParser.Error.Reading(error.cause))
-                        }
-                    }
-            }
+        val readingOrderLinks = readingOrderWithFormat.map { (url, format) ->
+            val mediaType = formatRegistry[format]?.mediaType
             Link(href = url, mediaType = mediaType)
         }.toMutableList()
 
@@ -116,12 +110,4 @@ public class ImageParser(
 
         return Try.success(publicationBuilder)
     }
-
-    private fun cbzCanContain(url: Url): Boolean =
-        url.extension?.lowercase() in bitmapExtensions && !url.isHiddenOrThumbs
-
-    private val bitmapExtensions = listOf(
-        "bmp", "dib", "gif", "jif", "jfi", "jfif", "jpg", "jpeg",
-        "png", "tif", "tiff", "webp"
-    )
 }

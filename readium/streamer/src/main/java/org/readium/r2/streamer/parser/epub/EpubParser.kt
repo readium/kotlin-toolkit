@@ -50,16 +50,16 @@ public class EpubParser(
     override suspend fun parse(
         asset: Asset,
         warnings: WarningLogger?
-    ): Try<Publication.Builder, PublicationParser.Error> {
+    ): Try<Publication.Builder, PublicationParser.ParseError> {
         if (asset !is ContainerAsset || !asset.format.conformsTo(Format.EPUB)) {
-            return Try.failure(PublicationParser.Error.FormatNotSupported())
+            return Try.failure(PublicationParser.ParseError.FormatNotSupported())
         }
 
         val opfPath = getRootFilePath(asset.container)
             .getOrElse { return Try.failure(it) }
         val opfResource = asset.container[opfPath]
             ?: return Try.failure(
-                PublicationParser.Error.Reading(
+                PublicationParser.ParseError.Reading(
                     ReadError.Decoding(
                         DebugError("Missing OPF file.")
                     )
@@ -68,12 +68,12 @@ public class EpubParser(
         val opfXmlDocument = opfResource.use { resource ->
             resource.readDecodeOrElse(
                 decode = { it.decodeXml() },
-                recover = { return Try.failure(PublicationParser.Error.Reading(it)) }
+                recover = { return Try.failure(PublicationParser.ParseError.Reading(it)) }
             )
         }
         val packageDocument = PackageDocument.parse(opfXmlDocument, opfPath)
             ?: return Try.failure(
-                PublicationParser.Error.Reading(
+                PublicationParser.ParseError.Reading(
                     ReadError.Decoding(
                         DebugError("Invalid OPF file.")
                     )
@@ -112,12 +112,12 @@ public class EpubParser(
         return Try.success(builder)
     }
 
-    private suspend fun getRootFilePath(container: Container<Resource>): Try<Url, PublicationParser.Error> {
+    private suspend fun getRootFilePath(container: Container<Resource>): Try<Url, PublicationParser.ParseError> {
         val containerXmlUrl = Url("META-INF/container.xml")!!
 
         val containerXmlResource = container[containerXmlUrl]
             ?: return Try.failure(
-                PublicationParser.Error.Reading(
+                PublicationParser.ParseError.Reading(
                     ReadError.Decoding("container.xml not found.")
                 )
             )
@@ -125,7 +125,7 @@ public class EpubParser(
         return containerXmlResource
             .readDecodeOrElse(
                 decode = { it.decodeXml() },
-                recover = { return Try.failure(PublicationParser.Error.Reading(it)) }
+                recover = { return Try.failure(PublicationParser.ParseError.Reading(it)) }
             )
             .getFirst("rootfiles", Namespaces.OPC)
             ?.getFirst("rootfile", Namespaces.OPC)
@@ -133,7 +133,7 @@ public class EpubParser(
             ?.let { Url.fromEpubHref(it) }
             ?.let { Try.success(it) }
             ?: Try.failure(
-                PublicationParser.Error.Reading(
+                PublicationParser.ParseError.Reading(
                     ReadError.Decoding("Cannot successfully parse OPF.")
                 )
             )

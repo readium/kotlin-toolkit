@@ -18,7 +18,6 @@ import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.shared.util.resource.ResourceFactory
 import org.readium.r2.shared.util.toUrl
-import timber.log.Timber
 
 /**
  * Retrieves an [Asset] instance providing reading access to the resource(s) of an asset stored at
@@ -69,7 +68,8 @@ public class AssetOpener(
         val resource = retrieveResource(url)
             .getOrElse { return Try.failure(it) }
 
-        val archive = archiveOpener.open(format, resource)
+        val archive = archiveOpener
+            .open(format, resource)
             .getOrElse {
                 return when (it) {
                     is ArchiveOpener.OpenError.Reading ->
@@ -116,7 +116,6 @@ public class AssetOpener(
                 )
             }
 
-        Timber.d("sniffing asset")
         return assetSniffer.sniffOpen(resource, FormatHints(mediaType = mediaType))
             .mapFailure {
                 when (it) {

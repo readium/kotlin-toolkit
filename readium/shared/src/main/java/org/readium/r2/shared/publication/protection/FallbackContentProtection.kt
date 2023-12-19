@@ -15,8 +15,8 @@ import org.readium.r2.shared.util.asset.ContainerAsset
 import org.readium.r2.shared.util.format.Trait
 
 /**
- * [ContentProtection] implementation used as a fallback by the Streamer to detect LCP DRM
- * if it is not supported by the app.
+ * [ContentProtection] implementation used as a fallback by the PublicationFactory to detect DRMs
+ * not supported by the app.
  */
 @InternalReadiumApi
 public class FallbackContentProtection : ContentProtection {

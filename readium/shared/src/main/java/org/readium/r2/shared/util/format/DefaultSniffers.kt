@@ -13,7 +13,6 @@ import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Manifest
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.encryption.encryption
-import org.readium.r2.shared.publication.protection.EpubEncryption
 import org.readium.r2.shared.util.RelativeUrl
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
@@ -31,7 +30,7 @@ import org.readium.r2.shared.util.getOrDefault
 import org.readium.r2.shared.util.getOrElse
 
 /** Sniffs an HTML or XHTML document. */
-public object HtmlSniffer : ContentSniffer {
+public object HtmlSniffer : FormatSniffer {
     override fun sniffHints(
         format: Format?,
         hints: FormatHints
@@ -91,7 +90,7 @@ public object HtmlSniffer : ContentSniffer {
 }
 
 /** Sniffs an OPDS1 document. */
-public object OpdsSniffer : ContentSniffer {
+public object OpdsSniffer : FormatSniffer {
 
     override fun sniffHints(
         format: Format?,
@@ -221,7 +220,7 @@ public object OpdsSniffer : ContentSniffer {
 }
 
 /** Sniffs an LCP License Document. */
-public object LcpLicenseSniffer : ContentSniffer {
+public object LcpLicenseSniffer : FormatSniffer {
     override fun sniffHints(
         format: Format?,
         hints: FormatHints
@@ -257,7 +256,8 @@ public object LcpLicenseSniffer : ContentSniffer {
 }
 
 /** Sniffs a bitmap image. */
-public object BitmapSniffer : ContentSniffer {
+public object BitmapSniffer : FormatSniffer {
+
     override fun sniffHints(
         format: Format?,
         hints: FormatHints
@@ -310,12 +310,29 @@ public object BitmapSniffer : ContentSniffer {
         ) {
             return Format(setOf(Trait.BITMAP, Trait.WEBP))
         }
+
         return format
     }
 }
 
+/** Sniffs audio files. */
+public object AudioSniffer : FormatSniffer {
+    override fun sniffHints(format: Format?, hints: FormatHints): Format? {
+        if (
+            hints.hasFileExtension(
+                "aac", "aiff", "alac", "flac", "m4a", "m4b", "mp3",
+                "ogg", "oga", "mogg", "opus", "wav", "webm"
+            )
+        ) {
+            return Format(setOf(Trait.AUDIO))
+        }
+
+        return null
+    }
+}
+
 /** Sniffs a Readium Web Manifest. */
-public object RwpmSniffer : ContentSniffer {
+public object RwpmSniffer : FormatSniffer {
     override fun sniffHints(
         format: Format?,
         hints: FormatHints
@@ -369,7 +386,7 @@ public object RwpmSniffer : ContentSniffer {
 }
 
 /** Sniffs a Readium Web Publication, protected or not by LCP. */
-public object RpfSniffer : ContentSniffer {
+public object RpfSniffer : FormatSniffer {
 
     override fun sniffHints(
         format: Format?,
@@ -445,7 +462,7 @@ public object RpfSniffer : ContentSniffer {
 }
 
 /** Sniffs a W3C Web Publication Manifest. */
-public object W3cWpubSniffer : ContentSniffer {
+public object W3cWpubSniffer : FormatSniffer {
 
     override suspend fun sniffBlob(
         format: Format?,
@@ -483,7 +500,7 @@ public object W3cWpubSniffer : ContentSniffer {
  *
  * Reference: https://www.w3.org/publishing/epub3/epub-ocf.html#sec-zip-container-mime
  */
-public object EpubSniffer : ContentSniffer {
+public object EpubSniffer : FormatSniffer {
     override fun sniffHints(
         format: Format?,
         hints: FormatHints
@@ -528,7 +545,7 @@ public object EpubSniffer : ContentSniffer {
  *  - https://www.w3.org/TR/lpf/
  *  - https://www.w3.org/TR/pub-manifest/
  */
-public object LpfSniffer : ContentSniffer {
+public object LpfSniffer : FormatSniffer {
     override fun sniffHints(
         format: Format?,
         hints: FormatHints
@@ -584,7 +601,7 @@ public object LpfSniffer : ContentSniffer {
  *
  * At the moment, only hints are supported.
  */
-public object RarSniffer : ContentSniffer {
+public object RarSniffer : FormatSniffer {
 
     override fun sniffHints(
         format: Format?,
@@ -606,7 +623,7 @@ public object RarSniffer : ContentSniffer {
 /**
  * Sniffs a ZIP archive.
  */
-public object ZipSniffer : ContentSniffer {
+public object ZipSniffer : FormatSniffer {
 
     override fun sniffHints(
         format: Format?,
@@ -627,7 +644,7 @@ public object ZipSniffer : ContentSniffer {
  *
  * Reference: https://wiki.mobileread.com/wiki/CBR_and_CBZ
  */
-public object ArchiveSniffer : ContentSniffer {
+public object ArchiveSniffer : FormatSniffer {
 
     /**
      * Authorized extensions for resources in a CBZ archive.
@@ -738,7 +755,7 @@ public object ArchiveSniffer : ContentSniffer {
  *
  * Reference: https://www.loc.gov/preservation/digital/formats/fdd/fdd000123.shtml
  */
-public object PdfSniffer : ContentSniffer {
+public object PdfSniffer : FormatSniffer {
     override fun sniffHints(
         format: Format?,
         hints: FormatHints
@@ -772,7 +789,7 @@ public object PdfSniffer : ContentSniffer {
 }
 
 /** Sniffs a JSON document. */
-public object JsonSniffer : ContentSniffer {
+public object JsonSniffer : FormatSniffer {
     override fun sniffHints(
         format: Format?,
         hints: FormatHints
@@ -811,7 +828,7 @@ public object JsonSniffer : ContentSniffer {
 /**
  * Sniffs Adept protection on EPUBs.
  */
-public object AdeptSniffer : ContentSniffer {
+public object AdeptSniffer : FormatSniffer {
 
     override suspend fun sniffContainer(
         format: Format?,
@@ -847,7 +864,7 @@ public object AdeptSniffer : ContentSniffer {
 /**
  * Sniffs LCP protected packages.
  */
-public object LcpSniffer : ContentSniffer {
+public object LcpSniffer : FormatSniffer {
 
     override suspend fun sniffContainer(
         format: Format?,
@@ -933,4 +950,9 @@ private suspend fun Readable.containsJsonKeys(
         recoverDecode = { return Try.success(false) }
     )
     return Try.success(json.keys().asSequence().toSet().containsAll(keys.toList()))
+}
+
+private object EpubEncryption {
+    const val ENC = "http://www.w3.org/2001/04/xmlenc#"
+    const val SIG = "http://www.w3.org/2000/09/xmldsig#"
 }

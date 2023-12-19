@@ -44,6 +44,7 @@ import org.readium.r2.shared.util.downloads.DownloadManager
 import org.readium.r2.shared.util.format.Format
 import org.readium.r2.shared.util.format.FormatHints
 import org.readium.r2.shared.util.format.FormatRegistry
+import org.readium.r2.shared.util.format.Trait
 import org.readium.r2.shared.util.getOrElse
 import timber.log.Timber
 
@@ -61,23 +62,23 @@ internal class LicensesService(
 
     private val formatRegistry = FormatRegistry()
 
+    @Deprecated(
+        "Use an AssetSniffer and check the returned format for Trait.LCP_PROTECTED",
+        level = DeprecationLevel.ERROR
+    )
     override suspend fun isLcpProtected(file: File): Boolean {
         val asset = assetOpener.open(file)
             .getOrElse { return false }
-        return isLcpProtected(asset)
-    }
 
-    override suspend fun isLcpProtected(asset: Asset): Boolean =
-        tryOr(false) {
+        return tryOr(false) {
             when (asset) {
                 is ResourceAsset ->
-                    asset.format.conformsTo(Format.LCP_LICENSE_DOCUMENT)
-                is ContainerAsset -> {
-                    createLicenseContainer(context, asset.container, asset.format).read()
-                    true
-                }
+                    asset.format.conformsTo(Trait.LCP_LICENSE_DOCUMENT)
+                is ContainerAsset ->
+                    asset.format.conformsTo(Trait.LCP_PROTECTED)
             }
         }
+    }
 
     override fun contentProtection(
         authentication: LcpAuthenticating

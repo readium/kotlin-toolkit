@@ -20,6 +20,7 @@ import org.readium.r2.shared.util.downloads.DownloadManager
 import org.readium.r2.shared.util.format.Format
 import org.readium.r2.shared.util.format.FormatHints
 import org.readium.r2.shared.util.format.FormatRegistry
+import org.readium.r2.shared.util.format.Trait
 import org.readium.r2.shared.util.getOrElse
 
 /**
@@ -194,7 +195,7 @@ public class LcpPublicationRetriever(
                     }
                 downloadsRepository.removeDownload(requestId.value)
 
-                val formatWithoutLicense =
+                val baseFormat =
                     assetSniffer.sniff(
                         download.file,
                         FormatHints(
@@ -205,9 +206,11 @@ public class LcpPublicationRetriever(
                         )
                     ).getOrElse { Format.EPUB }
 
+                val format = baseFormat + Trait.LCP_PROTECTED
+
                 try {
                     // Saves the License Document into the downloaded publication
-                    val container = createLicenseContainer(download.file, formatWithoutLicense)
+                    val container = createLicenseContainer(download.file, format)
                     container.write(license)
                 } catch (e: Exception) {
                     tryOrLog { download.file.delete() }
@@ -216,17 +219,6 @@ public class LcpPublicationRetriever(
                     }
                     return@launch
                 }
-
-                val format = assetSniffer.sniff(
-                    download.file,
-                    FormatHints(
-                        format = formatWithoutLicense,
-                        mediaTypes = listOfNotNull(
-                            license.publicationLink.mediaType,
-                            download.mediaType
-                        )
-                    )
-                ).getOrElse { formatWithoutLicense }
 
                 val acquiredPublication = LcpService.AcquiredPublication(
                     localFile = download.file,

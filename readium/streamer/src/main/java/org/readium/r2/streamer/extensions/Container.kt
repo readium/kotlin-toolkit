@@ -11,11 +11,17 @@ package org.readium.r2.streamer.extensions
 
 import java.io.File
 import org.readium.r2.shared.extensions.addPrefix
+import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.asset.AssetSniffer
+import org.readium.r2.shared.util.asset.SniffError
 import org.readium.r2.shared.util.data.Container
+import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.format.FileExtension
+import org.readium.r2.shared.util.format.Format
 import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.shared.util.resource.SingleResourceContainer
+import org.readium.r2.shared.util.use
 
 internal fun Iterable<Url>.guessTitle(): String? {
     val firstEntry = firstOrNull() ?: return null
@@ -52,3 +58,31 @@ internal fun Resource.toContainer(
         this
     )
 }
+
+internal suspend fun AssetSniffer.sniffContainerEntries(
+    container: Container<Resource>,
+    filter: (Url) -> Boolean
+): Try<Map<Url, Format>, ReadError> =
+    container
+        .filter(filter)
+        .fold<Url, Try<Map<Url, Format>, ReadError>>(Try.success(emptyMap())) { acc, url ->
+            when (acc) {
+                is Try.Failure ->
+                    acc
+
+                is Try.Success ->
+                    container[url]!!.use { resource ->
+                        sniff(resource).fold(
+                            onSuccess = {
+                                Try.success(acc.value + (url to it))
+                            },
+                            onFailure = {
+                                when (it) {
+                                    SniffError.NotRecognized -> acc
+                                    is SniffError.Reading -> Try.failure(it.cause)
+                                }
+                            }
+                        )
+                    }
+            }
+        }

@@ -28,6 +28,7 @@ import org.readium.r2.shared.util.io.CountingInputStream
 import org.readium.r2.shared.util.resource.ArchiveProperties
 import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.shared.util.resource.archive
+import org.readium.r2.shared.util.resource.filename
 import org.readium.r2.shared.util.toUrl
 
 internal class FileZipContainer(
@@ -43,6 +44,7 @@ internal class FileZipContainer(
         override suspend fun properties(): Try<Resource.Properties, ReadError> =
             Try.success(
                 Resource.Properties {
+                    filename = url.filename
                     archive = ArchiveProperties(
                         entryLength = compressedLength
                             ?: length().getOrElse { return Try.failure(it) },

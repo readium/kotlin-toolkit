@@ -158,24 +158,24 @@ public class PublicationFactory(
     private suspend fun parse(
         publicationAsset: Asset,
         warnings: WarningLogger?
-    ): Try<Publication.Builder, PublicationParser.Error> {
+    ): Try<Publication.Builder, PublicationParser.ParseError> {
         for (parser in parsers) {
             val result = parser.parse(publicationAsset, warnings)
             if (
                 result is Try.Success ||
-                result is Try.Failure && result.value !is PublicationParser.Error.FormatNotSupported
+                result is Try.Failure && result.value !is PublicationParser.ParseError.FormatNotSupported
             ) {
                 return result
             }
         }
-        return Try.failure(PublicationParser.Error.FormatNotSupported())
+        return Try.failure(PublicationParser.ParseError.FormatNotSupported())
     }
 
-    private fun wrapParserException(e: PublicationParser.Error): OpenError =
+    private fun wrapParserException(e: PublicationParser.ParseError): OpenError =
         when (e) {
-            is PublicationParser.Error.FormatNotSupported ->
+            is PublicationParser.ParseError.FormatNotSupported ->
                 OpenError.FormatNotSupported(DebugError("Cannot find a parser for this asset."))
-            is PublicationParser.Error.Reading ->
+            is PublicationParser.ParseError.Reading ->
                 OpenError.Reading(e.cause)
         }
 }

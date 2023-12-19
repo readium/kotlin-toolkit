@@ -18,15 +18,15 @@ import org.readium.r2.shared.util.asset.Asset
 import org.readium.r2.shared.util.asset.AssetSniffer
 import org.readium.r2.shared.util.asset.ContainerAsset
 import org.readium.r2.shared.util.asset.ResourceAsset
-import org.readium.r2.shared.util.asset.SniffError
 import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.format.Format
 import org.readium.r2.shared.util.format.FormatRegistry
+import org.readium.r2.shared.util.format.Trait
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.logging.WarningLogger
-import org.readium.r2.shared.util.use
 import org.readium.r2.streamer.extensions.guessTitle
 import org.readium.r2.streamer.extensions.isHiddenOrThumbs
+import org.readium.r2.streamer.extensions.sniffContainerEntries
 import org.readium.r2.streamer.extensions.toContainer
 import org.readium.r2.streamer.parser.PublicationParser
 
@@ -44,9 +44,9 @@ public class AudioParser(
     override suspend fun parse(
         asset: Asset,
         warnings: WarningLogger?
-    ): Try<Publication.Builder, PublicationParser.Error> {
-        if (!asset.format.conformsTo(Format.ZAB) && formatRegistry[asset.format]?.mediaType?.isAudio != true) {
-            return Try.failure(PublicationParser.Error.FormatNotSupported())
+    ): Try<Publication.Builder, PublicationParser.ParseError> {
+        if (!asset.format.conformsTo(Trait.AUDIOBOOK) && !asset.format.conformsTo(Trait.AUDIO)) {
+            return Try.failure(PublicationParser.ParseError.FormatNotSupported())
         }
 
         val container = when (asset) {
@@ -56,20 +56,23 @@ public class AudioParser(
                 asset.container
         }
 
-        val readingOrder =
-            if (asset.format.conformsTo(Format.ZAB)) {
+        val entryFormats: Map<Url, Format> = assetSniffer
+            .sniffContainerEntries(container) { !it.isHiddenOrThumbs }
+            .getOrElse { return Try.failure(PublicationParser.ParseError.Reading(it)) }
+
+        val readingOrderWithFormat =
+            if (asset.format.conformsTo(Trait.AUDIOBOOK)) {
                 container
-                    .filter { zabCanContain(it) }
-                    .sortedBy { it.toString() }
+                    .mapNotNull { url -> entryFormats[url]?.let { url to it } }
+                    .filter { it.second.conformsTo(Trait.AUDIO) }
+                    .sortedBy { it.first.toString() }
             } else {
-                listOfNotNull(
-                    container.entries.firstOrNull()
-                )
+                listOfNotNull(container.first() to asset.format)
             }
 
-        if (readingOrder.isEmpty()) {
+        if (readingOrderWithFormat.isEmpty()) {
             return Try.failure(
-                PublicationParser.Error.Reading(
+                PublicationParser.ParseError.Reading(
                     ReadError.Decoding(
                         DebugError("No audio file found in the publication.")
                     )
@@ -77,19 +80,8 @@ public class AudioParser(
             )
         }
 
-        val readingOrderLinks = readingOrder.map { url ->
-            val mediaType = container[url]!!.use { resource ->
-                assetSniffer.sniff(resource)
-                    .map { formatRegistry[it]?.mediaType }
-                    .getOrElse { error ->
-                        when (error) {
-                            SniffError.NotRecognized ->
-                                null
-                            is SniffError.Reading ->
-                                return Try.failure(PublicationParser.Error.Reading(error.cause))
-                        }
-                    }
-            }
+        val readingOrderLinks = readingOrderWithFormat.map { (url, format) ->
+            val mediaType = formatRegistry[format]?.mediaType
             Link(href = url, mediaType = mediaType)
         }
 
@@ -111,12 +103,4 @@ public class AudioParser(
 
         return Try.success(publicationBuilder)
     }
-
-    private fun zabCanContain(url: Url): Boolean =
-        url.extension?.lowercase() in audioExtensions && !url.isHiddenOrThumbs
-
-    private val audioExtensions = listOf(
-        "aac", "aiff", "alac", "flac", "m4a", "m4b", "mp3",
-        "ogg", "oga", "mogg", "opus", "wav", "webm"
-    )
 }
