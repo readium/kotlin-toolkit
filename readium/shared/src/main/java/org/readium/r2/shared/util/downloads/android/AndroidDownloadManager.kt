@@ -117,7 +117,7 @@ public class AndroidDownloadManager internal constructor(
 
         val androidRequest = createRequest(
             uri = request.url.toUri(),
-            filename = generateFileName(extension = request.url.extension),
+            filename = generateFileName(extension = request.url.extension?.value),
             headers = request.headers
         )
         val downloadId = downloadManager.enqueue(androidRequest)

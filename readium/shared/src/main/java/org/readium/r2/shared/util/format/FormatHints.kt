@@ -7,6 +7,7 @@
 package org.readium.r2.shared.util.format
 
 import java.nio.charset.Charset
+import org.readium.r2.shared.util.FileExtension
 import org.readium.r2.shared.util.mediatype.MediaType
 
 /**

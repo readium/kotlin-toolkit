@@ -3,7 +3,7 @@ package org.readium.r2.shared.util.mediatype
 import kotlin.test.assertEquals
 import kotlinx.coroutines.runBlocking
 import org.junit.Test
-import org.readium.r2.shared.util.format.FileExtension
+import org.readium.r2.shared.util.FileExtension
 import org.readium.r2.shared.util.format.Format
 import org.readium.r2.shared.util.format.FormatInfo
 import org.readium.r2.shared.util.format.FormatRegistry

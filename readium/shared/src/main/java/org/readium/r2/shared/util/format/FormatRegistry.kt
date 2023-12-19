@@ -6,12 +6,9 @@
 
 package org.readium.r2.shared.util.format
 
+import org.readium.r2.shared.util.FileExtension
 import org.readium.r2.shared.util.mediatype.MediaType
 
-@JvmInline
-public value class FileExtension(
-    public val value: String
-)
 public data class FormatInfo(
     public val mediaType: MediaType,
     public val fileExtension: FileExtension

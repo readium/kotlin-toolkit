@@ -748,7 +748,7 @@ public object ArchiveSniffer : FormatSniffer {
 
         fun archiveContainsOnlyExtensions(fileExtensions: List<String>): Boolean =
             container.all { url ->
-                isIgnored(url) || url.extension?.let {
+                isIgnored(url) || url.extension?.value?.let {
                     fileExtensions.contains(
                         it.lowercase(Locale.ROOT)
                     )

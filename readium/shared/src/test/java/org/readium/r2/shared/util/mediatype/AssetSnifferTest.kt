@@ -11,12 +11,12 @@ import kotlinx.coroutines.runBlocking
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.readium.r2.shared.Fixtures
+import org.readium.r2.shared.util.FileExtension
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.asset.AssetSniffer
 import org.readium.r2.shared.util.asset.SniffError
 import org.readium.r2.shared.util.checkSuccess
 import org.readium.r2.shared.util.data.EmptyContainer
-import org.readium.r2.shared.util.format.FileExtension
 import org.readium.r2.shared.util.format.Format
 import org.readium.r2.shared.util.format.FormatHints
 import org.readium.r2.shared.util.format.Trait

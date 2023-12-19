@@ -8,6 +8,7 @@ package org.readium.r2.shared.util.asset
 
 import java.io.File
 import org.readium.r2.shared.util.Either
+import org.readium.r2.shared.util.FileExtension
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.data.CachingContainer
 import org.readium.r2.shared.util.data.CachingReadable
@@ -15,11 +16,29 @@ import org.readium.r2.shared.util.data.Container
 import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.data.Readable
 import org.readium.r2.shared.util.file.FileResource
-import org.readium.r2.shared.util.format.DefaultFormatSniffer
-import org.readium.r2.shared.util.format.FileExtension
+import org.readium.r2.shared.util.format.AdeptSniffer
+import org.readium.r2.shared.util.format.ArchiveSniffer
+import org.readium.r2.shared.util.format.AudioSniffer
+import org.readium.r2.shared.util.format.BitmapSniffer
+import org.readium.r2.shared.util.format.BlobSniffer
+import org.readium.r2.shared.util.format.ContainerSniffer
+import org.readium.r2.shared.util.format.EpubSniffer
 import org.readium.r2.shared.util.format.Format
 import org.readium.r2.shared.util.format.FormatHints
+import org.readium.r2.shared.util.format.FormatHintsSniffer
 import org.readium.r2.shared.util.format.FormatSniffer
+import org.readium.r2.shared.util.format.HtmlSniffer
+import org.readium.r2.shared.util.format.JsonSniffer
+import org.readium.r2.shared.util.format.LcpLicenseSniffer
+import org.readium.r2.shared.util.format.LcpSniffer
+import org.readium.r2.shared.util.format.LpfSniffer
+import org.readium.r2.shared.util.format.OpdsSniffer
+import org.readium.r2.shared.util.format.PdfSniffer
+import org.readium.r2.shared.util.format.RarSniffer
+import org.readium.r2.shared.util.format.RpfSniffer
+import org.readium.r2.shared.util.format.RwpmSniffer
+import org.readium.r2.shared.util.format.W3cWpubSniffer
+import org.readium.r2.shared.util.format.ZipSniffer
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.shared.util.resource.borrow
@@ -30,9 +49,33 @@ import org.readium.r2.shared.util.use
 import org.readium.r2.shared.util.zip.ZipArchiveOpener
 
 public class AssetSniffer(
-    private val formatSniffer: FormatSniffer = DefaultFormatSniffer(),
+    private val formatSniffers: List<FormatSniffer> = defaultFormatSniffers,
     private val archiveOpener: ArchiveOpener = ZipArchiveOpener()
 ) {
+
+    public companion object {
+
+        public val defaultFormatSniffers: List<FormatSniffer> = listOf(
+            ZipSniffer,
+            RarSniffer,
+            EpubSniffer,
+            LpfSniffer,
+            ArchiveSniffer,
+            RpfSniffer,
+            PdfSniffer,
+            HtmlSniffer,
+            BitmapSniffer,
+            AudioSniffer,
+            JsonSniffer,
+            OpdsSniffer,
+            LcpLicenseSniffer,
+            LcpSniffer,
+            AdeptSniffer,
+            W3cWpubSniffer,
+            RwpmSniffer
+        )
+    }
+
     public suspend fun sniff(
         file: File,
         hints: FormatHints = FormatHints()
@@ -100,30 +143,42 @@ public class AssetSniffer(
     private suspend fun doSniff(
         format: Format?,
         source: Either<Readable, Container<Readable>>,
-        hints: FormatHints
+        hints: FormatHints,
+        excludeHintsSniffer: FormatHintsSniffer? = null,
+        excludeBlobSniffer: BlobSniffer? = null,
+        excludeContainerSniffer: ContainerSniffer? = null
     ): Try<Format?, ReadError> {
-        formatSniffer
-            .sniffHints(format, hints)
-            ?.takeIf { format == null || it.conformsTo(format) }
-            ?.takeIf { it != format }
-            ?.let { return doSniff(it, source, hints) }
+        for (sniffer in formatSniffers) {
+            sniffer
+                .takeIf { it != excludeHintsSniffer }
+                ?.sniffHints(format, hints)
+                ?.takeIf { format == null || it.conformsTo(format) }
+                ?.takeIf { it != format }
+                ?.let { return doSniff(it, source, hints, excludeHintsSniffer = sniffer) }
+        }
 
         when (source) {
             is Either.Left ->
-                formatSniffer
-                    .sniffBlob(format, source.value)
-                    .getOrElse { return Try.failure(it) }
-                    ?.takeIf { format == null || it.conformsTo(format) }
-                    ?.takeIf { it != format }
-                    ?.let { return doSniff(it, source, hints) }
+                for (sniffer in formatSniffers) {
+                    sniffer
+                        .takeIf { it != excludeBlobSniffer }
+                        ?.sniffBlob(format, source.value)
+                        ?.getOrElse { return Try.failure(it) }
+                        ?.takeIf { format == null || it.conformsTo(format) }
+                        ?.takeIf { it != format }
+                        ?.let { return doSniff(it, source, hints, excludeBlobSniffer = sniffer) }
+                }
 
             is Either.Right ->
-                formatSniffer
-                    .sniffContainer(format, source.value)
-                    .getOrElse { return Try.failure(it) }
-                    ?.takeIf { format == null || it.conformsTo(format) }
-                    ?.takeIf { it != format }
-                    ?.let { return doSniff(it, source, hints) }
+                for (sniffer in formatSniffers) {
+                    sniffer
+                        .takeIf { it != excludeContainerSniffer }
+                        ?.sniffContainer(format, source.value)
+                        ?.getOrElse { return Try.failure(it) }
+                        ?.takeIf { format == null || it.conformsTo(format) }
+                        ?.takeIf { it != format }
+                        ?.let { return doSniff(it, source, hints, excludeContainerSniffer = sniffer) }
+                }
         }
 
         if (source is Either.Left) {
