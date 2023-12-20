@@ -68,7 +68,7 @@ public class AssetOpener(
         val resource = retrieveResource(url)
             .getOrElse { return Try.failure(it) }
 
-        val archive = archiveOpener
+        val asset = archiveOpener
             .open(format, resource)
             .getOrElse {
                 return when (it) {
@@ -79,7 +79,7 @@ public class AssetOpener(
                 }
             }
 
-        return Try.success(ContainerAsset(format, archive))
+        return Try.success(asset)
     }
 
     private suspend fun retrieveResource(

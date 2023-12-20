@@ -47,25 +47,28 @@ internal class StreamingZipArchiveProvider {
     suspend fun open(
         format: Format,
         source: Readable
-    ): Try<Container<Resource>, ArchiveOpener.OpenError> {
+    ): Try<ContainerAsset, ArchiveOpener.OpenError> {
         if (!format.conformsTo(Trait.ZIP)) {
             return Try.failure(
                 ArchiveOpener.OpenError.FormatNotSupported(format)
             )
         }
 
-        return try {
-            val container = openBlob(
+        val container = try {
+            openBlob(
                 source,
                 ::ReadException,
                 (source as? Resource)?.sourceUrl
             )
-            Try.success(container)
         } catch (exception: Exception) {
-            exception.findInstance(ReadException::class.java)
-                ?.let { Try.failure(ArchiveOpener.OpenError.Reading(it.error)) }
-                ?: Try.failure(ArchiveOpener.OpenError.Reading(ReadError.Decoding(exception)))
+            val error = exception.findInstance(ReadException::class.java)
+                ?.let { ArchiveOpener.OpenError.Reading(it.error) }
+                ?: ArchiveOpener.OpenError.Reading(ReadError.Decoding(exception))
+
+            return Try.failure(error)
         }
+
+        return Try.success(ContainerAsset(format, container))
     }
 
     private suspend fun openBlob(

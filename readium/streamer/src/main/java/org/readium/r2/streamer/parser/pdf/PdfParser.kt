@@ -32,7 +32,8 @@ import org.readium.r2.streamer.parser.PublicationParser
 @OptIn(ExperimentalReadiumApi::class)
 public class PdfParser(
     context: Context,
-    private val pdfFactory: PdfDocumentFactory<*>
+    private val pdfFactory: PdfDocumentFactory<*>,
+    private val formatRegistry: FormatRegistry
 ) : PublicationParser {
 
     private val context = context.applicationContext
@@ -45,8 +46,8 @@ public class PdfParser(
             return Try.failure(PublicationParser.ParseError.FormatNotSupported())
         }
 
-        val container = asset.resource
-            .toContainer(FormatRegistry()[Format.PDF]?.fileExtension)
+        val container = asset
+            .toContainer(formatRegistry)
 
         val url = container.entries
             .first()

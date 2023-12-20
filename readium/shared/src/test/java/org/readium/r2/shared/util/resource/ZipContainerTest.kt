@@ -47,6 +47,7 @@ class ZipContainerTest(val sut: suspend () -> Container<Resource>) {
                             file = File(epubZip.path)
                         )
                         .getOrNull()
+                        ?.container
                 )
             }
 

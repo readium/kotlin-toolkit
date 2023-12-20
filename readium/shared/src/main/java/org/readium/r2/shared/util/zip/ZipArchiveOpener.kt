@@ -10,7 +10,6 @@ import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.asset.ArchiveOpener
 import org.readium.r2.shared.util.asset.ContainerAsset
 import org.readium.r2.shared.util.asset.SniffError
-import org.readium.r2.shared.util.data.Container
 import org.readium.r2.shared.util.data.Readable
 import org.readium.r2.shared.util.format.Format
 import org.readium.r2.shared.util.resource.Resource
@@ -24,7 +23,7 @@ public class ZipArchiveOpener : ArchiveOpener {
     override suspend fun open(
         format: Format,
         source: Readable
-    ): Try<Container<Resource>, ArchiveOpener.OpenError> =
+    ): Try<ContainerAsset, ArchiveOpener.OpenError> =
         (source as? Resource)?.sourceUrl?.toFile()
             ?.let { fileZipArchiveProvider.open(format, it) }
             ?: streamingZipArchiveProvider.open(format, source)

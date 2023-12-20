@@ -206,7 +206,6 @@ public class AssetSniffer(
                 }
         } else {
             archiveOpener.open(format, source)
-                .map { ContainerAsset(format, it) }
                 .tryRecover {
                     when (it) {
                         is ArchiveOpener.OpenError.FormatNotSupported ->

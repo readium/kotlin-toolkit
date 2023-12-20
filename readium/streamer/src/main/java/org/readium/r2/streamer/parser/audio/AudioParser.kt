@@ -18,12 +18,14 @@ import org.readium.r2.shared.util.asset.Asset
 import org.readium.r2.shared.util.asset.AssetSniffer
 import org.readium.r2.shared.util.asset.ContainerAsset
 import org.readium.r2.shared.util.asset.ResourceAsset
+import org.readium.r2.shared.util.data.Container
 import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.format.Format
 import org.readium.r2.shared.util.format.FormatRegistry
 import org.readium.r2.shared.util.format.Trait
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.logging.WarningLogger
+import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.streamer.extensions.guessTitle
 import org.readium.r2.streamer.extensions.isHiddenOrThumbs
 import org.readium.r2.streamer.extensions.sniffContainerEntries
@@ -44,31 +46,44 @@ public class AudioParser(
     override suspend fun parse(
         asset: Asset,
         warnings: WarningLogger?
+    ): Try<Publication.Builder, PublicationParser.ParseError> =
+        when (asset) {
+            is ResourceAsset -> parseResourceAsset(asset)
+            is ContainerAsset -> parseContainerAsset(asset)
+        }
+
+    private fun parseResourceAsset(
+        asset: ResourceAsset
     ): Try<Publication.Builder, PublicationParser.ParseError> {
-        if (!asset.format.conformsTo(Trait.AUDIOBOOK) && !asset.format.conformsTo(Trait.AUDIO)) {
+        if (!asset.format.conformsTo(Trait.AUDIO)) {
             return Try.failure(PublicationParser.ParseError.FormatNotSupported())
         }
 
-        val container = when (asset) {
-            is ResourceAsset ->
-                asset.resource.toContainer()
-            is ContainerAsset ->
-                asset.container
+        val container =
+            asset.toContainer(formatRegistry)
+
+        val readingOrderWithFormat =
+            listOfNotNull(container.first() to asset.format)
+
+        return finalizeParsing(container, readingOrderWithFormat, null)
+    }
+
+    private suspend fun parseContainerAsset(
+        asset: ContainerAsset
+    ): Try<Publication.Builder, PublicationParser.ParseError> {
+        if (!asset.format.conformsTo(Trait.AUDIOBOOK)) {
+            return Try.failure(PublicationParser.ParseError.FormatNotSupported())
         }
 
         val entryFormats: Map<Url, Format> = assetSniffer
-            .sniffContainerEntries(container) { !it.isHiddenOrThumbs }
+            .sniffContainerEntries(asset.container) { !it.isHiddenOrThumbs }
             .getOrElse { return Try.failure(PublicationParser.ParseError.Reading(it)) }
 
         val readingOrderWithFormat =
-            if (asset.format.conformsTo(Trait.AUDIOBOOK)) {
-                container
-                    .mapNotNull { url -> entryFormats[url]?.let { url to it } }
-                    .filter { it.second.conformsTo(Trait.AUDIO) }
-                    .sortedBy { it.first.toString() }
-            } else {
-                listOfNotNull(container.first() to asset.format)
-            }
+            asset.container
+                .mapNotNull { url -> entryFormats[url]?.let { url to it } }
+                .filter { it.second.conformsTo(Trait.AUDIO) }
+                .sortedBy { it.first.toString() }
 
         if (readingOrderWithFormat.isEmpty()) {
             return Try.failure(
@@ -80,7 +95,20 @@ public class AudioParser(
             )
         }
 
-        val readingOrderLinks = readingOrderWithFormat.map { (url, format) ->
+        val title = asset
+            .container
+            .entries
+            .guessTitle()
+
+        return finalizeParsing(asset.container, readingOrderWithFormat, title)
+    }
+
+    private fun finalizeParsing(
+        container: Container<Resource>,
+        readingOrderWithFormat: List<Pair<Url, Format>>,
+        title: String?
+    ): Try<Publication.Builder, PublicationParser.ParseError> {
+        val readingOrder = readingOrderWithFormat.map { (url, format) ->
             val mediaType = formatRegistry[format]?.mediaType
             Link(href = url, mediaType = mediaType)
         }
@@ -88,9 +116,9 @@ public class AudioParser(
         val manifest = Manifest(
             metadata = Metadata(
                 conformsTo = setOf(Publication.Profile.AUDIOBOOK),
-                localizedTitle = container.entries.guessTitle()?.let { LocalizedString(it) }
+                localizedTitle = title?.let { LocalizedString(it) }
             ),
-            readingOrder = readingOrderLinks
+            readingOrder = readingOrder
         )
 
         val publicationBuilder = Publication.Builder(

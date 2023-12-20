@@ -34,15 +34,15 @@ public interface ArchiveOpener {
     }
 
     /**
-     * Creates a new [Container] to access the entries of the given archive.
+     * Creates a new [Container] to access the entries of an archive with a known format.
      */
     public suspend fun open(
         format: Format,
         source: Readable
-    ): Try<Container<Resource>, OpenError>
+    ): Try<ContainerAsset, OpenError>
 
     /**
-     * Creates a new [Container] to access the entries of the given archive.
+     * Creates a new [ContainerAsset] to access the entries of an archive after sniffing its format.
      */
     public suspend fun sniffOpen(
         source: Readable
@@ -54,7 +54,7 @@ public interface ArchiveOpener {
  * the format.
 */
 public class CompositeArchiveOpener(
-    private val factories: List<ArchiveOpener>
+    private val openers: List<ArchiveOpener>
 ) : ArchiveOpener {
 
     public constructor(vararg factories: ArchiveOpener) :
@@ -63,8 +63,8 @@ public class CompositeArchiveOpener(
     override suspend fun open(
         format: Format,
         source: Readable
-    ): Try<Container<Resource>, ArchiveOpener.OpenError> {
-        for (factory in factories) {
+    ): Try<ContainerAsset, ArchiveOpener.OpenError> {
+        for (factory in openers) {
             factory.open(format, source)
                 .getOrElse { error ->
                     when (error) {
@@ -79,7 +79,7 @@ public class CompositeArchiveOpener(
     }
 
     override suspend fun sniffOpen(source: Readable): Try<ContainerAsset, SniffError> {
-        for (factory in factories) {
+        for (factory in openers) {
             factory.sniffOpen(source)
                 .getOrElse { error ->
                     when (error) {

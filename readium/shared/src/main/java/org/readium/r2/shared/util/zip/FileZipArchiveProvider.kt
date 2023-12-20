@@ -56,7 +56,7 @@ internal class FileZipArchiveProvider {
     suspend fun open(
         format: Format,
         file: File
-    ): Try<Container<Resource>, ArchiveOpener.OpenError> {
+    ): Try<ContainerAsset, ArchiveOpener.OpenError> {
         if (!format.conformsTo(Trait.ZIP)) {
             return Try.failure(
                 ArchiveOpener.OpenError.FormatNotSupported(format)
@@ -66,7 +66,9 @@ internal class FileZipArchiveProvider {
         val container = open(file)
             .getOrElse { return Try.failure(it) }
 
-        return Try.success(container)
+        val asset = ContainerAsset(format, container)
+
+        return Try.success(asset)
     }
 
     // Internal for testing purpose

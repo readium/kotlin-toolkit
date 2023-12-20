@@ -32,7 +32,7 @@ import org.readium.r2.streamer.parser.readium.ReadiumWebPubParser
 /**
  * Opens a Publication using a list of parsers.
  *
- * The [PublicationFactory] is configured to use Readium's default parsers, which you can bypass
+ * The [PublicationOpener] is configured to use Readium's default parsers, which you can bypass
  * using ignoreDefaultParsers. However, you can provide additional [parsers] which will take
  * precedence over the default ones. This can also be used to provide an alternative configuration
  * of a default parser.
@@ -47,7 +47,7 @@ import org.readium.r2.streamer.parser.readium.ReadiumWebPubParser
  *   the manifest, the root container or the list of service factories of a [Publication].
  */
 @OptIn(PdfSupport::class)
-public class PublicationFactory(
+public class PublicationOpener(
     context: Context,
     parsers: List<PublicationParser> = emptyList(),
     ignoreDefaultParsers: Boolean = false,
@@ -78,7 +78,7 @@ public class PublicationFactory(
     private val defaultParsers: List<PublicationParser> =
         listOfNotNull(
             EpubParser(),
-            pdfFactory?.let { PdfParser(context, it) },
+            pdfFactory?.let { PdfParser(context, it, formatRegistry) },
             ReadiumWebPubParser(context, httpClient, pdfFactory),
             ImageParser(assetSniffer, formatRegistry),
             AudioParser(assetSniffer, formatRegistry)
@@ -118,7 +118,7 @@ public class PublicationFactory(
         warnings: WarningLogger? = null
     ): Try<Publication, OpenError> {
         var compositeOnCreatePublication: Publication.Builder.() -> Unit = {
-            this@PublicationFactory.onCreatePublication(this)
+            this@PublicationOpener.onCreatePublication(this)
             onCreatePublication(this)
         }
 

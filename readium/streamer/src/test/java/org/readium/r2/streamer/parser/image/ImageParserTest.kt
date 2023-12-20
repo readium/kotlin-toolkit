@@ -21,13 +21,12 @@ import org.readium.r2.shared.publication.firstWithRel
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.asset.AssetSniffer
 import org.readium.r2.shared.util.asset.ContainerAsset
+import org.readium.r2.shared.util.asset.ResourceAsset
 import org.readium.r2.shared.util.checkSuccess
 import org.readium.r2.shared.util.file.FileResource
 import org.readium.r2.shared.util.format.Format
 import org.readium.r2.shared.util.format.FormatRegistry
 import org.readium.r2.shared.util.mediatype.MediaType
-import org.readium.r2.shared.util.resource.SingleResourceContainer
-import org.readium.r2.shared.util.toUrl
 import org.readium.r2.shared.util.zip.ZipArchiveOpener
 import org.readium.r2.streamer.parseBlocking
 import org.robolectric.RobolectricTestRunner
@@ -47,15 +46,15 @@ class ImageParserTest {
         val file = fileForResource("futuristic_tales.cbz")
         val resource = FileResource(file)
         val archive = archiveOpener.open(Format.ZIP, resource).checkSuccess()
-        ContainerAsset(Format.CBZ, archive)
+        ContainerAsset(Format.CBZ, archive.container)
     }
 
     private val jpgAsset = runBlocking {
         val file = fileForResource("futuristic_tales.jpg")
         val resource = FileResource(file, mediaType = MediaType.JPEG)
-        ContainerAsset(
+        ResourceAsset(
             Format.JPEG,
-            SingleResourceContainer(file.toUrl(), resource)
+            resource
         )
     }
 

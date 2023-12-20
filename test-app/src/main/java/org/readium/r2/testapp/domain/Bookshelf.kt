@@ -22,7 +22,7 @@ import org.readium.r2.shared.util.format.FormatRegistry
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.toUrl
-import org.readium.r2.streamer.PublicationFactory
+import org.readium.r2.streamer.PublicationOpener
 import org.readium.r2.testapp.data.BookRepository
 import org.readium.r2.testapp.data.model.Book
 import org.readium.r2.testapp.utils.extensions.formatPercentage
@@ -38,7 +38,7 @@ import timber.log.Timber
 class Bookshelf(
     private val bookRepository: BookRepository,
     private val coverStorage: CoverStorage,
-    private val publicationFactory: PublicationFactory,
+    private val publicationOpener: PublicationOpener,
     private val assetOpener: AssetOpener,
     private val formatRegistry: FormatRegistry,
     createPublicationRetriever: (PublicationRetriever.Listener) -> PublicationRetriever
@@ -132,7 +132,7 @@ class Bookshelf(
                     )
                 }
 
-        publicationFactory.open(
+        publicationOpener.open(
             asset,
             allowUserInteraction = false
         ).onSuccess { publication ->

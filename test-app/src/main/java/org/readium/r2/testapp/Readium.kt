@@ -26,7 +26,7 @@ import org.readium.r2.shared.util.http.DefaultHttpClient
 import org.readium.r2.shared.util.http.HttpResourceFactory
 import org.readium.r2.shared.util.resource.CompositeResourceFactory
 import org.readium.r2.shared.util.zip.ZipArchiveOpener
-import org.readium.r2.streamer.PublicationFactory
+import org.readium.r2.streamer.PublicationOpener
 
 /**
  * Holds the shared Readium objects and services used by the app.
@@ -82,7 +82,7 @@ class Readium(context: Context) {
     /**
      * The PublicationFactory is used to parse and open publications.
      */
-    val publicationFactory = PublicationFactory(
+    val publicationOpener = PublicationOpener(
         context,
         contentProtections = contentProtections,
         formatRegistry = formatRegistry,

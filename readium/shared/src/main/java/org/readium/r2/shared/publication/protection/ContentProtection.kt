@@ -42,7 +42,7 @@ public interface ContentProtection {
     }
 
     /**
-     * Holds the result of opening an [OpenResult] with a [ContentProtection].
+     * Holds the result of opening an [Asset] with a [ContentProtection].
      *
      * @property asset Asset pointing to a publication.
      * @property onCreatePublication Called on every parsed Publication.Builder

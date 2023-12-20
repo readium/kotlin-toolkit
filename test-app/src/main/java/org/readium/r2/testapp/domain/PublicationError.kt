@@ -8,7 +8,7 @@ package org.readium.r2.testapp.domain
 
 import org.readium.r2.shared.util.Error
 import org.readium.r2.shared.util.asset.AssetOpener
-import org.readium.r2.streamer.PublicationFactory
+import org.readium.r2.streamer.PublicationOpener
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.utils.UserError
 
@@ -58,11 +58,11 @@ sealed class PublicationError(
                     UnsupportedScheme(error)
             }
 
-        operator fun invoke(error: PublicationFactory.OpenError): PublicationError =
+        operator fun invoke(error: PublicationOpener.OpenError): PublicationError =
             when (error) {
-                is PublicationFactory.OpenError.Reading ->
+                is PublicationOpener.OpenError.Reading ->
                     ReadError(error.cause)
-                is PublicationFactory.OpenError.FormatNotSupported ->
+                is PublicationOpener.OpenError.FormatNotSupported ->
                     PublicationError(error)
             }
     }

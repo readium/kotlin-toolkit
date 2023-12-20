@@ -6,19 +6,20 @@
 
 package org.readium.r2.shared.publication.protection
 
-import org.readium.r2.shared.InternalReadiumApi
+import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.protection.ContentProtection.Scheme
+import org.readium.r2.shared.publication.services.ContentProtectionService
 import org.readium.r2.shared.publication.services.contentProtectionServiceFactory
+import org.readium.r2.shared.util.Error
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.asset.Asset
 import org.readium.r2.shared.util.asset.ContainerAsset
 import org.readium.r2.shared.util.format.Trait
 
 /**
- * [ContentProtection] implementation used as a fallback by the PublicationFactory to detect DRMs
+ * [ContentProtection] implementation used as a fallback by when detecting known DRMs
  * not supported by the app.
  */
-@InternalReadiumApi
 public class FallbackContentProtection : ContentProtection {
 
     override suspend fun open(
@@ -34,9 +35,9 @@ public class FallbackContentProtection : ContentProtection {
 
         val protectionServiceFactory = when {
             asset.format.conformsTo(Trait.LCP_PROTECTED) ->
-                FallbackContentProtectionService.createFactory(Scheme.Lcp, "Readium LCP")
+                Service.createFactory(Scheme.Lcp, "Readium LCP")
             asset.format.conformsTo(Trait.ADEPT_PROTECTED) ->
-                FallbackContentProtectionService.createFactory(Scheme.Adept, "Adobe ADEPT")
+                Service.createFactory(Scheme.Adept, "Adobe ADEPT")
             else ->
                 return Try.failure(ContentProtection.OpenError.AssetNotSupported())
         }
@@ -49,5 +50,42 @@ public class FallbackContentProtection : ContentProtection {
         )
 
         return Try.success(protectedFile)
+    }
+
+    public class SchemeNotSupportedError(
+        public val scheme: Scheme,
+        public val name: String
+    ) : Error {
+
+        override val message: String = "$name DRM scheme is not supported."
+
+        override val cause: Error? = null
+    }
+
+    private class Service(
+        override val scheme: Scheme,
+        override val name: String
+    ) : ContentProtectionService {
+
+        override val isRestricted: Boolean =
+            true
+
+        override val credentials: String? =
+            null
+
+        override val rights: ContentProtectionService.UserRights =
+            ContentProtectionService.UserRights.AllRestricted
+
+        override val error: Error =
+            SchemeNotSupportedError(scheme, name)
+
+        companion object {
+
+            fun createFactory(
+                scheme: Scheme,
+                name: String
+            ): (Publication.Service.Context) -> ContentProtectionService =
+                { Service(scheme, name) }
+        }
     }
 }

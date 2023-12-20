@@ -83,7 +83,7 @@ class ReaderRepository(
             )
         }
 
-        val publication = readium.publicationFactory.open(
+        val publication = readium.publicationOpener.open(
             asset,
             allowUserInteraction = true
         ).getOrElse {
