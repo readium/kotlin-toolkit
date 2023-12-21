@@ -10,9 +10,9 @@
 package org.readium.r2.streamer.extensions
 
 import java.io.File
-import org.readium.r2.shared.extensions.addPrefix
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.appendToFilename
 import org.readium.r2.shared.util.asset.AssetSniffer
 import org.readium.r2.shared.util.asset.ResourceAsset
 import org.readium.r2.shared.util.asset.SniffError
@@ -52,17 +52,11 @@ internal fun ResourceAsset.toContainer(
     // "publication.extension".
     val extension = formatRegistry[format]
         ?.fileExtension
-        ?.value
         ?: resource.sourceUrl
             ?.extension
-            ?.value
-
-    val dottedExtension = extension
-        ?.addPrefix(".")
-        ?: ""
 
     return SingleResourceContainer(
-        Url("publication$dottedExtension")!!,
+        Url(extension.appendToFilename("publication"))!!,
         resource
     )
 }

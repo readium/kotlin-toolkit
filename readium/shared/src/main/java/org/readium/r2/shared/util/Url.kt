@@ -360,3 +360,9 @@ private fun String.isValidUrl(): Boolean =
 public value class FileExtension(
     public val value: String
 )
+
+/**
+ * Appends this file extension to [filename].
+ */
+public fun FileExtension?.appendToFilename(filename: String): String =
+    this?.let { "$filename.$value" } ?: filename
