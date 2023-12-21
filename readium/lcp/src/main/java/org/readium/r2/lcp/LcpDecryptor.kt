@@ -29,7 +29,7 @@ import org.readium.r2.shared.util.resource.flatMap
  */
 internal class LcpDecryptor(
     val license: LcpLicense?,
-    var encryptionData: Map<Url, Encryption> = emptyMap()
+    val encryptionData: Map<Url, Encryption>
 ) {
 
     fun transform(url: Url, resource: Resource): Resource {

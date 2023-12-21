@@ -7,7 +7,7 @@
 package org.readium.r2.shared.util.asset
 
 import org.readium.r2.shared.util.data.Container
-import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.shared.util.format.Format
 import org.readium.r2.shared.util.resource.Resource
 
 /**
@@ -16,9 +16,9 @@ import org.readium.r2.shared.util.resource.Resource
 public sealed class Asset {
 
     /**
-     * Media type of the asset.
+     * Format of the asset.
      */
-    public abstract val mediaType: MediaType
+    public abstract val format: Format
 
     /**
      * Releases in-memory resources related to this asset.
@@ -29,11 +29,11 @@ public sealed class Asset {
 /**
  * A container asset providing access to several resources.
  *
- * @param mediaType Media type of the asset.
+ * @param format Format of the asset.
  * @param container Opened container to access asset resources.
  */
 public class ContainerAsset(
-    override val mediaType: MediaType,
+    override val format: Format,
     public val container: Container<Resource>
 ) : Asset() {
 
@@ -45,11 +45,11 @@ public class ContainerAsset(
 /**
  * A single resource asset.
  *
- * @param mediaType Media type of the asset.
+ * @param format Format of the asset.
  * @param resource Opened resource to access the asset.
  */
 public class ResourceAsset(
-    override val mediaType: MediaType,
+    override val format: Format,
     public val resource: Resource
 ) : Asset() {
 

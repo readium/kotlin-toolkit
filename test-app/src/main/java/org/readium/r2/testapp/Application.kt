@@ -78,9 +78,9 @@ class Application : android.app.Application() {
             Bookshelf(
                 bookRepository,
                 CoverStorage(storageDir, httpClient = readium.httpClient),
-                readium.publicationFactory,
-                readium.assetRetriever,
-                readium.protectionRetriever,
+                readium.publicationOpener,
+                readium.assetOpener,
+                readium.formatRegistry,
                 createPublicationRetriever = { listener ->
                     PublicationRetriever(
                         listener = listener,
@@ -89,7 +89,7 @@ class Application : android.app.Application() {
                                 listener = localListener,
                                 context = applicationContext,
                                 storageDir = storageDir,
-                                assetRetriever = readium.assetRetriever,
+                                assetOpener = readium.assetOpener,
                                 formatRegistry = readium.formatRegistry,
                                 createLcpPublicationRetriever = { lcpListener ->
                                     readium.lcpService.getOrNull()?.publicationRetriever()

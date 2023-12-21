@@ -7,6 +7,7 @@
 package org.readium.r2.testapp.domain
 
 import org.readium.r2.lcp.LcpError
+import org.readium.r2.shared.util.DebugError
 import org.readium.r2.shared.util.Error
 import org.readium.r2.shared.util.downloads.DownloadManager
 import org.readium.r2.shared.util.file.FileSystemError
@@ -19,6 +20,9 @@ sealed class ImportError(
 
     override val message: String =
         "Import failed"
+
+    object MissingLcpSupport :
+        ImportError(DebugError("Lcp support is missing."))
 
     class LcpAcquisitionFailed(
         override val cause: LcpError
@@ -43,6 +47,7 @@ sealed class ImportError(
         ImportError(cause)
 
     fun toUserError(): UserError = when (this) {
+        is MissingLcpSupport -> UserError(R.string.missing_lcp_support)
         is Database -> UserError(R.string.import_publication_unable_add_pub_database)
         is DownloadFailed -> UserError(R.string.import_publication_download_failed)
         is LcpAcquisitionFailed -> cause.toUserError()

@@ -23,13 +23,14 @@ import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.DebugError
 import org.readium.r2.shared.util.Error
 import org.readium.r2.shared.util.Try
-import org.readium.r2.shared.util.asset.AssetRetriever
+import org.readium.r2.shared.util.asset.AssetOpener
 import org.readium.r2.shared.util.asset.ResourceAsset
 import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.downloads.DownloadManager
 import org.readium.r2.shared.util.file.FileSystemError
+import org.readium.r2.shared.util.format.Format
+import org.readium.r2.shared.util.format.FormatRegistry
 import org.readium.r2.shared.util.getOrElse
-import org.readium.r2.shared.util.mediatype.FormatRegistry
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.testapp.data.DownloadRepository
 import org.readium.r2.testapp.utils.extensions.copyToTempFile
@@ -104,7 +105,7 @@ class LocalPublicationRetriever(
     private val listener: PublicationRetriever.Listener,
     private val context: Context,
     private val storageDir: File,
-    private val assetRetriever: AssetRetriever,
+    private val assetOpener: AssetOpener,
     private val formatRegistry: FormatRegistry,
     createLcpPublicationRetriever: (PublicationRetriever.Listener) -> LcpPublicationRetriever?
 ) {
@@ -150,7 +151,7 @@ class LocalPublicationRetriever(
         tempFile: File,
         coverUrl: AbsoluteUrl? = null
     ) {
-        val sourceAsset = assetRetriever.retrieve(tempFile)
+        val sourceAsset = assetOpener.open(tempFile)
             .getOrElse {
                 listener.onError(
                     ImportError.Publication(PublicationError(it))
@@ -160,23 +161,19 @@ class LocalPublicationRetriever(
 
         if (
             sourceAsset is ResourceAsset &&
-            sourceAsset.mediaType.matches(MediaType.LCP_LICENSE_DOCUMENT)
+            sourceAsset.format.conformsTo(Format.LCP_LICENSE_DOCUMENT)
         ) {
             if (lcpPublicationRetriever == null) {
-                listener.onError(
-                    ImportError.Publication(
-                        PublicationError.UnsupportedContentProtection(
-                            DebugError("LCP support is missing.")
-                        )
-                    )
-                )
+                listener.onError(ImportError.MissingLcpSupport)
             } else {
                 lcpPublicationRetriever.retrieve(sourceAsset, tempFile, coverUrl)
             }
             return
         }
 
-        val fileExtension = formatRegistry.fileExtension(sourceAsset.mediaType) ?: tempFile.extension
+        val fileExtension = formatRegistry[sourceAsset.format]
+            ?.fileExtension?.value
+            ?: tempFile.extension
         val fileName = "${UUID.randomUUID()}.$fileExtension"
         val libraryFile = File(storageDir, fileName)
 

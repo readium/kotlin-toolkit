@@ -8,7 +8,7 @@
     "modified": "2015-09-29T17:00:00Z"
   },
   "links": [
-    {"rel": "self", "href": "http://example.org/manifest.json", "type": "application/webpub+json"},
+    {"rel": "self", "href": "http://example.org/manifest.json", "type": "application/opds-publication+json"},
     {
       "href": "/buy",
       "rel": "http://opds-spec.org/acquisition/buy",

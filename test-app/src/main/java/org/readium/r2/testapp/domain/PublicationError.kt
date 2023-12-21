@@ -6,10 +6,9 @@
 
 package org.readium.r2.testapp.domain
 
-import org.readium.r2.shared.publication.protection.ContentProtectionSchemeRetriever
 import org.readium.r2.shared.util.Error
-import org.readium.r2.shared.util.asset.AssetRetriever
-import org.readium.r2.streamer.PublicationFactory
+import org.readium.r2.shared.util.asset.AssetOpener
+import org.readium.r2.streamer.PublicationOpener
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.utils.UserError
 
@@ -24,12 +23,7 @@ sealed class PublicationError(
     class UnsupportedScheme(cause: Error) :
         PublicationError(cause.message, cause.cause)
 
-    class UnsupportedContentProtection(cause: Error) :
-        PublicationError(cause.message, cause.cause)
-    class UnsupportedArchiveFormat(cause: Error) :
-        PublicationError(cause.message, cause.cause)
-
-    class UnsupportedPublication(cause: Error) :
+    class UnsupportedFormat(cause: Error) :
         PublicationError(cause.message, cause.cause)
 
     class InvalidPublication(cause: Error) :
@@ -44,11 +38,7 @@ sealed class PublicationError(
                 UserError(R.string.publication_error_invalid_publication)
             is Unexpected ->
                 UserError(R.string.publication_error_unexpected)
-            is UnsupportedArchiveFormat ->
-                UserError(R.string.publication_error_unsupported_archive)
-            is UnsupportedContentProtection ->
-                UserError(R.string.publication_error_unsupported_protection)
-            is UnsupportedPublication ->
+            is UnsupportedFormat ->
                 UserError(R.string.publication_error_unsupported_asset)
             is UnsupportedScheme ->
                 UserError(R.string.publication_error_scheme_not_supported)
@@ -58,32 +48,22 @@ sealed class PublicationError(
 
     companion object {
 
-        operator fun invoke(error: AssetRetriever.RetrieveError): PublicationError =
+        operator fun invoke(error: AssetOpener.OpenError): PublicationError =
             when (error) {
-                is AssetRetriever.RetrieveError.Reading ->
+                is AssetOpener.OpenError.Reading ->
                     ReadError(error.cause)
-                is AssetRetriever.RetrieveError.FormatNotSupported ->
-                    UnsupportedArchiveFormat(error)
-                is AssetRetriever.RetrieveError.SchemeNotSupported ->
+                is AssetOpener.OpenError.FormatNotSupported ->
+                    UnsupportedFormat(error)
+                is AssetOpener.OpenError.SchemeNotSupported ->
                     UnsupportedScheme(error)
             }
 
-        operator fun invoke(error: ContentProtectionSchemeRetriever.Error): PublicationError =
+        operator fun invoke(error: PublicationOpener.OpenError): PublicationError =
             when (error) {
-                is ContentProtectionSchemeRetriever.Error.Reading ->
+                is PublicationOpener.OpenError.Reading ->
                     ReadError(error.cause)
-                ContentProtectionSchemeRetriever.Error.NotRecognized ->
-                    UnsupportedContentProtection(error)
-            }
-
-        operator fun invoke(error: PublicationFactory.OpenError): PublicationError =
-            when (error) {
-                is PublicationFactory.OpenError.Reading ->
-                    ReadError(error.cause)
-                is PublicationFactory.OpenError.FormatNotSupported ->
-                    UnsupportedPublication(error)
-                is PublicationFactory.OpenError.ContentProtectionNotSupported ->
-                    UnsupportedContentProtection(error)
+                is PublicationOpener.OpenError.FormatNotSupported ->
+                    PublicationError(error)
             }
     }
 }

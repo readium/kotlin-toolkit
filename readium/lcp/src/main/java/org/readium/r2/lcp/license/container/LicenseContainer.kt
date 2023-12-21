@@ -19,7 +19,7 @@ import org.readium.r2.shared.util.asset.Asset
 import org.readium.r2.shared.util.asset.ContainerAsset
 import org.readium.r2.shared.util.asset.ResourceAsset
 import org.readium.r2.shared.util.data.Container
-import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.shared.util.format.Format
 import org.readium.r2.shared.util.resource.Resource
 
 private val LICENSE_IN_EPUB = Url("META-INF/license.lcpl")!!
@@ -39,11 +39,11 @@ internal interface WritableLicenseContainer : LicenseContainer {
 
 internal fun createLicenseContainer(
     file: File,
-    mediaType: MediaType
+    format: Format
 ): WritableLicenseContainer =
-    when (mediaType) {
-        MediaType.EPUB -> FileZipLicenseContainer(file.path, LICENSE_IN_EPUB)
-        MediaType.LCP_LICENSE_DOCUMENT -> LcplLicenseContainer(file)
+    when {
+        format.conformsTo(Format.EPUB) -> FileZipLicenseContainer(file.path, LICENSE_IN_EPUB)
+        format.conformsTo(Format.LCP_LICENSE_DOCUMENT) -> LcplLicenseContainer(file)
         // Assuming it's a Readium WebPub package (e.g. audiobook, LCPDF, etc.) as a fallback
         else -> FileZipLicenseContainer(file.path, LICENSE_IN_RPF)
     }
@@ -53,15 +53,15 @@ internal fun createLicenseContainer(
     asset: Asset
 ): LicenseContainer =
     when (asset) {
-        is ResourceAsset -> createLicenseContainer(asset.resource, asset.mediaType)
-        is ContainerAsset -> createLicenseContainer(context, asset.container, asset.mediaType)
+        is ResourceAsset -> createLicenseContainer(asset.resource, asset.format)
+        is ContainerAsset -> createLicenseContainer(context, asset.container, asset.format)
     }
 
 internal fun createLicenseContainer(
     resource: Resource,
-    mediaType: MediaType
+    format: Format
 ): LicenseContainer {
-    if (mediaType != MediaType.LCP_LICENSE_DOCUMENT) {
+    if (!format.conformsTo(Format.LCP_LICENSE_DOCUMENT)) {
         throw LcpException(LcpError.Container.OpenFailed)
     }
 
@@ -76,10 +76,10 @@ internal fun createLicenseContainer(
 internal fun createLicenseContainer(
     context: Context,
     container: Container<Resource>,
-    mediaType: MediaType
+    format: Format
 ): LicenseContainer {
-    val licensePath = when (mediaType) {
-        MediaType.EPUB -> LICENSE_IN_EPUB
+    val licensePath = when {
+        format.conformsTo(Format.EPUB) -> LICENSE_IN_EPUB
         // Assuming it's a Readium WebPub package (e.g. audiobook, LCPDF, etc.) as a fallback
         else -> LICENSE_IN_RPF
     }

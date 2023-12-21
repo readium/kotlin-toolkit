@@ -10,13 +10,15 @@ import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.encryption.Encryption
-import org.readium.r2.shared.publication.encryption.encryption
+import org.readium.r2.shared.publication.epub.EpubEncryptionParser
 import org.readium.r2.shared.publication.services.content.DefaultContentService
 import org.readium.r2.shared.publication.services.content.iterators.HtmlResourceContentIterator
 import org.readium.r2.shared.publication.services.search.StringSearchService
 import org.readium.r2.shared.util.DebugError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.asset.Asset
+import org.readium.r2.shared.util.asset.ContainerAsset
 import org.readium.r2.shared.util.data.Container
 import org.readium.r2.shared.util.data.DecodeError
 import org.readium.r2.shared.util.data.ReadError
@@ -24,6 +26,7 @@ import org.readium.r2.shared.util.data.Readable
 import org.readium.r2.shared.util.data.decodeXml
 import org.readium.r2.shared.util.data.readDecodeOrElse
 import org.readium.r2.shared.util.data.readDecodeOrNull
+import org.readium.r2.shared.util.format.Trait
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.mediatype.MediaType
@@ -46,18 +49,18 @@ public class EpubParser(
 ) : PublicationParser {
 
     override suspend fun parse(
-        asset: PublicationParser.Asset,
+        asset: Asset,
         warnings: WarningLogger?
-    ): Try<Publication.Builder, PublicationParser.Error> {
-        if (asset.mediaType != MediaType.EPUB) {
-            return Try.failure(PublicationParser.Error.FormatNotSupported())
+    ): Try<Publication.Builder, PublicationParser.ParseError> {
+        if (asset !is ContainerAsset || !asset.format.conformsTo(Trait.EPUB)) {
+            return Try.failure(PublicationParser.ParseError.FormatNotSupported())
         }
 
         val opfPath = getRootFilePath(asset.container)
             .getOrElse { return Try.failure(it) }
         val opfResource = asset.container[opfPath]
             ?: return Try.failure(
-                PublicationParser.Error.Reading(
+                PublicationParser.ParseError.Reading(
                     ReadError.Decoding(
                         DebugError("Missing OPF file.")
                     )
@@ -66,32 +69,30 @@ public class EpubParser(
         val opfXmlDocument = opfResource.use { resource ->
             resource.readDecodeOrElse(
                 decode = { it.decodeXml() },
-                recover = { return Try.failure(PublicationParser.Error.Reading(it)) }
+                recover = { return Try.failure(PublicationParser.ParseError.Reading(it)) }
             )
         }
         val packageDocument = PackageDocument.parse(opfXmlDocument, opfPath)
             ?: return Try.failure(
-                PublicationParser.Error.Reading(
+                PublicationParser.ParseError.Reading(
                     ReadError.Decoding(
                         DebugError("Invalid OPF file.")
                     )
                 )
             )
 
+        val encryptionData = parseEncryptionData(asset.container)
+
         val manifest = ManifestAdapter(
             packageDocument = packageDocument,
             navigationData = parseNavigationData(packageDocument, asset.container),
-            encryptionData = parseEncryptionData(asset.container),
+            encryptionData = encryptionData,
             displayOptions = parseDisplayOptions(asset.container)
         ).adapt()
 
         var container = asset.container
         manifest.metadata.identifier?.let { id ->
-            val deobfuscator = EpubDeobfuscator(id) { url ->
-                manifest.linkWithHref(url)
-                    ?.properties?.encryption
-            }
-
+            val deobfuscator = EpubDeobfuscator(id, encryptionData)
             container = TransformingContainer(container, deobfuscator::transform)
         }
 
@@ -112,12 +113,12 @@ public class EpubParser(
         return Try.success(builder)
     }
 
-    private suspend fun getRootFilePath(container: Container<Resource>): Try<Url, PublicationParser.Error> {
+    private suspend fun getRootFilePath(container: Container<Resource>): Try<Url, PublicationParser.ParseError> {
         val containerXmlUrl = Url("META-INF/container.xml")!!
 
         val containerXmlResource = container[containerXmlUrl]
             ?: return Try.failure(
-                PublicationParser.Error.Reading(
+                PublicationParser.ParseError.Reading(
                     ReadError.Decoding("container.xml not found.")
                 )
             )
@@ -125,7 +126,7 @@ public class EpubParser(
         return containerXmlResource
             .readDecodeOrElse(
                 decode = { it.decodeXml() },
-                recover = { return Try.failure(PublicationParser.Error.Reading(it)) }
+                recover = { return Try.failure(PublicationParser.ParseError.Reading(it)) }
             )
             .getFirst("rootfiles", Namespaces.OPC)
             ?.getFirst("rootfile", Namespaces.OPC)
@@ -133,7 +134,7 @@ public class EpubParser(
             ?.let { Url.fromEpubHref(it) }
             ?.let { Try.success(it) }
             ?: Try.failure(
-                PublicationParser.Error.Reading(
+                PublicationParser.ParseError.Reading(
                     ReadError.Decoding("Cannot successfully parse OPF.")
                 )
             )
@@ -141,7 +142,7 @@ public class EpubParser(
 
     private suspend fun parseEncryptionData(container: Container<Resource>): Map<Url, Encryption> =
         container.readDecodeXmlOrNull(path = "META-INF/encryption.xml")
-            ?.let { EncryptionParser.parse(it) }
+            ?.let { EpubEncryptionParser.parse(it) }
             ?: emptyMap()
 
     private suspend fun parseNavigationData(

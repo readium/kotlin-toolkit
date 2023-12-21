@@ -9,7 +9,6 @@ package org.readium.r2.shared.util.content
 import android.content.ContentResolver
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Try
-import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.shared.util.resource.ResourceFactory
 import org.readium.r2.shared.util.toUri
@@ -23,8 +22,7 @@ public class ContentResourceFactory(
 ) : ResourceFactory {
 
     override suspend fun create(
-        url: AbsoluteUrl,
-        mediaType: MediaType?
+        url: AbsoluteUrl
     ): Try<Resource, ResourceFactory.Error> {
         if (!url.isContent) {
             return Try.failure(ResourceFactory.Error.SchemeNotSupported(url.scheme))

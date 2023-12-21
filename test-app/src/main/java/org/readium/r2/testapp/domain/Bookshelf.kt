@@ -13,17 +13,16 @@ import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
 import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.publication.protection.ContentProtectionSchemeRetriever
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.DebugError
 import org.readium.r2.shared.util.Try
-import org.readium.r2.shared.util.asset.AssetRetriever
-import org.readium.r2.shared.util.data.ReadError
+import org.readium.r2.shared.util.asset.AssetOpener
 import org.readium.r2.shared.util.file.FileSystemError
+import org.readium.r2.shared.util.format.FormatRegistry
 import org.readium.r2.shared.util.getOrElse
+import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.toUrl
-import org.readium.r2.shared.util.tryRecover
-import org.readium.r2.streamer.PublicationFactory
+import org.readium.r2.streamer.PublicationOpener
 import org.readium.r2.testapp.data.BookRepository
 import org.readium.r2.testapp.data.model.Book
 import org.readium.r2.testapp.utils.extensions.formatPercentage
@@ -39,9 +38,9 @@ import timber.log.Timber
 class Bookshelf(
     private val bookRepository: BookRepository,
     private val coverStorage: CoverStorage,
-    private val publicationFactory: PublicationFactory,
-    private val assetRetriever: AssetRetriever,
-    private val protectionRetriever: ContentProtectionSchemeRetriever,
+    private val publicationOpener: PublicationOpener,
+    private val assetOpener: AssetOpener,
+    private val formatRegistry: FormatRegistry,
     createPublicationRetriever: (PublicationRetriever.Listener) -> PublicationRetriever
 ) {
     val channel: Channel<Event> =
@@ -126,47 +125,30 @@ class Bookshelf(
         coverUrl: AbsoluteUrl? = null
     ): Try<Unit, ImportError> {
         val asset =
-            assetRetriever.retrieve(url)
+            assetOpener.open(url)
                 .getOrElse {
                     return Try.failure(
                         ImportError.Publication(PublicationError(it))
                     )
                 }
 
-        val drmScheme =
-            protectionRetriever.retrieve(asset)
-                .tryRecover {
-                    when (it) {
-                        ContentProtectionSchemeRetriever.Error.NotRecognized ->
-                            Try.success(null)
-                        is ContentProtectionSchemeRetriever.Error.Reading ->
-                            Try.failure(it)
-                    }
-                }.getOrElse {
-                    return Try.failure(
-                        ImportError.Publication(PublicationError(it))
-                    )
-                }
-
-        publicationFactory.open(
+        publicationOpener.open(
             asset,
-            contentProtectionScheme = drmScheme,
             allowUserInteraction = false
         ).onSuccess { publication ->
             val coverFile =
                 coverStorage.storeCover(publication, coverUrl)
                     .getOrElse {
                         return Try.failure(
-                            ImportError.Publication(
-                                PublicationError.ReadError(ReadError.Access(FileSystemError.IO(it)))
+                            ImportError.FileSystem(
+                                FileSystemError.IO(it)
                             )
                         )
                     }
 
             val id = bookRepository.insertBook(
                 url,
-                asset.mediaType,
-                drmScheme,
+                formatRegistry[asset.format]?.mediaType ?: MediaType.BINARY,
                 publication,
                 coverFile
             )

@@ -12,14 +12,17 @@ import org.readium.r2.shared.PdfSupport
 import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.publication.services.InMemoryCacheService
 import org.readium.r2.shared.publication.services.InMemoryCoverService
-import org.readium.r2.shared.util.DebugError
 import org.readium.r2.shared.util.Try
-import org.readium.r2.shared.util.data.ReadError
+import org.readium.r2.shared.util.asset.Asset
+import org.readium.r2.shared.util.asset.ResourceAsset
+import org.readium.r2.shared.util.format.Format
+import org.readium.r2.shared.util.format.FormatRegistry
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.pdf.PdfDocumentFactory
 import org.readium.r2.shared.util.pdf.toLinks
+import org.readium.r2.streamer.extensions.toContainer
 import org.readium.r2.streamer.parser.PublicationParser
 
 /**
@@ -29,33 +32,28 @@ import org.readium.r2.streamer.parser.PublicationParser
 @OptIn(ExperimentalReadiumApi::class)
 public class PdfParser(
     context: Context,
-    private val pdfFactory: PdfDocumentFactory<*>
+    private val pdfFactory: PdfDocumentFactory<*>,
+    private val formatRegistry: FormatRegistry
 ) : PublicationParser {
 
     private val context = context.applicationContext
 
     override suspend fun parse(
-        asset: PublicationParser.Asset,
+        asset: Asset,
         warnings: WarningLogger?
-    ): Try<Publication.Builder, PublicationParser.Error> {
-        if (asset.mediaType != MediaType.PDF) {
-            return Try.failure(PublicationParser.Error.FormatNotSupported())
+    ): Try<Publication.Builder, PublicationParser.ParseError> {
+        if (asset !is ResourceAsset || !asset.format.conformsTo(Format.PDF)) {
+            return Try.failure(PublicationParser.ParseError.FormatNotSupported())
         }
 
-        val url = asset.container.entries
-            .firstOrNull()
+        val container = asset
+            .toContainer(formatRegistry)
 
-        val resource = url
-            ?.let { asset.container[it] }
-            ?: return Try.failure(
-                PublicationParser.Error.Reading(
-                    ReadError.Decoding(
-                        DebugError("No PDF found in the publication.")
-                    )
-                )
-            )
-        val document = pdfFactory.open(resource, password = null)
-            .getOrElse { return Try.failure(PublicationParser.Error.Reading(it)) }
+        val url = container.entries
+            .first()
+
+        val document = pdfFactory.open(container[url]!!, password = null)
+            .getOrElse { return Try.failure(PublicationParser.ParseError.Reading(it)) }
         val tableOfContents = document.outline.toLinks(url)
 
         val manifest = Manifest(
@@ -77,7 +75,7 @@ public class PdfParser(
             cover = document.cover(context)?.let { InMemoryCoverService.createFactory(it) }
         )
 
-        val publicationBuilder = Publication.Builder(manifest, asset.container, servicesBuilder)
+        val publicationBuilder = Publication.Builder(manifest, container, servicesBuilder)
 
         return Try.success(publicationBuilder)
     }

@@ -15,15 +15,23 @@ import org.readium.r2.shared.publication.services.PerResourcePositionsService
 import org.readium.r2.shared.util.DebugError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.asset.Asset
+import org.readium.r2.shared.util.asset.AssetSniffer
+import org.readium.r2.shared.util.asset.ContainerAsset
+import org.readium.r2.shared.util.asset.ResourceAsset
+import org.readium.r2.shared.util.data.Container
 import org.readium.r2.shared.util.data.ReadError
+import org.readium.r2.shared.util.format.Format
+import org.readium.r2.shared.util.format.FormatRegistry
+import org.readium.r2.shared.util.format.Trait
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.mediatype.MediaType
-import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
-import org.readium.r2.shared.util.mediatype.MediaTypeSnifferError
-import org.readium.r2.shared.util.use
+import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.streamer.extensions.guessTitle
 import org.readium.r2.streamer.extensions.isHiddenOrThumbs
+import org.readium.r2.streamer.extensions.sniffContainerEntries
+import org.readium.r2.streamer.extensions.toContainer
 import org.readium.r2.streamer.parser.PublicationParser
 
 /**
@@ -33,29 +41,55 @@ import org.readium.r2.streamer.parser.PublicationParser
  * It can also work for a standalone bitmap file.
  */
 public class ImageParser(
-    private val mediaTypeRetriever: MediaTypeRetriever
+    private val assetSniffer: AssetSniffer,
+    private val formatRegistry: FormatRegistry
 ) : PublicationParser {
 
     override suspend fun parse(
-        asset: PublicationParser.Asset,
+        asset: Asset,
         warnings: WarningLogger?
-    ): Try<Publication.Builder, PublicationParser.Error> {
-        if (!asset.mediaType.matches(MediaType.CBZ) && !asset.mediaType.isBitmap) {
-            return Try.failure(PublicationParser.Error.FormatNotSupported())
+    ): Try<Publication.Builder, PublicationParser.ParseError> =
+        when (asset) {
+            is ResourceAsset -> parseResourceAsset(asset)
+            is ContainerAsset -> parseContainerAsset(asset)
         }
 
-        val readingOrder =
-            if (asset.mediaType.matches(MediaType.CBZ)) {
-                (asset.container)
-                    .filter { cbzCanContain(it) }
-                    .sortedBy { it.toString() }
-            } else {
-                listOfNotNull(asset.container.firstOrNull())
-            }
+    private fun parseResourceAsset(
+        asset: ResourceAsset
+    ): Try<Publication.Builder, PublicationParser.ParseError> {
+        if (!asset.format.conformsTo(Trait.BITMAP)) {
+            return Try.failure(PublicationParser.ParseError.FormatNotSupported())
+        }
 
-        if (readingOrder.isEmpty()) {
+        val container =
+            asset.toContainer(formatRegistry)
+
+        val readingOrderWithFormat =
+            listOfNotNull(container.first() to asset.format)
+
+        return finalizeParsing(container, readingOrderWithFormat, null)
+    }
+
+    private suspend fun parseContainerAsset(
+        asset: ContainerAsset
+    ): Try<Publication.Builder, PublicationParser.ParseError> {
+        if (!asset.format.conformsTo(Trait.COMICS)) {
+            return Try.failure(PublicationParser.ParseError.FormatNotSupported())
+        }
+
+        val entryFormats: Map<Url, Format> = assetSniffer
+            .sniffContainerEntries(asset.container) { !it.isHiddenOrThumbs }
+            .getOrElse { return Try.failure(PublicationParser.ParseError.Reading(it)) }
+
+        val readingOrderWithFormat =
+            asset.container
+                .mapNotNull { url -> entryFormats[url]?.let { url to it } }
+                .filter { it.second.conformsTo(Trait.BITMAP) }
+                .sortedBy { it.first.toString() }
+
+        if (readingOrderWithFormat.isEmpty()) {
             return Try.failure(
-                PublicationParser.Error.Reading(
+                PublicationParser.ParseError.Reading(
                     ReadError.Decoding(
                         DebugError("No bitmap found in the publication.")
                     )
@@ -63,35 +97,38 @@ public class ImageParser(
             )
         }
 
-        val readingOrderLinks = readingOrder.map { url ->
-            val mediaType = asset.container[url]!!.use { resource ->
-                mediaTypeRetriever.retrieve(resource)
-                    .getOrElse { error ->
-                        when (error) {
-                            MediaTypeSnifferError.NotRecognized ->
-                                null
-                            is MediaTypeSnifferError.Reading ->
-                                return Try.failure(PublicationParser.Error.Reading(error.cause))
-                        }
-                    }
-            }
+        val title = asset
+            .container
+            .entries
+            .guessTitle()
+
+        return finalizeParsing(asset.container, readingOrderWithFormat, title)
+    }
+
+    private fun finalizeParsing(
+        container: Container<Resource>,
+        readingOrderWithFormat: List<Pair<Url, Format>>,
+        title: String?
+    ): Try<Publication.Builder, PublicationParser.ParseError> {
+        val readingOrder = readingOrderWithFormat.map { (url, format) ->
+            val mediaType = formatRegistry[format]?.mediaType
             Link(href = url, mediaType = mediaType)
         }.toMutableList()
 
         // First valid resource is the cover.
-        readingOrderLinks[0] = readingOrderLinks[0].copy(rels = setOf("cover"))
+        readingOrder[0] = readingOrder[0].copy(rels = setOf("cover"))
 
         val manifest = Manifest(
             metadata = Metadata(
                 conformsTo = setOf(Publication.Profile.DIVINA),
-                localizedTitle = asset.container.guessTitle()?.let { LocalizedString(it) }
+                localizedTitle = title?.let { LocalizedString(it) }
             ),
-            readingOrder = readingOrderLinks
+            readingOrder = readingOrder
         )
 
         val publicationBuilder = Publication.Builder(
             manifest = manifest,
-            container = asset.container,
+            container = container,
             servicesBuilder = Publication.ServicesBuilder(
                 positions = PerResourcePositionsService.createFactory(
                     fallbackMediaType = MediaType("image/*")!!
@@ -101,12 +138,4 @@ public class ImageParser(
 
         return Try.success(publicationBuilder)
     }
-
-    private fun cbzCanContain(url: Url): Boolean =
-        url.extension?.lowercase() in bitmapExtensions && !url.isHiddenOrThumbs
-
-    private val bitmapExtensions = listOf(
-        "bmp", "dib", "gif", "jif", "jfi", "jfif", "jpg", "jpeg",
-        "png", "tif", "tiff", "webp"
-    )
 }

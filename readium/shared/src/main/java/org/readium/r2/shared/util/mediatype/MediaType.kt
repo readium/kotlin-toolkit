@@ -367,7 +367,7 @@ public class MediaType private constructor(
          * The sniffers order is important, because some formats are subsets of other formats.
          */
         @Deprecated(message = "Use FormatRegistry instead", level = DeprecationLevel.ERROR)
-        public val sniffers: MutableList<MediaTypeSniffer> = mutableListOf()
+        public val sniffers: MutableList<Any> = mutableListOf()
 
         /**
          * Resolves a format from a single file extension and media type hint, without checking the actual

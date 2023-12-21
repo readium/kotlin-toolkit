@@ -83,9 +83,10 @@ public sealed class Url : Parcelable {
     /**
      * Extension of the filename portion of the URL path.
      */
-    public val extension: String?
+    public val extension: FileExtension?
         get() = filename?.substringAfterLast('.', "")
             ?.takeIf { it.isNotEmpty() }
+            ?.let { FileExtension(it) }
 
     /**
      * Represents a list of query parameters in a URL.
@@ -354,3 +355,14 @@ private fun Uri.addFileAuthority(): Uri =
 private fun String.isValidUrl(): Boolean =
     // Uri.parse doesn't really validate the URL, it could contain invalid characters.
     isNotBlank() && tryOrNull { URI(this) } != null
+
+@JvmInline
+public value class FileExtension(
+    public val value: String
+)
+
+/**
+ * Appends this file extension to [filename].
+ */
+public fun FileExtension?.appendToFilename(filename: String): String =
+    this?.let { "$filename.$value" } ?: filename

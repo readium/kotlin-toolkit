@@ -30,10 +30,7 @@ import org.readium.r2.shared.util.downloads.DownloadManager
 import org.readium.r2.shared.util.file.FileSystemError
 import org.readium.r2.shared.util.http.HttpError
 import org.readium.r2.shared.util.http.HttpStatus
-import org.readium.r2.shared.util.mediatype.FormatRegistry
 import org.readium.r2.shared.util.mediatype.MediaType
-import org.readium.r2.shared.util.mediatype.MediaTypeHints
-import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 import org.readium.r2.shared.util.toUri
 import org.readium.r2.shared.util.units.Hz
 import org.readium.r2.shared.util.units.hz
@@ -43,8 +40,6 @@ import org.readium.r2.shared.util.units.hz
  */
 public class AndroidDownloadManager internal constructor(
     private val context: Context,
-    private val mediaTypeRetriever: MediaTypeRetriever,
-    private val formatRegistry: FormatRegistry,
     private val destStorage: Storage,
     private val dirType: String,
     private val refreshRate: Hz,
@@ -59,9 +54,7 @@ public class AndroidDownloadManager internal constructor(
      * android.permission.DOWNLOAD_WITHOUT_NOTIFICATION.
      *
      * @param context Android context
-     * @param mediaTypeRetriever Retrieves the media type of the download content, if the server
      * communicates it.
-     * @param formatRegistry Associates a media type to its file extension.
      * @param destStorage Location where downloads should be stored
      * @param refreshRate Frequency with which download status will be checked and
      *   listeners notified
@@ -70,15 +63,11 @@ public class AndroidDownloadManager internal constructor(
      */
     public constructor(
         context: Context,
-        mediaTypeRetriever: MediaTypeRetriever,
-        formatRegistry: FormatRegistry = FormatRegistry(),
         destStorage: Storage = Storage.App,
         refreshRate: Hz = 60.0.hz,
         allowDownloadsOverMetered: Boolean = true
     ) : this(
         context = context,
-        mediaTypeRetriever = mediaTypeRetriever,
-        formatRegistry = formatRegistry,
         destStorage = destStorage,
         dirType = Environment.DIRECTORY_DOWNLOADS,
         refreshRate = refreshRate,
@@ -128,7 +117,7 @@ public class AndroidDownloadManager internal constructor(
 
         val androidRequest = createRequest(
             uri = request.url.toUri(),
-            filename = generateFileName(extension = request.url.extension),
+            filename = generateFileName(extension = request.url.extension?.value),
             headers = request.headers
         )
         val downloadId = downloadManager.enqueue(androidRequest)
@@ -253,7 +242,7 @@ public class AndroidDownloadManager internal constructor(
             SystemDownloadManager.STATUS_SUCCESSFUL -> {
                 prepareResult(
                     Uri.parse(facade.localUri!!)!!.toFile(),
-                    mediaTypeHint = facade.mediaType?.let { MediaType(it) }
+                    mediaType = facade.mediaType?.let { MediaType(it) }
                 )
                     .onSuccess { download ->
                         listenersForId.forEach { it.onDownloadCompleted(id, download) }
@@ -272,15 +261,9 @@ public class AndroidDownloadManager internal constructor(
         }
     }
 
-    private suspend fun prepareResult(destFile: File, mediaTypeHint: MediaType?): Try<DownloadManager.Download, DownloadManager.DownloadError> =
+    private suspend fun prepareResult(destFile: File, mediaType: MediaType?): Try<DownloadManager.Download, DownloadManager.DownloadError> =
         withContext(Dispatchers.IO) {
-            val mediaType = mediaTypeRetriever.retrieve(
-                destFile,
-                MediaTypeHints(mediaType = mediaTypeHint)
-            ).getOrNull()
-
-            val extension = mediaType?.let { formatRegistry.fileExtension(it) }
-                ?: destFile.extension.takeUnless { it.isEmpty() }
+            val extension = destFile.extension.takeUnless { it.isEmpty() }
 
             val newDest = File(destFile.parent, generateFileName(extension))
             val renamed = tryOr(false) { destFile.renameTo(newDest) }

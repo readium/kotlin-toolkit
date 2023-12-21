@@ -9,20 +9,14 @@
 
 package org.readium.r2.shared.publication.protection
 
-import kotlin.Boolean
-import kotlin.Deprecated
-import kotlin.DeprecationLevel
-import kotlin.String
-import kotlin.Unit
 import org.readium.r2.shared.publication.LocalizedString
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.services.ContentProtectionService
 import org.readium.r2.shared.util.Error
 import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.asset.Asset
 import org.readium.r2.shared.util.data.Container
 import org.readium.r2.shared.util.data.ReadError
-import org.readium.r2.shared.util.mediatype.MediaType
-import org.readium.r2.shared.util.resource.Resource
 
 /**
  * Bridge between a Content Protection technology and the Readium toolkit.
@@ -43,18 +37,22 @@ public interface ContentProtection {
         ) : OpenError("An error occurred while trying to read asset.", cause)
 
         public class AssetNotSupported(
-            override val cause: Error?
+            override val cause: Error? = null
         ) : OpenError("Asset is not supported.", cause)
     }
 
-    public val scheme: Scheme
-
     /**
-     * Returns if this [ContentProtection] supports the given [asset].
+     * Holds the result of opening an [Asset] with a [ContentProtection].
+     *
+     * @property asset Asset pointing to a publication.
+     * @property onCreatePublication Called on every parsed Publication.Builder
+     * It can be used to modify the `Manifest`, the root [Container] or the list of service
+     * factories of a [Publication].
      */
-    public suspend fun supports(
-        asset: org.readium.r2.shared.util.asset.Asset
-    ): Try<Boolean, ReadError>
+    public data class OpenResult(
+        val asset: Asset,
+        val onCreatePublication: Publication.Builder.() -> Unit = {}
+    )
 
     /**
      * Attempts to unlock a potentially protected publication asset.
@@ -63,25 +61,10 @@ public interface ContentProtection {
      * asset can't be successfully opened even in restricted mode.
      */
     public suspend fun open(
-        asset: org.readium.r2.shared.util.asset.Asset,
+        asset: Asset,
         credentials: String?,
         allowUserInteraction: Boolean
-    ): Try<Asset, OpenError>
-
-    /**
-     * Holds the result of opening an [Asset] with a [ContentProtection].
-     *
-     * @property mediaType Media type of the asset
-     * @property container Container to access the publication through
-     * @property onCreatePublication Called on every parsed Publication.Builder
-     * It can be used to modify the `Manifest`, the root [Container] or the list of service
-     * factories of a [Publication].
-     */
-    public data class Asset(
-        val mediaType: MediaType,
-        val container: Container<Resource>,
-        val onCreatePublication: Publication.Builder.() -> Unit = {}
-    )
+    ): Try<OpenResult, OpenError>
 
     /**
      * Represents a specific Content Protection technology, uniquely identified with an [uri].

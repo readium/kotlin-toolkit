@@ -8,7 +8,6 @@ package org.readium.r2.shared.util.http
 
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Try
-import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.shared.util.resource.ResourceFactory
 
@@ -20,8 +19,7 @@ public class HttpResourceFactory(
 ) : ResourceFactory {
 
     override suspend fun create(
-        url: AbsoluteUrl,
-        mediaType: MediaType?
+        url: AbsoluteUrl
     ): Try<Resource, ResourceFactory.Error> {
         if (!url.isHttp) {
             return Try.failure(ResourceFactory.Error.SchemeNotSupported(url.scheme))

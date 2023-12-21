@@ -25,6 +25,9 @@ sealed class OpeningError(
         cause: Error
     ) : OpeningError(cause)
 
+    class CannotRender(cause: Error) :
+        OpeningError(cause)
+
     class AudioEngineInitialization(
         cause: Error
     ) : OpeningError(cause)
@@ -37,5 +40,7 @@ sealed class OpeningError(
                 cause.toUserError()
             is RestrictedPublication ->
                 UserError(R.string.publication_error_restricted)
+            is CannotRender ->
+                UserError((R.string.opening_publication_cannot_render))
         }
 }

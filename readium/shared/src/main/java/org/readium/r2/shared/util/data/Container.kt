@@ -11,18 +11,12 @@ import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.SuspendingCloseable
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
-import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.use
 
 /**
  * A container provides access to a list of [Readable] entries.
  */
 public interface Container<out E : Readable> : Iterable<Url>, SuspendingCloseable {
-
-    /**
-     * Media type of the archive the container offers access to if any.
-     */
-    public val archiveMediaType: MediaType? get() = null
 
     /**
      * Direct source to this container, when available.

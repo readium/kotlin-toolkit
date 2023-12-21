@@ -6,31 +6,15 @@
 
 package org.readium.r2.streamer.parser
 
-import kotlin.String
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.util.Try
-import org.readium.r2.shared.util.data.Container
+import org.readium.r2.shared.util.asset.Asset
 import org.readium.r2.shared.util.logging.WarningLogger
-import org.readium.r2.shared.util.mediatype.MediaType
-import org.readium.r2.shared.util.resource.Resource
 
 /**
  *  Parses a Publication from an asset.
  */
 public interface PublicationParser {
-
-    /**
-     * Full publication asset.
-     *
-     * @param mediaType Media type of the "virtual" publication asset, built from the source asset.
-     * For example, if the source asset was a `application/audiobook+json`, the "virtual" asset
-     * media type will be `application/audiobook+zip`.
-     * @param container Container granting access to the resources of the publication.
-     */
-    public data class Asset(
-        val mediaType: MediaType,
-        val container: Container<Resource>
-    )
 
     /**
      * Constructs a [Publication.Builder] to build a [Publication] from a publication asset.
@@ -43,17 +27,17 @@ public interface PublicationParser {
     public suspend fun parse(
         asset: Asset,
         warnings: WarningLogger? = null
-    ): Try<Publication.Builder, Error>
+    ): Try<Publication.Builder, ParseError>
 
-    public sealed class Error(
+    public sealed class ParseError(
         public override val message: String,
         public override val cause: org.readium.r2.shared.util.Error?
     ) : org.readium.r2.shared.util.Error {
 
         public class FormatNotSupported :
-            Error("Asset format not supported.", null)
+            ParseError("Asset format not supported.", null)
 
         public class Reading(override val cause: org.readium.r2.shared.util.data.ReadError) :
-            Error("An error occurred while trying to read asset.", cause)
+            ParseError("An error occurred while trying to read asset.", cause)
     }
 }

@@ -13,57 +13,62 @@ import kotlinx.coroutines.withContext
 import org.readium.r2.shared.extensions.findInstance
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Try
-import org.readium.r2.shared.util.archive.ArchiveFactory
+import org.readium.r2.shared.util.asset.ArchiveOpener
+import org.readium.r2.shared.util.asset.ContainerAsset
+import org.readium.r2.shared.util.asset.SniffError
 import org.readium.r2.shared.util.data.Container
 import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.data.ReadException
 import org.readium.r2.shared.util.data.Readable
-import org.readium.r2.shared.util.mediatype.MediaType
-import org.readium.r2.shared.util.mediatype.MediaTypeSnifferError
+import org.readium.r2.shared.util.format.Format
+import org.readium.r2.shared.util.format.Trait
 import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.shared.util.toUrl
 import org.readium.r2.shared.util.zip.compress.archivers.zip.ZipFile
 import org.readium.r2.shared.util.zip.jvm.SeekableByteChannel
 
 /**
- * An [ArchiveFactory] able to open a ZIP archive served through a stream (e.g. HTTP server,
+ * An [ArchiveOpener] able to open a ZIP archive served through a stream (e.g. HTTP server,
  * content URI, etc.).
  */
 internal class StreamingZipArchiveProvider {
 
-    suspend fun sniffBlob(readable: Readable): Try<MediaType, MediaTypeSnifferError> {
+    suspend fun sniffOpen(source: Readable): Try<ContainerAsset, SniffError> {
         return try {
-            openBlob(readable, ::ReadException, null)
-            Try.success(MediaType.ZIP)
+            val container = openBlob(source, ::ReadException, null)
+            Try.success(ContainerAsset(Format.ZIP, container))
         } catch (exception: Exception) {
             exception.findInstance(ReadException::class.java)
-                ?.let { Try.failure(MediaTypeSnifferError.Reading(it.error)) }
-                ?: Try.failure(MediaTypeSnifferError.NotRecognized)
+                ?.let { Try.failure(SniffError.Reading(it.error)) }
+                ?: Try.failure(SniffError.NotRecognized)
         }
     }
 
-    suspend fun create(
-        mediaType: MediaType,
-        readable: Readable
-    ): Try<Container<Resource>, ArchiveFactory.CreateError> {
-        if (mediaType != MediaType.ZIP) {
+    suspend fun open(
+        format: Format,
+        source: Readable
+    ): Try<ContainerAsset, ArchiveOpener.OpenError> {
+        if (!format.conformsTo(Trait.ZIP)) {
             return Try.failure(
-                ArchiveFactory.CreateError.FormatNotSupported(mediaType)
+                ArchiveOpener.OpenError.FormatNotSupported(format)
             )
         }
 
-        return try {
-            val container = openBlob(
-                readable,
+        val container = try {
+            openBlob(
+                source,
                 ::ReadException,
-                (readable as? Resource)?.sourceUrl
+                (source as? Resource)?.sourceUrl
             )
-            Try.success(container)
         } catch (exception: Exception) {
-            exception.findInstance(ReadException::class.java)
-                ?.let { Try.failure(ArchiveFactory.CreateError.Reading(it.error)) }
-                ?: Try.failure(ArchiveFactory.CreateError.Reading(ReadError.Decoding(exception)))
+            val error = exception.findInstance(ReadException::class.java)
+                ?.let { ArchiveOpener.OpenError.Reading(it.error) }
+                ?: ArchiveOpener.OpenError.Reading(ReadError.Decoding(exception))
+
+            return Try.failure(error)
         }
+
+        return Try.success(ContainerAsset(format, container))
     }
 
     private suspend fun openBlob(

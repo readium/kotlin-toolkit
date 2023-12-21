@@ -22,7 +22,7 @@ import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.checkSuccess
 import org.readium.r2.shared.util.data.Container
 import org.readium.r2.shared.util.file.DirectoryContainer
-import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.shared.util.format.Format
 import org.readium.r2.shared.util.use
 import org.readium.r2.shared.util.zip.FileZipArchiveProvider
 import org.readium.r2.shared.util.zip.StreamingZipArchiveProvider
@@ -42,11 +42,12 @@ class ZipContainerTest(val sut: suspend () -> Container<Resource>) {
             val zipArchive = suspend {
                 assertNotNull(
                     FileZipArchiveProvider()
-                        .create(
-                            mediaType = MediaType.ZIP,
+                        .open(
+                            format = Format.EPUB,
                             file = File(epubZip.path)
                         )
                         .getOrNull()
+                        ?.container
                 )
             }
 

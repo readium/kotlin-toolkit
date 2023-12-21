@@ -148,21 +148,21 @@ class UrlTest {
 
     @Test
     fun getExtension() {
-        assertEquals("txt", Url("foo/bar.txt?query#fragment")?.extension)
+        assertEquals("txt", Url("foo/bar.txt?query#fragment")?.extension?.value)
         assertEquals(null, Url("foo/bar?query#fragment")?.extension)
         assertEquals(null, Url("foo/bar/?query#fragment")?.extension)
-        assertEquals("txt", Url("http://example.com/foo/bar.txt?query#fragment")?.extension)
+        assertEquals("txt", Url("http://example.com/foo/bar.txt?query#fragment")?.extension?.value)
         assertEquals(null, Url("http://example.com/foo/bar?query#fragment")?.extension)
         assertEquals(null, Url("http://example.com/foo/bar/")?.extension)
-        assertEquals("txt", Url("file:///foo/bar.txt?query#fragment")?.extension)
+        assertEquals("txt", Url("file:///foo/bar.txt?query#fragment")?.extension?.value)
         assertEquals(null, Url("file:///foo/bar?query#fragment")?.extension)
         assertEquals(null, Url("file:///foo/bar/")?.extension)
     }
 
     @Test
     fun extensionIsPercentDecoded() {
-        assertEquals("%bar", Url("foo.%25bar")?.extension)
-        assertEquals("%bar", Url("http://example.com/foo.%25bar")?.extension)
+        assertEquals("%bar", Url("foo.%25bar")?.extension?.value)
+        assertEquals("%bar", Url("http://example.com/foo.%25bar")?.extension?.value)
     }
 
     @Test
