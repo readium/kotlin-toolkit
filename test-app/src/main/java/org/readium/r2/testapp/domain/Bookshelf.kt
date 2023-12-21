@@ -148,7 +148,6 @@ class Bookshelf(
 
             val id = bookRepository.insertBook(
                 url,
-                asset.format,
                 formatRegistry[asset.format]?.mediaType ?: MediaType.BINARY,
                 publication,
                 coverFile

@@ -10,7 +10,6 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import org.readium.r2.shared.util.AbsoluteUrl
-import org.readium.r2.shared.util.format.Format
 import org.readium.r2.shared.util.mediatype.MediaType
 
 @Entity(tableName = Book.TABLE_NAME)
@@ -32,8 +31,6 @@ data class Book(
     val progression: String? = null,
     @ColumnInfo(name = MEDIA_TYPE)
     val rawMediaType: String,
-    @ColumnInfo(name = FORMAT_ID)
-    val formatId: String,
     @ColumnInfo(name = COVER)
     val cover: String
 ) {
@@ -46,7 +43,6 @@ data class Book(
         author: String? = null,
         identifier: String,
         progression: String? = null,
-        format: Format,
         mediaType: MediaType,
         cover: String
     ) : this(
@@ -57,7 +53,6 @@ data class Book(
         author = author,
         identifier = identifier,
         progression = progression,
-        formatId = format.toString(),
         rawMediaType = mediaType.toString(),
         cover = cover
     )
@@ -66,9 +61,6 @@ data class Book(
 
     val mediaType: MediaType get() =
         MediaType(rawMediaType)!!
-
-    val format: Format get() =
-        Format(formatId)
 
     companion object {
 
@@ -82,6 +74,5 @@ data class Book(
         const val PROGRESSION = "progression"
         const val MEDIA_TYPE = "media_type"
         const val COVER = "cover"
-        const val FORMAT_ID = "format_id"
     }
 }

@@ -10,6 +10,7 @@ import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.encryption.Encryption
+import org.readium.r2.shared.publication.epub.EpubEncryptionParser
 import org.readium.r2.shared.publication.services.content.DefaultContentService
 import org.readium.r2.shared.publication.services.content.iterators.HtmlResourceContentIterator
 import org.readium.r2.shared.publication.services.search.StringSearchService
@@ -141,7 +142,7 @@ public class EpubParser(
 
     private suspend fun parseEncryptionData(container: Container<Resource>): Map<Url, Encryption> =
         container.readDecodeXmlOrNull(path = "META-INF/encryption.xml")
-            ?.let { EncryptionParser.parse(it) }
+            ?.let { EpubEncryptionParser.parse(it) }
             ?: emptyMap()
 
     private suspend fun parseNavigationData(

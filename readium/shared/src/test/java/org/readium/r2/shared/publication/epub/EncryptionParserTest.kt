@@ -7,7 +7,7 @@
  * LICENSE file present in the project repository where this source code is maintained.
  */
 
-package org.readium.r2.streamer.parser.epub
+package org.readium.r2.shared.publication.epub
 
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.entry
@@ -24,7 +24,7 @@ class EncryptionParserTest {
         val res = EncryptionParserTest::class.java.getResourceAsStream(path)
         checkNotNull(res)
         val document = XmlParser().parse(res)
-        return EncryptionParser.parse(document)
+        return EpubEncryptionParser.parse(document)
     }
 
     val lcpChap1 = entry(

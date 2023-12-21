@@ -4,16 +4,24 @@
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.r2.streamer.parser.epub
+package org.readium.r2.shared.publication.epub
 
+import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.publication.encryption.Encryption
 import org.readium.r2.shared.publication.protection.ContentProtection
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.xml.ElementNode
-import org.readium.r2.streamer.parser.epub.extensions.fromEpubHref
 
-internal object EncryptionParser {
-    fun parse(document: ElementNode): Map<Url, Encryption> =
+@InternalReadiumApi
+public object EpubEncryptionParser {
+
+    private object Namespaces {
+        const val ENC = "http://www.w3.org/2001/04/xmlenc#"
+        const val SIG = "http://www.w3.org/2000/09/xmldsig#"
+        const val COMP = "http://www.idpf.org/2016/encryption#compression"
+    }
+
+    public fun parse(document: ElementNode): Map<Url, Encryption> =
         document.get("EncryptedData", Namespaces.ENC)
             .mapNotNull { parseEncryptedData(it) }
             .toMap()
@@ -21,7 +29,7 @@ internal object EncryptionParser {
     private fun parseEncryptedData(node: ElementNode): Pair<Url, Encryption>? {
         val resourceURI = node.getFirst("CipherData", Namespaces.ENC)
             ?.getFirst("CipherReference", Namespaces.ENC)?.getAttr("URI")
-            ?.let { Url.fromEpubHref(it) }
+            ?.let { Url(it) ?: Url.fromDecodedPath(it) }
             ?: return null
         val retrievalMethod = node.getFirst("KeyInfo", Namespaces.SIG)
             ?.getFirst("RetrievalMethod", Namespaces.SIG)?.getAttr("URI")

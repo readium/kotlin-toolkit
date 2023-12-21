@@ -10,6 +10,7 @@ import org.readium.r2.lcp.auth.LcpPassphraseAuthentication
 import org.readium.r2.lcp.license.model.LicenseDocument
 import org.readium.r2.shared.publication.encryption.Encryption
 import org.readium.r2.shared.publication.encryption.encryption
+import org.readium.r2.shared.publication.epub.EpubEncryptionParser
 import org.readium.r2.shared.publication.protection.ContentProtection
 import org.readium.r2.shared.publication.services.contentProtectionServiceFactory
 import org.readium.r2.shared.util.AbsoluteUrl
