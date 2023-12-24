@@ -81,68 +81,75 @@ public class AssetSniffer(
         source: Either<Resource, Container<Resource>>,
         hints: FormatHints
     ): Try<Asset, SniffError> {
-        val cachedSource: Either<Readable, Container<Readable>> = when (source) {
-            is Either.Left -> Either.Left(CachingReadable(source.value))
-            is Either.Right -> Either.Right(CachingContainer(source.value))
-        }
-
         val initialDescription = Format(
             specification = FormatSpecification(emptySet()),
             mediaType = MediaType.BINARY,
             fileExtension = FileExtension("")
         )
 
-        val format = doSniff(initialDescription, cachedSource, hints)
+        val cachingSource: Either<Readable, Container<Readable>> = when (source) {
+            is Either.Left -> Either.Left(CachingReadable(source.value))
+            is Either.Right -> Either.Right(CachingContainer(source.value))
+        }
+
+        val asset = doSniff(initialDescription, source, cachingSource, hints)
             .getOrElse { return Try.failure(SniffError.Reading(it)) }
 
-        return format
-            .takeIf { it.isValid() }
-            ?.let {
-                Try.success(
-                    when (source) {
-                        is Either.Left -> ResourceAsset(it, source.value)
-                        is Either.Right -> ContainerAsset(it, source.value)
-                    }
-                )
-            } ?: Try.failure(SniffError.NotRecognized)
+        return asset
+            .takeIf { it.format.isValid() }
+            ?.let { Try.success(it) }
+            ?: Try.failure(SniffError.NotRecognized)
     }
 
     private suspend fun doSniff(
         format: Format,
-        source: Either<Readable, Container<Readable>>,
+        source: Either<Resource, Container<Resource>>,
+        cache: Either<Readable, Container<Readable>>,
         hints: FormatHints
-    ): Try<Format, ReadError> {
+    ): Try<Asset, ReadError> {
         formatSniffers
             .sniffHints(format, hints)
             .takeIf { it.conformsTo(format) }
             ?.takeIf { it != format }
-            ?.let { return doSniff(it, source, hints) }
+            ?.let { return doSniff(it, source, cache, hints) }
 
-        when (source) {
+        when (cache) {
             is Either.Left ->
                 formatSniffers
-                    .sniffBlob(format, source.value)
+                    .sniffBlob(format, cache.value)
                     .getOrElse { return Try.failure(it) }
                     .takeIf { it.conformsTo(format) }
                     ?.takeIf { it != format }
-                    ?.let { return doSniff(it, source, hints) }
+                    ?.let { return doSniff(it, source, cache, hints) }
 
             is Either.Right ->
                 formatSniffers
-                    .sniffContainer(format, source.value)
+                    .sniffContainer(format, cache.value)
                     .getOrElse { return Try.failure(it) }
                     .takeIf { it.conformsTo(format) }
                     ?.takeIf { it != format }
-                    ?.let { return doSniff(it, source, hints) }
+                    ?.let { return doSniff(it, source, cache, hints) }
         }
 
         if (source is Either.Left) {
             tryOpenArchive(format, source.value)
                 .getOrElse { return Try.failure(it) }
-                ?.let { return doSniff(it.format, Either.Right(it.container), hints) }
+                ?.let {
+                    return doSniff(
+                        it.format,
+                        Either.Right(it.container),
+                        Either.Right(CachingContainer(it.container)),
+                        hints
+                    )
+                }
         }
 
-        return Try.success(format)
+        return Try.success(
+            when (source) {
+                is Either.Left -> ResourceAsset(format, source.value)
+                is Either.Right -> ContainerAsset(format, source.value)
+            }
+        )
     }
 
     private suspend fun tryOpenArchive(
