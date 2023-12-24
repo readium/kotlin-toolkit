@@ -15,13 +15,17 @@ import org.readium.r2.lcp.license.model.LicenseDocument
 import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.ErrorException
+import org.readium.r2.shared.util.FileExtension
 import org.readium.r2.shared.util.asset.AssetSniffer
 import org.readium.r2.shared.util.downloads.DownloadManager
+import org.readium.r2.shared.util.format.EpubSpecification
 import org.readium.r2.shared.util.format.Format
 import org.readium.r2.shared.util.format.FormatHints
-import org.readium.r2.shared.util.format.FormatRegistry
-import org.readium.r2.shared.util.format.Trait
+import org.readium.r2.shared.util.format.FormatSpecification
+import org.readium.r2.shared.util.format.LcpSpecification
+import org.readium.r2.shared.util.format.ZipSpecification
 import org.readium.r2.shared.util.getOrElse
+import org.readium.r2.shared.util.mediatype.MediaType
 
 /**
  * Utility to acquire a protected publication from an LCP License Document.
@@ -128,9 +132,6 @@ public class LcpPublicationRetriever(
     private val coroutineScope: CoroutineScope =
         MainScope()
 
-    private val formatRegistry: FormatRegistry =
-        FormatRegistry()
-
     private val downloadsRepository: LcpDownloadsRepository =
         LcpDownloadsRepository(context)
 
@@ -195,7 +196,7 @@ public class LcpPublicationRetriever(
                     }
                 downloadsRepository.removeDownload(requestId.value)
 
-                val baseFormat =
+                val format =
                     assetSniffer.sniff(
                         download.file,
                         FormatHints(
@@ -204,13 +205,21 @@ public class LcpPublicationRetriever(
                                 download.mediaType
                             )
                         )
-                    ).getOrElse { Format.EPUB }
-
-                val format = baseFormat + Trait.LCP_PROTECTED
+                    ).getOrElse {
+                        Format(
+                            specification = FormatSpecification(
+                                ZipSpecification,
+                                EpubSpecification,
+                                LcpSpecification
+                            ),
+                            mediaType = MediaType.EPUB,
+                            fileExtension = FileExtension("epub")
+                        )
+                    }
 
                 try {
                     // Saves the License Document into the downloaded publication
-                    val container = createLicenseContainer(download.file, format)
+                    val container = createLicenseContainer(download.file, format.specification)
                     container.write(license)
                 } catch (e: Exception) {
                     tryOrLog { download.file.delete() }
@@ -279,7 +288,4 @@ public class LcpPublicationRetriever(
             listeners.remove(lcpRequestId)
         }
     }
-
-    private val Format.fileExtension: String get() =
-        formatRegistry[this]?.fileExtension?.value ?: "epub"
 }

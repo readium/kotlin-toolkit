@@ -33,6 +33,7 @@ import org.readium.r2.shared.util.asset.AssetOpener
 import org.readium.r2.shared.util.asset.AssetSniffer
 import org.readium.r2.shared.util.downloads.DownloadManager
 import org.readium.r2.shared.util.format.Format
+import org.readium.r2.shared.util.format.FormatSpecification
 
 /**
  * Service used to acquire and open publications protected with LCP.
@@ -91,7 +92,7 @@ public interface LcpService {
      */
     public suspend fun retrieveLicense(
         file: File,
-        format: Format,
+        formatSpecification: FormatSpecification,
         authentication: LcpAuthenticating,
         allowUserInteraction: Boolean
     ): Try<LcpLicense, LcpError>

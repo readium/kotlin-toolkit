@@ -15,8 +15,7 @@ import org.readium.r2.shared.publication.services.InMemoryCoverService
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.asset.Asset
 import org.readium.r2.shared.util.asset.ResourceAsset
-import org.readium.r2.shared.util.format.Format
-import org.readium.r2.shared.util.format.FormatRegistry
+import org.readium.r2.shared.util.format.PdfSpecification
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.mediatype.MediaType
@@ -32,8 +31,7 @@ import org.readium.r2.streamer.parser.PublicationParser
 @OptIn(ExperimentalReadiumApi::class)
 public class PdfParser(
     context: Context,
-    private val pdfFactory: PdfDocumentFactory<*>,
-    private val formatRegistry: FormatRegistry
+    private val pdfFactory: PdfDocumentFactory<*>
 ) : PublicationParser {
 
     private val context = context.applicationContext
@@ -42,12 +40,12 @@ public class PdfParser(
         asset: Asset,
         warnings: WarningLogger?
     ): Try<Publication.Builder, PublicationParser.ParseError> {
-        if (asset !is ResourceAsset || !asset.format.conformsTo(Format.PDF)) {
+        if (asset !is ResourceAsset || !asset.format.conformsTo(PdfSpecification)) {
             return Try.failure(PublicationParser.ParseError.FormatNotSupported())
         }
 
         val container = asset
-            .toContainer(formatRegistry)
+            .toContainer()
 
         val url = container.entries
             .first()

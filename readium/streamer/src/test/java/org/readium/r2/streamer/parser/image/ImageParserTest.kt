@@ -18,6 +18,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.firstWithRel
+import org.readium.r2.shared.util.FileExtension
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.asset.AssetSniffer
 import org.readium.r2.shared.util.asset.ContainerAsset
@@ -25,7 +26,10 @@ import org.readium.r2.shared.util.asset.ResourceAsset
 import org.readium.r2.shared.util.checkSuccess
 import org.readium.r2.shared.util.file.FileResource
 import org.readium.r2.shared.util.format.Format
-import org.readium.r2.shared.util.format.FormatRegistry
+import org.readium.r2.shared.util.format.FormatSpecification
+import org.readium.r2.shared.util.format.InformalComicSpecification
+import org.readium.r2.shared.util.format.JpegSpecification
+import org.readium.r2.shared.util.format.ZipSpecification
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.zip.ZipArchiveOpener
 import org.readium.r2.streamer.parseBlocking
@@ -38,24 +42,29 @@ class ImageParserTest {
 
     private val assetSniffer = AssetSniffer()
 
-    private val formatRegistry = FormatRegistry()
-
-    private val parser = ImageParser(assetSniffer, formatRegistry)
+    private val parser = ImageParser(assetSniffer)
 
     private val cbzAsset = runBlocking {
         val file = fileForResource("futuristic_tales.cbz")
         val resource = FileResource(file)
-        val archive = archiveOpener.open(Format.ZIP, resource).checkSuccess()
-        ContainerAsset(Format.CBZ, archive.container)
+        val format = Format(
+            specification = FormatSpecification(ZipSpecification, InformalComicSpecification),
+            mediaType = MediaType.CBZ,
+            fileExtension = FileExtension("cbz")
+        )
+        val archive = archiveOpener.open(format, resource).checkSuccess()
+        ContainerAsset(format, archive.container)
     }
 
     private val jpgAsset = runBlocking {
         val file = fileForResource("futuristic_tales.jpg")
-        val resource = FileResource(file, mediaType = MediaType.JPEG)
-        ResourceAsset(
-            Format.JPEG,
-            resource
+        val resource = FileResource(file)
+        val format = Format(
+            specification = FormatSpecification(JpegSpecification),
+            mediaType = MediaType.JPEG,
+            fileExtension = FileExtension("jpg")
         )
+        ResourceAsset(format, resource)
     }
 
     private fun fileForResource(resource: String): File {

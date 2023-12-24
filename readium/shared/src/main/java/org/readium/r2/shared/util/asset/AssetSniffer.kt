@@ -16,30 +16,13 @@ import org.readium.r2.shared.util.data.Container
 import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.data.Readable
 import org.readium.r2.shared.util.file.FileResource
-import org.readium.r2.shared.util.format.AdeptSniffer
-import org.readium.r2.shared.util.format.ArchiveSniffer
-import org.readium.r2.shared.util.format.AudioSniffer
-import org.readium.r2.shared.util.format.BitmapSniffer
-import org.readium.r2.shared.util.format.BlobSniffer
-import org.readium.r2.shared.util.format.ContainerSniffer
-import org.readium.r2.shared.util.format.EpubSniffer
+import org.readium.r2.shared.util.format.DefaultFormatSniffer
 import org.readium.r2.shared.util.format.Format
 import org.readium.r2.shared.util.format.FormatHints
-import org.readium.r2.shared.util.format.FormatHintsSniffer
 import org.readium.r2.shared.util.format.FormatSniffer
-import org.readium.r2.shared.util.format.HtmlSniffer
-import org.readium.r2.shared.util.format.JsonSniffer
-import org.readium.r2.shared.util.format.LcpLicenseSniffer
-import org.readium.r2.shared.util.format.LcpSniffer
-import org.readium.r2.shared.util.format.LpfSniffer
-import org.readium.r2.shared.util.format.OpdsSniffer
-import org.readium.r2.shared.util.format.PdfSniffer
-import org.readium.r2.shared.util.format.RarSniffer
-import org.readium.r2.shared.util.format.RpfSniffer
-import org.readium.r2.shared.util.format.RwpmSniffer
-import org.readium.r2.shared.util.format.W3cWpubSniffer
-import org.readium.r2.shared.util.format.ZipSniffer
+import org.readium.r2.shared.util.format.FormatSpecification
 import org.readium.r2.shared.util.getOrElse
+import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.shared.util.resource.borrow
 import org.readium.r2.shared.util.resource.filename
@@ -49,32 +32,9 @@ import org.readium.r2.shared.util.use
 import org.readium.r2.shared.util.zip.ZipArchiveOpener
 
 public class AssetSniffer(
-    private val formatSniffers: List<FormatSniffer> = defaultFormatSniffers,
+    private val formatSniffers: FormatSniffer = DefaultFormatSniffer(),
     private val archiveOpener: ArchiveOpener = ZipArchiveOpener()
 ) {
-
-    public companion object {
-
-        public val defaultFormatSniffers: List<FormatSniffer> = listOf(
-            ZipSniffer,
-            RarSniffer,
-            EpubSniffer,
-            LpfSniffer,
-            ArchiveSniffer,
-            RpfSniffer,
-            PdfSniffer,
-            HtmlSniffer,
-            BitmapSniffer,
-            AudioSniffer,
-            JsonSniffer,
-            OpdsSniffer,
-            LcpLicenseSniffer,
-            LcpSniffer,
-            AdeptSniffer,
-            W3cWpubSniffer,
-            RwpmSniffer
-        )
-    }
 
     public suspend fun sniff(
         file: File,
@@ -126,10 +86,17 @@ public class AssetSniffer(
             is Either.Right -> Either.Right(CachingContainer(source.value))
         }
 
-        val format = doSniff(null, cachedSource, hints)
+        val initialDescription = Format(
+            specification = FormatSpecification(emptySet()),
+            mediaType = MediaType.BINARY,
+            fileExtension = FileExtension("")
+        )
+
+        val format = doSniff(initialDescription, cachedSource, hints)
             .getOrElse { return Try.failure(SniffError.Reading(it)) }
 
         return format
+            .takeIf { it.isValid() }
             ?.let {
                 Try.success(
                     when (source) {
@@ -141,44 +108,32 @@ public class AssetSniffer(
     }
 
     private suspend fun doSniff(
-        format: Format?,
+        format: Format,
         source: Either<Readable, Container<Readable>>,
-        hints: FormatHints,
-        excludeHintsSniffer: FormatHintsSniffer? = null,
-        excludeBlobSniffer: BlobSniffer? = null,
-        excludeContainerSniffer: ContainerSniffer? = null
-    ): Try<Format?, ReadError> {
-        for (sniffer in formatSniffers) {
-            sniffer
-                .takeIf { it != excludeHintsSniffer }
-                ?.sniffHints(format, hints)
-                ?.takeIf { format == null || it.conformsTo(format) }
-                ?.takeIf { it != format }
-                ?.let { return doSniff(it, source, hints, excludeHintsSniffer = sniffer) }
-        }
+        hints: FormatHints
+    ): Try<Format, ReadError> {
+        formatSniffers
+            .sniffHints(format, hints)
+            .takeIf { it.conformsTo(format) }
+            ?.takeIf { it != format }
+            ?.let { return doSniff(it, source, hints) }
 
         when (source) {
             is Either.Left ->
-                for (sniffer in formatSniffers) {
-                    sniffer
-                        .takeIf { it != excludeBlobSniffer }
-                        ?.sniffBlob(format, source.value)
-                        ?.getOrElse { return Try.failure(it) }
-                        ?.takeIf { format == null || it.conformsTo(format) }
-                        ?.takeIf { it != format }
-                        ?.let { return doSniff(it, source, hints, excludeBlobSniffer = sniffer) }
-                }
+                formatSniffers
+                    .sniffBlob(format, source.value)
+                    .getOrElse { return Try.failure(it) }
+                    .takeIf { it.conformsTo(format) }
+                    ?.takeIf { it != format }
+                    ?.let { return doSniff(it, source, hints) }
 
             is Either.Right ->
-                for (sniffer in formatSniffers) {
-                    sniffer
-                        .takeIf { it != excludeContainerSniffer }
-                        ?.sniffContainer(format, source.value)
-                        ?.getOrElse { return Try.failure(it) }
-                        ?.takeIf { format == null || it.conformsTo(format) }
-                        ?.takeIf { it != format }
-                        ?.let { return doSniff(it, source, hints, excludeContainerSniffer = sniffer) }
-                }
+                formatSniffers
+                    .sniffContainer(format, source.value)
+                    .getOrElse { return Try.failure(it) }
+                    .takeIf { it.conformsTo(format) }
+                    ?.takeIf { it != format }
+                    ?.let { return doSniff(it, source, hints) }
         }
 
         if (source is Either.Left) {
@@ -191,10 +146,10 @@ public class AssetSniffer(
     }
 
     private suspend fun tryOpenArchive(
-        format: Format?,
+        format: Format,
         source: Readable
     ): Try<ContainerAsset?, ReadError> =
-        if (format == null) {
+        if (!format.isValid()) {
             archiveOpener.sniffOpen(source)
                 .tryRecover {
                     when (it) {
@@ -215,4 +170,9 @@ public class AssetSniffer(
                     }
                 }
         }
+
+    private fun Format.isValid(): Boolean =
+        specification.specifications.isNotEmpty() &&
+            mediaType != MediaType.BINARY &&
+            fileExtension.value.isNotBlank()
 }

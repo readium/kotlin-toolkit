@@ -20,21 +20,17 @@ import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.getOrThrow
 import org.readium.r2.shared.util.isLazyInitialized
-import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.shared.util.resource.filename
-import org.readium.r2.shared.util.resource.mediaType
 import org.readium.r2.shared.util.toUrl
 
 /**
  * A [Resource] to access a [File].
  *
  * @param file the file to read.
- * @param mediaType the file media type, if already known.
  */
 public class FileResource(
-    private val file: File,
-    private val mediaType: MediaType? = null
+    private val file: File
 ) : Resource {
 
     private val randomAccessFile by lazy {
@@ -50,7 +46,6 @@ public class FileResource(
             Resource.Properties.Builder()
                 .also {
                     it.filename = file.name
-                    it.mediaType = mediaType
                 }
         )
 

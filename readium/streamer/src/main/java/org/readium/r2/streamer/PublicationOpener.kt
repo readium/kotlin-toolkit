@@ -17,7 +17,6 @@ import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.asset.Asset
 import org.readium.r2.shared.util.asset.AssetSniffer
 import org.readium.r2.shared.util.data.ReadError
-import org.readium.r2.shared.util.format.FormatRegistry
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.http.HttpClient
 import org.readium.r2.shared.util.logging.WarningLogger
@@ -52,7 +51,6 @@ public class PublicationOpener(
     parsers: List<PublicationParser> = emptyList(),
     ignoreDefaultParsers: Boolean = false,
     contentProtections: List<ContentProtection>,
-    formatRegistry: FormatRegistry,
     private val httpClient: HttpClient,
     pdfFactory: PdfDocumentFactory<*>?,
     assetSniffer: AssetSniffer,
@@ -78,10 +76,10 @@ public class PublicationOpener(
     private val defaultParsers: List<PublicationParser> =
         listOfNotNull(
             EpubParser(),
-            pdfFactory?.let { PdfParser(context, it, formatRegistry) },
+            pdfFactory?.let { PdfParser(context, it) },
             ReadiumWebPubParser(context, httpClient, pdfFactory),
-            ImageParser(assetSniffer, formatRegistry),
-            AudioParser(assetSniffer, formatRegistry)
+            ImageParser(assetSniffer),
+            AudioParser(assetSniffer)
         )
 
     private val parsers: List<PublicationParser> = parsers +

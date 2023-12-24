@@ -18,9 +18,7 @@ import org.readium.r2.shared.util.DebugError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.asset.AssetOpener
 import org.readium.r2.shared.util.file.FileSystemError
-import org.readium.r2.shared.util.format.FormatRegistry
 import org.readium.r2.shared.util.getOrElse
-import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.toUrl
 import org.readium.r2.streamer.PublicationOpener
 import org.readium.r2.testapp.data.BookRepository
@@ -40,7 +38,6 @@ class Bookshelf(
     private val coverStorage: CoverStorage,
     private val publicationOpener: PublicationOpener,
     private val assetOpener: AssetOpener,
-    private val formatRegistry: FormatRegistry,
     createPublicationRetriever: (PublicationRetriever.Listener) -> PublicationRetriever
 ) {
     val channel: Channel<Event> =
@@ -148,7 +145,7 @@ class Bookshelf(
 
             val id = bookRepository.insertBook(
                 url,
-                formatRegistry[asset.format]?.mediaType ?: MediaType.BINARY,
+                asset.format.mediaType,
                 publication,
                 coverFile
             )

@@ -19,7 +19,6 @@ import org.readium.r2.shared.util.asset.SniffError
 import org.readium.r2.shared.util.data.Container
 import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.format.Format
-import org.readium.r2.shared.util.format.FormatRegistry
 import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.shared.util.resource.SingleResourceContainer
 import org.readium.r2.shared.util.use
@@ -43,17 +42,13 @@ internal fun Iterable<Url>.pathCommonFirstComponent(): File? =
         ?.firstOrNull()
         ?.let { File(it) }
 
-internal fun ResourceAsset.toContainer(
-    formatRegistry: FormatRegistry
-): Container<Resource> {
+internal fun ResourceAsset.toContainer(): Container<Resource> {
     // Historically, the reading order of a standalone file contained a single link with the
     // HREF "/$assetName". This was fragile if the asset named changed, or was different on
     // other devices. To avoid this, we now use a single link with the HREF
     // "publication.extension".
-    val extension = formatRegistry[format]
-        ?.fileExtension
-        ?: resource.sourceUrl
-            ?.extension
+    val extension = format
+        .fileExtension
 
     return SingleResourceContainer(
         Url(extension.appendToFilename("publication"))!!,

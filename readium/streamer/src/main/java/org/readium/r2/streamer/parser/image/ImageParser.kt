@@ -21,9 +21,17 @@ import org.readium.r2.shared.util.asset.ContainerAsset
 import org.readium.r2.shared.util.asset.ResourceAsset
 import org.readium.r2.shared.util.data.Container
 import org.readium.r2.shared.util.data.ReadError
+import org.readium.r2.shared.util.format.AvifSpecification
+import org.readium.r2.shared.util.format.BmpSpecification
 import org.readium.r2.shared.util.format.Format
-import org.readium.r2.shared.util.format.FormatRegistry
-import org.readium.r2.shared.util.format.Trait
+import org.readium.r2.shared.util.format.GifSpecification
+import org.readium.r2.shared.util.format.InformalComicSpecification
+import org.readium.r2.shared.util.format.JpegSpecification
+import org.readium.r2.shared.util.format.JxlSpecification
+import org.readium.r2.shared.util.format.PngSpecification
+import org.readium.r2.shared.util.format.Specification
+import org.readium.r2.shared.util.format.TiffSpecification
+import org.readium.r2.shared.util.format.WebpSpecification
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.mediatype.MediaType
@@ -41,8 +49,7 @@ import org.readium.r2.streamer.parser.PublicationParser
  * It can also work for a standalone bitmap file.
  */
 public class ImageParser(
-    private val assetSniffer: AssetSniffer,
-    private val formatRegistry: FormatRegistry
+    private val assetSniffer: AssetSniffer
 ) : PublicationParser {
 
     override suspend fun parse(
@@ -57,12 +64,12 @@ public class ImageParser(
     private fun parseResourceAsset(
         asset: ResourceAsset
     ): Try<Publication.Builder, PublicationParser.ParseError> {
-        if (!asset.format.conformsTo(Trait.BITMAP)) {
+        if (!asset.format.specification.specifications.any { it in bitmapSpecifications }) {
             return Try.failure(PublicationParser.ParseError.FormatNotSupported())
         }
 
         val container =
-            asset.toContainer(formatRegistry)
+            asset.toContainer()
 
         val readingOrderWithFormat =
             listOfNotNull(container.first() to asset.format)
@@ -73,7 +80,7 @@ public class ImageParser(
     private suspend fun parseContainerAsset(
         asset: ContainerAsset
     ): Try<Publication.Builder, PublicationParser.ParseError> {
-        if (!asset.format.conformsTo(Trait.COMICS)) {
+        if (!asset.format.conformsTo(InformalComicSpecification)) {
             return Try.failure(PublicationParser.ParseError.FormatNotSupported())
         }
 
@@ -84,7 +91,7 @@ public class ImageParser(
         val readingOrderWithFormat =
             asset.container
                 .mapNotNull { url -> entryFormats[url]?.let { url to it } }
-                .filter { it.second.conformsTo(Trait.BITMAP) }
+                .filter { (_, format) -> format.specification.specifications.any { it in bitmapSpecifications } }
                 .sortedBy { it.first.toString() }
 
         if (readingOrderWithFormat.isEmpty()) {
@@ -111,8 +118,7 @@ public class ImageParser(
         title: String?
     ): Try<Publication.Builder, PublicationParser.ParseError> {
         val readingOrder = readingOrderWithFormat.map { (url, format) ->
-            val mediaType = formatRegistry[format]?.mediaType
-            Link(href = url, mediaType = mediaType)
+            Link(href = url, mediaType = format.mediaType)
         }.toMutableList()
 
         // First valid resource is the cover.
@@ -138,4 +144,16 @@ public class ImageParser(
 
         return Try.success(publicationBuilder)
     }
+
+    private val bitmapSpecifications: List<Specification> =
+        listOf(
+            AvifSpecification,
+            BmpSpecification,
+            GifSpecification,
+            JpegSpecification,
+            JxlSpecification,
+            PngSpecification,
+            TiffSpecification,
+            WebpSpecification
+        )
 }

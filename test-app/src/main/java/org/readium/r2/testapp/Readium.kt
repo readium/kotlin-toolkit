@@ -21,7 +21,6 @@ import org.readium.r2.shared.util.asset.AssetSniffer
 import org.readium.r2.shared.util.content.ContentResourceFactory
 import org.readium.r2.shared.util.downloads.android.AndroidDownloadManager
 import org.readium.r2.shared.util.file.FileResourceFactory
-import org.readium.r2.shared.util.format.FormatRegistry
 import org.readium.r2.shared.util.http.DefaultHttpClient
 import org.readium.r2.shared.util.http.HttpResourceFactory
 import org.readium.r2.shared.util.resource.CompositeResourceFactory
@@ -35,9 +34,6 @@ class Readium(context: Context) {
 
     private val archiveOpener =
         ZipArchiveOpener()
-
-    val formatRegistry =
-        FormatRegistry()
 
     private val assetSniffer =
         AssetSniffer(archiveOpener = archiveOpener)
@@ -85,7 +81,6 @@ class Readium(context: Context) {
     val publicationOpener = PublicationOpener(
         context,
         contentProtections = contentProtections,
-        formatRegistry = formatRegistry,
         assetSniffer = assetSniffer,
         httpClient = httpClient,
         // Only required if you want to support PDF files using the PDFium adapter.

@@ -8,7 +8,6 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.readium.r2.shared.util.data.asInputStream
 import org.readium.r2.shared.util.file.FileResource
-import org.readium.r2.shared.util.mediatype.MediaType
 import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
@@ -22,7 +21,7 @@ class ReadableInputStreamAdapterTest {
 
     @Test
     fun `stream can be read by chunks`() {
-        val resource = FileResource(file, mediaType = MediaType.EPUB)
+        val resource = FileResource(file)
         val resourceStream = resource.asInputStream()
         val outputStream = ByteArrayOutputStream(fileContent.size)
         resourceStream.copyTo(outputStream, bufferSize = bufferSize)

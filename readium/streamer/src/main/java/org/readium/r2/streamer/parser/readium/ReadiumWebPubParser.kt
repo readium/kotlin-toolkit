@@ -22,17 +22,20 @@ import org.readium.r2.shared.util.asset.Asset
 import org.readium.r2.shared.util.asset.ContainerAsset
 import org.readium.r2.shared.util.asset.ResourceAsset
 import org.readium.r2.shared.util.data.CompositeContainer
+import org.readium.r2.shared.util.data.Container
 import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.data.decodeRwpm
 import org.readium.r2.shared.util.data.readDecodeOrElse
-import org.readium.r2.shared.util.format.Format
-import org.readium.r2.shared.util.format.Trait
-import org.readium.r2.shared.util.getOrElse
+import org.readium.r2.shared.util.format.FormatSpecification
+import org.readium.r2.shared.util.format.LcpSpecification
+import org.readium.r2.shared.util.format.RpfSpecification
+import org.readium.r2.shared.util.format.RwpmSpecification
 import org.readium.r2.shared.util.http.HttpClient
 import org.readium.r2.shared.util.http.HttpContainer
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.pdf.PdfDocumentFactory
+import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.shared.util.resource.SingleResourceContainer
 import org.readium.r2.streamer.parser.PublicationParser
 import org.readium.r2.streamer.parser.audio.AudioLocatorService
@@ -50,26 +53,20 @@ public class ReadiumWebPubParser(
     override suspend fun parse(
         asset: Asset,
         warnings: WarningLogger?
-    ): Try<Publication.Builder, PublicationParser.ParseError> {
-        if (
-            asset is ResourceAsset &&
-            (
-                asset.format.conformsTo(Format.READIUM_WEBPUB_MANIFEST) ||
-                    asset.format.conformsTo(Trait.READIUM_PDF_MANIFEST) ||
-                    asset.format.conformsTo(Trait.READIUM_AUDIOBOOK_MANIFEST) ||
-                    asset.format.conformsTo(Trait.READIUM_COMICS_MANIFEST)
-                )
-        ) {
-            val packageAsset = createPackage(asset)
-                .getOrElse { return Try.failure(it) }
-            return parse(packageAsset, warnings)
-        }
+    ): Try<Publication.Builder, PublicationParser.ParseError> = when (asset) {
+        is ResourceAsset -> parseResourceAsset(asset.resource, asset.format.specification)
+        is ContainerAsset -> parseContainerAsset(asset.container, asset.format.specification)
+    }
 
-        if (asset !is ContainerAsset || !asset.format.conformsTo(Trait.RPF)) {
+    private suspend fun parseContainerAsset(
+        container: Container<Resource>,
+        formatSpecification: FormatSpecification
+    ): Try<Publication.Builder, PublicationParser.ParseError> {
+        if (!formatSpecification.conformsTo(RpfSpecification)) {
             return Try.failure(PublicationParser.ParseError.FormatNotSupported())
         }
 
-        val manifestResource = asset.container[Url("manifest.json")!!]
+        val manifestResource = container[Url("manifest.json")!!]
             ?: return Try.failure(
                 PublicationParser.ParseError.Reading(
                     ReadError.Decoding(
@@ -87,7 +84,9 @@ public class ReadiumWebPubParser(
         // Checks the requirements from the LCPDF specification.
         // https://readium.org/lcp-specs/notes/lcp-for-pdf.html
         val readingOrder = manifest.readingOrder
-        if (asset.format.conformsTo(Trait.PDFBOOK) && asset.format.conformsTo(Trait.LCP_PROTECTED) &&
+        if (manifest.conformsTo(Publication.Profile.PDF) && formatSpecification.conformsTo(
+                LcpSpecification
+            ) &&
             (readingOrder.isEmpty() || !readingOrder.all { MediaType.PDF.matches(it.mediaType) })
         ) {
             return Try.failure(
@@ -101,30 +100,37 @@ public class ReadiumWebPubParser(
             cacheServiceFactory = InMemoryCacheService.createFactory(context)
 
             positionsServiceFactory = when {
-                asset.format.conformsTo(Trait.PDFBOOK) && asset.format.conformsTo(
-                    Trait.LCP_PROTECTED
+                manifest.conformsTo(Publication.Profile.PDF) && formatSpecification.conformsTo(
+                    LcpSpecification
                 ) ->
                     pdfFactory?.let { LcpdfPositionsService.create(it) }
-                asset.format.conformsTo(Trait.COMICS) ->
+                manifest.conformsTo(Publication.Profile.DIVINA) ->
                     PerResourcePositionsService.createFactory(MediaType("image/*")!!)
                 else ->
                     WebPositionsService.createFactory(httpClient)
             }
 
             locatorServiceFactory = when {
-                asset.format.conformsTo(Trait.AUDIOBOOK) ->
+                manifest.conformsTo(Publication.Profile.AUDIOBOOK) ->
                     AudioLocatorService.createFactory()
                 else ->
                     null
             }
         }
 
-        val publicationBuilder = Publication.Builder(manifest, asset.container, servicesBuilder)
+        val publicationBuilder = Publication.Builder(manifest, container, servicesBuilder)
         return Try.success(publicationBuilder)
     }
 
-    private suspend fun createPackage(asset: ResourceAsset): Try<ContainerAsset, PublicationParser.ParseError> {
-        val manifest = asset.resource
+    private suspend fun parseResourceAsset(
+        resource: Resource,
+        formatSpecification: FormatSpecification
+    ): Try<Publication.Builder, PublicationParser.ParseError> {
+        if (!formatSpecification.conformsTo(RwpmSpecification)) {
+            return Try.failure(PublicationParser.ParseError.FormatNotSupported())
+        }
+
+        val manifest = resource
             .readDecodeOrElse(
                 decode = { it.decodeRwpm() },
                 recover = { return Try.failure(PublicationParser.ParseError.Reading(it)) }
@@ -132,7 +138,7 @@ public class ReadiumWebPubParser(
 
         val baseUrl = manifest.linkWithRel("self")?.href?.resolve()
         if (baseUrl == null) {
-            Timber.w("No self link found in the manifest at ${asset.resource.sourceUrl}")
+            Timber.w("No self link found in the manifest at ${resource.sourceUrl}")
         } else {
             if (baseUrl !is AbsoluteUrl) {
                 return Try.failure(
@@ -158,27 +164,11 @@ public class ReadiumWebPubParser(
             CompositeContainer(
                 SingleResourceContainer(
                     Url("manifest.json")!!,
-                    asset.resource
+                    resource
                 ),
                 HttpContainer(baseUrl, resources, httpClient)
             )
 
-        return Try.success(
-            ContainerAsset(
-                format = when {
-                    asset.format.conformsTo(Trait.READIUM_AUDIOBOOK_MANIFEST) ->
-                        Format.READIUM_AUDIOBOOK
-                    asset.format.conformsTo(Trait.READIUM_COMICS_MANIFEST) ->
-                        Format.READIUM_COMICS
-                    asset.format.conformsTo(Trait.READIUM_WEBPUB_MANIFEST) ->
-                        Format.READIUM_WEBPUB
-                    asset.format.conformsTo(Trait.READIUM_PDF_MANIFEST) ->
-                        Format.READIUM_PDF
-                    else ->
-                        throw IllegalStateException()
-                },
-                container = container
-            )
-        )
+        return parseContainerAsset(container, FormatSpecification(RpfSpecification))
     }
 }

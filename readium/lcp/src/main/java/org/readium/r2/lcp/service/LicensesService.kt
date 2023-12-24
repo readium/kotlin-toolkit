@@ -34,6 +34,7 @@ import org.readium.r2.lcp.license.model.LicenseDocument
 import org.readium.r2.shared.extensions.tryOr
 import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.publication.protection.ContentProtection
+import org.readium.r2.shared.util.FileExtension
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.asset.Asset
 import org.readium.r2.shared.util.asset.AssetOpener
@@ -41,11 +42,15 @@ import org.readium.r2.shared.util.asset.AssetSniffer
 import org.readium.r2.shared.util.asset.ContainerAsset
 import org.readium.r2.shared.util.asset.ResourceAsset
 import org.readium.r2.shared.util.downloads.DownloadManager
+import org.readium.r2.shared.util.format.EpubSpecification
 import org.readium.r2.shared.util.format.Format
 import org.readium.r2.shared.util.format.FormatHints
-import org.readium.r2.shared.util.format.FormatRegistry
-import org.readium.r2.shared.util.format.Trait
+import org.readium.r2.shared.util.format.FormatSpecification
+import org.readium.r2.shared.util.format.LcpLicenseSpecification
+import org.readium.r2.shared.util.format.LcpSpecification
+import org.readium.r2.shared.util.format.ZipSpecification
 import org.readium.r2.shared.util.getOrElse
+import org.readium.r2.shared.util.mediatype.MediaType
 import timber.log.Timber
 
 internal class LicensesService(
@@ -60,8 +65,6 @@ internal class LicensesService(
     private val downloadManager: DownloadManager
 ) : LcpService, CoroutineScope by MainScope() {
 
-    private val formatRegistry = FormatRegistry()
-
     @Deprecated(
         "Use an AssetSniffer and check the returned format for Trait.LCP_PROTECTED",
         level = DeprecationLevel.ERROR
@@ -73,9 +76,9 @@ internal class LicensesService(
         return tryOr(false) {
             when (asset) {
                 is ResourceAsset ->
-                    asset.format.conformsTo(Trait.LCP_LICENSE_DOCUMENT)
+                    asset.format.conformsTo(LcpLicenseSpecification)
                 is ContainerAsset ->
-                    asset.format.conformsTo(Trait.LCP_PROTECTED)
+                    asset.format.conformsTo(LcpSpecification)
             }
         }
     }
@@ -109,12 +112,12 @@ internal class LicensesService(
 
     override suspend fun retrieveLicense(
         file: File,
-        format: Format,
+        formatSpecification: FormatSpecification,
         authentication: LcpAuthenticating,
         allowUserInteraction: Boolean
     ): Try<LcpLicense, LcpError> =
         try {
-            val container = createLicenseContainer(file, format)
+            val container = createLicenseContainer(file, formatSpecification)
             val license = retrieveLicense(
                 container,
                 authentication,
@@ -269,11 +272,21 @@ internal class LicensesService(
         val format = assetSniffer.sniff(
             destination,
             FormatHints(mediaTypes = listOfNotNull(mediaTypeHint, link.mediaType))
-        ).getOrElse { Format.EPUB }
+        ).getOrElse {
+            Format(
+                specification = FormatSpecification(
+                    ZipSpecification,
+                    EpubSpecification,
+                    LcpSpecification
+                ),
+                mediaType = MediaType.EPUB,
+                fileExtension = FileExtension("epub")
+            )
+        }
 
         try {
             // Saves the License Document into the downloaded publication
-            val container = createLicenseContainer(destination, format)
+            val container = createLicenseContainer(destination, format.specification)
             container.write(license)
         } catch (e: Exception) {
             tryOrLog { destination.delete() }
@@ -287,7 +300,4 @@ internal class LicensesService(
             licenseDocument = license
         )
     }
-
-    private val Format.fileExtension: String get() =
-        formatRegistry[this]?.fileExtension?.value ?: "epub"
 }

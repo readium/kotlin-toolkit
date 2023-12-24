@@ -13,6 +13,7 @@ import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Manifest
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.encryption.encryption
+import org.readium.r2.shared.util.FileExtension
 import org.readium.r2.shared.util.RelativeUrl
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
@@ -24,10 +25,9 @@ import org.readium.r2.shared.util.data.decodeRwpm
 import org.readium.r2.shared.util.data.decodeString
 import org.readium.r2.shared.util.data.decodeXml
 import org.readium.r2.shared.util.data.readDecodeOrElse
-import org.readium.r2.shared.util.flatMap
-import org.readium.r2.shared.util.format.Format.Companion.orEmpty
 import org.readium.r2.shared.util.getOrDefault
 import org.readium.r2.shared.util.getOrElse
+import org.readium.r2.shared.util.mediatype.MediaType
 
 public class DefaultFormatSniffer :
     FormatSniffer by CompositeFormatSniffer(
@@ -42,10 +42,10 @@ public class DefaultFormatSniffer :
         BitmapSniffer,
         AudioSniffer,
         JsonSniffer,
-        OpdsSniffer,
+        Opds1Sniffer,
+        Opds2Sniffer,
         LcpLicenseSniffer,
-        LcpSniffer,
-        AdeptSniffer,
+        EpubDrmSniffer,
         W3cWpubSniffer,
         RwpmSniffer
     )
@@ -53,31 +53,35 @@ public class DefaultFormatSniffer :
 /** Sniffs an HTML or XHTML document. */
 public object HtmlSniffer : FormatSniffer {
     override fun sniffHints(
-        format: Format?,
+        format: Format,
         hints: FormatHints
-    ): Format? {
+    ): Format {
+        if (format.hasMoreThan(XmlSpecification)) {
+            return format
+        }
+
         if (
             hints.hasFileExtension("htm", "html") ||
             hints.hasMediaType("text/html")
         ) {
-            return format.orEmpty() + Format.HTML
+            return htmlFormat
         }
 
         if (
             hints.hasFileExtension("xht", "xhtml") ||
             hints.hasMediaType("application/xhtml+xml")
         ) {
-            return format.orEmpty() + Format.XHTML
+            return xhtmlFormat
         }
 
         return format
     }
 
     override suspend fun sniffBlob(
-        format: Format?,
+        format: Format,
         source: Readable
-    ): Try<Format?, ReadError> {
-        if (format != null && format != Format.XML || !source.canReadWholeBlob()) {
+    ): Try<Format, ReadError> {
+        if (format.hasMoreThan(XmlSpecification) || !source.canReadWholeBlob()) {
             return Try.success(format)
         }
 
@@ -91,9 +95,9 @@ public object HtmlSniffer : FormatSniffer {
             ?.let {
                 return Try.success(
                     if (it.namespace.lowercase(Locale.ROOT).contains("xhtml")) {
-                        Format.XHTML
+                        xhtmlFormat
                     } else {
-                        Format.HTML
+                        htmlFormat
                     }
                 )
             }
@@ -104,79 +108,57 @@ public object HtmlSniffer : FormatSniffer {
             recoverDecode = { null }
         )
             ?.takeIf { it.trimStart().take(15).lowercase() == "<!doctype html>" }
-            ?.let { return Try.success(Format.HTML) }
+            ?.let { return Try.success(htmlFormat) }
 
         return Try.success(format)
     }
+
+    private val htmlFormat = Format(
+        specification = FormatSpecification(HtmlSpecification),
+        fileExtension = FileExtension("html"),
+        mediaType = MediaType.HTML
+    )
+
+    private val xhtmlFormat = Format(
+        specification = FormatSpecification(XmlSpecification, HtmlSpecification),
+        fileExtension = FileExtension("xhtml"),
+        mediaType = MediaType.XHTML
+    )
 }
 
 /** Sniffs an OPDS1 document. */
-public object OpdsSniffer : FormatSniffer {
+public object Opds1Sniffer : FormatSniffer {
 
     override fun sniffHints(
-        format: Format?,
+        format: Format,
         hints: FormatHints
-    ): Format? {
-        return sniffHintsXml(format, hints)
-            ?: sniffHintsJson(format, hints)
-    }
+    ): Format {
+        if (format.hasMoreThan(XmlSpecification)) {
+            return format
+        }
 
-    private fun sniffHintsXml(format: Format?, hints: FormatHints): Format? {
         // OPDS 1
         if (hints.hasMediaType("application/atom+xml;type=entry;profile=opds-catalog")) {
-            return format.orEmpty() + Format.OPDS1_ENTRY
+            return opds1EntryFormat
         }
         if (hints.hasMediaType("application/atom+xml;profile=opds-catalog;kind=navigation")) {
-            return format.orEmpty() + Format.OPDS1_NAVIGATION_FEED
+            return opds1NavigationFeedFormat
         }
         if (hints.hasMediaType("application/atom+xml;profile=opds-catalog;kind=acquisition")) {
-            return format.orEmpty() + Format.OPDS1_ACQUISITION_FEED
+            return opds1AcquisitionFeedFormat
         }
         if (hints.hasMediaType("application/atom+xml;profile=opds-catalog")) {
-            return format.orEmpty() + Format.OPDS1_CATALOG
-        }
-
-        return format
-    }
-
-    private fun sniffHintsJson(format: Format?, hints: FormatHints): Format? {
-        // OPDS 2
-        if (hints.hasMediaType("application/opds+json")) {
-            return format.orEmpty() + Format.OPDS2_CATALOG
-        }
-        if (hints.hasMediaType("application/opds-publication+json")) {
-            return format.orEmpty() + Format.OPDS2_PUBLICATION
-        }
-
-        // OPDS Authentication Document.
-        if (
-            hints.hasMediaType("application/opds-authentication+json") ||
-            hints.hasMediaType("application/vnd.opds.authentication.v1.0+json")
-        ) {
-            return format.orEmpty() + Format.OPDS_AUTHENTICATION
+            return opds1CatalogFormat
         }
 
         return format
     }
 
     override suspend fun sniffBlob(
-        format: Format?,
+        format: Format,
         source: Readable
-    ): Try<Format?, ReadError> {
-        if (!source.canReadWholeBlob()) {
-            return Try.success(format)
-        }
-
-        sniffBlobXml(format, source)
-            .flatMap { sniffBlobJson(it, source) }
-            .getOrElse { return Try.failure(it) }
-            ?.let { return Try.success(it) }
-
-        return Try.success(format)
-    }
-
-    private suspend fun sniffBlobXml(format: Format?, source: Readable): Try<Format?, ReadError> {
-        if (format != null && format != Format.XML) {
+    ): Try<Format, ReadError> {
+        if (format.hasMoreThan(XmlSpecification) || !source.canReadWholeBlob()) {
             return Try.success(format)
         }
 
@@ -188,17 +170,74 @@ public object OpdsSniffer : FormatSniffer {
         )?.takeIf { it.namespace == "http://www.w3.org/2005/Atom" }
             ?.let { xml ->
                 if (xml.name == "feed") {
-                    return Try.success(Format.OPDS1_CATALOG)
+                    return Try.success(opds1CatalogFormat)
                 } else if (xml.name == "entry") {
-                    return Try.success(Format.OPDS1_ENTRY)
+                    return Try.success(opds1EntryFormat)
                 }
             }
 
         return Try.success(format)
     }
 
-    private suspend fun sniffBlobJson(format: Format?, source: Readable): Try<Format?, ReadError> {
-        if (format != null && format != Format.JSON) {
+    private val opds1CatalogFormat = Format(
+        specification = FormatSpecification(XmlSpecification, Opds1CatalogSpecification),
+        mediaType = MediaType.OPDS1,
+        fileExtension = FileExtension("xml")
+    )
+
+    private val opds1NavigationFeedFormat = Format(
+        specification = FormatSpecification(XmlSpecification, Opds1CatalogSpecification),
+        mediaType = MediaType.OPDS1_NAVIGATION_FEED,
+        fileExtension = FileExtension("xml")
+    )
+
+    private val opds1AcquisitionFeedFormat = Format(
+        specification = FormatSpecification(XmlSpecification, Opds1CatalogSpecification),
+        mediaType = MediaType.OPDS1_ACQUISITION_FEED,
+        fileExtension = FileExtension("xml")
+    )
+
+    private val opds1EntryFormat = Format(
+        specification = FormatSpecification(XmlSpecification, Opds1EntrySpecification),
+        mediaType = MediaType.OPDS1_ENTRY,
+        fileExtension = FileExtension("xml")
+    )
+}
+
+/**
+ * Sniffs an OPDS 2 document.
+ */
+public object Opds2Sniffer : FormatSniffer {
+
+    override fun sniffHints(format: Format, hints: FormatHints): Format {
+        if (format.hasMoreThan(JsonSpecification)) {
+            return format
+        }
+
+        // OPDS 2
+        if (hints.hasMediaType("application/opds+json")) {
+            return opds2CatalogFormat
+        }
+        if (hints.hasMediaType("application/opds-publication+json")) {
+            return opds2PublicationFormat
+        }
+
+        // OPDS Authentication Document.
+        if (
+            hints.hasMediaType("application/opds-authentication+json") ||
+            hints.hasMediaType("application/vnd.opds.authentication.v1.0+json")
+        ) {
+            return opdsAuthenticationFormat
+        }
+
+        return format
+    }
+
+    override suspend fun sniffBlob(
+        format: Format,
+        source: Readable
+    ): Try<Format, ReadError> {
+        if (format.hasMoreThan(JsonSpecification)) {
             return Try.success(format)
         }
 
@@ -211,7 +250,7 @@ public object OpdsSniffer : FormatSniffer {
             ?.let { rwpm ->
                 if (rwpm.linkWithRel("self")?.mediaType?.matches("application/opds+json") == true
                 ) {
-                    return Try.success(Format.OPDS2_CATALOG)
+                    return Try.success(opds2CatalogFormat)
                 }
 
                 /**
@@ -226,7 +265,7 @@ public object OpdsSniffer : FormatSniffer {
                         )
                 } != null
                 ) {
-                    return Try.success(Format.OPDS2_PUBLICATION)
+                    return Try.success(opds2PublicationFormat)
                 }
             }
 
@@ -234,34 +273,56 @@ public object OpdsSniffer : FormatSniffer {
         source.containsJsonKeys("id", "title", "authentication")
             .getOrElse { return Try.failure(it) }
             .takeIf { it }
-            ?.let { return Try.success(Format.OPDS_AUTHENTICATION) }
+            ?.let { return Try.success(opdsAuthenticationFormat) }
 
         return Try.success(format)
     }
+
+    private val opdsAuthenticationFormat = Format(
+        specification = FormatSpecification(JsonSpecification, OpdsAuthenticationSpecification),
+        mediaType = MediaType.OPDS_AUTHENTICATION,
+        fileExtension = FileExtension("json")
+    )
+
+    private val opds2CatalogFormat = Format(
+        specification = FormatSpecification(JsonSpecification, Opds2CatalogSpecification),
+        mediaType = MediaType.OPDS2,
+        fileExtension = FileExtension("json")
+    )
+
+    private val opds2PublicationFormat = Format(
+        specification = FormatSpecification(JsonSpecification, Opds2PublicationSpecification),
+        mediaType = MediaType.OPDS2_PUBLICATION,
+        fileExtension = FileExtension("json")
+    )
 }
 
 /** Sniffs an LCP License Document. */
 public object LcpLicenseSniffer : FormatSniffer {
     override fun sniffHints(
-        format: Format?,
+        format: Format,
         hints: FormatHints
-    ): Format? {
+    ): Format {
+        if (format.hasMoreThan(JsonSpecification)) {
+            return format
+        }
+
         if (
             hints.hasFileExtension("lcpl") ||
             hints.hasMediaType("application/vnd.readium.lcp.license.v1.0+json")
         ) {
-            return format.orEmpty() + Format.LCP_LICENSE_DOCUMENT
+            return lcplFormat
         }
 
         return format
     }
 
     override suspend fun sniffBlob(
-        format: Format?,
+        format: Format,
         source: Readable
-    ): Try<Format?, ReadError> {
+    ): Try<Format, ReadError> {
         if (
-            format != null && format != Format.JSON ||
+            format.hasMoreThan(JsonSpecification) ||
             !source.canReadWholeBlob()
         ) {
             return Try.success(format)
@@ -270,66 +331,104 @@ public object LcpLicenseSniffer : FormatSniffer {
         source.containsJsonKeys("id", "issued", "provider", "encryption")
             .getOrElse { return Try.failure(it) }
             .takeIf { it }
-            ?.let { return Try.success(Format.LCP_LICENSE_DOCUMENT) }
+            ?.let { return Try.success(lcplFormat) }
 
         return Try.success(format)
     }
+
+    private val lcplFormat = Format(
+        specification = FormatSpecification(JsonSpecification, LcpLicenseSpecification),
+        mediaType = MediaType.LCP_LICENSE_DOCUMENT,
+        fileExtension = FileExtension("lcpl")
+    )
 }
 
 /** Sniffs a bitmap image. */
 public object BitmapSniffer : FormatSniffer {
 
     override fun sniffHints(
-        format: Format?,
+        format: Format,
         hints: FormatHints
-    ): Format? {
+    ): Format {
         if (
             hints.hasFileExtension("avif") ||
             hints.hasMediaType("image/avif")
         ) {
-            return format.orEmpty() + Format(setOf(Trait.BITMAP, Trait.AVIF))
+            return Format(
+                specification = FormatSpecification(AvifSpecification),
+                mediaType = MediaType.AVIF,
+                fileExtension = FileExtension("avif")
+            )
         }
         if (
             hints.hasFileExtension("bmp", "dib") ||
             hints.hasMediaType("image/bmp", "image/x-bmp")
         ) {
-            return format.orEmpty() + Format(setOf(Trait.BITMAP, Trait.BMP))
+            return Format(
+                specification = FormatSpecification(BmpSpecification),
+                mediaType = MediaType.BMP,
+                fileExtension = FileExtension("bmp")
+            )
         }
         if (
             hints.hasFileExtension("gif") ||
             hints.hasMediaType("image/gif")
         ) {
-            return format.orEmpty() + Format(setOf(Trait.BITMAP, Trait.GIF))
+            return Format(
+                specification = FormatSpecification(GifSpecification),
+                mediaType = MediaType.GIF,
+                fileExtension = FileExtension("gif")
+            )
         }
         if (
             hints.hasFileExtension("jpg", "jpeg", "jpe", "jif", "jfif", "jfi") ||
             hints.hasMediaType("image/jpeg")
         ) {
-            return format.orEmpty() + Format(setOf(Trait.BITMAP, Trait.JPEG))
+            return Format(
+                specification = FormatSpecification(JpegSpecification),
+                mediaType = MediaType.JPEG,
+                fileExtension = FileExtension("jpg")
+            )
         }
         if (
             hints.hasFileExtension("jxl") ||
             hints.hasMediaType("image/jxl")
         ) {
-            return format.orEmpty() + Format(setOf(Trait.BITMAP, Trait.JXL))
+            return Format(
+                specification = FormatSpecification(JxlSpecification),
+                mediaType = MediaType.JXL,
+                fileExtension = FileExtension("jxl")
+            )
         }
         if (
             hints.hasFileExtension("png") ||
             hints.hasMediaType("image/png")
         ) {
-            return format.orEmpty() + Format(setOf(Trait.BITMAP, Trait.PNG))
+            return Format(
+                specification = FormatSpecification(PngSpecification),
+                mediaType = MediaType.PNG,
+                fileExtension = FileExtension("png")
+            )
         }
         if (
             hints.hasFileExtension("tiff", "tif") ||
             hints.hasMediaType("image/tiff", "image/tiff-fx")
         ) {
-            return format.orEmpty() + Format(setOf(Trait.BITMAP, Trait.TIFF))
+            return Format(
+                specification = FormatSpecification(TiffSpecification),
+                mediaType = MediaType.TIFF,
+                fileExtension = FileExtension("tiff")
+            )
         }
         if (
             hints.hasFileExtension("webp") ||
             hints.hasMediaType("image/webp")
         ) {
-            return format.orEmpty() + Format(setOf(Trait.BITMAP, Trait.WEBP))
+            return Format(
+                specification = FormatSpecification(WebpSpecification),
+                mediaType = MediaType.WEBP,
+                fileExtension = FileExtension("webp")
+            )
         }
 
         return format
@@ -338,14 +437,115 @@ public object BitmapSniffer : FormatSniffer {
 
 /** Sniffs audio files. */
 public object AudioSniffer : FormatSniffer {
-    override fun sniffHints(format: Format?, hints: FormatHints): Format? {
+    override fun sniffHints(format: Format, hints: FormatHints): Format {
         if (
-            hints.hasFileExtension(
-                "aac", "aiff", "alac", "flac", "m4a", "m4b", "mp3",
-                "ogg", "oga", "mogg", "opus", "wav", "webm"
-            )
+            hints.hasFileExtension("aac")
         ) {
-            return format.orEmpty() + Format(setOf(Trait.AUDIO))
+            return Format(
+                specification = FormatSpecification(AacSpecification),
+                mediaType = MediaType.AAC,
+                fileExtension = FileExtension("aac")
+            )
+        }
+
+        if (
+            hints.hasFileExtension("aiff")
+        ) {
+            return Format(
+                specification = FormatSpecification(AiffSpecification),
+                mediaType = MediaType.AIFF,
+                fileExtension = FileExtension("aiff")
+            )
+        }
+
+        if (
+            hints.hasFileExtension("alac")
+        ) {
+            return Format(
+                specification = FormatSpecification(AlacSpecification),
+                mediaType = MediaType.ALAC,
+                fileExtension = FileExtension("alac")
+            )
+        }
+
+        if (
+            hints.hasFileExtension("flac")
+        ) {
+            return Format(
+                specification = FormatSpecification(FlacSpecification),
+                mediaType = MediaType.FLAC,
+                fileExtension = FileExtension("flac")
+            )
+        }
+
+        if (
+            hints.hasFileExtension("m4a", "m4b")
+        ) {
+            return Format(
+                specification = FormatSpecification(Mp4Specification),
+                mediaType = MediaType.MP4,
+                fileExtension = FileExtension("m4a")
+            )
+        }
+
+        if (
+            hints.hasFileExtension("mp3")
+        ) {
+            return Format(
+                specification = FormatSpecification(Mp3Specification),
+                mediaType = MediaType.MP3,
+                fileExtension = FileExtension("mp3")
+            )
+        }
+
+        if (
+            hints.hasFileExtension("ogg", "oga")
+        ) {
+            return Format(
+                specification = FormatSpecification(OggSpecification),
+                mediaType = MediaType.OGG,
+                fileExtension = FileExtension("oga")
+            )
+        }
+
+        if (
+            hints.hasFileExtension("mogg")
+        ) {
+            return Format(
+                specification = FormatSpecification(MoggSpecification),
+                mediaType = MediaType.MOGG,
+                fileExtension = FileExtension("mogg")
+            )
+        }
+
+        if (
+            hints.hasFileExtension("opus")
+        ) {
+            return Format(
+                specification = FormatSpecification(OpusSpecification),
+                mediaType = MediaType.OPUS,
+                fileExtension = FileExtension("opus")
+            )
+        }
+
+        if (
+            hints.hasFileExtension("wav")
+        ) {
+            return Format(
+                specification = FormatSpecification(WavSpecification),
+                mediaType = MediaType.WAV,
+                fileExtension = FileExtension("wav")
+            )
+        }
+
+        if (
+            hints.hasFileExtension("webm")
+        ) {
+            return Format(
+                specification = FormatSpecification(WebmSpecification),
+                mediaType = MediaType.WEBM_AUDIO,
+                fileExtension = FileExtension("webm")
+            )
         }
 
         return format
@@ -355,30 +555,34 @@ public object AudioSniffer : FormatSniffer {
 /** Sniffs a Readium Web Manifest. */
 public object RwpmSniffer : FormatSniffer {
     override fun sniffHints(
-        format: Format?,
+        format: Format,
         hints: FormatHints
-    ): Format? {
+    ): Format {
+        if (format.hasMoreThan(JsonSpecification)) {
+            return format
+        }
+
         if (hints.hasMediaType("application/audiobook+json")) {
-            return format.orEmpty() + Format.READIUM_AUDIOBOOK_MANIFEST
+            return rwpmAudioFormat
         }
 
         if (hints.hasMediaType("application/divina+json")) {
-            return format.orEmpty() + Format.READIUM_COMICS_MANIFEST
+            return rwpmDivinaFormat
         }
 
         if (hints.hasMediaType("application/webpub+json")) {
-            return format.orEmpty() + Format.READIUM_WEBPUB_MANIFEST
+            return rwpmFormat
         }
 
         return format
     }
 
     public override suspend fun sniffBlob(
-        format: Format?,
+        format: Format,
         source: Readable
-    ): Try<Format?, ReadError> {
+    ): Try<Format, ReadError> {
         if (
-            format != null && format != Format.JSON ||
+            format.hasMoreThan(JsonSpecification) ||
             !source.canReadWholeBlob()
         ) {
             return Try.success(format)
@@ -392,70 +596,92 @@ public object RwpmSniffer : FormatSniffer {
             ) ?: return Try.success(format)
 
         if (manifest.conformsTo(Publication.Profile.AUDIOBOOK)) {
-            return Try.success(Format.READIUM_AUDIOBOOK_MANIFEST)
+            return Try.success(rwpmAudioFormat)
         }
 
         if (manifest.conformsTo(Publication.Profile.DIVINA)) {
-            return Try.success(Format.READIUM_COMICS_MANIFEST)
+            return Try.success(rwpmDivinaFormat)
         }
         if (manifest.linkWithRel("self")?.mediaType?.matches("application/webpub+json") == true) {
-            return Try.success(Format.READIUM_WEBPUB_MANIFEST)
+            return Try.success(rwpmFormat)
         }
 
         return Try.success(format)
     }
+
+    private val rwpmFormat = Format(
+        specification = FormatSpecification(JsonSpecification, RwpmSpecification),
+        mediaType = MediaType.READIUM_WEBPUB_MANIFEST,
+        fileExtension = FileExtension("json")
+    )
+
+    private val rwpmAudioFormat = Format(
+        specification = FormatSpecification(JsonSpecification, RwpmSpecification),
+        mediaType = MediaType.READIUM_AUDIOBOOK_MANIFEST,
+        fileExtension = FileExtension("json")
+    )
+
+    private val rwpmDivinaFormat = Format(
+        specification = FormatSpecification(JsonSpecification, RwpmSpecification),
+        mediaType = MediaType.DIVINA_MANIFEST,
+        fileExtension = FileExtension("json")
+    )
 }
 
 /** Sniffs a Readium Web Publication, protected or not by LCP. */
 public object RpfSniffer : FormatSniffer {
 
     override fun sniffHints(
-        format: Format?,
+        format: Format,
         hints: FormatHints
-    ): Format? {
+    ): Format {
+        if (format.hasMoreThan(ZipSpecification, RpfSpecification, LcpSpecification)) {
+            return format
+        }
+
         if (
             hints.hasFileExtension("audiobook") ||
             hints.hasMediaType("application/audiobook+zip")
         ) {
-            return format.orEmpty() + Format.READIUM_AUDIOBOOK
+            return rpfAudioFormat
         }
 
         if (
             hints.hasFileExtension("divina") ||
             hints.hasMediaType("application/divina+zip")
         ) {
-            return format.orEmpty() + Format.READIUM_COMICS
+            return rpfDivinaFormat
         }
 
         if (
             hints.hasFileExtension("webpub") ||
             hints.hasMediaType("application/webpub+zip")
         ) {
-            return format.orEmpty() + Format.READIUM_WEBPUB
+            return rpfFormat
         }
 
         if (
             hints.hasFileExtension("lcpa") ||
             hints.hasMediaType("application/audiobook+lcp")
         ) {
-            return format.orEmpty() + Format.READIUM_AUDIOBOOK + Trait.LCP_PROTECTED
+            return lcpaFormat
         }
         if (
             hints.hasFileExtension("lcpdf") ||
             hints.hasMediaType("application/pdf+lcp")
         ) {
-            return format.orEmpty() + Format.READIUM_PDF + Trait.LCP_PROTECTED
+            return lcpdfFormat
         }
 
         return format
     }
 
     override suspend fun sniffContainer(
-        format: Format?,
+        format: Format,
         container: Container<Readable>
-    ): Try<Format?, ReadError> {
+    ): Try<Format, ReadError> {
         if (
-            format != null && format != Format.ZIP
+            format.hasMoreThan(ZipSpecification, RpfSpecification, LcpSpecification)
         ) {
             return Try.success(format)
         }
@@ -468,28 +694,85 @@ public object RpfSniffer : FormatSniffer {
                 ?.let { tryOrNull { Manifest.fromJSON(JSONObject(String(it))) } }
                 ?: return Try.success(format)
 
-        if (manifest.conformsTo(Publication.Profile.AUDIOBOOK)) {
-            return Try.success(Format.READIUM_AUDIOBOOK)
-        }
-        if (manifest.conformsTo(Publication.Profile.DIVINA)) {
-            return Try.success(Format.READIUM_COMICS)
-        }
-        if (manifest.conformsTo(Publication.Profile.PDF)) {
-            return Try.success(Format.READIUM_PDF)
+        val isLcpProtected = RelativeUrl("license.lcpl")!! in container ||
+            hasLcpSchemeInManifest(manifest)
+
+        val newFormat = when {
+            manifest.conformsTo(Publication.Profile.AUDIOBOOK) -> {
+                if (isLcpProtected) {
+                    lcpaFormat
+                } else {
+                    rpfAudioFormat
+                }
+            }
+            manifest.conformsTo(Publication.Profile.DIVINA) -> {
+                if (isLcpProtected) {
+                    rpfDivinaFormat.addSpecifications(LcpSpecification)
+                } else {
+                    rpfDivinaFormat
+                }
+            }
+            manifest.conformsTo(Publication.Profile.PDF) -> {
+                if (isLcpProtected) {
+                    lcpdfFormat
+                } else {
+                    rpfFormat
+                }
+            }
+            else ->
+                if (isLcpProtected) {
+                    rpfFormat.addSpecifications(LcpSpecification)
+                } else {
+                    rpfFormat
+                }
         }
 
-        return Try.success(Format.READIUM_WEBPUB)
+        return Try.success(newFormat)
     }
+
+    private fun hasLcpSchemeInManifest(manifest: Manifest): Boolean = manifest
+        .readingOrder
+        .any { it.properties.encryption?.scheme == "http://readium.org/2014/01/lcp" }
+
+    private val rpfFormat = Format(
+        specification = FormatSpecification(ZipSpecification, RpfSpecification),
+        mediaType = MediaType.READIUM_WEBPUB,
+        fileExtension = FileExtension("webpub")
+    )
+
+    private val rpfAudioFormat = Format(
+        specification = FormatSpecification(ZipSpecification, RpfSpecification),
+        mediaType = MediaType.READIUM_AUDIOBOOK,
+        fileExtension = FileExtension("audiobook")
+    )
+
+    private val rpfDivinaFormat = Format(
+        specification = FormatSpecification(ZipSpecification, RpfSpecification),
+        mediaType = MediaType.DIVINA,
+        fileExtension = FileExtension("divina")
+    )
+
+    private val lcpaFormat = Format(
+        specification = FormatSpecification(ZipSpecification, RpfSpecification, LcpSpecification),
+        mediaType = MediaType.LCP_PROTECTED_AUDIOBOOK,
+        fileExtension = FileExtension("lcpa")
+    )
+
+    private val lcpdfFormat = Format(
+        specification = FormatSpecification(ZipSpecification, RpfSpecification, LcpSpecification),
+        mediaType = MediaType.LCP_PROTECTED_PDF,
+        fileExtension = FileExtension("lcpdf")
+    )
 }
 
 /** Sniffs a W3C Web Publication Manifest. */
 public object W3cWpubSniffer : FormatSniffer {
 
     override suspend fun sniffBlob(
-        format: Format?,
+        format: Format,
         source: Readable
-    ): Try<Format?, ReadError> {
-        if (format != null && format != Format.JSON || !source.canReadWholeBlob()) {
+    ): Try<Format, ReadError> {
+        if (format.hasMoreThan(JsonSpecification) || !source.canReadWholeBlob()) {
             return Try.success(format)
         }
 
@@ -504,11 +787,14 @@ public object W3cWpubSniffer : FormatSniffer {
             string.contains("https://www.w3.org/ns/wp-context")
         ) {
             return Try.success(
-                if (string.contains("https://www.w3.org/TR/audiobooks/")) {
-                    Format(setOf(Trait.JSON, Trait.W3C_AUDIOBOOK_MANIFEST))
-                } else {
-                    Format(setOf(Trait.JSON, Trait.W3C_PUB_MANIFEST))
-                }
+                Format(
+                    specification = FormatSpecification(
+                        JsonSpecification,
+                        W3cPubManifestSpecification
+                    ),
+                    mediaType = MediaType.W3C_WPUB_MANIFEST,
+                    fileExtension = FileExtension("json")
+                )
             )
         }
 
@@ -523,24 +809,28 @@ public object W3cWpubSniffer : FormatSniffer {
  */
 public object EpubSniffer : FormatSniffer {
     override fun sniffHints(
-        format: Format?,
+        format: Format,
         hints: FormatHints
-    ): Format? {
+    ): Format {
+        if (format.hasMoreThan(ZipSpecification)) {
+            return format
+        }
+
         if (
             hints.hasFileExtension("epub") ||
             hints.hasMediaType("application/epub+zip")
         ) {
-            return format.orEmpty() + Format.EPUB
+            return epubFormatSpecification
         }
 
         return format
     }
 
     override suspend fun sniffContainer(
-        format: Format?,
+        format: Format,
         container: Container<Readable>
-    ): Try<Format?, ReadError> {
-        if (format != null && format != Format.ZIP) {
+    ): Try<Format, ReadError> {
+        if (format.hasMoreThan(ZipSpecification)) {
             return Try.success(format)
         }
 
@@ -552,11 +842,17 @@ public object EpubSniffer : FormatSniffer {
             )?.trim()
 
         if (mimetype == "application/epub+zip") {
-            return Try.success(format.orEmpty() + Trait.EPUB)
+            return Try.success(epubFormatSpecification)
         }
 
         return Try.success(format)
     }
+
+    private val epubFormatSpecification = Format(
+        specification = FormatSpecification(ZipSpecification, EpubSpecification),
+        mediaType = MediaType.EPUB,
+        fileExtension = FileExtension("epub")
+    )
 }
 
 /**
@@ -568,29 +864,33 @@ public object EpubSniffer : FormatSniffer {
  */
 public object LpfSniffer : FormatSniffer {
     override fun sniffHints(
-        format: Format?,
+        format: Format,
         hints: FormatHints
-    ): Format? {
+    ): Format {
+        if (format.hasMoreThan(ZipSpecification)) {
+            return format
+        }
+
         if (
             hints.hasFileExtension("lpf") ||
             hints.hasMediaType("application/lpf+zip")
         ) {
-            return format.orEmpty() + Trait.ZIP + Trait.LPF
+            return lpfFormat
         }
 
         return format
     }
 
     override suspend fun sniffContainer(
-        format: Format?,
+        format: Format,
         container: Container<Readable>
-    ): Try<Format?, ReadError> {
-        if (format != null && format != Format.ZIP) {
+    ): Try<Format, ReadError> {
+        if (format.hasMoreThan(ZipSpecification)) {
             return Try.success(format)
         }
 
         if (RelativeUrl("index.html")!! in container) {
-            return Try.success(format.orEmpty() + Trait.LPF)
+            return Try.success(lpfFormat)
         }
 
         // Somehow, [JSONObject] can't access JSON-LD keys such as `@content`.
@@ -603,18 +903,18 @@ public object LpfSniffer : FormatSniffer {
                     manifest.contains("@context") &&
                     manifest.contains("https://www.w3.org/ns/pub-context")
                 ) {
-                    return Try.success(
-                        if (manifest.contains("https://www.w3.org/TR/audiobooks/")) {
-                            format.orEmpty() + Trait.LPF + Trait.AUDIOBOOK
-                        } else {
-                            format.orEmpty() + Trait.LPF
-                        }
-                    )
+                    return Try.success(lpfFormat)
                 }
             }
 
         return Try.success(format)
     }
+
+    private val lpfFormat = Format(
+        specification = FormatSpecification(ZipSpecification, LpfSpecification),
+        mediaType = MediaType.LPF,
+        fileExtension = FileExtension("lpf")
+    )
 }
 
 /**
@@ -625,16 +925,20 @@ public object LpfSniffer : FormatSniffer {
 public object RarSniffer : FormatSniffer {
 
     override fun sniffHints(
-        format: Format?,
+        format: Format,
         hints: FormatHints
-    ): Format? {
+    ): Format {
         if (
             hints.hasFileExtension("rar") ||
             hints.hasMediaType("application/vnd.rar") ||
             hints.hasMediaType("application/x-rar") ||
             hints.hasMediaType("application/x-rar-compressed")
         ) {
-            return format.orEmpty() + Format.RAR
+            return Format(
+                specification = FormatSpecification(RarSpecification),
+                mediaType = MediaType.RAR,
+                fileExtension = FileExtension("rar")
+            )
         }
 
         return format
@@ -647,13 +951,17 @@ public object RarSniffer : FormatSniffer {
 public object ZipSniffer : FormatSniffer {
 
     override fun sniffHints(
-        format: Format?,
+        format: Format,
         hints: FormatHints
-    ): Format? {
+    ): Format {
         if (hints.hasMediaType("application/zip") ||
             hints.hasFileExtension("zip")
         ) {
-            return format.orEmpty() + Format.ZIP
+            return Format(
+                specification = FormatSpecification(ZipSpecification),
+                mediaType = MediaType.ZIP,
+                fileExtension = FileExtension("zip")
+            )
         }
 
         return format
@@ -711,9 +1019,13 @@ public object ArchiveSniffer : FormatSniffer {
     )
 
     override fun sniffHints(
-        format: Format?,
+        format: Format,
         hints: FormatHints
-    ): Format? {
+    ): Format {
+        if (format.hasMoreThan(ZipSpecification, RarSpecification)) {
+            return format
+        }
+
         if (
             hints.hasFileExtension("cbz") ||
             hints.hasMediaType(
@@ -721,7 +1033,11 @@ public object ArchiveSniffer : FormatSniffer {
                 "application/x-cbz"
             )
         ) {
-            return Format.CBZ
+            return Format(
+                specification = FormatSpecification(ZipSpecification, InformalComicSpecification),
+                mediaType = MediaType.CBZ,
+                fileExtension = FileExtension("cbz")
+            )
         }
 
         if (
@@ -729,20 +1045,35 @@ public object ArchiveSniffer : FormatSniffer {
             hints.hasMediaType("application/vnd.comicbook-rar") ||
             hints.hasMediaType("application/x-cbr")
         ) {
-            return Format.CBR
+            return Format(
+                specification = FormatSpecification(RarSpecification, InformalComicSpecification),
+                mediaType = MediaType.CBR,
+                fileExtension = FileExtension("cbr")
+            )
         }
 
         if (hints.hasFileExtension("zab")) {
-            return Format.ZAB
+            return Format(
+                specification = FormatSpecification(
+                    ZipSpecification,
+                    InformalAudiobookSpecification
+                ),
+                mediaType = MediaType.ZAB,
+                fileExtension = FileExtension("zab")
+            )
         }
 
         return format
     }
 
     override suspend fun sniffContainer(
-        format: Format?,
+        format: Format,
         container: Container<Readable>
-    ): Try<Format?, ReadError> {
+    ): Try<Format, ReadError> {
+        if (format.hasMoreThan(ZipSpecification, RarSpecification)) {
+            return Try.success(format)
+        }
+
         fun isIgnored(url: Url): Boolean =
             url.filename?.startsWith(".") == true || url.filename == "Thumbs.db"
 
@@ -760,11 +1091,51 @@ public object ArchiveSniffer : FormatSniffer {
         }
 
         if (archiveContainsOnlyExtensions(cbzExtensions)) {
-            return Try.success(format.orEmpty() + Trait.COMICS)
+            val mediaType =
+                if (format.conformsTo(RarSpecification)) {
+                    MediaType.CBR
+                } else {
+                    MediaType.CBZ
+                }
+
+            val extension =
+                if (format.conformsTo(RarSpecification)) {
+                    FileExtension("cbr")
+                } else {
+                    FileExtension("cbz")
+                }
+
+            return Try.success(
+                Format(
+                    specification = format.specification + InformalComicSpecification,
+                    mediaType = mediaType,
+                    fileExtension = extension
+                )
+            )
         }
 
         if (archiveContainsOnlyExtensions(zabExtensions)) {
-            return Try.success(format.orEmpty() + Trait.AUDIOBOOK)
+            val mediaType =
+                if (format.conformsTo(ZipSpecification)) {
+                    MediaType.ZAB
+                } else {
+                    format.mediaType
+                }
+
+            val extension =
+                if (format.conformsTo(ZipSpecification)) {
+                    FileExtension("zab")
+                } else {
+                    format.fileExtension
+                }
+
+            return Try.success(
+                Format(
+                    specification = format.specification + InformalAudiobookSpecification,
+                    mediaType = mediaType,
+                    fileExtension = extension
+                )
+            )
         }
 
         return Try.success(format)
@@ -778,24 +1149,28 @@ public object ArchiveSniffer : FormatSniffer {
  */
 public object PdfSniffer : FormatSniffer {
     override fun sniffHints(
-        format: Format?,
+        format: Format,
         hints: FormatHints
-    ): Format? {
+    ): Format {
+        if (format.hasAnySpecification()) {
+            return format
+        }
+
         if (
             hints.hasFileExtension("pdf") ||
             hints.hasMediaType("application/pdf")
         ) {
-            return Format.PDF
+            return pdfFormat
         }
 
         return format
     }
 
     override suspend fun sniffBlob(
-        format: Format?,
+        format: Format,
         source: Readable
-    ): Try<Format?, ReadError> {
-        if (format != null) {
+    ): Try<Format, ReadError> {
+        if (format.hasAnySpecification()) {
             return Try.success(format)
         }
 
@@ -803,36 +1178,54 @@ public object PdfSniffer : FormatSniffer {
             .getOrElse { return Try.failure(it) }
             .let { tryOrNull { it.toString(Charsets.UTF_8) } }
             .takeIf { it == "%PDF-" }
-            ?.let { return Try.success(Format.PDF) }
+            ?.let { return Try.success(pdfFormat) }
 
         return Try.success(format)
     }
+
+    private val pdfFormat = Format(
+        specification = FormatSpecification(PdfSpecification),
+        mediaType = MediaType.PDF,
+        fileExtension = FileExtension("pdf")
+    )
 }
 
 /** Sniffs a JSON document. */
 public object JsonSniffer : FormatSniffer {
     override fun sniffHints(
-        format: Format?,
+        format: Format,
         hints: FormatHints
-    ): Format? {
+    ): Format {
+        if (format.hasMoreThan()) {
+            return format
+        }
+
         if (hints.hasFileExtension("json") ||
             hints.hasMediaType("application/json")
         ) {
-            return Format.JSON
+            return Format(
+                specification = FormatSpecification(JsonSpecification),
+                mediaType = MediaType.JSON,
+                fileExtension = FileExtension("json")
+            )
         }
 
         if (hints.hasMediaType("application/problem+json")) {
-            return Format.JSON + Trait.JSON_PROBLEM_DETAILS
+            return Format(
+                specification = FormatSpecification(JsonSpecification, ProblemDetailsSpecification),
+                mediaType = MediaType.JSON_PROBLEM_DETAILS,
+                fileExtension = FileExtension("json")
+            )
         }
 
         return format
     }
 
     override suspend fun sniffBlob(
-        format: Format?,
+        format: Format,
         source: Readable
-    ): Try<Format?, ReadError> {
-        if (format != null || !source.canReadWholeBlob()) {
+    ): Try<Format, ReadError> {
+        if (format.hasMoreThan() || !source.canReadWholeBlob()) {
             return Try.success(format)
         }
 
@@ -840,35 +1233,61 @@ public object JsonSniffer : FormatSniffer {
             decode = { it.decodeJson() },
             recoverRead = { return Try.failure(it) },
             recoverDecode = { null }
-        )?.let { return Try.success(Format.JSON) }
+        )?.let {
+            return Try.success(
+                Format(
+                    specification = FormatSpecification(JsonSpecification),
+                    mediaType = MediaType.JSON,
+                    fileExtension = FileExtension("json")
+                )
+            )
+        }
 
         return Try.success(format)
     }
 }
 
 /**
- * Sniffs Adept protection on EPUBs.
+ * Sniffs LCP and Adept protection on EPUBs.
  */
-public object AdeptSniffer : FormatSniffer {
+public object EpubDrmSniffer : FormatSniffer {
 
     override suspend fun sniffContainer(
-        format: Format?,
+        format: Format,
         container: Container<Readable>
-    ): Try<Format?, ReadError> {
-        if (format != Format.EPUB) {
+    ): Try<Format, ReadError> {
+        if (
+            !format.conformsTo(EpubSpecification) ||
+            format.conformsTo(AdeptSpecification) ||
+            format.conformsTo(LcpSpecification)
+        ) {
             return Try.success(format)
         }
 
-        container[Url("META-INF/encryption.xml")!!]
+        if (RelativeUrl("META-INF/license.lcpl")!! in container) {
+            return Try.success(format.addSpecifications(LcpSpecification))
+        }
+
+        val encryptionDocument = container[Url("META-INF/encryption.xml")!!]
             ?.readDecodeOrElse(
                 decode = { it.decodeXml() },
                 recover = { return Try.failure(it) }
             )
+
+        encryptionDocument
+            ?.get("EncryptedData", EpubEncryption.ENC)
+            ?.flatMap { it.get("KeyInfo", EpubEncryption.SIG) }
+            ?.flatMap { it.get("RetrievalMethod", EpubEncryption.SIG) }
+            ?.any { it.getAttr("URI") == "license.lcpl#/encryption/content_key" }
+            ?.takeIf { it }
+            ?.let { return Try.success(format.addSpecifications(LcpSpecification)) }
+
+        encryptionDocument
             ?.get("EncryptedData", EpubEncryption.ENC)
             ?.flatMap { it.get("KeyInfo", EpubEncryption.SIG) }
             ?.flatMap { it.get("resource", "http://ns.adobe.com/adept") }
             ?.takeIf { it.isNotEmpty() }
-            ?.let { return Try.success(format + Trait.ADEPT_PROTECTED) }
+            ?.let { return Try.success(format.addSpecifications(AdeptSpecification)) }
 
         container[Url("META-INF/rights.xml")!!]
             ?.readDecodeOrElse(
@@ -876,82 +1295,9 @@ public object AdeptSniffer : FormatSniffer {
                 recover = { null }
             )
             ?.takeIf { it.namespace == "http://ns.adobe.com/adept" }
-            ?.let { return Try.success(format + Trait.ADEPT_PROTECTED) }
+            ?.let { return Try.success(format.addSpecifications(AdeptSpecification)) }
 
         return Try.success(format)
-    }
-}
-
-/**
- * Sniffs LCP protected packages.
- */
-public object LcpSniffer : FormatSniffer {
-
-    override suspend fun sniffContainer(
-        format: Format?,
-        container: Container<Readable>
-    ): Try<Format?, ReadError> {
-        return when {
-            format?.conformsTo(Trait.RPF) == true -> {
-                val isLcpProtected = RelativeUrl("license.lcpl")!! in container ||
-                    hasLcpSchemeInManifest(container)
-                        .getOrElse { return Try.failure(it) }
-
-                Try.success(
-                    if (isLcpProtected) {
-                        format + Trait.LCP_PROTECTED
-                    } else {
-                        format
-                    }
-                )
-            }
-
-            format == Format.EPUB -> {
-                val isLcpProtected = RelativeUrl("META-INF/license.lcpl")!! in container ||
-                    hasLcpSchemeInEncryptionXml(container)
-                        .getOrElse { return Try.failure(it) }
-
-                Try.success(
-                    if (isLcpProtected) {
-                        format + Trait.LCP_PROTECTED
-                    } else {
-                        format
-                    }
-                )
-            }
-            else ->
-                Try.success(format)
-        }
-    }
-
-    private suspend fun hasLcpSchemeInManifest(container: Container<Readable>): Try<Boolean, ReadError> {
-        val manifest = container[Url("manifest.json")!!]
-            ?.readDecodeOrElse(
-                decode = { it.decodeRwpm() },
-                recover = { return Try.failure(it) }
-            ) ?: return Try.success(false)
-
-        val manifestHasLcpScheme = manifest
-            .readingOrder
-            .any { it.properties.encryption?.scheme == "http://readium.org/2014/01/lcp" }
-
-        return Try.success(manifestHasLcpScheme)
-    }
-
-    private suspend fun hasLcpSchemeInEncryptionXml(container: Container<Readable>): Try<Boolean, ReadError> {
-        val encryptionXml = container[Url("META-INF/encryption.xml")!!]
-            ?.readDecodeOrElse(
-                decode = { it.decodeXml() },
-                recover = { return Try.failure(it) }
-            ) ?: return Try.success(false)
-
-        val hasLcpScheme = encryptionXml
-            .get("EncryptedData", EpubEncryption.ENC)
-            .flatMap { it.get("KeyInfo", EpubEncryption.SIG) }
-            .flatMap { it.get("RetrievalMethod", EpubEncryption.SIG) }
-            .any { it.getAttr("URI") == "license.lcpl#/encryption/content_key" }
-
-        return Try.success(hasLcpScheme)
     }
 }
 
@@ -972,6 +1318,17 @@ private suspend fun Readable.containsJsonKeys(
     )
     return Try.success(json.keys().asSequence().toSet().containsAll(keys.toList()))
 }
+
+private fun Format.addSpecifications(
+    vararg specifications: Specification
+): Format =
+    copy(specification = specification + specifications.toSet())
+
+private fun Format.hasAnySpecification() =
+    specification.specifications.isNotEmpty()
+
+private fun Format.hasMoreThan(vararg specifications: Specification) =
+    !specifications.toSet().containsAll(specification.specifications)
 
 private object EpubEncryption {
     const val ENC = "http://www.w3.org/2001/04/xmlenc#"
