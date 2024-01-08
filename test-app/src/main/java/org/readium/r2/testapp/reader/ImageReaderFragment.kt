@@ -20,7 +20,15 @@ class ImageReaderFragment : VisualReaderFragment() {
     override lateinit var navigator: Navigator
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        val readerData = model.readerInitData as VisualReaderInitData
+        val readerData = model.readerInitData as? VisualReaderInitData ?: run {
+            // We provide a dummy fragment factory  if the ReaderActivity is restored after the
+            // app process was killed because the ReaderRepository is empty. In that case, finish
+            // the activity as soon as possible and go back to the previous one.
+            childFragmentManager.fragmentFactory = ImageNavigatorFragment.createDummyFactory()
+            super.onCreate(savedInstanceState)
+            requireActivity().finish()
+            return
+        }
 
         childFragmentManager.fragmentFactory =
             ImageNavigatorFragment.createFactory(

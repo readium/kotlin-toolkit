@@ -10,16 +10,50 @@ All notable changes to this project will be documented in this file. Take a look
 
 #### Navigator
 
+* Support for keyboard events in the EPUB, PDF and image navigators. See `VisualNavigator.addInputListener()`.
+
+### Fixed
+
+#### OPDS
+
+* Fixed race conditions causing `ConcurrentModificationException` to be thrown when parsing an OPDS 2 feed.
+
+
+## [2.4.0]
+
+* Readium is now distributed with [Maven Central](https://search.maven.org/search?q=g:org.readium.kotlin-toolkit). Take a look at [the migration guide](docs/migration-guide.md#240) to update your Gradle configuration.
+
+### Added
+
+#### Navigator
+
 * The EPUB `backgroundColor` preference is now available with fixed-layout publications.
 * New `EPUBNavigatorFragment.Configuration.useReadiumCssFontSize` option to revert to the 2.2.0 strategy for setting the font size of reflowable EPUB publications.
     * The native font size strategy introduced in 2.3.0 uses the Android web view's [`WebSettings.textZoom`](https://developer.android.com/reference/android/webkit/WebSettings#setTextZoom(int)) property to adjust the font size. 2.2.0 was using Readium CSS's [`--USER__fontSize` variable](https://readium.org/readium-css/docs/CSS12-user_prefs.html#font-size).
     * `WebSettings.textZoom` will work with more publications than `--USER__fontSize`, even the ones poorly authored. However the page width is not adjusted when changing the font size to keep the optimal line length.
 * Scroll mode: jumping between two EPUB resources with a horizontal swipe triggers the `Navigator.Listener.onJumpToLocator()` callback.
     * This can be used to allow the user to go back to their previous location if they swiped across chapters by mistake.
-* Support for keyboard events in the EPUB, PDF and image navigators. See `VisualNavigator.addInputListener()`.
 * Support for non-linear EPUB resources with an opt-in in reading apps (contributed by @chrfalch in [#375](https://github.com/readium/kotlin-toolkit/pull/375) and [#376](https://github.com/readium/kotlin-toolkit/pull/376)).
      1. Override loading non-linear resources with `VisualNavigator.Listener.shouldJumpToLink()`.
      2. Present a new `EpubNavigatorFragment` by providing a custom `readingOrder` with only this resource to the constructor.
+* Added dummy navigator fragment factories to prevent crashes caused by Android restoring the fragments after a process death.
+    * To use it, set the dummy fragment factory when you don't have access to the `Publication` instance. Then, either finish the `Activity` or pop the fragment from the UI before it resumes.
+        ```kotlin
+        override fun onCreate(savedInstanceState: Bundle?) {
+            val publication = model.publication ?: run {
+                childFragmentManager.fragmentFactory = EpubNavigatorFragment.createDummyFactory()
+                super.onCreate(savedInstanceState)
+
+                requireActivity().finish()
+                // or
+                navController?.popBackStack()
+
+                return
+            }
+
+            // Create the real navigator factory as usual...
+        }
+        ```
 
 #### Streamer
 
@@ -66,10 +100,6 @@ All notable changes to this project will be documented in this file. Take a look
 #### Streamer
 
 * Fixed issue with the TTS starting from the beginning of the chapter instead of the current position.
-
-#### OPDS
-
-* Fixed race conditions causing `ConcurrentModificationException` to be thrown when parsing an OPDS 2 feed.
 
 ## [2.3.0]
 
@@ -704,4 +734,5 @@ progression. Now if no reading progression is set, the `effectiveReadingProgress
 [2.2.0]: https://github.com/readium/kotlin-toolkit/compare/2.1.1...2.2.0
 [2.2.1]: https://github.com/readium/kotlin-toolkit/compare/2.2.0...2.2.1
 [2.3.0]: https://github.com/readium/kotlin-toolkit/compare/2.2.1...2.3.0
+[2.4.0]: https://github.com/readium/kotlin-toolkit/compare/2.3.0...2.4.0
 

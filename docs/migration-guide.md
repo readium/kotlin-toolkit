@@ -2,7 +2,9 @@
 
 All migration steps necessary in reading apps to upgrade to major versions of the Kotlin Readium toolkit will be documented in this file.
 
-## Unreleased
+<!-- ## Unreleased -->
+
+## 2.4.0
 
 ### Maven Central
 

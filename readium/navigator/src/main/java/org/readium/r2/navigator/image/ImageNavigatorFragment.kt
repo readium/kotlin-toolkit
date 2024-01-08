@@ -22,9 +22,11 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.runBlocking
 import org.readium.r2.navigator.NavigatorFragment
 import org.readium.r2.navigator.OverflowableNavigator
+import org.readium.r2.navigator.RestorationNotSupportedException
 import org.readium.r2.navigator.SimpleOverflow
 import org.readium.r2.navigator.VisualNavigator
 import org.readium.r2.navigator.databinding.ReadiumNavigatorViewpagerBinding
+import org.readium.r2.navigator.dummyPublication
 import org.readium.r2.navigator.extensions.layoutDirectionIsRTL
 import org.readium.r2.navigator.extensions.normalizeLocator
 import org.readium.r2.navigator.input.CompositeInputListener
@@ -45,6 +47,8 @@ import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.ReadingProgression as PublicationReadingProgression
 import org.readium.r2.shared.publication.indexOfFirstWithHref
 import org.readium.r2.shared.publication.services.positions
+import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.mediatype.MediaType
 
 /**
  * Navigator for bitmap-based publications, such as CBZ.
@@ -146,6 +150,14 @@ public class ImageNavigatorFragment private constructor(
         notifyCurrentLocation()
     }
 
+    override fun onResume() {
+        super.onResume()
+
+        if (publication == dummyPublication) {
+            throw RestorationNotSupportedException
+        }
+    }
+
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
@@ -172,10 +184,10 @@ public class ImageNavigatorFragment private constructor(
     }
 
     private fun notifyCurrentLocation() {
-        val locator = positions[resourcePager.currentItem]
-        if (locator == _currentLocator.value) {
-            return
-        }
+        val locator = positions.getOrNull(resourcePager.currentItem)
+            ?.takeUnless { it == _currentLocator.value }
+            ?: return
+
         _currentLocator.value = locator
     }
 
@@ -279,5 +291,19 @@ public class ImageNavigatorFragment private constructor(
             listener: Listener? = null
         ): FragmentFactory =
             createFragmentFactory { ImageNavigatorFragment(publication, initialLocator, listener) }
+
+        /**
+         * Creates a factory for a dummy [ImageNavigatorFragment].
+         *
+         * Used when Android restore the [ImageNavigatorFragment] after the process was killed. You
+         * need to make sure the fragment is removed from the screen before `onResume` is called.
+         */
+        public fun createDummyFactory(): FragmentFactory = createFragmentFactory {
+            ImageNavigatorFragment(
+                publication = dummyPublication,
+                initialLocator = Locator(href = Url("#")!!, mediaType = MediaType.JPEG),
+                listener = null
+            )
+        }
     }
 }

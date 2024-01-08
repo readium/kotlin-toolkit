@@ -48,8 +48,8 @@ class BookshelfViewModel(application: Application) : AndroidViewModel(applicatio
         bookId: Long
     ) {
         viewModelScope.launch {
-            val readerRepository = app.readerRepository.await()
-            readerRepository.open(bookId)
+            app.readerRepository
+                .open(bookId)
                 .onFailure {
                     channel.send(Event.OpenPublicationError(it))
                 }

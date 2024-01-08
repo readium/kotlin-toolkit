@@ -310,10 +310,11 @@ class ReaderViewModel(
     companion object {
         fun createFactory(application: Application, arguments: ReaderActivityContract.Arguments) =
             createViewModelFactory {
-                val readerRepository =
-                    application.readerRepository.getCompleted()
-
-                ReaderViewModel(arguments.bookId, readerRepository, application.bookRepository)
+                ReaderViewModel(
+                    arguments.bookId,
+                    application.readerRepository,
+                    application.bookRepository
+                )
             }
     }
 }

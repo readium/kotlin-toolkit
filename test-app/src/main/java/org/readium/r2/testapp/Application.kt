@@ -17,9 +17,7 @@ import java.io.File
 import java.util.Properties
 import java.util.concurrent.Executors
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.MainScope
-import kotlinx.coroutines.async
 import org.readium.r2.testapp.BuildConfig.DEBUG
 import org.readium.r2.testapp.data.BookRepository
 import org.readium.r2.testapp.data.DownloadRepository
@@ -47,7 +45,7 @@ class Application : android.app.Application() {
     lateinit var bookshelf: Bookshelf
         private set
 
-    lateinit var readerRepository: Deferred<ReaderRepository>
+    lateinit var readerRepository: ReaderRepository
         private set
 
     private val coroutineScope: CoroutineScope =
@@ -118,15 +116,12 @@ class Application : android.app.Application() {
                 }
             )
 
-        readerRepository =
-            coroutineScope.async {
-                ReaderRepository(
-                    this@Application,
-                    readium,
-                    bookRepository,
-                    navigatorPreferences
-                )
-            }
+        readerRepository = ReaderRepository(
+            this@Application,
+            readium,
+            bookRepository,
+            navigatorPreferences
+        )
     }
 
     private fun computeStorageDir(): File {

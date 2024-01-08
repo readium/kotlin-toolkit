@@ -51,9 +51,11 @@ import org.readium.r2.navigator.NavigatorFragment
 import org.readium.r2.navigator.OverflowableNavigator
 import org.readium.r2.navigator.R
 import org.readium.r2.navigator.R2BasicWebView
+import org.readium.r2.navigator.RestorationNotSupportedException
 import org.readium.r2.navigator.SelectableNavigator
 import org.readium.r2.navigator.Selection
 import org.readium.r2.navigator.databinding.ReadiumNavigatorViewpagerBinding
+import org.readium.r2.navigator.dummyPublication
 import org.readium.r2.navigator.epub.EpubNavigatorViewModel.RunScriptCommand
 import org.readium.r2.navigator.epub.css.FontFamilyDeclaration
 import org.readium.r2.navigator.epub.css.MutableFontFamilyDeclaration
@@ -76,6 +78,7 @@ import org.readium.r2.navigator.pager.R2ViewPager
 import org.readium.r2.navigator.preferences.Configurable
 import org.readium.r2.navigator.preferences.FontFamily
 import org.readium.r2.navigator.preferences.ReadingProgression
+import org.readium.r2.navigator.util.createFragmentFactory
 import org.readium.r2.shared.DelicateReadiumApi
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.extensions.tryOrLog
@@ -578,6 +581,11 @@ public class EpubNavigatorFragment internal constructor(
 
     override fun onResume() {
         super.onResume()
+
+        if (publication == dummyPublication) {
+            throw RestorationNotSupportedException
+        }
+
         notifyCurrentLocation()
     }
 
@@ -1076,6 +1084,8 @@ public class EpubNavigatorFragment internal constructor(
          * if you use a local HTTP server.
          * @param initialLocator The first location which should be visible when rendering the
          * publication. Can be used to restore the last reading location.
+         * @param readingOrder Custom order of resources to display. Used for example to display a
+         * non-linear resource on its own.
          * @param listener Optional listener to implement to observe events, such as user taps.
          * @param readingOrder Custom order of resources to display. Used for example to display a
          * non-linear resource on its own.
@@ -1090,11 +1100,32 @@ public class EpubNavigatorFragment internal constructor(
             publication: Publication,
             baseUrl: String? = null,
             initialLocator: Locator? = null,
+            readingOrder: List<Link>? = null,
             listener: Listener? = null,
             paginationListener: PaginationListener? = null,
             config: Configuration = Configuration(),
             initialPreferences: EpubPreferences = EpubPreferences()
         ): FragmentFactory { throw NotImplementedError() }
+
+        /**
+         * Creates a factory for a dummy [EpubNavigatorFragment].
+         *
+         * Used when Android restore the [EpubNavigatorFragment] after the process was killed. You
+         * need to make sure the fragment is removed from the screen before [onResume] is called.
+         */
+        public fun createDummyFactory(): FragmentFactory = createFragmentFactory {
+            EpubNavigatorFragment(
+                publication = dummyPublication,
+                initialLocator = Locator(href = Url("#")!!, mediaType = MediaType.XHTML),
+                readingOrder = null,
+                initialPreferences = EpubPreferences(),
+                listener = null,
+                paginationListener = null,
+                epubLayout = EpubLayout.REFLOWABLE,
+                defaults = EpubDefaults(),
+                configuration = Configuration()
+            )
+        }
 
         /**
          * Returns a URL to the application asset at [path], served in the web views.

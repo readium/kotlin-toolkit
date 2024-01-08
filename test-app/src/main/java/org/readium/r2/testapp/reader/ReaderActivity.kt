@@ -49,15 +49,6 @@ open class ReaderActivity : AppCompatActivity() {
     private lateinit var readerFragment: BaseReaderFragment
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        /*
-         * We provide dummy publications if the [ReaderActivity] is restored after the app process
-         * was killed because the [ReaderRepository] is empty.
-         * In that case, finish the activity as soon as possible and go back to the previous one.
-         */
-        if (model.publication.readingOrder.isEmpty()) {
-            finish()
-        }
-
         super.onCreate(savedInstanceState)
 
         val binding = ActivityReaderBinding.inflate(layoutInflater)

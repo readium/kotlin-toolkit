@@ -25,7 +25,9 @@ import kotlinx.coroutines.launch
 import org.readium.r2.navigator.NavigatorFragment
 import org.readium.r2.navigator.OverflowableNavigator
 import org.readium.r2.navigator.R
+import org.readium.r2.navigator.RestorationNotSupportedException
 import org.readium.r2.navigator.VisualNavigator
+import org.readium.r2.navigator.dummyPublication
 import org.readium.r2.navigator.extensions.normalizeLocator
 import org.readium.r2.navigator.extensions.page
 import org.readium.r2.navigator.input.CompositeInputListener
@@ -41,6 +43,8 @@ import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.ReadingProgression as PublicationReadingProgression
+import org.readium.r2.shared.publication.services.isRestricted
+import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
 
 /**
@@ -91,13 +95,35 @@ public class PdfNavigatorFragment<S : Configurable.Settings, P : Configurable.Pr
                 pdfEngineProvider
             )
         }
+
+        /**
+         * Creates a factory for a dummy [PdfNavigatorFragment].
+         *
+         * Used when Android restore the [PdfNavigatorFragment] after the process was killed. You need
+         * to make sure the fragment is removed from the screen before `onResume` is called.
+         */
+        public fun <P : Configurable.Preferences<P>> createDummyFactory(
+            pdfEngineProvider: PdfEngineProvider<*, P, *>
+        ): FragmentFactory = createFragmentFactory {
+            PdfNavigatorFragment(
+                publication = dummyPublication,
+                initialLocator = Locator(href = Url("#")!!, mediaType = MediaType.PDF),
+                initialPreferences = pdfEngineProvider.createEmptyPreferences(),
+                listener = null,
+                pdfEngineProvider = pdfEngineProvider
+            )
+        }
     }
 
     init {
-        require(
-            publication.readingOrder.count() == 1 &&
-                publication.readingOrder.first().mediaType?.matches(MediaType.PDF) == true
-        ) { "[PdfNavigatorFragment] currently supports only publications with a single PDF for reading order" }
+        require(!publication.isRestricted) { "The provided publication is restricted. Check that any DRM was properly unlocked using a Content Protection." }
+
+        if (publication != dummyPublication) {
+            require(
+                publication.readingOrder.count() == 1 &&
+                    publication.readingOrder.first().mediaType?.matches(MediaType.PDF) == true
+            ) { "[PdfNavigatorFragment] currently supports only publications with a single PDF for reading order" }
+        }
     }
 
     private val inputListener = CompositeInputListener()
@@ -170,6 +196,14 @@ public class PdfNavigatorFragment<S : Configurable.Settings, P : Configurable.Pr
                     .onEach { documentFragment.applySettings(it) }
                     .launchIn(this)
             }
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        if (publication == dummyPublication) {
+            throw RestorationNotSupportedException
         }
     }
 

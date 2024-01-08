@@ -23,6 +23,9 @@ import org.readium.r2.navigator.preferences.Axis
 import org.readium.r2.navigator.preferences.Fit
 import org.readium.r2.navigator.preferences.ReadingProgression
 import org.readium.r2.shared.ExperimentalReadiumApi
+import org.readium.r2.shared.publication.LocalizedString
+import org.readium.r2.shared.publication.Manifest
+import org.readium.r2.shared.publication.Metadata
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.util.SingleJob
 import org.readium.r2.shared.util.Url
@@ -39,6 +42,27 @@ public class PdfiumDocumentFragment internal constructor(
     initialSettings: PdfiumSettings,
     private val listener: Listener?
 ) : PdfDocumentFragment<PdfiumSettings>() {
+
+    // Dummy constructor to address https://github.com/readium/kotlin-toolkit/issues/395
+    public constructor() : this(
+        publication = Publication(
+            manifest = Manifest(
+                metadata = Metadata(
+                    identifier = "readium:dummy",
+                    localizedTitle = LocalizedString("")
+                )
+            )
+        ),
+        href = Url("publication.pdf")!!,
+        initialPageIndex = 0,
+        initialSettings = PdfiumSettings(
+            fit = Fit.WIDTH,
+            pageSpacing = 0.0,
+            readingProgression = ReadingProgression.LTR,
+            scrollAxis = Axis.VERTICAL
+        ),
+        listener = null
+    )
 
     internal interface Listener {
         fun onResourceLoadFailed(href: Url, error: ReadError)
