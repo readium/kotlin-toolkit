@@ -64,7 +64,7 @@ public class ImageParser(
     private fun parseResourceAsset(
         asset: ResourceAsset
     ): Try<Publication.Builder, PublicationParser.ParseError> {
-        if (!asset.format.specification.specifications.any { it in bitmapSpecifications }) {
+        if (!asset.format.conformsToAny(bitmapSpecifications)) {
             return Try.failure(PublicationParser.ParseError.FormatNotSupported())
         }
 
@@ -145,8 +145,8 @@ public class ImageParser(
         return Try.success(publicationBuilder)
     }
 
-    private val bitmapSpecifications: List<Specification> =
-        listOf(
+    private val bitmapSpecifications: Set<Specification> =
+        setOf(
             AvifSpecification,
             BmpSpecification,
             GifSpecification,

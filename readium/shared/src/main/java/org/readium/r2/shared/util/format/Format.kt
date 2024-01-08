@@ -17,7 +17,13 @@ public data class Format(
     public fun conformsTo(specification: Specification): Boolean =
         this.specification.conformsTo(specification)
 
-    public fun conformsTo(other: Format): Boolean =
+    public fun conformsToAny(specifications: Collection<Specification>): Boolean =
+        this.specification.conformsToAny(specifications)
+
+    public fun conformsToAll(specifications: Collection<Specification>): Boolean =
+        this.specification.conformsToAll(specifications)
+
+    internal fun conformsTo(other: Format): Boolean =
         specification.conformsTo(other.specification)
 }
 
@@ -35,7 +41,19 @@ public value class FormatSpecification(public val specifications: Set<Specificat
     public fun conformsTo(specification: Specification): Boolean =
         specification in specifications
 
-    public fun conformsTo(other: FormatSpecification): Boolean =
+    public fun conformsToAny(vararg specifications: Specification): Boolean =
+        conformsToAny(*specifications)
+
+    public fun conformsToAny(specifications: Collection<Specification>): Boolean =
+        specifications.any { spec -> this.specifications.contains(spec) }
+
+    public fun conformsToAll(specifications: Collection<Specification>): Boolean =
+        this.specifications.containsAll(specifications)
+
+    public fun conformsToAll(vararg specifications: Specification): Boolean =
+        conformsToAll(*specifications)
+
+    internal fun conformsTo(other: FormatSpecification): Boolean =
         specifications.containsAll(other.specifications)
 }
 

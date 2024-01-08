@@ -65,7 +65,7 @@ public class AudioParser(
     private fun parseResourceAsset(
         asset: ResourceAsset
     ): Try<Publication.Builder, PublicationParser.ParseError> {
-        if (asset.format.specification.specifications.any { it in audioSpecifications }) {
+        if (asset.format.conformsToAny(audioSpecifications)) {
             return Try.failure(PublicationParser.ParseError.FormatNotSupported())
         }
 
@@ -141,8 +141,8 @@ public class AudioParser(
         return Try.success(publicationBuilder)
     }
 
-    private val audioSpecifications: List<Specification> =
-        listOf(
+    private val audioSpecifications: Set<Specification> =
+        setOf(
             AacSpecification,
             AiffSpecification,
             AlacSpecification,
