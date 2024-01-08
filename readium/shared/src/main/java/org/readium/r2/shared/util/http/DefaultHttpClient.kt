@@ -53,8 +53,7 @@ public class DefaultHttpClient(
     @Suppress("UNUSED_PARAMETER")
     @Deprecated(
         "If you used [additionalHeaders], pass all headers when building your request or modify it in Callback.onStartRequest instead.",
-        level = DeprecationLevel.ERROR,
-        replaceWith = ReplaceWith("DefaultHttpClient(mediaTypeRetriever = MediaTypeRetriever())")
+        level = DeprecationLevel.ERROR
     )
     public constructor(
         userAgent: String? = null,
