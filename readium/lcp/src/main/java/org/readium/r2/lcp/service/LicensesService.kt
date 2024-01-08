@@ -38,7 +38,6 @@ import org.readium.r2.shared.util.FileExtension
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.asset.Asset
 import org.readium.r2.shared.util.asset.AssetOpener
-import org.readium.r2.shared.util.asset.AssetSniffer
 import org.readium.r2.shared.util.asset.ContainerAsset
 import org.readium.r2.shared.util.asset.ResourceAsset
 import org.readium.r2.shared.util.downloads.DownloadManager
@@ -61,7 +60,6 @@ internal class LicensesService(
     private val passphrases: PassphrasesService,
     private val context: Context,
     private val assetOpener: AssetOpener,
-    private val assetSniffer: AssetSniffer,
     private val downloadManager: DownloadManager
 ) : LcpService, CoroutineScope by MainScope() {
 
@@ -92,7 +90,7 @@ internal class LicensesService(
         return LcpPublicationRetriever(
             context,
             downloadManager,
-            assetSniffer
+            assetOpener.assetSniffer
         )
     }
 
@@ -269,7 +267,7 @@ internal class LicensesService(
             onProgress = onProgress
         )
 
-        val format = assetSniffer.sniff(
+        val format = assetOpener.assetSniffer.sniff(
             destination,
             FormatHints(mediaTypes = listOfNotNull(mediaTypeHint, link.mediaType))
         ).getOrElse {

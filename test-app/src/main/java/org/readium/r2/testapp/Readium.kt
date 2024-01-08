@@ -17,7 +17,6 @@ import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.DebugError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.asset.AssetOpener
-import org.readium.r2.shared.util.asset.AssetSniffer
 import org.readium.r2.shared.util.content.ContentResourceFactory
 import org.readium.r2.shared.util.downloads.android.AndroidDownloadManager
 import org.readium.r2.shared.util.file.FileResourceFactory
@@ -32,13 +31,10 @@ import org.readium.r2.streamer.PublicationOpener
  */
 class Readium(context: Context) {
 
+    val httpClient = DefaultHttpClient()
+
     private val archiveOpener =
         ZipArchiveOpener()
-
-    private val assetSniffer =
-        AssetSniffer(archiveOpener = archiveOpener)
-
-    val httpClient = DefaultHttpClient()
 
     private val resourceFactory = CompositeResourceFactory(
         FileResourceFactory(),
@@ -47,7 +43,6 @@ class Readium(context: Context) {
     )
 
     val assetOpener = AssetOpener(
-        assetSniffer,
         resourceFactory,
         archiveOpener
     )
@@ -64,7 +59,6 @@ class Readium(context: Context) {
     val lcpService = LcpService(
         context,
         assetOpener,
-        assetSniffer,
         downloadManager
     )?.let { Try.success(it) }
         ?: Try.failure(LcpError.Unknown(DebugError("liblcp is missing on the classpath")))
@@ -81,7 +75,7 @@ class Readium(context: Context) {
     val publicationOpener = PublicationOpener(
         context,
         contentProtections = contentProtections,
-        assetSniffer = assetSniffer,
+        assetOpener = assetOpener,
         httpClient = httpClient,
         // Only required if you want to support PDF files using the PDFium adapter.
         pdfFactory = PdfiumDocumentFactory(context)

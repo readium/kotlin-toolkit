@@ -15,7 +15,7 @@ import org.readium.r2.shared.util.DebugError
 import org.readium.r2.shared.util.Error
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.asset.Asset
-import org.readium.r2.shared.util.asset.AssetSniffer
+import org.readium.r2.shared.util.asset.AssetOpener
 import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.http.HttpClient
@@ -42,6 +42,7 @@ import org.readium.r2.streamer.parser.readium.ReadiumWebPubParser
  * @param contentProtections Opens DRM-protected publications.
  * @param httpClient Service performing HTTP requests.
  * @param pdfFactory Parses a PDF document, optionally protected by password.
+ * @param assetOpener Opens assets in case of indirection.
  * @param onCreatePublication Called on every parsed [Publication.Builder]. It can be used to modify
  *   the manifest, the root container or the list of service factories of a [Publication].
  */
@@ -53,7 +54,7 @@ public class PublicationOpener(
     contentProtections: List<ContentProtection>,
     private val httpClient: HttpClient,
     pdfFactory: PdfDocumentFactory<*>?,
-    assetSniffer: AssetSniffer,
+    assetOpener: AssetOpener,
     private val onCreatePublication: Publication.Builder.() -> Unit = {}
 ) {
     public sealed class OpenError(
@@ -78,8 +79,8 @@ public class PublicationOpener(
             EpubParser(),
             pdfFactory?.let { PdfParser(context, it) },
             ReadiumWebPubParser(context, httpClient, pdfFactory),
-            ImageParser(assetSniffer),
-            AudioParser(assetSniffer)
+            ImageParser(assetOpener.assetSniffer),
+            AudioParser(assetOpener.assetSniffer)
         )
 
     private val parsers: List<PublicationParser> = parsers +

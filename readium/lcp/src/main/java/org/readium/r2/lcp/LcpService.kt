@@ -30,7 +30,6 @@ import org.readium.r2.shared.publication.protection.ContentProtection
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.asset.Asset
 import org.readium.r2.shared.util.asset.AssetOpener
-import org.readium.r2.shared.util.asset.AssetSniffer
 import org.readium.r2.shared.util.downloads.DownloadManager
 import org.readium.r2.shared.util.format.Format
 import org.readium.r2.shared.util.format.FormatSpecification
@@ -165,7 +164,6 @@ public interface LcpService {
         public operator fun invoke(
             context: Context,
             assetOpener: AssetOpener,
-            assetSniffer: AssetSniffer,
             downloadManager: DownloadManager
         ): LcpService? {
             if (!LcpClient.isAvailable()) {
@@ -192,7 +190,6 @@ public interface LcpService {
                 passphrases = passphrases,
                 context = context,
                 assetOpener = assetOpener,
-                assetSniffer = assetSniffer,
                 downloadManager = downloadManager
             )
         }
