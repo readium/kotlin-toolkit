@@ -20,9 +20,18 @@ import org.readium.r2.shared.util.asset.ContainerAsset
 import org.readium.r2.shared.util.asset.ResourceAsset
 import org.readium.r2.shared.util.data.Container
 import org.readium.r2.shared.util.data.ReadError
+import org.readium.r2.shared.util.format.AacSpecification
+import org.readium.r2.shared.util.format.AiffSpecification
+import org.readium.r2.shared.util.format.FlacSpecification
 import org.readium.r2.shared.util.format.Format
-import org.readium.r2.shared.util.format.FormatRegistry
-import org.readium.r2.shared.util.format.Trait
+import org.readium.r2.shared.util.format.InformalAudiobookSpecification
+import org.readium.r2.shared.util.format.Mp3Specification
+import org.readium.r2.shared.util.format.Mp4Specification
+import org.readium.r2.shared.util.format.OggSpecification
+import org.readium.r2.shared.util.format.OpusSpecification
+import org.readium.r2.shared.util.format.Specification
+import org.readium.r2.shared.util.format.WavSpecification
+import org.readium.r2.shared.util.format.WebmSpecification
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.resource.Resource
@@ -39,8 +48,7 @@ import org.readium.r2.streamer.parser.PublicationParser
  * It can also work for a standalone audio file.
  */
 public class AudioParser(
-    private val assetSniffer: AssetSniffer,
-    private val formatRegistry: FormatRegistry
+    private val assetSniffer: AssetSniffer
 ) : PublicationParser {
 
     override suspend fun parse(
@@ -55,12 +63,12 @@ public class AudioParser(
     private fun parseResourceAsset(
         asset: ResourceAsset
     ): Try<Publication.Builder, PublicationParser.ParseError> {
-        if (!asset.format.conformsTo(Trait.AUDIO)) {
+        if (asset.format.conformsToAny(audioSpecifications)) {
             return Try.failure(PublicationParser.ParseError.FormatNotSupported())
         }
 
         val container =
-            asset.toContainer(formatRegistry)
+            asset.toContainer()
 
         val readingOrderWithFormat =
             listOfNotNull(container.first() to asset.format)
@@ -71,7 +79,7 @@ public class AudioParser(
     private suspend fun parseContainerAsset(
         asset: ContainerAsset
     ): Try<Publication.Builder, PublicationParser.ParseError> {
-        if (!asset.format.conformsTo(Trait.AUDIOBOOK)) {
+        if (!asset.format.conformsTo(InformalAudiobookSpecification)) {
             return Try.failure(PublicationParser.ParseError.FormatNotSupported())
         }
 
@@ -82,7 +90,7 @@ public class AudioParser(
         val readingOrderWithFormat =
             asset.container
                 .mapNotNull { url -> entryFormats[url]?.let { url to it } }
-                .filter { it.second.conformsTo(Trait.AUDIO) }
+                .filter { (_, format) -> format.specification.specifications.any { it in audioSpecifications } }
                 .sortedBy { it.first.toString() }
 
         if (readingOrderWithFormat.isEmpty()) {
@@ -109,8 +117,7 @@ public class AudioParser(
         title: String?
     ): Try<Publication.Builder, PublicationParser.ParseError> {
         val readingOrder = readingOrderWithFormat.map { (url, format) ->
-            val mediaType = formatRegistry[format]?.mediaType
-            Link(href = url, mediaType = mediaType)
+            Link(href = url, mediaType = format.mediaType)
         }
 
         val manifest = Manifest(
@@ -131,4 +138,17 @@ public class AudioParser(
 
         return Try.success(publicationBuilder)
     }
+
+    private val audioSpecifications: Set<Specification> =
+        setOf(
+            AacSpecification,
+            AiffSpecification,
+            FlacSpecification,
+            Mp4Specification,
+            Mp3Specification,
+            OggSpecification,
+            OpusSpecification,
+            WavSpecification,
+            WebmSpecification
+        )
 }

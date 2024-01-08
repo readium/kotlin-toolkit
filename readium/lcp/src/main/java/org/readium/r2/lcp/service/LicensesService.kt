@@ -10,7 +10,6 @@
 package org.readium.r2.lcp.service
 
 import android.content.Context
-import java.io.File
 import kotlin.coroutines.resume
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
@@ -31,21 +30,11 @@ import org.readium.r2.lcp.license.container.LicenseContainer
 import org.readium.r2.lcp.license.container.WritableLicenseContainer
 import org.readium.r2.lcp.license.container.createLicenseContainer
 import org.readium.r2.lcp.license.model.LicenseDocument
-import org.readium.r2.shared.extensions.tryOr
-import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.publication.protection.ContentProtection
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.asset.Asset
 import org.readium.r2.shared.util.asset.AssetOpener
-import org.readium.r2.shared.util.asset.AssetSniffer
-import org.readium.r2.shared.util.asset.ContainerAsset
-import org.readium.r2.shared.util.asset.ResourceAsset
 import org.readium.r2.shared.util.downloads.DownloadManager
-import org.readium.r2.shared.util.format.Format
-import org.readium.r2.shared.util.format.FormatHints
-import org.readium.r2.shared.util.format.FormatRegistry
-import org.readium.r2.shared.util.format.Trait
-import org.readium.r2.shared.util.getOrElse
 import timber.log.Timber
 
 internal class LicensesService(
@@ -56,29 +45,8 @@ internal class LicensesService(
     private val passphrases: PassphrasesService,
     private val context: Context,
     private val assetOpener: AssetOpener,
-    private val assetSniffer: AssetSniffer,
     private val downloadManager: DownloadManager
 ) : LcpService, CoroutineScope by MainScope() {
-
-    private val formatRegistry = FormatRegistry()
-
-    @Deprecated(
-        "Use an AssetSniffer and check the returned format for Trait.LCP_PROTECTED",
-        level = DeprecationLevel.ERROR
-    )
-    override suspend fun isLcpProtected(file: File): Boolean {
-        val asset = assetOpener.open(file)
-            .getOrElse { return false }
-
-        return tryOr(false) {
-            when (asset) {
-                is ResourceAsset ->
-                    asset.format.conformsTo(Trait.LCP_LICENSE_DOCUMENT)
-                is ContainerAsset ->
-                    asset.format.conformsTo(Trait.LCP_PROTECTED)
-            }
-        }
-    }
 
     override fun contentProtection(
         authentication: LcpAuthenticating
@@ -89,41 +57,9 @@ internal class LicensesService(
         return LcpPublicationRetriever(
             context,
             downloadManager,
-            assetSniffer
+            assetOpener.assetSniffer
         )
     }
-
-    @Deprecated(
-        "Use a LcpPublicationRetriever instead.",
-        ReplaceWith("publicationRetriever()"),
-        level = DeprecationLevel.ERROR
-    )
-    override suspend fun acquirePublication(lcpl: ByteArray, onProgress: (Double) -> Unit): Try<LcpService.AcquiredPublication, LcpError> =
-        try {
-            val licenseDocument = LicenseDocument(lcpl)
-            Timber.d("license ${licenseDocument.json}")
-            fetchPublication(licenseDocument, onProgress).let { Try.success(it) }
-        } catch (e: Exception) {
-            Try.failure(LcpError.wrap(e))
-        }
-
-    override suspend fun retrieveLicense(
-        file: File,
-        format: Format,
-        authentication: LcpAuthenticating,
-        allowUserInteraction: Boolean
-    ): Try<LcpLicense, LcpError> =
-        try {
-            val container = createLicenseContainer(file, format)
-            val license = retrieveLicense(
-                container,
-                authentication,
-                allowUserInteraction
-            )
-            Try.success(license)
-        } catch (e: Exception) {
-            Try.failure(LcpError.wrap(e))
-        }
 
     override suspend fun retrieveLicense(
         asset: Asset,
@@ -250,44 +186,4 @@ internal class LicensesService(
             }
         }
     }
-
-    private suspend fun fetchPublication(license: LicenseDocument, onProgress: (Double) -> Unit): LcpService.AcquiredPublication {
-        val link = license.publicationLink
-
-        val destination = withContext(Dispatchers.IO) {
-            File.createTempFile("lcp-${System.currentTimeMillis()}", ".tmp")
-        }
-        Timber.i("LCP destination $destination")
-
-        val mediaTypeHint = network.download(
-            link.url(),
-            destination,
-            mediaType = link.mediaType,
-            onProgress = onProgress
-        )
-
-        val format = assetSniffer.sniff(
-            destination,
-            FormatHints(mediaTypes = listOfNotNull(mediaTypeHint, link.mediaType))
-        ).getOrElse { Format.EPUB }
-
-        try {
-            // Saves the License Document into the downloaded publication
-            val container = createLicenseContainer(destination, format)
-            container.write(license)
-        } catch (e: Exception) {
-            tryOrLog { destination.delete() }
-            throw e
-        }
-
-        return LcpService.AcquiredPublication(
-            localFile = destination,
-            suggestedFilename = "${license.id}.${format.fileExtension}",
-            format = format,
-            licenseDocument = license
-        )
-    }
-
-    private val Format.fileExtension: String get() =
-        formatRegistry[this]?.fileExtension?.value ?: "epub"
 }

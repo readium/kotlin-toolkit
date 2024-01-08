@@ -15,9 +15,8 @@ import org.readium.r2.shared.util.DebugError
 import org.readium.r2.shared.util.Error
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.asset.Asset
-import org.readium.r2.shared.util.asset.AssetSniffer
+import org.readium.r2.shared.util.asset.AssetOpener
 import org.readium.r2.shared.util.data.ReadError
-import org.readium.r2.shared.util.format.FormatRegistry
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.http.HttpClient
 import org.readium.r2.shared.util.logging.WarningLogger
@@ -43,6 +42,7 @@ import org.readium.r2.streamer.parser.readium.ReadiumWebPubParser
  * @param contentProtections Opens DRM-protected publications.
  * @param httpClient Service performing HTTP requests.
  * @param pdfFactory Parses a PDF document, optionally protected by password.
+ * @param assetOpener Opens assets in case of indirection.
  * @param onCreatePublication Called on every parsed [Publication.Builder]. It can be used to modify
  *   the manifest, the root container or the list of service factories of a [Publication].
  */
@@ -52,10 +52,9 @@ public class PublicationOpener(
     parsers: List<PublicationParser> = emptyList(),
     ignoreDefaultParsers: Boolean = false,
     contentProtections: List<ContentProtection>,
-    formatRegistry: FormatRegistry,
     private val httpClient: HttpClient,
     pdfFactory: PdfDocumentFactory<*>?,
-    assetSniffer: AssetSniffer,
+    assetOpener: AssetOpener,
     private val onCreatePublication: Publication.Builder.() -> Unit = {}
 ) {
     public sealed class OpenError(
@@ -78,10 +77,10 @@ public class PublicationOpener(
     private val defaultParsers: List<PublicationParser> =
         listOfNotNull(
             EpubParser(),
-            pdfFactory?.let { PdfParser(context, it, formatRegistry) },
+            pdfFactory?.let { PdfParser(context, it) },
             ReadiumWebPubParser(context, httpClient, pdfFactory),
-            ImageParser(assetSniffer, formatRegistry),
-            AudioParser(assetSniffer, formatRegistry)
+            ImageParser(assetOpener.assetSniffer),
+            AudioParser(assetOpener.assetSniffer)
         )
 
     private val parsers: List<PublicationParser> = parsers +
@@ -117,10 +116,7 @@ public class PublicationOpener(
         onCreatePublication: Publication.Builder.() -> Unit = {},
         warnings: WarningLogger? = null
     ): Try<Publication, OpenError> {
-        var compositeOnCreatePublication: Publication.Builder.() -> Unit = {
-            this@PublicationOpener.onCreatePublication(this)
-            onCreatePublication(this)
-        }
+        var protectionOnCreatePublication: Publication.Builder.() -> Unit = {}
 
         var transformedAsset: Asset = asset
 
@@ -138,10 +134,7 @@ public class PublicationOpener(
 
             if (openResult != null) {
                 transformedAsset = openResult.asset
-                compositeOnCreatePublication = {
-                    openResult.onCreatePublication.invoke(this)
-                    compositeOnCreatePublication(this)
-                }
+                protectionOnCreatePublication = openResult.onCreatePublication
                 break
             }
         }
@@ -149,7 +142,11 @@ public class PublicationOpener(
         val builder = parse(transformedAsset, warnings)
             .getOrElse { return Try.failure(wrapParserException(it)) }
 
-        builder.apply(onCreatePublication)
+        builder.apply {
+            protectionOnCreatePublication()
+            this.onCreatePublication()
+            onCreatePublication()
+        }
 
         val publication = builder.build()
         return Try.success(publication)

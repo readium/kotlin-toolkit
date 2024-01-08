@@ -30,7 +30,6 @@ import org.readium.r2.shared.publication.protection.ContentProtection
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.asset.Asset
 import org.readium.r2.shared.util.asset.AssetOpener
-import org.readium.r2.shared.util.asset.AssetSniffer
 import org.readium.r2.shared.util.downloads.DownloadManager
 import org.readium.r2.shared.util.format.Format
 
@@ -43,10 +42,12 @@ public interface LcpService {
      * Returns if the file is a LCP license document or a publication protected by LCP.
      */
     @Deprecated(
-        "Use an AssetSniffer and check the returned format for Trait.LCP_PROTECTED",
+        "Use an AssetSniffer and check the conformance of the returned format to LcpSpecification",
         level = DeprecationLevel.ERROR
     )
-    public suspend fun isLcpProtected(file: File): Boolean
+    public suspend fun isLcpProtected(file: File): Boolean {
+        throw NotImplementedError()
+    }
 
     /**
      * Acquires a protected publication from a standalone LCPL's bytes.
@@ -60,7 +61,9 @@ public interface LcpService {
         ReplaceWith("publicationRetriever()"),
         level = DeprecationLevel.ERROR
     )
-    public suspend fun acquirePublication(lcpl: ByteArray, onProgress: (Double) -> Unit = {}): Try<AcquiredPublication, LcpError>
+    public suspend fun acquirePublication(lcpl: ByteArray, onProgress: (Double) -> Unit = {}): Try<AcquiredPublication, LcpError> {
+        throw NotImplementedError()
+    }
 
     /**
      * Acquires a protected publication from a standalone LCPL file.
@@ -88,13 +91,21 @@ public interface LcpService {
      *        The request will be cancelled if no passphrase is found in the LCP passphrase storage
      *        and the provided [authentication].
      * @param allowUserInteraction Indicates whether the user can be prompted for their passphrase.
+     * @param sender Free object that can be used by reading apps to give some UX context when
+     *        presenting dialogs with [LcpAuthenticating].
      */
+    @Deprecated(
+        "Use the overload taking an asset instead.",
+        level = DeprecationLevel.ERROR
+    )
     public suspend fun retrieveLicense(
         file: File,
-        format: Format,
-        authentication: LcpAuthenticating,
-        allowUserInteraction: Boolean
-    ): Try<LcpLicense, LcpError>
+        authentication: LcpAuthenticating = LcpDialogAuthentication(),
+        allowUserInteraction: Boolean,
+        sender: Any? = null
+    ): Try<LcpLicense, LcpError>? {
+        throw NotImplementedError()
+    }
 
     /**
      * Opens the LCP license of a protected publication, to access its DRM metadata and decipher
@@ -164,7 +175,6 @@ public interface LcpService {
         public operator fun invoke(
             context: Context,
             assetOpener: AssetOpener,
-            assetSniffer: AssetSniffer,
             downloadManager: DownloadManager
         ): LcpService? {
             if (!LcpClient.isAvailable()) {
@@ -191,7 +201,6 @@ public interface LcpService {
                 passphrases = passphrases,
                 context = context,
                 assetOpener = assetOpener,
-                assetSniffer = assetSniffer,
                 downloadManager = downloadManager
             )
         }

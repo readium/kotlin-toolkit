@@ -18,11 +18,16 @@ import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.readium.r2.shared.util.FileExtension
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.checkSuccess
 import org.readium.r2.shared.util.data.Container
 import org.readium.r2.shared.util.file.DirectoryContainer
+import org.readium.r2.shared.util.format.EpubSpecification
 import org.readium.r2.shared.util.format.Format
+import org.readium.r2.shared.util.format.FormatSpecification
+import org.readium.r2.shared.util.format.ZipSpecification
+import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.use
 import org.readium.r2.shared.util.zip.FileZipArchiveProvider
 import org.readium.r2.shared.util.zip.StreamingZipArchiveProvider
@@ -38,16 +43,17 @@ class ZipContainerTest(val sut: suspend () -> Container<Resource>) {
         fun archives(): List<suspend () -> Container<Resource>> {
             val epubZip = ZipContainerTest::class.java.getResource("epub.epub")
             assertNotNull(epubZip)
+            val format = Format(
+                specification = FormatSpecification(ZipSpecification, EpubSpecification),
+                mediaType = MediaType.EPUB,
+                fileExtension = FileExtension("epub")
+            )
 
             val zipArchive = suspend {
                 assertNotNull(
                     FileZipArchiveProvider()
-                        .open(
-                            format = Format.EPUB,
-                            file = File(epubZip.path)
-                        )
+                        .open(format, File(epubZip.path))
                         .getOrNull()
-                        ?.container
                 )
             }
 

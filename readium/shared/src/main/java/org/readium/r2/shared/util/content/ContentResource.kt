@@ -32,12 +32,10 @@ import org.readium.r2.shared.util.toUrl
  *
  * @param uri the [Uri] to read.
  * @param contentResolver a ContentResolver.
- * @param mediaType the file media type, if already known.
  */
 public class ContentResource(
     private val uri: Uri,
-    private val contentResolver: ContentResolver,
-    private val mediaType: MediaType? = null
+    private val contentResolver: ContentResolver
 ) : Resource {
 
     private lateinit var _length: Try<Long, ReadError>
@@ -57,8 +55,8 @@ public class ContentResource(
         val filename =
             contentResolver.queryProjection(uri, MediaStore.MediaColumns.DISPLAY_NAME)
 
-        val mediaType: MediaType? = this.mediaType
-            ?: contentResolver.getType(uri)
+        val mediaType =
+            contentResolver.getType(uri)
                 ?.let { MediaType(it) }
                 ?.takeUnless { it.matches(MediaType.BINARY) }
 

@@ -59,7 +59,7 @@ class CoverServiceTest {
             ),
             container = SingleResourceContainer(
                 coverPath,
-                FileResource(coverPath.toFile()!!, mediaType = MediaType.JPEG)
+                FileResource(coverPath.toFile()!!)
             )
         )
     }

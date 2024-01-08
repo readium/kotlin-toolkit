@@ -9,7 +9,6 @@ import org.junit.runner.RunWith
 import org.readium.r2.shared.Fixtures
 import org.readium.r2.shared.util.checkSuccess
 import org.readium.r2.shared.util.file.FileResource
-import org.readium.r2.shared.util.mediatype.MediaType
 import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
@@ -124,7 +123,7 @@ class BufferingResourceTest {
 
     private val file = Fixtures("util/resource").fileAt("epub.epub")
     private val data = file.readBytes()
-    private val resource = FileResource(file, MediaType.EPUB)
+    private val resource = FileResource(file)
 
     private fun sut(bufferSize: Int = 1024): BufferingResource =
         BufferingResource(resource, bufferSize = bufferSize)

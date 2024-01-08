@@ -296,6 +296,7 @@ public class MediaType private constructor(
         public val DIVINA: MediaType = MediaType("application/divina+zip")!!
         public val DIVINA_MANIFEST: MediaType = MediaType("application/divina+json")!!
         public val EPUB: MediaType = MediaType("application/epub+zip")!!
+        public val FLAC: MediaType = MediaType("audio/flac")!!
         public val GIF: MediaType = MediaType("image/gif")!!
         public val GZ: MediaType = MediaType("application/gzip")!!
         public val HTML: MediaType = MediaType("text/html")!!
@@ -314,6 +315,7 @@ public class MediaType private constructor(
         )!!
         public val LPF: MediaType = MediaType("application/lpf+zip")!!
         public val MP3: MediaType = MediaType("audio/mpeg")!!
+        public val MP4: MediaType = MediaType("audio/mp4")!!
         public val MPEG: MediaType = MediaType("video/mpeg")!!
         public val NCX: MediaType = MediaType("application/x-dtbncx+xml")!!
         public val OGG: MediaType = MediaType("audio/ogg")!!

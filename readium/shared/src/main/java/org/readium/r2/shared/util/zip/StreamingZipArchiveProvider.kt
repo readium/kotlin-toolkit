@@ -14,14 +14,13 @@ import org.readium.r2.shared.extensions.findInstance
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.asset.ArchiveOpener
-import org.readium.r2.shared.util.asset.ContainerAsset
 import org.readium.r2.shared.util.asset.SniffError
 import org.readium.r2.shared.util.data.Container
 import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.data.ReadException
 import org.readium.r2.shared.util.data.Readable
 import org.readium.r2.shared.util.format.Format
-import org.readium.r2.shared.util.format.Trait
+import org.readium.r2.shared.util.format.ZipSpecification
 import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.shared.util.toUrl
 import org.readium.r2.shared.util.zip.compress.archivers.zip.ZipFile
@@ -33,10 +32,10 @@ import org.readium.r2.shared.util.zip.jvm.SeekableByteChannel
  */
 internal class StreamingZipArchiveProvider {
 
-    suspend fun sniffOpen(source: Readable): Try<ContainerAsset, SniffError> {
+    suspend fun sniffOpen(source: Readable): Try<Container<Resource>, SniffError> {
         return try {
             val container = openBlob(source, ::ReadException, null)
-            Try.success(ContainerAsset(Format.ZIP, container))
+            Try.success(container)
         } catch (exception: Exception) {
             exception.findInstance(ReadException::class.java)
                 ?.let { Try.failure(SniffError.Reading(it.error)) }
@@ -47,28 +46,27 @@ internal class StreamingZipArchiveProvider {
     suspend fun open(
         format: Format,
         source: Readable
-    ): Try<ContainerAsset, ArchiveOpener.OpenError> {
-        if (!format.conformsTo(Trait.ZIP)) {
+    ): Try<Container<Resource>, ArchiveOpener.OpenError> {
+        if (!format.conformsTo(ZipSpecification)) {
             return Try.failure(
                 ArchiveOpener.OpenError.FormatNotSupported(format)
             )
         }
 
-        val container = try {
-            openBlob(
+        return try {
+            val container = openBlob(
                 source,
                 ::ReadException,
                 (source as? Resource)?.sourceUrl
             )
+            Try.success(container)
         } catch (exception: Exception) {
             val error = exception.findInstance(ReadException::class.java)
                 ?.let { ArchiveOpener.OpenError.Reading(it.error) }
                 ?: ArchiveOpener.OpenError.Reading(ReadError.Decoding(exception))
 
-            return Try.failure(error)
+            Try.failure(error)
         }
-
-        return Try.success(ContainerAsset(format, container))
     }
 
     private suspend fun openBlob(

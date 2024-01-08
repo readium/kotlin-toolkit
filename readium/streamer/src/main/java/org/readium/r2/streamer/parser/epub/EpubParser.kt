@@ -26,7 +26,7 @@ import org.readium.r2.shared.util.data.Readable
 import org.readium.r2.shared.util.data.decodeXml
 import org.readium.r2.shared.util.data.readDecodeOrElse
 import org.readium.r2.shared.util.data.readDecodeOrNull
-import org.readium.r2.shared.util.format.Trait
+import org.readium.r2.shared.util.format.EpubSpecification
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.mediatype.MediaType
@@ -52,7 +52,7 @@ public class EpubParser(
         asset: Asset,
         warnings: WarningLogger?
     ): Try<Publication.Builder, PublicationParser.ParseError> {
-        if (asset !is ContainerAsset || !asset.format.conformsTo(Trait.EPUB)) {
+        if (asset !is ContainerAsset || !asset.format.conformsTo(EpubSpecification)) {
             return Try.failure(PublicationParser.ParseError.FormatNotSupported())
         }
 

@@ -10,19 +10,27 @@ import kotlin.test.assertEquals
 import kotlinx.coroutines.runBlocking
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.readium.r2.shared.util.FileExtension
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.checkSuccess
+import org.readium.r2.shared.util.mediatype.MediaType
 import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
 class DefaultSniffersTest {
 
+    private val epubFormat = Format(
+        specification = FormatSpecification(ZipSpecification, EpubSpecification),
+        mediaType = MediaType.EPUB,
+        fileExtension = FileExtension("epub")
+    )
+
     @Test
-    fun `Adept sniffers doesn't recognize EPUB with empty encryption xml`() = runBlocking {
+    fun `EpubDrmSniffer doesn't recognize EPUB with empty encryption xml`() = runBlocking {
         assertEquals(
-            Format.EPUB,
-            AdeptSniffer.sniffContainer(
-                Format.EPUB,
+            epubFormat,
+            EpubDrmSniffer.sniffContainer(
+                format = epubFormat,
                 container = TestContainer(
                     Url("META-INF/encryption.xml")!! to """<?xml version='1.0' encoding='utf-8'?><encryption xmlns="urn:oasis:names:tc:opendocument:xmlns:container" xmlns:enc="http://www.w3.org/2001/04/xmlenc#"></encryption>"""
                 )
@@ -33,9 +41,9 @@ class DefaultSniffersTest {
     @Test
     fun `Sniff Adobe ADEPT`() = runBlocking {
         assertEquals(
-            Format.EPUB + Trait.ADEPT_PROTECTED,
-            AdeptSniffer.sniffContainer(
-                format = Format.EPUB,
+            epubFormat.copy(specification = epubFormat.specification + AdeptSpecification),
+            EpubDrmSniffer.sniffContainer(
+                format = epubFormat,
                 container = TestContainer(
                     Url("META-INF/encryption.xml")!! to """<?xml version="1.0"?><encryption xmlns="urn:oasis:names:tc:opendocument:xmlns:container">
   <EncryptedData xmlns="http://www.w3.org/2001/04/xmlenc#">
@@ -56,9 +64,9 @@ class DefaultSniffersTest {
     @Test
     fun `Sniff Adobe ADEPT from rights xml`() = runBlocking {
         assertEquals(
-            Format.EPUB + Trait.ADEPT_PROTECTED,
-            AdeptSniffer.sniffContainer(
-                format = Format.EPUB,
+            epubFormat.copy(specification = epubFormat.specification + AdeptSpecification),
+            EpubDrmSniffer.sniffContainer(
+                format = epubFormat,
                 container = TestContainer(
                     Url("META-INF/encryption.xml")!! to """<?xml version='1.0' encoding='utf-8'?><encryption xmlns="urn:oasis:names:tc:opendocument:xmlns:container" xmlns:enc="http://www.w3.org/2001/04/xmlenc#"></encryption>""",
                     Url("META-INF/rights.xml")!! to """<?xml version="1.0"?><adept:rights xmlns:adept="http://ns.adobe.com/adept"></adept:rights>"""
@@ -68,36 +76,11 @@ class DefaultSniffersTest {
     }
 
     @Test
-    fun `LcpSniffer doesn't recognize EPUB with empty encryption xml`() = runBlocking {
-        assertEquals(
-            Format.EPUB,
-            LcpSniffer.sniffContainer(
-                format = Format.EPUB,
-                container = TestContainer(
-                    Url("META-INF/encryption.xml")!! to """<?xml version='1.0' encoding='utf-8'?><encryption xmlns="urn:oasis:names:tc:opendocument:xmlns:container" xmlns:enc="http://www.w3.org/2001/04/xmlenc#"></encryption>"""
-
-                )
-            ).checkSuccess()
-        )
-    }
-
-    @Test
-    fun `Sniff LCP protected Readium package`() = runBlocking {
-        assertEquals(
-            Format.READIUM_WEBPUB + Trait.LCP_PROTECTED,
-            LcpSniffer.sniffContainer(
-                format = Format.READIUM_WEBPUB,
-                container = TestContainer(Url("license.lcpl")!! to "{}")
-            ).checkSuccess()
-        )
-    }
-
-    @Test
     fun `Sniff LCP protected EPUB`() = runBlocking {
         assertEquals(
-            Format.EPUB + Trait.LCP_PROTECTED,
-            LcpSniffer.sniffContainer(
-                format = Format.EPUB,
+            epubFormat.copy(specification = epubFormat.specification + LcpSpecification),
+            EpubDrmSniffer.sniffContainer(
+                format = epubFormat,
                 container = TestContainer(Url("META-INF/license.lcpl")!! to "{}")
             ).checkSuccess()
         )
@@ -106,9 +89,9 @@ class DefaultSniffersTest {
     @Test
     fun `Sniff LCP protected EPUB missing the license`() = runBlocking {
         assertEquals(
-            Format.EPUB + Trait.LCP_PROTECTED,
-            LcpSniffer.sniffContainer(
-                format = Format.EPUB,
+            epubFormat.copy(specification = epubFormat.specification + LcpSpecification),
+            EpubDrmSniffer.sniffContainer(
+                format = epubFormat,
                 container = TestContainer(
                     Url("META-INF/encryption.xml")!! to """<?xml version="1.0" encoding="UTF-8"?>
 <encryption xmlns="urn:oasis:names:tc:opendocument:xmlns:container">

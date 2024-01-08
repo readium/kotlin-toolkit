@@ -80,7 +80,6 @@ class Application : android.app.Application() {
                 CoverStorage(storageDir, httpClient = readium.httpClient),
                 readium.publicationOpener,
                 readium.assetOpener,
-                readium.formatRegistry,
                 createPublicationRetriever = { listener ->
                     PublicationRetriever(
                         listener = listener,
@@ -90,7 +89,6 @@ class Application : android.app.Application() {
                                 context = applicationContext,
                                 storageDir = storageDir,
                                 assetOpener = readium.assetOpener,
-                                formatRegistry = readium.formatRegistry,
                                 createLcpPublicationRetriever = { lcpListener ->
                                     readium.lcpService.getOrNull()?.publicationRetriever()
                                         ?.let { retriever ->

@@ -28,8 +28,9 @@ import org.readium.r2.shared.util.data.decodeRwpm
 import org.readium.r2.shared.util.data.decodeXml
 import org.readium.r2.shared.util.data.readDecodeOrElse
 import org.readium.r2.shared.util.flatMap
-import org.readium.r2.shared.util.format.Format
-import org.readium.r2.shared.util.format.Trait
+import org.readium.r2.shared.util.format.EpubSpecification
+import org.readium.r2.shared.util.format.LcpLicenseSpecification
+import org.readium.r2.shared.util.format.LcpSpecification
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.shared.util.resource.TransformingContainer
@@ -44,25 +45,23 @@ internal class LcpContentProtection(
         asset: Asset,
         credentials: String?,
         allowUserInteraction: Boolean
-    ): Try<ContentProtection.OpenResult, ContentProtection.OpenError> {
-        if (
-            !asset.format.conformsTo(Trait.LCP_PROTECTED) &&
-            !asset.format.conformsTo(Format.LCP_LICENSE_DOCUMENT)
-        ) {
-            return Try.failure(ContentProtection.OpenError.AssetNotSupported())
-        }
-
-        return when (asset) {
+    ): Try<ContentProtection.OpenResult, ContentProtection.OpenError> =
+        when (asset) {
             is ContainerAsset -> openPublication(asset, credentials, allowUserInteraction)
             is ResourceAsset -> openLicense(asset, credentials, allowUserInteraction)
         }
-    }
 
     private suspend fun openPublication(
         asset: ContainerAsset,
         credentials: String?,
         allowUserInteraction: Boolean
     ): Try<ContentProtection.OpenResult, ContentProtection.OpenError> {
+        if (
+            !asset.format.conformsTo(LcpSpecification)
+        ) {
+            return Try.failure(ContentProtection.OpenError.AssetNotSupported())
+        }
+
         val license = retrieveLicense(asset, credentials, allowUserInteraction)
         return createResultAsset(asset, license)
     }
@@ -88,7 +87,9 @@ internal class LcpContentProtection(
 
         val encryptionData =
             when {
-                asset.format.conformsTo(Trait.EPUB) -> parseEncryptionDataEpub(asset.container)
+                asset.format.conformsTo(EpubSpecification) -> parseEncryptionDataEpub(
+                    asset.container
+                )
                 else -> parseEncryptionDataRpf(asset.container)
             }
                 .getOrElse { return Try.failure(ContentProtection.OpenError.Reading(it)) }
@@ -146,6 +147,10 @@ internal class LcpContentProtection(
         credentials: String?,
         allowUserInteraction: Boolean
     ): Try<ContentProtection.OpenResult, ContentProtection.OpenError> {
+        if (!licenseAsset.format.conformsTo(LcpLicenseSpecification)) {
+            return Try.failure(ContentProtection.OpenError.AssetNotSupported())
+        }
+
         val license = retrieveLicense(licenseAsset, credentials, allowUserInteraction)
 
         val licenseDoc = license.getOrNull()?.license

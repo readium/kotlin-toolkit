@@ -7,27 +7,37 @@
 package org.readium.r2.shared.util.asset
 
 import java.io.File
+import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Error
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.file.FileResourceFactory
+import org.readium.r2.shared.util.format.DefaultFormatSniffer
 import org.readium.r2.shared.util.format.Format
 import org.readium.r2.shared.util.format.FormatHints
+import org.readium.r2.shared.util.format.FormatSniffer
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.shared.util.resource.ResourceFactory
 import org.readium.r2.shared.util.toUrl
+import org.readium.r2.shared.util.zip.ZipArchiveOpener
 
 /**
  * Retrieves an [Asset] instance providing reading access to the resource(s) of an asset stored at
  * a given [Url] as well as a canonical media type.
  */
 public class AssetOpener(
-    private val assetSniffer: AssetSniffer,
+    @InternalReadiumApi public val assetSniffer: AssetSniffer,
     private val resourceFactory: ResourceFactory,
     private val archiveOpener: ArchiveOpener
 ) {
+    public constructor(
+        resourceFactory: ResourceFactory = FileResourceFactory(),
+        archiveOpener: ArchiveOpener = ZipArchiveOpener(),
+        formatSniffer: FormatSniffer = DefaultFormatSniffer()
+    ) : this(AssetSniffer(formatSniffer, archiveOpener), resourceFactory, archiveOpener)
 
     public sealed class OpenError(
         override val message: String,

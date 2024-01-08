@@ -28,8 +28,7 @@ import org.readium.r2.shared.util.asset.ResourceAsset
 import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.downloads.DownloadManager
 import org.readium.r2.shared.util.file.FileSystemError
-import org.readium.r2.shared.util.format.Format
-import org.readium.r2.shared.util.format.FormatRegistry
+import org.readium.r2.shared.util.format.LcpLicenseSpecification
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.testapp.data.DownloadRepository
@@ -106,7 +105,6 @@ class LocalPublicationRetriever(
     private val context: Context,
     private val storageDir: File,
     private val assetOpener: AssetOpener,
-    private val formatRegistry: FormatRegistry,
     createLcpPublicationRetriever: (PublicationRetriever.Listener) -> LcpPublicationRetriever?
 ) {
 
@@ -161,7 +159,7 @@ class LocalPublicationRetriever(
 
         if (
             sourceAsset is ResourceAsset &&
-            sourceAsset.format.conformsTo(Format.LCP_LICENSE_DOCUMENT)
+            sourceAsset.format.conformsTo(LcpLicenseSpecification)
         ) {
             if (lcpPublicationRetriever == null) {
                 listener.onError(ImportError.MissingLcpSupport)
@@ -171,10 +169,8 @@ class LocalPublicationRetriever(
             return
         }
 
-        val fileExtension = formatRegistry[sourceAsset.format]
-            ?.fileExtension?.value
-            ?: tempFile.extension
-        val fileName = "${UUID.randomUUID()}.$fileExtension"
+        val fileExtension = sourceAsset.format.fileExtension
+        val fileName = "${UUID.randomUUID()}.${fileExtension.value}"
         val libraryFile = File(storageDir, fileName)
 
         try {

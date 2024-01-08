@@ -14,7 +14,8 @@ import org.readium.r2.shared.util.Error
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.asset.Asset
 import org.readium.r2.shared.util.asset.ContainerAsset
-import org.readium.r2.shared.util.format.Trait
+import org.readium.r2.shared.util.format.AdeptSpecification
+import org.readium.r2.shared.util.format.LcpSpecification
 
 /**
  * [ContentProtection] implementation used as a fallback by when detecting known DRMs
@@ -34,9 +35,9 @@ public class FallbackContentProtection : ContentProtection {
         }
 
         val protectionServiceFactory = when {
-            asset.format.conformsTo(Trait.LCP_PROTECTED) ->
+            asset.format.conformsTo(LcpSpecification) ->
                 Service.createFactory(Scheme.Lcp, "Readium LCP")
-            asset.format.conformsTo(Trait.ADEPT_PROTECTED) ->
+            asset.format.conformsTo(AdeptSpecification) ->
                 Service.createFactory(Scheme.Adept, "Adobe ADEPT")
             else ->
                 return Try.failure(ContentProtection.OpenError.AssetNotSupported())
