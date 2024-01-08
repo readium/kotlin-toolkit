@@ -115,10 +115,7 @@ public class PublicationOpener(
         onCreatePublication: Publication.Builder.() -> Unit = {},
         warnings: WarningLogger? = null
     ): Try<Publication, OpenError> {
-        var compositeOnCreatePublication: Publication.Builder.() -> Unit = {
-            this@PublicationOpener.onCreatePublication(this)
-            onCreatePublication(this)
-        }
+        var protectionOnCreatePublication: Publication.Builder.() -> Unit = {}
 
         var transformedAsset: Asset = asset
 
@@ -136,10 +133,7 @@ public class PublicationOpener(
 
             if (openResult != null) {
                 transformedAsset = openResult.asset
-                compositeOnCreatePublication = {
-                    openResult.onCreatePublication.invoke(this)
-                    compositeOnCreatePublication(this)
-                }
+                protectionOnCreatePublication = openResult.onCreatePublication
                 break
             }
         }
@@ -147,7 +141,11 @@ public class PublicationOpener(
         val builder = parse(transformedAsset, warnings)
             .getOrElse { return Try.failure(wrapParserException(it)) }
 
-        builder.apply(onCreatePublication)
+        builder.apply {
+            protectionOnCreatePublication()
+            this.onCreatePublication()
+            onCreatePublication()
+        }
 
         val publication = builder.build()
         return Try.success(publication)

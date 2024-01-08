@@ -23,7 +23,7 @@ sealed class PublicationError(
     class UnsupportedScheme(cause: Error) :
         PublicationError(cause.message, cause.cause)
 
-    class UnsupportedFormat(cause: Error) :
+    class FormatNotSupported(cause: Error) :
         PublicationError(cause.message, cause.cause)
 
     class InvalidPublication(cause: Error) :
@@ -38,7 +38,7 @@ sealed class PublicationError(
                 UserError(R.string.publication_error_invalid_publication)
             is Unexpected ->
                 UserError(R.string.publication_error_unexpected)
-            is UnsupportedFormat ->
+            is FormatNotSupported ->
                 UserError(R.string.publication_error_unsupported_asset)
             is UnsupportedScheme ->
                 UserError(R.string.publication_error_scheme_not_supported)
@@ -53,7 +53,7 @@ sealed class PublicationError(
                 is AssetOpener.OpenError.Reading ->
                     ReadError(error.cause)
                 is AssetOpener.OpenError.FormatNotSupported ->
-                    UnsupportedFormat(error)
+                    FormatNotSupported(error)
                 is AssetOpener.OpenError.SchemeNotSupported ->
                     UnsupportedScheme(error)
             }
@@ -63,7 +63,7 @@ sealed class PublicationError(
                 is PublicationOpener.OpenError.Reading ->
                     ReadError(error.cause)
                 is PublicationOpener.OpenError.FormatNotSupported ->
-                    PublicationError(error)
+                    FormatNotSupported(error)
             }
     }
 }
