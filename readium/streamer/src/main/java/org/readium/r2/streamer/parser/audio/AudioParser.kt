@@ -22,11 +22,9 @@ import org.readium.r2.shared.util.data.Container
 import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.format.AacSpecification
 import org.readium.r2.shared.util.format.AiffSpecification
-import org.readium.r2.shared.util.format.AlacSpecification
 import org.readium.r2.shared.util.format.FlacSpecification
 import org.readium.r2.shared.util.format.Format
 import org.readium.r2.shared.util.format.InformalAudiobookSpecification
-import org.readium.r2.shared.util.format.MoggSpecification
 import org.readium.r2.shared.util.format.Mp3Specification
 import org.readium.r2.shared.util.format.Mp4Specification
 import org.readium.r2.shared.util.format.OggSpecification
@@ -145,12 +143,10 @@ public class AudioParser(
         setOf(
             AacSpecification,
             AiffSpecification,
-            AlacSpecification,
             FlacSpecification,
             Mp4Specification,
             Mp3Specification,
             OggSpecification,
-            MoggSpecification,
             OpusSpecification,
             WavSpecification,
             WebmSpecification

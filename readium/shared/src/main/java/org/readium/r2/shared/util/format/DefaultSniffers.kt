@@ -459,16 +459,6 @@ public object AudioSniffer : FormatSniffer {
         }
 
         if (
-            hints.hasFileExtension("alac")
-        ) {
-            return Format(
-                specification = FormatSpecification(AlacSpecification),
-                mediaType = MediaType.ALAC,
-                fileExtension = FileExtension("alac")
-            )
-        }
-
-        if (
             hints.hasFileExtension("flac")
         ) {
             return Format(
@@ -479,7 +469,7 @@ public object AudioSniffer : FormatSniffer {
         }
 
         if (
-            hints.hasFileExtension("m4a", "m4b")
+            hints.hasFileExtension("m4a", "m4b", "alac")
         ) {
             return Format(
                 specification = FormatSpecification(Mp4Specification),
@@ -505,16 +495,6 @@ public object AudioSniffer : FormatSniffer {
                 specification = FormatSpecification(OggSpecification),
                 mediaType = MediaType.OGG,
                 fileExtension = FileExtension("oga")
-            )
-        }
-
-        if (
-            hints.hasFileExtension("mogg")
-        ) {
-            return Format(
-                specification = FormatSpecification(MoggSpecification),
-                mediaType = MediaType.MOGG,
-                fileExtension = FileExtension("mogg")
             )
         }
 
@@ -1196,7 +1176,7 @@ public object JsonSniffer : FormatSniffer {
         format: Format,
         hints: FormatHints
     ): Format {
-        if (format.hasMoreThan()) {
+        if (format.hasAnySpecification()) {
             return format
         }
 

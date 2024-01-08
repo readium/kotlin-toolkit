@@ -112,12 +112,10 @@ public object WebpSpecification : Specification
  */
 public object AacSpecification : Specification
 public object AiffSpecification : Specification
-public object AlacSpecification : Specification
 public object FlacSpecification : Specification
 public object Mp4Specification : Specification
 public object Mp3Specification : Specification
 public object OggSpecification : Specification
-public object MoggSpecification : Specification
 public object OpusSpecification : Specification
 public object WavSpecification : Specification
 public object WebmSpecification : Specification

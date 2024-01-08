@@ -89,7 +89,7 @@ public data class FormatHints(
 }
 
 /**
- * Tries to refine a [FormatSpecification] from media type and file extension hints.
+ * Tries to refine a [Format] from media type and file extension hints.
  */
 public interface FormatHintsSniffer {
 
@@ -100,7 +100,7 @@ public interface FormatHintsSniffer {
 }
 
 /**
- * Tries to refine a [FormatSpecification] by sniffing a [Readable] blob.
+ * Tries to refine a [Format] by sniffing a [Readable] blob.
  */
 public interface BlobSniffer {
 
@@ -111,7 +111,7 @@ public interface BlobSniffer {
 }
 
 /**
- * Tries to Refine a [FormatSpecification] by sniffing a [Container].
+ * Tries to refine a [Format] by sniffing a [Container].
  */
 public interface ContainerSniffer {
 
@@ -121,6 +121,9 @@ public interface ContainerSniffer {
     ): Try<Format, ReadError>
 }
 
+/**
+ * Tries to refine a [Format] by sniffing format hints or content.
+ */
 public interface FormatSniffer :
     FormatHintsSniffer,
     BlobSniffer,

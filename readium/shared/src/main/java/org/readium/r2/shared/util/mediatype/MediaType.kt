@@ -286,7 +286,6 @@ public class MediaType private constructor(
         public val AAC: MediaType = MediaType("audio/aac")!!
         public val ACSM: MediaType = MediaType("application/vnd.adobe.adept+xml")!!
         public val AIFF: MediaType = MediaType("audio/aiff")!!
-        public val ALAC: MediaType = MediaType("audio/x.readium.alac")!! // non-existent
         public val AVI: MediaType = MediaType("video/x-msvideo")!!
         public val AVIF: MediaType = MediaType("image/avif")!!
         public val BINARY: MediaType = MediaType("application/octet-stream")!!
@@ -315,7 +314,6 @@ public class MediaType private constructor(
             "application/vnd.readium.license.status.v1.0+json"
         )!!
         public val LPF: MediaType = MediaType("application/lpf+zip")!!
-        public val MOGG: MediaType = MediaType("audio/x.readium.mogg")!! // non-existent
         public val MP3: MediaType = MediaType("audio/mpeg")!!
         public val MP4: MediaType = MediaType("audio/mp4")!!
         public val MPEG: MediaType = MediaType("video/mpeg")!!
