@@ -62,10 +62,10 @@ public interface PublicationParser {
  */
 public class DefaultPublicationParser(
     context: Context,
-    additionalParsers: List<PublicationParser> = emptyList(),
     private val httpClient: HttpClient,
+    assetOpener: AssetOpener,
     pdfFactory: PdfDocumentFactory<*>?,
-    assetOpener: AssetOpener
+    additionalParsers: List<PublicationParser> = emptyList()
 ) : PublicationParser by CompositePublicationParser(
     additionalParsers + listOfNotNull(
         EpubParser(),

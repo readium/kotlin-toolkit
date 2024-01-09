@@ -60,7 +60,7 @@ class Readium(context: Context) {
      * The PublicationFactory is used to open publications.
      */
     val publicationOpener = PublicationOpener(
-        parser = DefaultPublicationParser(
+        publicationParser = DefaultPublicationParser(
             context,
             assetOpener = assetOpener,
             httpClient = httpClient,
