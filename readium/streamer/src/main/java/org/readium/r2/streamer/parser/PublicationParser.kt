@@ -10,7 +10,7 @@ import android.content.Context
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.asset.Asset
-import org.readium.r2.shared.util.asset.AssetOpener
+import org.readium.r2.shared.util.asset.AssetRetriever
 import org.readium.r2.shared.util.http.HttpClient
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.pdf.PdfDocumentFactory
@@ -58,12 +58,12 @@ public interface PublicationParser {
  * @param additionalParsers Parsers used to open a publication, in addition to the default parsers. They take precedence over the default ones.
  * @param httpClient Service performing HTTP requests.
  * @param pdfFactory Parses a PDF document, optionally protected by password.
- * @param assetOpener Opens assets in case of indirection.
+ * @param assetRetriever Opens assets in case of indirection.
  */
 public class DefaultPublicationParser(
     context: Context,
     private val httpClient: HttpClient,
-    assetOpener: AssetOpener,
+    assetRetriever: AssetRetriever,
     pdfFactory: PdfDocumentFactory<*>?,
     additionalParsers: List<PublicationParser> = emptyList()
 ) : PublicationParser by CompositePublicationParser(
@@ -71,8 +71,8 @@ public class DefaultPublicationParser(
         EpubParser(),
         pdfFactory?.let { PdfParser(context, it) },
         ReadiumWebPubParser(context, httpClient, pdfFactory),
-        ImageParser(assetOpener.assetSniffer),
-        AudioParser(assetOpener.assetSniffer)
+        ImageParser(assetRetriever),
+        AudioParser(assetRetriever)
     )
 )
 

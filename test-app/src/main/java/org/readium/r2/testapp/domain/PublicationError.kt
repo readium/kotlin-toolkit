@@ -7,7 +7,7 @@
 package org.readium.r2.testapp.domain
 
 import org.readium.r2.shared.util.Error
-import org.readium.r2.shared.util.asset.AssetOpener
+import org.readium.r2.shared.util.asset.AssetRetriever
 import org.readium.r2.streamer.PublicationOpener
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.utils.UserError
@@ -48,13 +48,13 @@ sealed class PublicationError(
 
     companion object {
 
-        operator fun invoke(error: AssetOpener.OpenError): PublicationError =
+        operator fun invoke(error: AssetRetriever.RetrieveUrlError): PublicationError =
             when (error) {
-                is AssetOpener.OpenError.Reading ->
+                is AssetRetriever.RetrieveUrlError.Reading ->
                     ReadError(error.cause)
-                is AssetOpener.OpenError.FormatNotSupported ->
+                is AssetRetriever.RetrieveUrlError.FormatNotSupported ->
                     FormatNotSupported(error)
-                is AssetOpener.OpenError.SchemeNotSupported ->
+                is AssetRetriever.RetrieveUrlError.SchemeNotSupported ->
                     UnsupportedScheme(error)
             }
 

@@ -13,9 +13,8 @@ import java.io.File
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.appendToFilename
-import org.readium.r2.shared.util.asset.AssetSniffer
+import org.readium.r2.shared.util.asset.AssetRetriever
 import org.readium.r2.shared.util.asset.ResourceAsset
-import org.readium.r2.shared.util.asset.SniffError
 import org.readium.r2.shared.util.data.Container
 import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.format.Format
@@ -56,7 +55,7 @@ internal fun ResourceAsset.toContainer(): Container<Resource> {
     )
 }
 
-internal suspend fun AssetSniffer.sniffContainerEntries(
+internal suspend fun AssetRetriever.sniffContainerEntries(
     container: Container<Resource>,
     filter: (Url) -> Boolean
 ): Try<Map<Url, Format>, ReadError> =
@@ -75,8 +74,8 @@ internal suspend fun AssetSniffer.sniffContainerEntries(
                             },
                             onFailure = {
                                 when (it) {
-                                    SniffError.NotRecognized -> acc
-                                    is SniffError.Reading -> Try.failure(it.cause)
+                                    is AssetRetriever.RetrieveError.FormatNotSupported -> acc
+                                    is AssetRetriever.RetrieveError.Reading -> Try.failure(it.cause)
                                 }
                             }
                         )

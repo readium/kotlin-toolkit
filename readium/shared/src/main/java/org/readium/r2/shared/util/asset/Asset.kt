@@ -6,6 +6,7 @@
 
 package org.readium.r2.shared.util.asset
 
+import org.readium.r2.shared.util.SuspendingCloseable
 import org.readium.r2.shared.util.data.Container
 import org.readium.r2.shared.util.format.Format
 import org.readium.r2.shared.util.resource.Resource
@@ -13,17 +14,12 @@ import org.readium.r2.shared.util.resource.Resource
 /**
  * An asset which is either a single resource or a container that holds multiple resources.
  */
-public sealed class Asset {
+public sealed class Asset : SuspendingCloseable {
 
     /**
      * Format of the asset.
      */
     public abstract val format: Format
-
-    /**
-     * Releases in-memory resources related to this asset.
-     */
-    public abstract suspend fun close()
 }
 
 /**

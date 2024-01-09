@@ -13,8 +13,7 @@ import kotlinx.coroutines.withContext
 import org.readium.r2.shared.extensions.findInstance
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Try
-import org.readium.r2.shared.util.asset.ArchiveOpener
-import org.readium.r2.shared.util.asset.SniffError
+import org.readium.r2.shared.util.archive.ArchiveOpener
 import org.readium.r2.shared.util.data.Container
 import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.data.ReadException
@@ -32,14 +31,14 @@ import org.readium.r2.shared.util.zip.jvm.SeekableByteChannel
  */
 internal class StreamingZipArchiveProvider {
 
-    suspend fun sniffOpen(source: Readable): Try<Container<Resource>, SniffError> {
+    suspend fun sniffOpen(source: Readable): Try<Container<Resource>, ArchiveOpener.SniffOpenError> {
         return try {
             val container = openBlob(source, ::ReadException, null)
             Try.success(container)
         } catch (exception: Exception) {
             exception.findInstance(ReadException::class.java)
-                ?.let { Try.failure(SniffError.Reading(it.error)) }
-                ?: Try.failure(SniffError.NotRecognized)
+                ?.let { Try.failure(ArchiveOpener.SniffOpenError.Reading(it.error)) }
+                ?: Try.failure(ArchiveOpener.SniffOpenError.NotRecognized)
         }
     }
 

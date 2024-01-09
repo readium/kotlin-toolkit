@@ -33,7 +33,7 @@ import org.readium.r2.lcp.license.model.LicenseDocument
 import org.readium.r2.shared.publication.protection.ContentProtection
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.asset.Asset
-import org.readium.r2.shared.util.asset.AssetOpener
+import org.readium.r2.shared.util.asset.AssetRetriever
 import org.readium.r2.shared.util.downloads.DownloadManager
 import timber.log.Timber
 
@@ -44,20 +44,20 @@ internal class LicensesService(
     private val network: NetworkService,
     private val passphrases: PassphrasesService,
     private val context: Context,
-    private val assetOpener: AssetOpener,
+    private val assetRetriever: AssetRetriever,
     private val downloadManager: DownloadManager
 ) : LcpService, CoroutineScope by MainScope() {
 
     override fun contentProtection(
         authentication: LcpAuthenticating
     ): ContentProtection =
-        LcpContentProtection(this, authentication, assetOpener)
+        LcpContentProtection(this, authentication, assetRetriever)
 
     override fun publicationRetriever(): LcpPublicationRetriever {
         return LcpPublicationRetriever(
             context,
             downloadManager,
-            assetOpener.assetSniffer
+            assetRetriever
         )
     }
 

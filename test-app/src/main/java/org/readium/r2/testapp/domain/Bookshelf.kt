@@ -16,7 +16,7 @@ import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.DebugError
 import org.readium.r2.shared.util.Try
-import org.readium.r2.shared.util.asset.AssetOpener
+import org.readium.r2.shared.util.asset.AssetRetriever
 import org.readium.r2.shared.util.file.FileSystemError
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.toUrl
@@ -37,7 +37,7 @@ class Bookshelf(
     private val bookRepository: BookRepository,
     private val coverStorage: CoverStorage,
     private val publicationOpener: PublicationOpener,
-    private val assetOpener: AssetOpener,
+    private val assetRetriever: AssetRetriever,
     createPublicationRetriever: (PublicationRetriever.Listener) -> PublicationRetriever
 ) {
     val channel: Channel<Event> =
@@ -122,7 +122,7 @@ class Bookshelf(
         coverUrl: AbsoluteUrl? = null
     ): Try<Unit, ImportError> {
         val asset =
-            assetOpener.open(url)
+            assetRetriever.open(url)
                 .getOrElse {
                     return Try.failure(
                         ImportError.Publication(PublicationError(it))

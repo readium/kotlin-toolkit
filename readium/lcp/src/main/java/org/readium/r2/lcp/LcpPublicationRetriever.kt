@@ -16,7 +16,7 @@ import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.ErrorException
 import org.readium.r2.shared.util.FileExtension
-import org.readium.r2.shared.util.asset.AssetSniffer
+import org.readium.r2.shared.util.asset.AssetRetriever
 import org.readium.r2.shared.util.downloads.DownloadManager
 import org.readium.r2.shared.util.format.EpubSpecification
 import org.readium.r2.shared.util.format.Format
@@ -33,7 +33,7 @@ import org.readium.r2.shared.util.mediatype.MediaType
 public class LcpPublicationRetriever(
     context: Context,
     private val downloadManager: DownloadManager,
-    private val assetSniffer: AssetSniffer
+    private val assetRetriever: AssetRetriever
 ) {
 
     @JvmInline
@@ -197,7 +197,7 @@ public class LcpPublicationRetriever(
                 downloadsRepository.removeDownload(requestId.value)
 
                 val format =
-                    assetSniffer.sniff(
+                    assetRetriever.sniff(
                         download.file,
                         FormatHints(
                             mediaTypes = listOfNotNull(

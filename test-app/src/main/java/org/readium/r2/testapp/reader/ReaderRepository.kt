@@ -72,7 +72,7 @@ class ReaderRepository(
 
         val book = checkNotNull(bookRepository.get(bookId)) { "Cannot find book in database." }
 
-        val asset = readium.assetOpener.open(
+        val asset = readium.assetRetriever.open(
             book.url,
             book.mediaType
         ).getOrElse {

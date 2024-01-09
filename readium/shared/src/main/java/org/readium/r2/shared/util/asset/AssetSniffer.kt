@@ -6,16 +6,16 @@
 
 package org.readium.r2.shared.util.asset
 
-import java.io.File
 import org.readium.r2.shared.util.Either
+import org.readium.r2.shared.util.Error
 import org.readium.r2.shared.util.FileExtension
 import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.archive.ArchiveOpener
 import org.readium.r2.shared.util.data.CachingContainer
 import org.readium.r2.shared.util.data.CachingReadable
 import org.readium.r2.shared.util.data.Container
 import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.data.Readable
-import org.readium.r2.shared.util.file.FileResource
 import org.readium.r2.shared.util.format.Format
 import org.readium.r2.shared.util.format.FormatHints
 import org.readium.r2.shared.util.format.FormatSniffer
@@ -23,60 +23,27 @@ import org.readium.r2.shared.util.format.FormatSpecification
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.resource.Resource
-import org.readium.r2.shared.util.resource.borrow
-import org.readium.r2.shared.util.resource.filename
-import org.readium.r2.shared.util.resource.mediaType
 import org.readium.r2.shared.util.tryRecover
-import org.readium.r2.shared.util.use
 import org.readium.r2.shared.util.zip.ZipArchiveOpener
 
-public class AssetSniffer(
-    private val formatSniffers: FormatSniffer = DefaultFormatSniffer(),
+internal class AssetSniffer(
+    private val formatSniffer: FormatSniffer = DefaultFormatSniffer(),
     private val archiveOpener: ArchiveOpener = ZipArchiveOpener()
 ) {
 
-    public suspend fun sniff(
-        file: File,
-        hints: FormatHints = FormatHints()
-    ): Try<Format, SniffError> =
-        FileResource(file).use { sniff(it, hints) }
+    sealed class SniffError(
+        override val message: String,
+        override val cause: Error?
+    ) : Error {
 
-    public suspend fun sniff(
-        resource: Resource,
-        hints: FormatHints = FormatHints()
-    ): Try<Format, SniffError> =
-        sniffOpen(resource.borrow(), hints).map { it.format }
+        data object NotRecognized :
+            SniffError("Format of resource could not be inferred.", null)
 
-    public suspend fun sniff(
-        container: Container<Resource>,
-        hints: FormatHints = FormatHints()
-    ): Try<Format, SniffError> =
-        sniff(Either.Right(container), hints).map { it.format }
-
-    public suspend fun sniffOpen(
-        resource: Resource,
-        hints: FormatHints = FormatHints()
-    ): Try<Asset, SniffError> {
-        val properties = resource.properties()
-            .getOrElse { return Try.failure(SniffError.Reading(it)) }
-
-        val internalHints = FormatHints(
-            mediaType = properties.mediaType,
-            fileExtension = properties.filename
-                ?.substringAfterLast(".")
-                ?.let { FileExtension((it)) }
-        )
-
-        return sniff(Either.Left(resource), hints + internalHints)
+        data class Reading(override val cause: ReadError) :
+            SniffError("An error occurred while trying to read content.", cause)
     }
 
-    public suspend fun sniffOpen(
-        file: File,
-        hints: FormatHints = FormatHints()
-    ): Try<Asset, SniffError> =
-        sniff(Either.Left(FileResource(file)), hints)
-
-    private suspend fun sniff(
+    suspend fun sniff(
         source: Either<Resource, Container<Resource>>,
         hints: FormatHints
     ): Try<Asset, SniffError> {
@@ -106,7 +73,7 @@ public class AssetSniffer(
         cache: Either<Readable, Container<Readable>>,
         hints: FormatHints
     ): Try<Asset, ReadError> {
-        formatSniffers
+        formatSniffer
             .sniffHints(format, hints)
             .takeIf { it.conformsTo(format) }
             ?.takeIf { it != format }
@@ -114,7 +81,7 @@ public class AssetSniffer(
 
         when (cache) {
             is Either.Left ->
-                formatSniffers
+                formatSniffer
                     .sniffBlob(format, cache.value)
                     .getOrElse { return Try.failure(it) }
                     .takeIf { it.conformsTo(format) }
@@ -122,7 +89,7 @@ public class AssetSniffer(
                     ?.let { return doSniff(it, source, cache, hints) }
 
             is Either.Right ->
-                formatSniffers
+                formatSniffer
                     .sniffContainer(format, cache.value)
                     .getOrElse { return Try.failure(it) }
                     .takeIf { it.conformsTo(format) }
@@ -159,9 +126,9 @@ public class AssetSniffer(
             archiveOpener.sniffOpen(source)
                 .tryRecover {
                     when (it) {
-                        is SniffError.NotRecognized ->
+                        is ArchiveOpener.SniffOpenError.NotRecognized ->
                             Try.success(null)
-                        is SniffError.Reading ->
+                        is ArchiveOpener.SniffOpenError.Reading ->
                             Try.failure(it.cause)
                     }
                 }
