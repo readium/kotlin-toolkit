@@ -24,11 +24,10 @@ import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.shared.util.tryRecover
-import org.readium.r2.shared.util.zip.ZipArchiveOpener
 
 internal class AssetSniffer(
     private val formatSniffer: FormatSniffer = DefaultFormatSniffer(),
-    private val archiveOpener: ArchiveOpener = ZipArchiveOpener()
+    private val archiveOpener: ArchiveOpener = DefaultArchiveOpener()
 ) {
 
     sealed class SniffError(
