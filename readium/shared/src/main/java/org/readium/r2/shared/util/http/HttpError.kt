@@ -21,6 +21,7 @@ public sealed class HttpError(
     public override val cause: Error? = null
 ) : AccessError {
 
+    /** Malformed HTTP response. */
     public class MalformedResponse(cause: Error?) :
         HttpError("The received response could not be decoded.", cause)
 
@@ -28,12 +29,15 @@ public sealed class HttpError(
     public class Timeout(cause: Error) :
         HttpError("Request timed out.", cause)
 
+    /** Server could not be reached. */
     public class Unreachable(cause: Error) :
         HttpError("Server could not be reached.", cause)
 
+    /** Redirection failed. */
     public class Redirection(cause: Error) :
         HttpError("Redirection failed.", cause)
 
+    /** SSL Handshake failed. */
     public class SslHandshake(cause: Error) :
         HttpError("SSL handshake failed.", cause)
 
@@ -45,6 +49,8 @@ public sealed class HttpError(
     }
 
     /**
+     * Server responded with an error status code.
+     *
      * @param status HTTP status code.
      * @param mediaType Response media type.
      * @param body Response body.
