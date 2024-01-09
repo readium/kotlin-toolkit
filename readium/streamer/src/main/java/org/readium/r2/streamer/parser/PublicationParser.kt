@@ -55,19 +55,19 @@ public interface PublicationParser {
  * Default implementation of [PublicationParser] handling all the publication formats supported by
  * Readium.
  *
- * @param parsers Parsers used to open a publication, in addition to the default parsers. They take precedence over the default ones.
+ * @param additionalParsers Parsers used to open a publication, in addition to the default parsers. They take precedence over the default ones.
  * @param httpClient Service performing HTTP requests.
  * @param pdfFactory Parses a PDF document, optionally protected by password.
  * @param assetOpener Opens assets in case of indirection.
  */
 public class DefaultPublicationParser(
     context: Context,
-    parsers: List<PublicationParser> = emptyList(),
+    additionalParsers: List<PublicationParser> = emptyList(),
     private val httpClient: HttpClient,
     pdfFactory: PdfDocumentFactory<*>?,
     assetOpener: AssetOpener
-) : CompositePublicationParser(
-    parsers + listOfNotNull(
+) : PublicationParser by CompositePublicationParser(
+    additionalParsers + listOfNotNull(
         EpubParser(),
         pdfFactory?.let { PdfParser(context, it) },
         ReadiumWebPubParser(context, httpClient, pdfFactory),
@@ -80,7 +80,7 @@ public class DefaultPublicationParser(
  * A composite [PublicationParser] which tries several parsers until it finds one which supports
  * the asset.
  */
-public open class CompositePublicationParser(
+public class CompositePublicationParser(
     private val parsers: List<PublicationParser>
 ) : PublicationParser {
 
