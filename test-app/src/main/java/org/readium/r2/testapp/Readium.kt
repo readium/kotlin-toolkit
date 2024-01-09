@@ -25,6 +25,7 @@ import org.readium.r2.shared.util.http.HttpResourceFactory
 import org.readium.r2.shared.util.resource.CompositeResourceFactory
 import org.readium.r2.shared.util.zip.ZipArchiveOpener
 import org.readium.r2.streamer.PublicationOpener
+import org.readium.r2.streamer.parser.DefaultPublicationParser
 
 /**
  * Holds the shared Readium objects and services used by the app.
@@ -70,15 +71,17 @@ class Readium(context: Context) {
     )
 
     /**
-     * The PublicationFactory is used to parse and open publications.
+     * The PublicationFactory is used to open publications.
      */
     val publicationOpener = PublicationOpener(
-        context,
-        contentProtections = contentProtections,
-        assetOpener = assetOpener,
-        httpClient = httpClient,
-        // Only required if you want to support PDF files using the PDFium adapter.
-        pdfFactory = PdfiumDocumentFactory(context)
+        parser = DefaultPublicationParser(
+            context,
+            assetOpener = assetOpener,
+            httpClient = httpClient,
+            // Only required if you want to support PDF files using the PDFium adapter.
+            pdfFactory = PdfiumDocumentFactory(context)
+        ),
+        contentProtections = contentProtections
     )
 
     fun onLcpDialogAuthenticationParentAttached(view: View) {

@@ -6,13 +6,22 @@
 
 package org.readium.r2.streamer.parser
 
+import android.content.Context
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.asset.Asset
+import org.readium.r2.shared.util.asset.AssetOpener
+import org.readium.r2.shared.util.http.HttpClient
 import org.readium.r2.shared.util.logging.WarningLogger
+import org.readium.r2.shared.util.pdf.PdfDocumentFactory
+import org.readium.r2.streamer.parser.audio.AudioParser
+import org.readium.r2.streamer.parser.epub.EpubParser
+import org.readium.r2.streamer.parser.image.ImageParser
+import org.readium.r2.streamer.parser.pdf.PdfParser
+import org.readium.r2.streamer.parser.readium.ReadiumWebPubParser
 
 /**
- *  Parses a Publication from an asset.
+ * Parses a [Publication] from an [Asset].
  */
 public interface PublicationParser {
 
@@ -39,5 +48,58 @@ public interface PublicationParser {
 
         public class Reading(override val cause: org.readium.r2.shared.util.data.ReadError) :
             ParseError("An error occurred while trying to read asset.", cause)
+    }
+}
+
+/**
+ * Default implementation of [PublicationParser] handling all the publication formats supported by
+ * Readium.
+ *
+ * @param parsers Parsers used to open a publication, in addition to the default parsers. They take precedence over the default ones.
+ * @param httpClient Service performing HTTP requests.
+ * @param pdfFactory Parses a PDF document, optionally protected by password.
+ * @param assetOpener Opens assets in case of indirection.
+ */
+public class DefaultPublicationParser(
+    context: Context,
+    parsers: List<PublicationParser> = emptyList(),
+    private val httpClient: HttpClient,
+    pdfFactory: PdfDocumentFactory<*>?,
+    assetOpener: AssetOpener
+) : CompositePublicationParser(
+    parsers + listOfNotNull(
+        EpubParser(),
+        pdfFactory?.let { PdfParser(context, it) },
+        ReadiumWebPubParser(context, httpClient, pdfFactory),
+        ImageParser(assetOpener.assetSniffer),
+        AudioParser(assetOpener.assetSniffer)
+    )
+)
+
+/**
+ * A composite [PublicationParser] which tries several parsers until it finds one which supports
+ * the asset.
+ */
+public open class CompositePublicationParser(
+    private val parsers: List<PublicationParser>
+) : PublicationParser {
+
+    public constructor(vararg parsers: PublicationParser) :
+        this(parsers.toList())
+
+    override suspend fun parse(
+        asset: Asset,
+        warnings: WarningLogger?
+    ): Try<Publication.Builder, PublicationParser.ParseError> {
+        for (parser in parsers) {
+            val result = parser.parse(asset, warnings)
+            if (
+                result is Try.Success ||
+                result is Try.Failure && result.value !is PublicationParser.ParseError.FormatNotSupported
+            ) {
+                return result
+            }
+        }
+        return Try.failure(PublicationParser.ParseError.FormatNotSupported())
     }
 }
