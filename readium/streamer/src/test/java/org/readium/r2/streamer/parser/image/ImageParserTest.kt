@@ -20,7 +20,7 @@ import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.firstWithRel
 import org.readium.r2.shared.util.FileExtension
 import org.readium.r2.shared.util.Url
-import org.readium.r2.shared.util.asset.AssetSniffer
+import org.readium.r2.shared.util.asset.AssetRetriever
 import org.readium.r2.shared.util.asset.ContainerAsset
 import org.readium.r2.shared.util.asset.ResourceAsset
 import org.readium.r2.shared.util.checkSuccess
@@ -30,17 +30,21 @@ import org.readium.r2.shared.util.format.FormatSpecification
 import org.readium.r2.shared.util.format.InformalComicSpecification
 import org.readium.r2.shared.util.format.JpegSpecification
 import org.readium.r2.shared.util.format.ZipSpecification
+import org.readium.r2.shared.util.http.DefaultHttpClient
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.zip.ZipArchiveOpener
 import org.readium.r2.streamer.parseBlocking
 import org.robolectric.RobolectricTestRunner
+import org.robolectric.RuntimeEnvironment
 
 @RunWith(RobolectricTestRunner::class)
 class ImageParserTest {
 
     private val archiveOpener = ZipArchiveOpener()
 
-    private val assetSniffer = AssetSniffer()
+    private val contentResolver = RuntimeEnvironment.getApplication().contentResolver
+
+    private val assetSniffer = AssetRetriever(contentResolver, DefaultHttpClient())
 
     private val parser = ImageParser(assetSniffer)
 

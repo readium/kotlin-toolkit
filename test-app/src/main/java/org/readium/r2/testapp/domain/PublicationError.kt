@@ -58,6 +58,14 @@ sealed class PublicationError(
                     UnsupportedScheme(error)
             }
 
+        operator fun invoke(error: AssetRetriever.RetrieveError): PublicationError =
+            when (error) {
+                is AssetRetriever.RetrieveError.Reading ->
+                    ReadError(error.cause)
+                is AssetRetriever.RetrieveError.FormatNotSupported ->
+                    FormatNotSupported(error)
+            }
+
         operator fun invoke(error: PublicationOpener.OpenError): PublicationError =
             when (error) {
                 is PublicationOpener.OpenError.Reading ->
