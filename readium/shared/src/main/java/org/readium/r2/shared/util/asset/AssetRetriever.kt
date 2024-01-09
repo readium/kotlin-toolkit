@@ -25,6 +25,7 @@ import org.readium.r2.shared.util.http.HttpClient
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.shared.util.resource.ResourceFactory
+import org.readium.r2.shared.util.resource.borrow
 import org.readium.r2.shared.util.resource.filename
 import org.readium.r2.shared.util.resource.mediaType
 import org.readium.r2.shared.util.use
@@ -239,18 +240,19 @@ public class AssetRetriever private constructor(
         hints: FormatHints = FormatHints()
     ): Try<Format, RetrieveUrlError> =
         retrieve(url, hints)
-            .map { it.format }
+            .map { asset -> asset.use { it.format } }
 
     public suspend fun sniffFormat(
         resource: Resource,
         hints: FormatHints = FormatHints()
     ): Try<Format, RetrieveError> =
-        retrieve(resource, hints)
-            .map { it.format }
+        retrieve(resource.borrow(), hints)
+            .map { asset -> asset.use { it.format } }
 
     public suspend fun sniffFormat(
         container: Container<Resource>,
         hints: FormatHints = FormatHints()
     ): Try<Format, RetrieveError> =
-        retrieve(container, hints).map { it.format }
+        retrieve(container, hints)
+            .map { asset -> asset.use { it.format } }
 }
