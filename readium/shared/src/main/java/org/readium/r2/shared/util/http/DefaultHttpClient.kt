@@ -17,6 +17,7 @@ import java.net.NoRouteToHostException
 import java.net.SocketTimeoutException
 import java.net.URL
 import java.net.UnknownHostException
+import javax.net.ssl.SSLHandshakeException
 import kotlin.time.Duration
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -327,6 +328,8 @@ private fun wrap(cause: IOException): HttpError =
             HttpError.Unreachable(ThrowableError(cause))
         is SocketTimeoutException ->
             HttpError.Timeout(ThrowableError(cause))
+        is SSLHandshakeException ->
+            HttpError.SslHandshake(ThrowableError(cause))
         else ->
             HttpError.IO(cause)
     }

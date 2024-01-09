@@ -32,8 +32,9 @@ fun HttpError.toUserError(): UserError = when (this) {
     is HttpError.IO -> UserError(R.string.publication_error_network_unexpected)
     is HttpError.MalformedResponse -> UserError(R.string.publication_error_network_unexpected)
     is HttpError.Redirection -> UserError(R.string.publication_error_network_unexpected)
-    is HttpError.Timeout -> UserError(R.string.publication_error_network_connectivity)
-    is HttpError.Unreachable -> UserError(R.string.publication_error_network_connectivity)
+    is HttpError.Timeout -> UserError(R.string.publication_error_network_timeout)
+    is HttpError.Unreachable -> UserError(R.string.publication_error_network_unreachable)
+    is HttpError.SslHandshake -> UserError(R.string.publication_error_network_ssl_handshake)
     is HttpError.ErrorResponse -> when (status) {
         HttpStatus.Forbidden -> UserError(R.string.publication_error_network_forbidden)
         HttpStatus.NotFound -> UserError(R.string.publication_error_network_not_found)

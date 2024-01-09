@@ -17,13 +17,8 @@ import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.DebugError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.asset.AssetOpener
-import org.readium.r2.shared.util.content.ContentResourceFactory
 import org.readium.r2.shared.util.downloads.android.AndroidDownloadManager
-import org.readium.r2.shared.util.file.FileResourceFactory
 import org.readium.r2.shared.util.http.DefaultHttpClient
-import org.readium.r2.shared.util.http.HttpResourceFactory
-import org.readium.r2.shared.util.resource.CompositeResourceFactory
-import org.readium.r2.shared.util.zip.ZipArchiveOpener
 import org.readium.r2.streamer.PublicationOpener
 import org.readium.r2.streamer.parser.DefaultPublicationParser
 
@@ -32,26 +27,17 @@ import org.readium.r2.streamer.parser.DefaultPublicationParser
  */
 class Readium(context: Context) {
 
-    val httpClient = DefaultHttpClient()
+    val httpClient =
+        DefaultHttpClient()
 
-    private val archiveOpener =
-        ZipArchiveOpener()
+    val assetOpener =
+        AssetOpener(context.contentResolver, httpClient)
 
-    private val resourceFactory = CompositeResourceFactory(
-        FileResourceFactory(),
-        ContentResourceFactory(context.contentResolver),
-        HttpResourceFactory(httpClient)
-    )
-
-    val assetOpener = AssetOpener(
-        resourceFactory,
-        archiveOpener
-    )
-
-    val downloadManager = AndroidDownloadManager(
-        context = context,
-        destStorage = AndroidDownloadManager.Storage.App
-    )
+    val downloadManager =
+        AndroidDownloadManager(
+            context = context,
+            destStorage = AndroidDownloadManager.Storage.App
+        )
 
     /**
      * The LCP service decrypts LCP-protected publication and acquire publications from a
@@ -74,7 +60,7 @@ class Readium(context: Context) {
      * The PublicationFactory is used to open publications.
      */
     val publicationOpener = PublicationOpener(
-        parser = DefaultPublicationParser(
+        publicationParser = DefaultPublicationParser(
             context,
             assetOpener = assetOpener,
             httpClient = httpClient,

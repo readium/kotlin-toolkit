@@ -21,13 +21,13 @@ import org.readium.r2.streamer.parser.PublicationParser
 /**
  * Opens a [Publication] from an [Asset].
  *
- * @param parser Parses the content of a publication [Asset].
+ * @param publicationParser Parses the content of a publication [Asset].
  * @param contentProtections Opens DRM-protected publications.
  * @param onCreatePublication Called on every parsed [Publication.Builder]. It can be used to modify
  *   the manifest, the root container or the list of service factories of a [Publication].
  */
 public class PublicationOpener(
-    private val parser: PublicationParser,
+    private val publicationParser: PublicationParser,
     contentProtections: List<ContentProtection>,
     private val onCreatePublication: Publication.Builder.() -> Unit = {}
 ) {
@@ -101,7 +101,7 @@ public class PublicationOpener(
             }
         }
 
-        val builder = parser.parse(transformedAsset, warnings)
+        val builder = publicationParser.parse(transformedAsset, warnings)
             .getOrElse { return Try.failure(wrapParserException(it)) }
 
         builder.apply {

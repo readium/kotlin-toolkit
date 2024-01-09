@@ -104,7 +104,9 @@
     <string name="publication_error_unsupported_asset">Asset format is not supported</string>
     <string name="publication_error_network_forbidden">Server denied access to a resource.</string>
     <string name="publication_error_network_not_found">A resource has not been found on the server.</string>
-    <string name="publication_error_network_connectivity">A connectivity error occurred.</string>
+    <string name="publication_error_network_unreachable">Server cannot be reached.</string>
+    <string name="publication_error_network_timeout">Server was too long to respond.</string>
+    <string name="publication_error_network_ssl_handshake">A SSL error occurred.</string>
     <string name="publication_error_network_unexpected">An unexpected network error occurred.</string>
     <string name="publication_error_filesystem_not_found">A file has not been found.</string>
     <string name="publication_error_filesystem_unexpected">An unexpected filesystem error occurred.</string>
