@@ -9,38 +9,40 @@ package org.readium.r2.shared.util.mediatype
 import java.nio.charset.Charset
 
 /**
- * Bundle of media type and file extension hints for the [MediaTypeSniffer].
+ * Bundle of media type and file extension hints for the MediaTypeSniffer.
  */
+@Suppress("UNUSED_PARAMETER")
+@Deprecated(
+    "Use FormatHints instead.",
+    level = DeprecationLevel.ERROR,
+    replaceWith = ReplaceWith("FormatHints")
+)
 public data class MediaTypeHints(
     val mediaTypes: List<MediaType> = emptyList(),
     val fileExtensions: List<String> = emptyList()
 ) {
     public companion object {
-        public operator fun invoke(mediaType: MediaType? = null, fileExtension: String? = null): MediaTypeHints =
-            MediaTypeHints(
-                mediaTypes = listOfNotNull(mediaType),
-                fileExtensions = listOfNotNull(fileExtension)
-            )
+        public operator fun invoke(mediaType: MediaType? = null, fileExtension: String? = null): Any {
+            throw NotImplementedError()
+        }
 
         public operator fun invoke(
             mediaTypes: List<String> = emptyList(),
             fileExtensions: List<String> = emptyList()
-        ): MediaTypeHints =
-            MediaTypeHints(mediaTypes.mapNotNull { MediaType(it) }, fileExtensions = fileExtensions)
+        ): Any {
+            throw NotImplementedError()
+        }
     }
 
-    public operator fun plus(other: MediaTypeHints): MediaTypeHints =
-        MediaTypeHints(
-            mediaTypes = mediaTypes + other.mediaTypes,
-            fileExtensions = fileExtensions + other.fileExtensions
-        )
+    public operator fun plus(other: Any): Any {
+        throw NotImplementedError()
+    }
 
     /**
      * Returns a new [MediaTypeHints] after appending the given [fileExtension] hint.
      */
-    public fun addFileExtension(fileExtension: String?): MediaTypeHints {
-        fileExtension ?: return this
-        return copy(fileExtensions = fileExtensions + fileExtension)
+    public fun addFileExtension(fileExtension: String?): Any {
+        throw NotImplementedError()
     }
 
     /** Finds the first [Charset] declared in the media types' `charset` parameter. */
