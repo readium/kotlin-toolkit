@@ -68,7 +68,7 @@ internal suspend fun AssetRetriever.sniffContainerEntries(
 
                 is Try.Success ->
                     container[url]!!.use { resource ->
-                        sniff(resource).fold(
+                        sniffFormat(resource).fold(
                             onSuccess = {
                                 Try.success(acc.value + (url to it))
                             },

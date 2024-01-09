@@ -228,27 +228,27 @@ public class AssetRetriever private constructor(
     ): Try<Asset, RetrieveError> =
         retrieve(container, FormatHints(mediaType = mediaType))
 
-    public suspend fun sniff(
+    public suspend fun sniffFormat(
         file: File,
         hints: FormatHints = FormatHints()
     ): Try<Format, RetrieveError> =
-        FileResource(file).use { sniff(it, hints) }
+        FileResource(file).use { sniffFormat(it, hints) }
 
-    public suspend fun sniff(
+    public suspend fun sniffFormat(
         url: AbsoluteUrl,
         hints: FormatHints = FormatHints()
     ): Try<Format, RetrieveUrlError> =
         retrieve(url, hints)
             .map { it.format }
 
-    public suspend fun sniff(
+    public suspend fun sniffFormat(
         resource: Resource,
         hints: FormatHints = FormatHints()
     ): Try<Format, RetrieveError> =
         retrieve(resource, hints)
             .map { it.format }
 
-    public suspend fun sniff(
+    public suspend fun sniffFormat(
         container: Container<Resource>,
         hints: FormatHints = FormatHints()
     ): Try<Format, RetrieveError> =

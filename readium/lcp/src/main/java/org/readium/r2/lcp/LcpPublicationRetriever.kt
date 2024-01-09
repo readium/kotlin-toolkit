@@ -197,7 +197,7 @@ public class LcpPublicationRetriever(
                 downloadsRepository.removeDownload(requestId.value)
 
                 val format =
-                    assetRetriever.sniff(
+                    assetRetriever.sniffFormat(
                         download.file,
                         FormatHints(
                             mediaTypes = listOfNotNull(
