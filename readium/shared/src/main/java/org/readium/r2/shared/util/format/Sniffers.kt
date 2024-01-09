@@ -29,27 +29,6 @@ import org.readium.r2.shared.util.getOrDefault
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.mediatype.MediaType
 
-public class DefaultFormatSniffer :
-    FormatSniffer by CompositeFormatSniffer(
-        ZipSniffer,
-        RarSniffer,
-        EpubSniffer,
-        LpfSniffer,
-        ArchiveSniffer,
-        RpfSniffer,
-        PdfSniffer,
-        HtmlSniffer,
-        BitmapSniffer,
-        AudioSniffer,
-        JsonSniffer,
-        Opds1Sniffer,
-        Opds2Sniffer,
-        LcpLicenseSniffer,
-        EpubDrmSniffer,
-        W3cWpubSniffer,
-        RwpmSniffer
-    )
-
 /** Sniffs an HTML or XHTML document. */
 public object HtmlSniffer : FormatSniffer {
     override fun sniffHints(
