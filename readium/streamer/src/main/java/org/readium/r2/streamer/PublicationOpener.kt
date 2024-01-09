@@ -6,8 +6,6 @@
 
 package org.readium.r2.streamer
 
-import android.content.Context
-import org.readium.r2.shared.PdfSupport
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.protection.ContentProtection
 import org.readium.r2.shared.publication.protection.FallbackContentProtection
@@ -15,46 +13,22 @@ import org.readium.r2.shared.util.DebugError
 import org.readium.r2.shared.util.Error
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.asset.Asset
-import org.readium.r2.shared.util.asset.AssetOpener
 import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.getOrElse
-import org.readium.r2.shared.util.http.HttpClient
 import org.readium.r2.shared.util.logging.WarningLogger
-import org.readium.r2.shared.util.pdf.PdfDocumentFactory
 import org.readium.r2.streamer.parser.PublicationParser
-import org.readium.r2.streamer.parser.audio.AudioParser
-import org.readium.r2.streamer.parser.epub.EpubParser
-import org.readium.r2.streamer.parser.image.ImageParser
-import org.readium.r2.streamer.parser.pdf.PdfParser
-import org.readium.r2.streamer.parser.readium.ReadiumWebPubParser
 
 /**
- * Opens a Publication using a list of parsers.
+ * Opens a [Publication] from an [Asset].
  *
- * The [PublicationOpener] is configured to use Readium's default parsers, which you can bypass
- * using ignoreDefaultParsers. However, you can provide additional [parsers] which will take
- * precedence over the default ones. This can also be used to provide an alternative configuration
- * of a default parser.
- *
- * @param context Application context.
- * @param parsers Parsers used to open a publication, in addition to the default parsers.
- * @param ignoreDefaultParsers When true, only parsers provided in parsers will be used.
+ * @param parser Parses the content of a publication [Asset].
  * @param contentProtections Opens DRM-protected publications.
- * @param httpClient Service performing HTTP requests.
- * @param pdfFactory Parses a PDF document, optionally protected by password.
- * @param assetOpener Opens assets in case of indirection.
  * @param onCreatePublication Called on every parsed [Publication.Builder]. It can be used to modify
  *   the manifest, the root container or the list of service factories of a [Publication].
  */
-@OptIn(PdfSupport::class)
 public class PublicationOpener(
-    context: Context,
-    parsers: List<PublicationParser> = emptyList(),
-    ignoreDefaultParsers: Boolean = false,
+    private val parser: PublicationParser,
     contentProtections: List<ContentProtection>,
-    private val httpClient: HttpClient,
-    pdfFactory: PdfDocumentFactory<*>?,
-    assetOpener: AssetOpener,
     private val onCreatePublication: Publication.Builder.() -> Unit = {}
 ) {
     public sealed class OpenError(
@@ -73,18 +47,6 @@ public class PublicationOpener(
 
     private val contentProtections: List<ContentProtection> =
         contentProtections + FallbackContentProtection()
-
-    private val defaultParsers: List<PublicationParser> =
-        listOfNotNull(
-            EpubParser(),
-            pdfFactory?.let { PdfParser(context, it) },
-            ReadiumWebPubParser(context, httpClient, pdfFactory),
-            ImageParser(assetOpener.assetSniffer),
-            AudioParser(assetOpener.assetSniffer)
-        )
-
-    private val parsers: List<PublicationParser> = parsers +
-        if (!ignoreDefaultParsers) defaultParsers else emptyList()
 
     /**
      * Opens a [Publication] from the given asset.
@@ -139,7 +101,7 @@ public class PublicationOpener(
             }
         }
 
-        val builder = parse(transformedAsset, warnings)
+        val builder = parser.parse(transformedAsset, warnings)
             .getOrElse { return Try.failure(wrapParserException(it)) }
 
         builder.apply {
@@ -150,22 +112,6 @@ public class PublicationOpener(
 
         val publication = builder.build()
         return Try.success(publication)
-    }
-
-    private suspend fun parse(
-        publicationAsset: Asset,
-        warnings: WarningLogger?
-    ): Try<Publication.Builder, PublicationParser.ParseError> {
-        for (parser in parsers) {
-            val result = parser.parse(publicationAsset, warnings)
-            if (
-                result is Try.Success ||
-                result is Try.Failure && result.value !is PublicationParser.ParseError.FormatNotSupported
-            ) {
-                return result
-            }
-        }
-        return Try.failure(PublicationParser.ParseError.FormatNotSupported())
     }
 
     private fun wrapParserException(e: PublicationParser.ParseError): OpenError =

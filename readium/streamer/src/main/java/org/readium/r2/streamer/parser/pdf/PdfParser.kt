@@ -8,7 +8,6 @@ package org.readium.r2.streamer.parser.pdf
 
 import android.content.Context
 import org.readium.r2.shared.ExperimentalReadiumApi
-import org.readium.r2.shared.PdfSupport
 import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.publication.services.InMemoryCacheService
 import org.readium.r2.shared.publication.services.InMemoryCoverService
@@ -27,7 +26,6 @@ import org.readium.r2.streamer.parser.PublicationParser
 /**
  * Parses a PDF file into a Readium [Publication].
  */
-@PdfSupport
 @OptIn(ExperimentalReadiumApi::class)
 public class PdfParser(
     context: Context,

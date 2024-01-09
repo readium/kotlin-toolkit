@@ -51,19 +51,6 @@ public annotation class DelicateReadiumApi
 
 @RequiresOptIn(
     level = RequiresOptIn.Level.WARNING,
-    message = "Support for PDF is still experimental. The API may be changed in the future without notice."
-)
-@Retention(AnnotationRetention.BINARY)
-@Target(
-    AnnotationTarget.CLASS,
-    AnnotationTarget.FUNCTION,
-    AnnotationTarget.TYPEALIAS,
-    AnnotationTarget.PROPERTY
-)
-public annotation class PdfSupport
-
-@RequiresOptIn(
-    level = RequiresOptIn.Level.WARNING,
     message = "Support for SearchService is still experimental. The API may be changed in the future without notice."
 )
 @Retention(AnnotationRetention.BINARY)
