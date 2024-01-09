@@ -27,7 +27,6 @@ import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.shared.util.resource.ResourceFactory
 import org.readium.r2.shared.util.resource.filename
 import org.readium.r2.shared.util.resource.mediaType
-import org.readium.r2.shared.util.toUrl
 import org.readium.r2.shared.util.use
 
 /**
@@ -105,7 +104,7 @@ public class AssetRetriever private constructor(
     /**
      * Retrieves an asset from an url and a known format.
      */
-    public suspend fun open(
+    public suspend fun retrieve(
         url: AbsoluteUrl,
         format: Format
     ): Try<Asset, RetrieveUrlError> {
@@ -134,16 +133,16 @@ public class AssetRetriever private constructor(
     /**
      * Retrieves an asset from a local file.
      */
-    public suspend fun open(
+    public suspend fun retrieve(
         file: File,
         formatHints: FormatHints = FormatHints()
-    ): Try<Asset, RetrieveUrlError> =
-        open(file.toUrl(), formatHints)
+    ): Try<Asset, RetrieveError> =
+        FileResource(file).use { retrieve(it, formatHints) }
 
     /**
      * Retrieves an asset from an [AbsoluteUrl].
      */
-    public suspend fun open(
+    public suspend fun retrieve(
         url: AbsoluteUrl,
         formatHints: FormatHints = FormatHints()
     ): Try<Asset, RetrieveUrlError> {
@@ -168,17 +167,17 @@ public class AssetRetriever private constructor(
             }
     }
 
-    public suspend fun open(
+    public suspend fun retrieve(
         url: AbsoluteUrl,
         mediaType: MediaType
     ): Try<Asset, RetrieveUrlError> =
-        open(url, FormatHints(mediaType = mediaType))
+        retrieve(url, FormatHints(mediaType = mediaType))
 
-    public suspend fun open(
+    public suspend fun retrieve(
         file: File,
         mediaType: MediaType
-    ): Try<Asset, RetrieveUrlError> =
-        open(file, FormatHints(mediaType = mediaType))
+    ): Try<Asset, RetrieveError> =
+        retrieve(file, FormatHints(mediaType = mediaType))
 
     public suspend fun retrieve(
         resource: Resource,
@@ -234,6 +233,13 @@ public class AssetRetriever private constructor(
         hints: FormatHints = FormatHints()
     ): Try<Format, RetrieveError> =
         FileResource(file).use { sniff(it, hints) }
+
+    public suspend fun sniff(
+        url: AbsoluteUrl,
+        hints: FormatHints = FormatHints()
+    ): Try<Format, RetrieveUrlError> =
+        retrieve(url, hints)
+            .map { it.format }
 
     public suspend fun sniff(
         resource: Resource,

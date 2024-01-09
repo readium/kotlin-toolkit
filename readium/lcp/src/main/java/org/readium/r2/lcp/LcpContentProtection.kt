@@ -191,14 +191,14 @@ internal class LcpContentProtection(
 
         val asset =
             if (link.mediaType != null) {
-                assetRetriever.open(
+                assetRetriever.retrieve(
                     url,
                     mediaType = link.mediaType
                 )
                     .map { it as ContainerAsset }
                     .mapFailure { it.wrap() }
             } else {
-                assetRetriever.open(url)
+                assetRetriever.retrieve(url)
                     .mapFailure { it.wrap() }
                     .flatMap {
                         if (it is ContainerAsset) {

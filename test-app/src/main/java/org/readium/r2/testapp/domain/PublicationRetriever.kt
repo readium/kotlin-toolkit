@@ -149,7 +149,7 @@ class LocalPublicationRetriever(
         tempFile: File,
         coverUrl: AbsoluteUrl? = null
     ) {
-        val sourceAsset = assetRetriever.open(tempFile)
+        val sourceAsset = assetRetriever.retrieve(tempFile)
             .getOrElse {
                 listener.onError(
                     ImportError.Publication(PublicationError(it))

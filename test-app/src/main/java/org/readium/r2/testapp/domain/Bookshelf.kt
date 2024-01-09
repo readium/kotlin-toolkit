@@ -122,7 +122,7 @@ class Bookshelf(
         coverUrl: AbsoluteUrl? = null
     ): Try<Unit, ImportError> {
         val asset =
-            assetRetriever.open(url)
+            assetRetriever.retrieve(url)
                 .getOrElse {
                     return Try.failure(
                         ImportError.Publication(PublicationError(it))
