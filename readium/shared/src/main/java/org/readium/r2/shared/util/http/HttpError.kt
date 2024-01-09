@@ -34,6 +34,9 @@ public sealed class HttpError(
     public class Redirection(cause: Error) :
         HttpError("Redirection failed.", cause)
 
+    public class SslHandshake(cause: Error) :
+        HttpError("SSL handshake failed.", cause)
+
     /** An unknown networking error. */
     public class IO(cause: Error) :
         HttpError("An IO error occurred.", cause) {

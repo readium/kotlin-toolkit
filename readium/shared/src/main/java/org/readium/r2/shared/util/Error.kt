@@ -56,7 +56,7 @@ public fun Error.toDebugDescription(): String =
     } else {
         var desc = "${javaClass.nameWithEnclosingClasses()}: $message"
         cause?.let { cause ->
-            desc += "\n\n${cause.toDebugDescription()}"
+            desc += "\n${cause.toDebugDescription()}"
         }
         desc
     }
@@ -67,7 +67,7 @@ private fun Throwable.toDebugDescription(): String {
     desc += message ?: ""
     desc += "\n" + stackTrace.take(2).joinToString("\n").prependIndent("  ")
     cause?.let { cause ->
-        desc += "\n\n${cause.toDebugDescription()}"
+        desc += "\n${cause.toDebugDescription()}"
     }
     return desc
 }
