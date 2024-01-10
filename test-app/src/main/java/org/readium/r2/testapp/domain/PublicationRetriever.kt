@@ -23,7 +23,7 @@ import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.DebugError
 import org.readium.r2.shared.util.Error
 import org.readium.r2.shared.util.Try
-import org.readium.r2.shared.util.asset.AssetOpener
+import org.readium.r2.shared.util.asset.AssetRetriever
 import org.readium.r2.shared.util.asset.ResourceAsset
 import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.downloads.DownloadManager
@@ -104,7 +104,7 @@ class LocalPublicationRetriever(
     private val listener: PublicationRetriever.Listener,
     private val context: Context,
     private val storageDir: File,
-    private val assetOpener: AssetOpener,
+    private val assetRetriever: AssetRetriever,
     createLcpPublicationRetriever: (PublicationRetriever.Listener) -> LcpPublicationRetriever?
 ) {
 
@@ -149,7 +149,7 @@ class LocalPublicationRetriever(
         tempFile: File,
         coverUrl: AbsoluteUrl? = null
     ) {
-        val sourceAsset = assetOpener.open(tempFile)
+        val sourceAsset = assetRetriever.retrieve(tempFile)
             .getOrElse {
                 listener.onError(
                     ImportError.Publication(PublicationError(it))

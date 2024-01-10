@@ -6,15 +6,18 @@
 
 package org.readium.r2.shared.util.asset
 
+import java.io.File
 import kotlin.test.assertEquals
 import kotlinx.coroutines.runBlocking
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.readium.r2.shared.Fixtures
+import org.readium.r2.shared.util.Either
 import org.readium.r2.shared.util.FileExtension
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.checkSuccess
 import org.readium.r2.shared.util.data.EmptyContainer
+import org.readium.r2.shared.util.file.FileResource
 import org.readium.r2.shared.util.format.AvifSpecification
 import org.readium.r2.shared.util.format.BmpSpecification
 import org.readium.r2.shared.util.format.EpubSpecification
@@ -48,6 +51,7 @@ import org.readium.r2.shared.util.format.WebpSpecification
 import org.readium.r2.shared.util.format.XmlSpecification
 import org.readium.r2.shared.util.format.ZipSpecification
 import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.shared.util.resource.StringResource
 import org.robolectric.RobolectricTestRunner
 
@@ -58,16 +62,21 @@ class AssetSnifferTest {
 
     private val sniffer = AssetSniffer()
 
-    private suspend fun AssetSniffer.sniffHints(formatHints: FormatHints): Try<Format, SniffError> =
-        sniff(
-            hints = formatHints,
-            container = EmptyContainer()
-        )
+    private suspend fun AssetSniffer.sniffHints(formatHints: FormatHints): Try<Format, AssetSniffer.SniffError> =
+        sniff(hints = formatHints, source = Either.Right(EmptyContainer()))
+            .map { it.format }
 
-    private suspend fun AssetSniffer.sniffFileExtension(extension: String?): Try<Format, SniffError> =
+    private suspend fun AssetSniffer.sniff(file: File, hints: FormatHints = FormatHints()): Try<Format, AssetSniffer.SniffError> =
+        sniff(FileResource(file), hints)
+
+    private suspend fun AssetSniffer.sniff(resource: Resource, hints: FormatHints = FormatHints()): Try<Format, AssetSniffer.SniffError> =
+        sniff(hints = hints, source = Either.Left(resource))
+            .map { it.format }
+
+    private suspend fun AssetSniffer.sniffFileExtension(extension: String?): Try<Format, AssetSniffer.SniffError> =
         sniffHints(FormatHints(fileExtension = extension?.let { FileExtension((it)) }))
 
-    private suspend fun AssetSniffer.sniffMediaType(mediaType: String?): Try<Format, SniffError> =
+    private suspend fun AssetSniffer.sniffMediaType(mediaType: String?): Try<Format, AssetSniffer.SniffError> =
         sniffHints(FormatHints(mediaType = mediaType?.let { MediaType(it) }))
 
     private val epubFormat =
@@ -119,7 +128,7 @@ class AssetSnifferTest {
     fun `sniff from metadata`() = runBlocking {
         assertEquals(
             sniffer.sniffFileExtension(null).failureOrNull(),
-            SniffError.NotRecognized
+            AssetSniffer.SniffError.NotRecognized
         )
         assertEquals(
             audiobookFormat,
@@ -127,7 +136,7 @@ class AssetSnifferTest {
         )
         assertEquals(
             sniffer.sniffMediaType(null).failureOrNull(),
-            SniffError.NotRecognized
+            AssetSniffer.SniffError.NotRecognized
         )
         assertEquals(
             audiobookFormat,
@@ -155,11 +164,11 @@ class AssetSnifferTest {
     @Test
     fun `sniff unknown format`() = runBlocking {
         assertEquals(
-            SniffError.NotRecognized,
+            AssetSniffer.SniffError.NotRecognized,
             sniffer.sniffMediaType(mediaType = "invalid").failureOrNull()
         )
         assertEquals(
-            SniffError.NotRecognized,
+            AssetSniffer.SniffError.NotRecognized,
             sniffer.sniff(fixtures.fileAt("unknown")).failureOrNull()
         )
     }

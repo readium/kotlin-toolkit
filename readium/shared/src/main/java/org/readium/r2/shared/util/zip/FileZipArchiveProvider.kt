@@ -14,8 +14,7 @@ import java.util.zip.ZipFile
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.util.Try
-import org.readium.r2.shared.util.asset.ArchiveOpener
-import org.readium.r2.shared.util.asset.SniffError
+import org.readium.r2.shared.util.archive.ArchiveOpener
 import org.readium.r2.shared.util.data.Container
 import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.file.FileSystemError
@@ -28,22 +27,22 @@ import org.readium.r2.shared.util.resource.Resource
  */
 internal class FileZipArchiveProvider {
 
-    suspend fun sniffOpen(file: File): Try<Container<Resource>, SniffError> {
+    suspend fun sniffOpen(file: File): Try<Container<Resource>, ArchiveOpener.SniffOpenError> {
         return withContext(Dispatchers.IO) {
             try {
                 val container = FileZipContainer(ZipFile(file), file)
                 Try.success(container)
             } catch (e: ZipException) {
-                Try.failure(SniffError.NotRecognized)
+                Try.failure(ArchiveOpener.SniffOpenError.NotRecognized)
             } catch (e: SecurityException) {
                 Try.failure(
-                    SniffError.Reading(
+                    ArchiveOpener.SniffOpenError.Reading(
                         ReadError.Access(FileSystemError.Forbidden(e))
                     )
                 )
             } catch (e: IOException) {
                 Try.failure(
-                    SniffError.Reading(
+                    ArchiveOpener.SniffOpenError.Reading(
                         ReadError.Access(FileSystemError.IO(e))
                     )
                 )

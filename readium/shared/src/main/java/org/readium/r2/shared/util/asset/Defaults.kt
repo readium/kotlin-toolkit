@@ -7,6 +7,8 @@
 package org.readium.r2.shared.util.asset
 
 import android.content.ContentResolver
+import org.readium.r2.shared.util.archive.ArchiveOpener
+import org.readium.r2.shared.util.archive.CompositeArchiveOpener
 import org.readium.r2.shared.util.content.ContentResourceFactory
 import org.readium.r2.shared.util.file.FileResourceFactory
 import org.readium.r2.shared.util.format.ArchiveSniffer

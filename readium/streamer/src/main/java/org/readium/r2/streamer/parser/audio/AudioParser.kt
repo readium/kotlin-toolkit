@@ -15,7 +15,7 @@ import org.readium.r2.shared.util.DebugError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.asset.Asset
-import org.readium.r2.shared.util.asset.AssetSniffer
+import org.readium.r2.shared.util.asset.AssetRetriever
 import org.readium.r2.shared.util.asset.ContainerAsset
 import org.readium.r2.shared.util.asset.ResourceAsset
 import org.readium.r2.shared.util.data.Container
@@ -48,7 +48,7 @@ import org.readium.r2.streamer.parser.PublicationParser
  * It can also work for a standalone audio file.
  */
 public class AudioParser(
-    private val assetSniffer: AssetSniffer
+    private val assetSniffer: AssetRetriever
 ) : PublicationParser {
 
     override suspend fun parse(

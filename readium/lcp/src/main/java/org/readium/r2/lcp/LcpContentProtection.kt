@@ -19,7 +19,7 @@ import org.readium.r2.shared.util.ThrowableError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.asset.Asset
-import org.readium.r2.shared.util.asset.AssetOpener
+import org.readium.r2.shared.util.asset.AssetRetriever
 import org.readium.r2.shared.util.asset.ContainerAsset
 import org.readium.r2.shared.util.asset.ResourceAsset
 import org.readium.r2.shared.util.data.Container
@@ -38,7 +38,7 @@ import org.readium.r2.shared.util.resource.TransformingContainer
 internal class LcpContentProtection(
     private val lcpService: LcpService,
     private val authentication: LcpAuthenticating,
-    private val assetOpener: AssetOpener
+    private val assetRetriever: AssetRetriever
 ) : ContentProtection {
 
     override suspend fun open(
@@ -191,14 +191,14 @@ internal class LcpContentProtection(
 
         val asset =
             if (link.mediaType != null) {
-                assetOpener.open(
+                assetRetriever.retrieve(
                     url,
                     mediaType = link.mediaType
                 )
                     .map { it as ContainerAsset }
                     .mapFailure { it.wrap() }
             } else {
-                assetOpener.open(url)
+                assetRetriever.retrieve(url)
                     .mapFailure { it.wrap() }
                     .flatMap {
                         if (it is ContainerAsset) {
@@ -218,13 +218,13 @@ internal class LcpContentProtection(
         return asset.flatMap { createResultAsset(it, license) }
     }
 
-    private fun AssetOpener.OpenError.wrap(): ContentProtection.OpenError =
+    private fun AssetRetriever.RetrieveUrlError.wrap(): ContentProtection.OpenError =
         when (this) {
-            is AssetOpener.OpenError.FormatNotSupported ->
+            is AssetRetriever.RetrieveUrlError.FormatNotSupported ->
                 ContentProtection.OpenError.AssetNotSupported(this)
-            is AssetOpener.OpenError.Reading ->
+            is AssetRetriever.RetrieveUrlError.Reading ->
                 ContentProtection.OpenError.Reading(cause)
-            is AssetOpener.OpenError.SchemeNotSupported ->
+            is AssetRetriever.RetrieveUrlError.SchemeNotSupported ->
                 ContentProtection.OpenError.AssetNotSupported(this)
         }
 }

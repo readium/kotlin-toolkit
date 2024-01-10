@@ -8,9 +8,8 @@ package org.readium.r2.shared.util.zip
 
 import org.readium.r2.shared.util.FileExtension
 import org.readium.r2.shared.util.Try
-import org.readium.r2.shared.util.asset.ArchiveOpener
+import org.readium.r2.shared.util.archive.ArchiveOpener
 import org.readium.r2.shared.util.asset.ContainerAsset
-import org.readium.r2.shared.util.asset.SniffError
 import org.readium.r2.shared.util.data.Readable
 import org.readium.r2.shared.util.format.Format
 import org.readium.r2.shared.util.format.FormatSpecification
@@ -37,7 +36,7 @@ public class ZipArchiveOpener : ArchiveOpener {
 
     override suspend fun sniffOpen(
         source: Readable
-    ): Try<ContainerAsset, SniffError> {
+    ): Try<ContainerAsset, ArchiveOpener.SniffOpenError> {
         val container = (source as? Resource)?.sourceUrl?.toFile()
             ?.let { fileZipArchiveProvider.sniffOpen(it) }
             ?: streamingZipArchiveProvider.sniffOpen(source)
