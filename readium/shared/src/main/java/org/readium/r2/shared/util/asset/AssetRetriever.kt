@@ -32,7 +32,7 @@ import org.readium.r2.shared.util.use
 
 /**
  * Retrieves an [Asset] instance providing reading access to the resource(s) of an asset stored at
- * a given [Url] as well as a canonical media type.
+ * a given [Url] as well as its [Format].
  */
 public class AssetRetriever private constructor(
     private val assetSniffer: AssetSniffer,
@@ -54,14 +54,16 @@ public class AssetRetriever private constructor(
         DefaultFormatSniffer()
     )
 
+    /**
+     * Error while trying to retrieve an asset from an URL.
+     */
     public sealed class RetrieveUrlError(
         override val message: String,
         override val cause: Error?
     ) : Error {
 
         /**
-         * The scheme (e.g. http, file, content) for the requested [Url] is not supported by the
-         * [resourceFactory].
+         * The scheme (e.g. http, file, content) for the requested [Url] is not supported.
          */
         public class SchemeNotSupported(
             public val scheme: Url.Scheme,
@@ -69,8 +71,7 @@ public class AssetRetriever private constructor(
         ) : RetrieveUrlError("Url scheme $scheme is not supported.", cause)
 
         /**
-         * The format of the resource at the requested [Url] is not recognized by the
-         * [assetSniffer].
+         * The format of the resource at the requested [Url] is not recognized.
          */
         public class FormatNotSupported(
             cause: Error? = null
@@ -83,13 +84,16 @@ public class AssetRetriever private constructor(
             RetrieveUrlError("An error occurred when trying to read asset.", cause)
     }
 
+    /**
+     * Error while trying to retrieve an asset from a [Resource] or a [Container].
+     */
     public sealed class RetrieveError(
         override val message: String,
         override val cause: Error?
     ) : Error {
 
         /**
-         * The format of the resource is not recognized by the formatSniffer.
+         * The format of the resource is not recognized.
          */
         public class FormatNotSupported(
             cause: Error? = null
@@ -138,7 +142,7 @@ public class AssetRetriever private constructor(
         file: File,
         formatHints: FormatHints = FormatHints()
     ): Try<Asset, RetrieveError> =
-        FileResource(file).use { retrieve(it, formatHints) }
+        retrieve(FileResource(file), formatHints)
 
     /**
      * Retrieves an asset from an [AbsoluteUrl].
@@ -168,18 +172,27 @@ public class AssetRetriever private constructor(
             }
     }
 
+    /**
+     * Retrieves an asset from an [AbsoluteUrl].
+     */
     public suspend fun retrieve(
         url: AbsoluteUrl,
         mediaType: MediaType
     ): Try<Asset, RetrieveUrlError> =
         retrieve(url, FormatHints(mediaType = mediaType))
 
+    /**
+     * Retrieves an asset from a local file.
+     */
     public suspend fun retrieve(
         file: File,
         mediaType: MediaType
     ): Try<Asset, RetrieveError> =
         retrieve(file, FormatHints(mediaType = mediaType))
 
+    /**
+     * Retrieves an asset from an already opened resource.
+     */
     public suspend fun retrieve(
         resource: Resource,
         hints: FormatHints = FormatHints()
@@ -204,6 +217,9 @@ public class AssetRetriever private constructor(
             }
     }
 
+    /**
+     * Retrieves an asset from an already opened container.
+     */
     public suspend fun retrieve(
         container: Container<Resource>,
         hints: FormatHints = FormatHints()
@@ -217,24 +233,36 @@ public class AssetRetriever private constructor(
                 }
             }
 
+    /**
+     * Retrieves an asset from an already opened resource.
+     */
     public suspend fun retrieve(
         resource: Resource,
         mediaType: MediaType
     ): Try<Asset, RetrieveError> =
         retrieve(resource, FormatHints(mediaType = mediaType))
 
+    /**
+     * Retrieves an asset from an already opened container.
+     */
     public suspend fun retrieve(
         container: Container<Resource>,
         mediaType: MediaType
     ): Try<Asset, RetrieveError> =
         retrieve(container, FormatHints(mediaType = mediaType))
 
+    /**
+     * Sniffs the format of a file content.
+     */
     public suspend fun sniffFormat(
         file: File,
         hints: FormatHints = FormatHints()
     ): Try<Format, RetrieveError> =
         FileResource(file).use { sniffFormat(it, hints) }
 
+    /**
+     * Sniffs the format of the content available at [url].
+     */
     public suspend fun sniffFormat(
         url: AbsoluteUrl,
         hints: FormatHints = FormatHints()
@@ -242,6 +270,9 @@ public class AssetRetriever private constructor(
         retrieve(url, hints)
             .map { asset -> asset.use { it.format } }
 
+    /**
+     * Sniffs the format of a resource content.
+     */
     public suspend fun sniffFormat(
         resource: Resource,
         hints: FormatHints = FormatHints()
@@ -249,6 +280,9 @@ public class AssetRetriever private constructor(
         retrieve(resource.borrow(), hints)
             .map { asset -> asset.use { it.format } }
 
+    /**
+     * Sniffs the format of a container content.
+     */
     public suspend fun sniffFormat(
         container: Container<Resource>,
         hints: FormatHints = FormatHints()
