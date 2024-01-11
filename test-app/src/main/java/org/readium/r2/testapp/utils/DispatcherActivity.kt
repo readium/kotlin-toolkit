@@ -15,28 +15,34 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import androidx.core.content.IntentCompat
+import org.readium.r2.testapp.Application
 import org.readium.r2.testapp.MainActivity
 import timber.log.Timber
 
-class R2DispatcherActivity : Activity() {
+class DispatcherActivity : Activity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        dispatchIntent(intent)
+
+        importPublication(intent)
+
+        val newIntent = Intent(this, MainActivity::class.java).apply {
+            addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+        }
+        startActivity(newIntent)
+
         finish()
     }
 
-    private fun dispatchIntent(intent: Intent) {
+    private fun importPublication(intent: Intent) {
         val uri = uriFromIntent(intent)
             ?: run {
                 Timber.d("Got an empty intent.")
                 return
             }
-        val newIntent = Intent(this, MainActivity::class.java).apply {
-            addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-            data = uri
-        }
-        startActivity(newIntent)
+
+        val app = application as Application
+        app.bookshelf.importPublicationFromStorage(uri)
     }
 
     private fun uriFromIntent(intent: Intent): Uri? =
