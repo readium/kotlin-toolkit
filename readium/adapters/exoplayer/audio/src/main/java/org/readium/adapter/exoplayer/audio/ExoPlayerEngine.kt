@@ -252,6 +252,6 @@ public class ExoPlayerEngine private constructor(
             Player.STATE_READY -> AudioEngine.State.Ready
             Player.STATE_BUFFERING -> AudioEngine.State.Buffering
             Player.STATE_ENDED -> AudioEngine.State.Ended
-            else -> AudioEngine.State.Error(Error(playerError!!))
+            else -> AudioEngine.State.Failure(Error(playerError!!))
         }
 }

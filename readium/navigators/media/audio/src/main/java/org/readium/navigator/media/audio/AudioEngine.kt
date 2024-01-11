@@ -47,7 +47,7 @@ public interface AudioEngine<S : Configurable.Settings, P : Configurable.Prefere
         /**
          * The engine cannot play because an error occurred.
          */
-        public data class Error(val error: AudioEngine.Error) : State()
+        public data class Failure(val error: AudioEngine.Error) : State()
     }
 
     /**

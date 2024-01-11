@@ -18,14 +18,14 @@ internal enum class SessionPlayerState {
     Idle,
     Paused,
     Playing,
-    Error;
+    Failure;
 
     companion object {
         fun fromCode(sessionPlayerState: Int) = when (sessionPlayerState) {
             SessionPlayer.PLAYER_STATE_IDLE -> Idle
             SessionPlayer.PLAYER_STATE_PAUSED -> Paused
             SessionPlayer.PLAYER_STATE_PLAYING -> Playing
-            else -> Error // SessionPlayer.PLAYER_STATE_ERROR
+            else -> Failure // SessionPlayer.PLAYER_STATE_ERROR
         }
     }
 }

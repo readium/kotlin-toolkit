@@ -79,7 +79,7 @@ public class TtsNavigator<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
 
         public object Ended : MediaNavigator.State.Ended
 
-        public data class Error(val error: TtsNavigator.Error) : MediaNavigator.State.Error
+        public data class Failure(val error: Error) : MediaNavigator.State.Failure
     }
 
     public sealed class Error(
@@ -183,13 +183,13 @@ public class TtsNavigator<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
         when (this) {
             TtsPlayer.State.Ready -> State.Ready
             TtsPlayer.State.Ended -> State.Ended
-            is TtsPlayer.State.Error -> this.toError()
+            is TtsPlayer.State.Failure -> this.toError()
         }
 
-    private fun TtsPlayer.State.Error.toError(): State.Error =
+    private fun TtsPlayer.State.Failure.toError(): State.Failure =
         when (this) {
-            is TtsPlayer.State.Error.ContentError -> State.Error(Error.ContentError(error))
-            is TtsPlayer.State.Error.EngineError<*> -> State.Error(Error.EngineError(error))
+            is TtsPlayer.State.Failure.ContentFailure -> State.Failure(Error.ContentError(error))
+            is TtsPlayer.State.Failure.EngineFailure<*> -> State.Failure(Error.EngineError(error))
         }
 
     private fun TtsPlayer.Utterance.toPosition(): Location {

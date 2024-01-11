@@ -159,8 +159,8 @@ public class MediaNavigator private constructor(
         val state = when (currentState) {
             SessionPlayerState.Playing ->
                 Playback.State.Playing
-            SessionPlayerState.Idle, SessionPlayerState.Error ->
-                Playback.State.Error
+            SessionPlayerState.Idle, SessionPlayerState.Failure ->
+                Playback.State.Failure
             SessionPlayerState.Paused ->
                 if (playerCallback.playbackCompleted) {
                     Playback.State.Finished
@@ -341,7 +341,7 @@ public class MediaNavigator private constructor(
             Playing,
             Paused,
             Finished,
-            Error
+            Failure
         }
 
         public data class Resource(

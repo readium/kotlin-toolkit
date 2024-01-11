@@ -23,7 +23,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import org.readium.navigator.media.tts.TtsEngine
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.extensions.tryOrNull
-import org.readium.r2.shared.util.Error
 import org.readium.r2.shared.util.Language
 
 /*
@@ -239,7 +238,7 @@ public class AndroidTtsEngine private constructor(
             val pendingRequests: MutableList<Request> = mutableListOf()
         ) : State()
 
-        data class Error(
+        data class Failure(
             val error: AndroidTtsEngine.Error
         ) : State()
     }
@@ -290,7 +289,7 @@ public class AndroidTtsEngine private constructor(
             is State.WaitingForService -> {
                 stateNow.pendingRequests.add(request)
             }
-            is State.Error -> {
+            is State.Failure -> {
                 tryReconnect(request)
             }
             is State.EngineAvailable -> {
@@ -307,7 +306,7 @@ public class AndroidTtsEngine private constructor(
             is State.EngineAvailable -> {
                 stateNow.engine.stop()
             }
-            is State.Error -> {
+            is State.Failure -> {
                 // Do nothing
             }
             is State.WaitingForService -> {
@@ -331,7 +330,7 @@ public class AndroidTtsEngine private constructor(
             is State.EngineAvailable -> {
                 cleanEngine(stateNow.engine)
             }
-            is State.Error -> {
+            is State.Failure -> {
                 // Do nothing
             }
             is State.WaitingForService -> {
@@ -373,7 +372,7 @@ public class AndroidTtsEngine private constructor(
     private fun onReconnectionFailed() {
         val previousState = state as State.WaitingForService
         val error = Error.Service
-        state = State.Error(error)
+        state = State.Failure(error)
 
         for (request in previousState.pendingRequests) {
             utteranceListener?.onError(request.id, error)

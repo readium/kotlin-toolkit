@@ -38,7 +38,7 @@ navigator.playback
         
         val playingItem = navigator.readingOrder.items[playback.index]
 
-        if (playback.state is MediaNavigator.State.Error) {
+        if (playback.state is MediaNavigator.State.Failure) {
             // Alert
         }
     }
