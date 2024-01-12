@@ -28,7 +28,7 @@ import org.readium.r2.streamer.parser.PublicationParser
  */
 public class PublicationOpener(
     private val publicationParser: PublicationParser,
-    contentProtections: List<ContentProtection>,
+    contentProtections: List<ContentProtection> = emptyList(),
     private val onCreatePublication: Publication.Builder.() -> Unit = {}
 ) {
     public sealed class OpenError(

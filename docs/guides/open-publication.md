@@ -1,33 +1,58 @@
 # Opening a publication
 
-:warning: The described components are is still experimental.
+:warning: The APIs described here may still undergo changes before the stable 3.0 release.
 
-Readium requires you to instantiate a few components before you can actually open a publication. 
+To open a publication with Readium, you need to instantiate a couple of components: an `AssetRetriever` and a `PublicationOpener`.
 
-## Constructing an `AssetRetriever`
+## `AssetRetriever`
 
-First, you need to instantiate an `HttpClient` to provide the toolkit the ability to do HTTP requests.
-You can use the Readium `DefaultHttpClient` or a custom implementation. In the former case, its callback will
-enable you to perform authentication when required.
-Then, you can create an `AssetRetriever` which will enable you to read content through different schemes and guess its format.
-In addition to an `HttpClient`, the `AssetRetriever` constructor takes a `ContentResolver` to support data access through the `content` scheme.
+The `AssetRetriever` grants access to the content of an asset located at a given URL, such as a publication package, manifest, or LCP license.
+
+### Constructing an `AssetRetriever`
+
+You can create an instance of `AssetRetriever` with:
+
+* A `ContentResolver` to support data access through the `content` URL scheme.
+* An `HttpClient` to enable the toolkit to perform HTTP requests and support the `http` and `https` URL schemes. You can use `DefaultHttpClient` which provides callbacks for handling authentication when needed.
 
 ```kotlin
 val httpClient = DefaultHttpClient()
-
 val assetRetriever = AssetRetriever(context.contentResolver, httpClient)
 ```
 
-## Constructing a `PublicationOpener`
+### Retrieving an `Asset`
 
-The component which can parse an `Asset` giving access to a publication to build a `Publication`
-object is the `PublicationOpener`. Its constructor requires you to pass in:
+With your fresh instance of `AssetRetriever`, you can open an `Asset` from an `AbsoluteUrl`.
 
-* a `PublicationParser` it delegates the parsing work to.
-* a list of `ContentProtection`s which will deal with DRMs.
+```kotlin
+// From a `File`
+val url = File("...").toUrl()
+// or from a content:// `Uri`
+val url = contentUri.toAbsoluteUrl()
+// or from a raw URL string
+val url = AbsoluteUrl("https://domain/book.epub")
 
-The easiest way to get a `PublicationParser` is to use the `DefaultPublicationParser` class. As to
-`ContentProtection`s, you can get one to support LCP publications through your `LcpService` if you have one.
+val asset = assetRetriever.retrieve(url)
+    .getOrElse {  /* Failed to retrieve the Asset */  }
+```
+
+The `AssetRetriever` will sniff the format of the asset, which you can store in your bookshelf database to speed up the process next time you retrieve the `Asset`. This will improve performance, especially with HTTP URL schemes.
+
+```kotlin
+val mediaType = asset.format.mediaType
+
+// Speed up the retrieval with a known media type.
+val asset = assetRetriever.retrieve(url, mediaType)
+```
+
+## `PublicationOpener`
+
+`PublicationOpener` builds a `Publication` object from an `Asset` using:
+
+* A `PublicationParser` to parse the asset structure and publication metadata.
+    * The `DefaultPublicationParser` handles all the formats supported by Readium out of the box.
+* An optional list of `ContentProtection` to decrypt DRM-protected publications.
+    * If you support Readium LCP, you can get one from the `LcpService`.
 
 ```kotlin
 val contentProtections = listOf(lcpService.contentProtection(authentication))
@@ -37,34 +62,25 @@ val publicationParser = DefaultPublicationParser(context, httpClient, assetRetri
 val publicationOpener = PublicationOpener(publicationParser, contentProtections)
 ```
 
-## Bringing the pieces together
+### Opening a `Publication`
 
-Once you have got an `AssetRetriever` and a `PublicationOpener`, you can eventually open a publication as follows:
+Now that you have a `PublicationOpener` ready, you can use it to create a `Publication` from an `Asset` that was previously obtained using the `AssetRetriever`.
+
+The `allowUserInteraction` parameter is useful when supporting Readium LCP. When enabled and using a `LcpDialogAuthentication`, the toolkit will prompt the user if the passphrase is missing.
+
 ```kotlin
-val asset = assetRetriever.open(url, mediaType)
-  .getOrElse {  return error  }
-
-val publication = publicationOpener.open(asset)
-  .getOrElse { return error }
+val publication = publicationOpener.open(asset, allowUserInteraction = true)
+    .getOrElse { /* Failed to access or parse the publication */ }
 ```
-
-Persisting the asset media type on the device can significantly improve performance as it is strong hint
-for the content format, especially in case of remote publications.
 
 ## Supporting additional formats or URL schemes
 
-`DefaultPublicationParser` accepts additional parsers. You can also use your own parser list
-with `CompositePublicationParser` or implement [PublicationParser] in the way you like.
+`DefaultPublicationParser` accepts additional parsers. You also have the option to use your own parser list by using `CompositePublicationParser` or create your own `PublicationParser` for a fully customized parsing resolution strategy.
 
-`AssetRetriever` offers an alternative constructor providing better extensibility in a similar way.
-This constructor takes several parameters with different responsibilities.
+The `AssetRetriever` offers an additional constructor that provides greater extensibility options, using:
 
-* `ResourceFactory` determines which schemes you will be able to access content through.
-* `ArchiveOpener` which kinds of archives your `AssetRetriever` will be able to open.
-* `FormatSniffer` which file formats your `AssetRetriever` will be able to identify.
+* `ResourceFactory` which handles the URL schemes through which you can access content.
+* `ArchiveOpener` which determines the types of archives (ZIP, RAR, etc.) that can be opened by the `AssetRetriever`.
+* `FormatSniffer` which identifies the file formats that `AssetRetriever` can recognize.
 
-For each of these components, you can either use the default implementations or implement yours
-with the composite pattern. `CompositeResourceFactory`, `CompositeArchiveOpener` and `CompositeFormatSniffer`
-provide simple implementations trying every item of a list in turns.
-
-
+You can use either the default implementations or implement your own for each of these components using the composite pattern. The toolkit's `CompositeResourceFactory`, `CompositeArchiveOpener`, and `CompositeFormatSniffer` provide a simple resolution strategy.

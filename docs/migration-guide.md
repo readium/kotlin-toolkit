@@ -2,36 +2,59 @@
 
 All migration steps necessary in reading apps to upgrade to major versions of the Kotlin Readium toolkit will be documented in this file.
 
-<!-- ## Unreleased -->
+## 3.0.0-alpha.1
 
-## 2.4.0
+First of all, upgrade to version 2.4.0 and resolve any deprecation notices. This will help you avoid troubles, as the APIs that were deprecated in version 2.x have been removed in version 3.0.
 
-### Maven Central
+### Minimum requirements
 
-Readium is now distributed with [Maven Central](https://search.maven.org/search?q=g:org.readium.kotlin-toolkit). You must update your Gradle configuration.
+Readium 3.0 requires Kotlin 1.9.0 and Gradle 8.0.0. You should start by updating these dependencies in your application.
 
-```diff
-allprojects {
-    repositories {
--       maven { url 'https://jitpack.io' }
-+       mavenCentral()
-    }
-}
+#### Targeting Android SDK 34
+
+The modules now target Android SDK 34. If your app also targets it, you will need the `FOREGROUND_SERVICE_MEDIA_PLAYBACK` permission in your `AndroidManifest.xml` file to use TTS and audiobook playback.
+
+### `Publication`
+
+#### Opening a `Publication`
+
+The `Streamer` object has been deprecated in favor of components with smaller responsibilities:
+
+* `AssetRetriever` grants access to the content of an asset located at a given URL, such as a publication package, manifest, or LCP license
+* `PublicationOpener` uses a publication parser and a set of content protections to create a `Publication` object from an `Asset`.
+
+[See the user guide for a detailed explanation on how to use these new APIs](guides/open-publication.md).
+
+#### Sharing `Publication` across Android activities
+
+The `putPublication` and `getPublication` helpers in `Intent` are deprecated. Now, it is the application's responsibility to pass `Publication` objects between activities and reopen them when necessary.
+
+You can take a look at the [`ReaderRepository` in the Test App](https://github.com/readium/kotlin-toolkit/blob/09e338b0f3acc8d59282280bded6c4bf93de6281/test-app/src/main/java/org/readium/r2/testapp/reader/ReaderRepository.kt#L46) for inspiration.
+
+Alternatively, you can copy [the deprecated helpers](https://github.com/readium/kotlin-toolkit/blob/7649378a0a6b924abedf8b72372c3808fe9b992f/readium/shared/src/main/java/org/readium/r2/shared/extensions/Intent.kt#L26) and add them to your codebase. However, please note that this approach is discouraged because it will not handle configuration changes smoothly.
+
+### `MediaType`
+
+#### Sniffing a `MediaType`
+
+`MediaType` no longer has static helpers for sniffing it from a file or URL. Instead, you can use an `AssetRetriever` to retrieve the format of a file.
+
+```kotlin
+val httpClient = DefaultHttpClient()
+val assetRetriever = AssetRetriever(context.contentResolver, httpClient)
+
+val mediaType = assetRetriever.sniffFormat(File(...))
+    .getOrElse { /* Failed to access the asset or recognize its format */ }
+    .mediaType
 ```
 
-The group ID of the Readium modules is now `org.readium.kotlin-toolkit`, for instance:
+### HREFs
 
-```groovy
-dependencies {
-    implementation "org.readium.kotlin-toolkit:readium-shared:$readium_version"
-    implementation "org.readium.kotlin-toolkit:readium-streamer:$readium_version"
-    implementation "org.readium.kotlin-toolkit:readium-navigator:$readium_version"
-    implementation "org.readium.kotlin-toolkit:readium-opds:$readium_version"
-    implementation "org.readium.kotlin-toolkit:readium-lcp:$readium_version"
-}
-```
+#### `Link.href` and `Locator.href` are not strings anymore
 
-### Migration of HREFs and Locators (bookmarks, annotations, etc.)
+`Link.href` and `Locator.href` are now respectively `Href` and `Url` objects. If you still need the string value, you can call `toString()`, but you may find the `Url` objects more useful in practice.
+
+#### Migration of HREFs and Locators (bookmarks, annotations, etc.)
 
 :warning: This requires a database migration in your application, if you were persisting `Locator` objects.
 
@@ -80,29 +103,235 @@ val MIGRATION_HREF = object : Migration(1, 2) {
 }
 ```
 
-### LcpDialogAuthentication now supports configuration changes.
+### Error management
 
-You no longer need to pass an activity, fragment or view as `sender` to `retrievePassphrase`.
-Instead, call `onParentViewAttachedToWindow` every time you have a
-view attached to a window available as anchor and `onParentViewDetachedFromWindow` every time it
-gets detached. You can monitor these events by setting a `View.OnAttachStateChangeListener` on your
-view.
+Most APIs now return an `Error` instance instead of an `Exception` in case of failure, as these objects are not thrown by the toolkit but returned as values.
 
-See the [test-app](https://github.com/readium/kotlin-toolkit/blob/01d6c7936accea2d6b953d435e669260676e8c99/test-app/src/main/java/org/readium/r2/testapp/bookshelf/BookshelfFragment.kt#L68)
-for an example.
+It is recommended to handle `Error` objects using a `when` statement. However, if you still need an `Exception`, you may wrap an `Error` with `ErrorException`, for example:
 
-### All resources now have the prefix `readium_`.
+```kotlin
+assetRetriever.sniffFormat(...)
+    .getOrElse { throw ErrorException(it) }
+```
+`UserException` is also deprecated. The application now needs to provide localized error messages for toolkit errors.
 
-To avoid conflicts when merging your app resources, all resources declared in the Readium toolkit now have the prefix `readium_`. This means that you must rename any layouts or strings you have overridden. Here is a comprehensive list of the changes.
+### Navigator
 
-### Pdfium and PSPDFKit adapters' namespaces slightly changed
+#### Click on external links
 
-`org.readium.adapters.pspdfkit.document` moved to `org.readium.adapter.pdspdfKit.document`
-`org.readium.adapters.pspdfkit.navigator` moved to `org.readium.adapter.pdspdfKit.navigator`
-`org.readium.adapters.pdfium.document` moved to `org.readium.adapter.pdfium.document`
-`org.readium.adapters.pdfium.navigator` moved to `org.readium.adapter.pdfium.navigator`
+Clicking on external links is no longer managed by the navigator. To open the link yourself, override `HyperlinkNavigator.Listener.onExternalLinkActivated`, for example:
 
-#### Layouts
+```kotlin
+override fun onExternalLinkActivated(url: AbsoluteUrl) {
+    if (!url.isHttp) return
+    val context = requireActivity()
+    val uri = url.toUri()
+    try {
+        CustomTabsIntent.Builder()
+            .build()
+            .launchUrl(context, uri)
+    } catch (e: ActivityNotFoundException) {
+        context.startActivity(Intent(Intent.ACTION_VIEW, uri))
+    }
+}
+```
+
+##### Edge tap and keyboard navigation
+
+Version 3 includes a new component called `DirectionalNavigationAdapter` that replaces `EdgeTapNavigation`. This helper enables users to navigate between pages using arrow and space keys on their keyboard or by tapping the edge of the screen.
+
+As it implements `InputListener`, you can attach it to any `OverflowableNavigator`.
+
+```kotlin
+navigator.addInputListener(
+    DirectionalNavigationAdapter(
+        navigator,
+        animatedTransition = true
+    )
+)
+```
+
+The `DirectionalNavigationAdapter` provides plenty of customization options. Please refer to its API for more details.
+
+#### Tap and drag events
+
+The `onTap` and `onDrag` events of `VisualNavigator.Listener` have been deprecated. You can now use multiple implementations of `InputListener`. The order is important when events are consumed.
+
+```kotlin
+navigator.addInputListener(DirectionalNavigationAdapter(navigator))
+
+navigator.addInputListener(object : InputListener {
+    override fun onTap(event: TapEvent): Boolean {
+        toggleUi()
+        return true
+    }
+})
+```
+
+### LCP
+
+#### Creating an `LcpService`
+
+The `LcpService` now requires an instance of `AssetRetriever` and `DownloadManager` during construction. To get the same behavior as before, you can use a `ForegroundDownloadManager`. If you want to support downloads in the background instead, take a look at `AndroidDownloadManager`.
+
+```kotlin
+val lcpService = LcpService(
+    context,
+    assetRetriever = assetRetriever,
+    downloadManager = ForegroundDownloadManager(
+        httpClient = httpClient,
+        downloadsDirectory = File(context.cacheDir, "lcp")
+    )
+)
+```
+
+#### Downloading an LCP protected publication from a license
+
+`LcpService.acquirePublication()` is deprecated in favor of `LcpService.publicationRetriever()`, which provides greater flexibility thanks to the `DownloadManager`.
+
+```kotlin
+// 1. Open an `Asset` from a `File`.
+val asset = assetRetriever.retrieve(file)
+    .getOrElse { /* Failed to open the file or sniff its format */ }
+    
+// 2. Verify that it is an LCP License Document.
+if (asset is ResourceAsset && asset.format.conformsTo(LcpLicenseSpecification)) {
+    // 3. Parse the LCP License Document from its JSON representation.
+    val license = lcplAsset.resource.read()
+        .getOrElse { /* Failed to read the content of the LCPL asset */ }
+        .let { LicenseDocument.fromBytes(it) }
+        .getOrElse { /* Failed to parse a valid LCP License Document from the the raw bytes */ }
+
+    // 4. Download the publication using the `LcpPublicationRetriever`.
+    // The returned `requestId` can be used to cancel an on-going download, or to resume a download
+    // with `LcpPublicationRetriever.register()`, if it was downloaded in the background.
+    val requestId = lcpService.publicationRetriever()
+        .retrieve(license, listener = object : LcpPublicationRetriever.Listener {
+            override fun onAcquisitionCompleted(
+                requestId: LcpPublicationRetriever.RequestId,
+                acquiredPublication: LcpService.AcquiredPublication
+            ) {
+            }
+
+            override fun onAcquisitionProgressed(
+                requestId: LcpPublicationRetriever.RequestId,
+                downloaded: Long,
+                expected: Long?
+            ) {
+                // Report progress.
+            }
+
+            override fun onAcquisitionFailed(
+                requestId: LcpPublicationRetriever.RequestId,
+                error: LcpError
+            ) {
+                // Report error.
+            }
+
+            override fun onAcquisitionCancelled(requestId: LcpPublicationRetriever.RequestId) {
+                // Handle cancellation.
+            }
+        })
+}
+```
+
+If you are using a `ForegroundDownloadManager` and **not supporting background downloads**, you can use this helper to have a similar API as Readium 2.x with coroutines.
+
+```kotlin
+suspend fun LcpService.acquirePublication(
+    lcplAsset: ResourceAsset,
+    onProgress: (Double) -> Unit
+): Try<LcpService.AcquiredPublication, Error> {
+    require(lcplAsset.format.conformsTo(LcpLicenseSpecification))
+
+    val license = lcplAsset.resource.read()
+        .flatMap { LicenseDocument.fromBytes(it) }
+        .getOrElse { return Try.failure(it) }
+
+    return suspendCancellableCoroutine { cont ->
+        publicationRetriever().retrieve(license, object : LcpPublicationRetriever.Listener {
+            override fun onAcquisitionCompleted(
+                requestId: LcpPublicationRetriever.RequestId,
+                acquiredPublication: LcpService.AcquiredPublication
+            ) {
+                cont.resume(Try.success(acquiredPublication))
+            }
+
+            override fun onAcquisitionProgressed(
+                requestId: LcpPublicationRetriever.RequestId,
+                downloaded: Long,
+                expected: Long?
+            ) {
+                expected ?: return
+                onProgress(downloaded.toDouble() / expected.toDouble())
+            }
+
+            override fun onAcquisitionFailed(
+                requestId: LcpPublicationRetriever.RequestId,
+                error: LcpError
+            ) {
+                cont.resume(Try.failure(error))
+            }
+
+            override fun onAcquisitionCancelled(requestId: LcpPublicationRetriever.RequestId) {
+                cont.cancel()
+            }
+        })
+    }
+}
+```
+
+#### `LcpDialogAuthentication` updated to support configuration changes
+
+The way the host view of a `LcpDialogAuthentication` is retrieved was changed to support Android configuration changes. You no longer need to pass an activity, fragment or view as `sender` parameter.
+
+Instead, call on your instance of `LcpDialogAuthentication`:
+* `onParentViewAttachedToWindow` every time you have a view attached to a window available as anchor
+* `onParentViewDetachedFromWindow` every time it gets detached
+
+You can monitor these events by setting a `View.OnAttachStateChangeListener` on your view. [See the Test App for an example](https://github.com/readium/kotlin-toolkit/blob/01d6c7936accea2d6b953d435e669260676e8c99/test-app/src/main/java/org/readium/r2/testapp/bookshelf/BookshelfFragment.kt#L68).
+
+### Removal of Fuel and Kovenant
+
+Both the Fuel and Kovenant libraries have been completely removed from the toolkit. With that, several deprecated functions have also been removed.
+
+### Resources
+
+To avoid conflicts when merging your app resources, all resources declared in the Readium toolkit now have the prefix `readium_`. This means that you must rename any layouts or strings you have overridden. Some resources were removed from the toolkit.
+
+#### Deleted resources
+
+If you referenced these resources, you need to remove them from your application or copy them to your own resources.
+
+##### Deleted colors
+
+| Name                        |
+|-----------------------------|
+| `colorPrimary`              |
+| `colorPrimaryDark`          |
+| `colorAccent`               |
+| `colorAccentPrefs`          |
+| `snackbar_background_color` |
+| `snackbar_text_color`       |
+
+##### Deleted strings
+
+| Name                       |
+|----------------------------|
+| `end_of_chapter`           |
+| `end_of_chapter_indicator` |
+| `zero`                     |
+| `epub_navigator_tag`       |
+| `image_navigator_tag`      |
+| `snackbar_text_color`      |
+
+All the localized error messages are also removed.
+
+#### Renamed resources
+
+If you used the resources listed below, you must rename the references to reflect the new names. You can use a global search to help you find the references in your project.
+
+##### Renamed layouts
 
 | Deprecated                  | New                                           |
 |-----------------------------|-----------------------------------------------|
@@ -114,13 +343,13 @@ To avoid conflicts when merging your app resources, all resources declared in th
 | `viewpager_fragment_cbz`    | `readium_navigator_viewpager_fragment_cbz`    |
 | `viewpager_fragment_epub`   | `readium_navigator_viewpager_fragment_epub`   |
 
-#### Dimensions
+##### Renamed dimensions
 
 | Deprecated                           | New                                       |
 |--------------------------------------|-------------------------------------------|
 | `r2_navigator_epub_vertical_padding` | `readium_navigator_epub_vertical_padding` |
 
-#### Strings
+##### Renamed strings
 
 | Deprecated                                  | New                                              |
 |---------------------------------------------|--------------------------------------------------|
@@ -137,93 +366,40 @@ To avoid conflicts when merging your app resources, all resources declared in th
 | `r2_media_notification_channel_description` | `readium_media_notification_channel_description` |
 | `r2_media_notification_channel_name`        | `readium_media_notification_channel_name`        |
 
-#### Drawables
+##### Renamed drawables
 
 | Deprecated                              | New                                          |
 |-----------------------------------------|----------------------------------------------|
 | `r2_media_notification_fastforward.xml` | `readium_media_notification_fastforward.xml` |
 | `r2_media_notification_rewind.xml`      | `readium_media_notification_rewind.xml`      |
 
-### Publication assets
 
-In most cases, you no longer need to manually create a `PublicationAsset` to open a publication with
-the streamer. You can use the overloaded open method taking a `Url` as argument instead.
+## 2.4.0
 
-```kotlin
-streamer.open(file.toUrl(), ...)
-```
+### Maven Central
 
-### Tap and drag events
+Readium is now distributed with [Maven Central](https://search.maven.org/search?q=g:org.readium.kotlin-toolkit). You must update your Gradle configuration.
 
-The `VisualNavigator.Listener`'s `onTap` and `onDrag` events are deprecated. You can now provide multiple implementations of `InputListener`, and the order matters if events are consumed.
-
-```kotlin
-navigator.addInputListener(DirectionalNavigationAdapter())
-
-navigator.addInputListener(object : InputListener {
-    override fun onTap(navigator: VisualNavigator, event: TapEvent): Boolean {
-        toggleUi()
-        return true
+```diff
+allprojects {
+    repositories {
+-       maven { url 'https://jitpack.io' }
++       mavenCentral()
     }
-})
+}
 ```
 
-### New navigator interfaces
+The group ID of the Readium modules is now `org.readium.kotlin-toolkit`, for instance:
 
-An important part of `VisualNavigator` was moved to `DirectionalNavigator`. A new `HyperlinkNavigator`
-interface implemented by the `EpubFragmentNavigator` provides the ability to intercept clicks on
-links to both internal and external URLs. Opening external URLs is no longer handled by the navigator,
-that's something you should do by yourself in the way you like.
-
-### Edge tap and keyboard navigation
-
-Version 3.0.0 ships with a new `DirectionalNavigationAdapter` component replacing `EdgeTapNavigation`. This helper allows users to turn pages with arrow and space keys on their keyboard or by tapping the edge of the screen.
-
-It's easy to set it up with an implementation of `DirectionalNavigator`, as it implements `InputListener`.
-
-```kotlin
-navigator.addInputListener(
-    DirectionalNavigationAdapter(
-        navigator,
-        animatedTransition = true
-    )
-)
+```groovy
+dependencies {
+    implementation "org.readium.kotlin-toolkit:readium-shared:$readium_version"
+    implementation "org.readium.kotlin-toolkit:readium-streamer:$readium_version"
+    implementation "org.readium.kotlin-toolkit:readium-navigator:$readium_version"
+    implementation "org.readium.kotlin-toolkit:readium-opds:$readium_version"
+    implementation "org.readium.kotlin-toolkit:readium-lcp:$readium_version"
+}
 ```
-
-`DirectionalNavigationAdapter` offers a lot of customization options. Take a look at its API.
-
-### Removal of Fuel and Kovenant
-
-Both the Fuel and Kovenant libraries have been completely removed from the toolkit. With that, several deprecated functions have also been removed.
-
-#### opds/OPDS1Parser
-
-* Both `parseURL(url: URL)` and `parseURL(headers: MutableMap<String, String>, url: URL)` have been replaced with `parseUrlString(url: String, client: HttpClient = DefaultHttpClient())`.
-* `fetchOpenSearchTemplate(feed: Feed)` has been replaced with `retrieveOpenSearchTemplate(feed: Feed)`.
-
-#### opds/OPDS2Parser
-
-* Both `parseURL(url: URL)` and `parseURL(headers: MutableMap<String, String>, url: URL)` have been replaced with `parseUrlString(url: String, client: HttpClient = DefaultHttpClient())`.
-
-#### shared/FuelPromiseExtension
-
-* `Request.promise()`
-
-#### shared/format/Deprecated
-
-* `Response.sniffFormat` has been replaced with `org.readium.r2.shared.util.mediatype.sniffMediaType`
-
-#### shared/util/mediatype/Extensions
-
-* `Response.sniffMediaType(...)` has been replaced with `org.readium.r2.shared.util.mediatype.sniffMediaType`
-
-### Targeting Android SDK 34
-
-The modules now target Android SDK 34. If your app also targets that, you will need the `FOREGROUND_SERVICE_MEDIA_PLAYBACK` permission in you AndroidManifest.xml file in order to use TTS and audiobook playback.
-
-### Gradle 8.0
-
-The minimum required Gradle version is now 8.0.
 
 ## 2.3.0
 
