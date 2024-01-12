@@ -7,14 +7,12 @@
 package org.readium.r2.testapp
 
 import android.app.Application
-import android.net.Uri
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.receiveAsFlow
-import kotlinx.coroutines.launch
 import org.readium.r2.testapp.domain.Bookshelf
 import org.readium.r2.testapp.domain.ImportError
 import org.readium.r2.testapp.utils.EventChannel
@@ -34,10 +32,6 @@ class MainViewModel(
             .onEach { sendImportFeedback(it) }
             .launchIn(viewModelScope)
     }
-    fun importPublicationFromStorage(uri: Uri) =
-        viewModelScope.launch {
-            app.bookshelf.importPublicationFromStorage(uri)
-        }
 
     private fun sendImportFeedback(event: Bookshelf.Event) {
         when (event) {
