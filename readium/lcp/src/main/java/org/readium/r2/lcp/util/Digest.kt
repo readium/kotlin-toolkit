@@ -8,13 +8,11 @@ package org.readium.r2.lcp.util
 
 import java.io.File
 import java.security.MessageDigest
-import kotlin.io.encoding.ExperimentalEncodingApi
 import org.readium.r2.shared.extensions.tryOrNull
 
 /**
  * Returns the SHA-256 sum of file content or null if computation failed.
  */
-@OptIn(ExperimentalEncodingApi::class)
 internal fun File.sha256(): ByteArray? =
     tryOrNull<ByteArray> {
         val md = MessageDigest.getInstance("SHA-256")
