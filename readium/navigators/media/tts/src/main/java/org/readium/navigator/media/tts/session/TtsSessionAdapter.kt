@@ -920,10 +920,10 @@ internal class TtsSessionAdapter<E : TtsEngine.Error>(
 
     @Suppress("Unchecked_cast")
     private fun TtsPlayer.State.Failure.toPlaybackException(): PlaybackException = when (this) {
-        is TtsPlayer.State.Failure.EngineFailure<*> -> {
+        is TtsPlayer.State.Failure.Engine<*> -> {
             mapEngineError(error as E)
         }
-        is TtsPlayer.State.Failure.ContentFailure -> {
+        is TtsPlayer.State.Failure.Content -> {
             val errorCode = when (error) {
                 is ReadError.Access ->
                     when (error.cause) {

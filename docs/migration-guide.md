@@ -54,6 +54,8 @@ val mediaType = assetRetriever.sniffFormat(File(...))
 
 `Link.href` and `Locator.href` are now respectively `Href` and `Url` objects. If you still need the string value, you can call `toString()`, but you may find the `Url` objects more useful in practice.
 
+Use `link.url()` to get a `Url` from a `Link` object.
+
 #### Migration of HREFs and Locators (bookmarks, annotations, etc.)
 
 :warning: This requires a database migration in your application, if you were persisting `Locator` objects.
@@ -117,9 +119,9 @@ assetRetriever.sniffFormat(...)
 
 ### Navigator
 
-#### Click on external links
+#### Click on external links in the EPUB navigator
 
-Clicking on external links is no longer managed by the navigator. To open the link yourself, override `HyperlinkNavigator.Listener.onExternalLinkActivated`, for example:
+Clicking on external links is no longer managed by the EPUB navigator. To open the link yourself, override `HyperlinkNavigator.Listener.onExternalLinkActivated`, for example:
 
 ```kotlin
 override fun onExternalLinkActivated(url: AbsoluteUrl) {

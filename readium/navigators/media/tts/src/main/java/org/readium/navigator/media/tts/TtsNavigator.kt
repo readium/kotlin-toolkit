@@ -188,8 +188,8 @@ public class TtsNavigator<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
 
     private fun TtsPlayer.State.Failure.toError(): State.Failure =
         when (this) {
-            is TtsPlayer.State.Failure.ContentFailure -> State.Failure(Error.ContentError(error))
-            is TtsPlayer.State.Failure.EngineFailure<*> -> State.Failure(Error.EngineError(error))
+            is TtsPlayer.State.Failure.Content -> State.Failure(Error.ContentError(error))
+            is TtsPlayer.State.Failure.Engine<*> -> State.Failure(Error.EngineError(error))
         }
 
     private fun TtsPlayer.Utterance.toPosition(): Location {

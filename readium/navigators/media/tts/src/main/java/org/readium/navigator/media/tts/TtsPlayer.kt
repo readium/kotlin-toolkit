@@ -119,9 +119,9 @@ internal class TtsPlayer<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
          */
         sealed class Failure : State {
 
-            data class EngineFailure<E : TtsEngine.Error> (val error: E) : Failure()
+            data class Engine<E : TtsEngine.Error> (val error: E) : Failure()
 
-            data class ContentFailure(val error: Error) : Failure()
+            data class Content(val error: Error) : Failure()
         }
     }
 
@@ -521,7 +521,7 @@ internal class TtsPlayer<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
 
     private fun onEngineError(error: E) {
         playbackMutable.value = playbackMutable.value.copy(
-            state = State.Failure.EngineFailure(error)
+            state = State.Failure.Engine(error)
         )
         playbackJob?.cancel()
     }
@@ -538,7 +538,7 @@ internal class TtsPlayer<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
 
     private fun onContentError(error: Error) {
         playbackMutable.value = playbackMutable.value.copy(
-            state = State.Failure.ContentFailure(error)
+            state = State.Failure.Content(error)
         )
         playbackJob?.cancel()
     }
