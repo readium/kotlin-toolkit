@@ -35,6 +35,9 @@ import org.readium.r2.navigator.preferences.FontFamily
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.epub.pageList
+import org.readium.r2.shared.publication.indexOfFirstWithHref
+import org.readium.r2.shared.publication.services.positions
+import org.readium.r2.shared.publication.services.positionsByReadingOrder
 import org.readium.r2.testapp.LITERATA
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.reader.preferences.UserPreferencesViewModel
@@ -64,6 +67,7 @@ class EpubReaderFragment : VisualReaderFragment() {
             requireActivity().finish()
             return
         }
+
 
         childFragmentManager.fragmentFactory =
             readerData.navigatorFactory.createFragmentFactory(
