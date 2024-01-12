@@ -23,18 +23,50 @@ internal class MetadataParser(
         return resolveItemsHierarchy(items)
     }
 
-    private fun parseElements(metadataElement: ElementNode, filePath: Url): List<MetadataItem> =
-        metadataElement.getAll().mapNotNull { e ->
-            when {
-                e.namespace == Namespaces.DC ->
-                    parseDcElement(e)
-                e.namespace == Namespaces.OPF && e.name == "meta" ->
-                    parseMetaElement(e)
-                e.namespace == Namespaces.OPF && e.name == "link" ->
-                    parseLinkElement(e, filePath)
-                else -> null
+    private fun parseElements(metadataElement: ElementNode, filePath: Url): List<MetadataItem> {
+        val oldMetas: MutableList<ElementNode> = mutableListOf()
+        val newMetas: MutableList<ElementNode> = mutableListOf()
+        val links: MutableList<ElementNode> = mutableListOf()
+        val dcItems: MutableList<ElementNode> = mutableListOf()
+
+        metadataElement
+            .getAll()
+            .forEach { e ->
+                when {
+                    e.namespace == Namespaces.DC -> {
+                        dcItems.add(e)
+                    }
+                    e.namespace == Namespaces.OPF && e.name == "meta" -> {
+                        if (e.getAttr("property") == null) {
+                            oldMetas.add(e)
+                        } else {
+                            newMetas.add(e)
+                        }
+                    }
+                    e.namespace == Namespaces.OPF && e.name == "link" -> {
+                        links.add(e)
+                    }
+                    else -> {}
+                }
             }
-        }
+
+        val parsedNewMetas = newMetas
+            .mapNotNull { parseNewMetaElement(it) }
+
+        val propertiesFromGlobalNewMetas = parsedNewMetas
+            .filter { it.refines == null }
+            .map { it.property }
+            .toSet()
+
+        val parsedOldMetas = oldMetas
+            .mapNotNull { parseOldMetaElement(it) }
+            // Ignore EPUB2 fallbacks in EPUB3
+            .filter { it.property !in propertiesFromGlobalNewMetas }
+
+        return parsedNewMetas + parsedOldMetas +
+            dcItems.mapNotNull { parseDcElement(it) } +
+            links.mapNotNull { parseLinkElement(it, filePath) }
+    }
 
     private fun parseLinkElement(element: ElementNode, filePath: Url): MetadataItem.Link? {
         val href = element.getAttr("href")?.let { Url.fromEpubHref(it) } ?: return null
@@ -60,43 +92,43 @@ internal class MetadataParser(
         )
     }
 
-    private fun parseMetaElement(element: ElementNode): MetadataItem.Meta? {
-        return if (element.getAttr("property") == null) {
-            val name = element.getAttr("name")?.trim()?.ifEmpty { null }
-                ?: return null
-            val content = element.getAttr("content")?.trim()?.ifEmpty { null }
-                ?: return null
-            val resolvedName = resolveProperty(name, prefixMap)
-            MetadataItem.Meta(
-                id = element.id,
-                refines = null,
-                property = resolvedName,
-                value = content,
-                lang = element.lang
-            )
-        } else {
-            val propName = element.getAttr("property")?.trim()?.ifEmpty { null }
-                ?: return null
-            val propValue = element.text?.trim()?.ifEmpty { null }
-                ?: return null
-            val resolvedProp = resolveProperty(propName, prefixMap, DEFAULT_VOCAB.META)
-            val resolvedScheme =
-                element.getAttr("scheme")?.trim()?.ifEmpty { null }?.let {
-                    resolveProperty(
-                        it,
-                        prefixMap
-                    )
-                }
-            val refines = element.getAttr("refines")?.removePrefix("#")
-            MetadataItem.Meta(
-                id = element.id,
-                refines = refines,
-                property = resolvedProp,
-                value = propValue,
-                lang = element.lang,
-                scheme = resolvedScheme
-            )
-        }
+    private fun parseNewMetaElement(element: ElementNode): MetadataItem.Meta? {
+        val propName = element.getAttr("property")?.trim()?.ifEmpty { null }
+            ?: return null
+        val propValue = element.text?.trim()?.ifEmpty { null }
+            ?: return null
+        val resolvedProp = resolveProperty(propName, prefixMap, DEFAULT_VOCAB.META)
+        val resolvedScheme =
+            element.getAttr("scheme")?.trim()?.ifEmpty { null }?.let {
+                resolveProperty(
+                    it,
+                    prefixMap
+                )
+            }
+        val refines = element.getAttr("refines")?.removePrefix("#")
+        return MetadataItem.Meta(
+            id = element.id,
+            refines = refines,
+            property = resolvedProp,
+            value = propValue,
+            lang = element.lang,
+            scheme = resolvedScheme
+        )
+    }
+
+    private fun parseOldMetaElement(element: ElementNode): MetadataItem.Meta? {
+        val name = element.getAttr("name")?.trim()?.ifEmpty { null }
+            ?: return null
+        val content = element.getAttr("content")?.trim()?.ifEmpty { null }
+            ?: return null
+        val resolvedName = resolveProperty(name, prefixMap)
+        return MetadataItem.Meta(
+            id = element.id,
+            refines = null,
+            property = resolvedName,
+            value = content,
+            lang = element.lang
+        )
     }
 
     private fun parseDcElement(element: ElementNode): MetadataItem.Meta? {

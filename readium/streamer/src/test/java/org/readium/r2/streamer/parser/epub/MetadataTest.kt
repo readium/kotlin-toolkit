@@ -362,9 +362,8 @@ class MetadataMiscTest {
             entry(
                 Vocabularies.DCTERMS + "source",
                 listOf(
-                    "Feedbooks",
                     mapOf("@value" to "Web", "http://my.url/#scheme" to "http"),
-                    "Internet"
+                    "Feedbooks"
                 )
             ),
             entry(

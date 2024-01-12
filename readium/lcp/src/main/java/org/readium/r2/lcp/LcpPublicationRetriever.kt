@@ -7,11 +7,15 @@
 package org.readium.r2.lcp
 
 import android.content.Context
+import java.io.File
+import kotlin.io.encoding.Base64
+import kotlin.io.encoding.ExperimentalEncodingApi
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import org.readium.r2.lcp.license.container.createLicenseContainer
 import org.readium.r2.lcp.license.model.LicenseDocument
+import org.readium.r2.lcp.util.sha256
 import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.ErrorException
@@ -173,28 +177,44 @@ public class LcpPublicationRetriever(
 
     private inner class DownloadListener : DownloadManager.Listener {
 
+        @OptIn(ExperimentalEncodingApi::class, ExperimentalStdlibApi::class)
         override fun onDownloadCompleted(
             requestId: DownloadManager.RequestId,
             download: DownloadManager.Download
         ) {
             coroutineScope.launch {
                 val lcpRequestId = RequestId(requestId.value)
-                val listenersForId = checkNotNull(listeners[lcpRequestId])
+                val listenersForId = checkNotNull(listeners.remove(lcpRequestId))
+
+                fun failWithError(error: LcpError) {
+                    listenersForId.forEach {
+                        it.onAcquisitionFailed(lcpRequestId, error)
+                    }
+                    tryOrLog { download.file.delete() }
+                }
 
                 val license = downloadsRepository.retrieveLicense(requestId.value)
                     ?.let { LicenseDocument(it) }
+                    .also { downloadsRepository.removeDownload(requestId.value) }
                     ?: run {
-                        listenersForId.forEach {
-                            it.onAcquisitionFailed(
-                                lcpRequestId,
-                                LcpError.wrap(
-                                    Exception("Couldn't retrieve license from local storage.")
-                                )
+                        failWithError(
+                            LcpError.wrap(
+                                Exception("Couldn't retrieve license from local storage.")
                             )
-                        }
+                        )
                         return@launch
                     }
-                downloadsRepository.removeDownload(requestId.value)
+
+                license.publicationLink.hash
+                    ?.takeIf { download.file.checkSha256(it) == false }
+                    ?.run {
+                        failWithError(
+                            LcpError.Network(
+                                Exception("Digest mismatch: download looks corrupted.")
+                            )
+                        )
+                        return@launch
+                    }
 
                 val format =
                     assetRetriever.sniffFormat(
@@ -206,15 +226,23 @@ public class LcpPublicationRetriever(
                             )
                         )
                     ).getOrElse {
-                        Format(
-                            specification = FormatSpecification(
-                                ZipSpecification,
-                                EpubSpecification,
-                                LcpSpecification
-                            ),
-                            mediaType = MediaType.EPUB,
-                            fileExtension = FileExtension("epub")
-                        )
+                        when (it) {
+                            is AssetRetriever.RetrieveError.Reading -> {
+                                failWithError(LcpError.wrap(ErrorException(it)))
+                                return@launch
+                            }
+                            is AssetRetriever.RetrieveError.FormatNotSupported -> {
+                                Format(
+                                    specification = FormatSpecification(
+                                        ZipSpecification,
+                                        EpubSpecification,
+                                        LcpSpecification
+                                    ),
+                                    mediaType = MediaType.EPUB,
+                                    fileExtension = FileExtension("epub")
+                                )
+                            }
+                        }
                     }
 
                 try {
@@ -222,10 +250,7 @@ public class LcpPublicationRetriever(
                     val container = createLicenseContainer(download.file, format.specification)
                     container.write(license)
                 } catch (e: Exception) {
-                    tryOrLog { download.file.delete() }
-                    listenersForId.forEach {
-                        it.onAcquisitionFailed(lcpRequestId, LcpError.wrap(e))
-                    }
+                    failWithError(LcpError.wrap(e))
                     return@launch
                 }
 
@@ -239,7 +264,6 @@ public class LcpPublicationRetriever(
                 listenersForId.forEach {
                     it.onAcquisitionCompleted(lcpRequestId, acquiredPublication)
                 }
-                listeners.remove(lcpRequestId)
             }
         }
 
@@ -286,6 +310,23 @@ public class LcpPublicationRetriever(
                 it.onAcquisitionCancelled(lcpRequestId)
             }
             listeners.remove(lcpRequestId)
+        }
+    }
+
+    /**
+     * Checks that the sha256 sum of file content matches the expected one.
+     * Returns null if we can't decide.
+     */
+    @OptIn(ExperimentalEncodingApi::class, ExperimentalStdlibApi::class)
+    private fun File.checkSha256(expected: String): Boolean? {
+        val actual = sha256() ?: return null
+
+        // Supports hexadecimal encoding for compatibility.
+        // See https://github.com/readium/lcp-specs/issues/52
+        return when (expected.length) {
+            44 -> Base64.encode(actual) == expected
+            64 -> actual.toHexString() == expected
+            else -> null
         }
     }
 }
