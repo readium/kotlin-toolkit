@@ -19,7 +19,7 @@ import org.readium.r2.testapp.Application
 import org.readium.r2.testapp.MainActivity
 import timber.log.Timber
 
-class DispatcherActivity : Activity() {
+class ImportActivity : Activity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
