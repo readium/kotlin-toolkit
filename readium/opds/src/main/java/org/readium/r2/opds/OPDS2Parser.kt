@@ -11,6 +11,7 @@
 
 package org.readium.r2.opds
 
+import java.net.URL
 import org.joda.time.DateTime
 import org.json.JSONArray
 import org.json.JSONObject
@@ -76,6 +77,15 @@ public class OPDS2Parser {
                 )
             }
         }
+
+        @Deprecated(
+            "Provide an instance of `Url` instead",
+            ReplaceWith("parse(jsonData, url.toUrl()!!)"),
+            DeprecationLevel.ERROR
+        )
+        @Suppress("UNUSED_PARAMETER")
+        public fun parse(jsonData: ByteArray, url: URL): ParseData =
+            throw NotImplementedError()
 
         private fun isFeed(jsonData: ByteArray) =
             JSONObject(String(jsonData)).let {

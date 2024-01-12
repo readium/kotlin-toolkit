@@ -70,4 +70,14 @@ public sealed class HttpError(
             tryOrLog { ProblemDetails.fromJSON(JSONObject(String(body))) }
         }
     }
+
+    public companion object {
+        @Suppress("UNUSED_PARAMETER")
+        @Deprecated("Not publicly available anymore.", level = DeprecationLevel.ERROR)
+        public fun wrap(exception: Exception): HttpError =
+            throw NotImplementedError()
+    }
 }
+
+@Deprecated("Renamed to `HttpError`", ReplaceWith("HttpError"), DeprecationLevel.ERROR)
+public typealias HttpException = HttpError

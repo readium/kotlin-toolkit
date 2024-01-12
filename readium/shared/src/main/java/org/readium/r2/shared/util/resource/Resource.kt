@@ -44,6 +44,13 @@ public interface Resource : Readable {
         public class Builder(properties: Map<String, Any> = emptyMap()) :
             MutableMap<String, Any> by properties.toMutableMap()
     }
+
+    @Deprecated(
+        "`Resource.Exception` was split into several `Error` classes. You probably need `ReadError`.",
+        ReplaceWith("org.readium.r2.shared.util.data.ReadError"),
+        DeprecationLevel.ERROR
+    )
+    public class Exception
 }
 
 /** Creates a Resource that will always return the given [error]. */

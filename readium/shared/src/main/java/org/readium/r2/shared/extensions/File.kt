@@ -69,7 +69,7 @@ public fun File.isParentOf(other: File): Boolean {
  */
 @Suppress("UnusedReceiverParameter", "RedundantSuspendModifier", "UNUSED_PARAMETER")
 @Deprecated(
-    message = "Use an `AssetOpener` instead to retrieve the format of a file. See the migration guide.",
+    message = "Use an `AssetRetriever` instead to retrieve the format of a file. See the migration guide.",
     level = DeprecationLevel.ERROR
 )
 public suspend fun File.mediaType(mediaTypeHint: String? = null): MediaType =

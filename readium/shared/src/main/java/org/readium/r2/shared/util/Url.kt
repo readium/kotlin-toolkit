@@ -359,7 +359,9 @@ private fun String.isValidUrl(): Boolean =
 @JvmInline
 public value class FileExtension(
     public val value: String
-)
+) {
+    override fun toString(): String = value
+}
 
 /**
  * Appends this file extension to [filename].

@@ -6,5 +6,9 @@
 
 package org.readium.r2.streamer
 
-@Deprecated("Use a `PublicationOpener` instead. See the migration guide.", ReplaceWith("PublicationOpener"), level = DeprecationLevel.ERROR)
+@Deprecated(
+    "Use a `PublicationOpener` instead. See the migration guide.",
+    ReplaceWith("PublicationOpener"),
+    level = DeprecationLevel.ERROR
+)
 public class Streamer

@@ -188,6 +188,20 @@ public data class Locator(
         putIfNotEmpty("text", text)
     }
 
+    @Suppress("UNUSED_PARAMETER")
+    @Deprecated(
+        "Provide a `Url` and `MediaType` instances.",
+        ReplaceWith("Locator(href = Url(href)!!, mediaType = MediaType(type)!!"),
+        level = DeprecationLevel.ERROR
+    )
+    public constructor(
+        href: String,
+        type: String,
+        title: String? = null,
+        locations: Locations = Locations(),
+        text: Text = Text()
+    ) : this(Url("#")!!, MediaType.BINARY)
+
     @Deprecated(
         "Use [mediaType.toString()] instead",
         ReplaceWith("mediaType.toString()"),
