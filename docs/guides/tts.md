@@ -115,7 +115,7 @@ If the device lacks the data necessary for the chosen voice, the user needs to m
 ```kotlin
 navigator.playback
     .onEach { playback ->
-        (playback?.state as? TtsNavigator.State.Error.EngineError<*>)
+        (playback?.state as? TtsNavigator.State.Failure.EngineError<*>)
             ?.let { it.error as? AndroidTtsEngine.Error.LanguageMissingData }
             ?.let { error ->
                 Timber.e("Missing data for language ${error.language}")

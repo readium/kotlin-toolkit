@@ -117,11 +117,11 @@ internal class TtsPlayer<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
         /**
          * The player cannot play because an error occurred.
          */
-        sealed class Error : State {
+        sealed class Failure : State {
 
-            data class EngineError<E : TtsEngine.Error> (val error: E) : Error()
+            data class Engine<E : TtsEngine.Error> (val error: E) : Failure()
 
-            data class ContentError(val error: org.readium.r2.shared.util.Error) : Error()
+            data class Content(val error: Error) : Failure()
         }
     }
 
@@ -521,7 +521,7 @@ internal class TtsPlayer<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
 
     private fun onEngineError(error: E) {
         playbackMutable.value = playbackMutable.value.copy(
-            state = State.Error.EngineError(error)
+            state = State.Failure.Engine(error)
         )
         playbackJob?.cancel()
     }
@@ -538,7 +538,7 @@ internal class TtsPlayer<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
 
     private fun onContentError(error: Error) {
         playbackMutable.value = playbackMutable.value.copy(
-            state = State.Error.ContentError(error)
+            state = State.Failure.Content(error)
         )
         playbackJob?.cancel()
     }

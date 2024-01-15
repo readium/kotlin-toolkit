@@ -209,13 +209,13 @@ public class MediaType private constructor(
     public val isPublication: Boolean get() =
         matchesAny(CBZ, EPUB, LPF, PDF, W3C_WPUB_MANIFEST, ZAB) || isRwpm || isRpf
 
+    @Suppress("RedundantNullableReturnType")
     @Deprecated(
-        "Format and MediaType got merged together",
-        replaceWith = ReplaceWith(""),
+        message = "The file extension is now in `Format`, which you can sniff using an `AssetRetriever`",
         level = DeprecationLevel.ERROR
     )
-    public val mediaType: MediaType
-        get() = this
+    public val fileExtension: String? get() =
+        throw NotImplementedError()
 
     public companion object {
 
@@ -371,15 +371,19 @@ public class MediaType private constructor(
         @Deprecated(message = "Use FormatRegistry instead", level = DeprecationLevel.ERROR)
         public val sniffers: MutableList<Any> = mutableListOf()
 
+        @Deprecated(
+            message = "Create the `MediaType` directly instead",
+            replaceWith = ReplaceWith("MediaType(mediaType)"),
+            level = DeprecationLevel.ERROR
+        )
+        public fun of(mediaType: String): MediaType? = MediaType(mediaType)
+
         /**
          * Resolves a format from a single file extension and media type hint, without checking the actual
          * content.
          */
         @Deprecated(
-            message = "Use MediaTypeRetriever instead",
-            replaceWith = ReplaceWith(
-                "MediaTypeRetriever().retrieve(mediaType = mediaType, fileExtension = fileExtension)"
-            ),
+            message = "Use an `AssetRetriever` instead to retrieve the format of a file. See the migration guide.",
             level = DeprecationLevel.ERROR
         )
         @Suppress("UNUSED_PARAMETER")
@@ -395,10 +399,7 @@ public class MediaType private constructor(
          * content.
          */
         @Deprecated(
-            message = "Use MediaTypeRetriever instead",
-            replaceWith = ReplaceWith(
-                "MediaTypeRetriever().retrieve(mediaTypes = mediaTypes, fileExtensions = fileExtensions)"
-            ),
+            message = "Use an `AssetRetriever` instead to retrieve the format of a file. See the migration guide.",
             level = DeprecationLevel.ERROR
         )
         @Suppress("UNUSED_PARAMETER")
@@ -414,8 +415,7 @@ public class MediaType private constructor(
          */
         @Suppress("UNUSED_PARAMETER")
         @Deprecated(
-            message = "Use MediaTypeRetriever instead",
-            replaceWith = ReplaceWith("MediaTypeRetriever().retrieve(file)"),
+            message = "Use an `AssetRetriever` instead to retrieve the format of a file. See the migration guide.",
             level = DeprecationLevel.ERROR
         )
         public fun ofFile(
@@ -430,10 +430,7 @@ public class MediaType private constructor(
          * Resolves a format from a local file path.
          */
         @Deprecated(
-            message = "Use MediaTypeRetriever instead",
-            replaceWith = ReplaceWith(
-                "MediaTypeRetriever().retrieve(file, mediaTypes = mediaTypes, fileExtensions = fileExtensions)"
-            ),
+            message = "Use an `AssetRetriever` instead to retrieve the format of a file. See the migration guide.",
             level = DeprecationLevel.ERROR
         )
         @Suppress("UNUSED_PARAMETER")
@@ -450,8 +447,7 @@ public class MediaType private constructor(
          */
         @Suppress("UNUSED_PARAMETER")
         @Deprecated(
-            message = "Use MediaTypeRetriever instead",
-            replaceWith = ReplaceWith("MediaTypeRetriever().retrieve(File(path))"),
+            message = "Use an `AssetRetriever` instead to retrieve the format of a file. See the migration guide.",
             level = DeprecationLevel.ERROR
         )
         public fun ofFile(
@@ -467,10 +463,7 @@ public class MediaType private constructor(
          */
         @Suppress("UNUSED_PARAMETER")
         @Deprecated(
-            message = "Use MediaTypeRetriever instead",
-            replaceWith = ReplaceWith(
-                "MediaTypeRetriever().retrieve(File(path), mediaTypes = mediaTypes, fileExtensions = fileExtensions)"
-            ),
+            message = "Use an `AssetRetriever` instead to retrieve the format of a file. See the migration guide.",
             level = DeprecationLevel.ERROR
         )
         public fun ofFile(
@@ -486,8 +479,7 @@ public class MediaType private constructor(
          */
         @Suppress("UNUSED_PARAMETER")
         @Deprecated(
-            message = "Use MediaTypeRetriever instead",
-            replaceWith = ReplaceWith("MediaTypeRetriever().retrieve(bytes)"),
+            message = "Use an `AssetRetriever` instead to retrieve the format of a file. See the migration guide.",
             level = DeprecationLevel.ERROR
         )
         public fun ofBytes(
@@ -503,10 +495,7 @@ public class MediaType private constructor(
          */
         @Suppress("UNUSED_PARAMETER")
         @Deprecated(
-            message = "Use MediaTypeRetriever instead",
-            replaceWith = ReplaceWith(
-                "MediaTypeRetriever().retrieve(bytes, mediaTypes = mediaTypes, fileExtensions = fileExtensions)"
-            ),
+            message = "Use an `AssetRetriever` instead to retrieve the format of a file. See the migration guide.",
             level = DeprecationLevel.ERROR
         )
         public fun ofBytes(
@@ -523,10 +512,7 @@ public class MediaType private constructor(
          */
         @Suppress("UNUSED_PARAMETER")
         @Deprecated(
-            message = "Use MediaTypeRetriever instead",
-            replaceWith = ReplaceWith(
-                "MediaTypeRetriever(contentResolver = contentResolver).retrieve(uri)"
-            ),
+            message = "Use an `AssetRetriever` instead to retrieve the format of a file. See the migration guide.",
             level = DeprecationLevel.ERROR
         )
         public fun ofUri(
@@ -544,10 +530,7 @@ public class MediaType private constructor(
          */
         @Suppress("UNUSED_PARAMETER")
         @Deprecated(
-            message = "Use MediaTypeRetriever instead",
-            replaceWith = ReplaceWith(
-                "MediaTypeRetriever(contentResolver = contentResolver).retrieve(uri, mediaTypes = mediaTypes, fileExtensions = fileExtensions)"
-            ),
+            message = "Use an `AssetRetriever` instead to retrieve the format of a file. See the migration guide.",
             level = DeprecationLevel.ERROR
         )
         public fun ofUri(
@@ -611,7 +594,10 @@ public class MediaType private constructor(
         public val LCP_LICENSE: MediaType get() = LCP_LICENSE_DOCUMENT
 
         @Suppress("UNUSED_PARAMETER")
-        @Deprecated("Use `MediaTypeRetriever` instead", level = DeprecationLevel.ERROR)
+        @Deprecated(
+            message = "Use an `AssetRetriever` instead to retrieve the format of a file. See the migration guide.",
+            level = DeprecationLevel.ERROR
+        )
         public fun of(
             file: File,
             mediaType: String? = null,
@@ -619,7 +605,10 @@ public class MediaType private constructor(
         ): MediaType? = null
 
         @Suppress("UNUSED_PARAMETER")
-        @Deprecated("Use `MediaTypeRetriever` instead", level = DeprecationLevel.ERROR)
+        @Deprecated(
+            message = "Use an `AssetRetriever` instead to retrieve the format of a file. See the migration guide.",
+            level = DeprecationLevel.ERROR
+        )
         public fun of(
             file: File,
             mediaTypes: List<String>,
@@ -627,7 +616,10 @@ public class MediaType private constructor(
         ): MediaType? = null
 
         @Suppress("UNUSED_PARAMETER")
-        @Deprecated("Use `MediaTypeRetriever` instead", level = DeprecationLevel.ERROR)
+        @Deprecated(
+            message = "Use an `AssetRetriever` instead to retrieve the format of a file. See the migration guide.",
+            level = DeprecationLevel.ERROR
+        )
         public fun of(
             bytes: () -> ByteArray,
             mediaType: String? = null,
@@ -635,7 +627,10 @@ public class MediaType private constructor(
         ): MediaType? = null
 
         @Suppress("UNUSED_PARAMETER")
-        @Deprecated("Use `MediaTypeRetriever` instead", level = DeprecationLevel.ERROR)
+        @Deprecated(
+            message = "Use an `AssetRetriever` instead to retrieve the format of a file. See the migration guide.",
+            level = DeprecationLevel.ERROR
+        )
         public fun of(
             bytes: () -> ByteArray,
             mediaTypes: List<String>,
@@ -643,7 +638,10 @@ public class MediaType private constructor(
         ): MediaType? = null
 
         @Suppress("UNUSED_PARAMETER")
-        @Deprecated("Use `MediaTypeRetriever` instead", level = DeprecationLevel.ERROR)
+        @Deprecated(
+            message = "Use an `AssetRetriever` instead to retrieve the format of a file. See the migration guide.",
+            level = DeprecationLevel.ERROR
+        )
         public fun of(
             uri: Uri,
             contentResolver: ContentResolver,
@@ -652,7 +650,10 @@ public class MediaType private constructor(
         ): MediaType? = null
 
         @Suppress("UNUSED_PARAMETER")
-        @Deprecated("Use `MediaTypeRetriever` instead", level = DeprecationLevel.ERROR)
+        @Deprecated(
+            message = "Use an `AssetRetriever` instead to retrieve the format of a file. See the migration guide.",
+            level = DeprecationLevel.ERROR
+        )
         public fun of(
             uri: Uri,
             contentResolver: ContentResolver,

@@ -25,7 +25,7 @@ private val deprecationException = IllegalArgumentException(
 )
 
 @Deprecated(
-    "Use a repository to share publications between components",
+    "Use your own repository to share publications between activities. See the migration guide.",
     level = DeprecationLevel.ERROR
 )
 public fun Intent.putPublication(publication: Publication) {
@@ -34,7 +34,7 @@ public fun Intent.putPublication(publication: Publication) {
 }
 
 @Deprecated(
-    "Use a repository to share publications between components",
+    "Use your own repository to share publications between activities. See the migration guide.",
     level = DeprecationLevel.ERROR
 )
 public fun Intent.putPublicationFrom(activity: Activity) {
@@ -42,7 +42,7 @@ public fun Intent.putPublicationFrom(activity: Activity) {
 }
 
 @Deprecated(
-    "Use a repository to share publications between components",
+    "Use your own repository to share publications between activities. See the migration guide.",
     level = DeprecationLevel.ERROR
 )
 public fun Intent.getPublication(activity: Activity?): Publication {
@@ -67,7 +67,7 @@ public fun Intent.getPublication(activity: Activity?): Publication {
 }
 
 @Deprecated(
-    "Use a repository to share publications between components",
+    "Use your own repository to share publications between activities. See the migration guide.",
     level = DeprecationLevel.ERROR
 )
 public fun Intent.getPublicationOrNull(): Publication? {
@@ -89,7 +89,7 @@ public fun Intent.getPublicationOrNull(activity: Activity): Publication? {
 }
 
 @Deprecated(
-    "Use a repository to share publications between components",
+    "Use your own repository to share publications between activities. See the migration guide.",
     level = DeprecationLevel.ERROR
 )
 public fun Intent.destroyPublication(activity: Activity?) {
@@ -101,7 +101,7 @@ public fun Intent.destroyPublication(activity: Activity?) {
 }
 
 @Deprecated(
-    "Use a repository to share publications between components",
+    "Use your own repository to share publications between activities. See the migration guide.",
     level = DeprecationLevel.ERROR
 )
 public fun Bundle.putPublication(publication: Publication) {
@@ -110,7 +110,7 @@ public fun Bundle.putPublication(publication: Publication) {
 }
 
 @Deprecated(
-    "Use a repository to share publications between components",
+    "Use your own repository to share publications between activities. See the migration guide.",
     level = DeprecationLevel.ERROR
 )
 public fun Bundle.putPublicationFrom(activity: Activity) {
@@ -118,7 +118,7 @@ public fun Bundle.putPublicationFrom(activity: Activity) {
 }
 
 @Deprecated(
-    "Use a repository to share publications between components",
+    "Use your own repository to share publications between activities. See the migration guide.",
     level = DeprecationLevel.ERROR
 )
 public fun Bundle.getPublicationOrNull(): Publication? {

@@ -33,6 +33,26 @@ public interface HyperlinkNavigator : Navigator {
 
         /**
          * Called when a link to an external URL was activated in the navigator.
+         *
+         * If it is an HTTP URL, you should open it with a `CustomTabsIntent` or `WebView`, for
+         * example:
+         *
+         * ```kotlin
+         * override fun onExternalLinkActivated(url: AbsoluteUrl) {
+         *     if (!url.isHttp) return
+         *
+         *     val context = requireActivity()
+         *     val uri = url.toUri()
+         *
+         *     try {
+         *         CustomTabsIntent.Builder()
+         *             .build()
+         *             .launchUrl(context, uri)
+         *     } catch (e: ActivityNotFoundException) {
+         *         context.startActivity(Intent(Intent.ACTION_VIEW, uri))
+         *     }
+         * }
+         * ```
          */
         @ExperimentalReadiumApi
         public fun onExternalLinkActivated(url: AbsoluteUrl)

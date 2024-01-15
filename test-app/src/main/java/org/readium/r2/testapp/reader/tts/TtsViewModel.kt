@@ -144,9 +144,9 @@ class TtsViewModel private constructor(
                     is MediaNavigator.State.Ended -> {
                         stop()
                     }
-                    is MediaNavigator.State.Error -> {
+                    is MediaNavigator.State.Failure -> {
                         onPlaybackError(
-                            (playback.state as TtsNavigator.State.Error).error
+                            (playback.state as TtsNavigator.State.Failure).error
                         )
                     }
                     is MediaNavigator.State.Ready -> {}

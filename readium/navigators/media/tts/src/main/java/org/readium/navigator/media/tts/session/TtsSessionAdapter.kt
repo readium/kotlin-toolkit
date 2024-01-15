@@ -265,7 +265,7 @@ internal class TtsSessionAdapter<E : TtsEngine.Error>(
     }
 
     override fun getPlayerError(): PlaybackException? {
-        return (lastPlayback.state as? TtsPlayer.State.Error)?.toPlaybackException()
+        return (lastPlayback.state as? TtsPlayer.State.Failure)?.toPlaybackException()
     }
 
     override fun play() {
@@ -777,15 +777,15 @@ internal class TtsSessionAdapter<E : TtsEngine.Error>(
         playbackInfo: TtsPlayer.Playback
         // playWhenReadyChangeReason: @Player.PlayWhenReadyChangeReason Int,
     ) {
-        if (previousPlaybackInfo.state as? TtsPlayer.State.Error != playbackInfo.state as? Error) {
+        if (previousPlaybackInfo.state as? TtsPlayer.State.Failure != playbackInfo.state as? Error) {
             listeners.queueEvent(
                 EVENT_PLAYER_ERROR
             ) { listener: Listener ->
                 listener.onPlayerErrorChanged(
-                    (playbackInfo.state as? TtsPlayer.State.Error)?.toPlaybackException()
+                    (playbackInfo.state as? TtsPlayer.State.Failure)?.toPlaybackException()
                 )
             }
-            if (playbackInfo.state is TtsPlayer.State.Error) {
+            if (playbackInfo.state is TtsPlayer.State.Failure) {
                 listeners.queueEvent(
                     EVENT_PLAYER_ERROR
                 ) { listener: Listener ->
@@ -915,15 +915,15 @@ internal class TtsSessionAdapter<E : TtsEngine.Error>(
     private val TtsPlayer.State.playerCode get() = when (this) {
         TtsPlayer.State.Ready -> STATE_READY
         TtsPlayer.State.Ended -> STATE_ENDED
-        is TtsPlayer.State.Error -> STATE_IDLE
+        is TtsPlayer.State.Failure -> STATE_IDLE
     }
 
     @Suppress("Unchecked_cast")
-    private fun TtsPlayer.State.Error.toPlaybackException(): PlaybackException = when (this) {
-        is TtsPlayer.State.Error.EngineError<*> -> {
+    private fun TtsPlayer.State.Failure.toPlaybackException(): PlaybackException = when (this) {
+        is TtsPlayer.State.Failure.Engine<*> -> {
             mapEngineError(error as E)
         }
-        is TtsPlayer.State.Error.ContentError -> {
+        is TtsPlayer.State.Failure.Content -> {
             val errorCode = when (error) {
                 is ReadError.Access ->
                     when (error.cause) {

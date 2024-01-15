@@ -68,6 +68,9 @@ public fun File.isParentOf(other: File): Boolean {
  * If unknown, fallback on `MediaType.BINARY`.
  */
 @Suppress("UnusedReceiverParameter", "RedundantSuspendModifier", "UNUSED_PARAMETER")
-@Deprecated("Explicitly use MediaTypeRetriever", level = DeprecationLevel.ERROR)
+@Deprecated(
+    message = "Use an `AssetRetriever` instead to retrieve the format of a file. See the migration guide.",
+    level = DeprecationLevel.ERROR
+)
 public suspend fun File.mediaType(mediaTypeHint: String? = null): MediaType =
     throw NotImplementedError()

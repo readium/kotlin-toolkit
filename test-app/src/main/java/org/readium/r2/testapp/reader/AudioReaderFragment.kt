@@ -92,7 +92,7 @@ class AudioReaderFragment : BaseReaderFragment(), SeekBar.OnSeekBarChangeListene
         playback: TimeBasedMediaNavigator.Playback
     ) {
         Timber.v("onPlaybackChanged $playback")
-        if (playback.state is MediaNavigator.State.Error) {
+        if (playback.state is MediaNavigator.State.Failure) {
             onPlayerError()
             return
         }
@@ -190,7 +190,7 @@ class AudioReaderFragment : BaseReaderFragment(), SeekBar.OnSeekBarChangeListene
                 }
                 Unit
             }
-            is MediaNavigator.State.Error -> {
+            is MediaNavigator.State.Failure -> {
                 // Do nothing.
             }
         }

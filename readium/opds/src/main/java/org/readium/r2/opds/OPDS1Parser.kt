@@ -9,6 +9,7 @@
 
 package org.readium.r2.opds
 
+import java.net.URL
 import org.joda.time.DateTime
 import org.readium.r2.shared.extensions.toList
 import org.readium.r2.shared.extensions.toMap
@@ -73,6 +74,15 @@ public class OPDS1Parser {
                 ParseData(null, parseEntry(root, url), 1)
             }
         }
+
+        @Suppress("UNUSED_PARAMETER")
+        @Deprecated(
+            "Provide an instance of `Url` instead",
+            ReplaceWith("parse(jsonData, url.toUrl()!!)"),
+            DeprecationLevel.ERROR
+        )
+        public fun parse(jsonData: ByteArray, url: URL): ParseData =
+            throw NotImplementedError()
 
         private fun parseFeed(root: ElementNode, url: Url): Feed {
             val feedTitle = root.getFirst("title", Namespaces.Atom)?.text

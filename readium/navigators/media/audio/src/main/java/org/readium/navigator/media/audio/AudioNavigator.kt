@@ -72,7 +72,7 @@ public class AudioNavigator<S : Configurable.Settings, P : Configurable.Preferen
 
         public object Buffering : MediaNavigator.State.Buffering
 
-        public data class Error<E : AudioEngine.Error> (val error: E) : MediaNavigator.State.Error
+        public data class Failure<E : AudioEngine.Error> (val error: E) : MediaNavigator.State.Failure
     }
 
     private val coroutineScope: CoroutineScope =
@@ -173,6 +173,6 @@ public class AudioNavigator<S : Configurable.Settings, P : Configurable.Preferen
             is AudioEngine.State.Ready -> State.Ready
             is AudioEngine.State.Ended -> State.Ended
             is AudioEngine.State.Buffering -> State.Buffering
-            is AudioEngine.State.Error -> State.Error(error)
+            is AudioEngine.State.Failure -> State.Failure(error)
         }
 }

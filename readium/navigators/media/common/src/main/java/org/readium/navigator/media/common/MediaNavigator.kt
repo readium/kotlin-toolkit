@@ -53,7 +53,7 @@ public interface MediaNavigator<
         /**
          * The navigator cannot play because an error occurred.
          */
-        public interface Error : State
+        public interface Failure : State
     }
 
     /**
