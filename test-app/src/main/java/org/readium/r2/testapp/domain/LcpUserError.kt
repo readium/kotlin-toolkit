@@ -50,11 +50,20 @@ fun LcpError.toUserError(): UserError = when (this) {
             LcpError.LicenseIntegrity.CertificateRevoked ->
                 UserError(R.string.lcp_error_license_integrity_certificate_revoked, cause = this)
             LcpError.LicenseIntegrity.InvalidCertificateSignature ->
-                UserError(R.string.lcp_error_license_integrity_invalid_certificate_signature, cause = this)
+                UserError(
+                    R.string.lcp_error_license_integrity_invalid_certificate_signature,
+                    cause = this
+                )
             LcpError.LicenseIntegrity.InvalidLicenseSignature ->
-                UserError(R.string.lcp_error_license_integrity_invalid_license_signature, cause = this)
+                UserError(
+                    R.string.lcp_error_license_integrity_invalid_license_signature,
+                    cause = this
+                )
             LcpError.LicenseIntegrity.InvalidLicenseSignatureDate ->
-                UserError(R.string.lcp_error_license_integrity_invalid_license_signature_date, cause = this)
+                UserError(
+                    R.string.lcp_error_license_integrity_invalid_license_signature_date,
+                    cause = this
+                )
             LcpError.LicenseIntegrity.InvalidUserKeyCheck ->
                 UserError(R.string.lcp_error_license_integrity_invalid_user_key_check, cause = this)
         }

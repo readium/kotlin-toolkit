@@ -9,7 +9,6 @@ package org.readium.r2.testapp.search
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.services.search.SearchError
 import org.readium.r2.testapp.R
-import org.readium.r2.testapp.domain.toUserError
 import org.readium.r2.testapp.utils.UserError
 
 @OptIn(ExperimentalReadiumApi::class)

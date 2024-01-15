@@ -15,19 +15,16 @@ import androidx.fragment.app.setFragmentResult
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import com.google.android.material.snackbar.Snackbar
 import java.util.*
 import kotlinx.coroutines.launch
 import org.joda.time.DateTime
 import org.joda.time.format.DateTimeFormat
 import org.readium.r2.lcp.MaterialRenewListener
 import org.readium.r2.lcp.lcpLicense
-import org.readium.r2.shared.util.toDebugDescription
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.databinding.FragmentDrmManagementBinding
 import org.readium.r2.testapp.reader.ReaderViewModel
 import org.readium.r2.testapp.utils.viewLifecycle
-import timber.log.Timber
 
 class DrmManagementFragment : Fragment() {
 

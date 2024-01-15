@@ -13,7 +13,6 @@ import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.Error
 import org.readium.r2.shared.util.ThrowableError
 import org.readium.r2.testapp.R
-import org.readium.r2.testapp.domain.toUserError
 import org.readium.r2.testapp.utils.UserError
 
 @OptIn(ExperimentalReadiumApi::class)

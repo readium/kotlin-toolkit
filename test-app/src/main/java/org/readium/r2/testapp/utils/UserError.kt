@@ -8,7 +8,6 @@ package org.readium.r2.testapp.utils
 
 import android.app.Activity
 import android.content.Context
-import android.view.View
 import androidx.annotation.PluralsRes
 import androidx.annotation.StringRes
 import androidx.appcompat.app.AlertDialog
@@ -55,7 +54,11 @@ class UserError private constructor(
      */
     fun show(activity: Activity) {
         val message = getUserMessage(activity)
-        val snackbar = Snackbar.make(activity.findViewById(android.R.id.content), message, Snackbar.LENGTH_LONG)
+        val snackbar = Snackbar.make(
+            activity.findViewById(android.R.id.content),
+            message,
+            Snackbar.LENGTH_LONG
+        )
 
         var details = "UserError: $message"
         cause?.toDebugDescription()?.let {

@@ -50,7 +50,6 @@ import org.readium.r2.navigator.util.DirectionalNavigationAdapter
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.util.Language
-import org.readium.r2.shared.util.toDebugDescription
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.data.model.Highlight
 import org.readium.r2.testapp.databinding.FragmentReaderBinding
@@ -60,7 +59,6 @@ import org.readium.r2.testapp.reader.tts.TtsViewModel
 import org.readium.r2.testapp.utils.*
 import org.readium.r2.testapp.utils.extensions.confirmDialog
 import org.readium.r2.testapp.utils.extensions.throttleLatest
-import timber.log.Timber
 
 /*
  * Base reader fragment class
