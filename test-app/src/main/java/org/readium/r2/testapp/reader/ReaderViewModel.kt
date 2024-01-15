@@ -215,7 +215,7 @@ class ReaderViewModel(
             ?: run {
                 activityChannel.send(
                     ActivityCommand.ToastError(
-                        UserError(R.string.search_error_not_searchable)
+                        UserError(R.string.search_error_not_searchable, cause = null)
                     )
                 )
                 null
@@ -263,7 +263,6 @@ class ReaderViewModel(
     // Navigator.Listener
 
     override fun onResourceLoadFailed(href: Url, error: ReadError) {
-        Timber.e(error.toDebugDescription())
         activityChannel.send(
             ActivityCommand.ToastError(error.toUserError())
         )

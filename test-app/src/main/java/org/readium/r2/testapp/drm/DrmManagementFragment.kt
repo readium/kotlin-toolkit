@@ -104,9 +104,8 @@ class DrmManagementFragment : Fragment() {
             model.renewLoan(this@DrmManagementFragment)
                 .onSuccess { newDate ->
                     binding.drmValueEnd.text = newDate.toFormattedString()
-                }.onFailure { error ->
-                    error.report(requireView())
                 }
+                .onFailure { handle(it) }
         }
     }
 
@@ -122,20 +121,17 @@ class DrmManagementFragment : Fragment() {
                         .onSuccess {
                             val result = DrmManagementContract.createResult(hasReturned = true)
                             setFragmentResult(DrmManagementContract.REQUEST_KEY, result)
-                        }.onFailure { exception ->
-                            exception.report(requireView())
                         }
+                        .onFailure { handle(it) }
                 }
             }
             .show()
+    }
+
+    private fun handle(error: DrmManagementViewModel.DrmError) {
+        error.toUserError().show(requireActivity())
     }
 }
 
 private fun Date?.toFormattedString() =
     DateTime(this).toString(DateTimeFormat.shortDateTime()).orEmpty()
-
-// FIXME: the toast is drawn behind the navigation bar
-private fun DrmManagementViewModel.DrmError.report(view: View) {
-    Snackbar.make(view, toUserError().getUserMessage(view.context), Snackbar.LENGTH_LONG).show()
-    Timber.w(error.toDebugDescription())
-}

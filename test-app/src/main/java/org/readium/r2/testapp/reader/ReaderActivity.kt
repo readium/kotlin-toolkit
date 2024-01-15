@@ -6,19 +6,24 @@
 
 package org.readium.r2.testapp.reader
 
+import android.content.DialogInterface
+import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.view.MenuItem
 import android.view.WindowManager
-import android.widget.Toast
 import androidx.activity.viewModels
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ShareCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentResultListener
 import androidx.fragment.app.commit
 import androidx.fragment.app.commitNow
 import androidx.lifecycle.ViewModelProvider
+import com.google.android.material.snackbar.Snackbar
 import org.readium.r2.shared.publication.Locator
+import org.readium.r2.shared.util.toDebugDescription
 import org.readium.r2.shared.util.toUri
 import org.readium.r2.testapp.Application
 import org.readium.r2.testapp.R
@@ -28,7 +33,9 @@ import org.readium.r2.testapp.drm.DrmManagementFragment
 import org.readium.r2.testapp.outline.OutlineContract
 import org.readium.r2.testapp.outline.OutlineFragment
 import org.readium.r2.testapp.utils.UserError
+import org.readium.r2.testapp.utils.extensions.createShareIntent
 import org.readium.r2.testapp.utils.launchWebBrowser
+
 
 /*
  * An activity to read a publication
@@ -154,12 +161,8 @@ open class ReaderActivity : AppCompatActivity() {
             is ReaderViewModel.ActivityCommand.OpenExternalLink ->
                 launchWebBrowser(this, command.url.toUri())
             is ReaderViewModel.ActivityCommand.ToastError ->
-                showError(command.error)
+                command.error.show(this)
         }
-    }
-
-    private fun showError(error: UserError) {
-        Toast.makeText(this, error.getUserMessage(this), Toast.LENGTH_LONG).show()
     }
 
     private fun showOutlineFragment() {

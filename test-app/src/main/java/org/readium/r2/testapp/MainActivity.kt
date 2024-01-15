@@ -51,20 +51,17 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun handleEvent(event: MainViewModel.Event) {
-        val message =
-            when (event) {
-                is MainViewModel.Event.ImportPublicationSuccess ->
-                    getString(R.string.import_publication_success)
+        when (event) {
+            is MainViewModel.Event.ImportPublicationSuccess ->
+                Snackbar.make(
+                    findViewById(android.R.id.content),
+                    getString(R.string.import_publication_success),
+                    Snackbar.LENGTH_LONG
+                ).show()
 
-                is MainViewModel.Event.ImportPublicationError -> {
-                    Timber.e(event.error.toDebugDescription())
-                    event.error.toUserError().getUserMessage(this)
-                }
+            is MainViewModel.Event.ImportPublicationError -> {
+                event.error.toUserError().show(this)
             }
-        Snackbar.make(
-            findViewById(android.R.id.content),
-            message,
-            Snackbar.LENGTH_LONG
-        ).show()
+        }
     }
 }

@@ -213,12 +213,13 @@ abstract class VisualReaderFragment : BaseReaderFragment() {
      * Setup text-to-speech observers, if available.
      */
     private suspend fun setupTts(scope: CoroutineScope) {
+        val activity = requireActivity()
+
         model.tts?.apply {
             events
                 .onEach { event ->
                     when (event) {
                         is TtsViewModel.Event.OnError -> {
-                            Timber.e(event.error.toDebugDescription())
                             showError(event.error.toUserError())
                         }
                         is TtsViewModel.Event.OnMissingVoiceData ->

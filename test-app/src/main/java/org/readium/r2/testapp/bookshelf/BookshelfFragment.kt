@@ -154,28 +154,18 @@ class BookshelfFragment : Fragment() {
     }
 
     private fun handleEvent(event: BookshelfViewModel.Event) {
-        val message =
-            when (event) {
-                is BookshelfViewModel.Event.OpenPublicationError -> {
-                    Timber.e(event.error.toDebugDescription())
-                    (event.error).toUserError().getUserMessage(requireContext())
-                }
-
-                is BookshelfViewModel.Event.LaunchReader -> {
-                    val intent = ReaderActivityContract().createIntent(
-                        requireContext(),
-                        event.arguments
-                    )
-                    startActivity(intent)
-                    null
-                }
+        when (event) {
+            is BookshelfViewModel.Event.OpenPublicationError -> {
+                activity?.let { event.error.toUserError().show(it) }
             }
-        message?.let {
-            Snackbar.make(
-                requireView(),
-                it,
-                Snackbar.LENGTH_LONG
-            ).show()
+
+            is BookshelfViewModel.Event.LaunchReader -> {
+                val intent = ReaderActivityContract().createIntent(
+                    requireContext(),
+                    event.arguments
+                )
+                startActivity(intent)
+            }
         }
     }
 
