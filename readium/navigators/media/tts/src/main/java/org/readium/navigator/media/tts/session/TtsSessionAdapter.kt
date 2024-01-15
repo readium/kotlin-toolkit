@@ -772,6 +772,10 @@ internal class TtsSessionAdapter<E : TtsEngine.Error>(
         streamVolumeManager.setMuted(muted)
     }
 
+    override fun setAudioAttributes(audioAttributes: AudioAttributes, handleAudioFocus: Boolean) {
+        audioFocusManager.setAudioAttributes(audioAttributes)
+    }
+
     private fun notifyListenersPlaybackChanged(
         previousPlaybackInfo: TtsPlayer.Playback,
         playbackInfo: TtsPlayer.Playback
