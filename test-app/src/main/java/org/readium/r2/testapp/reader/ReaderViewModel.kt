@@ -33,7 +33,6 @@ import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.data.ReadError
-import org.readium.r2.shared.util.toDebugDescription
 import org.readium.r2.testapp.Application
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.data.BookRepository
@@ -215,7 +214,7 @@ class ReaderViewModel(
             ?: run {
                 activityChannel.send(
                     ActivityCommand.ToastError(
-                        UserError(R.string.search_error_not_searchable)
+                        UserError(R.string.search_error_not_searchable, cause = null)
                     )
                 )
                 null
@@ -263,7 +262,6 @@ class ReaderViewModel(
     // Navigator.Listener
 
     override fun onResourceLoadFailed(href: Url, error: ReadError) {
-        Timber.e(error.toDebugDescription())
         activityChannel.send(
             ActivityCommand.ToastError(error.toUserError())
         )

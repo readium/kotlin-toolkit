@@ -41,10 +41,10 @@ sealed class TtsError(
         TtsError(cause.message, cause)
 
     fun toUserError(): UserError = when (this) {
-        is ContentError -> UserError(R.string.tts_error_other)
-        is EngineError.Network -> UserError(R.string.tts_error_network)
-        is EngineError.Other -> UserError(R.string.tts_error_other)
-        is Initialization -> UserError(R.string.tts_error_initialization)
-        is ServiceError -> UserError(R.string.error_unexpected)
+        is ContentError -> UserError(R.string.tts_error_other, cause = this)
+        is EngineError.Network -> UserError(R.string.tts_error_network, cause = this)
+        is EngineError.Other -> UserError(R.string.tts_error_other, cause = this)
+        is Initialization -> UserError(R.string.tts_error_initialization, cause = this)
+        is ServiceError -> UserError(R.string.error_unexpected, cause = this)
     }
 }

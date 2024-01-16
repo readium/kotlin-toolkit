@@ -116,7 +116,7 @@ abstract class BaseReaderFragment : Fragment() {
     }
 
     protected fun showError(error: UserError) {
-        val context = context ?: return
-        Toast.makeText(context, error.getUserMessage(context), Toast.LENGTH_LONG).show()
+        val activity = activity ?: return
+        error.show(activity)
     }
 }

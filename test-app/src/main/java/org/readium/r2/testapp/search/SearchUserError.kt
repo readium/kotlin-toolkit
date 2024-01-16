@@ -13,6 +13,6 @@ import org.readium.r2.testapp.utils.UserError
 
 @OptIn(ExperimentalReadiumApi::class)
 fun SearchError.toUserError(): UserError = when (this) {
-    is SearchError.Engine -> UserError(R.string.search_error_other)
-    is SearchError.Reading -> UserError(R.string.search_error_other)
+    is SearchError.Engine -> UserError(R.string.search_error_other, cause = this)
+    is SearchError.Reading -> UserError(R.string.search_error_other, cause = this)
 }

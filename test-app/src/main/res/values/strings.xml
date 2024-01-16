@@ -71,6 +71,9 @@
     <string name="cover_image">Cover Image</string>
     <string name="repfr">repfr</string>
 
+    <string name="details">Details</string>
+    <string name="close">Close</string>
+    <string name="share">Share</string>
     <string name="delete">Delete</string>
     <string name="cancel">Cancel</string>
     <string name="confirm_delete_book_title">Delete Book?</string>

@@ -8,6 +8,7 @@ package org.readium.r2.testapp.reader
 
 import org.readium.r2.shared.util.Error
 import org.readium.r2.testapp.R
+import org.readium.r2.testapp.domain.toUserError
 import org.readium.r2.testapp.utils.UserError
 
 sealed class OpeningError(
@@ -35,12 +36,12 @@ sealed class OpeningError(
     fun toUserError(): UserError =
         when (this) {
             is AudioEngineInitialization ->
-                UserError(R.string.opening_publication_audio_engine_initialization)
+                UserError(R.string.opening_publication_audio_engine_initialization, cause = this)
             is PublicationError ->
                 cause.toUserError()
             is RestrictedPublication ->
-                UserError(R.string.publication_error_restricted)
+                UserError(R.string.publication_error_restricted, cause = this)
             is CannotRender ->
-                UserError((R.string.opening_publication_cannot_render))
+                UserError(R.string.opening_publication_cannot_render, cause = this)
         }
 }

@@ -10,7 +10,6 @@ import android.os.Build
 import android.os.Bundle
 import android.view.MenuItem
 import android.view.WindowManager
-import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
@@ -27,7 +26,6 @@ import org.readium.r2.testapp.drm.DrmManagementContract
 import org.readium.r2.testapp.drm.DrmManagementFragment
 import org.readium.r2.testapp.outline.OutlineContract
 import org.readium.r2.testapp.outline.OutlineFragment
-import org.readium.r2.testapp.utils.UserError
 import org.readium.r2.testapp.utils.launchWebBrowser
 
 /*
@@ -154,12 +152,8 @@ open class ReaderActivity : AppCompatActivity() {
             is ReaderViewModel.ActivityCommand.OpenExternalLink ->
                 launchWebBrowser(this, command.url.toUri())
             is ReaderViewModel.ActivityCommand.ToastError ->
-                showError(command.error)
+                command.error.show(this)
         }
-    }
-
-    private fun showError(error: UserError) {
-        Toast.makeText(this, error.getUserMessage(this), Toast.LENGTH_LONG).show()
     }
 
     private fun showOutlineFragment() {

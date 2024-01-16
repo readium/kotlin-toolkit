@@ -35,13 +35,13 @@ sealed class PublicationError(
     fun toUserError(): UserError =
         when (this) {
             is InvalidPublication ->
-                UserError(R.string.publication_error_invalid_publication)
+                UserError(R.string.publication_error_invalid_publication, cause = this)
             is Unexpected ->
-                UserError(R.string.publication_error_unexpected)
+                UserError(R.string.publication_error_unexpected, cause = this)
             is FormatNotSupported ->
-                UserError(R.string.publication_error_unsupported_asset)
+                UserError(R.string.publication_error_unsupported_asset, cause = this)
             is UnsupportedScheme ->
-                UserError(R.string.publication_error_scheme_not_supported)
+                UserError(R.string.publication_error_scheme_not_supported, cause = this)
             is ReadError ->
                 cause.toUserError()
         }
