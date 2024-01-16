@@ -54,7 +54,7 @@ class HtmlResourceContentIteratorTest {
         TextElement(
             locator = locator(
                 progression = 0.0,
-                selector = "#pgepubid00498 > div.center",
+                selector = "html > body > section > div.center",
                 before = null,
                 highlight = "171"
             ),
@@ -63,7 +63,7 @@ class HtmlResourceContentIteratorTest {
                 Segment(
                     locator = locator(
                         progression = 0.0,
-                        selector = "#pgepubid00498 > div.center",
+                        selector = "html > body > section > div.center",
                         before = null,
                         highlight = "171"
                     ),
@@ -75,7 +75,7 @@ class HtmlResourceContentIteratorTest {
         TextElement(
             locator = locator(
                 progression = 0.2,
-                selector = "#pgepubid00498 > h3",
+                selector = "html > body > section > h3",
                 before = "171",
                 highlight = "INTRODUCTORY"
             ),
@@ -84,7 +84,7 @@ class HtmlResourceContentIteratorTest {
                 Segment(
                     locator = locator(
                         progression = 0.2,
-                        selector = "#pgepubid00498 > h3",
+                        selector = "html > body > section > h3",
                         before = "171",
                         highlight = "INTRODUCTORY"
                     ),
@@ -96,7 +96,7 @@ class HtmlResourceContentIteratorTest {
         TextElement(
             locator = locator(
                 progression = 0.4,
-                selector = "#pgepubid00498 > p:nth-child(3)",
+                selector = "html > body > section > p:nth-child(3)",
                 before = "171INTRODUCTORY",
                 highlight = "The difficulties of classification are very apparent here, and once more it must be noted that illustrative and practical purposes rather than logical ones are served by the arrangement adopted. The modern fanciful story is here placed next to the real folk story instead of after all the groups of folk products. The Hebrew stories at the beginning belong quite as well, perhaps even better, in Section V, while the stories at the end of Section VI shade off into the more modern types of short tales."
             ),
@@ -105,7 +105,7 @@ class HtmlResourceContentIteratorTest {
                 Segment(
                     locator = locator(
                         progression = 0.4,
-                        selector = "#pgepubid00498 > p:nth-child(3)",
+                        selector = "html > body > section > p:nth-child(3)",
                         before = "171INTRODUCTORY",
                         highlight = "The difficulties of classification are very apparent here, and once more it must be noted that illustrative and practical purposes rather than logical ones are served by the arrangement adopted. The modern fanciful story is here placed next to the real folk story instead of after all the groups of folk products. The Hebrew stories at the beginning belong quite as well, perhaps even better, in Section V, while the stories at the end of Section VI shade off into the more modern types of short tales."
                     ),
@@ -117,7 +117,7 @@ class HtmlResourceContentIteratorTest {
         TextElement(
             locator = locator(
                 progression = 0.6,
-                selector = "#pgepubid00498 > p:nth-child(4)",
+                selector = "html > body > section > p:nth-child(4)",
                 before = "ade off into the more modern types of short tales.",
                 highlight = "The child's natural literature. The world has lost certain secrets as the price of an advancing civilization."
             ),
@@ -126,7 +126,7 @@ class HtmlResourceContentIteratorTest {
                 Segment(
                     locator = locator(
                         progression = 0.6,
-                        selector = "#pgepubid00498 > p:nth-child(4)",
+                        selector = "html > body > section > p:nth-child(4)",
                         before = "ade off into the more modern types of short tales.",
                         highlight = "The child's natural literature. The world has lost certain secrets as the price of an advancing civilization."
                     ),
@@ -138,7 +138,7 @@ class HtmlResourceContentIteratorTest {
         TextElement(
             locator = locator(
                 progression = 0.8,
-                selector = "#pgepubid00498 > p:nth-child(5)",
+                selector = "html > body > section > p:nth-child(5)",
                 before = "secrets as the price of an advancing civilization.",
                 highlight = "Without discussing the limits of the culture-epoch theory of human development as a complete guide in education, it is clear that the young child passes through a period when his mind looks out upon the world in a manner analogous to that of the folk as expressed in their literature."
             ),
@@ -147,7 +147,7 @@ class HtmlResourceContentIteratorTest {
                 Segment(
                     locator = locator(
                         progression = 0.8,
-                        selector = "#pgepubid00498 > p:nth-child(5)",
+                        selector = "html > body > section > p:nth-child(5)",
                         before = "secrets as the price of an advancing civilization.",
                         highlight = "Without discussing the limits of the culture-epoch theory of human development as a complete guide in education, it is clear that the young child passes through a period when his mind looks out upon the world in a manner analogous to that of the folk as expressed in their literature."
                     ),
@@ -271,13 +271,13 @@ class HtmlResourceContentIteratorTest {
 
     @Test
     fun `starting from a CSS selector`() = runTest {
-        val iter = iterator(html, locator(selector = "#pgepubid00498 > p:nth-child(3)"))
+        val iter = iterator(html, locator(selector = "html > body > section > p:nth-child(3)"))
         assertEquals(elements.subList(2, elements.size), iter.elements())
     }
 
     @Test
     fun `calling previous() when starting from a CSS selector`() = runTest {
-        val iter = iterator(html, locator(selector = "#pgepubid00498 > p:nth-child(3)"))
+        val iter = iterator(html, locator(selector = "html > body > section > p:nth-child(3)"))
         assertTrue(iter.hasPrevious())
         assertEquals(elements[1], iter.previous())
     }
@@ -557,7 +557,7 @@ class HtmlResourceContentIteratorTest {
                 TextElement(
                     locator = locator(
                         progression = 2 / 3.0,
-                        selector = "#c06-li-0001 > aside",
+                        selector = "html > body > ol.decimal > li > aside",
                         before = "e just described is very much a waterfall process.\n                        \n                        ",
                         highlight = "Trailing text"
                     ),
@@ -566,7 +566,7 @@ class HtmlResourceContentIteratorTest {
                         Segment(
                             locator = locator(
                                 progression = 2 / 3.0,
-                                selector = "#c06-li-0001 > aside",
+                                selector = "html > body > ol.decimal > li > aside",
                                 before = "e just described is very much a waterfall process.\n                        ",
                                 highlight = "Trailing text"
                             ),
