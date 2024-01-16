@@ -63,7 +63,7 @@ public class AudioParser(
     private fun parseResourceAsset(
         asset: ResourceAsset
     ): Try<Publication.Builder, PublicationParser.ParseError> {
-        if (asset.format.conformsToAny(audioSpecifications)) {
+        if (!asset.format.conformsToAny(audioSpecifications)) {
             return Try.failure(PublicationParser.ParseError.FormatNotSupported())
         }
 

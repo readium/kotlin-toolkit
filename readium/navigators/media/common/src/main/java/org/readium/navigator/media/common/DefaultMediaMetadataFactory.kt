@@ -45,7 +45,7 @@ internal class DefaultMediaMetadataFactory(
             // byte array will go cross processes and should be kept small
             publication.coverFitting(Size(400, 400))
                 ?.compress(Bitmap.CompressFormat.PNG, 80, byteStream)
-            byteStream.toByteArray()
+                ?.let { byteStream.toByteArray() }
         }
     }
 
