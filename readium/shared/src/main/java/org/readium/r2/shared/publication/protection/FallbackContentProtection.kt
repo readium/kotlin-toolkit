@@ -18,7 +18,7 @@ import org.readium.r2.shared.util.format.AdeptSpecification
 import org.readium.r2.shared.util.format.LcpSpecification
 
 /**
- * [ContentProtection] implementation used as a fallback by when detecting known DRMs
+ * [ContentProtection] implementation used as a fallback when detecting known DRMs
  * not supported by the app.
  */
 public class FallbackContentProtection : ContentProtection {
