@@ -153,7 +153,7 @@ class BookshelfFragment : Fragment() {
     private fun handleEvent(event: BookshelfViewModel.Event) {
         when (event) {
             is BookshelfViewModel.Event.OpenPublicationError -> {
-                activity?.let { event.error.toUserError().show(it) }
+                event.error.toUserError().show(requireActivity())
             }
 
             is BookshelfViewModel.Event.LaunchReader -> {
