@@ -115,8 +115,8 @@ class DirectoryContainerTest {
         runBlocking {
             // FIXME: Test media types
             Shadows.shadowOf(MimeTypeMap.getSingleton()).apply {
-                addExtensionMimeTypMapping("txt", "text/plain")
-                addExtensionMimeTypMapping("mp3", "audio/mpeg")
+                addExtensionMimeTypeMapping("txt", "text/plain")
+                addExtensionMimeTypeMapping("mp3", "audio/mpeg")
             }
 
             val entries = sut().entries
