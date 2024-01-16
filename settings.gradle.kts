@@ -18,10 +18,10 @@ pluginManagement {
     // it to integrate Readium in submodules.
     // See https://github.com/readium/kotlin-toolkit/pull/97
     plugins {
-        id("com.android.application") version ("8.2.0")
-        id("com.android.library") version ("8.2.0")
+        id("com.android.application") version ("8.2.1")
+        id("com.android.library") version ("8.2.1")
         id("io.github.gradle-nexus.publish-plugin") version ("1.3.0")
-        id("org.jetbrains.dokka") version ("1.8.20")
+        id("org.jetbrains.dokka") version ("1.9.10")
         id("org.jetbrains.kotlin.android") version ("1.9.22")
         id("org.jetbrains.kotlin.plugin.serialization") version ("1.9.22")
         id("org.jlleitschuh.gradle.ktlint") version ("11.5.1")
