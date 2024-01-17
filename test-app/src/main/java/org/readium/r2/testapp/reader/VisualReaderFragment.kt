@@ -621,6 +621,7 @@ abstract class VisualReaderFragment : BaseReaderFragment() {
                 }
 
                 // Finally, show the popup window at the center location of root relative layout
+                // FIXME: should anchor on noteref and be scrollable if the note is too long.
                 mPopupWindow.showAtLocation(
                     requireView(),
                     Gravity.CENTER,

@@ -573,6 +573,7 @@ internal open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebV
     internal fun shouldOverrideUrlLoading(request: WebResourceRequest): Boolean {
         val requestUrl = request.url.toUrl() ?: return false
 
+        // FIXME: I doubt this can work well. hasGesture considers itself unreliable.
         return if (urlNotToOverrideLoading == requestUrl && request.hasGesture()) {
             urlNotToOverrideLoading = null
             false
