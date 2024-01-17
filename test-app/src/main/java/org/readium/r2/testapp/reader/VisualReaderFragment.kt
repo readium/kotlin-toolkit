@@ -9,19 +9,34 @@ package org.readium.r2.testapp.reader
 import android.app.AlertDialog
 import android.content.Context
 import android.graphics.Color
+import android.graphics.PointF
 import android.graphics.RectF
 import android.os.Bundle
-import android.view.*
+import android.text.Spanned
+import android.view.ActionMode
+import android.view.Gravity
+import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
+import android.view.View
+import android.view.ViewGroup
 import android.view.WindowInsets
 import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
+import android.widget.ImageButton
 import android.widget.LinearLayout
+import android.widget.ListPopupWindow
 import android.widget.PopupWindow
 import android.widget.TextView
 import androidx.annotation.ColorInt
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -36,13 +51,21 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import kotlin.math.roundToInt
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.parcelize.Parcelize
 import org.readium.navigator.media.tts.android.AndroidTtsEngine
-import org.readium.r2.navigator.*
+import org.readium.r2.navigator.DecorableNavigator
+import org.readium.r2.navigator.Decoration
+import org.readium.r2.navigator.ExperimentalDecorator
+import org.readium.r2.navigator.OverflowableNavigator
+import org.readium.r2.navigator.SelectableNavigator
+import org.readium.r2.navigator.VisualNavigator
 import org.readium.r2.navigator.input.InputListener
 import org.readium.r2.navigator.input.TapEvent
 import org.readium.r2.navigator.util.BaseActionModeCallback
@@ -56,9 +79,14 @@ import org.readium.r2.testapp.databinding.FragmentReaderBinding
 import org.readium.r2.testapp.reader.preferences.UserPreferencesBottomSheetDialogFragment
 import org.readium.r2.testapp.reader.tts.TtsControls
 import org.readium.r2.testapp.reader.tts.TtsViewModel
-import org.readium.r2.testapp.utils.*
+import org.readium.r2.testapp.utils.clearPadding
 import org.readium.r2.testapp.utils.extensions.confirmDialog
 import org.readium.r2.testapp.utils.extensions.throttleLatest
+import org.readium.r2.testapp.utils.hideSystemUi
+import org.readium.r2.testapp.utils.padSystemUi
+import org.readium.r2.testapp.utils.showSystemUi
+import org.readium.r2.testapp.utils.toggleSystemUi
+import org.readium.r2.testapp.utils.viewLifecycle
 
 /*
  * Base reader fragment class
@@ -71,6 +99,17 @@ abstract class VisualReaderFragment : BaseReaderFragment() {
     protected var binding: FragmentReaderBinding by viewLifecycle()
 
     private lateinit var navigatorFragment: Fragment
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        model.visualFragmentChannel.receive(this) { event ->
+            when (event) {
+                is ReaderViewModel.VisualFragmentCommand.ShowPopup ->
+                    showFootnote(event.text, event.point)
+            }
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -211,8 +250,6 @@ abstract class VisualReaderFragment : BaseReaderFragment() {
      * Setup text-to-speech observers, if available.
      */
     private suspend fun setupTts(scope: CoroutineScope) {
-        val activity = requireActivity()
-
         model.tts?.apply {
             events
                 .onEach { event ->
@@ -544,6 +581,55 @@ abstract class VisualReaderFragment : BaseReaderFragment() {
                 alert.show()
             }
         }
+
+    private fun showFootnote(
+        text: Spanned,
+        point: PointF
+    ) {
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                // Initialize a new instance of LayoutInflater service
+                val inflater =
+                    requireActivity().getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
+
+                // Inflate the custom layout/view
+                val customView = inflater.inflate(R.layout.popup_footnote, null)
+
+                // Initialize a new instance of popup window
+                val mPopupWindow = PopupWindow(
+                    customView,
+                    ListPopupWindow.WRAP_CONTENT,
+                    ListPopupWindow.WRAP_CONTENT
+                )
+                mPopupWindow.isOutsideTouchable = true
+                mPopupWindow.isFocusable = true
+
+                // Set an elevation value for popup window
+                // Call requires API level 21
+                mPopupWindow.elevation = 5.0f
+
+                val textView = customView.findViewById(R.id.footnote) as TextView
+                textView.text = text
+
+                // Get a reference for the custom view close button
+                val closeButton = customView.findViewById(R.id.ib_close) as ImageButton
+
+                // Set a click listener for the popup window close button
+                closeButton.setOnClickListener {
+                    // Dismiss the popup window
+                    mPopupWindow.dismiss()
+                }
+
+                // Finally, show the popup window at the center location of root relative layout
+                mPopupWindow.showAtLocation(
+                    requireView(),
+                    Gravity.CENTER,
+                    point.x.roundToInt(),
+                    point.y.roundToInt()
+                )
+            }
+        }
+    }
 
     fun updateSystemUiVisibility() {
         if (navigatorFragment.isHidden) {

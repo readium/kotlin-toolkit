@@ -6,6 +6,7 @@
 
 package org.readium.r2.navigator
 
+import android.graphics.PointF
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.util.AbsoluteUrl
@@ -15,6 +16,19 @@ import org.readium.r2.shared.util.AbsoluteUrl
  */
 @ExperimentalReadiumApi
 public interface HyperlinkNavigator : Navigator {
+
+    @ExperimentalReadiumApi
+    public sealed interface LinkContext {
+        public val referrer: String
+        public val activationPoint: PointF
+    }
+
+    @ExperimentalReadiumApi
+    public data class FootnoteContext(
+        public override val referrer: String,
+        override val activationPoint: PointF,
+        public val content: String
+    ) : LinkContext
 
     @ExperimentalReadiumApi
     public interface Listener : Navigator.Listener {
@@ -29,7 +43,7 @@ public interface HyperlinkNavigator : Navigator {
          * to the calling app to decide how to display the link.
          */
         @ExperimentalReadiumApi
-        public fun shouldFollowInternalLink(link: Link): Boolean { return true }
+        public fun shouldFollowInternalLink(link: Link, context: LinkContext?): Boolean { return true }
 
         /**
          * Called when a link to an external URL was activated in the navigator.

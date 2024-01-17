@@ -9,20 +9,33 @@
 package org.readium.r2.testapp.reader
 
 import android.graphics.Color
+import android.graphics.PointF
+import android.os.Build
+import android.text.Html
+import android.text.Spanned
 import androidx.annotation.ColorInt
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.paging.*
-import kotlinx.coroutines.ExperimentalCoroutinesApi
+import androidx.paging.InvalidatingPagingSourceFactory
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.PagingData
+import androidx.paging.cachedIn
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import org.readium.r2.navigator.Decoration
 import org.readium.r2.navigator.ExperimentalDecorator
+import org.readium.r2.navigator.HyperlinkNavigator
 import org.readium.r2.navigator.epub.EpubNavigatorFragment
 import org.readium.r2.navigator.image.ImageNavigatorFragment
 import org.readium.r2.navigator.pdf.PdfNavigatorFragment
 import org.readium.r2.shared.ExperimentalReadiumApi
+import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.LocatorCollection
 import org.readium.r2.shared.publication.Publication
@@ -48,7 +61,6 @@ import timber.log.Timber
 
 @OptIn(
     ExperimentalDecorator::class,
-    ExperimentalCoroutinesApi::class,
     ExperimentalReadiumApi::class
 )
 class ReaderViewModel(
@@ -74,7 +86,10 @@ class ReaderViewModel(
     val activityChannel: EventChannel<ActivityCommand> =
         EventChannel(Channel(Channel.BUFFERED), viewModelScope)
 
-    val fragmentChannel: EventChannel<FeedbackEvent> =
+    val fragmentChannel: EventChannel<FragmentFeedback> =
+        EventChannel(Channel(Channel.BUFFERED), viewModelScope)
+
+    val visualFragmentChannel: EventChannel<VisualFragmentCommand> =
         EventChannel(Channel(Channel.BUFFERED), viewModelScope)
 
     val searchChannel: EventChannel<SearchCommand> =
@@ -104,9 +119,9 @@ class ReaderViewModel(
     fun insertBookmark(locator: Locator) = viewModelScope.launch {
         val id = bookRepository.insertBookmark(bookId, publication, locator)
         if (id != -1L) {
-            fragmentChannel.send(FeedbackEvent.BookmarkSuccessfullyAdded)
+            fragmentChannel.send(FragmentFeedback.BookmarkSuccessfullyAdded)
         } else {
-            fragmentChannel.send(FeedbackEvent.BookmarkFailed)
+            fragmentChannel.send(FragmentFeedback.BookmarkFailed)
         }
     }
 
@@ -272,6 +287,27 @@ class ReaderViewModel(
         activityChannel.send(ActivityCommand.OpenExternalLink(url))
     }
 
+    override fun shouldFollowInternalLink(
+        link: Link,
+        context: HyperlinkNavigator.LinkContext?
+    ): Boolean =
+        when (context) {
+            is HyperlinkNavigator.FootnoteContext -> {
+                val text =
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                        Html.fromHtml(context.content, Html.FROM_HTML_MODE_COMPACT)
+                    } else {
+                        @Suppress("DEPRECATION")
+                        Html.fromHtml(context.content)
+                    }
+
+                val command = VisualFragmentCommand.ShowPopup(text, context.activationPoint)
+                visualFragmentChannel.send(command)
+                false
+            }
+            else -> true
+        }
+
     // Search
 
     inner class PagingSourceListener : SearchPagingSource.Listener {
@@ -296,9 +332,13 @@ class ReaderViewModel(
         class ToastError(val error: UserError) : ActivityCommand()
     }
 
-    sealed class FeedbackEvent {
-        object BookmarkSuccessfullyAdded : FeedbackEvent()
-        object BookmarkFailed : FeedbackEvent()
+    sealed class FragmentFeedback {
+        object BookmarkSuccessfullyAdded : FragmentFeedback()
+        object BookmarkFailed : FragmentFeedback()
+    }
+
+    sealed class VisualFragmentCommand {
+        class ShowPopup(val text: Spanned, val point: PointF) : VisualFragmentCommand()
     }
 
     sealed class SearchCommand {

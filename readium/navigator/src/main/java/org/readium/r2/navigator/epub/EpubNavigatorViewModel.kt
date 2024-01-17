@@ -177,12 +177,17 @@ internal class EpubNavigatorViewModel(
     fun navigateToUrl(url: AbsoluteUrl) = viewModelScope.launch {
         val link = internalLinkFromUrl(url)
         if (link != null) {
-            if (listener == null || listener.shouldFollowInternalLink(link)) {
+            if (listener == null || listener.shouldFollowInternalLink(link, null)) {
                 _events.send(Event.OpenInternalLink(link))
             }
         } else {
             listener?.onExternalLinkActivated(url)
         }
+    }
+
+    fun shouldFollowFootnoteLink(url: AbsoluteUrl, context: HyperlinkNavigator.FootnoteContext): Boolean {
+        val link = internalLinkFromUrl(url) ?: return true
+        return listener?.shouldFollowInternalLink(link, context) ?: true
     }
 
     /**
