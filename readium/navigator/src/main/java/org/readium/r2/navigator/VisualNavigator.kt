@@ -24,7 +24,7 @@ import org.readium.r2.shared.publication.ReadingProgression as PublicationReadin
 public interface VisualNavigator : Navigator {
 
     @Deprecated(
-        "Moved to DirectionalNavigator",
+        "Renamed to OverflowableNavigator.Overflow",
         level = DeprecationLevel.ERROR
     )
     @OptIn(ExperimentalReadiumApi::class)
@@ -126,7 +126,7 @@ public interface VisualNavigator : Navigator {
      * Moves to the next content portion (eg. page) in the reading progression direction.
      */
     @Deprecated(
-        "Moved to DirectionalNavigator",
+        "Moved to OverflowableNavigator",
         level = DeprecationLevel.ERROR
     )
     public fun goForward(animated: Boolean = false, completion: () -> Unit = {}): Boolean
@@ -135,7 +135,7 @@ public interface VisualNavigator : Navigator {
      * Moves to the previous content portion (eg. page) in the reading progression direction.
      */
     @Deprecated(
-        "Moved to DirectionalNavigator",
+        "Moved to OverflowableNavigator",
         level = DeprecationLevel.ERROR
     )
     public fun goBackward(animated: Boolean = false, completion: () -> Unit = {}): Boolean

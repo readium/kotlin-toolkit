@@ -208,7 +208,7 @@ public class MediaSessionNavigator(
         return go(locator, animated, completion)
     }
 
-    public fun goForward(animated: Boolean, completion: () -> Unit): Boolean {
+    public fun goForward(animated: Boolean = true, completion: () -> Unit = {}): Boolean {
         if (!isActive) return false
 
         seekRelative(skipForwardInterval)
@@ -216,7 +216,7 @@ public class MediaSessionNavigator(
         return true
     }
 
-    public fun goBackward(animated: Boolean, completion: () -> Unit): Boolean {
+    public fun goBackward(animated: Boolean = true, completion: () -> Unit = {}): Boolean {
         if (!isActive) return false
 
         seekRelative(-skipBackwardInterval)

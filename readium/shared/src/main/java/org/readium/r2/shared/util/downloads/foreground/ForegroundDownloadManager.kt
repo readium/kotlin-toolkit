@@ -57,8 +57,17 @@ public class ForegroundDownloadManager(
     }
 
     private suspend fun doRequest(request: DownloadManager.Request, id: DownloadManager.RequestId) {
-        val destination = withContext(Dispatchers.IO) {
-            File.createTempFile(UUID.randomUUID().toString(), null, downloadsDirectory)
+        val destination: File
+        try {
+            destination = withContext(Dispatchers.IO) {
+                File.createTempFile(UUID.randomUUID().toString(), null, downloadsDirectory)
+            }
+        } catch (exception: IOException) {
+            val error = DownloadManager.DownloadError.FileSystem(FileSystemError.IO(exception))
+            forEachListener(id) {
+                onDownloadFailed(id, error)
+            }
+            return
         }
 
         httpClient
