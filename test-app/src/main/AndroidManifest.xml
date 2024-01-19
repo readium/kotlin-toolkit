@@ -24,13 +24,11 @@
     <!-- android:networkSecurityConfig is required for r2-lcp-kotlin and r2-navigator-kotlin -->
     <application
         android:name=".Application"
-        android:allowBackup="false"
         android:icon="@mipmap/ic_launcher"
         android:label="Readium"
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:networkSecurityConfig="@xml/network_security_config"
-        tools:replace="android:allowBackup"
         tools:targetApi="n">
         <activity android:name=".MainActivity"
             android:clearTaskOnLaunch="true"

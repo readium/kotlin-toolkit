@@ -47,11 +47,11 @@ sealed class ImportError(
         ImportError(cause)
 
     fun toUserError(): UserError = when (this) {
-        is MissingLcpSupport -> UserError(R.string.missing_lcp_support)
-        is Database -> UserError(R.string.import_publication_unable_add_pub_database)
-        is DownloadFailed -> UserError(R.string.import_publication_download_failed)
+        is MissingLcpSupport -> UserError(R.string.missing_lcp_support, cause = this)
+        is Database -> UserError(R.string.import_publication_unable_add_pub_database, cause = this)
+        is DownloadFailed -> UserError(R.string.import_publication_download_failed, cause = this)
         is LcpAcquisitionFailed -> cause.toUserError()
-        is Opds -> UserError(R.string.import_publication_no_acquisition)
+        is Opds -> UserError(R.string.import_publication_no_acquisition, cause = this)
         is Publication -> cause.toUserError()
         is FileSystem -> cause.toUserError()
     }

@@ -21,9 +21,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import com.google.android.material.snackbar.Snackbar
 import org.readium.r2.shared.util.AbsoluteUrl
-import org.readium.r2.shared.util.toDebugDescription
 import org.readium.r2.testapp.Application
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.data.model.Book
@@ -31,7 +29,6 @@ import org.readium.r2.testapp.databinding.FragmentBookshelfBinding
 import org.readium.r2.testapp.opds.GridAutoFitLayoutManager
 import org.readium.r2.testapp.reader.ReaderActivityContract
 import org.readium.r2.testapp.utils.viewLifecycle
-import timber.log.Timber
 
 class BookshelfFragment : Fragment() {
 
@@ -154,28 +151,18 @@ class BookshelfFragment : Fragment() {
     }
 
     private fun handleEvent(event: BookshelfViewModel.Event) {
-        val message =
-            when (event) {
-                is BookshelfViewModel.Event.OpenPublicationError -> {
-                    Timber.e(event.error.toDebugDescription())
-                    (event.error).toUserError().getUserMessage(requireContext())
-                }
-
-                is BookshelfViewModel.Event.LaunchReader -> {
-                    val intent = ReaderActivityContract().createIntent(
-                        requireContext(),
-                        event.arguments
-                    )
-                    startActivity(intent)
-                    null
-                }
+        when (event) {
+            is BookshelfViewModel.Event.OpenPublicationError -> {
+                event.error.toUserError().show(requireActivity())
             }
-        message?.let {
-            Snackbar.make(
-                requireView(),
-                it,
-                Snackbar.LENGTH_LONG
-            ).show()
+
+            is BookshelfViewModel.Event.LaunchReader -> {
+                val intent = ReaderActivityContract().createIntent(
+                    requireContext(),
+                    event.arguments
+                )
+                startActivity(intent)
+            }
         }
     }
 
