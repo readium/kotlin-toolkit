@@ -4,7 +4,9 @@ All notable changes to this project will be documented in this file. Take a look
 
 **Warning:** Features marked as *experimental* may change or be removed in a future release without notice. Use with caution.
 
-## [Unreleased]
+<!-- ## [Unreleased] -->
+
+## [3.0.0-alpha.1]
 
 :warning: Please consult [the migration guide](docs/migration-guide.md#300-alpha1) to assist you in handling the breaking changes in this latest major release.
 
@@ -783,4 +785,5 @@ progression. Now if no reading progression is set, the `effectiveReadingProgress
 [2.2.1]: https://github.com/readium/kotlin-toolkit/compare/2.2.0...2.2.1
 [2.3.0]: https://github.com/readium/kotlin-toolkit/compare/2.2.1...2.3.0
 [2.4.0]: https://github.com/readium/kotlin-toolkit/compare/2.3.0...2.4.0
+[3.0.0-alpha.1]: https://github.com/readium/kotlin-toolkit/compare/2.4.0...3.0.0-alpha.1
 
