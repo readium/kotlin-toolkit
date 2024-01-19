@@ -20,7 +20,7 @@ apply(from = "$rootDir/scripts/publish-root.gradle")
 
 ext {
     set("publish.groupId", "org.readium.kotlin-toolkit")
-    set("publish.version", "2.3.0")
+    set("publish.version", "3.0.0-alpha.1")
 }
 
 subprojects {

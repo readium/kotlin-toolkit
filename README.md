@@ -32,7 +32,7 @@ Readium modules are distributed with [Maven Central](https://search.maven.org/se
 
 ```groovy
 buildscript {
-    ext.readium_version = '2.4.0'
+    ext.readium_version = '3.0.0-alpha.1'
 }
 
 allprojects {
