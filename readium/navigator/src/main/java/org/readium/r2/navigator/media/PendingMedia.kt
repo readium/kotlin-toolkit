@@ -15,7 +15,7 @@ import org.readium.r2.shared.publication.PublicationId
  * Holds information about a media-based [publication] waiting to be rendered by a [MediaPlayer].
  */
 @ExperimentalAudiobook
-data class PendingMedia(
+public data class PendingMedia(
     val publication: Publication,
     val publicationId: PublicationId,
     val locator: Locator

@@ -31,13 +31,16 @@ internal class PresentationAdapter(
 
         val layoutProp =
             if (epubVersion < 3.0) {
-                if (displayOptions["fixed-layout"] == "true")
+                if (displayOptions["fixed-layout"] == "true") {
                     "pre-paginated"
-                else
+                } else {
                     "reflowable"
-            } else itemsHolder
-                .adapt { it.takeFirstWithProperty(Vocabularies.RENDITION + "layout") }
-                ?.value
+                }
+            } else {
+                itemsHolder
+                    .adapt { it.takeFirstWithProperty(Vocabularies.RENDITION + "layout") }
+                    ?.value
+            }
 
         val (overflow, continuous) = when (flowProp) {
             "paginated" -> Pair(Presentation.Overflow.PAGINATED, false)
@@ -65,8 +68,11 @@ internal class PresentationAdapter(
         }
 
         val presentation = Presentation(
-            overflow = overflow, continuous = continuous,
-            layout = layout, orientation = orientation, spread = spread
+            overflow = overflow,
+            continuous = continuous,
+            layout = layout,
+            orientation = orientation,
+            spread = spread
         )
 
         return presentation to itemsHolder.remainingItems

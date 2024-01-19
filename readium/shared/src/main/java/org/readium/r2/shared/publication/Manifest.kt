@@ -9,17 +9,14 @@
 
 package org.readium.r2.shared.publication
 
-import android.os.Parcelable
-import kotlinx.parcelize.Parcelize
 import org.json.JSONArray
 import org.json.JSONObject
 import org.readium.r2.shared.JSONable
 import org.readium.r2.shared.extensions.optStringsFromArrayOrSingle
 import org.readium.r2.shared.extensions.putIfNotEmpty
-import org.readium.r2.shared.extensions.removeLastComponent
-import org.readium.r2.shared.extensions.toUrlOrNull
 import org.readium.r2.shared.toJSON
-import org.readium.r2.shared.util.Href
+import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.logging.ConsoleWarningLogger
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.logging.log
 import org.readium.r2.shared.util.mediatype.MediaType
@@ -27,24 +24,20 @@ import org.readium.r2.shared.util.mediatype.MediaType
 /**
  * Holds the metadata of a Readium publication, as described in the Readium Web Publication Manifest.
  */
-@Parcelize
-data class Manifest(
+public data class Manifest(
     val context: List<String> = emptyList(),
     val metadata: Metadata,
-    // FIXME: Currently Readium requires to set the [Link] with [rel] "self" when adding it to the
-    //     server. So we need to keep [links] as a mutable property.
-    var links: List<Link> = emptyList(),
+    val links: List<Link> = emptyList(),
     val readingOrder: List<Link> = emptyList(),
     val resources: List<Link> = emptyList(),
     val tableOfContents: List<Link> = emptyList(),
     val subcollections: Map<String, List<PublicationCollection>> = emptyMap()
-
-) : JSONable, Parcelable {
+) : JSONable {
 
     /**
      * Returns whether this manifest conforms to the given Readium Web Publication Profile.
      */
-    fun conformsTo(profile: Publication.Profile): Boolean {
+    public fun conformsTo(profile: Publication.Profile): Boolean {
         if (readingOrder.isEmpty()) {
             return false
         }
@@ -70,12 +63,12 @@ data class Manifest(
      * If there's no match, tries again after removing any query parameter and anchor from the
      * given [href].
      */
-    fun linkWithHref(href: String): Link? {
-        fun List<Link>.deepLinkWithHref(href: String): Link? {
+    public fun linkWithHref(href: Url): Link? {
+        fun List<Link>.deepLinkWithHref(href: Url): Link? {
             for (l in this) {
-                if (l.href == href)
+                if (l.url() == href) {
                     return l
-                else {
+                } else {
                     l.alternates.deepLinkWithHref(href)?.let { return it }
                     l.children.deepLinkWithHref(href)?.let { return it }
                 }
@@ -83,20 +76,20 @@ data class Manifest(
             return null
         }
 
-        fun find(href: String): Link? {
+        fun find(href: Url): Link? {
             return readingOrder.deepLinkWithHref(href)
                 ?: resources.deepLinkWithHref(href)
                 ?: links.deepLinkWithHref(href)
         }
 
         return find(href)
-            ?: find(href.takeWhile { it !in "#?" })
+            ?: find(href.removeFragment().removeQuery())
     }
 
     /**
      * Finds the first [Link] with the given relation in the manifest's links.
      */
-    fun linkWithRel(rel: String): Link? =
+    public fun linkWithRel(rel: String): Link? =
         readingOrder.firstWithRel(rel)
             ?: resources.firstWithRel(rel)
             ?: links.firstWithRel(rel)
@@ -104,7 +97,7 @@ data class Manifest(
     /**
      * Finds all [Link]s having the given [rel] in the manifest's links.
      */
-    fun linksWithRel(rel: String): List<Link> =
+    public fun linksWithRel(rel: String): List<Link> =
         (readingOrder + resources + links).filterByRel(rel)
 
     /**
@@ -112,16 +105,17 @@ data class Manifest(
      *
      * Returns null if the resource is not found in this manifest.
      */
-    fun locatorFromLink(link: Link): Locator? {
-        val components = link.href.split("#", limit = 2)
-        val href = components.firstOrNull() ?: link.href
-        val resourceLink = linkWithHref(href) ?: return null
-        val type = resourceLink.type ?: return null
-        val fragment = components.getOrNull(1)
+    public fun locatorFromLink(link: Link): Locator? {
+        var url = link.url()
+        val fragment = url.fragment
+        url = url.removeFragment()
+
+        val resourceLink = linkWithHref(url) ?: return null
+        val mediaType = resourceLink.mediaType ?: return null
 
         return Locator(
-            href = href,
-            type = type,
+            href = url,
+            mediaType = mediaType,
             title = resourceLink.title ?: link.title,
             locations = Locator.Locations(
                 fragments = listOfNotNull(fragment),
@@ -133,7 +127,7 @@ data class Manifest(
     /**
      * Serializes a [Publication] to its RWPM JSON representation.
      */
-    override fun toJSON() = JSONObject().apply {
+    override fun toJSON(): JSONObject = JSONObject().apply {
         putIfNotEmpty("@context", context)
         put("metadata", metadata.toJSON())
         put("links", links.toJSON())
@@ -148,7 +142,7 @@ data class Manifest(
      */
     override fun toString(): String = toJSON().toString().replace("\\/", "/")
 
-    companion object {
+    public companion object {
 
         /**
          * Parses a [Manifest] from its RWPM JSON representation.
@@ -157,50 +151,52 @@ data class Manifest(
          * https://readium.org/webpub-manifest/
          * https://readium.org/webpub-manifest/schema/publication.schema.json
          */
-        fun fromJSON(
+        public fun fromJSON(
             json: JSONObject?,
-            packaged: Boolean = false,
-            warnings: WarningLogger? = null
+            warnings: WarningLogger? = ConsoleWarningLogger()
         ): Manifest? {
             json ?: return null
 
-            val baseUrl =
-                if (packaged)
-                    "/"
-                else
-                    Link.fromJSONArray(json.optJSONArray("links"), warnings = warnings)
-                        .firstWithRel("self")
-                        ?.href
-                        ?.toUrlOrNull()
-                        ?.removeLastComponent()
-                        ?.toString()
-                        ?: "/"
-
-            val normalizeHref = { href: String -> Href(href, baseUrl).string }
-
             val context = json.optStringsFromArrayOrSingle("@context", remove = true)
 
-            val metadata = Metadata.fromJSON(json.remove("metadata") as? JSONObject, normalizeHref, warnings)
+            val metadata = Metadata.fromJSON(
+                json.remove("metadata") as? JSONObject,
+                warnings
+            )
             if (metadata == null) {
                 warnings?.log(Manifest::class.java, "[metadata] is required", json)
                 return null
             }
 
-            val links = Link.fromJSONArray(json.remove("links") as? JSONArray, normalizeHref, warnings)
-                .map { if (!packaged || "self" !in it.rels) it else it.copy(rels = it.rels - "self" + "alternate") }
+            val links = Link.fromJSONArray(
+                json.remove("links") as? JSONArray,
+                warnings
+            )
 
             // [readingOrder] used to be [spine], so we parse [spine] as a fallback.
             val readingOrderJSON = (json.remove("readingOrder") ?: json.remove("spine")) as? JSONArray
-            val readingOrder = Link.fromJSONArray(readingOrderJSON, normalizeHref, warnings)
-                .filter { it.type != null }
+            val readingOrder = Link.fromJSONArray(
+                readingOrderJSON,
+                warnings
+            )
+                .filter { it.mediaType != null }
 
-            val resources = Link.fromJSONArray(json.remove("resources") as? JSONArray, normalizeHref, warnings)
-                .filter { it.type != null }
+            val resources = Link.fromJSONArray(
+                json.remove("resources") as? JSONArray,
+                warnings
+            )
+                .filter { it.mediaType != null }
 
-            val tableOfContents = Link.fromJSONArray(json.remove("toc") as? JSONArray, normalizeHref, warnings)
+            val tableOfContents = Link.fromJSONArray(
+                json.remove("toc") as? JSONArray,
+                warnings
+            )
 
             // Parses subcollections from the remaining JSON properties.
-            val subcollections = PublicationCollection.collectionsFromJSON(json, normalizeHref, warnings)
+            val subcollections = PublicationCollection.collectionsFromJSON(
+                json,
+                warnings
+            )
 
             return Manifest(
                 context = context,

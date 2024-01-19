@@ -1,25 +1,46 @@
 /*
- * Module: r2-streamer-kotlin
- * Developers: Quentin Gliosca
- *
- * Copyright (c) 2020. Readium Foundation. All rights reserved.
- * Use of this source code is governed by a BSD-style license which is detailed in the
- * LICENSE file present in the project repository where this source code is maintained.
+ * Copyright 2023 Readium Foundation. All rights reserved.
+ * Use of this source code is governed by the BSD-style license
+ * available in the top-level LICENSE file of the project.
  */
 
 package org.readium.r2.streamer.parser.image
 
-import java.io.File
-import org.readium.r2.shared.fetcher.Fetcher
-import org.readium.r2.shared.publication.*
-import org.readium.r2.shared.publication.asset.PublicationAsset
+import org.readium.r2.shared.publication.Link
+import org.readium.r2.shared.publication.LocalizedString
+import org.readium.r2.shared.publication.Manifest
+import org.readium.r2.shared.publication.Metadata
+import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.services.PerResourcePositionsService
+import org.readium.r2.shared.util.DebugError
+import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.asset.Asset
+import org.readium.r2.shared.util.asset.AssetRetriever
+import org.readium.r2.shared.util.asset.ContainerAsset
+import org.readium.r2.shared.util.asset.ResourceAsset
+import org.readium.r2.shared.util.data.Container
+import org.readium.r2.shared.util.data.ReadError
+import org.readium.r2.shared.util.format.AvifSpecification
+import org.readium.r2.shared.util.format.BmpSpecification
+import org.readium.r2.shared.util.format.Format
+import org.readium.r2.shared.util.format.GifSpecification
+import org.readium.r2.shared.util.format.InformalComicSpecification
+import org.readium.r2.shared.util.format.JpegSpecification
+import org.readium.r2.shared.util.format.JxlSpecification
+import org.readium.r2.shared.util.format.PngSpecification
+import org.readium.r2.shared.util.format.Specification
+import org.readium.r2.shared.util.format.TiffSpecification
+import org.readium.r2.shared.util.format.WebpSpecification
+import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.mediatype.MediaType
-import org.readium.r2.streamer.PublicationParser
+import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.streamer.extensions.guessTitle
 import org.readium.r2.streamer.extensions.isHiddenOrThumbs
-import org.readium.r2.streamer.extensions.lowercasedExtension
+import org.readium.r2.streamer.extensions.sniffContainerEntries
+import org.readium.r2.streamer.extensions.toContainer
+import org.readium.r2.streamer.parser.PublicationParser
 
 /**
  * Parses an image–based Publication from an unstructured archive format containing bitmap files,
@@ -27,26 +48,78 @@ import org.readium.r2.streamer.extensions.lowercasedExtension
  *
  * It can also work for a standalone bitmap file.
  */
-class ImageParser : PublicationParser {
+public class ImageParser(
+    private val assetRetriever: AssetRetriever
+) : PublicationParser {
 
     override suspend fun parse(
-        asset: PublicationAsset,
-        fetcher: Fetcher,
+        asset: Asset,
         warnings: WarningLogger?
-    ): Publication.Builder? {
+    ): Try<Publication.Builder, PublicationParser.ParseError> =
+        when (asset) {
+            is ResourceAsset -> parseResourceAsset(asset)
+            is ContainerAsset -> parseContainerAsset(asset)
+        }
 
-        if (!accepts(asset, fetcher))
-            return null
+    private fun parseResourceAsset(
+        asset: ResourceAsset
+    ): Try<Publication.Builder, PublicationParser.ParseError> {
+        if (!asset.format.conformsToAny(bitmapSpecifications)) {
+            return Try.failure(PublicationParser.ParseError.FormatNotSupported())
+        }
 
-        val readingOrder = fetcher.links()
-            .filter { !File(it.href).isHiddenOrThumbs && it.mediaType.isBitmap }
-            .sortedBy(Link::href)
-            .toMutableList()
+        val container =
+            asset.toContainer()
 
-        if (readingOrder.isEmpty())
-            throw Exception("No bitmap found in the publication.")
+        val readingOrderWithFormat =
+            listOfNotNull(container.first() to asset.format)
 
-        val title = fetcher.guessTitle() ?: asset.name
+        return finalizeParsing(container, readingOrderWithFormat, null)
+    }
+
+    private suspend fun parseContainerAsset(
+        asset: ContainerAsset
+    ): Try<Publication.Builder, PublicationParser.ParseError> {
+        if (!asset.format.conformsTo(InformalComicSpecification)) {
+            return Try.failure(PublicationParser.ParseError.FormatNotSupported())
+        }
+
+        val entryFormats: Map<Url, Format> = assetRetriever
+            .sniffContainerEntries(asset.container) { !it.isHiddenOrThumbs }
+            .getOrElse { return Try.failure(PublicationParser.ParseError.Reading(it)) }
+
+        val readingOrderWithFormat =
+            asset.container
+                .mapNotNull { url -> entryFormats[url]?.let { url to it } }
+                .filter { (_, format) -> format.specification.specifications.any { it in bitmapSpecifications } }
+                .sortedBy { it.first.toString() }
+
+        if (readingOrderWithFormat.isEmpty()) {
+            return Try.failure(
+                PublicationParser.ParseError.Reading(
+                    ReadError.Decoding(
+                        DebugError("No bitmap found in the publication.")
+                    )
+                )
+            )
+        }
+
+        val title = asset
+            .container
+            .entries
+            .guessTitle()
+
+        return finalizeParsing(asset.container, readingOrderWithFormat, title)
+    }
+
+    private fun finalizeParsing(
+        container: Container<Resource>,
+        readingOrderWithFormat: List<Pair<Url, Format>>,
+        title: String?
+    ): Try<Publication.Builder, PublicationParser.ParseError> {
+        val readingOrder = readingOrderWithFormat.map { (url, format) ->
+            Link(href = url, mediaType = format.mediaType)
+        }.toMutableList()
 
         // First valid resource is the cover.
         readingOrder[0] = readingOrder[0].copy(rels = setOf("cover"))
@@ -54,32 +127,33 @@ class ImageParser : PublicationParser {
         val manifest = Manifest(
             metadata = Metadata(
                 conformsTo = setOf(Publication.Profile.DIVINA),
-                localizedTitle = LocalizedString(title)
+                localizedTitle = title?.let { LocalizedString(it) }
             ),
             readingOrder = readingOrder
         )
 
-        return Publication.Builder(
+        val publicationBuilder = Publication.Builder(
             manifest = manifest,
-            fetcher = fetcher,
+            container = container,
             servicesBuilder = Publication.ServicesBuilder(
-                positions = PerResourcePositionsService.createFactory(fallbackMediaType = "image/*")
+                positions = PerResourcePositionsService.createFactory(
+                    fallbackMediaType = MediaType("image/*")!!
+                )
             )
         )
+
+        return Try.success(publicationBuilder)
     }
 
-    private suspend fun accepts(asset: PublicationAsset, fetcher: Fetcher): Boolean {
-        if (asset.mediaType() == MediaType.CBZ)
-            return true
-
-        val allowedExtensions = listOf("acbf", "txt", "xml")
-
-        if (fetcher.links()
-            .filterNot { File(it.href).isHiddenOrThumbs }
-            .all { it.mediaType.isBitmap || File(it.href).lowercasedExtension in allowedExtensions }
+    private val bitmapSpecifications: Set<Specification> =
+        setOf(
+            AvifSpecification,
+            BmpSpecification,
+            GifSpecification,
+            JpegSpecification,
+            JxlSpecification,
+            PngSpecification,
+            TiffSpecification,
+            WebpSpecification
         )
-            return true
-
-        return false
-    }
 }

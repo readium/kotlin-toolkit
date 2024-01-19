@@ -15,8 +15,8 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.testapp.R
+import org.readium.r2.testapp.data.model.Catalog
 import org.readium.r2.testapp.databinding.ItemRecycleButtonBinding
-import org.readium.r2.testapp.domain.model.Catalog
 
 class NavigationAdapter(val type: Int) :
     ListAdapter<Link, NavigationAdapter.ViewHolder>(LinkDiff()) {
@@ -27,7 +27,9 @@ class NavigationAdapter(val type: Int) :
     ): ViewHolder {
         return ViewHolder(
             ItemRecycleButtonBinding.inflate(
-                LayoutInflater.from(parent.context), parent, false
+                LayoutInflater.from(parent.context),
+                parent,
+                false
             )
         )
     }
@@ -45,7 +47,7 @@ class NavigationAdapter(val type: Int) :
             binding.catalogListButton.text = link.title
             binding.catalogListButton.setOnClickListener {
                 val catalog1 = Catalog(
-                    href = link.href,
+                    href = link.href.toString(),
                     title = link.title!!,
                     type = type
                 )

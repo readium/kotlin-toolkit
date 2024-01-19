@@ -12,16 +12,16 @@ package org.readium.r2.shared
 import org.json.JSONArray
 import org.json.JSONObject
 
-interface JSONable {
+public interface JSONable {
 
     /**
      * Serializes the object to its JSON representation.
      */
-    fun toJSON(): JSONObject
+    public fun toJSON(): JSONObject
 }
 
 /**
  * Serializes a list of [JSONable] into a [JSONArray].
  */
-fun List<JSONable>.toJSON(): JSONArray =
+public fun List<JSONable>.toJSON(): JSONArray =
     JSONArray(map(JSONable::toJSON))

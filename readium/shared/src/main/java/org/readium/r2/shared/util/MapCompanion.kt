@@ -9,6 +9,8 @@
 
 package org.readium.r2.shared.util
 
+import org.readium.r2.shared.InternalReadiumApi
+
 /**
  * Encapsulates a [Map] into a more limited query API.
  *
@@ -24,47 +26,55 @@ package org.readium.r2.shared.util
  * val layout: Layout? = Layout("reflowable")
  * ```
  */
-open class MapCompanion<K, E>(protected val map: Map<K, E>) {
+@InternalReadiumApi
+public open class MapCompanion<K, E>(protected val map: Map<K, E>) {
 
-    constructor(elements: Array<E>, keySelector: (E) -> K) :
+    public constructor(elements: Array<E>, keySelector: (E) -> K) :
         this(elements.associateBy(keySelector))
 
     /**
      * Returns the available [keys].
      */
-    val keys: Set<K>
+    public val keys: Set<K>
         get() = map.keys
 
     /**
-     * Returns the element matching the [key], or [null] if not found.
+     * Returns the element matching the [key], or null if not found.
      *
-     * To be overriden in subclasses if custom retrieval is needed – for example, testing lowercase
+     * To be overridden in subclasses if custom retrieval is needed – for example, testing lowercase
      * keys.
      */
-    open fun get(key: K?): E? =
+    public open fun get(key: K?): E? =
         key?.let { map[key] }
 
     /**
      * Alias to [get], to be used like `keyMapper("a_key")`.
      */
-    open operator fun invoke(key: K?): E? = get(key)
+    public open operator fun invoke(key: K?): E? = get(key)
 
-    @Deprecated("Use `Enum(\"value\")` instead", ReplaceWith("get(key)"))
-    open fun from(key: K?): E? = get(key)
+    @Deprecated(
+        "Use `Enum(\"value\")` instead",
+        ReplaceWith("get(key)"),
+        level = DeprecationLevel.ERROR
+    )
+    public open fun from(key: K?): E? = get(key)
 }
 
 /**
  * Extends a [MapCompanion] by adding a [default] value as a fallback.
  */
-open class MapWithDefaultCompanion<K, E>(map: Map<K, E>, val default: E) : MapCompanion<K, E>(map) {
+@InternalReadiumApi
+public open class MapWithDefaultCompanion<K, E>(map: Map<K, E>, public val default: E) : MapCompanion<K, E>(
+    map
+) {
 
-    constructor(elements: Array<E>, keySelector: (E) -> K, default: E) :
+    public constructor(elements: Array<E>, keySelector: (E) -> K, default: E) :
         this(elements.associateBy(keySelector), default)
 
     /**
      * Returns the element matching the [key], or the [default] value as a fallback.
      */
-    fun getOrDefault(key: K?): E =
+    public fun getOrDefault(key: K?): E =
         get(key) ?: default
 
     /**
@@ -72,6 +82,10 @@ open class MapWithDefaultCompanion<K, E>(map: Map<K, E>, val default: E) : MapCo
      */
     override operator fun invoke(key: K?): E = getOrDefault(key)
 
-    @Deprecated("Use `Enum(\"value\")` instead", ReplaceWith("getOrDefault(key)"))
+    @Deprecated(
+        "Use `Enum(\"value\")` instead",
+        ReplaceWith("getOrDefault(key)"),
+        level = DeprecationLevel.ERROR
+    )
     override fun from(key: K?): E? = getOrDefault(key)
 }

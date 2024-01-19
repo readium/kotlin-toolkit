@@ -10,6 +10,6 @@ import org.readium.r2.shared.ExperimentalReadiumApi
 
 /** A tokenizer splits a piece of data [D] into a list of [T] tokens. */
 @ExperimentalReadiumApi
-fun interface Tokenizer<D, T> {
-    fun tokenize(data: D): List<T>
+public fun interface Tokenizer<D, T> {
+    public fun tokenize(data: D): List<T>
 }

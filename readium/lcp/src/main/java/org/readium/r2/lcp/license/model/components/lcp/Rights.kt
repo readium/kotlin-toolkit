@@ -15,7 +15,7 @@ import org.readium.r2.shared.extensions.iso8601ToDate
 import org.readium.r2.shared.extensions.optNullableInt
 import org.readium.r2.shared.extensions.optNullableString
 
-data class Rights(val json: JSONObject) {
+public data class Rights(val json: JSONObject) {
     val print: Int?
     val copy: Int?
     val start: Date?

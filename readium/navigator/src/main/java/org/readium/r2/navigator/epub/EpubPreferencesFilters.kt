@@ -13,14 +13,14 @@ import org.readium.r2.shared.ExperimentalReadiumApi
  * Suggested filter to keep only shared [EpubPreferences].
  */
 @ExperimentalReadiumApi
-object EpubSharedPreferencesFilter : PreferencesFilter<EpubPreferences> {
+public object EpubSharedPreferencesFilter : PreferencesFilter<EpubPreferences> {
 
     override fun filter(preferences: EpubPreferences): EpubPreferences =
         preferences.copy(
             readingProgression = null,
             language = null,
             spread = null,
-            verticalText = null,
+            verticalText = null
         )
 }
 
@@ -28,13 +28,13 @@ object EpubSharedPreferencesFilter : PreferencesFilter<EpubPreferences> {
  * Suggested filter to keep only publication-specific [EpubPreferences].
  */
 @ExperimentalReadiumApi
-object EpubPublicationPreferencesFilter : PreferencesFilter<EpubPreferences> {
+public object EpubPublicationPreferencesFilter : PreferencesFilter<EpubPreferences> {
 
     override fun filter(preferences: EpubPreferences): EpubPreferences =
         EpubPreferences(
             readingProgression = preferences.readingProgression,
             language = preferences.language,
             spread = preferences.spread,
-            verticalText = preferences.verticalText,
+            verticalText = preferences.verticalText
         )
 }

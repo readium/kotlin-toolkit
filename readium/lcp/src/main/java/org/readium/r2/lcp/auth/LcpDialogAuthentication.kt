@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Readium Foundation. All rights reserved.
+ * Copyright 2023 Readium Foundation. All rights reserved.
  * Use of this source code is governed by the BSD-style license
  * available in the top-level LICENSE file of the project.
  */
@@ -7,68 +7,118 @@
 package org.readium.r2.lcp.auth
 
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.text.Editable
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ListPopupWindow
 import android.widget.PopupWindow
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.core.view.isVisible
-import androidx.fragment.app.Fragment
+import androidx.core.widget.addTextChangedListener
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
 import java.util.*
+import kotlin.coroutines.Continuation
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.withContext
 import org.readium.r2.lcp.LcpAuthenticating
 import org.readium.r2.lcp.R
 import org.readium.r2.lcp.license.model.components.Link
 import org.readium.r2.shared.extensions.tryOr
 import org.readium.r2.shared.extensions.tryOrNull
-import timber.log.Timber
+import org.readium.r2.shared.util.AbsoluteUrl
+import org.readium.r2.shared.util.toUri
 
 /**
  * An [LcpAuthenticating] implementation presenting a dialog to the user.
  *
- * For this authentication to trigger, you must provide a [sender] parameter of type [Activity],
- * [Fragment] or [View] to `Streamer::open()` or `LcpService::retrieveLicense()`. It will be used as
- * the host view for the dialog.
+ * This authentication requires a view to anchor on. To use it, you'll need to call
+ * [onParentViewAttachedToWindow] every time it gets attached to a window and
+ * [onParentViewDetachedFromWindow] when it gets detached. You can typically achieve this with
+ * a [View.OnAttachStateChangeListener]. Without view to anchor on, [retrievePassphrase] will
+ * suspend until one is available.
  */
-class LcpDialogAuthentication : LcpAuthenticating {
+public class LcpDialogAuthentication : LcpAuthenticating {
+
+    private class SuspendedCall(
+        val continuation: Continuation<String?>,
+        val license: LcpAuthenticating.AuthenticatedLicense,
+        val reason: LcpAuthenticating.AuthenticationReason,
+        var currentInput: Editable? = null
+    )
+
+    private val mutex: Mutex = Mutex()
+    private var suspendedCall: SuspendedCall? = null
+    private var parentView: View? = null
+
+    /**
+     * Call this method every time the anchor view gets attached to the window.
+     */
+    public fun onParentViewAttachedToWindow(parentView: View) {
+        this@LcpDialogAuthentication.parentView = parentView
+        suspendedCall?.let { showPopupWindow(it, parentView) }
+    }
+
+    /**
+     * Call this method every time the anchor view gets detached from the window.
+     */
+    public fun onParentViewDetachedFromWindow() {
+        this.parentView = null
+    }
 
     override suspend fun retrievePassphrase(
         license: LcpAuthenticating.AuthenticatedLicense,
         reason: LcpAuthenticating.AuthenticationReason,
-        allowUserInteraction: Boolean,
-        sender: Any?
+        allowUserInteraction: Boolean
     ): String? =
-        if (allowUserInteraction) withContext(Dispatchers.Main) { askPassphrase(license, reason, sender) }
-        else null
+        if (allowUserInteraction) {
+            withContext(Dispatchers.Main) {
+                askPassphrase(
+                    license,
+                    reason
+                )
+            }
+        } else {
+            null
+        }
 
     private suspend fun askPassphrase(
         license: LcpAuthenticating.AuthenticatedLicense,
-        reason: LcpAuthenticating.AuthenticationReason,
-        sender: Any?
+        reason: LcpAuthenticating.AuthenticationReason
     ): String? {
-        val hostView = (sender as? View) ?: (sender as? Activity)?.findViewById<ViewGroup>(android.R.id.content)?.getChildAt(0) ?: (sender as? Fragment)?.view
-            ?: run {
-                Timber.e("No valid [sender] was passed to `LcpDialogAuthentication::retrievePassphrase()`. Make sure it is an Activity, a Fragment or a View.")
-                return null
-            }
+        mutex.lock()
+
+        return suspendCoroutine { cont ->
+            val suspendedCall = SuspendedCall(cont, license, reason)
+            this.suspendedCall = suspendedCall
+            parentView?.let { showPopupWindow(suspendedCall, it) }
+        }
+    }
+
+    private fun terminateCall() {
+        suspendedCall = null
+        mutex.unlock()
+    }
+
+    private fun showPopupWindow(
+        suspendedCall: SuspendedCall,
+        hostView: View
+    ) {
         val context = hostView.context
 
         val inflater = context.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
+
         @SuppressLint("InflateParams") // https://stackoverflow.com/q/26404951/1474476
-        val dialogView = inflater.inflate(R.layout.r2_lcp_auth_dialog, null)
+        val dialogView = inflater.inflate(R.layout.readium_lcp_auth_dialog, null)
 
         val title = dialogView.findViewById(R.id.r2_title) as TextView
         val description = dialogView.findViewById(R.id.r2_description) as TextView
@@ -80,61 +130,75 @@ class LcpDialogAuthentication : LcpAuthenticating {
         val forgotButton = dialogView.findViewById(R.id.r2_forgotButton) as Button
         val helpButton = dialogView.findViewById(R.id.r2_helpButton) as Button
 
-        forgotButton.isVisible = license.hintLink != null
-        helpButton.isVisible = license.supportLinks.isNotEmpty()
+        password.text = suspendedCall.currentInput
+        password.addTextChangedListener { suspendedCall.currentInput = it }
 
-        when (reason) {
+        forgotButton.isVisible = suspendedCall.license.hintLink != null
+        helpButton.isVisible = suspendedCall.license.supportLinks.isNotEmpty()
+
+        when (suspendedCall.reason) {
             LcpAuthenticating.AuthenticationReason.PassphraseNotFound -> {
-                title.text = context.getString(R.string.r2_lcp_dialog_reason_passphraseNotFound)
+                title.text = context.getString(
+                    R.string.readium_lcp_dialog_reason_passphraseNotFound
+                )
             }
+
             LcpAuthenticating.AuthenticationReason.InvalidPassphrase -> {
-                title.text = context.getString(R.string.r2_lcp_dialog_reason_invalidPassphrase)
-                passwordLayout.error = context.getString(R.string.r2_lcp_dialog_reason_invalidPassphrase)
+                title.text = context.getString(R.string.readium_lcp_dialog_reason_invalidPassphrase)
+                passwordLayout.error = context.getString(
+                    R.string.readium_lcp_dialog_reason_invalidPassphrase
+                )
             }
         }
 
-        val provider = tryOr(license.provider) { Uri.parse(license.provider).host }
-        description.text = context.getString(R.string.r2_lcp_dialog_prompt, provider)
-
-        hint.text = license.hint
-
-        return suspendCoroutine { cont ->
-            val popupWindow = PopupWindow(dialogView, ListPopupWindow.MATCH_PARENT, ListPopupWindow.MATCH_PARENT).apply {
-                isOutsideTouchable = false
-                isFocusable = true
-                elevation = 5.0f
-            }
-
-            cancelButton.setOnClickListener {
-                popupWindow.dismiss()
-                cont.resume(null)
-            }
-
-            confirmButton.setOnClickListener {
-                popupWindow.dismiss()
-                cont.resume(password.text.toString())
-            }
-
-            forgotButton.setOnClickListener {
-                license.hintLink?.let { context.startActivityForLink(it) }
-            }
-
-            helpButton.setOnClickListener {
-                showHelpDialog(context, license.supportLinks)
-            }
-
-            popupWindow.showAtLocation(hostView, Gravity.CENTER, 0, 0)
+        val provider = tryOr(suspendedCall.license.provider) {
+            Uri.parse(suspendedCall.license.provider).host
         }
+        description.text = context.getString(R.string.readium_lcp_dialog_prompt, provider)
+
+        hint.text = suspendedCall.license.hint
+
+        val popupWindow = PopupWindow(
+            dialogView,
+            ListPopupWindow.MATCH_PARENT,
+            ListPopupWindow.MATCH_PARENT
+        ).apply {
+            isOutsideTouchable = false
+            isFocusable = true
+            elevation = 5.0f
+        }
+
+        cancelButton.setOnClickListener {
+            popupWindow.dismiss()
+            terminateCall()
+            suspendedCall.continuation.resume(null)
+        }
+
+        confirmButton.setOnClickListener {
+            popupWindow.dismiss()
+            terminateCall()
+            suspendedCall.continuation.resume(password.text.toString())
+        }
+
+        forgotButton.setOnClickListener {
+            suspendedCall.license.hintLink?.let { context.startActivityForLink(it) }
+        }
+
+        helpButton.setOnClickListener {
+            showHelpDialog(context, suspendedCall.license.supportLinks)
+        }
+
+        popupWindow.showAtLocation(hostView, Gravity.CENTER, 0, 0)
     }
 
     private fun showHelpDialog(context: Context, links: List<Link>) {
         val titles = links.map {
-            it.title ?: tryOr(context.getString(R.string.r2_lcp_dialog_support)) {
-                when (Uri.parse(it.href).scheme) {
-                    "http", "https" -> context.getString(R.string.r2_lcp_dialog_support_web)
-                    "tel" -> context.getString(R.string.r2_lcp_dialog_support_phone)
-                    "mailto" -> context.getString(R.string.r2_lcp_dialog_support_mail)
-                    else -> context.getString(R.string.r2_lcp_dialog_support)
+            it.title ?: tryOr(context.getString(R.string.readium_lcp_dialog_support)) {
+                when ((it.url() as? AbsoluteUrl)?.scheme?.value) {
+                    "http", "https" -> context.getString(R.string.readium_lcp_dialog_support_web)
+                    "tel" -> context.getString(R.string.readium_lcp_dialog_support_phone)
+                    "mailto" -> context.getString(R.string.readium_lcp_dialog_support_mail)
+                    else -> context.getString(R.string.readium_lcp_dialog_support)
                 }
             }
         }.toTypedArray()
@@ -147,9 +211,9 @@ class LcpDialogAuthentication : LcpAuthenticating {
     }
 
     private fun Context.startActivityForLink(link: Link) {
-        val url = tryOrNull { Uri.parse(link.href) } ?: return
+        val url = tryOrNull { (link.url() as? AbsoluteUrl) } ?: return
 
-        val action = when (url.scheme?.lowercase(Locale.ROOT)) {
+        val action = when (url.scheme.value) {
             "http", "https" -> Intent(Intent.ACTION_VIEW)
             "tel" -> Intent(Intent.ACTION_CALL)
             "mailto" -> Intent(Intent.ACTION_SEND)
@@ -158,7 +222,7 @@ class LcpDialogAuthentication : LcpAuthenticating {
 
         startActivity(
             Intent(action).apply {
-                data = url
+                data = url.toUri()
             }
         )
     }

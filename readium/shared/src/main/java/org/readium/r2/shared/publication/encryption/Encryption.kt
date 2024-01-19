@@ -30,7 +30,7 @@ import org.readium.r2.shared.util.logging.log
  * @param scheme Identifies the encryption scheme used to encrypt the resource (URI).
  */
 @Parcelize
-data class Encryption(
+public data class Encryption(
     val algorithm: String,
     val compression: String? = null,
     val originalLength: Long? = null,
@@ -41,7 +41,7 @@ data class Encryption(
     /**
      * Serializes an [Encryption] to its RWPM JSON representation.
      */
-    override fun toJSON() = JSONObject().apply {
+    override fun toJSON(): JSONObject = JSONObject().apply {
         put("algorithm", algorithm)
         put("compression", compression)
         put("originalLength", originalLength)
@@ -49,13 +49,13 @@ data class Encryption(
         put("scheme", scheme)
     }
 
-    companion object {
+    public companion object {
 
         /**
          * Creates an [Encryption] from its RWPM JSON representation.
          * If the encryption can't be parsed, a warning will be logged with [warnings].
          */
-        fun fromJSON(json: JSONObject?, warnings: WarningLogger? = null): Encryption? {
+        public fun fromJSON(json: JSONObject?, warnings: WarningLogger? = null): Encryption? {
             val algorithm = json?.optNullableString("algorithm")
             if (algorithm.isNullOrEmpty()) {
                 warnings?.log(Encryption::class.java, "[algorithm] is required", json)

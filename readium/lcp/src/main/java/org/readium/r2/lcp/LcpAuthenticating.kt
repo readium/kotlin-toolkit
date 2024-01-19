@@ -13,7 +13,7 @@ import org.readium.r2.lcp.license.model.LicenseDocument
 import org.readium.r2.lcp.license.model.components.Link
 import org.readium.r2.lcp.license.model.components.lcp.User
 
-interface LcpAuthenticating {
+public interface LcpAuthenticating {
 
     /**
      * Retrieves the passphrase used to decrypt the given license.
@@ -41,17 +41,14 @@ interface LcpAuthenticating {
      * @param license Information to show to the user about the license being opened.
      * @param reason Reason why the passphrase is requested. It should be used to prompt the user.
      * @param allowUserInteraction Indicates whether the user can be prompted for their passphrase.
-     * @param sender Free object that can be used by reading apps to give some UX context when
-     *        presenting dialogs.
      */
-    suspend fun retrievePassphrase(
+    public suspend fun retrievePassphrase(
         license: AuthenticatedLicense,
         reason: AuthenticationReason,
-        allowUserInteraction: Boolean,
-        sender: Any? = null
+        allowUserInteraction: Boolean
     ): String?
 
-    enum class AuthenticationReason {
+    public enum class AuthenticationReason {
 
         /** No matching passphrase was found. */
         PassphraseNotFound,
@@ -59,13 +56,13 @@ interface LcpAuthenticating {
         /** The provided passphrase was invalid. */
         InvalidPassphrase;
 
-        companion object
+        public companion object
     }
 
     /**
      * @param document License Document being opened.
      */
-    data class AuthenticatedLicense(val document: LicenseDocument) {
+    public data class AuthenticatedLicense(val document: LicenseDocument) {
 
         /**
          * A hint to be displayed to the User to help them remember the User Passphrase.
@@ -78,13 +75,13 @@ interface LcpAuthenticating {
          * about the User Passphrase.
          */
         val hintLink: Link?
-            get() = document.link(LicenseDocument.Rel.hint)
+            get() = document.link(LicenseDocument.Rel.Hint)
 
         /**
          * Support resources for the user (either a website, an email or a telephone number).
          */
         val supportLinks: List<Link>
-            get() = document.links(LicenseDocument.Rel.support)
+            get() = document.links(LicenseDocument.Rel.Support)
 
         /**
          * URI of the license provider.
@@ -95,27 +92,47 @@ interface LcpAuthenticating {
         /**
          * Informations about the user owning the license.
          */
-        val user: User?
+        val user: User
             get() = document.user
     }
 }
 
-@Deprecated("Renamed to `LcpAuthenticating`", replaceWith = ReplaceWith("LcpAuthenticating"))
-typealias LCPAuthenticating = LcpAuthenticating
+@Deprecated(
+    "Renamed to `LcpAuthenticating`",
+    replaceWith = ReplaceWith("LcpAuthenticating"),
+    level = DeprecationLevel.ERROR
+)
+public typealias LCPAuthenticating = LcpAuthenticating
 
 @Deprecated("Not used anymore", level = DeprecationLevel.ERROR)
-interface LCPAuthenticationDelegate
+public interface LCPAuthenticationDelegate
 
-@Deprecated("Renamed to `LcpAuthenticating.AuthenticationReason`", replaceWith = ReplaceWith("LcpAuthenticating.AuthenticationReason"))
-typealias LCPAuthenticationReason = LcpAuthenticating.AuthenticationReason
+@Deprecated(
+    "Renamed to `LcpAuthenticating.AuthenticationReason`",
+    replaceWith = ReplaceWith("LcpAuthenticating.AuthenticationReason"),
+    level = DeprecationLevel.ERROR
+)
+public typealias LCPAuthenticationReason = LcpAuthenticating.AuthenticationReason
 
-@Deprecated("Renamed to `LcpAuthenticating.AuthenticatedLicense`", replaceWith = ReplaceWith("LcpAuthenticating.AuthenticatedLicense"))
-typealias LCPAuthenticatedLicense = LcpAuthenticating.AuthenticatedLicense
+@Deprecated(
+    "Renamed to `LcpAuthenticating.AuthenticatedLicense`",
+    replaceWith = ReplaceWith("LcpAuthenticating.AuthenticatedLicense"),
+    level = DeprecationLevel.ERROR
+)
+public typealias LCPAuthenticatedLicense = LcpAuthenticating.AuthenticatedLicense
 
-@Deprecated("Renamed to `PassphraseNotFound`", replaceWith = ReplaceWith("PassphraseNotFound"))
-val LcpAuthenticating.AuthenticationReason.Companion.passphraseNotFound get() =
-    LcpAuthenticating.AuthenticationReason.PassphraseNotFound
+@Deprecated(
+    "Renamed to `PassphraseNotFound`",
+    replaceWith = ReplaceWith("PassphraseNotFound"),
+    level = DeprecationLevel.ERROR
+)
+public val LcpAuthenticating.AuthenticationReason.Companion.passphraseNotFound: LcpAuthenticating.AuthenticationReason
+    get() = LcpAuthenticating.AuthenticationReason.PassphraseNotFound
 
-@Deprecated("Renamed to `InvalidPassphrase`", replaceWith = ReplaceWith("InvalidPassphrase"))
-val LcpAuthenticating.AuthenticationReason.Companion.invalidPassphrase get() =
-    LcpAuthenticating.AuthenticationReason.InvalidPassphrase
+@Deprecated(
+    "Renamed to `InvalidPassphrase`",
+    replaceWith = ReplaceWith("InvalidPassphrase"),
+    level = DeprecationLevel.ERROR
+)
+public val LcpAuthenticating.AuthenticationReason.Companion.invalidPassphrase: LcpAuthenticating.AuthenticationReason
+    get() = LcpAuthenticating.AuthenticationReason.InvalidPassphrase

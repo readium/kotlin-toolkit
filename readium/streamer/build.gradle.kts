@@ -11,15 +11,17 @@ plugins {
 }
 
 android {
-    compileSdk = 33
+    resourcePrefix = "readium_"
+
+    compileSdk = 34
     defaultConfig {
         minSdk = 21
-        targetSdk = 33
+        targetSdk = 34
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
     testOptions {
         unitTests.isIncludeAndroidResources = true
@@ -38,6 +40,10 @@ android {
         }
     }
     namespace = "org.readium.r2.streamer"
+}
+
+kotlin {
+    explicitApi()
 }
 
 rootProject.ext["publish.artifactId"] = "readium-streamer"
@@ -64,6 +70,7 @@ dependencies {
 
     // Tests
     testImplementation(libs.junit)
+    testImplementation(libs.kotlin.junit)
 
     androidTestImplementation(libs.androidx.ext.junit)
     androidTestImplementation(libs.androidx.expresso.core)

@@ -8,29 +8,32 @@ package org.readium.r2.testapp.reader.tts
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import org.readium.navigator.media.common.MediaNavigator
+import org.readium.navigator.media.tts.AndroidTtsNavigator
+import org.readium.navigator.media.tts.AndroidTtsNavigatorFactory
+import org.readium.navigator.media.tts.TtsNavigator
+import org.readium.navigator.media.tts.android.AndroidTtsEngine
+import org.readium.navigator.media.tts.android.AndroidTtsPreferences
+import org.readium.navigator.media.tts.android.AndroidTtsSettings
 import org.readium.r2.navigator.Navigator
 import org.readium.r2.navigator.VisualNavigator
-import org.readium.r2.navigator.media3.api.MediaNavigator
-import org.readium.r2.navigator.media3.tts.AndroidTtsNavigator
-import org.readium.r2.navigator.media3.tts.AndroidTtsNavigatorFactory
-import org.readium.r2.navigator.media3.tts.TtsNavigator
-import org.readium.r2.navigator.media3.tts.android.AndroidTtsEngine
-import org.readium.r2.navigator.media3.tts.android.AndroidTtsPreferences
-import org.readium.r2.navigator.media3.tts.android.AndroidTtsSettings
 import org.readium.r2.shared.ExperimentalReadiumApi
-import org.readium.r2.shared.UserException
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.util.Language
-import org.readium.r2.testapp.R
+import org.readium.r2.shared.util.getOrElse
+import org.readium.r2.testapp.reader.MediaService
+import org.readium.r2.testapp.reader.MediaServiceFacade
 import org.readium.r2.testapp.reader.ReaderInitData
 import org.readium.r2.testapp.reader.VisualReaderInitData
 import org.readium.r2.testapp.reader.preferences.PreferencesManager
 import org.readium.r2.testapp.reader.preferences.UserPreferencesViewModel
 import org.readium.r2.testapp.utils.extensions.mapStateIn
+import timber.log.Timber
 
 /**
  * View model controlling a [TtsNavigator] to read a publication aloud.
@@ -43,8 +46,8 @@ class TtsViewModel private constructor(
     private val bookId: Long,
     private val publication: Publication,
     private val ttsNavigatorFactory: AndroidTtsNavigatorFactory,
-    private val ttsServiceFacade: TtsServiceFacade,
-    private val preferencesManager: PreferencesManager<AndroidTtsPreferences>,
+    private val mediaServiceFacade: MediaServiceFacade,
+    private val preferencesManager: PreferencesManager<AndroidTtsPreferences>
 ) : TtsNavigator.Listener {
 
     companion object {
@@ -54,7 +57,7 @@ class TtsViewModel private constructor(
          */
         operator fun invoke(
             viewModelScope: CoroutineScope,
-            readerInitData: ReaderInitData,
+            readerInitData: ReaderInitData
         ): TtsViewModel? {
             if (readerInitData !is VisualReaderInitData || readerInitData.ttsInitData == null) {
                 return null
@@ -64,8 +67,8 @@ class TtsViewModel private constructor(
                 viewModelScope = viewModelScope,
                 bookId = readerInitData.bookId,
                 publication = readerInitData.publication,
-                ttsNavigatorFactory = readerInitData.ttsInitData.ttsNavigatorFactory,
-                ttsServiceFacade = readerInitData.ttsInitData.ttsServiceFacade,
+                ttsNavigatorFactory = readerInitData.ttsInitData.navigatorFactory,
+                mediaServiceFacade = readerInitData.ttsInitData.mediaServiceFacade,
                 preferencesManager = readerInitData.ttsInitData.preferencesManager
             )
         }
@@ -75,7 +78,7 @@ class TtsViewModel private constructor(
         /**
          * Emitted when the [TtsNavigator] fails with an error.
          */
-        class OnError(val error: UserException) : Event()
+        class OnError(val error: TtsError) : Event()
 
         /**
          * Emitted when the selected language cannot be played because it is missing voice data.
@@ -83,8 +86,14 @@ class TtsViewModel private constructor(
         class OnMissingVoiceData(val language: Language) : Event()
     }
 
+    @Suppress("Unchecked_cast")
+    private val MediaService.Session.ttsNavigator
+        get() = navigator as? AndroidTtsNavigator
+
     private val navigatorNow: AndroidTtsNavigator? get() =
-        ttsServiceFacade.session.value?.navigator
+        mediaServiceFacade.session.value?.ttsNavigator
+
+    private var launchJob: Job? = null
 
     private val _events: Channel<Event> =
         Channel(Channel.BUFFERED)
@@ -98,37 +107,35 @@ class TtsViewModel private constructor(
             bookId = bookId,
             preferencesManager = preferencesManager
         ) { preferences ->
-            val baseEditor = ttsNavigatorFactory.createTtsPreferencesEditor(preferences)
+            val baseEditor = ttsNavigatorFactory.createPreferencesEditor(preferences)
+            val voices = navigatorNow?.voices.orEmpty()
             TtsPreferencesEditor(baseEditor, voices)
         }
 
     val showControls: StateFlow<Boolean> =
-        ttsServiceFacade.session.mapStateIn(viewModelScope) {
+        mediaServiceFacade.session.mapStateIn(viewModelScope) {
             it != null
         }
 
     val isPlaying: StateFlow<Boolean> =
-        ttsServiceFacade.session.flatMapLatest { session ->
+        mediaServiceFacade.session.flatMapLatest { session ->
             session?.navigator?.playback?.map { playback -> playback.playWhenReady }
                 ?: MutableStateFlow(false)
         }.stateIn(viewModelScope, SharingStarted.Eagerly, false)
 
     val position: StateFlow<Locator?> =
-        ttsServiceFacade.session.flatMapLatest { session ->
+        mediaServiceFacade.session.flatMapLatest { session ->
             session?.navigator?.currentLocator ?: MutableStateFlow(null)
         }.stateIn(viewModelScope, SharingStarted.Eagerly, null)
 
     val highlight: StateFlow<Locator?> =
-        ttsServiceFacade.session.flatMapLatest { session ->
-            session?.navigator?.utterance?.map { it.utteranceLocator }
+        mediaServiceFacade.session.flatMapLatest { session ->
+            session?.ttsNavigator?.location?.map { it.utteranceLocator }
                 ?: MutableStateFlow(null)
         }.stateIn(viewModelScope, SharingStarted.Eagerly, null)
 
-    val voices: Set<AndroidTtsEngine.Voice> get() =
-        ttsServiceFacade.session.value?.navigator?.voices.orEmpty()
-
     init {
-        ttsServiceFacade.session
+        mediaServiceFacade.session
             .flatMapLatest { it?.navigator?.playback ?: MutableStateFlow(null) }
             .onEach { playback ->
                 when (playback?.state) {
@@ -137,16 +144,19 @@ class TtsViewModel private constructor(
                     is MediaNavigator.State.Ended -> {
                         stop()
                     }
-                    is MediaNavigator.State.Error -> {
-                        onPlaybackError(playback.state as TtsNavigator.State.Error)
+                    is MediaNavigator.State.Failure -> {
+                        onPlaybackError(
+                            (playback.state as TtsNavigator.State.Failure).error
+                        )
                     }
                     is MediaNavigator.State.Ready -> {}
                     is MediaNavigator.State.Buffering -> {}
                 }
-            }.launchIn(viewModelScope)
+            }
+            .launchIn(viewModelScope)
 
         preferencesManager.preferences
-            .onEach { ttsServiceFacade.session.value?.navigator?.submitPreferences(it) }
+            .onEach { navigatorNow?.submitPreferences(it) }
             .launchIn(viewModelScope)
     }
 
@@ -154,10 +164,11 @@ class TtsViewModel private constructor(
      * Starts the TTS using the first visible locator in the given [navigator].
      */
     fun start(navigator: Navigator) {
-        viewModelScope.launch {
-            if (ttsServiceFacade.session.value != null)
-                return@launch
+        if (launchJob != null) {
+            return
+        }
 
+        launchJob = viewModelScope.launch {
             openSession(navigator)
         }
     }
@@ -167,24 +178,30 @@ class TtsViewModel private constructor(
 
         val ttsNavigator = ttsNavigatorFactory.createNavigator(
             this,
-            preferencesManager.preferences.value,
-            start
-        ) ?: run {
-            val exception = UserException(R.string.tts_error_initialization)
-            _events.send(Event.OnError(exception))
+            initialLocator = start,
+            initialPreferences = preferencesManager.preferences.value
+        ).getOrElse {
+            val error = TtsError.Initialization(it)
+            _events.send(Event.OnError(error))
             return
         }
 
-        // playWhenReady must be true for the MediaSessionService to call Service.startForeground
-        // and prevent crashing
+        try {
+            mediaServiceFacade.openSession(bookId, ttsNavigator)
+        } catch (e: Exception) {
+            ttsNavigator.close()
+            val error = TtsError.ServiceError(e)
+            _events.trySend(Event.OnError(error))
+            launchJob = null
+            return
+        }
+
         ttsNavigator.play()
-        ttsServiceFacade.openSession(bookId, ttsNavigator)
     }
 
     fun stop() {
-        viewModelScope.launch {
-            ttsServiceFacade.closeSession()
-        }
+        launchJob = null
+        mediaServiceFacade.closeSession()
     }
 
     fun play() {
@@ -196,34 +213,41 @@ class TtsViewModel private constructor(
     }
 
     fun previous() {
-        navigatorNow?.goBackward()
+        navigatorNow?.skipToPreviousUtterance()
     }
 
     fun next() {
-        navigatorNow?.goForward()
+        navigatorNow?.skipToNextUtterance()
     }
 
     override fun onStopRequested() {
         stop()
     }
 
-    private fun onPlaybackError(error: TtsNavigator.State.Error) {
-        val exception = when (error) {
-            is TtsNavigator.State.Error.ContentError -> {
-                UserException(R.string.tts_error_other, cause = error.exception)
+    private fun onPlaybackError(error: TtsNavigator.Error) {
+        val event = when (error) {
+            is TtsNavigator.Error.ContentError -> {
+                Event.OnError(TtsError.ContentError(error))
             }
-            is TtsNavigator.State.Error.EngineError<*> -> {
-                when ((error.error as AndroidTtsEngine.Error).kind) {
-                    AndroidTtsEngine.Error.Kind.Network ->
-                        UserException(R.string.tts_error_network)
-                    else ->
-                        UserException(R.string.tts_error_other)
-                }
+            is TtsNavigator.Error.EngineError<*> -> {
+                val engineError = (error.cause as AndroidTtsEngine.Error)
+                when (engineError) {
+                    is AndroidTtsEngine.Error.LanguageMissingData ->
+                        Event.OnMissingVoiceData(engineError.language)
+                    is AndroidTtsEngine.Error.Network -> {
+                        val ttsError = TtsError.EngineError.Network(engineError)
+                        Event.OnError(ttsError)
+                    }
+                    else -> {
+                        val ttsError = TtsError.EngineError.Other(engineError)
+                        Event.OnError(ttsError)
+                    }
+                }.also { Timber.e("Error type: $error") }
             }
         }
 
         viewModelScope.launch {
-            _events.send(Event.OnError(exception))
+            _events.send(event)
         }
     }
 }

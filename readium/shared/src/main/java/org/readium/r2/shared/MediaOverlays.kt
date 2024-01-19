@@ -10,39 +10,43 @@
 package org.readium.r2.shared
 
 import java.io.Serializable
+import org.readium.r2.shared.util.Url
 
-data class MediaOverlays(private val nodes: List<MediaOverlayNode> = listOf()) : Serializable {
-    fun clip(ref: String): Clip? {
+@InternalReadiumApi
+public data class MediaOverlays(private val nodes: List<MediaOverlayNode> = listOf()) : Serializable {
+    public fun clip(ref: Url): Clip? {
         val fragmentNode = nodeForFragment(ref)
         return fragmentNode?.clip
     }
 
-    fun nodeForFragment(ref: String?): MediaOverlayNode? = findNode(ref, this.nodes)
+    private fun nodeForFragment(ref: Url?): MediaOverlayNode? = findNode(ref, this.nodes)
 
-    private fun findNode(ref: String?, inNodes: List<MediaOverlayNode>): MediaOverlayNode? {
+    private fun findNode(ref: Url?, inNodes: List<MediaOverlayNode>): MediaOverlayNode? {
         for (node in inNodes) {
-            if (node.role.contains("section"))
+            if (node.role.contains("section")) {
                 return findNode(ref, node.children)
-            else if (ref == null || node.text == ref)
+            } else if (ref == null || node.text == ref) {
                 return node
+            }
         }
         return null
     }
 
-    data class NextNodeResult(val found: MediaOverlayNode?, val prevFound: Boolean)
+    public data class NextNodeResult(val found: MediaOverlayNode?, val prevFound: Boolean)
 
-    private fun nodeAfterFragment(ref: String?): MediaOverlayNode? = findNextNode(ref, this.nodes).found
+    private fun nodeAfterFragment(ref: Url?): MediaOverlayNode? = findNextNode(ref, this.nodes).found
 
-    private fun findNextNode(fragment: String?, inNodes: List<MediaOverlayNode>): NextNodeResult {
+    private fun findNextNode(fragment: Url?, inNodes: List<MediaOverlayNode>): NextNodeResult {
         var prevNodeFoundFlag = false
         //  For each node of the current scope...
         for (node in inNodes) {
             if (prevNodeFoundFlag) {
                 //  If the node is a section, we get the first non section child.
-                if (node.role.contains("section"))
+                if (node.role.contains("section")) {
                     getFirstNonSectionChild(node)?.let { return NextNodeResult(it, false) }
-                else
+                } else {
                     return NextNodeResult(node, false)
+                }
             } else {
                 //  If the node is a "section" (<seq> sequence element)
                 if (node.role.contains("section")) {

@@ -11,21 +11,36 @@ package org.readium.r2.navigator
     message = "Support for the Decorator API is still experimental. The API may be changed in the future without notice."
 )
 @Retention(AnnotationRetention.BINARY)
-@Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION, AnnotationTarget.TYPEALIAS, AnnotationTarget.PROPERTY)
-annotation class ExperimentalDecorator
+@Target(
+    AnnotationTarget.CLASS,
+    AnnotationTarget.FUNCTION,
+    AnnotationTarget.TYPEALIAS,
+    AnnotationTarget.PROPERTY
+)
+public annotation class ExperimentalDecorator
 
 @RequiresOptIn(
     level = RequiresOptIn.Level.WARNING,
     message = "The new Audiobook navigator is still experimental. The API may be changed in the future without notice."
 )
 @Retention(AnnotationRetention.BINARY)
-@Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION, AnnotationTarget.TYPEALIAS, AnnotationTarget.PROPERTY)
-annotation class ExperimentalAudiobook
+@Target(
+    AnnotationTarget.CLASS,
+    AnnotationTarget.FUNCTION,
+    AnnotationTarget.TYPEALIAS,
+    AnnotationTarget.PROPERTY
+)
+public annotation class ExperimentalAudiobook
 
 @RequiresOptIn(
     level = RequiresOptIn.Level.WARNING,
     message = "The new dragging gesture is still experimental. The API may be changed in the future without notice."
 )
 @Retention(AnnotationRetention.BINARY)
-@Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION, AnnotationTarget.TYPEALIAS, AnnotationTarget.PROPERTY)
-annotation class ExperimentalDragGesture
+@Target(
+    AnnotationTarget.CLASS,
+    AnnotationTarget.FUNCTION,
+    AnnotationTarget.TYPEALIAS,
+    AnnotationTarget.PROPERTY
+)
+public annotation class ExperimentalDragGesture

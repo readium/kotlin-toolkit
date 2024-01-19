@@ -18,13 +18,16 @@ pluginManagement {
     // it to integrate Readium in submodules.
     // See https://github.com/readium/kotlin-toolkit/pull/97
     plugins {
-        id("com.android.application") version ("7.3.1")
-        id("com.android.library") version ("7.3.1")
-        id("io.github.gradle-nexus.publish-plugin") version ("1.1.0")
-        id("org.jetbrains.dokka") version ("1.7.20")
-        id("org.jetbrains.kotlin.android") version ("1.7.20")
-        id("org.jetbrains.kotlin.plugin.serialization") version ("1.7.10")
-        id("org.jlleitschuh.gradle.ktlint") version ("11.0.0")
+        id("com.android.application") version ("8.2.1")
+        id("com.android.library") version ("8.2.1")
+        id("io.github.gradle-nexus.publish-plugin") version ("1.3.0")
+        id("org.jetbrains.dokka") version ("1.9.10")
+        id("org.jetbrains.kotlin.android") version ("1.9.22")
+        id("org.jetbrains.kotlin.plugin.serialization") version ("1.9.22")
+        id("org.jlleitschuh.gradle.ktlint") version ("11.5.1")
+        // Make sure to align with the Kotlin version.
+        // See https://github.com/google/ksp/releases
+        id("com.google.devtools.ksp") version ("1.9.22-1.0.16")
     }
 }
 dependencyResolutionManagement {
@@ -41,20 +44,20 @@ dependencyResolutionManagement {
 
 rootProject.name = "Readium"
 
-include(":readium:adapters:pdfium:pdfium-document")
-project(":readium:adapters:pdfium:pdfium-document")
+include(":readium:adapters:pdfium:document")
+project(":readium:adapters:pdfium:document")
     .name = "readium-adapter-pdfium-document"
 
-include(":readium:adapters:pdfium:pdfium-navigator")
-project(":readium:adapters:pdfium:pdfium-navigator")
+include(":readium:adapters:pdfium:navigator")
+project(":readium:adapters:pdfium:navigator")
     .name = "readium-adapter-pdfium-navigator"
 
-include(":readium:adapters:pspdfkit:pspdfkit-document")
-project(":readium:adapters:pspdfkit:pspdfkit-document")
+include(":readium:adapters:pspdfkit:document")
+project(":readium:adapters:pspdfkit:document")
     .name = "readium-adapter-pspdfkit-document"
 
-include(":readium:adapters:pspdfkit:pspdfkit-navigator")
-project(":readium:adapters:pspdfkit:pspdfkit-navigator")
+include(":readium:adapters:pspdfkit:navigator")
+project(":readium:adapters:pspdfkit:navigator")
     .name = "readium-adapter-pspdfkit-navigator"
 
 include(":readium:lcp")
@@ -65,9 +68,25 @@ include(":readium:navigator")
 project(":readium:navigator")
     .name = "readium-navigator"
 
+include(":readium:navigators:media:common")
+project(":readium:navigators:media:common")
+    .name = "readium-navigator-media-common"
+
+include(":readium:navigators:media:audio")
+project(":readium:navigators:media:audio")
+    .name = "readium-navigator-media-audio"
+
+include(":readium:navigators:media:tts")
+project(":readium:navigators:media:tts")
+    .name = "readium-navigator-media-tts"
+
 include(":readium:navigator-media2")
 project(":readium:navigator-media2")
     .name = "readium-navigator-media2"
+
+include(":readium:adapters:exoplayer:audio")
+project(":readium:adapters:exoplayer:audio")
+    .name = "readium-adapter-exoplayer-audio"
 
 include(":readium:opds")
 project(":readium:opds")

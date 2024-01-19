@@ -8,7 +8,7 @@ import org.junit.Assert.*
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.readium.r2.shared.ExperimentalReadiumApi
-import org.readium.r2.shared.fetcher.StringResource
+import org.readium.r2.shared.publication.Href
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.services.content.Content
@@ -18,14 +18,16 @@ import org.readium.r2.shared.publication.services.content.Content.AttributeKey.C
 import org.readium.r2.shared.publication.services.content.Content.TextElement
 import org.readium.r2.shared.publication.services.content.Content.TextElement.Segment
 import org.readium.r2.shared.util.Language
+import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.shared.util.resource.StringResource
 import org.robolectric.RobolectricTestRunner
 
 @OptIn(ExperimentalReadiumApi::class)
 @RunWith(RobolectricTestRunner::class)
 class HtmlResourceContentIteratorTest {
 
-    private val link = Link(href = "/dir/res.xhtml", type = "application/xhtml+xml")
-    private val locator = Locator(href = "/dir/res.xhtml", type = "application/xhtml+xml")
+    private val locator = Locator(href = Url("/dir/res.xhtml")!!, mediaType = MediaType.XHTML)
 
     private val html = """
         <?xml version="1.0" encoding="UTF-8"?>
@@ -51,7 +53,8 @@ class HtmlResourceContentIteratorTest {
     private val elements: List<Content.Element> = listOf(
         TextElement(
             locator = locator(
-                selector = "#pgepubid00498 > div.center",
+                progression = 0.0,
+                selector = "html > body > section > div.center",
                 before = null,
                 highlight = "171"
             ),
@@ -59,7 +62,8 @@ class HtmlResourceContentIteratorTest {
             segments = listOf(
                 Segment(
                     locator = locator(
-                        selector = "#pgepubid00498 > div.center",
+                        progression = 0.0,
+                        selector = "html > body > section > div.center",
                         before = null,
                         highlight = "171"
                     ),
@@ -70,7 +74,8 @@ class HtmlResourceContentIteratorTest {
         ),
         TextElement(
             locator = locator(
-                selector = "#pgepubid00498 > h3",
+                progression = 0.2,
+                selector = "html > body > section > h3",
                 before = "171",
                 highlight = "INTRODUCTORY"
             ),
@@ -78,18 +83,20 @@ class HtmlResourceContentIteratorTest {
             segments = listOf(
                 Segment(
                     locator = locator(
-                        selector = "#pgepubid00498 > h3",
+                        progression = 0.2,
+                        selector = "html > body > section > h3",
                         before = "171",
                         highlight = "INTRODUCTORY"
                     ),
                     text = "INTRODUCTORY",
                     attributes = listOf(Attribute(LANGUAGE, Language("en")))
-                ),
+                )
             )
         ),
         TextElement(
             locator = locator(
-                selector = "#pgepubid00498 > p:nth-child(3)",
+                progression = 0.4,
+                selector = "html > body > section > p:nth-child(3)",
                 before = "171INTRODUCTORY",
                 highlight = "The difficulties of classification are very apparent here, and once more it must be noted that illustrative and practical purposes rather than logical ones are served by the arrangement adopted. The modern fanciful story is here placed next to the real folk story instead of after all the groups of folk products. The Hebrew stories at the beginning belong quite as well, perhaps even better, in Section V, while the stories at the end of Section VI shade off into the more modern types of short tales."
             ),
@@ -97,18 +104,20 @@ class HtmlResourceContentIteratorTest {
             segments = listOf(
                 Segment(
                     locator = locator(
-                        selector = "#pgepubid00498 > p:nth-child(3)",
+                        progression = 0.4,
+                        selector = "html > body > section > p:nth-child(3)",
                         before = "171INTRODUCTORY",
                         highlight = "The difficulties of classification are very apparent here, and once more it must be noted that illustrative and practical purposes rather than logical ones are served by the arrangement adopted. The modern fanciful story is here placed next to the real folk story instead of after all the groups of folk products. The Hebrew stories at the beginning belong quite as well, perhaps even better, in Section V, while the stories at the end of Section VI shade off into the more modern types of short tales."
                     ),
                     text = "The difficulties of classification are very apparent here, and once more it must be noted that illustrative and practical purposes rather than logical ones are served by the arrangement adopted. The modern fanciful story is here placed next to the real folk story instead of after all the groups of folk products. The Hebrew stories at the beginning belong quite as well, perhaps even better, in Section V, while the stories at the end of Section VI shade off into the more modern types of short tales.",
-                    attributes = listOf(Attribute(LANGUAGE, Language("en"))),
-                ),
+                    attributes = listOf(Attribute(LANGUAGE, Language("en")))
+                )
             )
         ),
         TextElement(
             locator = locator(
-                selector = "#pgepubid00498 > p:nth-child(4)",
+                progression = 0.6,
+                selector = "html > body > section > p:nth-child(4)",
                 before = "ade off into the more modern types of short tales.",
                 highlight = "The child's natural literature. The world has lost certain secrets as the price of an advancing civilization."
             ),
@@ -116,18 +125,20 @@ class HtmlResourceContentIteratorTest {
             segments = listOf(
                 Segment(
                     locator = locator(
-                        selector = "#pgepubid00498 > p:nth-child(4)",
+                        progression = 0.6,
+                        selector = "html > body > section > p:nth-child(4)",
                         before = "ade off into the more modern types of short tales.",
                         highlight = "The child's natural literature. The world has lost certain secrets as the price of an advancing civilization."
                     ),
                     text = "The child's natural literature. The world has lost certain secrets as the price of an advancing civilization.",
                     attributes = listOf(Attribute(LANGUAGE, Language("en")))
-                ),
+                )
             )
         ),
         TextElement(
             locator = locator(
-                selector = "#pgepubid00498 > p:nth-child(5)",
+                progression = 0.8,
+                selector = "html > body > section > p:nth-child(5)",
                 before = "secrets as the price of an advancing civilization.",
                 highlight = "Without discussing the limits of the culture-epoch theory of human development as a complete guide in education, it is clear that the young child passes through a period when his mind looks out upon the world in a manner analogous to that of the folk as expressed in their literature."
             ),
@@ -135,18 +146,20 @@ class HtmlResourceContentIteratorTest {
             segments = listOf(
                 Segment(
                     locator = locator(
-                        selector = "#pgepubid00498 > p:nth-child(5)",
+                        progression = 0.8,
+                        selector = "html > body > section > p:nth-child(5)",
                         before = "secrets as the price of an advancing civilization.",
                         highlight = "Without discussing the limits of the culture-epoch theory of human development as a complete guide in education, it is clear that the young child passes through a period when his mind looks out upon the world in a manner analogous to that of the folk as expressed in their literature."
                     ),
                     text = "Without discussing the limits of the culture-epoch theory of human development as a complete guide in education, it is clear that the young child passes through a period when his mind looks out upon the world in a manner analogous to that of the folk as expressed in their literature.",
                     attributes = listOf(Attribute(LANGUAGE, Language("en")))
-                ),
+                )
             )
         )
     )
 
     private fun locator(
+        progression: Double? = null,
         selector: String? = null,
         before: String? = null,
         highlight: String? = null,
@@ -154,6 +167,7 @@ class HtmlResourceContentIteratorTest {
     ): Locator =
         locator.copy(
             locations = Locator.Locations(
+                progression = progression,
                 otherLocations = buildMap {
                     selector?.let { put("cssSelector", it) }
                 }
@@ -161,8 +175,16 @@ class HtmlResourceContentIteratorTest {
             text = Locator.Text(before = before, highlight = highlight, after = after)
         )
 
-    private fun iterator(html: String, startLocator: Locator = locator): HtmlResourceContentIterator =
-        HtmlResourceContentIterator(StringResource(link, html), startLocator)
+    private fun iterator(
+        html: String,
+        startLocator: Locator = locator,
+        totalProgressionRange: ClosedRange<Double>? = null
+    ): HtmlResourceContentIterator =
+        HtmlResourceContentIterator(
+            StringResource(html),
+            totalProgressionRange = totalProgressionRange,
+            startLocator
+        )
 
     private suspend fun HtmlResourceContentIterator.elements(): List<Content.Element> =
         buildList {
@@ -249,13 +271,13 @@ class HtmlResourceContentIteratorTest {
 
     @Test
     fun `starting from a CSS selector`() = runTest {
-        val iter = iterator(html, locator(selector = "#pgepubid00498 > p:nth-child(3)"))
+        val iter = iterator(html, locator(selector = "html > body > section > p:nth-child(3)"))
         assertEquals(elements.subList(2, elements.size), iter.elements())
     }
 
     @Test
     fun `calling previous() when starting from a CSS selector`() = runTest {
-        val iter = iterator(html, locator(selector = "#pgepubid00498 > p:nth-child(3)"))
+        val iter = iterator(html, locator(selector = "html > body > section > p:nth-child(3)"))
         assertTrue(iter.hasPrevious())
         assertEquals(elements[1], iter.previous())
     }
@@ -277,6 +299,7 @@ class HtmlResourceContentIteratorTest {
         assertEquals(
             TextElement(
                 locator = locator(
+                    progression = 0.5,
                     selector = "html > body > p:nth-child(2)",
                     before = "oin sur la chaussée, aussi loin qu’on pouvait voir",
                     highlight = "Lui, notre colonel, savait peut-être pourquoi ces deux gens-là tiraient [...] On buvait de la bière sucrée."
@@ -285,9 +308,10 @@ class HtmlResourceContentIteratorTest {
                 segments = listOf(
                     Segment(
                         locator = locator(
+                            progression = 0.5,
                             selector = "html > body > p:nth-child(2)",
                             before = "oin sur la chaussée, aussi loin qu’on pouvait voir",
-                            highlight = "Lui, notre colonel, savait peut-être pourquoi ces deux gens-là tiraient [...] On buvait de la bière sucrée.",
+                            highlight = "Lui, notre colonel, savait peut-être pourquoi ces deux gens-là tiraient [...] On buvait de la bière sucrée."
                         ),
                         text = "Lui, notre colonel, savait peut-être pourquoi ces deux gens-là tiraient [...] On buvait de la bière sucrée.",
                         attributes = listOf(Attribute(LANGUAGE, Language("fr")))
@@ -316,6 +340,7 @@ class HtmlResourceContentIteratorTest {
         assertEquals(
             TextElement(
                 locator = locator(
+                    progression = 0.5,
                     selector = "html > body > p:nth-child(2)",
                     before = "oin sur la chaussée, aussi loin qu’on pouvait voir",
                     highlight = "Lui, notre colonel, savait peut-être pourquoi ces deux gens-là tiraient [...] On buvait de la bière sucrée."
@@ -324,9 +349,10 @@ class HtmlResourceContentIteratorTest {
                 segments = listOf(
                     Segment(
                         locator = locator(
+                            progression = 0.5,
                             selector = "html > body > p:nth-child(2)",
                             before = "oin sur la chaussée, aussi loin qu’on pouvait voir",
-                            highlight = "Lui, notre colonel, savait peut-être pourquoi ces deux gens-là tiraient [...] On buvait de la bière sucrée.",
+                            highlight = "Lui, notre colonel, savait peut-être pourquoi ces deux gens-là tiraient [...] On buvait de la bière sucrée."
                         ),
                         text = "Lui, notre colonel, savait peut-être pourquoi ces deux gens-là tiraient [...] On buvait de la bière sucrée.",
                         attributes = listOf(Attribute(LANGUAGE, Language("fr")))
@@ -353,17 +379,19 @@ class HtmlResourceContentIteratorTest {
             listOf(
                 Content.ImageElement(
                     locator = locator(
+                        progression = 0.0,
                         selector = "html > body > img:nth-child(1)"
                     ),
-                    embeddedLink = Link(href = "/dir/image.png"),
+                    embeddedLink = Link(href = Href("/dir/image.png")!!),
                     caption = null,
                     attributes = emptyList()
                 ),
                 Content.ImageElement(
                     locator = locator(
+                        progression = 0.5,
                         selector = "html > body > img:nth-child(2)"
                     ),
-                    embeddedLink = Link(href = "/cover.jpg"),
+                    embeddedLink = Link(href = Href("/cover.jpg")!!),
                     caption = null,
                     attributes = listOf(Attribute(ACCESSIBILITY_LABEL, "Accessibility description"))
                 )
@@ -380,7 +408,7 @@ class HtmlResourceContentIteratorTest {
             <body>
                 <audio src="audio.mp3" />
                 <audio>
-                    <source src="audio.mp3" type="audio/mp3" />
+                    <source src="audio.mp3" type="audio/mpeg" />
                     <source src="audio.ogg" type="audio/ogg" />
                 </audio>
             </body>
@@ -391,20 +419,22 @@ class HtmlResourceContentIteratorTest {
             listOf(
                 Content.AudioElement(
                     locator = locator(
+                        progression = 0.0,
                         selector = "html > body > audio:nth-child(1)"
                     ),
-                    embeddedLink = Link(href = "/dir/audio.mp3"),
+                    embeddedLink = Link(href = Href("/dir/audio.mp3")!!),
                     attributes = emptyList()
                 ),
                 Content.AudioElement(
                     locator = locator(
+                        progression = 0.5,
                         selector = "html > body > audio:nth-child(2)"
                     ),
                     embeddedLink = Link(
-                        href = "/dir/audio.mp3",
-                        type = "audio/mp3",
+                        href = Href("/dir/audio.mp3")!!,
+                        mediaType = MediaType.MP3,
                         alternates = listOf(
-                            Link(href = "/dir/audio.ogg", type = "audio/ogg")
+                            Link(href = Href("/dir/audio.ogg")!!, mediaType = MediaType.OGG)
                         )
                     ),
                     attributes = emptyList()
@@ -433,20 +463,25 @@ class HtmlResourceContentIteratorTest {
             listOf(
                 Content.VideoElement(
                     locator = locator(
+                        progression = 0.0,
                         selector = "html > body > video:nth-child(1)"
                     ),
-                    embeddedLink = Link(href = "/dir/video.mp4"),
+                    embeddedLink = Link(href = Href("/dir/video.mp4")!!),
                     attributes = emptyList()
                 ),
                 Content.VideoElement(
                     locator = locator(
+                        progression = 0.5,
                         selector = "html > body > video:nth-child(2)"
                     ),
                     embeddedLink = Link(
-                        href = "/dir/video.mp4",
-                        type = "video/mp4",
+                        href = Href("/dir/video.mp4")!!,
+                        mediaType = MediaType("video/mp4")!!,
                         alternates = listOf(
-                            Link(href = "/dir/video.m4v", type = "video/x-m4v")
+                            Link(
+                                href = Href("/dir/video.m4v")!!,
+                                mediaType = MediaType("video/x-m4v")!!
+                            )
                         )
                     ),
                     attributes = emptyList()
@@ -479,6 +514,7 @@ class HtmlResourceContentIteratorTest {
             listOf(
                 TextElement(
                     locator = locator(
+                        progression = 0.0,
                         selector = "#c06-li-0001",
                         highlight = "Let's start at the top—the source of ideas."
                     ),
@@ -486,17 +522,19 @@ class HtmlResourceContentIteratorTest {
                     segments = listOf(
                         Segment(
                             locator = locator(
+                                progression = 0.0,
                                 selector = "#c06-li-0001",
                                 highlight = "Let's start at the top—the source of ideas."
                             ),
                             text = "Let's start at the top—the source of ideas.",
                             attributes = emptyList()
-                        ),
+                        )
                     ),
                     attributes = emptyList()
                 ),
                 TextElement(
                     locator = locator(
+                        progression = 1 / 3.0,
                         selector = "#c06-para-0019",
                         before = " top—the source of ideas.\n                        ",
                         highlight = "While almost everyone today claims to be Agile, what I've just described is very much a waterfall process."
@@ -505,6 +543,7 @@ class HtmlResourceContentIteratorTest {
                     segments = listOf(
                         Segment(
                             locator = locator(
+                                progression = 1 / 3.0,
                                 selector = "#c06-para-0019",
                                 before = " top—the source of ideas.\n                        ",
                                 highlight = "While almost everyone today claims to be Agile, what I've just described is very much a waterfall process."
@@ -517,7 +556,8 @@ class HtmlResourceContentIteratorTest {
                 ),
                 TextElement(
                     locator = locator(
-                        selector = "#c06-para-0019",
+                        progression = 2 / 3.0,
+                        selector = "html > body > ol.decimal > li > aside",
                         before = "e just described is very much a waterfall process.\n                        \n                        ",
                         highlight = "Trailing text"
                     ),
@@ -525,11 +565,117 @@ class HtmlResourceContentIteratorTest {
                     segments = listOf(
                         Segment(
                             locator = locator(
-                                selector = "#c06-para-0019",
+                                progression = 2 / 3.0,
+                                selector = "html > body > ol.decimal > li > aside",
                                 before = "e just described is very much a waterfall process.\n                        ",
                                 highlight = "Trailing text"
                             ),
                             text = "Trailing text",
+                            attributes = emptyList()
+                        )
+                    ),
+                    attributes = emptyList()
+                )
+            ),
+            iterator(html).elements()
+        )
+    }
+
+    @Test
+    fun `iterating over text nodes located around a nested block element`() = runTest {
+        val html = """
+            <?xml version="1.0" encoding="UTF-8"?>
+            <html xmlns="http://www.w3.org/1999/xhtml">
+            <body>
+                <div id="a">begin a <div id="b">in b</div> end a</div>
+                <div id="c">in c</div>
+            </body>
+            </html>
+            """
+
+        assertEquals(
+            listOf(
+                TextElement(
+                    locator = locator(
+                        progression = 0.0,
+                        selector = "#a",
+                        highlight = "begin a"
+                    ),
+                    role = TextElement.Role.Body,
+                    segments = listOf(
+                        Segment(
+                            locator = locator(
+                                progression = 0.0,
+                                selector = "#a",
+                                highlight = "begin a"
+                            ),
+                            text = "begin a",
+                            attributes = emptyList()
+                        )
+                    ),
+                    attributes = emptyList()
+                ),
+                TextElement(
+                    locator = locator(
+                        progression = 0.25,
+                        selector = "#b",
+                        before = "begin a ",
+                        highlight = "in b"
+                    ),
+                    role = TextElement.Role.Body,
+                    segments = listOf(
+                        Segment(
+                            locator = locator(
+                                progression = 0.25,
+                                selector = "#b",
+                                before = "begin a ",
+                                highlight = "in b"
+                            ),
+                            text = "in b",
+                            attributes = emptyList()
+                        )
+                    ),
+                    attributes = emptyList()
+                ),
+                TextElement(
+                    locator = locator(
+                        progression = 0.5,
+                        selector = "#a",
+                        before = "begin a in b  ",
+                        highlight = "end a"
+                    ),
+                    role = TextElement.Role.Body,
+                    segments = listOf(
+                        Segment(
+                            locator = locator(
+                                progression = 0.5,
+                                selector = "#a",
+                                before = "begin a in b ",
+                                highlight = "end a"
+                            ),
+                            text = "end a",
+                            attributes = emptyList()
+                        )
+                    ),
+                    attributes = emptyList()
+                ),
+                TextElement(
+                    locator = locator(
+                        progression = 0.75,
+                        selector = "#c",
+                        before = "begin a in b end a",
+                        highlight = "in c"
+                    ),
+                    role = TextElement.Role.Body,
+                    segments = listOf(
+                        Segment(
+                            locator = locator(
+                                progression = 0.75,
+                                selector = "#c",
+                                before = "begin a in b end a",
+                                highlight = "in c"
+                            ),
+                            text = "in c",
                             attributes = emptyList()
                         )
                     ),

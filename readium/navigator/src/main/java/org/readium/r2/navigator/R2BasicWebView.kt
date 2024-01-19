@@ -35,36 +35,41 @@ import org.json.JSONObject
 import org.jsoup.Jsoup
 import org.jsoup.safety.Safelist
 import org.readium.r2.navigator.extensions.optRectF
+import org.readium.r2.navigator.input.InputModifier
+import org.readium.r2.navigator.input.Key
+import org.readium.r2.navigator.input.KeyEvent
+import org.readium.r2.navigator.preferences.ReadingProgression
+import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.extensions.optNullableString
 import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.extensions.tryOrNull
-import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
-import org.readium.r2.shared.publication.ReadingProgression
-import org.readium.r2.shared.util.Href
+import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.data.decodeString
+import org.readium.r2.shared.util.flatMap
+import org.readium.r2.shared.util.resource.Resource
+import org.readium.r2.shared.util.toUrl
 import org.readium.r2.shared.util.use
 import timber.log.Timber
 
-@OptIn(ExperimentalDecorator::class)
-open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(context, attrs) {
+@OptIn(ExperimentalDecorator::class, ExperimentalReadiumApi::class)
+internal open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(context, attrs) {
 
     interface Listener {
         val readingProgression: ReadingProgression
         fun onResourceLoaded(link: Link?, webView: R2BasicWebView, url: String?) {}
-        fun onPageLoaded()
-        fun onPageChanged(pageIndex: Int, totalPages: Int, url: String)
-        fun onPageEnded(end: Boolean)
-        fun onScroll()
-        fun onTap(point: PointF): Boolean
-        fun onDragStart(event: DragEvent): Boolean
-        fun onDragMove(event: DragEvent): Boolean
-        fun onDragEnd(event: DragEvent): Boolean
+        fun onPageLoaded() {}
+        fun onPageChanged(pageIndex: Int, totalPages: Int, url: String) {}
+        fun onPageEnded(end: Boolean) {}
+        fun onTap(point: PointF): Boolean = false
+        fun onDragStart(event: DragEvent): Boolean = false
+        fun onDragMove(event: DragEvent): Boolean = false
+        fun onDragEnd(event: DragEvent): Boolean = false
+        fun onKey(event: KeyEvent): Boolean = false
         fun onDecorationActivated(id: DecorationId, group: String, rect: RectF, point: PointF): Boolean = false
-        fun onProgressionChanged()
-        fun onHighlightActivated(id: String)
-        fun onHighlightAnnotationMarkActivated(id: String)
+        fun onProgressionChanged() {}
         fun goForward(animated: Boolean = false, completion: () -> Unit = {}): Boolean = false
         fun goBackward(animated: Boolean = false, completion: () -> Unit = {}): Boolean = false
 
@@ -75,12 +80,15 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
 
         @InternalReadiumApi
         fun javascriptInterfacesForResource(link: Link): Map<String, Any?> = emptyMap()
+
         @InternalReadiumApi
         fun shouldOverrideUrlLoading(webView: WebView, request: WebResourceRequest): Boolean = false
+
         @InternalReadiumApi
         fun shouldInterceptRequest(webView: WebView, request: WebResourceRequest): WebResourceResponse? = null
+
         @InternalReadiumApi
-        fun resourceAtUrl(url: String): Resource? = null
+        fun resourceAtUrl(url: Url): Resource? = null
 
         /**
          * Requests to load the next resource in the reading order.
@@ -90,15 +98,24 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
          */
         @InternalReadiumApi
         fun goToNextResource(jump: Boolean, animated: Boolean): Boolean = false
+
         @InternalReadiumApi
         fun goToPreviousResource(jump: Boolean, animated: Boolean): Boolean = false
+
+        @Deprecated("Not available anymore", level = DeprecationLevel.ERROR)
+        fun onScroll() {}
+
+        @Deprecated("Not available anymore", level = DeprecationLevel.ERROR)
+        fun onHighlightActivated(id: String) {}
+
+        @Deprecated("Not available anymore", level = DeprecationLevel.ERROR)
+        fun onHighlightAnnotationMarkActivated(id: String) {}
     }
 
     var listener: Listener? = null
     internal var preferences: SharedPreferences? = null
-    internal var useLegacySettings: Boolean = false
 
-    var resourceUrl: String? = null
+    var resourceUrl: Url? = null
 
     internal val scrollModeFlow = MutableStateFlow(false)
 
@@ -181,13 +198,9 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
         super.destroy()
     }
 
-    @android.webkit.JavascriptInterface
     open fun scrollRight(animated: Boolean = false) {
         uiScope.launch {
             val listener = listener ?: return@launch
-            listener.onScroll()
-
-            val isRtl = (listener.readingProgression == ReadingProgression.RTL)
 
             fun goRight(jump: Boolean) {
                 if (listener.readingProgression == ReadingProgression.RTL) {
@@ -216,11 +229,9 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
         }
     }
 
-    @android.webkit.JavascriptInterface
     open fun scrollLeft(animated: Boolean = false) {
         uiScope.launch {
             val listener = listener ?: return@launch
-            listener.onScroll()
 
             fun goLeft(jump: Boolean) {
                 if (listener.readingProgression == ReadingProgression.RTL) {
@@ -249,10 +260,7 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
         }
     }
 
-    /**
-     * Called from the JS code when a tap is detected.
-     * If the JS indicates the tap is being handled within the web view, don't take action,
-     *
+    /*
      * Returns whether the web view should prevent the default behavior for this tap.
      */
     @android.webkit.JavascriptInterface
@@ -277,23 +285,7 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
             return handleFootnote(event.targetElement)
         }
 
-        // Skips to previous/next pages if the tap is on the content edges.
-        val clientWidth = computeHorizontalScrollExtent()
-        val thresholdRange = 0.0..(0.2 * clientWidth)
-
-        // FIXME: Call listener.onTap if scrollLeft|Right fails
-        return when {
-            useLegacySettings && thresholdRange.contains(event.point.x) -> {
-                scrollLeft(false)
-                true
-            }
-            useLegacySettings && thresholdRange.contains(clientWidth - event.point.x) -> {
-                scrollRight(false)
-                true
-            }
-            else ->
-                runBlocking(uiScope.coroutineContext) { listener?.onTap(event.point) ?: false }
-        }
+        return runBlocking(uiScope.coroutineContext) { listener?.onTap(event.point) ?: false }
     }
 
     /**
@@ -347,22 +339,21 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
         val href = tryOrNull { Jsoup.parse(html) }
             ?.select("a[epub:type=noteref]")?.first()
             ?.attr("href")
+            ?.let { Url(it) }
             ?: return false
 
-        val id = href.substringAfter("#", missingDelimiterValue = "")
-            .takeIf { it.isNotBlank() }
-            ?: return false
+        val id = href.fragment ?: return false
 
-        val absoluteUrl = Href(href, baseHref = resourceUrl).percentEncodedString
-            .substringBefore("#")
+        val absoluteUrl = resourceUrl.resolve(href).removeFragment()
 
         val aside = runBlocking {
             tryOrLog {
                 listener?.resourceAtUrl(absoluteUrl)
                     ?.use { res ->
-                        res.readAsString()
+                        res.read()
+                            .flatMap { it.decodeString() }
                             .map { Jsoup.parse(it) }
-                            .getOrThrow()
+                            .getOrNull()
                     }
                     ?.select("#$id")
                     ?.first()?.html()
@@ -375,7 +366,7 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
         val inflater = context.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
 
         // Inflate the custom layout/view
-        val customView = inflater.inflate(R.layout.popup_footnote, null)
+        val customView = inflater.inflate(R.layout.readium_navigator_popup_footnote, null)
 
         // Initialize a new instance of popup window
         val mPopupWindow = PopupWindow(
@@ -388,9 +379,7 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
 
         // Set an elevation value for popup window
         // Call requires API level 21
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            mPopupWindow.elevation = 5.0f
-        }
+        mPopupWindow.elevation = 5.0f
 
         val textView = customView.findViewById(R.id.footnote) as TextView
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
@@ -440,6 +429,23 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
     }
 
     @android.webkit.JavascriptInterface
+    fun onKey(eventJson: String): Boolean {
+        val jsonObject = JSONObject(eventJson)
+        val event = KeyEvent(
+            type = when (jsonObject.optString("type")) {
+                "down" -> KeyEvent.Type.Down
+                "up" -> KeyEvent.Type.Up
+                else -> return false
+            },
+            key = Key(jsonObject.optString("code")),
+            modifiers = inputModifiers(jsonObject),
+            characters = jsonObject.optNullableString("characters")?.takeUnless { it.isBlank() }
+        )
+
+        return listener?.onKey(event) ?: false
+    }
+
+    @android.webkit.JavascriptInterface
     fun onSelectionStart() {
         isSelecting = true
     }
@@ -463,9 +469,6 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
         companion object {
             fun fromJSONObject(obj: JSONObject?): DragEvent? {
                 obj ?: return null
-
-                val x = obj.optDouble("x").toFloat()
-                val y = obj.optDouble("y").toFloat()
 
                 return DragEvent(
                     defaultPrevented = obj.optBoolean("defaultPrevented"),
@@ -501,20 +504,6 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
     @android.webkit.JavascriptInterface
     fun log(message: String) {
         Timber.d("JavaScript: $message")
-    }
-
-    @android.webkit.JavascriptInterface
-    fun highlightActivated(id: String) {
-        uiScope.launch {
-            listener?.onHighlightActivated(id)
-        }
-    }
-
-    @android.webkit.JavascriptInterface
-    fun highlightAnnotationMarkActivated(id: String) {
-        uiScope.launch {
-            listener?.onHighlightAnnotationMarkActivated(id)
-        }
     }
 
     fun Boolean.toInt() = if (this) 1 else 0
@@ -607,7 +596,7 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
     }
 
     internal fun shouldOverrideUrlLoading(request: WebResourceRequest): Boolean {
-        if (resourceUrl == request.url?.toString()) return false
+        if (resourceUrl == request.url.toUrl()) return false
 
         return listener?.shouldOverrideUrlLoading(this, request) ?: false
     }
@@ -654,7 +643,10 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
             ?: return super.startActionMode(callback, type)
 
         val parent = parent ?: return null
-        val wrapper = Callback2Wrapper(customCallback, callback2 = callback as? ActionMode.Callback2)
+        val wrapper = Callback2Wrapper(
+            customCallback,
+            callback2 = callback as? ActionMode.Callback2
+        )
         return parent.startActionModeForChild(this, wrapper, type)
     }
 
@@ -668,3 +660,19 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
                 ?: super.onGetContentRect(mode, view, outRect)
     }
 }
+
+private fun inputModifiers(json: JSONObject): Set<InputModifier> =
+    buildSet {
+        if (json.optBoolean("alt")) {
+            add(InputModifier.Alt)
+        }
+        if (json.optBoolean("control")) {
+            add(InputModifier.Control)
+        }
+        if (json.optBoolean("shift")) {
+            add(InputModifier.Shift)
+        }
+        if (json.optBoolean("meta")) {
+            add(InputModifier.Meta)
+        }
+    }

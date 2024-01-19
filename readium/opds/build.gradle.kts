@@ -11,18 +11,20 @@ plugins {
 }
 
 android {
-    compileSdk = 33
+    resourcePrefix = "readium_"
+
+    compileSdk = 34
     defaultConfig {
         minSdk = 21
-        targetSdk = 33
+        targetSdk = 34
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = JavaVersion.VERSION_17.toString()
         freeCompilerArgs = freeCompilerArgs + listOf(
             "-opt-in=kotlin.RequiresOptIn",
             "-opt-in=org.readium.r2.shared.InternalReadiumApi"
@@ -40,6 +42,10 @@ android {
     namespace = "org.readium.r2.opds"
 }
 
+kotlin {
+    explicitApi()
+}
+
 rootProject.ext["publish.artifactId"] = "readium-opds"
 apply(from = "$rootDir/scripts/publish-module.gradle")
 
@@ -49,7 +55,6 @@ dependencies {
     implementation(libs.androidx.appcompat)
     implementation(libs.timber)
     implementation(libs.joda.time)
-    implementation("nl.komponents.kovenant:kovenant:3.3.0")
     implementation(libs.kotlinx.coroutines.core)
 
     // Tests

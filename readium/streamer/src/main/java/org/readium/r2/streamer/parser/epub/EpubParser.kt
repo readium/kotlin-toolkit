@@ -4,80 +4,38 @@
  * available in the top-level LICENSE file of the project.
  */
 
-@file:Suppress("DEPRECATION")
-
 package org.readium.r2.streamer.parser.epub
 
-import java.io.File
-import kotlinx.coroutines.runBlocking
 import org.readium.r2.shared.ExperimentalReadiumApi
-import org.readium.r2.shared.ReadiumCSSName
-import org.readium.r2.shared.Search
-import org.readium.r2.shared.drm.DRM
-import org.readium.r2.shared.extensions.addPrefix
-import org.readium.r2.shared.fetcher.Fetcher
-import org.readium.r2.shared.fetcher.TransformingFetcher
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.publication.asset.FileAsset
-import org.readium.r2.shared.publication.asset.PublicationAsset
 import org.readium.r2.shared.publication.encryption.Encryption
+import org.readium.r2.shared.publication.epub.EpubEncryptionParser
 import org.readium.r2.shared.publication.services.content.DefaultContentService
 import org.readium.r2.shared.publication.services.content.iterators.HtmlResourceContentIterator
 import org.readium.r2.shared.publication.services.search.StringSearchService
-import org.readium.r2.shared.util.Href
+import org.readium.r2.shared.util.DebugError
+import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.asset.Asset
+import org.readium.r2.shared.util.asset.ContainerAsset
+import org.readium.r2.shared.util.data.Container
+import org.readium.r2.shared.util.data.DecodeError
+import org.readium.r2.shared.util.data.ReadError
+import org.readium.r2.shared.util.data.Readable
+import org.readium.r2.shared.util.data.decodeXml
+import org.readium.r2.shared.util.data.readDecodeOrElse
+import org.readium.r2.shared.util.data.readDecodeOrNull
+import org.readium.r2.shared.util.format.EpubSpecification
+import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.shared.util.resource.Resource
+import org.readium.r2.shared.util.resource.TransformingContainer
 import org.readium.r2.shared.util.use
-import org.readium.r2.streamer.PublicationParser
-import org.readium.r2.streamer.container.Container
-import org.readium.r2.streamer.container.ContainerError
-import org.readium.r2.streamer.container.PublicationContainer
-import org.readium.r2.streamer.extensions.fromArchiveOrDirectory
-import org.readium.r2.streamer.extensions.readAsXmlOrNull
-import org.readium.r2.streamer.fetcher.LcpDecryptor
-import org.readium.r2.streamer.parser.PubBox
-
-@Suppress("DEPRECATION")
-object EPUBConstant {
-
-    @Deprecated("Use [MediaType.EPUB.toString()] instead", replaceWith = ReplaceWith("MediaType.EPUB.toString()"))
-    val mimetype: String get() = MediaType.EPUB.toString()
-
-    internal val ltrPreset: MutableMap<ReadiumCSSName, Boolean> = mutableMapOf(
-        ReadiumCSSName.ref("hyphens") to false,
-        ReadiumCSSName.ref("ligatures") to false
-    )
-
-    internal val rtlPreset: MutableMap<ReadiumCSSName, Boolean> = mutableMapOf(
-        ReadiumCSSName.ref("hyphens") to false,
-        ReadiumCSSName.ref("wordSpacing") to false,
-        ReadiumCSSName.ref("letterSpacing") to false,
-        ReadiumCSSName.ref("ligatures") to true
-    )
-
-    internal val cjkHorizontalPreset: MutableMap<ReadiumCSSName, Boolean> = mutableMapOf(
-        ReadiumCSSName.ref("textAlignment") to false,
-        ReadiumCSSName.ref("hyphens") to false,
-        ReadiumCSSName.ref("paraIndent") to false,
-        ReadiumCSSName.ref("wordSpacing") to false,
-        ReadiumCSSName.ref("letterSpacing") to false
-    )
-
-    internal val cjkVerticalPreset: MutableMap<ReadiumCSSName, Boolean> = mutableMapOf(
-        ReadiumCSSName.ref("scroll") to true,
-        ReadiumCSSName.ref("columnCount") to false,
-        ReadiumCSSName.ref("textAlignment") to false,
-        ReadiumCSSName.ref("hyphens") to false,
-        ReadiumCSSName.ref("paraIndent") to false,
-        ReadiumCSSName.ref("wordSpacing") to false,
-        ReadiumCSSName.ref("letterSpacing") to false
-    )
-
-    val forceScrollPreset: MutableMap<ReadiumCSSName, Boolean> = mutableMapOf(
-        ReadiumCSSName.ref("scroll") to true
-    )
-}
+import org.readium.r2.shared.util.xml.ElementNode
+import org.readium.r2.streamer.parser.PublicationParser
+import org.readium.r2.streamer.parser.epub.extensions.fromEpubHref
 
 /**
  * Parses a Publication from an EPUB publication.
@@ -85,125 +43,132 @@ object EPUBConstant {
  * @param reflowablePositionsStrategy Strategy used to calculate the number of positions in a
  *        reflowable resource.
  */
-class EpubParser(
+@OptIn(ExperimentalReadiumApi::class)
+public class EpubParser(
     private val reflowablePositionsStrategy: EpubPositionsService.ReflowableStrategy = EpubPositionsService.ReflowableStrategy.recommended
-) : PublicationParser, org.readium.r2.streamer.parser.PublicationParser {
+) : PublicationParser {
 
-    override suspend fun parse(asset: PublicationAsset, fetcher: Fetcher, warnings: WarningLogger?): Publication.Builder? =
-        _parse(asset, fetcher, asset.name)
-
-    @OptIn(Search::class, ExperimentalReadiumApi::class)
-    suspend fun _parse(asset: PublicationAsset, fetcher: Fetcher, fallbackTitle: String): Publication.Builder? {
-
-        if (asset.mediaType() != MediaType.EPUB)
-            return null
-
-        val opfPath = getRootFilePath(fetcher).addPrefix("/")
-        val opfXmlDocument = fetcher.get(opfPath).readAsXml().getOrThrow()
-        val packageDocument = PackageDocument.parse(opfXmlDocument, opfPath)
-            ?: throw Exception("Invalid OPF file.")
-
-        val manifest = ManifestAdapter(
-            fallbackTitle = fallbackTitle,
-            packageDocument = packageDocument,
-            navigationData = parseNavigationData(packageDocument, fetcher),
-            encryptionData = parseEncryptionData(fetcher),
-            displayOptions = parseDisplayOptions(fetcher)
-        ).adapt()
-
-        @Suppress("NAME_SHADOWING")
-        var fetcher = fetcher
-        manifest.metadata.identifier?.let {
-            fetcher = TransformingFetcher(fetcher, EpubDeobfuscator(it)::transform)
+    override suspend fun parse(
+        asset: Asset,
+        warnings: WarningLogger?
+    ): Try<Publication.Builder, PublicationParser.ParseError> {
+        if (asset !is ContainerAsset || !asset.format.conformsTo(EpubSpecification)) {
+            return Try.failure(PublicationParser.ParseError.FormatNotSupported())
         }
 
-        return Publication.Builder(
+        val opfPath = getRootFilePath(asset.container)
+            .getOrElse { return Try.failure(it) }
+        val opfResource = asset.container[opfPath]
+            ?: return Try.failure(
+                PublicationParser.ParseError.Reading(
+                    ReadError.Decoding(
+                        DebugError("Missing OPF file.")
+                    )
+                )
+            )
+        val opfXmlDocument = opfResource.use { resource ->
+            resource.readDecodeOrElse(
+                decode = { it.decodeXml() },
+                recover = { return Try.failure(PublicationParser.ParseError.Reading(it)) }
+            )
+        }
+        val packageDocument = PackageDocument.parse(opfXmlDocument, opfPath)
+            ?: return Try.failure(
+                PublicationParser.ParseError.Reading(
+                    ReadError.Decoding(
+                        DebugError("Invalid OPF file.")
+                    )
+                )
+            )
+
+        val encryptionData = parseEncryptionData(asset.container)
+
+        val manifest = ManifestAdapter(
+            packageDocument = packageDocument,
+            navigationData = parseNavigationData(packageDocument, asset.container),
+            encryptionData = encryptionData,
+            displayOptions = parseDisplayOptions(asset.container)
+        ).adapt()
+
+        var container = asset.container
+        manifest.metadata.identifier?.let { id ->
+            val deobfuscator = EpubDeobfuscator(id, encryptionData)
+            container = TransformingContainer(container, deobfuscator::transform)
+        }
+
+        val builder = Publication.Builder(
             manifest = manifest,
-            fetcher = fetcher,
+            container = container,
             servicesBuilder = Publication.ServicesBuilder(
                 positions = EpubPositionsService.createFactory(reflowablePositionsStrategy),
                 search = StringSearchService.createDefaultFactory(),
                 content = DefaultContentService.createFactory(
-                    listOf(
-                        HtmlResourceContentIterator.createFactory()
+                    resourceContentIteratorFactories = listOf(
+                        HtmlResourceContentIterator.Factory()
                     )
-                ),
+                )
             )
         )
+
+        return Try.success(builder)
     }
 
-    override fun parse(
-        fileAtPath: String,
-        fallbackTitle: String
-    ): PubBox? = runBlocking {
+    private suspend fun getRootFilePath(container: Container<Resource>): Try<Url, PublicationParser.ParseError> {
+        val containerXmlUrl = Url("META-INF/container.xml")!!
 
-        val file = File(fileAtPath)
-        val asset = FileAsset(file)
+        val containerXmlResource = container[containerXmlUrl]
+            ?: return Try.failure(
+                PublicationParser.ParseError.Reading(
+                    ReadError.Decoding("container.xml not found.")
+                )
+            )
 
-        var fetcher = Fetcher.fromArchiveOrDirectory(fileAtPath)
-            ?: throw ContainerError.missingFile(fileAtPath)
-
-        val drm = if (fetcher.isProtectedWithLcp()) DRM(DRM.Brand.lcp) else null
-        if (drm?.brand == DRM.Brand.lcp) {
-            fetcher = TransformingFetcher(fetcher, LcpDecryptor(drm)::transform)
-        }
-
-        val builder = try {
-            _parse(asset, fetcher, fallbackTitle)
-        } catch (e: Exception) {
-            return@runBlocking null
-        } ?: return@runBlocking null
-
-        val publication = builder.build()
-            .apply {
-                @Suppress("DEPRECATION")
-                type = Publication.TYPE.EPUB
-
-                // This might need to be moved as it's not really about parsing the EPUB but it
-                // sets values needed (in UserSettings & ContentFilter)
-                setLayoutStyle()
-            }
-
-        val container = PublicationContainer(
-            publication = publication,
-            path = file.canonicalPath,
-            mediaType = MediaType.EPUB,
-            drm = drm
-        ).apply {
-            rootFile.rootFilePath = getRootFilePath(fetcher)
-        }
-
-        PubBox(publication, container)
-    }
-
-    private suspend fun getRootFilePath(fetcher: Fetcher): String =
-        fetcher.readAsXmlOrNull("/META-INF/container.xml")
-            ?.getFirst("rootfiles", Namespaces.OPC)
+        return containerXmlResource
+            .readDecodeOrElse(
+                decode = { it.decodeXml() },
+                recover = { return Try.failure(PublicationParser.ParseError.Reading(it)) }
+            )
+            .getFirst("rootfiles", Namespaces.OPC)
             ?.getFirst("rootfile", Namespaces.OPC)
             ?.getAttr("full-path")
-            ?: throw Exception("Unable to find an OPF file.")
+            ?.let { Url.fromEpubHref(it) }
+            ?.let { Try.success(it) }
+            ?: Try.failure(
+                PublicationParser.ParseError.Reading(
+                    ReadError.Decoding("Cannot successfully parse OPF.")
+                )
+            )
+    }
 
-    private suspend fun parseEncryptionData(fetcher: Fetcher): Map<String, Encryption> =
-        fetcher.readAsXmlOrNull("/META-INF/encryption.xml")
-            ?.let { EncryptionParser.parse(it) }
+    private suspend fun parseEncryptionData(container: Container<Resource>): Map<Url, Encryption> =
+        container.readDecodeXmlOrNull(path = "META-INF/encryption.xml")
+            ?.let { EpubEncryptionParser.parse(it) }
             ?: emptyMap()
 
-    private suspend fun parseNavigationData(packageDocument: PackageDocument, fetcher: Fetcher): Map<String, List<Link>> =
-        parseNavigationDocument(packageDocument, fetcher)
-            ?: parseNcx(packageDocument, fetcher)
+    private suspend fun parseNavigationData(
+        packageDocument: PackageDocument,
+        container: Container<Resource>
+    ): Map<String, List<Link>> =
+        parseNavigationDocument(packageDocument, container)
+            ?: parseNcx(packageDocument, container)
             ?: emptyMap()
 
-    private suspend fun parseNavigationDocument(packageDocument: PackageDocument, fetcher: Fetcher): Map<String, List<Link>>? =
+    private suspend fun parseNavigationDocument(
+        packageDocument: PackageDocument,
+        container: Container<Resource>
+    ): Map<String, List<Link>>? =
         packageDocument.manifest
             .firstOrNull { it.properties.contains(Vocabularies.ITEM + "nav") }
             ?.let { navItem ->
-                val navPath = Href(navItem.href, baseHref = packageDocument.path).string
-                fetcher.readAsXmlOrNull(navPath)
-                    ?.let { NavigationDocumentParser.parse(it, navPath) }
+                container.readDecodeXmlOrNull(navItem.href)
+                    ?.let { NavigationDocumentParser.parse(it, navItem.href) }
             }
             ?.takeUnless { it.isEmpty() }
 
-    private suspend fun parseNcx(packageDocument: PackageDocument, fetcher: Fetcher): Map<String, List<Link>>? {
+    private suspend fun parseNcx(
+        packageDocument: PackageDocument,
+        container: Container<Resource>
+    ): Map<String, List<Link>>? {
         val ncxItem =
             if (packageDocument.spine.toc != null) {
                 packageDocument.manifest.firstOrNull { it.id == packageDocument.spine.toc }
@@ -212,17 +177,17 @@ class EpubParser(
             }
 
         return ncxItem
-            ?.let {
-                val ncxPath = Href(ncxItem.href, baseHref = packageDocument.path).string
-                fetcher.readAsXmlOrNull(ncxPath)?.let { NcxParser.parse(it, ncxPath) }
+            ?.let { item ->
+                container.readDecodeXmlOrNull(item.href)
+                    ?.let { NcxParser.parse(it, item.href) }
             }
             ?.takeUnless { it.isEmpty() }
     }
 
-    private suspend fun parseDisplayOptions(fetcher: Fetcher): Map<String, String> {
+    private suspend fun parseDisplayOptions(container: Container<Resource>): Map<String, String> {
         val displayOptionsXml =
-            fetcher.readAsXmlOrNull("/META-INF/com.apple.ibooks.display-options.xml")
-                ?: fetcher.readAsXmlOrNull("/META-INF/com.kobobooks.display-options.xml")
+            container.readDecodeXmlOrNull("META-INF/com.apple.ibooks.display-options.xml")
+                ?: container.readDecodeXmlOrNull("META-INF/com.kobobooks.display-options.xml")
 
         return displayOptionsXml?.getFirst("platform", "")
             ?.get("option", "")
@@ -234,26 +199,27 @@ class EpubParser(
             ?.toMap().orEmpty()
     }
 
-    @Deprecated("This is done automatically in [parse], you can remove the call to [fillEncryption]", ReplaceWith(""))
-    @Suppress("Unused_parameter")
-    fun fillEncryption(container: Container, publication: Publication, drm: DRM?): Pair<Container, Publication> {
-        return Pair(container, publication)
-    }
+    public suspend inline fun<R> Readable.readDecodeOrElse(
+        url: Url,
+        decode: (value: ByteArray) -> Try<R, DecodeError>,
+        recover: (ReadError) -> R
+    ): R =
+        readDecodeOrElse(decode, recover) {
+            recover(
+                ReadError.Decoding(
+                    DebugError("Couldn't decode resource at $url", it.cause)
+                )
+            )
+        }
+
+    private suspend inline fun Container<Readable>.readDecodeXmlOrNull(
+        path: String
+    ): ElementNode? =
+        Url.fromDecodedPath(path)?.let { url -> readDecodeXmlOrNull(url) }
+
+    /** Returns the resource data as an XML Document at the given [url], or null. */
+    private suspend inline fun Container<Readable>.readDecodeXmlOrNull(
+        url: Url
+    ): ElementNode? =
+        readDecodeOrNull(url) { it.decodeXml() }
 }
-
-@Suppress("DEPRECATION")
-internal fun Publication.setLayoutStyle() {
-    val layout = ReadiumCssLayout(metadata)
-
-    cssStyle = layout.cssId
-
-    userSettingsUIPreset = when (layout) {
-        ReadiumCssLayout.RTL -> EPUBConstant.rtlPreset
-        ReadiumCssLayout.LTR -> EPUBConstant.ltrPreset
-        ReadiumCssLayout.CJK_VERTICAL -> EPUBConstant.cjkVerticalPreset
-        ReadiumCssLayout.CJK_HORIZONTAL -> EPUBConstant.cjkHorizontalPreset
-    }
-}
-
-private suspend fun Fetcher.isProtectedWithLcp(): Boolean =
-    get("/META-INF/license.lcpl").use { it.length().isSuccess }

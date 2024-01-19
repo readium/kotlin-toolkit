@@ -11,9 +11,11 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.DurationUnit
 import kotlin.time.ExperimentalTime
+import org.readium.r2.shared.InternalReadiumApi
 
 @ExperimentalTime
-internal fun List<Duration>.sum(): Duration =
+@InternalReadiumApi
+public fun List<Duration>.sum(): Duration =
     fold(0.seconds) { a, b -> a + b }
 
 @JvmName("sumNullable")

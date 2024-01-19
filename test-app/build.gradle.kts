@@ -7,15 +7,15 @@
 plugins {
     id("com.android.application")
     kotlin("android")
-    kotlin("kapt")
+    id("com.google.devtools.ksp")
     kotlin("plugin.parcelize")
 }
 
 android {
-    compileSdk = 33
+    compileSdk = 34
     defaultConfig {
         minSdk = 21
-        targetSdk = 33
+        targetSdk = 34
 
         applicationId = "org.readium.r2reader"
 
@@ -28,11 +28,11 @@ android {
         ndk.abiFilters.add("x86_64")
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = JavaVersion.VERSION_17.toString()
         freeCompilerArgs = freeCompilerArgs + "-opt-in=kotlin.RequiresOptIn"
     }
     composeOptions {
@@ -41,6 +41,7 @@ android {
     buildFeatures {
         viewBinding = true
         compose = true
+        buildConfig = true
     }
     buildTypes {
         getByName("release") {
@@ -48,7 +49,7 @@ android {
             proguardFiles(getDefaultProguardFile("proguard-android.txt"))
         }
     }
-    packagingOptions {
+    packaging {
         resources.excludes.add("META-INF/*")
     }
 
@@ -69,11 +70,17 @@ dependencies {
     implementation(project(":readium:readium-shared"))
     implementation(project(":readium:readium-streamer"))
     implementation(project(":readium:readium-navigator"))
+    implementation(project(":readium:navigators:media:readium-navigator-media-audio"))
+    implementation(project(":readium:navigators:media:readium-navigator-media-tts"))
+    // Only required if you want to support audiobooks using ExoPlayer.
+    implementation(project(":readium:adapters:exoplayer"))
     implementation(project(":readium:readium-navigator-media2"))
     implementation(project(":readium:readium-opds"))
     implementation(project(":readium:readium-lcp"))
     // Only required if you want to support PDF files using PDFium.
     implementation(project(":readium:adapters:pdfium"))
+
+    implementation(libs.accompanist.themeadapter.material)
 
     implementation(libs.androidx.compose.activity)
     implementation(libs.androidx.activity.ktx)
@@ -102,12 +109,11 @@ dependencies {
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.jsoup)
 
-    implementation(libs.bundles.media2)
     implementation(libs.bundles.media3)
 
     // Room database
     implementation(libs.bundles.room)
-    kapt(libs.androidx.room.compiler)
+    ksp(libs.androidx.room.compiler)
 
     // Tests
     testImplementation(libs.junit)

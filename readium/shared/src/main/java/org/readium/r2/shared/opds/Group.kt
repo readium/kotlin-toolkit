@@ -9,12 +9,32 @@
 
 package org.readium.r2.shared.opds
 
+import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
 
-data class Group(val title: String) {
-    var metadata: OpdsMetadata = OpdsMetadata(title = title)
-    var links = mutableListOf<Link>()
-    var publications = mutableListOf<Publication>()
-    var navigation = mutableListOf<Link>()
+public data class Group(
+    val title: String,
+    val metadata: OpdsMetadata = OpdsMetadata(title = title),
+    val links: List<Link> = emptyList(),
+    val publications: List<Publication> = emptyList(),
+    val navigation: List<Link> = emptyList()
+) {
+    @InternalReadiumApi
+    public data class Builder(
+        val title: String,
+        val metadata: OpdsMetadata.Builder = OpdsMetadata.Builder(title = title),
+        val links: MutableList<Link> = mutableListOf(),
+        val publications: MutableList<Publication> = mutableListOf(),
+        val navigation: MutableList<Link> = mutableListOf()
+    ) {
+        public fun build(): Group =
+            Group(
+                title = title,
+                metadata = metadata.build(),
+                links = links.toList(),
+                publications = publications.toList(),
+                navigation = navigation.toList()
+            )
+    }
 }

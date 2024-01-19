@@ -12,11 +12,11 @@ import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.InternalReadiumApi
 
 @InternalReadiumApi
-open class PreferenceDelegate<T>(
+public open class PreferenceDelegate<T>(
     private val getValue: () -> T?,
     private val getEffectiveValue: () -> T,
     private val getIsEffective: () -> Boolean,
-    private val updateValue: (T?) -> Unit,
+    private val updateValue: (T?) -> Unit
 ) : Preference<T> {
 
     override val value: T?
@@ -28,17 +28,18 @@ open class PreferenceDelegate<T>(
     override val isEffective: Boolean
         get() = getIsEffective()
 
-    override fun set(value: T?) =
+    public override fun set(value: T?) {
         updateValue(value)
+    }
 }
 
 @InternalReadiumApi
-class EnumPreferenceDelegate<T>(
+public class EnumPreferenceDelegate<T>(
     getValue: () -> T?,
     getEffectiveValue: () -> T,
     getIsEffective: () -> Boolean,
     updateValue: (T?) -> Unit,
-    override val supportedValues: List<T>,
+    override val supportedValues: List<T>
 ) : PreferenceDelegate<T>(getValue, getEffectiveValue, getIsEffective, updateValue),
     EnumPreference<T> {
 
@@ -49,14 +50,14 @@ class EnumPreferenceDelegate<T>(
 }
 
 @InternalReadiumApi
-class RangePreferenceDelegate<T : Comparable<T>>(
+public class RangePreferenceDelegate<T : Comparable<T>>(
     getValue: () -> T?,
     getEffectiveValue: () -> T,
     getIsEffective: () -> Boolean,
     updateValue: (T?) -> Unit,
     private val valueFormatter: (T) -> String,
     override val supportedRange: ClosedRange<T>,
-    private val progressionStrategy: ProgressionStrategy<T>,
+    private val progressionStrategy: ProgressionStrategy<T>
 ) : PreferenceDelegate<T>(getValue, getEffectiveValue, getIsEffective, updateValue),
     RangePreference<T> {
 

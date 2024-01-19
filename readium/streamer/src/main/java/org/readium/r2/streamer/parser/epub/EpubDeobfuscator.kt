@@ -9,33 +9,44 @@ package org.readium.r2.streamer.parser.epub
 import com.mcxiaoke.koi.HASH
 import com.mcxiaoke.koi.ext.toHexBytes
 import kotlin.experimental.xor
-import org.readium.r2.shared.fetcher.LazyResource
-import org.readium.r2.shared.fetcher.Resource
-import org.readium.r2.shared.fetcher.ResourceTry
-import org.readium.r2.shared.fetcher.TransformingResource
-import org.readium.r2.shared.publication.encryption.encryption
+import org.readium.r2.shared.publication.encryption.Encryption
+import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.data.ReadTry
+import org.readium.r2.shared.util.resource.Resource
+import org.readium.r2.shared.util.resource.TransformingResource
+import org.readium.r2.shared.util.resource.flatMap
 
 /**
  * Deobfuscates fonts according to https://www.w3.org/TR/epub-33/#sec-font-obfuscation
  */
-internal class EpubDeobfuscator(private val pubId: String) {
+internal class EpubDeobfuscator(
+    private val pubId: String,
+    private val encryptionData: Map<Url, Encryption>
+) {
 
-    fun transform(resource: Resource): Resource = LazyResource {
-        val algorithm = resource.link().properties.encryption?.algorithm
-        if (algorithm != null && algorithm2length.containsKey(algorithm)) {
-            DeobfuscatingResource(resource, algorithm)
-        } else {
-            resource
+    @Suppress("Unused_parameter")
+    fun transform(url: Url, resource: Resource): Resource =
+        resource.flatMap {
+            val algorithm = resource.sourceUrl
+                ?.let { encryptionData[it] }
+                ?.algorithm
+            if (algorithm != null && algorithm2length.containsKey(algorithm)) {
+                DeobfuscatingResource(resource, algorithm)
+            } else {
+                resource
+            }
         }
-    }
 
-    inner class DeobfuscatingResource(resource: Resource, private val algorithm: String) : TransformingResource(resource) {
+    inner class DeobfuscatingResource(
+        private val resource: Resource,
+        private val algorithm: String
+    ) : TransformingResource(resource) {
 
         // The obfuscation doesn't change the length of the resource.
-        override suspend fun length(): ResourceTry<Long> =
+        override suspend fun length(): ReadTry<Long> =
             resource.length()
 
-        override suspend fun transform(data: ResourceTry<ByteArray>): ResourceTry<ByteArray> =
+        override suspend fun transform(data: ReadTry<ByteArray>): ReadTry<ByteArray> =
             data.map { bytes ->
                 val obfuscationLength: Int = algorithm2length[algorithm]
                     ?: return@map bytes
@@ -45,7 +56,11 @@ internal class EpubDeobfuscator(private val pubId: String) {
                     else -> HASH.sha1(pubId).toHexBytes()
                 }
 
-                deobfuscate(bytes = bytes, obfuscationKey = obfuscationKey, obfuscationLength = obfuscationLength)
+                deobfuscate(
+                    bytes = bytes,
+                    obfuscationKey = obfuscationKey,
+                    obfuscationLength = obfuscationLength
+                )
                 bytes
             }
     }
@@ -56,7 +71,6 @@ internal class EpubDeobfuscator(private val pubId: String) {
     )
 
     private fun deobfuscate(bytes: ByteArray, obfuscationKey: ByteArray, obfuscationLength: Int) {
-        @Suppress("NAME_SHADOWING")
         val toDeobfuscate = 0 until obfuscationLength
         for (i in toDeobfuscate)
             bytes[i] = bytes[i].xor(obfuscationKey[i % obfuscationKey.size])

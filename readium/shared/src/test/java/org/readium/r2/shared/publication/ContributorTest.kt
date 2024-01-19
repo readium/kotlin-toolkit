@@ -45,8 +45,8 @@ class ContributorTest {
                 roles = setOf("bassist"),
                 position = 4.0,
                 links = listOf(
-                    Link(href = "http://link1"),
-                    Link(href = "http://link2")
+                    Link(href = Href("http://link1")!!),
+                    Link(href = Href("http://link2")!!)
                 )
             ),
             Contributor.fromJSON(
@@ -217,8 +217,8 @@ class ContributorTest {
                 roles = setOf("bassist"),
                 position = 4.0,
                 links = listOf(
-                    Link(href = "http://link1"),
-                    Link(href = "http://link2")
+                    Link(href = Href("http://link1")!!),
+                    Link(href = Href("http://link2")!!)
                 )
             ).toJSON()
         )

@@ -6,7 +6,6 @@
 
 package org.readium.r2.testapp.catalogs
 
-import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.navigation.Navigation
@@ -14,13 +13,14 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.squareup.picasso.Picasso
-import org.readium.r2.shared.extensions.putPublication
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.opds.images
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.databinding.ItemRecycleCatalogBinding
 
-class PublicationAdapter :
+class PublicationAdapter(
+    private val setModelPublication: (Publication) -> Unit
+) :
     ListAdapter<Publication, PublicationAdapter.ViewHolder>(PublicationListDiff()) {
 
     override fun onCreateViewHolder(
@@ -33,7 +33,6 @@ class PublicationAdapter :
     }
 
     override fun onBindViewHolder(viewHolder: ViewHolder, position: Int) {
-
         val publication = getItem(position)
 
         viewHolder.bind(publication)
@@ -46,21 +45,21 @@ class PublicationAdapter :
             binding.catalogListTitleText.text = publication.metadata.title
 
             publication.linkWithRel("http://opds-spec.org/image/thumbnail")?.let { link ->
-                Picasso.get().load(link.href)
+                Picasso.get().load(link.href.toString())
                     .into(binding.catalogListCoverImage)
             } ?: run {
                 if (publication.images.isNotEmpty()) {
                     Picasso.get()
-                        .load(publication.images.first().href).into(binding.catalogListCoverImage)
+                        .load(publication.images.first().href.toString()).into(
+                            binding.catalogListCoverImage
+                        )
                 }
             }
 
             binding.root.setOnClickListener {
-                val bundle = Bundle().apply {
-                    putPublication(publication)
-                }
+                setModelPublication(publication)
                 Navigation.findNavController(it)
-                    .navigate(R.id.action_navigation_catalog_to_navigation_catalog_detail, bundle)
+                    .navigate(R.id.action_navigation_catalog_to_navigation_catalog_detail)
             }
         }
     }
@@ -78,7 +77,7 @@ class PublicationAdapter :
             oldItem: Publication,
             newItem: Publication
         ): Boolean {
-            return oldItem.jsonManifest == newItem.jsonManifest
+            return oldItem.manifest == newItem.manifest
         }
     }
 }

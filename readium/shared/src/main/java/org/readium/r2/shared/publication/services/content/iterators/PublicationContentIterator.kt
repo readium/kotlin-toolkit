@@ -7,36 +7,56 @@
 package org.readium.r2.shared.publication.services.content.iterators
 
 import org.readium.r2.shared.ExperimentalReadiumApi
-import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
-import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.publication.Manifest
+import org.readium.r2.shared.publication.PublicationServicesHolder
 import org.readium.r2.shared.publication.indexOfFirstWithHref
 import org.readium.r2.shared.publication.services.content.Content
 import org.readium.r2.shared.util.Either
+import org.readium.r2.shared.util.data.Container
+import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.shared.util.resource.Resource
 
 /**
- * Creates a [Content.Iterator] instance for the [Resource], starting from the given [Locator].
+ * Creates a [Content.Iterator] instance for the [Resource], starting from the
+ * given [Locator].
  *
  * Returns null if the resource media type is not supported.
  */
 @ExperimentalReadiumApi
-typealias ResourceContentIteratorFactory =
-    suspend (resource: Resource, locator: Locator) -> Content.Iterator?
+public fun interface ResourceContentIteratorFactory {
+
+    /**
+     * Creates a [Content.Iterator] instance for the [resource], starting from the given [locator].
+     *
+     * Returns null if the resource media type is not supported.
+     */
+    public suspend fun create(
+        manifest: Manifest,
+        servicesHolder: PublicationServicesHolder,
+        readingOrderIndex: Int,
+        resource: Resource,
+        mediaType: MediaType,
+        locator: Locator
+    ): Content.Iterator?
+}
 
 /**
- * A composite [Content.Iterator] which iterates through a whole [publication] and delegates the
+ * A composite [Content.Iterator] which iterates through a whole [manifest] and delegates the
  * iteration inside a given resource to media type-specific iterators.
  *
- * @param publication The [Publication] which will be iterated through.
+ * @param manifest The [Manifest] of the publication which will be iterated through.
  * @param startLocator Starting [Locator] in the publication.
  * @param resourceContentIteratorFactories List of [ResourceContentIteratorFactory] which will be
  * used to create the iterator for each resource. The factories are tried in order until there's a
  * match.
  */
 @ExperimentalReadiumApi
-class PublicationContentIterator(
-    private val publication: Publication,
+public class PublicationContentIterator(
+    private val manifest: Manifest,
+    private val container: Container<Resource>,
+    private val services: PublicationServicesHolder,
     private val startLocator: Locator?,
     private val resourceContentIteratorFactories: List<ResourceContentIteratorFactory>
 ) : Content.Iterator {
@@ -68,7 +88,9 @@ class PublicationContentIterator(
     override fun previous(): Content.Element =
         currentElement
             ?.takeIf { it.direction == Direction.Backward }?.element
-            ?: throw IllegalStateException("Called previous() without a successful call to hasPrevious() first")
+            ?: throw IllegalStateException(
+                "Called previous() without a successful call to hasPrevious() first"
+            )
 
     override suspend fun hasNext(): Boolean {
         currentElement = nextIn(Direction.Forward)
@@ -78,7 +100,9 @@ class PublicationContentIterator(
     override fun next(): Content.Element =
         currentElement
             ?.takeIf { it.direction == Direction.Forward }?.element
-            ?: throw IllegalStateException("Called next() without a successful call to hasNext() first")
+            ?: throw IllegalStateException(
+                "Called next() without a successful call to hasNext() first"
+            )
 
     private suspend fun nextIn(direction: Direction): ElementInDirection? {
         val iterator = currentIterator() ?: return null
@@ -93,7 +117,7 @@ class PublicationContentIterator(
     }
 
     /**
-     * Returns the [Content.Iterator] for the current [Resource] in the reading order.
+     * Returns the [Content.Iterator] for the current resource in the reading order.
      */
     private suspend fun currentIterator(): IndexedIterator? {
         if (_currentIterator == null) {
@@ -107,7 +131,7 @@ class PublicationContentIterator(
      */
     private suspend fun initialIterator(): IndexedIterator? {
         val index: Int =
-            startLocator?.let { publication.readingOrder.indexOfFirstWithHref(it.href) }
+            startLocator?.let { manifest.readingOrder.indexOfFirstWithHref(it.href) }
                 ?: 0
 
         val locations = startLocator.orProgression(0.0)
@@ -121,7 +145,7 @@ class PublicationContentIterator(
      */
     private suspend fun nextIteratorIn(direction: Direction, fromIndex: Int): IndexedIterator? {
         val index = fromIndex + direction.delta
-        if (!publication.readingOrder.indices.contains(index)) {
+        if (!manifest.readingOrder.indices.contains(index)) {
             return null
         }
 
@@ -140,13 +164,14 @@ class PublicationContentIterator(
      * The [location] will be used to compute the starting [Locator] for the iterator.
      */
     private suspend fun loadIteratorAt(index: Int, location: LocatorOrProgression): IndexedIterator? {
-        val link = publication.readingOrder[index]
+        val link = manifest.readingOrder[index]
         val locator = location.toLocator(link) ?: return null
-        val resource = publication.get(link)
+        val resource = container[link.url()] ?: return null
+        val mediaType = link.mediaType ?: return null
 
         return resourceContentIteratorFactories
             .firstNotNullOfOrNull { factory ->
-                factory(resource, locator)
+                factory.create(manifest, services, index, resource, mediaType, locator)
             }
             ?.let { IndexedIterator(index, it) }
     }
@@ -163,7 +188,7 @@ class PublicationContentIterator(
 
     private fun LocatorOrProgression.toLocator(link: Link): Locator? =
         left
-            ?: publication.locatorFromLink(link)?.copyWithLocations(progression = right)
+            ?: manifest.locatorFromLink(link)?.copyWithLocations(progression = right)
 }
 
 /**

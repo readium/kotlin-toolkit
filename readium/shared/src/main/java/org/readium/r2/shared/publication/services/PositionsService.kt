@@ -11,88 +11,72 @@ package org.readium.r2.shared.publication.services
 
 import kotlinx.coroutines.runBlocking
 import org.json.JSONObject
+import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.extensions.mapNotNull
 import org.readium.r2.shared.extensions.toJsonOrNull
-import org.readium.r2.shared.fetcher.Resource
-import org.readium.r2.shared.fetcher.StringResource
-import org.readium.r2.shared.publication.*
-import org.readium.r2.shared.toJSON
+import org.readium.r2.shared.publication.Link
+import org.readium.r2.shared.publication.Locator
+import org.readium.r2.shared.publication.Manifest
+import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.publication.PublicationServicesHolder
+import org.readium.r2.shared.publication.ServiceFactory
+import org.readium.r2.shared.publication.firstWithMediaType
+import org.readium.r2.shared.publication.firstWithRel
+import org.readium.r2.shared.util.AbsoluteUrl
+import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.http.HttpClient
+import org.readium.r2.shared.util.http.HttpRequest
+import org.readium.r2.shared.util.http.fetchString
+import org.readium.r2.shared.util.mediatype.MediaType
 
-private val positionsLink = Link(
-    href = "/~readium/positions",
-    type = "application/vnd.readium.position-list+json"
-)
+private val positionsMediaType =
+    MediaType("application/vnd.readium.position-list+json")!!
 
 /**
  * Provides a list of discrete locations in the publication, no matter what the original format is.
  */
-interface PositionsService : Publication.Service {
+public interface PositionsService : Publication.Service {
 
     /**
      * Returns the list of all the positions in the publication, grouped by the resource reading order index.
      */
-    suspend fun positionsByReadingOrder(): List<List<Locator>>
+    public suspend fun positionsByReadingOrder(): List<List<Locator>>
 
     /**
      * Returns the list of all the positions in the publication.
      */
-    suspend fun positions(): List<Locator> = positionsByReadingOrder().flatten()
-
-    override val links get() = listOf(positionsLink)
-
-    override fun get(link: Link): Resource? {
-        if (link.href != positionsLink.href)
-            return null
-
-        return StringResource(positionsLink) {
-            val positions = positions()
-            JSONObject().apply {
-                put("total", positions.size)
-                put("positions", positions.toJSON())
-            }.toString()
-        }
-    }
+    public suspend fun positions(): List<Locator> = positionsByReadingOrder().flatten()
 }
-
-private suspend fun Publication.positionsFromManifest(): List<Locator> =
-    links.firstWithMediaType(positionsLink.mediaType)
-        ?.let { get(it) }
-        ?.readAsString()
-        ?.getOrNull()
-        ?.toJsonOrNull()
-        ?.optJSONArray("positions")
-        ?.mapNotNull { Locator.fromJSON(it as? JSONObject) }
-        .orEmpty()
 
 /**
  * Returns the list of all the positions in the publication, grouped by the resource reading order index.
  */
-suspend fun Publication.positionsByReadingOrder(): List<List<Locator>> {
-    findService(PositionsService::class)?.let {
-        return it.positionsByReadingOrder()
-    }
-
-    val locators = positionsFromManifest().groupBy(Locator::href)
-    return readingOrder.map { locators[it.href].orEmpty() }
-}
+public suspend fun PublicationServicesHolder.positionsByReadingOrder(): List<List<Locator>> =
+    findService(PositionsService::class)
+        ?.positionsByReadingOrder()
+        .orEmpty()
 
 /**
  * Returns the list of all the positions in the publication.
  */
-suspend fun Publication.positions(): List<Locator> {
-    return findService(PositionsService::class)?.positions()
-        ?: positionsFromManifest()
-}
+public suspend fun PublicationServicesHolder.positions(): List<Locator> =
+    findService(PositionsService::class)
+        ?.positions()
+        .orEmpty()
 
 /**
  * List of all the positions in each resource, indexed by their href.
  */
-@Deprecated("Use [positionsByReadingOrder] instead", ReplaceWith("positionsByReadingOrder"))
-val Publication.positionsByResource: Map<String, List<Locator>>
+@Deprecated(
+    "Use [positionsByReadingOrder] instead",
+    ReplaceWith("positionsByReadingOrder"),
+    level = DeprecationLevel.ERROR
+)
+public val Publication.positionsByResource: Map<Url, List<Locator>>
     get() = runBlocking { positions().groupBy { it.href } }
 
 /** Factory to build a [PositionsService] */
-var Publication.ServicesBuilder.positionsServiceFactory: ServiceFactory?
+public var Publication.ServicesBuilder.positionsServiceFactory: ServiceFactory?
     get() = get(PositionsService::class)
     set(value) = set(PositionsService::class, value)
 
@@ -103,9 +87,9 @@ var Publication.ServicesBuilder.positionsServiceFactory: ServiceFactory?
  * @param fallbackMediaType Media type that will be used as a fallback if the Link doesn't specify
  *        any.
  */
-class PerResourcePositionsService(
+public class PerResourcePositionsService(
     private val readingOrder: List<Link>,
-    private val fallbackMediaType: String
+    private val fallbackMediaType: MediaType
 ) : PositionsService {
 
     override suspend fun positionsByReadingOrder(): List<List<Locator>> {
@@ -114,8 +98,8 @@ class PerResourcePositionsService(
         return readingOrder.mapIndexed { index, link ->
             listOf(
                 Locator(
-                    href = link.href,
-                    type = link.type ?: fallbackMediaType,
+                    href = link.url(),
+                    mediaType = link.mediaType ?: fallbackMediaType,
                     title = link.title,
                     locations = Locator.Locations(
                         position = index + 1,
@@ -126,13 +110,62 @@ class PerResourcePositionsService(
         }
     }
 
-    companion object {
+    public companion object {
 
-        fun createFactory(fallbackMediaType: String): (Publication.Service.Context) -> PerResourcePositionsService = {
+        public fun createFactory(fallbackMediaType: MediaType): (Publication.Service.Context) -> PerResourcePositionsService = {
             PerResourcePositionsService(
                 readingOrder = it.manifest.readingOrder,
                 fallbackMediaType = fallbackMediaType
             )
+        }
+    }
+}
+
+@InternalReadiumApi
+public class WebPositionsService(
+    private val manifest: Manifest,
+    private val httpClient: HttpClient
+) : PositionsService {
+
+    private lateinit var _positions: List<Locator>
+
+    private val links: List<Link> =
+        listOfNotNull(
+            manifest.links.firstWithMediaType(positionsMediaType)
+        )
+
+    override suspend fun positions(): List<Locator> {
+        if (!::_positions.isInitialized) {
+            _positions = computePositions()
+        }
+
+        return _positions
+    }
+
+    override suspend fun positionsByReadingOrder(): List<List<Locator>> {
+        val locators = positions().groupBy(Locator::href)
+        return manifest.readingOrder.map { locators[it.url()].orEmpty() }
+    }
+
+    private suspend fun computePositions(): List<Locator> {
+        val positionsLink = links.firstOrNull()
+            ?: return emptyList()
+        val selfLink = manifest.links.firstWithRel("self")
+        val positionsUrl = (positionsLink.url(base = selfLink?.url()) as? AbsoluteUrl)
+            ?: return emptyList()
+
+        return httpClient.fetchString(HttpRequest(positionsUrl))
+            .getOrNull()
+            ?.toJsonOrNull()
+            ?.optJSONArray("positions")
+            ?.mapNotNull { Locator.fromJSON(it as? JSONObject) }
+            .orEmpty()
+    }
+
+    public companion object {
+
+        public fun createFactory(httpClient: HttpClient): (Publication.Service.Context) -> WebPositionsService = {
+            WebPositionsService(it.manifest, httpClient)
         }
     }
 }

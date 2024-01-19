@@ -18,7 +18,7 @@ import org.readium.r2.shared.util.Language
  * @see EpubPreferences
  */
 @ExperimentalReadiumApi
-data class EpubDefaults(
+public data class EpubDefaults(
     val columnCount: ColumnCount? = null,
     val fontSize: Double? = null,
     val fontWeight: Double? = null,

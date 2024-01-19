@@ -48,6 +48,7 @@ captures/
 .idea/libraries
 .idea/jarRepositories.xml
 .idea/misc.xml
+.idea/migrations.xml
 # Android Studio 3 in .gitignore file.
 .idea/caches
 .idea/modules.xml
@@ -83,3 +84,4 @@ docs/readium
 docs/index.md
 docs/package-list
 site/
+androidTestResultsUserPreferences.xml

@@ -44,8 +44,8 @@ class SubjectTest {
                 scheme = "http://scheme",
                 code = "CODE",
                 links = listOf(
-                    Link(href = "pub1"),
-                    Link(href = "pub2")
+                    Link(href = Href("pub1")!!),
+                    Link(href = Href("pub2")!!)
                 )
             ),
             Subject.fromJSON(
@@ -181,8 +181,8 @@ class SubjectTest {
                 scheme = "http://scheme",
                 code = "CODE",
                 links = listOf(
-                    Link(href = "pub1"),
-                    Link(href = "pub2")
+                    Link(href = Href("pub1")!!),
+                    Link(href = Href("pub2")!!)
                 )
             ).toJSON()
         )

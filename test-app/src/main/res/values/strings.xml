@@ -1,58 +1,20 @@
 <!--
-  ~ Module: r2-testapp-kotlin
-  ~ Developers: Aferdita Muriqi, Clément Baumann
-  ~
-  ~ Copyright (c) 2018. European Digital Reading Lab. All rights reserved.
-  ~ Licensed to the Readium Foundation under one or more contributor license agreements.
-  ~ Use of this source code is governed by a BSD-style license which is detailed in the
-  ~ LICENSE file present in the project repository where this source code is maintained.
-  -->
+  Copyright 2023 Readium Foundation. All rights reserved.
+  Use of this source code is governed by the BSD-style license
+  available in the top-level LICENSE file of the project.
+-->
 
 <resources>
-    <string name="app_name" translatable="false">R2 Reader</string>
-    <string name="menu_item_show_epub_list">Show List</string>
-    <string name="menu_item_add_epub">Add ePub</string>
-    <string name="menu_item_filter">Filter</string>
-    <string name="progress_wait_while_searching_book">Please wait.</string>
-    <string name="progress_wait">Please wait.</string>
-    <string name="progress_wait_while_downloading_book">Please wait while your publication is being downloaded.</string>
-    <string name="progress_wait_while_preparing_book">Please wait while your publication is being prepared.</string>
-    <string name="progress_wait_while_preparing_audiobook">Please wait while your audiobook is being prepared.</string>
-    <string name="progress_wait_while_loading_feed">Please wait while your feed is loading.</string>
-    <string name="error_invalid_epub">Invalid Epub</string>
-    <string name="fallback_no_description">No description</string>
-    <string name="button_dismiss">DISMISS</string>
-
     <string name="epubactivity_drm_info">DRM Info</string>
     <string name="epubactivity_set_bookmark">Add a bookmark</string>
     <string name="epubactivity_settings">User Settings</string>
     <string name="epubactivity_book_nav_options">Book navigation menu</string>
     <string name="epubactivity_read_aloud_start">Read Aloud</string>
-    <string name="epubactivity_read_aloud_stop">Stop Read Aloud</string>
     <string name="epubactivity_search">Search</string>
 
-    <string name="epubactivity_accessibility">Accessibility</string>
-    <string name="epubactivity_accessibility_screen_reader_start">Start Screen Reader</string>
-    <string name="epubactivity_accessibility_screen_reader_pause">Pause Screen Reader</string>
-    <string name="epubactivity_accessibility_screen_reader_resume">Resume Screen Reader</string>
-    <string name="epubactivity_accessibility_screen_reader_stop">Stop Screen Reader</string>
-
-    <string name="title_activity_opdscatalog">OPDS Catalog</string>
-    <string name="action_settings">Settings</string>
-    <string name="title_activity_r2_about">About R2 Reader</string>
-    <string name="title_activity_opds_list">OPDS Feeds</string>
-    <string name="title_activity_opds_detail">Detail</string>
     <string name="title_fragment_drm_management">DRM Management</string>
-    <string name="title_activity_epub">Detail</string>
-    <string name="floating_button_add_book">Add a Book</string>
-    <string name="floating_button_add_feed">Add a OPDS Feed</string>
-    <string name="about_r2_reader">About R2 Reader</string>
     <string name="more_options">More Options</string>
-    <string name="opds_feeds">OPDS Feeds</string>
     <string name="popup_delete_button">DELETE</string>
-    <string name="add_publication_to_library">Add a publication to your library</string>
-    <string name="select_from_your_device">select from your device</string>
-    <string name="download_from_url">download from a url</string>
 
     <string name="app_version_header">Version</string>
     <string name="app_version_label">App Version:</string>
@@ -70,41 +32,7 @@
     <string name="catalog_detail_download_button">Download</string>
 
 
-    <string name="menu_label_drm">DRM</string>
-    <string name="menu_label_settings">Settings</string>
-    <string name="menu_label_toc">TOC</string>
-    <string name="usersettings_label_font">Font</string>
-    <string name="usersettings_appearance_default">Default</string>
-    <string name="usersettings_appearance_sepia">Sepia</string>
-    <string name="usersettings_appearance_night">Night</string>
-    <string name="usersettings_label_scroll_mode">Scroll mode</string>
-    <string name="usersettings_publisher_default">"Publisher's Default"</string>
-    <string name="usersettings_publisher_default_accessibility">"Publisher's Default Settings"</string>
-    <string name="usersettings_label_columns">Columns</string>
-    <string name="usersettings_auto">Auto</string>
-    <string name="usersettings_column_one">1</string>
-    <string name="usersettings_column_two">2</string>
-    <string name="usersettings_label_page_margins">Page Margins</string>
-    <string name="usersettings_page_margin_default">0.75</string>
-    <string name="usersettings_label_word_spacing">Word Spacing</string>
-    <string name="usersettings_label_letter_spacing">Letter Spacing</string>
-    <string name="usersettings_label_line_height">Line Height</string>
-    <string name="usersettings_label_TTS_speech_speed">TTS speed</string>
-
     <!-- Accessibility -->
-
-    <string name="usersettings_description_TTS_speech_speed">Set TTS speech speed</string>
-    <string name="usersettings_description_brightness">Set Brightness</string>
-    <string name="usersettings_description_font_increase">Increase Font Size</string>
-    <string name="usersettings_description_font_decrease">Decrease Font Size</string>
-    <string name="usersettings_description_pm_increase">Increase Page Margins Size</string>
-    <string name="usersettings_description_pm_decrease">Decrease Page Margins Size</string>
-    <string name="usersettings_description_ws_increase">Increase Word Spacing</string>
-    <string name="usersettings_description_ws_decrease">Decrease Word Spacing</string>
-    <string name="usersettings_description_ls_increase">Increase Letter Spacing</string>
-    <string name="usersettings_description_ls_decrease">Decrease Letter Spacing</string>
-    <string name="usersettings_description_lh_increase">Increase Line Height</string>
-    <string name="usersettings_description_lh_decrease">Decrease Line Height</string>
 
     <string name="drm_information_header">INFORMATION</string>
     <string name="drm_label_license_type">License Type</string>
@@ -117,12 +45,10 @@
     <string name="drm_label_copies_left">Copies left</string>
     <string name="drm_label_start">Start</string>
     <string name="drm_label_end">End</string>
-    <string name="drm_label_potential_right_end">Potential right end</string>
     <string name="drm_label_actions">ACTIONS</string>
     <string name="drm_label_renew">RENEW</string>
     <string name="drm_label_return">RETURN</string>
     <string name="zero">00:00</string>
-    <string name="chapter">Chapter</string>
     <string name="chapter_page">Chapter / Page</string>
     <string name="progression">Progression</string>
     <string name="timestamp">Timestamp</string>
@@ -145,6 +71,9 @@
     <string name="cover_image">Cover Image</string>
     <string name="repfr">repfr</string>
 
+    <string name="details">Details</string>
+    <string name="close">Close</string>
+    <string name="share">Share</string>
     <string name="delete">Delete</string>
     <string name="cancel">Cancel</string>
     <string name="confirm_delete_book_title">Delete Book?</string>
@@ -162,24 +91,87 @@
     <string name="invalid_url">Please enter a valid URL</string>
     <string name="catalog_parse_error">Error parsing Catalog feed. Please check the URL and try again</string>
 
-    <string name="publication_image_description">Cover image for %1$s</string>
-
     <string name="return_publication">This will return the publication</string>
     <string name="return_button">Return</string>
 
-    <string name="end_of_chapter">End of chapter</string>
+    <string name="opening_publication_cannot_render">Cannot render publication.</string>
+    <string name="opening_publication_audio_engine_initialization">Could not open publication because audio engine initialization failed.</string>
 
-    <string name="unexpected_io_exception">Unable to add publication due to an unexpected error on your device</string>
+    <string name="import_publication_unexpected_io_exception">Unable to add publication due to an unexpected error on your device</string>
+    <string name="import_publication_download_failed">Publication download failed.</string>
+    <string name="import_publication_no_acquisition">Acquisition is not possible.</string>
+
     <string name="import_publication_success">Publication added to your library</string>
-    <string name="unable_add_pub_database">Unable to add publication to the database</string>
+    <string name="import_publication_unable_add_pub_database">Unable to add publication to the database</string>
+
+    <string name="publication_error_unsupported_asset">Asset format is not supported</string>
+    <string name="publication_error_network_forbidden">Server denied access to a resource.</string>
+    <string name="publication_error_network_not_found">A resource has not been found on the server.</string>
+    <string name="publication_error_network_unreachable">Server cannot be reached.</string>
+    <string name="publication_error_network_timeout">Server was too long to respond.</string>
+    <string name="publication_error_network_ssl_handshake">A SSL error occurred.</string>
+    <string name="publication_error_network_unexpected">An unexpected network error occurred.</string>
+    <string name="publication_error_filesystem_not_found">A file has not been found.</string>
+    <string name="publication_error_filesystem_unexpected">An unexpected filesystem error occurred.</string>
+    <string name="publication_error_filesystem_insufficient_space">There is not enough space left on the device.</string>
+    <string name="publication_error_incorrect_credentials">Provided credentials were incorrect</string>
+    <string name="publication_error_restricted">You are not allowed to open this publication</string>
+    <string name="publication_error_out_of_memory">There is not enough memory on this device to open the publication.</string>
+    <string name="publication_error_scheme_not_supported">Publication source is not supported.</string>
+    <string name="publication_error_invalid_publication">Publication looks corrupted.</string>
+    <string name="publication_error_unexpected">An unexpected error occurred.</string>
+
+    <!-- LcpError User Messages -->
+
+    <string name="lcp_error_license_interaction_not_available">This interaction is not available</string>
+    <string name="lcp_error_license_profile_not_supported">This License has a profile identifier that this app cannot handle, the publication cannot be processed</string>
+    <string name="lcp_error_crl_fetching">Can\'t retrieve the Certificate Revocation List</string>
+    <string name="lcp_error_network">Network error</string>
+    <string name="lcp_error_runtime">Unexpected LCP error</string>
+    <string name="lcp_error_unknown">Unknown LCP error</string>
+
+    <string name="lcp_error_license_status.cancelled">This license was cancelled on %1$s</string>
+    <string name="lcp_error_license_status.returned">This license has been returned on %1$s</string>
+    <string name="lcp_error_license_status.not_started">This license starts on %1$s</string>
+    <string name="lcp_error_license_status.expired">This license expired on %1$s</string>
+    <plurals name="lcp_error_license_status.revoked">
+        <item quantity="one">This license was revoked by its provider on %1$s. It was registered by %2$d device.</item>
+        <item quantity="other">This license was revoked by its provider on %1$s. It was registered by %2$d devices.</item>
+    </plurals>
+
+    <string name="lcp_error_renew.renew_failed">Your publication could not be renewed properly</string>
+    <string name="lcp_error_renew.invalid_renewal_period">Incorrect renewal period, your publication could not be renewed</string>
+    <string name="lcp_error_renew.unexpected_server_error">An unexpected error has occurred on the server</string>
+
+    <string name="lcp_error_return.return_failed">Your publication could not be returned properly</string>
+    <string name="lcp_error_return.already_returned_or_expired">Your publication has already been returned before or is expired</string>
+    <string name="lcp_error_return.unexpected_server_error">An unexpected error has occurred on the server</string>
+
+    <string name="lcp_error_parsing">The JSON is not representing a valid document</string>
+    <string name="lcp_error_parsing.malformed_json">The JSON is malformed and can\'t be parsed</string>
+    <string name="lcp_error_parsing.license_document">The JSON is not representing a valid License Document</string>
+    <string name="lcp_error_parsing.status_document">The JSON is not representing a valid Status Document</string>
+
+    <string name="lcp_error_container.open_failed">Can\'t open the license container</string>
+    <string name="lcp_error_container.file_not_found">License not found in container</string>
+    <string name="lcp_error_container.read_failed">Can\'t read license from container</string>
+    <string name="lcp_error_container.write_failed">Can\'t write license in container</string>
+
+    <string name="lcp_error_license_integrity.certificate_revoked">Certificate has been revoked in the CRL</string>
+    <string name="lcp_error_license_integrity.invalid_certificate_signature">Certificate has not been signed by CA</string>
+    <string name="lcp_error_license_integrity.invalid_license_signature_date">License has been issued by an expired certificate</string>
+    <string name="lcp_error_license_integrity.invalid_license_signature">License signature does not match</string>
+    <string name="lcp_error_license_integrity.invalid_user_key_check">User key check invalid</string>
+
+    <string name="lcp_error_decryption.content_key_decrypt_error">Unable to decrypt encrypted content key from user key</string>
+    <string name="lcp_error_decryption.content_decrypt_error">Unable to decrypt encrypted content from content key</string>
+
+    <string name="missing_lcp_support">The application was compiled without LCP support.</string>
+    <string name="reader_error">Error</string>
+    <string name="opening_error">Could not open publication</string>
+    <string name="import_error">Import error</string>
+
     <string name="failed_parsing_catalog">Failed parsing Catalog</string>
-    <string name="next_chapter">Next chapter</string>
-    <string name="next_sentence">Next sentence</string>
-    <string name="play_and_pause">Play and pause</string>
-    <string name="previous_sentence">Previous sentence</string>
-    <string name="previous_chapter">Previous chapter</string>
-    <string name="brightness_lower">Brightness lower</string>
-    <string name="brightness_higher">Brightness higher</string>
     <string name="no_result">No result</string>
     <string name="note">Note</string>
     <string name="add_a_note">Add a note</string>
@@ -194,13 +186,8 @@
     <string name="go_backward_30_seconds">Go backward 30 seconds</string>
     <string name="play_or_pause">Play or pause</string>
     <string name="go_forward_30_seconds">Go forward 30 seconds</string>
-    <string name="select_a_font">Select a font</string>
-    <string name="close">Close</string>
-    <string name="language">Language</string>
-    <string name="defaultValue">Default</string>
 
     <string name="tts_error_initialization">Failed to initialize the TTS engine</string>
-    <string name="tts_error_language_not_supported">The language %s is not supported</string>
     <string name="tts_error_language_support_incomplete">The language %s requires additional data. Do you want to download it?</string>
     <string name="tts_error_network">A networking error occurred</string>
     <string name="tts_error_other">A TTS error occurred</string>
@@ -213,4 +200,11 @@
     <string name="tts_settings">Speech settings</string>
     <string name="tts_stop">Stop</string>
     <string name="tts_voice">Voice</string>
+
+    <string name="search_error_not_searchable">This publication is not searchable</string>
+    <string name="search_error_cancelled">The search was cancelled</string>
+    <string name="search_error_other">An error occurred while searching</string>
+
+
+    <string name="error_unexpected">An unexpected error occurred.</string>
 </resources>

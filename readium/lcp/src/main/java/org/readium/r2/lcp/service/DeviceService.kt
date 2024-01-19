@@ -29,7 +29,10 @@ internal class DeviceService(
     val context: Context
 ) : Serializable {
 
-    private val preferences: SharedPreferences = context.getSharedPreferences("org.readium.r2.settings", Context.MODE_PRIVATE)
+    private val preferences: SharedPreferences = context.getSharedPreferences(
+        "org.readium.r2.settings",
+        Context.MODE_PRIVATE
+    )
 
     val id: String
         get() {
@@ -67,7 +70,7 @@ internal class DeviceService(
             return null
         }
 
-        val url = link.url(asQueryParameters).toString()
+        val url = link.url(parameters = asQueryParameters).toString()
         val data = network.fetch(url, NetworkService.Method.POST, asQueryParameters)
             .getOrNull() ?: return null
 

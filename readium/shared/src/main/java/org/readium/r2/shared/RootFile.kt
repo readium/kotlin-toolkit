@@ -9,23 +9,12 @@
 
 package org.readium.r2.shared
 
-class RootFile() {
+@Deprecated("Not used anymore", level = DeprecationLevel.ERROR)
+public class RootFile {
+    public var rootPath: String = ""
 
-    constructor(
-        rootPath: String = "",
-        rootFilePath: String = "",
-        mimetype: String = "",
-        version: Double? = null
-    ) : this() {
-        this.rootPath = rootPath
-        this.rootFilePath = rootFilePath
-        this.mimetype = mimetype
-        this.version = version
-    }
-
-    var rootPath: String = ""
     //  Path to OPF
-    var rootFilePath: String = ""
-    var mimetype: String = ""
-    var version: Double? = null
+    public var rootFilePath: String = ""
+    public var mimetype: String = ""
+    public var version: Double? = null
 }

@@ -11,6 +11,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
+import androidx.core.os.BundleCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.setFragmentResult
 import androidx.lifecycle.ViewModelProvider
@@ -20,7 +21,7 @@ import org.readium.r2.shared.publication.Publication
 import org.readium.r2.testapp.databinding.FragmentListviewBinding
 import org.readium.r2.testapp.databinding.ItemRecycleNavigationBinding
 import org.readium.r2.testapp.reader.ReaderViewModel
-import org.readium.r2.testapp.utils.extensions.outlineTitle
+import org.readium.r2.testapp.utils.extensions.readium.outlineTitle
 import org.readium.r2.testapp.utils.viewLifecycle
 
 /*
@@ -41,7 +42,9 @@ class NavigationFragment : Fragment() {
             publication = it.publication
         }
 
-        links = requireNotNull(requireArguments().getParcelableArrayList(LINKS_ARG))
+        links = requireNotNull(
+            BundleCompat.getParcelableArrayList(requireArguments(), LINKS_ARG, Link::class.java)
+        )
     }
 
     override fun onCreateView(
@@ -96,7 +99,10 @@ class NavigationFragment : Fragment() {
         fun newInstance(links: List<Link>) =
             NavigationFragment().apply {
                 arguments = Bundle().apply {
-                    putParcelableArrayList(LINKS_ARG, if (links is ArrayList<Link>) links else ArrayList(links))
+                    putParcelableArrayList(
+                        LINKS_ARG,
+                        if (links is ArrayList<Link>) links else ArrayList(links)
+                    )
                 }
             }
     }
@@ -111,7 +117,9 @@ class NavigationAdapter(private val onLinkSelected: (Link) -> Unit) :
     ): ViewHolder {
         return ViewHolder(
             ItemRecycleNavigationBinding.inflate(
-                LayoutInflater.from(parent.context), parent, false
+                LayoutInflater.from(parent.context),
+                parent,
+                false
             )
         )
     }
@@ -123,11 +131,16 @@ class NavigationAdapter(private val onLinkSelected: (Link) -> Unit) :
         holder.bind(item)
     }
 
-    inner class ViewHolder(val binding: ItemRecycleNavigationBinding) : RecyclerView.ViewHolder(binding.root) {
+    inner class ViewHolder(val binding: ItemRecycleNavigationBinding) : RecyclerView.ViewHolder(
+        binding.root
+    ) {
 
         fun bind(item: Pair<Int, Link>) {
             binding.navigationTextView.text = item.second.outlineTitle
-            binding.indentation.layoutParams = LinearLayout.LayoutParams(item.first * 50, ViewGroup.LayoutParams.MATCH_PARENT)
+            binding.indentation.layoutParams = LinearLayout.LayoutParams(
+                item.first * 50,
+                ViewGroup.LayoutParams.MATCH_PARENT
+            )
             binding.root.setOnClickListener {
                 onLinkSelected(item.second)
             }

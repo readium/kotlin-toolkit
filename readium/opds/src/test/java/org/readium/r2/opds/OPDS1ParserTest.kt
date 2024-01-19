@@ -1,9 +1,7 @@
 package org.readium.r2.opds
 
-import java.net.URL
 import java.util.*
 import org.joda.time.DateTime
-import org.json.JSONObject
 import org.junit.Assert.*
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -13,6 +11,8 @@ import org.readium.r2.shared.opds.OpdsMetadata
 import org.readium.r2.shared.opds.ParseData
 import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.publication.Properties
+import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.mediatype.MediaType
 import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
@@ -27,40 +27,50 @@ class OPDS1ParserTest {
                 feed = Feed(
                     title = "OPDS Catalog Root Example",
                     type = 1,
-                    href = URL("https://example.com"),
+                    href = Url("https://example.com")!!,
                     metadata = OpdsMetadata(
                         title = "OPDS Catalog Root Example",
                         modified = parseDate("2010-01-10T10:03:10Z")
                     ),
                     links = mutableListOf(
                         Link(
-                            href = "https://example.com/opds-catalogs/root.xml",
-                            type = "application/atom+xml;profile=opds-catalog;kind=navigation",
+                            href = Href("https://example.com/opds-catalogs/root.xml")!!,
+                            mediaType = MediaType(
+                                "application/atom+xml;profile=opds-catalog;kind=navigation"
+                            )!!,
                             rels = setOf("self"),
                             properties = Properties()
                         ),
                         Link(
-                            href = "https://example.com/opds-catalogs/root.xml",
-                            type = "application/atom+xml;profile=opds-catalog;kind=navigation",
+                            href = Href("https://example.com/opds-catalogs/root.xml")!!,
+                            mediaType = MediaType(
+                                "application/atom+xml;profile=opds-catalog;kind=navigation"
+                            )!!,
                             rels = setOf("start")
                         )
                     ),
                     navigation = mutableListOf(
                         Link(
-                            href = "https://example.com/opds-catalogs/popular.xml",
-                            type = "application/atom+xml;profile=opds-catalog;kind=acquisition",
+                            href = Href("https://example.com/opds-catalogs/popular.xml")!!,
+                            mediaType = MediaType(
+                                "application/atom+xml;profile=opds-catalog;kind=acquisition"
+                            )!!,
                             title = "Popular Publications",
                             rels = setOf("http://opds-spec.org/sort/popular")
                         ),
                         Link(
-                            href = "https://example.com/opds-catalogs/new.xml",
-                            type = "application/atom+xml;profile=opds-catalog;kind=acquisition",
+                            href = Href("https://example.com/opds-catalogs/new.xml")!!,
+                            mediaType = MediaType(
+                                "application/atom+xml;profile=opds-catalog;kind=acquisition"
+                            )!!,
                             title = "New Publications",
                             rels = setOf("http://opds-spec.org/sort/new")
                         ),
                         Link(
-                            href = "https://example.com/opds-catalogs/unpopular.xml",
-                            type = "application/atom+xml;profile=opds-catalog;kind=acquisition",
+                            href = Href("https://example.com/opds-catalogs/unpopular.xml")!!,
+                            mediaType = MediaType(
+                                "application/atom+xml;profile=opds-catalog;kind=acquisition"
+                            )!!,
                             title = "Unpopular Publications",
                             rels = setOf("subsection")
                         )
@@ -81,7 +91,7 @@ class OPDS1ParserTest {
         val feed = parseData.feed!!
         assertEquals("Unpopular Publications", feed.title)
         assertEquals(1, feed.type)
-        assertEquals(URL("https://example.com"), feed.href)
+        assertEquals(Url("https://example.com"), feed.href)
         assertEquals(
             OpdsMetadata(
                 title = "Unpopular Publications",
@@ -92,23 +102,31 @@ class OPDS1ParserTest {
         assertEquals(
             mutableListOf(
                 Link(
-                    href = "https://example.com/opds-catalogs/vampire.farming.xml",
-                    type = "application/atom+xml;profile=opds-catalog;kind=acquisition",
+                    href = Href("https://example.com/opds-catalogs/vampire.farming.xml")!!,
+                    mediaType = MediaType(
+                        "application/atom+xml;profile=opds-catalog;kind=acquisition"
+                    )!!,
                     rels = setOf("related")
                 ),
                 Link(
-                    href = "https://example.com/opds-catalogs/unpopular.xml",
-                    type = "application/atom+xml;profile=opds-catalog;kind=acquisition",
+                    href = Href("https://example.com/opds-catalogs/unpopular.xml")!!,
+                    mediaType = MediaType(
+                        "application/atom+xml;profile=opds-catalog;kind=acquisition"
+                    )!!,
                     rels = setOf("self")
                 ),
                 Link(
-                    href = "https://example.com/opds-catalogs/root.xml",
-                    type = "application/atom+xml;profile=opds-catalog;kind=navigation",
+                    href = Href("https://example.com/opds-catalogs/root.xml")!!,
+                    mediaType = MediaType(
+                        "application/atom+xml;profile=opds-catalog;kind=navigation"
+                    )!!,
                     rels = setOf("start")
                 ),
                 Link(
-                    href = "https://example.com/opds-catalogs/root.xml",
-                    type = "application/atom+xml;profile=opds-catalog;kind=navigation",
+                    href = Href("https://example.com/opds-catalogs/root.xml")!!,
+                    mediaType = MediaType(
+                        "application/atom+xml;profile=opds-catalog;kind=navigation"
+                    )!!,
                     rels = setOf("up")
                 )
             ),
@@ -121,12 +139,12 @@ class OPDS1ParserTest {
                     metadata = OpdsMetadata(title = "Categories"),
                     links = mutableListOf(
                         Link(
-                            href = "https://example.com/sci-fi",
+                            href = Href("https://example.com/sci-fi")!!,
                             title = "Science-Fiction",
                             rels = setOf("http://opds-spec.org/facet")
                         ),
                         Link(
-                            href = "https://example.com/romance",
+                            href = Href("https://example.com/romance")!!,
                             title = "Romance",
                             rels = setOf("http://opds-spec.org/facet"),
                             properties = Properties(mapOf("numberOfItems" to 600))
@@ -156,31 +174,37 @@ class OPDS1ParserTest {
                     authors = listOf(
                         Contributor(
                             localizedName = LocalizedString("Bob the Recursive"),
-                            links = listOf(Link(href = "http://opds-spec.org/authors/1285"))
+                            links = listOf(
+                                Link(href = Href("http://opds-spec.org/authors/1285")!!)
+                            )
                         )
                     ),
                     description = "The story of the son of the Bob and the gallant part he played in the lives of a man and a woman."
                 ),
                 links = listOf(
                     Link(
-                        href = "https://example.com/covers/4561.thmb.gif",
-                        type = "image/gif",
+                        href = Href("https://example.com/covers/4561.thmb.gif")!!,
+                        mediaType = MediaType("image/gif")!!,
                         rels = setOf("http://opds-spec.org/image/thumbnail")
                     ),
                     Link(
-                        href = "https://example.com/opds-catalogs/entries/4571.complete.xml",
-                        type = "application/atom+xml;type=entry;profile=opds-catalog",
+                        href = Href(
+                            "https://example.com/opds-catalogs/entries/4571.complete.xml"
+                        )!!,
+                        mediaType = MediaType(
+                            "application/atom+xml;type=entry;profile=opds-catalog"
+                        )!!,
                         title = "Complete Catalog Entry for Bob, Son of Bob",
                         rels = setOf("alternate")
                     ),
                     Link(
-                        href = "https://example.com/content/free/4561.epub",
-                        type = "application/epub+zip",
+                        href = Href("https://example.com/content/free/4561.epub")!!,
+                        mediaType = MediaType("application/epub+zip")!!,
                         rels = setOf("http://opds-spec.org/acquisition")
                     ),
                     Link(
-                        href = "https://example.com/content/free/4561.mobi",
-                        type = "application/x-mobipocket-ebook",
+                        href = Href("https://example.com/content/free/4561.mobi")!!,
+                        mediaType = MediaType("application/x-mobipocket-ebook")!!,
                         rels = setOf("http://opds-spec.org/acquisition")
                     )
                 ),
@@ -189,16 +213,16 @@ class OPDS1ParserTest {
                         PublicationCollection(
                             links = listOf(
                                 Link(
-                                    href = "https://example.com/covers/4561.lrg.png",
-                                    type = "image/png",
+                                    href = Href("https://example.com/covers/4561.lrg.png")!!,
+                                    mediaType = MediaType("image/png")!!,
                                     rels = setOf("http://opds-spec.org/image")
                                 )
                             )
                         )
                     )
-                ),
+                )
             ).toJSON(),
-            JSONObject(feed.publications[0].jsonManifest)
+            feed.publications[0].manifest.toJSON()
         )
 
         assertJSONEquals(
@@ -211,15 +235,21 @@ class OPDS1ParserTest {
                     authors = listOf(
                         Contributor(
                             localizedName = LocalizedString("Stampy McGee"),
-                            links = listOf(Link(href = "http://opds-spec.org/authors/21285"))
+                            links = listOf(
+                                Link(href = Href("http://opds-spec.org/authors/21285")!!)
+                            )
                         ),
                         Contributor(
                             localizedName = LocalizedString("Alice McGee"),
-                            links = listOf(Link(href = "http://opds-spec.org/authors/21284"))
+                            links = listOf(
+                                Link(href = Href("http://opds-spec.org/authors/21284")!!)
+                            )
                         ),
                         Contributor(
                             localizedName = LocalizedString("Harold McGee"),
-                            links = listOf(Link(href = "http://opds-spec.org/authors/21283"))
+                            links = listOf(
+                                Link(href = Href("http://opds-spec.org/authors/21283")!!)
+                            )
                         )
                     ),
                     publishers = listOf(
@@ -229,10 +259,12 @@ class OPDS1ParserTest {
                 ),
                 links = listOf(
                     Link(
-                        href = "https://example.com/content/buy/11241.epub",
-                        type = "application/epub+zip",
+                        href = Href("https://example.com/content/buy/11241.epub")!!,
+                        mediaType = MediaType("application/epub+zip")!!,
                         rels = setOf("http://opds-spec.org/acquisition/buy"),
-                        properties = Properties(mapOf("price" to mapOf("currency" to "USD", "value" to 18.99)))
+                        properties = Properties(
+                            mapOf("price" to mapOf("currency" to "USD", "value" to 18.99))
+                        )
                     )
                 ),
                 subcollections = mapOf(
@@ -240,16 +272,16 @@ class OPDS1ParserTest {
                         PublicationCollection(
                             links = listOf(
                                 Link(
-                                    href = "https://example.com/covers/11241.lrg.jpg",
-                                    type = "image/jpeg",
+                                    href = Href("https://example.com/covers/11241.lrg.jpg")!!,
+                                    mediaType = MediaType("image/jpeg")!!,
                                     rels = setOf("http://opds-spec.org/image")
                                 )
                             )
                         )
                     )
-                ),
+                )
             ).toJSON(),
-            JSONObject(feed.publications[1].jsonManifest)
+            feed.publications[1].manifest.toJSON()
         )
     }
 
@@ -276,30 +308,36 @@ class OPDS1ParserTest {
                     authors = listOf(
                         Contributor(
                             localizedName = LocalizedString("Bob the Recursive"),
-                            links = listOf(Link(href = "http://opds-spec.org/authors/1285"))
+                            links = listOf(
+                                Link(href = Href("http://opds-spec.org/authors/1285")!!)
+                            )
                         )
                     ),
                     description = "The story of the son of the Bob and the gallant part he played in the lives of a man and a woman. Bob begins his humble life under the wandering eye of his senile mother, but quickly learns how to escape into the wilder world. Follow Bob as he uncovers his father's past and uses those lessons to improve the lives of others."
                 ),
                 links = listOf(
                     Link(
-                        href = "https://example.com/covers/4561.thmb.gif",
-                        type = "image/gif",
+                        href = Href("https://example.com/covers/4561.thmb.gif")!!,
+                        mediaType = MediaType("image/gif")!!,
                         rels = setOf("http://opds-spec.org/image/thumbnail")
                     ),
                     Link(
-                        href = "https://example.com/opds-catalogs/entries/4571.complete.xml",
-                        type = "application/atom+xml;type=entry;profile=opds-catalog",
+                        href = Href(
+                            "https://example.com/opds-catalogs/entries/4571.complete.xml"
+                        )!!,
+                        mediaType = MediaType(
+                            "application/atom+xml;type=entry;profile=opds-catalog"
+                        )!!,
                         rels = setOf("self")
                     ),
                     Link(
-                        href = "https://example.com/content/free/4561.epub",
-                        type = "application/epub+zip",
+                        href = Href("https://example.com/content/free/4561.epub")!!,
+                        mediaType = MediaType("application/epub+zip")!!,
                         rels = setOf("http://opds-spec.org/acquisition")
                     ),
                     Link(
-                        href = "https://example.com/content/free/4561.mobi",
-                        type = "application/x-mobipocket-ebook",
+                        href = Href("https://example.com/content/free/4561.mobi")!!,
+                        mediaType = MediaType("application/x-mobipocket-ebook")!!,
                         rels = setOf("http://opds-spec.org/acquisition")
                     )
                 ),
@@ -308,20 +346,20 @@ class OPDS1ParserTest {
                         PublicationCollection(
                             links = listOf(
                                 Link(
-                                    href = "https://example.com/covers/4561.lrg.png",
-                                    type = "image/png",
+                                    href = Href("https://example.com/covers/4561.lrg.png")!!,
+                                    mediaType = MediaType("image/png")!!,
                                     rels = setOf("http://opds-spec.org/image")
                                 )
                             )
                         )
                     )
-                ),
+                )
             ).toJSON(),
-            JSONObject(publication!!.jsonManifest)
+            publication!!.manifest.toJSON()
         )
     }
 
-    private fun parse(filename: String, url: URL = URL("https://example.com")): ParseData =
+    private fun parse(filename: String, url: Url = Url("https://example.com")!!): ParseData =
         OPDS1Parser.parse(fixtures.bytesAt(filename), url)
 
     private fun parseDate(string: String): Date =

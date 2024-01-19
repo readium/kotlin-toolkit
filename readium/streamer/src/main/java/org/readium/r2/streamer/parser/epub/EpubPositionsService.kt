@@ -7,22 +7,24 @@
 package org.readium.r2.streamer.parser.epub
 
 import kotlin.math.ceil
-import org.readium.r2.shared.fetcher.Fetcher
-import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.publication.archive.archive
 import org.readium.r2.shared.publication.encryption.encryption
 import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.publication.epub.layoutOf
 import org.readium.r2.shared.publication.presentation.Presentation
 import org.readium.r2.shared.publication.presentation.presentation
 import org.readium.r2.shared.publication.services.PositionsService
+import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.archive.archive
+import org.readium.r2.shared.util.data.Container
+import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.shared.util.use
 
 /**
- * Positions Service for an EPUB from its [readingOrder] and [fetcher].
+ * Positions Service for an EPUB from its [readingOrder] and [container].
  *
  * The [presentation] is used to apply different calculation strategy if the resource has a
  * reflowable or fixed layout.
@@ -30,23 +32,25 @@ import org.readium.r2.shared.util.use
  * https://github.com/readium/architecture/blob/master/models/locators/best-practices/format.md#epub
  * https://github.com/readium/architecture/issues/101
  */
-class EpubPositionsService(
+public class EpubPositionsService(
     private val readingOrder: List<Link>,
     private val presentation: Presentation,
-    private val fetcher: Fetcher,
+    private val container: Container<Resource>,
     private val reflowableStrategy: ReflowableStrategy
 ) : PositionsService {
 
-    companion object {
+    public companion object {
 
-        fun createFactory(reflowableStrategy: ReflowableStrategy = ReflowableStrategy.recommended): (
+        public fun createFactory(
+            reflowableStrategy: ReflowableStrategy = ReflowableStrategy.recommended
+        ): (
             Publication.Service.Context
         ) -> EpubPositionsService =
             { context ->
                 EpubPositionsService(
                     readingOrder = context.manifest.readingOrder,
                     presentation = context.manifest.metadata.presentation,
-                    fetcher = context.fetcher,
+                    container = context.container,
                     reflowableStrategy = reflowableStrategy
                 )
             }
@@ -57,17 +61,17 @@ class EpubPositionsService(
      *
      * Note that a fixed-layout resource always has a single position.
      */
-    sealed class ReflowableStrategy {
+    public sealed class ReflowableStrategy {
         /** Returns the number of positions in the given [resource] according to the strategy. */
-        abstract suspend fun positionCount(resource: Resource): Int
+        public abstract suspend fun positionCount(link: Link, resource: Resource): Int
 
         /**
          * Use the original length of each resource (before compression and encryption) and split it
          * by the given [pageLength].
          */
-        data class OriginalLength(val pageLength: Int) : ReflowableStrategy() {
-            override suspend fun positionCount(resource: Resource): Int {
-                val length = resource.link().properties.encryption?.originalLength
+        public data class OriginalLength(val pageLength: Int) : ReflowableStrategy() {
+            override suspend fun positionCount(link: Link, resource: Resource): Int {
+                val length = link.properties.encryption?.originalLength
                     ?: resource.length().getOrNull()
                     ?: 0
                 return ceil(length.toDouble() / pageLength.toDouble()).toInt()
@@ -79,9 +83,9 @@ class EpubPositionsService(
          * Use the archive entry length (whether it is compressed or stored) and split it by the
          * given [pageLength].
          */
-        data class ArchiveEntryLength(val pageLength: Int) : ReflowableStrategy() {
-            override suspend fun positionCount(resource: Resource): Int {
-                val length = resource.link().properties.archive?.entryLength
+        public data class ArchiveEntryLength(val pageLength: Int) : ReflowableStrategy() {
+            override suspend fun positionCount(link: Link, resource: Resource): Int {
+                val length = resource.properties().getOrNull()?.archive?.entryLength
                     ?: resource.length().getOrNull()
                     ?: 0
                 return ceil(length.toDouble() / pageLength.toDouble()).toInt()
@@ -89,20 +93,21 @@ class EpubPositionsService(
             }
         }
 
-        companion object {
+        public companion object {
             /**
              * Recommended historical strategy: archive entry length split by 1024 bytes pages.
              *
              * This strategy is used by Adobe RMSDK as well.
              * See https://github.com/readium/architecture/issues/123
              */
-            val recommended = ArchiveEntryLength(pageLength = 1024)
+            public val recommended: ReflowableStrategy = ArchiveEntryLength(pageLength = 1024)
         }
     }
 
     override suspend fun positionsByReadingOrder(): List<List<Locator>> {
-        if (!::_positions.isInitialized)
+        if (!::_positions.isInitialized) {
             _positions = computePositions()
+        }
 
         return _positions
     }
@@ -116,7 +121,9 @@ class EpubPositionsService(
                 if (presentation.layoutOf(link) == EpubLayout.FIXED) {
                     createFixed(link, lastPositionOfPreviousResource)
                 } else {
-                    createReflowable(link, lastPositionOfPreviousResource, fetcher)
+                    container.get(link.url())
+                        ?.use { createReflowable(link, lastPositionOfPreviousResource, it) }
+                        ?: emptyList()
                 }
 
             positions.lastOrNull()?.locations?.position?.let {
@@ -127,7 +134,7 @@ class EpubPositionsService(
         }
 
         // Calculates [totalProgression].
-        val totalPageCount = positions.map { it.size }.sum()
+        val totalPageCount = positions.sumOf { it.size }
         positions = positions.map { item ->
             item.map { locator ->
                 val position = locator.locations.position
@@ -144,35 +151,48 @@ class EpubPositionsService(
         return positions
     }
 
-    private fun createFixed(link: Link, startPosition: Int) = listOf(
-        createLocator(
-            link,
-            progression = 0.0,
-            position = startPosition + 1
-        )
-    )
-
-    private suspend fun createReflowable(link: Link, startPosition: Int, fetcher: Fetcher): List<Locator> {
-        val positionCount = fetcher.get(link).use { resource ->
-            reflowableStrategy.positionCount(resource)
-        }
-
-        return (1..positionCount).map { position ->
+    private fun createFixed(link: Link, startPosition: Int): List<Locator> =
+        listOf(
             createLocator(
-                link,
+                href = link.url(),
+                type = link.mediaType,
+                title = link.title,
+                progression = 0.0,
+                position = startPosition + 1
+            )
+        )
+
+    private suspend fun createReflowable(link: Link, startPosition: Int, resource: Resource): List<Locator> {
+        val href = link.url()
+
+        val positionCount =
+            reflowableStrategy.positionCount(link, resource)
+
+        return (1..positionCount).mapNotNull { position ->
+            createLocator(
+                href = href,
+                type = link.mediaType,
+                title = link.title,
                 progression = (position - 1) / positionCount.toDouble(),
                 position = startPosition + position
             )
         }
     }
 
-    private fun createLocator(link: Link, progression: Double, position: Int) = Locator(
-        href = link.href,
-        type = link.type ?: "text/html",
-        title = link.title,
-        locations = Locator.Locations(
-            progression = progression,
-            position = position
+    private fun createLocator(
+        href: Url,
+        type: MediaType?,
+        title: String?,
+        progression: Double,
+        position: Int
+    ): Locator =
+        Locator(
+            href = href,
+            mediaType = type ?: MediaType.XHTML,
+            title = title,
+            locations = Locator.Locations(
+                progression = progression,
+                position = position
+            )
         )
-    )
 }

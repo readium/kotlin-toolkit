@@ -7,7 +7,7 @@
 package org.readium.r2.testapp.utils.compose
 
 import androidx.compose.runtime.Composable
-import com.google.android.material.composethemeadapter.MdcTheme
+import com.google.accompanist.themeadapter.material.MdcTheme
 
 /**
  * Setup the Compose app-wide theme.

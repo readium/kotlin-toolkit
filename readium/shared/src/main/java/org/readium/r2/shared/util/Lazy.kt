@@ -8,13 +8,15 @@ package org.readium.r2.shared.util
 
 import kotlin.reflect.KProperty0
 import kotlin.reflect.jvm.isAccessible
+import org.readium.r2.shared.InternalReadiumApi
 
 /**
  * Returns true if a lazy property reference has been initialized, or if the property is not lazy.
  *
  * Source: https://stackoverflow.com/a/42536189/1474476
  */
-val KProperty0<*>.isLazyInitialized: Boolean
+@InternalReadiumApi
+public val KProperty0<*>.isLazyInitialized: Boolean
     get() {
         if (this !is Lazy<*>) return true
 

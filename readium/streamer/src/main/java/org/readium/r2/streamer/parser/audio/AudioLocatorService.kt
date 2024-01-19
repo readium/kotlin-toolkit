@@ -14,7 +14,7 @@ import org.readium.r2.shared.publication.services.LocatorService
 import org.readium.r2.shared.util.mediatype.MediaType
 
 /** Locator service for audio publications. */
-class AudioLocatorService(private val readingOrder: List<Link>) : LocatorService {
+public class AudioLocatorService(private val readingOrder: List<Link>) : LocatorService {
 
     /** Duration per reading order index. */
     private val durations: List<Double> =
@@ -50,13 +50,16 @@ class AudioLocatorService(private val readingOrder: List<Link>) : LocatorService
         val positionInResource = positionInPublication - resourcePosition
 
         return Locator(
-            href = link.href,
-            type = link.type ?: MediaType.BINARY.toString(),
+            href = link.url(),
+            mediaType = link.mediaType ?: MediaType.BINARY,
             locations = Locator.Locations(
                 fragments = listOf("t=${positionInResource.toInt()}"),
                 progression = link.duration?.let { duration ->
-                    if (duration == 0.0) 0.0
-                    else positionInResource / duration
+                    if (duration == 0.0) {
+                        0.0
+                    } else {
+                        positionInResource / duration
+                    }
                 },
                 totalProgression = totalProgression
             )
@@ -86,9 +89,9 @@ class AudioLocatorService(private val readingOrder: List<Link>) : LocatorService
         return null
     }
 
-    companion object {
+    public companion object {
 
-        fun createFactory(): (Publication.Service.Context) -> AudioLocatorService = {
+        public fun createFactory(): (Publication.Service.Context) -> AudioLocatorService = {
             AudioLocatorService(readingOrder = it.manifest.readingOrder)
         }
     }

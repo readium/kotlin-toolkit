@@ -18,47 +18,54 @@ import android.view.ViewGroup
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
+import androidx.core.os.BundleCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.webkit.WebViewClientCompat
 import org.readium.r2.navigator.R2BasicWebView
-import org.readium.r2.navigator.databinding.FragmentFxllayoutDoubleBinding
-import org.readium.r2.navigator.databinding.FragmentFxllayoutSingleBinding
+import org.readium.r2.navigator.databinding.ReadiumNavigatorFragmentFxllayoutDoubleBinding
+import org.readium.r2.navigator.databinding.ReadiumNavigatorFragmentFxllayoutSingleBinding
 import org.readium.r2.navigator.epub.EpubNavigatorFragment
 import org.readium.r2.navigator.epub.EpubNavigatorViewModel
 import org.readium.r2.navigator.epub.fxl.R2FXLLayout
 import org.readium.r2.navigator.epub.fxl.R2FXLOnDoubleTapListener
+import org.readium.r2.shared.util.Url
 
-class R2FXLPageFragment : Fragment() {
+internal class R2FXLPageFragment : Fragment() {
 
-    private val firstResourceUrl: String?
-        get() = requireArguments().getString("firstUrl")
+    private val firstResourceUrl: Url?
+        get() = BundleCompat.getParcelable(requireArguments(), "firstUrl", Url::class.java)
 
-    private val secondResourceUrl: String?
-        get() = requireArguments().getString("secondUrl")
+    private val secondResourceUrl: Url?
+        get() = BundleCompat.getParcelable(requireArguments(), "secondUrl", Url::class.java)
 
     private var webViews = mutableListOf<R2BasicWebView>()
 
-    private var _doubleBinding: FragmentFxllayoutDoubleBinding? = null
+    private var _doubleBinding: ReadiumNavigatorFragmentFxllayoutDoubleBinding? = null
     private val doubleBinding get() = _doubleBinding!!
 
-    private var _singleBinding: FragmentFxllayoutSingleBinding? = null
+    private var _singleBinding: ReadiumNavigatorFragmentFxllayoutSingleBinding? = null
     private val singleBinding get() = _singleBinding!!
 
     private val navigator: EpubNavigatorFragment?
         get() = parentFragment as? EpubNavigatorFragment
 
-    private val viewModel: EpubNavigatorViewModel by viewModels(ownerProducer = { requireParentFragment() })
+    private val viewModel: EpubNavigatorViewModel by viewModels(
+        ownerProducer = { requireParentFragment() }
+    )
 
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-
+    ): View {
         secondResourceUrl?.let {
-            _doubleBinding = FragmentFxllayoutDoubleBinding.inflate(inflater, container, false)
+            _doubleBinding = ReadiumNavigatorFragmentFxllayoutDoubleBinding.inflate(
+                inflater,
+                container,
+                false
+            )
             val view: View = doubleBinding.root
             view.setPadding(0, 0, 0, 0)
 
@@ -80,7 +87,11 @@ class R2FXLPageFragment : Fragment() {
 
             return view
         } ?: run {
-            _singleBinding = FragmentFxllayoutSingleBinding.inflate(inflater, container, false)
+            _singleBinding = ReadiumNavigatorFragmentFxllayoutSingleBinding.inflate(
+                inflater,
+                container,
+                false
+            )
             val view: View = singleBinding.root
             view.setPadding(0, 0, 0, 0)
 
@@ -125,13 +136,12 @@ class R2FXLPageFragment : Fragment() {
     }
 
     @SuppressLint("SetJavaScriptEnabled")
-    private fun setupWebView(webView: R2BasicWebView, resourceUrl: String?) {
+    private fun setupWebView(webView: R2BasicWebView, resourceUrl: Url?) {
         webViews.add(webView)
         navigator?.let {
             webView.listener = it.webViewListener
         }
 
-        webView.useLegacySettings = viewModel.useLegacySettings
         webView.settings.javaScriptEnabled = true
         webView.isVerticalScrollBarEnabled = false
         webView.isHorizontalScrollBarEnabled = false
@@ -164,16 +174,16 @@ class R2FXLPageFragment : Fragment() {
             true
         }
 
-        resourceUrl?.let { webView.loadUrl(it) }
+        resourceUrl?.let { webView.loadUrl(it.toString()) }
     }
 
     companion object {
 
-        fun newInstance(url: String?, url2: String? = null): R2FXLPageFragment =
+        fun newInstance(url: Url?, url2: Url? = null): R2FXLPageFragment =
             R2FXLPageFragment().apply {
                 arguments = Bundle().apply {
-                    putString("firstUrl", url)
-                    putString("secondUrl", url2)
+                    putParcelable("firstUrl", url)
+                    putParcelable("secondUrl", url2)
                 }
             }
     }

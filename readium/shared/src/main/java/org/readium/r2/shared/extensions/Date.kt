@@ -12,6 +12,8 @@ package org.readium.r2.shared.extensions
 import java.util.*
 import org.joda.time.DateTime
 import org.joda.time.DateTimeZone
+import org.readium.r2.shared.InternalReadiumApi
 
-fun Date.toIso8601String(timeZone: TimeZone = TimeZone.getTimeZone("UTC")): String =
+@InternalReadiumApi
+public fun Date.toIso8601String(timeZone: TimeZone = TimeZone.getTimeZone("UTC")): String =
     DateTime(this, DateTimeZone.forTimeZone(timeZone)).toString()

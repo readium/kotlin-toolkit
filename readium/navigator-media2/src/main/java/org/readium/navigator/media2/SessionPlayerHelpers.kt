@@ -18,14 +18,14 @@ internal enum class SessionPlayerState {
     Idle,
     Paused,
     Playing,
-    Error;
+    Failure;
 
     companion object {
         fun fromCode(sessionPlayerState: Int) = when (sessionPlayerState) {
             SessionPlayer.PLAYER_STATE_IDLE -> Idle
             SessionPlayer.PLAYER_STATE_PAUSED -> Paused
             SessionPlayer.PLAYER_STATE_PLAYING -> Playing
-            else -> Error // SessionPlayer.PLAYER_STATE_ERROR
+            else -> Failure // SessionPlayer.PLAYER_STATE_ERROR
         }
     }
 }
@@ -106,7 +106,7 @@ internal data class ItemState(
     val index: Int,
     val position: Duration,
     val buffered: Duration,
-    val duration: Duration?,
+    val duration: Duration?
 )
 
 @OptIn(ExperimentalTime::class)
@@ -149,10 +149,11 @@ internal val SessionPlayer.currentDuration: Duration?
 
 @ExperimentalTime
 private fun msToDuration(ms: Long): Duration? =
-    if (ms == SessionPlayer.UNKNOWN_TIME)
+    if (ms == SessionPlayer.UNKNOWN_TIME) {
         null
-    else
+    } else {
         ms.milliseconds
+    }
 
 @ExperimentalTime
 internal val MediaMetadata.duration: Duration?

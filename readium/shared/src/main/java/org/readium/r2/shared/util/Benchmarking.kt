@@ -6,11 +6,9 @@
 
 package org.readium.r2.shared.util
 
-import kotlin.time.ExperimentalTime
 import kotlin.time.measureTime
 import timber.log.Timber
 
-@OptIn(ExperimentalTime::class)
 internal inline fun <T> benchmark(title: String, enabled: Boolean = true, closure: () -> T): T {
     if (!enabled) {
         return closure()

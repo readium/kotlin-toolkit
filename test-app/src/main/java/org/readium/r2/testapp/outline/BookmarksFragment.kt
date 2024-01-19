@@ -22,12 +22,13 @@ import kotlin.math.roundToInt
 import org.joda.time.DateTime
 import org.joda.time.format.DateTimeFormat
 import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.util.Url
 import org.readium.r2.testapp.R
+import org.readium.r2.testapp.data.model.Bookmark
 import org.readium.r2.testapp.databinding.FragmentListviewBinding
 import org.readium.r2.testapp.databinding.ItemRecycleBookmarkBinding
-import org.readium.r2.testapp.domain.model.Bookmark
 import org.readium.r2.testapp.reader.ReaderViewModel
-import org.readium.r2.testapp.utils.extensions.outlineTitle
+import org.readium.r2.testapp.utils.extensions.readium.outlineTitle
 import org.readium.r2.testapp.utils.viewLifecycle
 
 class BookmarksFragment : Fragment() {
@@ -58,13 +59,20 @@ class BookmarksFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        bookmarkAdapter = BookmarkAdapter(publication, onBookmarkDeleteRequested = { bookmark -> viewModel.deleteBookmark(bookmark.id!!) }, onBookmarkSelectedRequested = { bookmark -> onBookmarkSelected(bookmark) })
+        bookmarkAdapter = BookmarkAdapter(
+            publication,
+            onBookmarkDeleteRequested = { bookmark -> viewModel.deleteBookmark(bookmark.id!!) },
+            onBookmarkSelectedRequested = { bookmark -> onBookmarkSelected(bookmark) }
+        )
         binding.listView.apply {
             layoutManager = LinearLayoutManager(requireContext())
             adapter = bookmarkAdapter
         }
 
-        val comparator: Comparator<Bookmark> = compareBy({ it.resourceIndex }, { it.locator.locations.progression })
+        val comparator: Comparator<Bookmark> = compareBy(
+            { it.resourceIndex },
+            { it.locator.locations.progression }
+        )
         viewModel.getBookmarks().observe(viewLifecycleOwner) {
             val bookmarks = it.sortedWith(comparator)
             bookmarkAdapter.submitList(bookmarks)
@@ -92,7 +100,9 @@ class BookmarkAdapter(
     ): ViewHolder {
         return ViewHolder(
             ItemRecycleBookmarkBinding.inflate(
-                LayoutInflater.from(parent.context), parent, false
+                LayoutInflater.from(parent.context),
+                parent,
+                false
             )
         )
     }
@@ -104,10 +114,12 @@ class BookmarkAdapter(
         holder.bind(item)
     }
 
-    inner class ViewHolder(val binding: ItemRecycleBookmarkBinding) : RecyclerView.ViewHolder(binding.root) {
+    inner class ViewHolder(val binding: ItemRecycleBookmarkBinding) : RecyclerView.ViewHolder(
+        binding.root
+    ) {
 
         fun bind(bookmark: Bookmark) {
-            val title = getBookSpineItem(bookmark.resourceHref)
+            val title = getBookSpineItem(Url(bookmark.resourceHref)!!)
                 ?: "*Title Missing*"
 
             binding.bookmarkChapter.text = title
@@ -120,7 +132,6 @@ class BookmarkAdapter(
             binding.bookmarkTimestamp.text = formattedDate
 
             binding.overflow.setOnClickListener {
-
                 val popupMenu = PopupMenu(binding.overflow.context, binding.overflow)
                 popupMenu.menuInflater.inflate(R.menu.menu_bookmark, popupMenu.menu)
                 popupMenu.show()
@@ -139,14 +150,14 @@ class BookmarkAdapter(
         }
     }
 
-    private fun getBookSpineItem(href: String): String? {
+    private fun getBookSpineItem(href: Url): String? {
         for (link in publication.tableOfContents) {
-            if (link.href == href) {
+            if (link.url() == href) {
                 return link.outlineTitle
             }
         }
         for (link in publication.readingOrder) {
-            if (link.href == href) {
+            if (link.url() == href) {
                 return link.outlineTitle
             }
         }

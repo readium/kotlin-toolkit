@@ -14,25 +14,38 @@ import android.content.Intent
 import android.os.Bundle
 import java.util.*
 import org.readium.r2.shared.BuildConfig
-import org.readium.r2.shared.publication.LocalizedString
 import org.readium.r2.shared.publication.Manifest
 import org.readium.r2.shared.publication.Metadata
 import org.readium.r2.shared.publication.Publication
 import timber.log.Timber
 
-private val extraKey = "publicationId"
-private val deprecationException = IllegalArgumentException("The [publication] intent extra is not supported anymore. Use the shared [PublicationRepository] instead.")
+private const val extraKey = "publicationId"
+private val deprecationException = IllegalArgumentException(
+    "The [publication] intent extra is not supported anymore. Use the shared [PublicationRepository] instead."
+)
 
-fun Intent.putPublication(publication: Publication) {
+@Deprecated(
+    "Use your own repository to share publications between activities. See the migration guide.",
+    level = DeprecationLevel.ERROR
+)
+public fun Intent.putPublication(publication: Publication) {
     val id = PublicationRepository.add(publication)
     putExtra(extraKey, id)
 }
 
-fun Intent.putPublicationFrom(activity: Activity) {
+@Deprecated(
+    "Use your own repository to share publications between activities. See the migration guide.",
+    level = DeprecationLevel.ERROR
+)
+public fun Intent.putPublicationFrom(activity: Activity) {
     putExtra(extraKey, activity.intent.getStringExtra(extraKey))
 }
 
-fun Intent.getPublication(activity: Activity?): Publication {
+@Deprecated(
+    "Use your own repository to share publications between activities. See the migration guide.",
+    level = DeprecationLevel.ERROR
+)
+public fun Intent.getPublication(activity: Activity?): Publication {
     if (hasExtra("publication")) {
         if (BuildConfig.DEBUG) {
             throw deprecationException
@@ -46,14 +59,18 @@ fun Intent.getPublication(activity: Activity?): Publication {
     if (publication == null) {
         activity?.finish()
         // Fallbacks on a dummy Publication to avoid crashing the app until the Activity finishes.
-        val metadata = Metadata(identifier = "dummy", localizedTitle = LocalizedString(""))
+        val metadata = Metadata(identifier = "dummy")
         return Publication(Manifest(metadata = metadata))
     }
 
     return publication
 }
 
-fun Intent.getPublicationOrNull(): Publication? {
+@Deprecated(
+    "Use your own repository to share publications between activities. See the migration guide.",
+    level = DeprecationLevel.ERROR
+)
+public fun Intent.getPublicationOrNull(): Publication? {
     if (hasExtra("publication")) {
         if (BuildConfig.DEBUG) {
             throw deprecationException
@@ -66,11 +83,16 @@ fun Intent.getPublicationOrNull(): Publication? {
 }
 
 @Suppress("UNUSED_PARAMETER")
-@Deprecated("The `activity` parameter is not necessary", ReplaceWith("getPublicationOrNull()"), level = DeprecationLevel.WARNING)
-fun Intent.getPublicationOrNull(activity: Activity): Publication? =
-    getPublicationOrNull()
+@Deprecated("The `activity` parameter is not necessary", level = DeprecationLevel.ERROR)
+public fun Intent.getPublicationOrNull(activity: Activity): Publication? {
+    throw NotImplementedError()
+}
 
-fun Intent.destroyPublication(activity: Activity?) {
+@Deprecated(
+    "Use your own repository to share publications between activities. See the migration guide.",
+    level = DeprecationLevel.ERROR
+)
+public fun Intent.destroyPublication(activity: Activity?) {
     if (activity == null || activity.isFinishing) {
         getStringExtra(extraKey)?.let {
             PublicationRepository.remove(it)
@@ -78,16 +100,28 @@ fun Intent.destroyPublication(activity: Activity?) {
     }
 }
 
-fun Bundle.putPublication(publication: Publication) {
+@Deprecated(
+    "Use your own repository to share publications between activities. See the migration guide.",
+    level = DeprecationLevel.ERROR
+)
+public fun Bundle.putPublication(publication: Publication) {
     val id = PublicationRepository.add(publication)
     putString(extraKey, id)
 }
 
-fun Bundle.putPublicationFrom(activity: Activity) {
+@Deprecated(
+    "Use your own repository to share publications between activities. See the migration guide.",
+    level = DeprecationLevel.ERROR
+)
+public fun Bundle.putPublicationFrom(activity: Activity) {
     putString(extraKey, activity.intent.getStringExtra(extraKey))
 }
 
-fun Bundle.getPublicationOrNull(): Publication? {
+@Deprecated(
+    "Use your own repository to share publications between activities. See the migration guide.",
+    level = DeprecationLevel.ERROR
+)
+public fun Bundle.getPublicationOrNull(): Publication? {
     return getString(extraKey)?.let { PublicationRepository.get(it) }
 }
 

@@ -7,13 +7,21 @@
 package org.readium.r2.shared.publication
 
 import android.os.Parcelable
-import java.util.*
+import java.util.Date
+import java.util.Locale
 import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
 import kotlinx.parcelize.WriteWith
 import org.json.JSONObject
 import org.readium.r2.shared.JSONable
-import org.readium.r2.shared.extensions.*
+import org.readium.r2.shared.extensions.JSONParceler
+import org.readium.r2.shared.extensions.iso8601ToDate
+import org.readium.r2.shared.extensions.optPositiveDouble
+import org.readium.r2.shared.extensions.optPositiveInt
+import org.readium.r2.shared.extensions.optStringsFromArrayOrSingle
+import org.readium.r2.shared.extensions.putIfNotEmpty
+import org.readium.r2.shared.extensions.toIso8601String
+import org.readium.r2.shared.extensions.toMap
 import org.readium.r2.shared.publication.presentation.Presentation
 import org.readium.r2.shared.publication.presentation.presentation
 import org.readium.r2.shared.util.Language
@@ -29,11 +37,11 @@ import org.readium.r2.shared.util.logging.log
  * @param otherMetadata Additional metadata for extensions, as a JSON dictionary.
  */
 @Parcelize
-data class Metadata(
+public data class Metadata(
     val identifier: String? = null, // URI
     val type: String? = null, // URI (@type)
     val conformsTo: Set<Publication.Profile> = emptySet(),
-    val localizedTitle: LocalizedString,
+    val localizedTitle: LocalizedString? = null,
     val localizedSubtitle: LocalizedString? = null,
     val localizedSortAs: LocalizedString? = null,
     val modified: Date? = null,
@@ -54,7 +62,7 @@ data class Metadata(
     val contributors: List<Contributor> = emptyList(),
     val publishers: List<Contributor> = emptyList(),
     val imprints: List<Contributor> = emptyList(),
-    val readingProgression: ReadingProgression = ReadingProgression.AUTO,
+    val readingProgression: ReadingProgression? = null,
     val description: String? = null,
     val duration: Double? = null,
     val numberOfPages: Int? = null,
@@ -62,11 +70,11 @@ data class Metadata(
     val otherMetadata: @WriteWith<JSONParceler> Map<String, Any> = mapOf()
 ) : JSONable, Parcelable {
 
-    constructor(
+    public constructor(
         identifier: String? = null, // URI
         type: String? = null, // URI (@type)
         conformsTo: Set<Publication.Profile> = emptySet(),
-        localizedTitle: LocalizedString,
+        localizedTitle: LocalizedString? = null,
         localizedSubtitle: LocalizedString? = null,
         localizedSortAs: LocalizedString? = null,
         modified: Date? = null,
@@ -87,7 +95,7 @@ data class Metadata(
         contributors: List<Contributor> = emptyList(),
         publishers: List<Contributor> = emptyList(),
         imprints: List<Contributor> = emptyList(),
-        readingProgression: ReadingProgression = ReadingProgression.AUTO,
+        readingProgression: ReadingProgression? = null,
         description: String? = null,
         duration: Double? = null,
         numberOfPages: Int? = null,
@@ -141,7 +149,7 @@ data class Metadata(
     /**
      * Returns the default translation string for the [localizedTitle].
      */
-    val title: String get() = localizedTitle.string
+    val title: String? get() = localizedTitle?.string
 
     /**
      * Returns the default translation string for the [localizedSortAs].
@@ -168,10 +176,13 @@ data class Metadata(
      *
      * See this issue for more details: https://github.com/readium/architecture/issues/113
      */
-    @Deprecated("You should resolve [ReadingProgression.AUTO] by yourself.", level = DeprecationLevel.WARNING)
+    @Deprecated(
+        "You should resolve [ReadingProgression.AUTO] by yourself.",
+        level = DeprecationLevel.WARNING
+    )
     @IgnoredOnParcel
     val effectiveReadingProgression: ReadingProgression get() {
-        if (readingProgression != ReadingProgression.AUTO) {
+        if (readingProgression != null) {
             return readingProgression
         }
 
@@ -197,7 +208,7 @@ data class Metadata(
     /**
      * Serializes a [Metadata] to its RWPM JSON representation.
      */
-    override fun toJSON() = JSONObject(otherMetadata).apply {
+    override fun toJSON(): JSONObject = JSONObject(otherMetadata).apply {
         put("identifier", identifier)
         put("@type", type)
         putIfNotEmpty("conformsTo", conformsTo.map { it.uri })
@@ -222,7 +233,7 @@ data class Metadata(
         putIfNotEmpty("contributor", contributors)
         putIfNotEmpty("publisher", publishers)
         putIfNotEmpty("imprint", imprints)
-        put("readingProgression", readingProgression.value)
+        put("readingProgression", readingProgression?.value ?: "auto")
         put("description", description)
         put("duration", duration)
         put("numberOfPages", numberOfPages)
@@ -233,18 +244,17 @@ data class Metadata(
      * Syntactic sugar to access the [otherMetadata] values by subscripting [Metadata] directly.
      * `metadata["layout"] == metadata.otherMetadata["layout"]`
      */
-    operator fun get(key: String): Any? = otherMetadata[key]
+    public operator fun get(key: String): Any? = otherMetadata[key]
 
-    companion object {
+    public companion object {
 
         /**
          * Parses a [Metadata] from its RWPM JSON representation.
          *
          * If the metadata can't be parsed, a warning will be logged with [warnings].
          */
-        fun fromJSON(
+        public fun fromJSON(
             json: JSONObject?,
-            normalizeHref: LinkHrefNormalizer = LinkHrefNormalizerIdentity,
             warnings: WarningLogger? = null
         ): Metadata? {
             json ?: return null
@@ -265,21 +275,65 @@ data class Metadata(
             val accessibility = Accessibility.fromJSON(json.remove("accessibility"))
             val languages = json.optStringsFromArrayOrSingle("language", remove = true)
             val localizedSortAs = LocalizedString.fromJSON(json.remove("sortAs"), warnings)
-            val subjects = Subject.fromJSONArray(json.remove("subject"), normalizeHref, warnings)
-            val authors = Contributor.fromJSONArray(json.remove("author"), normalizeHref, warnings)
-            val translators = Contributor.fromJSONArray(json.remove("translator"), normalizeHref, warnings)
-            val editors = Contributor.fromJSONArray(json.remove("editor"), normalizeHref, warnings)
-            val artists = Contributor.fromJSONArray(json.remove("artist"), normalizeHref, warnings)
-            val illustrators = Contributor.fromJSONArray(json.remove("illustrator"), normalizeHref, warnings)
-            val letterers = Contributor.fromJSONArray(json.remove("letterer"), normalizeHref, warnings)
-            val pencilers = Contributor.fromJSONArray(json.remove("penciler"), normalizeHref, warnings)
-            val colorists = Contributor.fromJSONArray(json.remove("colorist"), normalizeHref, warnings)
-            val inkers = Contributor.fromJSONArray(json.remove("inker"), normalizeHref, warnings)
-            val narrators = Contributor.fromJSONArray(json.remove("narrator"), normalizeHref, warnings)
-            val contributors = Contributor.fromJSONArray(json.remove("contributor"), normalizeHref, warnings)
-            val publishers = Contributor.fromJSONArray(json.remove("publisher"), normalizeHref, warnings)
-            val imprints = Contributor.fromJSONArray(json.remove("imprint"), normalizeHref, warnings)
-            val readingProgression = ReadingProgression(json.remove("readingProgression") as? String)
+            val subjects = Subject.fromJSONArray(
+                json.remove("subject"),
+                warnings
+            )
+            val authors = Contributor.fromJSONArray(
+                json.remove("author"),
+                warnings
+            )
+            val translators = Contributor.fromJSONArray(
+                json.remove("translator"),
+                warnings
+            )
+            val editors = Contributor.fromJSONArray(
+                json.remove("editor"),
+                warnings
+            )
+            val artists = Contributor.fromJSONArray(
+                json.remove("artist"),
+                warnings
+            )
+            val illustrators = Contributor.fromJSONArray(
+                json.remove("illustrator"),
+                warnings
+            )
+            val letterers = Contributor.fromJSONArray(
+                json.remove("letterer"),
+                warnings
+            )
+            val pencilers = Contributor.fromJSONArray(
+                json.remove("penciler"),
+                warnings
+            )
+            val colorists = Contributor.fromJSONArray(
+                json.remove("colorist"),
+                warnings
+            )
+            val inkers = Contributor.fromJSONArray(
+                json.remove("inker"),
+                warnings
+            )
+            val narrators = Contributor.fromJSONArray(
+                json.remove("narrator"),
+                warnings
+            )
+            val contributors = Contributor.fromJSONArray(
+                json.remove("contributor"),
+                warnings
+            )
+            val publishers = Contributor.fromJSONArray(
+                json.remove("publisher"),
+                warnings
+            )
+            val imprints = Contributor.fromJSONArray(
+                json.remove("imprint"),
+                warnings
+            )
+            val readingProgression = ReadingProgression(
+                json.remove("readingProgression") as? String
+            )
             val description = json.remove("description") as? String
             val duration = json.optPositiveDouble("duration", remove = true)
             val numberOfPages = json.optPositiveInt("numberOfPages", remove = true)
@@ -294,7 +348,10 @@ data class Metadata(
             for (key in belongsToJson.keys()) {
                 if (!belongsToJson.isNull(key)) {
                     val value = belongsToJson.get(key)
-                    belongsTo[key] = Collection.fromJSONArray(value, normalizeHref, warnings)
+                    belongsTo[key] = Collection.fromJSONArray(
+                        value,
+                        warnings
+                    )
                 }
             }
 
@@ -333,36 +390,62 @@ data class Metadata(
         }
     }
 
-    @Deprecated("Use [type] instead", ReplaceWith("type"))
+    @Deprecated("Use [type] instead", ReplaceWith("type"), level = DeprecationLevel.ERROR)
     val rdfType: String? get() = type
 
-    @Deprecated("Use [localizeTitle] instead.", ReplaceWith("localizedTitle"))
+    @Deprecated(
+        "Use [localizeTitle] instead.",
+        ReplaceWith("localizedTitle"),
+        level = DeprecationLevel.ERROR
+    )
     val multilanguageTitle: LocalizedString?
         get() = localizedTitle
 
-    @Deprecated("Use [localizedTitle.get] instead", ReplaceWith("localizedTitle.translationForLanguage(key)?.string"))
-    fun titleForLang(key: String): String? =
-        localizedTitle.getOrFallback(key)?.string
+    @Deprecated(
+        "Use [localizedTitle.get] instead",
+        ReplaceWith("localizedTitle.translationForLanguage(key)?.string"),
+        level = DeprecationLevel.ERROR
+    )
+    public fun titleForLang(key: String): String? =
+        localizedTitle?.getOrFallback(key)?.string
 
-    @Deprecated("Use [readingProgression] instead.", ReplaceWith("readingProgression"))
+    @Deprecated(
+        "Use [readingProgression] instead.",
+        ReplaceWith("readingProgression"),
+        level = DeprecationLevel.ERROR
+    )
     val direction: String
-        get() = readingProgression.value
+        get() {
+            throw NotImplementedError()
+        }
 
-    @Deprecated("Use [published] instead", ReplaceWith("published?.toIso8601String()"))
+    @Deprecated(
+        "Use [published] instead",
+        ReplaceWith("published?.toIso8601String()"),
+        level = DeprecationLevel.ERROR
+    )
     val publicationDate: String?
         get() = published?.toIso8601String()
 
-    @Deprecated("Use [presentation] instead", ReplaceWith("presentation", "org.readium.r2.shared.publication.presentation.presentation"))
+    @Deprecated(
+        "Use [presentation] instead",
+        ReplaceWith("presentation", "org.readium.r2.shared.publication.presentation.presentation"),
+        level = DeprecationLevel.ERROR
+    )
     val rendition: Presentation
         get() = presentation
 
-    @Deprecated("Access from [otherMetadata] instead", ReplaceWith("otherMetadata[\"source\"] as? String"))
+    @Deprecated(
+        "Access from [otherMetadata] instead",
+        ReplaceWith("otherMetadata[\"source\"] as? String"),
+        level = DeprecationLevel.ERROR
+    )
     val source: String?
         get() = otherMetadata["source"] as? String
 
-    @Deprecated("Not used anymore", ReplaceWith("null"))
+    @Deprecated("Not used anymore", ReplaceWith("null"), level = DeprecationLevel.ERROR)
     val rights: String? get() = null
 
-    @Deprecated("Renamed into [toJSON]", ReplaceWith("toJSON()"))
-    fun writeJSON(): JSONObject = toJSON()
+    @Deprecated("Renamed into [toJSON]", ReplaceWith("toJSON()"), level = DeprecationLevel.ERROR)
+    public fun writeJSON(): JSONObject = toJSON()
 }

@@ -61,10 +61,14 @@ internal class AccessibilityAdapter {
     private fun conformedToProfileOrNull(item: MetadataItem): Accessibility.Profile? =
         if (item is MetadataItem.Meta && item.property == Vocabularies.DCTERMS + "conformsTo") {
             accessibilityProfileFromString(item.value)
-        } else if (item is MetadataItem.Link && item.rels.contains(Vocabularies.DCTERMS + "conformsTo")) {
-            accessibilityProfileFromString(item.href)
-        } else
+        } else if (item is MetadataItem.Link && item.rels.contains(
+                Vocabularies.DCTERMS + "conformsTo"
+            )
+        ) {
+            accessibilityProfileFromString(item.href.toString())
+        } else {
             null
+        }
 
     private fun adaptAccessModeSufficient(items: List<MetadataItem>): Pair<Set<Set<Accessibility.PrimaryAccessMode>>, List<MetadataItem>> = items
         .takeAllWithProperty(Vocabularies.SCHEMA + "accessModeSufficient")
@@ -105,7 +109,7 @@ internal class AccessibilityAdapter {
             remainingItems
                 .takeFirstWithRel(Vocabularies.A11Y + "certifierReport")
                 .let { remainingItems = it.second; it.first }
-                ?.let { certification = certification.copy(report = it.href) }
+                ?.let { certification = certification.copy(report = it.href.toString()) }
         }
 
         return if (remainingItems.size == items.size) {
@@ -127,7 +131,7 @@ internal class AccessibilityAdapter {
         return Accessibility.Certification(
             certifiedBy = value,
             credential = credential,
-            report = report
+            report = report?.toString()
         )
     }
 
@@ -143,7 +147,7 @@ internal class AccessibilityAdapter {
         "http://idpf.org/epub/a11y/accessibility-20170105.html#wcag-a",
         "http://www.idpf.org/epub/a11y/accessibility-20170105.html#wcag-a",
         "https://idpf.org/epub/a11y/accessibility-20170105.html#wcag-a",
-        "https://www.idpf.org/epub/a11y/accessibility-20170105.html#wcag-a",
+        "https://www.idpf.org/epub/a11y/accessibility-20170105.html#wcag-a"
     )
 
     private fun isWCAG_20_AA(value: String) = value in setOf(
@@ -151,7 +155,7 @@ internal class AccessibilityAdapter {
         "http://idpf.org/epub/a11y/accessibility-20170105.html#wcag-aa",
         "http://www.idpf.org/epub/a11y/accessibility-20170105.html#wcag-aa",
         "https://idpf.org/epub/a11y/accessibility-20170105.html#wcag-aa",
-        "https://www.idpf.org/epub/a11y/accessibility-20170105.html#wcag-aa",
+        "https://www.idpf.org/epub/a11y/accessibility-20170105.html#wcag-aa"
     )
 
     private fun isWCAG_20_AAA(value: String) = value in setOf(
@@ -159,6 +163,6 @@ internal class AccessibilityAdapter {
         "http://idpf.org/epub/a11y/accessibility-20170105.html#wcag-aaa",
         "http://www.idpf.org/epub/a11y/accessibility-20170105.html#wcag-aaa",
         "https://idpf.org/epub/a11y/accessibility-20170105.html#wcag-aaa",
-        "https://www.idpf.org/epub/a11y/accessibility-20170105.html#wcag-aaa",
+        "https://www.idpf.org/epub/a11y/accessibility-20170105.html#wcag-aaa"
     )
 }

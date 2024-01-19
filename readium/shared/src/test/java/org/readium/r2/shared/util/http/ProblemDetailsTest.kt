@@ -18,7 +18,10 @@ class ProblemDetailsTest {
         """
         )
 
-        assertEquals(ProblemDetails(title = "You do not have enough credit."), ProblemDetails.fromJSON(json))
+        assertEquals(
+            ProblemDetails(title = "You do not have enough credit."),
+            ProblemDetails.fromJSON(json)
+        )
     }
 
     @Test

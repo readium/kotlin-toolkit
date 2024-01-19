@@ -9,11 +9,14 @@
 
 package org.readium.r2.lcp
 
-import org.readium.r2.shared.publication.ContentProtection
 import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.publication.protection.ContentProtection
 import org.readium.r2.shared.publication.services.ContentProtectionService
 
-class LcpContentProtectionService(val license: LcpLicense?, override val error: LcpException?) : ContentProtectionService {
+public class LcpContentProtectionService(
+    public val license: LcpLicense?,
+    override val error: LcpError?
+) : ContentProtectionService {
 
     override val isRestricted: Boolean = license == null
 
@@ -22,11 +25,17 @@ class LcpContentProtectionService(val license: LcpLicense?, override val error: 
     override val rights: ContentProtectionService.UserRights = license
         ?: ContentProtectionService.UserRights.AllRestricted
 
-    override val scheme = ContentProtection.Scheme.Lcp
+    override val scheme: ContentProtection.Scheme = ContentProtection.Scheme.Lcp
 
-    companion object {
+    override fun close() {
+        license?.close()
+    }
 
-        fun createFactory(license: LcpLicense?, error: LcpException?): (Publication.Service.Context) -> LcpContentProtectionService =
+    public companion object {
+
+        public fun createFactory(license: LcpLicense?, error: LcpError?): (
+            Publication.Service.Context
+        ) -> LcpContentProtectionService =
             { LcpContentProtectionService(license, error) }
     }
 }
@@ -34,5 +43,5 @@ class LcpContentProtectionService(val license: LcpLicense?, override val error: 
 /**
  * Returns the [LcpLicense] if the [Publication] is protected by LCP and the license is opened.
  */
-val Publication.lcpLicense: LcpLicense?
+public val Publication.lcpLicense: LcpLicense?
     get() = findService(LcpContentProtectionService::class)?.license

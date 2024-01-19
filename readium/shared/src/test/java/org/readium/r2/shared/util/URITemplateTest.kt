@@ -56,7 +56,9 @@ class URITemplateTest {
 
         assertEquals(
             "https://lsd-test.edrlab.org/licenses/39ef1ff2-cda2-4219-a26a-d504fbb24c17/renew?end=2020-11-12T16:02:00.000%2B01:00&id=38dfd7ba-a80b-4253-a047-e6aa9c21d6f0&name=Pixel%203a",
-            URITemplate("https://lsd-test.edrlab.org/licenses/39ef1ff2-cda2-4219-a26a-d504fbb24c17/renew{?end,id,name}")
+            URITemplate(
+                "https://lsd-test.edrlab.org/licenses/39ef1ff2-cda2-4219-a26a-d504fbb24c17/renew{?end,id,name}"
+            )
                 .expand(
                     mapOf(
                         "id" to "38dfd7ba-a80b-4253-a047-e6aa9c21d6f0",

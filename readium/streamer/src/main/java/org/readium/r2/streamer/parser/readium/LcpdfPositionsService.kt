@@ -10,30 +10,32 @@
 package org.readium.r2.streamer.parser.readium
 
 import org.readium.r2.shared.ExperimentalReadiumApi
-import org.readium.r2.shared.PdfSupport
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.services.PositionsService
+import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.pdf.PdfDocument
 import org.readium.r2.shared.util.pdf.PdfDocumentFactory
 import org.readium.r2.shared.util.pdf.cachedIn
+import org.readium.r2.shared.util.toDebugDescription
 import timber.log.Timber
 
 /**
- * Creates the [positions] for an LCP protected PDF [Publication] from its [readingOrder] and
- * [fetcher].
+ * Creates the [positions] for an LCP protected PDF [Publication] from its reading order and
+ * container.
  */
-@OptIn(PdfSupport::class, ExperimentalReadiumApi::class)
+@OptIn(ExperimentalReadiumApi::class)
 internal class LcpdfPositionsService(
     private val pdfFactory: PdfDocumentFactory<*>,
-    private val context: Publication.Service.Context,
+    private val context: Publication.Service.Context
 ) : PositionsService {
 
     override suspend fun positionsByReadingOrder(): List<List<Locator>> {
-        if (!::_positions.isInitialized)
+        if (!::_positions.isInitialized) {
             _positions = computePositions()
+        }
 
         return _positions
     }
@@ -54,7 +56,12 @@ internal class LcpdfPositionsService(
 
         var lastPositionOfPreviousResource = 0
         return resources.map { (pageCount, link) ->
-            val positions = createPositionsOf(link, pageCount = pageCount, totalPageCount = totalPageCount, startPosition = lastPositionOfPreviousResource)
+            val positions = createPositionsOf(
+                link,
+                pageCount = pageCount,
+                totalPageCount = totalPageCount,
+                startPosition = lastPositionOfPreviousResource
+            )
             lastPositionOfPreviousResource += pageCount
             positions
         }
@@ -70,13 +77,15 @@ internal class LcpdfPositionsService(
             return emptyList()
         }
 
+        val href = link.url()
+
         // FIXME: Use the [tableOfContents] to generate the titles
         return (1..pageCount).map { position ->
             val progression = (position - 1) / pageCount.toDouble()
             val totalProgression = (startPosition + position - 1) / totalPageCount.toDouble()
             Locator(
-                href = link.href,
-                type = link.type ?: MediaType.PDF.toString(),
+                href = href,
+                mediaType = link.mediaType ?: MediaType.PDF,
                 locations = Locator.Locations(
                     fragments = listOf("page=$position"),
                     progression = progression,
@@ -87,15 +96,18 @@ internal class LcpdfPositionsService(
         }
     }
 
-    private suspend fun openPdfAt(link: Link): PdfDocument? =
-        try {
-            pdfFactory
-                .cachedIn(context.services)
-                .open(context.fetcher.get(link), password = null)
-        } catch (e: Exception) {
-            Timber.e(e)
-            null
-        }
+    private suspend fun openPdfAt(link: Link): PdfDocument? {
+        val resource = context.container.get(link.url())
+            ?: return null
+
+        return pdfFactory
+            .cachedIn(context.services)
+            .open(resource, password = null)
+            .getOrElse {
+                Timber.e(it.toDebugDescription())
+                null
+            }
+    }
 
     companion object {
 

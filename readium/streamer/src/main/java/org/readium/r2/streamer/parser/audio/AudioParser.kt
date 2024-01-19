@@ -1,24 +1,45 @@
 /*
- * Module: r2-streamer-kotlin
- * Developers: Quentin Gliosca
- *
- * Copyright (c) 2020. Readium Foundation. All rights reserved.
- * Use of this source code is governed by a BSD-style license which is detailed in the
- * LICENSE file present in the project repository where this source code is maintained.
+ * Copyright 2023 Readium Foundation. All rights reserved.
+ * Use of this source code is governed by the BSD-style license
+ * available in the top-level LICENSE file of the project.
  */
 
 package org.readium.r2.streamer.parser.audio
 
-import java.io.File
-import org.readium.r2.shared.fetcher.Fetcher
-import org.readium.r2.shared.publication.*
-import org.readium.r2.shared.publication.asset.PublicationAsset
+import org.readium.r2.shared.publication.Link
+import org.readium.r2.shared.publication.LocalizedString
+import org.readium.r2.shared.publication.Manifest
+import org.readium.r2.shared.publication.Metadata
+import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.util.DebugError
+import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.asset.Asset
+import org.readium.r2.shared.util.asset.AssetRetriever
+import org.readium.r2.shared.util.asset.ContainerAsset
+import org.readium.r2.shared.util.asset.ResourceAsset
+import org.readium.r2.shared.util.data.Container
+import org.readium.r2.shared.util.data.ReadError
+import org.readium.r2.shared.util.format.AacSpecification
+import org.readium.r2.shared.util.format.AiffSpecification
+import org.readium.r2.shared.util.format.FlacSpecification
+import org.readium.r2.shared.util.format.Format
+import org.readium.r2.shared.util.format.InformalAudiobookSpecification
+import org.readium.r2.shared.util.format.Mp3Specification
+import org.readium.r2.shared.util.format.Mp4Specification
+import org.readium.r2.shared.util.format.OggSpecification
+import org.readium.r2.shared.util.format.OpusSpecification
+import org.readium.r2.shared.util.format.Specification
+import org.readium.r2.shared.util.format.WavSpecification
+import org.readium.r2.shared.util.format.WebmSpecification
+import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.logging.WarningLogger
-import org.readium.r2.shared.util.mediatype.MediaType
-import org.readium.r2.streamer.PublicationParser
+import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.streamer.extensions.guessTitle
 import org.readium.r2.streamer.extensions.isHiddenOrThumbs
-import org.readium.r2.streamer.extensions.lowercasedExtension
+import org.readium.r2.streamer.extensions.sniffContainerEntries
+import org.readium.r2.streamer.extensions.toContainer
+import org.readium.r2.streamer.parser.PublicationParser
 
 /**
  * Parses an audiobook Publication from an unstructured archive format containing audio files,
@@ -26,57 +47,108 @@ import org.readium.r2.streamer.extensions.lowercasedExtension
  *
  * It can also work for a standalone audio file.
  */
-class AudioParser : PublicationParser {
+public class AudioParser(
+    private val assetSniffer: AssetRetriever
+) : PublicationParser {
 
-    override suspend fun parse(asset: PublicationAsset, fetcher: Fetcher, warnings: WarningLogger?): Publication.Builder? {
+    override suspend fun parse(
+        asset: Asset,
+        warnings: WarningLogger?
+    ): Try<Publication.Builder, PublicationParser.ParseError> =
+        when (asset) {
+            is ResourceAsset -> parseResourceAsset(asset)
+            is ContainerAsset -> parseContainerAsset(asset)
+        }
 
-        if (!accepts(asset, fetcher))
-            return null
+    private fun parseResourceAsset(
+        asset: ResourceAsset
+    ): Try<Publication.Builder, PublicationParser.ParseError> {
+        if (!asset.format.conformsToAny(audioSpecifications)) {
+            return Try.failure(PublicationParser.ParseError.FormatNotSupported())
+        }
 
-        val readingOrder = fetcher.links()
-            .filter { link -> with(File(link.href)) { lowercasedExtension in audioExtensions && !isHiddenOrThumbs } }
-            .sortedBy(Link::href)
-            .toMutableList()
+        val container =
+            asset.toContainer()
 
-        if (readingOrder.isEmpty())
-            throw Exception("No audio file found in the publication.")
+        val readingOrderWithFormat =
+            listOfNotNull(container.first() to asset.format)
 
-        val title = fetcher.guessTitle() ?: asset.name
+        return finalizeParsing(container, readingOrderWithFormat, null)
+    }
+
+    private suspend fun parseContainerAsset(
+        asset: ContainerAsset
+    ): Try<Publication.Builder, PublicationParser.ParseError> {
+        if (!asset.format.conformsTo(InformalAudiobookSpecification)) {
+            return Try.failure(PublicationParser.ParseError.FormatNotSupported())
+        }
+
+        val entryFormats: Map<Url, Format> = assetSniffer
+            .sniffContainerEntries(asset.container) { !it.isHiddenOrThumbs }
+            .getOrElse { return Try.failure(PublicationParser.ParseError.Reading(it)) }
+
+        val readingOrderWithFormat =
+            asset.container
+                .mapNotNull { url -> entryFormats[url]?.let { url to it } }
+                .filter { (_, format) -> format.specification.specifications.any { it in audioSpecifications } }
+                .sortedBy { it.first.toString() }
+
+        if (readingOrderWithFormat.isEmpty()) {
+            return Try.failure(
+                PublicationParser.ParseError.Reading(
+                    ReadError.Decoding(
+                        DebugError("No audio file found in the publication.")
+                    )
+                )
+            )
+        }
+
+        val title = asset
+            .container
+            .entries
+            .guessTitle()
+
+        return finalizeParsing(asset.container, readingOrderWithFormat, title)
+    }
+
+    private fun finalizeParsing(
+        container: Container<Resource>,
+        readingOrderWithFormat: List<Pair<Url, Format>>,
+        title: String?
+    ): Try<Publication.Builder, PublicationParser.ParseError> {
+        val readingOrder = readingOrderWithFormat.map { (url, format) ->
+            Link(href = url, mediaType = format.mediaType)
+        }
 
         val manifest = Manifest(
             metadata = Metadata(
                 conformsTo = setOf(Publication.Profile.AUDIOBOOK),
-                localizedTitle = LocalizedString(title)
+                localizedTitle = title?.let { LocalizedString(it) }
             ),
             readingOrder = readingOrder
         )
 
-        return Publication.Builder(
+        val publicationBuilder = Publication.Builder(
             manifest = manifest,
-            fetcher = fetcher,
+            container = container,
             servicesBuilder = Publication.ServicesBuilder(
                 locator = AudioLocatorService.createFactory()
             )
         )
+
+        return Try.success(publicationBuilder)
     }
 
-    private suspend fun accepts(asset: PublicationAsset, fetcher: Fetcher): Boolean {
-        if (asset.mediaType() == MediaType.ZAB)
-            return true
-
-        val allowedExtensions = audioExtensions +
-            listOf("asx", "bio", "m3u", "m3u8", "pla", "pls", "smil", "txt", "vlc", "wpl", "xspf", "zpl")
-
-        if (fetcher.links().filterNot { File(it.href).isHiddenOrThumbs }
-            .all { File(it.href).lowercasedExtension in allowedExtensions }
+    private val audioSpecifications: Set<Specification> =
+        setOf(
+            AacSpecification,
+            AiffSpecification,
+            FlacSpecification,
+            Mp4Specification,
+            Mp3Specification,
+            OggSpecification,
+            OpusSpecification,
+            WavSpecification,
+            WebmSpecification
         )
-            return true
-
-        return false
-    }
-
-    private val audioExtensions = listOf(
-        "aac", "aiff", "alac", "flac", "m4a", "m4b", "mp3",
-        "ogg", "oga", "mogg", "opus", "wav", "webm"
-    )
 }

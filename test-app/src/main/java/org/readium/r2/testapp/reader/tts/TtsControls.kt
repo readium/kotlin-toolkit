@@ -4,8 +4,6 @@
  * available in the top-level LICENSE file of the project.
  */
 
-@file:OptIn(ExperimentalReadiumApi::class)
-
 package org.readium.r2.testapp.reader.tts
 
 import androidx.compose.foundation.layout.Arrangement
@@ -23,7 +21,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.utils.extensions.asStateWhenStarted
 
@@ -60,39 +57,45 @@ fun TtsControls(
     onPrevious: () -> Unit,
     onNext: () -> Unit,
     onPreferences: () -> Unit,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier
 ) {
     Card(
         modifier = modifier
     ) {
         Row(
             horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically,
+            verticalAlignment = Alignment.CenterVertically
         ) {
             val largeButtonModifier = Modifier.size(40.dp)
 
             IconButton(onClick = onPrevious) {
                 Icon(
                     imageVector = Icons.Default.SkipPrevious,
-                    contentDescription = stringResource(R.string.tts_previous),
+                    contentDescription = stringResource(R.string.tts_previous)
                 )
             }
 
             IconButton(
-                onClick = onPlayPause,
+                onClick = onPlayPause
             ) {
                 Icon(
-                    imageVector = if (playing) Icons.Default.Pause
-                    else Icons.Default.PlayArrow,
+                    imageVector = if (playing) {
+                        Icons.Default.Pause
+                    } else {
+                        Icons.Default.PlayArrow
+                    },
                     contentDescription = stringResource(
-                        if (playing) R.string.tts_pause
-                        else R.string.tts_play
+                        if (playing) {
+                            R.string.tts_pause
+                        } else {
+                            R.string.tts_play
+                        }
                     ),
                     modifier = Modifier.then(largeButtonModifier)
                 )
             }
             IconButton(
-                onClick = onStop,
+                onClick = onStop
             ) {
                 Icon(
                     imageVector = Icons.Default.Stop,

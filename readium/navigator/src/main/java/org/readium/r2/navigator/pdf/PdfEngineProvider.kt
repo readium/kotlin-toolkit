@@ -6,79 +6,71 @@
 
 package org.readium.r2.navigator.pdf
 
-import android.graphics.PointF
 import androidx.fragment.app.Fragment
-import org.readium.r2.navigator.VisualNavigator
+import kotlinx.coroutines.flow.StateFlow
+import org.readium.r2.navigator.Navigator
+import org.readium.r2.navigator.OverflowableNavigator
+import org.readium.r2.navigator.input.InputListener
 import org.readium.r2.navigator.preferences.Configurable
 import org.readium.r2.navigator.preferences.PreferencesEditor
+import org.readium.r2.navigator.util.SingleFragmentFactory
 import org.readium.r2.shared.ExperimentalReadiumApi
-import org.readium.r2.shared.fetcher.Resource
-import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Metadata
 import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.util.Url
 
 /**
  * To be implemented by adapters for third-party PDF engines which can be used with [PdfNavigatorFragment].
  */
 @ExperimentalReadiumApi
-interface PdfEngineProvider<S : Configurable.Settings, P : Configurable.Preferences<P>, E : PreferencesEditor<P>> {
+public interface PdfEngineProvider<S : Configurable.Settings, P : Configurable.Preferences<P>, E : PreferencesEditor<P>> {
+
+    public interface Listener
 
     /**
-     * Creates a [PdfDocumentFragment] for [input].
+     * Creates a [PdfDocumentFragment] factory for [input].
      */
-    suspend fun createDocumentFragment(input: PdfDocumentFragmentInput<S>): PdfDocumentFragment<S>
+    public fun createDocumentFragmentFactory(input: PdfDocumentFragmentInput<S>): SingleFragmentFactory<*>
 
     /**
      * Creates settings for [metadata] and [preferences].
      */
-    fun computeSettings(metadata: Metadata, preferences: P): S
+    public fun computeSettings(metadata: Metadata, preferences: P): S
+
+    @Deprecated(
+        "Renamed to computeOverflow",
+        replaceWith = ReplaceWith("computeOverflow"),
+        level = DeprecationLevel.ERROR
+    )
+    public fun computePresentation(settings: S): Any =
+        throw NotImplementedError()
 
     /**
-     * Infers a [VisualNavigator.Presentation] from settings.
+     * Infers a [OverflowableNavigator.Overflow] from [settings].
      */
-    fun computePresentation(settings: S): VisualNavigator.Presentation
+    public fun computeOverflow(settings: S): OverflowableNavigator.Overflow
 
     /**
      * Creates a preferences editor for [publication] and [initialPreferences].
      */
-    fun createPreferenceEditor(publication: Publication, initialPreferences: P): E
+    public fun createPreferenceEditor(publication: Publication, initialPreferences: P): E
 
     /**
      * Creates an empty set of preferences of this PDF engine provider.
      */
-    fun createEmptyPreferences(): P
+    public fun createEmptyPreferences(): P
 }
 
-@ExperimentalReadiumApi
-typealias PdfDocumentFragmentFactory<S> = suspend (PdfDocumentFragmentInput<S>) -> PdfDocumentFragment<S>
-
 /**
- * A [PdfDocumentFragment] renders a single PDF resource.
+ * A [PdfDocumentFragment] renders a single PDF document.
  */
 @ExperimentalReadiumApi
-abstract class PdfDocumentFragment<S : Configurable.Settings> : Fragment() {
-
-    interface Listener {
-        /**
-         * Called when the fragment navigates to a different page.
-         */
-        fun onPageChanged(pageIndex: Int)
-
-        /**
-         * Called when the user triggers a tap on the document.
-         */
-        fun onTap(point: PointF): Boolean
-
-        /**
-         * Called when the PDF engine fails to load the PDF document.
-         */
-        fun onResourceLoadFailed(link: Link, error: Resource.Exception)
-    }
+public abstract class PdfDocumentFragment<S : Configurable.Settings> : Fragment() {
 
     /**
-     * Returns the current page index in the document, from 0.
+     * Current page index displayed in the PDF document.
      */
-    abstract val pageIndex: Int
+    public abstract val pageIndex: StateFlow<Int>
 
     /**
      * Jumps to the given page [index].
@@ -86,19 +78,20 @@ abstract class PdfDocumentFragment<S : Configurable.Settings> : Fragment() {
      * @param animated Indicates if the transition should be animated.
      * @return Whether the jump is valid.
      */
-    abstract fun goToPageIndex(index: Int, animated: Boolean): Boolean
+    public abstract fun goToPageIndex(index: Int, animated: Boolean): Boolean
 
     /**
-     * Current settings for the PDF document.
+     * Submits a new set of settings.
      */
-    abstract var settings: S
+    public abstract fun applySettings(settings: S)
 }
 
 @ExperimentalReadiumApi
-data class PdfDocumentFragmentInput<S : Configurable.Settings>(
+public data class PdfDocumentFragmentInput<S : Configurable.Settings>(
     val publication: Publication,
-    val link: Link,
-    val initialPageIndex: Int,
+    val href: Url,
+    val pageIndex: Int,
     val settings: S,
-    val listener: PdfDocumentFragment.Listener?
+    val navigatorListener: Navigator.Listener?,
+    val inputListener: InputListener?
 )

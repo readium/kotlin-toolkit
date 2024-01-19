@@ -16,6 +16,7 @@ package org.readium.r2.shared.extensions
 import java.io.ByteArrayOutputStream
 import java.io.InputStream
 import java.io.OutputStream
+import java.util.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -61,8 +62,9 @@ internal suspend fun InputStream.readRange(range: LongRange): ByteArray {
         .coerceFirstNonNegative()
         .requireLengthFitInt()
 
-    if (range.isEmpty())
+    if (range.isEmpty()) {
         return ByteArray(0)
+    }
 
     return withContext(Dispatchers.IO) {
         val skipped = skip(range.first)
@@ -79,3 +81,17 @@ internal suspend fun InputStream.readFully(): ByteArray =
     withContext(Dispatchers.IO) {
         readBytes()
     }
+
+internal fun InputStream.readSafe(b: ByteArray): Int =
+    readSafe(b, 0, b.size)
+
+internal fun InputStream.readSafe(b: ByteArray, off: Int, len: Int): Int {
+    Objects.checkFromIndexSize(off, len, b.size)
+    var n = 0
+    while (n < len) {
+        val count = read(b, off + n, len - n)
+        if (count < 0) break
+        n += count
+    }
+    return n
+}

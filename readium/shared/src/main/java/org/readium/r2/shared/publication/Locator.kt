@@ -14,11 +14,14 @@ import kotlinx.parcelize.Parcelize
 import kotlinx.parcelize.WriteWith
 import org.json.JSONArray
 import org.json.JSONObject
+import org.readium.r2.shared.DelicateReadiumApi
 import org.readium.r2.shared.JSONable
 import org.readium.r2.shared.extensions.*
 import org.readium.r2.shared.toJSON
+import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.logging.log
+import org.readium.r2.shared.util.mediatype.MediaType
 
 /**
  * Represents a precise location in a publication in a format that can be stored and shared.
@@ -33,9 +36,9 @@ import org.readium.r2.shared.util.logging.log
  * https://readium.org/architecture/models/locators/
  */
 @Parcelize
-data class Locator(
-    val href: String,
-    val type: String,
+public data class Locator(
+    val href: Url,
+    val mediaType: MediaType,
     val title: String? = null,
     val locations: Locations = Locations(),
     val text: Text = Text()
@@ -53,7 +56,7 @@ data class Locator(
      * @param otherLocations Additional locations for extensions.
      */
     @Parcelize
-    data class Locations(
+    public data class Locations(
         val fragments: List<String> = emptyList(),
         val progression: Double? = null,
         val position: Int? = null,
@@ -61,7 +64,7 @@ data class Locator(
         val otherLocations: @WriteWith<JSONParceler> Map<String, Any> = emptyMap()
     ) : JSONable, Parcelable {
 
-        override fun toJSON() = JSONObject(otherLocations).apply {
+        override fun toJSON(): JSONObject = JSONObject(otherLocations).apply {
             putIfNotEmpty("fragments", fragments)
             put("progression", progression)
             put("position", position)
@@ -72,11 +75,13 @@ data class Locator(
          * Syntactic sugar to access the [otherLocations] values by subscripting [Locations] directly.
          * `locations["cssSelector"] == locations.otherLocations["cssSelector"]`
          */
-        operator fun get(key: String): Any? = otherLocations[key]
+        public operator fun get(key: String): Any? = otherLocations[key]
 
-        companion object {
+        public companion object {
 
-            fun fromJSON(json: JSONObject?): Locations {
+            public fun fromJSON(
+                json: JSONObject?
+            ): Locations {
                 val fragments = json?.optStringsFromArrayOrSingle("fragments", remove = true)?.takeIf { it.isNotEmpty() }
                     ?: json?.optStringsFromArrayOrSingle("fragment", remove = true)
                     ?: emptyList()
@@ -100,7 +105,11 @@ data class Locator(
             }
         }
 
-        @Deprecated("Renamed to [fragments]", ReplaceWith("fragments"))
+        @Deprecated(
+            "Renamed to [fragments]",
+            ReplaceWith("fragments"),
+            level = DeprecationLevel.ERROR
+        )
         val fragment: String? get() = fragments.firstOrNull()
     }
 
@@ -116,30 +125,35 @@ data class Locator(
      * @param after The text after the locator.
      */
     @Parcelize
-    data class Text(
+    public data class Text(
         val before: String? = null,
         val highlight: String? = null,
         val after: String? = null
     ) : JSONable, Parcelable {
 
-        override fun toJSON() = JSONObject().apply {
+        override fun toJSON(): JSONObject = JSONObject().apply {
             put("before", before)
             put("highlight", highlight)
             put("after", after)
         }
 
-        fun substring(range: IntRange): Text {
-            highlight ?: return this
+        public fun substring(range: IntRange): Text {
+            if (highlight.isNullOrBlank()) return this
+
+            val fixedRange = range.first.coerceIn(0, highlight.length)..range.last.coerceIn(
+                0,
+                highlight.length - 1
+            )
             return copy(
-                before = (before ?: "") + highlight.substring(0, range.first),
-                highlight = highlight.substring(range),
-                after = highlight.substring(range.last) + (after ?: "")
+                before = (before ?: "") + highlight.substring(0, fixedRange.first),
+                highlight = highlight.substring(fixedRange),
+                after = highlight.substring((fixedRange.last + 1).coerceAtMost(highlight.length)) + (after ?: "")
             )
         }
 
-        companion object {
+        public companion object {
 
-            fun fromJSON(json: JSONObject?) = Text(
+            public fun fromJSON(json: JSONObject?): Text = Text(
                 before = json?.optNullableString("before"),
                 highlight = json?.optNullableString("highlight"),
                 after = json?.optNullableString("after")
@@ -150,13 +164,13 @@ data class Locator(
     /**
      * Shortcut to get a copy of the [Locator] with different [Locations] sub-properties.
      */
-    fun copyWithLocations(
+    public fun copyWithLocations(
         fragments: List<String> = locations.fragments,
         progression: Double? = locations.progression,
         position: Int? = locations.position,
         totalProgression: Double? = locations.totalProgression,
         otherLocations: Map<String, Any> = locations.otherLocations
-    ) = copy(
+    ): Locator = copy(
         locations = locations.copy(
             fragments = fragments,
             progression = progression,
@@ -166,17 +180,65 @@ data class Locator(
         )
     )
 
-    override fun toJSON() = JSONObject().apply {
-        put("href", href)
-        put("type", type)
+    override fun toJSON(): JSONObject = JSONObject().apply {
+        put("href", href.toString())
+        put("type", mediaType.toString())
         put("title", title)
         putIfNotEmpty("locations", locations)
         putIfNotEmpty("text", text)
     }
 
-    companion object {
+    @Suppress("UNUSED_PARAMETER")
+    @Deprecated(
+        "Provide a `Url` and `MediaType` instances.",
+        ReplaceWith("Locator(href = Url(href)!!, mediaType = MediaType(type)!!"),
+        level = DeprecationLevel.ERROR
+    )
+    public constructor(
+        href: String,
+        type: String,
+        title: String? = null,
+        locations: Locations = Locations(),
+        text: Text = Text()
+    ) : this(Url("#")!!, MediaType.BINARY)
 
-        fun fromJSON(json: JSONObject?, warnings: WarningLogger? = null): Locator? {
+    @Deprecated(
+        "Use [mediaType.toString()] instead",
+        ReplaceWith("mediaType.toString()"),
+        level = DeprecationLevel.ERROR
+    )
+    public val type: String get() = throw NotImplementedError()
+
+    public companion object {
+
+        /**
+         * Creates a [Locator] from its JSON representation.
+         */
+        public fun fromJSON(
+            json: JSONObject?,
+            warnings: WarningLogger? = null
+        ): Locator? =
+            fromJSON(json, warnings, withLegacyHref = false)
+
+        /**
+         * Creates a [Locator] from its legacy JSON representation.
+         *
+         * Only use this API when you are upgrading to Readium 3.x and migrating the [Locator]
+         * objects stored in your database. See the migration guide for more information.
+         */
+        @DelicateReadiumApi
+        public fun fromLegacyJSON(
+            json: JSONObject?,
+            warnings: WarningLogger? = null
+        ): Locator? =
+            fromJSON(json, warnings, withLegacyHref = true)
+
+        @OptIn(DelicateReadiumApi::class)
+        private fun fromJSON(
+            json: JSONObject?,
+            warnings: WarningLogger? = null,
+            withLegacyHref: Boolean = false
+        ): Locator? {
             val href = json?.optNullableString("href")
             val type = json?.optNullableString("type")
             if (href == null || type == null) {
@@ -184,20 +246,36 @@ data class Locator(
                 return null
             }
 
+            val url = (
+                if (withLegacyHref) {
+                    Url.fromLegacyHref(href)
+                } else {
+                    Url(href)
+                }
+                ) ?: run {
+                warnings?.log(Locator::class.java, "[href] is not a valid URL", json)
+                return null
+            }
+
+            val mediaType = MediaType(type) ?: run {
+                warnings?.log(Locator::class.java, "[type] is not a valid media type", json)
+                return null
+            }
+
             return Locator(
-                href = href,
-                type = type,
+                href = url,
+                mediaType = mediaType,
                 title = json.optNullableString("title"),
                 locations = Locations.fromJSON(json.optJSONObject("locations")),
                 text = Text.fromJSON(json.optJSONObject("text"))
             )
         }
 
-        fun fromJSONArray(
+        public fun fromJSONArray(
             json: JSONArray?,
             warnings: WarningLogger? = null
         ): List<Locator> {
-            return json.parseObjects { Locator.fromJSON(it as? JSONObject, warnings) }
+            return json.parseObjects { fromJSON(it as? JSONObject, warnings) }
         }
     }
 }
@@ -205,18 +283,11 @@ data class Locator(
 /**
  * Creates a [Locator] from a reading order [Link].
  */
-@Deprecated("This may create an incorrect `Locator` if the link `type` is missing. Use `publication.locatorFromLink()` instead.")
-fun Link.toLocator(): Locator {
-    val components = href.split("#", limit = 2)
-    return Locator(
-        href = components.firstOrNull() ?: href,
-        type = type ?: "",
-        title = title,
-        locations = Locator.Locations(
-            fragments = listOfNotNull(components.getOrNull(1))
-        )
-    )
-}
+@Deprecated(
+    "This may create an incorrect `Locator` if the link `type` is missing. Use `publication.locatorFromLink()` instead.",
+    level = DeprecationLevel.ERROR
+)
+public fun Link.toLocator(): Locator = throw NotImplementedError()
 
 /**
  * Represents a sequential list of `Locator` objects.
@@ -224,10 +295,10 @@ fun Link.toLocator(): Locator {
  * For example, a search result or a list of positions.
  */
 @Parcelize
-data class LocatorCollection(
+public data class LocatorCollection(
     val metadata: Metadata = Metadata(),
     val links: List<Link> = emptyList(),
-    val locators: List<Locator> = emptyList(),
+    val locators: List<Locator> = emptyList()
 ) : JSONable, Parcelable {
 
     /**
@@ -236,10 +307,10 @@ data class LocatorCollection(
      * @param numberOfItems Indicates the total number of locators in the collection.
      */
     @Parcelize
-    data class Metadata(
+    public data class Metadata(
         val localizedTitle: LocalizedString? = null,
         val numberOfItems: Int? = null,
-        val otherMetadata: @WriteWith<JSONParceler> Map<String, Any> = mapOf(),
+        val otherMetadata: @WriteWith<JSONParceler> Map<String, Any> = mapOf()
     ) : JSONable, Parcelable {
 
         /**
@@ -247,14 +318,14 @@ data class LocatorCollection(
          */
         val title: String? get() = localizedTitle?.string
 
-        override fun toJSON() = JSONObject(otherMetadata).apply {
+        override fun toJSON(): JSONObject = JSONObject(otherMetadata).apply {
             putIfNotEmpty("title", localizedTitle)
             putOpt("numberOfItems", numberOfItems)
         }
 
-        companion object {
+        public companion object {
 
-            fun fromJSON(json: JSONObject?, warnings: WarningLogger? = null): Metadata {
+            public fun fromJSON(json: JSONObject?, warnings: WarningLogger? = null): Metadata {
                 json ?: return Metadata()
 
                 val localizedTitle = LocalizedString.fromJSON(json.remove("title"), warnings)
@@ -269,19 +340,28 @@ data class LocatorCollection(
         }
     }
 
-    override fun toJSON() = JSONObject().apply {
+    override fun toJSON(): JSONObject = JSONObject().apply {
         putIfNotEmpty("metadata", metadata.toJSON())
         putIfNotEmpty("links", links.toJSON())
         put("locators", locators.toJSON())
     }
 
-    companion object {
+    public companion object {
 
-        fun fromJSON(json: JSONObject?, warnings: WarningLogger? = null): LocatorCollection {
+        public fun fromJSON(
+            json: JSONObject?,
+            warnings: WarningLogger? = null
+        ): LocatorCollection {
             return LocatorCollection(
                 metadata = Metadata.fromJSON(json?.optJSONObject("metadata"), warnings),
-                links = Link.fromJSONArray(json?.optJSONArray("links"), warnings = warnings),
-                locators = Locator.fromJSONArray(json?.optJSONArray("locators"), warnings),
+                links = Link.fromJSONArray(
+                    json?.optJSONArray("links"),
+                    warnings = warnings
+                ),
+                locators = Locator.fromJSONArray(
+                    json?.optJSONArray("locators"),
+                    warnings
+                )
             )
         }
     }

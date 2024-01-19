@@ -17,26 +17,28 @@ import java.net.HttpURLConnection
 import java.net.URL
 import kotlin.math.round
 import kotlin.time.Duration
-import kotlin.time.ExperimentalTime
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.readium.r2.lcp.LcpError
 import org.readium.r2.lcp.LcpException
 import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
-import org.readium.r2.shared.util.mediatype.sniffMediaType
 import timber.log.Timber
 
-internal typealias URLParameters = Map<String, String?>
+internal typealias URLParameters = Map<String, String>
 
-internal class NetworkException(val status: Int?, cause: Throwable? = null) : Exception("Network failure with status $status", cause)
+internal class NetworkException(val status: Int?, cause: Throwable? = null) : Exception(
+    "Network failure with status $status",
+    cause
+)
 
-@OptIn(ExperimentalTime::class)
 internal class NetworkService {
-    enum class Method(val rawValue: String) {
+    enum class Method(val value: String) {
         GET("GET"), POST("POST"), PUT("PUT");
 
         companion object {
-            operator fun invoke(rawValue: String) = values().firstOrNull { it.rawValue == rawValue }
+            operator fun invoke(value: String) = values().firstOrNull { it.value == value }
         }
     }
 
@@ -50,10 +52,12 @@ internal class NetworkService {
         withContext(Dispatchers.IO) {
             try {
                 @Suppress("NAME_SHADOWING")
-                val url = URL(Uri.parse(url).buildUpon().appendQueryParameters(parameters).build().toString())
+                val url = URL(
+                    Uri.parse(url).buildUpon().appendQueryParameters(parameters).build().toString()
+                )
 
                 val connection = url.openConnection() as HttpURLConnection
-                connection.requestMethod = method.rawValue
+                connection.requestMethod = method.value
                 if (timeout != null) {
                     connection.connectTimeout = timeout.inWholeMilliseconds.toInt()
                 }
@@ -81,22 +85,20 @@ internal class NetworkService {
     private fun Uri.Builder.appendQueryParameters(parameters: URLParameters): Uri.Builder =
         apply {
             for ((key, value) in parameters) {
-                if (value != null) {
-                    appendQueryParameter(key, value)
-                }
+                appendQueryParameter(key, value)
             }
         }
 
     suspend fun download(
-        url: URL,
+        url: Url,
         destination: File,
-        mediaType: String? = null,
+        mediaType: MediaType? = null,
         onProgress: (Double) -> Unit
     ): MediaType? = withContext(Dispatchers.IO) {
         try {
-            val connection = url.openConnection() as HttpURLConnection
+            val connection = URL(url.toString()).openConnection() as HttpURLConnection
             if (connection.responseCode >= 400) {
-                throw LcpException.Network(NetworkException(connection.responseCode))
+                throw LcpException(LcpError.Network(NetworkException(connection.responseCode)))
             }
 
             var readLength = 0L
@@ -132,10 +134,12 @@ internal class NetworkService {
                 }
             }
 
-            connection.sniffMediaType(mediaTypes = listOfNotNull(mediaType))
+            connection.contentType
+                ?.let { MediaType(it) }
+                ?: mediaType
         } catch (e: Exception) {
             Timber.e(e)
-            throw LcpException.Network(e)
+            throw LcpException(LcpError.Network(e))
         }
     }
 }

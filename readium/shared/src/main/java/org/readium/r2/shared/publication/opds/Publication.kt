@@ -14,4 +14,4 @@ import org.readium.r2.shared.publication.Publication
 
 // OPDS extensions for [Publication]
 
-val Publication.images: List<Link> get() = linksWithRole("images")
+public val Publication.images: List<Link> get() = linksWithRole("images")

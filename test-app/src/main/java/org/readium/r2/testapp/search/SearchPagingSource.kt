@@ -8,12 +8,14 @@ package org.readium.r2.testapp.search
 
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
-import org.readium.r2.shared.Search
+import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.LocatorCollection
 import org.readium.r2.shared.publication.services.search.SearchTry
+import org.readium.r2.shared.util.ErrorException
+import org.readium.r2.shared.util.getOrThrow
 
-@OptIn(Search::class)
+@OptIn(ExperimentalReadiumApi::class)
 class SearchPagingSource(
     private val listener: Listener?
 ) : PagingSource<Unit, Locator>() {
@@ -30,7 +32,9 @@ class SearchPagingSource(
         listener ?: return LoadResult.Page(data = emptyList(), prevKey = null, nextKey = null)
 
         return try {
-            val page = listener.next().getOrThrow()
+            val page = listener.next()
+                .mapFailure { ErrorException(it) }
+                .getOrThrow()
             LoadResult.Page(
                 data = page?.locators ?: emptyList(),
                 prevKey = null,

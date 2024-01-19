@@ -10,7 +10,14 @@ import org.junit.Test
 class SmartSeekerTest {
 
     private val playlist: List<Duration> = listOf(
-        10, 20, 15, 800, 10, 230, 20, 10
+        10,
+        20,
+        15,
+        800,
+        10,
+        230,
+        20,
+        10
     ).map { it.seconds }
 
     private val forwardOffset = 50.seconds

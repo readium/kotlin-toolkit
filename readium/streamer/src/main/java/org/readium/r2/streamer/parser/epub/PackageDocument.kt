@@ -6,12 +6,13 @@
 
 package org.readium.r2.streamer.parser.epub
 
-import org.readium.r2.shared.parser.xml.ElementNode
 import org.readium.r2.shared.publication.ReadingProgression
-import org.readium.r2.shared.util.Href
+import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.xml.ElementNode
+import org.readium.r2.streamer.parser.epub.extensions.fromEpubHref
 
 internal data class PackageDocument(
-    val path: String,
+    val path: Url,
     val epubVersion: Double,
     val uniqueIdentifierId: String?,
     val metadata: List<MetadataItem>,
@@ -20,11 +21,11 @@ internal data class PackageDocument(
 ) {
 
     companion object {
-        fun parse(document: ElementNode, filePath: String): PackageDocument? {
+        fun parse(document: ElementNode, filePath: Url): PackageDocument? {
             val packagePrefixes = document.getAttr("prefix")?.let { parsePrefixes(it) }.orEmpty()
             val prefixMap = PACKAGE_RESERVED_PREFIXES + packagePrefixes // prefix element overrides reserved prefixes
             val epubVersion = document.getAttr("version")?.toDoubleOrNull() ?: 1.2
-            val metadata = MetadataParser(epubVersion, prefixMap).parse(document, filePath)
+            val metadata = MetadataParser(prefixMap).parse(document, filePath)
                 ?: return null
             val manifestElement = document.getFirst("manifest", Namespaces.OPF)
                 ?: return null
@@ -45,7 +46,7 @@ internal data class PackageDocument(
 }
 
 internal data class Item(
-    val href: String,
+    val href: Url,
     val id: String?,
     val fallback: String?,
     val mediaOverlay: String?,
@@ -53,11 +54,19 @@ internal data class Item(
     val properties: List<String>
 ) {
     companion object {
-        fun parse(element: ElementNode, filePath: String, prefixMap: Map<String, String>): Item? {
-            val href = element.getAttr("href")?.let { Href(it, baseHref = filePath).string }
+        fun parse(element: ElementNode, filePath: Url, prefixMap: Map<String, String>): Item? {
+            val href = element.getAttr("href")
+                ?.let { Url.fromEpubHref(it) }
+                ?.let { filePath.resolve(it) }
                 ?: return null
             val propAttr = element.getAttr("properties").orEmpty()
-            val properties = parseProperties(propAttr).mapNotNull { resolveProperty(it, prefixMap, DEFAULT_VOCAB.ITEM) }
+            val properties = parseProperties(propAttr).map {
+                resolveProperty(
+                    it,
+                    prefixMap,
+                    DEFAULT_VOCAB.ITEM
+                )
+            }
             return Item(
                 href = href,
                 id = element.id,
@@ -72,16 +81,21 @@ internal data class Item(
 
 internal data class Spine(
     val itemrefs: List<Itemref>,
-    val direction: ReadingProgression,
+    val direction: ReadingProgression?,
     val toc: String? = null
 ) {
     companion object {
         fun parse(element: ElementNode, prefixMap: Map<String, String>, epubVersion: Double): Spine {
-            val itemrefs = element.get("itemref", Namespaces.OPF).mapNotNull { Itemref.parse(it, prefixMap) }
+            val itemrefs = element.get("itemref", Namespaces.OPF).mapNotNull {
+                Itemref.parse(
+                    it,
+                    prefixMap
+                )
+            }
             val pageProgressionDirection = when (element.getAttr("page-progression-direction")) {
                 "rtl" -> ReadingProgression.RTL
                 "ltr" -> ReadingProgression.LTR
-                else -> ReadingProgression.AUTO // null or "default"
+                else -> null // null or "default"
             }
             val ncx = if (epubVersion < 3.0) element.getAttr("toc") else null
             return Spine(itemrefs, pageProgressionDirection, ncx)
@@ -100,7 +114,7 @@ internal data class Itemref(
             val notLinear = element.getAttr("linear") == "no"
             val propAttr = element.getAttr("properties").orEmpty()
             val properties = parseProperties(propAttr)
-                .mapNotNull { resolveProperty(it, prefixMap, DEFAULT_VOCAB.ITEMREF) }
+                .map { resolveProperty(it, prefixMap, DEFAULT_VOCAB.ITEMREF) }
             return Itemref(idref, !notLinear, properties)
         }
     }

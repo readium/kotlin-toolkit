@@ -9,22 +9,8 @@
 
 package org.readium.r2.streamer.server
 
-import org.readium.r2.shared.Injectable
-
-class Resources {
-    val resources: MutableMap<String, Any> = mutableMapOf()
-
-    fun add(key: String, body: String, injectable: Injectable? = null) {
-        injectable?.let {
-            resources[key] = Pair(body, injectable.rawValue)
-        } ?: run {
-            resources[key] = body
-        }
-    }
-
-    fun get(key: String): String? =
-        when (val resource = resources[key]) {
-            is Pair<*, *> -> resource.first as? String
-            else -> resource as? String
-        }
-}
+@Deprecated(
+    "The HTTP server is not needed anymore (see migration guide)",
+    level = DeprecationLevel.ERROR
+)
+public class Resources

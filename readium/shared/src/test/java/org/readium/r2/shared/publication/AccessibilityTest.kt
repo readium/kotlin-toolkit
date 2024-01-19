@@ -67,7 +67,7 @@ class AccessibilityTest {
                 hazards = emptySet(),
                 features = emptySet()
             ),
-            Accessibility.fromJSON(JSONObject("{}")),
+            Accessibility.fromJSON(JSONObject("{}"))
         )
     }
 
@@ -211,7 +211,10 @@ class AccessibilityTest {
                 accessModes = emptySet(),
                 accessModesSufficient = setOf(
                     setOf(Accessibility.PrimaryAccessMode.AUDITORY),
-                    setOf(Accessibility.PrimaryAccessMode.VISUAL, Accessibility.PrimaryAccessMode.TACTILE),
+                    setOf(
+                        Accessibility.PrimaryAccessMode.VISUAL,
+                        Accessibility.PrimaryAccessMode.TACTILE
+                    ),
                     setOf(Accessibility.PrimaryAccessMode.VISUAL)
                 ),
                 features = emptySet(),
@@ -298,21 +301,36 @@ class AccessibilityTest {
             }"""
             ),
             Accessibility(
-                conformsTo = setOf(Accessibility.Profile.EPUB_A11Y_10_WCAG_20_A, Accessibility.Profile("https://profile2")),
+                conformsTo = setOf(
+                    Accessibility.Profile.EPUB_A11Y_10_WCAG_20_A,
+                    Accessibility.Profile("https://profile2")
+                ),
                 certification = Accessibility.Certification(
                     certifiedBy = "company1",
                     credential = "credential1",
                     report = "https://report1"
                 ),
                 summary = "Summary",
-                accessModes = setOf(Accessibility.AccessMode.AUDITORY, Accessibility.AccessMode.CHART_ON_VISUAL),
+                accessModes = setOf(
+                    Accessibility.AccessMode.AUDITORY,
+                    Accessibility.AccessMode.CHART_ON_VISUAL
+                ),
                 accessModesSufficient = setOf(
                     setOf(Accessibility.PrimaryAccessMode.AUDITORY),
-                    setOf(Accessibility.PrimaryAccessMode.VISUAL, Accessibility.PrimaryAccessMode.TACTILE),
+                    setOf(
+                        Accessibility.PrimaryAccessMode.VISUAL,
+                        Accessibility.PrimaryAccessMode.TACTILE
+                    ),
                     setOf(Accessibility.PrimaryAccessMode.VISUAL)
                 ),
-                features = setOf(Accessibility.Feature.READING_ORDER, Accessibility.Feature.ALTERNATIVE_TEXT),
-                hazards = setOf(Accessibility.Hazard.FLASHING, Accessibility.Hazard.MOTION_SIMULATION)
+                features = setOf(
+                    Accessibility.Feature.READING_ORDER,
+                    Accessibility.Feature.ALTERNATIVE_TEXT
+                ),
+                hazards = setOf(
+                    Accessibility.Hazard.FLASHING,
+                    Accessibility.Hazard.MOTION_SIMULATION
+                )
             ).toJSON()
         )
     }

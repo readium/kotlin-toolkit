@@ -8,20 +8,18 @@
 
 package org.readium.r2.testapp.reader
 
-import org.readium.adapters.pdfium.navigator.PdfiumPreferences
-import org.readium.adapters.pdfium.navigator.PdfiumPreferencesEditor
-import org.readium.adapters.pdfium.navigator.PdfiumSettings
-import org.readium.navigator.media2.ExperimentalMedia2
-import org.readium.navigator.media2.MediaNavigator
+import org.readium.adapter.exoplayer.audio.ExoPlayerNavigator
+import org.readium.adapter.exoplayer.audio.ExoPlayerNavigatorFactory
+import org.readium.adapter.exoplayer.audio.ExoPlayerPreferences
+import org.readium.adapter.pdfium.navigator.PdfiumNavigatorFactory
+import org.readium.adapter.pdfium.navigator.PdfiumPreferences
+import org.readium.navigator.media.tts.AndroidTtsNavigatorFactory
+import org.readium.navigator.media.tts.android.AndroidTtsPreferences
 import org.readium.r2.navigator.epub.EpubNavigatorFactory
 import org.readium.r2.navigator.epub.EpubPreferences
-import org.readium.r2.navigator.media3.tts.AndroidTtsNavigatorFactory
-import org.readium.r2.navigator.media3.tts.android.AndroidTtsPreferences
-import org.readium.r2.navigator.pdf.PdfNavigatorFactory
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.*
 import org.readium.r2.testapp.reader.preferences.PreferencesManager
-import org.readium.r2.testapp.reader.tts.TtsServiceFacade
 
 sealed class ReaderInitData {
     abstract val bookId: Long
@@ -31,15 +29,15 @@ sealed class ReaderInitData {
 sealed class VisualReaderInitData(
     override val bookId: Long,
     override val publication: Publication,
-    var initialLocation: Locator?,
-    val ttsInitData: TtsInitData?,
+    val initialLocation: Locator?,
+    val ttsInitData: TtsInitData?
 ) : ReaderInitData()
 
 class ImageReaderInitData(
     bookId: Long,
     publication: Publication,
     initialLocation: Locator?,
-    ttsInitData: TtsInitData?,
+    ttsInitData: TtsInitData?
 ) : VisualReaderInitData(bookId, publication, initialLocation, ttsInitData)
 
 class EpubReaderInitData(
@@ -48,7 +46,7 @@ class EpubReaderInitData(
     initialLocation: Locator?,
     val preferencesManager: PreferencesManager<EpubPreferences>,
     val navigatorFactory: EpubNavigatorFactory,
-    ttsInitData: TtsInitData?,
+    ttsInitData: TtsInitData?
 ) : VisualReaderInitData(bookId, publication, initialLocation, ttsInitData)
 
 class PdfReaderInitData(
@@ -56,32 +54,30 @@ class PdfReaderInitData(
     publication: Publication,
     initialLocation: Locator?,
     val preferencesManager: PreferencesManager<PdfiumPreferences>,
-    val navigatorFactory: PdfNavigatorFactory<PdfiumSettings, PdfiumPreferences, PdfiumPreferencesEditor>,
-    ttsInitData: TtsInitData?,
+    val navigatorFactory: PdfiumNavigatorFactory,
+    ttsInitData: TtsInitData?
 ) : VisualReaderInitData(bookId, publication, initialLocation, ttsInitData)
 
-@OptIn(ExperimentalMedia2::class)
+class TtsInitData(
+    val mediaServiceFacade: MediaServiceFacade,
+    val navigatorFactory: AndroidTtsNavigatorFactory,
+    val preferencesManager: PreferencesManager<AndroidTtsPreferences>
+)
+
 class MediaReaderInitData(
     override val bookId: Long,
     override val publication: Publication,
-    val mediaNavigator: MediaNavigator,
-    val sessionBinder: MediaService.Binder
-    // val preferencesManager: PreferencesManager<ExoPlayerPreferences>,
-    // val navigatorFactory: PlayerNavigatorFactory<ExoPlayerSettings, ExoPlayerPreferences, ExoPlayerPreferencesEditor>
+    val mediaNavigator: ExoPlayerNavigator,
+    val preferencesManager: PreferencesManager<ExoPlayerPreferences>,
+    val navigatorFactory: ExoPlayerNavigatorFactory
 ) : ReaderInitData()
 
 class DummyReaderInitData(
-    override val bookId: Long,
+    override val bookId: Long
 ) : ReaderInitData() {
     override val publication: Publication = Publication(
         Manifest(
-            metadata = Metadata(identifier = "dummy", localizedTitle = LocalizedString(""))
+            metadata = Metadata(identifier = "dummy")
         )
     )
 }
-
-class TtsInitData(
-    val ttsServiceFacade: TtsServiceFacade,
-    val ttsNavigatorFactory: AndroidTtsNavigatorFactory,
-    val preferencesManager: PreferencesManager<AndroidTtsPreferences>,
-)

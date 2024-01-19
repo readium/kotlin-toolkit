@@ -25,9 +25,9 @@ import org.joda.time.DateTime
 import org.joda.time.format.DateTimeFormat
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.testapp.R
+import org.readium.r2.testapp.data.model.Highlight
 import org.readium.r2.testapp.databinding.FragmentListviewBinding
 import org.readium.r2.testapp.databinding.ItemRecycleHighlightBinding
-import org.readium.r2.testapp.domain.model.Highlight
 import org.readium.r2.testapp.reader.ReaderViewModel
 import org.readium.r2.testapp.utils.viewLifecycle
 
@@ -59,7 +59,11 @@ class HighlightsFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        highlightAdapter = HighlightAdapter(publication, onDeleteHighlightRequested = { highlight -> viewModel.deleteHighlight(highlight.id) }, onHighlightSelectedRequested = { highlight -> onHighlightSelected(highlight) })
+        highlightAdapter = HighlightAdapter(
+            publication,
+            onDeleteHighlightRequested = { highlight -> viewModel.deleteHighlight(highlight.id) },
+            onHighlightSelectedRequested = { highlight -> onHighlightSelected(highlight) }
+        )
         binding.listView.apply {
             layoutManager = LinearLayoutManager(requireContext())
             adapter = highlightAdapter
@@ -91,7 +95,9 @@ class HighlightAdapter(
     ): ViewHolder {
         return ViewHolder(
             ItemRecycleHighlightBinding.inflate(
-                LayoutInflater.from(parent.context), parent, false
+                LayoutInflater.from(parent.context),
+                parent,
+                false
             )
         )
     }
@@ -103,19 +109,25 @@ class HighlightAdapter(
         holder.bind(item)
     }
 
-    inner class ViewHolder(val binding: ItemRecycleHighlightBinding) : RecyclerView.ViewHolder(binding.root) {
+    inner class ViewHolder(val binding: ItemRecycleHighlightBinding) : RecyclerView.ViewHolder(
+        binding.root
+    ) {
 
         fun bind(highlight: Highlight) {
             binding.highlightChapter.text = highlight.title
             binding.highlightText.text = highlight.locator.text.highlight
             binding.annotation.text = highlight.annotation
 
-            val formattedDate = DateTime(highlight.creation).toString(DateTimeFormat.shortDateTime())
+            val formattedDate = DateTime(highlight.creation).toString(
+                DateTimeFormat.shortDateTime()
+            )
             binding.highlightTimeStamp.text = formattedDate
 
             binding.highlightOverflow.setOnClickListener {
-
-                val popupMenu = PopupMenu(binding.highlightOverflow.context, binding.highlightOverflow)
+                val popupMenu = PopupMenu(
+                    binding.highlightOverflow.context,
+                    binding.highlightOverflow
+                )
                 popupMenu.menuInflater.inflate(R.menu.menu_bookmark, popupMenu.menu)
                 popupMenu.show()
 

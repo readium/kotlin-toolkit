@@ -15,31 +15,23 @@ import kotlinx.parcelize.Parcelize
 import org.json.JSONArray
 import org.json.JSONObject
 import org.readium.r2.shared.JSONable
-import org.readium.r2.shared.extensions.*
-import org.readium.r2.shared.util.Href
-import org.readium.r2.shared.util.URITemplate
+import org.readium.r2.shared.extensions.optNullableString
+import org.readium.r2.shared.extensions.optPositiveDouble
+import org.readium.r2.shared.extensions.optPositiveInt
+import org.readium.r2.shared.extensions.optStringsFromArrayOrSingle
+import org.readium.r2.shared.extensions.parseObjects
+import org.readium.r2.shared.extensions.putIfNotEmpty
+import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.logging.log
 import org.readium.r2.shared.util.mediatype.MediaType
-
-/**
- * Function used to recursively transform the href of a [Link] when parsing its JSON
- * representation.
- */
-typealias LinkHrefNormalizer = (String) -> String
-
-/**
- * Default href normalizer for [Link], doing nothing.
- */
-val LinkHrefNormalizerIdentity: LinkHrefNormalizer = { it }
 
 /**
  * Link Object for the Readium Web Publication Manifest.
  * https://readium.org/webpub-manifest/schema/link.schema.json
  *
  * @param href URI or URI template of the linked resource.
- * @param type MIME type of the linked resource.
- * @param templated Indicates that a URI template is used in href.
+ * @param mediaType Media type of the linked resource.
  * @param title Title of the linked resource.
  * @param rels Relation between the linked resource and its containing collection.
  * @param properties Properties associated to the linked resource.
@@ -53,10 +45,9 @@ val LinkHrefNormalizerIdentity: LinkHrefNormalizer = { it }
  *     collection role.
  */
 @Parcelize
-data class Link(
-    val href: String,
-    val type: String? = null,
-    val templated: Boolean = false,
+public data class Link(
+    val href: Href,
+    val mediaType: MediaType? = null,
     val title: String? = null,
     val rels: Set<String> = setOf(),
     val properties: Properties = Properties(),
@@ -69,50 +60,80 @@ data class Link(
     val children: List<Link> = listOf()
 ) : JSONable, Parcelable {
 
-    /** Media type of the linked resource. */
-    val mediaType: MediaType get() =
-        type?.let { MediaType.parse(it) } ?: MediaType.BINARY
+    /**
+     * Convenience constructor for a [Link] with a [Url] as [href].
+     */
+    public constructor(
+        href: Url,
+        mediaType: MediaType? = null,
+        title: String? = null,
+        rels: Set<String> = setOf(),
+        properties: Properties = Properties(),
+        alternates: List<Link> = listOf(),
+        children: List<Link> = listOf()
+    ) : this(
+        href = Href(href),
+        mediaType = mediaType,
+        title = title,
+        rels = rels,
+        properties = properties,
+        alternates = alternates,
+        children = children
+    )
+
+    /**
+     * Returns the URL represented by this link's HREF, resolved to the given [base] URL.
+     *
+     * If the HREF is a template, the [parameters] are used to expand it according to RFC 6570.
+     */
+    public fun url(
+        base: Url? = null,
+        parameters: Map<String, String> = emptyMap()
+    ): Url = href.resolve(base, parameters)
 
     /**
      * List of URI template parameter keys, if the [Link] is templated.
      */
     @IgnoredOnParcel
-    val templateParameters: List<String> by lazy {
-        if (!templated)
-            emptyList()
-        else
-            URITemplate(href).parameters
-    }
+    @Deprecated("Open a GitHub issue if you were using this", level = DeprecationLevel.ERROR)
+    val templateParameters: List<String> get() =
+        throw NotImplementedError()
 
     /**
      * Expands the HREF by replacing URI template variables by the given parameters.
      *
      * See RFC 6570 on URI template.
      */
-    fun expandTemplate(parameters: Map<String, String>): Link =
-        copy(href = URITemplate(href).expand(parameters), templated = false)
+    @Deprecated(
+        "Use `url(parameters)` instead",
+        ReplaceWith("this.url(parameters = parameters)"),
+        level = DeprecationLevel.ERROR
+    )
+    @Suppress("UNUSED_PARAMETER")
+    public fun expandTemplate(parameters: Map<String, String>): Link? =
+        throw NotImplementedError()
 
     /**
      * Computes an absolute URL to the link, relative to the given [baseUrl].
      *
      * If the link's [href] is already absolute, the [baseUrl] is ignored.
      */
-    fun toUrl(baseUrl: String?): String? {
-        val href = href.removePrefix("/")
-        if (href.isBlank()) {
-            return null
-        }
-
-        return Href(href, baseHref = baseUrl ?: "/").percentEncodedString
-    }
+    @Deprecated(
+        "Use `url(baseUrl)` instead",
+        ReplaceWith("this.url(baseUrl)"),
+        level = DeprecationLevel.ERROR
+    )
+    @Suppress("UNUSED_PARAMETER")
+    public fun toUrl(baseUrl: Url?): String? =
+        throw NotImplementedError()
 
     /**
      * Serializes a [Link] to its RWPM JSON representation.
      */
     override fun toJSON(): JSONObject = JSONObject().apply {
-        put("href", href)
-        put("type", type)
-        put("templated", templated)
+        put("href", href.toString())
+        put("type", mediaType?.toString())
+        put("templated", href.isTemplated)
         put("title", title)
         putIfNotEmpty("rel", rels)
         putIfNotEmpty("properties", properties)
@@ -128,32 +149,26 @@ data class Link(
     /**
      * Makes a copy of this [Link] after merging in the given additional other [properties].
      */
-    fun addProperties(properties: Map<String, Any>): Link =
+    public fun addProperties(properties: Map<String, Any>): Link =
         copy(properties = this.properties.add(properties))
 
-    companion object {
+    public companion object {
 
         /**
          * Creates an [Link] from its RWPM JSON representation.
-         * It's [href] and its children's recursively will be normalized using the provided
-         * [normalizeHref] closure.
+         *
          * If the link can't be parsed, a warning will be logged with [warnings].
          */
-        fun fromJSON(
+        public fun fromJSON(
             json: JSONObject?,
-            normalizeHref: LinkHrefNormalizer = LinkHrefNormalizerIdentity,
             warnings: WarningLogger? = null
         ): Link? {
-            val href = json?.optNullableString("href")
-            if (href == null) {
-                warnings?.log(Link::class.java, "[href] is required", json)
-                return null
-            }
+            json ?: return null
 
             return Link(
-                href = normalizeHref(href),
-                type = json.optNullableString("type"),
-                templated = json.optBoolean("templated", false),
+                href = parseHref(json, warnings) ?: return null,
+                mediaType = json.optNullableString("type")
+                    ?.let { MediaType(it) },
                 title = json.optNullableString("title"),
                 rels = json.optStringsFromArrayOrSingle("rel").toSet(),
                 properties = Properties.fromJSON(json.optJSONObject("properties")),
@@ -162,31 +177,79 @@ data class Link(
                 bitrate = json.optPositiveDouble("bitrate"),
                 duration = json.optPositiveDouble("duration"),
                 languages = json.optStringsFromArrayOrSingle("language"),
-                alternates = fromJSONArray(json.optJSONArray("alternate"), normalizeHref),
-                children = fromJSONArray(json.optJSONArray("children"), normalizeHref)
+                alternates = fromJSONArray(
+                    json.optJSONArray("alternate")
+                ),
+                children = fromJSONArray(
+                    json.optJSONArray("children")
+                )
             )
+        }
+
+        private fun parseHref(
+            json: JSONObject,
+            warnings: WarningLogger? = null
+        ): Href? {
+            val hrefString = json.optNullableString("href")
+            if (hrefString == null) {
+                warnings?.log(Link::class.java, "[href] is required", json)
+                return null
+            }
+
+            val templated = json.optBoolean("templated", false)
+            val href = if (templated) {
+                Href(hrefString, templated = true)
+            } else {
+                // We support existing publications with incorrect HREFs (not valid percent-encoded
+                // URIs). We try to parse them first as valid, but fall back on a percent-decoded
+                // path if it fails.
+                val url = Url(hrefString) ?: run {
+                    warnings?.log(
+                        Link::class.java,
+                        "[href] is not a valid percent-encoded URL",
+                        json
+                    )
+                    Url.fromDecodedPath(hrefString)
+                }
+                url?.let { Href(it) }
+            }
+
+            if (href == null) {
+                warnings?.log(Link::class.java, "[href] is not a valid URL or URL template", json)
+            }
+
+            return href
         }
 
         /**
          * Creates a list of [Link] from its RWPM JSON representation.
-         * It's [href] and its children's recursively will be normalized using the provided
-         * [normalizeHref] closure.
+         *
          * If a link can't be parsed, a warning will be logged with [warnings].
          */
-        fun fromJSONArray(
+        public fun fromJSONArray(
             json: JSONArray?,
-            normalizeHref: LinkHrefNormalizer = LinkHrefNormalizerIdentity,
             warnings: WarningLogger? = null
         ): List<Link> {
-            return json.parseObjects { fromJSON(it as? JSONObject, normalizeHref, warnings) }
+            return json.parseObjects {
+                fromJSON(
+                    it as? JSONObject,
+                    warnings
+                )
+            }
         }
     }
 
-    @Deprecated("Use [type] instead", ReplaceWith("type"))
-    val typeLink: String?
-        get() = type
+    @Deprecated(
+        "Use [mediaType.toString()] instead",
+        ReplaceWith("mediaType.toString()"),
+        level = DeprecationLevel.ERROR
+    )
+    val type: String? get() = throw NotImplementedError()
 
-    @Deprecated("Use [rels] instead.", ReplaceWith("rels"))
+    @Deprecated("Use [type] instead", ReplaceWith("type"), level = DeprecationLevel.ERROR)
+    val typeLink: String? get() = throw NotImplementedError()
+
+    @Deprecated("Use [rels] instead.", ReplaceWith("rels"), level = DeprecationLevel.ERROR)
     val rel: List<String>
         get() = rels.toList()
 }
@@ -194,84 +257,97 @@ data class Link(
 /**
  * Returns the first [Link] with the given [href], or null if not found.
  */
-fun List<Link>.indexOfFirstWithHref(href: String): Int? =
-    indexOfFirst { it.href == href }
+public fun List<Link>.indexOfFirstWithHref(href: Url): Int? =
+    indexOfFirst { it.url() == href }
         .takeUnless { it == -1 }
 
 /**
  * Finds the first link matching the given HREF.
  */
-fun List<Link>.firstWithHref(href: String): Link? = firstOrNull { it.href == href }
+public fun List<Link>.firstWithHref(href: Url): Link? = firstOrNull { it.url() == href }
 
 /**
  * Finds the first link with the given relation.
  */
-fun List<Link>.firstWithRel(rel: String): Link? = firstOrNull { it.rels.contains(rel) }
+public fun List<Link>.firstWithRel(rel: String): Link? = firstOrNull { it.rels.contains(rel) }
 
 /**
  * Finds all the links with the given relation.
  */
-fun List<Link>.filterByRel(rel: String): List<Link> = filter { it.rels.contains(rel) }
+public fun List<Link>.filterByRel(rel: String): List<Link> = filter { it.rels.contains(rel) }
 
 /**
  * Finds the first link matching the given media type.
  */
-fun List<Link>.firstWithMediaType(mediaType: MediaType): Link? = firstOrNull {
-    it.mediaType.matches(mediaType)
+public fun List<Link>.firstWithMediaType(mediaType: MediaType): Link? = firstOrNull {
+    mediaType.matches(it.mediaType)
 }
 
 /**
  * Finds all the links matching the given media type.
  */
-fun List<Link>.filterByMediaType(mediaType: MediaType): List<Link> = filter {
-    it.mediaType.matches(mediaType)
+public fun List<Link>.filterByMediaType(mediaType: MediaType): List<Link> = filter {
+    mediaType.matches(it.mediaType)
 }
 
 /**
  * Finds all the links matching any of the given media types.
  */
-fun List<Link>.filterByMediaTypes(mediaTypes: List<MediaType>): List<Link> = filter {
-    mediaTypes.any { mediaType -> mediaType.matches(it.type) }
+public fun List<Link>.filterByMediaTypes(mediaTypes: List<MediaType>): List<Link> = filter {
+    mediaTypes.any { mediaType -> mediaType.matches(it.mediaType) }
 }
 
 /**
  * Returns whether all the resources in the collection are bitmaps.
  */
-val List<Link>.allAreBitmap: Boolean get() = isNotEmpty() && all {
-    it.mediaType.isBitmap
+public val List<Link>.allAreBitmap: Boolean get() = isNotEmpty() && all {
+    it.mediaType?.isBitmap ?: false
 }
 
 /**
  * Returns whether all the resources in the collection are audio clips.
  */
-val List<Link>.allAreAudio: Boolean get() = isNotEmpty() && all {
-    it.mediaType.isAudio
+public val List<Link>.allAreAudio: Boolean get() = isNotEmpty() && all {
+    it.mediaType?.isAudio ?: false
 }
 
 /**
  * Returns whether all the resources in the collection are video clips.
  */
-val List<Link>.allAreVideo: Boolean get() = isNotEmpty() && all {
-    it.mediaType.isVideo
+public val List<Link>.allAreVideo: Boolean get() = isNotEmpty() && all {
+    it.mediaType?.isVideo ?: false
 }
 
 /**
  * Returns whether all the resources in the collection are HTML documents.
  */
-val List<Link>.allAreHtml: Boolean get() = isNotEmpty() && all {
-    it.mediaType.isHtml
+public val List<Link>.allAreHtml: Boolean get() = isNotEmpty() && all {
+    it.mediaType?.isHtml ?: false
 }
 
 /**
  * Returns whether all the resources in the collection are matching the given media type.
  */
-fun List<Link>.allMatchMediaType(mediaType: MediaType): Boolean = isNotEmpty() && all {
+public fun List<Link>.allMatchMediaType(mediaType: MediaType): Boolean = isNotEmpty() && all {
     mediaType.matches(it.mediaType)
 }
 
 /**
  * Returns whether all the resources in the collection are matching any of the given media types.
  */
-fun List<Link>.allMatchMediaTypes(mediaTypes: List<MediaType>): Boolean = isNotEmpty() && all {
+public fun List<Link>.allMatchMediaTypes(mediaTypes: List<MediaType>): Boolean = isNotEmpty() && all {
     mediaTypes.any { mediaType -> mediaType.matches(it.mediaType) }
+}
+
+/**
+ * Returns a list of `Link` after flattening the `children` and `alternates` links of the receiver.
+ */
+public fun List<Link>.flatten(): List<Link> {
+    fun Link.flatten(): List<Link> {
+        val children = children.flatten()
+        val alternates = alternates.flatten()
+        return listOf(this) + children.flatten() + alternates.flatten()
+    }
+
+    return flatMap { it.flatten() }
 }

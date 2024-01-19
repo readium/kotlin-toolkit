@@ -14,10 +14,16 @@ import android.view.inputmethod.InputMethodManager
 import android.widget.ImageView
 import androidx.annotation.ColorInt
 import androidx.appcompat.widget.SearchView
+import androidx.core.os.BundleCompat
+import androidx.core.view.MenuHost
+import androidx.core.view.MenuProvider
 import androidx.fragment.app.FragmentResultListener
 import androidx.fragment.app.commit
 import androidx.fragment.app.commitNow
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
+import kotlinx.coroutines.launch
 import org.readium.r2.navigator.DecorableNavigator
 import org.readium.r2.navigator.Decoration
 import org.readium.r2.navigator.ExperimentalDecorator
@@ -35,7 +41,7 @@ import org.readium.r2.testapp.reader.preferences.UserPreferencesViewModel
 import org.readium.r2.testapp.search.SearchFragment
 
 @OptIn(ExperimentalReadiumApi::class, ExperimentalDecorator::class)
-class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listener {
+class EpubReaderFragment : VisualReaderFragment() {
 
     override lateinit var navigator: EpubNavigatorFragment
 
@@ -62,8 +68,8 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
         childFragmentManager.fragmentFactory =
             readerData.navigatorFactory.createFragmentFactory(
                 initialLocator = readerData.initialLocation,
-                listener = this,
                 initialPreferences = readerData.preferencesManager.preferences.value,
+                listener = model,
                 configuration = EpubNavigatorFragment.Configuration {
                     // To customize the text selection menu.
                     selectionActionModeCallback = customSelectionActionModeCallback
@@ -104,13 +110,15 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
             this,
             FragmentResultListener { _, result ->
                 menuSearch.collapseActionView()
-                result.getParcelable<Locator>(SearchFragment::class.java.name)?.let {
+                BundleCompat.getParcelable(
+                    result,
+                    SearchFragment::class.java.name,
+                    Locator::class.java
+                )?.let {
                     navigator.go(it)
                 }
             }
         )
-
-        setHasOptionsMenu(true)
 
         super.onCreate(savedInstanceState)
     }
@@ -121,14 +129,18 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
         savedInstanceState: Bundle?
     ): View {
         val view = super.onCreateView(inflater, container, savedInstanceState)
-        val navigatorFragmentTag = getString(R.string.epub_navigator_tag)
 
         if (savedInstanceState == null) {
             childFragmentManager.commitNow {
-                add(R.id.fragment_reader_container, EpubNavigatorFragment::class.java, Bundle(), navigatorFragmentTag)
+                add(
+                    R.id.fragment_reader_container,
+                    EpubNavigatorFragment::class.java,
+                    Bundle(),
+                    NAVIGATOR_FRAGMENT_TAG
+                )
             }
         }
-        navigator = childFragmentManager.findFragmentByTag(navigatorFragmentTag) as EpubNavigatorFragment
+        navigator = childFragmentManager.findFragmentByTag(NAVIGATOR_FRAGMENT_TAG) as EpubNavigatorFragment
 
         return view
     }
@@ -140,10 +152,42 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
         (model.settings as UserPreferencesViewModel<EpubSettings, EpubPreferences>)
             .bind(navigator, viewLifecycleOwner)
 
-        viewLifecycleOwner.lifecycleScope.launchWhenStarted {
-            // Display page number labels if the book contains a `page-list` navigation document.
-            (navigator as? DecorableNavigator)?.applyPageNumberDecorations()
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                // Display page number labels if the book contains a `page-list` navigation document.
+                (navigator as? DecorableNavigator)?.applyPageNumberDecorations()
+            }
         }
+
+        val menuHost: MenuHost = requireActivity()
+
+        menuHost.addMenuProvider(
+            object : MenuProvider {
+                override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+                    menuSearch = menu.findItem(R.id.search).apply {
+                        isVisible = true
+                        menuSearchView = actionView as SearchView
+                    }
+
+                    connectSearch()
+                    if (!isSearchViewIconified) menuSearch.expandActionView()
+                }
+
+                override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+                    when (menuItem.itemId) {
+                        R.id.search -> {
+                            return true
+                        }
+                        android.R.id.home -> {
+                            menuSearch.collapseActionView()
+                            return true
+                        }
+                    }
+                    return false
+                }
+            },
+            viewLifecycleOwner
+        )
     }
 
     /**
@@ -161,23 +205,11 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
                 Decoration(
                     id = "page-$index",
                     locator = locator,
-                    style = DecorationStylePageNumber(label = label),
+                    style = DecorationStylePageNumber(label = label)
                 )
             }
 
         applyDecorations(decorations, "pageNumbers")
-    }
-
-    override fun onCreateOptionsMenu(menu: Menu, menuInflater: MenuInflater) {
-        super.onCreateOptionsMenu(menu, menuInflater)
-
-        menuSearch = menu.findItem(R.id.search).apply {
-            isVisible = true
-            menuSearchView = actionView as SearchView
-        }
-
-        connectSearch()
-        if (!isSearchViewIconified) menuSearch.expandActionView()
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -220,33 +252,27 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
             }
         })
 
-        menuSearchView.findViewById<ImageView>(R.id.search_close_btn).setOnClickListener {
+        menuSearchView.findViewById<ImageView>(androidx.appcompat.R.id.search_close_btn).setOnClickListener {
             menuSearchView.requestFocus()
             model.cancelSearch()
             menuSearchView.setQuery("", false)
 
             (activity?.getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager)?.showSoftInput(
-                this.view, InputMethodManager.SHOW_FORCED
+                this.view,
+                0
             )
         }
     }
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean =
-        when (item.itemId) {
-            R.id.search -> {
-                super.onOptionsItemSelected(item)
-            }
-            android.R.id.home -> {
-                menuSearch.collapseActionView()
-                true
-            }
-            else -> super.onOptionsItemSelected(item)
-        }
-
     private fun showSearchFragment() {
         childFragmentManager.commit {
             childFragmentManager.findFragmentByTag(SEARCH_FRAGMENT_TAG)?.let { remove(it) }
-            add(R.id.fragment_reader_container, SearchFragment::class.java, Bundle(), SEARCH_FRAGMENT_TAG)
+            add(
+                R.id.fragment_reader_container,
+                SearchFragment::class.java,
+                Bundle(),
+                SEARCH_FRAGMENT_TAG
+            )
             hide(navigator)
             addToBackStack(SEARCH_FRAGMENT_TAG)
         }
@@ -254,6 +280,7 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
 
     companion object {
         private const val SEARCH_FRAGMENT_TAG = "search"
+        private const val NAVIGATOR_FRAGMENT_TAG = "navigator"
         private const val IS_SEARCH_VIEW_ICONIFIED = "isSearchViewIconified"
     }
 }
@@ -269,7 +296,7 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
 @OptIn(ExperimentalDecorator::class)
 private fun annotationMarkTemplate(@ColorInt defaultTint: Int = Color.YELLOW): HtmlDecorationTemplate {
     val className = "testapp-annotation-mark"
-    val iconUrl = EpubNavigatorFragment.assetUrl("annotation-icon.svg")
+    val iconUrl = checkNotNull(EpubNavigatorFragment.assetUrl("annotation-icon.svg"))
     return HtmlDecorationTemplate(
         layout = HtmlDecorationTemplate.Layout.BOUNDS,
         width = HtmlDecorationTemplate.Width.PAGE,

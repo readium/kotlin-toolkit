@@ -29,7 +29,7 @@ import org.readium.r2.shared.util.logging.log
  * Can be used as extension point in the Readium Web Publication Manifest.
  */
 @Parcelize
-data class PublicationCollection(
+public data class PublicationCollection(
     val metadata: @WriteWith<JSONParceler> Map<String, Any> = emptyMap(),
     val links: List<Link> = emptyList(),
     val subcollections: Map<String, List<PublicationCollection>> = emptyMap()
@@ -38,24 +38,21 @@ data class PublicationCollection(
     /**
      * Serializes a [PublicationCollection] to its RWPM JSON representation.
      */
-    override fun toJSON() = JSONObject().apply {
+    override fun toJSON(): JSONObject = JSONObject().apply {
         put("metadata", metadata)
         putIfNotEmpty("links", links)
         subcollections.appendToJSONObject(this)
     }
 
-    companion object {
+    public companion object {
 
         /**
          * Parses a [PublicationCollection] from its RWPM JSON representation.
          *
          * If the collection can't be parsed, a warning will be logged with [warnings].
-         * The [links]' href and their children's will be normalized recursively using the
-         * provided [normalizeHref] closure.
          */
-        fun fromJSON(
+        public fun fromJSON(
             json: Any?,
-            normalizeHref: LinkHrefNormalizer = LinkHrefNormalizerIdentity,
             warnings: WarningLogger? = null
         ): PublicationCollection? {
             json ?: return null
@@ -67,14 +64,20 @@ data class PublicationCollection(
             when (json) {
                 // Parses a sub-collection object.
                 is JSONObject -> {
-                    links = Link.fromJSONArray(json.remove("links") as? JSONArray, normalizeHref, warnings)
+                    links = Link.fromJSONArray(
+                        json.remove("links") as? JSONArray,
+                        warnings
+                    )
                     metadata = (json.remove("metadata") as? JSONObject)?.toMap()
-                    subcollections = collectionsFromJSON(json, normalizeHref, warnings)
+                    subcollections = collectionsFromJSON(
+                        json,
+                        warnings
+                    )
                 }
 
                 // Parses an array of links.
                 is JSONArray -> {
-                    links = Link.fromJSONArray(json, normalizeHref, warnings)
+                    links = Link.fromJSONArray(json, warnings)
                 }
 
                 else -> {
@@ -84,7 +87,10 @@ data class PublicationCollection(
             }
 
             if (links.isEmpty()) {
-                warnings?.log(PublicationCollection::class.java, "core collection's [links] must not be empty")
+                warnings?.log(
+                    PublicationCollection::class.java,
+                    "core collection's [links] must not be empty"
+                )
                 return null
             }
 
@@ -99,12 +105,9 @@ data class PublicationCollection(
          * Parses a map of [PublicationCollection] indexed by their roles from its RWPM JSON representation.
          *
          * If the collection can't be parsed, a warning will be logged with [warnings].
-         * The [links]' href and their children's will be normalized recursively using the
-         * provided [normalizeHref] closure.
          */
-        fun collectionsFromJSON(
+        public fun collectionsFromJSON(
             json: JSONObject,
-            normalizeHref: LinkHrefNormalizer = LinkHrefNormalizerIdentity,
             warnings: WarningLogger? = null
         ): Map<String, List<PublicationCollection>> {
             val collections = mutableMapOf<String, MutableList<PublicationCollection>>()
@@ -112,14 +115,19 @@ data class PublicationCollection(
                 val subJSON = json.get(role)
 
                 // Parses a list of links or a single collection object.
-                val collection = fromJSON(subJSON, normalizeHref, warnings)
+                val collection = fromJSON(subJSON, warnings)
                 if (collection != null) {
                     collections.getOrPut(role) { mutableListOf() }.add(collection)
 
                     // Parses a list of collection objects.
                 } else if (subJSON is JSONArray) {
                     collections.getOrPut(role) { mutableListOf() }.addAll(
-                        subJSON.mapNotNull { fromJSON(it, normalizeHref, warnings) }
+                        subJSON.mapNotNull {
+                            fromJSON(
+                                it,
+                                warnings
+                            )
+                        }
                     )
                 }
             }
@@ -149,10 +157,18 @@ internal fun Map<String, List<PublicationCollection>>.appendToJSONObject(jsonObj
         }
     }
 
-@Deprecated("Use [subcollections[role].firstOrNull()] instead", ReplaceWith("subcollections[role].firstOrNull()"))
-fun Map<String, List<PublicationCollection>>.firstWithRole(role: String): PublicationCollection? =
+@Deprecated(
+    "Use [subcollections[role].firstOrNull()] instead",
+    ReplaceWith("subcollections[role].firstOrNull()"),
+    level = DeprecationLevel.ERROR
+)
+public fun Map<String, List<PublicationCollection>>.firstWithRole(role: String): PublicationCollection? =
     get(role)?.firstOrNull()
 
-@Deprecated("Use [subcollections[role]] instead", ReplaceWith("subcollections[role]"))
-fun Map<String, List<PublicationCollection>>.findAllWithRole(role: String): List<PublicationCollection> =
+@Deprecated(
+    "Use [subcollections[role]] instead",
+    ReplaceWith("subcollections[role]"),
+    level = DeprecationLevel.ERROR
+)
+public fun Map<String, List<PublicationCollection>>.findAllWithRole(role: String): List<PublicationCollection> =
     get(role) ?: emptyList()

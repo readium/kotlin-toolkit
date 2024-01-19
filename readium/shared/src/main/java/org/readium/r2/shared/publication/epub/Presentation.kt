@@ -16,7 +16,7 @@ import org.readium.r2.shared.publication.presentation.Presentation
  * Get the layout of the given resource in this publication.
  * Falls back on REFLOWABLE.
  */
-fun Presentation.layoutOf(link: Link): EpubLayout {
+public fun Presentation.layoutOf(link: Link): EpubLayout {
     return link.properties.layout
         ?: layout
         ?: EpubLayout.REFLOWABLE

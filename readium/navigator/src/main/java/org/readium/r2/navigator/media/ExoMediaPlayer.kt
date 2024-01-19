@@ -4,6 +4,9 @@
  * available in the top-level LICENSE file of the project.
  */
 
+// Everything in this file will be deprecated
+@file:Suppress("DEPRECATION")
+
 package org.readium.r2.navigator.media
 
 import android.app.Notification
@@ -18,35 +21,46 @@ import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaControllerCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
-import com.google.android.exoplayer2.*
+import com.google.android.exoplayer2.C
+import com.google.android.exoplayer2.ExoPlayer
+import com.google.android.exoplayer2.MediaItem
+import com.google.android.exoplayer2.PlaybackException
+import com.google.android.exoplayer2.PlaybackParameters
+import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.audio.AudioAttributes
 import com.google.android.exoplayer2.ext.mediasession.MediaSessionConnector
 import com.google.android.exoplayer2.ext.mediasession.TimelineQueueNavigator
 import com.google.android.exoplayer2.source.DefaultMediaSourceFactory
 import com.google.android.exoplayer2.ui.PlayerNotificationManager
 import com.google.android.exoplayer2.upstream.DataSource
-import com.google.android.exoplayer2.upstream.HttpDataSource
 import com.google.android.exoplayer2.upstream.cache.Cache
 import com.google.android.exoplayer2.upstream.cache.CacheDataSource
-import java.net.UnknownHostException
 import kotlin.time.Duration.Companion.seconds
-import kotlin.time.ExperimentalTime
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.async
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
 import org.readium.r2.navigator.ExperimentalAudiobook
 import org.readium.r2.navigator.R
-import org.readium.r2.navigator.audio.PublicationDataSource
 import org.readium.r2.navigator.extensions.timeWithDuration
-import org.readium.r2.shared.extensions.asInstance
-import org.readium.r2.shared.fetcher.Resource
-import org.readium.r2.shared.publication.*
+import org.readium.r2.shared.extensions.findInstance
+import org.readium.r2.shared.publication.Link
+import org.readium.r2.shared.publication.Locator
+import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.publication.PublicationId
+import org.readium.r2.shared.publication.indexOfFirstWithHref
+import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.data.ReadException
+import org.readium.r2.shared.util.toUri
 import timber.log.Timber
 
 /**
  * An implementation of [MediaPlayer] using ExoPlayer.
  */
 @ExperimentalAudiobook
-@OptIn(ExperimentalTime::class)
-class ExoMediaPlayer(
+public class ExoMediaPlayer(
     context: Context,
     mediaSession: MediaSessionCompat,
     media: PendingMedia,
@@ -105,17 +119,21 @@ class ExoMediaPlayer(
             MEDIA_NOTIFICATION_ID,
             MEDIA_CHANNEL_ID
         )
-            .setChannelNameResourceId(R.string.r2_media_notification_channel_name)
-            .setChannelDescriptionResourceId(R.string.r2_media_notification_channel_description)
+            .setChannelNameResourceId(R.string.readium_media_notification_channel_name)
+            .setChannelDescriptionResourceId(
+                R.string.readium_media_notification_channel_description
+            )
             .setMediaDescriptionAdapter(DescriptionAdapter(mediaSession.controller, media))
             .setNotificationListener(NotificationListener())
-            .setRewindActionIconResourceId(R.drawable.r2_media_notification_rewind)
-            .setFastForwardActionIconResourceId(R.drawable.r2_media_notification_fastforward)
+            .setRewindActionIconResourceId(R.drawable.readium_media_notification_rewind)
+            .setFastForwardActionIconResourceId(R.drawable.readium_media_notification_fastforward)
             .build()
             .apply {
                 setMediaSessionToken(mediaSession.sessionToken)
                 setPlayer(player)
-                setSmallIcon(com.google.android.exoplayer2.ui.R.drawable.exo_notification_small_icon)
+                setSmallIcon(
+                    com.google.android.exoplayer2.ui.R.drawable.exo_notification_small_icon
+                )
                 setUsePlayPauseActions(true)
                 setUseStopAction(false)
                 setUseChronometer(false)
@@ -155,7 +173,7 @@ class ExoMediaPlayer(
     private fun prepareTracklist() {
         player.setMediaItems(
             publication.readingOrder.map { link ->
-                MediaItem.fromUri(link.href)
+                MediaItem.fromUri(link.url().toUri())
             }
         )
         player.prepare()
@@ -179,16 +197,14 @@ class ExoMediaPlayer(
         }
 
         override fun onPlayerError(error: PlaybackException) {
-            var resourceException: Resource.Exception? = error.asInstance<Resource.Exception>()
-            if (resourceException == null && (error.cause as? HttpDataSource.HttpDataSourceException)?.cause is UnknownHostException) {
-                resourceException = Resource.Exception.Offline
-            }
+            val readError = error.findInstance<ReadException>()?.error
 
-            if (resourceException != null) {
+            if (readError != null) {
                 player.currentMediaItem?.mediaId
+                    ?.let { Url(it) }
                     ?.let { href -> publication.linkWithHref(href) }
                     ?.let { link ->
-                        listener?.onResourceLoadFailed(link, resourceException)
+                        listener?.onResourceLoadFailed(link, readError)
                     }
             } else {
                 Timber.e(error)
@@ -223,7 +239,9 @@ class ExoMediaPlayer(
         override fun onPrepareFromUri(uri: Uri, playWhenReady: Boolean, extras: Bundle?) {}
     }
 
-    private inner class QueueNavigator(mediaSession: MediaSessionCompat) : TimelineQueueNavigator(mediaSession) {
+    private inner class QueueNavigator(mediaSession: MediaSessionCompat) : TimelineQueueNavigator(
+        mediaSession
+    ) {
 
         override fun getMediaDescription(player: Player, windowIndex: Int): MediaDescriptionCompat =
             createMediaMetadata(publication.readingOrder[windowIndex]).description
@@ -257,10 +275,10 @@ class ExoMediaPlayer(
             controller.sessionActivity
 
         override fun getCurrentContentText(player: Player): CharSequence =
-            publication.metadata.title
+            publication.metadata.title ?: ""
 
         override fun getCurrentContentTitle(player: Player): CharSequence =
-            controller.metadata.description.title ?: publication.metadata.title
+            controller.metadata.description.title ?: publication.metadata.title ?: ""
 
         override fun getCurrentLargeIcon(
             player: Player,

@@ -7,15 +7,17 @@
 package org.readium.r2.streamer.parser.epub
 
 import org.readium.r2.shared.extensions.toMap
+import org.readium.r2.shared.publication.Href
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Properties
 import org.readium.r2.shared.publication.encryption.Encryption
+import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.mediatype.MediaType
 
 internal class ResourceAdapter(
-    private val epubVersion: Double,
     private val spine: Spine,
     private val manifest: List<Item>,
-    private val encryptionData: Map<String, Encryption>,
+    private val encryptionData: Map<Url, Encryption>,
     private val coverId: String?,
     private val durationById: Map<String, Double?>
 ) {
@@ -34,21 +36,27 @@ internal class ResourceAdapter(
 
     fun adapt(): Links {
         val readingOrderIds = spine.itemrefs.filter { it.linear }.map { it.idref }
-        val readingOrder = readingOrderIds.mapNotNull { id -> itemById[id]?.let { item -> computeLink(item) } }
+        val readingOrder = readingOrderIds.mapNotNull { id ->
+            itemById[id]?.let { item ->
+                computeLink(
+                    item
+                )
+            }
+        }
         val readingOrderAllIds = computeIdsWithFallbacks(readingOrderIds)
         val resourceItems = manifest.filterNot { it.id in readingOrderAllIds }
         val resources = resourceItems.map { computeLink(it) }
         return Links(readingOrder, resources)
     }
 
-    /** Recursively find the ids of the fallback items in [items] */
+    /** Recursively find the ids contained in fallback chains of items with [ids]. */
     private fun computeIdsWithFallbacks(ids: List<String>): Set<String> {
         val fallbackIds: MutableSet<String> = mutableSetOf()
         ids.forEach { fallbackIds.addAll(computeFallbackChain(it)) }
         return fallbackIds
     }
 
-    /** Compute the ids contained in the fallback chain of [item] */
+    /** Compute the ids contained in the fallback chain of item with [id]. */
     private fun computeFallbackChain(id: String): Set<String> {
         // The termination has already been checked while computing links
         val ids: MutableSet<String> = mutableSetOf()
@@ -63,8 +71,8 @@ internal class ResourceAdapter(
         val (rels, properties) = computePropertiesAndRels(item, itemrefByIdref[item.id])
 
         return Link(
-            href = item.href,
-            type = item.mediaType,
+            href = Href(item.href),
+            mediaType = item.mediaType?.let { MediaType(it) },
             duration = durationById[item.id],
             rels = rels,
             properties = properties,
@@ -98,13 +106,15 @@ internal class ResourceAdapter(
 
     /** Compute alternate links for [item], checking for an infinite recursion */
     private fun computeAlternates(item: Item, fallbackChain: Set<String>): List<Link> {
-
         val fallback = item.fallback?.let { id ->
-            if (id in fallbackChain) null else
+            if (id in fallbackChain) {
+                null
+            } else {
                 itemById[id]?.let {
                     val updatedChain = if (item.id != null) fallbackChain + item.id else fallbackChain
                     computeLink(it, updatedChain)
                 }
+            }
         }
         val mediaOverlays = item.mediaOverlay?.let { id ->
             itemById[id]?.let {

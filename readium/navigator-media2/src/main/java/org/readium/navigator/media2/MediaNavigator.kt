@@ -4,6 +4,9 @@
  * available in the top-level LICENSE file of the project.
  */
 
+// Everything in this file will be deprecated
+@file:Suppress("DEPRECATION")
+
 package org.readium.navigator.media2
 
 import android.app.PendingIntent
@@ -31,6 +34,8 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import org.readium.navigator.media2.MediaNavigator.Companion.create
 import org.readium.r2.navigator.Navigator
+import org.readium.r2.navigator.extensions.normalizeLocator
+import org.readium.r2.shared.DelicateReadiumApi
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
@@ -50,10 +55,10 @@ import timber.log.Timber
  * providing [create] with it. If you don't, ExoPlayer will be used, without cache.
  * You can build your own [SessionPlayer] based on [ExoPlayer] using [ExoPlayerDataSource].
  */
-@ExperimentalMedia2
+@Deprecated("Use the new AudioNavigator from the readium-navigator-media-audio module.")
 @OptIn(ExperimentalTime::class)
-class MediaNavigator private constructor(
-    override val publication: Publication,
+public class MediaNavigator private constructor(
+    public val publication: Publication,
     private val playerFacade: SessionPlayerFacade,
     private val playerCallback: SessionPlayerCallback,
     private val configuration: Configuration
@@ -124,15 +129,18 @@ class MediaNavigator private constructor(
         this.playerFacade.playlist!!.metadata.durations?.sum()
 
     private fun computeLocator(
-        item: ItemState,
+        item: ItemState
     ): Locator {
         val playlist = this.playerFacade.playlist!!.map { it.metadata!! }
         val position = item.position
         val link = publication.readingOrder[item.index]
         val itemStartPosition = playlist.slice(0 until item.index).durations?.sum()
         val totalProgression =
-            if (itemStartPosition == null) null
-            else totalDuration?.let { (itemStartPosition + position) / it }
+            if (itemStartPosition == null) {
+                null
+            } else {
+                totalDuration?.let { (itemStartPosition + position) / it }
+            }
 
         val locator = requireNotNull(publication.locatorFromLink(link))
         return locator.copyWithLocations(
@@ -151,8 +159,8 @@ class MediaNavigator private constructor(
         val state = when (currentState) {
             SessionPlayerState.Playing ->
                 Playback.State.Playing
-            SessionPlayerState.Idle, SessionPlayerState.Error ->
-                Playback.State.Error
+            SessionPlayerState.Idle, SessionPlayerState.Failure ->
+                Playback.State.Failure
             SessionPlayerState.Paused ->
                 if (playerCallback.playbackCompleted) {
                     Playback.State.Finished
@@ -200,7 +208,7 @@ class MediaNavigator private constructor(
     /**
      * Indicates the navigator current state.
      */
-    val playback: StateFlow<Playback> =
+    public val playback: StateFlow<Playback> =
         playbackMutable
 
     /**
@@ -208,35 +216,39 @@ class MediaNavigator private constructor(
      *
      * Normal speed is 1.0 and 0.0 is incorrect.
      */
-    suspend fun setPlaybackRate(rate: Double): Try<Unit, Exception> = executeCommand {
+    public suspend fun setPlaybackRate(rate: Double): Try<Unit, Exception> = executeCommand {
         playerFacade.setPlaybackSpeed(rate).toNavigatorResult()
     }
 
     /**
      * Resumes or start the playback at the current location.
      */
-    suspend fun play(): Try<Unit, Exception> = executeCommand {
+    public suspend fun play(): Try<Unit, Exception> = executeCommand {
         playerFacade.play().toNavigatorResult()
     }
 
     /**
      * Pauses the playback.
      */
-    suspend fun pause(): Try<Unit, Exception> = executeCommand {
+    public suspend fun pause(): Try<Unit, Exception> = executeCommand {
         playerFacade.pause().toNavigatorResult()
     }
 
     /**
      * Seeks to the given time at the given resource.
      */
-    suspend fun seek(index: Int, position: Duration): Try<Unit, Exception> = executeCommand {
+    public suspend fun seek(index: Int, position: Duration): Try<Unit, Exception> = executeCommand {
         playerFacade.seekTo(index, position).toNavigatorResult()
     }
 
     /**
      * Seeks to the given locator.
      */
-    suspend fun go(locator: Locator): Try<Unit, Exception> {
+    @OptIn(DelicateReadiumApi::class)
+    public suspend fun go(locator: Locator): Try<Unit, Exception> {
+        @Suppress("NAME_SHADOWING")
+        val locator = publication.normalizeLocator(locator)
+
         val itemIndex = publication.readingOrder.indexOfFirstWithHref(locator.href)
             ?: return Try.failure(Exception.InvalidArgument("Invalid href ${locator.href}."))
         val position = locator.locations.time ?: Duration.ZERO
@@ -247,7 +259,7 @@ class MediaNavigator private constructor(
     /**
      * Seeks to the beginning of the given link.
      */
-    suspend fun go(link: Link): Try<Unit, Exception> {
+    public suspend fun go(link: Link): Try<Unit, Exception> {
         val locator = publication.locatorFromLink(link)
             ?: return Try.failure(Exception.InvalidArgument("Resource not found at ${link.href}"))
         return go(locator)
@@ -256,13 +268,13 @@ class MediaNavigator private constructor(
     /**
      * Skips to a little amount of time later.
      */
-    suspend fun goForward(): Try<Unit, Exception> =
+    public suspend fun goForward(): Try<Unit, Exception> =
         seekBy(configuration.skipForwardInterval)
 
     /**
      * Skips to a little amount of time before.
      */
-    suspend fun goBackward(): Try<Unit, Exception> =
+    public suspend fun goBackward(): Try<Unit, Exception> =
         seekBy(-configuration.skipBackwardInterval)
 
     private suspend fun seekBy(offset: Duration): Try<Unit, Exception> = executeCommand {
@@ -298,7 +310,7 @@ class MediaNavigator private constructor(
      * Compared to [pause], the navigator may clear its state in whatever way is appropriate. For
      * example, recovering a player's resources.
      */
-    fun close() {
+    public fun close() {
         playerFacade.unregisterPlayerCallback(playerCallback)
         playerCallback.close()
         playerFacade.close()
@@ -308,50 +320,50 @@ class MediaNavigator private constructor(
     /**
      * Builds a [MediaSession] for this navigator.
      */
-    fun session(context: Context, activityIntent: PendingIntent, id: String? = null): MediaSession =
+    public fun session(context: Context, activityIntent: PendingIntent, id: String? = null): MediaSession =
         playerFacade.session(context, id, activityIntent)
 
-    data class Configuration(
+    public data class Configuration(
         val positionRefreshRate: Double = 2.0, // Hz
         val skipForwardInterval: Duration = 30.seconds,
-        val skipBackwardInterval: Duration = 30.seconds,
+        val skipBackwardInterval: Duration = 30.seconds
     )
 
     @ExperimentalTime
-    data class Playback(
+    public data class Playback(
         val state: State,
         val rate: Double,
         val resource: Resource,
         val buffer: Buffer
     ) {
 
-        enum class State {
+        public enum class State {
             Playing,
             Paused,
             Finished,
-            Error
+            Failure
         }
 
-        data class Resource(
+        public data class Resource(
             val index: Int,
             val link: Link,
             val position: Duration,
             val duration: Duration?
         )
 
-        data class Buffer(
+        public data class Buffer(
             val isPlayable: Boolean,
             val position: Duration
         )
     }
 
-    sealed class Exception(override val message: String) : kotlin.Exception(message) {
+    public sealed class Exception(override val message: String) : kotlin.Exception(message) {
 
-        class SessionPlayer internal constructor(
+        public class SessionPlayer internal constructor(
             internal val error: SessionPlayerError
         ) : Exception("${error.name} error occurred in SessionPlayer.")
 
-        class InvalidArgument(message: String) : Exception(message)
+        public class InvalidArgument(message: String) : Exception(message)
     }
 
     /*
@@ -371,19 +383,19 @@ class MediaNavigator private constructor(
         return true
     }
 
-    override fun goForward(animated: Boolean, completion: () -> Unit): Boolean {
+    public fun goForward(animated: Boolean, completion: () -> Unit): Boolean {
         launchAndRun({ goForward() }, completion)
         return true
     }
 
-    override fun goBackward(animated: Boolean, completion: () -> Unit): Boolean {
+    public fun goBackward(animated: Boolean, completion: () -> Unit): Boolean {
         launchAndRun({ goBackward() }, completion)
         return true
     }
 
-    companion object {
+    public companion object {
 
-        suspend fun create(
+        public suspend fun create(
             context: Context,
             publication: Publication,
             initialLocator: Locator?,
@@ -391,7 +403,6 @@ class MediaNavigator private constructor(
             player: SessionPlayer = createPlayer(context, publication),
             metadataFactory: MediaMetadataFactory = DefaultMetadataFactory(publication)
         ): Try<MediaNavigator, Exception> {
-
             val positionRefreshDelay = (1.0 / configuration.positionRefreshRate).seconds
             val seekCompletedChannel = Channel<Long>(Channel.UNLIMITED)
             val callback = SessionPlayerCallback(positionRefreshDelay, seekCompletedChannel)
@@ -459,9 +470,10 @@ class MediaNavigator private constructor(
         }
 
         internal fun SessionPlayerResult.toNavigatorResult(): Try<Unit, Exception> =
-            if (isSuccess)
+            if (isSuccess) {
                 Try.success(Unit)
-            else
+            } else {
                 this.mapFailure { Exception.SessionPlayer(it.error) }
+            }
     }
 }

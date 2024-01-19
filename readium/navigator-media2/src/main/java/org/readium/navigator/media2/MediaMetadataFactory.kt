@@ -7,16 +7,16 @@ import androidx.media2.common.MediaMetadata
  *
  * The metadata are used for example in the media-style Android notification.
  */
-@ExperimentalMedia2
-interface MediaMetadataFactory {
+@Deprecated("Use the new MediaMetadataFactory from the readium-navigator-media-common module.")
+public interface MediaMetadataFactory {
 
     /**
      * Creates the [MediaMetadata] for the whole publication.
      */
-    suspend fun publicationMetadata(): MediaMetadata
+    public suspend fun publicationMetadata(): MediaMetadata
 
     /**
      * Creates the [MediaMetadata] for the reading order resource at the given [index].
      */
-    suspend fun resourceMetadata(index: Int): MediaMetadata
+    public suspend fun resourceMetadata(index: Int): MediaMetadata
 }

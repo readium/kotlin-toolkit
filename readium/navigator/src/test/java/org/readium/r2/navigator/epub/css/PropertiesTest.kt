@@ -52,7 +52,7 @@ class PropertiesTest {
                 "--RS__serif-ja-v" to null,
                 "--RS__sans-serif-ja-v" to null,
                 "--RS__compFontFamily" to null,
-                "--RS__codeFontFamily" to null,
+                "--RS__codeFontFamily" to null
             ),
             RsProperties().toCssProperties()
         )
@@ -109,7 +109,7 @@ class PropertiesTest {
                 "--RS__serif-ja-v" to """"Serif", "JaV"""",
                 "--RS__sans-serif-ja-v" to """"Sans serif", "JaV"""",
                 "--RS__compFontFamily" to """"Arial"""",
-                "--RS__codeFontFamily" to """"Monaco", "Console Sans"""",
+                "--RS__codeFontFamily" to """"Monaco", "Console Sans""""
             ),
             RsProperties(
                 colWidth = Length.Cm(1.2),
@@ -175,7 +175,7 @@ class PropertiesTest {
                 "--USER__letterSpacing" to null,
                 "--USER__bodyHyphens" to null,
                 "--USER__ligatures" to null,
-                "--USER__a11yNormalize" to null,
+                "--USER__a11yNormalize" to null
             ),
             UserProperties().toCssProperties()
         )
@@ -206,7 +206,7 @@ class PropertiesTest {
                 "--USER__letterSpacing" to "8.9rem",
                 "--USER__bodyHyphens" to "auto",
                 "--USER__ligatures" to "common-ligatures",
-                "--USER__a11yNormalize" to "readium-a11y-on",
+                "--USER__a11yNormalize" to "readium-a11y-on"
             ),
             UserProperties(
                 view = View.SCROLL,
@@ -230,7 +230,7 @@ class PropertiesTest {
                 letterSpacing = Length.Rem(8.9),
                 bodyHyphens = Hyphens.AUTO,
                 ligatures = Ligatures.COMMON,
-                a11yNormalize = true,
+                a11yNormalize = true
             ).toCssProperties()
         )
     }
@@ -267,7 +267,7 @@ class PropertiesTest {
             """.trimIndent(),
             UserProperties(
                 view = View.SCROLL,
-                colCount = ColCount.AUTO,
+                colCount = ColCount.AUTO
             ).toCss()
         )
     }
@@ -322,7 +322,7 @@ class PropertiesTest {
                 letterSpacing = Length.Rem(8.9),
                 bodyHyphens = Hyphens.AUTO,
                 ligatures = Ligatures.COMMON,
-                a11yNormalize = true,
+                a11yNormalize = true
             ).toCss()
         )
     }

@@ -4,7 +4,68 @@ All notable changes to this project will be documented in this file. Take a look
 
 **Warning:** Features marked as *experimental* may change or be removed in a future release without notice. Use with caution.
 
-<!-- ## [Unreleased] -->
+## [Unreleased]
+
+:warning: Please consult [the migration guide](docs/migration-guide.md#300-alpha1) to assist you in handling the breaking changes in this latest major release.
+
+### Added
+
+#### Shared
+
+* A new `Format` type was introduced to augment `MediaType` with more precise information about the format specifications of an `Asset`.
+* The `DownloadManager` interface handles HTTP downloads. Components like the `LcpService` rely on it for downloading publications. Readium v3 ships with two implementations:
+    * `ForegroundDownloadManager` uses an `HttpClient` to download files while the app is running.
+    * `AndroidDownloadManager` is built upon [Android's `DownloadManager`](https://developer.android.com/reference/android/app/DownloadManager) to manage HTTP downloads, even when the application is closed. It allows for resuming downloads after losing connection.
+* The default `ZipArchiveOpener` now supports streaming ZIP archives, which enables opening a packaged publication (e.g. EPUB or LCP protected audiobook):
+    * served by a remote HTTP server,
+    * accessed through an Android `ContentProvider`, such as the shared storage.
+
+#### Navigator
+
+* Support for keyboard events in the EPUB, PDF and image navigators. See `VisualNavigator.addInputListener()`.
+
+#### LCP
+
+* You can now stream an LCP protected publication using its LCP License Document. This is useful for example to read a large audiobook without downloading it on the device first.
+* The hash of protected publications is now verified upon download.
+
+### Changed
+
+* :warning: To avoid conflicts when merging your app resources, all resources declared in the Readium toolkit now have the prefix `readium_`. This means that you must rename any layouts or strings you have overridden. Some resources were removed from the toolkit. Please consult [the migration guide](docs/migration-guide.md#300-alpha1).
+* Most APIs now return an `Error` instance instead of an `Exception` in case of failure, as these objects are not thrown by the toolkit but returned as values
+
+#### Shared
+
+* :warning: To improve the interoperability with other Readium toolkits (in particular the Readium Web Toolkits, which only work in a streaming context) **Readium v3 now generates and expects valid URLs** for `Locator` and `Link`'s `href`. **You must migrate the HREFs or Locators stored in your database**, please consult [the migration guide](docs/migration-guide.md#300-alpha1).
+* `Link.href` and `Locator.href` are now respectively `Href` and `Url` objects. If you still need the string value, you can call `toString()`
+* `MediaType` no longer has static helpers for sniffing it from a file or URL. Instead, you can use an `AssetRetriever` to retrieve the format of a file.
+
+#### Navigator
+
+* Version 3 includes a new component called `DirectionalNavigationAdapter` that replaces `EdgeTapNavigation`. This helper enables users to navigate between pages using arrow and space keys on their keyboard or by tapping the edge of the screen.
+* The `onTap` and `onDrag` events of `VisualNavigator.Listener` have been deprecated. You can now use multiple implementations of `InputListener` with `VisualNavigator.addInputListener()`.
+
+#### Streamer
+
+* The `Streamer` object has been deprecated in favor of components with smaller responsibilities: `AssetRetriever` and `PublicationOpener`.
+
+#### LCP
+
+* `LcpService.acquirePublication()` is deprecated in favor of `LcpService.publicationRetriever()`, which provides greater flexibility thanks to the `DownloadManager`.
+* The way the host view of a `LcpDialogAuthentication` is retrieved was changed to support Android configuration changes.
+
+### Deprecated
+
+* Both the Fuel and Kovenant libraries have been completely removed from the toolkit. With that, several deprecated functions have also been removed.
+
+#### Shared
+
+* The `putPublication` and `getPublication` helpers in `Intent` are deprecated. Now, it is the application's responsibility to pass `Publication` objects between activities and reopen them when necessary.
+
+#### Navigator
+
+* EPUB external links are no longer handled by the navigator. You need to open the link in your own Web View or Chrome Custom Tab.
+
 
 ## [2.4.0]
 
@@ -48,10 +109,35 @@ All notable changes to this project will be documented in this file. Take a look
 
 ### Changed
 
+* Readium resources are now prefixed with `readium_`. Take care of updating any overridden resource by following [the migration guide](docs/migration-guide.md#300).
+* `Link` and `Locator`'s `href` are normalized as valid URLs to improve interoperability with the Readium Web toolkits.
+    * **You MUST migrate your database if you were persisting HREFs and Locators**. Take a look at [the migration guide](docs/migration-guide.md) for guidance.
+
+#### Shared
+
+* `Publication.localizedTitle` is nullable, as we cannot guarantee that all publication sources offer a title.
+* The `MediaType` sniffing helpers are deprecated in favor of `MediaTypeRetriever` (for media type and file extension hints and raw content) and `AssetRetriever` (for URLs). 
+
 #### Navigator
 
 * `EpubNavigatorFragment.firstVisibleElementLocator()` now returns the first *block* element that is visible on the screen, even if it starts on previous pages.
     * This is used to make sure the user will not miss any context when restoring a TTS session in the middle of a resource.
+* The `VisualNavigator`'s drag and tap listener events are moved to a new `addInputListener()` API.
+* The new `DirectionalNavigationAdapter` component replaces `EdgeTapNavigation`, helping you turn pages with the arrow and space keyboard keys, or taps on the edge of the screen.
+
+### Deprecated
+
+#### Shared
+
+* `DefaultHttClient.additionalHeaders` is deprecated. Set all the headers when creating a new `HttpRequest`, or modify outgoing requests in `DefaultHttpClient.Callback.onStartRequest()`.
+
+#### Navigator
+
+* All the navigator `Activity` are deprecated in favor of the `Fragment` variants.
+
+#### Streamer
+
+* The `Fetcher` interface was deprecated in favor of the `Container` one in `readium-shared`.
 
 ### Fixed
 
@@ -62,7 +148,6 @@ All notable changes to this project will be documented in this file. Take a look
 #### Streamer
 
 * Fixed issue with the TTS starting from the beginning of the chapter instead of the current position.
-
 
 ## [2.3.0]
 

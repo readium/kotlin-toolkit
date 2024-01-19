@@ -18,8 +18,8 @@ import kotlin.time.Duration.Companion.seconds
 import kotlin.time.ExperimentalTime
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
-import org.readium.r2.navigator.ExperimentalAudiobook
 import org.readium.r2.navigator.MediaNavigator
+import org.readium.r2.navigator.extensions.normalizeLocator
 import org.readium.r2.navigator.extensions.sum
 import org.readium.r2.navigator.media.extensions.elapsedPosition
 import org.readium.r2.navigator.media.extensions.id
@@ -27,7 +27,10 @@ import org.readium.r2.navigator.media.extensions.isPlaying
 import org.readium.r2.navigator.media.extensions.publicationId
 import org.readium.r2.navigator.media.extensions.resourceHref
 import org.readium.r2.navigator.media.extensions.toPlaybackState
+import org.readium.r2.shared.DelicateReadiumApi
 import org.readium.r2.shared.publication.*
+import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.mediatype.MediaType
 import timber.log.Timber
 
 /**
@@ -35,24 +38,22 @@ import timber.log.Timber
  */
 private const val playbackPositionRefreshRate: Double = 2.0 // Hz
 
-@OptIn(ExperimentalTime::class)
 private val skipForwardInterval: Duration = 30.seconds
-@OptIn(ExperimentalTime::class)
 private val skipBackwardInterval: Duration = 30.seconds
 
 /**
  * An implementation of [MediaNavigator] using an Android's MediaSession compatible media player.
  */
-@ExperimentalAudiobook
-@OptIn(ExperimentalCoroutinesApi::class, ExperimentalTime::class)
-class MediaSessionNavigator(
-    override val publication: Publication,
-    val publicationId: PublicationId,
-    val controller: MediaControllerCompat,
-    var listener: Listener? = null
+@Deprecated("Use the new AudioNavigator from the readium-navigator-media-audio module.")
+@OptIn(ExperimentalTime::class)
+public class MediaSessionNavigator(
+    public val publication: Publication,
+    public val publicationId: PublicationId,
+    public val controller: MediaControllerCompat,
+    public var listener: Listener? = null
 ) : MediaNavigator, CoroutineScope by MainScope() {
 
-    interface Listener : MediaNavigator.Listener
+    public interface Listener : MediaNavigator.Listener
 
     /**
      * Indicates whether the media session is loaded with a resource from this [publication]. This
@@ -144,7 +145,10 @@ class MediaSessionNavigator(
         override fun onSessionEvent(event: String?, extras: Bundle?) {
             super.onSessionEvent(event, extras)
 
-            if (event == MediaService.EVENT_PUBLICATION_CHANGED && extras?.getString(MediaService.EXTRA_PUBLICATION_ID) == publicationId && playWhenReady && needsPlaying) {
+            if (event == MediaService.EVENT_PUBLICATION_CHANGED && extras?.getString(
+                    MediaService.EXTRA_PUBLICATION_ID
+                ) == publicationId && playWhenReady && needsPlaying
+            ) {
                 play()
             }
         }
@@ -152,7 +156,9 @@ class MediaSessionNavigator(
 
     // Navigator
 
-    private val _currentLocator = MutableStateFlow(Locator(href = "#", type = ""))
+    private val _currentLocator = MutableStateFlow(
+        Locator(href = Url("#")!!, mediaType = MediaType.BINARY)
+    )
     override val currentLocator: StateFlow<Locator> get() = _currentLocator.asStateFlow()
 
     /**
@@ -178,8 +184,12 @@ class MediaSessionNavigator(
         return locator
     }
 
+    @OptIn(DelicateReadiumApi::class)
     override fun go(locator: Locator, animated: Boolean, completion: () -> Unit): Boolean {
         if (!isActive) return false
+
+        @Suppress("NAME_SHADOWING")
+        val locator = publication.normalizeLocator(locator)
 
         listener?.onJumpToLocator(locator)
 
@@ -198,7 +208,7 @@ class MediaSessionNavigator(
         return go(locator, animated, completion)
     }
 
-    override fun goForward(animated: Boolean, completion: () -> Unit): Boolean {
+    public fun goForward(animated: Boolean = true, completion: () -> Unit = {}): Boolean {
         if (!isActive) return false
 
         seekRelative(skipForwardInterval)
@@ -206,7 +216,7 @@ class MediaSessionNavigator(
         return true
     }
 
-    override fun goBackward(animated: Boolean, completion: () -> Unit): Boolean {
+    public fun goBackward(animated: Boolean = true, completion: () -> Unit = {}): Boolean {
         if (!isActive) return false
 
         seekRelative(-skipBackwardInterval)
@@ -226,7 +236,11 @@ class MediaSessionNavigator(
             // See https://github.com/Kotlin/kotlinx.coroutines/issues/2353
             val position = positionMs.milliseconds
 
-            val index = metadata.resourceHref?.let { publication.readingOrder.indexOfFirstWithHref(it) }
+            val index = metadata.resourceHref?.let {
+                publication.readingOrder.indexOfFirstWithHref(
+                    it
+                )
+            }
             if (index == null) {
                 Timber.e("Can't find resource index in publication for media ID `${metadata.id}`.")
             }

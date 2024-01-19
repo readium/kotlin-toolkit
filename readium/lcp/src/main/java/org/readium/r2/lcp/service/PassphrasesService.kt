@@ -18,8 +18,7 @@ internal class PassphrasesService(private val repository: PassphrasesRepository)
     suspend fun request(
         license: LicenseDocument,
         authentication: LcpAuthenticating?,
-        allowUserInteraction: Boolean,
-        sender: Any?
+        allowUserInteraction: Boolean
     ): String? {
         val candidates = this@PassphrasesService.possiblePassphrasesFromRepository(license)
         val passphrase = try {
@@ -29,7 +28,12 @@ internal class PassphrasesService(private val repository: PassphrasesRepository)
         }
         return when {
             passphrase != null -> passphrase
-            authentication != null -> this@PassphrasesService.authenticate(license, LcpAuthenticating.AuthenticationReason.PassphraseNotFound, authentication, allowUserInteraction, sender)
+            authentication != null -> this@PassphrasesService.authenticate(
+                license,
+                LcpAuthenticating.AuthenticationReason.PassphraseNotFound,
+                authentication,
+                allowUserInteraction
+            )
             else -> null
         }
     }
@@ -38,11 +42,14 @@ internal class PassphrasesService(private val repository: PassphrasesRepository)
         license: LicenseDocument,
         reason: LcpAuthenticating.AuthenticationReason,
         authentication: LcpAuthenticating,
-        allowUserInteraction: Boolean,
-        sender: Any?
+        allowUserInteraction: Boolean
     ): String? {
         val authenticatedLicense = LcpAuthenticating.AuthenticatedLicense(document = license)
-        val clearPassphrase = authentication.retrievePassphrase(authenticatedLicense, reason, allowUserInteraction, sender)
+        val clearPassphrase = authentication.retrievePassphrase(
+            authenticatedLicense,
+            reason,
+            allowUserInteraction
+        )
             ?: return null
         val hashedPassphrase = HASH.sha256(clearPassphrase)
         val passphrases = mutableListOf(hashedPassphrase)
@@ -57,7 +64,12 @@ internal class PassphrasesService(private val repository: PassphrasesRepository)
             addPassphrase(passphrase, true, license.id, license.provider, license.user.id)
             passphrase
         } catch (e: Exception) {
-            authenticate(license, LcpAuthenticating.AuthenticationReason.InvalidPassphrase, authentication, allowUserInteraction, sender)
+            authenticate(
+                license,
+                LcpAuthenticating.AuthenticationReason.InvalidPassphrase,
+                authentication,
+                allowUserInteraction
+            )
         }
     }
 

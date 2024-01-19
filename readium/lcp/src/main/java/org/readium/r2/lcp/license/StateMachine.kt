@@ -165,7 +165,11 @@ internal class StateMachine<STATE : Any, EVENT : Any> private constructor(
         }
 
         fun build(): Graph<STATE, EVENT> {
-            return Graph(requireNotNull(initialState), stateDefinitions.toMap(), onTransitionListeners.toList())
+            return Graph(
+                requireNotNull(initialState),
+                stateDefinitions.toMap(),
+                onTransitionListeners.toList()
+            )
         }
 
         inner class StateDefinitionBuilder<S : STATE> {

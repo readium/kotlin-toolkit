@@ -78,9 +78,20 @@ class SectionDecoration(
 
     private fun fixLayoutSize(v: View, parent: ViewGroup) {
         val widthSpec = View.MeasureSpec.makeMeasureSpec(parent.width, View.MeasureSpec.EXACTLY)
-        val heightSpec = View.MeasureSpec.makeMeasureSpec(parent.height, View.MeasureSpec.UNSPECIFIED)
-        val childWidth = ViewGroup.getChildMeasureSpec(widthSpec, parent.paddingStart + parent.paddingEnd, v.layoutParams.width)
-        val childHeight = ViewGroup.getChildMeasureSpec(heightSpec, parent.paddingTop + parent.paddingBottom, v.layoutParams.height)
+        val heightSpec = View.MeasureSpec.makeMeasureSpec(
+            parent.height,
+            View.MeasureSpec.UNSPECIFIED
+        )
+        val childWidth = ViewGroup.getChildMeasureSpec(
+            widthSpec,
+            parent.paddingStart + parent.paddingEnd,
+            v.layoutParams.width
+        )
+        val childHeight = ViewGroup.getChildMeasureSpec(
+            heightSpec,
+            parent.paddingTop + parent.paddingBottom,
+            v.layoutParams.height
+        )
         v.measure(childWidth, childHeight)
         v.layout(0, 0, v.measuredWidth, v.measuredHeight)
     }

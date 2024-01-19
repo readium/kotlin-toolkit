@@ -17,6 +17,7 @@ import kotlin.time.ExperimentalTime
 import org.joda.time.DateTime
 import org.joda.time.Days
 import org.readium.r2.lcp.BuildConfig.DEBUG
+import org.readium.r2.lcp.LcpError
 import org.readium.r2.lcp.LcpException
 import org.readium.r2.shared.util.getOrElse
 import timber.log.Timber
@@ -24,7 +25,10 @@ import timber.log.Timber
 @OptIn(ExperimentalTime::class)
 internal class CRLService(val network: NetworkService, val context: Context) {
 
-    private val preferences: SharedPreferences = context.getSharedPreferences("org.readium.r2.lcp", Context.MODE_PRIVATE)
+    private val preferences: SharedPreferences = context.getSharedPreferences(
+        "org.readium.r2.lcp",
+        Context.MODE_PRIVATE
+    )
 
     companion object {
         const val expiration = 7
@@ -50,12 +54,15 @@ internal class CRLService(val network: NetworkService, val context: Context) {
     private suspend fun fetch(): String {
         val url = "http://crl.edrlab.telesec.de/rl/EDRLab_CA.crl"
         val data = network.fetch(url, NetworkService.Method.GET)
-            .getOrElse { throw LcpException.CrlFetching }
+            .getOrElse { throw LcpException(LcpError.CrlFetching) }
 
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             "-----BEGIN X509 CRL-----${Base64.getEncoder().encodeToString(data)}-----END X509 CRL-----"
         } else {
-            "-----BEGIN X509 CRL-----${android.util.Base64.encodeToString(data, android.util.Base64.DEFAULT)}-----END X509 CRL-----"
+            "-----BEGIN X509 CRL-----${android.util.Base64.encodeToString(
+                data,
+                android.util.Base64.DEFAULT
+            )}-----END X509 CRL-----"
         }
     }
 

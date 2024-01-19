@@ -28,7 +28,7 @@ import org.readium.r2.shared.util.logging.log
  *     inherent with Double and the JSON parsing.
  */
 @Parcelize
-data class Price(
+public data class Price(
     val currency: String,
     val value: Double
 ) : JSONable, Parcelable {
@@ -36,18 +36,18 @@ data class Price(
     /**
      * Serializes an [Price] to its JSON representation.
      */
-    override fun toJSON() = JSONObject().apply {
+    override fun toJSON(): JSONObject = JSONObject().apply {
         put("currency", currency)
         put("value", value)
     }
 
-    companion object {
+    public companion object {
 
         /**
          * Creates an [Price] from its JSON representation.
          * If the price can't be parsed, a warning will be logged with [warnings].
          */
-        fun fromJSON(json: JSONObject?, warnings: WarningLogger? = null): Price? {
+        public fun fromJSON(json: JSONObject?, warnings: WarningLogger? = null): Price? {
             val currency = json?.optNullableString("currency")
             val value = json?.optPositiveDouble("value")
             if (currency == null || value == null) {

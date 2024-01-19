@@ -19,34 +19,32 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
-import org.readium.adapters.pdfium.navigator.PdfiumPreferences
-import org.readium.adapters.pdfium.navigator.PdfiumPreferencesSerializer
-import org.readium.adapters.pdfium.navigator.PdfiumPublicationPreferencesFilter
-import org.readium.adapters.pdfium.navigator.PdfiumSharedPreferencesFilter
+import org.readium.adapter.exoplayer.audio.ExoPlayerPreferences
+import org.readium.adapter.exoplayer.audio.ExoPlayerPreferencesSerializer
+import org.readium.adapter.pdfium.navigator.PdfiumPreferences
+import org.readium.adapter.pdfium.navigator.PdfiumPreferencesSerializer
+import org.readium.adapter.pdfium.navigator.PdfiumPublicationPreferencesFilter
+import org.readium.adapter.pdfium.navigator.PdfiumSharedPreferencesFilter
+import org.readium.navigator.media.tts.android.AndroidTtsPreferences
+import org.readium.navigator.media.tts.android.AndroidTtsPreferencesSerializer
+import org.readium.navigator.media.tts.android.AndroidTtsPublicationPreferencesFilter
+import org.readium.navigator.media.tts.android.AndroidTtsSharedPreferencesFilter
 import org.readium.r2.navigator.epub.EpubPreferences
 import org.readium.r2.navigator.epub.EpubPreferencesSerializer
 import org.readium.r2.navigator.epub.EpubPublicationPreferencesFilter
 import org.readium.r2.navigator.epub.EpubSharedPreferencesFilter
-import org.readium.r2.navigator.media3.exoplayer.ExoPlayerPreferences
-import org.readium.r2.navigator.media3.exoplayer.ExoPlayerPreferencesSerializer
-import org.readium.r2.navigator.media3.exoplayer.ExoPlayerPublicationPreferencesFilter
-import org.readium.r2.navigator.media3.exoplayer.ExoPlayerSharedPreferencesFilter
-import org.readium.r2.navigator.media3.tts.android.AndroidTtsPreferences
-import org.readium.r2.navigator.media3.tts.android.AndroidTtsPreferencesSerializer
-import org.readium.r2.navigator.media3.tts.android.AndroidTtsPublicationPreferencesFilter
-import org.readium.r2.navigator.media3.tts.android.AndroidTtsSharedPreferencesFilter
 import org.readium.r2.navigator.preferences.Configurable
 import org.readium.r2.navigator.preferences.PreferencesFilter
 import org.readium.r2.navigator.preferences.PreferencesSerializer
 import org.readium.r2.shared.ExperimentalReadiumApi
-import org.readium.r2.shared.extensions.tryOrNull
 import org.readium.r2.testapp.utils.extensions.stateInFirst
+import org.readium.r2.testapp.utils.tryOrNull
 
 class PreferencesManager<P : Configurable.Preferences<P>> internal constructor(
     val preferences: StateFlow<P>,
     @Suppress("Unused") // Keep the scope alive until the PreferencesManager is garbage collected
     private val coroutineScope: CoroutineScope,
-    private val editPreferences: suspend (P) -> Unit,
+    private val editPreferences: suspend (P) -> Unit
 ) {
 
     suspend fun setPreferences(preferences: P) {
@@ -118,7 +116,7 @@ sealed class PreferencesManagerFactory<P : Configurable.Preferences<P>>(
 }
 
 class EpubPreferencesManagerFactory(
-    dataStore: DataStore<Preferences>,
+    dataStore: DataStore<Preferences>
 ) : PreferencesManagerFactory<EpubPreferences>(
     dataStore = dataStore,
     klass = EpubPreferences::class,
@@ -129,7 +127,7 @@ class EpubPreferencesManagerFactory(
 )
 
 class PdfiumPreferencesManagerFactory(
-    dataStore: DataStore<Preferences>,
+    dataStore: DataStore<Preferences>
 ) : PreferencesManagerFactory<PdfiumPreferences>(
     dataStore = dataStore,
     klass = PdfiumPreferences::class,
@@ -144,8 +142,8 @@ class ExoPlayerPreferencesManagerFactory(
 ) : PreferencesManagerFactory<ExoPlayerPreferences>(
     dataStore = dataStore,
     klass = ExoPlayerPreferences::class,
-    sharedPreferencesFilter = ExoPlayerSharedPreferencesFilter,
-    publicationPreferencesFilter = ExoPlayerPublicationPreferencesFilter,
+    sharedPreferencesFilter = { preferences -> preferences },
+    publicationPreferencesFilter = { ExoPlayerPreferences() },
     preferencesSerializer = ExoPlayerPreferencesSerializer(),
     emptyPreferences = ExoPlayerPreferences()
 )

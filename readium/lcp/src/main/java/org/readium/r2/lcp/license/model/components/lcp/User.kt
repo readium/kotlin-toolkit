@@ -12,12 +12,12 @@ package org.readium.r2.lcp.license.model.components.lcp
 
 import org.json.JSONObject
 
-data class User(val json: JSONObject) {
+public data class User(val json: JSONObject) {
     val id: String?
     val email: String?
     val name: String?
     var extensions: JSONObject
-    var encrypted = mutableListOf<String>()
+    var encrypted: MutableList<String> = mutableListOf<String>()
 
     init {
         id = if (json.has("id")) json.getString("id") else null

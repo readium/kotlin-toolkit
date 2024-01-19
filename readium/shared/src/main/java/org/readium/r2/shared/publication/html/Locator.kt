@@ -18,7 +18,7 @@ import org.readium.r2.shared.publication.Locator
 /**
  * A CSS Selector.
  */
-val Locator.Locations.cssSelector: String?
+public val Locator.Locations.cssSelector: String?
     get() = this["cssSelector"] as? String
 
 /**
@@ -28,12 +28,12 @@ val Locator.Locations.cssSelector: String?
  * epubcfi(***) syntax is not used for the [partialCfi] string, i.e. the "fragment" part of the CFI
  * grammar is ignored.
  */
-val Locator.Locations.partialCfi: String?
+public val Locator.Locations.partialCfi: String?
     get() = this["partialCfi"] as? String
 
 /**
  * An HTML DOM range.
  */
-val Locator.Locations.domRange: DomRange?
+public val Locator.Locations.domRange: DomRange?
     get() = (this["domRange"] as? Map<*, *>)
         ?.let { DomRange.fromJSON(JSONObject(it)) }

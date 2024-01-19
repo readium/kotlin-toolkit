@@ -12,7 +12,7 @@ package org.readium.r2.navigator.epub.fxl
 import android.content.Context
 import android.widget.OverScroller
 
-abstract class R2FXLScroller {
+internal abstract class R2FXLScroller {
 
     abstract val isFinished: Boolean
     abstract val currX: Int

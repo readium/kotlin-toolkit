@@ -14,7 +14,7 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 
 @Entity(tableName = License.TABLE_NAME)
-data class License(
+internal data class License(
     @PrimaryKey(autoGenerate = true)
     @ColumnInfo(name = ID)
     var id: Long? = null,

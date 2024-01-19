@@ -15,7 +15,7 @@ import org.readium.r2.navigator.Navigator
 import org.readium.r2.navigator.image.ImageNavigatorFragment
 import org.readium.r2.testapp.R
 
-class ImageReaderFragment : VisualReaderFragment(), ImageNavigatorFragment.Listener {
+class ImageReaderFragment : VisualReaderFragment() {
 
     override lateinit var navigator: Navigator
 
@@ -31,7 +31,11 @@ class ImageReaderFragment : VisualReaderFragment(), ImageNavigatorFragment.Liste
         }
 
         childFragmentManager.fragmentFactory =
-            ImageNavigatorFragment.createFactory(publication, readerData.initialLocation, this)
+            ImageNavigatorFragment.createFactory(
+                publication,
+                readerData.initialLocation,
+                model
+            )
 
         super.onCreate(savedInstanceState)
     }
@@ -44,7 +48,12 @@ class ImageReaderFragment : VisualReaderFragment(), ImageNavigatorFragment.Liste
         val view = super.onCreateView(inflater, container, savedInstanceState)
         if (savedInstanceState == null) {
             childFragmentManager.commitNow {
-                add(R.id.fragment_reader_container, ImageNavigatorFragment::class.java, Bundle(), NAVIGATOR_FRAGMENT_TAG)
+                add(
+                    R.id.fragment_reader_container,
+                    ImageNavigatorFragment::class.java,
+                    Bundle(),
+                    NAVIGATOR_FRAGMENT_TAG
+                )
             }
         }
         navigator = childFragmentManager.findFragmentByTag(NAVIGATOR_FRAGMENT_TAG)!! as Navigator

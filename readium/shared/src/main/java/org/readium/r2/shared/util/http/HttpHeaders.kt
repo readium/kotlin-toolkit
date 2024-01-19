@@ -12,38 +12,32 @@ import org.readium.r2.shared.InternalReadiumApi
  * Helper to parse HTTP request/response headers.
  */
 @InternalReadiumApi
-data class HttpHeaders(val headers: Map<String, List<String>>) {
+public data class HttpHeaders(val headers: Map<String, List<String>>) {
 
-    companion object {
-        operator fun invoke(headers: Map<String, String>): HttpHeaders =
+    public companion object {
+        public operator fun invoke(headers: Map<String, String>): HttpHeaders =
             HttpHeaders(headers.mapValues { (_, value) -> listOf(value) })
     }
 
     /**
-     * Finds the first value of the first header matching the given name.
+     * Finds the last header matching the given name.
      * In keeping with the HTTP RFC, HTTP header field names are case-insensitive.
+     * The returned string can contain a single value or a comma-separated list of values if
+     * the field supports it.
      */
-    operator fun get(name: String): String? {
-        val n = name.lowercase()
-        return headers.firstNotNullOfOrNull { (key, value) ->
-            if (key.lowercase() == n) value.firstOrNull()
-            else null
-        }
-    }
+    public operator fun get(name: String): String? = getAll(name)
+        .lastOrNull()
 
     /**
-     * Finds all the values of the first header matching the given name.
+     * Finds all the headers matching the given name.
      * In keeping with the HTTP RFC, HTTP header field names are case-insensitive.
+     * Each item of the returned list can contain a single value or a comma-separated list of
+     * values if the field supports it.
      */
-    fun getAll(name: String): List<String> {
-        val n = name.lowercase()
-        return headers
-            .mapNotNull { (key, value) ->
-                if (key.lowercase() == n) value
-                else null
-            }
-            .flatten()
-    }
+    public fun getAll(name: String): List<String> = headers
+        .filter { it.key.lowercase() == name.lowercase() }
+        .values
+        .flatten()
 
     /**
      * Indicates whether this server supports byte range requests.
@@ -92,10 +86,10 @@ data class HttpHeaders(val headers: Map<String, List<String>>) {
  *
  * [end] is inclusive.
  */
-data class HttpRange(
+public data class HttpRange(
     val start: Long,
     val end: Long?
 ) {
-    fun toLongRange(contentLength: Long): LongRange =
+    public fun toLongRange(contentLength: Long): LongRange =
         start..(end ?: (contentLength - 1))
 }

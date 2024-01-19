@@ -10,91 +10,84 @@
 package org.readium.r2.opds
 
 import java.net.URL
-import nl.komponents.kovenant.Promise
-import nl.komponents.kovenant.then
 import org.joda.time.DateTime
 import org.readium.r2.shared.extensions.toList
 import org.readium.r2.shared.extensions.toMap
 import org.readium.r2.shared.opds.*
-import org.readium.r2.shared.parser.xml.ElementNode
-import org.readium.r2.shared.parser.xml.XmlParser
 import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.toJSON
-import org.readium.r2.shared.util.Href
+import org.readium.r2.shared.util.AbsoluteUrl
+import org.readium.r2.shared.util.ErrorException
 import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.http.DefaultHttpClient
 import org.readium.r2.shared.util.http.HttpClient
 import org.readium.r2.shared.util.http.HttpRequest
 import org.readium.r2.shared.util.http.fetchWithDecoder
+import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.shared.util.xml.ElementNode
+import org.readium.r2.shared.util.xml.XmlParser
 
-enum class OPDSParserError {
+public enum class OPDSParserError {
     MissingTitle
 }
 
-data class MimeTypeParameters(
+public data class MimeTypeParameters(
     var type: String,
     var parameters: MutableMap<String, String> = mutableMapOf()
 )
 
-object Namespaces {
-    const val Opds = "http://opds-spec.org/2010/catalog"
-    const val Dc = "http://purl.org/dc/elements/1.1/"
-    const val Dcterms = "http://purl.org/dc/terms/"
-    const val Atom = "http://www.w3.org/2005/Atom"
-    const val Search = "http://a9.com/-/spec/opensearch/1.1/"
-    const val Thread = "http://purl.org/syndication/thread/1.0"
+public object Namespaces {
+    public const val Opds: String = "http://opds-spec.org/2010/catalog"
+    public const val Dc: String = "http://purl.org/dc/elements/1.1/"
+    public const val Dcterms: String = "http://purl.org/dc/terms/"
+    public const val Atom: String = "http://www.w3.org/2005/Atom"
+    public const val Search: String = "http://a9.com/-/spec/opensearch/1.1/"
+    public const val Thread: String = "http://purl.org/syndication/thread/1.0"
 }
 
-class OPDS1Parser {
-    companion object {
+public class OPDS1Parser {
+    public companion object {
 
-        suspend fun parseUrlString(url: String, client: HttpClient = DefaultHttpClient()): Try<ParseData, Exception> {
-            return client.fetchWithDecoder(HttpRequest(url)) {
-                this.parse(it.body, URL(url))
-            }
-        }
+        public suspend fun parseUrlString(
+            url: String,
+            client: HttpClient = DefaultHttpClient()
+        ): Try<ParseData, Exception> =
+            AbsoluteUrl(url)
+                ?.let { parseRequest(HttpRequest(it), client) }
+                ?: run { Try.failure(Exception("Not an absolute URL.")) }
 
-        suspend fun parseRequest(request: HttpRequest, client: HttpClient = DefaultHttpClient()): Try<ParseData, Exception> {
+        public suspend fun parseRequest(
+            request: HttpRequest,
+            client: HttpClient = DefaultHttpClient()
+        ): Try<ParseData, Exception> {
             return client.fetchWithDecoder(request) {
-                this.parse(it.body, URL(request.url))
-            }
+                this.parse(it.body, request.url)
+            }.mapFailure { ErrorException(it) }
         }
 
-        @Deprecated(
-            "Use `parseRequest` or `parseUrlString` with coroutines instead",
-            ReplaceWith("OPDS1Parser.parseUrlString(url)"),
-            DeprecationLevel.WARNING
-        )
-        fun parseURL(url: URL): Promise<ParseData, Exception> {
-            return DefaultHttpClient().fetchPromise(HttpRequest(url.toString())) then {
-                this.parse(xmlData = it.body, url = url)
-            }
-        }
-
-        @Deprecated(
-            "Use `parseRequest` or `parseUrlString` with coroutines instead",
-            ReplaceWith("OPDS1Parser.parseUrlString(url)"),
-            DeprecationLevel.WARNING
-        )
-        @Suppress("unused")
-        fun parseURL(headers: MutableMap<String, String>, url: URL): Promise<ParseData, Exception> {
-            return DefaultHttpClient().fetchPromise(HttpRequest(url = url.toString(), headers = headers)) then {
-                this.parse(xmlData = it.body, url = url)
-            }
-        }
-
-        fun parse(xmlData: ByteArray, url: URL): ParseData {
+        public fun parse(xmlData: ByteArray, url: Url): ParseData {
             val root = XmlParser().parse(xmlData.inputStream())
-            return if (root.name == "feed")
+            return if (root.name == "feed") {
                 ParseData(parseFeed(root, url), null, 1)
-            else
+            } else {
                 ParseData(null, parseEntry(root, url), 1)
+            }
         }
 
-        private fun parseFeed(root: ElementNode, url: URL): Feed {
+        @Suppress("UNUSED_PARAMETER")
+        @Deprecated(
+            "Provide an instance of `Url` instead",
+            ReplaceWith("parse(jsonData, url.toUrl()!!)"),
+            DeprecationLevel.ERROR
+        )
+        public fun parse(jsonData: ByteArray, url: URL): ParseData =
+            throw NotImplementedError()
+
+        private fun parseFeed(root: ElementNode, url: Url): Feed {
             val feedTitle = root.getFirst("title", Namespaces.Atom)?.text
                 ?: throw Exception(OPDSParserError.MissingTitle.name)
-            val feed = Feed(feedTitle, 1, url)
+            val feed = Feed.Builder(feedTitle, 1, url)
             val tmpDate = root.getFirst("updated", Namespaces.Atom)?.text
             feed.metadata.modified = tmpDate?.let { DateTime(it).toDate() }
 
@@ -113,7 +106,7 @@ class OPDS1Parser {
                 var collectionLink: Link? = null
                 val links = entry.get("link", Namespaces.Atom)
                 for (link in links) {
-                    val href = link.getAttr("href")
+                    val href = link.getAttr("href")?.let { Url(it) }
                     val rel = link.getAttr("rel")
                     if (rel != null) {
                         if (rel.startsWith("http://opds-spec.org/acquisition")) {
@@ -121,7 +114,7 @@ class OPDS1Parser {
                         }
                         if (href != null && (rel == "collection" || rel == "http://opds-spec.org/group")) {
                             collectionLink = Link(
-                                href = Href(href, baseHref = feed.href.toString()).percentEncodedString,
+                                href = feed.href.resolve(href),
                                 title = link.getAttr("title"),
                                 rels = setOf("collection")
                             )
@@ -139,7 +132,7 @@ class OPDS1Parser {
                     }
                 } else {
                     val link = entry.getFirst("link", Namespaces.Atom)
-                    val href = link?.getAttr("href")
+                    val href = link?.getAttr("href")?.let { Url(it) }
                     if (href != null) {
                         val otherProperties = mutableMapOf<String, Any>()
                         val facetElementCount = link.getAttrNs("count", Namespaces.Thread)?.toInt()
@@ -148,8 +141,8 @@ class OPDS1Parser {
                         }
 
                         val newLink = Link(
-                            href = Href(href, baseHref = feed.href.toString()).percentEncodedString,
-                            type = link.getAttr("type"),
+                            href = feed.href.resolve(href),
+                            mediaType = link.getAttr("type")?.let { MediaType(it) },
                             title = entry.getFirst("title", Namespaces.Atom)?.text,
                             rels = listOfNotNull(link.getAttr("rel")).toSet(),
                             properties = Properties(otherProperties = otherProperties)
@@ -165,10 +158,10 @@ class OPDS1Parser {
             }
             // Parse links
             for (link in root.get("link", Namespaces.Atom)) {
-                val hrefAttr = link.getAttr("href") ?: continue
-                val href = Href(hrefAttr, baseHref = feed.href.toString()).percentEncodedString
+                val hrefAttr = link.getAttr("href")?.let { Url(it) } ?: continue
+                val href = feed.href.resolve(hrefAttr)
                 val title = link.getAttr("title")
-                val type = link.getAttr("type")
+                val type = link.getAttr("type")?.let { MediaType(it) }
                 val rels = listOfNotNull(link.getAttr("rel")).toSet()
 
                 val facetGroupName = link.getAttrNs("facetGroup", Namespaces.Opds)
@@ -178,13 +171,21 @@ class OPDS1Parser {
                     if (facetElementCount != null) {
                         otherProperties["numberOfItems"] = facetElementCount
                     }
-                    val newLink = Link(href = href, type = type, title = title, rels = rels, properties = Properties(otherProperties = otherProperties))
+                    val newLink = Link(
+                        href = href,
+                        mediaType = type,
+                        title = title,
+                        rels = rels,
+                        properties = Properties(otherProperties = otherProperties)
+                    )
                     addFacet(feed, newLink, facetGroupName)
                 } else {
-                    feed.links.add(Link(href = href, type = type, title = title, rels = rels))
+                    feed.links.add(
+                        Link(href = href, mediaType = type, title = title, rels = rels)
+                    )
                 }
             }
-            return feed
+            return feed.build()
         }
 
         private fun parseMimeType(mimeTypeString: String): MimeTypeParameters {
@@ -201,27 +202,28 @@ class OPDS1Parser {
         }
 
         @Suppress("unused")
-        suspend fun retrieveOpenSearchTemplate(feed: Feed): Try<String?, Exception> {
-
-            var openSearchURL: URL? = null
-            var selfMimeType: String? = null
+        public suspend fun retrieveOpenSearchTemplate(
+            feed: Feed,
+            client: HttpClient = DefaultHttpClient()
+        ): Try<String?, Exception> {
+            var openSearchURL: Href? = null
+            var selfMimeType: MediaType? = null
 
             for (link in feed.links) {
                 if (link.rels.contains("self")) {
-                    if (link.type != null) {
-                        selfMimeType = link.type
+                    if (link.mediaType != null) {
+                        selfMimeType = link.mediaType
                     }
                 } else if (link.rels.contains("search")) {
-                    openSearchURL = URL(link.href)
+                    openSearchURL = link.href
                 }
             }
 
-            val unwrappedURL = openSearchURL?.let {
-                return@let it
-            }
+            val unwrappedURL = openSearchURL
+                ?.let { it.resolve() as? AbsoluteUrl }
+                ?: return Try.success(null)
 
-            return DefaultHttpClient().fetchWithDecoder(HttpRequest(unwrappedURL.toString())) {
-
+            return client.fetchWithDecoder(HttpRequest(unwrappedURL)) {
                 val document = XmlParser().parse(it.body.inputStream())
 
                 val urls = document.get("Url", Namespaces.Search)
@@ -231,7 +233,7 @@ class OPDS1Parser {
 
                 selfMimeType?.let { s ->
 
-                    val selfMimeParams = parseMimeType(mimeTypeString = s)
+                    val selfMimeParams = parseMimeType(mimeTypeString = s.toString())
                     for (url in urls) {
                         val urlMimeType = url.getAttr("type") ?: continue
                         val otherMimeParams = parseMimeType(mimeTypeString = urlMimeType)
@@ -251,76 +253,17 @@ class OPDS1Parser {
                     template
                 }
                 null
-            }
+            }.mapFailure { ErrorException(it) }
         }
 
-        @Deprecated(
-            "Use `retrieveOpenSearchTemplate` with coroutines instead",
-            ReplaceWith("OPDS1Parser.retrieveOpenSearchTemplate(feed)"),
-            DeprecationLevel.WARNING
-        )
-        @Suppress("unused")
-        fun fetchOpenSearchTemplate(feed: Feed): Promise<String?, Exception> {
-
-            var openSearchURL: URL? = null
-            var selfMimeType: String? = null
-
-            for (link in feed.links) {
-                if (link.rels.contains("self")) {
-                    if (link.type != null) {
-                        selfMimeType = link.type
-                    }
-                } else if (link.rels.contains("search")) {
-                    openSearchURL = URL(link.href)
-                }
-            }
-
-            val unwrappedURL = openSearchURL?.let {
-                return@let it
-            }
-
-            return DefaultHttpClient().fetchPromise(HttpRequest(unwrappedURL.toString())) then {
-
-                val document = XmlParser().parse(it.body.inputStream())
-
-                val urls = document.get("Url", Namespaces.Search)
-
-                var typeAndProfileMatch: ElementNode? = null
-                var typeMatch: ElementNode? = null
-
-                selfMimeType?.let { s ->
-
-                    val selfMimeParams = parseMimeType(mimeTypeString = s)
-                    for (url in urls) {
-                        val urlMimeType = url.getAttr("type") ?: continue
-                        val otherMimeParams = parseMimeType(mimeTypeString = urlMimeType)
-                        if (selfMimeParams.type == otherMimeParams.type) {
-                            if (typeMatch == null) {
-                                typeMatch = url
-                            }
-                            if (selfMimeParams.parameters["profile"] == otherMimeParams.parameters["profile"]) {
-                                typeAndProfileMatch = url
-                                break
-                            }
-                        }
-                    }
-                    val match = typeAndProfileMatch ?: (typeMatch ?: urls[0])
-                    val template = match.getAttr("template")
-
-                    template
-                }
-                null
-            }
-        }
-
-        private fun parseEntry(entry: ElementNode, baseUrl: URL): Publication? {
+        private fun parseEntry(entry: ElementNode, baseUrl: Url): Publication? {
             // A title is mandatory
             val title = entry.getFirst("title", Namespaces.Atom)?.text
                 ?: return null
 
             var links = entry.get("link", Namespaces.Atom)
                 .mapNotNull { element ->
-                    val href = element.getAttr("href")
+                    val href = element.getAttr("href")?.let { Url(it) }
                     val rel = element.getAttr("rel")
                     if (href == null || rel == "collection" || rel == "http://opds-spec.org/group") {
                         return@mapNotNull null
@@ -343,8 +286,8 @@ class OPDS1Parser {
                     }
 
                     Link(
-                        href = Href(href, baseHref = baseUrl.toString()).percentEncodedString,
-                        type = element.getAttr("type"),
+                        href = baseUrl.resolve(href),
+                        mediaType = element.getAttr("type")?.let { MediaType(it) },
                         title = element.getAttr("title"),
                         rels = listOfNotNull(rel).toSet(),
                         properties = Properties(otherProperties = properties)
@@ -352,7 +295,9 @@ class OPDS1Parser {
                 }
 
             val images = links.filter {
-                it.rels.contains("http://opds-spec.org/image") || it.rels.contains("http://opds-spec.org/image-thumbnail")
+                it.rels.contains("http://opds-spec.org/image") || it.rels.contains(
+                    "http://opds-spec.org/image-thumbnail"
+                )
             }
 
             links = links - images
@@ -375,7 +320,11 @@ class OPDS1Parser {
 
                     publishers = entry.get("publisher", Namespaces.Dcterms)
                         .mapNotNull {
-                            it.text?.let { name -> Contributor(localizedName = LocalizedString(name)) }
+                            it.text?.let { name ->
+                                Contributor(
+                                    localizedName = LocalizedString(name)
+                                )
+                            }
                         },
 
                     subjects = entry.get("category", Namespaces.Atom)
@@ -396,6 +345,7 @@ class OPDS1Parser {
                                     localizedName = LocalizedString(name),
                                     links = listOfNotNull(
                                         element.getFirst("uri", Namespaces.Atom)?.text
+                                            ?.let { Url(it) }
                                             ?.let { Link(href = it) }
                                     )
                                 )
@@ -417,20 +367,20 @@ class OPDS1Parser {
             return Publication(manifest)
         }
 
-        private fun addFacet(feed: Feed, link: Link, title: String) {
+        private fun addFacet(feed: Feed.Builder, link: Link, title: String) {
             for (facet in feed.facets) {
                 if (facet.metadata.title == title) {
                     facet.links.add(link)
                     return
                 }
             }
-            val newFacet = Facet(title = title)
+            val newFacet = Facet.Builder(title = title)
             newFacet.links.add(link)
             feed.facets.add(newFacet)
         }
 
         private fun addPublicationInGroup(
-            feed: Feed,
+            feed: Feed.Builder,
             publication: Publication,
             collectionLink: Link
         ) {
@@ -447,14 +397,14 @@ class OPDS1Parser {
                 val selfLink = collectionLink.copy(
                     rels = collectionLink.rels + "self"
                 )
-                val newGroup = Group(title = title)
+                val newGroup = Group.Builder(title = title)
                 newGroup.links.add(selfLink)
                 newGroup.publications.add(publication)
                 feed.groups.add(newGroup)
             }
         }
 
-        private fun addNavigationInGroup(feed: Feed, link: Link, collectionLink: Link) {
+        private fun addNavigationInGroup(feed: Feed.Builder, link: Link, collectionLink: Link) {
             for (group in feed.groups) {
                 for (l in group.links) {
                     if (l.href == collectionLink.href) {
@@ -468,7 +418,7 @@ class OPDS1Parser {
                 val selfLink = collectionLink.copy(
                     rels = collectionLink.rels + "self"
                 )
-                val newGroup = Group(title = title)
+                val newGroup = Group.Builder(title = title)
                 newGroup.links.add(selfLink)
                 newGroup.navigation.add(link)
                 feed.groups.add(newGroup)

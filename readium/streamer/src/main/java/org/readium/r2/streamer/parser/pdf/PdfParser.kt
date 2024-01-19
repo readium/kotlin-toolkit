@@ -1,68 +1,67 @@
 /*
- * Module: r2-shared-kotlin
- * Developers: Mickaël Menu
- *
- * Copyright (c) 2020. Readium Foundation. All rights reserved.
- * Use of this source code is governed by a BSD-style license which is detailed in the
- * LICENSE file present in the project repository where this source code is maintained.
+ * Copyright 2023 Readium Foundation. All rights reserved.
+ * Use of this source code is governed by the BSD-style license
+ * available in the top-level LICENSE file of the project.
  */
 
 package org.readium.r2.streamer.parser.pdf
 
 import android.content.Context
-import java.io.File
-import kotlinx.coroutines.runBlocking
 import org.readium.r2.shared.ExperimentalReadiumApi
-import org.readium.r2.shared.PdfSupport
-import org.readium.r2.shared.fetcher.Fetcher
-import org.readium.r2.shared.fetcher.FileFetcher
 import org.readium.r2.shared.publication.*
-import org.readium.r2.shared.publication.asset.FileAsset
-import org.readium.r2.shared.publication.asset.PublicationAsset
 import org.readium.r2.shared.publication.services.InMemoryCacheService
 import org.readium.r2.shared.publication.services.InMemoryCoverService
+import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.asset.Asset
+import org.readium.r2.shared.util.asset.ResourceAsset
+import org.readium.r2.shared.util.format.PdfSpecification
+import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.pdf.PdfDocumentFactory
 import org.readium.r2.shared.util.pdf.toLinks
-import org.readium.r2.streamer.PublicationParser
-import org.readium.r2.streamer.container.PublicationContainer
-import org.readium.r2.streamer.parser.PubBox
+import org.readium.r2.streamer.extensions.toContainer
+import org.readium.r2.streamer.parser.PublicationParser
 
 /**
  * Parses a PDF file into a Readium [Publication].
  */
-@PdfSupport
 @OptIn(ExperimentalReadiumApi::class)
-class PdfParser(
+public class PdfParser(
     context: Context,
     private val pdfFactory: PdfDocumentFactory<*>
-) : PublicationParser, org.readium.r2.streamer.parser.PublicationParser {
+) : PublicationParser {
 
     private val context = context.applicationContext
 
-    override suspend fun parse(asset: PublicationAsset, fetcher: Fetcher, warnings: WarningLogger?): Publication.Builder? =
-        _parse(asset, fetcher, asset.name)
+    override suspend fun parse(
+        asset: Asset,
+        warnings: WarningLogger?
+    ): Try<Publication.Builder, PublicationParser.ParseError> {
+        if (asset !is ResourceAsset || !asset.format.conformsTo(PdfSpecification)) {
+            return Try.failure(PublicationParser.ParseError.FormatNotSupported())
+        }
 
-    suspend fun _parse(asset: PublicationAsset, fetcher: Fetcher, fallbackTitle: String): Publication.Builder? {
-        if (asset.mediaType() != MediaType.PDF)
-            return null
+        val container = asset
+            .toContainer()
 
-        val fileHref = fetcher.links().firstOrNull { it.mediaType == MediaType.PDF }?.href
-            ?: throw Exception("Unable to find PDF file.")
-        val document = pdfFactory.open(fetcher.get(fileHref), password = null)
-        val tableOfContents = document.outline.toLinks(fileHref)
+        val url = container.entries
+            .first()
+
+        val document = pdfFactory.open(container[url]!!, password = null)
+            .getOrElse { return Try.failure(PublicationParser.ParseError.Reading(it)) }
+        val tableOfContents = document.outline.toLinks(url)
 
         val manifest = Manifest(
             metadata = Metadata(
                 identifier = document.identifier,
                 conformsTo = setOf(Publication.Profile.PDF),
-                localizedTitle = LocalizedString(document.title?.ifBlank { null } ?: fallbackTitle),
+                localizedTitle = document.title?.ifBlank { null }?.let { LocalizedString(it) },
                 authors = listOfNotNull(document.author).map { Contributor(name = it) },
                 readingProgression = document.readingProgression,
-                numberOfPages = document.pageCount,
+                numberOfPages = document.pageCount
             ),
-            readingOrder = listOf(Link(href = fileHref, type = MediaType.PDF.toString())),
+            readingOrder = listOf(Link(href = url, mediaType = MediaType.PDF)),
             tableOfContents = tableOfContents
         )
 
@@ -72,27 +71,8 @@ class PdfParser(
             cover = document.cover(context)?.let { InMemoryCoverService.createFactory(it) }
         )
 
-        return Publication.Builder(manifest, fetcher, servicesBuilder)
-    }
+        val publicationBuilder = Publication.Builder(manifest, container, servicesBuilder)
 
-    override fun parse(fileAtPath: String, fallbackTitle: String): PubBox? = runBlocking {
-
-        val file = File(fileAtPath)
-        val asset = FileAsset(file)
-        val baseFetcher = FileFetcher(href = "/${file.name}", file = file)
-        val builder = try {
-            _parse(asset, baseFetcher, fallbackTitle)
-        } catch (e: Exception) {
-            return@runBlocking null
-        } ?: return@runBlocking null
-
-        val publication = builder.build()
-        val container = PublicationContainer(
-            publication = publication,
-            path = file.canonicalPath,
-            mediaType = MediaType.PDF
-        )
-
-        PubBox(publication, container)
+        return Try.success(publicationBuilder)
     }
 }

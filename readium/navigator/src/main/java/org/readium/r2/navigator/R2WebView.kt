@@ -11,6 +11,7 @@ package org.readium.r2.navigator
 
 import android.content.Context
 import android.graphics.Rect
+import android.os.Build
 import android.util.AttributeSet
 import android.view.*
 import android.view.animation.Interpolator
@@ -31,7 +32,7 @@ import timber.log.Timber
  * Created by Aferdita Muriqi on 12/2/17.
  */
 
-class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context, attrs) {
+internal class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context, attrs) {
 
     init {
         initWebPager()
@@ -39,7 +40,6 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
 
     private val uiScope = CoroutineScope(Dispatchers.Main)
 
-    @android.webkit.JavascriptInterface
     override fun scrollRight(animated: Boolean) {
         super.scrollRight(animated)
         uiScope.launch {
@@ -52,7 +52,6 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
         }
     }
 
-    @android.webkit.JavascriptInterface
     override fun scrollLeft(animated: Boolean) {
         super.scrollLeft(animated)
         uiScope.launch {
@@ -64,8 +63,6 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
             }
         }
     }
-
-    private val USE_CACHE = false
 
     private val MAX_SETTLE_DURATION = 600 // ms
     private val MIN_DISTANCE_FOR_FLING = 25 // dips
@@ -107,8 +104,6 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
     private val mFirstOffset = -java.lang.Float.MAX_VALUE
     private val mLastOffset = java.lang.Float.MAX_VALUE
 
-    private var mScrollingCacheEnabled: Boolean = false
-
     private var mIsBeingDragged: Boolean = false
     private var mGutterSize: Int = 30
     private var mTouchSlop: Int = 0
@@ -136,6 +131,7 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
      * Determines speed during touch scrolling
      */
     private var mVelocityTracker: VelocityTracker? = null
+
     /** Initial velocity of the current movement. */
     private var mInitialVelocity: Int? = null
     private var mMinimumVelocity: Int = 0
@@ -189,7 +185,13 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
     private fun initWebPager() {
         setWillNotDraw(false)
         descendantFocusability = ViewGroup.FOCUS_AFTER_DESCENDANTS
-        isFocusable = true
+
+        // Disable the focus overlay appearing when interacting with the keyboard.
+        // https://developer.android.com/about/versions/oreo/android-8.0-changes#ian
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            defaultFocusHighlightEnabled = false
+        }
+
         val context = context
         mScroller = Scroller(context, sInterpolator)
         val configuration = ViewConfiguration.get(context)
@@ -245,7 +247,9 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
                     val count = childCount
                     while (i < count) {
                         val childInsets = ViewCompat
-                            .dispatchApplyWindowInsets(getChildAt(i), applied).getInsets(WindowInsetsCompat.Type.systemBars())
+                            .dispatchApplyWindowInsets(getChildAt(i), applied).getInsets(
+                                WindowInsetsCompat.Type.systemBars()
+                            )
                         // Now keep track of any consumed by tracking each dimension's min
                         // value
                         res.left = min(
@@ -269,7 +273,10 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
 
                     // Now return a new WindowInsets, using the consumed window insets
                     return WindowInsetsCompat.Builder(applied)
-                        .setInsets(WindowInsetsCompat.Type.systemBars(), Insets.of(res.left, res.top, res.right, res.bottom))
+                        .setInsets(
+                            WindowInsetsCompat.Type.systemBars(),
+                            Insets.of(res.left, res.top, res.right, res.bottom)
+                        )
                         .build()
                 }
             }
@@ -391,7 +398,6 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
             sx = if (mIsScrollStarted) mScroller!!.currX else mScroller!!.startX
             // And abort the current scrolling.
             mScroller!!.abortAnimation()
-            setScrollingCacheEnabled(false)
         } else {
             sx = scrollX
         }
@@ -404,7 +410,6 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
             return
         }
 
-        setScrollingCacheEnabled(true)
         setScrollState(SCROLL_STATE_SETTLING)
 
         val halfWidth = width / 2
@@ -430,7 +435,6 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
     }
 
     private fun infoForPosition(position: Int): ItemInfo {
-
         val ii = ItemInfo()
         ii.position = position
         ii.offset = (position * (1 / numPages)).toFloat()
@@ -530,7 +534,8 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
                     }
                     childLeft += scrollX
                     child.layout(
-                        childLeft, childTop,
+                        childLeft,
+                        childTop,
                         childLeft + child.measuredWidth,
                         childTop + child.measuredHeight
                     )
@@ -550,7 +555,7 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
     }
 
     override fun computeScroll() {
-        if (!useLegacySettings && scrollMode) {
+        if (scrollMode) {
             return super.computeScroll()
         }
 
@@ -657,8 +662,6 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
     private fun completeScroll(postEvents: Boolean) {
         val needPopulate = mScrollState == SCROLL_STATE_SETTLING
         if (needPopulate) {
-            // Done with scroll, no longer want to cache view drawing.
-            setScrollingCacheEnabled(false)
             val wasScrolling = !mScroller!!.isFinished
             if (wasScrolling) {
                 mScroller!!.abortAnimation()
@@ -684,7 +687,6 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
     }
 
     override fun onTouchEvent(ev: MotionEvent): Boolean {
-
         if (mVelocityTracker == null) {
             mVelocityTracker = VelocityTracker.obtain()
         }
@@ -692,7 +694,6 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
 
         val action = ev.action
         when (action and MotionEvent.ACTION_MASK) {
-
             MotionEvent.ACTION_DOWN -> {
                 mScroller?.let { scroller ->
                     mHasAbortedScroller = !scroller.isFinished
@@ -714,18 +715,18 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
                 if (!isSelecting && !mIsBeingDragged) {
                     mInitialVelocity = getCurrentXVelocity()
                     val pointerIndex = ev.findPointerIndex(mActivePointerId)
-                    val x = ev.getX(pointerIndex)
+                    val x = ev.safeGetX(pointerIndex)
                     val xDiff = abs(x - mLastMotionX)
 
                     if (xDiff > mTouchSlop) {
                         if (DEBUG) Timber.v("Starting drag!")
                         mIsBeingDragged = true
-                        mLastMotionX = if (x - mInitialMotionX > 0)
+                        mLastMotionX = if (x - mInitialMotionX > 0) {
                             mInitialMotionX + mTouchSlop
-                        else
+                        } else {
                             mInitialMotionX - mTouchSlop
+                        }
                         setScrollState(SCROLL_STATE_DRAGGING)
-                        setScrollingCacheEnabled(true)
                     }
                 }
             }
@@ -735,8 +736,8 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
                     mHasAbortedScroller = false
 
                     val activePointerIndex = ev.findPointerIndex(mActivePointerId)
-                    val x = ev.getX(activePointerIndex)
-                    val y = ev.getY(activePointerIndex)
+                    val x = ev.safeGetX(activePointerIndex)
+                    val y = ev.safeGetY(activePointerIndex)
 
                     if (scrollMode) {
                         val totalDelta = (y - mInitialMotionY).toInt()
@@ -785,13 +786,13 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
             }
             MotionEvent.ACTION_POINTER_DOWN -> {
                 val index = ev.actionIndex
-                val x = ev.getX(index)
+                val x = ev.safeGetX(index)
                 mLastMotionX = x
                 mActivePointerId = ev.getPointerId(index)
             }
             MotionEvent.ACTION_POINTER_UP -> {
                 onSecondaryPointerUp(ev)
-                mLastMotionX = ev.getX(ev.findPointerIndex(mActivePointerId))
+                mLastMotionX = ev.safeGetX(ev.findPointerIndex(mActivePointerId))
             }
         }
 
@@ -860,8 +861,11 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
         val isCancelled = (initialVelocity * currentVelocity) <= 0
 
         return if (!isCancelled && abs(deltaX) > mFlingDistance && abs(currentVelocity) > mMinimumVelocity) {
-            if (currentVelocity >= 0) currentPage - 1
-            else currentPage + 1
+            if (currentVelocity >= 0) {
+                currentPage - 1
+            } else {
+                currentPage + 1
+            }
         } else {
             currentPage
         }
@@ -874,24 +878,9 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
             // This was our active pointer going up. Choose a new
             // active pointer and adjust accordingly.
             val newPointerIndex = if (pointerIndex == 0) 1 else 0
-            mLastMotionX = ev.getX(newPointerIndex)
+            mLastMotionX = ev.safeGetX(newPointerIndex)
             mActivePointerId = ev.getPointerId(newPointerIndex)
             mVelocityTracker?.clear()
-        }
-    }
-
-    private fun setScrollingCacheEnabled(enabled: Boolean) {
-        if (mScrollingCacheEnabled != enabled) {
-            mScrollingCacheEnabled = enabled
-            if (USE_CACHE) {
-                val size = childCount
-                for (i in 0 until size) {
-                    val child = getChildAt(i)
-                    if (child.visibility != View.GONE) {
-                        child.isDrawingCacheEnabled = enabled
-                    }
-                }
-            }
         }
     }
 
@@ -917,7 +906,10 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
                 } else {
                     arrowScroll(View.FOCUS_LEFT)
                 }
-                KeyEvent.KEYCODE_DPAD_RIGHT -> handled = if (event.hasModifiers(KeyEvent.META_ALT_ON)) {
+                KeyEvent.KEYCODE_DPAD_RIGHT -> handled = if (event.hasModifiers(
+                        KeyEvent.META_ALT_ON
+                    )
+                ) {
                     pageRight()
                 } else {
                     arrowScroll(View.FOCUS_RIGHT)
@@ -964,7 +956,12 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
                     sb.append(" => ").append(parent.javaClass.simpleName)
                     parent = parent.parent
                 }
-                if (DEBUG) Timber.e("arrowScroll tried to find focus based on non-child current focused view %s", sb.toString())
+                if (DEBUG) {
+                    Timber.e(
+                        "arrowScroll tried to find focus based on non-child current focused view %s",
+                        sb.toString()
+                    )
+                }
                 currentFocused = null
             }
         }
@@ -972,7 +969,8 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
         var handled = false
 
         val nextFocused = FocusFinder.getInstance().findNextFocus(
-            this, currentFocused,
+            this,
+            currentFocused,
             direction
         )
         if (nextFocused != null && nextFocused !== currentFocused) {
@@ -1094,3 +1092,15 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
         }
     }
 }
+
+/**
+ * May crash with java.lang.IllegalArgumentException: pointerIndex out of range
+ */
+private fun MotionEvent.safeGetX(pointerIndex: Int): Float =
+    try { getX(pointerIndex) } catch (e: IllegalArgumentException) { 0F }
+
+/**
+ * May crash with java.lang.IllegalArgumentException: pointerIndex out of range
+ */
+private fun MotionEvent.safeGetY(pointerIndex: Int): Float =
+    try { getY(pointerIndex) } catch (e: IllegalArgumentException) { 0F }

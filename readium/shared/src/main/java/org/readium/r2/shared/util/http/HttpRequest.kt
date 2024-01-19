@@ -1,3 +1,9 @@
+/*
+ * Copyright 2023 Readium Foundation. All rights reserved.
+ * Use of this source code is governed by the BSD-style license
+ * available in the top-level LICENSE file of the project.
+ */
+
 package org.readium.r2.shared.util.http
 
 import android.net.Uri
@@ -5,6 +11,9 @@ import android.os.Bundle
 import java.io.Serializable
 import java.net.URLEncoder
 import kotlin.time.Duration
+import org.readium.r2.shared.extensions.toMutable
+import org.readium.r2.shared.util.AbsoluteUrl
+import org.readium.r2.shared.util.toUri
 
 /**
  * Holds the information about an HTTP request performed by an [HttpClient].
@@ -22,32 +31,35 @@ import kotlin.time.Duration
  * @param allowUserInteraction If true, the user might be presented with interactive dialogs, such
  *        as popping up an authentication dialog.
  */
-class HttpRequest(
-    val url: String,
-    val method: Method = Method.GET,
-    val headers: Map<String, String> = mapOf(),
-    val body: Body? = null,
-    val extras: Bundle = Bundle(),
-    val connectTimeout: Duration? = null,
-    val readTimeout: Duration? = null,
-    val allowUserInteraction: Boolean = false,
+public class HttpRequest(
+    public val url: AbsoluteUrl,
+    public val method: Method = Method.GET,
+    public val headers: Map<String, List<String>> = mapOf(),
+    public val body: Body? = null,
+    public val extras: Bundle = Bundle(),
+    public val connectTimeout: Duration? = null,
+    public val readTimeout: Duration? = null,
+    public val allowUserInteraction: Boolean = false
 ) : Serializable {
 
-    /** Supported HTTP methods. */
-    enum class Method : Serializable {
-        DELETE, GET, HEAD, PATCH, POST, PUT;
-    }
-
-    /** Supported body values. */
-    sealed class Body : Serializable {
-        class Bytes(val bytes: ByteArray) : Body()
-        class File(val file: java.io.File) : Body()
-    }
-
-    fun buildUpon() = Builder(
-        url = url,
+    @Deprecated(
+        message = "Provide an instance of `AbsoluteUrl` instead of a string.",
+        replaceWith = ReplaceWith("HttpRequest(AbsoluteUrl(url)!!)"),
+        level = DeprecationLevel.ERROR
+    )
+    public constructor(
+        url: String,
+        method: Method = Method.GET,
+        headers: Map<String, String> = mapOf(),
+        body: Body? = null,
+        extras: Bundle = Bundle(),
+        connectTimeout: Duration? = null,
+        readTimeout: Duration? = null,
+        allowUserInteraction: Boolean = false
+    ) : this(
+        url = AbsoluteUrl(url)!!,
         method = method,
-        headers = headers.toMutableMap(),
+        headers = headers.mapValues { (_, value) -> listOf(value) },
         body = body,
         extras = extras,
         connectTimeout = connectTimeout,
@@ -55,51 +67,91 @@ class HttpRequest(
         allowUserInteraction = allowUserInteraction
     )
 
-    companion object {
-        operator fun invoke(url: String, build: Builder.() -> Unit): HttpRequest =
+    /** Supported HTTP methods. */
+    public enum class Method : Serializable {
+        DELETE, GET, HEAD, PATCH, POST, PUT;
+    }
+
+    /** Supported body values. */
+    public sealed class Body : Serializable {
+        public class Bytes(public val bytes: ByteArray) : Body()
+        public class File(public val file: java.io.File) : Body()
+    }
+
+    public fun buildUpon(): Builder = Builder(
+        url = url,
+        method = method,
+        headers = headers.toMutable(),
+        body = body,
+        extras = extras,
+        connectTimeout = connectTimeout,
+        readTimeout = readTimeout,
+        allowUserInteraction = allowUserInteraction
+    )
+
+    public fun copy(build: Builder.() -> Unit): HttpRequest =
+        buildUpon().apply(build).build()
+
+    public companion object {
+        public operator fun invoke(url: AbsoluteUrl, build: Builder.() -> Unit): HttpRequest =
             Builder(url).apply(build).build()
     }
 
-    class Builder(
-        url: String,
-        var method: Method = Method.GET,
-        var headers: MutableMap<String, String> = mutableMapOf(),
-        var body: Body? = null,
-        var extras: Bundle = Bundle(),
-        var connectTimeout: Duration? = null,
-        var readTimeout: Duration? = null,
-        var allowUserInteraction: Boolean = false,
+    public class Builder(
+        public val url: AbsoluteUrl,
+        public var method: Method = Method.GET,
+        public var headers: MutableMap<String, MutableList<String>> = mutableMapOf(),
+        public var body: Body? = null,
+        public var extras: Bundle = Bundle(),
+        public var connectTimeout: Duration? = null,
+        public var readTimeout: Duration? = null,
+        public var allowUserInteraction: Boolean = false
     ) {
 
-        var url: String
-            get() = uriBuilder.build().toString()
-            set(value) { uriBuilder = Uri.parse(value).buildUpon() }
+        private var uriBuilder: Uri.Builder = url.toUri().buildUpon()
 
-        private var uriBuilder: Uri.Builder = Uri.parse(url).buildUpon()
-
-        fun appendQueryParameter(key: String, value: String?): Builder {
+        public fun appendQueryParameter(key: String, value: String?): Builder {
             if (value != null) {
                 uriBuilder.appendQueryParameter(key, value)
             }
             return this
         }
 
-        fun appendQueryParameters(params: Map<String, String?>): Builder {
+        public fun appendQueryParameters(params: Map<String, String?>): Builder {
             for ((key, value) in params) {
                 appendQueryParameter(key, value)
             }
             return this
         }
 
-        fun setHeader(key: String, value: String): Builder {
-            headers[key] = value
+        /**
+         * Sets header with key [key] to [values] overriding current values, if any.
+         */
+        public fun setHeader(key: String, values: List<String>): Builder {
+            headers[key] = values.toMutableList()
+            return this
+        }
+
+        /**
+         * Sets header with [key] to [value] overriding current values, if any.
+         */
+        public fun setHeader(key: String, value: String): Builder {
+            headers[key] = mutableListOf(value)
+            return this
+        }
+
+        /**
+         * Adds [value] to header values associated with [key].
+         */
+        public fun addHeader(key: String, value: String): Builder {
+            headers.getOrPut(key) { mutableListOf() }.add(value)
             return this
         }
 
         /**
          * Issue a byte range request. Use -1 to download until the end.
          */
-        fun setRange(range: LongRange): Builder {
+        public fun setRange(range: LongRange): Builder {
             val start = range.first.coerceAtLeast(0)
             var value = "$start-"
             if (range.last >= start) {
@@ -112,7 +164,7 @@ class HttpRequest(
         /**
          * Initializes a POST request with the given form data.
          */
-        fun setPostForm(form: Map<String, String?>): Builder {
+        public fun setPostForm(form: Map<String, String?>): Builder {
             method = Method.POST
             setHeader("Content-Type", "application/x-www-form-urlencoded")
 
@@ -128,7 +180,7 @@ class HttpRequest(
             return this
         }
 
-        fun build(): HttpRequest = HttpRequest(
+        public fun build(): HttpRequest = HttpRequest(
             url = url,
             method = method,
             headers = headers.toMap(),
@@ -136,7 +188,7 @@ class HttpRequest(
             extras = extras,
             connectTimeout = connectTimeout,
             readTimeout = readTimeout,
-            allowUserInteraction = allowUserInteraction,
+            allowUserInteraction = allowUserInteraction
         )
     }
 }

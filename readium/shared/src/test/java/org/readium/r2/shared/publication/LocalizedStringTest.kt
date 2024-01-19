@@ -198,10 +198,11 @@ class LocalizedStringTest {
                     "fr" to "une chaîne"
                 )
             ).mapLanguages { (language, translation) ->
-                if (translation.string == "a string")
+                if (translation.string == "a string") {
                     "en"
-                else
+                } else {
                     language
+                }
             }
         )
     }
@@ -220,10 +221,11 @@ class LocalizedStringTest {
                     "fr" to "une chaîne"
                 )
             ).mapTranslations { (language, translation) ->
-                if (language == "en")
+                if (language == "en") {
                     translation.copy(string = "a string")
-                else
+                } else {
                     translation
+                }
             }
         )
     }

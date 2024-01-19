@@ -12,15 +12,17 @@ plugins {
 }
 
 android {
-    compileSdk = 33
+    resourcePrefix = "readium_"
+
+    compileSdk = 34
     defaultConfig {
         minSdk = 21
-        targetSdk = 33
+        targetSdk = 34
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
     kotlinOptions {
         allWarningsAsErrors = true
@@ -38,7 +40,14 @@ android {
             proguardFiles(getDefaultProguardFile("proguard-android.txt"))
         }
     }
+    buildFeatures {
+        buildConfig = true
+    }
     namespace = "org.readium.r2.shared"
+}
+
+kotlin {
+    explicitApi()
 }
 
 rootProject.ext["publish.artifactId"] = "readium-shared"
@@ -47,16 +56,8 @@ apply(from = "$rootDir/scripts/publish-module.gradle")
 dependencies {
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.browser)
-    implementation("com.github.kittinunf.fuel:fuel-android:2.3.1")
-    implementation("com.github.kittinunf.fuel:fuel:2.3.1")
     implementation(libs.timber)
     implementation(libs.joda.time)
-    implementation("nl.komponents.kovenant:kovenant-android:3.3.0")
-    implementation("nl.komponents.kovenant:kovenant-combine:3.3.0")
-    implementation("nl.komponents.kovenant:kovenant-core:3.3.0")
-    implementation("nl.komponents.kovenant:kovenant-functional:3.3.0")
-    implementation("nl.komponents.kovenant:kovenant-jvm:3.3.0")
-    implementation("nl.komponents.kovenant:kovenant:3.3.0")
     implementation(libs.kotlin.reflect)
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.kotlinx.serialization.json)

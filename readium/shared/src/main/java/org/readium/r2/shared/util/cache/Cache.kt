@@ -15,6 +15,7 @@ import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.util.Closeable
 import org.readium.r2.shared.util.MemoryObserver
 import org.readium.r2.shared.util.SuspendingCloseable
+import org.readium.r2.shared.util.Try
 
 /**
  * A generic cache for objects of type [V].
@@ -22,53 +23,64 @@ import org.readium.r2.shared.util.SuspendingCloseable
  * It implements [MemoryObserver] to flush unused in-memory objects when necessary.
  */
 @InternalReadiumApi
-interface Cache<V> : SuspendingCloseable, MemoryObserver {
+public interface Cache<V> : SuspendingCloseable, MemoryObserver {
     /**
      * Performs an atomic [block] transaction on this cache.
      */
-    suspend fun <T> transaction(block: suspend CacheTransaction<V>.() -> T): T
+    public suspend fun <T> transaction(block: suspend CacheTransaction<V>.() -> T): T
 }
 
 /**
  * An atomic transaction run on a cache for objects of type [V].
  */
 @InternalReadiumApi
-interface CacheTransaction<V> {
+public interface CacheTransaction<V> {
     /**
      * Gets the current cached value for the given [key].
      */
-    suspend fun get(key: String): V?
+    public suspend fun get(key: String): V?
 
     /**
      * Writes the cached [value] for the given [key].
      */
-    suspend fun put(key: String, value: V?)
-
-    /**
-     * Gets the current cached value for the given [key] or creates and caches a new one.
-     */
-    suspend fun <V> CacheTransaction<V>.getOrPut(key: String, defaultValue: suspend () -> V): V =
-        get(key)
-            ?: defaultValue().also { put(key, it) }
+    public suspend fun put(key: String, value: V?)
 
     /**
      * Clears the cached value for the given [key].
      *
      * @return The cached value if any.
      */
-    suspend fun remove(key: String): V?
+    public suspend fun remove(key: String): V?
 
     /**
      * Clears all cached values.
      */
-    suspend fun clear()
+    public suspend fun clear()
 }
+
+/**
+ * Gets the current cached value for the given [key] or creates and caches a new one.
+ */
+public suspend fun <V> CacheTransaction<V>.getOrPut(key: String, defaultValue: suspend () -> V): V =
+    get(key)
+        ?: defaultValue().also { put(key, it) }
+
+/**
+ * Gets the current cached value for the given [key] or creates and caches a new one.
+ */
+public suspend fun <V, F> CacheTransaction<V>.getOrTryPut(
+    key: String,
+    defaultValue: suspend () -> Try<V, F>
+): Try<V, F> =
+    get(key)?.let { Try.success(it) }
+        ?: defaultValue()
+            .onSuccess { put(key, it) }
 
 /**
  * A basic in-memory cache.
  */
 @InternalReadiumApi
-class InMemoryCache<V> : Cache<V> {
+public class InMemoryCache<V> : Cache<V> {
     private val values = mutableMapOf<String, V>()
     private val mutex = Mutex()
 

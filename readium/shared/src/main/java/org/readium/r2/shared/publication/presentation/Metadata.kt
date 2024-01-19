@@ -13,7 +13,7 @@ import org.readium.r2.shared.publication.Metadata
 
 // Presentation extensions for [Metadata]
 
-val Metadata.presentation: Presentation
+public val Metadata.presentation: Presentation
     get() = Presentation.fromJSON(
         (this["presentation"] as? Map<*, *>)
             ?.let { JSONObject(it) }

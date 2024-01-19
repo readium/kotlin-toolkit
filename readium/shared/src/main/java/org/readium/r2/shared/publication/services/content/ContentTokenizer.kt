@@ -16,7 +16,7 @@ import org.readium.r2.shared.util.tokenizer.Tokenizer
 
 /** A tokenizer splitting a [Content.Element] into smaller pieces. */
 @ExperimentalReadiumApi
-fun interface ContentTokenizer : Tokenizer<Content.Element, Content.Element>
+public fun interface ContentTokenizer : Tokenizer<Content.Element, Content.Element>
 
 /**
  * A [ContentTokenizer] using a [TextTokenizer] to split the text of the [Content.Element] into smaller
@@ -27,7 +27,7 @@ fun interface ContentTokenizer : Tokenizer<Content.Element, Content.Element>
  *   content. If false, [language] will be used only as a default when there is no data-specific information.
  */
 @ExperimentalReadiumApi
-class TextContentTokenizer(
+public class TextContentTokenizer(
     private val language: Language?,
     private val overrideContentLanguage: Boolean = false,
     private val contextSnippetLength: Int = 50,
@@ -37,9 +37,18 @@ class TextContentTokenizer(
     /**
      * A [ContentTokenizer] using the default [TextTokenizer] to split the text of the [Content.Element].
      */
-    constructor(language: Language?, unit: TextUnit, overrideContentLanguage: Boolean = false) : this(
+    public constructor(
+        language: Language?,
+        unit: TextUnit,
+        overrideContentLanguage: Boolean = false
+    ) : this(
         language = language,
-        textTokenizerFactory = { contentLanguage -> DefaultTextContentTokenizer(unit, contentLanguage) },
+        textTokenizerFactory = { contentLanguage ->
+            DefaultTextContentTokenizer(
+                unit,
+                contentLanguage
+            )
+        },
         overrideContentLanguage = overrideContentLanguage
     )
 
@@ -66,8 +75,14 @@ class TextContentTokenizer(
         segment.language.takeUnless { overrideContentLanguage } ?: language
 
     private fun extractTextContextIn(string: String, range: IntRange): Locator.Text {
-        val after = string.substring(range.last, (range.last + contextSnippetLength).coerceAtMost(string.length))
-        val before = string.substring((range.first - contextSnippetLength).coerceAtLeast(0), range.first)
+        val after = string.substring(
+            range.last,
+            (range.last + contextSnippetLength).coerceAtMost(string.length)
+        )
+        val before = string.substring(
+            (range.first - contextSnippetLength).coerceAtLeast(0),
+            range.first
+        )
         return Locator.Text(
             after = after.takeIf { it.isNotEmpty() },
             before = before.takeIf { it.isNotEmpty() },

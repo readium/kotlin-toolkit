@@ -15,19 +15,16 @@ import androidx.fragment.app.setFragmentResult
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import com.google.android.material.snackbar.Snackbar
 import java.util.*
 import kotlinx.coroutines.launch
 import org.joda.time.DateTime
 import org.joda.time.format.DateTimeFormat
 import org.readium.r2.lcp.MaterialRenewListener
 import org.readium.r2.lcp.lcpLicense
-import org.readium.r2.shared.UserException
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.databinding.FragmentDrmManagementBinding
 import org.readium.r2.testapp.reader.ReaderViewModel
 import org.readium.r2.testapp.utils.viewLifecycle
-import timber.log.Timber
 
 class DrmManagementFragment : Fragment() {
 
@@ -73,10 +70,11 @@ class DrmManagementFragment : Fragment() {
         binding.drmValueCopiesLeft.text = model.copiesLeft
 
         val datesVisibility =
-            if (model.start != null && model.end != null && model.start != model.end)
+            if (model.start != null && model.end != null && model.start != model.end) {
                 View.VISIBLE
-            else
+            } else {
                 View.GONE
+            }
 
         binding.drmStart.visibility = datesVisibility
         binding.drmValueStart.text = model.start.toFormattedString()
@@ -103,9 +101,8 @@ class DrmManagementFragment : Fragment() {
             model.renewLoan(this@DrmManagementFragment)
                 .onSuccess { newDate ->
                     binding.drmValueEnd.text = newDate.toFormattedString()
-                }.onFailure { exception ->
-                    exception.toastUserMessage(requireView())
                 }
+                .onFailure { handle(it) }
         }
     }
 
@@ -121,22 +118,17 @@ class DrmManagementFragment : Fragment() {
                         .onSuccess {
                             val result = DrmManagementContract.createResult(hasReturned = true)
                             setFragmentResult(DrmManagementContract.REQUEST_KEY, result)
-                        }.onFailure { exception ->
-                            exception.toastUserMessage(requireView())
                         }
+                        .onFailure { handle(it) }
                 }
             }
             .show()
+    }
+
+    private fun handle(error: DrmManagementViewModel.DrmError) {
+        error.toUserError().show(requireActivity())
     }
 }
 
 private fun Date?.toFormattedString() =
     DateTime(this).toString(DateTimeFormat.shortDateTime()).orEmpty()
-
-// FIXME: the toast is drawn behind the navigation bar
-private fun Exception.toastUserMessage(view: View) {
-    if (this is UserException)
-        Snackbar.make(view, getUserMessage(view.context), Snackbar.LENGTH_LONG).show()
-
-    Timber.d(this)
-}

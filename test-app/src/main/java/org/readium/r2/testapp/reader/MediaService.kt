@@ -13,21 +13,31 @@ import android.content.Intent
 import android.content.ServiceConnection
 import android.os.Build
 import android.os.IBinder
-import androidx.lifecycle.lifecycleScope
-import androidx.media2.session.MediaSession
-import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.flow.sample
-import org.readium.navigator.media2.ExperimentalMedia2
-import org.readium.navigator.media2.MediaNavigator
-import org.readium.r2.testapp.utils.LifecycleMedia2SessionService
+import androidx.core.app.NotificationManagerCompat
+import androidx.core.app.ServiceCompat
+import androidx.media3.session.MediaSession
+import androidx.media3.session.MediaSessionService
+import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.*
+import org.readium.navigator.media.common.Media3Adapter
+import org.readium.navigator.media.common.MediaNavigator
+import org.readium.r2.shared.ExperimentalReadiumApi
 import timber.log.Timber
 
-@OptIn(ExperimentalMedia2::class)
-class MediaService : LifecycleMedia2SessionService() {
+@OptIn(ExperimentalReadiumApi::class)
+typealias AnyMediaNavigator = MediaNavigator<*, *, *>
+
+@OptIn(ExperimentalReadiumApi::class)
+@androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
+class MediaService : MediaSessionService() {
+
+    class Session(
+        val bookId: Long,
+        val navigator: AnyMediaNavigator,
+        val mediaSession: MediaSession
+    ) {
+        val coroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
+    }
 
     /**
      * The service interface to be used by the app.
@@ -37,38 +47,54 @@ class MediaService : LifecycleMedia2SessionService() {
         private val app: org.readium.r2.testapp.Application
             get() = application as org.readium.r2.testapp.Application
 
-        private var saveLocationJob: Job? = null
+        private val sessionMutable: MutableStateFlow<Session?> =
+            MutableStateFlow(null)
 
-        private var mediaNavigator: MediaNavigator? = null
+        val session: StateFlow<Session?> =
+            sessionMutable.asStateFlow()
 
-        var mediaSession: MediaSession? = null
-
-        fun closeNavigator() {
-            stopForeground(true)
-            mediaSession?.close()
-            mediaSession = null
-            saveLocationJob?.cancel()
-            saveLocationJob = null
-            mediaNavigator?.close()
-            mediaNavigator?.publication?.close()
-            mediaNavigator = null
+        fun closeSession() {
+            Timber.d("closeSession")
+            session.value?.let { session ->
+                session.mediaSession.release()
+                session.coroutineScope.cancel()
+                session.navigator.close()
+                sessionMutable.value = null
+            }
         }
 
         @OptIn(FlowPreview::class)
-        fun bindNavigator(navigator: MediaNavigator, bookId: Long) {
+        fun <N> openSession(
+            navigator: N,
+            bookId: Long
+        ) where N : AnyMediaNavigator, N : Media3Adapter {
+            Timber.d("openSession")
             val activityIntent = createSessionActivityIntent()
-            mediaNavigator = navigator
-            mediaSession = navigator.session(applicationContext, activityIntent)
-                .also { addSession(it) }
+            val mediaSession = MediaSession.Builder(applicationContext, navigator.asMedia3Player())
+                .setSessionActivity(activityIntent)
+                .setId(bookId.toString())
+                .build()
+
+            addSession(mediaSession)
+
+            val session = Session(
+                bookId,
+                navigator,
+                mediaSession
+            )
+
+            sessionMutable.value = session
 
             /*
              * Launch a job for saving progression even when playback is going on in the background
              * with no ReaderActivity opened.
              */
-            saveLocationJob = navigator.currentLocator
+            navigator.currentLocator
                 .sample(3000)
-                .onEach { locator -> app.bookRepository.saveProgression(locator, bookId) }
-                .launchIn(lifecycleScope)
+                .onEach { locator ->
+                    Timber.d("Saving TTS progression $locator")
+                    app.bookRepository.saveProgression(locator, bookId)
+                }.launchIn(session.coroutineScope)
         }
 
         private fun createSessionActivityIntent(): PendingIntent {
@@ -78,8 +104,17 @@ class MediaService : LifecycleMedia2SessionService() {
                 flags = flags or PendingIntent.FLAG_IMMUTABLE
             }
 
-            val intent = application.packageManager.getLaunchIntentForPackage(application.packageName)
+            val intent = application.packageManager.getLaunchIntentForPackage(
+                application.packageName
+            )
+
             return PendingIntent.getActivity(applicationContext, 0, intent, flags)
+        }
+
+        fun stop() {
+            closeSession()
+            ServiceCompat.stopForeground(this@MediaService, ServiceCompat.STOP_FOREGROUND_REMOVE)
+            this@MediaService.stopSelf()
         }
     }
 
@@ -87,15 +122,10 @@ class MediaService : LifecycleMedia2SessionService() {
         Binder()
     }
 
-    override fun onCreate() {
-        super.onCreate()
-        Timber.d("MediaService created.")
-    }
-
-    override fun onBind(intent: Intent): IBinder? {
+    override fun onBind(intent: Intent?): IBinder? {
         Timber.d("onBind called with $intent")
 
-        return if (intent.action == SERVICE_INTERFACE) {
+        return if (intent?.action == SERVICE_INTERFACE) {
             super.onBind(intent)
             // Readium-aware client.
             Timber.d("Returning custom binder.")
@@ -108,20 +138,24 @@ class MediaService : LifecycleMedia2SessionService() {
     }
 
     override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaSession? {
-        return binder.mediaSession
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        Timber.d("MediaService destroyed.")
+        return binder.session.value?.mediaSession
     }
 
     override fun onTaskRemoved(rootIntent: Intent) {
         super.onTaskRemoved(rootIntent)
         Timber.d("Task removed. Stopping session and service.")
-        // Close the navigator to allow the service to be stopped.
-        binder.closeNavigator()
-        stopSelf()
+        // Close the session to allow the service to be stopped.
+        binder.closeSession()
+        binder.stop()
+    }
+
+    override fun onDestroy() {
+        Timber.d("Destroying MediaService.")
+        binder.closeSession()
+        // Ensure one more time that all notifications are gone and,
+        // hopefully, pending intents cancelled.
+        NotificationManagerCompat.from(this).cancelAll()
+        super.onDestroy()
     }
 
     companion object {
@@ -133,7 +167,12 @@ class MediaService : LifecycleMedia2SessionService() {
             application.startService(intent)
         }
 
-        suspend fun bind(application: Application): MediaService.Binder {
+        fun stop(application: Application) {
+            val intent = intent(application)
+            application.stopService(intent)
+        }
+
+        suspend fun bind(application: Application): Binder {
             val mediaServiceBinder: CompletableDeferred<Binder> =
                 CompletableDeferred()
 
@@ -141,21 +180,23 @@ class MediaService : LifecycleMedia2SessionService() {
 
                 override fun onServiceConnected(name: ComponentName?, service: IBinder) {
                     Timber.d("MediaService bound.")
-                    mediaServiceBinder.complete(service as MediaService.Binder)
+                    mediaServiceBinder.complete(service as Binder)
                 }
 
                 override fun onServiceDisconnected(name: ComponentName) {
-                    Timber.e("MediaService disconnected.")
-
-                    // Should not happen, do nothing.
+                    Timber.d("MediaService disconnected.")
                 }
 
                 override fun onNullBinding(name: ComponentName) {
+                    if (mediaServiceBinder.isCompleted) {
+                        // This happens when the service has successfully connected and later
+                        // stopped and disconnected.
+                        return
+                    }
                     val errorMessage = "Failed to bind to MediaService."
                     Timber.e(errorMessage)
                     val exception = IllegalStateException(errorMessage)
                     mediaServiceBinder.completeExceptionally(exception)
-                    // Should not happen, do nothing.
                 }
             }
 
@@ -163,11 +204,6 @@ class MediaService : LifecycleMedia2SessionService() {
             application.bindService(intent, mediaServiceConnection, 0)
 
             return mediaServiceBinder.await()
-        }
-
-        fun stop(application: Application) {
-            val intent = intent(application)
-            application.stopService(intent)
         }
 
         private fun intent(application: Application) =

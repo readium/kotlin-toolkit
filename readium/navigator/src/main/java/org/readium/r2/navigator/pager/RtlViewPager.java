@@ -40,7 +40,7 @@ import java.util.HashMap;
  * <code>OnPageChangeListener</code>s so that clients can be agnostic to layout direction and
  * modifications are kept internal to <code>RtlViewPager</code>.
  */
-public class RtlViewPager extends ViewPager {
+class RtlViewPager extends ViewPager {
 
     private final HashMap<OnPageChangeListener, ReversingOnPageChangeListener> mPageChangeListeners = new HashMap<>();
     private int mLayoutDirection = ViewCompat.LAYOUT_DIRECTION_LTR;

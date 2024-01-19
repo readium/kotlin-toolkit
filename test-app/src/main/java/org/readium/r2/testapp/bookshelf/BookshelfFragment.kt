@@ -6,10 +6,10 @@
 
 package org.readium.r2.testapp.bookshelf
 
+import android.content.Intent
 import android.graphics.Rect
 import android.net.Uri
 import android.os.Bundle
-import android.text.TextUtils
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -17,25 +17,40 @@ import android.webkit.URLUtil
 import android.widget.EditText
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import com.google.android.material.snackbar.Snackbar
+import org.readium.r2.shared.util.AbsoluteUrl
+import org.readium.r2.testapp.Application
 import org.readium.r2.testapp.R
+import org.readium.r2.testapp.data.model.Book
 import org.readium.r2.testapp.databinding.FragmentBookshelfBinding
-import org.readium.r2.testapp.domain.model.Book
 import org.readium.r2.testapp.opds.GridAutoFitLayoutManager
 import org.readium.r2.testapp.reader.ReaderActivityContract
 import org.readium.r2.testapp.utils.viewLifecycle
 
 class BookshelfFragment : Fragment() {
 
+    private inner class OnViewAttachedListener : View.OnAttachStateChangeListener {
+        override fun onViewAttachedToWindow(view: View) {
+            app.readium.onLcpDialogAuthenticationParentAttached(view)
+        }
+
+        override fun onViewDetachedFromWindow(view: View) {
+            app.readium.onLcpDialogAuthenticationParentDetached()
+        }
+    }
+
     private val bookshelfViewModel: BookshelfViewModel by activityViewModels()
     private lateinit var bookshelfAdapter: BookshelfAdapter
-    private lateinit var documentPickerLauncher: ActivityResultLauncher<String>
+    private lateinit var appStoragePickerLauncher: ActivityResultLauncher<String>
+    private lateinit var sharedStoragePickerLauncher: ActivityResultLauncher<Array<String>>
     private var binding: FragmentBookshelfBinding by viewLifecycle()
+    private var onViewAttachedListener: OnViewAttachedListener = OnViewAttachedListener()
+
+    private val app: Application
+        get() = requireContext().applicationContext as Application
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -49,18 +64,32 @@ class BookshelfFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        view.addOnAttachStateChangeListener(onViewAttachedListener)
+
         bookshelfViewModel.channel.receive(viewLifecycleOwner) { handleEvent(it) }
 
         bookshelfAdapter = BookshelfAdapter(
-            onBookClick = { book -> book.id?.let { bookshelfViewModel.openPublication(it, requireActivity()) } },
+            onBookClick = { book ->
+                book.id?.let {
+                    bookshelfViewModel.openPublication(it)
+                }
+            },
             onBookLongClick = { book -> confirmDeleteBook(book) }
         )
 
-        documentPickerLauncher =
+        appStoragePickerLauncher =
             registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
                 uri?.let {
-                    binding.bookshelfProgressBar.visibility = View.VISIBLE
-                    bookshelfViewModel.addPublicationFromUri(it)
+                    bookshelfViewModel.importPublicationFromStorage(it)
+                }
+            }
+
+        sharedStoragePickerLauncher =
+            registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri: Uri? ->
+                uri?.let {
+                    val takeFlags: Int = Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                    requireContext().contentResolver.takePersistableUriPermission(uri, takeFlags)
+                    bookshelfViewModel.addPublicationFromStorage(it)
                 }
             }
 
@@ -79,7 +108,6 @@ class BookshelfFragment : Fragment() {
             bookshelfAdapter.submitList(it)
         }
 
-        // FIXME embedded dialogs like this are ugly
         binding.bookshelfAddBookFab.setOnClickListener {
             var selected = 0
             MaterialAlertDialogBuilder(requireContext())
@@ -88,32 +116,10 @@ class BookshelfFragment : Fragment() {
                     dialog.cancel()
                 }
                 .setPositiveButton(getString(R.string.ok)) { _, _ ->
-                    if (selected == 0) {
-                        documentPickerLauncher.launch("*/*")
-                    } else {
-                        val urlEditText = EditText(requireContext())
-                        val urlDialog = MaterialAlertDialogBuilder(requireContext())
-                            .setTitle(getString(R.string.add_book))
-                            .setMessage(R.string.enter_url)
-                            .setView(urlEditText)
-                            .setNegativeButton(R.string.cancel) { dialog, _ ->
-                                dialog.cancel()
-                            }
-                            .setPositiveButton(getString(R.string.ok), null)
-                            .show()
-                        urlDialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
-                            if (TextUtils.isEmpty(urlEditText.text)) {
-                                urlEditText.error = getString(R.string.invalid_url)
-                            } else if (!URLUtil.isValidUrl(urlEditText.text.toString())) {
-                                urlEditText.error = getString(R.string.invalid_url)
-                            } else {
-                                val url = urlEditText.text.toString()
-                                val uri = Uri.parse(url)
-                                binding.bookshelfProgressBar.visibility = View.VISIBLE
-                                bookshelfViewModel.addPublicationFromUri(uri)
-                                urlDialog.dismiss()
-                            }
-                        }
+                    when (selected) {
+                        0 -> appStoragePickerLauncher.launch("*/*")
+                        1 -> sharedStoragePickerLauncher.launch(arrayOf("*/*"))
+                        else -> askForRemoteUrl()
                     }
                 }
                 .setSingleChoiceItems(R.array.documentSelectorArray, 0) { _, which ->
@@ -123,35 +129,40 @@ class BookshelfFragment : Fragment() {
         }
     }
 
-    private fun handleEvent(event: BookshelfViewModel.Event) {
-        val message =
-            when (event) {
-                is BookshelfViewModel.Event.ImportPublicationSuccess ->
-                    getString(R.string.import_publication_success)
-
-                is BookshelfViewModel.Event.ImportPublicationError -> {
-                    event.errorMessage
-                }
-
-                is BookshelfViewModel.Event.OpenPublicationError -> {
-                    val detail = event.errorMessage
-                        ?: "Unable to open publication. An unexpected error occurred."
-                    "Error: $detail"
-                }
-
-                is BookshelfViewModel.Event.LaunchReader -> {
-                    val intent = ReaderActivityContract().createIntent(requireContext(), event.arguments)
-                    startActivity(intent)
-                    null
-                }
+    private fun askForRemoteUrl() {
+        val urlEditText = EditText(requireContext())
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle(getString(R.string.add_book))
+            .setMessage(R.string.enter_url)
+            .setView(urlEditText)
+            .setNegativeButton(R.string.cancel) { dialog, _ ->
+                dialog.cancel()
             }
-        binding.bookshelfProgressBar.visibility = View.GONE
-        message?.let {
-            Snackbar.make(
-                requireView(),
-                it,
-                Snackbar.LENGTH_LONG
-            ).show()
+            .setPositiveButton(getString(R.string.ok)) { _, _ ->
+                val url = AbsoluteUrl(urlEditText.text.toString())
+                if (url == null || !URLUtil.isValidUrl(urlEditText.text.toString())) {
+                    urlEditText.error = getString(R.string.invalid_url)
+                    return@setPositiveButton
+                }
+
+                bookshelfViewModel.addPublicationFromWeb(url)
+            }
+            .show()
+    }
+
+    private fun handleEvent(event: BookshelfViewModel.Event) {
+        when (event) {
+            is BookshelfViewModel.Event.OpenPublicationError -> {
+                event.error.toUserError().show(requireActivity())
+            }
+
+            is BookshelfViewModel.Event.LaunchReader -> {
+                val intent = ReaderActivityContract().createIntent(
+                    requireContext(),
+                    event.arguments
+                )
+                startActivity(intent)
+            }
         }
     }
 

@@ -14,7 +14,7 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 
 @Entity(tableName = Passphrase.TABLE_NAME)
-data class Passphrase(
+internal data class Passphrase(
     @PrimaryKey(autoGenerate = true)
     @ColumnInfo(name = ID)
     var id: Long? = null,

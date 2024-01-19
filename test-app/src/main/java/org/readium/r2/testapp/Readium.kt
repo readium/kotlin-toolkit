@@ -7,37 +7,76 @@
 package org.readium.r2.testapp
 
 import android.content.Context
-import org.readium.adapters.pdfium.document.PdfiumDocumentFactory
+import android.view.View
+import org.readium.adapter.pdfium.document.PdfiumDocumentFactory
+import org.readium.r2.lcp.LcpError
 import org.readium.r2.lcp.LcpService
+import org.readium.r2.lcp.auth.LcpDialogAuthentication
 import org.readium.r2.navigator.preferences.FontFamily
 import org.readium.r2.shared.ExperimentalReadiumApi
+import org.readium.r2.shared.util.DebugError
 import org.readium.r2.shared.util.Try
-import org.readium.r2.streamer.Streamer
+import org.readium.r2.shared.util.asset.AssetRetriever
+import org.readium.r2.shared.util.downloads.android.AndroidDownloadManager
+import org.readium.r2.shared.util.http.DefaultHttpClient
+import org.readium.r2.streamer.PublicationOpener
+import org.readium.r2.streamer.parser.DefaultPublicationParser
 
 /**
  * Holds the shared Readium objects and services used by the app.
  */
 class Readium(context: Context) {
 
+    val httpClient =
+        DefaultHttpClient()
+
+    val assetRetriever =
+        AssetRetriever(context.contentResolver, httpClient)
+
+    val downloadManager =
+        AndroidDownloadManager(
+            context = context,
+            destStorage = AndroidDownloadManager.Storage.App
+        )
+
     /**
      * The LCP service decrypts LCP-protected publication and acquire publications from a
      * license file.
      */
-    val lcpService = LcpService(context)
-        ?.let { Try.success(it) }
-        ?: Try.failure(Exception("liblcp is missing on the classpath"))
+    val lcpService = LcpService(
+        context,
+        assetRetriever,
+        downloadManager
+    )?.let { Try.success(it) }
+        ?: Try.failure(LcpError.Unknown(DebugError("liblcp is missing on the classpath")))
+
+    private val lcpDialogAuthentication = LcpDialogAuthentication()
+
+    private val contentProtections = listOfNotNull(
+        lcpService.getOrNull()?.contentProtection(lcpDialogAuthentication)
+    )
 
     /**
-     * The Streamer is used to open and parse publications.
+     * The PublicationFactory is used to open publications.
      */
-    val streamer = Streamer(
-        context,
-        contentProtections = listOfNotNull(
-            lcpService.getOrNull()?.contentProtection()
+    val publicationOpener = PublicationOpener(
+        publicationParser = DefaultPublicationParser(
+            context,
+            assetRetriever = assetRetriever,
+            httpClient = httpClient,
+            // Only required if you want to support PDF files using the PDFium adapter.
+            pdfFactory = PdfiumDocumentFactory(context)
         ),
-        // Only required if you want to support PDF files using the PDFium adapter.
-        pdfFactory = PdfiumDocumentFactory(context)
+        contentProtections = contentProtections
     )
+
+    fun onLcpDialogAuthenticationParentAttached(view: View) {
+        lcpDialogAuthentication.onParentViewAttachedToWindow(view)
+    }
+
+    fun onLcpDialogAuthenticationParentDetached() {
+        lcpDialogAuthentication.onParentViewDetachedFromWindow()
+    }
 }
 
 @OptIn(ExperimentalReadiumApi::class)

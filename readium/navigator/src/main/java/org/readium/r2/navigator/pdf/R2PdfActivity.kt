@@ -11,5 +11,8 @@ package org.readium.r2.navigator.pdf
 
 import androidx.appcompat.app.AppCompatActivity
 
-@Deprecated("Use `PdfNavigatorFragment` in your own activity instead", level = DeprecationLevel.ERROR)
-abstract class R2PdfActivity : AppCompatActivity()
+@Deprecated(
+    "Use `PdfNavigatorFragment` in your own activity instead",
+    level = DeprecationLevel.ERROR
+)
+public abstract class R2PdfActivity : AppCompatActivity()

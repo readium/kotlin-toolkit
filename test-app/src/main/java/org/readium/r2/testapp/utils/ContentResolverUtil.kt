@@ -74,7 +74,8 @@ object ContentResolverUtil {
                     }
                     return try {
                         val contentUri = ContentUris.withAppendedId(
-                            Uri.parse("content://downloads/public_downloads"), java.lang.Long.valueOf(id)
+                            Uri.parse("content://downloads/public_downloads"),
+                            java.lang.Long.valueOf(id)
                         )
                         getDataColumn(context, contentUri, null, null)
                     } catch (e: NumberFormatException) {
@@ -99,7 +100,6 @@ object ContentResolverUtil {
                 return getDataColumn(context, contentUri, selection, selectionArgs)
             }
         } else if ("content".equals(uri.scheme!!, ignoreCase = true)) {
-
             // Return the remote address
             return getDataColumn(context, uri, null, null)
         } else if ("file".equals(uri.scheme!!, ignoreCase = true)) {
@@ -125,7 +125,6 @@ object ContentResolverUtil {
         selection: String?,
         selectionArgs: Array<String>?
     ): String? {
-
         val column = "_data"
         val projection = arrayOf(column)
         context.contentResolver.query(uri!!, projection, selection, selectionArgs, null).use { cursor ->
