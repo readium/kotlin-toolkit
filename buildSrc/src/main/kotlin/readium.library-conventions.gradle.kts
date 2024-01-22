@@ -7,6 +7,8 @@ plugins {
     kotlin("plugin.parcelize")
 }
 
+group = property("pom.groupId") as String
+
 android {
     resourcePrefix = "readium_"
 
@@ -54,7 +56,7 @@ kotlin {
 
 mavenPublishing {
     coordinates(
-        groupId = property("pom.groupId") as String,
+        groupId = group.toString(),
         artifactId = property("pom.artifactId") as String,
         version = property("pom.version") as String
     )
