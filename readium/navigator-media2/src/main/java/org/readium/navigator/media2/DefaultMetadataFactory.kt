@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package org.readium.navigator.media2
 
 import android.graphics.Bitmap
@@ -9,6 +11,7 @@ import kotlinx.coroutines.async
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.services.cover
 
+@Suppress("DEPRECATION")
 @ExperimentalMedia2
 internal class DefaultMetadataFactory(private val publication: Publication) : MediaMetadataFactory {
 
