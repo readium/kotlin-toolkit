@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package org.readium.navigator.media2
 
 import androidx.media2.common.MediaMetadata

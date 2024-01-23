@@ -4,6 +4,8 @@
  * available in the top-level LICENSE file of the project.
  */
 
+@file:Suppress("DEPRECATION")
+
 package org.readium.r2.navigator.media
 
 import android.media.session.PlaybackState
@@ -18,6 +20,7 @@ import kotlin.time.Duration.Companion.seconds
 import kotlin.time.ExperimentalTime
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
+import org.readium.r2.navigator.ExperimentalAudiobook
 import org.readium.r2.navigator.MediaNavigator
 import org.readium.r2.navigator.extensions.normalizeLocator
 import org.readium.r2.navigator.extensions.sum
@@ -45,7 +48,7 @@ private val skipBackwardInterval: Duration = 30.seconds
  * An implementation of [MediaNavigator] using an Android's MediaSession compatible media player.
  */
 @Deprecated("Use the new AudioNavigator from the readium-navigator-media-audio module.")
-@OptIn(ExperimentalTime::class)
+@OptIn(ExperimentalTime::class, ExperimentalAudiobook::class)
 public class MediaSessionNavigator(
     public val publication: Publication,
     public val publicationId: PublicationId,
@@ -208,6 +211,7 @@ public class MediaSessionNavigator(
         return go(locator, animated, completion)
     }
 
+    @Suppress("UNUSED_PARAMETER")
     public fun goForward(animated: Boolean = true, completion: () -> Unit = {}): Boolean {
         if (!isActive) return false
 
@@ -216,6 +220,7 @@ public class MediaSessionNavigator(
         return true
     }
 
+    @Suppress("UNUSED_PARAMETER")
     public fun goBackward(animated: Boolean = true, completion: () -> Unit = {}): Boolean {
         if (!isActive) return false
 

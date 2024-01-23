@@ -4,6 +4,8 @@
  * available in the top-level LICENSE file of the project.
  */
 
+@file:Suppress("DEPRECATION")
+
 package org.readium.r2.navigator.media
 
 import android.app.Notification
@@ -47,6 +49,7 @@ import timber.log.Timber
  */
 @ExperimentalAudiobook
 @OptIn(ExperimentalCoroutinesApi::class)
+@Deprecated("Use the new AudioNavigator from the readium-navigator-media-audio module.")
 public open class MediaService : MediaBrowserServiceCompat(), CoroutineScope by MainScope() {
 
     /**

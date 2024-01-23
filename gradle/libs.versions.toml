@@ -1,5 +1,9 @@
 [versions]
 
+kotlin = "1.9.22"
+agp = "8.2.1"
+gradle-maven-publish-plugin = "0.27.0"
+
 accompanist = "0.32.0"
 
 androidx-activity = "1.8.2"
@@ -45,10 +49,15 @@ joda-time = "2.12.6"
 jsoup = "1.17.2"
 junit = "4.13.2"
 
-kotlin = "1.9.22"
 kotlinx-coroutines = "1.7.3"
 kotlinx-coroutines-test = "1.7.3"
 kotlinx-serialization-json = "1.6.2"
+
+# Make sure to align with the Kotlin version.
+# See https://github.com/google/ksp/releases
+ksp = "1.9.22-1.0.16"
+
+ktlint = "11.5.1"
 
 pdfium = "1.8.2"
 pdf-viewer = "2.8.2"
@@ -59,6 +68,7 @@ pspdfkit = "8.4.1"
 robolectric = "4.11.1"
 
 timber = "5.0.1"
+
 
 [libraries]
 accompanist-themeadapter-material = { group = "com.google.accompanist", name = "accompanist-themeadapter-material", version.ref = "accompanist" }
@@ -140,6 +150,15 @@ robolectric = { group = "org.robolectric", name = "robolectric", version.ref = "
 
 timber = { group = "com.jakewharton.timber", name = "timber", version.ref = "timber" }
 
+plugin-android = { module = "com.android.tools.build:gradle", version.ref = "agp" }
+plugin-kotlin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
+plugin-maven-publish = { module = "com.vanniktech:gradle-maven-publish-plugin", version.ref = "gradle-maven-publish-plugin" }
+
+[plugins]
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }
+ktlint = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlint" }
+ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 
 [bundles]
 compose = ["androidx-compose-activity", "androidx-compose-animation", "androidx-compose-foundation", "androidx-compose-material", "androidx-compose-material3", "androidx-compose-material-icons", "androidx-compose-ui", "androidx-compose-ui-tooling"]
@@ -151,4 +170,3 @@ media3 = ["androidx-media3-session", "androidx-media3-common", "androidx-media3-
 navigation = ["androidx-navigation-fragment", "androidx-navigation-ui"]
 room = ["androidx-room-runtime", "androidx-room-ktx"]
 test-frameworks = ["junit", "androidx-ext-junit", "androidx-expresso-core", "robolectric", "kotlin-junit", "assertj", "kotlinx-coroutines-test"]
-
