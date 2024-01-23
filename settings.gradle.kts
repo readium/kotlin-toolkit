@@ -73,3 +73,5 @@ project(":readium:shared")
 include(":readium:streamer")
 project(":readium:streamer")
     .name = "readium-streamer"
+
+include("test-app")
