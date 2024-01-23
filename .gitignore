@@ -83,3 +83,10 @@ docs/readium
 docs/index.md
 docs/package-list
 site/
+androidTestResultsUserPreferences.xml
+
+# Custom Git patch enabling LCP in the Test App
+lcp.patch
+
+# direnv file containing Maven Central secrets
+.envrc

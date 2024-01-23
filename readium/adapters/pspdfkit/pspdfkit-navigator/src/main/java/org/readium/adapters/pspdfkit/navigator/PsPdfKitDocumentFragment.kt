@@ -68,7 +68,7 @@ internal class PsPdfKitDocumentFragment(
     ): View =
         FragmentContainerView(inflater.context)
             .apply {
-                id = R.id.readium_pspdfkit_fragment
+                id = org.readium.adapter.pspdfkit.navigator.R.id.readium_pspdfkit_fragment
             }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -80,7 +80,7 @@ internal class PsPdfKitDocumentFragment(
         pdfFragment = createPdfFragment()
 
         childFragmentManager.commitNow {
-            replace(R.id.readium_pspdfkit_fragment, pdfFragment, "com.pspdfkit.ui.PdfFragment")
+            replace(org.readium.adapter.pspdfkit.navigator.R.id.readium_pspdfkit_fragment, pdfFragment, "com.pspdfkit.ui.PdfFragment")
         }
     }
 

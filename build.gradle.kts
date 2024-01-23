@@ -7,20 +7,8 @@
 import org.jetbrains.dokka.gradle.DokkaTaskPartial
 
 plugins {
-    id("com.android.application") apply false
-    id("com.android.library") apply false
-    id("io.github.gradle-nexus.publish-plugin") apply true
-    id("org.jetbrains.dokka") apply true
-    id("org.jetbrains.kotlin.android") apply false
-    id("com.google.devtools.ksp") apply false
-    id("org.jlleitschuh.gradle.ktlint") apply true
-}
-
-apply(from = "$rootDir/scripts/publish-root.gradle")
-
-ext {
-    set("publish.groupId", "org.readium.kotlin-toolkit")
-    set("publish.version", "2.4.1")
+    alias(libs.plugins.dokka)
+    alias(libs.plugins.ktlint)
 }
 
 subprojects {
@@ -28,8 +16,6 @@ subprojects {
 
     ktlint {
         android.set(true)
-        disabledRules.add("no-wildcard-imports")
-        disabledRules.add("max-line-length")
     }
 }
 

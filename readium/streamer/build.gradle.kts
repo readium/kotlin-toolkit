@@ -5,46 +5,12 @@
  */
 
 plugins {
-    id("com.android.library")
-    kotlin("android")
-    kotlin("plugin.parcelize")
+    id("readium.library-conventions")
 }
 
 android {
-    compileSdk = 34
-    defaultConfig {
-        minSdk = 21
-        targetSdk = 33
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-    }
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
-    }
-    testOptions {
-        unitTests.isIncludeAndroidResources = true
-    }
-    kotlinOptions {
-        allWarningsAsErrors = true
-        freeCompilerArgs = freeCompilerArgs + listOf(
-            "-opt-in=kotlin.RequiresOptIn",
-            "-opt-in=org.readium.r2.shared.InternalReadiumApi"
-        )
-    }
-    buildFeatures {
-        buildConfig = true
-    }
-    buildTypes {
-        getByName("release") {
-            isMinifyEnabled = false
-            proguardFiles(getDefaultProguardFile("proguard-android.txt"))
-        }
-    }
     namespace = "org.readium.r2.streamer"
 }
-
-rootProject.ext["publish.artifactId"] = "readium-streamer"
-apply(from = "$rootDir/scripts/publish-module.gradle")
 
 dependencies {
     api(project(":readium:readium-shared"))
