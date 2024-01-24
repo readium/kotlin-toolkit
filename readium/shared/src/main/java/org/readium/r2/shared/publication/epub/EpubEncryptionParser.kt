@@ -29,7 +29,7 @@ public object EpubEncryptionParser {
     private fun parseEncryptedData(node: ElementNode): Pair<Url, Encryption>? {
         val resourceURI = node.getFirst("CipherData", Namespaces.ENC)
             ?.getFirst("CipherReference", Namespaces.ENC)?.getAttr("URI")
-            ?.let { Url(it) ?: Url.fromDecodedPath(it) }
+            ?.let { Url.fromEpubHref(it) }
             ?: return null
         val retrievalMethod = node.getFirst("KeyInfo", Namespaces.SIG)
             ?.getFirst("RetrievalMethod", Namespaces.SIG)?.getAttr("URI")

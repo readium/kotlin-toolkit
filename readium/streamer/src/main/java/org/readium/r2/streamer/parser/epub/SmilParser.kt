@@ -10,7 +10,6 @@ import org.readium.r2.shared.MediaOverlayNode
 import org.readium.r2.shared.MediaOverlays
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.xml.ElementNode
-import org.readium.r2.streamer.parser.epub.extensions.fromEpubHref
 
 internal object SmilParser {
     /* According to https://www.w3.org/publishing/epub3/epub-mediaoverlays.html#sec-overlays-content-conf

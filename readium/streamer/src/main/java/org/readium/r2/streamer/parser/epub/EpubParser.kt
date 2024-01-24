@@ -35,7 +35,6 @@ import org.readium.r2.shared.util.resource.TransformingContainer
 import org.readium.r2.shared.util.use
 import org.readium.r2.shared.util.xml.ElementNode
 import org.readium.r2.streamer.parser.PublicationParser
-import org.readium.r2.streamer.parser.epub.extensions.fromEpubHref
 
 /**
  * Parses a Publication from an EPUB publication.
