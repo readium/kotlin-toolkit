@@ -9,7 +9,6 @@
 package org.readium.r2.testapp.reader
 
 import android.graphics.Color
-import android.graphics.PointF
 import android.os.Build
 import android.text.Html
 import android.text.Spanned
@@ -295,13 +294,13 @@ class ReaderViewModel(
             is HyperlinkNavigator.FootnoteContext -> {
                 val text =
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                        Html.fromHtml(context.content, Html.FROM_HTML_MODE_COMPACT)
+                        Html.fromHtml(context.noteContent, Html.FROM_HTML_MODE_COMPACT)
                     } else {
                         @Suppress("DEPRECATION")
-                        Html.fromHtml(context.content)
+                        Html.fromHtml(context.noteContent)
                     }
 
-                val command = VisualFragmentCommand.ShowPopup(text, context.activationPoint)
+                val command = VisualFragmentCommand.ShowPopup(text)
                 visualFragmentChannel.send(command)
                 false
             }
@@ -338,7 +337,7 @@ class ReaderViewModel(
     }
 
     sealed class VisualFragmentCommand {
-        class ShowPopup(val text: Spanned, val point: PointF) : VisualFragmentCommand()
+        class ShowPopup(val text: Spanned) : VisualFragmentCommand()
     }
 
     sealed class SearchCommand {

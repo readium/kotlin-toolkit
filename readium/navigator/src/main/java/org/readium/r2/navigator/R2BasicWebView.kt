@@ -127,6 +127,10 @@ internal open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebV
 
     private val uiScope = CoroutineScope(Dispatchers.Main)
 
+    /*
+     * Url already handled by listener.shouldFollowFootnoteLink,
+     * Tries to ignore the matching shouldOverrideUrlLoading call.
+     */
     private var urlNotToOverrideLoading: AbsoluteUrl? = null
 
     init {
@@ -365,8 +369,7 @@ internal open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebV
         val safe = Jsoup.clean(aside, Safelist.relaxed())
         val context = HyperlinkNavigator.FootnoteContext(
             referrer = html,
-            content = safe,
-            activationPoint = point
+            noteContent = safe
         )
 
         val shouldFollowLink = listener?.shouldFollowFootnoteLink(absoluteUrl, context) ?: true

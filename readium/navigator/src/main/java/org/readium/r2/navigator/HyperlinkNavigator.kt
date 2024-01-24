@@ -6,7 +6,6 @@
 
 package org.readium.r2.navigator
 
-import android.graphics.PointF
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.util.AbsoluteUrl
@@ -20,14 +19,12 @@ public interface HyperlinkNavigator : Navigator {
     @ExperimentalReadiumApi
     public sealed interface LinkContext {
         public val referrer: String
-        public val activationPoint: PointF
     }
 
     @ExperimentalReadiumApi
     public data class FootnoteContext(
         public override val referrer: String,
-        override val activationPoint: PointF,
-        public val content: String
+        public val noteContent: String
     ) : LinkContext
 
     @ExperimentalReadiumApi

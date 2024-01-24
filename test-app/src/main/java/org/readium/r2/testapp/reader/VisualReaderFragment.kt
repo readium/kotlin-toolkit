@@ -9,7 +9,6 @@ package org.readium.r2.testapp.reader
 import android.app.AlertDialog
 import android.content.Context
 import android.graphics.Color
-import android.graphics.PointF
 import android.graphics.RectF
 import android.os.Bundle
 import android.text.Spanned
@@ -51,7 +50,6 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import kotlin.math.roundToInt
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.filterNotNull
@@ -106,7 +104,7 @@ abstract class VisualReaderFragment : BaseReaderFragment() {
         model.visualFragmentChannel.receive(this) { event ->
             when (event) {
                 is ReaderViewModel.VisualFragmentCommand.ShowPopup ->
-                    showFootnote(event.text, event.point)
+                    showFootnote(event.text)
             }
         }
     }
@@ -583,8 +581,7 @@ abstract class VisualReaderFragment : BaseReaderFragment() {
         }
 
     private fun showFootnote(
-        text: Spanned,
-        point: PointF
+        text: Spanned
     ) {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
@@ -625,8 +622,8 @@ abstract class VisualReaderFragment : BaseReaderFragment() {
                 mPopupWindow.showAtLocation(
                     requireView(),
                     Gravity.CENTER,
-                    point.x.roundToInt(),
-                    point.y.roundToInt()
+                    0,
+                    0
                 )
             }
         }
