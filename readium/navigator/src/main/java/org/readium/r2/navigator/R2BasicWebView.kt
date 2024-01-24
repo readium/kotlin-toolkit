@@ -368,7 +368,6 @@ internal open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebV
 
         val safe = Jsoup.clean(aside, Safelist.relaxed())
         val context = HyperlinkNavigator.FootnoteContext(
-            referrer = html,
             noteContent = safe
         )
 

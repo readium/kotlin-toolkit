@@ -17,13 +17,10 @@ import org.readium.r2.shared.util.AbsoluteUrl
 public interface HyperlinkNavigator : Navigator {
 
     @ExperimentalReadiumApi
-    public sealed interface LinkContext {
-        public val referrer: String
-    }
+    public sealed interface LinkContext
 
     @ExperimentalReadiumApi
     public data class FootnoteContext(
-        public override val referrer: String,
         public val noteContent: String
     ) : LinkContext
 
