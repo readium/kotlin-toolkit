@@ -507,7 +507,7 @@ public class EpubNavigatorFragment internal constructor(
         }
 
         viewLifecycleOwner.lifecycleScope.launch {
-            withStarted {
+            viewLifecycleOwner.withStarted {
                 // Restore the last locator before a configuration change (e.g. screen rotation), or the
                 // initial locator when given.
                 val locator = savedInstanceState?.let {
