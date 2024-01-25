@@ -4,32 +4,6 @@
  * available in the top-level LICENSE file of the project.
  */
 
-pluginManagement {
-    repositories {
-        gradlePluginPortal()
-        google()
-        mavenLocal()
-        mavenCentral()
-        maven(url = "https://jcenter.bintray.com")
-        maven(url = "https://s3.amazonaws.com/repo.commonsware.com")
-    }
-
-    // Setting the plugin versions here doesn't work with AGP Upgrade Assistant, but we need
-    // it to integrate Readium in submodules.
-    // See https://github.com/readium/kotlin-toolkit/pull/97
-    plugins {
-        id("com.android.application") version ("8.2.1")
-        id("com.android.library") version ("8.2.1")
-        id("io.github.gradle-nexus.publish-plugin") version ("1.3.0")
-        id("org.jetbrains.dokka") version ("1.9.10")
-        id("org.jetbrains.kotlin.android") version ("1.9.22")
-        id("org.jetbrains.kotlin.plugin.serialization") version ("1.9.22")
-        id("org.jlleitschuh.gradle.ktlint") version ("11.5.1")
-        // Make sure to align with the Kotlin version.
-        // See https://github.com/google/ksp/releases
-        id("com.google.devtools.ksp") version ("1.9.22-1.0.16")
-    }
-}
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
@@ -100,6 +74,4 @@ include(":readium:streamer")
 project(":readium:streamer")
     .name = "readium-streamer"
 
-if (System.getenv("JITPACK") == null) {
-    include("test-app")
-}
+include("test-app")

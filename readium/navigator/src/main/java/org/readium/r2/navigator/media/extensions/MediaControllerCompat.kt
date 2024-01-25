@@ -4,6 +4,8 @@
  * available in the top-level LICENSE file of the project.
  */
 
+@file:Suppress("DEPRECATION")
+
 package org.readium.r2.navigator.media.extensions
 
 import android.support.v4.media.session.MediaControllerCompat

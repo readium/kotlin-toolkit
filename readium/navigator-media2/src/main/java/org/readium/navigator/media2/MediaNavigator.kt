@@ -55,6 +55,7 @@ import timber.log.Timber
  * providing [create] with it. If you don't, ExoPlayer will be used, without cache.
  * You can build your own [SessionPlayer] based on [ExoPlayer] using [ExoPlayerDataSource].
  */
+@ExperimentalMedia2
 @Deprecated("Use the new AudioNavigator from the readium-navigator-media-audio module.")
 @OptIn(ExperimentalTime::class)
 public class MediaNavigator private constructor(
@@ -383,16 +384,19 @@ public class MediaNavigator private constructor(
         return true
     }
 
+    @Suppress("UNUSED_PARAMETER")
     public fun goForward(animated: Boolean, completion: () -> Unit): Boolean {
         launchAndRun({ goForward() }, completion)
         return true
     }
 
+    @Suppress("UNUSED_PARAMETER")
     public fun goBackward(animated: Boolean, completion: () -> Unit): Boolean {
         launchAndRun({ goBackward() }, completion)
         return true
     }
 
+    @ExperimentalMedia2
     public companion object {
 
         public suspend fun create(

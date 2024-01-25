@@ -354,7 +354,7 @@ public class EpubNavigatorFragment internal constructor(
 
                 // TODO needs work, currently showing two resources for fxl, needs to understand which two resources, left & right, or only right etc.
                 var doublePageLeft: Link? = null
-                var doublePageRight: Link? = null
+                var doublePageRight: Link?
 
                 for ((index, link) in readingOrder.withIndex()) {
                     val url = viewModel.urlTo(link)
