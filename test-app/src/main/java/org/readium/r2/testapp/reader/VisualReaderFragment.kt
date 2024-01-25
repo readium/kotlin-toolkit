@@ -81,6 +81,7 @@ import org.readium.r2.testapp.utils.clearPadding
 import org.readium.r2.testapp.utils.extensions.confirmDialog
 import org.readium.r2.testapp.utils.extensions.throttleLatest
 import org.readium.r2.testapp.utils.hideSystemUi
+import org.readium.r2.testapp.utils.observeWhenStarted
 import org.readium.r2.testapp.utils.padSystemUi
 import org.readium.r2.testapp.utils.showSystemUi
 import org.readium.r2.testapp.utils.toggleSystemUi
@@ -249,7 +250,7 @@ abstract class VisualReaderFragment : BaseReaderFragment() {
     private suspend fun setupTts(scope: CoroutineScope) {
         model.tts?.apply {
             events
-                .onEach { event ->
+                .observeWhenStarted(viewLifecycleOwner) { event ->
                     when (event) {
                         is TtsViewModel.Event.OnError -> {
                             showError(event.error.toUserError())
@@ -258,7 +259,6 @@ abstract class VisualReaderFragment : BaseReaderFragment() {
                             confirmAndInstallTtsVoice(event.language)
                     }
                 }
-                .launchIn(scope)
 
             // Navigate to the currently spoken word.
             // This will automatically turn pages when needed.
@@ -266,23 +266,21 @@ abstract class VisualReaderFragment : BaseReaderFragment() {
                 .filterNotNull()
                 // Improve performances by throttling the moves to maximum one per second.
                 .throttleLatest(1.seconds)
-                .onEach { locator ->
+                .observeWhenStarted(viewLifecycleOwner) { locator ->
                     navigator.go(locator, animated = false)
                 }
-                .launchIn(scope)
 
             // Prevent interacting with the publication (including page turns) while the TTS is
             // playing.
             isPlaying
-                .onEach { isPlaying ->
+                .observeWhenStarted(viewLifecycleOwner) { isPlaying ->
                     disableTouches = isPlaying
                 }
-                .launchIn(scope)
 
             // Highlight the currently spoken utterance.
             (navigator as? DecorableNavigator)?.let { navigator ->
                 highlight
-                    .onEach { locator ->
+                    .observeWhenStarted(viewLifecycleOwner) { locator ->
                         val decoration = locator?.let {
                             Decoration(
                                 id = "tts",
@@ -292,7 +290,6 @@ abstract class VisualReaderFragment : BaseReaderFragment() {
                         }
                         navigator.applyDecorations(listOfNotNull(decoration), "tts")
                     }
-                    .launchIn(scope)
             }
         }
     }

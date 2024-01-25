@@ -285,7 +285,7 @@ internal open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebV
         // We ignore taps on interactive element, unless it's an element we handle ourselves such as
         // pop-up footnotes.
         if (event.interactiveElement != null) {
-            return handleFootnote(event.targetElement, event.point)
+            return handleFootnote(event.targetElement)
         }
 
         return runBlocking(uiScope.coroutineContext) { listener?.onTap(event.point) ?: false }
@@ -336,7 +336,7 @@ internal open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebV
         }
     }
 
-    private fun handleFootnote(html: String, point: PointF): Boolean {
+    private fun handleFootnote(html: String): Boolean {
         val resourceUrl = resourceUrl ?: return false
 
         val href = tryOrNull { Jsoup.parse(html) }
