@@ -68,7 +68,12 @@ public sealed class Url : Parcelable {
         public fun fromEpubHref(href: String): Url? =
             (Url(href) ?: fromDecodedPath(href))
                 // Make the EPUB HREFs canonical by percent-decoding the path before re-encoding it.
-                ?.path?.let { fromDecodedPath(it) }
+                ?.run {
+                    uri.buildUpon()
+                        .path(path)
+                        .build()
+                        .toUrl()
+                }
 
         internal operator fun invoke(uri: Uri): Url? =
             if (uri.isAbsolute) {
