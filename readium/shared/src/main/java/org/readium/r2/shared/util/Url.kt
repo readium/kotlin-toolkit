@@ -15,6 +15,7 @@ import java.net.URL
 import kotlinx.parcelize.Parcelize
 import org.readium.r2.shared.DelicateReadiumApi
 import org.readium.r2.shared.InternalReadiumApi
+import org.readium.r2.shared.extensions.isPrintableAscii
 import org.readium.r2.shared.extensions.percentEncodedPath
 import org.readium.r2.shared.extensions.tryOrNull
 
@@ -67,13 +68,6 @@ public sealed class Url : Parcelable {
         @InternalReadiumApi
         public fun fromEpubHref(href: String): Url? =
             (Url(href) ?: fromDecodedPath(href))
-                // Make the EPUB HREFs canonical by percent-decoding the path before re-encoding it.
-                ?.run {
-                    uri.buildUpon()
-                        .path(path)
-                        .build()
-                        .toUrl()
-                }
 
         internal operator fun invoke(uri: Uri): Url? =
             if (uri.isAbsolute) {
@@ -372,8 +366,9 @@ private fun Uri.addFileAuthority(): Uri =
     }
 
 private fun String.isValidUrl(): Boolean =
-    // Uri.parse doesn't really validate the URL, it could contain invalid characters.
-    isNotBlank() && tryOrNull { URI(this) } != null
+    // Uri.parse doesn't really validate the URL, it could contain invalid characters, so we use
+    // URI. However, URI allows some non-ASCII characters.
+    isNotBlank() && isPrintableAscii() && tryOrNull { URI(this) } != null
 
 @JvmInline
 public value class FileExtension(
