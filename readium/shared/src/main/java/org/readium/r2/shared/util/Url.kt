@@ -44,31 +44,6 @@ public sealed class Url : Parcelable {
             return invoke(Uri.parse(url))
         }
 
-        /**
-         * Creates an [Url] from a legacy HREF.
-         *
-         * For example, if it is a relative path such as `/dir/my chapter.html`, it will be
-         * converted to the valid relative URL `dir/my%20chapter.html`.
-         *
-         * Only use this API when you are upgrading to Readium 3.x and migrating the HREFs stored in
-         * your database. See the 3.0 migration guide for more information.
-         */
-        @DelicateReadiumApi
-        public fun fromLegacyHref(href: String): Url? =
-            AbsoluteUrl(href) ?: fromDecodedPath(href.removePrefix("/"))
-
-        /**
-         * According to the EPUB specification, the HREFs in the EPUB package must be valid URLs (so
-         * percent-encoded). Unfortunately, many EPUBs don't follow this rule, and use invalid HREFs such
-         * as `my chapter.html` or `/dir/my chapter.html`.
-         *
-         * As a workaround, we assume the HREFs are valid percent-encoded URLs, and fallback to decoded paths
-         * if we can't parse the URL.
-         */
-        @InternalReadiumApi
-        public fun fromEpubHref(href: String): Url? =
-            (Url(href) ?: fromDecodedPath(href))
-
         internal operator fun invoke(uri: Uri): Url? =
             if (uri.isAbsolute) {
                 AbsoluteUrl(uri)
@@ -317,6 +292,32 @@ public class RelativeUrl private constructor(override val uri: Uri) : Url() {
                 RelativeUrl(uri)
             }
     }
+}
+
+/**
+ * Creates an [Url] from a legacy HREF.
+ *
+ * For example, if it is a relative path such as `/dir/my chapter.html`, it will be
+ * converted to the valid relative URL `dir/my%20chapter.html`.
+ *
+ * Only use this API when you are upgrading to Readium 3.x and migrating the HREFs stored in
+ * your database. See the 3.0 migration guide for more information.
+ */
+@DelicateReadiumApi
+public fun Url.Companion.fromLegacyHref(href: String): Url? =
+    AbsoluteUrl(href) ?: Url.fromDecodedPath(href.removePrefix("/"))
+
+/**
+ * According to the EPUB specification, the HREFs in the EPUB package must be valid URLs (so
+ * percent-encoded). Unfortunately, many EPUBs don't follow this rule, and use invalid HREFs such
+ * as `my chapter.html` or `/dir/my chapter.html`.
+ *
+ * As a workaround, we assume the HREFs are valid percent-encoded URLs, and fallback to decoded paths
+ * if we can't parse the URL.
+ */
+@InternalReadiumApi
+public fun Url.Companion.fromEpubHref(href: String): Url? {
+    return (Url(href) ?: Url.fromDecodedPath(href))
 }
 
 public fun File.toUrl(): AbsoluteUrl =

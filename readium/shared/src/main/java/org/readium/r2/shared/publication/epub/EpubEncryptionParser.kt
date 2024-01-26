@@ -10,6 +10,7 @@ import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.publication.encryption.Encryption
 import org.readium.r2.shared.publication.protection.ContentProtection
 import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.fromEpubHref
 import org.readium.r2.shared.util.xml.ElementNode
 
 @InternalReadiumApi
