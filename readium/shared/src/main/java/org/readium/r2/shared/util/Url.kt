@@ -15,6 +15,7 @@ import java.net.URL
 import kotlinx.parcelize.Parcelize
 import org.readium.r2.shared.DelicateReadiumApi
 import org.readium.r2.shared.InternalReadiumApi
+import org.readium.r2.shared.extensions.isPrintableAscii
 import org.readium.r2.shared.extensions.percentEncodedPath
 import org.readium.r2.shared.extensions.tryOrNull
 
@@ -42,19 +43,6 @@ public sealed class Url : Parcelable {
             if (!url.isValidUrl()) return null
             return invoke(Uri.parse(url))
         }
-
-        /**
-         * Creates an [Url] from a legacy HREF.
-         *
-         * For example, if it is a relative path such as `/dir/my chapter.html`, it will be
-         * converted to the valid relative URL `dir/my%20chapter.html`.
-         *
-         * Only use this API when you are upgrading to Readium 3.x and migrating the HREFs stored in
-         * your database. See the 3.0 migration guide for more information.
-         */
-        @DelicateReadiumApi
-        public fun fromLegacyHref(href: String): Url? =
-            AbsoluteUrl(href) ?: fromDecodedPath(href.removePrefix("/"))
 
         internal operator fun invoke(uri: Uri): Url? =
             if (uri.isAbsolute) {
@@ -306,6 +294,32 @@ public class RelativeUrl private constructor(override val uri: Uri) : Url() {
     }
 }
 
+/**
+ * Creates an [Url] from a legacy HREF.
+ *
+ * For example, if it is a relative path such as `/dir/my chapter.html`, it will be
+ * converted to the valid relative URL `dir/my%20chapter.html`.
+ *
+ * Only use this API when you are upgrading to Readium 3.x and migrating the HREFs stored in
+ * your database. See the 3.0 migration guide for more information.
+ */
+@DelicateReadiumApi
+public fun Url.Companion.fromLegacyHref(href: String): Url? =
+    AbsoluteUrl(href) ?: Url.fromDecodedPath(href.removePrefix("/"))
+
+/**
+ * According to the EPUB specification, the HREFs in the EPUB package must be valid URLs (so
+ * percent-encoded). Unfortunately, many EPUBs don't follow this rule, and use invalid HREFs such
+ * as `my chapter.html` or `/dir/my chapter.html`.
+ *
+ * As a workaround, we assume the HREFs are valid percent-encoded URLs, and fallback to decoded paths
+ * if we can't parse the URL.
+ */
+@InternalReadiumApi
+public fun Url.Companion.fromEpubHref(href: String): Url? {
+    return (Url(href) ?: Url.fromDecodedPath(href))
+}
+
 public fun File.toUrl(): AbsoluteUrl =
     checkNotNull(AbsoluteUrl(Uri.fromFile(this)))
 
@@ -353,8 +367,9 @@ private fun Uri.addFileAuthority(): Uri =
     }
 
 private fun String.isValidUrl(): Boolean =
-    // Uri.parse doesn't really validate the URL, it could contain invalid characters.
-    isNotBlank() && tryOrNull { URI(this) } != null
+    // Uri.parse doesn't really validate the URL, it could contain invalid characters, so we use
+    // URI. However, URI allows some non-ASCII characters.
+    isNotBlank() && isPrintableAscii() && tryOrNull { URI(this) } != null
 
 @JvmInline
 public value class FileExtension(

@@ -23,12 +23,15 @@ class UrlTest {
         assertNull(Url(""))
         assertNull(Url("     "))
         assertNull(Url("invalid character"))
+        assertNull(Url("école"))
 
         assertNull(AbsoluteUrl("  "))
         assertNull(AbsoluteUrl("invalid character"))
+        assertNull(AbsoluteUrl("école"))
 
         assertNull(RelativeUrl("   "))
         assertNull(RelativeUrl("invalid character"))
+        assertNull(RelativeUrl("école"))
     }
 
     @Test
