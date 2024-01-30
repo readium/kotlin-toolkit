@@ -19,6 +19,7 @@ import org.readium.r2.shared.JSONable
 import org.readium.r2.shared.extensions.*
 import org.readium.r2.shared.toJSON
 import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.fromLegacyHref
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.logging.log
 import org.readium.r2.shared.util.mediatype.MediaType

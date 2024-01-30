@@ -101,3 +101,9 @@ internal fun String.percentEncodedPath(): String =
  */
 internal fun String.percentEncodedQuery(): String =
     Uri.encode(this, "$+,/?:=@")
+
+/**
+ * Returns whether the String receiver contains only printable ASCII characters.
+ */
+internal fun String.isPrintableAscii(): Boolean =
+    all { it.code in 0x20..0x7F }

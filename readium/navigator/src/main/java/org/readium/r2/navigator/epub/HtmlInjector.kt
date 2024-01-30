@@ -15,6 +15,7 @@ import org.readium.r2.shared.publication.services.isProtected
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.shared.util.resource.TransformingResource
@@ -42,7 +43,12 @@ internal fun Resource.injectHtml(
         val injectables = mutableListOf<String>()
 
         if (publication.metadata.presentation.layout == EpubLayout.REFLOWABLE) {
-            content = css.injectHtml(content)
+            content = try {
+                css.injectHtml(content)
+            } catch (e: Exception) {
+                return@TransformingResource Try.failure(ReadError.Decoding(e))
+            }
+
             injectables.add(
                 script(
                     baseHref.resolve(Url("readium/scripts/readium-reflowable.js")!!)
