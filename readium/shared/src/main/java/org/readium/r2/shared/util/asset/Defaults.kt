@@ -14,8 +14,8 @@ import org.readium.r2.shared.util.file.FileResourceFactory
 import org.readium.r2.shared.util.format.ArchiveSniffer
 import org.readium.r2.shared.util.format.AudioSniffer
 import org.readium.r2.shared.util.format.BitmapSniffer
-import org.readium.r2.shared.util.format.CssSniffer
 import org.readium.r2.shared.util.format.CompositeFormatSniffer
+import org.readium.r2.shared.util.format.CssSniffer
 import org.readium.r2.shared.util.format.EpubDrmSniffer
 import org.readium.r2.shared.util.format.EpubSniffer
 import org.readium.r2.shared.util.format.FormatSniffer
