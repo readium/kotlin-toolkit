@@ -14,11 +14,13 @@ import org.readium.r2.shared.util.file.FileResourceFactory
 import org.readium.r2.shared.util.format.ArchiveSniffer
 import org.readium.r2.shared.util.format.AudioSniffer
 import org.readium.r2.shared.util.format.BitmapSniffer
+import org.readium.r2.shared.util.format.CssSniffer
 import org.readium.r2.shared.util.format.CompositeFormatSniffer
 import org.readium.r2.shared.util.format.EpubDrmSniffer
 import org.readium.r2.shared.util.format.EpubSniffer
 import org.readium.r2.shared.util.format.FormatSniffer
 import org.readium.r2.shared.util.format.HtmlSniffer
+import org.readium.r2.shared.util.format.JavaScriptSniffer
 import org.readium.r2.shared.util.format.JsonSniffer
 import org.readium.r2.shared.util.format.LcpLicenseSniffer
 import org.readium.r2.shared.util.format.LpfSniffer
@@ -92,5 +94,7 @@ public class DefaultFormatSniffer(
     LcpLicenseSniffer,
     EpubDrmSniffer,
     W3cWpubSniffer,
-    RwpmSniffer
+    RwpmSniffer,
+    CssSniffer,
+    JavaScriptSniffer
 )
