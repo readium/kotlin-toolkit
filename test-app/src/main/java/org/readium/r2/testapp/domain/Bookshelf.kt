@@ -18,6 +18,8 @@ import org.readium.r2.shared.util.DebugError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.asset.AssetRetriever
 import org.readium.r2.shared.util.file.FileSystemError
+import org.readium.r2.shared.util.format.Format
+import org.readium.r2.shared.util.format.FormatHints
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.toUrl
 import org.readium.r2.streamer.PublicationOpener
@@ -62,10 +64,10 @@ class Bookshelf(
         MainScope()
 
     private inner class PublicationRetrieverListener : PublicationRetriever.Listener {
-        override fun onSuccess(publication: File, coverUrl: AbsoluteUrl?) {
+        override fun onSuccess(publication: File, format: Format?, coverUrl: AbsoluteUrl?) {
             coroutineScope.launch {
                 val url = publication.toUrl()
-                addBookFeedback(url, coverUrl)
+                addBookFeedback(url, format, coverUrl)
             }
         }
 
@@ -110,19 +112,21 @@ class Bookshelf(
 
     private suspend fun addBookFeedback(
         url: AbsoluteUrl,
+        format: Format? = null,
         coverUrl: AbsoluteUrl? = null
     ) {
-        addBook(url, coverUrl)
+        addBook(url, format, coverUrl)
             .onSuccess { channel.send(Event.ImportPublicationSuccess) }
             .onFailure { channel.send(Event.ImportPublicationError(it)) }
     }
 
     private suspend fun addBook(
         url: AbsoluteUrl,
+        format: Format? = null,
         coverUrl: AbsoluteUrl? = null
     ): Try<Unit, ImportError> {
         val asset =
-            assetRetriever.retrieve(url)
+            assetRetriever.retrieve(url, FormatHints(format?.mediaType))
                 .getOrElse {
                     return Try.failure(
                         ImportError.Publication(PublicationError(it))

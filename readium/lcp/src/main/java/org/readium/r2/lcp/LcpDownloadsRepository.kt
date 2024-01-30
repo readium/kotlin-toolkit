@@ -8,7 +8,6 @@ package org.readium.r2.lcp
 
 import android.content.Context
 import java.io.File
-import java.util.LinkedList
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
@@ -16,8 +15,12 @@ import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.json.JSONArray
 import org.json.JSONObject
+import org.readium.r2.shared.JSONable
+import org.readium.r2.shared.extensions.mapNotNull
 import org.readium.r2.shared.util.CoroutineQueue
+import org.readium.r2.shared.util.downloads.DownloadManager
 
 internal class LcpDownloadsRepository(
     context: Context
@@ -40,19 +43,19 @@ internal class LcpDownloadsRepository(
         coroutineScope.async {
             withContext(Dispatchers.IO) {
                 File(storageDir.await(), "licenses.json")
-                    .also { if (!it.exists()) { it.writeText("{}", Charsets.UTF_8) } }
+                    .also { if (!it.exists()) { it.writeText("[]", Charsets.UTF_8) } }
             }
         }
 
-    private val snapshot: Deferred<MutableMap<String, JSONObject>> =
+    private val snapshot: Deferred<MutableList<Download>> =
         coroutineScope.async {
-            readSnapshot().toMutableMap()
+            readSnapshot().toMutableList()
         }
 
     fun addDownload(id: String, license: JSONObject) {
         coroutineScope.launch {
             val snapshotCompleted = snapshot.await()
-            snapshotCompleted[id] = license
+            snapshotCompleted.add(Download(id, null, license))
             writeSnapshot(snapshotCompleted)
         }
     }
@@ -60,46 +63,101 @@ internal class LcpDownloadsRepository(
     fun removeDownload(id: String) {
         queue.launch {
             val snapshotCompleted = snapshot.await()
-            snapshotCompleted.remove(id)
+            val current = snapshotCompleted.firstOrNull { it.requestId == id }
+                ?: return@launch
+            snapshotCompleted.remove(current)
             writeSnapshot(snapshotCompleted)
         }
     }
 
-    suspend fun retrieveLicense(id: String): JSONObject? =
-        queue.await {
-            snapshot.await()[id]
-        }
-
-    private suspend fun readSnapshot(): Map<String, JSONObject> {
-        return withContext(Dispatchers.IO) {
-            storageFile.await().readText(Charsets.UTF_8).toData().toMutableMap()
+    fun removeUnconfirmed() {
+        queue.launch {
+            val snapshotCompleted = snapshot.await()
+            snapshotCompleted.removeAll { it.downloadId == null }
+            writeSnapshot(snapshotCompleted)
         }
     }
 
-    private suspend fun writeSnapshot(snapshot: Map<String, JSONObject>) {
+    fun confirmDownload(id: String, downloadId: DownloadManager.RequestId) {
+        queue.launch {
+            val snapshotCompleted = snapshot.await()
+            val current = snapshotCompleted.firstOrNull { it.requestId == id }
+                ?: return@launch
+            snapshotCompleted.remove(current)
+            snapshotCompleted.add(current.copy(downloadId = downloadId))
+            writeSnapshot(snapshotCompleted)
+        }
+    }
+
+    suspend fun getDownload(downloadId: DownloadManager.RequestId): Download? =
+        queue.await {
+            snapshot.await().firstOrNull { it.downloadId == downloadId }
+        }
+
+    suspend fun getDownload(id: String): Download? =
+        queue.await {
+            snapshot.await().firstOrNull { it.requestId == id }
+        }
+
+    private suspend fun readSnapshot(): List<Download> {
+        return withContext(Dispatchers.IO) {
+            storageFile.await().readText(Charsets.UTF_8).toData()
+        }
+    }
+
+    private suspend fun writeSnapshot(snapshot: List<Download>) {
         val storageFileCompleted = storageFile.await()
         withContext(Dispatchers.IO) {
             storageFileCompleted.writeText(snapshot.toJson(), Charsets.UTF_8)
         }
     }
 
-    private fun Map<String, JSONObject>.toJson(): String {
-        val jsonObject = JSONObject()
-        for ((id, license) in this.entries) {
-            jsonObject.put(id, license)
+    private fun List<Download>.toJson(): String {
+        val jsonArray = JSONArray()
+        for (download in this) {
+            jsonArray.put(download.toJSON())
         }
-        return jsonObject.toString()
+        return jsonArray.toString()
     }
 
-    private fun String.toData(): Map<String, JSONObject> {
-        val jsonObject = JSONObject(this)
-        val names = jsonObject.keys().iterator().toList()
-        return names.associateWith { jsonObject.getJSONObject(it) }
+    private fun String.toData(): List<Download> {
+        val jsonArray = JSONArray(this)
+        return jsonArray.mapNotNull { item -> (item as? JSONObject)?.let { Download.fromJSON(it) } }
     }
 
-    private fun <T> Iterator<T>.toList(): List<T> =
-        LinkedList<T>().apply {
-            while (hasNext())
-                this += next()
-        }.toMutableList()
+    data class Download(
+        val requestId: String,
+        val downloadId: DownloadManager.RequestId?,
+        val license: JSONObject
+    ) : JSONable {
+
+        override fun toJSON(): JSONObject {
+            val jsonObject = JSONObject()
+            jsonObject.put("requestId", requestId)
+            jsonObject.put("downloadId", downloadId?.value)
+            jsonObject.put("license", license)
+            return jsonObject
+        }
+
+        companion object {
+
+            fun fromJSON(jsonObject: JSONObject): Download {
+                val requestId = jsonObject
+                    .getString("requestId")
+
+                val downloadId = jsonObject
+                    .takeIf { it.has("downloadId") }
+                    ?.getString("downloadId")
+
+                val license = jsonObject
+                    .getJSONObject("license")
+
+                return Download(
+                    requestId = requestId,
+                    downloadId = downloadId?.let { DownloadManager.RequestId(it) },
+                    license = license
+                )
+            }
+        }
+    }
 }

@@ -28,6 +28,7 @@ import org.readium.r2.testapp.domain.CoverStorage
 import org.readium.r2.testapp.domain.LcpPublicationRetriever
 import org.readium.r2.testapp.domain.LocalPublicationRetriever
 import org.readium.r2.testapp.domain.OpdsPublicationRetriever
+import org.readium.r2.testapp.domain.PublicationImporter
 import org.readium.r2.testapp.domain.PublicationRetriever
 import org.readium.r2.testapp.reader.ReaderRepository
 import timber.log.Timber
@@ -79,14 +80,22 @@ class Application : android.app.Application() {
                 readium.publicationOpener,
                 readium.assetRetriever,
                 createPublicationRetriever = { listener ->
+                    val publicationImporter = PublicationImporter(
+                        listener = listener,
+                        storageDir = storageDir,
+                        assetRetriever = readium.assetRetriever
+                    )
+
                     PublicationRetriever(
                         listener = listener,
+                        publicationImporter = publicationImporter,
                         createLocalPublicationRetriever = { localListener ->
                             LocalPublicationRetriever(
                                 listener = localListener,
                                 context = applicationContext,
                                 storageDir = storageDir,
                                 assetRetriever = readium.assetRetriever,
+                                publicationImporter = publicationImporter,
                                 createLcpPublicationRetriever = { lcpListener ->
                                     readium.lcpService.getOrNull()?.publicationRetriever()
                                         ?.let { retriever ->

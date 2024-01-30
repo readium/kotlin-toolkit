@@ -30,6 +30,11 @@ interface DownloadsDao {
     suspend fun get(id: String, type: Download.Type): Download?
 
     @Query(
+        "UPDATE " + Download.TABLE_NAME + " SET " + Download.SUBMITTED + " = :submitted WHERE " + Download.ID + "= :id"
+    )
+    suspend fun update(id: String, submitted: Boolean)
+
+    @Query(
         "SELECT * FROM " + Download.TABLE_NAME +
             " WHERE " + Download.TYPE + " = :type"
     )

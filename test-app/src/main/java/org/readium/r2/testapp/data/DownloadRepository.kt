@@ -23,8 +23,14 @@ class DownloadRepository(
         cover: AbsoluteUrl?
     ) {
         downloadsDao.insert(
-            Download(id = id, type = type, cover = cover?.toString())
+            Download(id = id, type = type, cover = cover?.toString(), submitted = false)
         )
+    }
+
+    suspend fun confirm(
+        id: String
+    ) {
+        downloadsDao.update(id, submitted = true)
     }
 
     suspend fun remove(

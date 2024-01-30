@@ -21,6 +21,8 @@ data class Download(
     val type: Type,
     @ColumnInfo(name = ID)
     val id: String,
+    @ColumnInfo(name = SUBMITTED)
+    val submitted: Boolean,
     @ColumnInfo(name = COVER)
     val cover: String? = null,
     @ColumnInfo(name = CREATION_DATE, defaultValue = "CURRENT_TIMESTAMP")
@@ -30,7 +32,7 @@ data class Download(
         OPDS("opds"), LCP("lcp");
 
         class Converter {
-            private val values = values().associateBy(Type::value)
+            private val values = entries.associateBy(Type::value)
 
             @TypeConverter
             fun fromString(value: String?): Type = values[value]!!
@@ -46,5 +48,6 @@ data class Download(
         const val ID = "id"
         const val TYPE = "type"
         const val COVER = "cover"
+        const val SUBMITTED = "submitted"
     }
 }

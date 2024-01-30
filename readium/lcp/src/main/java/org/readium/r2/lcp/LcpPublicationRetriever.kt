@@ -8,6 +8,7 @@ package org.readium.r2.lcp
 
 import android.content.Context
 import java.io.File
+import java.util.UUID
 import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
 import kotlinx.coroutines.CoroutineScope
@@ -39,6 +40,15 @@ public class LcpPublicationRetriever(
     private val downloadManager: DownloadManager,
     private val assetRetriever: AssetRetriever
 ) {
+
+    public class Request private constructor(
+        public val id: RequestId,
+        public val license: LicenseDocument
+    ) {
+        public constructor(
+            license: LicenseDocument
+        ) : this(RequestId(UUID.randomUUID().toString()), license)
+    }
 
     @JvmInline
     public value class RequestId(public val value: String)
@@ -79,19 +89,33 @@ public class LcpPublicationRetriever(
     }
 
     /**
-     * Submits a new request to acquire the publication protected with the given [license].
+     * Submits a new request to acquire the publication protected with the given the license
+     * passed into the [request].
      *
      * The given [listener] will automatically be registered.
      *
      * Returns the ID of the acquisition request, which can be used to cancel it.
      */
     public fun retrieve(
-        license: LicenseDocument,
+        request: Request,
         listener: Listener
-    ): RequestId {
-        val requestId = fetchPublication(license)
-        addListener(requestId, listener)
-        return requestId
+    ) {
+        addListener(request.id, listener)
+
+        downloadsRepository.addDownload(request.id.value, request.license.json)
+
+        val downloadRequest =
+            DownloadManager.Request(
+                url = request.license.publicationLink.url() as AbsoluteUrl,
+                headers = emptyMap()
+            )
+
+        downloadManager.submit(
+            request = downloadRequest,
+            listener = downloadListener
+        )
+
+        downloadsRepository.confirmDownload(request.id.value, downloadRequest.id)
     }
 
     /**
@@ -108,10 +132,17 @@ public class LcpPublicationRetriever(
             requestId,
             listener,
             onFirstListenerAdded = {
-                downloadManager.register(
-                    DownloadManager.RequestId(requestId.value),
-                    downloadListener
-                )
+                coroutineScope.launch {
+                    val data = downloadsRepository.getDownload(requestId.value)
+                        ?: return@launch
+                    val downloadId = data.downloadId
+                        ?: return@launch
+
+                    downloadManager.register(
+                        DownloadManager.RequestId(downloadId.value),
+                        downloadListener
+                    )
+                }
             }
         )
     }
@@ -119,8 +150,8 @@ public class LcpPublicationRetriever(
     /**
      * Cancels the acquisition with the given [requestId].
      */
-    public fun cancel(requestId: RequestId) {
-        downloadManager.cancel(DownloadManager.RequestId(requestId.value))
+    public fun remove(requestId: RequestId) {
+        downloadManager.remove(DownloadManager.RequestId(requestId.value))
         downloadsRepository.removeDownload(requestId.value)
     }
 
@@ -145,6 +176,10 @@ public class LcpPublicationRetriever(
     private val listeners: MutableMap<RequestId, MutableList<Listener>> =
         mutableMapOf()
 
+    init {
+        downloadsRepository.removeUnconfirmed()
+    }
+
     private fun addListener(
         requestId: RequestId,
         listener: Listener,
@@ -158,23 +193,6 @@ public class LcpPublicationRetriever(
             .add(listener)
     }
 
-    private fun fetchPublication(
-        license: LicenseDocument
-    ): RequestId {
-        val url = license.publicationLink.url() as AbsoluteUrl
-
-        val requestId = downloadManager.submit(
-            request = DownloadManager.Request(
-                url = url,
-                headers = emptyMap()
-            ),
-            listener = downloadListener
-        )
-
-        downloadsRepository.addDownload(requestId.value, license.json)
-        return RequestId(requestId.value)
-    }
-
     private inner class DownloadListener : DownloadManager.Listener {
 
         @OptIn(ExperimentalEncodingApi::class, ExperimentalStdlibApi::class)
@@ -183,7 +201,11 @@ public class LcpPublicationRetriever(
             download: DownloadManager.Download
         ) {
             coroutineScope.launch {
-                val lcpRequestId = RequestId(requestId.value)
+                val data = downloadsRepository.getDownload(requestId)
+                    ?: return@launch // Repository is corrupted.
+
+                val downloadId = checkNotNull(data.downloadId)
+                val lcpRequestId = RequestId(data.requestId)
                 val listenersForId = checkNotNull(listeners.remove(lcpRequestId))
 
                 fun failWithError(error: LcpError) {
@@ -191,19 +213,11 @@ public class LcpPublicationRetriever(
                         it.onAcquisitionFailed(lcpRequestId, error)
                     }
                     tryOrLog { download.file.delete() }
+                    downloadManager.remove(downloadId)
+                    downloadsRepository.removeDownload(requestId.value)
                 }
 
-                val license = downloadsRepository.retrieveLicense(requestId.value)
-                    ?.let { LicenseDocument(it) }
-                    .also { downloadsRepository.removeDownload(requestId.value) }
-                    ?: run {
-                        failWithError(
-                            LcpError.wrap(
-                                Exception("Couldn't retrieve license from local storage.")
-                            )
-                        )
-                        return@launch
-                    }
+                val license = LicenseDocument(data.license)
 
                 license.publicationLink.hash
                     ?.takeIf { download.file.checkSha256(it) == false }
@@ -231,6 +245,7 @@ public class LcpPublicationRetriever(
                                 failWithError(LcpError.wrap(ErrorException(it)))
                                 return@launch
                             }
+
                             is AssetRetriever.RetrieveError.FormatNotSupported -> {
                                 Format(
                                     specification = FormatSpecification(
@@ -264,6 +279,10 @@ public class LcpPublicationRetriever(
                 listenersForId.forEach {
                     it.onAcquisitionCompleted(lcpRequestId, acquiredPublication)
                 }
+
+                listeners.remove(lcpRequestId)
+                downloadManager.remove(requestId)
+                downloadsRepository.removeDownload(requestId.value)
             }
         }
 
@@ -272,15 +291,20 @@ public class LcpPublicationRetriever(
             downloaded: Long,
             expected: Long?
         ) {
-            val lcpRequestId = RequestId(requestId.value)
-            val listenersForId = checkNotNull(listeners[lcpRequestId])
+            coroutineScope.launch {
+                val data = downloadsRepository.getDownload(requestId)
+                    ?: return@launch // Repository is corrupted.
 
-            listenersForId.forEach {
-                it.onAcquisitionProgressed(
-                    lcpRequestId,
-                    downloaded,
-                    expected
-                )
+                val lcpRequestId = RequestId(data.requestId)
+                val listenersForId = checkNotNull(listeners[lcpRequestId])
+
+                listenersForId.forEach {
+                    it.onAcquisitionProgressed(
+                        lcpRequestId,
+                        downloaded,
+                        expected
+                    )
+                }
             }
         }
 
@@ -288,28 +312,42 @@ public class LcpPublicationRetriever(
             requestId: DownloadManager.RequestId,
             error: DownloadManager.DownloadError
         ) {
-            val lcpRequestId = RequestId(requestId.value)
-            val listenersForId = checkNotNull(listeners[lcpRequestId])
+            coroutineScope.launch {
+                val data = downloadsRepository.getDownload(requestId)
+                    ?: return@launch // Repository is corrupted.
 
-            downloadsRepository.removeDownload(requestId.value)
+                val lcpRequestId = RequestId(data.requestId)
+                val listenersForId = checkNotNull(listeners[lcpRequestId])
 
-            listenersForId.forEach {
-                it.onAcquisitionFailed(
-                    lcpRequestId,
-                    LcpError.Network(ErrorException(error))
-                )
+                listenersForId.forEach {
+                    it.onAcquisitionFailed(
+                        lcpRequestId,
+                        LcpError.Network(ErrorException(error))
+                    )
+                }
+
+                listeners.remove(lcpRequestId)
+                downloadsRepository.removeDownload(requestId.value)
+                downloadManager.remove(requestId)
             }
-
-            listeners.remove(lcpRequestId)
         }
 
         override fun onDownloadCancelled(requestId: DownloadManager.RequestId) {
-            val lcpRequestId = RequestId(requestId.value)
-            val listenersForId = checkNotNull(listeners[lcpRequestId])
-            listenersForId.forEach {
-                it.onAcquisitionCancelled(lcpRequestId)
+            coroutineScope.launch {
+                val data = downloadsRepository.getDownload(requestId)
+                    ?: return@launch // Repository is corrupted.
+
+                val lcpRequestId = RequestId(data.requestId)
+                val listenersForId = checkNotNull(listeners[lcpRequestId])
+
+                listenersForId.forEach {
+                    it.onAcquisitionCancelled(lcpRequestId)
+                }
+
+                listeners.remove(lcpRequestId)
+                downloadsRepository.removeDownload(requestId.value)
+                downloadManager.remove(requestId)
             }
-            listeners.remove(lcpRequestId)
         }
     }
 

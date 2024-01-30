@@ -18,6 +18,12 @@ internal class DownloadCursorFacade(
         .also { require(it != -1) }
         .let { cursor.getLong(it) }
 
+    val desc: String? = cursor
+        .getColumnIndex(DownloadManager.COLUMN_DESCRIPTION)
+        .also { require(it != -1) }
+        .takeUnless { cursor.isNull(it) }
+        ?.let { cursor.getString(it) }
+
     val localUri: String? = cursor
         .getColumnIndex(DownloadManager.COLUMN_LOCAL_URI)
         .also { require(it != -1) }

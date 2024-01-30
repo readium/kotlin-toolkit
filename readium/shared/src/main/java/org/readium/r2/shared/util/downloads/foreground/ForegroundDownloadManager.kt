@@ -49,11 +49,13 @@ public class ForegroundDownloadManager(
     public override fun submit(
         request: DownloadManager.Request,
         listener: DownloadManager.Listener
-    ): DownloadManager.RequestId {
-        val requestId = DownloadManager.RequestId(UUID.randomUUID().toString())
-        register(requestId, listener)
-        jobs[requestId] = coroutineScope.launch { doRequest(request, requestId) }
-        return requestId
+    ) {
+        if (request.id in jobs) {
+            return
+        }
+
+        register(request.id, listener)
+        jobs[request.id] = coroutineScope.launch { doRequest(request, request.id) }
     }
 
     private suspend fun doRequest(request: DownloadManager.Request, id: DownloadManager.RequestId) {
@@ -112,7 +114,7 @@ public class ForegroundDownloadManager(
         }
     }
 
-    public override fun cancel(requestId: DownloadManager.RequestId) {
+    public override fun remove(requestId: DownloadManager.RequestId) {
         jobs.remove(requestId)?.cancel()
         forEachListener(requestId) { onDownloadCancelled(requestId) }
         listeners.remove(requestId)
@@ -126,7 +128,7 @@ public class ForegroundDownloadManager(
     }
 
     public override fun close() {
-        jobs.forEach { cancel(it.key) }
+        jobs.forEach { remove(it.key) }
     }
 
     private suspend fun HttpClient.download(

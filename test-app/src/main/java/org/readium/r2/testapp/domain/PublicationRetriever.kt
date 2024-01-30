@@ -28,6 +28,7 @@ import org.readium.r2.shared.util.asset.ResourceAsset
 import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.downloads.DownloadManager
 import org.readium.r2.shared.util.file.FileSystemError
+import org.readium.r2.shared.util.format.Format
 import org.readium.r2.shared.util.format.LcpLicenseSpecification
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.mediatype.MediaType
@@ -44,6 +45,7 @@ import timber.log.Timber
  */
 class PublicationRetriever(
     private val listener: Listener,
+    private val publicationImporter: PublicationImporter,
     createLocalPublicationRetriever: (Listener) -> LocalPublicationRetriever,
     createOpdsPublicationRetriever: (Listener) -> OpdsPublicationRetriever
 ) {
@@ -53,15 +55,15 @@ class PublicationRetriever(
 
     interface Listener {
 
-        fun onSuccess(publication: File, coverUrl: AbsoluteUrl?)
+        fun onSuccess(publication: File, format: Format?, coverUrl: AbsoluteUrl?)
         fun onProgressed(progress: Double)
         fun onError(error: ImportError)
     }
 
     init {
         localPublicationRetriever = createLocalPublicationRetriever(object : Listener {
-            override fun onSuccess(publication: File, coverUrl: AbsoluteUrl?) {
-                listener.onSuccess(publication, coverUrl)
+            override fun onSuccess(publication: File, format: Format?, coverUrl: AbsoluteUrl?) {
+                publicationImporter.import(publication, format, coverUrl)
             }
 
             override fun onProgressed(progress: Double) {
@@ -72,9 +74,8 @@ class PublicationRetriever(
                 listener.onError(error)
             }
         })
-
         opdsPublicationRetriever = createOpdsPublicationRetriever(object : Listener {
-            override fun onSuccess(publication: File, coverUrl: AbsoluteUrl?) {
+            override fun onSuccess(publication: File, format: Format?, coverUrl: AbsoluteUrl?) {
                 localPublicationRetriever.retrieve(publication, coverUrl)
             }
 
@@ -98,6 +99,52 @@ class PublicationRetriever(
 }
 
 /**
+ * Stores the final publication file into the library dir.
+ */
+class PublicationImporter(
+    private val listener: PublicationRetriever.Listener,
+    private val storageDir: File,
+    private val assetRetriever: AssetRetriever
+) {
+
+    private val coroutineScope: CoroutineScope =
+        MainScope()
+
+    fun import(tempFile: File, format: Format?, coverUrl: AbsoluteUrl?) {
+        coroutineScope.launch {
+            val actualFormat = format
+                ?: assetRetriever.sniffFormat(tempFile)
+                    .getOrElse {
+                        listener.onError(
+                            ImportError.Publication(PublicationError(it))
+                        )
+                        return@launch
+                    }
+
+            val fileName = "${UUID.randomUUID()}.${actualFormat.fileExtension.value}"
+            val libraryFile = File(storageDir, fileName)
+
+            try {
+                tempFile.moveTo(libraryFile)
+            } catch (e: Exception) {
+                Timber.d(e)
+                tryOrNull { libraryFile.delete() }
+                listener.onError(
+                    ImportError.Publication(
+                        PublicationError.ReadError(
+                            ReadError.Access(FileSystemError.IO(e))
+                        )
+                    )
+                )
+                return@launch
+            }
+
+            listener.onSuccess(libraryFile, actualFormat, coverUrl)
+        }
+    }
+}
+
+/**
  * Retrieves a publication from a file (publication or LCP license document) stored on the device.
  */
 class LocalPublicationRetriever(
@@ -105,17 +152,26 @@ class LocalPublicationRetriever(
     private val context: Context,
     private val storageDir: File,
     private val assetRetriever: AssetRetriever,
+    private val publicationImporter: PublicationImporter,
     createLcpPublicationRetriever: (PublicationRetriever.Listener) -> LcpPublicationRetriever?
 ) {
-
-    private val lcpPublicationRetriever: LcpPublicationRetriever?
 
     private val coroutineScope: CoroutineScope =
         MainScope()
 
-    init {
-        lcpPublicationRetriever = createLcpPublicationRetriever(LcpListener())
-    }
+    private val lcpPublicationRetriever = createLcpPublicationRetriever(object : PublicationRetriever.Listener {
+        override fun onSuccess(publication: File, format: Format?, coverUrl: AbsoluteUrl?) {
+            publicationImporter.import(publication, format, coverUrl)
+        }
+
+        override fun onProgressed(progress: Double) {
+            listener.onProgressed(progress)
+        }
+
+        override fun onError(error: ImportError) {
+            listener.onError(error)
+        }
+    })
 
     /**
      * Retrieves the publication from the given local [uri].
@@ -168,43 +224,7 @@ class LocalPublicationRetriever(
             }
             return
         }
-
-        val fileExtension = sourceAsset.format.fileExtension
-        val fileName = "${UUID.randomUUID()}.${fileExtension.value}"
-        val libraryFile = File(storageDir, fileName)
-
-        try {
-            tempFile.moveTo(libraryFile)
-        } catch (e: Exception) {
-            Timber.d(e)
-            tryOrNull { libraryFile.delete() }
-            listener.onError(
-                ImportError.Publication(
-                    PublicationError.ReadError(
-                        ReadError.Access(FileSystemError.IO(e))
-                    )
-                )
-            )
-            return
-        }
-
-        listener.onSuccess(libraryFile, coverUrl)
-    }
-
-    private inner class LcpListener : PublicationRetriever.Listener {
-        override fun onSuccess(publication: File, coverUrl: AbsoluteUrl?) {
-            coroutineScope.launch {
-                retrieve(publication, coverUrl)
-            }
-        }
-
-        override fun onProgressed(progress: Double) {
-            listener.onProgressed(progress)
-        }
-
-        override fun onError(error: ImportError) {
-            listener.onError(error)
-        }
+        listener.onSuccess(tempFile, sourceAsset.format, coverUrl)
     }
 }
 
@@ -223,10 +243,19 @@ class OpdsPublicationRetriever(
     init {
         coroutineScope.launch {
             for (download in downloadRepository.all()) {
-                downloadManager.register(
-                    DownloadManager.RequestId(download.id),
-                    downloadListener
-                )
+                if (download.submitted) {
+                    downloadManager.register(
+                        DownloadManager.RequestId(download.id),
+                        downloadListener
+                    )
+                } else {
+                    downloadRepository.remove(download.id)
+                    listener.onError(
+                        ImportError.InconsistentState(
+                            DebugError("Download has never been submitted.")
+                        )
+                    )
+                }
             }
         }
     }
@@ -245,17 +274,22 @@ class OpdsPublicationRetriever(
             val coverUrl = publication.images.firstOrNull()
                 ?.let { publication.url(it) }
 
-            val requestId = downloadManager.submit(
-                request = DownloadManager.Request(
-                    publicationUrl,
-                    headers = emptyMap()
-                ),
-                listener = downloadListener
+            val request = DownloadManager.Request(
+                publicationUrl,
+                headers = emptyMap()
             )
+
             downloadRepository.insert(
-                id = requestId.value,
+                id = request.id.value,
                 cover = coverUrl as? AbsoluteUrl
             )
+
+            downloadManager.submit(
+                request = request,
+                listener = downloadListener
+            )
+
+            downloadRepository.confirm(request.id.value)
         }
     }
 
@@ -278,8 +312,9 @@ class OpdsPublicationRetriever(
         ) {
             coroutineScope.launch {
                 val coverUrl = downloadRepository.getCover(requestId.value)
+                listener.onSuccess(download.file, null, coverUrl)
                 downloadRepository.remove(requestId.value)
-                listener.onSuccess(download.file, coverUrl)
+                downloadManager.remove(requestId)
             }
         }
 
@@ -299,8 +334,9 @@ class OpdsPublicationRetriever(
             error: DownloadManager.DownloadError
         ) {
             coroutineScope.launch {
-                downloadRepository.remove(requestId.value)
                 listener.onError(ImportError.DownloadFailed(error))
+                downloadRepository.remove(requestId.value)
+                downloadManager.remove(requestId)
             }
         }
 
@@ -308,6 +344,7 @@ class OpdsPublicationRetriever(
             coroutineScope.launch {
                 Timber.v("Download ${requestId.value} has been cancelled.")
                 downloadRepository.remove(requestId.value)
+                downloadManager.remove(requestId)
             }
         }
     }
@@ -328,10 +365,19 @@ class LcpPublicationRetriever(
     init {
         coroutineScope.launch {
             for (download in downloadRepository.all()) {
-                lcpPublicationRetriever.register(
-                    ReadiumLcpPublicationRetriever.RequestId(download.id),
-                    lcpRetrieverListener
-                )
+                if (download.submitted) {
+                    lcpPublicationRetriever.register(
+                        ReadiumLcpPublicationRetriever.RequestId(download.id),
+                        lcpRetrieverListener
+                    )
+                } else {
+                    downloadRepository.remove(download.id)
+                    listener.onError(
+                        ImportError.InconsistentState(
+                            DebugError("Acquisition has never been started.")
+                        )
+                    )
+                }
             }
         }
     }
@@ -362,12 +408,16 @@ class LcpPublicationRetriever(
 
             tryOrNull { licenceFile.delete() }
 
-            val requestId = lcpPublicationRetriever.retrieve(
-                license,
+            val request = ReadiumLcpPublicationRetriever.Request(license)
+
+            downloadRepository.insert(request.id.value, coverUrl)
+
+            lcpPublicationRetriever.retrieve(
+                request,
                 lcpRetrieverListener
             )
 
-            downloadRepository.insert(requestId.value, coverUrl)
+            downloadRepository.confirm(request.id.value)
         }
     }
 
@@ -381,8 +431,9 @@ class LcpPublicationRetriever(
         ) {
             coroutineScope.launch {
                 val coverUrl = downloadRepository.getCover(requestId.value)
+                listener.onSuccess(acquiredPublication.localFile, null, coverUrl)
                 downloadRepository.remove(requestId.value)
-                listener.onSuccess(acquiredPublication.localFile, coverUrl)
+                lcpPublicationRetriever.remove(requestId)
             }
         }
 
@@ -391,10 +442,8 @@ class LcpPublicationRetriever(
             downloaded: Long,
             expected: Long?
         ) {
-            coroutineScope.launch {
-                val progression = expected?.let { downloaded.toDouble() / expected } ?: return@launch
-                listener.onProgressed(progression)
-            }
+            val progression = expected?.let { downloaded.toDouble() / expected } ?: return
+            listener.onProgressed(progression)
         }
 
         override fun onAcquisitionFailed(
@@ -402,10 +451,11 @@ class LcpPublicationRetriever(
             error: LcpError
         ) {
             coroutineScope.launch {
-                downloadRepository.remove(requestId.value)
                 listener.onError(
                     ImportError.LcpAcquisitionFailed(error)
                 )
+                downloadRepository.remove(requestId.value)
+                lcpPublicationRetriever.remove(requestId)
             }
         }
 

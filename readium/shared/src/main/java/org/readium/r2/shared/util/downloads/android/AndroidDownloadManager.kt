@@ -12,20 +12,15 @@ import android.database.Cursor
 import android.net.Uri
 import android.os.Environment
 import androidx.core.net.toFile
-import java.io.File
 import java.util.UUID
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import org.readium.r2.shared.extensions.tryOr
 import org.readium.r2.shared.util.DebugError
-import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.downloads.DownloadManager
 import org.readium.r2.shared.util.file.FileSystemError
 import org.readium.r2.shared.util.http.HttpError
@@ -98,6 +93,11 @@ public class AndroidDownloadManager internal constructor(
     private val listeners: MutableMap<DownloadManager.RequestId, MutableList<DownloadManager.Listener>> =
         mutableMapOf()
 
+    /*
+     * If the process is killed at a bad time, listeners for a given [requestId] can be called
+     * several times. It's the caller's responsibility not to register listeners for requests that have
+     * already completed.
+     */
     public override fun register(
         requestId: DownloadManager.RequestId,
         listener: DownloadManager.Listener
@@ -112,18 +112,37 @@ public class AndroidDownloadManager internal constructor(
     public override fun submit(
         request: DownloadManager.Request,
         listener: DownloadManager.Listener
-    ): DownloadManager.RequestId {
+    ) {
+        if (requestAlreadyExists(request.id)) {
+            return
+        }
+
         maybeStartObservingProgress()
 
         val androidRequest = createRequest(
+            id = request.id,
             uri = request.url.toUri(),
             filename = generateFileName(extension = request.url.extension?.value),
             headers = request.headers
         )
+
         val downloadId = downloadManager.enqueue(androidRequest)
-        val requestId = DownloadManager.RequestId(downloadId.toString())
-        register(requestId, listener)
-        return requestId
+        DownloadManager.RequestId(downloadId.toString())
+        register(request.id, listener)
+    }
+
+    private fun requestAlreadyExists(requestId: DownloadManager.RequestId): Boolean {
+        val cursor = downloadManager.query(SystemDownloadManager.Query())
+
+        while (cursor.moveToNext()) {
+            val facade = DownloadCursorFacade(cursor)
+            val desc = checkNotNull(facade.desc)
+            if (desc == requestId.value) {
+                return true
+            }
+        }
+
+        return false
     }
 
     private fun generateFileName(extension: String?): String {
@@ -133,24 +152,35 @@ public class AndroidDownloadManager internal constructor(
         return "${UUID.randomUUID()}$dottedExtension"
     }
 
-    public override fun cancel(requestId: DownloadManager.RequestId) {
-        val longId = requestId.value.toLong()
-        downloadManager.remove(longId)
+    public override fun remove(requestId: DownloadManager.RequestId) {
         val listenersForId = listeners[requestId].orEmpty()
         listenersForId.forEach { it.onDownloadCancelled(requestId) }
         listeners.remove(requestId)
         if (!listeners.any { it.value.isNotEmpty() }) {
             maybeStopObservingProgress()
         }
+
+        val cursor = downloadManager.query(SystemDownloadManager.Query())
+
+        while (cursor.moveToNext()) {
+            val facade = DownloadCursorFacade(cursor)
+            val id = facade.id
+            val desc = checkNotNull(facade.desc)
+            if (desc == requestId.value) {
+                downloadManager.remove(id)
+            }
+        }
     }
 
     private fun createRequest(
+        id: DownloadManager.RequestId,
         uri: Uri,
         filename: String,
         headers: Map<String, List<String>>
     ): SystemDownloadManager.Request =
         SystemDownloadManager.Request(uri)
             .setNotificationVisibility(SystemDownloadManager.Request.VISIBILITY_HIDDEN)
+            .setDescription(id.value)
             .setDestination(filename)
             .setHeaders(headers)
             .setAllowedOverMetered(allowDownloadsOverMetered)
@@ -206,12 +236,13 @@ public class AndroidDownloadManager internal constructor(
         // Notify about known downloads
         while (cursor.moveToNext()) {
             val facade = DownloadCursorFacade(cursor)
-            val id = DownloadManager.RequestId(facade.id.toString())
-            val listenersForId = listeners[id].orEmpty()
+            val desc = checkNotNull(facade.desc)
+            val requestId = DownloadManager.RequestId(desc)
+            val listenersForId = listeners[requestId].orEmpty()
             if (listenersForId.isNotEmpty()) {
-                notifyDownload(id, facade, listenersForId)
+                notifyDownload(requestId, facade, listenersForId)
             }
-            knownDownloads.add(id)
+            knownDownloads.add(requestId)
         }
 
         // Missing downloads have been cancelled.
@@ -233,23 +264,17 @@ public class AndroidDownloadManager internal constructor(
                 listenersForId.forEach {
                     it.onDownloadFailed(id, mapErrorCode(facade.reason!!))
                 }
-                downloadManager.remove(facade.id)
                 listeners.remove(id)
                 maybeStopObservingProgress()
             }
             SystemDownloadManager.STATUS_PAUSED -> {}
             SystemDownloadManager.STATUS_PENDING -> {}
             SystemDownloadManager.STATUS_SUCCESSFUL -> {
-                prepareResult(
-                    Uri.parse(facade.localUri!!)!!.toFile(),
+                val download = DownloadManager.Download(
+                    file = Uri.parse(facade.localUri!!)!!.toFile(),
                     mediaType = facade.mediaType?.let { MediaType(it) }
                 )
-                    .onSuccess { download ->
-                        listenersForId.forEach { it.onDownloadCompleted(id, download) }
-                    }.onFailure { error ->
-                        listenersForId.forEach { it.onDownloadFailed(id, error) }
-                    }
-                downloadManager.remove(facade.id)
+                listenersForId.forEach { it.onDownloadCompleted(id, download) }
                 listeners.remove(id)
                 maybeStopObservingProgress()
             }
@@ -260,28 +285,6 @@ public class AndroidDownloadManager internal constructor(
             }
         }
     }
-
-    private suspend fun prepareResult(destFile: File, mediaType: MediaType?): Try<DownloadManager.Download, DownloadManager.DownloadError> =
-        withContext(Dispatchers.IO) {
-            val extension = destFile.extension.takeUnless { it.isEmpty() }
-
-            val newDest = File(destFile.parent, generateFileName(extension))
-            val renamed = tryOr(false) { destFile.renameTo(newDest) }
-
-            if (renamed) {
-                val download = DownloadManager.Download(
-                    file = newDest,
-                    mediaType = mediaType
-                )
-                Try.success(download)
-            } else {
-                Try.failure(
-                    DownloadManager.DownloadError.FileSystem(
-                        FileSystemError.IO(DebugError("Failed to rename the downloaded file."))
-                    )
-                )
-            }
-        }
 
     private fun mapErrorCode(code: Int): DownloadManager.DownloadError =
         when (code) {

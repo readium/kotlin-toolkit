@@ -7,6 +7,7 @@
 package org.readium.r2.shared.util.downloads
 
 import java.io.File
+import java.util.UUID
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Error
 import org.readium.r2.shared.util.downloads.android.AndroidDownloadManager
@@ -25,10 +26,16 @@ import org.readium.r2.shared.util.mediatype.MediaType
  */
 public interface DownloadManager {
 
-    public data class Request(
-        val url: AbsoluteUrl,
-        val headers: Map<String, List<String>> = emptyMap()
-    )
+    public class Request private constructor(
+        public val id: RequestId,
+        public val url: AbsoluteUrl,
+        public val headers: Map<String, List<String>> = emptyMap()
+    ) {
+        public constructor(
+            url: AbsoluteUrl,
+            headers: Map<String, List<String>> = emptyMap()
+        ) : this(RequestId(UUID.randomUUID().toString()), url, headers)
+    }
 
     public data class Download(
         val file: File,
@@ -85,11 +92,11 @@ public interface DownloadManager {
 
     /**
      * Submits a new request to this [DownloadManager]. The given [listener] will automatically be
-     * registered.
+     * registered. Requests already submitted will be ignored.
      *
      * Returns the ID of the download request, which can be used to cancel it.
      */
-    public fun submit(request: Request, listener: Listener): RequestId
+    public fun submit(request: Request, listener: Listener)
 
     /**
      * Registers a listener for the download with the given [requestId].
@@ -102,7 +109,7 @@ public interface DownloadManager {
     /**
      * Cancels the download with the given [requestId].
      */
-    public fun cancel(requestId: RequestId)
+    public fun remove(requestId: RequestId)
 
     /**
      * Releases any in-memory resource associated with this [DownloadManager].
