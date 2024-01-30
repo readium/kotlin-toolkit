@@ -4,7 +4,13 @@ All notable changes to this project will be documented in this file. Take a look
 
 **Warning:** Features marked as *experimental* may change or be removed in a future release without notice. Use with caution.
 
-<!-- ## [Unreleased] -->
+## [Unreleased]
+
+### Added
+
+* The new `HyperlinkNavigator.shouldFollowInternalLink(Link, LinkContext?)` allows you to handle footnotes according to your preference.
+    * By default, the navigator now moves to the footnote content instead of displaying a pop-up as it did in version 2.x.
+
 
 ## [3.0.0-alpha.1]
 

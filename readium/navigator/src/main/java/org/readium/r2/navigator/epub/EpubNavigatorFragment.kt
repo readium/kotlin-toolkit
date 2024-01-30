@@ -90,6 +90,7 @@ import org.readium.r2.shared.publication.ReadingProgression as PublicationReadin
 import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.publication.presentation.presentation
 import org.readium.r2.shared.publication.services.positionsByReadingOrder
+import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.resource.Resource
@@ -506,7 +507,7 @@ public class EpubNavigatorFragment internal constructor(
         }
 
         viewLifecycleOwner.lifecycleScope.launch {
-            withStarted {
+            viewLifecycleOwner.withStarted {
                 // Restore the last locator before a configuration change (e.g. screen rotation), or the
                 // initial locator when given.
                 val locator = savedInstanceState?.let {
@@ -830,6 +831,12 @@ public class EpubNavigatorFragment internal constructor(
             viewModel.navigateToUrl(url)
             return true
         }
+
+        override fun shouldFollowFootnoteLink(
+            url: AbsoluteUrl,
+            context: HyperlinkNavigator.FootnoteContext
+        ): Boolean =
+            viewModel.shouldFollowFootnoteLink(url, context)
 
         override fun shouldInterceptRequest(webView: WebView, request: WebResourceRequest): WebResourceResponse? =
             viewModel.shouldInterceptRequest(request)

@@ -23,7 +23,7 @@ import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.testapp.R
-import org.readium.r2.testapp.reader.preferences.UserPreferencesBottomSheetDialogFragment
+import org.readium.r2.testapp.reader.preferences.MainPreferencesBottomSheetDialogFragment
 import org.readium.r2.testapp.utils.UserError
 
 /*
@@ -48,8 +48,10 @@ abstract class BaseReaderFragment : Fragment() {
             }
 
             when (event) {
-                is ReaderViewModel.FeedbackEvent.BookmarkFailed -> toast(R.string.bookmark_exists)
-                is ReaderViewModel.FeedbackEvent.BookmarkSuccessfullyAdded -> toast(
+                is ReaderViewModel.FragmentFeedback.BookmarkFailed -> toast(
+                    R.string.bookmark_exists
+                )
+                is ReaderViewModel.FragmentFeedback.BookmarkSuccessfullyAdded -> toast(
                     R.string.bookmark_added
                 )
             }
@@ -86,8 +88,7 @@ abstract class BaseReaderFragment : Fragment() {
                             return true
                         }
                         R.id.settings -> {
-                            val settingsModel = checkNotNull(model.settings)
-                            UserPreferencesBottomSheetDialogFragment(settingsModel, "User Settings")
+                            MainPreferencesBottomSheetDialogFragment()
                                 .show(childFragmentManager, "Settings")
                             return true
                         }

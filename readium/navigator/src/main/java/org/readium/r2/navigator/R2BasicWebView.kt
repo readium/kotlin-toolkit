@@ -12,17 +12,12 @@ import android.graphics.PointF
 import android.graphics.Rect
 import android.graphics.RectF
 import android.os.Build
-import android.text.Html
 import android.util.AttributeSet
 import android.view.*
 import android.webkit.URLUtil
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
-import android.widget.ImageButton
-import android.widget.ListPopupWindow
-import android.widget.PopupWindow
-import android.widget.TextView
 import androidx.annotation.RequiresApi
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
@@ -46,6 +41,7 @@ import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.extensions.tryOrNull
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
+import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.data.decodeString
 import org.readium.r2.shared.util.flatMap
@@ -88,6 +84,9 @@ internal open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebV
         fun shouldInterceptRequest(webView: WebView, request: WebResourceRequest): WebResourceResponse? = null
 
         @InternalReadiumApi
+        fun shouldFollowFootnoteLink(url: AbsoluteUrl, context: HyperlinkNavigator.FootnoteContext): Boolean
+
+        @InternalReadiumApi
         fun resourceAtUrl(url: Url): Resource? = null
 
         /**
@@ -115,7 +114,7 @@ internal open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebV
     var listener: Listener? = null
     internal var preferences: SharedPreferences? = null
 
-    var resourceUrl: Url? = null
+    var resourceUrl: AbsoluteUrl? = null
 
     internal val scrollModeFlow = MutableStateFlow(false)
 
@@ -127,6 +126,12 @@ internal open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebV
     var callback: OnOverScrolledCallback? = null
 
     private val uiScope = CoroutineScope(Dispatchers.Main)
+
+    /*
+     * Url already handled by listener.shouldFollowFootnoteLink,
+     * Tries to ignore the matching shouldOverrideUrlLoading call.
+     */
+    private var urlNotToOverrideLoading: AbsoluteUrl? = null
 
     init {
         setWebContentsDebuggingEnabled(BuildConfig.DEBUG)
@@ -277,8 +282,6 @@ internal open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebV
             return false
         }
 
-        // FIXME: Let the app handle footnotes.
-
         // We ignore taps on interactive element, unless it's an element we handle ourselves such as
         // pop-up footnotes.
         if (event.interactiveElement != null) {
@@ -344,11 +347,13 @@ internal open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebV
 
         val id = href.fragment ?: return false
 
-        val absoluteUrl = resourceUrl.resolve(href).removeFragment()
+        val absoluteUrl = resourceUrl.resolve(href)
+
+        val absoluteUrlWithoutFragment = absoluteUrl.removeFragment()
 
         val aside = runBlocking {
             tryOrLog {
-                listener?.resourceAtUrl(absoluteUrl)
+                listener?.resourceAtUrl(absoluteUrlWithoutFragment)
                     ?.use { res ->
                         res.read()
                             .flatMap { it.decodeString() }
@@ -358,50 +363,22 @@ internal open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebV
                     ?.select("#$id")
                     ?.first()?.html()
             }
-        } ?: return false
+        }?.takeIf { it.isNotBlank() }
+            ?: return false
 
         val safe = Jsoup.clean(aside, Safelist.relaxed())
-
-        // Initialize a new instance of LayoutInflater service
-        val inflater = context.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
-
-        // Inflate the custom layout/view
-        val customView = inflater.inflate(R.layout.readium_navigator_popup_footnote, null)
-
-        // Initialize a new instance of popup window
-        val mPopupWindow = PopupWindow(
-            customView,
-            ListPopupWindow.WRAP_CONTENT,
-            ListPopupWindow.WRAP_CONTENT
+        val context = HyperlinkNavigator.FootnoteContext(
+            noteContent = safe
         )
-        mPopupWindow.isOutsideTouchable = true
-        mPopupWindow.isFocusable = true
 
-        // Set an elevation value for popup window
-        // Call requires API level 21
-        mPopupWindow.elevation = 5.0f
+        val shouldFollowLink = listener?.shouldFollowFootnoteLink(absoluteUrl, context) ?: true
 
-        val textView = customView.findViewById(R.id.footnote) as TextView
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            textView.text = Html.fromHtml(safe, Html.FROM_HTML_MODE_COMPACT)
-        } else {
-            @Suppress("DEPRECATION")
-            textView.text = Html.fromHtml(safe)
+        if (shouldFollowLink) {
+            urlNotToOverrideLoading = absoluteUrl
         }
 
-        // Get a reference for the custom view close button
-        val closeButton = customView.findViewById(R.id.ib_close) as ImageButton
-
-        // Set a click listener for the popup window close button
-        closeButton.setOnClickListener {
-            // Dismiss the popup window
-            mPopupWindow.dismiss()
-        }
-
-        // Finally, show the popup window at the center location of root relative layout
-        mPopupWindow.showAtLocation(this, Gravity.CENTER, 0, 0)
-
-        return true
+        // Consume event if the link should not be followed.
+        return !shouldFollowLink
     }
 
     @android.webkit.JavascriptInterface
@@ -596,9 +573,15 @@ internal open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebV
     }
 
     internal fun shouldOverrideUrlLoading(request: WebResourceRequest): Boolean {
-        if (resourceUrl == request.url.toUrl()) return false
+        val requestUrl = request.url.toUrl() ?: return false
 
-        return listener?.shouldOverrideUrlLoading(this, request) ?: false
+        // FIXME: I doubt this can work well. hasGesture considers itself unreliable.
+        return if (urlNotToOverrideLoading == requestUrl && request.hasGesture()) {
+            urlNotToOverrideLoading = null
+            false
+        } else {
+            listener?.shouldOverrideUrlLoading(this, request) ?: false
+        }
     }
 
     internal fun shouldInterceptRequest(webView: WebView, request: WebResourceRequest): WebResourceResponse? {
