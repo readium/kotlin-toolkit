@@ -312,4 +312,17 @@ class SnifferTest {
         )!!
         assertEquals(png, MediaType.ofFile(fixtures.fileAt("png.unknown")))
     }
+
+    @Test
+    fun `sniff CSS`() = runBlocking {
+        assertEquals(MediaType.CSS, MediaType.of(fileExtension = "css"))
+        assertEquals(MediaType.CSS, MediaType.of(mediaType = "text/css"))
+    }
+
+    @Test
+    fun `sniff JS`() = runBlocking {
+        assertEquals(MediaType.JAVASCRIPT, MediaType.of(fileExtension = "js"))
+        assertEquals(MediaType.JAVASCRIPT, MediaType.of(mediaType = "text/javascript"))
+        assertEquals(MediaType.JAVASCRIPT, MediaType.of(mediaType = "application/javascript"))
+    }
 }

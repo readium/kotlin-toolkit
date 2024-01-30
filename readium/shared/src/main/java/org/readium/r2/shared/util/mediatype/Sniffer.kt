@@ -34,8 +34,30 @@ object Sniffers {
      */
     val all: List<Sniffer> = listOf(
         ::xhtml, ::html, ::opds, ::lcpLicense, ::bitmap, ::webpub, ::w3cWPUB, ::epub, ::lpf, ::archive,
-        ::pdf, ::json
+        ::pdf, ::json, ::css, ::javascript
     )
+
+    /**
+     * Sniffs a CSS file.
+     */
+
+    suspend fun css(context: SnifferContext): MediaType? {
+        if (context.hasFileExtension("css") || context.hasMediaType("text/css")) {
+            return MediaType.CSS
+        }
+        return null
+    }
+
+    /**
+     * Sniffs a JavaScript file.
+     */
+
+    suspend fun javascript(context: SnifferContext): MediaType? {
+        if (context.hasFileExtension("js") || context.hasMediaType("text/javascript", "application/javascript")) {
+            return MediaType.JAVASCRIPT
+        }
+        return null
+    }
 
     /**
      * Sniffs an XHTML document.
