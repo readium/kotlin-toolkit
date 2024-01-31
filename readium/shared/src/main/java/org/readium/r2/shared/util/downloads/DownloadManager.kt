@@ -107,7 +107,9 @@ public interface DownloadManager {
     public fun register(requestId: RequestId, listener: Listener)
 
     /**
-     * Cancels the download with the given [requestId].
+     * Removes the download with the given [requestId] from the [DownloadManager].
+     *
+     * If it was ongoing, il will be cancelled.
      */
     public fun remove(requestId: RequestId)
 
