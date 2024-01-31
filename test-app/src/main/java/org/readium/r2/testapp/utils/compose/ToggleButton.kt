@@ -8,10 +8,10 @@ package org.readium.r2.testapp.utils.compose
 
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
-import androidx.compose.material.ButtonDefaults
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.OutlinedButton
-import androidx.compose.material.Text
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.tooling.preview.Preview
@@ -55,22 +55,22 @@ fun ToggleButton(
         enabled = enabled,
         content = content,
         colors = ButtonDefaults.outlinedButtonColors(
-            contentColor = MaterialTheme.colors.onBackground,
-            backgroundColor = when {
+            contentColor = MaterialTheme.colorScheme.onBackground,
+            containerColor = when {
                 selected ->
-                    MaterialTheme.colors.onBackground
+                    MaterialTheme.colorScheme.onBackground
                         .copy(alpha = 0.15f)
-                        .compositeOver(MaterialTheme.colors.background)
+                        .compositeOver(MaterialTheme.colorScheme.background)
                 active ->
-                    MaterialTheme.colors.onBackground
+                    MaterialTheme.colorScheme.onBackground
                         .copy(alpha = 0.05f)
-                        .compositeOver(MaterialTheme.colors.background)
-                else -> MaterialTheme.colors.surface
+                        .compositeOver(MaterialTheme.colorScheme.background)
+                else -> MaterialTheme.colorScheme.surface
             }
         ),
         elevation =
         if (selected) {
-            ButtonDefaults.elevation(defaultElevation = 2.dp)
+            ButtonDefaults.buttonElevation(defaultElevation = 2.dp)
         } else {
             null
         }

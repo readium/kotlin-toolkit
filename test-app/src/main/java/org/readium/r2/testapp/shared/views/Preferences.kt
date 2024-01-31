@@ -13,10 +13,10 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.material.*
+import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Backspace
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Backspace
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.runtime.*
@@ -30,6 +30,7 @@ import androidx.compose.ui.window.Dialog
 import java.util.*
 import org.readium.r2.navigator.preferences.*
 import org.readium.r2.navigator.preferences.Color as ReadiumColor
+import androidx.compose.ui.text.font.FontWeight
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.Language
 import org.readium.r2.testapp.utils.compose.ColorPicker
@@ -90,7 +91,7 @@ private fun <T> ButtonGroupItem(
         ) { option ->
             Text(
                 text = formatValue(option),
-                style = MaterialTheme.typography.caption
+                style = MaterialTheme.typography.labelMedium
             )
         }
     }
@@ -139,19 +140,18 @@ private fun <T> MenuItem(
             text = {
                 Text(
                     text = formatValue(value),
-                    style = MaterialTheme.typography.caption
+                    style = MaterialTheme.typography.labelMedium
                 )
             }
         ) { dismiss ->
             for (aValue in values) {
                 DropdownMenuItem(
+                    text = { Text(formatValue(aValue)) },
                     onClick = {
                         dismiss()
                         onValueChanged(aValue)
                     }
-                ) {
-                    Text(formatValue(aValue))
-                }
+                )
             }
         }
     }
@@ -308,7 +308,7 @@ private fun ColorItem(
 
         OutlinedButton(
             onClick = { isPicking = true },
-            colors = ButtonDefaults.buttonColors(backgroundColor = color)
+            colors = ButtonDefaults.buttonColors(containerColor = color)
         ) {
             if (noValueSelected) {
                 Icon(
@@ -367,7 +367,6 @@ fun LanguageItem(
     )
 }
 
-@OptIn(ExperimentalMaterialApi::class)
 @Composable
 private fun Item(
     title: String,
@@ -383,19 +382,26 @@ private fun Item(
         } else {
             Modifier
         },
-        text = {
-            val alpha = if (isActive) 1.0f else ContentAlpha.disabled
-            CompositionLocalProvider(LocalContentAlpha provides alpha) {
-                Text(title)
+        headlineContent = {
+            val alphaForText = if (isActive) 1.0f else 0.38f
+            CompositionLocalProvider(
+                LocalContentColor provides MaterialTheme.colorScheme.onSurface.copy(
+                    alpha = alphaForText
+                )
+            ) {
+                Text(
+                    text = title,
+                    fontWeight = FontWeight.Normal
+                )
             }
         },
-        trailing = {
+        trailingContent = {
             Row {
                 content()
 
                 IconButton(onClick = onClear ?: {}, enabled = onClear != null) {
                     Icon(
-                        Icons.Default.Backspace,
+                        Icons.AutoMirrored.Filled.Backspace,
                         contentDescription = "Clear"
                     )
                 }
@@ -427,7 +433,6 @@ fun <T> SelectorListItem(
  * A Material [ListItem] displaying a dropdown menu to select a value. The current value is
  * displayed on the right.
  */
-@OptIn(ExperimentalMaterialApi::class)
 @Composable
 private fun <T> SelectorListItem(
     title: String,
@@ -445,12 +450,12 @@ private fun <T> SelectorListItem(
             .clickable(enabled = enabled) {
                 isExpanded = true
             },
-        text = {
+        headlineContent = {
             Group(enabled = enabled) {
                 Text(title)
             }
         },
-        trailing = {
+        trailingContent = {
             Group(enabled = enabled) {
                 Text(formatValue(selection))
             }
@@ -461,13 +466,12 @@ private fun <T> SelectorListItem(
             ) {
                 for (value in values) {
                     DropdownMenuItem(
+                        text = { Text(formatValue(value)) },
                         onClick = {
                             onSelected(value)
                             dismiss()
                         }
-                    ) {
-                        Text(formatValue(value))
-                    }
+                    )
                 }
             }
         }

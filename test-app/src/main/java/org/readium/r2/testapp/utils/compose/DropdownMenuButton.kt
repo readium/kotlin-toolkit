@@ -8,8 +8,8 @@ package org.readium.r2.testapp.utils.compose
 
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.RowScope
-import androidx.compose.material.DropdownMenu
-import androidx.compose.material.OutlinedButton
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.runtime.*
 
 @Composable
