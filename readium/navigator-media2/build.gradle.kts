@@ -20,14 +20,11 @@ dependencies {
     api(project(":readium:readium-shared"))
     api(project(":readium:readium-navigator"))
 
-    implementation(libs.bundles.coroutines)
+    implementation(libs.kotlinx.coroutines.android)
 
     implementation(libs.timber)
 
     implementation(libs.bundles.media2)
-
-    implementation(libs.google.exoplayer.core)
-    implementation(libs.google.exoplayer.extension.media2)
 
     testImplementation(libs.junit)
 

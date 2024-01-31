@@ -24,7 +24,7 @@ dependencies {
     implementation(libs.androidx.fragment.ktx)
     implementation(libs.timber)
     implementation(libs.pspdfkit)
-    implementation(libs.bundles.coroutines)
+    implementation(libs.kotlinx.coroutines.android)
     implementation(libs.kotlinx.serialization.json)
 
     testImplementation(libs.junit)

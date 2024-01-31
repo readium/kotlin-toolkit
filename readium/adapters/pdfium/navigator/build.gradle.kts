@@ -25,7 +25,7 @@ dependencies {
     api(libs.pdf.viewer)
     implementation(libs.androidx.fragment.ktx)
     implementation(libs.timber)
-    implementation(libs.bundles.coroutines)
+    implementation(libs.kotlinx.coroutines.android)
     implementation(libs.kotlinx.serialization.json)
 
     testImplementation(libs.junit)
