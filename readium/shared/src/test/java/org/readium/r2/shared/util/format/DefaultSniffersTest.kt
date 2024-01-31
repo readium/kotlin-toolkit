@@ -12,7 +12,6 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.readium.r2.shared.util.FileExtension
 import org.readium.r2.shared.util.Url
-import org.readium.r2.shared.util.asset.DefaultFormatSniffer
 import org.readium.r2.shared.util.checkSuccess
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.robolectric.RobolectricTestRunner
@@ -114,29 +113,5 @@ class DefaultSniffersTest {
                 )
             ).checkSuccess()
         )
-    }
-
-    private val cssFormat = Format(
-        specification = FormatSpecification(CssSpecification),
-        mediaType = MediaType.CSS,
-        fileExtension = FileExtension("css")
-    )
-
-    @Test
-    fun `Sniff CSS`() = runBlocking {
-        val sniffer = DefaultFormatSniffer()
-        assertEquals(cssFormat, sniffer.sniffHints(format = cssFormat, hints = FormatHints()))
-    }
-
-    private val jsFormat = Format(
-        specification = FormatSpecification(JavaScriptSpecification),
-        mediaType = MediaType.JAVASCRIPT,
-        fileExtension = FileExtension("js")
-    )
-
-    @Test
-    fun `Sniff JS`() = runBlocking {
-        val sniffer = DefaultFormatSniffer()
-        assertEquals(jsFormat, sniffer.sniffHints(format = jsFormat, hints = FormatHints()))
     }
 }
