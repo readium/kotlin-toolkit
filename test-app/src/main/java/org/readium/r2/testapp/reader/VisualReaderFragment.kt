@@ -11,7 +11,6 @@ import android.content.Context
 import android.graphics.Color
 import android.graphics.RectF
 import android.os.Bundle
-import android.text.Spanned
 import android.view.ActionMode
 import android.view.Gravity
 import android.view.LayoutInflater
@@ -572,7 +571,7 @@ abstract class VisualReaderFragment : BaseReaderFragment() {
     }
 
     private fun showFootnotePopup(
-        text: Spanned
+        text: CharSequence
     ) {
         viewLifecycleOwner.lifecycleScope.launch {
             // Initialize a new instance of LayoutInflater service

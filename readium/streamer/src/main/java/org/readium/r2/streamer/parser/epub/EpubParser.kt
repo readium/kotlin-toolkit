@@ -27,6 +27,7 @@ import org.readium.r2.shared.util.data.decodeXml
 import org.readium.r2.shared.util.data.readDecodeOrElse
 import org.readium.r2.shared.util.data.readDecodeOrNull
 import org.readium.r2.shared.util.format.EpubSpecification
+import org.readium.r2.shared.util.fromEpubHref
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.mediatype.MediaType
@@ -35,7 +36,6 @@ import org.readium.r2.shared.util.resource.TransformingContainer
 import org.readium.r2.shared.util.use
 import org.readium.r2.shared.util.xml.ElementNode
 import org.readium.r2.streamer.parser.PublicationParser
-import org.readium.r2.streamer.parser.epub.extensions.fromEpubHref
 
 /**
  * Parses a Publication from an EPUB publication.

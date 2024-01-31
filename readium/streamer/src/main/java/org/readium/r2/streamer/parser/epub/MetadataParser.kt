@@ -8,9 +8,9 @@ package org.readium.r2.streamer.parser.epub
 
 import org.readium.r2.shared.publication.Href
 import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.fromEpubHref
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.xml.ElementNode
-import org.readium.r2.streamer.parser.epub.extensions.fromEpubHref
 
 internal class MetadataParser(
     private val prefixMap: Map<String, String>

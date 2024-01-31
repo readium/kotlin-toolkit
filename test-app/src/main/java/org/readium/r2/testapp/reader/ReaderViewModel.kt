@@ -9,9 +9,6 @@
 package org.readium.r2.testapp.reader
 
 import android.graphics.Color
-import android.os.Build
-import android.text.Html
-import android.text.Spanned
 import androidx.annotation.ColorInt
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -56,6 +53,7 @@ import org.readium.r2.testapp.search.SearchPagingSource
 import org.readium.r2.testapp.utils.EventChannel
 import org.readium.r2.testapp.utils.UserError
 import org.readium.r2.testapp.utils.createViewModelFactory
+import org.readium.r2.testapp.utils.extensions.toHtml
 import timber.log.Timber
 
 @OptIn(
@@ -293,11 +291,10 @@ class ReaderViewModel(
         when (context) {
             is HyperlinkNavigator.FootnoteContext -> {
                 val text =
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                        Html.fromHtml(context.noteContent, Html.FROM_HTML_MODE_COMPACT)
+                    if (link.mediaType?.isHtml == true) {
+                        context.noteContent.toHtml()
                     } else {
-                        @Suppress("DEPRECATION")
-                        Html.fromHtml(context.noteContent)
+                        context.noteContent
                     }
 
                 val command = VisualFragmentCommand.ShowPopup(text)
@@ -337,7 +334,7 @@ class ReaderViewModel(
     }
 
     sealed class VisualFragmentCommand {
-        class ShowPopup(val text: Spanned) : VisualFragmentCommand()
+        class ShowPopup(val text: CharSequence) : VisualFragmentCommand()
     }
 
     sealed class SearchCommand {
