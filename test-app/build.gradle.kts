@@ -83,7 +83,6 @@ dependencies {
 
     implementation(libs.accompanist.themeadapter.material)
 
-    implementation(libs.androidx.compose.activity)
     implementation(libs.androidx.activity.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.browser)

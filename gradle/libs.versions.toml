@@ -119,8 +119,6 @@ androidx-webkit = { group = "androidx.webkit", name = "webkit", version.ref = "a
 
 assertj = { group = "org.assertj", name = "assertj-core", version.ref = "assertj" }
 
-dokka-gradle = { group = "org.jetbrains.dokka", name = "dokka-gradle-plugin", version.ref = "dokka" }
-
 google-exoplayer-core = { group = "com.google.android.exoplayer", name = "exoplayer-core", version.ref = "google-exoplayer" }
 google-exoplayer-extension-media2 = { group = "com.google.android.exoplayer", name = "extension-media2", version.ref = "google-exoplayer" }
 google-exoplayer-mediasession = { group = "com.google.android.exoplayer", name = "extension-mediasession", version.ref = "google-exoplayer" }
@@ -132,7 +130,6 @@ joda-time = { group = "joda-time", name = "joda-time", version.ref = "joda-time"
 jsoup = { group = "org.jsoup", name = "jsoup", version.ref = "jsoup" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 
-kotlin-gradle = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlin" }
 kotlin-junit = { group = "org.jetbrains.kotlin", name = "kotlin-test-junit", version.ref = "kotlin" }
 kotlin-reflect = { group = "org.jetbrains.kotlin", name = "kotlin-reflect", version.ref = "kotlin" }
 kotlin-stdlib = { group = "org.jetbrains.kotlin", name = "kotlin-stdlib", version.ref = "kotlin" }
