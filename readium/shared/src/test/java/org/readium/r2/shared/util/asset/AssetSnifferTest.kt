@@ -20,6 +20,7 @@ import org.readium.r2.shared.util.data.EmptyContainer
 import org.readium.r2.shared.util.file.FileResource
 import org.readium.r2.shared.util.format.AvifSpecification
 import org.readium.r2.shared.util.format.BmpSpecification
+import org.readium.r2.shared.util.format.CssSpecification
 import org.readium.r2.shared.util.format.EpubSpecification
 import org.readium.r2.shared.util.format.Format
 import org.readium.r2.shared.util.format.FormatHints
@@ -28,6 +29,7 @@ import org.readium.r2.shared.util.format.GifSpecification
 import org.readium.r2.shared.util.format.HtmlSpecification
 import org.readium.r2.shared.util.format.InformalAudiobookSpecification
 import org.readium.r2.shared.util.format.InformalComicSpecification
+import org.readium.r2.shared.util.format.JavaScriptSpecification
 import org.readium.r2.shared.util.format.JpegSpecification
 import org.readium.r2.shared.util.format.JsonSpecification
 import org.readium.r2.shared.util.format.JxlSpecification
@@ -838,6 +840,46 @@ class AssetSnifferTest {
                 resource = StringResource("""{"title": "Message"}"""),
                 hints = FormatHints(mediaType = MediaType("application/problem+json")!!)
             ).checkSuccess()
+        )
+    }
+
+    private val cssFormat = Format(
+        specification = FormatSpecification(CssSpecification),
+        mediaType = MediaType.CSS,
+        fileExtension = FileExtension("css")
+    )
+
+    @Test
+    fun `sniff CSS`() = runBlocking {
+        assertEquals(
+            cssFormat,
+            sniffer.sniffFileExtension("css").checkSuccess()
+        )
+        assertEquals(
+            cssFormat,
+            sniffer.sniffMediaType("text/css").checkSuccess()
+        )
+    }
+
+    private val jsFormat = Format(
+        specification = FormatSpecification(JavaScriptSpecification),
+        mediaType = MediaType.JAVASCRIPT,
+        fileExtension = FileExtension("js")
+    )
+
+    @Test
+    fun `sniff JavaScript`() = runBlocking {
+        assertEquals(
+            jsFormat,
+            sniffer.sniffFileExtension("js").checkSuccess()
+        )
+        assertEquals(
+            jsFormat,
+            sniffer.sniffMediaType("text/javascript").checkSuccess()
+        )
+        assertEquals(
+            jsFormat,
+            sniffer.sniffMediaType("application/javascript").checkSuccess()
         )
     }
 }
