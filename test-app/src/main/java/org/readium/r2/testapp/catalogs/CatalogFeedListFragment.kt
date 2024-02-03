@@ -18,10 +18,15 @@ import android.widget.EditText
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.data.model.Catalog
 import org.readium.r2.testapp.databinding.FragmentCatalogFeedListBinding
@@ -62,9 +67,13 @@ class CatalogFeedListFragment : Fragment() {
             )
         }
 
-        catalogFeedListViewModel.catalogs.observe(viewLifecycleOwner, {
-            catalogsAdapter.submitList(it)
-        })
+        lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                catalogFeedListViewModel.catalogs.collectLatest {
+                    catalogsAdapter.submitList(it)
+                }
+            }
+        }
 
         val version = 2
         val VERSION_KEY = "OPDS_CATALOG_VERSION"
