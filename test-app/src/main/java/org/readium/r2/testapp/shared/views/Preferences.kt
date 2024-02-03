@@ -24,13 +24,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import java.util.*
 import org.readium.r2.navigator.preferences.*
 import org.readium.r2.navigator.preferences.Color as ReadiumColor
-import androidx.compose.ui.text.font.FontWeight
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.Language
 import org.readium.r2.testapp.utils.compose.ColorPicker
