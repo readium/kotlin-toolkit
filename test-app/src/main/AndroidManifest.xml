@@ -31,7 +31,6 @@
         android:networkSecurityConfig="@xml/network_security_config"
         tools:targetApi="n">
         <activity android:name=".MainActivity"
-            android:clearTaskOnLaunch="true"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
