@@ -6,7 +6,7 @@
 
 package org.readium.r2.testapp.data
 
-import androidx.lifecycle.LiveData
+import kotlinx.coroutines.flow.Flow
 import org.readium.r2.testapp.data.db.CatalogDao
 import org.readium.r2.testapp.data.model.Catalog
 
@@ -16,7 +16,7 @@ class CatalogRepository(private val catalogDao: CatalogDao) {
         return catalogDao.insertCatalog(catalog)
     }
 
-    fun getCatalogsFromDatabase(): LiveData<List<Catalog>> = catalogDao.getCatalogModels()
+    fun getCatalogsFromDatabase(): Flow<List<Catalog>> = catalogDao.getCatalogModels()
 
     suspend fun deleteCatalog(id: Long) = catalogDao.deleteCatalog(id)
 }

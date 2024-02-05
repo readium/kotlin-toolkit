@@ -7,7 +7,6 @@
 package org.readium.r2.testapp.data
 
 import androidx.annotation.ColorInt
-import androidx.lifecycle.LiveData
 import java.io.File
 import kotlinx.coroutines.flow.Flow
 import org.joda.time.DateTime
@@ -25,7 +24,7 @@ import org.readium.r2.testapp.utils.extensions.readium.authorName
 class BookRepository(
     private val booksDao: BooksDao
 ) {
-    fun books(): LiveData<List<Book>> = booksDao.getAllBooks()
+    fun books(): Flow<List<Book>> = booksDao.getAllBooks()
 
     suspend fun get(id: Long) = booksDao.get(id)
 
@@ -48,7 +47,7 @@ class BookRepository(
         return booksDao.insertBookmark(bookmark)
     }
 
-    fun bookmarksForBook(bookId: Long): LiveData<List<Bookmark>> =
+    fun bookmarksForBook(bookId: Long): Flow<List<Bookmark>> =
         booksDao.getBookmarksForBook(bookId)
 
     suspend fun deleteBookmark(bookmarkId: Long) = booksDao.deleteBookmark(bookmarkId)

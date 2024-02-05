@@ -7,7 +7,6 @@
 package org.readium.r2.testapp.data.db
 
 import androidx.annotation.ColorInt
-import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
@@ -43,18 +42,18 @@ interface BooksDao {
 
     /**
      * Retrieve all books
-     * @return List of books as LiveData
+     * @return List of books as Flow
      */
     @Query("SELECT * FROM " + Book.TABLE_NAME + " ORDER BY " + Book.CREATION_DATE + " desc")
-    fun getAllBooks(): LiveData<List<Book>>
+    fun getAllBooks(): Flow<List<Book>>
 
     /**
      * Retrieve all bookmarks for a specific book
      * @param bookId The ID of the book
-     * @return List of bookmarks for the book as LiveData
+     * @return List of bookmarks for the book as Flow
      */
     @Query("SELECT * FROM " + Bookmark.TABLE_NAME + " WHERE " + Bookmark.BOOK_ID + " = :bookId")
-    fun getBookmarksForBook(bookId: Long): LiveData<List<Bookmark>>
+    fun getBookmarksForBook(bookId: Long): Flow<List<Bookmark>>
 
     /**
      * Retrieve all highlights for a specific book
