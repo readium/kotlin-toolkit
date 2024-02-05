@@ -19,7 +19,7 @@ dependencies {
     implementation(libs.timber)
     implementation(libs.joda.time)
     implementation(libs.kotlin.reflect)
-    implementation(libs.kotlinx.coroutines.core)
+    implementation(libs.kotlinx.coroutines.android)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.jsoup)
 

@@ -12,15 +12,14 @@ plugins {
 }
 
 subprojects {
+    if (name != "test-app") {
+        apply(plugin = "org.jetbrains.dokka")
+    }
     apply(plugin = "org.jlleitschuh.gradle.ktlint")
 
     ktlint {
         android.set(true)
     }
-}
-
-tasks.register("clean", Delete::class).configure {
-    delete(rootProject.buildDir)
 }
 
 tasks.register("cleanDocs", Delete::class).configure {

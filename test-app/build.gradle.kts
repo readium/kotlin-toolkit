@@ -104,7 +104,7 @@ dependencies {
     implementation(libs.timber)
     implementation(libs.picasso)
     implementation(libs.joda.time)
-    implementation(libs.kotlinx.coroutines.core)
+    implementation(libs.kotlinx.coroutines.android)
     implementation(libs.jsoup)
 
     implementation(libs.bundles.media3)

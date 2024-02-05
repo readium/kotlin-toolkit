@@ -8,7 +8,7 @@ First of all, upgrade to version 2.4.0 and resolve any deprecation notices. This
 
 ### Minimum requirements
 
-If you integrate Readium 3.0 as a submodule, it requires Kotlin 1.9.22 and Gradle 8.2.0. You should start by updating these dependencies in your application.
+If you integrate Readium 3.0 as a submodule, it requires Kotlin 1.9.22 and Gradle 8.2.2. You should start by updating these dependencies in your application.
 
 #### Targeting Android SDK 34
 

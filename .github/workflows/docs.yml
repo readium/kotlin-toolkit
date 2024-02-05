@@ -37,7 +37,7 @@ jobs:
         run: echo "READIUM_VERSION=`git describe --tag --match [0-9]* --abbrev=0`" >> $GITHUB_ENV
 
       - name: Run Dokka
-        run: ./gradlew dokkaGfmMultiModule
+        run: ./gradlew :dokkaGfmMultiModule
 
       - name: Copy README.md into docs to replace Dokka index.md
         run: cp README.md index.md

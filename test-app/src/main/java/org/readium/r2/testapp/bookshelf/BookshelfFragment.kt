@@ -19,8 +19,13 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.testapp.Application
 import org.readium.r2.testapp.R
@@ -103,9 +108,12 @@ class BookshelfFragment : Fragment() {
                 )
             )
         }
-
-        bookshelfViewModel.books.observe(viewLifecycleOwner) {
-            bookshelfAdapter.submitList(it)
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                bookshelfViewModel.books.collectLatest {
+                    bookshelfAdapter.submitList(it)
+                }
+            }
         }
 
         binding.bookshelfAddBookFab.setOnClickListener {
