@@ -43,7 +43,7 @@ dependencies {
     implementation(libs.google.material)
     implementation(libs.timber)
     implementation(libs.joda.time)
-    implementation(libs.bundles.coroutines)
+    implementation(libs.kotlinx.coroutines.android)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.jsoup)
 

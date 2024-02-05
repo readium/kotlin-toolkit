@@ -18,7 +18,7 @@ dependencies {
     implementation(libs.androidx.core)
     implementation(libs.timber)
     implementation(libs.pspdfkit)
-    implementation(libs.bundles.coroutines)
+    implementation(libs.kotlinx.coroutines.android)
 
     testImplementation(libs.junit)
 
