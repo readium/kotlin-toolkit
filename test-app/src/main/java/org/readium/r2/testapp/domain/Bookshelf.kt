@@ -19,7 +19,6 @@ import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.asset.AssetRetriever
 import org.readium.r2.shared.util.file.FileSystemError
 import org.readium.r2.shared.util.format.Format
-import org.readium.r2.shared.util.format.FormatHints
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.toUrl
 import org.readium.r2.streamer.PublicationOpener
@@ -126,12 +125,15 @@ class Bookshelf(
         coverUrl: AbsoluteUrl? = null
     ): Try<Unit, ImportError> {
         val asset =
-            assetRetriever.retrieve(url, FormatHints(format?.mediaType))
-                .getOrElse {
-                    return Try.failure(
-                        ImportError.Publication(PublicationError(it))
-                    )
-                }
+            if (format == null) {
+                assetRetriever.retrieve(url)
+            } else {
+                assetRetriever.retrieve(url, format)
+            }.getOrElse {
+                return Try.failure(
+                    ImportError.Publication(PublicationError(it))
+                )
+            }
 
         publicationOpener.open(
             asset,
