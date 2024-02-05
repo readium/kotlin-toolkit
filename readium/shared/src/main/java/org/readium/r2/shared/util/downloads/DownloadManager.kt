@@ -94,6 +94,9 @@ public interface DownloadManager {
      * Submits a new request to this [DownloadManager]. The given [listener] will automatically be
      * registered. Requests already submitted will be ignored.
      *
+     * You must call [remove] once the download has completed or failed, or earlier if you want
+     * to cancel it.
+     *
      * Returns the ID of the download request, which can be used to cancel it.
      */
     public fun submit(request: Request, listener: Listener)

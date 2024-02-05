@@ -93,11 +93,6 @@ public class AndroidDownloadManager internal constructor(
     private val listeners: MutableMap<DownloadManager.RequestId, MutableList<DownloadManager.Listener>> =
         mutableMapOf()
 
-    /*
-     * If the process is killed at a bad time, listeners for a given [requestId] can be called
-     * several times. It's the caller's responsibility not to register listeners for requests that have
-     * already completed.
-     */
     public override fun register(
         requestId: DownloadManager.RequestId,
         listener: DownloadManager.Listener
@@ -230,7 +225,7 @@ public class AndroidDownloadManager internal constructor(
         }
     }
 
-    private suspend fun notify(cursor: Cursor) = cursor.use {
+    private fun notify(cursor: Cursor) = cursor.use {
         val knownDownloads = mutableSetOf<DownloadManager.RequestId>()
 
         // Notify about known downloads
@@ -254,7 +249,7 @@ public class AndroidDownloadManager internal constructor(
         maybeStopObservingProgress()
     }
 
-    private suspend fun notifyDownload(
+    private fun notifyDownload(
         id: DownloadManager.RequestId,
         facade: DownloadCursorFacade,
         listenersForId: List<DownloadManager.Listener>
