@@ -10,7 +10,7 @@ dependencies:
     version: 1.1.0
   css-selector-generator:
     specifier: ^3.6.0
-    version: 3.6.4
+    version: 3.6.6
   hash.js:
     specifier: ^1.1.7
     version: 1.1.7
@@ -1774,8 +1774,8 @@ packages:
       which: 2.0.2
     dev: true
 
-  /css-selector-generator@3.6.4:
-    resolution: {integrity: sha512-/VDUW5KAoxGXJPNcn+5Y0DLJMQumLk9zNMWl2NChuTwGLEFeqfnddCpRhY6uZ77ar0uyM7W7ilvIWsk7DpjKxQ==}
+  /css-selector-generator@3.6.6:
+    resolution: {integrity: sha512-tNy7zBawE2EjuR0Htl3AbY8ZQ5TJBt3YFNh8xIPkLahDtE1mmFKDp2uHF4TdByElpFnzNy3HbDF0ITazZ/Lp5w==}
     dev: false
 
   /debug@4.3.4:
