@@ -6,11 +6,11 @@
 
 package org.readium.r2.testapp.data.db
 
-import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import kotlinx.coroutines.flow.Flow
 import org.readium.r2.testapp.data.model.Catalog
 
 @Dao
@@ -26,19 +26,19 @@ interface CatalogDao {
 
     /**
      * Retrieve list of Catalog models based on Catalog model
-     * @return List of Catalog models as LiveData
+     * @return List of Catalog models as Flow
      */
     @Query(
         "SELECT * FROM " + Catalog.TABLE_NAME + " WHERE " + Catalog.TITLE + " = :title AND " + Catalog.HREF + " = :href AND " + Catalog.TYPE + " = :type"
     )
-    fun getCatalogModels(title: String, href: String, type: Int): LiveData<List<Catalog>>
+    fun getCatalogModels(title: String, href: String, type: Int): Flow<List<Catalog>>
 
     /**
      * Retrieve list of all Catalog models
-     * @return List of Catalog models as LiveData
+     * @return List of Catalog models as Flow
      */
     @Query("SELECT * FROM " + Catalog.TABLE_NAME)
-    fun getCatalogModels(): LiveData<List<Catalog>>
+    fun getCatalogModels(): Flow<List<Catalog>>
 
     /**
      * Deletes an Catalog model

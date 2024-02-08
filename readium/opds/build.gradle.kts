@@ -18,7 +18,7 @@ dependencies {
     implementation(libs.androidx.appcompat)
     implementation(libs.timber)
     implementation(libs.joda.time)
-    implementation(libs.kotlinx.coroutines.core)
+    implementation(libs.kotlinx.coroutines.android)
 
     // Tests
     testImplementation(libs.junit)

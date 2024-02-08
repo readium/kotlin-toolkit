@@ -24,5 +24,5 @@ dependencies {
 
     implementation(libs.androidx.core)
     implementation(libs.timber)
-    implementation(libs.bundles.coroutines)
+    implementation(libs.kotlinx.coroutines.android)
 }

@@ -137,3 +137,11 @@ public object Opds1EntrySpecification : Specification
 public object Opds2CatalogSpecification : Specification
 public object Opds2PublicationSpecification : Specification
 public object OpdsAuthenticationSpecification : Specification
+
+/*
+ * Language specifications
+ */
+
+public object JavaScriptSpecification : Specification
+
+public object CssSpecification : Specification

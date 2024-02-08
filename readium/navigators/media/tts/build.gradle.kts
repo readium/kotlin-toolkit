@@ -20,6 +20,6 @@ dependencies {
     implementation(libs.androidx.media3.session)
 
     implementation(libs.timber)
-    implementation(libs.bundles.coroutines)
+    implementation(libs.kotlinx.coroutines.android)
     implementation(libs.kotlinx.serialization.json)
 }

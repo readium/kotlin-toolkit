@@ -1260,6 +1260,55 @@ public object EpubDrmSniffer : FormatSniffer {
     }
 }
 
+/**
+ * Sniffs CSS.
+ */
+
+public object CssSniffer : FormatSniffer {
+    override fun sniffHints(format: Format, hints: FormatHints): Format {
+        if (format.hasAnySpecification()) {
+            return format
+        }
+
+        if (hints.hasFileExtension("css") ||
+            hints.hasMediaType("text/css")
+        ) {
+            return Format(
+                specification = FormatSpecification(CssSpecification),
+                mediaType = MediaType.CSS,
+                fileExtension = FileExtension("css")
+            )
+        }
+
+        return format
+    }
+}
+
+/**
+ * Sniffs JavaScript.
+ */
+
+public object JavaScriptSniffer : FormatSniffer {
+    override fun sniffHints(format: Format, hints: FormatHints): Format {
+        if (format.hasAnySpecification()) {
+            return format
+        }
+
+        if (hints.hasFileExtension("js") ||
+            hints.hasMediaType("text/javascript") ||
+            hints.hasMediaType("application/javascript")
+        ) {
+            return Format(
+                specification = FormatSpecification(JavaScriptSpecification),
+                mediaType = MediaType.JAVASCRIPT,
+                fileExtension = FileExtension("js")
+            )
+        }
+
+        return format
+    }
+}
+
 private suspend fun Readable.canReadWholeBlob() =
     length().getOrDefault(0) < 5 * 1000 * 1000
 

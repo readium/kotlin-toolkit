@@ -13,12 +13,17 @@ import android.view.ViewGroup
 import androidx.appcompat.widget.PopupMenu
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.setFragmentResult
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import kotlin.math.roundToInt
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 import org.joda.time.DateTime
 import org.joda.time.format.DateTimeFormat
 import org.readium.r2.shared.publication.Publication
@@ -73,9 +78,13 @@ class BookmarksFragment : Fragment() {
             { it.resourceIndex },
             { it.locator.locations.progression }
         )
-        viewModel.getBookmarks().observe(viewLifecycleOwner) {
-            val bookmarks = it.sortedWith(comparator)
-            bookmarkAdapter.submitList(bookmarks)
+        lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.getBookmarks().collectLatest {
+                    val bookmarks = it.sortedWith(comparator)
+                    bookmarkAdapter.submitList(bookmarks)
+                }
+            }
         }
     }
 

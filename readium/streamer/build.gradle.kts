@@ -29,7 +29,7 @@ dependencies {
         exclude(module = "support-v4")
     }
     implementation(libs.joda.time)
-    implementation(libs.kotlinx.coroutines.core)
+    implementation(libs.kotlinx.coroutines.android)
 
     // Tests
     testImplementation(libs.junit)
