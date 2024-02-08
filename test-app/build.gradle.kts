@@ -81,6 +81,8 @@ dependencies {
     // Only required if you want to support PDF files using PDFium.
     implementation(project(":readium:adapters:pdfium"))
 
+    implementation("readium:liblcp:1.0.0@aar")
+
     implementation(libs.accompanist.themeadapter.material)
 
     implementation(libs.androidx.compose.activity)

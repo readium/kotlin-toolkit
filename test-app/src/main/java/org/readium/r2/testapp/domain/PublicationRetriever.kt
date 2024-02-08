@@ -31,7 +31,6 @@ import org.readium.r2.testapp.utils.copyToNewFile
 import org.readium.r2.testapp.utils.extensions.copyToTempFile
 import org.readium.r2.testapp.utils.extensions.moveTo
 import org.readium.r2.testapp.utils.tryOrLog
-import org.readium.r2.testapp.utils.tryOrNull
 import timber.log.Timber
 
 /**
@@ -49,7 +48,7 @@ class PublicationRetriever(
 ) {
     data class Result(
         val publication: File,
-        val format: Format?,
+        val format: Format,
         val coverUrl: AbsoluteUrl?
     )
 
@@ -66,7 +65,11 @@ class PublicationRetriever(
             .retrieve(uri)
             .getOrElse { return Try.failure(it) }
 
-        val finalResult = import(localResult.tempFile, localResult.format, localResult.coverUrl)
+        val finalResult = moveToBookshelfDir(
+            localResult.tempFile,
+            localResult.format,
+            localResult.coverUrl
+        )
             .getOrElse {
                 tryOrLog { localResult.tempFile.delete() }
                 return Try.failure(it)
@@ -91,7 +94,11 @@ class PublicationRetriever(
                 return Try.failure(it)
             }
 
-        val finalResult = import(localResult.tempFile, localResult.format, localResult.coverUrl)
+        val finalResult = moveToBookshelfDir(
+            localResult.tempFile,
+            localResult.format,
+            localResult.coverUrl
+        )
             .getOrElse {
                 tryOrLog { localResult.tempFile.delete() }
                 return Try.failure(it)
@@ -102,7 +109,7 @@ class PublicationRetriever(
         )
     }
 
-    private suspend fun import(
+    private suspend fun moveToBookshelfDir(
         tempFile: File,
         format: Format?,
         coverUrl: AbsoluteUrl?
@@ -114,13 +121,13 @@ class PublicationRetriever(
                 }
 
         val fileName = "${UUID.randomUUID()}.${actualFormat.fileExtension.value}"
-        val libraryFile = File(bookshelfDir, fileName)
+        val bookshelfFile = File(bookshelfDir, fileName)
 
         try {
-            tempFile.moveTo(libraryFile)
+            tempFile.moveTo(bookshelfFile)
         } catch (e: Exception) {
             Timber.d(e)
-            tryOrNull { libraryFile.delete() }
+            tryOrLog { bookshelfFile.delete() }
             return Try.failure(
                 ImportError.Publication(
                     PublicationError.Reading(
@@ -131,7 +138,7 @@ class PublicationRetriever(
         }
 
         return Try.success(
-            Result(libraryFile, format, coverUrl)
+            Result(bookshelfFile, actualFormat, coverUrl)
         )
     }
 }
