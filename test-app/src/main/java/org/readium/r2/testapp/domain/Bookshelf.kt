@@ -24,7 +24,6 @@ import org.readium.r2.shared.util.toUrl
 import org.readium.r2.streamer.PublicationOpener
 import org.readium.r2.testapp.data.BookRepository
 import org.readium.r2.testapp.data.model.Book
-import org.readium.r2.testapp.utils.extensions.formatPercentage
 import org.readium.r2.testapp.utils.tryOrLog
 import timber.log.Timber
 
@@ -39,17 +38,8 @@ class Bookshelf(
     private val coverStorage: CoverStorage,
     private val publicationOpener: PublicationOpener,
     private val assetRetriever: AssetRetriever,
-    createPublicationRetriever: (PublicationRetriever.Listener) -> PublicationRetriever
-) {
-    val channel: Channel<Event> =
-        Channel(Channel.UNLIMITED)
-
     private val publicationRetriever: PublicationRetriever
-
-    init {
-        publicationRetriever = createPublicationRetriever(PublicationRetrieverListener())
-    }
-
+) {
     sealed class Event {
         data object ImportPublicationSuccess :
             Event()
@@ -59,38 +49,26 @@ class Bookshelf(
         ) : Event()
     }
 
+    val channel: Channel<Event> =
+        Channel(Channel.UNLIMITED)
+
     private val coroutineScope: CoroutineScope =
         MainScope()
-
-    private inner class PublicationRetrieverListener : PublicationRetriever.Listener {
-        override fun onSuccess(publication: File, format: Format?, coverUrl: AbsoluteUrl?) {
-            coroutineScope.launch {
-                val url = publication.toUrl()
-                addBookFeedback(url, format, coverUrl)
-            }
-        }
-
-        override fun onProgressed(progress: Double) {
-            Timber.e("Downloaded ${progress.formatPercentage()}")
-        }
-
-        override fun onError(error: ImportError) {
-            coroutineScope.launch {
-                channel.send(Event.ImportPublicationError(error))
-            }
-        }
-    }
 
     fun importPublicationFromStorage(
         uri: Uri
     ) {
-        publicationRetriever.retrieveFromStorage(uri)
+        coroutineScope.launch {
+            addBookFeedback(publicationRetriever.retrieveFromStorage(uri))
+        }
     }
 
     fun importPublicationFromOpds(
         publication: Publication
     ) {
-        publicationRetriever.retrieveFromOpds(publication)
+        coroutineScope.launch {
+            addBookFeedback(publicationRetriever.retrieveFromOpds(publication))
+        }
     }
 
     fun addPublicationFromWeb(
@@ -107,6 +85,15 @@ class Bookshelf(
         coroutineScope.launch {
             addBookFeedback(url)
         }
+    }
+
+    private suspend fun addBookFeedback(
+        retrieverResult: Try<PublicationRetriever.Result, ImportError>
+    ) {
+        retrieverResult
+            .map { addBook(it.publication.toUrl(), it.format, it.coverUrl) }
+            .onSuccess { channel.send(Event.ImportPublicationSuccess) }
+            .onFailure { channel.send(Event.ImportPublicationError(it)) }
     }
 
     private suspend fun addBookFeedback(

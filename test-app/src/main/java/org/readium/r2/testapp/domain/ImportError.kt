@@ -9,8 +9,8 @@ package org.readium.r2.testapp.domain
 import org.readium.r2.lcp.LcpError
 import org.readium.r2.shared.util.DebugError
 import org.readium.r2.shared.util.Error
-import org.readium.r2.shared.util.downloads.DownloadManager
 import org.readium.r2.shared.util.file.FileSystemError
+import org.readium.r2.shared.util.http.HttpError
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.utils.UserError
 
@@ -36,8 +36,8 @@ sealed class ImportError(
         override val cause: FileSystemError
     ) : ImportError(cause)
 
-    class DownloadFailed(
-        override val cause: DownloadManager.DownloadError
+    class Download(
+        override val cause: HttpError
     ) : ImportError(cause)
 
     class Opds(override val cause: Error) :
@@ -52,7 +52,7 @@ sealed class ImportError(
     fun toUserError(): UserError = when (this) {
         is MissingLcpSupport -> UserError(R.string.missing_lcp_support, cause = this)
         is Database -> UserError(R.string.import_publication_unable_add_pub_database, cause = this)
-        is DownloadFailed -> UserError(R.string.import_publication_download_failed, cause = this)
+        is Download -> UserError(R.string.import_publication_download_failed, cause = this)
         is LcpAcquisitionFailed -> cause.toUserError()
         is Opds -> UserError(R.string.import_publication_no_acquisition, cause = this)
         is Publication -> cause.toUserError()
