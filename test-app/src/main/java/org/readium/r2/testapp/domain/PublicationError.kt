@@ -8,6 +8,7 @@ package org.readium.r2.testapp.domain
 
 import org.readium.r2.shared.util.Error
 import org.readium.r2.shared.util.asset.AssetRetriever
+import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.streamer.PublicationOpener
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.utils.UserError
@@ -17,7 +18,7 @@ sealed class PublicationError(
     override val cause: Error? = null
 ) : Error {
 
-    class ReadError(override val cause: org.readium.r2.shared.util.data.ReadError) :
+    class Reading(override val cause: ReadError) :
         PublicationError(cause.message, cause.cause)
 
     class UnsupportedScheme(cause: Error) :
@@ -42,7 +43,7 @@ sealed class PublicationError(
                 UserError(R.string.publication_error_unsupported_asset, cause = this)
             is UnsupportedScheme ->
                 UserError(R.string.publication_error_scheme_not_supported, cause = this)
-            is ReadError ->
+            is Reading ->
                 cause.toUserError()
         }
 
@@ -51,7 +52,7 @@ sealed class PublicationError(
         operator fun invoke(error: AssetRetriever.RetrieveUrlError): PublicationError =
             when (error) {
                 is AssetRetriever.RetrieveUrlError.Reading ->
-                    ReadError(error.cause)
+                    Reading(error.cause)
                 is AssetRetriever.RetrieveUrlError.FormatNotSupported ->
                     FormatNotSupported(error)
                 is AssetRetriever.RetrieveUrlError.SchemeNotSupported ->
@@ -61,7 +62,7 @@ sealed class PublicationError(
         operator fun invoke(error: AssetRetriever.RetrieveError): PublicationError =
             when (error) {
                 is AssetRetriever.RetrieveError.Reading ->
-                    ReadError(error.cause)
+                    Reading(error.cause)
                 is AssetRetriever.RetrieveError.FormatNotSupported ->
                     FormatNotSupported(error)
             }
@@ -69,7 +70,7 @@ sealed class PublicationError(
         operator fun invoke(error: PublicationOpener.OpenError): PublicationError =
             when (error) {
                 is PublicationOpener.OpenError.Reading ->
-                    ReadError(error.cause)
+                    Reading(error.cause)
                 is PublicationOpener.OpenError.FormatNotSupported ->
                     FormatNotSupported(error)
             }

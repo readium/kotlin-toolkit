@@ -18,21 +18,18 @@ import org.readium.r2.testapp.data.model.Catalog
 import org.readium.r2.testapp.data.model.Highlight
 
 @Database(
-    entities = [Book::class, Bookmark::class, Highlight::class, Catalog::class, Download::class],
+    entities = [Book::class, Bookmark::class, Highlight::class, Catalog::class],
     version = 1,
     exportSchema = false
 )
 @TypeConverters(
-    HighlightConverters::class,
-    Download.Type.Converter::class
+    HighlightConverters::class
 )
 abstract class AppDatabase : RoomDatabase() {
 
     abstract fun booksDao(): BooksDao
 
     abstract fun catalogDao(): CatalogDao
-
-    abstract fun downloadsDao(): DownloadsDao
 
     companion object {
         @Volatile

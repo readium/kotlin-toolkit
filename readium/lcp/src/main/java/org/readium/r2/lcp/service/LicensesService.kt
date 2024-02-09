@@ -10,7 +10,10 @@
 package org.readium.r2.lcp.service
 
 import android.content.Context
+import java.io.File
 import kotlin.coroutines.resume
+import kotlin.io.encoding.Base64
+import kotlin.io.encoding.ExperimentalEncodingApi
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -21,8 +24,8 @@ import kotlinx.coroutines.withContext
 import org.readium.r2.lcp.LcpAuthenticating
 import org.readium.r2.lcp.LcpContentProtection
 import org.readium.r2.lcp.LcpError
+import org.readium.r2.lcp.LcpException
 import org.readium.r2.lcp.LcpLicense
-import org.readium.r2.lcp.LcpPublicationRetriever
 import org.readium.r2.lcp.LcpService
 import org.readium.r2.lcp.license.License
 import org.readium.r2.lcp.license.LicenseValidation
@@ -30,11 +33,22 @@ import org.readium.r2.lcp.license.container.LicenseContainer
 import org.readium.r2.lcp.license.container.WritableLicenseContainer
 import org.readium.r2.lcp.license.container.createLicenseContainer
 import org.readium.r2.lcp.license.model.LicenseDocument
+import org.readium.r2.lcp.util.sha256
+import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.publication.protection.ContentProtection
+import org.readium.r2.shared.util.ErrorException
+import org.readium.r2.shared.util.FileExtension
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.asset.Asset
 import org.readium.r2.shared.util.asset.AssetRetriever
-import org.readium.r2.shared.util.downloads.DownloadManager
+import org.readium.r2.shared.util.format.EpubSpecification
+import org.readium.r2.shared.util.format.Format
+import org.readium.r2.shared.util.format.FormatHints
+import org.readium.r2.shared.util.format.FormatSpecification
+import org.readium.r2.shared.util.format.LcpSpecification
+import org.readium.r2.shared.util.format.ZipSpecification
+import org.readium.r2.shared.util.getOrElse
+import org.readium.r2.shared.util.mediatype.MediaType
 import timber.log.Timber
 
 internal class LicensesService(
@@ -44,8 +58,7 @@ internal class LicensesService(
     private val network: NetworkService,
     private val passphrases: PassphrasesService,
     private val context: Context,
-    private val assetRetriever: AssetRetriever,
-    private val downloadManager: DownloadManager
+    private val assetRetriever: AssetRetriever
 ) : LcpService, CoroutineScope by MainScope() {
 
     override fun contentProtection(
@@ -53,12 +66,124 @@ internal class LicensesService(
     ): ContentProtection =
         LcpContentProtection(this, authentication, assetRetriever)
 
-    override fun publicationRetriever(): LcpPublicationRetriever {
-        return LcpPublicationRetriever(
-            context,
-            downloadManager,
-            assetRetriever
+    override suspend fun acquirePublication(
+        lcpl: File,
+        onProgress: (Double) -> Unit
+    ): Try<LcpService.AcquiredPublication, LcpError> {
+        val bytes = try {
+            lcpl.readBytes()
+        } catch (e: Exception) {
+            return Try.failure(LcpError.wrap(e))
+        }
+
+        return acquirePublication(bytes, onProgress)
+    }
+
+    override suspend fun acquirePublication(
+        lcpl: ByteArray,
+        onProgress: (Double) -> Unit
+    ): Try<LcpService.AcquiredPublication, LcpError> {
+        val destination =
+            try {
+                withContext(Dispatchers.IO) {
+                    File.createTempFile("lcp-${System.currentTimeMillis()}", ".tmp")
+                }
+            } catch (e: Exception) {
+                return Try.failure(LcpError.wrap(e))
+            }
+
+        return try {
+            val licenseDocument = LicenseDocument(lcpl)
+            Timber.d("license ${licenseDocument.json}")
+            fetchPublication(licenseDocument, destination, onProgress).let { Try.success(it) }
+        } catch (e: Exception) {
+            tryOrLog { destination.delete() }
+            Try.failure(LcpError.wrap(e))
+        }
+    }
+
+    private suspend fun fetchPublication(
+        license: LicenseDocument,
+        destination: File,
+        onProgress: (Double) -> Unit
+    ): LcpService.AcquiredPublication {
+        val link = license.link(LicenseDocument.Rel.Publication)!!
+        val url = link.url()
+
+        Timber.i("LCP destination $destination")
+
+        val mediaType = network.download(
+            url,
+            destination,
+            mediaType = link.mediaType,
+            onProgress = onProgress
         )
+
+        license.publicationLink.hash
+            ?.takeIf { destination.checkSha256(it) == false }
+            ?.run {
+                throw LcpException(
+                    LcpError.Network(Exception("Digest mismatch: download looks corrupted."))
+                )
+            }
+
+        val format =
+            assetRetriever.sniffFormat(
+                destination,
+                FormatHints(
+                    mediaTypes = listOfNotNull(
+                        license.publicationLink.mediaType,
+                        mediaType
+                    )
+                )
+            ).getOrElse {
+                when (it) {
+                    is AssetRetriever.RetrieveError.Reading -> {
+                        tryOrLog { destination.delete() }
+                        throw LcpException(LcpError.wrap(ErrorException(it)))
+                    }
+
+                    is AssetRetriever.RetrieveError.FormatNotSupported -> {
+                        Format(
+                            specification = FormatSpecification(
+                                ZipSpecification,
+                                EpubSpecification,
+                                LcpSpecification
+                            ),
+                            mediaType = MediaType.EPUB,
+                            fileExtension = FileExtension("epub")
+                        )
+                    }
+                }
+            }
+
+        // Saves the License Document into the downloaded publication
+        val container = createLicenseContainer(destination, format.specification)
+        container.write(license)
+
+        return LcpService.AcquiredPublication(
+            localFile = destination,
+            suggestedFilename = "${license.id}.${format.fileExtension.value}",
+            format = format,
+            licenseDocument = license
+        )
+    }
+
+    /**
+     * Checks that the sha256 sum of file content matches the expected one.
+     * Returns null if we can't decide.
+     */
+    @OptIn(ExperimentalEncodingApi::class, ExperimentalStdlibApi::class)
+    private fun File.checkSha256(expected: String): Boolean? {
+        val actual = sha256() ?: return null
+
+        // Supports hexadecimal encoding for compatibility.
+        // See https://github.com/readium/lcp-specs/issues/52
+        return when (expected.length) {
+            44 -> Base64.encode(actual) == expected
+            64 -> actual.toHexString() == expected
+            else -> null
+        }
     }
 
     override suspend fun retrieveLicense(
