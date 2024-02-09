@@ -42,6 +42,7 @@ suspend fun InputStream.toFileUnsafe(file: File) {
         }
     } catch (e: Exception) {
         tryOrLog { file.delete() }
+        throw e
     }
 }
 
