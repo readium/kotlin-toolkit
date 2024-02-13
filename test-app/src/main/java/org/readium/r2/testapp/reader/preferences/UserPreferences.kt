@@ -9,7 +9,7 @@
 package org.readium.r2.testapp.reader.preferences
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.*
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -63,7 +63,8 @@ private fun <P : Configurable.Preferences<P>, E : PreferencesEditor<P>> UserPref
         Text(
             text = title,
             textAlign = TextAlign.Center,
-            style = MaterialTheme.typography.h6,
+            style = MaterialTheme.typography.headlineSmall,
+            color = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier
                 .fillMaxWidth()
         )
@@ -611,15 +612,14 @@ private fun PresetsMenuButton(
 
         for (preset in presets) {
             DropdownMenuItem(
+                text = { Text(preset.title) },
                 onClick = {
                     dismiss()
                     clear()
                     preset.apply()
                     commit()
                 }
-            ) {
-                Text(preset.title)
-            }
+            )
         }
     }
 }

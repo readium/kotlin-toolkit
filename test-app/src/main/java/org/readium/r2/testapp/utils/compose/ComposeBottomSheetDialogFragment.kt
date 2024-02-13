@@ -11,6 +11,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.ComposeView
 import androidx.core.widget.NestedScrollView
@@ -32,7 +33,9 @@ abstract class ComposeBottomSheetDialogFragment(
         val composeView = ComposeView(context).apply {
             setContent {
                 AppTheme {
-                    this@ComposeBottomSheetDialogFragment.Content()
+                    Surface {
+                        this@ComposeBottomSheetDialogFragment.Content()
+                    }
                 }
             }
         }

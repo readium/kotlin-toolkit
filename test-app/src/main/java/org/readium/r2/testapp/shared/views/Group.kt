@@ -6,21 +6,21 @@
 
 package org.readium.r2.testapp.shared.views
 
-import androidx.compose.material.ContentAlpha
-import androidx.compose.material.LocalContentAlpha
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
+import org.readium.r2.testapp.utils.compose.Emphasis
+import org.readium.r2.testapp.utils.compose.EmphasisProvider
+import org.readium.r2.testapp.utils.compose.LocalContentEmphasis
 
 /**
  * Sets the emphasis (alpha) of a group of [Composable] views.
  */
 @Composable
 fun Group(lowEmphasis: Boolean = false, enabled: Boolean = true, content: @Composable () -> Unit) {
-    val alpha = when {
-        !enabled -> ContentAlpha.disabled
-        lowEmphasis -> ContentAlpha.medium
-        else -> ContentAlpha.high
+    val emphasis = when {
+        !enabled -> Emphasis.Disabled
+        else -> Emphasis.Medium
     }
-
-    CompositionLocalProvider(LocalContentAlpha provides alpha, content = content)
+    EmphasisProvider(LocalContentEmphasis provides emphasis) {
+        content()
+    }
 }
