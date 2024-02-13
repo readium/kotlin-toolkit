@@ -22,7 +22,6 @@ import java.io.InputStream
 import java.net.URL
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.readium.r2.testapp.utils.extensions.toFile
 
 object ContentResolverUtil {
 

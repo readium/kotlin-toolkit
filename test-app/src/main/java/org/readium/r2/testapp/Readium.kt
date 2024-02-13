@@ -17,7 +17,6 @@ import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.DebugError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.asset.AssetRetriever
-import org.readium.r2.shared.util.downloads.android.AndroidDownloadManager
 import org.readium.r2.shared.util.http.DefaultHttpClient
 import org.readium.r2.streamer.PublicationOpener
 import org.readium.r2.streamer.parser.DefaultPublicationParser
@@ -33,20 +32,13 @@ class Readium(context: Context) {
     val assetRetriever =
         AssetRetriever(context.contentResolver, httpClient)
 
-    val downloadManager =
-        AndroidDownloadManager(
-            context = context,
-            destStorage = AndroidDownloadManager.Storage.App
-        )
-
     /**
      * The LCP service decrypts LCP-protected publication and acquire publications from a
      * license file.
      */
     val lcpService = LcpService(
         context,
-        assetRetriever,
-        downloadManager
+        assetRetriever
     )?.let { Try.success(it) }
         ?: Try.failure(LcpError.Unknown(DebugError("liblcp is missing on the classpath")))
 
