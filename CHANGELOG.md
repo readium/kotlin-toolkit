@@ -8,8 +8,14 @@ All notable changes to this project will be documented in this file. Take a look
 
 ### Added
 
-* The new `HyperlinkNavigator.shouldFollowInternalLink(Link, LinkContext?)` allows you to handle footnotes according to your preference.
+#### Navigator
+
+* The new `HyperlinkNavigator.shouldfollowinternallink(Link, LinkContext?)` allows you to handle footnotes according to your preference.
     * By default, the navigator now moves to the footnote content instead of displaying a pop-up as it did in version 2.x.
+
+#### LCP
+
+* You can use `LcpService.injectLicenseDocument()` to insert an LCPL into a package, if you downloaded it manually instead of using `LcpService.acquirePublication()`.
 
 
 ## [3.0.0-alpha.1]

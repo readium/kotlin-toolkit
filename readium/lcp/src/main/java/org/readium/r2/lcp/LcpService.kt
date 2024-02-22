@@ -120,10 +120,9 @@ public interface LcpService {
     ): Try<LcpLicense, LcpError>
 
     /**
-     * Injects license document into publication archive.
+     * Injects a [licenseDocument] into the given [publicationFile] package.
      *
-     * This is useful if you've downloaded the publication by your own means but not if you used
-     * [acquirePublication].
+     * This is useful if you downloaded the publication yourself instead of using [acquirePublication].
      */
     public suspend fun injectLicenseDocument(
         licenseDocument: LicenseDocument,
