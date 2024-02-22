@@ -66,6 +66,33 @@ internal class LicensesService(
     ): ContentProtection =
         LcpContentProtection(this, authentication, assetRetriever)
 
+    override suspend fun injectLicenseDocument(
+        licenseDocument: LicenseDocument,
+        publicationFile: File,
+        mediaType: MediaType?
+    ): Try<Unit, LcpError> {
+        val format = assetRetriever.sniffFormat(publicationFile, FormatHints(mediaType))
+            .getOrElse {
+                Format(
+                    specification = FormatSpecification(
+                        ZipSpecification,
+                        EpubSpecification,
+                        LcpSpecification
+                    ),
+                    mediaType = MediaType.EPUB,
+                    fileExtension = FileExtension("epub")
+                )
+            }
+
+        return try {
+            val container = createLicenseContainer(publicationFile, format.specification)
+            container.write(licenseDocument)
+            Try.success(Unit)
+        } catch (e: Exception) {
+            Try.failure(LcpError.wrap(e))
+        }
+    }
+
     override suspend fun acquirePublication(
         lcpl: File,
         onProgress: (Double) -> Unit
