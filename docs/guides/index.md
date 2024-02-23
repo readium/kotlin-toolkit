@@ -1,5 +1,6 @@
 # User guides
 
+* [Getting started](getting-started.md)
 * [Opening a publication](open-publication.md)
 * [Extracting the content of a publication](content.md)
 * [Supporting PDF documents](pdf.md)
