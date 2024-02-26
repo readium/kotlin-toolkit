@@ -27,9 +27,7 @@ internal class EpubDeobfuscator(
     @Suppress("Unused_parameter")
     fun transform(url: Url, resource: Resource): Resource =
         resource.flatMap {
-            val algorithm = resource.sourceUrl
-                ?.let { encryptionData[it] }
-                ?.algorithm
+            val algorithm = encryptionData[url]?.algorithm
             if (algorithm != null && algorithm2length.containsKey(algorithm)) {
                 DeobfuscatingResource(resource, algorithm)
             } else {
@@ -71,9 +69,10 @@ internal class EpubDeobfuscator(
     )
 
     private fun deobfuscate(bytes: ByteArray, obfuscationKey: ByteArray, obfuscationLength: Int) {
-        val toDeobfuscate = 0 until obfuscationLength
-        for (i in toDeobfuscate)
+        val toDeobfuscate = 0 until obfuscationLength.coerceAtMost(bytes.size)
+        for (i in toDeobfuscate) {
             bytes[i] = bytes[i].xor(obfuscationKey[i % obfuscationKey.size])
+        }
     }
 
     private fun getHashKeyAdobe(pubId: String) =
