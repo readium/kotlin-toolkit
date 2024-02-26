@@ -99,7 +99,8 @@ internal class AssetSniffer(
                         it.format,
                         Either.Right(it.container),
                         Either.Right(CachingContainer(it.container)),
-                        hints
+                        hints,
+                        forceRefine = true
                     )
                 }
         }
