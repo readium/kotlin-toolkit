@@ -152,9 +152,7 @@ public class CompositeFormatSniffer(
     public constructor(vararg sniffers: FormatSniffer) : this(sniffers.toList())
 
     override fun sniffHints(hints: FormatHints): Format? =
-        sniffers.fold<FormatSniffer, Format?>(null) { current, sniffer ->
-            current ?: sniffer.sniffHints(hints)
-        }
+        sniffers.firstNotNullOfOrNull { it.sniffHints(hints) }
 
     override suspend fun sniffBlob(format: Format, source: Readable): Try<Format, ReadError> =
         sniffers.fold(Try.success(format)) { acc: Try<Format, ReadError>, sniffer ->
