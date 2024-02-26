@@ -46,7 +46,7 @@ internal class AssetSniffer(
         source: Either<Resource, Container<Resource>>,
         hints: FormatHints
     ): Try<Asset, SniffError> {
-        val formatFromHints = formatSniffer
+        val initialFormat = formatSniffer
             .sniffHints(hints)
             ?: Format(
                 specification = FormatSpecification(emptySet()),
@@ -59,7 +59,7 @@ internal class AssetSniffer(
             is Either.Right -> Either.Right(CachingContainer(source.value))
         }
 
-        val asset = sniffContent(formatFromHints, source, cachingSource, hints)
+        val asset = sniffContent(initialFormat, source, cachingSource, hints, forceRefine = false)
             .getOrElse { return Try.failure(SniffError.Reading(it)) }
 
         return asset
@@ -73,7 +73,7 @@ internal class AssetSniffer(
         source: Either<Resource, Container<Resource>>,
         cache: Either<Readable, Container<Readable>>,
         hints: FormatHints,
-        forceRefine: Boolean = false
+        forceRefine: Boolean
     ): Try<Asset, ReadError> {
         when (cache) {
             is Either.Left ->
