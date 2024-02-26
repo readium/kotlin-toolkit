@@ -46,17 +46,13 @@ internal class AssetSniffer(
         source: Either<Resource, Container<Resource>>,
         hints: FormatHints
     ): Try<Asset, SniffError> {
-        val initialFormat = Format(
-            specification = FormatSpecification(emptySet()),
-            mediaType = MediaType.BINARY,
-            fileExtension = FileExtension("")
-        )
-
         val formatFromHints = formatSniffer
-            .sniffHints(initialFormat, hints)
-            .takeIf { it.conformsTo(initialFormat) }
-            ?.takeIf { it.specification != initialFormat.specification }
-            ?: initialFormat
+            .sniffHints(hints)
+            ?: Format(
+                specification = FormatSpecification(emptySet()),
+                mediaType = MediaType.BINARY,
+                fileExtension = FileExtension("")
+            )
 
         val cachingSource: Either<Readable, Container<Readable>> = when (source) {
             is Either.Left -> Either.Left(CachingReadable(source.value))
