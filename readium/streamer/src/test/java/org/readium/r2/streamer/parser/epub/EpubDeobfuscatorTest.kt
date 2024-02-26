@@ -45,8 +45,8 @@ class EpubDeobfuscatorTest {
 
     private fun deobfuscate(url: Url, resource: Resource, algorithm: String?): Resource {
         val encryptionData =
-            if (resource.sourceUrl != null && algorithm != null) {
-                mapOf(resource.sourceUrl as Url to Encryption(algorithm = algorithm))
+            if (algorithm != null) {
+                mapOf(url to Encryption(algorithm = algorithm))
             } else {
                 emptyMap()
             }
