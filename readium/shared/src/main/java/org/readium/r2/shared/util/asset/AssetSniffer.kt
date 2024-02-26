@@ -46,18 +46,20 @@ internal class AssetSniffer(
         source: Either<Resource, Container<Resource>>,
         hints: FormatHints
     ): Try<Asset, SniffError> {
-        val initialDescription = Format(
-            specification = FormatSpecification(emptySet()),
-            mediaType = MediaType.BINARY,
-            fileExtension = FileExtension("")
-        )
+        val initialFormat = formatSniffer
+            .sniffHints(hints)
+            ?: Format(
+                specification = FormatSpecification(emptySet()),
+                mediaType = MediaType.BINARY,
+                fileExtension = FileExtension("")
+            )
 
         val cachingSource: Either<Readable, Container<Readable>> = when (source) {
             is Either.Left -> Either.Left(CachingReadable(source.value))
             is Either.Right -> Either.Right(CachingContainer(source.value))
         }
 
-        val asset = doSniff(initialDescription, source, cachingSource, hints)
+        val asset = sniffContent(initialFormat, source, cachingSource, hints, forceRefine = false)
             .getOrElse { return Try.failure(SniffError.Reading(it)) }
 
         return asset
@@ -66,45 +68,39 @@ internal class AssetSniffer(
             ?: Try.failure(SniffError.NotRecognized)
     }
 
-    private suspend fun doSniff(
+    private suspend fun sniffContent(
         format: Format,
         source: Either<Resource, Container<Resource>>,
         cache: Either<Readable, Container<Readable>>,
-        hints: FormatHints
+        hints: FormatHints,
+        forceRefine: Boolean
     ): Try<Asset, ReadError> {
-        formatSniffer
-            .sniffHints(format, hints)
-            .takeIf { it.conformsTo(format) }
-            ?.takeIf { it != format }
-            ?.let { return doSniff(it, source, cache, hints) }
-
         when (cache) {
             is Either.Left ->
                 formatSniffer
                     .sniffBlob(format, cache.value)
                     .getOrElse { return Try.failure(it) }
-                    .takeIf { it.conformsTo(format) }
-                    ?.takeIf { it != format }
-                    ?.let { return doSniff(it, source, cache, hints) }
+                    .takeIf { !forceRefine || it.refines(format) }
+                    ?.let { return sniffContent(it, source, cache, hints, forceRefine = true) }
 
             is Either.Right ->
                 formatSniffer
                     .sniffContainer(format, cache.value)
                     .getOrElse { return Try.failure(it) }
-                    .takeIf { it.conformsTo(format) }
-                    ?.takeIf { it != format }
-                    ?.let { return doSniff(it, source, cache, hints) }
+                    .takeIf { !forceRefine || it.refines(format) }
+                    ?.let { return sniffContent(it, source, cache, hints, forceRefine = true) }
         }
 
         if (source is Either.Left) {
             tryOpenArchive(format, source.value)
                 .getOrElse { return Try.failure(it) }
                 ?.let {
-                    return doSniff(
+                    return sniffContent(
                         it.format,
                         Either.Right(it.container),
                         Either.Right(CachingContainer(it.container)),
-                        hints
+                        hints,
+                        forceRefine = true
                     )
                 }
         }

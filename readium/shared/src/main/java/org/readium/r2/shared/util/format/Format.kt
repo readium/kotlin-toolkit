@@ -25,6 +25,10 @@ public data class Format(
 
     internal fun conformsTo(other: Format): Boolean =
         specification.conformsTo(other.specification)
+
+    internal fun refines(other: Format) =
+        specification != other.specification &&
+            specification.conformsToAll(other.specification.specifications)
 }
 
 @JvmInline
