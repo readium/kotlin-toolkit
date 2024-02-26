@@ -72,24 +72,23 @@ internal class AssetSniffer(
         format: Format,
         source: Either<Resource, Container<Resource>>,
         cache: Either<Readable, Container<Readable>>,
-        hints: FormatHints
+        hints: FormatHints,
+        forceRefine: Boolean = false
     ): Try<Asset, ReadError> {
         when (cache) {
             is Either.Left ->
                 formatSniffer
                     .sniffBlob(format, cache.value)
                     .getOrElse { return Try.failure(it) }
-                    .takeIf { it.conformsTo(format) }
-                    ?.takeIf { it.specification != format.specification }
-                    ?.let { return sniffContent(it, source, cache, hints) }
+                    .takeIf { !forceRefine || it.refines(format) }
+                    ?.let { return sniffContent(it, source, cache, hints, forceRefine = true) }
 
             is Either.Right ->
                 formatSniffer
                     .sniffContainer(format, cache.value)
                     .getOrElse { return Try.failure(it) }
-                    .takeIf { it.conformsTo(format) }
-                    ?.takeIf { it.specification != format.specification }
-                    ?.let { return sniffContent(it, source, cache, hints) }
+                    .takeIf { !forceRefine || it.refines(format) }
+                    ?.let { return sniffContent(it, source, cache, hints, forceRefine = true) }
         }
 
         if (source is Either.Left) {

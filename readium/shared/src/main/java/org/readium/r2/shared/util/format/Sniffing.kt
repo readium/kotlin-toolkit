@@ -159,8 +159,15 @@ public class CompositeFormatSniffer(
     override suspend fun sniffBlob(format: Format, source: Readable): Try<Format, ReadError> =
         sniffers.fold(Try.success(format)) { acc: Try<Format, ReadError>, sniffer ->
             when (acc) {
-                is Try.Failure -> acc
-                is Try.Success -> sniffer.sniffBlob(acc.value, source)
+                is Try.Failure ->
+                    acc
+                is Try.Success ->
+                    when (val new = sniffer.sniffBlob(acc.value, source)) {
+                        is Try.Failure ->
+                            new
+                        is Try.Success ->
+                            new.takeIf { it.value.refines(acc.value) } ?: acc
+                    }
             }
         }
 
@@ -170,8 +177,15 @@ public class CompositeFormatSniffer(
     ): Try<Format, ReadError> =
         sniffers.fold(Try.success(format)) { acc: Try<Format, ReadError>, sniffer ->
             when (acc) {
-                is Try.Failure -> acc
-                is Try.Success -> sniffer.sniffContainer(acc.value, container)
+                is Try.Failure ->
+                    acc
+                is Try.Success ->
+                    when (val new = sniffer.sniffContainer(acc.value, container)) {
+                        is Try.Failure ->
+                            new
+                        is Try.Success ->
+                            new.takeIf { it.value.refines(acc.value) } ?: acc
+                    }
             }
         }
 }
