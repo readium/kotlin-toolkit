@@ -215,6 +215,7 @@ internal class TtsPlayer<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
                 // WORKAROUND to get the media buttons correctly working when an audio player was
                 // running before.
                 fakePlayingAudio()
+                playbackJob?.cancelAndJoin()
                 playIfReadyAndNotPaused()
             }
         }
