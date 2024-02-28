@@ -13,8 +13,10 @@ import android.content.Intent
 import android.content.ServiceConnection
 import android.os.Build
 import android.os.IBinder
+import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.app.ServiceCompat
+import androidx.media3.session.DefaultMediaNotificationProvider
 import androidx.media3.session.MediaSession
 import androidx.media3.session.MediaSessionService
 import kotlinx.coroutines.*
@@ -135,6 +137,34 @@ class MediaService : MediaSessionService() {
             Timber.d("Returning MediaSessionService binder.")
             super.onBind(intent)
         }
+    }
+
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        super.onStartCommand(intent, flags, startId)
+        val readerRepository = (application as org.readium.r2.testapp.Application).readerRepository
+
+        // App and service can be started again from a stale notification using
+        // PendingIntent.getForegroundService, so we need to call startForeground and then stop
+        // the service.
+        if (readerRepository.isEmpty()) {
+            val notification =
+                NotificationCompat.Builder(
+                    this,
+                    DefaultMediaNotificationProvider.DEFAULT_CHANNEL_ID
+                )
+                    .setContentTitle("Media service")
+                    .setContentText("Media service will stop immediately.")
+                    .build()
+
+            // Unfortunately, stopSelf does not remove the need for calling startForeground
+            // to prevent crashing.
+            startForeground(DefaultMediaNotificationProvider.DEFAULT_NOTIFICATION_ID, notification)
+            ServiceCompat.stopForeground(this, ServiceCompat.STOP_FOREGROUND_REMOVE)
+            stopSelf(startId)
+        }
+
+        // Prevents the service from being automatically restarted after being killed;
+        return START_NOT_STICKY
     }
 
     override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaSession? {
