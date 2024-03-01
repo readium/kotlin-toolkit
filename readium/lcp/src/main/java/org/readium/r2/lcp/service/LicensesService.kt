@@ -68,9 +68,9 @@ internal class LicensesService(
 
     override suspend fun injectLicenseDocument(
         licenseDocument: LicenseDocument,
-        publicationFile: File,
-        mediaType: MediaType?
+        publicationFile: File
     ): Try<Unit, LcpError> {
+        val mediaType = licenseDocument.publicationLink.mediaType
         val format = assetRetriever.sniffFormat(publicationFile, FormatHints(mediaType))
             .getOrElse {
                 Format(
