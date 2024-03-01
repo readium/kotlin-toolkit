@@ -29,7 +29,6 @@ import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.asset.Asset
 import org.readium.r2.shared.util.asset.AssetRetriever
 import org.readium.r2.shared.util.format.Format
-import org.readium.r2.shared.util.mediatype.MediaType
 
 /**
  * Service used to acquire and open publications protected with LCP.
@@ -126,8 +125,7 @@ public interface LcpService {
      */
     public suspend fun injectLicenseDocument(
         licenseDocument: LicenseDocument,
-        publicationFile: File,
-        mediaType: MediaType? = null
+        publicationFile: File
     ): Try<Unit, LcpError>
 
     /**
