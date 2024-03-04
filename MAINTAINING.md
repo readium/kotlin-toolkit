@@ -10,10 +10,8 @@ You are ready to release a new version of the Kotlin toolkit? Great, follow thes
 4. Issue the new release.
     1. Create a branch with the same name as the future tag, from `develop`.
     2. Bump the version numbers in:
-        * `CHANGELOG`
         * `README`
-        * `docs/migration-guide.md`
-        * `build.gradle.kts`
+        * `gradle.properties`
         * `test-app/build.gradle.kts`
     5. Close the version in the `CHANGELOG.md` and `docs/migration-guide.md`, [for example](https://github.com/readium/kotlin-toolkit/commit/011e0d74adc66ec2073f746d815310b838af4fbf).
     6. Create a PR to merge in `develop` and verify the CI workflows.
@@ -27,7 +25,11 @@ You are ready to release a new version of the Kotlin toolkit? Great, follow thes
         ```
 5. Create a new release on GitHub.
     * Add an APK to the release page **with LCP enabled**.
-6. Verify that the [`Publish` workflow](https://github.com/readium/kotlin-toolkit/actions/workflows/publish.yml) successfully pushed the release to Maven Central.
+6. Publish to Maven Central.
+    1. Verify that the [`Publish` workflow](https://github.com/readium/kotlin-toolkit/actions/workflows/publish.yml) successfully pushed and closed the release to Maven Central.
+    2. Sign in to https://s01.oss.sonatype.org/
+    3. Verify the content of the staging repository.
+    4. Release the staging repository.
 7. Check that the new modules can be imported in an Android project from Maven Central.
 8. Merge `develop` into `main`.
 
