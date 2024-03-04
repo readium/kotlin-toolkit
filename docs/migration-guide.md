@@ -2,6 +2,40 @@
 
 All migration steps necessary in reading apps to upgrade to major versions of the Kotlin Readium toolkit will be documented in this file.
 
+## 3.0.0-alpha.2
+
+### Deprecation of `DownloadManager`
+
+The `DownloadManager` introduced in version 3.0.0-alpha.1 has been removed due to the Android Download Manager introducing unnecessary complexities in the toolkit. Instead, we chose to enable apps to manually handle an LCP download with `LcpService.injectLicenseDocument()`.
+
+### EPUB footnote pop-ups
+
+The EPUB navigator no longer displays a pop-up when the user activates a footnote link. This change was made to give reading apps control over the entire user interface.
+
+The navigator now moves to the footnote content by default. To show your own pop-up instead, implement the new callback `HyperlinkNavigator.Listener.shouldFollowInternalLink(Link, LinkContext?)`.
+
+```kotlin
+override fun shouldFollowInternalLink(
+    link: Link,
+    context: HyperlinkNavigator.LinkContext?
+): Boolean =
+    when (context) {
+        is HyperlinkNavigator.FootnoteContext -> {
+            val text =
+                if (link.mediaType?.isHtml == true) {
+                    Html.fromHtml(context.noteContent, Html.FROM_HTML_MODE_COMPACT)
+                } else {
+                    context.noteContent
+                }
+
+            showPopup(text)
+            false
+        }
+        else -> true
+    }
+```
+
+
 ## 3.0.0-alpha.1
 
 First of all, upgrade to version 2.4.0 and resolve any deprecation notices. This will help you avoid troubles, as the APIs that were deprecated in version 2.x have been removed in version 3.0.
@@ -174,113 +208,13 @@ navigator.addInputListener(object : InputListener {
 
 #### Creating an `LcpService`
 
-The `LcpService` now requires an instance of `AssetRetriever` and `DownloadManager` during construction. To get the same behavior as before, you can use a `ForegroundDownloadManager`. If you want to support downloads in the background instead, take a look at `AndroidDownloadManager`.
+The `LcpService` now requires an instance of `AssetRetriever` during construction.
 
 ```kotlin
 val lcpService = LcpService(
     context,
-    assetRetriever = assetRetriever,
-    downloadManager = ForegroundDownloadManager(
-        httpClient = httpClient,
-        downloadsDirectory = File(context.cacheDir, "lcp")
-    )
+    assetRetriever = assetRetriever
 )
-```
-
-#### Downloading an LCP protected publication from a license
-
-`LcpService.acquirePublication()` is deprecated in favor of `LcpService.publicationRetriever()`, which provides greater flexibility thanks to the `DownloadManager`.
-
-```kotlin
-// 1. Open an `Asset` from a `File`.
-val asset = assetRetriever.retrieve(file)
-    .getOrElse { /* Failed to open the file or sniff its format */ }
-    
-// 2. Verify that it is an LCP License Document.
-if (asset is ResourceAsset && asset.format.conformsTo(LcpLicenseSpecification)) {
-    // 3. Parse the LCP License Document from its JSON representation.
-    val license = lcplAsset.resource.read()
-        .getOrElse { /* Failed to read the content of the LCPL asset */ }
-        .let { LicenseDocument.fromBytes(it) }
-        .getOrElse { /* Failed to parse a valid LCP License Document from the the raw bytes */ }
-
-    // 4. Download the publication using the `LcpPublicationRetriever`.
-    // The returned `requestId` can be used to cancel an on-going download, or to resume a download
-    // with `LcpPublicationRetriever.register()`, if it was downloaded in the background.
-    val requestId = lcpService.publicationRetriever()
-        .retrieve(license, listener = object : LcpPublicationRetriever.Listener {
-            override fun onAcquisitionCompleted(
-                requestId: LcpPublicationRetriever.RequestId,
-                acquiredPublication: LcpService.AcquiredPublication
-            ) {
-            }
-
-            override fun onAcquisitionProgressed(
-                requestId: LcpPublicationRetriever.RequestId,
-                downloaded: Long,
-                expected: Long?
-            ) {
-                // Report progress.
-            }
-
-            override fun onAcquisitionFailed(
-                requestId: LcpPublicationRetriever.RequestId,
-                error: LcpError
-            ) {
-                // Report error.
-            }
-
-            override fun onAcquisitionCancelled(requestId: LcpPublicationRetriever.RequestId) {
-                // Handle cancellation.
-            }
-        })
-}
-```
-
-If you are using a `ForegroundDownloadManager` and **not supporting background downloads**, you can use this helper to have a similar API as Readium 2.x with coroutines.
-
-```kotlin
-suspend fun LcpService.acquirePublication(
-    lcplAsset: ResourceAsset,
-    onProgress: (Double) -> Unit
-): Try<LcpService.AcquiredPublication, Error> {
-    require(lcplAsset.format.conformsTo(LcpLicenseSpecification))
-
-    val license = lcplAsset.resource.read()
-        .flatMap { LicenseDocument.fromBytes(it) }
-        .getOrElse { return Try.failure(it) }
-
-    return suspendCancellableCoroutine { cont ->
-        publicationRetriever().retrieve(license, object : LcpPublicationRetriever.Listener {
-            override fun onAcquisitionCompleted(
-                requestId: LcpPublicationRetriever.RequestId,
-                acquiredPublication: LcpService.AcquiredPublication
-            ) {
-                cont.resume(Try.success(acquiredPublication))
-            }
-
-            override fun onAcquisitionProgressed(
-                requestId: LcpPublicationRetriever.RequestId,
-                downloaded: Long,
-                expected: Long?
-            ) {
-                expected ?: return
-                onProgress(downloaded.toDouble() / expected.toDouble())
-            }
-
-            override fun onAcquisitionFailed(
-                requestId: LcpPublicationRetriever.RequestId,
-                error: LcpError
-            ) {
-                cont.resume(Try.failure(error))
-            }
-
-            override fun onAcquisitionCancelled(requestId: LcpPublicationRetriever.RequestId) {
-                cont.cancel()
-            }
-        })
-    }
-}
 ```
 
 #### `LcpDialogAuthentication` updated to support configuration changes

@@ -4,18 +4,26 @@ All notable changes to this project will be documented in this file. Take a look
 
 **Warning:** Features marked as *experimental* may change or be removed in a future release without notice. Use with caution.
 
-## [Unreleased]
+<!-- ## [Unreleased] -->
+
+## [3.0.0-alpha.2]
 
 ### Added
 
 #### Navigator
 
-* The new `HyperlinkNavigator.shouldfollowinternallink(Link, LinkContext?)` allows you to handle footnotes according to your preference.
+* The new `HyperlinkNavigator.Listener.shouldFollowInternalLink(Link, LinkContext?)` allows you to handle footnotes according to your preference.
     * By default, the navigator now moves to the footnote content instead of displaying a pop-up as it did in version 2.x.
 
 #### LCP
 
 * You can use `LcpService.injectLicenseDocument()` to insert an LCPL into a package, if you downloaded it manually instead of using `LcpService.acquirePublication()`.
+
+### Deprecated
+
+#### Shared
+
+* The `DownloadManager` introduced in version 3.0.0-alpha.1 has been removed due to the Android Download Manager introducing unnecessary complexities in the toolkit. Instead, we chose to enable apps to manually handle an LCP download with `LcpService.injectLicenseDocument()`.
 
 
 ## [3.0.0-alpha.1]
@@ -798,4 +806,5 @@ progression. Now if no reading progression is set, the `effectiveReadingProgress
 [2.3.0]: https://github.com/readium/kotlin-toolkit/compare/2.2.1...2.3.0
 [2.4.0]: https://github.com/readium/kotlin-toolkit/compare/2.3.0...2.4.0
 [3.0.0-alpha.1]: https://github.com/readium/kotlin-toolkit/compare/2.4.0...3.0.0-alpha.1
+[3.0.0-alpha.2]: https://github.com/readium/kotlin-toolkit/compare/3.0.0-alpha.1...3.0.0-alpha.2
 
