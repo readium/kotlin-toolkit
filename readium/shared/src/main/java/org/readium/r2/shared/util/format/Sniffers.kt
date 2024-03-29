@@ -202,7 +202,7 @@ public object Opds2Sniffer : FormatSniffer {
         format: Format,
         source: Readable
     ): Try<Format, ReadError> {
-        if (format.hasMoreThan(JsonSpecification)) {
+        if (format.hasMoreThan(JsonSpecification) || !source.canReadWholeBlob()) {
             return Try.success(format)
         }
 
