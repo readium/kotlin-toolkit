@@ -62,7 +62,7 @@ fun HttpError.toUserError(): UserError = when (this) {
 
 fun FileSystemError.toUserError(): UserError = when (this) {
     is FileSystemError.Forbidden -> UserError(
-        R.string.publication_error_filesystem_unexpected,
+        R.string.publication_error_filesystem_forbidden,
         cause = this
     )
     is FileSystemError.IO -> UserError(
@@ -86,6 +86,10 @@ fun ContentResolverError.toUserError(): UserError = when (this) {
     )
     is ContentResolverError.IO -> UserError(
         R.string.publication_error_filesystem_unexpected,
+        cause = this
+    )
+    is ContentResolverError.Forbidden -> UserError(
+        R.string.publication_error_filesystem_forbidden,
         cause = this
     )
     is ContentResolverError.NotAvailable -> UserError(R.string.error_unexpected, cause = this)

@@ -113,6 +113,7 @@
     <string name="publication_error_network_ssl_handshake">A SSL error occurred.</string>
     <string name="publication_error_network_unexpected">An unexpected network error occurred.</string>
     <string name="publication_error_filesystem_not_found">A file has not been found.</string>
+    <string name="publication_error_filesystem_forbidden">You are not allowed to access the file.</string>
     <string name="publication_error_filesystem_unexpected">An unexpected filesystem error occurred.</string>
     <string name="publication_error_filesystem_insufficient_space">There is not enough space left on the device.</string>
     <string name="publication_error_incorrect_credentials">Provided credentials were incorrect</string>
