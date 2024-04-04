@@ -25,6 +25,13 @@ public sealed class ContentResolverError(
         public constructor(exception: Exception) : this(ThrowableError(exception))
     }
 
+    public class Forbidden(
+        cause: Error?
+    ) : ContentResolverError("You are not allowed to access this file.", cause) {
+
+        public constructor(exception: Exception) : this(ThrowableError(exception))
+    }
+
     public class NotAvailable(
         cause: Error? = null
     ) : ContentResolverError("Content Provider recently crashed.", cause) {

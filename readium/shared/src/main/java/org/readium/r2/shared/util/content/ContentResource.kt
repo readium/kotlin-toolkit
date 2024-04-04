@@ -150,6 +150,8 @@ public class ContentResource(
             failure(ReadError.Access(ContentResolverError.FileNotFound(e)))
         } catch (e: IOException) {
             failure(ReadError.Access(ContentResolverError.IO(e)))
+        } catch (e: SecurityException) {
+            failure(ReadError.Access(ContentResolverError.Forbidden(e)))
         } catch (e: OutOfMemoryError) { // We don't want to catch any Error, only OOM.
             failure(ReadError.OutOfMemory(e))
         }
