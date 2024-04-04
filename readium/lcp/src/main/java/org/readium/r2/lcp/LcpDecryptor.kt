@@ -267,6 +267,15 @@ private suspend fun LcpLicense.decryptFully(
 
         // Removes the padding.
         val padding = bytes.last().toInt()
+        if (padding !in bytes.indices) {
+            return Try.failure(
+                ReadError.Decoding(
+                    DebugError(
+                        "The padding length of the encrypted resource is incorrect: $padding / ${bytes.size}"
+                    )
+                )
+            )
+        }
         bytes = bytes.copyOfRange(0, bytes.size - padding)
 
         // If the resource was compressed using deflate, inflates it.
