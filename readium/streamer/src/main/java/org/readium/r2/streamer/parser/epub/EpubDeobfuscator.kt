@@ -10,7 +10,9 @@ import com.mcxiaoke.koi.HASH
 import com.mcxiaoke.koi.ext.toHexBytes
 import kotlin.experimental.xor
 import org.readium.r2.shared.publication.encryption.Encryption
+import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.data.ReadTry
 import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.shared.util.resource.TransformingResource
@@ -51,7 +53,11 @@ internal class EpubDeobfuscator(
 
                 val obfuscationKey: ByteArray = when (algorithm) {
                     "http://ns.adobe.com/pdf/enc#RC" -> getHashKeyAdobe(pubId)
-                    else -> HASH.sha1(pubId).toHexBytes()
+                    else -> toHexBytes(HASH.sha1(pubId))
+                } ?: ByteArray(0)
+
+                if (obfuscationKey.isEmpty()) {
+                    return Try.failure(ReadError.Decoding("The obfuscation key is not valid."))
                 }
 
                 deobfuscate(
@@ -76,7 +82,17 @@ internal class EpubDeobfuscator(
     }
 
     private fun getHashKeyAdobe(pubId: String) =
-        pubId.replace("urn:uuid:", "")
-            .replace("-", "")
-            .toHexBytes()
+        toHexBytes(
+            pubId.replace("urn:uuid:", "")
+                .replace("-", "")
+        )
+
+    private fun toHexBytes(string: String): ByteArray? {
+        // Only even-length strings can be converted to an Hex byte array, otherwise it crashes
+        // with StringIndexOutOfBoundsException.
+        if (string.isEmpty() || string.length % 2 != 0) {
+            return null
+        }
+        return string.toHexBytes()
+    }
 }
