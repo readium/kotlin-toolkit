@@ -14,6 +14,7 @@ import org.readium.r2.shared.extensions.inflate
 import org.readium.r2.shared.extensions.requireLengthFitInt
 import org.readium.r2.shared.publication.encryption.Encryption
 import org.readium.r2.shared.util.DebugError
+import org.readium.r2.shared.util.ThrowableError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.data.ReadError
@@ -268,9 +269,16 @@ private suspend fun LcpLicense.decryptFully(
         val padding = bytes.last().toInt()
         bytes = bytes.copyOfRange(0, bytes.size - padding)
 
-        // If the ressource was compressed using deflate, inflates it.
+        // If the resource was compressed using deflate, inflates it.
         if (isDeflated) {
             bytes = bytes.inflate(nowrap = true)
+                .getOrElse {
+                    return Try.failure(
+                        ReadError.Decoding(
+                            DebugError("Cannot deflate the decrypted resource", ThrowableError(it))
+                        )
+                    )
+                }
         }
 
         Try.success(bytes)
