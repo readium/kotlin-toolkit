@@ -74,12 +74,9 @@ internal fun createLicenseContainer(
         throw LcpException(LcpError.Container.OpenFailed)
     }
 
-    return when {
-        resource.sourceUrl?.isFile == true ->
-            LcplLicenseContainer(resource.sourceUrl!!.toFile()!!)
-        else ->
-            LcplResourceLicenseContainer(resource)
-    }
+    return resource.sourceUrl?.toFileUrl()?.toFile()
+        ?.let { LcplLicenseContainer(it) }
+        ?: LcplResourceLicenseContainer(resource)
 }
 
 internal fun createLicenseContainer(
@@ -93,12 +90,13 @@ internal fun createLicenseContainer(
         else -> LICENSE_IN_RPF
     }
 
-    return when {
-        container.sourceUrl?.isFile == true ->
-            FileZipLicenseContainer(container.sourceUrl!!.path!!, licensePath)
-        container.sourceUrl?.isContent == true ->
-            ContentZipLicenseContainer(context, container, licensePath)
-        else ->
-            ContainerLicenseContainer(container, licensePath)
+    container.sourceUrl?.toFileUrl()?.let {
+        return FileZipLicenseContainer(it.path, licensePath)
     }
+
+    container.sourceUrl?.toContentUrl()?.let {
+        return ContentZipLicenseContainer(context, container, licensePath)
+    }
+
+    return ContainerLicenseContainer(container, licensePath)
 }

@@ -24,7 +24,7 @@ public class ContentResourceFactory(
     override suspend fun create(
         url: AbsoluteUrl
     ): Try<Resource, ResourceFactory.Error> {
-        if (!url.isContent) {
+        if (url.scheme != AbsoluteUrl.Scheme.CONTENT) {
             return Try.failure(ResourceFactory.Error.SchemeNotSupported(url.scheme))
         }
 

@@ -19,7 +19,7 @@ public class FileResourceFactory : ResourceFactory {
     override suspend fun create(
         url: AbsoluteUrl
     ): Try<Resource, ResourceFactory.Error> {
-        val file = url.toFile()
+        val file = url.toFileUrl()?.toFile()
             ?: return Try.failure(ResourceFactory.Error.SchemeNotSupported(url.scheme))
 
         val resource = FileResource(file)

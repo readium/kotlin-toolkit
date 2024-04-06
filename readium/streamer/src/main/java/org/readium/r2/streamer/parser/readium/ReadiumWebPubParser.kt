@@ -14,7 +14,6 @@ import org.readium.r2.shared.publication.services.WebPositionsService
 import org.readium.r2.shared.publication.services.cacheServiceFactory
 import org.readium.r2.shared.publication.services.locatorServiceFactory
 import org.readium.r2.shared.publication.services.positionsServiceFactory
-import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.DebugError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
@@ -136,24 +135,9 @@ public class ReadiumWebPubParser(
                 recover = { return Try.failure(PublicationParser.ParseError.Reading(it)) }
             )
 
-        val baseUrl = manifest.linkWithRel("self")?.href?.resolve()
+        val baseUrl = manifest.linkWithRel("self")?.href?.resolve()?.toHttpUrl()
         if (baseUrl == null) {
-            Timber.w("No self link found in the manifest at ${resource.sourceUrl}")
-        } else {
-            if (baseUrl !is AbsoluteUrl) {
-                return Try.failure(
-                    PublicationParser.ParseError.Reading(
-                        ReadError.Decoding("Self link is not absolute.")
-                    )
-                )
-            }
-            if (!baseUrl.isHttp) {
-                return Try.failure(
-                    PublicationParser.ParseError.Reading(
-                        ReadError.Decoding("Self link doesn't use the HTTP(S) scheme.")
-                    )
-                )
-            }
+            Timber.w("No valid self link found in the manifest at ${resource.sourceUrl}")
         }
 
         val resources = (manifest.readingOrder + manifest.resources)

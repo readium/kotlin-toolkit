@@ -36,14 +36,15 @@ class CoverStorage(
         }
     }
 
-    private suspend fun AbsoluteUrl.fetchBitmap(): Bitmap? =
-        tryOrLog {
-            when {
-                isFile -> toFile()?.toBitmap()
-                isHttp -> httpClient.fetchBitmap(HttpRequest(this)).getOrNull()
-                else -> null
-            }
+    private suspend fun AbsoluteUrl.fetchBitmap(): Bitmap? {
+        toFileUrl()?.let {
+            return it.toFile().toBitmap()
         }
+        toHttpUrl()?.let {
+            return httpClient.fetchBitmap(HttpRequest(this)).getOrNull()
+        }
+        return null
+    }
 
     private suspend fun File.toBitmap(): Bitmap? =
         withContext(Dispatchers.IO) {

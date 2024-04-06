@@ -13,8 +13,8 @@ import kotlinx.coroutines.withContext
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.extensions.read
 import org.readium.r2.shared.extensions.tryOrLog
-import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.DebugError
+import org.readium.r2.shared.util.HttpUrl
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.flatMap
@@ -26,7 +26,7 @@ import org.readium.r2.shared.util.resource.mediaType
 /** Provides access to an external URL through HTTP. */
 @OptIn(ExperimentalReadiumApi::class)
 public class HttpResource(
-    override val sourceUrl: AbsoluteUrl,
+    override val sourceUrl: HttpUrl,
     private val client: HttpClient,
     private val maxSkipBytes: Long = MAX_SKIP_BYTES
 ) : Resource {

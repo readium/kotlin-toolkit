@@ -66,7 +66,7 @@ public class AssetRetriever private constructor(
          * The scheme (e.g. http, file, content) for the requested [Url] is not supported.
          */
         public class SchemeNotSupported(
-            public val scheme: Url.Scheme,
+            public val scheme: AbsoluteUrl.Scheme,
             cause: Error? = null
         ) : RetrieveUrlError("Url scheme $scheme is not supported.", cause)
 

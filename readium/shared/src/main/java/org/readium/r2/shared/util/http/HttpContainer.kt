@@ -6,7 +6,7 @@
 
 package org.readium.r2.shared.util.http
 
-import org.readium.r2.shared.util.AbsoluteUrl
+import org.readium.r2.shared.util.HttpUrl
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.data.Container
 import org.readium.r2.shared.util.resource.Resource
@@ -22,7 +22,7 @@ import org.readium.r2.shared.util.resource.Resource
  * @param client HTTP client used to perform HTTP requests.
  */
 public class HttpContainer(
-    private val baseUrl: Url? = null,
+    private val baseUrl: HttpUrl? = null,
     override val entries: Set<Url>,
     private val client: HttpClient
 ) : Container<Resource> {
@@ -30,13 +30,10 @@ public class HttpContainer(
     override fun get(url: Url): Resource? {
         // We don't check that url matches any entry because that might save us from edge cases.
 
-        val absoluteUrl = (baseUrl?.resolve(url) ?: url) as? AbsoluteUrl
+        val absoluteUrl = (baseUrl?.resolve(url) ?: url).toHttpUrl()
+            ?: return null
 
-        return if (absoluteUrl == null || !absoluteUrl.isHttp) {
-            null
-        } else {
-            HttpResource(absoluteUrl, client)
-        }
+        return HttpResource(absoluteUrl, client)
     }
 
     override suspend fun close() {}

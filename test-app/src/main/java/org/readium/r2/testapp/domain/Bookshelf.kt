@@ -164,7 +164,7 @@ class Bookshelf(
     suspend fun deleteBook(book: Book) {
         val id = book.id!!
         bookRepository.deleteBook(id)
-        tryOrLog { book.url.toFile()?.delete() }
+        tryOrLog { book.url.toFileUrl()?.toFile()?.delete() }
         tryOrLog { File(book.cover).delete() }
     }
 }

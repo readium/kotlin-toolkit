@@ -96,7 +96,7 @@ public class PdfiumDocumentFactory(context: Context) : PdfDocumentFactory<Pdfium
 
     private suspend fun Resource.openAsFile(password: String?): ReadTry<PdfiumDocument>? =
         tryOrNull {
-            sourceUrl?.toFile()?.let { file ->
+            sourceUrl?.toFileUrl()?.toFile()?.let { file ->
                 withContext(Dispatchers.IO) {
                     Try.success(core.fromFile(file, password))
                 }

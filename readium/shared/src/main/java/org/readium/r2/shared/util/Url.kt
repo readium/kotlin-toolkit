@@ -9,9 +9,11 @@ package org.readium.r2.shared.util
 import android.net.Uri
 import android.net.UrlQuerySanitizer
 import android.os.Parcelable
+import androidx.core.net.toUri
 import java.io.File
 import java.net.URI
 import java.net.URL
+import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
 import org.readium.r2.shared.DelicateReadiumApi
 import org.readium.r2.shared.InternalReadiumApi
@@ -55,7 +57,7 @@ public sealed class Url : Parcelable {
     /**
      * Decoded path segments identifying a location.
      */
-    public val path: String?
+    public open val path: String?
         get() = uri.path?.takeUnless { it.isBlank() }
 
     /**
@@ -180,94 +182,61 @@ public sealed class Url : Parcelable {
 
         other as Url
 
-        if (uri.toString() != other.uri.toString()) return false
-
-        return true
+        return uri.toString() == other.uri.toString()
     }
 
     override fun hashCode(): Int =
         uri.toString().hashCode()
 
     /**
-     * A URL scheme, e.g. http or file.
+     * Returns an [RelativeUrl] if this URL is a relative URL, or `null` otherwise.
      */
-    @JvmInline
-    public value class Scheme private constructor(public val value: String) {
-
-        public companion object {
-            public operator fun invoke(scheme: String): Scheme =
-                Scheme(scheme.lowercase())
+    public fun toRelativeUrl(): RelativeUrl? =
+        if (this is RelativeUrl) {
+            this
+        } else {
+            RelativeUrl(uri)
         }
 
-        override fun toString(): String = value
-
-        public val isFile: Boolean
-            get() = value == "file"
-
-        public val isHttp: Boolean
-            get() = value == "http" || value == "https"
-
-        public val isContent: Boolean
-            get() = value == "content"
-    }
-}
-
-/**
- * Represents an absolute Uniform Resource Locator.
- */
-@Parcelize
-public class AbsoluteUrl private constructor(override val uri: Uri) : Url() {
-
-    public companion object {
-
-        /**
-         * Creates an [AbsoluteUrl] from its encoded string representation.
-         */
-        public operator fun invoke(url: String): AbsoluteUrl? {
-            if (!url.isValidUrl()) return null
-            return invoke(Uri.parse(url))
+    /**
+     * Returns an [AbsoluteUrl] if this URL is an absolute URL, or `null` otherwise.
+     */
+    public fun toAbsoluteUrl(): AbsoluteUrl? =
+        if (this is AbsoluteUrl) {
+            this
+        } else {
+            AbsoluteUrl(uri)
         }
 
-        internal operator fun invoke(uri: Uri): AbsoluteUrl? =
-            tryOrNull {
-                require(uri.isAbsolute)
-                require(uri.isHierarchical)
-                AbsoluteUrl(uri)
-            }
-    }
-
-    public override fun resolve(url: Url): AbsoluteUrl =
-        super.resolve(url) as AbsoluteUrl
+    /**
+     * Returns a [FileUrl] if this URL is a file URL, or `null` otherwise.
+     */
+    public fun toFileUrl(): FileUrl? =
+        if (this is FileUrl) {
+            this
+        } else {
+            FileUrl(uri)
+        }
 
     /**
-     * Identifies the type of URL.
+     * Returns an [HttpUrl] if this URL is an HTTP URL, or `null` otherwise.
      */
-    public val scheme: Scheme
-        get() = Scheme(uri.scheme!!)
+    public fun toHttpUrl(): HttpUrl? =
+        if (this is HttpUrl) {
+            this
+        } else {
+            HttpUrl(uri)
+        }
 
     /**
-     * Indicates whether this URL points to a HTTP resource.
+     * Returns a [ContentUrl] if this URL is a content URL, or `null` otherwise.
      */
-    public val isHttp: Boolean get() =
-        scheme.isHttp
-
-    /**
-     * Indicates whether this URL points to a file.
-     */
-    public val isFile: Boolean get() =
-        scheme.isFile
-
-    /**
-     * Indicates whether this URL points to an Android content resource.
-     */
-    public val isContent: Boolean get() =
-        scheme.isContent
-
-    /**
-     * Converts the URL to a [File], if it's a file URL.
-     */
-    public fun toFile(): File? =
-        if (isFile) File(path!!) else null
+    public fun toContentUrl(): ContentUrl? =
+        if (this is ContentUrl) {
+            this
+        } else {
+            ContentUrl(uri)
+        }
 }
 
 /**
@@ -277,6 +246,11 @@ public class AbsoluteUrl private constructor(override val uri: Uri) : Url() {
 public class RelativeUrl private constructor(override val uri: Uri) : Url() {
 
     public companion object {
+        /**
+         * Creates a [RelativeUrl] from a [Uri].
+         */
+        internal operator fun invoke(uri: Uri): RelativeUrl? =
+            tryOrNull { RelativeUrl(uri) }
 
         /**
          * Creates a [RelativeUrl] from its encoded string representation.
@@ -285,13 +259,202 @@ public class RelativeUrl private constructor(override val uri: Uri) : Url() {
             if (!url.isValidUrl()) return null
             return invoke(Uri.parse(url))
         }
-
-        internal operator fun invoke(uri: Uri): RelativeUrl? =
-            tryOrNull {
-                require(uri.isRelative)
-                RelativeUrl(uri)
-            }
     }
+
+    init {
+        require(uri.isRelative)
+    }
+}
+
+/**
+ * Represents an absolute Uniform Resource Locator with a scheme.
+ */
+public abstract class AbsoluteUrl : Url() {
+
+    /**
+     * A URL scheme, e.g. http or file.
+     */
+    @JvmInline
+    @Parcelize
+    public value class Scheme private constructor(public val value: String) : Parcelable {
+
+        public companion object {
+            public operator fun invoke(scheme: String): Scheme =
+                Scheme(scheme.lowercase())
+
+            public val CONTENT: Scheme = Scheme("content")
+            public val DATA: Scheme = Scheme("data")
+            public val FILE: Scheme = Scheme("file")
+            public val FTP: Scheme = Scheme("ftp")
+            public val HTTP: Scheme = Scheme("http")
+            public val HTTPS: Scheme = Scheme("https")
+            public val OPDS: Scheme = Scheme("opds")
+        }
+
+        override fun toString(): String = value
+    }
+
+    public companion object {
+        /**
+         * Creates an [AbsoluteUrl] from a [Uri].
+         */
+        internal operator fun invoke(uri: Uri): AbsoluteUrl? =
+            when (Scheme(uri.scheme ?: "")) {
+                Scheme.HTTP, Scheme.HTTPS -> HttpUrl(uri)
+                Scheme.FILE -> FileUrl(uri)
+                Scheme.CONTENT -> ContentUrl(uri)
+                else -> tryOrNull {
+                    require(uri.isAbsolute)
+                    require(uri.isHierarchical)
+                    AbsoluteUrl(uri)
+                }
+            }
+
+        /**
+         * Creates an [AbsoluteUrl] from its encoded string representation.
+         */
+        public operator fun invoke(url: String): AbsoluteUrl? {
+            if (!url.isValidUrl()) return null
+            return invoke(Uri.parse(url))
+        }
+    }
+
+    /**
+     * Identifies the type of URL.
+     */
+    public abstract val scheme: Scheme
+
+    /**
+     * Origin of the URL.
+     *
+     * [See the specification](https://url.spec.whatwg.org/#origin).
+     */
+    public abstract val origin: String?
+
+    public override fun resolve(url: Url): AbsoluteUrl =
+        super.resolve(url) as AbsoluteUrl
+}
+
+/**
+ * Represents an absolute URL with the special scheme `file`.
+ *
+ * See [the specification](https://url.spec.whatwg.org/#special-scheme).
+ */
+@Parcelize
+public class FileUrl private constructor(
+    override val uri: Uri
+) : AbsoluteUrl() {
+
+    public companion object {
+        /**
+         * Creates a file URL from a [Uri].
+         */
+        internal operator fun invoke(uri: Uri): FileUrl? =
+            tryOrNull { FileUrl(uri) }
+
+        /**
+         * Creates a file URL from a [File].
+         */
+        public operator fun invoke(file: File): FileUrl =
+            FileUrl(file.toUri())
+
+        /**
+         * Creates a file URL from a percent-decoded absolute path.
+         */
+        public operator fun invoke(path: String): FileUrl? {
+            if (path == "/" || path.isBlank() || !path.startsWith("/")) {
+                return null
+            }
+            return FileUrl(File(path))
+        }
+    }
+
+    init {
+        require(uri.scheme?.lowercase() == "file")
+        require(uri.path != null)
+    }
+
+    override val scheme: Scheme get() = Scheme.FILE
+    override val origin: String? get() = null
+    override val path: String get() = uri.path!!
+
+    /**
+     * Converts the URL to a [File].
+     */
+    public fun toFile(): File = File(path)
+}
+
+/**
+ * Represents an absolute URL with the special schemes `http` or `https`.
+ *
+ * See [the specification](https://url.spec.whatwg.org/#special-scheme).
+ */
+@Parcelize
+public class HttpUrl private constructor(
+    override val uri: Uri
+) : AbsoluteUrl() {
+
+    public companion object {
+        /**
+         * Creates an HTTP URL from a [Uri].
+         */
+        internal operator fun invoke(uri: Uri): HttpUrl? =
+            tryOrNull { HttpUrl(uri) }
+    }
+
+    @IgnoredOnParcel
+    override val scheme: Scheme =
+        Scheme(requireNotNull(uri.scheme))
+
+    @IgnoredOnParcel
+    override val origin: String = buildString {
+        append("$scheme://")
+        uri.host?.let { host ->
+            append(host)
+            uri.port.takeIf { it != -1 }?.let { port ->
+                append(":$port")
+            }
+        }
+    }
+
+    init {
+        require(scheme == Scheme.HTTP || scheme == Scheme.HTTPS)
+    }
+}
+
+/**
+ * Represents an absolute URL with the special scheme `content`.
+ *
+ * See [the specification](https://url.spec.whatwg.org/#special-scheme).
+ */
+@Parcelize
+public class ContentUrl private constructor(
+    override val uri: Uri
+) : AbsoluteUrl() {
+
+    public companion object {
+        /**
+         * Creates a Content URL from a [Uri].
+         */
+        internal operator fun invoke(uri: Uri): ContentUrl? =
+            tryOrNull { ContentUrl(uri) }
+    }
+
+    init {
+        require(uri.scheme?.lowercase() == "content")
+    }
+
+    @IgnoredOnParcel
+    override val scheme: Scheme get() = Scheme.CONTENT
+
+    @IgnoredOnParcel
+    override val origin: String get() = "content://$authority"
+
+    /**
+     * A string that identifies the entire content provider.
+     */
+    @IgnoredOnParcel
+    public val authority: String = requireNotNull(uri.host)
 }
 
 /**
@@ -312,25 +475,19 @@ public fun Url.Companion.fromLegacyHref(href: String): Url? =
  * percent-encoded). Unfortunately, many EPUBs don't follow this rule, and use invalid HREFs such
  * as `my chapter.html` or `/dir/my chapter.html`.
  *
- * As a workaround, we assume the HREFs are valid percent-encoded URLs, and fallback to decoded paths
- * if we can't parse the URL.
+ * As a workaround, we assume the HREFs are valid percent-encoded URLs, and fallback to decoded
+ * paths if we can't parse the URL.
  */
 @InternalReadiumApi
 public fun Url.Companion.fromEpubHref(href: String): Url? {
     return (Url(href) ?: Url.fromDecodedPath(href))
 }
 
-public fun File.toUrl(): AbsoluteUrl =
-    checkNotNull(AbsoluteUrl(Uri.fromFile(this)))
+public fun File.toUrl(): FileUrl =
+    FileUrl(this)
 
 public fun Uri.toUrl(): Url? =
     Url(this)
-
-public fun Uri.toAbsoluteUrl(): AbsoluteUrl? =
-    AbsoluteUrl(this)
-
-public fun Uri.toRelativeUrl(): RelativeUrl? =
-    RelativeUrl(this)
 
 public fun Url.toUri(): Uri =
     uri
@@ -340,12 +497,6 @@ internal fun Url.toURI(): URI =
 
 public fun URL.toUrl(): Url? =
     Url(toUri())
-
-public fun URL.toAbsoluteUrl(): AbsoluteUrl? =
-    AbsoluteUrl(toUri())
-
-public fun URL.toRelativeUrl(): RelativeUrl? =
-    RelativeUrl(toUri())
 
 private fun URL.toUri(): Uri =
     Uri.parse(toString()).addFileAuthority()

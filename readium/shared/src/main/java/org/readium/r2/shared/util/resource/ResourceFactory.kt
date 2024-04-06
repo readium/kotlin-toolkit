@@ -21,7 +21,7 @@ public interface ResourceFactory {
     ) : org.readium.r2.shared.util.Error {
 
         public class SchemeNotSupported(
-            public val scheme: Url.Scheme,
+            public val scheme: AbsoluteUrl.Scheme,
             cause: org.readium.r2.shared.util.Error? = null
         ) : Error("Url scheme $scheme is not supported.", cause)
     }
@@ -31,9 +31,7 @@ public interface ResourceFactory {
      *
      * @param url The url the resource will access.
      */
-    public suspend fun create(
-        url: AbsoluteUrl
-    ): Try<Resource, Error>
+    public suspend fun create(url: AbsoluteUrl): Try<Resource, Error>
 }
 
 /**

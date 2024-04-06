@@ -94,7 +94,7 @@ import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.resource.Resource
-import org.readium.r2.shared.util.toAbsoluteUrl
+import org.readium.r2.shared.util.toUrl
 
 /**
  * Factory for a [JavascriptInterface] which will be injected in the web views.
@@ -827,7 +827,7 @@ public class EpubNavigatorFragment internal constructor(
          * Prevents opening external links in the web view and handles internal links.
          */
         override fun shouldOverrideUrlLoading(webView: WebView, request: WebResourceRequest): Boolean {
-            val url = request.url.toAbsoluteUrl() ?: return false
+            val url = request.url.toUrl()?.toAbsoluteUrl() ?: return false
             viewModel.navigateToUrl(url)
             return true
         }
