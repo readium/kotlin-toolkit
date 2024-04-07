@@ -238,7 +238,7 @@ public class DefaultHttpClient(
 
         val location = response.header("Location")
             ?.let { Url(it) }
-            ?.let { request.url.resolve(it) }
+            ?.let { request.url.resolve(it).toHttpUrl() }
             ?: return Try.failure(
                 HttpError.MalformedResponse(
                     DebugError("Location of redirect is missing or invalid.")

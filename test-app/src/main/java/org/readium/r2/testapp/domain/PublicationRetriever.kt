@@ -243,7 +243,7 @@ private class OpdsPublicationRetriever(
         val acquisitionLink = publication.links
             .firstOrNull { it.mediaType?.isPublication == true || it.mediaType == MediaType.LCP_LICENSE_DOCUMENT }
 
-        val publicationUrl = (acquisitionLink?.url() as? AbsoluteUrl)
+        val publicationUrl = acquisitionLink?.url()?.toHttpUrl()
             ?: return Try.failure(
                 ImportError.Opds(DebugError("No supported link to acquire publication."))
             )

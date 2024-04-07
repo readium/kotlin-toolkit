@@ -13,6 +13,7 @@ import java.net.URLEncoder
 import kotlin.time.Duration
 import org.readium.r2.shared.extensions.toMutable
 import org.readium.r2.shared.util.AbsoluteUrl
+import org.readium.r2.shared.util.HttpUrl
 import org.readium.r2.shared.util.toUri
 
 /**
@@ -32,7 +33,7 @@ import org.readium.r2.shared.util.toUri
  *        as popping up an authentication dialog.
  */
 public class HttpRequest(
-    public val url: AbsoluteUrl,
+    public val url: HttpUrl,
     public val method: Method = Method.GET,
     public val headers: Map<String, List<String>> = mapOf(),
     public val body: Body? = null,
@@ -57,7 +58,7 @@ public class HttpRequest(
         readTimeout: Duration? = null,
         allowUserInteraction: Boolean = false
     ) : this(
-        url = AbsoluteUrl(url)!!,
+        url = AbsoluteUrl(url)?.toHttpUrl()!!,
         method = method,
         headers = headers.mapValues { (_, value) -> listOf(value) },
         body = body,
@@ -93,12 +94,12 @@ public class HttpRequest(
         buildUpon().apply(build).build()
 
     public companion object {
-        public operator fun invoke(url: AbsoluteUrl, build: Builder.() -> Unit): HttpRequest =
+        public operator fun invoke(url: HttpUrl, build: Builder.() -> Unit): HttpRequest =
             Builder(url).apply(build).build()
     }
 
     public class Builder(
-        public val url: AbsoluteUrl,
+        public val url: HttpUrl,
         public var method: Method = Method.GET,
         public var headers: MutableMap<String, MutableList<String>> = mutableMapOf(),
         public var body: Body? = null,

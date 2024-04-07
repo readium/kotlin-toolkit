@@ -12,7 +12,7 @@ import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.publication.presentation.presentation
 import org.readium.r2.shared.publication.services.isProtected
-import org.readium.r2.shared.util.AbsoluteUrl
+import org.readium.r2.shared.util.HttpUrl
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.data.ReadError
@@ -31,7 +31,7 @@ internal fun Resource.injectHtml(
     publication: Publication,
     mediaType: MediaType,
     css: ReadiumCss,
-    baseHref: AbsoluteUrl,
+    baseHref: HttpUrl,
     disableSelectionWhenProtected: Boolean
 ): Resource =
     TransformingResource(this) { bytes ->

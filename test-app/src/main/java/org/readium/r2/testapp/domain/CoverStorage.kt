@@ -41,7 +41,7 @@ class CoverStorage(
             return it.toFile().toBitmap()
         }
         toHttpUrl()?.let {
-            return httpClient.fetchBitmap(HttpRequest(this)).getOrNull()
+            return httpClient.fetchBitmap(HttpRequest(it)).getOrNull()
         }
         return null
     }

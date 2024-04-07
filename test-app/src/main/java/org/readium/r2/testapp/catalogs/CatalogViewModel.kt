@@ -15,7 +15,7 @@ import org.readium.r2.opds.OPDS1Parser
 import org.readium.r2.opds.OPDS2Parser
 import org.readium.r2.shared.opds.ParseData
 import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.util.AbsoluteUrl
+import org.readium.r2.shared.util.HttpUrl
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.http.HttpRequest
 import org.readium.r2.testapp.data.model.Catalog
@@ -32,7 +32,7 @@ class CatalogViewModel(application: Application) : AndroidViewModel(application)
     fun parseCatalog(catalog: Catalog) = viewModelScope.launch {
         var parseRequest: Try<ParseData, Exception>? = null
         catalog.href.let { href ->
-            AbsoluteUrl(href)
+            HttpUrl(href)
                 ?.let { HttpRequest(it) }
                 ?.let { request ->
                     parseRequest = if (catalog.type == 1) {

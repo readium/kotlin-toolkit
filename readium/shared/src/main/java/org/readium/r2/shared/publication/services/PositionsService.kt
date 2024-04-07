@@ -22,7 +22,6 @@ import org.readium.r2.shared.publication.PublicationServicesHolder
 import org.readium.r2.shared.publication.ServiceFactory
 import org.readium.r2.shared.publication.firstWithMediaType
 import org.readium.r2.shared.publication.firstWithRel
-import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.http.HttpClient
 import org.readium.r2.shared.util.http.HttpRequest
@@ -151,7 +150,7 @@ public class WebPositionsService(
         val positionsLink = links.firstOrNull()
             ?: return emptyList()
         val selfLink = manifest.links.firstWithRel("self")
-        val positionsUrl = (positionsLink.url(base = selfLink?.url()) as? AbsoluteUrl)
+        val positionsUrl = positionsLink.url(base = selfLink?.url()).toHttpUrl()
             ?: return emptyList()
 
         return httpClient.fetchString(HttpRequest(positionsUrl))

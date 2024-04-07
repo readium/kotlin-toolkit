@@ -51,7 +51,7 @@ public interface HyperlinkNavigator : Navigator {
          *
          * ```kotlin
          * override fun onExternalLinkActivated(url: AbsoluteUrl) {
-         *     if (!url.isHttp) return
+         *     val url = url.toHttpUrl() ?: return
          *
          *     val context = requireActivity()
          *     val uri = url.toUri()

@@ -29,15 +29,15 @@ import org.readium.r2.navigator.epub.EpubNavigatorFragment
 import org.readium.r2.navigator.epub.EpubNavigatorViewModel
 import org.readium.r2.navigator.epub.fxl.R2FXLLayout
 import org.readium.r2.navigator.epub.fxl.R2FXLOnDoubleTapListener
-import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.HttpUrl
 
 internal class R2FXLPageFragment : Fragment() {
 
-    private val firstResourceUrl: Url?
-        get() = BundleCompat.getParcelable(requireArguments(), "firstUrl", Url::class.java)
+    private val firstResourceUrl: HttpUrl?
+        get() = BundleCompat.getParcelable(requireArguments(), "firstUrl", HttpUrl::class.java)
 
-    private val secondResourceUrl: Url?
-        get() = BundleCompat.getParcelable(requireArguments(), "secondUrl", Url::class.java)
+    private val secondResourceUrl: HttpUrl?
+        get() = BundleCompat.getParcelable(requireArguments(), "secondUrl", HttpUrl::class.java)
 
     private var webViews = mutableListOf<R2BasicWebView>()
 
@@ -136,7 +136,7 @@ internal class R2FXLPageFragment : Fragment() {
     }
 
     @SuppressLint("SetJavaScriptEnabled")
-    private fun setupWebView(webView: R2BasicWebView, resourceUrl: Url?) {
+    private fun setupWebView(webView: R2BasicWebView, resourceUrl: HttpUrl?) {
         webViews.add(webView)
         navigator?.let {
             webView.listener = it.webViewListener
@@ -179,7 +179,7 @@ internal class R2FXLPageFragment : Fragment() {
 
     companion object {
 
-        fun newInstance(url: Url?, url2: Url? = null): R2FXLPageFragment =
+        fun newInstance(url: HttpUrl?, url2: HttpUrl? = null): R2FXLPageFragment =
             R2FXLPageFragment().apply {
                 arguments = Bundle().apply {
                     putParcelable("firstUrl", url)

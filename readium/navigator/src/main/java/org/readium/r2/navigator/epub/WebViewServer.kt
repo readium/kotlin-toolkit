@@ -18,7 +18,7 @@ import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Href
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.util.AbsoluteUrl
+import org.readium.r2.shared.util.HttpUrl
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.data.ReadError
@@ -41,8 +41,8 @@ internal class WebViewServer(
     private val onResourceLoadFailed: (Url, ReadError) -> Unit
 ) {
     companion object {
-        val publicationBaseHref = AbsoluteUrl("https://readium/publication/")!!
-        val assetsBaseHref = AbsoluteUrl("https://readium/assets/")!!
+        val publicationBaseHref = HttpUrl("https://readium/publication/")!!
+        val assetsBaseHref = HttpUrl("https://readium/assets/")!!
 
         fun assetUrl(path: String): Url? =
             Url.fromDecodedPath(path)?.let { assetsBaseHref.resolve(it) }

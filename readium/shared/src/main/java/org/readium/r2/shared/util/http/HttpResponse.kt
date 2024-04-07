@@ -6,7 +6,7 @@
 
 package org.readium.r2.shared.util.http
 
-import org.readium.r2.shared.util.AbsoluteUrl
+import org.readium.r2.shared.util.HttpUrl
 import org.readium.r2.shared.util.mediatype.MediaType
 
 /**
@@ -20,7 +20,7 @@ import org.readium.r2.shared.util.mediatype.MediaType
  */
 public data class HttpResponse(
     val request: HttpRequest,
-    val url: AbsoluteUrl,
+    val url: HttpUrl,
     val statusCode: HttpStatus,
     val headers: Map<String, List<String>>,
     val mediaType: MediaType?

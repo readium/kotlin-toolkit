@@ -25,8 +25,8 @@ import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Manifest
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.normalizeHrefsToBase
-import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.ErrorException
+import org.readium.r2.shared.util.HttpUrl
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.http.DefaultHttpClient
@@ -50,7 +50,7 @@ public class OPDS2Parser {
             url: String,
             client: HttpClient = DefaultHttpClient()
         ): Try<ParseData, Exception> =
-            AbsoluteUrl(url)
+            HttpUrl(url)
                 ?.let { parseRequest(HttpRequest(it), client) }
                 ?: run { Try.failure(Exception("Not an absolute URL.")) }
 

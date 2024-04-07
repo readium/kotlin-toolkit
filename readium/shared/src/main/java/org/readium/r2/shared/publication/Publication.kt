@@ -28,6 +28,7 @@ import org.readium.r2.shared.publication.services.ResourceCoverService
 import org.readium.r2.shared.publication.services.content.ContentService
 import org.readium.r2.shared.publication.services.search.SearchService
 import org.readium.r2.shared.util.Closeable
+import org.readium.r2.shared.util.HttpUrl
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.data.Container
 import org.readium.r2.shared.util.data.EmptyContainer
@@ -120,10 +121,11 @@ public class Publication(
      * The URL from which the publication resources are relative to, computed from the [Link] with
      * `self` relation.
      */
-    public val baseUrl: Url?
+    public val baseUrl: HttpUrl?
         get() = links.firstWithRel("self")?.href
             ?.takeUnless { it.isTemplated }
             ?.resolve()
+            ?.toHttpUrl()
 
     /**
      * Returns the URL to the resource represented by the given [locator], relative to the

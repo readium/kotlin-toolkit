@@ -18,8 +18,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
-import org.readium.r2.shared.util.AbsoluteUrl
-import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.HttpUrl
 
 internal class R2PagerAdapter internal constructor(
     val fm: FragmentManager,
@@ -33,12 +32,12 @@ internal class R2PagerAdapter internal constructor(
     internal var listener: Listener? = null
 
     internal sealed class PageResource {
-        data class EpubReflowable(val link: Link, val url: AbsoluteUrl, val positionCount: Int) : PageResource()
+        data class EpubReflowable(val link: Link, val url: HttpUrl?, val positionCount: Int) : PageResource()
         data class EpubFxl(
             val leftLink: Link? = null,
-            val leftUrl: Url? = null,
+            val leftUrl: HttpUrl? = null,
             val rightLink: Link? = null,
-            val rightUrl: Url? = null
+            val rightUrl: HttpUrl? = null
         ) : PageResource()
         data class Cbz(val link: Link) : PageResource()
     }

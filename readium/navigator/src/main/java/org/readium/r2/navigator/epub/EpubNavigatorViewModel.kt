@@ -34,6 +34,7 @@ import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.util.AbsoluteUrl
+import org.readium.r2.shared.util.HttpUrl
 import org.readium.r2.shared.util.RelativeUrl
 import org.readium.r2.shared.util.Url
 
@@ -161,15 +162,15 @@ internal class EpubNavigatorViewModel(
 
     // Serving resources
 
-    val baseUrl: AbsoluteUrl =
-        (publication.baseUrl as? AbsoluteUrl)
+    val baseUrl: HttpUrl =
+        publication.baseUrl
             ?: WebViewServer.publicationBaseHref
 
     /**
      * Generates the URL to the given publication link.
      */
-    fun urlTo(link: Link): AbsoluteUrl =
-        baseUrl.resolve(link.url())
+    fun urlTo(link: Link): HttpUrl? =
+        baseUrl.resolve(link.url()).toHttpUrl()
 
     /**
      * Intercepts and handles web view navigation to [url].

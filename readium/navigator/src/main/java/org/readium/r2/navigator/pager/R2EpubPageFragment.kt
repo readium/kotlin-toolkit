@@ -43,13 +43,13 @@ import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
-import org.readium.r2.shared.util.AbsoluteUrl
+import org.readium.r2.shared.util.HttpUrl
 
 @OptIn(ExperimentalReadiumApi::class)
 internal class R2EpubPageFragment : Fragment() {
 
-    private val resourceUrl: AbsoluteUrl?
-        get() = BundleCompat.getParcelable(requireArguments(), "url", AbsoluteUrl::class.java)
+    private val resourceUrl: HttpUrl?
+        get() = BundleCompat.getParcelable(requireArguments(), "url", HttpUrl::class.java)
 
     internal val link: Link?
         get() = BundleCompat.getParcelable(requireArguments(), "link", Link::class.java)
@@ -436,7 +436,7 @@ internal class R2EpubPageFragment : Fragment() {
         private const val textZoomBundleKey = "org.readium.textZoom"
 
         fun newInstance(
-            url: AbsoluteUrl,
+            url: HttpUrl?,
             link: Link? = null,
             initialLocator: Locator? = null,
             positionCount: Int = 0

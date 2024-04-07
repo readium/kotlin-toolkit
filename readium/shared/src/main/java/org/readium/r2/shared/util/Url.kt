@@ -158,9 +158,14 @@ public sealed class Url : Parcelable {
      */
     public open fun resolve(url: Url): Url =
         when (url) {
-            is AbsoluteUrl -> url
-            is RelativeUrl -> checkNotNull(toURI().resolve(url.toURI()).toUrl())
+            is AbsoluteUrl -> resolve(url)
+            is RelativeUrl -> resolve(url)
         }
+
+    public open fun resolve(url: AbsoluteUrl): AbsoluteUrl = url
+
+    public open fun resolve(url: RelativeUrl): Url =
+        checkNotNull(toURI().resolve(url.toURI()).toUrl())
 
     /**
      * Relativizes the given [url] against this URL.
@@ -361,7 +366,7 @@ public class FileUrl private constructor(
         /**
          * Creates a file URL from a percent-decoded absolute path.
          */
-        public operator fun invoke(path: String): FileUrl? {
+        public fun fromDecodedPath(path: String): FileUrl? {
             if (path == "/" || path.isBlank() || !path.startsWith("/")) {
                 return null
             }
@@ -400,6 +405,12 @@ public class HttpUrl private constructor(
          */
         internal operator fun invoke(uri: Uri): HttpUrl? =
             tryOrNull { HttpUrl(uri) }
+
+        /**
+         * Creates an [HttpUrl] from its encoded string representation.
+         */
+        public operator fun invoke(url: String): HttpUrl? =
+            Url(url)?.toHttpUrl()
     }
 
     @IgnoredOnParcel
@@ -420,6 +431,12 @@ public class HttpUrl private constructor(
     init {
         require(scheme == Scheme.HTTP || scheme == Scheme.HTTPS)
     }
+
+    public override fun resolve(url: RelativeUrl): HttpUrl =
+        super.resolve(url) as HttpUrl
+
+    public fun resolve(url: HttpUrl): HttpUrl =
+        super.resolve(url) as HttpUrl
 }
 
 /**
