@@ -8,6 +8,7 @@ package org.readium.r2.lcp
 
 import java.net.SocketTimeoutException
 import java.util.*
+import kotlinx.coroutines.CancellationException
 import org.readium.r2.lcp.service.NetworkException
 import org.readium.r2.shared.util.DebugError
 import org.readium.r2.shared.util.Error
@@ -240,6 +241,7 @@ public sealed class LcpError(
             is LcpException -> e.error
             is NetworkException -> Network(e)
             is SocketTimeoutException -> Network(e)
+            is CancellationException -> throw e
             else -> Unknown(e)
         }
     }
