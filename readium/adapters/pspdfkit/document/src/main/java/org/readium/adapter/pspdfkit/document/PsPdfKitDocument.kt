@@ -47,7 +47,10 @@ public class PsPdfKitDocumentFactory(context: Context) : PdfDocumentFactory<PsPd
             } catch (e: InvalidSignatureException) {
                 Try.failure(ReadError.Decoding(ThrowableError(e)))
             } catch (e: IOException) {
-                Try.failure(dataProvider.error!!)
+                Try.failure(
+                    dataProvider.error
+                        ?: ReadError.UnsupportedOperation(ThrowableError(IllegalStateException(e)))
+                )
             }
         }
 }
