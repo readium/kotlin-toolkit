@@ -6,8 +6,6 @@
 
 package org.readium.r2.streamer.parser.epub
 
-import com.mcxiaoke.koi.HASH
-import com.mcxiaoke.koi.ext.toHexBytes
 import kotlin.experimental.xor
 import org.readium.r2.shared.publication.encryption.Encryption
 import org.readium.r2.shared.util.Try
@@ -17,6 +15,8 @@ import org.readium.r2.shared.util.data.ReadTry
 import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.shared.util.resource.TransformingResource
 import org.readium.r2.shared.util.resource.flatMap
+import org.readium.r2.streamer.extensions.sha1
+import org.readium.r2.streamer.extensions.toHexByteArray
 
 /**
  * Deobfuscates fonts according to https://www.w3.org/TR/epub-33/#sec-font-obfuscation
@@ -51,12 +51,12 @@ internal class EpubDeobfuscator(
                 val obfuscationLength: Int = algorithm2length[algorithm]
                     ?: return@map bytes
 
-                val obfuscationKey: ByteArray = when (algorithm) {
+                val obfuscationKey: ByteArray? = when (algorithm) {
                     "http://ns.adobe.com/pdf/enc#RC" -> getHashKeyAdobe(pubId)
-                    else -> toHexBytes(HASH.sha1(pubId))
-                } ?: ByteArray(0)
+                    else -> pubId.sha1()
+                }.toHexByteArray()
 
-                if (obfuscationKey.isEmpty()) {
+                if (obfuscationKey == null || obfuscationKey.isEmpty()) {
                     return Try.failure(ReadError.Decoding("The obfuscation key is not valid."))
                 }
 
@@ -82,17 +82,6 @@ internal class EpubDeobfuscator(
     }
 
     private fun getHashKeyAdobe(pubId: String) =
-        toHexBytes(
-            pubId.replace("urn:uuid:", "")
-                .replace("-", "")
-        )
-
-    private fun toHexBytes(string: String): ByteArray? {
-        // Only even-length strings can be converted to an Hex byte array, otherwise it crashes
-        // with StringIndexOutOfBoundsException.
-        if (string.isEmpty() || string.length % 2 != 0) {
-            return null
-        }
-        return string.toHexBytes()
-    }
+        pubId.replace("urn:uuid:", "")
+            .replace("-", "")
 }
