@@ -25,7 +25,6 @@ import org.readium.r2.shared.util.data.decodeRwpm
 import org.readium.r2.shared.util.data.decodeString
 import org.readium.r2.shared.util.data.decodeXml
 import org.readium.r2.shared.util.data.readDecodeOrElse
-import org.readium.r2.shared.util.getOrDefault
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.mediatype.MediaType
 
@@ -1245,7 +1244,11 @@ public object JavaScriptSniffer : FormatSniffer {
 }
 
 private suspend fun Readable.canReadWholeBlob() =
-    length().getOrDefault(0) < 5 * 1000 * 1000
+    length()
+        .fold(
+            onSuccess = { it < 5 * 1000 * 1000 },
+            onFailure = { false }
+        )
 
 /**
  * Returns whether the content is a JSON object containing all of the given root keys.
