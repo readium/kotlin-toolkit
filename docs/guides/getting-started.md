@@ -37,7 +37,7 @@ A `Publication` instance:
 
 * holds the metadata of a publication, such as its author or table of contents,
 * allows to read the contents of a publication, e.g. XHTML or audio resources,
-* provides additional services, for example content extraction or text search
+* provides additional services, for example content extraction or text search.
 
 ### Link
 
