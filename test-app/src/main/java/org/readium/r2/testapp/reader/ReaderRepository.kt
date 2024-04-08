@@ -59,6 +59,9 @@ class ReaderRepository(
     private val mediaServiceFacade: MediaServiceFacade =
         MediaServiceFacade(application)
 
+    fun isEmpty() =
+        repository.isEmpty()
+
     operator fun get(bookId: Long): ReaderInitData? =
         repository[bookId]
 
@@ -124,7 +127,13 @@ class ReaderRepository(
                 )
         }
 
-        return readerInitData.map { repository[bookId] = it }
+        return readerInitData.map {
+            repository[bookId] = it
+
+            if (it is MediaReaderInitData) {
+                mediaServiceFacade.openSession(bookId, it.mediaNavigator)
+            }
+        }
     }
 
     private suspend fun openAudio(
@@ -159,7 +168,6 @@ class ReaderRepository(
             )
         }
 
-        mediaServiceFacade.openSession(bookId, navigator)
         val initData = MediaReaderInitData(
             bookId,
             publication,

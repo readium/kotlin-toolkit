@@ -11,8 +11,10 @@ package org.readium.r2.shared.extensions
 
 import java.io.ByteArrayOutputStream
 import java.security.MessageDigest
+import java.util.zip.DataFormatException
 import java.util.zip.Inflater
 import org.readium.r2.shared.InternalReadiumApi
+import org.readium.r2.shared.util.Try
 import timber.log.Timber
 
 /**
@@ -21,18 +23,22 @@ import timber.log.Timber
  * @param nowrap If true then support GZIP compatible compression, see the documentation of [Inflater]
  */
 @InternalReadiumApi
-public fun ByteArray.inflate(nowrap: Boolean = false, bufferSize: Int = 32 * 1024 /* 32 KB */): ByteArray =
-    ByteArrayOutputStream().use { output ->
-        val inflater = Inflater(nowrap)
-        inflater.setInput(this)
+public fun ByteArray.inflate(nowrap: Boolean = false, bufferSize: Int = 32 * 1024 /* 32 KB */): Try<ByteArray, DataFormatException> =
+    try {
+        ByteArrayOutputStream().use { output ->
+            val inflater = Inflater(nowrap)
+            inflater.setInput(this)
 
-        val buffer = ByteArray(bufferSize)
-        while (!inflater.finished()) {
-            val count = inflater.inflate(buffer)
-            output.write(buffer, 0, count)
+            val buffer = ByteArray(bufferSize)
+            while (!inflater.finished()) {
+                val count = inflater.inflate(buffer)
+                output.write(buffer, 0, count)
+            }
+
+            Try.success(output.toByteArray())
         }
-
-        output.toByteArray()
+    } catch (e: DataFormatException) {
+        Try.failure(e)
     }
 
 /** Computes the MD5 hash of the byte array. */

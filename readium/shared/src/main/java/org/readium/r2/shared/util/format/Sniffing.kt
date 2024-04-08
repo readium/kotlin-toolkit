@@ -89,14 +89,13 @@ public data class FormatHints(
 }
 
 /**
- * Tries to refine a [Format] from media type and file extension hints.
+ * Tries to guess a [Format] from media type and file extension hints.
  */
 public interface FormatHintsSniffer {
 
     public fun sniffHints(
-        format: Format,
         hints: FormatHints
-    ): Format
+    ): Format?
 }
 
 /**
@@ -130,10 +129,8 @@ public interface FormatSniffer :
     ContainerSniffer {
 
     public override fun sniffHints(
-        format: Format,
         hints: FormatHints
-    ): Format =
-        format
+    ): Format? = null
 
     public override suspend fun sniffBlob(
         format: Format,
@@ -154,16 +151,21 @@ public class CompositeFormatSniffer(
 
     public constructor(vararg sniffers: FormatSniffer) : this(sniffers.toList())
 
-    override fun sniffHints(format: Format, hints: FormatHints): Format =
-        sniffers.fold(format) { acc, sniffer ->
-            sniffer.sniffHints(acc, hints)
-        }
+    override fun sniffHints(hints: FormatHints): Format? =
+        sniffers.firstNotNullOfOrNull { it.sniffHints(hints) }
 
     override suspend fun sniffBlob(format: Format, source: Readable): Try<Format, ReadError> =
         sniffers.fold(Try.success(format)) { acc: Try<Format, ReadError>, sniffer ->
             when (acc) {
-                is Try.Failure -> acc
-                is Try.Success -> sniffer.sniffBlob(acc.value, source)
+                is Try.Failure ->
+                    acc
+                is Try.Success ->
+                    when (val new = sniffer.sniffBlob(acc.value, source)) {
+                        is Try.Failure ->
+                            new
+                        is Try.Success ->
+                            new.takeIf { it.value.refines(acc.value) } ?: acc
+                    }
             }
         }
 
@@ -173,8 +175,15 @@ public class CompositeFormatSniffer(
     ): Try<Format, ReadError> =
         sniffers.fold(Try.success(format)) { acc: Try<Format, ReadError>, sniffer ->
             when (acc) {
-                is Try.Failure -> acc
-                is Try.Success -> sniffer.sniffContainer(acc.value, container)
+                is Try.Failure ->
+                    acc
+                is Try.Success ->
+                    when (val new = sniffer.sniffContainer(acc.value, container)) {
+                        is Try.Failure ->
+                            new
+                        is Try.Success ->
+                            new.takeIf { it.value.refines(acc.value) } ?: acc
+                    }
             }
         }
 }

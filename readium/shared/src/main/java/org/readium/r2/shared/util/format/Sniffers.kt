@@ -32,13 +32,8 @@ import org.readium.r2.shared.util.mediatype.MediaType
 /** Sniffs an HTML or XHTML document. */
 public object HtmlSniffer : FormatSniffer {
     override fun sniffHints(
-        format: Format,
         hints: FormatHints
-    ): Format {
-        if (format.hasMoreThan(XmlSpecification)) {
-            return format
-        }
-
+    ): Format? {
         if (
             hints.hasFileExtension("htm", "html") ||
             hints.hasMediaType("text/html")
@@ -53,7 +48,7 @@ public object HtmlSniffer : FormatSniffer {
             return xhtmlFormat
         }
 
-        return format
+        return null
     }
 
     override suspend fun sniffBlob(
@@ -109,13 +104,8 @@ public object HtmlSniffer : FormatSniffer {
 public object Opds1Sniffer : FormatSniffer {
 
     override fun sniffHints(
-        format: Format,
         hints: FormatHints
-    ): Format {
-        if (format.hasMoreThan(XmlSpecification)) {
-            return format
-        }
-
+    ): Format? {
         // OPDS 1
         if (hints.hasMediaType("application/atom+xml;type=entry;profile=opds-catalog")) {
             return opds1EntryFormat
@@ -130,7 +120,7 @@ public object Opds1Sniffer : FormatSniffer {
             return opds1CatalogFormat
         }
 
-        return format
+        return null
     }
 
     override suspend fun sniffBlob(
@@ -188,11 +178,7 @@ public object Opds1Sniffer : FormatSniffer {
  */
 public object Opds2Sniffer : FormatSniffer {
 
-    override fun sniffHints(format: Format, hints: FormatHints): Format {
-        if (format.hasMoreThan(JsonSpecification)) {
-            return format
-        }
-
+    override fun sniffHints(hints: FormatHints): Format? {
         // OPDS 2
         if (hints.hasMediaType("application/opds+json")) {
             return opds2CatalogFormat
@@ -209,14 +195,14 @@ public object Opds2Sniffer : FormatSniffer {
             return opdsAuthenticationFormat
         }
 
-        return format
+        return null
     }
 
     override suspend fun sniffBlob(
         format: Format,
         source: Readable
     ): Try<Format, ReadError> {
-        if (format.hasMoreThan(JsonSpecification)) {
+        if (format.hasMoreThan(JsonSpecification) || !source.canReadWholeBlob()) {
             return Try.success(format)
         }
 
@@ -279,13 +265,8 @@ public object Opds2Sniffer : FormatSniffer {
 /** Sniffs an LCP License Document. */
 public object LcpLicenseSniffer : FormatSniffer {
     override fun sniffHints(
-        format: Format,
         hints: FormatHints
-    ): Format {
-        if (format.hasMoreThan(JsonSpecification)) {
-            return format
-        }
-
+    ): Format? {
         if (
             hints.hasFileExtension("lcpl") ||
             hints.hasMediaType("application/vnd.readium.lcp.license.v1.0+json")
@@ -293,7 +274,7 @@ public object LcpLicenseSniffer : FormatSniffer {
             return lcplFormat
         }
 
-        return format
+        return null
     }
 
     override suspend fun sniffBlob(
@@ -326,9 +307,8 @@ public object LcpLicenseSniffer : FormatSniffer {
 public object BitmapSniffer : FormatSniffer {
 
     override fun sniffHints(
-        format: Format,
         hints: FormatHints
-    ): Format {
+    ): Format? {
         if (
             hints.hasFileExtension("avif") ||
             hints.hasMediaType("image/avif")
@@ -410,13 +390,13 @@ public object BitmapSniffer : FormatSniffer {
             )
         }
 
-        return format
+        return null
     }
 }
 
 /** Sniffs audio files. */
 public object AudioSniffer : FormatSniffer {
-    override fun sniffHints(format: Format, hints: FormatHints): Format {
+    override fun sniffHints(hints: FormatHints): Format? {
         if (
             hints.hasFileExtension("aac")
         ) {
@@ -507,20 +487,15 @@ public object AudioSniffer : FormatSniffer {
             )
         }
 
-        return format
+        return null
     }
 }
 
 /** Sniffs a Readium Web Manifest. */
 public object RwpmSniffer : FormatSniffer {
     override fun sniffHints(
-        format: Format,
         hints: FormatHints
-    ): Format {
-        if (format.hasMoreThan(JsonSpecification)) {
-            return format
-        }
-
+    ): Format? {
         if (hints.hasMediaType("application/audiobook+json")) {
             return rwpmAudioFormat
         }
@@ -533,7 +508,7 @@ public object RwpmSniffer : FormatSniffer {
             return rwpmFormat
         }
 
-        return format
+        return null
     }
 
     public override suspend fun sniffBlob(
@@ -591,13 +566,8 @@ public object RwpmSniffer : FormatSniffer {
 public object RpfSniffer : FormatSniffer {
 
     override fun sniffHints(
-        format: Format,
         hints: FormatHints
-    ): Format {
-        if (format.hasMoreThan(ZipSpecification, RpfSpecification, LcpSpecification)) {
-            return format
-        }
-
+    ): Format? {
         if (
             hints.hasFileExtension("audiobook") ||
             hints.hasMediaType("application/audiobook+zip")
@@ -632,7 +602,7 @@ public object RpfSniffer : FormatSniffer {
             return lcpdfFormat
         }
 
-        return format
+        return null
     }
 
     override suspend fun sniffContainer(
@@ -768,13 +738,8 @@ public object W3cWpubSniffer : FormatSniffer {
  */
 public object EpubSniffer : FormatSniffer {
     override fun sniffHints(
-        format: Format,
         hints: FormatHints
-    ): Format {
-        if (format.hasMoreThan(ZipSpecification)) {
-            return format
-        }
-
+    ): Format? {
         if (
             hints.hasFileExtension("epub") ||
             hints.hasMediaType("application/epub+zip")
@@ -782,7 +747,7 @@ public object EpubSniffer : FormatSniffer {
             return epubFormatSpecification
         }
 
-        return format
+        return null
     }
 
     override suspend fun sniffContainer(
@@ -823,13 +788,8 @@ public object EpubSniffer : FormatSniffer {
  */
 public object LpfSniffer : FormatSniffer {
     override fun sniffHints(
-        format: Format,
         hints: FormatHints
-    ): Format {
-        if (format.hasMoreThan(ZipSpecification)) {
-            return format
-        }
-
+    ): Format? {
         if (
             hints.hasFileExtension("lpf") ||
             hints.hasMediaType("application/lpf+zip")
@@ -837,7 +797,7 @@ public object LpfSniffer : FormatSniffer {
             return lpfFormat
         }
 
-        return format
+        return null
     }
 
     override suspend fun sniffContainer(
@@ -884,9 +844,8 @@ public object LpfSniffer : FormatSniffer {
 public object RarSniffer : FormatSniffer {
 
     override fun sniffHints(
-        format: Format,
         hints: FormatHints
-    ): Format {
+    ): Format? {
         if (
             hints.hasFileExtension("rar") ||
             hints.hasMediaType("application/vnd.rar") ||
@@ -900,7 +859,7 @@ public object RarSniffer : FormatSniffer {
             )
         }
 
-        return format
+        return null
     }
 }
 
@@ -910,9 +869,8 @@ public object RarSniffer : FormatSniffer {
 public object ZipSniffer : FormatSniffer {
 
     override fun sniffHints(
-        format: Format,
         hints: FormatHints
-    ): Format {
+    ): Format? {
         if (hints.hasMediaType("application/zip") ||
             hints.hasFileExtension("zip")
         ) {
@@ -923,7 +881,7 @@ public object ZipSniffer : FormatSniffer {
             )
         }
 
-        return format
+        return null
     }
 }
 
@@ -978,13 +936,8 @@ public object ArchiveSniffer : FormatSniffer {
     )
 
     override fun sniffHints(
-        format: Format,
         hints: FormatHints
-    ): Format {
-        if (format.hasMoreThan(ZipSpecification, RarSpecification)) {
-            return format
-        }
-
+    ): Format? {
         if (
             hints.hasFileExtension("cbz") ||
             hints.hasMediaType(
@@ -1022,7 +975,7 @@ public object ArchiveSniffer : FormatSniffer {
             )
         }
 
-        return format
+        return null
     }
 
     override suspend fun sniffContainer(
@@ -1108,13 +1061,8 @@ public object ArchiveSniffer : FormatSniffer {
  */
 public object PdfSniffer : FormatSniffer {
     override fun sniffHints(
-        format: Format,
         hints: FormatHints
-    ): Format {
-        if (format.hasAnySpecification()) {
-            return format
-        }
-
+    ): Format? {
         if (
             hints.hasFileExtension("pdf") ||
             hints.hasMediaType("application/pdf")
@@ -1122,7 +1070,7 @@ public object PdfSniffer : FormatSniffer {
             return pdfFormat
         }
 
-        return format
+        return null
     }
 
     override suspend fun sniffBlob(
@@ -1152,13 +1100,8 @@ public object PdfSniffer : FormatSniffer {
 /** Sniffs a JSON document. */
 public object JsonSniffer : FormatSniffer {
     override fun sniffHints(
-        format: Format,
         hints: FormatHints
-    ): Format {
-        if (format.hasAnySpecification()) {
-            return format
-        }
-
+    ): Format? {
         if (hints.hasFileExtension("json") ||
             hints.hasMediaType("application/json")
         ) {
@@ -1177,7 +1120,7 @@ public object JsonSniffer : FormatSniffer {
             )
         }
 
-        return format
+        return null
     }
 
     override suspend fun sniffBlob(
@@ -1265,11 +1208,7 @@ public object EpubDrmSniffer : FormatSniffer {
  */
 
 public object CssSniffer : FormatSniffer {
-    override fun sniffHints(format: Format, hints: FormatHints): Format {
-        if (format.hasAnySpecification()) {
-            return format
-        }
-
+    override fun sniffHints(hints: FormatHints): Format? {
         if (hints.hasFileExtension("css") ||
             hints.hasMediaType("text/css")
         ) {
@@ -1280,7 +1219,7 @@ public object CssSniffer : FormatSniffer {
             )
         }
 
-        return format
+        return null
     }
 }
 
@@ -1289,11 +1228,7 @@ public object CssSniffer : FormatSniffer {
  */
 
 public object JavaScriptSniffer : FormatSniffer {
-    override fun sniffHints(format: Format, hints: FormatHints): Format {
-        if (format.hasAnySpecification()) {
-            return format
-        }
-
+    override fun sniffHints(hints: FormatHints): Format? {
         if (hints.hasFileExtension("js") ||
             hints.hasMediaType("text/javascript") ||
             hints.hasMediaType("application/javascript")
@@ -1305,7 +1240,7 @@ public object JavaScriptSniffer : FormatSniffer {
             )
         }
 
-        return format
+        return null
     }
 }
 

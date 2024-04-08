@@ -6,15 +6,17 @@
 
 package org.readium.r2.streamer.parser.epub
 
-import com.mcxiaoke.koi.HASH
-import com.mcxiaoke.koi.ext.toHexBytes
 import kotlin.experimental.xor
 import org.readium.r2.shared.publication.encryption.Encryption
+import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.data.ReadTry
 import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.shared.util.resource.TransformingResource
 import org.readium.r2.shared.util.resource.flatMap
+import org.readium.r2.streamer.extensions.sha1
+import org.readium.r2.streamer.extensions.toHexByteArray
 
 /**
  * Deobfuscates fonts according to https://www.w3.org/TR/epub-33/#sec-font-obfuscation
@@ -27,9 +29,7 @@ internal class EpubDeobfuscator(
     @Suppress("Unused_parameter")
     fun transform(url: Url, resource: Resource): Resource =
         resource.flatMap {
-            val algorithm = resource.sourceUrl
-                ?.let { encryptionData[it] }
-                ?.algorithm
+            val algorithm = encryptionData[url]?.algorithm
             if (algorithm != null && algorithm2length.containsKey(algorithm)) {
                 DeobfuscatingResource(resource, algorithm)
             } else {
@@ -51,9 +51,13 @@ internal class EpubDeobfuscator(
                 val obfuscationLength: Int = algorithm2length[algorithm]
                     ?: return@map bytes
 
-                val obfuscationKey: ByteArray = when (algorithm) {
+                val obfuscationKey: ByteArray? = when (algorithm) {
                     "http://ns.adobe.com/pdf/enc#RC" -> getHashKeyAdobe(pubId)
-                    else -> HASH.sha1(pubId).toHexBytes()
+                    else -> pubId.sha1()
+                }.toHexByteArray()
+
+                if (obfuscationKey == null || obfuscationKey.isEmpty()) {
+                    return Try.failure(ReadError.Decoding("The obfuscation key is not valid."))
                 }
 
                 deobfuscate(
@@ -71,13 +75,13 @@ internal class EpubDeobfuscator(
     )
 
     private fun deobfuscate(bytes: ByteArray, obfuscationKey: ByteArray, obfuscationLength: Int) {
-        val toDeobfuscate = 0 until obfuscationLength
-        for (i in toDeobfuscate)
+        val toDeobfuscate = 0 until obfuscationLength.coerceAtMost(bytes.size)
+        for (i in toDeobfuscate) {
             bytes[i] = bytes[i].xor(obfuscationKey[i % obfuscationKey.size])
+        }
     }
 
     private fun getHashKeyAdobe(pubId: String) =
         pubId.replace("urn:uuid:", "")
             .replace("-", "")
-            .toHexBytes()
 }

@@ -18,6 +18,7 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
@@ -68,9 +69,9 @@ internal class LicensesService(
 
     override suspend fun injectLicenseDocument(
         licenseDocument: LicenseDocument,
-        publicationFile: File,
-        mediaType: MediaType?
+        publicationFile: File
     ): Try<Unit, LcpError> {
+        val mediaType = licenseDocument.publicationLink.mediaType
         val format = assetRetriever.sniffFormat(publicationFile, FormatHints(mediaType))
             .getOrElse {
                 Format(
@@ -84,12 +85,14 @@ internal class LicensesService(
                 )
             }
 
-        return try {
-            val container = createLicenseContainer(publicationFile, format.specification)
-            container.write(licenseDocument)
-            Try.success(Unit)
-        } catch (e: Exception) {
-            Try.failure(LcpError.wrap(e))
+        return withContext(Dispatchers.IO) {
+            try {
+                val container = createLicenseContainer(publicationFile, format.specification)
+                container.write(licenseDocument)
+                Try.success(Unit)
+            } catch (e: Exception) {
+                Try.failure(LcpError.wrap(e))
+            }
         }
     }
 
@@ -97,6 +100,7 @@ internal class LicensesService(
         lcpl: File,
         onProgress: (Double) -> Unit
     ): Try<LcpService.AcquiredPublication, LcpError> {
+        coroutineContext.ensureActive()
         val bytes = try {
             lcpl.readBytes()
         } catch (e: Exception) {

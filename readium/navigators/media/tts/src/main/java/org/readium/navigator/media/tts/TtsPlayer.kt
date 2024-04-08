@@ -215,6 +215,7 @@ internal class TtsPlayer<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
                 // WORKAROUND to get the media buttons correctly working when an audio player was
                 // running before.
                 fakePlayingAudio()
+                playbackJob?.cancelAndJoin()
                 playIfReadyAndNotPaused()
             }
         }
@@ -321,10 +322,12 @@ internal class TtsPlayer<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
         }
 
         coroutineScope.launch {
-            playbackJob?.cancel()
-            playbackJob?.join()
-            utteranceMutable.value = utteranceMutable.value.copy(range = null)
-            playIfReadyAndNotPaused()
+            mutex.withLock {
+                playbackJob?.cancel()
+                playbackJob?.join()
+                utteranceMutable.value = utteranceMutable.value.copy(range = null)
+                playIfReadyAndNotPaused()
+            }
         }
     }
 

@@ -18,6 +18,7 @@ import java.net.URL
 import kotlin.math.round
 import kotlin.time.Duration
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.withContext
 import org.readium.r2.lcp.LcpError
 import org.readium.r2.lcp.LcpException
@@ -95,6 +96,7 @@ internal class NetworkService {
         mediaType: MediaType? = null,
         onProgress: (Double) -> Unit
     ): MediaType? = withContext(Dispatchers.IO) {
+        coroutineContext.ensureActive()
         try {
             val connection = URL(url.toString()).openConnection() as HttpURLConnection
             if (connection.responseCode >= 400) {
@@ -115,6 +117,7 @@ internal class NetworkService {
                     val buf = ByteArray(2048)
                     var n: Int
                     while (-1 != input.read(buf).also { n = it }) {
+                        coroutineContext.ensureActive()
                         output.write(buf, 0, n)
                         readLength += n
 
