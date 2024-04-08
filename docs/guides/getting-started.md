@@ -29,7 +29,9 @@ The toolkit is divided into separate modules that can be used independently.
 
 The Readium toolkit provides models used as exchange types between packages.
 
-### Publication
+### Publication models
+
+#### Publication
 
 `Publication` and its sub-components represent a single publication – ebook, audiobook or comic. It is loosely based on the [Readium Web Publication Manifest](https://readium.org/webpub-manifest/).
 
@@ -39,7 +41,7 @@ A `Publication` instance:
 * allows to read the contents of a publication, e.g. XHTML or audio resources,
 * provides additional services, for example content extraction or text search.
 
-### Link
+#### Link
 
 A [`Link` object](https://readium.org/webpub-manifest/#24-the-link-object) holds a pointer (URL) to a `Publication` resource along with additional metadata, such as its media type or title.
 
@@ -49,7 +51,7 @@ The `Publication` contains several `Link` collections, for example:
 * `resources` contains secondary resources necessary for rendering the `readingOrder`, such as an image or a font file.
 * `tableOfContents` represents the table of contents as a tree of `Link` objects.
 
-### Locator
+#### Locator
 
 A [`Locator` object](https://readium.org/architecture/models/locators/) represents a precise location in a publication resource in a format that can be stored and shared across reading systems. It is more accurate than a `Link` and contains additional information about the location, e.g. progression percentage, position or textual context.
 
@@ -58,6 +60,40 @@ A [`Locator` object](https://readium.org/architecture/models/locators/) represen
 * reporting the current progression in the publication
 * saving bookmarks, highlights and annotations
 * navigating search results
+
+### Data models
+
+#### Asset
+
+An `Asset` represents a single file or package and provides access to its content. There are two types of `Asset`:
+
+* `ContainerAsset` for packages which contains several resources, such as a ZIP archive.
+* `ResourceAsset` for accessing a single resource, such as a JSON or PDF file.
+
+`Asset` instances are obtained through an `AssetRetriever`.
+
+You can use the `asset.format` to identify the media type and capabilities of the asset.
+
+```kotlin
+if (asset.format.conformsTo(LcpSpecification)) {
+    // The asset is protected with LCP.
+}
+if (asset.format.conformsTo(EpubSpecification)) {
+    // The asset represent an EPUB publication.
+}
+```
+
+#### Resource
+
+A `Resource` provides read access to a single resource, such as a file or an entry in an archive.
+
+`Resource` instances are usually created by a `ResourceFactory`. The toolkit ships with various implementations supporting different data access protocols such as local files, HTTP, Android Content Providers, etc.
+
+#### Container
+
+A `Container<Resource>` provides read access to a collection of resources. `Container` instances representing an archive are usually created by an `ArchiveOpener`. The toolkit ships with a `ZipArchiveOpener` supporting local and remote ZIP files.
+
+`Publication` objects internally use a `Container<Resource>` to expose its content.
 
 ## Opening a publication (`readium-streamer`)
 
