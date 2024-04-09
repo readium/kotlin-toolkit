@@ -29,6 +29,7 @@ import org.readium.r2.navigator.epub.EpubNavigatorFragment
 import org.readium.r2.navigator.epub.EpubNavigatorViewModel
 import org.readium.r2.navigator.epub.fxl.R2FXLLayout
 import org.readium.r2.navigator.epub.fxl.R2FXLOnDoubleTapListener
+import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.util.Url
 
 internal class R2FXLPageFragment : Fragment() {
@@ -38,6 +39,12 @@ internal class R2FXLPageFragment : Fragment() {
 
     private val secondResourceUrl: Url?
         get() = BundleCompat.getParcelable(requireArguments(), "secondUrl", Url::class.java)
+
+    private val firstResourceLink: Link?
+        get() = BundleCompat.getParcelable(requireArguments(), "firstLink", Link::class.java)
+
+    private val secondResourceLink: Link?
+        get() = BundleCompat.getParcelable(requireArguments(), "secondLink", Link::class.java)
 
     private var webViews = mutableListOf<R2BasicWebView>()
 
@@ -75,8 +82,8 @@ internal class R2FXLPageFragment : Fragment() {
             val left = doubleBinding.firstWebView
             val right = doubleBinding.secondWebView
 
-            setupWebView(left, firstResourceUrl)
-            setupWebView(right, secondResourceUrl)
+            setupWebView(left, firstResourceLink, firstResourceUrl)
+            setupWebView(right, secondResourceLink, secondResourceUrl)
 
             r2FXLLayout.addOnDoubleTapListener(R2FXLOnDoubleTapListener(true))
             r2FXLLayout.addOnTapListener(object : R2FXLLayout.OnTapListener {
@@ -100,7 +107,7 @@ internal class R2FXLPageFragment : Fragment() {
 
             val webview = singleBinding.webViewSingle
 
-            setupWebView(webview, firstResourceUrl)
+            setupWebView(webview, firstResourceLink, firstResourceUrl)
 
             r2FXLLayout.addOnDoubleTapListener(R2FXLOnDoubleTapListener(true))
             r2FXLLayout.addOnTapListener(object : R2FXLLayout.OnTapListener {
@@ -136,7 +143,7 @@ internal class R2FXLPageFragment : Fragment() {
     }
 
     @SuppressLint("SetJavaScriptEnabled")
-    private fun setupWebView(webView: R2BasicWebView, resourceUrl: Url?) {
+    private fun setupWebView(webView: R2BasicWebView, link: Link?, resourceUrl: Url?) {
         webViews.add(webView)
         navigator?.let {
             webView.listener = it.webViewListener
@@ -167,6 +174,15 @@ internal class R2FXLPageFragment : Fragment() {
 
             override fun shouldInterceptRequest(view: WebView, request: WebResourceRequest): WebResourceResponse? =
                 (webView as? R2BasicWebView)?.shouldInterceptRequest(view, request)
+
+            override fun onPageFinished(view: WebView?, url: String?) {
+                super.onPageFinished(view, url)
+
+                if (link != null) {
+                    webView.listener?.onResourceLoaded(webView, link)
+                    webView.listener?.onPageLoaded(webView, link)
+                }
+            }
         }
         webView.isHapticFeedbackEnabled = false
         webView.isLongClickable = false
@@ -179,11 +195,13 @@ internal class R2FXLPageFragment : Fragment() {
 
     companion object {
 
-        fun newInstance(url: Url?, url2: Url? = null): R2FXLPageFragment =
+        fun newInstance(left: Pair<Link, Url>?, right: Pair<Link, Url>? = null): R2FXLPageFragment =
             R2FXLPageFragment().apply {
                 arguments = Bundle().apply {
-                    putParcelable("firstUrl", url)
-                    putParcelable("secondUrl", url2)
+                    putParcelable("firstLink", left?.first)
+                    putParcelable("firstUrl", left?.second)
+                    putParcelable("secondLink", right?.first)
+                    putParcelable("secondUrl", right?.second)
                 }
             }
     }

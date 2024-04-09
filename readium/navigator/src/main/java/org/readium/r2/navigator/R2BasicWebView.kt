@@ -55,8 +55,12 @@ internal open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebV
 
     interface Listener {
         val readingProgression: ReadingProgression
-        fun onResourceLoaded(link: Link?, webView: R2BasicWebView, url: String?) {}
-        fun onPageLoaded() {}
+
+        /** Called when the resource content is loaded in the web view. */
+        fun onResourceLoaded(webView: R2BasicWebView, link: Link) {}
+
+        /** Called when the target page of the resource is loaded in the web view. */
+        fun onPageLoaded(webView: R2BasicWebView, link: Link) {}
         fun onPageChanged(pageIndex: Int, totalPages: Int, url: String) {}
         fun onPageEnded(end: Boolean) {}
         fun onTap(point: PointF): Boolean = false

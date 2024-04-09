@@ -265,6 +265,19 @@ public class EpubNavigatorFragment internal constructor(
 
     public interface Listener : OverflowableNavigator.Listener, HyperlinkNavigator.Listener
 
+    private sealed class State {
+        /** The navigator just started and didn't load any resource yet. */
+        object Initializing : State()
+
+        /** The navigator is jumping to the resource at `locator`. */
+        data class Loading(val locator: Locator) : State()
+
+        /** The navigator is idle and ready for interactions. */
+        object Ready : State()
+    }
+
+    private var state: State = State.Initializing
+
     // Configurable
 
     override val settings: StateFlow<EpubSettings> get() = viewModel.settings
@@ -595,6 +608,8 @@ public class EpubNavigatorFragment internal constructor(
         @Suppress("NAME_SHADOWING")
         val locator = publication.normalizeLocator(locator)
 
+        state = State.Loading(locator)
+
         listener?.onJumpToLocator(locator)
 
         val href = locator.href.removeFragment()
@@ -759,12 +774,17 @@ public class EpubNavigatorFragment internal constructor(
         override val readingProgression: ReadingProgression
             get() = viewModel.readingProgression
 
-        override fun onResourceLoaded(link: Link?, webView: R2BasicWebView, url: String?) {
-            run(viewModel.onResourceLoaded(link, webView))
+        override fun onResourceLoaded(webView: R2BasicWebView, link: Link) {
+            run(viewModel.onResourceLoaded(webView, link))
         }
 
-        override fun onPageLoaded() {
+        override fun onPageLoaded(webView: R2BasicWebView, link: Link) {
             paginationListener?.onPageLoaded()
+
+            if ((state as? State.Loading)?.locator?.href == link.url()) {
+                state = State.Ready
+            }
+
             notifyCurrentLocation()
         }
 
@@ -1032,7 +1052,9 @@ public class EpubNavigatorFragment internal constructor(
         debounceLocationNotificationJob = viewLifecycleOwner.lifecycleScope.launch {
             delay(100L)
 
-            if (currentReflowablePageFragment?.isLoaded?.value == false) {
+            // We don't want to notify the current location if the navigator is still loading a
+            // locator, to avoid notifying intermediate locations.
+            if (currentReflowablePageFragment?.isLoaded?.value == false || state != State.Ready) {
                 return@launch
             }
 
