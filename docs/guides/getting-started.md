@@ -4,7 +4,15 @@ The Readium Kotlin toolkit enables you to develop reading apps for Android and C
 
 :warning: Readium offers only low-level tools. You are responsible for creating a user interface for reading and managing books, as well as a data layer to store the user's publications. The Test App is an example of such integration.
 
-The toolkit is divided into separate modules that can be used independently.
+## Design principles
+
+The toolkit has been designed following these core tenets:
+
+* **Modular**: It is divided into separate modules that can be used independently.
+* **Extensible**: Integrators should be able to support a custom DRM, publication format or inject their own stylesheets without modifying the toolkit itself.
+* **Opiniated**: We adhere to open standards but sometimes interpret them for practicality.
+
+## Modules
 
 ### Main modules
 
