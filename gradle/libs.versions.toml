@@ -55,6 +55,7 @@ junit = "4.13.2"
 
 kotlinx-coroutines = "1.7.3"
 kotlinx-coroutines-test = "1.7.3"
+kotlinx-datetime = "0.6.0-RC.2"
 kotlinx-serialization-json = "1.6.2"
 
 # Make sure to align with the Kotlin version.
@@ -139,6 +140,7 @@ kotlin-stdlib = { group = "org.jetbrains.kotlin", name = "kotlin-stdlib", versio
 
 kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "kotlinx-coroutines" }
 kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "kotlinx-coroutines-test" }
+kotlinx-datetime = { group = "org.jetbrains.kotlinx", name = "kotlinx-datetime", version.ref = "kotlinx-datetime" }
 kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinx-serialization-json" }
 
 pdfium = { group = "com.github.barteksc", name = "pdfium-android", version.ref="pdfium" }

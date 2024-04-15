@@ -12,38 +12,25 @@ package org.readium.r2.shared.extensions
 import android.net.Uri
 import java.net.URL
 import java.security.MessageDigest
-import java.text.DateFormat
-import java.text.ParseException
-import java.text.SimpleDateFormat
 import java.util.Date
-import java.util.Locale
-import java.util.TimeZone
+import kotlinx.datetime.Instant
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.atStartOfDayIn
+import kotlinx.datetime.toInstant
 import org.json.JSONException
 import org.json.JSONObject
 import org.readium.r2.shared.InternalReadiumApi
 
 @InternalReadiumApi
 public fun String.iso8601ToDate(): Date? {
-    for (format in iso8601UtcFormats) {
-        try {
-            return format.parse(this)
-        } catch (ignored: ParseException) {
-            // Continue to the next format if parsing fails.
-        }
-    }
-    return null
-}
+    val instant = tryOrNull { Instant.parse(this) }
+        ?: tryOrNull { LocalDateTime.parse(this).toInstant(TimeZone.UTC) }
+        ?: tryOrNull { LocalDate.parse(this).atStartOfDayIn(TimeZone.UTC) }
+        ?: return null
 
-private val iso8601UtcFormats: List<DateFormat> = listOf(
-    "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'",
-    "yyyy-MM-dd'T'HH:mm:ss'Z'",
-    "yyyy-MM-dd'T'HH:mm:ss",
-    "yyyy-MM-dd'T'HH:mm",
-    "yyyy-MM-dd"
-).map {
-    SimpleDateFormat(it, Locale.getDefault()).apply {
-        timeZone = TimeZone.getTimeZone("UTC")
-    }
+    return Date(instant.toEpochMilliseconds())
 }
 
 /**

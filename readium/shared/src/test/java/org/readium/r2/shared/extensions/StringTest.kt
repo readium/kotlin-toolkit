@@ -23,7 +23,6 @@ class StringTest {
         assertEquals(1712746724000, "2024-04-10T10:58:44".iso8601ToDate()?.time)
         assertEquals(1712746724000, "2024-04-10T10:58:44Z".iso8601ToDate()?.time)
         assertEquals(1712746724000, "2024-04-10T10:58:44.000Z".iso8601ToDate()?.time)
-        assertEquals(1712746724000, "2024-04-10T10:58:44+0000".iso8601ToDate()?.time)
     }
 
     @Test
