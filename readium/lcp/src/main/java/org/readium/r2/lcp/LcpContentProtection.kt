@@ -84,7 +84,7 @@ internal class LcpContentProtection(
     ): Try<ContentProtection.OpenResult, ContentProtection.OpenError> {
         // ContentProtectionService should not expose errors due to user cancellation
         val error = license.failureOrNull()
-            .takeUnless { it is LcpError.MissingCredentials }
+            .takeUnless { it is LcpError.MissingPassphrase }
 
         val serviceFactory = LcpContentProtectionService
             .createFactory(license.getOrNull(), error)

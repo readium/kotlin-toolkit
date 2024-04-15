@@ -21,8 +21,8 @@ public sealed class LcpError(
     override val cause: Error? = null
 ) : Error {
 
-    public object MissingCredentials :
-        LcpError("Credentials are not available.")
+    public object MissingPassphrase :
+        LcpError("Passphrase is not available.")
 
     /** The interaction is not available with this License. */
     public object LicenseInteractionNotAvailable :

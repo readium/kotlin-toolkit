@@ -340,7 +340,7 @@ internal class LicensesService(
 
             // Both error and documents can be null if the user cancelled the passphrase prompt.
             if (documents == null) {
-                throw LcpException(LcpError.MissingCredentials)
+                throw LcpException(LcpError.MissingPassphrase)
             }
         }
     }
