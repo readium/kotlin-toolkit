@@ -781,7 +781,7 @@ public class EpubNavigatorFragment internal constructor(
         override fun onPageLoaded(webView: R2BasicWebView, link: Link) {
             paginationListener?.onPageLoaded()
 
-            if ((state as? State.Loading)?.locator?.href == link.url()) {
+            if (state is State.Initializing || (state as? State.Loading)?.locator?.href == link.url()) {
                 state = State.Ready
             }
 
