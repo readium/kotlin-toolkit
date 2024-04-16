@@ -9,9 +9,9 @@ package org.readium.adapter.pspdfkit.document
 import com.pspdfkit.document.providers.DataProvider
 import java.util.UUID
 import kotlinx.coroutines.runBlocking
+import org.readium.r2.shared.util.ThrowableError
 import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.getOrElse
-import org.readium.r2.shared.util.isLazyInitialized
 import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.shared.util.resource.synchronized
 import org.readium.r2.shared.util.toDebugDescription
@@ -30,12 +30,17 @@ internal class ResourceDataProvider(
 
     private val length by lazy {
         runBlocking {
-            resource.length()
-                .getOrElse {
-                    error = it
-                    onResourceError(it)
-                    DataProvider.FILE_SIZE_UNKNOWN.toLong()
-                }
+            try {
+                resource.length()
+                    .getOrElse {
+                        error = it
+                        onResourceError(it)
+                        DataProvider.FILE_SIZE_UNKNOWN.toLong()
+                    }
+            } catch (e: Exception) {
+                error = ReadError.UnsupportedOperation(ThrowableError(IllegalStateException(e)))
+                DataProvider.FILE_SIZE_UNKNOWN.toLong()
+            }
         }
     }
 
@@ -52,18 +57,20 @@ internal class ResourceDataProvider(
 
     override fun read(size: Long, offset: Long): ByteArray = runBlocking {
         val range = offset until (offset + size)
-        resource.read(range)
-            .getOrElse {
-                error = it
-                onResourceError(it)
-                DataProvider.NO_DATA_AVAILABLE
-            }
+        try {
+            resource.read(range)
+                .getOrElse {
+                    error = it
+                    onResourceError(it)
+                    DataProvider.NO_DATA_AVAILABLE
+                }
+        } catch (e: Exception) {
+            error = ReadError.UnsupportedOperation(ThrowableError(IllegalStateException(e)))
+            DataProvider.NO_DATA_AVAILABLE
+        }
     }
 
     override fun release() {
-        if (::resource.isLazyInitialized) {
-            error = null
-            runBlocking { resource.close() }
-        }
+        runBlocking { resource.close() }
     }
 }
