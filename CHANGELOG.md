@@ -4,7 +4,14 @@ All notable changes to this project will be documented in this file. Take a look
 
 **Warning:** Features marked as *experimental* may change or be removed in a future release without notice. Use with caution.
 
-<!-- ## [Unreleased] -->
+## [Unreleased]
+
+### Deprecated
+
+#### Navigator
+
+* All the `completion` parameters of the `Navigator` APIs are removed.
+
 
 ## [3.0.0-alpha.2]
 

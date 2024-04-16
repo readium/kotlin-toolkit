@@ -65,8 +65,8 @@ internal open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebV
         fun onKey(event: KeyEvent): Boolean = false
         fun onDecorationActivated(id: DecorationId, group: String, rect: RectF, point: PointF): Boolean = false
         fun onProgressionChanged() {}
-        fun goForward(animated: Boolean = false, completion: () -> Unit = {}): Boolean = false
-        fun goBackward(animated: Boolean = false, completion: () -> Unit = {}): Boolean = false
+        fun goForward(animated: Boolean = false): Boolean = false
+        fun goBackward(animated: Boolean = false): Boolean = false
 
         /**
          * Returns the custom [ActionMode.Callback] to be used with the text selection menu.
