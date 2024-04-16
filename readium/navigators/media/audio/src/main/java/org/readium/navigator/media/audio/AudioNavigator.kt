@@ -151,7 +151,7 @@ public class AudioNavigator<S : Configurable.Settings, P : Configurable.Preferen
     override fun asMedia3Player(): Player =
         audioEngine.asPlayer()
 
-    override fun go(locator: Locator, animated: Boolean, completion: () -> Unit): Boolean {
+    override fun go(locator: Locator, animated: Boolean): Boolean {
         @Suppress("NAME_SHADOWING")
         val locator = publication.normalizeLocator(locator)
         val itemIndex = readingOrder.items.indexOfFirst { it.href == locator.href }
@@ -163,9 +163,9 @@ public class AudioNavigator<S : Configurable.Settings, P : Configurable.Preferen
         return true
     }
 
-    override fun go(link: Link, animated: Boolean, completion: () -> Unit): Boolean {
+    override fun go(link: Link, animated: Boolean): Boolean {
         val locator = publication.locatorFromLink(link) ?: return false
-        return go(locator, animated, completion)
+        return go(locator, animated)
     }
 
     private fun AudioEngine.State.toState(): MediaNavigator.State =

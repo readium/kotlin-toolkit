@@ -604,7 +604,7 @@ public class EpubNavigatorFragment internal constructor(
     }
 
     @OptIn(DelicateReadiumApi::class)
-    override fun go(locator: Locator, animated: Boolean, completion: () -> Unit): Boolean {
+    override fun go(locator: Locator, animated: Boolean): Boolean {
         @Suppress("NAME_SHADOWING")
         val locator = publication.normalizeLocator(locator)
 
@@ -651,9 +651,9 @@ public class EpubNavigatorFragment internal constructor(
         return true
     }
 
-    override fun go(link: Link, animated: Boolean, completion: () -> Unit): Boolean {
+    override fun go(link: Link, animated: Boolean): Boolean {
         val locator = publication.locatorFromLink(link) ?: return false
-        return go(locator, animated, completion)
+        return go(locator, animated)
     }
 
     private fun run(commands: List<RunScriptCommand>) {
@@ -866,9 +866,9 @@ public class EpubNavigatorFragment internal constructor(
                 ?.let { publication.get(it) }
     }
 
-    override fun goForward(animated: Boolean, completion: () -> Unit): Boolean {
+    override fun goForward(animated: Boolean): Boolean {
         if (publication.metadata.presentation.layout == EpubLayout.FIXED) {
-            return goToNextResource(jump = false, animated = animated, completion)
+            return goToNextResource(jump = false, animated = animated)
         }
 
         val webView = currentReflowablePageFragment?.webView ?: return false
@@ -880,13 +880,12 @@ public class EpubNavigatorFragment internal constructor(
             ReadingProgression.RTL ->
                 webView.scrollLeft(animated)
         }
-        lifecycleScope.launch { completion() }
         return true
     }
 
-    override fun goBackward(animated: Boolean, completion: () -> Unit): Boolean {
+    override fun goBackward(animated: Boolean): Boolean {
         if (publication.metadata.presentation.layout == EpubLayout.FIXED) {
-            return goToPreviousResource(jump = false, animated = animated, completion)
+            return goToPreviousResource(jump = false, animated = animated)
         }
 
         val webView = currentReflowablePageFragment?.webView ?: return false
@@ -898,11 +897,10 @@ public class EpubNavigatorFragment internal constructor(
             ReadingProgression.RTL ->
                 webView.scrollRight(animated)
         }
-        lifecycleScope.launch { completion() }
         return true
     }
 
-    private fun goToNextResource(jump: Boolean, animated: Boolean, completion: () -> Unit = {}): Boolean {
+    private fun goToNextResource(jump: Boolean, animated: Boolean): Boolean {
         val adapter = resourcePager.adapter ?: return false
         if (resourcePager.currentItem >= adapter.count - 1) {
             return false
@@ -922,11 +920,10 @@ public class EpubNavigatorFragment internal constructor(
             }
         }
 
-        viewLifecycleOwner.lifecycleScope.launch { completion() }
         return true
     }
 
-    private fun goToPreviousResource(jump: Boolean, animated: Boolean, completion: () -> Unit = {}): Boolean {
+    private fun goToPreviousResource(jump: Boolean, animated: Boolean): Boolean {
         if (resourcePager.currentItem <= 0) {
             return false
         }
@@ -945,7 +942,6 @@ public class EpubNavigatorFragment internal constructor(
             }
         }
 
-        viewLifecycleOwner.lifecycleScope.launch { completion() }
         return true
     }
 

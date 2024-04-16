@@ -188,7 +188,7 @@ public class MediaSessionNavigator(
     }
 
     @OptIn(DelicateReadiumApi::class)
-    override fun go(locator: Locator, animated: Boolean, completion: () -> Unit): Boolean {
+    override fun go(locator: Locator, animated: Boolean): Boolean {
         if (!isActive) return false
 
         @Suppress("NAME_SHADOWING")
@@ -202,30 +202,27 @@ public class MediaSessionNavigator(
                 putParcelable("locator", locator)
             }
         )
-        completion()
         return true
     }
 
-    override fun go(link: Link, animated: Boolean, completion: () -> Unit): Boolean {
+    override fun go(link: Link, animated: Boolean): Boolean {
         val locator = publication.locatorFromLink(link) ?: return false
-        return go(locator, animated, completion)
+        return go(locator, animated)
     }
 
     @Suppress("UNUSED_PARAMETER")
-    public fun goForward(animated: Boolean = true, completion: () -> Unit = {}): Boolean {
+    public fun goForward(animated: Boolean = true): Boolean {
         if (!isActive) return false
 
         seekRelative(skipForwardInterval)
-        completion()
         return true
     }
 
     @Suppress("UNUSED_PARAMETER")
-    public fun goBackward(animated: Boolean = true, completion: () -> Unit = {}): Boolean {
+    public fun goBackward(animated: Boolean = true): Boolean {
         if (!isActive) return false
 
         seekRelative(-skipBackwardInterval)
-        completion()
         return true
     }
 

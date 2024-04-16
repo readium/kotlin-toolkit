@@ -99,14 +99,16 @@ public class FileResource(
     }
 
     override suspend fun length(): Try<Long, ReadError> =
-        metadataLength?.let { Try.success(it) }
-            ?: Try.failure(
-                ReadError.UnsupportedOperation(
-                    DebugError("Length not available for file at ${file.path}.")
+        withContext(Dispatchers.IO) {
+            metadataLength?.let { Try.success(it) }
+                ?: Try.failure(
+                    ReadError.UnsupportedOperation(
+                        DebugError("Length not available for file at ${file.path}.")
+                    )
                 )
-            )
+        }
 
-    private val metadataLength: Long? =
+    private val metadataLength: Long? by lazy {
         tryOrNull {
             if (file.isFile) {
                 file.length()
@@ -114,6 +116,7 @@ public class FileResource(
                 null
             }
         }
+    }
 
     private inline fun <T> Try.Companion.catching(closure: () -> T): Try<T, ReadError> =
         try {

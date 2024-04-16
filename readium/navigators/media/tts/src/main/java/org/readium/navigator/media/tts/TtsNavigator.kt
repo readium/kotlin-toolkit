@@ -152,14 +152,14 @@ public class TtsNavigator<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
     override val currentLocator: StateFlow<Locator> =
         location.mapStateIn(coroutineScope) { it.tokenLocator ?: it.utteranceLocator }
 
-    override fun go(locator: Locator, animated: Boolean, completion: () -> Unit): Boolean {
+    override fun go(locator: Locator, animated: Boolean): Boolean {
         player.go(publication.normalizeLocator(locator))
         return true
     }
 
-    override fun go(link: Link, animated: Boolean, completion: () -> Unit): Boolean {
+    override fun go(link: Link, animated: Boolean): Boolean {
         val locator = publication.locatorFromLink(link) ?: return false
-        return go(locator, animated, completion)
+        return go(locator, animated)
     }
 
     override val settings: StateFlow<S> =

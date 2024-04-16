@@ -371,28 +371,25 @@ public class MediaNavigator private constructor(
      * Compatibility
      */
 
-    private fun launchAndRun(runnable: suspend () -> Unit, callback: () -> Unit) =
-        coroutineScope.launch { runnable() }.invokeOnCompletion { callback() }
-
-    override fun go(locator: Locator, animated: Boolean, completion: () -> Unit): Boolean {
-        launchAndRun({ go(locator) }, completion)
+    override fun go(locator: Locator, animated: Boolean): Boolean {
+        coroutineScope.launch { go(locator) }
         return true
     }
 
-    override fun go(link: Link, animated: Boolean, completion: () -> Unit): Boolean {
-        launchAndRun({ go(link) }, completion)
-        return true
-    }
-
-    @Suppress("UNUSED_PARAMETER")
-    public fun goForward(animated: Boolean, completion: () -> Unit): Boolean {
-        launchAndRun({ goForward() }, completion)
+    override fun go(link: Link, animated: Boolean): Boolean {
+        coroutineScope.launch { go(link) }
         return true
     }
 
     @Suppress("UNUSED_PARAMETER")
-    public fun goBackward(animated: Boolean, completion: () -> Unit): Boolean {
-        launchAndRun({ goBackward() }, completion)
+    public fun goForward(animated: Boolean): Boolean {
+        coroutineScope.launch { goForward() }
+        return true
+    }
+
+    @Suppress("UNUSED_PARAMETER")
+    public fun goBackward(animated: Boolean): Boolean {
+        coroutineScope.launch { goBackward() }
         return true
     }
 
