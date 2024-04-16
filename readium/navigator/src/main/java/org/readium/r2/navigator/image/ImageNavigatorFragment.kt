@@ -6,8 +6,6 @@
 
 package org.readium.r2.navigator.image
 
-import android.content.Context
-import android.content.SharedPreferences
 import android.graphics.PointF
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -65,8 +63,6 @@ public class ImageNavigatorFragment private constructor(
     internal lateinit var positions: List<Locator>
     internal lateinit var resourcePager: R2ViewPager
 
-    internal lateinit var preferences: SharedPreferences
-
     internal lateinit var adapter: R2PagerAdapter
     private lateinit var currentActivity: FragmentActivity
 
@@ -102,10 +98,6 @@ public class ImageNavigatorFragment private constructor(
         _binding = ReadiumNavigatorViewpagerBinding.inflate(inflater, container, false)
         val view = binding.root
 
-        preferences = requireContext().getSharedPreferences(
-            "org.readium.r2.settings",
-            Context.MODE_PRIVATE
-        )
         resourcePager = binding.resourcePager
         resourcePager.publicationType = R2ViewPager.PublicationType.CBZ
 

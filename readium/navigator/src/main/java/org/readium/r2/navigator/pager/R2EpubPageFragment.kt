@@ -10,8 +10,6 @@
 package org.readium.r2.navigator.pager
 
 import android.annotation.SuppressLint
-import android.content.Context
-import android.content.SharedPreferences
 import android.graphics.PointF
 import android.os.Bundle
 import android.util.DisplayMetrics
@@ -63,7 +61,6 @@ internal class R2EpubPageFragment : Fragment() {
         private set
 
     private lateinit var containerView: View
-    private lateinit var preferences: SharedPreferences
     private val viewModel: EpubNavigatorViewModel by viewModels(
         ownerProducer = { requireParentFragment() }
     )
@@ -137,10 +134,6 @@ internal class R2EpubPageFragment : Fragment() {
     ): View {
         _binding = ReadiumNavigatorViewpagerFragmentEpubBinding.inflate(inflater, container, false)
         containerView = binding.root
-        preferences = activity?.getSharedPreferences(
-            "org.readium.r2.settings",
-            Context.MODE_PRIVATE
-        )!!
 
         val webView = binding.webView
         this.webView = webView
@@ -158,7 +151,6 @@ internal class R2EpubPageFragment : Fragment() {
                 }
             }
         }
-        webView.preferences = preferences
 
         webView.settings.javaScriptEnabled = true
         webView.isVerticalScrollBarEnabled = false
