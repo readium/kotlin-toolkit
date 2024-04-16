@@ -9,11 +9,12 @@
 
 package org.readium.r2.shared.extensions
 
-import java.util.*
-import org.joda.time.DateTime
-import org.joda.time.DateTimeZone
+import java.util.Date
+import kotlinx.datetime.Instant
+import kotlinx.datetime.format
+import kotlinx.datetime.format.DateTimeComponents
 import org.readium.r2.shared.InternalReadiumApi
 
 @InternalReadiumApi
-public fun Date.toIso8601String(timeZone: TimeZone = TimeZone.getTimeZone("UTC")): String =
-    DateTime(this, DateTimeZone.forTimeZone(timeZone)).toString()
+public fun Date.toIso8601String(): String =
+    Instant.fromEpochMilliseconds(time).format(DateTimeComponents.Formats.ISO_DATE_TIME_OFFSET)

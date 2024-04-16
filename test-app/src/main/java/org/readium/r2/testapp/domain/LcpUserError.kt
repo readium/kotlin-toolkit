@@ -20,7 +20,7 @@ fun LcpError.toUserError(): UserError = when (this) {
     is LcpError.Network ->
         UserError(R.string.lcp_error_network, cause = this)
 
-    is LcpError.Runtime ->
+    is LcpError.Runtime, LcpError.MissingPassphrase ->
         UserError(R.string.lcp_error_runtime, cause = this)
     is LcpError.Unknown ->
         UserError(R.string.lcp_error_unknown, cause = this)

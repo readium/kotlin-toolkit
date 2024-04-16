@@ -7,7 +7,6 @@
 package org.readium.r2.navigator
 
 import android.content.Context
-import android.content.SharedPreferences
 import android.graphics.PointF
 import android.graphics.Rect
 import android.graphics.RectF
@@ -112,7 +111,6 @@ internal open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebV
     }
 
     var listener: Listener? = null
-    internal var preferences: SharedPreferences? = null
 
     var resourceUrl: AbsoluteUrl? = null
 

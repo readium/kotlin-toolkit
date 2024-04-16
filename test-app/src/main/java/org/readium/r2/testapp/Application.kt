@@ -52,7 +52,7 @@ class Application : android.app.Application() {
 
     override fun onCreate() {
         if (DEBUG) {
-//            enableStrictMode()
+            enableStrictMode()
             Timber.plant(Timber.DebugTree())
         }
 

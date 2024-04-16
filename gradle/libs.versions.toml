@@ -46,11 +46,16 @@ google-exoplayer = "2.19.1"
 google-material = "1.11.0"
 
 joda-time = "2.12.6"
-jsoup = "1.17.2"
+# Jsoup 1.16.2 requires core library desugaring, otherwise it crashes on Android 7 devices when
+# opening the EPUB navigator.
+# Before enabling desugaring, we need to assess its impact on the toolkit.
+# See https://github.com/jhy/jsoup/issues/2022#issuecomment-1783931119
+jsoup = "1.16.1"
 junit = "4.13.2"
 
 kotlinx-coroutines = "1.7.3"
 kotlinx-coroutines-test = "1.7.3"
+kotlinx-datetime = "0.6.0-RC.2"
 kotlinx-serialization-json = "1.6.2"
 
 # Make sure to align with the Kotlin version.
@@ -135,6 +140,7 @@ kotlin-stdlib = { group = "org.jetbrains.kotlin", name = "kotlin-stdlib", versio
 
 kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "kotlinx-coroutines" }
 kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "kotlinx-coroutines-test" }
+kotlinx-datetime = { group = "org.jetbrains.kotlinx", name = "kotlinx-datetime", version.ref = "kotlinx-datetime" }
 kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinx-serialization-json" }
 
 pdfium = { group = "com.github.barteksc", name = "pdfium-android", version.ref="pdfium" }
