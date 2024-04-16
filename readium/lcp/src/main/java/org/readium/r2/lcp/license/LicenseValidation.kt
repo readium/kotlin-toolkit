@@ -234,7 +234,7 @@ internal class LicenseValidation(
                 transitionTo(State.failure(it.error))
             }
             on<Event.cancelled> {
-                if (DEBUG) Timber.d("State.cancelled)")
+                if (DEBUG) Timber.d("State.cancelled")
                 transitionTo(State.cancelled)
             }
         }
