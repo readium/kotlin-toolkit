@@ -127,6 +127,8 @@ internal class LicensesService(
             val licenseDocument = LicenseDocument(lcpl)
             Timber.d("license ${licenseDocument.json}")
             fetchPublication(licenseDocument, destination, onProgress).let { Try.success(it) }
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             tryOrLog { destination.delete() }
             Try.failure(LcpError.wrap(e))
@@ -338,7 +340,7 @@ internal class LicensesService(
 
             // Both error and documents can be null if the user cancelled the passphrase prompt.
             if (documents == null) {
-                throw CancellationException("License validation was interrupted.")
+                throw LcpException(LcpError.MissingPassphrase)
             }
         }
     }

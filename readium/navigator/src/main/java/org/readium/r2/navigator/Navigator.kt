@@ -41,12 +41,12 @@ public interface Navigator {
     /**
      * Moves to the position in the publication corresponding to the given [Locator].
      */
-    public fun go(locator: Locator, animated: Boolean = false, completion: () -> Unit = {}): Boolean
+    public fun go(locator: Locator, animated: Boolean = false): Boolean
 
     /**
      * Moves to the position in the publication targeted by the given link.
      */
-    public fun go(link: Link, animated: Boolean = false, completion: () -> Unit = {}): Boolean
+    public fun go(link: Link, animated: Boolean = false): Boolean
 
     public interface Listener {
 

@@ -219,32 +219,30 @@ public class PdfNavigatorFragment<S : Configurable.Settings, P : Configurable.Pr
 
     override val currentLocator: StateFlow<Locator> get() = viewModel.currentLocator
 
-    override fun go(locator: Locator, animated: Boolean, completion: () -> Unit): Boolean {
+    override fun go(locator: Locator, animated: Boolean): Boolean {
         @Suppress("NAME_SHADOWING")
         val locator = publication.normalizeLocator(locator)
         listener?.onJumpToLocator(locator)
-        return goToPageIndex(locator.locations.pageIndex, animated, completion)
+        return goToPageIndex(locator.locations.pageIndex, animated)
     }
 
-    override fun go(link: Link, animated: Boolean, completion: () -> Unit): Boolean {
+    override fun go(link: Link, animated: Boolean): Boolean {
         val locator = publication.locatorFromLink(link) ?: return false
-        return go(locator, animated, completion)
+        return go(locator, animated)
     }
 
-    override fun goForward(animated: Boolean, completion: () -> Unit): Boolean {
+    override fun goForward(animated: Boolean): Boolean {
         val pageIndex = currentLocator.value.locations.pageIndex + 1
-        return goToPageIndex(pageIndex, animated, completion)
+        return goToPageIndex(pageIndex, animated)
     }
 
-    override fun goBackward(animated: Boolean, completion: () -> Unit): Boolean {
+    override fun goBackward(animated: Boolean): Boolean {
         val pageIndex = currentLocator.value.locations.pageIndex - 1
-        return goToPageIndex(pageIndex, animated, completion)
+        return goToPageIndex(pageIndex, animated)
     }
 
-    private fun goToPageIndex(pageIndex: Int, animated: Boolean, completion: () -> Unit): Boolean {
-        val success = documentFragment.goToPageIndex(pageIndex, animated = animated)
-        if (success) { completion() }
-        return success
+    private fun goToPageIndex(pageIndex: Int, animated: Boolean): Boolean {
+        return documentFragment.goToPageIndex(pageIndex, animated = animated)
     }
 
     // VisualNavigator

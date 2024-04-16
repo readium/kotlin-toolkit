@@ -82,8 +82,12 @@ internal class LcpContentProtection(
         asset: ContainerAsset,
         license: Try<LcpLicense, LcpError>
     ): Try<ContentProtection.OpenResult, ContentProtection.OpenError> {
+        // ContentProtectionService should not expose errors due to user cancellation
+        val error = license.failureOrNull()
+            .takeUnless { it is LcpError.MissingPassphrase }
+
         val serviceFactory = LcpContentProtectionService
-            .createFactory(license.getOrNull(), license.failureOrNull())
+            .createFactory(license.getOrNull(), error)
 
         val encryptionData =
             when {

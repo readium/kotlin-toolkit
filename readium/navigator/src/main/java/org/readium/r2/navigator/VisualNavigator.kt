@@ -161,10 +161,10 @@ public interface OverflowableNavigator : VisualNavigator {
     /**
      * Moves to the next content portion (eg. page) in the reading progression direction.
      */
-    public fun goForward(animated: Boolean = false, completion: () -> Unit = {}): Boolean
+    public fun goForward(animated: Boolean = false): Boolean
 
     /**
      * Moves to the previous content portion (eg. page) in the reading progression direction.
      */
-    public fun goBackward(animated: Boolean = false, completion: () -> Unit = {}): Boolean
+    public fun goBackward(animated: Boolean = false): Boolean
 }
