@@ -209,7 +209,9 @@ internal class R2EpubPageFragment : Fragment() {
             override fun onPageFinished(view: WebView?, url: String?) {
                 super.onPageFinished(view, url)
 
-                webView.listener?.onResourceLoaded(link, webView, url)
+                link?.let {
+                    webView.listener?.onResourceLoaded(webView, it)
+                }
 
                 // To make sure the page is properly laid out before jumping to the target locator,
                 // we execute a dummy JavaScript and wait for the callback result.
@@ -362,7 +364,9 @@ internal class R2EpubPageFragment : Fragment() {
                     }
                     .also { pendingLocator = null }
 
-                webView.listener?.onPageLoaded()
+                link?.let {
+                    webView.listener?.onPageLoaded(webView, it)
+                }
             }
         }
     }
