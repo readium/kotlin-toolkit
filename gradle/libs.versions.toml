@@ -68,7 +68,7 @@ pdfium = "1.8.2"
 pdf-viewer = "2.8.2"
 #noinspection GradleDependency
 picasso = "2.8"
-pspdfkit = "2024.2.1"
+pspdfkit = "8.4.1"
 
 robolectric = "4.11.1"
 
