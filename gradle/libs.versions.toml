@@ -47,11 +47,7 @@ google-exoplayer = "2.19.1"
 google-material = "1.11.0"
 
 joda-time = "2.12.6"
-# Jsoup 1.16.2 requires core library desugaring, otherwise it crashes on Android 7 devices when
-# opening the EPUB navigator.
-# Before enabling desugaring, we need to assess its impact on the toolkit.
-# See https://github.com/jhy/jsoup/issues/2022#issuecomment-1783931119
-jsoup = "1.16.1"
+jsoup = "1.17.2"
 junit = "4.13.2"
 
 kotlinx-coroutines = "1.7.3"
