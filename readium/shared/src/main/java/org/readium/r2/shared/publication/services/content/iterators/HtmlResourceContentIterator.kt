@@ -373,23 +373,42 @@ public class HtmlResourceContentIterator internal constructor(
         }
 
         override fun tail(node: Node, depth: Int) {
-            if (node is TextNode && node.wholeText.isNotBlank()) {
-                val language = node.language
-                if (currentLanguage != language) {
-                    flushSegment()
-                    currentLanguage = language
-                }
-
-                val text = Parser.unescapeEntities(node.wholeText, false)
-                rawTextAcc += text
-                appendNormalisedText(text)
-            } else if (node is Element) {
-                if (node.isBlock) {
-                    assert(breadcrumbs.last().element == node)
-                    flushText()
-                    breadcrumbs.removeLast()
-                }
+            when (node) {
+                is Element -> tailElement(node)
+                is TextNode -> tailTextNode(node)
             }
+        }
+
+        private fun tailTextNode(node: TextNode) {
+            var text = node.wholeText
+            when {
+                text.isNotBlank() -> {
+                    val language = node.language
+                    if (currentLanguage != language) {
+                        flushSegment()
+                        currentLanguage = language
+                    }
+
+                    text = Parser.unescapeEntities(text, false)
+                }
+                text.isNotEmpty() -> {
+                    text = " "
+                }
+                else -> return
+            }
+
+            rawTextAcc += text
+            appendNormalisedText(text)
+        }
+
+        private fun tailElement(node: Element) {
+            if (!node.isBlock) {
+                return
+            }
+
+            assert(breadcrumbs.last().element == node)
+            flushText()
+            breadcrumbs.removeLast()
         }
 
         private fun appendNormalisedText(text: String) {

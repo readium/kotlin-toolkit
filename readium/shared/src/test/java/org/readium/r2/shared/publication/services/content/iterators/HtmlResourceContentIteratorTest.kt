@@ -2,6 +2,7 @@
 
 package org.readium.r2.shared.publication.services.content.iterators
 
+import kotlin.test.assertContentEquals
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.*
@@ -676,6 +677,39 @@ class HtmlResourceContentIteratorTest {
                                 highlight = "in c"
                             ),
                             text = "in c",
+                            attributes = emptyList()
+                        )
+                    ),
+                    attributes = emptyList()
+                )
+            ),
+            iterator(html).elements()
+        )
+    }
+
+    @Test
+    fun `spaces between two spans are coalesce into one`() = runTest {
+        val html = """
+            <p><span>Call me Ishmael.</span>     <span>Some years ago</span></p>
+            """
+
+        assertContentEquals(
+            listOf(
+                TextElement(
+                    locator = locator(
+                        progression = 0.0,
+                        selector = "html > body > p",
+                        highlight = "Call me Ishmael. Some years ago"
+                    ),
+                    role = TextElement.Role.Body,
+                    segments = listOf(
+                        Segment(
+                            locator = locator(
+                                progression = 0.0,
+                                selector = "html > body > p",
+                                highlight = "Call me Ishmael. Some years ago"
+                            ),
+                            text = "Call me Ishmael. Some years ago",
                             attributes = emptyList()
                         )
                     ),
