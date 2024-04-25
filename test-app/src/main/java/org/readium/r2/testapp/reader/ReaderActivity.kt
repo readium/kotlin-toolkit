@@ -138,11 +138,6 @@ open class ReaderActivity : AppCompatActivity() {
         )
     }
 
-    override fun finish() {
-        model.close()
-        super.finish()
-    }
-
     private fun handleReaderFragmentEvent(command: ReaderViewModel.ActivityCommand) {
         when (command) {
             is ReaderViewModel.ActivityCommand.OpenOutlineRequested ->
