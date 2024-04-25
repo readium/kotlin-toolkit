@@ -19,8 +19,10 @@ window.addEventListener(
   "load",
   function () {
     const observer = new ResizeObserver(() => {
-      onViewportWidthChanged();
-      snapCurrentOffset();
+      requestAnimationFrame(() => {
+        onViewportWidthChanged();
+        snapCurrentOffset();
+      });
     });
     observer.observe(document.body);
   },
