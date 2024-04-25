@@ -269,11 +269,11 @@ public class EpubNavigatorFragment internal constructor(
         /** The navigator just started and didn't load any resource yet. */
         data object Initializing : State()
 
-        /** The navigator is jumping to the resource at `href`. */
-        data class LoadingResource(val href: Url) : State()
+        /** The navigator is loading the first resource at `initialResourceHref`. */
+        data class Loading(val initialResourceHref: Url) : State()
 
-        /** The navigator is idle and ready for interactions. */
-        data class Ready(val currentResource: Url) : State()
+        /** The navigator is fully initialized and ready for action. */
+        data object Ready : State()
     }
 
     private var state: State = State.Initializing
@@ -608,8 +608,8 @@ public class EpubNavigatorFragment internal constructor(
         @Suppress("NAME_SHADOWING")
         val locator = publication.normalizeLocator(locator)
 
-        if (state != State.Ready(locator.href)) {
-            state = State.LoadingResource(locator.href)
+        if (state == State.Initializing) {
+            state = State.Loading(locator.href)
         }
 
         listener?.onJumpToLocator(locator)
@@ -784,8 +784,8 @@ public class EpubNavigatorFragment internal constructor(
             paginationListener?.onPageLoaded()
 
             val href = link.url()
-            if (state is State.Initializing || (state as? State.LoadingResource)?.href == href) {
-                state = State.Ready(href)
+            if (state is State.Initializing || (state as? State.Loading)?.initialResourceHref == href) {
+                state = State.Ready
             }
 
             notifyCurrentLocation()
@@ -1053,7 +1053,7 @@ public class EpubNavigatorFragment internal constructor(
 
             // We don't want to notify the current location if the navigator is still loading a
             // locator, to avoid notifying intermediate locations.
-            if (currentReflowablePageFragment?.isLoaded?.value == false || state !is State.Ready) {
+            if (currentReflowablePageFragment?.isLoaded?.value == false || state != State.Ready) {
                 return@launch
             }
 
