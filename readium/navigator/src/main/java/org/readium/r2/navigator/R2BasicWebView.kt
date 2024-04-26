@@ -287,7 +287,7 @@ internal open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebV
         // We ignore taps on interactive element, unless it's an element we handle ourselves such as
         // pop-up footnotes.
         if (event.interactiveElement != null) {
-            return handleFootnote(event.targetElement)
+            return handleFootnote(event.interactiveElement)
         }
 
         return runBlocking(uiScope.coroutineContext) { listener?.onTap(event.point) ?: false }
