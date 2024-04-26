@@ -20,18 +20,8 @@ import org.readium.r2.shared.util.asset.ContainerAsset
 import org.readium.r2.shared.util.asset.ResourceAsset
 import org.readium.r2.shared.util.data.Container
 import org.readium.r2.shared.util.data.ReadError
-import org.readium.r2.shared.util.format.AacSpecification
-import org.readium.r2.shared.util.format.AiffSpecification
-import org.readium.r2.shared.util.format.FlacSpecification
 import org.readium.r2.shared.util.format.Format
-import org.readium.r2.shared.util.format.InformalAudiobookSpecification
-import org.readium.r2.shared.util.format.Mp3Specification
-import org.readium.r2.shared.util.format.Mp4Specification
-import org.readium.r2.shared.util.format.OggSpecification
-import org.readium.r2.shared.util.format.OpusSpecification
 import org.readium.r2.shared.util.format.Specification
-import org.readium.r2.shared.util.format.WavSpecification
-import org.readium.r2.shared.util.format.WebmSpecification
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.resource.Resource
@@ -79,7 +69,7 @@ public class AudioParser(
     private suspend fun parseContainerAsset(
         asset: ContainerAsset
     ): Try<Publication.Builder, PublicationParser.ParseError> {
-        if (!asset.format.conformsTo(InformalAudiobookSpecification)) {
+        if (!asset.format.conformsTo(Specification.InformalAudiobook)) {
             return Try.failure(PublicationParser.ParseError.FormatNotSupported())
         }
 
@@ -141,14 +131,14 @@ public class AudioParser(
 
     private val audioSpecifications: Set<Specification> =
         setOf(
-            AacSpecification,
-            AiffSpecification,
-            FlacSpecification,
-            Mp4Specification,
-            Mp3Specification,
-            OggSpecification,
-            OpusSpecification,
-            WavSpecification,
-            WebmSpecification
+            Specification.Aac,
+            Specification.Aiff,
+            Specification.Flac,
+            Specification.Mp4,
+            Specification.Mp3,
+            Specification.Ogg,
+            Specification.Opus,
+            Specification.Wav,
+            Specification.Webm
         )
 }

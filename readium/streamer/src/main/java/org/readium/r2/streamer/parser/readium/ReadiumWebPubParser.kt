@@ -27,9 +27,7 @@ import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.data.decodeRwpm
 import org.readium.r2.shared.util.data.readDecodeOrElse
 import org.readium.r2.shared.util.format.FormatSpecification
-import org.readium.r2.shared.util.format.LcpSpecification
-import org.readium.r2.shared.util.format.RpfSpecification
-import org.readium.r2.shared.util.format.RwpmSpecification
+import org.readium.r2.shared.util.format.Specification
 import org.readium.r2.shared.util.http.HttpClient
 import org.readium.r2.shared.util.http.HttpContainer
 import org.readium.r2.shared.util.logging.WarningLogger
@@ -62,7 +60,7 @@ public class ReadiumWebPubParser(
         container: Container<Resource>,
         formatSpecification: FormatSpecification
     ): Try<Publication.Builder, PublicationParser.ParseError> {
-        if (!formatSpecification.conformsTo(RpfSpecification)) {
+        if (!formatSpecification.conformsTo(Specification.Rpf)) {
             return Try.failure(PublicationParser.ParseError.FormatNotSupported())
         }
 
@@ -85,7 +83,7 @@ public class ReadiumWebPubParser(
         // https://readium.org/lcp-specs/notes/lcp-for-pdf.html
         val readingOrder = manifest.readingOrder
         if (manifest.conformsTo(Publication.Profile.PDF) && formatSpecification.conformsTo(
-                LcpSpecification
+                Specification.Rpf
             ) &&
             (readingOrder.isEmpty() || !readingOrder.all { MediaType.PDF.matches(it.mediaType) })
         ) {
@@ -101,7 +99,7 @@ public class ReadiumWebPubParser(
 
             positionsServiceFactory = when {
                 manifest.conformsTo(Publication.Profile.PDF) && formatSpecification.conformsTo(
-                    LcpSpecification
+                    Specification.Lcp
                 ) ->
                     pdfFactory?.let { LcpdfPositionsService.create(it) }
                 manifest.conformsTo(Publication.Profile.DIVINA) ->
@@ -126,7 +124,7 @@ public class ReadiumWebPubParser(
         resource: Resource,
         formatSpecification: FormatSpecification
     ): Try<Publication.Builder, PublicationParser.ParseError> {
-        if (!formatSpecification.conformsTo(RwpmSpecification)) {
+        if (!formatSpecification.conformsTo(Specification.Rwpm)) {
             return Try.failure(PublicationParser.ParseError.FormatNotSupported())
         }
 
@@ -169,6 +167,6 @@ public class ReadiumWebPubParser(
                 HttpContainer(baseUrl, resources, httpClient)
             )
 
-        return parseContainerAsset(container, FormatSpecification(RpfSpecification))
+        return parseContainerAsset(container, FormatSpecification(Specification.Rpf))
     }
 }
