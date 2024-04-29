@@ -6,11 +6,11 @@
 
 package org.readium.r2.streamer.parser.epub
 
-import org.readium.r2.shared.extensions.iso8601ToDate
 import org.readium.r2.shared.extensions.toMap
 import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.publication.Collection
 import org.readium.r2.shared.publication.presentation.Presentation
+import org.readium.r2.shared.util.Instant
 
 internal class MetadataAdapter(
     private val epubVersion: Double,
@@ -53,11 +53,12 @@ internal class MetadataAdapter(
         val published = globalItemsHolder
             .adapt { it.takeFirstWithProperty(Vocabularies.DCTERMS + "date") }
             ?.value
-            ?.iso8601ToDate()
+            ?.let { Instant.parse(it) }
 
         val modified = globalItemsHolder
             .adapt { it.takeFirstWithProperty(Vocabularies.DCTERMS + "modified") }
-            ?.value?.iso8601ToDate()
+            ?.value
+            ?.let { Instant.parse(it) }
 
         val description = globalItemsHolder
             .adapt { it.takeFirstWithProperty(Vocabularies.DCTERMS + "description") }

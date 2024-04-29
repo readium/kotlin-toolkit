@@ -7,23 +7,20 @@
 package org.readium.r2.shared.publication
 
 import android.os.Parcelable
-import java.util.Date
-import java.util.Locale
 import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
 import kotlinx.parcelize.WriteWith
 import org.json.JSONObject
 import org.readium.r2.shared.JSONable
 import org.readium.r2.shared.extensions.JSONParceler
-import org.readium.r2.shared.extensions.iso8601ToDate
 import org.readium.r2.shared.extensions.optPositiveDouble
 import org.readium.r2.shared.extensions.optPositiveInt
 import org.readium.r2.shared.extensions.optStringsFromArrayOrSingle
 import org.readium.r2.shared.extensions.putIfNotEmpty
-import org.readium.r2.shared.extensions.toIso8601String
 import org.readium.r2.shared.extensions.toMap
 import org.readium.r2.shared.publication.presentation.Presentation
 import org.readium.r2.shared.publication.presentation.presentation
+import org.readium.r2.shared.util.Instant
 import org.readium.r2.shared.util.Language
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.logging.log
@@ -31,9 +28,6 @@ import org.readium.r2.shared.util.logging.log
 /**
  * https://readium.org/webpub-manifest/schema/metadata.schema.json
  *
- * @param readingProgression WARNING: This contains the reading progression as declared in the
- *     publication, so it might be [AUTO]. To lay out the content, use [effectiveReadingProgression]
- *     to get the calculated reading progression from the declared direction and the language.
  * @param otherMetadata Additional metadata for extensions, as a JSON dictionary.
  */
 @Parcelize
@@ -44,8 +38,8 @@ public data class Metadata(
     val localizedTitle: LocalizedString? = null,
     val localizedSubtitle: LocalizedString? = null,
     val localizedSortAs: LocalizedString? = null,
-    val modified: Date? = null,
-    val published: Date? = null,
+    val modified: Instant? = null,
+    val published: Instant? = null,
     val accessibility: Accessibility? = null,
     val languages: List<String> = emptyList(), // BCP 47 tag
     val subjects: List<Subject> = emptyList(),
@@ -77,8 +71,8 @@ public data class Metadata(
         localizedTitle: LocalizedString? = null,
         localizedSubtitle: LocalizedString? = null,
         localizedSortAs: LocalizedString? = null,
-        modified: Date? = null,
-        published: Date? = null,
+        modified: Instant? = null,
+        published: Instant? = null,
         accessibility: Accessibility? = null,
         languages: List<String> = emptyList(), // BCP 47 tag
         subjects: List<Subject> = emptyList(),
@@ -178,32 +172,11 @@ public data class Metadata(
      */
     @Deprecated(
         "You should resolve [ReadingProgression.AUTO] by yourself.",
-        level = DeprecationLevel.WARNING
+        level = DeprecationLevel.ERROR
     )
     @IgnoredOnParcel
-    val effectiveReadingProgression: ReadingProgression get() {
-        if (readingProgression != null) {
-            return readingProgression
-        }
-
-        // https://github.com/readium/readium-css/blob/develop/docs/CSS16-internationalization.md#missing-page-progression-direction
-        if (languages.size != 1) {
-            return ReadingProgression.LTR
-        }
-
-        var language = languages.first().lowercase(Locale.ROOT)
-
-        if (language == "zh-hant" || language == "zh-tw") {
-            return ReadingProgression.RTL
-        }
-
-        // The region is ignored for ar, fa and he.
-        language = language.split("-", limit = 2).first()
-        return when (language) {
-            "ar", "fa", "he" -> ReadingProgression.RTL
-            else -> ReadingProgression.LTR
-        }
-    }
+    val effectiveReadingProgression: ReadingProgression get() =
+        throw NotImplementedError()
 
     /**
      * Serializes a [Metadata] to its RWPM JSON representation.
@@ -214,8 +187,8 @@ public data class Metadata(
         putIfNotEmpty("conformsTo", conformsTo.map { it.uri })
         putIfNotEmpty("title", localizedTitle)
         putIfNotEmpty("subtitle", localizedSubtitle)
-        put("modified", modified?.toIso8601String())
-        put("published", published?.toIso8601String())
+        put("modified", modified?.toString())
+        put("published", published?.toString())
         put("accessibility", accessibility?.toJSON())
         putIfNotEmpty("language", languages)
         putIfNotEmpty("sortAs", localizedSortAs)
@@ -270,8 +243,8 @@ public data class Metadata(
                 .map { Publication.Profile(it) }
                 .toSet()
             val localizedSubtitle = LocalizedString.fromJSON(json.remove("subtitle"), warnings)
-            val modified = (json.remove("modified") as? String)?.iso8601ToDate()
-            val published = (json.remove("published") as? String)?.iso8601ToDate()
+            val modified = (json.remove("modified") as? String)?.let { Instant.parse(it) }
+            val published = (json.remove("published") as? String)?.let { Instant.parse(it) }
             val accessibility = Accessibility.fromJSON(json.remove("accessibility"))
             val languages = json.optStringsFromArrayOrSingle("language", remove = true)
             val localizedSortAs = LocalizedString.fromJSON(json.remove("sortAs"), warnings)
@@ -425,7 +398,7 @@ public data class Metadata(
         level = DeprecationLevel.ERROR
     )
     val publicationDate: String?
-        get() = published?.toIso8601String()
+        get() = published?.toString()
 
     @Deprecated(
         "Use [presentation] instead",

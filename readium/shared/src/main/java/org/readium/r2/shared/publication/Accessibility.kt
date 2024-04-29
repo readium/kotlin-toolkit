@@ -59,8 +59,7 @@ public data class Accessibility(
      * Accessibility profile.
      */
     @Parcelize
-    @JvmInline
-    public value class Profile(public val uri: String) : Parcelable {
+    public data class Profile(public val uri: String) : Parcelable {
 
         public companion object {
 
@@ -143,8 +142,7 @@ public data class Accessibility(
      * or perceive information.
      */
     @Parcelize
-    @JvmInline
-    public value class AccessMode(public val value: String) : Parcelable {
+    public data class AccessMode(public val value: String) : Parcelable {
 
         public companion object {
             /**
@@ -255,7 +253,7 @@ public data class Accessibility(
         VISUAL("visual");
 
         public companion object : MapCompanion<String, PrimaryAccessMode>(
-            values(),
+            entries.toTypedArray(),
             PrimaryAccessMode::value
         ) {
 
@@ -277,8 +275,7 @@ public data class Accessibility(
      * supported enhancements for accessibility.
      */
     @Parcelize
-    @JvmInline
-    public value class Feature(public val value: String) : Parcelable {
+    public data class Feature(public val value: String) : Parcelable {
 
         public companion object {
             /**
@@ -489,8 +486,7 @@ public data class Accessibility(
      * A characteristic of the described resource that is physiologically dangerous to some users.
      */
     @Parcelize
-    @JvmInline
-    public value class Hazard(public val value: String) : Parcelable {
+    public data class Hazard(public val value: String) : Parcelable {
 
         public companion object {
 
@@ -567,8 +563,6 @@ public data class Accessibility(
 
         /**
          * Parses a [Accessibility] from its RWPM JSON representation.
-         *
-         * If the accessibility metadata can't be parsed, a warning will be logged with [warnings].
          */
         public fun fromJSON(json: Any?): Accessibility? {
             if (json !is JSONObject) {

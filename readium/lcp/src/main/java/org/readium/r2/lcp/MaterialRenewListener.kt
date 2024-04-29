@@ -12,11 +12,11 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.browser.customtabs.CustomTabsIntent
 import androidx.fragment.app.FragmentManager
 import com.google.android.material.datepicker.*
-import java.util.*
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 import kotlinx.coroutines.suspendCancellableCoroutine
+import org.readium.r2.shared.util.Instant
 import org.readium.r2.shared.util.Url
 
 /**
@@ -37,9 +37,9 @@ public class MaterialRenewListener(
     private val fragmentManager: FragmentManager
 ) : LcpLicense.RenewListener {
 
-    override suspend fun preferredEndDate(maximumDate: Date?): Date? = suspendCancellableCoroutine { cont ->
-        val start = (license.license.rights.end ?: Date()).time
-        val end = maximumDate?.time
+    override suspend fun preferredEndDate(maximumDate: Instant?): Instant? = suspendCancellableCoroutine { cont ->
+        val start = (license.license.rights.end ?: Instant.now()).toEpochMilliseconds()
+        val end = maximumDate?.toEpochMilliseconds()
 
         MaterialDatePicker.Builder.datePicker()
             .setCalendarConstraints(
@@ -67,7 +67,7 @@ public class MaterialRenewListener(
                 addOnNegativeButtonClickListener { cont.cancel() }
 
                 addOnPositiveButtonClickListener { selection ->
-                    cont.resume(Date(selection))
+                    cont.resume(Instant.fromEpochMilliseconds(selection))
                 }
             }
             .show(fragmentManager, "MaterialRenewListener.DatePicker")

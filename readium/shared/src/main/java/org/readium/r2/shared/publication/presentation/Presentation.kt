@@ -114,7 +114,7 @@ public data class Presentation(
         @SerialName("cover")
         COVER("cover");
 
-        public companion object : MapCompanion<String, Fit>(values(), Fit::value) {
+        public companion object : MapCompanion<String, Fit>(entries.toTypedArray(), Fit::value) {
 
             /**
              * Default value for [Fit], if not specified.
@@ -138,7 +138,10 @@ public data class Presentation(
         @SerialName("portrait")
         PORTRAIT("portrait");
 
-        public companion object : MapCompanion<String, Orientation>(values(), Orientation::value) {
+        public companion object : MapCompanion<String, Orientation>(
+            entries.toTypedArray(),
+            Orientation::value
+        ) {
 
             /**
              * Default value for [Orientation], if not specified.
@@ -183,7 +186,10 @@ public data class Presentation(
         @SerialName("scrolled")
         SCROLLED("scrolled");
 
-        public companion object : MapCompanion<String, Overflow>(values(), Overflow::value) {
+        public companion object : MapCompanion<String, Overflow>(
+            entries.toTypedArray(),
+            Overflow::value
+        ) {
 
             /**
              * Default value for [Overflow], if not specified.
@@ -229,7 +235,7 @@ public data class Presentation(
         @SerialName("center")
         CENTER("center");
 
-        public companion object : MapCompanion<String, Page>(values(), Page::value)
+        public companion object : MapCompanion<String, Page>(entries.toTypedArray(), Page::value)
     }
 
     /**
@@ -251,7 +257,10 @@ public data class Presentation(
         @SerialName("landscape")
         LANDSCAPE("landscape");
 
-        public companion object : MapCompanion<String, Spread>(values(), Spread::value) {
+        public companion object : MapCompanion<String, Spread>(
+            entries.toTypedArray(),
+            Spread::value
+        ) {
 
             /**
              * Default value for [Spread], if not specified.

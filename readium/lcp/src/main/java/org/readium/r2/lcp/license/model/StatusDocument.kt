@@ -19,9 +19,9 @@ import org.readium.r2.lcp.license.model.components.Links
 import org.readium.r2.lcp.license.model.components.lsd.Event
 import org.readium.r2.lcp.license.model.components.lsd.PotentialRights
 import org.readium.r2.lcp.service.URLParameters
-import org.readium.r2.shared.extensions.iso8601ToDate
 import org.readium.r2.shared.extensions.mapNotNull
 import org.readium.r2.shared.extensions.optNullableString
+import org.readium.r2.shared.util.Instant
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
 
@@ -29,8 +29,8 @@ public class StatusDocument(public val data: ByteArray) {
     public val id: String
     public val status: Status
     public val message: String
-    public val licenseUpdated: Date
-    public val statusUpdated: Date
+    public val licenseUpdated: Instant
+    public val statusUpdated: Instant
     public val links: Links
     public val potentialRights: PotentialRights?
     public val events: List<Event>
@@ -49,7 +49,7 @@ public class StatusDocument(public val data: ByteArray) {
         public val rawValue: String get() = value
 
         public companion object {
-            public operator fun invoke(value: String): Status? = values().firstOrNull { it.value == value }
+            public operator fun invoke(value: String): Status? = entries.firstOrNull { it.value == value }
         }
     }
 
@@ -63,7 +63,7 @@ public class StatusDocument(public val data: ByteArray) {
         public val rawValue: String get() = value
 
         public companion object {
-            public operator fun invoke(value: String): Rel? = values().firstOrNull { it.value == value }
+            public operator fun invoke(value: String): Rel? = entries.firstOrNull { it.value == value }
         }
     }
 
@@ -83,10 +83,10 @@ public class StatusDocument(public val data: ByteArray) {
         )
 
         val updated = json.optJSONObject("updated") ?: JSONObject()
-        licenseUpdated = updated.optNullableString("license")?.iso8601ToDate() ?: throw LcpException(
+        licenseUpdated = updated.optNullableString("license")?.let { Instant.parse(it) } ?: throw LcpException(
             LcpError.Parsing.StatusDocument
         )
-        statusUpdated = updated.optNullableString("status")?.iso8601ToDate() ?: throw LcpException(
+        statusUpdated = updated.optNullableString("status")?.let { Instant.parse(it) } ?: throw LcpException(
             LcpError.Parsing.StatusDocument
         )
 

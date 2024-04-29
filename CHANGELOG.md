@@ -12,6 +12,10 @@ All notable changes to this project will be documented in this file. Take a look
 
 * All the `completion` parameters of the `Navigator` APIs are removed.
 
+### Changed
+
+* All the APIs using or returning a `Date` objects are now using a custom `Instant` type. 
+
 ### Fixed
 
 #### Navigator
