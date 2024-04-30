@@ -23,9 +23,9 @@ androidx-compose-ui = "1.6.0"
 androidx-constraintlayout = "2.1.4"
 androidx-core = "1.12.0"
 androidx-datastore = "1.0.0"
-androidx-expresso-core = "3.5.1"
+androidx-espresso = "3.5.1"
 androidx-ext-junit = "1.1.5"
-androidx-fragment-ktx = "1.6.2"
+androidx-fragment = "1.6.2"
 androidx-legacy = "1.0.0"
 androidx-lifecycle = "2.7.0"
 androidx-lifecycle-extensions = "2.2.0"
@@ -36,6 +36,8 @@ androidx-navigation = "2.7.6"
 androidx-paging = "3.2.1"
 androidx-recyclerview = "1.3.2"
 androidx-room = "2.6.1"
+androidx-test-rules = "1.5.0"
+androidx-test-runner = "1.5.2"
 androidx-viewpager2 = "1.0.0"
 androidx-webkit = "1.10.0"
 
@@ -90,9 +92,11 @@ androidx-compose-ui-tooling = { group = "androidx.compose.ui", name = "ui-toolin
 androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "androidx-constraintlayout" }
 androidx-core = { group = "androidx.core", name = "core-ktx", version.ref = "androidx-core" }
 androidx-datastore-preferences = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "androidx-datastore" }
-androidx-expresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "androidx-expresso-core" }
+androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "androidx-espresso" }
+androidx-espresso-web = { group = "androidx.test.espresso", name = "espresso-web", version.ref = "androidx-espresso" }
 androidx-ext-junit = { group = "androidx.test.ext", name = "junit", version.ref = "androidx-ext-junit" }
-androidx-fragment-ktx = { group = "androidx.fragment", name = "fragment-ktx", version.ref = "androidx-fragment-ktx" }
+androidx-fragment-ktx = { group = "androidx.fragment", name = "fragment-ktx", version.ref = "androidx-fragment" }
+androidx-fragment-testing = { group = "androidx.fragment", name = "fragment-testing", version.ref = "androidx-fragment" }
 androidx-legacy-v4 = { group = "androidx.legacy", name = "legacy-support-v4", version.ref = "androidx-legacy" }
 androidx-legacy-ui = { group = "androidx.legacy", name = "legacy-support-core-ui", version.ref = "androidx-legacy" }
 androidx-lifecycle-common = { group = "androidx.lifecycle", name = "lifecycle-common-java8", version.ref = "androidx-lifecycle" }
@@ -115,6 +119,8 @@ androidx-recyclerview = { group = "androidx.recyclerview", name = "recyclerview"
 androidx-room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "androidx-room" }
 androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "androidx-room" }
 androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "androidx-room" }
+androidx-test-rules = { group = "androidx.test", name = "rules", version.ref = "androidx-test-rules" }
+androidx-test-runner = { group = "androidx.test", name = "runner", version.ref = "androidx-test-runner" }
 androidx-viewpager2 = { group = "androidx.viewpager2", name = "viewpager2", version.ref = "androidx-viewpager2" }
 androidx-webkit = { group = "androidx.webkit", name = "webkit", version.ref = "androidx-webkit" }
 
@@ -170,4 +176,3 @@ media2 = ["androidx-media2-session", "androidx-media2-player", "google-exoplayer
 media3 = ["androidx-media3-session", "androidx-media3-common", "androidx-media3-exoplayer"]
 navigation = ["androidx-navigation-fragment", "androidx-navigation-ui"]
 room = ["androidx-room-runtime", "androidx-room-ktx"]
-test-frameworks = ["junit", "androidx-ext-junit", "androidx-expresso-core", "robolectric", "kotlin-junit", "assertj", "kotlinx-coroutines-test"]

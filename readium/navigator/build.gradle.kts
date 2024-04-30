@@ -50,9 +50,15 @@ dependencies {
     // Tests
     testImplementation(libs.junit)
 
+    androidTestImplementation(libs.androidx.espresso.core)
+    androidTestImplementation(libs.androidx.espresso.web)
     androidTestImplementation(libs.androidx.ext.junit)
-    androidTestImplementation(libs.androidx.expresso.core)
+    androidTestImplementation(libs.androidx.test.rules)
+    androidTestImplementation(libs.androidx.test.runner)
     testImplementation(libs.kotlin.junit)
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.robolectric)
+    // Note: debugImplementation is used here so that the empty activity that FragmentScenario
+    // relies on is accessible by the test target process.
+    debugImplementation(libs.androidx.fragment.testing)
 }
