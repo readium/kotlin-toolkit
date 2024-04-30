@@ -69,11 +69,14 @@ internal class LicensesService(
         licenseDocument: LicenseDocument,
         publicationFile: File
     ): Try<Unit, LcpError> {
-        licenseDocument.publicationLink.hash
-            ?.takeIf { publicationFile.checkSha256(it) == false }
-            ?: return Try.failure(
+        val hashIsCorrect = licenseDocument.publicationLink.hash
+            ?.let { publicationFile.checkSha256(it) }
+
+        if (hashIsCorrect == false) {
+            return Try.failure(
                 LcpError.Network(Exception("Digest mismatch: download looks corrupted."))
             )
+        }
 
         val mediaType = licenseDocument.publicationLink.mediaType
         val format = assetRetriever.sniffFormat(publicationFile, FormatHints(mediaType))
@@ -156,13 +159,14 @@ internal class LicensesService(
             onProgress = onProgress
         )
 
-        license.publicationLink.hash
-            ?.takeIf { destination.checkSha256(it) == false }
-            ?.run {
-                throw LcpException(
-                    LcpError.Network(Exception("Digest mismatch: download looks corrupted."))
-                )
-            }
+        val hashIsCorrect = license.publicationLink.hash
+            ?.let { destination.checkSha256(it) }
+
+        if (hashIsCorrect == false) {
+            throw LcpException(
+                LcpError.Network(Exception("Digest mismatch: download looks corrupted."))
+            )
+        }
 
         val format =
             assetRetriever.sniffFormat(

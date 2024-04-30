@@ -7,6 +7,7 @@
 package org.readium.r2.streamer.parser.readium
 
 import android.content.Context
+import org.readium.r2.shared.publication.Manifest
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.services.InMemoryCacheService
 import org.readium.r2.shared.publication.services.PerResourcePositionsService
@@ -79,20 +80,8 @@ public class ReadiumWebPubParser(
                 recover = { return Try.failure(PublicationParser.ParseError.Reading(it)) }
             )
 
-        // Checks the requirements from the LCPDF specification.
-        // https://readium.org/lcp-specs/notes/lcp-for-pdf.html
-        val readingOrder = manifest.readingOrder
-        if (manifest.conformsTo(Publication.Profile.PDF) && formatSpecification.conformsTo(
-                Specification.Rpf
-            ) &&
-            (readingOrder.isEmpty() || !readingOrder.all { MediaType.PDF.matches(it.mediaType) })
-        ) {
-            return Try.failure(
-                PublicationParser.ParseError.Reading(
-                    ReadError.Decoding("Invalid LCP Protected PDF.")
-                )
-            )
-        }
+        checkProfileRequirements(manifest)
+            ?.let { return Try.failure(it) }
 
         val servicesBuilder = Publication.ServicesBuilder().apply {
             cacheServiceFactory = InMemoryCacheService.createFactory(context)
@@ -119,6 +108,37 @@ public class ReadiumWebPubParser(
         val publicationBuilder = Publication.Builder(manifest, container, servicesBuilder)
         return Try.success(publicationBuilder)
     }
+
+    private fun checkProfileRequirements(manifest: Manifest): PublicationParser.ParseError? =
+        when {
+            manifest.conformsTo(Publication.Profile.PDF) -> {
+                if (manifest.readingOrder.isEmpty() ||
+                    manifest.readingOrder.any { !MediaType.PDF.matches(it.mediaType) }
+                ) {
+                    PublicationParser.ParseError.Reading(
+                        ReadError.Decoding(
+                            "Publication does not conform to the PDF profile specification."
+                        )
+                    )
+                } else {
+                    null
+                }
+            }
+            manifest.conformsTo(Publication.Profile.AUDIOBOOK) -> {
+                if (manifest.readingOrder.isEmpty()) {
+                    PublicationParser.ParseError.Reading(
+                        ReadError.Decoding(
+                            "Publication does not conform to the Audiobook profile specification."
+                        )
+                    )
+                } else {
+                    null
+                }
+            }
+            else -> {
+                null
+            }
+        }
 
     private suspend fun parseResourceAsset(
         resource: Resource,
