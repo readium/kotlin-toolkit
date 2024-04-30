@@ -9,15 +9,15 @@
 
 package org.readium.r2.shared.opds
 
-import java.util.*
 import org.readium.r2.shared.InternalReadiumApi
+import org.readium.r2.shared.util.Instant
 
 public data class OpdsMetadata(
     val title: String,
     val numberOfItems: Int? = null,
     val itemsPerPage: Int? = null,
     val currentPage: Int? = null,
-    val modified: Date? = null,
+    val modified: Instant? = null,
     val position: Int? = null,
     val rdfType: String? = null
 ) {
@@ -27,7 +27,7 @@ public data class OpdsMetadata(
         var numberOfItems: Int? = null,
         var itemsPerPage: Int? = null,
         var currentPage: Int? = null,
-        var modified: Date? = null,
+        var modified: Instant? = null,
         var position: Int? = null,
         var rdfType: String? = null
     ) {

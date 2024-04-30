@@ -11,7 +11,6 @@ package org.readium.r2.streamer.parser.epub
 
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.entry
-import org.joda.time.DateTime
 import org.junit.Assert.assertNotNull
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -20,6 +19,7 @@ import org.readium.r2.shared.publication.Link as SharedLink
 import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.publication.presentation.Presentation
 import org.readium.r2.shared.publication.presentation.presentation
+import org.readium.r2.shared.util.Instant
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.robolectric.RobolectricTestRunner
 
@@ -294,14 +294,14 @@ class DateTest {
 
     @Test
     fun `Publication date is rightly parsed`() {
-        val expected = DateTime.parse("1865-07-04T00:00:00Z").toDate()
+        val expected = Instant.parse("1865-07-04T00:00:00Z")
         assertThat(epub2Metadata.published).isEqualTo(expected)
         assertThat(epub3Metadata.published).isEqualTo(expected)
     }
 
     @Test
     fun `Modification date is rightly parsed`() {
-        val expected = DateTime.parse("2012-04-02T12:47:00Z").toDate()
+        val expected = Instant.parse("2012-04-02T12:47:00Z")
         assertThat(epub2Metadata.modified).isEqualTo(expected)
         assertThat(epub3Metadata.modified).isEqualTo(expected)
     }

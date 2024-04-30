@@ -237,12 +237,12 @@ public class ImageNavigatorFragment private constructor(
 
     @Suppress("DEPRECATION")
     @Deprecated(
-        "Use `presentation.value.readingProgression` instead",
-        replaceWith = ReplaceWith("presentation.value.readingProgression"),
+        "Use `overflow.value.readingProgression` instead",
+        replaceWith = ReplaceWith("overflow.value.readingProgression"),
         level = DeprecationLevel.ERROR
     )
     override val readingProgression: PublicationReadingProgression =
-        publication.metadata.effectiveReadingProgression
+        throw NotImplementedError()
 
     @ExperimentalReadiumApi
     override val overflow: StateFlow<OverflowableNavigator.Overflow> =

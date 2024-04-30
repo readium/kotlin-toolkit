@@ -9,17 +9,16 @@
 
 package org.readium.r2.lcp.license.model.components.lcp
 
-import java.util.*
 import org.json.JSONObject
-import org.readium.r2.shared.extensions.iso8601ToDate
 import org.readium.r2.shared.extensions.optNullableInt
 import org.readium.r2.shared.extensions.optNullableString
+import org.readium.r2.shared.util.Instant
 
 public data class Rights(val json: JSONObject) {
     val print: Int?
     val copy: Int?
-    val start: Date?
-    val end: Date?
+    val start: Instant?
+    val end: Instant?
     val extensions: JSONObject
 
     init {
@@ -27,8 +26,8 @@ public data class Rights(val json: JSONObject) {
 
         print = clone.optNullableInt("print", remove = true)
         copy = clone.optNullableInt("copy", remove = true)
-        start = clone.optNullableString("start", remove = true)?.iso8601ToDate()
-        end = clone.optNullableString("end", remove = true)?.iso8601ToDate()
+        start = clone.optNullableString("start", remove = true)?.let { Instant.parse(it) }
+        end = clone.optNullableString("end", remove = true)?.let { Instant.parse(it) }
 
         extensions = clone
     }

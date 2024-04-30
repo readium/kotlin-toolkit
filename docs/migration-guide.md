@@ -8,6 +8,12 @@ All migration steps necessary in reading apps to upgrade to major versions of th
 
 If you target Android devices running below API 26, you now must enable [core library desugaring](https://developer.android.com/studio/write/java8-support#library-desugaring) in your application module.
 
+### Removing JVM dependencies
+
+To reduce our depency to the JVM, we no longer use `Date` objects in the toolkit. Instead, we added a custom `Instant` type.
+
+You can still translate from and to a `Date` object with `Instant.fromJavaDate()` and `instant.toJavaDate()`.
+
 
 ## 3.0.0-alpha.2
 

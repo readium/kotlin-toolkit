@@ -10,7 +10,6 @@
 package org.readium.r2.opds
 
 import java.net.URL
-import org.joda.time.DateTime
 import org.readium.r2.shared.extensions.toList
 import org.readium.r2.shared.extensions.toMap
 import org.readium.r2.shared.opds.*
@@ -18,6 +17,7 @@ import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.toJSON
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.ErrorException
+import org.readium.r2.shared.util.Instant
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.http.DefaultHttpClient
@@ -89,7 +89,7 @@ public class OPDS1Parser {
                 ?: throw Exception(OPDSParserError.MissingTitle.name)
             val feed = Feed.Builder(feedTitle, 1, url)
             val tmpDate = root.getFirst("updated", Namespaces.Atom)?.text
-            feed.metadata.modified = tmpDate?.let { DateTime(it).toDate() }
+            feed.metadata.modified = tmpDate?.let { Instant.parse(it) }
 
             val totalResults = root.getFirst("TotalResults", Namespaces.Search)?.text
             totalResults?.let {
@@ -310,10 +310,12 @@ public class OPDS1Parser {
                     localizedTitle = LocalizedString(title),
 
                     modified = entry.getFirst("updated", Namespaces.Atom)
-                        ?.let { DateTime(it.text).toDate() },
+                        ?.text
+                        ?.let { Instant.parse(it) },
 
                     published = entry.getFirst("published", Namespaces.Atom)
-                        ?. let { DateTime(it.text).toDate() },
+                        ?.text
+                        ?.let { Instant.parse(it) },
 
                     languages = entry.get("language", Namespaces.Dcterms)
                         .mapNotNull { it.text },

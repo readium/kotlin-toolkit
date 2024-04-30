@@ -10,7 +10,6 @@
 package org.readium.r2.lcp.license
 
 import java.net.HttpURLConnection
-import java.util.Date
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -30,8 +29,8 @@ import org.readium.r2.lcp.service.DeviceService
 import org.readium.r2.lcp.service.LcpClient
 import org.readium.r2.lcp.service.LicensesRepository
 import org.readium.r2.lcp.service.NetworkService
-import org.readium.r2.shared.extensions.toIso8601String
 import org.readium.r2.shared.extensions.tryOrNull
+import org.readium.r2.shared.util.Instant
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.getOrThrow
@@ -144,10 +143,10 @@ internal class License private constructor(
     override val canRenewLoan: Boolean
         get() = status?.link(StatusDocument.Rel.Renew) != null
 
-    override val maxRenewDate: Date?
+    override val maxRenewDate: Instant?
         get() = status?.potentialRights?.end
 
-    override suspend fun renewLoan(listener: LcpLicense.RenewListener, prefersWebPage: Boolean): Try<Date?, LcpError> {
+    override suspend fun renewLoan(listener: LcpLicense.RenewListener, prefersWebPage: Boolean): Try<Instant?, LcpError> {
         // Finds the renew link according to `prefersWebPage`.
         fun findRenewLink(): Link? {
             val status = documents.status ?: return null
@@ -179,7 +178,7 @@ internal class License private constructor(
 
             val parameters = this.device.asQueryParameters.toMutableMap()
             if (endDate != null) {
-                parameters["end"] = endDate.toIso8601String()
+                parameters["end"] = endDate.toString()
             }
 
             val url = link.url(parameters = parameters)
