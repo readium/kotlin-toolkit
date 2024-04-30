@@ -27,9 +27,7 @@ import org.readium.r2.shared.util.checkSuccess
 import org.readium.r2.shared.util.file.FileResource
 import org.readium.r2.shared.util.format.Format
 import org.readium.r2.shared.util.format.FormatSpecification
-import org.readium.r2.shared.util.format.InformalComicSpecification
-import org.readium.r2.shared.util.format.JpegSpecification
-import org.readium.r2.shared.util.format.ZipSpecification
+import org.readium.r2.shared.util.format.Specification
 import org.readium.r2.shared.util.http.DefaultHttpClient
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.zip.ZipArchiveOpener
@@ -52,7 +50,7 @@ class ImageParserTest {
         val file = fileForResource("futuristic_tales.cbz")
         val resource = FileResource(file)
         val format = Format(
-            specification = FormatSpecification(ZipSpecification, InformalComicSpecification),
+            specification = FormatSpecification(Specification.Zip, Specification.InformalComic),
             mediaType = MediaType.CBZ,
             fileExtension = FileExtension("cbz")
         )
@@ -64,7 +62,7 @@ class ImageParserTest {
         val file = fileForResource("futuristic_tales.jpg")
         val resource = FileResource(file)
         val format = Format(
-            specification = FormatSpecification(JpegSpecification),
+            specification = FormatSpecification(Specification.Jpeg),
             mediaType = MediaType.JPEG,
             fileExtension = FileExtension("jpg")
         )

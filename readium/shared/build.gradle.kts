@@ -17,9 +17,9 @@ dependencies {
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.browser)
     implementation(libs.timber)
-    implementation(libs.joda.time)
     implementation(libs.kotlin.reflect)
     implementation(libs.kotlinx.coroutines.android)
+    implementation(libs.kotlinx.datetime)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.jsoup)
 

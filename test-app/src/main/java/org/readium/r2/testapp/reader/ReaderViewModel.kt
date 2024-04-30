@@ -102,7 +102,10 @@ class ReaderViewModel(
         readerInitData = readerInitData
     )
 
-    fun close() {
+    override fun onCleared() {
+        // When the ReaderViewModel is disposed of, we want to close the publication to avoid
+        // using outdated information (such as the initial location) if the `ReaderActivity` is
+        // opened again with the same book.
         readerRepository.close(bookId)
     }
 

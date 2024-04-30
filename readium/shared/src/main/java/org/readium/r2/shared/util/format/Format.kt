@@ -61,91 +61,93 @@ public value class FormatSpecification(public val specifications: Set<Specificat
         specifications.containsAll(other.specifications)
 }
 
-public interface Specification
+public interface Specification {
 
-/*
- * Archive specifications
- */
-public object ZipSpecification : Specification
-public object RarSpecification : Specification
+    public companion object {}
 
-/*
- * Syntax specifications
- */
-public object JsonSpecification : Specification
-public object XmlSpecification : Specification
+    /*
+     * Archive specifications
+     */
+    public object Zip : Specification
+    public object Rar : Specification
 
-/*
- * Publication manifest specifications
- */
-public object W3cPubManifestSpecification : Specification
-public object RwpmSpecification : Specification
+    /*
+     * Syntax specifications
+     */
+    public object Json : Specification
+    public object Xml : Specification
 
-/*
- * Technical document specifications
- */
-public object ProblemDetailsSpecification : Specification
-public object LcpLicenseSpecification : Specification
+    /*
+     * Publication manifest specifications
+     */
+    public object W3cPubManifest : Specification
+    public object Rwpm : Specification
 
-/*
- * Media format specifications
- */
-public object PdfSpecification : Specification
-public object HtmlSpecification : Specification
+    /*
+     * Technical document specifications
+     */
+    public object ProblemDetails : Specification
+    public object LcpLicense : Specification
 
-/*
- * Drm specifications
- */
-public object LcpSpecification : Specification
-public object AdeptSpecification : Specification
+    /*
+     * Media format specifications
+     */
+    public object Pdf : Specification
+    public object Html : Specification
 
-/*
- * Bitmap specifications
- */
-public object AvifSpecification : Specification
-public object BmpSpecification : Specification
-public object GifSpecification : Specification
-public object JpegSpecification : Specification
-public object JxlSpecification : Specification
-public object PngSpecification : Specification
-public object TiffSpecification : Specification
-public object WebpSpecification : Specification
+    /*
+     * Drm specifications
+     */
+    public object Lcp : Specification
+    public object Adept : Specification
 
-/*
- * Audio specifications
- */
-public object AacSpecification : Specification
-public object AiffSpecification : Specification
-public object FlacSpecification : Specification
-public object Mp4Specification : Specification
-public object Mp3Specification : Specification
-public object OggSpecification : Specification
-public object OpusSpecification : Specification
-public object WavSpecification : Specification
-public object WebmSpecification : Specification
+    /*
+     * Bitmap specifications
+     */
+    public object Avif : Specification
+    public object Bmp : Specification
+    public object Gif : Specification
+    public object Jpeg : Specification
+    public object Jxl : Specification
+    public object Png : Specification
+    public object Tiff : Specification
+    public object Webp : Specification
 
-/*
- * Publication package specifications
- */
-public object EpubSpecification : Specification
-public object RpfSpecification : Specification
-public object LpfSpecification : Specification
-public object InformalAudiobookSpecification : Specification
-public object InformalComicSpecification : Specification
+    /*
+     * Audio specifications
+     */
+    public object Aac : Specification
+    public object Aiff : Specification
+    public object Flac : Specification
+    public object Mp4 : Specification
+    public object Mp3 : Specification
+    public object Ogg : Specification
+    public object Opus : Specification
+    public object Wav : Specification
+    public object Webm : Specification
 
-/*
- * Opds specifications
- */
-public object Opds1CatalogSpecification : Specification
-public object Opds1EntrySpecification : Specification
-public object Opds2CatalogSpecification : Specification
-public object Opds2PublicationSpecification : Specification
-public object OpdsAuthenticationSpecification : Specification
+    /*
+     * Publication package specifications
+     */
+    public object Epub : Specification
+    public object Rpf : Specification
+    public object Lpf : Specification
+    public object InformalAudiobook : Specification
+    public object InformalComic : Specification
 
-/*
- * Language specifications
- */
+    /*
+     * Opds specifications
+     */
+    public object Opds1Catalog : Specification
+    public object Opds1Entry : Specification
+    public object Opds2Catalog : Specification
+    public object Opds2Publication : Specification
+    public object OpdsAuthentication : Specification
 
-public object JavaScriptSpecification : Specification
+    /*
+     * Language specifications
+     */
 
-public object CssSpecification : Specification
+    public object JavaScript : Specification
+    public object Css : Specification
+}

@@ -21,17 +21,8 @@ import org.readium.r2.shared.util.asset.ContainerAsset
 import org.readium.r2.shared.util.asset.ResourceAsset
 import org.readium.r2.shared.util.data.Container
 import org.readium.r2.shared.util.data.ReadError
-import org.readium.r2.shared.util.format.AvifSpecification
-import org.readium.r2.shared.util.format.BmpSpecification
 import org.readium.r2.shared.util.format.Format
-import org.readium.r2.shared.util.format.GifSpecification
-import org.readium.r2.shared.util.format.InformalComicSpecification
-import org.readium.r2.shared.util.format.JpegSpecification
-import org.readium.r2.shared.util.format.JxlSpecification
-import org.readium.r2.shared.util.format.PngSpecification
 import org.readium.r2.shared.util.format.Specification
-import org.readium.r2.shared.util.format.TiffSpecification
-import org.readium.r2.shared.util.format.WebpSpecification
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.mediatype.MediaType
@@ -80,7 +71,7 @@ public class ImageParser(
     private suspend fun parseContainerAsset(
         asset: ContainerAsset
     ): Try<Publication.Builder, PublicationParser.ParseError> {
-        if (!asset.format.conformsTo(InformalComicSpecification)) {
+        if (!asset.format.conformsTo(Specification.InformalComic)) {
             return Try.failure(PublicationParser.ParseError.FormatNotSupported())
         }
 
@@ -147,13 +138,13 @@ public class ImageParser(
 
     private val bitmapSpecifications: Set<Specification> =
         setOf(
-            AvifSpecification,
-            BmpSpecification,
-            GifSpecification,
-            JpegSpecification,
-            JxlSpecification,
-            PngSpecification,
-            TiffSpecification,
-            WebpSpecification
+            Specification.Avif,
+            Specification.Bmp,
+            Specification.Gif,
+            Specification.Jpeg,
+            Specification.Jxl,
+            Specification.Png,
+            Specification.Tiff,
+            Specification.Webp
         )
 }

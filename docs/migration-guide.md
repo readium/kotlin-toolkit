@@ -2,6 +2,13 @@
 
 All migration steps necessary in reading apps to upgrade to major versions of the Kotlin Readium toolkit will be documented in this file.
 
+## Unreleased
+
+### Core library desugaring
+
+If you target Android devices running below API 26, you now must enable [core library desugaring](https://developer.android.com/studio/write/java8-support#library-desugaring) in your application module.
+
+
 ## 3.0.0-alpha.2
 
 ### Deprecation of `DownloadManager`

@@ -74,14 +74,14 @@ class AvailabilityTest {
             JSONObject(
                 """{
                 'state': 'available',
-                'since': '2001-02-01T13:36:27.000Z',
-                'until': '2001-02-01T13:36:27.000Z'
+                'since': '2001-02-01T13:36:27Z',
+                'until': '2001-02-01T13:36:27Z'
             }"""
             ),
             Availability(
                 state = Availability.State.AVAILABLE,
-                since = "2001-02-01T13:36:27.000Z".iso8601ToDate(),
-                until = "2001-02-01T13:36:27.000Z".iso8601ToDate()
+                since = "2001-02-01T13:36:27Z".iso8601ToDate(),
+                until = "2001-02-01T13:36:27Z".iso8601ToDate()
             ).toJSON()
         )
     }

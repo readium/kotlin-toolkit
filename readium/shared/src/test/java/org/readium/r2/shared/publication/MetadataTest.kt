@@ -218,8 +218,8 @@ class MetadataTest {
                 ],
                 "title": {"en": "Title", "fr": "Titre"},
                 "subtitle": {"en": "Subtitle", "fr": "Sous-titre"},
-                "modified": "2001-01-01T12:36:27.000Z",
-                "published": "2001-01-02T12:36:27.000Z",
+                "modified": "2001-01-01T12:36:27Z",
+                "published": "2001-01-02T12:36:27Z",
                 "accessibility": {
                     "conformsTo": ["http://www.idpf.org/epub/a11y/accessibility-20170105.html#wcag-a"],
                     "accessMode": ["textual"],

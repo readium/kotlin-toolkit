@@ -22,7 +22,7 @@ import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.file.FileSystemError
 import org.readium.r2.shared.util.format.Format
 import org.readium.r2.shared.util.format.FormatHints
-import org.readium.r2.shared.util.format.LcpLicenseSpecification
+import org.readium.r2.shared.util.format.Specification
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.http.HttpClient
 import org.readium.r2.shared.util.http.HttpRequest
@@ -196,7 +196,7 @@ private class LocalPublicationRetriever(
 
         if (
             sourceAsset is ResourceAsset &&
-            sourceAsset.format.conformsTo(LcpLicenseSpecification)
+            sourceAsset.format.conformsTo(Specification.LcpLicense)
         ) {
             return if (lcpService == null) {
                 sourceAsset.close()

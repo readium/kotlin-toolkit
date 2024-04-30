@@ -11,6 +11,8 @@ package org.readium.r2.shared.publication.services
 
 import android.graphics.Bitmap
 import android.util.Size
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.readium.r2.shared.extensions.scaleToFit
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
@@ -76,15 +78,16 @@ internal class ResourceCoverService(
     private val container: Container<Resource>
 ) : CoverService {
 
-    override suspend fun cover(): Bitmap? {
-        val resource = container[coverUrl]
-            ?: return null
+    override suspend fun cover(): Bitmap? =
+        withContext(Dispatchers.IO) {
+            val resource = container[coverUrl]
+                ?: return@withContext null
 
-        return resource
-            .read()
-            .flatMap { it.decodeBitmap() }
-            .getOrNull()
-    }
+            return@withContext resource
+                .read()
+                .flatMap { it.decodeBitmap() }
+                .getOrNull()
+        }
 
     companion object {
 
