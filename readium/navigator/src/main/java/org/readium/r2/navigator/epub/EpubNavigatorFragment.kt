@@ -267,13 +267,13 @@ public class EpubNavigatorFragment internal constructor(
 
     private sealed class State {
         /** The navigator just started and didn't load any resource yet. */
-        object Initializing : State()
+        data object Initializing : State()
 
-        /** The navigator is jumping to the resource at `locator`. */
-        data class Loading(val locator: Locator) : State()
+        /** The navigator is loading the first resource at `initialResourceHref`. */
+        data class Loading(val initialResourceHref: Url) : State()
 
-        /** The navigator is idle and ready for interactions. */
-        object Ready : State()
+        /** The navigator is fully initialized and ready for action. */
+        data object Ready : State()
     }
 
     private var state: State = State.Initializing
@@ -608,7 +608,9 @@ public class EpubNavigatorFragment internal constructor(
         @Suppress("NAME_SHADOWING")
         val locator = publication.normalizeLocator(locator)
 
-        state = State.Loading(locator)
+        if (state == State.Initializing) {
+            state = State.Loading(locator.href)
+        }
 
         listener?.onJumpToLocator(locator)
 
@@ -781,7 +783,8 @@ public class EpubNavigatorFragment internal constructor(
         override fun onPageLoaded(webView: R2BasicWebView, link: Link) {
             paginationListener?.onPageLoaded()
 
-            if (state is State.Initializing || (state as? State.Loading)?.locator?.href == link.url()) {
+            val href = link.url()
+            if (state is State.Initializing || (state as? State.Loading)?.initialResourceHref == href) {
                 state = State.Ready
             }
 

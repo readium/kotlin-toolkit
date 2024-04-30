@@ -47,12 +47,26 @@ public class PsPdfKitDocumentFactory(context: Context) : PdfDocumentFactory<PsPd
             } catch (e: InvalidSignatureException) {
                 Try.failure(ReadError.Decoding(ThrowableError(e)))
             } catch (e: IOException) {
-                Try.failure(
-                    dataProvider.error
-                        ?: ReadError.UnsupportedOperation(ThrowableError(IllegalStateException(e)))
-                )
+                // For debugging purpose
+                dataProvider.error?.unwrapDebugException()
+                    ?.let { throw it }
+
+                dataProvider.error
+                    ?.let { Try.failure(it) }
+                    ?: throw IllegalStateException(e)
             }
         }
+
+    private fun ReadError.unwrapDebugException(): Throwable? {
+        if (this !is ReadError.UnsupportedOperation) {
+            return null
+        }
+
+        val throwableCause = (cause as? ThrowableError<*>)
+            ?: return null
+
+        return throwableCause.throwable as? IllegalStateException
+    }
 }
 
 public class PsPdfKitDocument(

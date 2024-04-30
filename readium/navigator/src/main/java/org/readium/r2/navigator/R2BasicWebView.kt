@@ -186,6 +186,13 @@ internal open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebV
     }
 
     override fun onOverScrolled(scrollX: Int, scrollY: Int, clampedX: Boolean, clampedY: Boolean) {
+        // Workaround addressing a bug in the Android WebView where the viewport is scrolled while
+        // dragging the text selection handles.
+        // See https://github.com/readium/kotlin-toolkit/issues/325
+        if (isSelecting) {
+            return
+        }
+
         if (callback != null) {
             callback?.onOverScrolled(scrollX, scrollY, clampedX, clampedY)
         }
@@ -287,7 +294,7 @@ internal open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebV
         // We ignore taps on interactive element, unless it's an element we handle ourselves such as
         // pop-up footnotes.
         if (event.interactiveElement != null) {
-            return handleFootnote(event.targetElement)
+            return handleFootnote(event.interactiveElement)
         }
 
         return runBlocking(uiScope.coroutineContext) { listener?.onTap(event.point) ?: false }
