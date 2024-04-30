@@ -304,19 +304,21 @@ window.addEventListener(
     const body = document.body;
     var lastSize = { width: 0, height: 0 };
     const observer = new ResizeObserver(() => {
-      if (
-        lastSize.width === body.clientWidth &&
-        lastSize.height === body.clientHeight
-      ) {
-        return;
-      }
-      lastSize = {
-        width: body.clientWidth,
-        height: body.clientHeight,
-      };
+      requestAnimationFrame(() => {
+        if (
+          lastSize.width === body.clientWidth &&
+          lastSize.height === body.clientHeight
+        ) {
+          return;
+        }
+        lastSize = {
+          width: body.clientWidth,
+          height: body.clientHeight,
+        };
 
-      groups.forEach(function (group) {
-        group.requestLayout();
+        groups.forEach(function (group) {
+          group.requestLayout();
+        });
       });
     });
     observer.observe(body);

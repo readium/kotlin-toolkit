@@ -12,6 +12,12 @@ All notable changes to this project will be documented in this file. Take a look
 
 * All the `completion` parameters of the `Navigator` APIs are removed.
 
+### Fixed
+
+#### Navigator
+
+* [#325](https://github.com/readium/kotlin-toolkit/issues/325) Top EPUB selections no longer break when dragging the selection handles.
+
 
 ## [3.0.0-alpha.2]
 

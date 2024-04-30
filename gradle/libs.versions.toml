@@ -2,6 +2,7 @@
 
 kotlin = "1.9.22"
 agp = "8.2.2"
+desugar_jdk_libs = "2.0.4"
 gradle-maven-publish-plugin = "0.27.0"
 
 accompanist = "0.34.0"
@@ -46,11 +47,7 @@ google-exoplayer = "2.19.1"
 google-material = "1.11.0"
 
 joda-time = "2.12.6"
-# Jsoup 1.16.2 requires core library desugaring, otherwise it crashes on Android 7 devices when
-# opening the EPUB navigator.
-# Before enabling desugaring, we need to assess its impact on the toolkit.
-# See https://github.com/jhy/jsoup/issues/2022#issuecomment-1783931119
-jsoup = "1.16.1"
+jsoup = "1.17.2"
 junit = "4.13.2"
 
 kotlinx-coroutines = "1.7.3"
@@ -123,6 +120,7 @@ androidx-webkit = { group = "androidx.webkit", name = "webkit", version.ref = "a
 
 assertj = { group = "org.assertj", name = "assertj-core", version.ref = "assertj" }
 
+desugar_jdk_libs = { module = "com.android.tools:desugar_jdk_libs", version.ref = "desugar_jdk_libs" }
 google-exoplayer-core = { group = "com.google.android.exoplayer", name = "exoplayer-core", version.ref = "google-exoplayer" }
 google-exoplayer-extension-media2 = { group = "com.google.android.exoplayer", name = "extension-media2", version.ref = "google-exoplayer" }
 google-exoplayer-mediasession = { group = "com.google.android.exoplayer", name = "extension-mediasession", version.ref = "google-exoplayer" }
