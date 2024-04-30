@@ -18,40 +18,10 @@ import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.checkSuccess
 import org.readium.r2.shared.util.data.EmptyContainer
 import org.readium.r2.shared.util.file.FileResource
-import org.readium.r2.shared.util.format.AvifSpecification
-import org.readium.r2.shared.util.format.BmpSpecification
-import org.readium.r2.shared.util.format.CssSpecification
-import org.readium.r2.shared.util.format.EpubSpecification
 import org.readium.r2.shared.util.format.Format
 import org.readium.r2.shared.util.format.FormatHints
 import org.readium.r2.shared.util.format.FormatSpecification
-import org.readium.r2.shared.util.format.GifSpecification
-import org.readium.r2.shared.util.format.HtmlSpecification
-import org.readium.r2.shared.util.format.InformalAudiobookSpecification
-import org.readium.r2.shared.util.format.InformalComicSpecification
-import org.readium.r2.shared.util.format.JavaScriptSpecification
-import org.readium.r2.shared.util.format.JpegSpecification
-import org.readium.r2.shared.util.format.JsonSpecification
-import org.readium.r2.shared.util.format.JxlSpecification
-import org.readium.r2.shared.util.format.LcpLicenseSpecification
-import org.readium.r2.shared.util.format.LcpSpecification
-import org.readium.r2.shared.util.format.LpfSpecification
-import org.readium.r2.shared.util.format.Opds1CatalogSpecification
-import org.readium.r2.shared.util.format.Opds1EntrySpecification
-import org.readium.r2.shared.util.format.Opds2CatalogSpecification
-import org.readium.r2.shared.util.format.Opds2PublicationSpecification
-import org.readium.r2.shared.util.format.OpdsAuthenticationSpecification
-import org.readium.r2.shared.util.format.PdfSpecification
-import org.readium.r2.shared.util.format.PngSpecification
-import org.readium.r2.shared.util.format.ProblemDetailsSpecification
-import org.readium.r2.shared.util.format.RarSpecification
-import org.readium.r2.shared.util.format.RpfSpecification
-import org.readium.r2.shared.util.format.RwpmSpecification
-import org.readium.r2.shared.util.format.TiffSpecification
-import org.readium.r2.shared.util.format.W3cPubManifestSpecification
-import org.readium.r2.shared.util.format.WebpSpecification
-import org.readium.r2.shared.util.format.XmlSpecification
-import org.readium.r2.shared.util.format.ZipSpecification
+import org.readium.r2.shared.util.format.Specification
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.shared.util.resource.StringResource
@@ -83,21 +53,21 @@ class AssetSnifferTest {
 
     private val epubFormat =
         Format(
-            specification = FormatSpecification(ZipSpecification, EpubSpecification),
+            specification = FormatSpecification(Specification.Zip, Specification.Epub),
             mediaType = MediaType.EPUB,
             fileExtension = FileExtension("epub")
         )
 
     private val audiobookFormat =
         Format(
-            specification = FormatSpecification(ZipSpecification, RpfSpecification),
+            specification = FormatSpecification(Specification.Zip, Specification.Rpf),
             mediaType = MediaType.READIUM_AUDIOBOOK,
             fileExtension = FileExtension("audiobook")
         )
 
     private val audiobookManifestFormat =
         Format(
-            specification = FormatSpecification(JsonSpecification, RwpmSpecification),
+            specification = FormatSpecification(Specification.Json, Specification.Rwpm),
             mediaType = MediaType.READIUM_AUDIOBOOK_MANIFEST,
             fileExtension = FileExtension("json")
         )
@@ -210,7 +180,7 @@ class AssetSnifferTest {
     @Test
     fun `sniff BMP`() = runBlocking {
         val format = Format(
-            specification = FormatSpecification(BmpSpecification),
+            specification = FormatSpecification(Specification.Bmp),
             mediaType = MediaType.BMP,
             fileExtension = FileExtension("bmp")
         )
@@ -224,13 +194,13 @@ class AssetSnifferTest {
     @Test
     fun `sniff CBZ`() = runBlocking {
         val cbzFormat = Format(
-            specification = FormatSpecification(ZipSpecification, InformalComicSpecification),
+            specification = FormatSpecification(Specification.Zip, Specification.InformalComic),
             mediaType = MediaType.CBZ,
             fileExtension = FileExtension("cbz")
         )
 
         val cbrFormat = Format(
-            specification = FormatSpecification(RarSpecification, InformalComicSpecification),
+            specification = FormatSpecification(Specification.Rar, Specification.InformalComic),
             mediaType = MediaType.CBR,
             fileExtension = FileExtension("cbr")
         )
@@ -260,7 +230,7 @@ class AssetSnifferTest {
     @Test
     fun `sniff DiViNa`() = runBlocking {
         val format = Format(
-            specification = FormatSpecification(ZipSpecification, RpfSpecification),
+            specification = FormatSpecification(Specification.Zip, Specification.Rpf),
             mediaType = MediaType.DIVINA,
             fileExtension = FileExtension("divina")
         )
@@ -282,7 +252,7 @@ class AssetSnifferTest {
     @Test
     fun `sniff DiViNa manifest`() = runBlocking {
         val format = Format(
-            specification = FormatSpecification(JsonSpecification, RwpmSpecification),
+            specification = FormatSpecification(Specification.Json, Specification.Rwpm),
             mediaType = MediaType.DIVINA_MANIFEST,
             fileExtension = FileExtension("json")
         )
@@ -316,7 +286,7 @@ class AssetSnifferTest {
     @Test
     fun `sniff AVIF`() = runBlocking {
         val format = Format(
-            specification = FormatSpecification(AvifSpecification),
+            specification = FormatSpecification(Specification.Avif),
             mediaType = MediaType.AVIF,
             fileExtension = FileExtension("avif")
         )
@@ -328,7 +298,7 @@ class AssetSnifferTest {
     @Test
     fun `sniff GIF`() = runBlocking {
         val format = Format(
-            specification = FormatSpecification(GifSpecification),
+            specification = FormatSpecification(Specification.Gif),
             mediaType = MediaType.GIF,
             fileExtension = FileExtension("gif")
         )
@@ -340,7 +310,7 @@ class AssetSnifferTest {
     @Test
     fun `sniff HTML`() = runBlocking {
         val format = Format(
-            specification = FormatSpecification(HtmlSpecification),
+            specification = FormatSpecification(Specification.Html),
             mediaType = MediaType.HTML,
             fileExtension = FileExtension("html")
         )
@@ -369,7 +339,7 @@ class AssetSnifferTest {
     @Test
     fun `sniff XHTML`() = runBlocking {
         val format = Format(
-            specification = FormatSpecification(XmlSpecification, HtmlSpecification),
+            specification = FormatSpecification(Specification.Xml, Specification.Html),
             mediaType = MediaType.XHTML,
             fileExtension = FileExtension("xhtml")
         )
@@ -395,7 +365,7 @@ class AssetSnifferTest {
     @Test
     fun `sniff JPEG`() = runBlocking {
         val format = Format(
-            specification = FormatSpecification(JpegSpecification),
+            specification = FormatSpecification(Specification.Jpeg),
             mediaType = MediaType.JPEG,
             fileExtension = FileExtension("jpg")
         )
@@ -412,7 +382,7 @@ class AssetSnifferTest {
     @Test
     fun `sniff JXL`() = runBlocking {
         val format = Format(
-            specification = FormatSpecification(JxlSpecification),
+            specification = FormatSpecification(Specification.Jxl),
             mediaType = MediaType.JXL,
             fileExtension = FileExtension("jxl")
         )
@@ -424,7 +394,7 @@ class AssetSnifferTest {
     @Test
     fun `sniff RAR`() = runBlocking {
         val format = Format(
-            specification = FormatSpecification(RarSpecification),
+            specification = FormatSpecification(Specification.Rar),
             mediaType = MediaType.RAR,
             fileExtension = FileExtension("rar")
         )
@@ -450,7 +420,7 @@ class AssetSnifferTest {
     @Test
     fun `sniff OPDS 1 feed`() = runBlocking {
         val format = Format(
-            specification = FormatSpecification(XmlSpecification, Opds1CatalogSpecification),
+            specification = FormatSpecification(Specification.Xml, Specification.Opds1Catalog),
             mediaType = MediaType.OPDS1,
             fileExtension = FileExtension("xml")
         )
@@ -476,7 +446,7 @@ class AssetSnifferTest {
     @Test
     fun `sniff OPDS 1 entry`() = runBlocking {
         val format = Format(
-            specification = FormatSpecification(XmlSpecification, Opds1EntrySpecification),
+            specification = FormatSpecification(Specification.Xml, Specification.Opds1Entry),
             mediaType = MediaType.OPDS1_ENTRY,
             fileExtension = FileExtension("xml")
         )
@@ -494,7 +464,7 @@ class AssetSnifferTest {
     @Test
     fun `sniff OPDS 2 feed`() = runBlocking {
         val format = Format(
-            specification = FormatSpecification(JsonSpecification, Opds2CatalogSpecification),
+            specification = FormatSpecification(Specification.Json, Specification.Opds2Catalog),
             mediaType = MediaType.OPDS2,
             fileExtension = FileExtension("json")
         )
@@ -512,7 +482,7 @@ class AssetSnifferTest {
     @Test
     fun `sniff OPDS 2 publication`() = runBlocking {
         val format = Format(
-            specification = FormatSpecification(JsonSpecification, Opds2PublicationSpecification),
+            specification = FormatSpecification(Specification.Json, Specification.Opds2Publication),
             mediaType = MediaType.OPDS2_PUBLICATION,
             fileExtension = FileExtension("json")
         )
@@ -530,7 +500,10 @@ class AssetSnifferTest {
     @Test
     fun `sniff OPDS authentication document`() = runBlocking {
         val format = Format(
-            specification = FormatSpecification(JsonSpecification, OpdsAuthenticationSpecification),
+            specification = FormatSpecification(
+                Specification.Json,
+                Specification.OpdsAuthentication
+            ),
             mediaType = MediaType.OPDS_AUTHENTICATION,
             fileExtension = FileExtension("json")
         )
@@ -553,9 +526,9 @@ class AssetSnifferTest {
     fun `sniff LCP protected audiobook`() = runBlocking {
         val format = Format(
             specification = FormatSpecification(
-                ZipSpecification,
-                RpfSpecification,
-                LcpSpecification
+                Specification.Zip,
+                Specification.Rpf,
+                Specification.Lcp
             ),
             mediaType = MediaType.LCP_PROTECTED_AUDIOBOOK,
             fileExtension = FileExtension("lcpa")
@@ -579,9 +552,9 @@ class AssetSnifferTest {
     fun `sniff LCP protected PDF`() = runBlocking {
         val format = Format(
             specification = FormatSpecification(
-                ZipSpecification,
-                RpfSpecification,
-                LcpSpecification
+                Specification.Zip,
+                Specification.Rpf,
+                Specification.Lcp
             ),
             mediaType = MediaType.LCP_PROTECTED_PDF,
             fileExtension = FileExtension("lcpdf")
@@ -604,7 +577,7 @@ class AssetSnifferTest {
     @Test
     fun `sniff LCP license document`() = runBlocking {
         val format = Format(
-            specification = FormatSpecification(JsonSpecification, LcpLicenseSpecification),
+            specification = FormatSpecification(Specification.Json, Specification.LcpLicense),
             mediaType = MediaType.LCP_LICENSE_DOCUMENT,
             fileExtension = FileExtension("lcpl")
         )
@@ -626,7 +599,7 @@ class AssetSnifferTest {
     @Test
     fun `sniff LPF`() = runBlocking {
         val format = Format(
-            specification = FormatSpecification(ZipSpecification, LpfSpecification),
+            specification = FormatSpecification(Specification.Zip, Specification.Lpf),
             mediaType = MediaType.LPF,
             fileExtension = FileExtension("lpf")
         )
@@ -652,7 +625,7 @@ class AssetSnifferTest {
     @Test
     fun `sniff PDF`() = runBlocking {
         val format = Format(
-            specification = FormatSpecification(PdfSpecification),
+            specification = FormatSpecification(Specification.Pdf),
             mediaType = MediaType.PDF,
             fileExtension = FileExtension("pdf")
         )
@@ -674,7 +647,7 @@ class AssetSnifferTest {
     @Test
     fun `sniff PNG`() = runBlocking {
         val format = Format(
-            specification = FormatSpecification(PngSpecification),
+            specification = FormatSpecification(Specification.Png),
             mediaType = MediaType.PNG,
             fileExtension = FileExtension("png")
         )
@@ -686,7 +659,7 @@ class AssetSnifferTest {
     @Test
     fun `sniff TIFF`() = runBlocking {
         val format = Format(
-            specification = FormatSpecification(TiffSpecification),
+            specification = FormatSpecification(Specification.Tiff),
             mediaType = MediaType.TIFF,
             fileExtension = FileExtension("tiff")
         )
@@ -703,7 +676,7 @@ class AssetSnifferTest {
     @Test
     fun `sniff WebP`() = runBlocking {
         val format = Format(
-            specification = FormatSpecification(WebpSpecification),
+            specification = FormatSpecification(Specification.Webp),
             mediaType = MediaType.WEBP,
             fileExtension = FileExtension("webp")
         )
@@ -715,7 +688,7 @@ class AssetSnifferTest {
     @Test
     fun `sniff WebPub`() = runBlocking {
         val format = Format(
-            specification = FormatSpecification(ZipSpecification, RpfSpecification),
+            specification = FormatSpecification(Specification.Zip, Specification.Rpf),
             mediaType = MediaType.READIUM_WEBPUB,
             fileExtension = FileExtension("webpub")
         )
@@ -738,9 +711,9 @@ class AssetSnifferTest {
     fun `Sniff LCP protected Readium package`() = runBlocking {
         val format = Format(
             specification = FormatSpecification(
-                ZipSpecification,
-                RpfSpecification,
-                LcpSpecification
+                Specification.Zip,
+                Specification.Rpf,
+                Specification.Lcp
             ),
             mediaType = MediaType.READIUM_WEBPUB,
             fileExtension = FileExtension("webpub")
@@ -755,7 +728,7 @@ class AssetSnifferTest {
     @Test
     fun `sniff WebPub manifest`() = runBlocking {
         val format = Format(
-            specification = FormatSpecification(JsonSpecification, RwpmSpecification),
+            specification = FormatSpecification(Specification.Json, Specification.Rwpm),
             mediaType = MediaType.READIUM_WEBPUB_MANIFEST,
             fileExtension = FileExtension("json")
         )
@@ -773,7 +746,7 @@ class AssetSnifferTest {
     @Test
     fun `sniff W3C WPUB manifest`() = runBlocking {
         val format = Format(
-            specification = FormatSpecification(JsonSpecification, W3cPubManifestSpecification),
+            specification = FormatSpecification(Specification.Json, Specification.W3cPubManifest),
             mediaType = MediaType.W3C_WPUB_MANIFEST,
             fileExtension = FileExtension("json")
         )
@@ -787,7 +760,7 @@ class AssetSnifferTest {
     @Test
     fun `sniff ZAB`() = runBlocking {
         val format = Format(
-            specification = FormatSpecification(ZipSpecification, InformalAudiobookSpecification),
+            specification = FormatSpecification(Specification.Zip, Specification.InformalAudiobook),
             mediaType = MediaType.ZAB,
             fileExtension = FileExtension("zab")
         )
@@ -805,7 +778,7 @@ class AssetSnifferTest {
     @Test
     fun `sniff JSON`() = runBlocking {
         val format = Format(
-            specification = FormatSpecification(JsonSpecification),
+            specification = FormatSpecification(Specification.Json),
             mediaType = MediaType.JSON,
             fileExtension = FileExtension("json")
         )
@@ -819,7 +792,7 @@ class AssetSnifferTest {
     @Test
     fun `sniff JSON problem details`() = runBlocking {
         val format = Format(
-            specification = FormatSpecification(JsonSpecification, ProblemDetailsSpecification),
+            specification = FormatSpecification(Specification.Json, Specification.ProblemDetails),
             mediaType = MediaType.JSON_PROBLEM_DETAILS,
             fileExtension = FileExtension("json")
         )
@@ -844,7 +817,7 @@ class AssetSnifferTest {
     }
 
     private val cssFormat = Format(
-        specification = FormatSpecification(CssSpecification),
+        specification = FormatSpecification(Specification.Css),
         mediaType = MediaType.CSS,
         fileExtension = FileExtension("css")
     )
@@ -862,7 +835,7 @@ class AssetSnifferTest {
     }
 
     private val jsFormat = Format(
-        specification = FormatSpecification(JavaScriptSpecification),
+        specification = FormatSpecification(Specification.JavaScript),
         mediaType = MediaType.JAVASCRIPT,
         fileExtension = FileExtension("js")
     )

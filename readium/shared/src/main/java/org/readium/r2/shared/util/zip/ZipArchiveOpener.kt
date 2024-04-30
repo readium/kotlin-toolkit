@@ -13,7 +13,7 @@ import org.readium.r2.shared.util.asset.ContainerAsset
 import org.readium.r2.shared.util.data.Readable
 import org.readium.r2.shared.util.format.Format
 import org.readium.r2.shared.util.format.FormatSpecification
-import org.readium.r2.shared.util.format.ZipSpecification
+import org.readium.r2.shared.util.format.Specification
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.resource.Resource
 
@@ -44,7 +44,7 @@ public class ZipArchiveOpener : ArchiveOpener {
         return container.map {
             ContainerAsset(
                 format = Format(
-                    specification = FormatSpecification(ZipSpecification),
+                    specification = FormatSpecification(Specification.Zip),
                     mediaType = MediaType.ZIP,
                     fileExtension = FileExtension("zip")
                 ),

@@ -54,7 +54,7 @@ public object HtmlSniffer : FormatSniffer {
         format: Format,
         source: Readable
     ): Try<Format, ReadError> {
-        if (format.hasMoreThan(XmlSpecification) || !source.canReadWholeBlob()) {
+        if (format.hasMoreThan(Specification.Xml) || !source.canReadWholeBlob()) {
             return Try.success(format)
         }
 
@@ -87,13 +87,13 @@ public object HtmlSniffer : FormatSniffer {
     }
 
     private val htmlFormat = Format(
-        specification = FormatSpecification(HtmlSpecification),
+        specification = FormatSpecification(Specification.Html),
         fileExtension = FileExtension("html"),
         mediaType = MediaType.HTML
     )
 
     private val xhtmlFormat = Format(
-        specification = FormatSpecification(XmlSpecification, HtmlSpecification),
+        specification = FormatSpecification(Specification.Xml, Specification.Html),
         fileExtension = FileExtension("xhtml"),
         mediaType = MediaType.XHTML
     )
@@ -126,7 +126,7 @@ public object Opds1Sniffer : FormatSniffer {
         format: Format,
         source: Readable
     ): Try<Format, ReadError> {
-        if (format.hasMoreThan(XmlSpecification) || !source.canReadWholeBlob()) {
+        if (format.hasMoreThan(Specification.Xml) || !source.canReadWholeBlob()) {
             return Try.success(format)
         }
 
@@ -148,25 +148,25 @@ public object Opds1Sniffer : FormatSniffer {
     }
 
     private val opds1CatalogFormat = Format(
-        specification = FormatSpecification(XmlSpecification, Opds1CatalogSpecification),
+        specification = FormatSpecification(Specification.Xml, Specification.Opds1Catalog),
         mediaType = MediaType.OPDS1,
         fileExtension = FileExtension("xml")
     )
 
     private val opds1NavigationFeedFormat = Format(
-        specification = FormatSpecification(XmlSpecification, Opds1CatalogSpecification),
+        specification = FormatSpecification(Specification.Xml, Specification.Opds1Catalog),
         mediaType = MediaType.OPDS1_NAVIGATION_FEED,
         fileExtension = FileExtension("xml")
     )
 
     private val opds1AcquisitionFeedFormat = Format(
-        specification = FormatSpecification(XmlSpecification, Opds1CatalogSpecification),
+        specification = FormatSpecification(Specification.Xml, Specification.Opds1Catalog),
         mediaType = MediaType.OPDS1_ACQUISITION_FEED,
         fileExtension = FileExtension("xml")
     )
 
     private val opds1EntryFormat = Format(
-        specification = FormatSpecification(XmlSpecification, Opds1EntrySpecification),
+        specification = FormatSpecification(Specification.Xml, Specification.Opds1Entry),
         mediaType = MediaType.OPDS1_ENTRY,
         fileExtension = FileExtension("xml")
     )
@@ -201,7 +201,7 @@ public object Opds2Sniffer : FormatSniffer {
         format: Format,
         source: Readable
     ): Try<Format, ReadError> {
-        if (format.hasMoreThan(JsonSpecification) || !source.canReadWholeBlob()) {
+        if (format.hasMoreThan(Specification.Json) || !source.canReadWholeBlob()) {
             return Try.success(format)
         }
 
@@ -243,19 +243,19 @@ public object Opds2Sniffer : FormatSniffer {
     }
 
     private val opdsAuthenticationFormat = Format(
-        specification = FormatSpecification(JsonSpecification, OpdsAuthenticationSpecification),
+        specification = FormatSpecification(Specification.Json, Specification.OpdsAuthentication),
         mediaType = MediaType.OPDS_AUTHENTICATION,
         fileExtension = FileExtension("json")
     )
 
     private val opds2CatalogFormat = Format(
-        specification = FormatSpecification(JsonSpecification, Opds2CatalogSpecification),
+        specification = FormatSpecification(Specification.Json, Specification.Opds2Catalog),
         mediaType = MediaType.OPDS2,
         fileExtension = FileExtension("json")
     )
 
     private val opds2PublicationFormat = Format(
-        specification = FormatSpecification(JsonSpecification, Opds2PublicationSpecification),
+        specification = FormatSpecification(Specification.Json, Specification.Opds2Publication),
         mediaType = MediaType.OPDS2_PUBLICATION,
         fileExtension = FileExtension("json")
     )
@@ -281,7 +281,7 @@ public object LcpLicenseSniffer : FormatSniffer {
         source: Readable
     ): Try<Format, ReadError> {
         if (
-            format.hasMoreThan(JsonSpecification) ||
+            format.hasMoreThan(Specification.Json) ||
             !source.canReadWholeBlob()
         ) {
             return Try.success(format)
@@ -296,7 +296,7 @@ public object LcpLicenseSniffer : FormatSniffer {
     }
 
     private val lcplFormat = Format(
-        specification = FormatSpecification(JsonSpecification, LcpLicenseSpecification),
+        specification = FormatSpecification(Specification.Json, Specification.LcpLicense),
         mediaType = MediaType.LCP_LICENSE_DOCUMENT,
         fileExtension = FileExtension("lcpl")
     )
@@ -313,7 +313,7 @@ public object BitmapSniffer : FormatSniffer {
             hints.hasMediaType("image/avif")
         ) {
             return Format(
-                specification = FormatSpecification(AvifSpecification),
+                specification = FormatSpecification(Specification.Avif),
                 mediaType = MediaType.AVIF,
                 fileExtension = FileExtension("avif")
             )
@@ -323,7 +323,7 @@ public object BitmapSniffer : FormatSniffer {
             hints.hasMediaType("image/bmp", "image/x-bmp")
         ) {
             return Format(
-                specification = FormatSpecification(BmpSpecification),
+                specification = FormatSpecification(Specification.Bmp),
                 mediaType = MediaType.BMP,
                 fileExtension = FileExtension("bmp")
             )
@@ -333,7 +333,7 @@ public object BitmapSniffer : FormatSniffer {
             hints.hasMediaType("image/gif")
         ) {
             return Format(
-                specification = FormatSpecification(GifSpecification),
+                specification = FormatSpecification(Specification.Gif),
                 mediaType = MediaType.GIF,
                 fileExtension = FileExtension("gif")
             )
@@ -343,7 +343,7 @@ public object BitmapSniffer : FormatSniffer {
             hints.hasMediaType("image/jpeg")
         ) {
             return Format(
-                specification = FormatSpecification(JpegSpecification),
+                specification = FormatSpecification(Specification.Jpeg),
                 mediaType = MediaType.JPEG,
                 fileExtension = FileExtension("jpg")
             )
@@ -353,7 +353,7 @@ public object BitmapSniffer : FormatSniffer {
             hints.hasMediaType("image/jxl")
         ) {
             return Format(
-                specification = FormatSpecification(JxlSpecification),
+                specification = FormatSpecification(Specification.Jxl),
                 mediaType = MediaType.JXL,
                 fileExtension = FileExtension("jxl")
             )
@@ -363,7 +363,7 @@ public object BitmapSniffer : FormatSniffer {
             hints.hasMediaType("image/png")
         ) {
             return Format(
-                specification = FormatSpecification(PngSpecification),
+                specification = FormatSpecification(Specification.Png),
                 mediaType = MediaType.PNG,
                 fileExtension = FileExtension("png")
             )
@@ -373,7 +373,7 @@ public object BitmapSniffer : FormatSniffer {
             hints.hasMediaType("image/tiff", "image/tiff-fx")
         ) {
             return Format(
-                specification = FormatSpecification(TiffSpecification),
+                specification = FormatSpecification(Specification.Tiff),
                 mediaType = MediaType.TIFF,
                 fileExtension = FileExtension("tiff")
             )
@@ -383,7 +383,7 @@ public object BitmapSniffer : FormatSniffer {
             hints.hasMediaType("image/webp")
         ) {
             return Format(
-                specification = FormatSpecification(WebpSpecification),
+                specification = FormatSpecification(Specification.Webp),
                 mediaType = MediaType.WEBP,
                 fileExtension = FileExtension("webp")
             )
@@ -400,7 +400,7 @@ public object AudioSniffer : FormatSniffer {
             hints.hasFileExtension("aac")
         ) {
             return Format(
-                specification = FormatSpecification(AacSpecification),
+                specification = FormatSpecification(Specification.Aac),
                 mediaType = MediaType.AAC,
                 fileExtension = FileExtension("aac")
             )
@@ -410,7 +410,7 @@ public object AudioSniffer : FormatSniffer {
             hints.hasFileExtension("aiff")
         ) {
             return Format(
-                specification = FormatSpecification(AiffSpecification),
+                specification = FormatSpecification(Specification.Aiff),
                 mediaType = MediaType.AIFF,
                 fileExtension = FileExtension("aiff")
             )
@@ -420,7 +420,7 @@ public object AudioSniffer : FormatSniffer {
             hints.hasFileExtension("flac")
         ) {
             return Format(
-                specification = FormatSpecification(FlacSpecification),
+                specification = FormatSpecification(Specification.Flac),
                 mediaType = MediaType.FLAC,
                 fileExtension = FileExtension("flac")
             )
@@ -430,7 +430,7 @@ public object AudioSniffer : FormatSniffer {
             hints.hasFileExtension("m4a", "m4b", "alac")
         ) {
             return Format(
-                specification = FormatSpecification(Mp4Specification),
+                specification = FormatSpecification(Specification.Mp4),
                 mediaType = MediaType.MP4,
                 fileExtension = FileExtension("m4a")
             )
@@ -440,7 +440,7 @@ public object AudioSniffer : FormatSniffer {
             hints.hasFileExtension("mp3")
         ) {
             return Format(
-                specification = FormatSpecification(Mp3Specification),
+                specification = FormatSpecification(Specification.Mp3),
                 mediaType = MediaType.MP3,
                 fileExtension = FileExtension("mp3")
             )
@@ -450,7 +450,7 @@ public object AudioSniffer : FormatSniffer {
             hints.hasFileExtension("ogg", "oga")
         ) {
             return Format(
-                specification = FormatSpecification(OggSpecification),
+                specification = FormatSpecification(Specification.Ogg),
                 mediaType = MediaType.OGG,
                 fileExtension = FileExtension("oga")
             )
@@ -460,7 +460,7 @@ public object AudioSniffer : FormatSniffer {
             hints.hasFileExtension("opus")
         ) {
             return Format(
-                specification = FormatSpecification(OpusSpecification),
+                specification = FormatSpecification(Specification.Opus),
                 mediaType = MediaType.OPUS,
                 fileExtension = FileExtension("opus")
             )
@@ -470,7 +470,7 @@ public object AudioSniffer : FormatSniffer {
             hints.hasFileExtension("wav")
         ) {
             return Format(
-                specification = FormatSpecification(WavSpecification),
+                specification = FormatSpecification(Specification.Wav),
                 mediaType = MediaType.WAV,
                 fileExtension = FileExtension("wav")
             )
@@ -480,7 +480,7 @@ public object AudioSniffer : FormatSniffer {
             hints.hasFileExtension("webm")
         ) {
             return Format(
-                specification = FormatSpecification(WebmSpecification),
+                specification = FormatSpecification(Specification.Webm),
                 mediaType = MediaType.WEBM_AUDIO,
                 fileExtension = FileExtension("webm")
             )
@@ -515,7 +515,7 @@ public object RwpmSniffer : FormatSniffer {
         source: Readable
     ): Try<Format, ReadError> {
         if (
-            format.hasMoreThan(JsonSpecification) ||
+            format.hasMoreThan(Specification.Json) ||
             !source.canReadWholeBlob()
         ) {
             return Try.success(format)
@@ -543,19 +543,19 @@ public object RwpmSniffer : FormatSniffer {
     }
 
     private val rwpmFormat = Format(
-        specification = FormatSpecification(JsonSpecification, RwpmSpecification),
+        specification = FormatSpecification(Specification.Json, Specification.Rwpm),
         mediaType = MediaType.READIUM_WEBPUB_MANIFEST,
         fileExtension = FileExtension("json")
     )
 
     private val rwpmAudioFormat = Format(
-        specification = FormatSpecification(JsonSpecification, RwpmSpecification),
+        specification = FormatSpecification(Specification.Json, Specification.Rwpm),
         mediaType = MediaType.READIUM_AUDIOBOOK_MANIFEST,
         fileExtension = FileExtension("json")
     )
 
     private val rwpmDivinaFormat = Format(
-        specification = FormatSpecification(JsonSpecification, RwpmSpecification),
+        specification = FormatSpecification(Specification.Json, Specification.Rwpm),
         mediaType = MediaType.DIVINA_MANIFEST,
         fileExtension = FileExtension("json")
     )
@@ -609,7 +609,7 @@ public object RpfSniffer : FormatSniffer {
         container: Container<Readable>
     ): Try<Format, ReadError> {
         if (
-            format.hasMoreThan(ZipSpecification, RpfSpecification, LcpSpecification)
+            format.hasMoreThan(Specification.Zip, Specification.Rpf, Specification.Lcp)
         ) {
             return Try.success(format)
         }
@@ -635,7 +635,7 @@ public object RpfSniffer : FormatSniffer {
             }
             manifest.conformsTo(Publication.Profile.DIVINA) -> {
                 if (isLcpProtected) {
-                    rpfDivinaFormat.addSpecifications(LcpSpecification)
+                    rpfDivinaFormat.addSpecifications(Specification.Lcp)
                 } else {
                     rpfDivinaFormat
                 }
@@ -649,7 +649,7 @@ public object RpfSniffer : FormatSniffer {
             }
             else ->
                 if (isLcpProtected) {
-                    rpfFormat.addSpecifications(LcpSpecification)
+                    rpfFormat.addSpecifications(Specification.Lcp)
                 } else {
                     rpfFormat
                 }
@@ -663,31 +663,31 @@ public object RpfSniffer : FormatSniffer {
         .any { it.properties.encryption?.scheme == "http://readium.org/2014/01/lcp" }
 
     private val rpfFormat = Format(
-        specification = FormatSpecification(ZipSpecification, RpfSpecification),
+        specification = FormatSpecification(Specification.Zip, Specification.Rpf),
         mediaType = MediaType.READIUM_WEBPUB,
         fileExtension = FileExtension("webpub")
     )
 
     private val rpfAudioFormat = Format(
-        specification = FormatSpecification(ZipSpecification, RpfSpecification),
+        specification = FormatSpecification(Specification.Zip, Specification.Rpf),
         mediaType = MediaType.READIUM_AUDIOBOOK,
         fileExtension = FileExtension("audiobook")
     )
 
     private val rpfDivinaFormat = Format(
-        specification = FormatSpecification(ZipSpecification, RpfSpecification),
+        specification = FormatSpecification(Specification.Zip, Specification.Rpf),
         mediaType = MediaType.DIVINA,
         fileExtension = FileExtension("divina")
     )
 
     private val lcpaFormat = Format(
-        specification = FormatSpecification(ZipSpecification, RpfSpecification, LcpSpecification),
+        specification = FormatSpecification(Specification.Zip, Specification.Rpf, Specification.Lcp),
         mediaType = MediaType.LCP_PROTECTED_AUDIOBOOK,
         fileExtension = FileExtension("lcpa")
     )
 
     private val lcpdfFormat = Format(
-        specification = FormatSpecification(ZipSpecification, RpfSpecification, LcpSpecification),
+        specification = FormatSpecification(Specification.Zip, Specification.Rpf, Specification.Lcp),
         mediaType = MediaType.LCP_PROTECTED_PDF,
         fileExtension = FileExtension("lcpdf")
     )
@@ -700,7 +700,7 @@ public object W3cWpubSniffer : FormatSniffer {
         format: Format,
         source: Readable
     ): Try<Format, ReadError> {
-        if (format.hasMoreThan(JsonSpecification) || !source.canReadWholeBlob()) {
+        if (format.hasMoreThan(Specification.Json) || !source.canReadWholeBlob()) {
             return Try.success(format)
         }
 
@@ -717,8 +717,8 @@ public object W3cWpubSniffer : FormatSniffer {
             return Try.success(
                 Format(
                     specification = FormatSpecification(
-                        JsonSpecification,
-                        W3cPubManifestSpecification
+                        Specification.Json,
+                        Specification.W3cPubManifest
                     ),
                     mediaType = MediaType.W3C_WPUB_MANIFEST,
                     fileExtension = FileExtension("json")
@@ -753,7 +753,7 @@ public object EpubSniffer : FormatSniffer {
         format: Format,
         container: Container<Readable>
     ): Try<Format, ReadError> {
-        if (format.hasMoreThan(ZipSpecification)) {
+        if (format.hasMoreThan(Specification.Zip)) {
             return Try.success(format)
         }
 
@@ -772,7 +772,7 @@ public object EpubSniffer : FormatSniffer {
     }
 
     private val epubFormatSpecification = Format(
-        specification = FormatSpecification(ZipSpecification, EpubSpecification),
+        specification = FormatSpecification(Specification.Zip, Specification.Epub),
         mediaType = MediaType.EPUB,
         fileExtension = FileExtension("epub")
     )
@@ -803,7 +803,7 @@ public object LpfSniffer : FormatSniffer {
         format: Format,
         container: Container<Readable>
     ): Try<Format, ReadError> {
-        if (format.hasMoreThan(ZipSpecification)) {
+        if (format.hasMoreThan(Specification.Zip)) {
             return Try.success(format)
         }
 
@@ -829,7 +829,7 @@ public object LpfSniffer : FormatSniffer {
     }
 
     private val lpfFormat = Format(
-        specification = FormatSpecification(ZipSpecification, LpfSpecification),
+        specification = FormatSpecification(Specification.Zip, Specification.Lpf),
         mediaType = MediaType.LPF,
         fileExtension = FileExtension("lpf")
     )
@@ -852,7 +852,7 @@ public object RarSniffer : FormatSniffer {
             hints.hasMediaType("application/x-rar-compressed")
         ) {
             return Format(
-                specification = FormatSpecification(RarSpecification),
+                specification = FormatSpecification(Specification.Rar),
                 mediaType = MediaType.RAR,
                 fileExtension = FileExtension("rar")
             )
@@ -874,7 +874,7 @@ public object ZipSniffer : FormatSniffer {
             hints.hasFileExtension("zip")
         ) {
             return Format(
-                specification = FormatSpecification(ZipSpecification),
+                specification = FormatSpecification(Specification.Zip),
                 mediaType = MediaType.ZIP,
                 fileExtension = FileExtension("zip")
             )
@@ -945,7 +945,7 @@ public object ArchiveSniffer : FormatSniffer {
             )
         ) {
             return Format(
-                specification = FormatSpecification(ZipSpecification, InformalComicSpecification),
+                specification = FormatSpecification(Specification.Zip, Specification.InformalComic),
                 mediaType = MediaType.CBZ,
                 fileExtension = FileExtension("cbz")
             )
@@ -957,7 +957,7 @@ public object ArchiveSniffer : FormatSniffer {
             hints.hasMediaType("application/x-cbr")
         ) {
             return Format(
-                specification = FormatSpecification(RarSpecification, InformalComicSpecification),
+                specification = FormatSpecification(Specification.Rar, Specification.InformalComic),
                 mediaType = MediaType.CBR,
                 fileExtension = FileExtension("cbr")
             )
@@ -966,8 +966,8 @@ public object ArchiveSniffer : FormatSniffer {
         if (hints.hasFileExtension("zab")) {
             return Format(
                 specification = FormatSpecification(
-                    ZipSpecification,
-                    InformalAudiobookSpecification
+                    Specification.Zip,
+                    Specification.InformalAudiobook
                 ),
                 mediaType = MediaType.ZAB,
                 fileExtension = FileExtension("zab")
@@ -981,7 +981,7 @@ public object ArchiveSniffer : FormatSniffer {
         format: Format,
         container: Container<Readable>
     ): Try<Format, ReadError> {
-        if (format.hasMoreThan(ZipSpecification, RarSpecification)) {
+        if (format.hasMoreThan(Specification.Zip, Specification.Rar)) {
             return Try.success(format)
         }
 
@@ -1003,14 +1003,14 @@ public object ArchiveSniffer : FormatSniffer {
 
         if (archiveContainsOnlyExtensions(cbzExtensions)) {
             val mediaType =
-                if (format.conformsTo(RarSpecification)) {
+                if (format.conformsTo(Specification.Rar)) {
                     MediaType.CBR
                 } else {
                     MediaType.CBZ
                 }
 
             val extension =
-                if (format.conformsTo(RarSpecification)) {
+                if (format.conformsTo(Specification.Rar)) {
                     FileExtension("cbr")
                 } else {
                     FileExtension("cbz")
@@ -1018,7 +1018,7 @@ public object ArchiveSniffer : FormatSniffer {
 
             return Try.success(
                 Format(
-                    specification = format.specification + InformalComicSpecification,
+                    specification = format.specification + Specification.InformalComic,
                     mediaType = mediaType,
                     fileExtension = extension
                 )
@@ -1027,14 +1027,14 @@ public object ArchiveSniffer : FormatSniffer {
 
         if (archiveContainsOnlyExtensions(zabExtensions)) {
             val mediaType =
-                if (format.conformsTo(ZipSpecification)) {
+                if (format.conformsTo(Specification.Zip)) {
                     MediaType.ZAB
                 } else {
                     format.mediaType
                 }
 
             val extension =
-                if (format.conformsTo(ZipSpecification)) {
+                if (format.conformsTo(Specification.Zip)) {
                     FileExtension("zab")
                 } else {
                     format.fileExtension
@@ -1042,7 +1042,7 @@ public object ArchiveSniffer : FormatSniffer {
 
             return Try.success(
                 Format(
-                    specification = format.specification + InformalAudiobookSpecification,
+                    specification = format.specification + Specification.InformalAudiobook,
                     mediaType = mediaType,
                     fileExtension = extension
                 )
@@ -1090,7 +1090,7 @@ public object PdfSniffer : FormatSniffer {
     }
 
     private val pdfFormat = Format(
-        specification = FormatSpecification(PdfSpecification),
+        specification = FormatSpecification(Specification.Pdf),
         mediaType = MediaType.PDF,
         fileExtension = FileExtension("pdf")
     )
@@ -1105,7 +1105,7 @@ public object JsonSniffer : FormatSniffer {
             hints.hasMediaType("application/json")
         ) {
             return Format(
-                specification = FormatSpecification(JsonSpecification),
+                specification = FormatSpecification(Specification.Json),
                 mediaType = MediaType.JSON,
                 fileExtension = FileExtension("json")
             )
@@ -1113,7 +1113,10 @@ public object JsonSniffer : FormatSniffer {
 
         if (hints.hasMediaType("application/problem+json")) {
             return Format(
-                specification = FormatSpecification(JsonSpecification, ProblemDetailsSpecification),
+                specification = FormatSpecification(
+                    Specification.Json,
+                    Specification.ProblemDetails
+                ),
                 mediaType = MediaType.JSON_PROBLEM_DETAILS,
                 fileExtension = FileExtension("json")
             )
@@ -1137,7 +1140,7 @@ public object JsonSniffer : FormatSniffer {
         )?.let {
             return Try.success(
                 Format(
-                    specification = FormatSpecification(JsonSpecification),
+                    specification = FormatSpecification(Specification.Json),
                     mediaType = MediaType.JSON,
                     fileExtension = FileExtension("json")
                 )
@@ -1158,15 +1161,15 @@ public object EpubDrmSniffer : FormatSniffer {
         container: Container<Readable>
     ): Try<Format, ReadError> {
         if (
-            !format.conformsTo(EpubSpecification) ||
-            format.conformsTo(AdeptSpecification) ||
-            format.conformsTo(LcpSpecification)
+            !format.conformsTo(Specification.Epub) ||
+            format.conformsTo(Specification.Adept) ||
+            format.conformsTo(Specification.Lcp)
         ) {
             return Try.success(format)
         }
 
         if (RelativeUrl("META-INF/license.lcpl")!! in container) {
-            return Try.success(format.addSpecifications(LcpSpecification))
+            return Try.success(format.addSpecifications(Specification.Lcp))
         }
 
         val encryptionDocument = container[Url("META-INF/encryption.xml")!!]
@@ -1181,14 +1184,14 @@ public object EpubDrmSniffer : FormatSniffer {
             ?.flatMap { it.get("RetrievalMethod", EpubEncryption.SIG) }
             ?.any { it.getAttr("URI") == "license.lcpl#/encryption/content_key" }
             ?.takeIf { it }
-            ?.let { return Try.success(format.addSpecifications(LcpSpecification)) }
+            ?.let { return Try.success(format.addSpecifications(Specification.Lcp)) }
 
         encryptionDocument
             ?.get("EncryptedData", EpubEncryption.ENC)
             ?.flatMap { it.get("KeyInfo", EpubEncryption.SIG) }
             ?.flatMap { it.get("resource", "http://ns.adobe.com/adept") }
             ?.takeIf { it.isNotEmpty() }
-            ?.let { return Try.success(format.addSpecifications(AdeptSpecification)) }
+            ?.let { return Try.success(format.addSpecifications(Specification.Adept)) }
 
         container[Url("META-INF/rights.xml")!!]
             ?.readDecodeOrElse(
@@ -1196,7 +1199,7 @@ public object EpubDrmSniffer : FormatSniffer {
                 recover = { null }
             )
             ?.takeIf { it.namespace == "http://ns.adobe.com/adept" }
-            ?.let { return Try.success(format.addSpecifications(AdeptSpecification)) }
+            ?.let { return Try.success(format.addSpecifications(Specification.Adept)) }
 
         return Try.success(format)
     }
@@ -1212,7 +1215,7 @@ public object CssSniffer : FormatSniffer {
             hints.hasMediaType("text/css")
         ) {
             return Format(
-                specification = FormatSpecification(CssSpecification),
+                specification = FormatSpecification(Specification.Css),
                 mediaType = MediaType.CSS,
                 fileExtension = FileExtension("css")
             )
@@ -1233,7 +1236,7 @@ public object JavaScriptSniffer : FormatSniffer {
             hints.hasMediaType("application/javascript")
         ) {
             return Format(
-                specification = FormatSpecification(JavaScriptSpecification),
+                specification = FormatSpecification(Specification.JavaScript),
                 mediaType = MediaType.JAVASCRIPT,
                 fileExtension = FileExtension("js")
             )

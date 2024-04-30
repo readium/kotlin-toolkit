@@ -20,7 +20,7 @@ import org.robolectric.RobolectricTestRunner
 class DefaultSniffersTest {
 
     private val epubFormat = Format(
-        specification = FormatSpecification(ZipSpecification, EpubSpecification),
+        specification = FormatSpecification(Specification.Zip, Specification.Epub),
         mediaType = MediaType.EPUB,
         fileExtension = FileExtension("epub")
     )
@@ -41,7 +41,7 @@ class DefaultSniffersTest {
     @Test
     fun `Sniff Adobe ADEPT`() = runBlocking {
         assertEquals(
-            epubFormat.copy(specification = epubFormat.specification + AdeptSpecification),
+            epubFormat.copy(specification = epubFormat.specification + Specification.Adept),
             EpubDrmSniffer.sniffContainer(
                 format = epubFormat,
                 container = TestContainer(
@@ -64,7 +64,7 @@ class DefaultSniffersTest {
     @Test
     fun `Sniff Adobe ADEPT from rights xml`() = runBlocking {
         assertEquals(
-            epubFormat.copy(specification = epubFormat.specification + AdeptSpecification),
+            epubFormat.copy(specification = epubFormat.specification + Specification.Adept),
             EpubDrmSniffer.sniffContainer(
                 format = epubFormat,
                 container = TestContainer(
@@ -78,7 +78,7 @@ class DefaultSniffersTest {
     @Test
     fun `Sniff LCP protected EPUB`() = runBlocking {
         assertEquals(
-            epubFormat.copy(specification = epubFormat.specification + LcpSpecification),
+            epubFormat.copy(specification = epubFormat.specification + Specification.Lcp),
             EpubDrmSniffer.sniffContainer(
                 format = epubFormat,
                 container = TestContainer(Url("META-INF/license.lcpl")!! to "{}")
@@ -89,7 +89,7 @@ class DefaultSniffersTest {
     @Test
     fun `Sniff LCP protected EPUB missing the license`() = runBlocking {
         assertEquals(
-            epubFormat.copy(specification = epubFormat.specification + LcpSpecification),
+            epubFormat.copy(specification = epubFormat.specification + Specification.Lcp),
             EpubDrmSniffer.sniffContainer(
                 format = epubFormat,
                 container = TestContainer(
