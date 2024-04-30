@@ -6,7 +6,7 @@ import org.junit.Assert.assertNull
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.readium.r2.shared.assertJSONEquals
-import org.readium.r2.shared.extensions.iso8601ToDate
+import org.readium.r2.shared.util.Instant
 import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
@@ -39,8 +39,8 @@ class AvailabilityTest {
         assertEquals(
             Availability(
                 state = Availability.State.AVAILABLE,
-                since = "2001-01-01T12:36:27.000Z".iso8601ToDate(),
-                until = "2001-02-01T12:36:27.000Z".iso8601ToDate()
+                since = Instant.parse("2001-01-01T12:36:27.000Z"),
+                until = Instant.parse("2001-02-01T12:36:27.000Z")
             ),
             Availability.fromJSON(
                 JSONObject(
@@ -80,8 +80,8 @@ class AvailabilityTest {
             ),
             Availability(
                 state = Availability.State.AVAILABLE,
-                since = "2001-02-01T13:36:27Z".iso8601ToDate(),
-                until = "2001-02-01T13:36:27Z".iso8601ToDate()
+                since = Instant.parse("2001-02-01T13:36:27Z"),
+                until = Instant.parse("2001-02-01T13:36:27Z")
             ).toJSON()
         )
     }

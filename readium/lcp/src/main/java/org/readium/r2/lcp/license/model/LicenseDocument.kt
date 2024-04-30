@@ -10,7 +10,6 @@
 package org.readium.r2.lcp.license.model
 
 import java.nio.charset.Charset
-import java.util.*
 import org.json.JSONObject
 import org.readium.r2.lcp.LcpError
 import org.readium.r2.lcp.LcpException
@@ -21,9 +20,9 @@ import org.readium.r2.lcp.license.model.components.lcp.Rights
 import org.readium.r2.lcp.license.model.components.lcp.Signature
 import org.readium.r2.lcp.license.model.components.lcp.User
 import org.readium.r2.lcp.service.URLParameters
-import org.readium.r2.shared.extensions.iso8601ToDate
 import org.readium.r2.shared.extensions.optNullableString
 import org.readium.r2.shared.util.AbsoluteUrl
+import org.readium.r2.shared.util.Instant
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
@@ -63,14 +62,14 @@ public class LicenseDocument internal constructor(public val json: JSONObject) {
         json.optNullableString("id")
             ?: throw LcpException(LcpError.Parsing.LicenseDocument)
 
-    public val issued: Date =
+    public val issued: Instant =
         json.optNullableString("issued")
-            ?.iso8601ToDate()
+            ?.let { Instant.parse(it) }
             ?: throw LcpException(LcpError.Parsing.LicenseDocument)
 
-    public val updated: Date =
+    public val updated: Instant =
         json.optNullableString("updated")
-            ?.iso8601ToDate()
+            ?.let { Instant.parse(it) }
             ?: issued
 
     public val encryption: Encryption =

@@ -7,12 +7,12 @@
 package org.readium.r2.lcp
 
 import java.net.SocketTimeoutException
-import java.util.*
 import kotlinx.coroutines.CancellationException
 import org.readium.r2.lcp.service.NetworkException
 import org.readium.r2.shared.util.DebugError
 import org.readium.r2.shared.util.Error
 import org.readium.r2.shared.util.ErrorException
+import org.readium.r2.shared.util.Instant
 import org.readium.r2.shared.util.ThrowableError
 import org.readium.r2.shared.util.Url
 
@@ -72,16 +72,16 @@ public sealed class LcpError(
         cause: Error? = null
     ) : LcpError(message, cause) {
 
-        public class Cancelled(public val date: Date) :
+        public class Cancelled(public val date: Instant) :
             LicenseStatus("This license was cancelled on $date")
 
-        public class Returned(public val date: Date) :
+        public class Returned(public val date: Instant) :
             LicenseStatus("This license has been returned on $date")
 
-        public class NotStarted(public val start: Date) :
+        public class NotStarted(public val start: Instant) :
             LicenseStatus("This license starts on $start")
 
-        public class Expired(public val end: Date) :
+        public class Expired(public val end: Instant) :
             LicenseStatus("This license expired on $end")
 
         /**
@@ -90,7 +90,7 @@ public sealed class LcpError(
          * in the status document. If no event is logged in the status document, no such message should
          * appear (certainly not "The license was registered by 0 devices").
          */
-        public class Revoked(public val date: Date, public val devicesCount: Int) :
+        public class Revoked(public val date: Instant, public val devicesCount: Int) :
             LicenseStatus(
                 "This license was revoked by its provider on $date. It was registered by $devicesCount device(s)."
             )
@@ -109,7 +109,7 @@ public sealed class LcpError(
             Renew("Publication could not be renewed properly")
 
         /** Incorrect renewal period, your publication could not be renewed. */
-        public class InvalidRenewalPeriod(public val maxRenewDate: Date?) :
+        public class InvalidRenewalPeriod(public val maxRenewDate: Instant?) :
             Renew("Incorrect renewal period, your publication could not be renewed")
 
         /** An unexpected error has occurred on the licensing server. */

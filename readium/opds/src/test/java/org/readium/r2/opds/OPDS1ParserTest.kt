@@ -1,7 +1,5 @@
 package org.readium.r2.opds
 
-import java.util.*
-import org.joda.time.DateTime
 import org.junit.Assert.*
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -11,6 +9,7 @@ import org.readium.r2.shared.opds.OpdsMetadata
 import org.readium.r2.shared.opds.ParseData
 import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.publication.Properties
+import org.readium.r2.shared.util.Instant
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.robolectric.RobolectricTestRunner
@@ -30,7 +29,7 @@ class OPDS1ParserTest {
                     href = Url("https://example.com")!!,
                     metadata = OpdsMetadata(
                         title = "OPDS Catalog Root Example",
-                        modified = parseDate("2010-01-10T10:03:10Z")
+                        modified = Instant.parse("2010-01-10T10:03:10Z")
                     ),
                     links = mutableListOf(
                         Link(
@@ -95,7 +94,7 @@ class OPDS1ParserTest {
         assertEquals(
             OpdsMetadata(
                 title = "Unpopular Publications",
-                modified = parseDate("2010-01-10T10:01:11Z")
+                modified = Instant.parse("2010-01-10T10:01:11Z")
             ),
             feed.metadata
         )
@@ -161,7 +160,7 @@ class OPDS1ParserTest {
                 metadata = Metadata(
                     identifier = "urn:uuid:6409a00b-7bf2-405e-826c-3fdff0fd0734",
                     localizedTitle = LocalizedString("Bob, Son of Bob"),
-                    modified = parseDate("2010-01-10T10:01:11Z"),
+                    modified = Instant.parse("2010-01-10T10:01:11Z"),
                     published = null,
                     languages = listOf("en"),
                     subjects = listOf(
@@ -230,7 +229,7 @@ class OPDS1ParserTest {
                 metadata = Metadata(
                     identifier = "urn:uuid:7b595b0c-e15c-4755-bf9a-b7019f5c1dab",
                     localizedTitle = LocalizedString("Modern Online Philately"),
-                    modified = parseDate("2010-01-10T10:01:10Z"),
+                    modified = Instant.parse("2010-01-10T10:01:10Z"),
                     languages = listOf("en"),
                     authors = listOf(
                         Contributor(
@@ -296,7 +295,7 @@ class OPDS1ParserTest {
                 metadata = Metadata(
                     identifier = "urn:uuid:6409a00b-7bf2-405e-826c-3fdff0fd0734",
                     localizedTitle = LocalizedString("Bob, Son of Bob"),
-                    modified = parseDate("2010-01-10T10:01:11Z"),
+                    modified = Instant.parse("2010-01-10T10:01:11Z"),
                     languages = listOf("en"),
                     subjects = listOf(
                         Subject(
@@ -361,7 +360,4 @@ class OPDS1ParserTest {
 
     private fun parse(filename: String, url: Url = Url("https://example.com")!!): ParseData =
         OPDS1Parser.parse(fixtures.bytesAt(filename), url)
-
-    private fun parseDate(string: String): Date =
-        DateTime.parse(string).toDate()
 }

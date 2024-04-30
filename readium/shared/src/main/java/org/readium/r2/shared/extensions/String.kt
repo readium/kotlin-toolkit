@@ -10,28 +10,10 @@
 package org.readium.r2.shared.extensions
 
 import android.net.Uri
-import java.net.URL
 import java.security.MessageDigest
-import java.util.Date
-import kotlinx.datetime.Instant
-import kotlinx.datetime.LocalDate
-import kotlinx.datetime.LocalDateTime
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.atStartOfDayIn
-import kotlinx.datetime.toInstant
 import org.json.JSONException
 import org.json.JSONObject
 import org.readium.r2.shared.InternalReadiumApi
-
-@InternalReadiumApi
-public fun String.iso8601ToDate(): Date? {
-    val instant = tryOrNull { Instant.parse(this) }
-        ?: tryOrNull { LocalDateTime.parse(this).toInstant(TimeZone.UTC) }
-        ?: tryOrNull { LocalDate.parse(this).atStartOfDayIn(TimeZone.UTC) }
-        ?: return null
-
-    return Date(instant.toEpochMilliseconds())
-}
 
 /**
  * If this string starts with the given [prefix], returns this string.
@@ -67,13 +49,6 @@ internal fun String.hash(algorithm: HashAlgorithm): String =
         .getInstance(algorithm.key)
         .digest(this.toByteArray())
         .fold("") { str, it -> str + "%02x".format(it) }
-
-internal fun String.toUrlOrNull(context: URL? = null) =
-    try {
-        URL(context, this)
-    } catch (e: Exception) {
-        null
-    }
 
 internal fun String.toJsonOrNull(): JSONObject? =
     try {
