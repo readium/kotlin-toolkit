@@ -28,9 +28,7 @@ import org.readium.r2.shared.util.data.decodeRwpm
 import org.readium.r2.shared.util.data.decodeXml
 import org.readium.r2.shared.util.data.readDecodeOrElse
 import org.readium.r2.shared.util.flatMap
-import org.readium.r2.shared.util.format.EpubSpecification
-import org.readium.r2.shared.util.format.LcpLicenseSpecification
-import org.readium.r2.shared.util.format.LcpSpecification
+import org.readium.r2.shared.util.format.Specification
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.shared.util.resource.TransformingContainer
@@ -57,7 +55,7 @@ internal class LcpContentProtection(
         allowUserInteraction: Boolean
     ): Try<ContentProtection.OpenResult, ContentProtection.OpenError> {
         if (
-            !asset.format.conformsTo(LcpSpecification)
+            !asset.format.conformsTo(Specification.Lcp)
         ) {
             return Try.failure(ContentProtection.OpenError.AssetNotSupported())
         }
@@ -91,7 +89,7 @@ internal class LcpContentProtection(
 
         val encryptionData =
             when {
-                asset.format.conformsTo(EpubSpecification) -> parseEncryptionDataEpub(
+                asset.format.conformsTo(Specification.Epub) -> parseEncryptionDataEpub(
                     asset.container
                 )
                 else -> parseEncryptionDataRpf(asset.container)
@@ -151,7 +149,7 @@ internal class LcpContentProtection(
         credentials: String?,
         allowUserInteraction: Boolean
     ): Try<ContentProtection.OpenResult, ContentProtection.OpenError> {
-        if (!licenseAsset.format.conformsTo(LcpLicenseSpecification)) {
+        if (!licenseAsset.format.conformsTo(Specification.LcpLicense)) {
             return Try.failure(ContentProtection.OpenError.AssetNotSupported())
         }
 

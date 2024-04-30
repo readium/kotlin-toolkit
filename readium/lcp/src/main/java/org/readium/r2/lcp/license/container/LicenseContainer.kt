@@ -19,9 +19,8 @@ import org.readium.r2.shared.util.asset.Asset
 import org.readium.r2.shared.util.asset.ContainerAsset
 import org.readium.r2.shared.util.asset.ResourceAsset
 import org.readium.r2.shared.util.data.Container
-import org.readium.r2.shared.util.format.EpubSpecification
 import org.readium.r2.shared.util.format.FormatSpecification
-import org.readium.r2.shared.util.format.LcpLicenseSpecification
+import org.readium.r2.shared.util.format.Specification
 import org.readium.r2.shared.util.resource.Resource
 
 private val LICENSE_IN_EPUB = Url("META-INF/license.lcpl")!!
@@ -44,11 +43,11 @@ internal fun createLicenseContainer(
     formatSpecification: FormatSpecification
 ): WritableLicenseContainer =
     when {
-        formatSpecification.conformsTo(EpubSpecification) -> FileZipLicenseContainer(
+        formatSpecification.conformsTo(Specification.Epub) -> FileZipLicenseContainer(
             file.path,
             LICENSE_IN_EPUB
         )
-        formatSpecification.conformsTo(LcpLicenseSpecification) -> LcplLicenseContainer(file)
+        formatSpecification.conformsTo(Specification.LcpLicense) -> LcplLicenseContainer(file)
         // Assuming it's a Readium WebPub package (e.g. audiobook, LCPDF, etc.) as a fallback
         else -> FileZipLicenseContainer(file.path, LICENSE_IN_RPF)
     }
@@ -70,7 +69,7 @@ internal fun createLicenseContainer(
     resource: Resource,
     formatSpecification: FormatSpecification
 ): LicenseContainer {
-    if (!formatSpecification.conformsTo(LcpLicenseSpecification)) {
+    if (!formatSpecification.conformsTo(Specification.LcpLicense)) {
         throw LcpException(LcpError.Container.OpenFailed)
     }
 
@@ -88,7 +87,7 @@ internal fun createLicenseContainer(
     formatSpecification: FormatSpecification
 ): LicenseContainer {
     val licensePath = when {
-        formatSpecification.conformsTo(EpubSpecification) -> LICENSE_IN_EPUB
+        formatSpecification.conformsTo(Specification.Epub) -> LICENSE_IN_EPUB
         // Assuming it's a Readium WebPub package (e.g. audiobook, LCPDF, etc.) as a fallback
         else -> LICENSE_IN_RPF
     }

@@ -19,7 +19,7 @@ import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.data.ReadException
 import org.readium.r2.shared.util.data.Readable
 import org.readium.r2.shared.util.format.Format
-import org.readium.r2.shared.util.format.ZipSpecification
+import org.readium.r2.shared.util.format.Specification
 import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.shared.util.toUrl
 import org.readium.r2.shared.util.zip.compress.archivers.zip.ZipFile
@@ -46,7 +46,7 @@ internal class StreamingZipArchiveProvider {
         format: Format,
         source: Readable
     ): Try<Container<Resource>, ArchiveOpener.OpenError> {
-        if (!format.conformsTo(ZipSpecification)) {
+        if (!format.conformsTo(Specification.Zip)) {
             return Try.failure(
                 ArchiveOpener.OpenError.FormatNotSupported(format)
             )
