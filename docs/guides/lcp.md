@@ -6,14 +6,14 @@ You can use the Readium Kotlin toolkit to download and read publications that ar
 
 ## Overview
 
-An LCP publication is distributed using an LCP License Document (`.lcpl`) protected with a *user passphrase*.
+An LCP publication is protected with a *user passphrase* and distributed using an LCP License Document (`.lcpl`) .
 
 The user flow typically goes as follows:
 
 1. The user imports a `.lcpl` file into your application.
 2. The application uses the Readium toolkit to download the protected publication from the `.lcpl` file to the user's bookshelf. The downloaded file can be a `.epub`, `.lcpdf` (PDF), or `.lcpa` (audiobook) package.
 3. The user opens the protected publication from the bookshelf.
-4. If the passphrase isn't saved, the user will be asked to enter it to unlock the contents.
+4. If the passphrase isn't already recorded in the `readium-lcp` internal database, the user will be asked to enter it to unlock the contents.
 5. The publication is decrypted and rendered on the screen.
 
 ## Setup
@@ -39,7 +39,7 @@ You may want to register these new file extensions and media types in the [inten
 
 ## Initializing the `LcpService`
 
-`readium-lcp` offers an `LcpService` object that exposes its API. If `liblcp` is not configured correctly in your application, the constructor will return `null`. This is helpful if your application has  build variants without LCP.
+`readium-lcp` offers an `LcpService` object that exposes its API. If `liblcp` is not configured correctly in your application, the constructor will return `null`. This is helpful if your application has build variants without LCP.
 
 ```kotlin
 val lcpService = LcpService(
@@ -81,7 +81,9 @@ The acquisition is done in three steps:
 3. Inject the LCPL into the downloaded package.
 
 ```kotlin
-val licenseDocument = LicenseDocument.fromBytes(File("path/to/license.lcpl").readBytes())
+val lcplBytes: ByteArray = ...
+
+val licenseDocument = LicenseDocument.fromBytes(lcplBytes)
     .getOrElse { /* The LCPL appears to be invalid */ }
 
 
@@ -89,11 +91,6 @@ val publicationLink = licenseDocument.publicationLink
 
 val downloadedFile = yourDownloadService.download(publicationLink.url())
     .getOrElse { /* Failed to download the protected publication */ }
-
-// Optional: It's recommended to verify the hash of the downloaded package, using your own solution.
-if (publicationLink.hash != null && publicationLink.hash != downloadedFile.sha256Checksum()) {
-    // The checksums don't match, abort.
-}
 
 lcpService.injectLicenseDocument(licenseDocument, downloadedFile)
     .getOrElse { /* Failed to inject the LCPL in the downloaded package */ }
@@ -173,7 +170,7 @@ The `allowUserInteraction` argument is forwarded to the `LcpAuthenticating` impl
 
 When importing the publication to the bookshelf, set `allowUserInteraction` to `false` as you don't need the passphrase for accessing the publication metadata and cover. If you intend to present the publication using a Navigator, set `allowUserInteraction` to `true` as decryption will be required.
 
-:point_up: To check if a publication is protected with LCP before opening it, you can use `asset.format.conformsTo(LcpSpecification)` on the `Asset` returned by the `AssetRetriever`.
+:point_up: To check if a publication is protected with LCP before opening it, you can use `asset.format.conformsTo(Specification.Lcp)` on the `Asset` returned by the `AssetRetriever`.
 
 ### Using the opened `Publication`
 
@@ -241,7 +238,7 @@ val url = File("/path/to/lcp-protected-book.epub").toUrl()
 val asset = assetRetriever.retrieve(url)
     .getOrElse { /* Failed to retrieve the Asset */ }
 
-if (!asset.format.conformsTo(LcpSpecification)) {
+if (!asset.format.conformsTo(Specification.Lcp)) {
     // Not protected with LCP.
 }
 

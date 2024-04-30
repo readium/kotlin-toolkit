@@ -51,13 +51,14 @@ A `Publication` instance:
 
 #### Link
 
-A [`Link` object](https://readium.org/webpub-manifest/#24-the-link-object) holds a pointer (URL) to a `Publication` resource along with additional metadata, such as its media type or title.
+A [`Link` object](https://readium.org/webpub-manifest/#24-the-link-object) holds a pointer (URL) to a resource or service along with additional metadata, such as its media type or title.
 
 The `Publication` contains several `Link` collections, for example:
 
 * `readingOrder` lists the publication resources arranged in the order they should be read.
 * `resources` contains secondary resources necessary for rendering the `readingOrder`, such as an image or a font file.
 * `tableOfContents` represents the table of contents as a tree of `Link` objects.
+* `links` exposes additional resources, such as a canonical link to the manifest or a search web service.
 
 #### Locator
 
@@ -83,10 +84,10 @@ An `Asset` represents a single file or package and provides access to its conten
 You can use the `asset.format` to identify the media type and capabilities of the asset.
 
 ```kotlin
-if (asset.format.conformsTo(LcpSpecification)) {
+if (asset.format.conformsTo(Specification.Lcp)) {
     // The asset is protected with LCP.
 }
-if (asset.format.conformsTo(EpubSpecification)) {
+if (asset.format.conformsTo(Specification.Epub)) {
     // The asset represent an EPUB publication.
 }
 ```
@@ -143,7 +144,7 @@ The `allowUserInteraction` parameter is useful when supporting a DRM like Readiu
 
 After opening a publication, you may want to read its metadata to insert a new entity into your bookshelf database, for instance. The `publication.metadata` object contains everything you need, including `title`, `authors` and the `published` date.
 
-You can retrieve the publication cover using `publication.cover()`. Avoid calling this from the main thread to prevent blocking the user interface.
+You can retrieve the publication cover using `publication.cover()`.
 
 ## Rendering the publication on the screen (`readium-navigator`)
 

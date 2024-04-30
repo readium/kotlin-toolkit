@@ -173,6 +173,36 @@ childFragmentManager.fragmentFactory =
     )
 ```
 
+#### Limitations of the current `Fragment` APIs
+
+The current toolkit API has a limitation regarding the lifecycle of `Fragment`s. If your `Activity` is being recreated after Android terminates your application, you must still provide a `FragmentFactory` in `Activity.onCreate()`, even though you may no longer have access to a `Publication` or `NavigatorFactory` instance.
+
+To work around this issue, we provide "dummy" factories that you can use to recover during the restoration, before immediately removing the fragment or finishing the activity. Here's an example with the `EpubNavigatorFragment`:
+
+```kotlin
+override fun onCreate(savedInstanceState: Bundle?) {
+    val navigatorFactory = viewModel.navigatorFactory
+
+    if (navigatorFactory == null) {
+        // We provide a dummy fragment factory  if the Activity is restored after the
+        // app process was killed because the view model is empty. In that case, finish
+        // the activity as soon as possible and go back to the previous one.
+        childFragmentManager.fragmentFactory = EpubNavigatorFragment.createDummyFactory()
+
+        super.onCreate(savedInstanceState)
+
+        requireActivity().finish()
+
+        return
+    }
+
+    childFragmentManager.fragmentFactory =
+        navigatorFactory.createFragmentFactory(...)
+
+    super.onCreate(savedInstanceState)
+}
+```
+
 ### `AudioNavigator`
 
 The `AudioNavigator` is chromeless and does not provide any user interface, allowing you to create your own custom UI.
