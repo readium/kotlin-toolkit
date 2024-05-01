@@ -36,7 +36,6 @@ androidx-navigation = "2.7.6"
 androidx-paging = "3.2.1"
 androidx-recyclerview = "1.3.2"
 androidx-room = "2.6.1"
-androidx-test-core = "1.5.0"
 androidx-test-rules = "1.5.0"
 androidx-test-runner = "1.5.2"
 androidx-test-services = "1.4.2"
@@ -120,7 +119,6 @@ androidx-recyclerview = { group = "androidx.recyclerview", name = "recyclerview"
 androidx-room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "androidx-room" }
 androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "androidx-room" }
 androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "androidx-room" }
-androidx-test-core-ktx = { group = "androidx.test", name = "core-ktx", version.ref = "androidx-test-core" }
 androidx-test-rules = { group = "androidx.test", name = "rules", version.ref = "androidx-test-rules" }
 androidx-test-runner = { group = "androidx.test", name = "runner", version.ref = "androidx-test-runner" }
 androidx-test-services = { group = "androidx.test.services", name = "test-services", version.ref = "androidx-test-services" }
