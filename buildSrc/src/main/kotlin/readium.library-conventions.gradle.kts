@@ -37,6 +37,7 @@ android {
 
     testOptions {
         unitTests.isIncludeAndroidResources = true
+        targetSdk = (property("android.targetSdk") as String).toInt()
     }
 
     buildFeatures {

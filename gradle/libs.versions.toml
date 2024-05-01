@@ -36,8 +36,10 @@ androidx-navigation = "2.7.6"
 androidx-paging = "3.2.1"
 androidx-recyclerview = "1.3.2"
 androidx-room = "2.6.1"
+androidx-test-core = "1.5.0"
 androidx-test-rules = "1.5.0"
 androidx-test-runner = "1.5.2"
+androidx-test-services = "1.4.2"
 androidx-viewpager2 = "1.0.0"
 androidx-webkit = "1.10.0"
 
@@ -52,8 +54,7 @@ joda-time = "2.12.6"
 jsoup = "1.17.2"
 junit = "4.13.2"
 
-kotlinx-coroutines = "1.7.3"
-kotlinx-coroutines-test = "1.7.3"
+kotlinx-coroutines = "1.8.0"
 kotlinx-datetime = "0.6.0-RC.2"
 kotlinx-serialization-json = "1.6.2"
 
@@ -119,8 +120,10 @@ androidx-recyclerview = { group = "androidx.recyclerview", name = "recyclerview"
 androidx-room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "androidx-room" }
 androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "androidx-room" }
 androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "androidx-room" }
+androidx-test-core-ktx = { group = "androidx.test", name = "core-ktx", version.ref = "androidx-test-core" }
 androidx-test-rules = { group = "androidx.test", name = "rules", version.ref = "androidx-test-rules" }
 androidx-test-runner = { group = "androidx.test", name = "runner", version.ref = "androidx-test-runner" }
+androidx-test-services = { group = "androidx.test.services", name = "test-services", version.ref = "androidx-test-services" }
 androidx-viewpager2 = { group = "androidx.viewpager2", name = "viewpager2", version.ref = "androidx-viewpager2" }
 androidx-webkit = { group = "androidx.webkit", name = "webkit", version.ref = "androidx-webkit" }
 
@@ -143,7 +146,7 @@ kotlin-reflect = { group = "org.jetbrains.kotlin", name = "kotlin-reflect", vers
 kotlin-stdlib = { group = "org.jetbrains.kotlin", name = "kotlin-stdlib", version.ref = "kotlin" }
 
 kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "kotlinx-coroutines" }
-kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "kotlinx-coroutines-test" }
+kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "kotlinx-coroutines" }
 kotlinx-datetime = { group = "org.jetbrains.kotlinx", name = "kotlinx-datetime", version.ref = "kotlinx-datetime" }
 kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinx-serialization-json" }
 
