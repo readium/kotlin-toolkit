@@ -33,7 +33,7 @@ val url = contentUri.toAbsoluteUrl()
 val url = AbsoluteUrl("https://domain/book.epub")
 
 val asset = assetRetriever.retrieve(url)
-    .getOrElse {  /* Failed to retrieve the Asset */  }
+    .getOrElse { /* Failed to retrieve the Asset */ }
 ```
 
 The `AssetRetriever` will sniff the media type of the asset, which you can store in your bookshelf database to speed up the process next time you retrieve the `Asset`. This will improve performance, especially with HTTP URL schemes.

@@ -2,18 +2,7 @@
 
 [Readium Mobile](https://github.com/readium/mobile) is a toolkit for ebooks, audiobooks and comics written in Swift & Kotlin.
 
-This toolkit is a modular project, which follows the [Readium Architecture](https://github.com/readium/architecture). The different modules are found under [`readium/`](readium).
-
-* [`shared`](readium/shared) – Shared `Publication` models and utilities
-* [`streamer`](readium/streamer) – Publication parsers and local HTTP server
-* [`navigator`](readium/navigator) – Plain `Fragment` and `Activity` classes rendering publications
-* [`opds`](readium/opds) – Parsers for OPDS catalog feeds
-* [`lcp`](readium/lcp) – Service and models for [Readium LCP](https://www.edrlab.org/readium-lcp/)
-* [`adapters`](readium/adapters) – Adapters to use third-party libraries with Readium.
-  * [`adapters/pdfium`](readium/adapters/pdfium) – Parse and render PDFs using the open source library [PdfiumAndroid](https://github.com/barteksc/PdfiumAndroid).
-  * [`adapters/pspdfkit`](readium/adapters/pspdfkit) – Parse and render PDFs using the commercial library [PSPDFKit](https://pspdfkit.com/).
-
-A [Test App](test-app) demonstrates how to integrate the Readium Kotlin toolkit in your own reading app.
+:point_up: **Take a look at the [guide to get started](docs/guides/getting-started.md).** A [Test App](test-app) demonstrates how to integrate the Readium Kotlin toolkit in your own reading app.
 
 :question: **Find documentation and API reference at [readium.org/kotlin-toolkit](https://readium.org/kotlin-toolkit)**.
 
