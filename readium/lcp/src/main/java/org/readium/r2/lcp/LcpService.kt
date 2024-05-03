@@ -166,10 +166,15 @@ public interface LcpService {
 
         /**
          * LCP service factory.
+         *
+         * @param deviceName Device name used when registering a license to an LSD server.
+         * If not provided, the device name will be generated from the device's manufacturer and
+         * model.
          */
         public operator fun invoke(
             context: Context,
-            assetRetriever: AssetRetriever
+            assetRetriever: AssetRetriever,
+            deviceName: String? = null
         ): LcpService? {
             if (!LcpClient.isAvailable()) {
                 return null
@@ -181,6 +186,7 @@ public interface LcpService {
             val licenseRepository = LicensesRepository(db)
             val network = NetworkService()
             val device = DeviceService(
+                deviceName = deviceName,
                 repository = deviceRepository,
                 network = network,
                 context = context

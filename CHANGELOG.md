@@ -16,6 +16,10 @@ All notable changes to this project will be documented in this file. Take a look
 
 * All the APIs using or returning a `Date` objects are now using a custom `Instant` type. 
 
+#### LCP
+
+* [#493](https://github.com/readium/kotlin-toolkit/discussions/493) The LCP module does not require the Bluetooth permissions anymore to derive the device name.
+
 ### Fixed
 
 #### Navigator
