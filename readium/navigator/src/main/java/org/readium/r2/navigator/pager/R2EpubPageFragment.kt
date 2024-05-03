@@ -11,7 +11,6 @@ package org.readium.r2.navigator.pager
 
 import android.annotation.SuppressLint
 import android.graphics.PointF
-import android.os.Build
 import android.os.Bundle
 import android.util.DisplayMetrics
 import android.view.*
@@ -30,6 +29,8 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.webkit.WebViewClientCompat
 import androidx.webkit.WebViewCompat
 import androidx.webkit.WebViewFeature
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 import kotlin.math.roundToInt
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -213,6 +214,8 @@ internal class R2EpubPageFragment : Fragment() {
             override fun onPageFinished(view: WebView?, url: String?) {
                 super.onPageFinished(view, url)
 
+                onPageFinished()
+
                 link?.let {
                     webView.listener?.onResourceLoaded(webView, it)
                 }
@@ -247,6 +250,26 @@ internal class R2EpubPageFragment : Fragment() {
         }
 
         return containerView
+    }
+
+    private var isPageFinished = false
+    private val pendingPageFinished = mutableListOf<() -> Unit>()
+
+    /**
+     * Will run the given [action] when the content of the [WebView] is loaded.
+     */
+    fun whenPageFinished(action: () -> Unit) {
+        if (isPageFinished) {
+            action()
+        } else {
+            pendingPageFinished.add(action)
+        }
+    }
+
+    private fun onPageFinished() {
+        isPageFinished = true
+        pendingPageFinished.forEach { it() }
+        pendingPageFinished.clear()
     }
 
     /**
@@ -445,6 +468,18 @@ internal class R2EpubPageFragment : Fragment() {
                 item -= 1
             }
             webView.setCurrentItem(item, false)
+        }
+    }
+
+    fun runJavaScript(script: String, callback: ((String) -> Unit)? = null) {
+        whenPageFinished {
+            requireNotNull(webView).runJavaScript(script, callback)
+        }
+    }
+
+    suspend fun runJavaScriptSuspend(javascript: String): String = suspendCoroutine { cont ->
+        runJavaScript(javascript) { result ->
+            cont.resume(result)
         }
     }
 

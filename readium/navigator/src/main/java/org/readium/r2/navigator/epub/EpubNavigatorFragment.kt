@@ -294,8 +294,7 @@ public class EpubNavigatorFragment internal constructor(
     public suspend fun evaluateJavascript(script: String): String? {
         val page = currentReflowablePageFragment ?: return null
         page.awaitLoaded()
-        val webView = page.webView ?: return null
-        return webView.runJavaScriptSuspend(script)
+        return page.runJavaScriptSuspend(script)
     }
 
     private val viewModel: EpubNavigatorViewModel by viewModels {
@@ -665,17 +664,17 @@ public class EpubNavigatorFragment internal constructor(
     private fun run(command: RunScriptCommand) {
         when (command.scope) {
             RunScriptCommand.Scope.CurrentResource -> {
-                currentReflowablePageFragment?.webView
+                currentReflowablePageFragment
                     ?.runJavaScript(command.script)
             }
             RunScriptCommand.Scope.LoadedResources -> {
                 r2PagerAdapter?.mFragments?.forEach { _, fragment ->
-                    (fragment as? R2EpubPageFragment)?.webView
+                    (fragment as? R2EpubPageFragment)
                         ?.runJavaScript(command.script)
                 }
             }
             is RunScriptCommand.Scope.Resource -> {
-                loadedFragmentForHref(command.scope.href)?.webView
+                loadedFragmentForHref(command.scope.href)
                     ?.runJavaScript(command.script)
             }
             is RunScriptCommand.Scope.WebView -> {
@@ -713,9 +712,9 @@ public class EpubNavigatorFragment internal constructor(
     // SelectableNavigator
 
     override suspend fun currentSelection(): Selection? {
-        val webView = currentReflowablePageFragment?.webView ?: return null
+        val fragment = currentReflowablePageFragment ?: return null
         val json =
-            webView.runJavaScriptSuspend("readium.getCurrentSelection();")
+            fragment.runJavaScriptSuspend("readium.getCurrentSelection();")
                 .takeIf { it != "null" }
                 ?.let { tryOrLog { JSONObject(it) } }
                 ?: return null
