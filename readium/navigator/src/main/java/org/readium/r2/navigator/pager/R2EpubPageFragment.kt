@@ -11,7 +11,6 @@ package org.readium.r2.navigator.pager
 
 import android.annotation.SuppressLint
 import android.graphics.PointF
-import android.os.Build
 import android.os.Bundle
 import android.util.DisplayMetrics
 import android.view.*
@@ -30,6 +29,8 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.webkit.WebViewClientCompat
 import androidx.webkit.WebViewCompat
 import androidx.webkit.WebViewFeature
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 import kotlin.math.roundToInt
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -56,6 +57,7 @@ internal class R2EpubPageFragment : Fragment() {
     internal val link: Link?
         get() = BundleCompat.getParcelable(requireArguments(), "link", Link::class.java)
 
+    private var isPageFinished = false
     private var pendingLocator: Locator? = null
 
     private val positionCount: Long
@@ -212,6 +214,11 @@ internal class R2EpubPageFragment : Fragment() {
 
             override fun onPageFinished(view: WebView?, url: String?) {
                 super.onPageFinished(view, url)
+
+                if (!isPageFinished) {
+                    isPageFinished = true
+                    runPendingJavaScripts()
+                }
 
                 link?.let {
                     webView.listener?.onResourceLoaded(webView, it)
@@ -446,6 +453,37 @@ internal class R2EpubPageFragment : Fragment() {
             }
             webView.setCurrentItem(item, false)
         }
+    }
+
+    private data class PendingJavaScript(
+        val script: String,
+        val callback: ((String) -> Unit)?
+    )
+
+    private var pendingJavaScripts: MutableList<PendingJavaScript> = mutableListOf()
+
+    fun runJavaScript(script: String, callback: ((String) -> Unit)? = null) {
+        if (!isPageFinished) {
+            pendingJavaScripts.add(PendingJavaScript(script, callback))
+            return
+        }
+
+        requireNotNull(webView).runJavaScript(script, callback)
+    }
+
+    suspend fun runJavaScriptSuspend(javascript: String): String = suspendCoroutine { cont ->
+        runJavaScript(javascript) { result ->
+            cont.resume(result)
+        }
+    }
+
+    private fun runPendingJavaScripts() {
+        require(isPageFinished)
+        val webView = requireNotNull(webView)
+        pendingJavaScripts.forEach { (script, callback) ->
+            webView.runJavaScript(script, callback)
+        }
+        pendingJavaScripts.clear()
     }
 
     companion object {

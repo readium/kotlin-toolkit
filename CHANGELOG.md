@@ -21,6 +21,7 @@ All notable changes to this project will be documented in this file. Take a look
 #### Navigator
 
 * [#325](https://github.com/readium/kotlin-toolkit/issues/325) Top EPUB selections no longer break when dragging the selection handles.
+* Fixed applying preferences while the EPUB navigator fragment is being recreated.
 
 
 ## [3.0.0-alpha.2]
