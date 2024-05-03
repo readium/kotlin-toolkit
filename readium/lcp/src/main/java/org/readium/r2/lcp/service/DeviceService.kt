@@ -9,21 +9,16 @@
 
 package org.readium.r2.lcp.service
 
-import android.Manifest
-import android.bluetooth.BluetoothManager
 import android.content.Context
 import android.content.SharedPreferences
-import android.content.pm.PackageManager
-import androidx.core.app.ActivityCompat
+import android.os.Build
 import java.io.Serializable
-import java.util.*
-import kotlin.time.ExperimentalTime
+import java.util.UUID
 import org.readium.r2.lcp.license.model.LicenseDocument
 import org.readium.r2.lcp.license.model.components.Link
-import timber.log.Timber
 
-@OptIn(ExperimentalTime::class)
 internal class DeviceService(
+    deviceName: String?,
     private val repository: DeviceRepository,
     private val network: NetworkService,
     val context: Context
@@ -40,27 +35,9 @@ internal class DeviceService(
             preferences.edit().putString("lcp_device_id", deviceId).apply()
             return deviceId
         }
-    val name: String
-        get() {
-            val bluetoothManager =
-                context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
-            val bluetoothName =
-                try {
-                    if (ActivityCompat.checkSelfPermission(
-                            context,
-                            Manifest.permission.BLUETOOTH_CONNECT
-                        ) != PackageManager.PERMISSION_GRANTED
-                    ) {
-                        null
-                    } else {
-                        bluetoothManager.adapter.name
-                    }
-                } catch (e: Exception) {
-                    Timber.e(e)
-                    null
-                }
-            return bluetoothName ?: "Android"
-        }
+
+    val name: String =
+        deviceName ?: "${Build.MANUFACTURER} ${Build.MODEL}"
 
     val asQueryParameters: URLParameters
         get() = mapOf("id" to id, "name" to name)
