@@ -57,7 +57,6 @@ internal class R2EpubPageFragment : Fragment() {
     internal val link: Link?
         get() = BundleCompat.getParcelable(requireArguments(), "link", Link::class.java)
 
-    private var isPageFinished = false
     private var pendingLocator: Locator? = null
 
     private val positionCount: Long
@@ -215,10 +214,7 @@ internal class R2EpubPageFragment : Fragment() {
             override fun onPageFinished(view: WebView?, url: String?) {
                 super.onPageFinished(view, url)
 
-                if (!isPageFinished) {
-                    isPageFinished = true
-                    runPendingJavaScripts()
-                }
+                onPageFinished()
 
                 link?.let {
                     webView.listener?.onResourceLoaded(webView, it)
@@ -254,6 +250,26 @@ internal class R2EpubPageFragment : Fragment() {
         }
 
         return containerView
+    }
+
+    private var isPageFinished = false
+    private val pendingPageFinished = mutableListOf<() -> Unit>()
+
+    /**
+     * Will run the given [action] when the content of the [WebView] is loaded.
+     */
+    fun whenPageFinished(action: () -> Unit) {
+        if (isPageFinished) {
+            action()
+        } else {
+            pendingPageFinished.add(action)
+        }
+    }
+
+    private fun onPageFinished() {
+        isPageFinished = true
+        pendingPageFinished.forEach { it() }
+        pendingPageFinished.clear()
     }
 
     /**
@@ -455,35 +471,16 @@ internal class R2EpubPageFragment : Fragment() {
         }
     }
 
-    private data class PendingJavaScript(
-        val script: String,
-        val callback: ((String) -> Unit)?
-    )
-
-    private var pendingJavaScripts: MutableList<PendingJavaScript> = mutableListOf()
-
     fun runJavaScript(script: String, callback: ((String) -> Unit)? = null) {
-        if (!isPageFinished) {
-            pendingJavaScripts.add(PendingJavaScript(script, callback))
-            return
+        whenPageFinished {
+            requireNotNull(webView).runJavaScript(script, callback)
         }
-
-        requireNotNull(webView).runJavaScript(script, callback)
     }
 
     suspend fun runJavaScriptSuspend(javascript: String): String = suspendCoroutine { cont ->
         runJavaScript(javascript) { result ->
             cont.resume(result)
         }
-    }
-
-    private fun runPendingJavaScripts() {
-        require(isPageFinished)
-        val webView = requireNotNull(webView)
-        pendingJavaScripts.forEach { (script, callback) ->
-            webView.runJavaScript(script, callback)
-        }
-        pendingJavaScripts.clear()
     }
 
     companion object {
