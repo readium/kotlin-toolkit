@@ -81,7 +81,7 @@ public class OPDS1Parser {
             ReplaceWith("parse(jsonData, url.toUrl()!!)"),
             DeprecationLevel.ERROR
         )
-        public fun parse(jsonData: ByteArray, url: URL): ParseData =
+        public fun parse(xmlData: ByteArray, url: URL): ParseData =
             throw NotImplementedError()
 
         private fun parseFeed(root: ElementNode, url: Url): Feed {
