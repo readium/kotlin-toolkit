@@ -1,3 +1,5 @@
+package org.readium.r2.navigator
+
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import androidx.test.core.graphics.writeToTestStorage
@@ -21,9 +23,13 @@ import org.junit.runner.RunWith
  *
  * After validating them, you should copy them as new references to:
  * readium/navigator/src/androidTest/assets/snapshots/
+ * for example with this command for a recursive copy:
+ * cp -Rn readium/navigator/build/outputs/connected_android_test_additional_output/[...]/\* readium/navigator/src/androidTest/assets/
  *
  * The screenshots are stored under a folder named after the test class, and the file name is
- * <API version>-<width>x<height>-<test method name>-<snapshot number>.png
+ * <test method name>-<snapshot number>-<width>x<height>@<API version>.png
+ *
+ * To support Composable views, take a look at https://blog.stylingandroid.com/compose-ui-snapshot-testing/
  */
 @RunWith(AndroidJUnit4::class)
 @LargeTest
@@ -40,10 +46,9 @@ abstract class SnapshotTest {
         val name = buildString {
             append("snapshots/")
             append(this@SnapshotTest.javaClass.name.replace(".", "/") + "/")
-            val api = android.os.Build.VERSION.SDK_INT
-            append("$api-${screenshot.width}x${screenshot.height}")
-            append("-${nameRule.methodName}")
-            append("-" + String.format("%02d", snapshotCount))
+            append("${nameRule.methodName}-")
+            append(String.format("%02d", snapshotCount))
+            append("-${screenshot.width}x${screenshot.height}@${android.os.Build.VERSION.SDK_INT}")
         }
 
         try {
@@ -73,7 +78,7 @@ abstract class SnapshotTest {
 
     private var snapshotCount = 0
     private var failures: MutableList<Exception> = mutableListOf()
-    private val assets = InstrumentationRegistry.getInstrumentation().context.resources.assets
+    private val assets = InstrumentationRegistry.getInstrumentation().context.assets
 
     @Before
     fun before() {

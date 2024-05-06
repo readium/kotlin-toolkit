@@ -25,3 +25,10 @@ scripts:
 	pnpm run format; \
 	pnpm run lint; \
 	pnpm run bundle
+
+# Will copy the failed Navigator UI tests snapshots from the Android test output to the assets folder.
+# This is useful to update the snapshots after a test failure.
+.PHONY: copy-snapshots
+copy-snapshots:
+	cp -R readium/navigator/build/outputs/connected_android_test_additional_output/debugAndroidTest/connected/*/snapshots/* readium/navigator/src/androidTest/assets/snapshots
+

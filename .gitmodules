@@ -1,0 +1,3 @@
+[submodule "readium/navigator/src/androidTest/assets"]
+	path = readium/navigator/src/androidTest/assets
+	url = git@github.com:readium/kotlin-toolkit-navigator-test-assets.git
