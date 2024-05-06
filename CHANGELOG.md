@@ -4,7 +4,14 @@ All notable changes to this project will be documented in this file. Take a look
 
 **Warning:** Features marked as *experimental* may change or be removed in a future release without notice. Use with caution.
 
-<!-- ## [Unreleased] -->
+## [Unreleased]
+
+### Added
+
+#### LCP
+
+* [#509](https://github.com/readium/kotlin-toolkit/issues/509) Support for the new 2.x LCP Profiles.
+
 
 ## [2.4.0]
 
