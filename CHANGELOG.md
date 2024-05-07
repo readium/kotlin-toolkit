@@ -6,10 +6,6 @@ All notable changes to this project will be documented in this file. Take a look
 
 ## [Unreleased]
 
-### Added
-
-* [#509](https://github.com/readium/kotlin-toolkit/issues/509) Support for the new 2.x LCP Profiles.
-
 ### Deprecated
 
 #### Navigator
@@ -113,6 +109,15 @@ All notable changes to this project will be documented in this file. Take a look
 #### Navigator
 
 * EPUB external links are no longer handled by the navigator. You need to open the link in your own Web View or Chrome Custom Tab.
+
+
+## [2.4.1]
+
+### Added
+
+#### LCP
+
+* [#509](https://github.com/readium/kotlin-toolkit/issues/509) Support for the new 2.x LCP Profiles.
 
 
 ## [2.4.0]
@@ -831,6 +836,7 @@ progression. Now if no reading progression is set, the `effectiveReadingProgress
 [2.2.1]: https://github.com/readium/kotlin-toolkit/compare/2.2.0...2.2.1
 [2.3.0]: https://github.com/readium/kotlin-toolkit/compare/2.2.1...2.3.0
 [2.4.0]: https://github.com/readium/kotlin-toolkit/compare/2.3.0...2.4.0
-[3.0.0-alpha.1]: https://github.com/readium/kotlin-toolkit/compare/2.4.0...3.0.0-alpha.1
+[2.4.1]: https://github.com/readium/kotlin-toolkit/compare/2.4.0...2.4.1
+[3.0.0-alpha.1]: https://github.com/readium/kotlin-toolkit/compare/2.4.1...3.0.0-alpha.1
 [3.0.0-alpha.2]: https://github.com/readium/kotlin-toolkit/compare/3.0.0-alpha.1...3.0.0-alpha.2
 
