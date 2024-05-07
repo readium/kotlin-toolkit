@@ -49,7 +49,7 @@ import org.readium.r2.shared.util.toUrl
 import org.readium.r2.shared.util.use
 import timber.log.Timber
 
-@OptIn(ExperimentalDecorator::class, ExperimentalReadiumApi::class)
+@OptIn(ExperimentalReadiumApi::class)
 internal open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(context, attrs) {
 
     interface Listener {

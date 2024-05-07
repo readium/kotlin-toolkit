@@ -8,8 +8,8 @@ package org.readium.r2.navigator.media.extensions
 
 import android.os.SystemClock
 import android.support.v4.media.session.PlaybackStateCompat
-import org.readium.r2.navigator.ExperimentalAudiobook
 import org.readium.r2.navigator.media.MediaPlayback
+import org.readium.r2.shared.InternalReadiumApi
 
 internal inline val PlaybackStateCompat.isPrepared get() =
     (state == PlaybackStateCompat.STATE_BUFFERING) ||
@@ -36,7 +36,7 @@ internal inline val PlaybackStateCompat.elapsedPosition: Long get() =
         position
     }
 
-@ExperimentalAudiobook
+@InternalReadiumApi
 internal fun PlaybackStateCompat.toPlaybackState(): MediaPlayback.State =
     when (state) {
         PlaybackStateCompat.STATE_BUFFERING, PlaybackStateCompat.STATE_CONNECTING,

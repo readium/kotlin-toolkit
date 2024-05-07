@@ -59,7 +59,6 @@ import kotlinx.parcelize.Parcelize
 import org.readium.navigator.media.tts.android.AndroidTtsEngine
 import org.readium.r2.navigator.DecorableNavigator
 import org.readium.r2.navigator.Decoration
-import org.readium.r2.navigator.ExperimentalDecorator
 import org.readium.r2.navigator.OverflowableNavigator
 import org.readium.r2.navigator.SelectableNavigator
 import org.readium.r2.navigator.VisualNavigator
@@ -91,7 +90,7 @@ import org.readium.r2.testapp.utils.viewLifecycle
  *
  * Provides common menu items and saves last location on stop.
  */
-@OptIn(ExperimentalDecorator::class, ExperimentalReadiumApi::class)
+@OptIn(ExperimentalReadiumApi::class)
 abstract class VisualReaderFragment : BaseReaderFragment() {
 
     protected var binding: FragmentReaderBinding by viewLifecycle()
@@ -642,7 +641,6 @@ abstract class VisualReaderFragment : BaseReaderFragment() {
  * This is an example of a custom Decoration Style declaration.
  */
 @Parcelize
-@OptIn(ExperimentalDecorator::class)
 data class DecorationStyleAnnotationMark(@ColorInt val tint: Int) : Decoration.Style
 
 /**
@@ -653,5 +651,4 @@ data class DecorationStyleAnnotationMark(@ColorInt val tint: Int) : Decoration.S
  * @param label Page number label as declared in the `page-list` link object.
  */
 @Parcelize
-@OptIn(ExperimentalDecorator::class)
 data class DecorationStylePageNumber(val label: String) : Decoration.Style

@@ -9,7 +9,6 @@ package org.readium.r2.navigator.epub.extensions
 import org.json.JSONObject
 import org.readium.r2.navigator.Decoration
 import org.readium.r2.navigator.DecorationChange
-import org.readium.r2.navigator.ExperimentalDecorator
 import org.readium.r2.navigator.html.HtmlDecorationTemplates
 import timber.log.Timber
 
@@ -18,7 +17,6 @@ import timber.log.Timber
 /**
  * Generates the JavaScript used to apply the receiver list of [DecorationChange] in a web view.
  */
-@ExperimentalDecorator
 internal fun List<DecorationChange>.javascriptForGroup(
     group: String,
     templates: HtmlDecorationTemplates
@@ -38,7 +36,6 @@ internal fun List<DecorationChange>.javascriptForGroup(
 /**
  * Generates the JavaScript used to apply the receiver [DecorationChange] in a web view.
  */
-@ExperimentalDecorator
 internal fun DecorationChange.javascript(templates: HtmlDecorationTemplates): String? {
     fun toJSON(decoration: Decoration): JSONObject? {
         val template = templates[decoration.style::class] ?: run {

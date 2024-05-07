@@ -45,7 +45,6 @@ import org.json.JSONObject
 import org.readium.r2.navigator.DecorableNavigator
 import org.readium.r2.navigator.Decoration
 import org.readium.r2.navigator.DecorationId
-import org.readium.r2.navigator.ExperimentalDecorator
 import org.readium.r2.navigator.HyperlinkNavigator
 import org.readium.r2.navigator.NavigatorFragment
 import org.readium.r2.navigator.OverflowableNavigator
@@ -108,7 +107,7 @@ public typealias JavascriptInterfaceFactory = (resource: Link) -> Any?
  *
  * To use this [Fragment], create a factory with `EpubNavigatorFragment.createFactory()`.
  */
-@OptIn(ExperimentalDecorator::class, ExperimentalReadiumApi::class, DelicateReadiumApi::class)
+@OptIn(ExperimentalReadiumApi::class, DelicateReadiumApi::class)
 public class EpubNavigatorFragment internal constructor(
     publication: Publication,
     private val initialLocator: Locator?,

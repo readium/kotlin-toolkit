@@ -3,6 +3,7 @@
 package org.readium.navigator.media2
 
 import androidx.media2.common.MediaMetadata
+import org.readium.r2.shared.InternalReadiumApi
 
 /**
  * Factory for the [MediaMetadata] associated with the publication and its resources.
@@ -10,6 +11,7 @@ import androidx.media2.common.MediaMetadata
  * The metadata are used for example in the media-style Android notification.
  */
 @Deprecated("Use the new MediaMetadataFactory from the readium-navigator-media-common module.")
+@InternalReadiumApi
 public interface MediaMetadataFactory {
 
     /**

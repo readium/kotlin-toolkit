@@ -10,7 +10,7 @@ import android.app.Notification
 import android.graphics.Bitmap
 import android.os.Bundle
 import android.os.ResultReceiver
-import org.readium.r2.navigator.ExperimentalAudiobook
+import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
@@ -25,7 +25,7 @@ import org.readium.r2.shared.util.data.ReadError
  * [MediaService], implementers MUST map a location in the [Publication] to a media ID
  * `publicationId#resourceHref` with a [Locator] as a `locator` extra field.
  */
-@ExperimentalAudiobook
+@InternalReadiumApi
 public interface MediaPlayer {
 
     public data class NotificationMetadata(

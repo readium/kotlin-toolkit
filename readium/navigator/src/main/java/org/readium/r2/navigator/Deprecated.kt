@@ -25,7 +25,6 @@ public interface IR2TTS
  * A navigator rendering an audio or video publication.
  */
 @Deprecated("Use the new readium-navigator-media modules.")
-@OptIn(ExperimentalAudiobook::class)
 public interface MediaNavigator : Navigator {
 
     /**

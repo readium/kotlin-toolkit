@@ -7,7 +7,7 @@
 package org.readium.r2.navigator.media
 
 import kotlin.time.Duration
-import org.readium.r2.navigator.ExperimentalAudiobook
+import org.readium.r2.shared.InternalReadiumApi
 
 /**
  * State of the playback at a point in time.
@@ -16,7 +16,7 @@ import org.readium.r2.navigator.ExperimentalAudiobook
  * @param rate Speed of the playback, defaults to 1.0.
  * @param timeline Position and duration of the current resource.
  */
-@ExperimentalAudiobook
+@InternalReadiumApi
 public data class MediaPlayback(val state: State, val rate: Double, val timeline: Timeline) {
 
     public enum class State {

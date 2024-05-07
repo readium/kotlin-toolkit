@@ -7,7 +7,6 @@
 package org.readium.r2.navigator.epub
 
 import androidx.fragment.app.FragmentFactory
-import org.readium.r2.navigator.ExperimentalDecorator
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
@@ -52,7 +51,6 @@ public class EpubNavigatorFactory(
      * pagination.
      * @param configuration Additional configuration.
      */
-    @OptIn(ExperimentalDecorator::class)
     public fun createFragmentFactory(
         initialLocator: Locator?,
         readingOrder: List<Link>? = null,
