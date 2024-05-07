@@ -10,7 +10,6 @@ import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.robolectric.RobolectricTestRunner
 
-@OptIn(ExperimentalDecorator::class)
 @RunWith(RobolectricTestRunner::class)
 class DecorationTest {
 

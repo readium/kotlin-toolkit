@@ -41,7 +41,7 @@ internal enum class DualPage {
     AUTO, OFF, ON
 }
 
-@OptIn(ExperimentalReadiumApi::class, ExperimentalDecorator::class, DelicateReadiumApi::class)
+@OptIn(ExperimentalReadiumApi::class, DelicateReadiumApi::class)
 internal class EpubNavigatorViewModel(
     application: Application,
     val publication: Publication,

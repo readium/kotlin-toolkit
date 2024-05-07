@@ -12,14 +12,12 @@ import androidx.media2.common.MediaItem
 import androidx.media2.common.MediaMetadata
 import androidx.media2.common.SessionPlayer
 import kotlin.time.Duration
-import kotlin.time.ExperimentalTime
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import timber.log.Timber
 
-@OptIn(ExperimentalTime::class)
 internal class SessionPlayerCallback(
     private val positionRefreshDelay: Duration,
     private val seekCompletedSender: SendChannel<Long>

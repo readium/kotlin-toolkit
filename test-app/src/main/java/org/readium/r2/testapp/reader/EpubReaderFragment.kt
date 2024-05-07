@@ -26,7 +26,6 @@ import androidx.lifecycle.repeatOnLifecycle
 import kotlinx.coroutines.launch
 import org.readium.r2.navigator.DecorableNavigator
 import org.readium.r2.navigator.Decoration
-import org.readium.r2.navigator.ExperimentalDecorator
 import org.readium.r2.navigator.epub.*
 import org.readium.r2.navigator.epub.css.FontStyle
 import org.readium.r2.navigator.html.HtmlDecorationTemplate
@@ -40,7 +39,7 @@ import org.readium.r2.testapp.R
 import org.readium.r2.testapp.reader.preferences.UserPreferencesViewModel
 import org.readium.r2.testapp.search.SearchFragment
 
-@OptIn(ExperimentalReadiumApi::class, ExperimentalDecorator::class)
+@OptIn(ExperimentalReadiumApi::class)
 class EpubReaderFragment : VisualReaderFragment() {
 
     override lateinit var navigator: EpubNavigatorFragment
@@ -293,7 +292,6 @@ class EpubReaderFragment : VisualReaderFragment() {
  *
  * Note that the icon is served from the app assets folder.
  */
-@OptIn(ExperimentalDecorator::class)
 private fun annotationMarkTemplate(@ColorInt defaultTint: Int = Color.YELLOW): HtmlDecorationTemplate {
     val className = "testapp-annotation-mark"
     val iconUrl = checkNotNull(EpubNavigatorFragment.assetUrl("annotation-icon.svg"))
@@ -330,7 +328,6 @@ private fun annotationMarkTemplate(@ColorInt defaultTint: Int = Color.YELLOW): H
  *
  * See http://kb.daisy.org/publishing/docs/navigation/pagelist.html
  */
-@OptIn(ExperimentalDecorator::class)
 private fun pageNumberTemplate(): HtmlDecorationTemplate {
     val className = "testapp-page-number"
     return HtmlDecorationTemplate(

@@ -20,7 +20,6 @@ import kotlin.time.Duration.Companion.seconds
 import kotlin.time.ExperimentalTime
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
-import org.readium.r2.navigator.ExperimentalAudiobook
 import org.readium.r2.navigator.MediaNavigator
 import org.readium.r2.navigator.extensions.normalizeLocator
 import org.readium.r2.navigator.extensions.sum
@@ -31,6 +30,7 @@ import org.readium.r2.navigator.media.extensions.publicationId
 import org.readium.r2.navigator.media.extensions.resourceHref
 import org.readium.r2.navigator.media.extensions.toPlaybackState
 import org.readium.r2.shared.DelicateReadiumApi
+import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
@@ -47,8 +47,11 @@ private val skipBackwardInterval: Duration = 30.seconds
 /**
  * An implementation of [MediaNavigator] using an Android's MediaSession compatible media player.
  */
-@Deprecated("Use the new AudioNavigator from the readium-navigator-media-audio module.")
-@OptIn(ExperimentalTime::class, ExperimentalAudiobook::class)
+@Deprecated(
+    "Use the new AudioNavigator from the readium-navigator-media-audio module. This class will be removed in a future 3.x release."
+)
+@InternalReadiumApi
+@OptIn(ExperimentalTime::class)
 public class MediaSessionNavigator(
     public val publication: Publication,
     public val publicationId: PublicationId,

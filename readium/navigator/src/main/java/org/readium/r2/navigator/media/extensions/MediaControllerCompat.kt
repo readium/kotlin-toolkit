@@ -9,10 +9,10 @@
 package org.readium.r2.navigator.media.extensions
 
 import android.support.v4.media.session.MediaControllerCompat
-import org.readium.r2.navigator.ExperimentalAudiobook
 import org.readium.r2.navigator.media.MediaService
+import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.publication.PublicationId
 
-@ExperimentalAudiobook
+@InternalReadiumApi
 internal val MediaControllerCompat.publicationId: PublicationId?
     get() = extras?.getString(MediaService.EXTRA_PUBLICATION_ID)

@@ -137,19 +137,15 @@ internal val SessionPlayer.playbackSpeedNullable
 internal val SessionPlayer.currentIndexNullable
     get() = currentMediaItemIndex.takeUnless { it == SessionPlayer.INVALID_ITEM_INDEX }
 
-@ExperimentalTime
 internal val SessionPlayer.currentPositionDuration: Duration?
     get() = msToDuration(currentPosition)
 
-@ExperimentalTime
 internal val SessionPlayer.bufferedPositionDuration: Duration?
     get() = msToDuration(bufferedPosition)
 
-@ExperimentalTime
 internal val SessionPlayer.currentDuration: Duration?
     get() = msToDuration(duration)
 
-@ExperimentalTime
 private fun msToDuration(ms: Long): Duration? =
     if (ms == SessionPlayer.UNKNOWN_TIME) {
         null
@@ -157,19 +153,16 @@ private fun msToDuration(ms: Long): Duration? =
         ms.milliseconds
     }
 
-@ExperimentalTime
 internal val MediaMetadata.duration: Duration?
     get() = getLong(MediaMetadata.METADATA_KEY_DURATION)
         .takeUnless { it == 0L }
         ?.milliseconds
 
-@ExperimentalTime
 internal val List<MediaMetadata>.durations: List<Duration>?
     get() {
         val durations = mapNotNull { it.duration }
         return durations.takeIf { it.size == this.size }
     }
 
-@ExperimentalTime
 internal val List<MediaItem>.metadata: List<MediaMetadata>
     get() = map { it.metadata!! }

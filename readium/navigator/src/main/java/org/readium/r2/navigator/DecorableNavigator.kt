@@ -26,7 +26,6 @@ import org.readium.r2.shared.util.Url
 /**
  * A navigator able to render arbitrary decorations over a publication.
  */
-@ExperimentalDecorator
 public interface DecorableNavigator : Navigator {
     /**
      * Declares the current state of the decorations in the given decoration [group].
@@ -98,7 +97,6 @@ public interface DecorableNavigator : Navigator {
  * @param extras Additional context data specific to a reading app. Readium does not use it.
  */
 @Parcelize
-@ExperimentalDecorator
 public data class Decoration(
     val id: DecorationId,
     val locator: Locator,
@@ -145,11 +143,9 @@ public data class Decoration(
 }
 
 /** Unique identifier for a decoration. */
-@ExperimentalDecorator
 public typealias DecorationId = String
 
 /** Represents an atomic change in a list of [Decoration] objects. */
-@ExperimentalDecorator
 public sealed class DecorationChange {
     public data class Added(val decoration: Decoration) : DecorationChange()
     public data class Updated(val decoration: Decoration) : DecorationChange()
@@ -162,7 +158,6 @@ public sealed class DecorationChange {
  *
  * The changes need to be applied in the same order, one by one.
  */
-@ExperimentalDecorator
 public suspend fun List<Decoration>.changesByHref(target: List<Decoration>): Map<Url, List<DecorationChange>> = withContext(
     Dispatchers.Default
 ) {

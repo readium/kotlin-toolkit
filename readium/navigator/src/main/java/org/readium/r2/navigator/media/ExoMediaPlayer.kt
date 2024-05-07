@@ -42,9 +42,9 @@ import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
-import org.readium.r2.navigator.ExperimentalAudiobook
 import org.readium.r2.navigator.R
 import org.readium.r2.navigator.extensions.timeWithDuration
+import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.extensions.findInstance
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
@@ -59,7 +59,7 @@ import timber.log.Timber
 /**
  * An implementation of [MediaPlayer] using ExoPlayer.
  */
-@ExperimentalAudiobook
+@InternalReadiumApi
 public class ExoMediaPlayer(
     context: Context,
     mediaSession: MediaSessionCompat,
