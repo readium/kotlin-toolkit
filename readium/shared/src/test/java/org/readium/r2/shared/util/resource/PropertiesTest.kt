@@ -24,7 +24,7 @@ class PropertiesTest {
             ArchiveProperties(entryLength = 8273, isEntryCompressed = true),
             Resource.Properties(
                 mapOf(
-                    "archive" to mapOf(
+                    "https://readium.org/webpub-manifest/properties#archive" to mapOf(
                         "entryLength" to 8273,
                         "isEntryCompressed" to true
                     )
@@ -38,7 +38,7 @@ class PropertiesTest {
         assertNull(
             Resource.Properties(
                 mapOf(
-                    "archive" to mapOf(
+                    "https://readium.org/webpub-manifest/properties#archive" to mapOf(
                         "foo" to "bar"
                     )
                 )
@@ -51,7 +51,7 @@ class PropertiesTest {
         assertNull(
             Resource.Properties(
                 mapOf(
-                    "archive" to mapOf(
+                    "https://readium.org/webpub-manifest/properties#archive" to mapOf(
                         "isEntryCompressed" to true
                     )
                 )
@@ -61,7 +61,7 @@ class PropertiesTest {
         assertNull(
             Resource.Properties(
                 mapOf(
-                    "archive" to mapOf(
+                    "https://readium.org/webpub-manifest/properties#archive" to mapOf(
                         "entryLength" to 8273
                     )
                 )
