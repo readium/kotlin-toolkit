@@ -48,7 +48,7 @@ public data class ArchiveProperties(
     }
 }
 
-private const val ARCHIVE_KEY = "archive"
+private const val ARCHIVE_KEY = "https://readium.org/webpub-manifest/properties#archive"
 
 public val Resource.Properties.archive: ArchiveProperties?
     get() = (this[ARCHIVE_KEY] as? Map<*, *>)
