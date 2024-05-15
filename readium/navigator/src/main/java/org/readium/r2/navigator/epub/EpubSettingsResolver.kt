@@ -28,6 +28,14 @@ internal class EpubSettingsResolver(
 
         val theme = preferences.theme ?: Theme.LIGHT
 
+        var scroll = preferences.scroll ?: defaults.scroll ?: false
+
+        // / We disable pagination with vertical text, because CSS columns don't support it properly.
+        // / See https://github.com/readium/swift-toolkit/discussions/370
+        if (verticalText) {
+            scroll = true
+        }
+
         return EpubSettings(
             backgroundColor = preferences.backgroundColor,
             columnCount = preferences.columnCount ?: defaults.columnCount ?: ColumnCount.AUTO,
@@ -45,7 +53,7 @@ internal class EpubSettingsResolver(
             paragraphSpacing = preferences.paragraphSpacing ?: defaults.paragraphSpacing,
             publisherStyles = preferences.publisherStyles ?: defaults.publisherStyles ?: true,
             readingProgression = readingProgression,
-            scroll = preferences.scroll ?: defaults.scroll ?: false,
+            scroll = scroll,
             spread = preferences.spread ?: defaults.spread ?: Spread.NEVER,
             textAlign = preferences.textAlign ?: defaults.textAlign,
             textColor = preferences.textColor,
