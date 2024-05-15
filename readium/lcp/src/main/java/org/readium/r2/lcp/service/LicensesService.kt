@@ -152,7 +152,7 @@ internal class LicensesService(
 
         Timber.i("LCP destination $destination")
 
-        val mediaType = network.download(
+        val serverMediaType = network.download(
             url,
             destination,
             mediaType = link.mediaType,
@@ -173,8 +173,7 @@ internal class LicensesService(
                 destination,
                 FormatHints(
                     mediaTypes = listOfNotNull(
-                        license.publicationLink.mediaType,
-                        mediaType
+                        license.publicationLink.mediaType ?: serverMediaType
                     )
                 )
             ).getOrElse {
