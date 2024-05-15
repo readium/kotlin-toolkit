@@ -329,7 +329,7 @@ public class EpubPreferencesEditor internal constructor(
         PreferenceDelegate(
             getValue = { preferences.scroll },
             getEffectiveValue = { state.settings.scroll },
-            getIsEffective = { layout == EpubLayout.REFLOWABLE },
+            getIsEffective = { layout == EpubLayout.REFLOWABLE && !state.settings.verticalText },
             updateValue = { value -> updateValues { it.copy(scroll = value) } }
         )
 
