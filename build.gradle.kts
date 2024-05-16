@@ -9,6 +9,7 @@ import org.jetbrains.dokka.gradle.DokkaTaskPartial
 plugins {
     alias(libs.plugins.dokka)
     alias(libs.plugins.ktlint)
+    alias(libs.plugins.compose.compiler) apply false
 }
 
 subprojects {

@@ -479,6 +479,7 @@ internal class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView
         }
     }
 
+    @Deprecated("Deprecated in Java")
     override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
         val count = childCount
         val width = r - l
