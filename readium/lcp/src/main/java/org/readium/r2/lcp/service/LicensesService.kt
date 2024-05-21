@@ -42,6 +42,7 @@ import org.readium.r2.shared.util.FileExtension
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.asset.Asset
 import org.readium.r2.shared.util.asset.AssetRetriever
+import org.readium.r2.shared.util.asset.ContainerAsset
 import org.readium.r2.shared.util.format.Format
 import org.readium.r2.shared.util.format.FormatHints
 import org.readium.r2.shared.util.format.FormatSpecification
@@ -241,6 +242,21 @@ internal class LicensesService(
             Try.success(license)
         } catch (e: Exception) {
             Try.failure(LcpError.wrap(e))
+        }
+
+    override suspend fun retrieveLicenseDocument(
+        asset: ContainerAsset
+    ): Try<LicenseDocument, LcpError> =
+        withContext(Dispatchers.IO) {
+            try {
+                val licenseContainer = createLicenseContainer(context, asset)
+                val licenseData = licenseContainer.read()
+                Try.success(LicenseDocument(licenseData))
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                Try.failure(LcpError.wrap(e))
+            }
         }
 
     private suspend fun retrieveLicense(

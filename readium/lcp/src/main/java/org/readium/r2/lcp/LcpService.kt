@@ -28,6 +28,7 @@ import org.readium.r2.shared.publication.protection.ContentProtection
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.asset.Asset
 import org.readium.r2.shared.util.asset.AssetRetriever
+import org.readium.r2.shared.util.asset.ContainerAsset
 import org.readium.r2.shared.util.format.Format
 
 /**
@@ -117,6 +118,13 @@ public interface LcpService {
         authentication: LcpAuthenticating,
         allowUserInteraction: Boolean
     ): Try<LcpLicense, LcpError>
+
+    /**
+     * Retrieves the license document from a LCP-protected publication asset.
+     */
+    public suspend fun retrieveLicenseDocument(
+        asset: ContainerAsset
+    ): Try<LicenseDocument, LcpError>
 
     /**
      * Injects a [licenseDocument] into the given [publicationFile] package.
