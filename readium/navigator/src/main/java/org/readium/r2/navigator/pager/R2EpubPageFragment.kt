@@ -435,9 +435,8 @@ internal class R2EpubPageFragment : Fragment() {
         readingProgression: ReadingProgression,
         locator: Locator
     ) {
-        val text = locator.text
-        if (text.highlight != null) {
-            if (webView.scrollToText(text)) {
+        if (locator.text.highlight != null) {
+            if (webView.scrollToLocator(locator)) {
                 return
             }
         }

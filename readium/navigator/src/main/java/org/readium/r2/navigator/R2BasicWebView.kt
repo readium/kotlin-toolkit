@@ -509,9 +509,9 @@ internal open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebV
         runJavaScript("readium.scrollToPosition(\"$progression\");")
     }
 
-    suspend fun scrollToText(text: Locator.Text): Boolean {
-        val json = text.toJSON().toString()
-        return runJavaScriptSuspend("readium.scrollToText($json);").toBoolean()
+    suspend fun scrollToLocator(locator: Locator): Boolean {
+        val json = locator.toJSON().toString()
+        return runJavaScriptSuspend("readium.scrollToLocator($json);").toBoolean()
     }
 
     fun setScrollMode(scrollMode: Boolean) {
