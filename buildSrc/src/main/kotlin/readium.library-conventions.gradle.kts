@@ -29,10 +29,6 @@ android {
     kotlinOptions {
         jvmTarget = JavaVersion.VERSION_1_8.toString()
         allWarningsAsErrors = true
-        freeCompilerArgs = freeCompilerArgs + listOf(
-            "-opt-in=kotlin.RequiresOptIn",
-            "-opt-in=org.readium.r2.shared.InternalReadiumApi"
-        )
     }
 
     testOptions {

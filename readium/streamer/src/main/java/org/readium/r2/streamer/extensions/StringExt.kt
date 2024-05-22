@@ -1,7 +1,10 @@
+@file:OptIn(InternalReadiumApi::class)
+
 package org.readium.r2.streamer.extensions
 
 import com.mcxiaoke.koi.HASH
 import com.mcxiaoke.koi.ext.toHexBytes
+import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.extensions.tryOrNull
 
 /**

@@ -4,12 +4,15 @@
  * available in the top-level LICENSE file of the project.
  */
 
+@file:OptIn(InternalReadiumApi::class)
+
 package org.readium.r2.shared.util.zip
 
 import java.io.File
 import java.io.IOException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.extensions.findInstance
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Try

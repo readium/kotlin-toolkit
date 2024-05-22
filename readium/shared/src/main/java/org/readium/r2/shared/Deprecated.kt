@@ -8,6 +8,7 @@
  */
 
 @file:Suppress("RemoveRedundantQualifierName")
+@file:OptIn(InternalReadiumApi::class)
 
 package org.readium.r2.shared
 

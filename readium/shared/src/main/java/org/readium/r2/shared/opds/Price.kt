@@ -7,11 +7,14 @@
  * LICENSE file present in the project repository where this source code is maintained.
  */
 
+@file:OptIn(InternalReadiumApi::class)
+
 package org.readium.r2.shared.opds
 
 import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
 import org.json.JSONObject
+import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.JSONable
 import org.readium.r2.shared.extensions.optNullableString
 import org.readium.r2.shared.extensions.optPositiveDouble

@@ -4,10 +4,13 @@
  * available in the top-level LICENSE file of the project.
  */
 
+@file:OptIn(InternalReadiumApi::class)
+
 package org.readium.r2.lcp.util
 
 import java.io.File
 import java.security.MessageDigest
+import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.extensions.tryOrNull
 
 /**

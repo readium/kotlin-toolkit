@@ -6,6 +6,8 @@
  * Use of this source code is governed by a BSD-style license which is detailed in the
  * LICENSE file present in the project repository where this source code is maintained.
  */
+@file:OptIn(InternalReadiumApi::class)
+
 package org.readium.r2.shared.publication.presentation
 
 import android.os.Parcelable
@@ -13,6 +15,7 @@ import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import org.json.JSONObject
+import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.JSONable
 import org.readium.r2.shared.extensions.optNullableBoolean
 import org.readium.r2.shared.publication.Properties

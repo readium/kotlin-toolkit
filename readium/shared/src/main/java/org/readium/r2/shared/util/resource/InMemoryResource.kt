@@ -4,9 +4,12 @@
  * available in the top-level LICENSE file of the project.
  */
 
+@file:OptIn(InternalReadiumApi::class)
+
 package org.readium.r2.shared.util.resource
 
 import kotlinx.coroutines.runBlocking
+import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.extensions.coerceFirstNonNegative
 import org.readium.r2.shared.extensions.read
 import org.readium.r2.shared.extensions.requireLengthFitInt

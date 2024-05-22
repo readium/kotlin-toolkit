@@ -8,10 +8,12 @@
  */
 
 @file:Suppress("unused")
+@file:OptIn(InternalReadiumApi::class)
 
 package org.readium.r2.lcp
 
 import kotlin.math.ceil
+import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.extensions.coerceIn
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.util.ErrorException

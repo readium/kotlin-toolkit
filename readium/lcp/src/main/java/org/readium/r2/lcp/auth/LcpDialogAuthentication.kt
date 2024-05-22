@@ -4,6 +4,8 @@
  * available in the top-level LICENSE file of the project.
  */
 
+@file:OptIn(InternalReadiumApi::class)
+
 package org.readium.r2.lcp.auth
 
 import android.annotation.SuppressLint
@@ -33,6 +35,7 @@ import kotlinx.coroutines.withContext
 import org.readium.r2.lcp.LcpAuthenticating
 import org.readium.r2.lcp.R
 import org.readium.r2.lcp.license.model.components.Link
+import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.extensions.tryOr
 import org.readium.r2.shared.extensions.tryOrNull
 import org.readium.r2.shared.util.AbsoluteUrl

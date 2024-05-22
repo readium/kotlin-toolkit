@@ -1,7 +1,10 @@
+@file:OptIn(InternalReadiumApi::class)
+
 package org.readium.r2.shared.extensions
 
 import kotlin.test.assertEquals
 import org.junit.Test
+import org.readium.r2.shared.InternalReadiumApi
 
 class LongRangeTest {
 
