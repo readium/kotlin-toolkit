@@ -169,6 +169,4 @@ exoplayer = ["google-exoplayer-core", "google-exoplayer-ui", "google-exoplayer-m
 lifecycle = ["androidx-lifecycle-common", "androidx-lifecycle-extensions", "androidx-lifecycle-livedata", "androidx-lifecycle-runtime", "androidx-lifecycle-viewmodel", "androidx-lifecycle-vmsavedstate", "androidx-lifecycle-viewmodel-compose"]
 media2 = ["androidx-media2-session", "androidx-media2-player", "google-exoplayer-core", "google-exoplayer-extension-media2"]
 media3 = ["androidx-media3-session", "androidx-media3-common", "androidx-media3-exoplayer"]
-navigation = ["androidx-navigation-fragment", "androidx-navigation-ui"]
 room = ["androidx-room-runtime", "androidx-room-ktx"]
-test-frameworks = ["junit", "androidx-ext-junit", "androidx-expresso-core", "robolectric", "kotlin-junit", "assertj", "kotlinx-coroutines-test"]
