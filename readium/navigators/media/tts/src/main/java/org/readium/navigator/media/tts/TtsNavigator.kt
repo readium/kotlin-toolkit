@@ -4,6 +4,8 @@
  * available in the top-level LICENSE file of the project.
  */
 
+@file:OptIn(InternalReadiumApi::class)
+
 package org.readium.navigator.media.tts
 
 import androidx.media3.common.Player
@@ -17,6 +19,7 @@ import org.readium.r2.navigator.extensions.normalizeLocator
 import org.readium.r2.navigator.preferences.Configurable
 import org.readium.r2.shared.DelicateReadiumApi
 import org.readium.r2.shared.ExperimentalReadiumApi
+import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.extensions.combineStateIn
 import org.readium.r2.shared.extensions.mapStateIn
 import org.readium.r2.shared.publication.Link

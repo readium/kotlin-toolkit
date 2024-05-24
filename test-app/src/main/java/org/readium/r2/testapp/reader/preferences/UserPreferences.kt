@@ -595,7 +595,7 @@ private fun ReflowableUserPreferences(
 
 @Composable
 private fun Divider() {
-    Divider(modifier = Modifier.padding(vertical = 16.dp))
+    HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
 }
 
 @Composable

@@ -4,9 +4,12 @@
  * available in the top-level LICENSE file of the project.
  */
 
+@file:OptIn(InternalReadiumApi::class)
+
 package org.readium.r2.streamer.parser.readium
 
 import android.content.Context
+import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.publication.Manifest
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.services.InMemoryCacheService

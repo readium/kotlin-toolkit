@@ -4,6 +4,8 @@
  * available in the top-level LICENSE file of the project.
  */
 
+@file:OptIn(InternalReadiumApi::class)
+
 package org.readium.adapter.pdfium.navigator
 
 import android.graphics.PointF
@@ -16,6 +18,7 @@ import org.readium.r2.navigator.pdf.PdfEngineProvider
 import org.readium.r2.navigator.util.SingleFragmentFactory
 import org.readium.r2.navigator.util.createFragmentFactory
 import org.readium.r2.shared.ExperimentalReadiumApi
+import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.publication.Metadata
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.util.Url

@@ -15,7 +15,7 @@ import org.readium.r2.testapp.utils.compose.LocalContentEmphasis
  * Sets the emphasis (alpha) of a group of [Composable] views.
  */
 @Composable
-fun Group(lowEmphasis: Boolean = false, enabled: Boolean = true, content: @Composable () -> Unit) {
+fun Group(enabled: Boolean = true, content: @Composable () -> Unit) {
     val emphasis = when {
         !enabled -> Emphasis.Disabled
         else -> Emphasis.Medium

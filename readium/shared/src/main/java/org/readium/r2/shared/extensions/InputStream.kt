@@ -11,6 +11,8 @@
  *
  */
 
+@file:OptIn(InternalReadiumApi::class)
+
 package org.readium.r2.shared.extensions
 
 import java.io.ByteArrayOutputStream
@@ -19,6 +21,7 @@ import java.io.OutputStream
 import java.util.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.readium.r2.shared.InternalReadiumApi
 
 /**
  * Copies this stream to the given output stream, returning the number of bytes copied

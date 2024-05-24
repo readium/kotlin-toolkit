@@ -7,6 +7,8 @@
  * LICENSE file present in the project repository where this source code is maintained.
  */
 
+@file:OptIn(InternalReadiumApi::class)
+
 package org.readium.r2.shared.util.xml
 
 import java.io.ByteArrayInputStream
@@ -14,6 +16,7 @@ import javax.xml.XMLConstants
 import kotlin.test.assertEquals
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.readium.r2.shared.InternalReadiumApi
 import org.robolectric.RobolectricTestRunner
 import org.xmlpull.v1.XmlPullParserException
 

@@ -222,7 +222,7 @@ abstract class VisualReaderFragment : BaseReaderFragment() {
         viewLifecycleOwner.lifecycleScope.launch {
             setupHighlights(viewLifecycleOwner.lifecycleScope)
             setupSearch(viewLifecycleOwner.lifecycleScope)
-            setupTts(viewLifecycleOwner.lifecycleScope)
+            setupTts()
         }
     }
 
@@ -245,7 +245,7 @@ abstract class VisualReaderFragment : BaseReaderFragment() {
     /**
      * Setup text-to-speech observers, if available.
      */
-    private suspend fun setupTts(scope: CoroutineScope) {
+    private suspend fun setupTts() {
         model.tts?.apply {
             events
                 .observeWhenStarted(viewLifecycleOwner) { event ->

@@ -4,8 +4,11 @@
  * available in the top-level LICENSE file of the project.
  */
 
+@file:OptIn(InternalReadiumApi::class)
+
 package org.readium.r2.streamer.parser.epub
 
+import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.publication.ReadingProgression
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.fromEpubHref
