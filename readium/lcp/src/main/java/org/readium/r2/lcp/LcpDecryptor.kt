@@ -7,8 +7,11 @@
  * LICENSE file present in the project repository where this source code is maintained.
  */
 
+@file:OptIn(InternalReadiumApi::class)
+
 package org.readium.r2.lcp
 
+import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.extensions.coerceFirstNonNegative
 import org.readium.r2.shared.extensions.inflate
 import org.readium.r2.shared.extensions.requireLengthFitInt

@@ -4,6 +4,8 @@
  * available in the top-level LICENSE file of the project.
  */
 
+@file:OptIn(InternalReadiumApi::class)
+
 package org.readium.r2.shared.util
 
 import android.net.Uri

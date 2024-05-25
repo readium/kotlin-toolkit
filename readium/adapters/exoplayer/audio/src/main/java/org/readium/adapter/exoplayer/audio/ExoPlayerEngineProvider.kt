@@ -4,6 +4,8 @@
  * available in the top-level LICENSE file of the project.
  */
 
+@file:OptIn(InternalReadiumApi::class)
+
 package org.readium.adapter.exoplayer.audio
 
 import android.app.Application
@@ -15,6 +17,7 @@ import org.readium.navigator.media.common.DefaultMediaMetadataProvider
 import org.readium.navigator.media.common.MediaMetadataProvider
 import org.readium.r2.navigator.extensions.time
 import org.readium.r2.shared.ExperimentalReadiumApi
+import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.indexOfFirstWithHref

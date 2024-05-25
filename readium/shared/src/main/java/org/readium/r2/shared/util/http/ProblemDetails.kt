@@ -4,11 +4,14 @@
  * available in the top-level LICENSE file of the project.
  */
 
+@file:OptIn(InternalReadiumApi::class)
+
 package org.readium.r2.shared.util.http
 
 import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
 import org.json.JSONObject
+import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.extensions.optNullableInt
 import org.readium.r2.shared.extensions.optNullableString
 import org.readium.r2.shared.util.logging.WarningLogger

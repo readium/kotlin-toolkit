@@ -4,6 +4,8 @@
  * available in the top-level LICENSE file of the project.
  */
 
+@file:OptIn(InternalReadiumApi::class)
+
 package org.readium.r2.navigator.image
 
 import android.graphics.PointF
@@ -39,6 +41,7 @@ import org.readium.r2.navigator.preferences.ReadingProgression
 import org.readium.r2.navigator.util.createFragmentFactory
 import org.readium.r2.shared.DelicateReadiumApi
 import org.readium.r2.shared.ExperimentalReadiumApi
+import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication

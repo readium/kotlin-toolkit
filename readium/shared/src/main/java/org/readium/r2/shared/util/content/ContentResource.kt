@@ -4,6 +4,8 @@
  * available in the top-level LICENSE file of the project.
  */
 
+@file:OptIn(InternalReadiumApi::class)
+
 package org.readium.r2.shared.util.content
 
 import android.content.ContentResolver
@@ -15,6 +17,7 @@ import java.io.InputStream
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
+import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.extensions.*
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.DebugError

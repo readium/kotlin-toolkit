@@ -7,13 +7,30 @@
  * LICENSE file present in the project repository where this source code is maintained.
  */
 
+@file:OptIn(InternalReadiumApi::class)
+
 package org.readium.r2.opds
 
 import java.net.URL
+import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.extensions.toList
 import org.readium.r2.shared.extensions.toMap
-import org.readium.r2.shared.opds.*
-import org.readium.r2.shared.publication.*
+import org.readium.r2.shared.opds.Acquisition
+import org.readium.r2.shared.opds.Facet
+import org.readium.r2.shared.opds.Feed
+import org.readium.r2.shared.opds.Group
+import org.readium.r2.shared.opds.ParseData
+import org.readium.r2.shared.opds.Price
+import org.readium.r2.shared.publication.Contributor
+import org.readium.r2.shared.publication.Href
+import org.readium.r2.shared.publication.Link
+import org.readium.r2.shared.publication.LocalizedString
+import org.readium.r2.shared.publication.Manifest
+import org.readium.r2.shared.publication.Metadata
+import org.readium.r2.shared.publication.Properties
+import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.publication.PublicationCollection
+import org.readium.r2.shared.publication.Subject
 import org.readium.r2.shared.toJSON
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.ErrorException

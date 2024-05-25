@@ -81,7 +81,9 @@ internal abstract class R2FragmentPagerAdapter(private val mFragmentManager: Fra
         }
 
         if (fragment.isAdded && currentPosition != PagerAdapter.POSITION_NONE) {
-            mSavedStates.put(fragmentKey, mFragmentManager.saveFragmentInstanceState(fragment))
+            mFragmentManager.saveFragmentInstanceState(fragment)?.let { state ->
+                mSavedStates.put(fragmentKey, state)
+            }
         } else {
             mSavedStates.remove(fragmentKey)
         }
@@ -133,7 +135,7 @@ internal abstract class R2FragmentPagerAdapter(private val mFragmentManager: Fra
         }
         for (i in 0 until mFragments.size()) {
             val f = mFragments.valueAt(i)
-            if (f != null && f.isAdded) {
+            if (f.isAdded) {
                 if (state == null) {
                     state = Bundle()
                 }
@@ -153,14 +155,13 @@ internal abstract class R2FragmentPagerAdapter(private val mFragmentManager: Fra
             mFragments.clear()
             if (fss != null) {
                 for (fs in fss) {
-                    mSavedStates.put(
-                        fs,
-                        BundleCompat.getParcelable(
-                            bundle,
-                            fs.toString(),
-                            Fragment.SavedState::class.java
-                        )
-                    )
+                    BundleCompat.getParcelable(
+                        bundle,
+                        fs.toString(),
+                        Fragment.SavedState::class.java
+                    )?.let { st ->
+                        mSavedStates.put(fs, st)
+                    }
                 }
             }
             val keys = bundle.keySet()

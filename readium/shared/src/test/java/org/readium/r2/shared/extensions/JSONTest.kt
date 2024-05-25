@@ -1,3 +1,5 @@
+@file:OptIn(InternalReadiumApi::class)
+
 package org.readium.r2.shared.extensions
 
 import org.json.JSONArray
@@ -6,6 +8,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.readium.r2.shared.InternalReadiumApi
 import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)

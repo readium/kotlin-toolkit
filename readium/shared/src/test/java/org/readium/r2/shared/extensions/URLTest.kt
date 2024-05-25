@@ -7,11 +7,14 @@
  * LICENSE file present in the project repository where this source code is maintained.
  */
 
+@file:OptIn(InternalReadiumApi::class)
+
 package org.readium.r2.shared.extensions
 
 import java.net.URL
 import org.junit.Assert.assertEquals
 import org.junit.Test
+import org.readium.r2.shared.InternalReadiumApi
 
 class URLTest {
 

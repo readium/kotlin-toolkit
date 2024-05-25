@@ -7,6 +7,8 @@
  * LICENSE file present in the project repository where this source code is maintained.
  */
 
+@file:OptIn(InternalReadiumApi::class)
+
 package org.readium.r2.navigator.pager
 
 import android.annotation.SuppressLint
@@ -435,9 +437,8 @@ internal class R2EpubPageFragment : Fragment() {
         readingProgression: ReadingProgression,
         locator: Locator
     ) {
-        val text = locator.text
-        if (text.highlight != null) {
-            if (webView.scrollToText(text)) {
+        if (locator.text.highlight != null) {
+            if (webView.scrollToLocator(locator)) {
                 return
             }
         }

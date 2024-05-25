@@ -4,9 +4,12 @@
  * available in the top-level LICENSE file of the project.
  */
 
+@file:OptIn(InternalReadiumApi::class)
+
 package org.readium.navigator.media.tts
 
 import org.readium.r2.shared.ExperimentalReadiumApi
+import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.indexOfFirstWithHref

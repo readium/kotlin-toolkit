@@ -4,10 +4,13 @@
  * available in the top-level LICENSE file of the project.
  */
 
+@file:OptIn(InternalReadiumApi::class)
+
 package org.readium.r2.shared.util.format
 
 import java.util.Locale
 import org.json.JSONObject
+import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.extensions.tryOrNull
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Manifest

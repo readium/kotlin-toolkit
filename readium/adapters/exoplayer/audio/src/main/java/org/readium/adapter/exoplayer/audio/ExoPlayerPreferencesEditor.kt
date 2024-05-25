@@ -4,6 +4,8 @@
  * available in the top-level LICENSE file of the project.
  */
 
+@file:OptIn(InternalReadiumApi::class)
+
 package org.readium.adapter.exoplayer.audio
 
 import org.readium.r2.navigator.extensions.format
@@ -12,6 +14,7 @@ import org.readium.r2.navigator.preferences.PreferencesEditor
 import org.readium.r2.navigator.preferences.RangePreference
 import org.readium.r2.navigator.preferences.RangePreferenceDelegate
 import org.readium.r2.shared.ExperimentalReadiumApi
+import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.publication.Metadata
 
 /**

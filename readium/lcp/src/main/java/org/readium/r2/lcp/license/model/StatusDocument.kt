@@ -7,6 +7,8 @@
  * LICENSE file present in the project repository where this source code is maintained.
  */
 
+@file:OptIn(InternalReadiumApi::class)
+
 package org.readium.r2.lcp.license.model
 
 import java.nio.charset.Charset
@@ -19,6 +21,7 @@ import org.readium.r2.lcp.license.model.components.Links
 import org.readium.r2.lcp.license.model.components.lsd.Event
 import org.readium.r2.lcp.license.model.components.lsd.PotentialRights
 import org.readium.r2.lcp.service.URLParameters
+import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.extensions.mapNotNull
 import org.readium.r2.shared.extensions.optNullableString
 import org.readium.r2.shared.util.Instant

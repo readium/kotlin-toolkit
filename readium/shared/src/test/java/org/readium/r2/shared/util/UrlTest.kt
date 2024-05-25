@@ -1,3 +1,5 @@
+@file:OptIn(InternalReadiumApi::class)
+
 package org.readium.r2.shared.util
 
 import android.net.Uri
@@ -11,6 +13,7 @@ import org.junit.Assert.assertNull
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.readium.r2.shared.DelicateReadiumApi
+import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.util.Url.Query
 import org.readium.r2.shared.util.Url.QueryParameter
 import org.robolectric.RobolectricTestRunner

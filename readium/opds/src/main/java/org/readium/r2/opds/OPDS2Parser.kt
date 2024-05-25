@@ -7,7 +7,7 @@
  * LICENSE file present in the project repository where this source code is maintained.
  */
 
-@file:OptIn(ExperimentalReadiumApi::class)
+@file:OptIn(ExperimentalReadiumApi::class, InternalReadiumApi::class)
 
 package org.readium.r2.opds
 
@@ -15,6 +15,7 @@ import java.net.URL
 import org.json.JSONArray
 import org.json.JSONObject
 import org.readium.r2.shared.ExperimentalReadiumApi
+import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.opds.Facet
 import org.readium.r2.shared.opds.Feed
 import org.readium.r2.shared.opds.Group
