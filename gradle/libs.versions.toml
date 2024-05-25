@@ -9,9 +9,6 @@ androidx-activity = "1.9.0"
 androidx-appcompat = "1.6.1"
 androidx-browser = "1.8.0"
 androidx-cardview = "1.0.0"
-# Make sure to align with the Kotlin version
-# https://developer.android.com/jetpack/androidx/releases/compose-kotlin
-androidx-compose-compiler = "1.5.14"
 androidx-compose-animation = "1.6.7"
 androidx-compose-foundation = "1.6.7"
 androidx-compose-material = "1.6.7"

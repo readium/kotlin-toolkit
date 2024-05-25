@@ -63,10 +63,6 @@ android {
     namespace = "org.readium.r2.testapp"
 }
 
-composeCompiler {
-//    enableStrongSkippingMode = true
-}
-
 dependencies {
     coreLibraryDesugaring(libs.desugar.jdk.libs)
 
