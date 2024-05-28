@@ -67,7 +67,6 @@ dependencies {
     coreLibraryDesugaring(libs.desugar.jdk.libs)
 
     implementation(libs.kotlin.stdlib)
-    implementation(libs.androidx.legacy.v4)
 
     implementation(project(":readium:readium-shared"))
     implementation(project(":readium:readium-streamer"))
@@ -94,7 +93,7 @@ dependencies {
     implementation(libs.androidx.core)
     implementation(libs.androidx.datastore.preferences)
     implementation(libs.androidx.fragment.ktx)
-    implementation(libs.bundles.lifecycle)
+    implementation(libs.androidx.lifecycle.common)
     implementation(libs.androidx.navigation.fragment)
     implementation(libs.androidx.navigation.ui)
     implementation(libs.androidx.paging)
@@ -113,10 +112,4 @@ dependencies {
     // Room database
     implementation(libs.bundles.room)
     ksp(libs.androidx.room.compiler)
-
-    // Tests
-    testImplementation(libs.junit)
-
-    androidTestImplementation(libs.androidx.ext.junit)
-    androidTestImplementation(libs.androidx.expresso.core)
 }

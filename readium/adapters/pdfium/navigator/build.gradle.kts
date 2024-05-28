@@ -23,13 +23,7 @@ dependencies {
     api(project(":readium:adapters:pdfium:readium-adapter-pdfium-document"))
 
     api(libs.pdf.viewer)
-    implementation(libs.androidx.fragment.ktx)
     implementation(libs.timber)
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.kotlinx.serialization.json)
-
-    testImplementation(libs.junit)
-
-    androidTestImplementation(libs.androidx.ext.junit)
-    androidTestImplementation(libs.androidx.expresso.core)
 }
