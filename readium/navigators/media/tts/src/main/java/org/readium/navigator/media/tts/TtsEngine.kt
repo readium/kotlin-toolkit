@@ -9,7 +9,6 @@ package org.readium.navigator.media.tts
 import org.readium.r2.navigator.preferences.Configurable
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.Closeable
-import org.readium.r2.shared.util.Error
 import org.readium.r2.shared.util.Language
 
 /**

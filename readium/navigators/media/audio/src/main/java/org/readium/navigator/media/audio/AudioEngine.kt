@@ -32,22 +32,22 @@ public interface AudioEngine<S : Configurable.Settings, P : Configurable.Prefere
         /**
          * The player is ready to play.
          */
-        public object Ready : State()
+        public data object Ready : State()
 
         /**
          * The end of the content has been reached.
          */
-        public object Ended : State()
+        public data object Ended : State()
 
         /**
          * The engine cannot play because the buffer is starved.
          */
-        public object Buffering : State()
+        public data object Buffering : State()
 
         /**
          * The engine cannot play because an error occurred.
          */
-        public data class Failure(val error: AudioEngine.Error) : State()
+        public data class Failure(val error: Error) : State()
     }
 
     /**
