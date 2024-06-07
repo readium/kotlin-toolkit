@@ -170,7 +170,6 @@ public class TtsNavigator<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
 
     override fun submitPreferences(preferences: P) {
         player.submitPreferences(preferences)
-        player.restartUtterance()
     }
 
     private fun navigatorPlayback(playback: TtsPlayer.Playback, utterance: TtsPlayer.Utterance) =
