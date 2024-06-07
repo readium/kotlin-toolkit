@@ -196,7 +196,7 @@ internal class TtsPlayer<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
         initialPreferences
 
     init {
-        submitPreferences(initialPreferences)
+        submitPreferencesForSure(initialPreferences)
     }
 
     fun play() {
@@ -560,6 +560,15 @@ internal class TtsPlayer<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
     }
 
     override fun submitPreferences(preferences: P) {
+        if (preferences == lastPreferences) {
+            return
+        }
+
+        submitPreferencesForSure(preferences)
+        restartUtterance()
+    }
+
+    private fun submitPreferencesForSure(preferences: P) {
         lastPreferences = preferences
         engineFacade.submitPreferences(preferences)
         contentIterator.language = engineFacade.settings.value.language
