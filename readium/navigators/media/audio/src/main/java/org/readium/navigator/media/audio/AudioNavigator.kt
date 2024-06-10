@@ -108,11 +108,21 @@ public class AudioNavigator<S : Configurable.Settings, P : Configurable.Preferen
 
     override val playback: StateFlow<Playback> =
         audioEngine.playback.mapStateIn(coroutineScope) { playback ->
+            val itemDuration =
+                readingOrder.items[playback.index].duration
+
+            val coercedOffset =
+                if (itemDuration == null) {
+                    playback.offset
+                } else {
+                    playback.offset.coerceAtMost(itemDuration)
+                }
+
             Playback(
                 playback.state.toState(),
                 playback.playWhenReady,
                 playback.index,
-                playback.offset,
+                coercedOffset,
                 playback.buffered
             )
         }
