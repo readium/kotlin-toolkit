@@ -91,28 +91,38 @@ public class AudioNavigator<S : Configurable.Settings, P : Configurable.Preferen
                 .mapNotNull { it.duration }
                 .takeIf { it.size == readingOrder.items.size }
                 ?.sum()
+
+            val coercedOffset =
+                playback.coerceOffset(currentItem.duration)
+
             val totalProgression =
                 if (itemStartPosition == null) {
                     null
                 } else {
-                    readingOrder.duration?.let { (itemStartPosition + playback.offset) / it }
+                    readingOrder.duration?.let { (itemStartPosition + coercedOffset) / it }
                 }
 
             val locator = requireNotNull(publication.locatorFromLink(link))
             locator.copyWithLocations(
-                fragments = listOf("t=${playback.offset.inWholeSeconds}"),
-                progression = item.duration?.let { playback.offset / it },
+                fragments = listOf("t=${coercedOffset.inWholeSeconds}"),
+                progression = item.duration?.let { coercedOffset / it },
                 totalProgression = totalProgression
             )
         }
 
     override val playback: StateFlow<Playback> =
         audioEngine.playback.mapStateIn(coroutineScope) { playback ->
+            val itemDuration =
+                readingOrder.items[playback.index].duration
+
+            val coercedOffset =
+                playback.coerceOffset(itemDuration)
+
             Playback(
                 playback.state.toState(),
                 playback.playWhenReady,
                 playback.index,
-                playback.offset,
+                coercedOffset,
                 playback.buffered
             )
         }
@@ -120,7 +130,8 @@ public class AudioNavigator<S : Configurable.Settings, P : Configurable.Preferen
     override val location: StateFlow<Location> =
         audioEngine.playback.mapStateIn(coroutineScope) {
             val currentItem = readingOrder.items[it.index]
-            Location(currentItem.href, it.offset)
+            val coercedOffset = it.coerceOffset(currentItem.duration)
+            Location(currentItem.href, coercedOffset)
         }
 
     override fun play() {
@@ -177,5 +188,12 @@ public class AudioNavigator<S : Configurable.Settings, P : Configurable.Preferen
             is AudioEngine.State.Ended -> State.Ended
             is AudioEngine.State.Buffering -> State.Buffering
             is AudioEngine.State.Failure -> State.Failure(error)
+        }
+
+    private fun AudioEngine.Playback.coerceOffset(duration: Duration?): Duration =
+        if (duration == null) {
+            offset
+        } else {
+            offset.coerceAtMost(duration)
         }
 }
