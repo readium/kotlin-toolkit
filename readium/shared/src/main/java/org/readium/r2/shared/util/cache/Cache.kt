@@ -16,7 +16,6 @@ import kotlinx.coroutines.sync.withLock
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.util.Closeable
 import org.readium.r2.shared.util.MemoryObserver
-import org.readium.r2.shared.util.SuspendingCloseable
 import org.readium.r2.shared.util.Try
 
 /**
@@ -25,7 +24,7 @@ import org.readium.r2.shared.util.Try
  * It implements [MemoryObserver] to flush unused in-memory objects when necessary.
  */
 @InternalReadiumApi
-public interface Cache<V> : SuspendingCloseable, MemoryObserver {
+public interface Cache<V> : Closeable, MemoryObserver {
     /**
      * Performs an atomic [block] transaction on this cache.
      */
@@ -111,11 +110,13 @@ public class InMemoryCache<V> : Cache<V> {
         }
     }
 
-    override suspend fun close() {
-        transaction {
-            for ((_, value) in values) {
-                (value as? Closeable)?.close()
-                (value as? SuspendingCloseable)?.close()
+    @OptIn(DelicateCoroutinesApi::class)
+    override fun close() {
+        GlobalScope.launch {
+            transaction {
+                for ((_, value) in values) {
+                    (value as? Closeable)?.close()
+                }
             }
         }
     }

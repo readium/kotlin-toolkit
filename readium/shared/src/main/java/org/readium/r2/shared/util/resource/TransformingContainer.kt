@@ -43,7 +43,7 @@ public class TransformingContainer(
             }
     }
 
-    override suspend fun close() {
+    override fun close() {
         container.close()
     }
 }

@@ -8,10 +8,10 @@ package org.readium.r2.shared.util.data
 
 import java.io.IOException
 import org.readium.r2.shared.InternalReadiumApi
+import org.readium.r2.shared.util.Closeable
 import org.readium.r2.shared.util.DebugError
 import org.readium.r2.shared.util.Error
 import org.readium.r2.shared.util.ErrorException
-import org.readium.r2.shared.util.SuspendingCloseable
 import org.readium.r2.shared.util.ThrowableError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.getOrElse
@@ -19,7 +19,7 @@ import org.readium.r2.shared.util.getOrElse
 /**
  * Acts as a proxy to an actual data source by handling read access.
  */
-public interface Readable : SuspendingCloseable {
+public interface Readable : Closeable {
 
     /**
      * Returns data length from metadata if available, or calculated from reading the bytes otherwise.
@@ -120,7 +120,7 @@ private class BorrowedReadable(
     private val readable: Readable
 ) : Readable by readable {
 
-    override suspend fun close() {
+    override fun close() {
         // Do nothing
     }
 }
