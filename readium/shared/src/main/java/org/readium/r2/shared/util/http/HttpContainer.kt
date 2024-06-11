@@ -39,5 +39,5 @@ public class HttpContainer(
         }
     }
 
-    override suspend fun close() {}
+    override fun close() {}
 }

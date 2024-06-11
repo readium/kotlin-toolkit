@@ -512,11 +512,11 @@ class EpubPositionsServiceTest {
                     override suspend fun read(range: LongRange?): ReadTry<ByteArray> =
                         Try.success(ByteArray(0))
 
-                    override suspend fun close() {}
+                    override fun close() {}
                 }
             }
 
-            override suspend fun close() {}
+            override fun close() {}
         },
         presentation = Presentation(layout = layout),
         reflowableStrategy = reflowableStrategy

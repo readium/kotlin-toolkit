@@ -11,12 +11,12 @@ package org.readium.r2.shared.publication
 import kotlin.reflect.KClass
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.extensions.tryOrLog
-import org.readium.r2.shared.util.SuspendingCloseable
+import org.readium.r2.shared.util.Closeable
 
 /**
  * Holds [Publication.Service] instances for a [Publication].
  */
-public interface PublicationServicesHolder : SuspendingCloseable {
+public interface PublicationServicesHolder : Closeable {
     /**
      * Returns the first publication service that is an instance of [serviceType].
      */
@@ -37,7 +37,7 @@ internal class ListPublicationServicesHolder(
     override fun <T : Publication.Service> findServices(serviceType: KClass<T>): List<T> =
         services.filterIsInstance(serviceType.java)
 
-    override suspend fun close() {
+    override fun close() {
         for (service in services) {
             tryOrLog { service.close() }
         }

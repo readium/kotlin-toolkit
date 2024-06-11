@@ -62,7 +62,7 @@ public class FailureResource(
     override suspend fun properties(): Try<Resource.Properties, ReadError> = Try.failure(error)
     override suspend fun length(): Try<Long, ReadError> = Try.failure(error)
     override suspend fun read(range: LongRange?): Try<ByteArray, ReadError> = Try.failure(error)
-    override suspend fun close() {}
+    override fun close() {}
 
     override fun toString(): String =
         "${javaClass.simpleName}($error)"
@@ -81,7 +81,7 @@ private class BorrowedResource(
     private val resource: Resource
 ) : Resource by resource {
 
-    override suspend fun close() {
+    override fun close() {
         // Do nothing
     }
 }

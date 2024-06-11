@@ -47,7 +47,7 @@ public class ContentResource(
 
     override val sourceUrl: AbsoluteUrl? = uri.toUrl() as? AbsoluteUrl
 
-    override suspend fun close() {
+    override fun close() {
     }
 
     override suspend fun properties(): Try<Resource.Properties, ReadError> {

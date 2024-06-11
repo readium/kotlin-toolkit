@@ -37,7 +37,7 @@ public open class LazyResource(
     override suspend fun read(range: LongRange?): Try<ByteArray, ReadError> =
         resource().read(range)
 
-    override suspend fun close() {
+    override fun close() {
         if (::_resource.isInitialized) {
             _resource.close()
         }

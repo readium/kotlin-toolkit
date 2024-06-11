@@ -25,7 +25,7 @@ public class SingleResourceContainer(
         return resource.borrow()
     }
 
-    override suspend fun close() {
+    override fun close() {
         resource.close()
     }
 }

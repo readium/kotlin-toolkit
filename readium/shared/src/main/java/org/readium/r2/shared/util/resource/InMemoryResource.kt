@@ -60,7 +60,7 @@ public class InMemoryResource(
         return _bytes.map { it.read(range) }
     }
 
-    override suspend fun close() {}
+    override fun close() {}
 
     override fun toString(): String =
         "${javaClass.simpleName}(${runBlocking { length() }} bytes)"

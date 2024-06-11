@@ -13,7 +13,10 @@ import java.io.FileNotFoundException
 import java.io.IOException
 import java.io.RandomAccessFile
 import java.nio.channels.Channels
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.extensions.*
@@ -58,11 +61,14 @@ public class FileResource(
         return Try.success(properties)
     }
 
-    override suspend fun close() {
-        withContext(Dispatchers.IO) {
-            if (::randomAccessFile.isLazyInitialized) {
-                randomAccessFile.onSuccess {
-                    tryOrLog { it.close() }
+    @OptIn(DelicateCoroutinesApi::class)
+    override fun close() {
+        if (::randomAccessFile.isLazyInitialized) {
+            GlobalScope.launch {
+                withContext(Dispatchers.IO) {
+                    randomAccessFile.onSuccess {
+                        tryOrLog { it.close() }
+                    }
                 }
             }
         }

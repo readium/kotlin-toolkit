@@ -27,5 +27,5 @@ class TestContainer(
     override fun get(url: Url): Resource? =
         resources[url]?.let { StringResource(it) }
 
-    override suspend fun close() {}
+    override fun close() {}
 }

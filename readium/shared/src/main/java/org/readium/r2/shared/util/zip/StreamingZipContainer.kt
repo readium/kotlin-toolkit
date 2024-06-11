@@ -8,7 +8,10 @@
 
 package org.readium.r2.shared.util.zip
 
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.extensions.findInstance
@@ -130,10 +133,13 @@ internal class StreamingZipContainer(
 
         private var stream: CountingInputStream? = null
 
-        override suspend fun close() {
-            tryOrLog {
+        @OptIn(DelicateCoroutinesApi::class)
+        override fun close() {
+            GlobalScope.launch {
                 withContext(Dispatchers.IO) {
-                    stream?.close()
+                    tryOrLog {
+                        stream?.close()
+                    }
                 }
             }
         }
@@ -151,9 +157,12 @@ internal class StreamingZipContainer(
             ?.takeUnless { it.isDirectory }
             ?.let { Entry(url, it) }
 
-    override suspend fun close() {
-        withContext(Dispatchers.IO) {
-            tryOrLog { zipFile.close() }
+    @OptIn(DelicateCoroutinesApi::class)
+    override fun close() {
+        GlobalScope.launch {
+            withContext(Dispatchers.IO) {
+                tryOrLog { zipFile.close() }
+            }
         }
     }
 }

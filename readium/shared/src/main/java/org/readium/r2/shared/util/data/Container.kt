@@ -6,9 +6,10 @@
 
 package org.readium.r2.shared.util.data
 
+import kotlin.io.use
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.util.AbsoluteUrl
-import org.readium.r2.shared.util.SuspendingCloseable
+import org.readium.r2.shared.util.Closeable
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.use
@@ -16,7 +17,7 @@ import org.readium.r2.shared.util.use
 /**
  * A container provides access to a list of [Readable] entries.
  */
-public interface Container<out E : Readable> : Iterable<Url>, SuspendingCloseable {
+public interface Container<out E : Readable> : Iterable<Url>, Closeable {
 
     /**
      * Direct source to this container, when available.
@@ -45,7 +46,7 @@ public class EmptyContainer<E : Readable> :
 
     override fun get(url: Url): E? = null
 
-    override suspend fun close() {}
+    override fun close() {}
 }
 
 /**
@@ -69,7 +70,7 @@ public class CompositeContainer<E : Readable>(
     override fun get(url: Url): E? =
         containers.firstNotNullOfOrNull { it[url] }
 
-    override suspend fun close() {
+    override fun close() {
         containers.forEach { it.close() }
     }
 }

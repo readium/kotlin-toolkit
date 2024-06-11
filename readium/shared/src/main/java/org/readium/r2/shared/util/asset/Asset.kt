@@ -6,7 +6,7 @@
 
 package org.readium.r2.shared.util.asset
 
-import org.readium.r2.shared.util.SuspendingCloseable
+import org.readium.r2.shared.util.Closeable
 import org.readium.r2.shared.util.data.Container
 import org.readium.r2.shared.util.format.Format
 import org.readium.r2.shared.util.resource.Resource
@@ -14,7 +14,7 @@ import org.readium.r2.shared.util.resource.Resource
 /**
  * An asset which is either a single resource or a container that holds multiple resources.
  */
-public sealed class Asset : SuspendingCloseable {
+public sealed class Asset : Closeable {
 
     /**
      * Format of the asset.
@@ -33,7 +33,7 @@ public class ContainerAsset(
     public val container: Container<Resource>
 ) : Asset() {
 
-    override suspend fun close() {
+    override fun close() {
         container.close()
     }
 }
@@ -49,7 +49,7 @@ public class ResourceAsset(
     public val resource: Resource
 ) : Asset() {
 
-    override suspend fun close() {
+    override fun close() {
         resource.close()
     }
 }

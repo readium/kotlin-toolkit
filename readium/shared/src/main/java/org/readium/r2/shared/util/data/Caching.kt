@@ -58,7 +58,7 @@ internal class CachingReadable(
         }
     }
 
-    override suspend fun close() {}
+    override fun close() {}
 }
 
 internal class CachingContainer(
@@ -81,7 +81,7 @@ internal class CachingContainer(
         return blobContext
     }
 
-    override suspend fun close() {
+    override fun close() {
         cache.forEach { it.value.close() }
         cache.clear()
     }

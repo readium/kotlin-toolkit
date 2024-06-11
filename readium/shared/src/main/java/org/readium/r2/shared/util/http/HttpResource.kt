@@ -61,7 +61,7 @@ public class HttpResource(
             }
         }
 
-    override suspend fun close() {}
+    override fun close() {}
 
     override suspend fun read(range: LongRange?): Try<ByteArray, ReadError> = withContext(
         Dispatchers.IO
