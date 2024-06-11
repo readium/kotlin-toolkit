@@ -18,7 +18,6 @@ import kotlinx.parcelize.Parcelize
 import org.readium.r2.shared.DelicateReadiumApi
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.extensions.isPrintableAscii
-import org.readium.r2.shared.extensions.percentDecoded
 import org.readium.r2.shared.extensions.percentEncodedPath
 import org.readium.r2.shared.extensions.tryOrNull
 
@@ -269,7 +268,7 @@ public class AbsoluteUrl private constructor(override val uri: Uri) : Url() {
 
         return scheme == other.scheme &&
             uri.authority == other.uri.authority &&
-            path?.percentDecoded() == other.path?.percentDecoded() &&
+            path == other.path &&
             query == other.query &&
             fragment == other.fragment
     }
@@ -304,7 +303,7 @@ public class RelativeUrl private constructor(override val uri: Uri) : Url() {
 
         other as RelativeUrl
 
-        return path?.percentDecoded() == other.path?.percentDecoded() &&
+        return path == other.path &&
             query == other.query &&
             fragment == other.fragment
     }
