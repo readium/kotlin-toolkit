@@ -58,6 +58,12 @@ internal fun String.toJsonOrNull(): JSONObject? =
     }
 
 /**
+ * Percent-decodes a string.
+ */
+internal fun String.percentDecoded(): String =
+    Uri.decode(this)
+
+/**
  * Percent-encodes an URL path section.
  *
  * Equivalent to Swift's `string.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed)`

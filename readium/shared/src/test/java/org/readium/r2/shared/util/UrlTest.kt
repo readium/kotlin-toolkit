@@ -7,6 +7,7 @@ import java.io.File
 import java.net.URI
 import java.net.URL
 import kotlin.test.assertIs
+import kotlin.test.assertNotEquals
 import kotlin.test.assertNotNull
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
@@ -398,5 +399,101 @@ class UrlTest {
         assertEquals(params.allNamed("fruit"), listOf("banana"))
         assertEquals(params.allNamed("empty"), emptyList<String>())
         assertEquals(params.allNamed("not-found"), emptyList<String>())
+    }
+
+    @Test
+    fun equality() {
+        assertNotEquals(
+            AbsoluteUrl("http://example.com/foo/bar")!! as Url,
+            RelativeUrl("foo/bar") as Url
+        )
+
+        // Paths must be equal.
+        assertEquals(
+            AbsoluteUrl("http://example.com/foo/bar")!!,
+            AbsoluteUrl("http://example.com/foo/bar")
+        )
+        assertEquals(RelativeUrl("foo/bar")!!, RelativeUrl("foo/bar"))
+        assertNotEquals(
+            AbsoluteUrl("http://example.com/foo/bar")!!,
+            AbsoluteUrl("http://example.com/foo/baz")
+        )
+        assertNotEquals(RelativeUrl("foo/bar")!!, RelativeUrl("foo/baz"))
+
+        // Paths is compared percent and entity-decoded.
+        assertEquals(
+            AbsoluteUrl("http://example.com/c%27est%20valide")!!,
+            AbsoluteUrl("http://example.com/c%27est%20valide")
+        )
+        assertEquals(
+            AbsoluteUrl("http://example.com/c%27est%20valide")!!,
+            AbsoluteUrl("http://example.com/c'est%20valide")
+        )
+        assertEquals(RelativeUrl("c%27est%20valide")!!, RelativeUrl("c%27est%20valide"))
+        assertEquals(RelativeUrl("c%27est%20valide")!!, RelativeUrl("c'est%20valide"))
+
+        // Authority must be equal.
+        assertEquals(AbsoluteUrl("http://example.com/foo")!!, AbsoluteUrl("http://example.com/foo"))
+        assertNotEquals(
+            AbsoluteUrl("http://example.com/foo")!!,
+            AbsoluteUrl("http://example.com:80/foo")
+        )
+        assertNotEquals(
+            AbsoluteUrl("http://example.com:443/foo")!!,
+            AbsoluteUrl("http://example.com:80/foo")
+        )
+        assertNotEquals(
+            AbsoluteUrl("http://example.com/foo")!!,
+            AbsoluteUrl("http://example.com:80/foo")
+        )
+        assertNotEquals(
+            AbsoluteUrl("http://example.com/foo")!!,
+            AbsoluteUrl("http://domain.com/foo")
+        )
+        assertNotEquals(
+            AbsoluteUrl("http://example.com/foo")!!,
+            AbsoluteUrl("http://user:password@example.com/foo")
+        )
+        assertNotEquals(
+            AbsoluteUrl("http://other:password@example.com/foo")!!,
+            AbsoluteUrl("http://user:password@example.com/foo")
+        )
+
+        // Order of query parameters is important.
+        assertNotEquals(
+            AbsoluteUrl("http://example.com/foo/bar?a=a&b=b")!!,
+            AbsoluteUrl("http://example.com/foo/bar?b=b&a=a")
+        )
+        assertNotEquals(RelativeUrl("foo/bar?a=a&b=b")!!, RelativeUrl("foo/bar?b=b&a=a"))
+
+        // Content of parameters is important.
+        assertEquals(
+            AbsoluteUrl("http://example.com/foo/bar?a=a&b=b")!!,
+            AbsoluteUrl("http://example.com/foo/bar?a=a&b=b")
+        )
+        assertNotEquals(
+            AbsoluteUrl("http://example.com/foo/bar?a=a")!!,
+            AbsoluteUrl("http://example.com/foo/bar?b=b")
+        )
+        assertNotEquals(RelativeUrl("foo/bar?a=a")!!, RelativeUrl("foo/bar?b=b"))
+
+        // Scheme is case insensitive.
+        assertEquals(AbsoluteUrl("http://example.com/foo")!!, AbsoluteUrl("HTTP://example.com/foo"))
+        assertNotEquals(
+            AbsoluteUrl("http://example.com/foo")!!,
+            AbsoluteUrl("https://example.com/foo")
+        )
+
+        // Fragment is relevant.
+        assertEquals(
+            AbsoluteUrl("http://example.com/foo#fragment")!!,
+            AbsoluteUrl("http://example.com/foo#fragment")
+        )
+        assertEquals(RelativeUrl("foo/bar#fragment")!!, RelativeUrl("foo/bar#fragment"))
+        assertNotEquals(
+            AbsoluteUrl("http://example.com/foo#fragment")!!,
+            AbsoluteUrl("http://example.com/foo#other")
+        )
+        assertNotEquals(RelativeUrl("foo/bar#fragment")!!, RelativeUrl("foo/bar#other"))
     }
 }

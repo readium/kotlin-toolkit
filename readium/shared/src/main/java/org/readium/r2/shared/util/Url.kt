@@ -18,6 +18,7 @@ import kotlinx.parcelize.Parcelize
 import org.readium.r2.shared.DelicateReadiumApi
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.extensions.isPrintableAscii
+import org.readium.r2.shared.extensions.percentDecoded
 import org.readium.r2.shared.extensions.percentEncodedPath
 import org.readium.r2.shared.extensions.tryOrNull
 
@@ -176,17 +177,6 @@ public sealed class Url : Parcelable {
     override fun toString(): String =
         uri.toString()
 
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-
-        other as Url
-
-        if (uri.toString() != other.uri.toString()) return false
-
-        return true
-    }
-
     override fun hashCode(): Int =
         uri.toString().hashCode()
 
@@ -270,6 +260,19 @@ public class AbsoluteUrl private constructor(override val uri: Uri) : Url() {
      */
     public fun toFile(): File? =
         if (isFile) File(path!!) else null
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as AbsoluteUrl
+
+        return scheme == other.scheme &&
+            uri.authority == other.uri.authority &&
+            path?.percentDecoded() == other.path?.percentDecoded() &&
+            query == other.query &&
+            fragment == other.fragment
+    }
 }
 
 /**
@@ -293,6 +296,17 @@ public class RelativeUrl private constructor(override val uri: Uri) : Url() {
                 require(uri.isRelative)
                 RelativeUrl(uri)
             }
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as RelativeUrl
+
+        return path?.percentDecoded() == other.path?.percentDecoded() &&
+            query == other.query &&
+            fragment == other.fragment
     }
 }
 
