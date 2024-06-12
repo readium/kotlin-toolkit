@@ -48,7 +48,7 @@ public class Href private constructor(private val href: Url) : Parcelable {
     public fun resolve(
         base: SharedUrl? = null,
         parameters: Map<String, String> = emptyMap()
-    ): SharedUrl = href.resolve(base, parameters)
+    ): SharedUrl = href.resolve(base, parameters).normalize()
 
     /**
      * Indicates whether this HREF is templated.

@@ -615,7 +615,7 @@ public class EpubNavigatorFragment internal constructor(
 
         listener?.onJumpToLocator(locator)
 
-        val href = locator.href.removeFragment()
+        val href = locator.href.removeFragment().normalize()
 
         fun setCurrent(resources: List<PageResource>) {
             val page = resources.withIndex().firstOrNull { (_, res) ->

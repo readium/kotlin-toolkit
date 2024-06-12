@@ -85,8 +85,9 @@ public data class Manifest(
                 ?: links.deepLinkWithHref(href)
         }
 
-        return find(href)
-            ?: find(href.removeFragment().removeQuery())
+        val normalizedHref = href.normalize()
+        return find(normalizedHref)
+            ?: find(normalizedHref.removeFragment().removeQuery())
     }
 
     /**

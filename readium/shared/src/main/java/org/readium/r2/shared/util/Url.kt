@@ -173,6 +173,25 @@ public sealed class Url : Parcelable {
     public open fun relativize(url: Url): Url =
         checkNotNull(toURI().relativize(url.toURI()).toUrl())
 
+    /**
+     * Normalizes the URL using a subset of the RFC-3986 rules.
+     *
+     * https://datatracker.ietf.org/doc/html/rfc3986#section-6
+     */
+    public open fun normalize(): Url =
+        uri.buildUpon()
+            .apply {
+                path?.let {
+                    path(File(it).normalize().path)
+                }
+
+                if (this@Url is AbsoluteUrl) {
+                    scheme(scheme.value)
+                }
+            }
+            .build()
+            .toUrl()!!
+
     override fun toString(): String =
         uri.toString()
 
@@ -241,6 +260,9 @@ public class AbsoluteUrl private constructor(override val uri: Uri) : Url() {
     public override fun resolve(url: Url): AbsoluteUrl =
         super.resolve(url) as AbsoluteUrl
 
+    public override fun normalize(): AbsoluteUrl =
+        super.normalize() as AbsoluteUrl
+
     /**
      * Identifies the type of URL.
      */
@@ -294,6 +316,9 @@ public class RelativeUrl private constructor(override val uri: Uri) : Url() {
                 RelativeUrl(uri)
             }
     }
+
+    public override fun normalize(): RelativeUrl =
+        super.normalize() as RelativeUrl
 }
 
 /**
@@ -307,7 +332,7 @@ public class RelativeUrl private constructor(override val uri: Uri) : Url() {
  */
 @DelicateReadiumApi
 public fun Url.Companion.fromLegacyHref(href: String): Url? =
-    AbsoluteUrl(href) ?: Url.fromDecodedPath(href.removePrefix("/"))
+    AbsoluteUrl(href) ?: fromDecodedPath(href.removePrefix("/"))
 
 /**
  * According to the EPUB specification, the HREFs in the EPUB package must be valid URLs (so
@@ -319,7 +344,7 @@ public fun Url.Companion.fromLegacyHref(href: String): Url? =
  */
 @InternalReadiumApi
 public fun Url.Companion.fromEpubHref(href: String): Url? {
-    return (Url(href) ?: Url.fromDecodedPath(href))
+    return (Url(href) ?: fromDecodedPath(href))?.normalize()
 }
 
 public fun File.toUrl(): AbsoluteUrl =

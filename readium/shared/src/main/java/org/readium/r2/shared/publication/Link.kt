@@ -92,7 +92,7 @@ public data class Link(
     public fun url(
         base: Url? = null,
         parameters: Map<String, String> = emptyMap()
-    ): Url = href.resolve(base, parameters)
+    ): Url = href.resolve(base, parameters).normalize()
 
     /**
      * List of URI template parameter keys, if the [Link] is templated.
