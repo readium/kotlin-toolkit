@@ -432,6 +432,16 @@ class UrlTest {
             Url("foo/./bar/../../../baz")!!.normalize().toString()
         )
 
+        // Trailing slash is kept.
+        assertEquals(
+            "http://example.com/foo/",
+            Url("http://example.com/foo/")!!.normalize().toString()
+        )
+        assertEquals(
+            "foo/",
+            Url("foo/")!!.normalize().toString()
+        )
+
         // The other components are left as-is.
         assertEquals(
             "http://user:password@example.com:443/foo?b=b&a=a#fragment",

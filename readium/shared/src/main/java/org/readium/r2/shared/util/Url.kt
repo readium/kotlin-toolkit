@@ -182,7 +182,11 @@ public sealed class Url : Parcelable {
         uri.buildUpon()
             .apply {
                 path?.let {
-                    path(File(it).normalize().path)
+                    var normalizedPath = File(it).normalize().path
+                    if (it.endsWith("/")) {
+                        normalizedPath += "/"
+                    }
+                    path(normalizedPath)
                 }
 
                 if (this@Url is AbsoluteUrl) {
