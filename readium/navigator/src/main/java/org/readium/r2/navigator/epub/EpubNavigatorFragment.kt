@@ -615,13 +615,13 @@ public class EpubNavigatorFragment internal constructor(
 
         listener?.onJumpToLocator(locator)
 
-        val href = locator.href.removeFragment().normalize()
+        val href = locator.href.removeFragment()
 
         fun setCurrent(resources: List<PageResource>) {
             val page = resources.withIndex().firstOrNull { (_, res) ->
                 when (res) {
                     is PageResource.EpubReflowable ->
-                        res.link.url() == href
+                        res.link.url().isEquivalent(href)
                     is PageResource.EpubFxl ->
                         res.leftUrl?.toString()?.endsWith(href.toString()) == true || res.rightUrl?.toString()?.endsWith(
                             href.toString()

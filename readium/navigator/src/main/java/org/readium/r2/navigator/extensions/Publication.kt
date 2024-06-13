@@ -36,12 +36,12 @@ public fun Publication.normalizeLocator(locator: Locator): Locator {
 
     return if (self == null) { // Packaged publication
         locator.copy(
-            href = Url(locator.href.toString().removePrefix("/"))?.normalize()
+            href = Url(locator.href.toString().removePrefix("/"))
                 ?: return locator
         )
     } else { // Remote publication
-        // Check that the locator HREF relative to `self` exists int he manifest.
-        val relativeHref = self.relativize(locator.href).normalize()
+        // Check that the locator HREF relative to `self` exists in the manifest.
+        val relativeHref = self.relativize(locator.href)
         if (linkWithHref(relativeHref) != null) {
             locator.copy(href = relativeHref)
         } else {

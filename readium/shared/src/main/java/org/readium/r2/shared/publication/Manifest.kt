@@ -69,7 +69,7 @@ public data class Manifest(
     public fun linkWithHref(href: Url): Link? {
         fun List<Link>.deepLinkWithHref(href: Url): Link? {
             for (l in this) {
-                if (l.url() == href) {
+                if (l.url().normalize() == href) {
                     return l
                 } else {
                     l.alternates.deepLinkWithHref(href)?.let { return it }

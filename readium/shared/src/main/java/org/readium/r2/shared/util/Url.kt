@@ -210,6 +210,12 @@ public sealed class Url : Parcelable {
         return true
     }
 
+    /**
+     * Returns whether the receiver is equivalent to the given `url` after normalization.
+     */
+    public fun isEquivalent(url: Url): Boolean =
+        normalize() == url.normalize()
+
     override fun hashCode(): Int =
         uri.toString().hashCode()
 
@@ -347,9 +353,8 @@ public fun Url.Companion.fromLegacyHref(href: String): Url? =
  * if we can't parse the URL.
  */
 @InternalReadiumApi
-public fun Url.Companion.fromEpubHref(href: String): Url? {
-    return (Url(href) ?: fromDecodedPath(href))?.normalize()
-}
+public fun Url.Companion.fromEpubHref(href: String): Url? =
+    Url(href) ?: fromDecodedPath(href)
 
 public fun File.toUrl(): AbsoluteUrl =
     checkNotNull(AbsoluteUrl(Uri.fromFile(this)))
@@ -414,3 +419,13 @@ public value class FileExtension(
  */
 public fun FileExtension?.appendToFilename(filename: String): String =
     this?.let { "$filename.$value" } ?: filename
+
+/**
+ * Returns the value of the first key matching `key` after normalization.
+ */
+public fun <T> Map<Url, T>.getEquivalent(key: Url): T? =
+    get(key) ?: run {
+        val url = key.normalize()
+        keys.firstOrNull { it.normalize() == url }
+            ?.let { get(it) }
+    }

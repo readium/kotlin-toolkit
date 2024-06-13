@@ -18,7 +18,7 @@ public class SingleResourceContainer(
     override val entries: Set<Url> = setOf(entryUrl)
 
     override fun get(url: Url): Resource? {
-        if (url.removeFragment().removeQuery() != entryUrl) {
+        if (!url.removeFragment().removeQuery().isEquivalent(entryUrl)) {
             return null
         }
 
