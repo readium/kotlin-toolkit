@@ -9,6 +9,7 @@
 package org.readium.r2.streamer.parser.readium
 
 import android.content.Context
+import org.readium.r2.shared.DelicateReadiumApi
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.publication.Manifest
 import org.readium.r2.shared.publication.Publication
@@ -143,6 +144,7 @@ public class ReadiumWebPubParser(
             }
         }
 
+    @OptIn(DelicateReadiumApi::class)
     private suspend fun parseResourceAsset(
         resource: Resource,
         formatSpecification: FormatSpecification

@@ -13,6 +13,7 @@ package org.readium.r2.shared.publication
 
 import org.json.JSONArray
 import org.json.JSONObject
+import org.readium.r2.shared.DelicateReadiumApi
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.JSONable
 import org.readium.r2.shared.extensions.optStringsFromArrayOrSingle
@@ -66,6 +67,7 @@ public data class Manifest(
      * If there's no match, tries again after removing any query parameter and anchor from the
      * given [href].
      */
+    @OptIn(DelicateReadiumApi::class)
     public fun linkWithHref(href: Url): Link? {
         fun List<Link>.deepLinkWithHref(href: Url): Link? {
             for (l in this) {

@@ -17,6 +17,7 @@ import org.jsoup.nodes.TextNode
 import org.jsoup.parser.Parser
 import org.jsoup.select.NodeTraversor
 import org.jsoup.select.NodeVisitor
+import org.readium.r2.shared.DelicateReadiumApi
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.extensions.tryOrLog
@@ -279,6 +280,7 @@ public class HtmlResourceContentIterator internal constructor(
             )
         }
 
+        @OptIn(DelicateReadiumApi::class)
         override fun head(node: Node, depth: Int) {
             if (node is Element) {
                 val parent = ParentElement(node)

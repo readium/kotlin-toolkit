@@ -199,6 +199,13 @@ public sealed class Url : Parcelable {
     override fun toString(): String =
         uri.toString()
 
+    /**
+     * Returns whether two URLs are strictly equal, by comparing their string representation.
+     *
+     * WARNING: Strict URL comparisons can be a source of bug, if the URLs are not normalized.
+     * In most cases, you should compare using [Url.isEquivalent].
+     */
+    @DelicateReadiumApi
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
@@ -213,8 +220,11 @@ public sealed class Url : Parcelable {
     /**
      * Returns whether the receiver is equivalent to the given `url` after normalization.
      */
-    public fun isEquivalent(url: Url): Boolean =
-        normalize() == url.normalize()
+    @OptIn(DelicateReadiumApi::class)
+    public fun isEquivalent(url: Url?): Boolean {
+        url ?: return false
+        return normalize() == url.normalize()
+    }
 
     override fun hashCode(): Int =
         uri.toString().hashCode()
@@ -421,8 +431,18 @@ public fun FileExtension?.appendToFilename(filename: String): String =
     this?.let { "$filename.$value" } ?: filename
 
 /**
+ * Returns whether the receiver is equivalent to the given `url` after normalization.
+ */
+@OptIn(DelicateReadiumApi::class)
+public fun Url?.isEquivalent(url: Url?): Boolean {
+    if (this == null && url == null) return true
+    return this?.normalize() == url?.normalize()
+}
+
+/**
  * Returns the value of the first key matching `key` after normalization.
  */
+@OptIn(DelicateReadiumApi::class)
 public fun <T> Map<Url, T>.getEquivalent(key: Url): T? =
     get(key) ?: run {
         val url = key.normalize()

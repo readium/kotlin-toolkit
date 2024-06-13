@@ -11,6 +11,7 @@ package org.readium.r2.shared
 
 import java.io.Serializable
 import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.isEquivalent
 
 @InternalReadiumApi
 public data class MediaOverlays(private val nodes: List<MediaOverlayNode> = listOf()) : Serializable {
@@ -25,7 +26,7 @@ public data class MediaOverlays(private val nodes: List<MediaOverlayNode> = list
         for (node in inNodes) {
             if (node.role.contains("section")) {
                 return findNode(ref, node.children)
-            } else if (ref == null || node.text == ref) {
+            } else if (ref.isEquivalent(null) || node.text.isEquivalent(ref)) {
                 return node
             }
         }
@@ -55,7 +56,7 @@ public data class MediaOverlays(private val nodes: List<MediaOverlayNode> = list
                     prevNodeFoundFlag = ret.prevFound
                 }
                 //  If the node text refer to filename or that filename is null, return node
-                else if (fragment == null || node.text == fragment) {
+                else if (fragment.isEquivalent(null) || node.text.isEquivalent(fragment)) {
                     prevNodeFoundFlag = true
                 }
             }
