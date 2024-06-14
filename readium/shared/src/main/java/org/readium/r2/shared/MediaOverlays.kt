@@ -22,11 +22,12 @@ public data class MediaOverlays(private val nodes: List<MediaOverlayNode> = list
 
     private fun nodeForFragment(ref: Url?): MediaOverlayNode? = findNode(ref, this.nodes)
 
+    @OptIn(DelicateReadiumApi::class)
     private fun findNode(ref: Url?, inNodes: List<MediaOverlayNode>): MediaOverlayNode? {
         for (node in inNodes) {
             if (node.role.contains("section")) {
                 return findNode(ref, node.children)
-            } else if (ref.isEquivalent(null) || node.text.isEquivalent(ref)) {
+            } else if (ref == null || node.text.isEquivalent(ref)) {
                 return node
             }
         }
@@ -37,6 +38,7 @@ public data class MediaOverlays(private val nodes: List<MediaOverlayNode> = list
 
     private fun nodeAfterFragment(ref: Url?): MediaOverlayNode? = findNextNode(ref, this.nodes).found
 
+    @OptIn(DelicateReadiumApi::class)
     private fun findNextNode(fragment: Url?, inNodes: List<MediaOverlayNode>): NextNodeResult {
         var prevNodeFoundFlag = false
         //  For each node of the current scope...
@@ -56,7 +58,7 @@ public data class MediaOverlays(private val nodes: List<MediaOverlayNode> = list
                     prevNodeFoundFlag = ret.prevFound
                 }
                 //  If the node text refer to filename or that filename is null, return node
-                else if (fragment.isEquivalent(null) || node.text.isEquivalent(fragment)) {
+                else if (fragment == null || node.text.isEquivalent(fragment)) {
                     prevNodeFoundFlag = true
                 }
             }

@@ -408,10 +408,10 @@ class UrlTest {
             Url("HTTP://example.com")!!.normalize().toString()
         )
 
-        // Path is percent-decoded.
+        // Percent encoding of path is normalized.
         assertEquals(
             "http://example.com/c'est%20valide",
-            Url("HTTP://example.com/c%27est%20valide")!!.normalize().toString()
+            Url("http://example.com/c%27est%20valide")!!.normalize().toString()
         )
         assertEquals(
             "c'est%20valide",
