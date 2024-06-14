@@ -493,7 +493,7 @@ class EpubPositionsServiceTest {
         container = object : Container<Resource> {
 
             private fun find(relativePath: Url): ReadingOrderItem? =
-                readingOrder.find { it.link.url() == relativePath }
+                readingOrder.find { it.link.url().isEquivalent(relativePath) }
 
             override val entries: Set<Url> = readingOrder.map { it.href }.toSet()
 

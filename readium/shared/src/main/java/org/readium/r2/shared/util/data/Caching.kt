@@ -8,6 +8,7 @@ package org.readium.r2.shared.util.data
 
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.getEquivalent
 
 internal class CachingReadable(
     private val source: Readable
@@ -69,7 +70,7 @@ internal class CachingContainer(
         mutableMapOf()
 
     override fun get(url: Url): Readable? {
-        cache[url]?.let { return it }
+        cache.getEquivalent(url)?.let { return it }
 
         val entry = container[url]
             ?: return null

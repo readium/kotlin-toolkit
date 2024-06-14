@@ -8,6 +8,7 @@
 
 package org.readium.r2.streamer.parser.epub
 
+import org.readium.r2.shared.DelicateReadiumApi
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.MediaOverlayNode
 import org.readium.r2.shared.MediaOverlays
@@ -28,6 +29,7 @@ internal object SmilParser {
         return parseSeq(body, filePath)?.let { MediaOverlays(it) }
     }
 
+    @OptIn(DelicateReadiumApi::class)
     private fun parseSeq(node: ElementNode, filePath: Url): List<MediaOverlayNode>? {
         val children: MutableList<MediaOverlayNode> = mutableListOf()
         for (child in node.getAll()) {

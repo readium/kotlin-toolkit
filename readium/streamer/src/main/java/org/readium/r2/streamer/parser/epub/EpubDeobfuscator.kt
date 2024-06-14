@@ -12,6 +12,7 @@ import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.data.ReadTry
+import org.readium.r2.shared.util.getEquivalent
 import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.shared.util.resource.TransformingResource
 import org.readium.r2.shared.util.resource.flatMap
@@ -29,7 +30,7 @@ internal class EpubDeobfuscator(
     @Suppress("Unused_parameter")
     fun transform(url: Url, resource: Resource): Resource =
         resource.flatMap {
-            val algorithm = encryptionData[url]?.algorithm
+            val algorithm = encryptionData.getEquivalent(url)?.algorithm
             if (algorithm != null && algorithm2length.containsKey(algorithm)) {
                 DeobfuscatingResource(resource, algorithm)
             } else {

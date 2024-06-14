@@ -22,6 +22,7 @@ import org.readium.r2.shared.util.data.Container
 import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.format.Format
 import org.readium.r2.shared.util.format.Specification
+import org.readium.r2.shared.util.getEquivalent
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.resource.Resource
@@ -79,7 +80,7 @@ public class AudioParser(
 
         val readingOrderWithFormat =
             asset.container
-                .mapNotNull { url -> entryFormats[url]?.let { url to it } }
+                .mapNotNull { url -> entryFormats.getEquivalent(url)?.let { url to it } }
                 .filter { (_, format) -> format.specification.specifications.any { it in audioSpecifications } }
                 .sortedBy { it.first.toString() }
 

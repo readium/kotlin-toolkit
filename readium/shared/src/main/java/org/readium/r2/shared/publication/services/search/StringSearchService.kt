@@ -356,7 +356,7 @@ private fun List<Link>.titleMatching(href: Url): String? {
 }
 
 private fun Link.titleMatching(targetHref: Url): String? {
-    if (url().removeFragment() == targetHref) {
+    if (url().removeFragment().isEquivalent(targetHref)) {
         return title
     }
     return children.titleMatching(targetHref)
