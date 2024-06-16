@@ -13,10 +13,10 @@ plugins {
 }
 
 android {
-    compileSdk = 34
+    compileSdk = (property("android.compileSdk") as String).toInt()
     defaultConfig {
-        minSdk = 21
-        targetSdk = 34
+        minSdk = (property("android.minSdk") as String).toInt()
+        targetSdk = (property("android.targetSdk") as String).toInt()
 
         applicationId = "org.readium.r2reader"
 
