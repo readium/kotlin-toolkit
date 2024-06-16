@@ -6,6 +6,7 @@
 
 package org.readium.r2.shared.util.http
 
+import org.readium.r2.shared.DelicateReadiumApi
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.data.Container
@@ -27,6 +28,7 @@ public class HttpContainer(
     private val client: HttpClient
 ) : Container<Resource> {
 
+    @OptIn(DelicateReadiumApi::class)
     override fun get(url: Url): Resource? {
         // We don't check that url matches any entry because that might save us from edge cases.
 
@@ -39,5 +41,5 @@ public class HttpContainer(
         }
     }
 
-    override suspend fun close() {}
+    override fun close() {}
 }

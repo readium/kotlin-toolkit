@@ -493,7 +493,7 @@ class EpubPositionsServiceTest {
         container = object : Container<Resource> {
 
             private fun find(relativePath: Url): ReadingOrderItem? =
-                readingOrder.find { it.link.url() == relativePath }
+                readingOrder.find { it.link.url().isEquivalent(relativePath) }
 
             override val entries: Set<Url> = readingOrder.map { it.href }.toSet()
 
@@ -512,11 +512,11 @@ class EpubPositionsServiceTest {
                     override suspend fun read(range: LongRange?): ReadTry<ByteArray> =
                         Try.success(ByteArray(0))
 
-                    override suspend fun close() {}
+                    override fun close() {}
                 }
             }
 
-            override suspend fun close() {}
+            override fun close() {}
         },
         presentation = Presentation(layout = layout),
         reflowableStrategy = reflowableStrategy

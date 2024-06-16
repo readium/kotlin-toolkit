@@ -12,6 +12,7 @@
 package org.readium.r2.opds
 
 import java.net.URL
+import org.readium.r2.shared.DelicateReadiumApi
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.extensions.toList
 import org.readium.r2.shared.extensions.toMap
@@ -101,6 +102,7 @@ public class OPDS1Parser {
         public fun parse(xmlData: ByteArray, url: URL): ParseData =
             throw NotImplementedError()
 
+        @OptIn(DelicateReadiumApi::class)
         private fun parseFeed(root: ElementNode, url: Url): Feed {
             val feedTitle = root.getFirst("title", Namespaces.Atom)?.text
                 ?: throw Exception(OPDSParserError.MissingTitle.name)
@@ -273,6 +275,7 @@ public class OPDS1Parser {
             }.mapFailure { ErrorException(it) }
         }
 
+        @OptIn(DelicateReadiumApi::class)
         private fun parseEntry(entry: ElementNode, baseUrl: Url): Publication? {
             // A title is mandatory
             val title = entry.getFirst("title", Namespaces.Atom)?.text

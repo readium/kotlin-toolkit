@@ -31,6 +31,7 @@ import org.readium.r2.lcp.service.DeviceService
 import org.readium.r2.lcp.service.LcpClient
 import org.readium.r2.lcp.service.LicensesRepository
 import org.readium.r2.lcp.service.NetworkService
+import org.readium.r2.shared.DelicateReadiumApi
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.extensions.tryOrNull
 import org.readium.r2.shared.util.Instant
@@ -246,6 +247,7 @@ internal class License private constructor(
     override val canReturnPublication: Boolean
         get() = status?.link(StatusDocument.Rel.Return) != null
 
+    @OptIn(DelicateReadiumApi::class)
     override suspend fun returnPublication(): Try<Unit, LcpError> {
         try {
             val status = this.documents.status

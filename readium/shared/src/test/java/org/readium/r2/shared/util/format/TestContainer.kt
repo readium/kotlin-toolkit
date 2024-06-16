@@ -8,6 +8,7 @@ package org.readium.r2.shared.util.format
 
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.data.Container
+import org.readium.r2.shared.util.getEquivalent
 import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.shared.util.resource.StringResource
 
@@ -25,7 +26,7 @@ class TestContainer(
         resources.keys
 
     override fun get(url: Url): Resource? =
-        resources[url]?.let { StringResource(it) }
+        resources.getEquivalent(url)?.let { StringResource(it) }
 
-    override suspend fun close() {}
+    override fun close() {}
 }

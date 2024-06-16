@@ -199,7 +199,7 @@ public class Publication(
     /**
      * Closes any opened resource associated with the [Publication], including services.
      */
-    override suspend fun close() {
+    override fun close() {
         container.close()
         services.close()
     }

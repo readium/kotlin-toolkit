@@ -78,9 +78,9 @@ public class TtsNavigator<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
 
     public sealed class State {
 
-        public object Ready : MediaNavigator.State.Ready
+        public data object Ready : MediaNavigator.State.Ready
 
-        public object Ended : MediaNavigator.State.Ended
+        public data object Ended : MediaNavigator.State.Ended
 
         public data class Failure(val error: Error) : MediaNavigator.State.Failure
     }
@@ -170,7 +170,6 @@ public class TtsNavigator<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
 
     override fun submitPreferences(preferences: P) {
         player.submitPreferences(preferences)
-        player.restartUtterance()
     }
 
     private fun navigatorPlayback(playback: TtsPlayer.Playback, utterance: TtsPlayer.Utterance) =

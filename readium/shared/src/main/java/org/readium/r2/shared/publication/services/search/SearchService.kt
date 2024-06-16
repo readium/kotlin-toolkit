@@ -12,8 +12,8 @@ import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.LocatorCollection
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.ServiceFactory
+import org.readium.r2.shared.util.Closeable
 import org.readium.r2.shared.util.Error
-import org.readium.r2.shared.util.SuspendingCloseable
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.data.ReadError
 
@@ -134,7 +134,7 @@ public var Publication.ServicesBuilder.searchServiceFactory: ServiceFactory?
  * Iterates through search results.
  */
 @ExperimentalReadiumApi
-public interface SearchIterator : SuspendingCloseable {
+public interface SearchIterator : Closeable {
 
     /**
      * Number of matches for this search, if known.
@@ -157,7 +157,7 @@ public interface SearchIterator : SuspendingCloseable {
      * Closes any resources allocated for the search query, such as a cursor.
      * To be called when the user dismisses the search.
      */
-    override suspend fun close() {}
+    override fun close() {}
 
     /**
      * Performs the given operation on each result page of this [SearchIterator].

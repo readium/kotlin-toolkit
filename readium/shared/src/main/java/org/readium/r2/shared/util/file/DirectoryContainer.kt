@@ -30,7 +30,7 @@ public class DirectoryContainer(
         ?.let { File(root, it) }
         ?.let { FileResource(it) }
 
-    override suspend fun close() {}
+    override fun close() {}
 
     public companion object {
 

@@ -115,7 +115,7 @@ public class PsPdfKitDocument(
         document.outline.toOutlineNodes()
     }
 
-    override suspend fun close() {}
+    override fun close() {}
 }
 
 private fun List<OutlineElement>.toOutlineNodes(): List<PdfDocument.OutlineNode> =

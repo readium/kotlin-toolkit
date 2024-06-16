@@ -621,7 +621,7 @@ public class EpubNavigatorFragment internal constructor(
             val page = resources.withIndex().firstOrNull { (_, res) ->
                 when (res) {
                     is PageResource.EpubReflowable ->
-                        res.link.url() == href
+                        res.link.url().isEquivalent(href)
                     is PageResource.EpubFxl ->
                         res.leftUrl?.toString()?.endsWith(href.toString()) == true || res.rightUrl?.toString()?.endsWith(
                             href.toString()
@@ -785,7 +785,10 @@ public class EpubNavigatorFragment internal constructor(
             paginationListener?.onPageLoaded()
 
             val href = link.url()
-            if (state is State.Initializing || (state as? State.Loading)?.initialResourceHref == href) {
+            if (state is State.Initializing || (state as? State.Loading)?.initialResourceHref?.isEquivalent(
+                    href
+                ) == true
+            ) {
                 state = State.Ready
             }
 

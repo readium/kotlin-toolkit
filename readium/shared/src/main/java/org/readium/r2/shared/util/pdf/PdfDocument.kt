@@ -21,7 +21,7 @@ import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.PublicationServicesHolder
 import org.readium.r2.shared.publication.ReadingProgression
 import org.readium.r2.shared.publication.services.cacheService
-import org.readium.r2.shared.util.SuspendingCloseable
+import org.readium.r2.shared.util.Closeable
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.cache.Cache
 import org.readium.r2.shared.util.cache.getOrTryPut
@@ -72,7 +72,7 @@ private class CachingPdfDocumentFactory<T : PdfDocument>(
 /**
  * Represents a PDF document.
  */
-public interface PdfDocument : SuspendingCloseable {
+public interface PdfDocument : Closeable {
 
     /**
      * Permanent identifier based on the contents of the file at the time it was originally
