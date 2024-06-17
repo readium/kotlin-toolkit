@@ -461,6 +461,10 @@ internal class TtsPlayer<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
             nextUtterance = contextNow.currentUtterance
         )
         utteranceMutable.value = utteranceWindow.currentUtterance.ttsPlayerUtterance()
+
+        if (playbackMutable.value.state == State.Ended) {
+            playbackMutable.value = playbackMutable.value.copy(state = State.Ready)
+        }
     }
 
     private suspend fun tryLoadNextContext() {
@@ -506,6 +510,7 @@ internal class TtsPlayer<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
         playbackMutable.value = playbackMutable.value.copy(
             state = State.Ended
         )
+        playbackJob?.cancel()
     }
 
     private suspend fun playContinuous() {
