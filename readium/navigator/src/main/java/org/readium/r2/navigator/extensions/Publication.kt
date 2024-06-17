@@ -40,7 +40,7 @@ public fun Publication.normalizeLocator(locator: Locator): Locator {
                 ?: return locator
         )
     } else { // Remote publication
-        // Check that the locator HREF relative to `self` exists int he manifest.
+        // Check that the locator HREF relative to `self` exists in the manifest.
         val relativeHref = self.relativize(locator.href)
         if (linkWithHref(relativeHref) != null) {
             locator.copy(href = relativeHref)

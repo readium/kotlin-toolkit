@@ -22,6 +22,7 @@ import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.flatMap
+import org.readium.r2.shared.util.getEquivalent
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.resource.FailureResource
 import org.readium.r2.shared.util.resource.Resource
@@ -38,7 +39,7 @@ internal class LcpDecryptor(
 
     fun transform(url: Url, resource: Resource): Resource {
         return resource.flatMap {
-            val encryption = encryptionData[url]
+            val encryption = encryptionData.getEquivalent(url)
 
             // Checks if the resource is encrypted and whether the encryption schemes of the resource
             // and the DRM license are the same.

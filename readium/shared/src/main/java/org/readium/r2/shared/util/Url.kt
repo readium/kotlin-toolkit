@@ -173,9 +173,39 @@ public sealed class Url : Parcelable {
     public open fun relativize(url: Url): Url =
         checkNotNull(toURI().relativize(url.toURI()).toUrl())
 
+    /**
+     * Normalizes the URL using a subset of the RFC-3986 rules.
+     *
+     * https://datatracker.ietf.org/doc/html/rfc3986#section-6
+     */
+    public open fun normalize(): Url =
+        uri.buildUpon()
+            .apply {
+                path?.let {
+                    var normalizedPath = File(it).normalize().path
+                    if (it.endsWith("/")) {
+                        normalizedPath += "/"
+                    }
+                    path(normalizedPath)
+                }
+
+                if (this@Url is AbsoluteUrl) {
+                    scheme(scheme.value)
+                }
+            }
+            .build()
+            .toUrl()!!
+
     override fun toString(): String =
         uri.toString()
 
+    /**
+     * Returns whether two URLs are strictly equal, by comparing their string representation.
+     *
+     * WARNING: Strict URL comparisons can be a source of bug, if the URLs are not normalized.
+     * In most cases, you should compare using [Url.isEquivalent].
+     */
+    @DelicateReadiumApi
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
@@ -185,6 +215,15 @@ public sealed class Url : Parcelable {
         if (uri.toString() != other.uri.toString()) return false
 
         return true
+    }
+
+    /**
+     * Returns whether the receiver is equivalent to the given `url` after normalization.
+     */
+    @OptIn(DelicateReadiumApi::class)
+    public fun isEquivalent(url: Url?): Boolean {
+        url ?: return false
+        return normalize() == url.normalize()
     }
 
     override fun hashCode(): Int =
@@ -241,6 +280,9 @@ public class AbsoluteUrl private constructor(override val uri: Uri) : Url() {
     public override fun resolve(url: Url): AbsoluteUrl =
         super.resolve(url) as AbsoluteUrl
 
+    public override fun normalize(): AbsoluteUrl =
+        super.normalize() as AbsoluteUrl
+
     /**
      * Identifies the type of URL.
      */
@@ -294,6 +336,9 @@ public class RelativeUrl private constructor(override val uri: Uri) : Url() {
                 RelativeUrl(uri)
             }
     }
+
+    public override fun normalize(): RelativeUrl =
+        super.normalize() as RelativeUrl
 }
 
 /**
@@ -307,7 +352,7 @@ public class RelativeUrl private constructor(override val uri: Uri) : Url() {
  */
 @DelicateReadiumApi
 public fun Url.Companion.fromLegacyHref(href: String): Url? =
-    AbsoluteUrl(href) ?: Url.fromDecodedPath(href.removePrefix("/"))
+    AbsoluteUrl(href) ?: fromDecodedPath(href.removePrefix("/"))
 
 /**
  * According to the EPUB specification, the HREFs in the EPUB package must be valid URLs (so
@@ -318,9 +363,8 @@ public fun Url.Companion.fromLegacyHref(href: String): Url? =
  * if we can't parse the URL.
  */
 @InternalReadiumApi
-public fun Url.Companion.fromEpubHref(href: String): Url? {
-    return (Url(href) ?: Url.fromDecodedPath(href))
-}
+public fun Url.Companion.fromEpubHref(href: String): Url? =
+    Url(href) ?: fromDecodedPath(href)
 
 public fun File.toUrl(): AbsoluteUrl =
     checkNotNull(AbsoluteUrl(Uri.fromFile(this)))
@@ -385,3 +429,23 @@ public value class FileExtension(
  */
 public fun FileExtension?.appendToFilename(filename: String): String =
     this?.let { "$filename.$value" } ?: filename
+
+/**
+ * Returns whether the receiver is equivalent to the given `url` after normalization.
+ */
+@OptIn(DelicateReadiumApi::class)
+public fun Url?.isEquivalent(url: Url?): Boolean {
+    if (this == null && url == null) return true
+    return this?.normalize() == url?.normalize()
+}
+
+/**
+ * Returns the value of the first key matching `key` after normalization.
+ */
+@OptIn(DelicateReadiumApi::class)
+public fun <T> Map<Url, T>.getEquivalent(key: Url): T? =
+    get(key) ?: run {
+        val url = key.normalize()
+        keys.firstOrNull { it.normalize() == url }
+            ?.let { get(it) }
+    }

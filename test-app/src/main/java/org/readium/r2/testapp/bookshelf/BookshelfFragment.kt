@@ -26,6 +26,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import org.readium.r2.shared.DelicateReadiumApi
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.testapp.Application
 import org.readium.r2.testapp.R
@@ -137,6 +138,7 @@ class BookshelfFragment : Fragment() {
         }
     }
 
+    @OptIn(DelicateReadiumApi::class)
     private fun askForRemoteUrl() {
         val urlEditText = EditText(requireContext())
         MaterialAlertDialogBuilder(requireContext())

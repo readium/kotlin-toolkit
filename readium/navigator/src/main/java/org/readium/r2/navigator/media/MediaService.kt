@@ -29,6 +29,7 @@ import kotlinx.coroutines.flow.*
 import org.readium.r2.navigator.extensions.let
 import org.readium.r2.navigator.extensions.splitAt
 import org.readium.r2.navigator.media.extensions.publicationId
+import org.readium.r2.shared.DelicateReadiumApi
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
@@ -141,6 +142,7 @@ public open class MediaService : MediaBrowserServiceCompat(), CoroutineScope by 
     private var notificationId: Int? = null
     private var notification: Notification? = null
 
+    @OptIn(DelicateReadiumApi::class)
     private val mediaPlayerListener = object : MediaPlayer.Listener {
 
         /**
@@ -168,7 +170,7 @@ public open class MediaService : MediaBrowserServiceCompat(), CoroutineScope by 
                     ?.let { navigator.publication.linkWithHref(it) }
                     ?.let { navigator.publication.locatorFromLink(it) }
 
-            if (locator != null && href != null && locator.href != href) {
+            if (locator != null && href != null && locator.href.isEquivalent(href)) {
                 Timber.e(
                     "Ambiguous playback location provided. HREF `$href` doesn't match locator $locator."
                 )
