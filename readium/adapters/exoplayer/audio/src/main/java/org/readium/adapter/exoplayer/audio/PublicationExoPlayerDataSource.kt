@@ -38,17 +38,17 @@ internal sealed class ExoPlayerDataSourceException(message: String, cause: Throw
  * An ExoPlayer's [DataSource] which retrieves resources from a [Publication].
  */
 @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
-internal class ExoPlayerDataSource internal constructor(
+public class PublicationExoPlayerDataSource internal constructor(
     private val publication: Publication
 ) : BaseDataSource(/* isNetwork = */ true) {
 
-    class Factory(
+    public class Factory(
         private val publication: Publication,
         private val transferListener: TransferListener? = null
     ) : DataSource.Factory {
 
         override fun createDataSource(): DataSource =
-            ExoPlayerDataSource(publication).apply {
+            PublicationExoPlayerDataSource(publication).apply {
                 if (transferListener != null) {
                     addTransferListener(transferListener)
                 }
