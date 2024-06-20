@@ -37,7 +37,4 @@ dependencies {
     // Tests
     testImplementation(libs.junit)
     testImplementation(libs.kotlin.junit)
-
-    androidTestImplementation(libs.androidx.ext.junit)
-    androidTestImplementation(libs.androidx.expresso.core)
 }

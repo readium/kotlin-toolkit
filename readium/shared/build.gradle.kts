@@ -14,8 +14,7 @@ android {
 }
 
 dependencies {
-    implementation(libs.androidx.appcompat)
-    implementation(libs.androidx.browser)
+    implementation(libs.androidx.annotation)
     implementation(libs.timber)
     implementation(libs.kotlin.reflect)
     implementation(libs.kotlinx.coroutines.android)
@@ -25,9 +24,6 @@ dependencies {
 
     // Tests
     testImplementation(libs.junit)
-
-    androidTestImplementation(libs.androidx.ext.junit)
-    androidTestImplementation(libs.androidx.expresso.core)
 
     testImplementation(libs.assertj)
     testImplementation(libs.kotlin.junit)
