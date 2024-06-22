@@ -150,28 +150,28 @@ public class AndroidTtsEngine private constructor(
     ) : TtsEngine.Error {
 
         /** Denotes a generic operation failure. */
-        public object Unknown : Error("An unknown error occurred.")
+        public data object Unknown : Error("An unknown error occurred.")
 
         /** Denotes a failure caused by an invalid request. */
-        public object InvalidRequest : Error("Invalid request")
+        public data object InvalidRequest : Error("Invalid request")
 
         /** Denotes a failure caused by a network connectivity problems. */
-        public object Network : Error("A network error occurred.")
+        public data object Network : Error("A network error occurred.")
 
         /** Denotes a failure caused by network timeout. */
-        public object NetworkTimeout : Error("Network timeout")
+        public data object NetworkTimeout : Error("Network timeout")
 
         /** Denotes a failure caused by an unfinished download of the voice data. */
-        public object NotInstalledYet : Error("Voice not installed yet.")
+        public data object NotInstalledYet : Error("Voice not installed yet.")
 
         /** Denotes a failure related to the output (audio device or a file). */
-        public object Output : Error("An error related to the output occurred.")
+        public data object Output : Error("An error related to the output occurred.")
 
         /** Denotes a failure of a TTS service. */
-        public object Service : Error("An error occurred with the TTS service.")
+        public data object Service : Error("An error occurred with the TTS service.")
 
         /** Denotes a failure of a TTS engine to synthesize the given input. */
-        public object Synthesis : Error("Synthesis failed.")
+        public data object Synthesis : Error("Synthesis failed.")
 
         /**
          * Denotes the language data is missing.
