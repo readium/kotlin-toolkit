@@ -34,6 +34,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import org.readium.navigator.media.audio.AudioEngine
 import org.readium.r2.shared.ExperimentalReadiumApi
+import org.readium.r2.shared.InternalReadiumApi
+import org.readium.r2.shared.extensions.findInstance
 import org.readium.r2.shared.util.ThrowableError
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.data.ReadError
@@ -289,12 +291,19 @@ public class ExoPlayerEngine private constructor(
             else -> AudioEngine.State.Failure(playerError!!.toError())
         }
 
-    private fun ExoPlaybackException.toError(): Error =
-        if (type == ExoPlaybackException.TYPE_SOURCE) {
-            // sourceException should always be a ReadException, we throw programming errors
-            val readException = (sourceException as? ReadException) ?: throw sourceException
-            Error.Source(readException.error)
-        } else {
+    @OptIn(InternalReadiumApi::class)
+    private fun ExoPlaybackException.toError(): Error {
+        val readError =
+            if (type == ExoPlaybackException.TYPE_SOURCE) {
+                sourceException.findInstance(ReadException::class.java)?.error
+            } else {
+                null
+            }
+
+        return if (readError == null) {
             Error.Engine(ThrowableError(this))
+        } else {
+            Error.Source(readError)
         }
+    }
 }

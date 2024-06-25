@@ -28,17 +28,17 @@ import timber.log.Timber
  * An ExoPlayer's [DataSource] which retrieves resources from a [Publication].
  */
 @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
-public class PublicationExoPlayerDataSource internal constructor(
+internal class ExoPlayerDataSource internal constructor(
     private val publication: Publication
 ) : BaseDataSource(/* isNetwork = */ true) {
 
-    public class Factory(
+    class Factory(
         private val publication: Publication,
         private val transferListener: TransferListener? = null
     ) : DataSource.Factory {
 
         override fun createDataSource(): DataSource =
-            PublicationExoPlayerDataSource(publication).apply {
+            ExoPlayerDataSource(publication).apply {
                 if (transferListener != null) {
                     addTransferListener(transferListener)
                 }
