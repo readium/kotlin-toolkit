@@ -12,7 +12,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import org.readium.navigator.media.common.MediaNavigator
 import org.readium.navigator.media.tts.AndroidTtsNavigator
 import org.readium.navigator.media.tts.AndroidTtsNavigatorFactory
 import org.readium.navigator.media.tts.TtsNavigator
@@ -138,19 +137,16 @@ class TtsViewModel private constructor(
         mediaServiceFacade.session
             .flatMapLatest { it?.navigator?.playback ?: MutableStateFlow(null) }
             .onEach { playback ->
-                when (playback?.state) {
-                    null -> {
+                when (val state = (playback?.state as? TtsNavigator.State)) {
+                    null, TtsNavigator.State.Ready -> {
+                        // Do nothing
                     }
-                    is MediaNavigator.State.Ended -> {
+                    is TtsNavigator.State.Ended -> {
                         stop()
                     }
-                    is MediaNavigator.State.Failure -> {
-                        onPlaybackError(
-                            (playback.state as TtsNavigator.State.Failure).error
-                        )
+                    is TtsNavigator.State.Failure -> {
+                        onPlaybackError(state.error)
                     }
-                    is MediaNavigator.State.Ready -> {}
-                    is MediaNavigator.State.Buffering -> {}
                 }
             }
             .launchIn(viewModelScope)

@@ -181,7 +181,7 @@ public class TtsNavigator<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
             range = utterance.range
         )
 
-    private fun TtsPlayer.State.toState() =
+    private fun TtsPlayer.State.toState(): State =
         when (this) {
             TtsPlayer.State.Ready -> State.Ready
             TtsPlayer.State.Ended -> State.Ended
