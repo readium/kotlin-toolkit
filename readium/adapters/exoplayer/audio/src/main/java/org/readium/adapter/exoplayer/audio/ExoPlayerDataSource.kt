@@ -48,7 +48,8 @@ internal class ExoPlayerDataSource internal constructor(
     private data class OpenedResource(
         val resource: Resource,
         val uri: Uri,
-        var position: Long
+        var position: Long,
+        var remaining: Long
     )
 
     private var openedResource: OpenedResource? = null
@@ -71,20 +72,24 @@ internal class ExoPlayerDataSource internal constructor(
                 )
             )
 
-        openedResource = OpenedResource(
-            resource = resource,
-            uri = dataSpec.uri,
-            position = dataSpec.position
-        )
-
         val bytesToRead =
             if (dataSpec.length != LENGTH_UNSET.toLong()) {
                 dataSpec.length
             } else {
                 val contentLength = contentLengthOf(dataSpec.uri, resource)
-                    ?: return dataSpec.length
-                contentLength - dataSpec.position
+                if (contentLength == null) {
+                    LENGTH_UNSET.toLong()
+                } else {
+                    contentLength - dataSpec.position
+                }
             }
+
+        openedResource = OpenedResource(
+            resource = resource,
+            uri = dataSpec.uri,
+            position = dataSpec.position,
+            remaining = bytesToRead
+        )
 
         return bytesToRead
     }
@@ -111,10 +116,18 @@ internal class ExoPlayerDataSource internal constructor(
             "No opened resource to read from. Did you call open()?"
         )
 
+        if (openedResource.remaining == 0L) {
+            return RESULT_END_OF_INPUT
+        }
+
+        val bytesToRead = length.toLong().coerceAtMost(openedResource.remaining)
+
         try {
             val data = runBlocking {
                 openedResource.resource
-                    .read(range = openedResource.position until (openedResource.position + length))
+                    .read(
+                        range = openedResource.position until (openedResource.position + bytesToRead)
+                    )
                     .mapFailure {
                         Timber.v("Failed to read $length bytes of URI $uri at offset $offset.")
                         ReadException(it)
@@ -133,6 +146,7 @@ internal class ExoPlayerDataSource internal constructor(
             )
 
             openedResource.position += data.count()
+            openedResource.remaining -= data.count()
             return data.count()
         } catch (e: Exception) {
             if (e is InterruptedException) {
