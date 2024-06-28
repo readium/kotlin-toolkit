@@ -12,6 +12,8 @@ import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.extensions.findInstance
@@ -78,18 +80,20 @@ internal class StreamingZipContainer(
 
         override suspend fun read(range: LongRange?): ReadTry<ByteArray> =
             withContext(Dispatchers.IO) {
-                try {
-                    val bytes =
-                        if (range == null) {
-                            readFully()
-                        } else {
-                            readRange(range)
-                        }
-                    Try.success(bytes)
-                } catch (exception: Exception) {
-                    exception.findInstance(ReadException::class.java)
-                        ?.let { Try.failure(it.error) }
-                        ?: Try.failure(ReadError.Decoding(exception))
+                mutex.withLock {
+                    try {
+                        val bytes =
+                            if (range == null) {
+                                readFully()
+                            } else {
+                                readRange(range)
+                            }
+                        Try.success(bytes)
+                    } catch (exception: Exception) {
+                        exception.findInstance(ReadException::class.java)
+                            ?.let { Try.failure(it.error) }
+                            ?: Try.failure(ReadError.Decoding(exception))
+                    }
                 }
             }
 
@@ -144,6 +148,9 @@ internal class StreamingZipContainer(
             }
         }
     }
+
+    private val mutex: Mutex =
+        Mutex()
 
     override val entries: Set<Url> =
         zipFile.entries.toList()
