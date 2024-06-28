@@ -7,6 +7,10 @@ import org.readium.r2.shared.DelicateReadiumApi
 import org.readium.r2.shared.publication.Href
 import org.readium.r2.shared.publication.Publication
 
+/**
+ * Uses the given cache only for remote publications and hrefs resolved against the
+ * publication base Url as cache keys.
+ */
 @OptIn(UnstableApi::class)
 public class DefaultExoPlayerCacheProvider(
     private val cache: Cache
