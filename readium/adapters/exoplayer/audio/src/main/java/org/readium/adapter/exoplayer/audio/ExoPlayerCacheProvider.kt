@@ -3,8 +3,8 @@ package org.readium.adapter.exoplayer.audio
 import androidx.annotation.OptIn
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.cache.Cache
-import org.readium.r2.shared.publication.Href
 import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.util.Url
 
 /**
  *  To be implemented to provide ExoPlayer with caching ability.
@@ -18,8 +18,8 @@ public interface ExoPlayerCacheProvider {
     public fun getCache(publication: Publication): Cache?
 
     /**
-     * Computes a unique cache key for the resource of [publication] with [href]. It can be an
-     * absolute URL or a mix of the href with some publication identifier.
+     * Computes a unique cache key for the resource of [publication] at [url] . It can be an
+     * absolute URL or a mix of [url] with some publication identifier.
      */
-    public fun computeKey(publication: Publication, href: Href): String
+    public fun computeKey(publication: Publication, url: Url): String
 }
