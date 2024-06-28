@@ -21,7 +21,6 @@ import org.readium.navigator.media.common.MediaMetadataProvider
 import org.readium.r2.navigator.extensions.time
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.InternalReadiumApi
-import org.readium.r2.shared.publication.Href
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.indexOfFirstWithHref
@@ -91,7 +90,7 @@ public class ExoPlayerEngineProvider(
 
         return CacheDataSource.Factory()
             .setCache(cache)
-            .setCacheKeyFactory { cacheProvider.computeKey(publication, Href(it.uri.toUrl()!!)) }
+            .setCacheKeyFactory { cacheProvider.computeKey(publication, it.uri.toUrl()!!) }
             .setCacheWriteDataSinkFactory(CacheDataSink.Factory().setCache(cache))
             .setCacheReadDataSourceFactory(FileDataSource.Factory())
             .setUpstreamDataSourceFactory(baseDataSource)
