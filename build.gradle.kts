@@ -12,6 +12,7 @@ plugins {
     id("io.github.gradle-nexus.publish-plugin") apply true
     id("org.jetbrains.dokka") apply true
     id("org.jetbrains.kotlin.android") apply false
+    id("com.google.devtools.ksp") apply false
     id("org.jlleitschuh.gradle.ktlint") apply true
 }
 
