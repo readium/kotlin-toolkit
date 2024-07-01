@@ -9,6 +9,10 @@
 package org.readium.adapter.exoplayer.audio
 
 import android.app.Application
+import androidx.media3.datasource.DataSource
+import androidx.media3.datasource.FileDataSource
+import androidx.media3.datasource.cache.CacheDataSink
+import androidx.media3.datasource.cache.CacheDataSource
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 import org.readium.navigator.media.audio.AudioEngineProvider
@@ -21,6 +25,7 @@ import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.indexOfFirstWithHref
 import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.toUrl
 
 /**
  * Main component to use the audio navigator with the ExoPlayer adapter.
@@ -28,15 +33,14 @@ import org.readium.r2.shared.util.Try
  * Provide [ExoPlayerDefaults] to customize the default values that will be used by
  * the navigator for some preferences.
  *
- * Pass an [ExoPlayerDataSourceProvider] providing a caching data source with an upstream
- * [PublicationExoPlayerDataSource] if you need caching.
+ * Pass an [ExoPlayerCacheProvider] to enable caching of remote resources.
  */
 @ExperimentalReadiumApi
 @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
 public class ExoPlayerEngineProvider(
     private val application: Application,
     private val metadataProvider: MediaMetadataProvider = DefaultMediaMetadataProvider(),
-    private val dataSourceProvider: ExoPlayerDataSourceProvider = DefaultExoPlayerDataSourceProvider(),
+    private val cacheProvider: ExoPlayerCacheProvider? = null,
     private val defaults: ExoPlayerDefaults = ExoPlayerDefaults(),
     private val configuration: ExoPlayerEngine.Configuration = ExoPlayerEngine.Configuration()
 ) : AudioEngineProvider<ExoPlayerSettings, ExoPlayerPreferences, ExoPlayerPreferencesEditor> {
@@ -48,7 +52,7 @@ public class ExoPlayerEngineProvider(
     ): Try<ExoPlayerEngine, Nothing> {
         val metadataFactory = metadataProvider.createMetadataFactory(publication)
         val settingsResolver = ExoPlayerSettingsResolver(defaults)
-        val dataSourceFactory = dataSourceProvider.createDataSourceFactory(publication)
+        val dataSourceFactory = createDataSourceFactory(publication)
         val initialIndex = publication.readingOrder.indexOfFirstWithHref(initialLocator.href) ?: 0
         val initialPosition = initialLocator.locations.time ?: Duration.ZERO
         val playlist = ExoPlayerEngine.Playlist(
@@ -75,6 +79,22 @@ public class ExoPlayerEngineProvider(
         )
 
         return Try.success(engine)
+    }
+
+    private fun createDataSourceFactory(
+        publication: Publication
+    ): DataSource.Factory {
+        val baseDataSource = ExoPlayerDataSource.Factory(publication)
+        val cache = cacheProvider?.getCache(publication)
+            ?: return baseDataSource
+
+        return CacheDataSource.Factory()
+            .setCache(cache)
+            .setCacheKeyFactory { cacheProvider.computeKey(publication, it.uri.toUrl()!!) }
+            .setCacheWriteDataSinkFactory(CacheDataSink.Factory().setCache(cache))
+            .setCacheReadDataSourceFactory(FileDataSource.Factory())
+            .setUpstreamDataSourceFactory(baseDataSource)
+            .setFlags(CacheDataSource.FLAG_IGNORE_CACHE_ON_ERROR)
     }
 
     override fun createPreferenceEditor(

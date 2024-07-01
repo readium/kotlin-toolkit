@@ -7,7 +7,13 @@
 package org.readium.adapter.exoplayer.audio
 
 import android.app.Application
-import androidx.media3.common.*
+import androidx.media3.common.AudioAttributes
+import androidx.media3.common.C
+import androidx.media3.common.ForwardingPlayer
+import androidx.media3.common.MediaItem
+import androidx.media3.common.MediaMetadata
+import androidx.media3.common.PlaybackParameters
+import androidx.media3.common.Player
 import androidx.media3.datasource.DataSource
 import androidx.media3.exoplayer.ExoPlaybackException
 import androidx.media3.exoplayer.ExoPlayer
@@ -15,13 +21,25 @@ import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
 import org.readium.navigator.media.audio.AudioEngine
 import org.readium.r2.shared.ExperimentalReadiumApi
+import org.readium.r2.shared.InternalReadiumApi
+import org.readium.r2.shared.extensions.findInstance
+import org.readium.r2.shared.util.ThrowableError
 import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.data.ReadError
+import org.readium.r2.shared.util.data.ReadException
 import org.readium.r2.shared.util.toUri
 import org.readium.r2.shared.util.units.Hz
 import org.readium.r2.shared.util.units.hz
@@ -164,7 +182,17 @@ public class ExoPlayerEngine private constructor(
         }
     }
 
-    public data class Error(val error: ExoPlaybackException) : AudioEngine.Error
+    public sealed class Error(
+        override val message: String,
+        override val cause: org.readium.r2.shared.util.Error?
+    ) : AudioEngine.Error {
+
+        public data class Engine(override val cause: ThrowableError<ExoPlaybackException>) :
+            Error("An error occurred in the ExoPlayer engine.", cause)
+
+        public data class Source(override val cause: ReadError) :
+            Error("An error occurred while trying to read publication content.", cause)
+    }
 
     private val coroutineScope: CoroutineScope =
         MainScope()
@@ -260,6 +288,22 @@ public class ExoPlayerEngine private constructor(
             Player.STATE_READY -> AudioEngine.State.Ready
             Player.STATE_BUFFERING -> AudioEngine.State.Buffering
             Player.STATE_ENDED -> AudioEngine.State.Ended
-            else -> AudioEngine.State.Failure(Error(playerError!!))
+            else -> AudioEngine.State.Failure(playerError!!.toError())
         }
+
+    @OptIn(InternalReadiumApi::class)
+    private fun ExoPlaybackException.toError(): Error {
+        val readError =
+            if (type == ExoPlaybackException.TYPE_SOURCE) {
+                sourceException.findInstance(ReadException::class.java)?.error
+            } else {
+                null
+            }
+
+        return if (readError == null) {
+            Error.Engine(ThrowableError(this))
+        } else {
+            Error.Source(readError)
+        }
+    }
 }
