@@ -160,6 +160,8 @@ public class PsPdfKitDocumentFragment internal constructor(
                     }
                     .onSuccess { resetPdfFragment() }
             }
+        } else {
+            resetPdfFragment()
         }
     }
 
