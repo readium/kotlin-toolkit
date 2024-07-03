@@ -15,6 +15,7 @@ android {
 dependencies {
     api(project(":readium:readium-shared"))
 
+    implementation(libs.bundles.compose)
     implementation(libs.timber)
     implementation(libs.kotlinx.coroutines.android)
 }

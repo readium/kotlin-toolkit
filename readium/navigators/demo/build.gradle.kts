@@ -59,6 +59,10 @@ android {
 }
 
 dependencies {
+    api(project(":readium:navigators:readium-navigator-web"))
+    api(project(":readium:readium-shared"))
+    api(project(":readium:readium-streamer"))
+
     coreLibraryDesugaring(libs.desugar.jdk.libs)
 
     implementation(libs.kotlin.stdlib)
