@@ -23,8 +23,10 @@ import kotlin.time.DurationUnit
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import org.readium.adapter.exoplayer.audio.ExoPlayerEngine
 import org.readium.adapter.exoplayer.audio.ExoPlayerPreferences
 import org.readium.adapter.exoplayer.audio.ExoPlayerSettings
+import org.readium.navigator.media.audio.AudioNavigator
 import org.readium.navigator.media.common.MediaNavigator
 import org.readium.navigator.media.common.TimeBasedMediaNavigator
 import org.readium.r2.navigator.preferences.Configurable
@@ -33,7 +35,9 @@ import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.services.cover
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.databinding.FragmentAudiobookBinding
+import org.readium.r2.testapp.domain.toUserError
 import org.readium.r2.testapp.reader.preferences.UserPreferencesViewModel
+import org.readium.r2.testapp.utils.UserError
 import org.readium.r2.testapp.utils.viewLifecycle
 import timber.log.Timber
 
@@ -92,8 +96,10 @@ class AudioReaderFragment : BaseReaderFragment(), SeekBar.OnSeekBarChangeListene
         playback: TimeBasedMediaNavigator.Playback
     ) {
         Timber.v("onPlaybackChanged $playback")
-        if (playback.state is MediaNavigator.State.Failure) {
-            onPlayerError()
+        val failureState = playback.state as? AudioNavigator.State.Failure<*>
+        if (failureState != null) {
+            val error = failureState.error as ExoPlayerEngine.Error
+            onPlayerError(error)
             return
         }
 
@@ -128,11 +134,18 @@ class AudioReaderFragment : BaseReaderFragment(), SeekBar.OnSeekBarChangeListene
     private fun Duration.formatElapsedTime(): String =
         DateUtils.formatElapsedTime(toLong(DurationUnit.SECONDS))
 
-    private fun onPlayerError() {
+    private fun onPlayerError(error: ExoPlayerEngine.Error) {
         binding.playPause.isEnabled = false
         binding.timelineBar.isEnabled = false
         binding.timelinePosition.isEnabled = false
         binding.timelineDuration.isEnabled = false
+        val userError = when (error) {
+            is ExoPlayerEngine.Error.Engine ->
+                UserError(error.message, error)
+            is ExoPlayerEngine.Error.Source ->
+                error.cause.toUserError()
+        }
+        userError.show(requireActivity())
     }
 
     override fun onResume() {

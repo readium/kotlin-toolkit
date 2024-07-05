@@ -22,7 +22,7 @@ public interface AudioEngine<S : Configurable.Settings, P : Configurable.Prefere
     /**
      * Marker interface for the errors that the [AudioEngine] returns.
      */
-    public interface Error
+    public interface Error : org.readium.r2.shared.util.Error
 
     /**
      * State of the player.

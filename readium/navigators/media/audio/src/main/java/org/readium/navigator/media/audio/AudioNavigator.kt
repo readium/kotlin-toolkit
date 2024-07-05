@@ -67,15 +67,19 @@ public class AudioNavigator<S : Configurable.Settings, P : Configurable.Preferen
         override val buffered: Duration?
     ) : TimeBasedMediaNavigator.Playback
 
-    public sealed class State {
+    public sealed interface State {
 
-        public object Ready : MediaNavigator.State.Ready
+        public data object Ready :
+            State, MediaNavigator.State.Ready
 
-        public object Ended : MediaNavigator.State.Ended
+        public data object Ended :
+            State, MediaNavigator.State.Ended
 
-        public object Buffering : MediaNavigator.State.Buffering
+        public data object Buffering :
+            State, MediaNavigator.State.Buffering
 
-        public data class Failure<E : AudioEngine.Error> (val error: E) : MediaNavigator.State.Failure
+        public data class Failure<E : AudioEngine.Error> (val error: E) :
+            State, MediaNavigator.State.Failure
     }
 
     private val coroutineScope: CoroutineScope =
@@ -119,7 +123,7 @@ public class AudioNavigator<S : Configurable.Settings, P : Configurable.Preferen
                 playback.coerceOffset(itemDuration)
 
             Playback(
-                playback.state.toState(),
+                playback.state.toState() as MediaNavigator.State,
                 playback.playWhenReady,
                 playback.index,
                 coercedOffset,
@@ -182,7 +186,7 @@ public class AudioNavigator<S : Configurable.Settings, P : Configurable.Preferen
         return go(locator, animated)
     }
 
-    private fun AudioEngine.State.toState(): MediaNavigator.State =
+    private fun AudioEngine.State.toState(): State =
         when (this) {
             is AudioEngine.State.Ready -> State.Ready
             is AudioEngine.State.Ended -> State.Ended

@@ -13,26 +13,16 @@ import androidx.media3.datasource.BaseDataSource
 import androidx.media3.datasource.DataSource
 import androidx.media3.datasource.DataSpec
 import androidx.media3.datasource.TransferListener
-import java.io.IOException
 import kotlinx.coroutines.runBlocking
 import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.util.DebugError
+import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.data.ReadException
 import org.readium.r2.shared.util.getOrThrow
 import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.shared.util.resource.buffered
 import org.readium.r2.shared.util.toUrl
-
-internal sealed class ExoPlayerDataSourceException(message: String, cause: Throwable?) : IOException(
-    message,
-    cause
-) {
-    class NotOpened(message: String) : ExoPlayerDataSourceException(message, null)
-    class NotFound(message: String) : ExoPlayerDataSourceException(message, null)
-    class ReadFailed(uri: Uri, offset: Int, readLength: Int, cause: Throwable) : ExoPlayerDataSourceException(
-        "Failed to read $readLength bytes of URI $uri at offset $offset.",
-        cause
-    )
-}
+import timber.log.Timber
 
 /**
  * An ExoPlayer's [DataSource] which retrieves resources from a [Publication].
@@ -58,35 +48,48 @@ internal class ExoPlayerDataSource internal constructor(
     private data class OpenedResource(
         val resource: Resource,
         val uri: Uri,
-        var position: Long
+        var position: Long,
+        var remaining: Long
     )
 
     private var openedResource: OpenedResource? = null
 
     override fun open(dataSpec: DataSpec): Long {
-        val resource = dataSpec.uri.toUrl()
+        val link = dataSpec.uri.toUrl()
             ?.let { publication.linkWithHref(it) }
-            ?.let { publication.get(it) }
-            // Significantly improves performances, in particular with deflated ZIP entries.
-            ?.buffered(resourceLength = cachedLengths[dataSpec.uri.toString()])
-            ?: throw ExoPlayerDataSourceException.NotFound(
+            ?: throw IllegalStateException(
                 "Can't find a [Link] for URI: ${dataSpec.uri}. Make sure you only request resources declared in the manifest."
             )
 
-        openedResource = OpenedResource(
-            resource = resource,
-            uri = dataSpec.uri,
-            position = dataSpec.position
-        )
+        val resource = publication.get(link)
+            // Significantly improves performances, in particular with deflated ZIP entries.
+            ?.buffered(resourceLength = cachedLengths[dataSpec.uri.toString()])
+            ?: throw ReadException(
+                ReadError.Decoding(
+                    DebugError(
+                        "Can't find an entry for URI: ${dataSpec.uri}. Publication looks invalid."
+                    )
+                )
+            )
 
         val bytesToRead =
             if (dataSpec.length != LENGTH_UNSET.toLong()) {
                 dataSpec.length
             } else {
                 val contentLength = contentLengthOf(dataSpec.uri, resource)
-                    ?: return dataSpec.length
-                contentLength - dataSpec.position
+                if (contentLength == null) {
+                    LENGTH_UNSET.toLong()
+                } else {
+                    contentLength - dataSpec.position
+                }
             }
+
+        openedResource = OpenedResource(
+            resource = resource,
+            uri = dataSpec.uri,
+            position = dataSpec.position,
+            remaining = bytesToRead
+        )
 
         return bytesToRead
     }
@@ -109,16 +112,26 @@ internal class ExoPlayerDataSource internal constructor(
             return 0
         }
 
-        val openedResource = openedResource ?: throw ExoPlayerDataSourceException.NotOpened(
+        val openedResource = openedResource ?: throw IllegalStateException(
             "No opened resource to read from. Did you call open()?"
         )
+
+        if (openedResource.remaining == 0L) {
+            return RESULT_END_OF_INPUT
+        }
+
+        val bytesToRead = length.toLong().coerceAtMost(openedResource.remaining)
 
         try {
             val data = runBlocking {
                 openedResource.resource
-                    .read(range = openedResource.position until (openedResource.position + length))
-                    .mapFailure { ReadException(it) }
-                    .getOrThrow()
+                    .read(
+                        range = openedResource.position until (openedResource.position + bytesToRead)
+                    )
+                    .mapFailure {
+                        Timber.v("Failed to read $length bytes of URI $uri at offset $offset.")
+                        ReadException(it)
+                    }.getOrThrow()
             }
 
             if (data.isEmpty()) {
@@ -133,33 +146,20 @@ internal class ExoPlayerDataSource internal constructor(
             )
 
             openedResource.position += data.count()
+            openedResource.remaining -= data.count()
             return data.count()
         } catch (e: Exception) {
             if (e is InterruptedException) {
                 return 0
             }
-            throw ExoPlayerDataSourceException.ReadFailed(
-                uri = openedResource.uri,
-                offset = offset,
-                readLength = length,
-                cause = e
-            )
+            throw e
         }
     }
 
     override fun getUri(): Uri? = openedResource?.uri
 
     override fun close() {
-        openedResource?.run {
-            try {
-                runBlocking { resource.close() }
-            } catch (e: Exception) {
-                if (e !is InterruptedException) {
-                    throw e
-                }
-            } finally {
-                openedResource = null
-            }
-        }
+        openedResource?.resource?.close()
+        openedResource = null
     }
 }
