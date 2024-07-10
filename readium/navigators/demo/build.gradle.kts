@@ -65,6 +65,7 @@ dependencies {
 
     coreLibraryDesugaring(libs.desugar.jdk.libs)
 
+    implementation(libs.timber)
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.kotlin.stdlib)
     implementation(libs.androidx.legacy.v4)

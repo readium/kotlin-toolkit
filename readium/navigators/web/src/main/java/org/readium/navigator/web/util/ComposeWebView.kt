@@ -27,7 +27,10 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.FrameLayout
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
@@ -43,13 +46,18 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.snapshots.SnapshotStateList
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.view.ViewCompat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.readium.navigator.web.util.LoadingState.Finished
+import org.readium.navigator.web.util.LoadingState.Loading
+import timber.log.Timber
 
 /**
  * A wrapper around the Android View WebView to provide a basic WebView composable.
@@ -87,7 +95,10 @@ internal fun WebView(
     chromeClient: AccompanistWebChromeClient = remember { AccompanistWebChromeClient() },
     factory: ((Context) -> WebView)? = null
 ) {
-    BoxWithConstraints(modifier) {
+    BoxWithConstraints(
+        modifier = modifier,
+        propagateMinConstraints = true
+    ) {
         // WebView changes it's layout strategy based on
         // it's layoutParams. We convert from Compose Modifier to
         // layout params here.
@@ -109,18 +120,29 @@ internal fun WebView(
             height
         )
 
-        WebView(
-            state,
-            layoutParams,
-            Modifier,
-            captureBackPresses,
-            navigator,
-            onCreated,
-            onDispose,
-            client,
-            chromeClient,
-            factory
-        )
+        Timber.d("layoutParams ${layoutParams.width} ${layoutParams.height}")
+
+        LazyRow(
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically,
+            userScrollEnabled = false,
+            modifier = Modifier.fillMaxSize()
+        ) {
+            item {
+                WebView(
+                    state,
+                    layoutParams,
+                    Modifier.fillParentMaxSize(),
+                    captureBackPresses,
+                    navigator,
+                    onCreated,
+                    onDispose,
+                    client,
+                    chromeClient,
+                    factory
+                )
+            }
+        }
     }
 }
 
@@ -179,6 +201,7 @@ internal fun WebView(
             snapshotFlow { state.content }.collect { content ->
                 when (content) {
                     is WebContent.Url -> {
+                        Timber.d("Loading URL ${content.url}")
                         wv.loadUrl(content.url, content.additionalHttpHeaders)
                     }
 
@@ -216,8 +239,9 @@ internal fun WebView(
 
     AndroidView(
         factory = { context ->
-            (factory?.invoke(context) ?: WebView(context)).apply {
+            (factory?.invoke(context) ?: LoggingWebView(context)).apply {
                 onCreated(this)
+                ViewCompat.setNestedScrollingEnabled(this, true)
 
                 this.layoutParams = layoutParams
 

@@ -19,6 +19,7 @@ import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.http.DefaultHttpClient
 import org.readium.r2.streamer.PublicationOpener
 import org.readium.r2.streamer.parser.DefaultPublicationParser
+import timber.log.Timber
 
 class DemoViewModel(
     application: Application
@@ -39,6 +40,10 @@ class DemoViewModel(
         data class Reader(
             val state: NavigatorState
         ) : State
+    }
+
+    init {
+        Timber.plant(Timber.DebugTree())
     }
 
     private val httpClient =

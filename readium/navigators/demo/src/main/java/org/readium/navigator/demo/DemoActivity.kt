@@ -47,7 +47,10 @@ class DemoActivity : ComponentActivity() {
                 ) { paddingValues ->
 
                     Box(
-                        modifier = Modifier.padding(paddingValues)
+                        modifier = Modifier
+                            .padding(paddingValues)
+                            .fillMaxSize(),
+                        propagateMinConstraints = true
                     ) {
                         val state = viewModel.state.collectAsState()
 
@@ -65,7 +68,10 @@ class DemoActivity : ComponentActivity() {
                                 // Display nothing
                             }
                             is DemoViewModel.State.Reader -> {
-                                NavigatorView(stateNow.state)
+                                NavigatorView(
+                                    modifier = Modifier.fillMaxSize(),
+                                    state = stateNow.state
+                                )
                             }
                         }
                     }

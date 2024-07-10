@@ -104,6 +104,17 @@ internal class WebViewServer(
             errorResource()
         }
 
+        link.mediaType
+            ?.takeIf { it.isHtml }
+            ?.let {
+                resource = resource.injectHtml(
+                    publication,
+                    mediaType = it,
+                    baseHref = assetsBaseHref,
+                    disableSelectionWhenProtected = disableSelectionWhenProtected
+                )
+            }
+
         val headers = mutableMapOf(
             "Accept-Ranges" to "bytes"
         )

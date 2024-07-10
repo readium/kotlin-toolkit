@@ -76,7 +76,7 @@ public class NavigatorFactory private constructor(
             WebViewServer(
                 application = application,
                 publication = publication,
-                servedAssets = emptyList(),
+                servedAssets = listOf("readium/.*"),
                 disableSelectionWhenProtected = false,
                 onResourceLoadFailed = { _, _ -> }
             )
