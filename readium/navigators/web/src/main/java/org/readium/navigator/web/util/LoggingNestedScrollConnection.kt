@@ -6,11 +6,13 @@ import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.unit.Velocity
 import timber.log.Timber
 
-internal class LoggingNestedScrollConnection : NestedScrollConnection {
+internal class LoggingNestedScrollConnection(
+    private val delegateNestedScrollConnection: NestedScrollConnection
+) : NestedScrollConnection {
 
     override suspend fun onPostFling(consumed: Velocity, available: Velocity): Velocity {
-        Timber.d("onPostFling $consumed $available")
-        return super.onPostFling(consumed, available)
+        Timber.d("onPostFling consumed $consumed, available $available")
+        return delegateNestedScrollConnection.onPostFling(consumed, available)
     }
 
     override fun onPostScroll(
@@ -18,17 +20,17 @@ internal class LoggingNestedScrollConnection : NestedScrollConnection {
         available: Offset,
         source: NestedScrollSource
     ): Offset {
-        Timber.d("onPostFling $consumed $available $source")
-        return super.onPostScroll(consumed, available, source)
+        Timber.d("onPostScroll consumed, $consumed, available $available")
+        return delegateNestedScrollConnection.onPostScroll(consumed, available, source)
     }
 
     override suspend fun onPreFling(available: Velocity): Velocity {
-        Timber.d("onPreFling $available")
-        return super.onPreFling(available)
+        Timber.d("onPreFling available $available")
+        return delegateNestedScrollConnection.onPreFling(available)
     }
 
     override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
-        Timber.d("onPreScroll $available $source")
-        return super.onPreScroll(available, source)
+        Timber.d("onPreScroll available $available")
+        return delegateNestedScrollConnection.onPreScroll(available, source)
     }
 }

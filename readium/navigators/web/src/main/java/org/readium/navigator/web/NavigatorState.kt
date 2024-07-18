@@ -24,7 +24,7 @@ public class NavigatorState internal constructor(
     initialPreferences: NavigatorPreferences,
     defaults: NavigatorDefaults,
     initialItem: Int,
-    webViewServer: WebViewServer
+    internal val webViewServer: WebViewServer
 ) {
     public data class ReadingOrder(
         val items: List<Item>

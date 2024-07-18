@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.readium.navigator.web.util
+package org.readium.navigator.web.webview
 
 import android.content.Context
 import android.graphics.Bitmap
@@ -27,6 +27,7 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.FrameLayout
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxSize
@@ -55,8 +56,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.readium.navigator.web.util.LoadingState.Finished
-import org.readium.navigator.web.util.LoadingState.Loading
+import org.readium.navigator.web.gestures.scrollable2D
+import org.readium.navigator.web.util.WebViewScrollable2DState
+import org.readium.navigator.web.webview.LoadingState.Finished
+import org.readium.navigator.web.webview.LoadingState.Loading
 import timber.log.Timber
 
 /**
@@ -171,6 +174,7 @@ internal fun WebView(
  * @param chromeClient Provides access to WebChromeClient via subclassing
  * @param factory An optional WebView factory for using a custom subclass of WebView
  */
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 internal fun WebView(
     state: WebViewState,
@@ -237,9 +241,11 @@ internal fun WebView(
     client.navigator = navigator
     chromeClient.state = state
 
+    val draggableState = remember { WebViewScrollable2DState() }
+
     AndroidView(
         factory = { context ->
-            (factory?.invoke(context) ?: LoggingWebView(context)).apply {
+            (RelaxedWebView(context)).apply {
                 onCreated(this)
                 ViewCompat.setNestedScrollingEnabled(this, true)
 
@@ -251,11 +257,14 @@ internal fun WebView(
 
                 webChromeClient = chromeClient
                 webViewClient = client
+                draggableState.webView = this
             }.also { state.webView = it }
         },
-        modifier = modifier,
+        modifier = modifier
+            .scrollable2D(draggableState),
         onRelease = {
             onDispose(it)
+            draggableState.webView = null
         }
     )
 }

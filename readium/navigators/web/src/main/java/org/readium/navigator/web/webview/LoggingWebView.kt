@@ -1,4 +1,4 @@
-package org.readium.navigator.web.util
+package org.readium.navigator.web.webview
 
 import android.annotation.SuppressLint
 import android.content.Context
@@ -6,6 +6,8 @@ import android.view.MotionEvent
 import android.view.ViewConfiguration
 import android.webkit.WebView
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.input.nestedscroll.NestedScrollDispatcher
+import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import kotlin.math.abs
 import kotlin.math.sign
 import kotlinx.coroutines.CoroutineScope
@@ -19,6 +21,8 @@ import timber.log.Timber
 
 @OptIn(InternalReadiumApi::class)
 internal class LoggingWebView(context: Context) : WebView(context) {
+
+    lateinit var nestedScrollDispatcher: NestedScrollDispatcher
 
     private val coroutineScope: CoroutineScope =
         CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
@@ -82,6 +86,27 @@ internal class LoggingWebView(context: Context) : WebView(context) {
 
                 val horizontalSign = -sign(currentMoveDelta.x).toInt()
                 val verticalSign = sign(currentMoveDelta.y).toInt()
+
+                Timber.d("nestedScrollDispatcher.dispatchPreScroll $currentMoveDelta")
+                val preconsumed =
+                    nestedScrollDispatcher.dispatchPreScroll(
+                        currentMoveDelta,
+                        NestedScrollSource.Drag
+                    )
+
+                val remaining = currentMoveDelta - preconsumed
+                val consumed = Offset(remaining.x.toInt().toFloat(), remaining.y.toInt().toFloat())
+
+                scrollBy(consumed.x.toInt(), consumed.y.toInt())
+
+                Timber.d(
+                    "nestedScrollDispatcher.dispatchPostScroll ${preconsumed + consumed} ${remaining - consumed}"
+                )
+                nestedScrollDispatcher.dispatchPostScroll(
+                    preconsumed + consumed,
+                    remaining - consumed,
+                    NestedScrollSource.Drag
+                )
 
                 val shouldScrollHorizontally =
                     state!!.isHorizontallyScrolling() && canScrollHorizontally(horizontalSign)
