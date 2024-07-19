@@ -1,7 +1,9 @@
 package org.readium.navigator.web.util
 
 import androidx.compose.ui.geometry.Offset
-import kotlin.math.roundToInt
+import kotlin.math.abs
+import kotlin.math.ceil
+import kotlin.math.sign
 import org.readium.navigator.web.gestures.DefaultScrollable2DState
 import org.readium.navigator.web.gestures.Scrollable2DState
 import org.readium.navigator.web.webview.RelaxedWebView
@@ -40,18 +42,30 @@ private class WebViewDeltaDispatcher {
         Timber.d("WebViewDeltaDispatcher currentScrollY $currentY")
         Timber.d("WebViewDeltaDispatcher currentScrollY $currentY")
 
-        val newX = (currentX - delta.x).coerceIn(0f, maxX.toFloat())
-        val newY = (currentY - delta.y).coerceIn(0f, maxY.toFloat())
-        webViewNow.scrollTo(newX.roundToInt(), newY.roundToInt())
+        // Consume slightly more than delta si we have to because
+        // we don't want the pager to consume any rounding error
+        val newX = (currentX - sign(delta.x) * ceil(abs(delta.x))).toInt().coerceIn(0, maxX)
+        val newY = (currentY - sign(delta.y) * ceil(abs(delta.y))).toInt().coerceIn(0, maxY)
+        webViewNow.scrollTo(newX, newY)
         // webViewNow.scrollBy(-delta.x.toInt(), delta.y.toInt())
 
         Timber.d("WebViewDeltaDispatcher newScrollX ${webViewNow.scrollX}")
         Timber.d("WebViewDeltaDispatcher newScrollY ${webViewNow.scrollY}")
 
-        val consumedX = (currentX - webViewNow.scrollX).toFloat()
-        val consumedY = (currentY - webViewNow.scrollY).toFloat()
+        // Fake that we never consume more than delta
+        val consumedX = (currentX - webViewNow.scrollX).toFloat().coerceAbsAtMost(abs(delta.x))
+        val consumedY = (currentY - webViewNow.scrollY).toFloat().coerceAbsAtMost(abs(delta.y))
         val consumed = Offset(consumedX, consumedY)
         Timber.d("WebViewDeltaDispatcher consumed $consumed")
         return consumed
+    }
+
+    private fun Float.coerceAbsAtMost(maxValue: Float): Float {
+        require(maxValue >= 0)
+        return if (this > 0) {
+            this.coerceAtMost(maxValue)
+        } else {
+            this.coerceAtLeast(-maxValue)
+        }
     }
 }
