@@ -9,7 +9,6 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
-import androidx.compose.ui.input.nestedscroll.NestedScrollDispatcher
 import org.readium.navigator.web.util.LoggingNestedScrollConnection
 import org.readium.navigator.web.util.PagerNestedConnection
 import org.readium.navigator.web.util.WebViewServer
@@ -31,31 +30,7 @@ public fun NavigatorView(
     }
 
     HorizontalPager(
-        modifier = modifier/*.nestedScroll(object : NestedScrollConnection {
-
-            override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
-                Timber.d("onPreScroll $available")
-                return Offset.Zero
-            }
-
-            override fun onPostScroll(
-                consumed: Offset,
-                available: Offset,
-                source: NestedScrollSource
-            ): Offset {
-                Timber.d("onPostScroll $consumed $available")
-               return Offset(pagerState.dispatchRawDelta(available.x), 0f)
-            }
-
-            override suspend fun onPreFling(available: Velocity): Velocity {
-                return Velocity.Zero
-            }
-
-            override suspend fun onPostFling(consumed: Velocity, available: Velocity): Velocity {
-                return available
-
-
-        })*/,
+        modifier = modifier,
         userScrollEnabled = true,
         state = pagerState,
         beyondViewportPageCount = 2,
@@ -68,19 +43,9 @@ public fun NavigatorView(
             is LayoutResolver.Spread.Single -> {
                 val url = WebViewServer.publicationBaseHref.resolve(it.url).toString()
                 val webViewState = rememberWebViewState(url)
-                val nestedScrollDispatcher = NestedScrollDispatcher()
                 WebView(
-                    modifier = Modifier.fillMaxSize(),
-                           /* .nestedScroll(object : NestedScrollConnection {
-
-                                override suspend fun onPostFling(
-                                    consumed: Velocity,
-                                    available: Velocity
-                                ): Velocity {
-                                    return available
-                                }
-                            }),*/
-                    // .nestedScroll(NoOpScrollConnection, nestedScrollDispatcher),
+                    modifier = Modifier
+                        .fillMaxSize(),
                     state = webViewState,
                     client = state.webViewClient,
                     onCreated = { webview ->

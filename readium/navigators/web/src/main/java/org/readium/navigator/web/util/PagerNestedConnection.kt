@@ -7,6 +7,7 @@ import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.unit.Velocity
 import kotlin.math.abs
+import kotlinx.coroutines.CancellationException
 import timber.log.Timber
 
 internal class PagerNestedConnection(
@@ -14,7 +15,7 @@ internal class PagerNestedConnection(
     private val orientation: Orientation
 ) : NestedScrollConnection {
 
-    fun Velocity.consumeOnOrientation(orientation: Orientation): Velocity {
+    private fun Velocity.consumeOnOrientation(orientation: Orientation): Velocity {
         return if (orientation == Orientation.Vertical) {
             copy(x = 0f)
         } else {
@@ -22,10 +23,13 @@ internal class PagerNestedConnection(
         }
     }
 
-    val PagerState.firstVisibleOffset get() =
+    private fun Offset.mainAxis(): Float =
+        if (orientation == Orientation.Horizontal) this.x else this.y
+
+    private val PagerState.firstVisibleOffset get() =
         layoutInfo.visiblePagesInfo.first().offset
 
-    val PagerState.lastVisibleOffset get() =
+    private val PagerState.lastVisibleOffset get() =
         layoutInfo.visiblePagesInfo.last().offset
 
     override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
@@ -81,6 +85,17 @@ internal class PagerNestedConnection(
             x = if (orientation == Orientation.Horizontal) consumed else available.x,
             y = if (orientation == Orientation.Vertical) consumed else available.y
         )
+    }
+
+    override fun onPostScroll(
+        consumed: Offset,
+        available: Offset,
+        source: NestedScrollSource
+    ): Offset {
+        if (source == NestedScrollSource.SideEffect && available.mainAxis() != 0f) {
+            throw CancellationException()
+        }
+        return Offset.Zero
     }
 
     override suspend fun onPostFling(consumed: Velocity, available: Velocity): Velocity {

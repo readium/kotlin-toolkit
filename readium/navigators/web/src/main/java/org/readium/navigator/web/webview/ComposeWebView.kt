@@ -56,6 +56,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.readium.navigator.web.gestures.Fling2DBehavior
 import org.readium.navigator.web.gestures.scrollable2D
 import org.readium.navigator.web.util.WebViewScrollable2DState
 import org.readium.navigator.web.webview.LoadingState.Finished
@@ -91,6 +92,7 @@ internal fun WebView(
     state: WebViewState,
     modifier: Modifier = Modifier,
     captureBackPresses: Boolean = true,
+    flingBehavior: Fling2DBehavior? = null,
     navigator: WebViewNavigator = rememberWebViewNavigator(),
     onCreated: (WebView) -> Unit = {},
     onDispose: (WebView) -> Unit = {},
@@ -134,6 +136,7 @@ internal fun WebView(
             item {
                 WebView(
                     state,
+                    flingBehavior,
                     layoutParams,
                     Modifier.fillParentMaxSize(),
                     captureBackPresses,
@@ -178,6 +181,7 @@ internal fun WebView(
 @Composable
 internal fun WebView(
     state: WebViewState,
+    flingBehavior: Fling2DBehavior?,
     layoutParams: FrameLayout.LayoutParams,
     modifier: Modifier = Modifier,
     captureBackPresses: Boolean = true,
@@ -261,7 +265,7 @@ internal fun WebView(
             }.also { state.webView = it }
         },
         modifier = modifier
-            .scrollable2D(draggableState),
+            .scrollable2D(draggableState, flingBehavior = flingBehavior),
         onRelease = {
             onDispose(it)
             draggableState.webView = null

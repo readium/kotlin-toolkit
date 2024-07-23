@@ -1,10 +1,12 @@
 package org.readium.navigator.web.gestures
 
+import androidx.compose.animation.core.AnimationState
 import androidx.compose.animation.core.AnimationVector2D
 import androidx.compose.animation.core.DecayAnimationSpec
 import androidx.compose.animation.core.TwoWayConverter
 import androidx.compose.animation.core.VectorConverter
 import androidx.compose.animation.core.animate
+import androidx.compose.animation.core.animateDecay
 import androidx.compose.animation.rememberSplineBasedDecay
 import androidx.compose.animation.splineBasedDecay
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -56,7 +58,10 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.util.fastAll
 import androidx.compose.ui.util.fastForEach
+import kotlin.coroutines.cancellation.CancellationException
+import kotlin.math.abs
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import timber.log.Timber
 
 /**
@@ -700,8 +705,41 @@ internal class DefaultFling2DBehavior(
     private val motionDurationScale: MotionDurationScale = DefaultScrollMotionDurationScale
 ) : Fling2DBehavior {
 
+    // For Testing
+    var lastAnimationCycleCount = 0
+
     override suspend fun Scroll2DScope.performFling(initialVelocity: Velocity): Velocity {
-        return Velocity.Zero
+        lastAnimationCycleCount = 0
+        // come up with the better threshold, but we need it since spline curve gives us NaNs
+        return withContext(motionDurationScale) {
+            if (abs(initialVelocity.x) > 1f || abs(initialVelocity.y) > 1f) {
+                var velocityLeft = Offset(initialVelocity.x, initialVelocity.y)
+                var lastValue = Offset.Zero
+                val animationState = AnimationState(
+                    typeConverter = Offset.VectorConverter,
+                    initialValue = Offset.Zero,
+                    initialVelocityVector = AnimationVector2D(initialVelocity.x, initialVelocity.y)
+                )
+                try {
+                    animationState.animateDecay(flingDecay) {
+                        val delta = value - lastValue
+                        val consumed = scrollBy(delta)
+                        lastValue = value
+                        velocityLeft = this.velocity
+                        // avoid rounding errors and stop if anything is unconsumed
+                        if (abs(delta.x - consumed.x) > 0.5f && abs(delta.y - consumed.y) > 0.5f) {
+                            this.cancelAnimation()
+                        }
+                        lastAnimationCycleCount++
+                    }
+                } catch (exception: CancellationException) {
+                    velocityLeft = animationState.velocity
+                }
+                Velocity(velocityLeft.x, velocityLeft.y)
+            } else {
+                initialVelocity
+            }
+        }
     }
 }
 
@@ -730,7 +768,7 @@ internal class ScrollableContainerNode(enabled: Boolean) :
     }
 }
 
-private val UnityDensity = object : Density {
+internal val UnityDensity = object : Density {
     override val density: Float
         get() = 1f
     override val fontScale: Float
