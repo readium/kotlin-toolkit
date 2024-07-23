@@ -21,7 +21,6 @@ import kotlin.reflect.KClass
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.publication.ReadingProgression
-import org.readium.r2.shared.util.ThrowableError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.data.ReadTry
@@ -43,9 +42,9 @@ public class PsPdfKitDocumentFactory(context: Context) : PdfDocumentFactory<PsPd
                 val innerDocument = PdfDocumentLoader.openDocument(context, documentSource)
                 Try.success(PsPdfKitDocument(innerDocument))
             } catch (e: InvalidPasswordException) {
-                Try.failure(ReadError.Decoding(ThrowableError(e)))
+                Try.failure(ReadError.Decoding(e))
             } catch (e: InvalidSignatureException) {
-                Try.failure(ReadError.Decoding(ThrowableError(e)))
+                Try.failure(ReadError.Decoding(e))
             } catch (e: IOException) {
                 dataProvider.error
                     ?.let { Try.failure(it) }
