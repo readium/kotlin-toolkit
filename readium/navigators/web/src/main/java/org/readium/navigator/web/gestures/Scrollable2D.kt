@@ -287,9 +287,11 @@ private class Scrollable2DNode(
     override suspend fun drag(
         forEachDelta: suspend ((dragDelta: DragEvent.DragDelta) -> Unit) -> Unit
     ) {
+        Timber.d("drag")
         with(scrollingLogic) {
             scroll(scrollPriority = MutatePriority.UserInput) {
                 forEachDelta {
+                    Timber.d("forEachDelta ${it.delta} $this@with")
                     scrollByWithOverscroll(
                         it.delta,
                         source = NestedScrollSource.UserInput

@@ -32,19 +32,21 @@ public fun NavigatorView(
         state.spreads.value.size
     }
 
+    val flingBehavior = LoggingTargetedFlingBehavior(
+        PagerDefaults.flingBehavior(
+            state = pagerState,
+            pagerSnapDistance = PagerSnapDistance.atMost(0)
+        )
+    )
+
     HorizontalPager(
         modifier = modifier,
         userScrollEnabled = true,
         state = pagerState,
         beyondViewportPageCount = 2,
-        flingBehavior = LoggingTargetedFlingBehavior(
-            PagerDefaults.flingBehavior(
-                state = pagerState,
-                pagerSnapDistance = PagerSnapDistance.atMost(0)
-            )
-        ),
+        flingBehavior = flingBehavior,
         pageNestedScrollConnection = LoggingNestedScrollConnection(
-            PagerNestedConnection(pagerState, Orientation.Horizontal)
+            PagerNestedConnection(pagerState, flingBehavior, Orientation.Horizontal)
         )
     ) {
         when (val spread = state.spreads.value[it]) {

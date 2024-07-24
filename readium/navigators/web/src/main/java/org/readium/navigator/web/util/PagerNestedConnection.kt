@@ -1,6 +1,7 @@
 package org.readium.navigator.web.util
 
 import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.TargetedFlingBehavior
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
@@ -11,6 +12,7 @@ import timber.log.Timber
 
 internal class PagerNestedConnection(
     private val state: PagerState,
+    private val flingBehavior: TargetedFlingBehavior,
     private val orientation: Orientation
 ) : NestedScrollConnection {
 
@@ -84,6 +86,24 @@ internal class PagerNestedConnection(
             x = if (orientation == Orientation.Horizontal) consumed else available.x,
             y = if (orientation == Orientation.Vertical) consumed else available.y
         )
+    }
+
+    override suspend fun onPreFling(available: Velocity): Velocity {
+        if (state.layoutInfo.visiblePagesInfo.size <= 1) {
+            return Velocity.Zero
+        }
+        var remaining: Float = available.x
+        state.scroll {
+            with(flingBehavior) {
+                remaining = -performFling(-available.x)
+            }
+        }
+
+        if ((available.x - remaining).isNaN()) {
+            return available
+        }
+
+        return Velocity(available.x - remaining, available.y)
     }
 
     /*override fun onPostScroll(
