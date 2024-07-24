@@ -9,7 +9,6 @@ package org.readium.adapter.pspdfkit.document
 import com.pspdfkit.document.providers.DataProvider
 import java.util.UUID
 import kotlinx.coroutines.runBlocking
-import org.readium.r2.shared.util.ThrowableError
 import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.resource.Resource
@@ -30,17 +29,12 @@ internal class ResourceDataProvider(
 
     private val length by lazy {
         runBlocking {
-            try {
-                resource.length()
-                    .getOrElse {
-                        error = it
-                        onResourceError(it)
-                        DataProvider.FILE_SIZE_UNKNOWN.toLong()
-                    }
-            } catch (e: Exception) {
-                error = ReadError.UnsupportedOperation(ThrowableError(IllegalStateException(e)))
-                DataProvider.FILE_SIZE_UNKNOWN.toLong()
-            }
+            resource.length()
+                .getOrElse {
+                    error = it
+                    onResourceError(it)
+                    DataProvider.FILE_SIZE_UNKNOWN.toLong()
+                }
         }
     }
 
@@ -57,17 +51,12 @@ internal class ResourceDataProvider(
 
     override fun read(size: Long, offset: Long): ByteArray = runBlocking {
         val range = offset until (offset + size)
-        try {
-            resource.read(range)
-                .getOrElse {
-                    error = it
-                    onResourceError(it)
-                    DataProvider.NO_DATA_AVAILABLE
-                }
-        } catch (e: Exception) {
-            error = ReadError.UnsupportedOperation(ThrowableError(IllegalStateException(e)))
-            DataProvider.NO_DATA_AVAILABLE
-        }
+        resource.read(range)
+            .getOrElse {
+                error = it
+                onResourceError(it)
+                DataProvider.NO_DATA_AVAILABLE
+            }
     }
 
     override fun release() {
