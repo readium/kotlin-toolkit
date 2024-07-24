@@ -39,7 +39,7 @@ private class WebViewDeltaDispatcher {
         Timber.d("WebViewDeltaDispatcher currentScrollX $currentX")
         Timber.d("WebViewDeltaDispatcher scrollRangeX ${webViewNow.horizontalScrollRange}")
         Timber.d("WebViewDeltaDispatcher scrollExtentX ${webViewNow.horizontalScrollExtent}")
-        Timber.d("WebViewDeltaDispatcher currentScrollY $currentY")
+        Timber.d("WebViewDeltaDispatcher currentScrollX $currentX")
         Timber.d("WebViewDeltaDispatcher currentScrollY $currentY")
 
         // Consume slightly more than delta si we have to because

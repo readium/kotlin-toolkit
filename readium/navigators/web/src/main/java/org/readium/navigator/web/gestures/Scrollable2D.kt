@@ -585,6 +585,8 @@ internal class ScrollingLogic(
 
             val velocityLeft = doFlingAnimation(available)
 
+            Timber.d("dispatchPostFling available $available left $velocityLeft")
+
             val consumedPost =
                 nestedScrollDispatcher.dispatchPostFling(
                     (available - velocityLeft),
@@ -604,13 +606,16 @@ internal class ScrollingLogic(
 
     suspend fun doFlingAnimation(available: Velocity): Velocity {
         var result: Velocity = available
-        scroll(scrollPriority = MutatePriority.Default) {
-            val nestedScrollScope = this
+
+        // Unlike the scrollable modifier, we bypass nested scroll while performing fling
+        // so that nested scroll is more predictable : ancestors do not get called while
+        // this is performing fling, only preFling beforehand and postFling afterwards.
+        scrollableState.scroll(scrollPriority = MutatePriority.Default) {
+            val scrollScope = this
             val reverseScope = object : Scroll2DScope {
                 override fun scrollBy(pixels: Offset): Offset {
-                    return nestedScrollScope.scrollByWithOverscroll(
-                        offset = pixels.reverseIfNeeded(),
-                        source = NestedScrollSource.SideEffect
+                    return scrollScope.scrollBy(
+                        pixels = pixels.reverseIfNeeded()
                     ).reverseIfNeeded()
                 }
             }
@@ -715,6 +720,7 @@ internal class DefaultFling2DBehavior(
             if (abs(initialVelocity.x) > 1f || abs(initialVelocity.y) > 1f) {
                 var velocityLeft = Offset(initialVelocity.x, initialVelocity.y)
                 var lastValue = Offset.Zero
+                var hasStarted = false
                 val animationState = AnimationState(
                     typeConverter = Offset.VectorConverter,
                     initialValue = Offset.Zero,
@@ -724,13 +730,18 @@ internal class DefaultFling2DBehavior(
                     animationState.animateDecay(flingDecay) {
                         val delta = value - lastValue
                         val consumed = scrollBy(delta)
+                        Timber.d("animationStep $delta $consumed")
                         lastValue = value
                         velocityLeft = this.velocity
-                        // avoid rounding errors and stop if anything is unconsumed
-                        if (abs(delta.x - consumed.x) > 0.5f && abs(delta.y - consumed.y) > 0.5f) {
+                        // avoid rounding errors and stop if anything is unconsumed on both axes
+                        val unconsumedX = abs(delta.x) <= 0.5f || abs(delta.x - consumed.x) > 0.5f
+                        val unconsumedY = abs(delta.y) <= 0.5f || abs(delta.y - consumed.y) > 0.5f
+                        if (hasStarted && unconsumedX && unconsumedY) {
+                            Timber.d("delta $delta consumed $consumed")
                             this.cancelAnimation()
                         }
                         lastAnimationCycleCount++
+                        hasStarted = true
                     }
                 } catch (exception: CancellationException) {
                     velocityLeft = animationState.velocity

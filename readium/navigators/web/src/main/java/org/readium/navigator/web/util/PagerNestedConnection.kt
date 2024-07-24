@@ -7,7 +7,6 @@ import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.unit.Velocity
 import kotlin.math.abs
-import kotlinx.coroutines.CancellationException
 import timber.log.Timber
 
 internal class PagerNestedConnection(
@@ -87,7 +86,7 @@ internal class PagerNestedConnection(
         )
     }
 
-    override fun onPostScroll(
+    /*override fun onPostScroll(
         consumed: Offset,
         available: Offset,
         source: NestedScrollSource
@@ -96,9 +95,10 @@ internal class PagerNestedConnection(
             throw CancellationException()
         }
         return Offset.Zero
-    }
+    }*/
 
     override suspend fun onPostFling(consumed: Velocity, available: Velocity): Velocity {
-        return available.consumeOnOrientation(orientation)
+        return Velocity.Zero
+        // return available.consumeOnOrientation(orientation)
     }
 }
