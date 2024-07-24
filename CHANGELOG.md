@@ -4,7 +4,19 @@ All notable changes to this project will be documented in this file. Take a look
 
 **Warning:** Features marked as *experimental* may change or be removed in a future release without notice. Use with caution.
 
-## [Unreleased]
+<!-- ## [Unreleased] -->
+
+## [3.0.0-beta.2]
+
+### Added
+
+#### Navigator
+
+* Added `ExoPlayerDataSourceProvider` to implement resource caching with the media3 audio navigator. 
+
+#### LCP
+
+* A new `LcpService.retrieveLicenseDocument()` API can be used to read the LCPL embedded in a ZIP package.
 
 ### Changed
 
@@ -14,9 +26,14 @@ All notable changes to this project will be documented in this file. Take a look
 
 ### Fixed
 
+#### Shared
+
+* Fixed concurrent access when streaming a ZIP container.
+
 #### Navigator
 
 * Optimized scrolling to an EPUB text-based locator if it contains a CSS selector.
+* Fixed applying the PSPDFKit reading progression preference on configuration changes.
 
 
 ## [3.0.0-beta.1]
@@ -859,4 +876,5 @@ progression. Now if no reading progression is set, the `effectiveReadingProgress
 [3.0.0-alpha.1]: https://github.com/readium/kotlin-toolkit/compare/2.4.1...3.0.0-alpha.1
 [3.0.0-alpha.2]: https://github.com/readium/kotlin-toolkit/compare/3.0.0-alpha.1...3.0.0-alpha.2
 [3.0.0-beta.1]: https://github.com/readium/kotlin-toolkit/compare/3.0.0-alpha.2...3.0.0-beta.1
+[3.0.0-beta.2]: https://github.com/readium/kotlin-toolkit/compare/3.0.0-beta.1...3.0.0-beta.2
 
