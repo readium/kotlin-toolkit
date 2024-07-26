@@ -1,5 +1,6 @@
 package org.readium.navigator.web.util
 
+import androidx.compose.foundation.MutatePriority
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.TargetedFlingBehavior
 import androidx.compose.foundation.pager.PagerState
@@ -93,7 +94,38 @@ internal class PagerNestedConnection(
             return Velocity.Zero
         }
         var remaining: Float = available.x
-        state.scroll {
+        state.scroll(scrollPriority = MutatePriority.PreventUserInput) {
+            with(flingBehavior) {
+                remaining = -performFling(-available.x)
+            }
+        }
+
+        if ((available.x - remaining).isNaN()) {
+            return available
+        }
+
+        return Velocity(available.x - remaining, available.y)
+    }
+
+    override fun onPostScroll(
+        consumed: Offset,
+        available: Offset,
+        source: NestedScrollSource
+    ): Offset {
+        val consumedX = -state.dispatchRawDelta(-available.x)
+        return Offset(consumedX, 0f)
+    }
+
+    override suspend fun onPostFling(
+        consumed: Velocity,
+        available: Velocity
+    ): Velocity {
+        var remaining = available.x
+        if (state.isScrollInProgress) {
+            return available
+        }
+
+        state.scroll(scrollPriority = MutatePriority.Default) {
             with(flingBehavior) {
                 remaining = -performFling(-available.x)
             }
@@ -117,8 +149,8 @@ internal class PagerNestedConnection(
         return Offset.Zero
     }*/
 
-    override suspend fun onPostFling(consumed: Velocity, available: Velocity): Velocity {
+    /*override suspend fun onPostFling(consumed: Velocity, available: Velocity): Velocity {
         return Velocity.Zero
         // return available.consumeOnOrientation(orientation)
-    }
+    }*/
 }

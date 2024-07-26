@@ -41,7 +41,7 @@ public fun NavigatorView(
 
     HorizontalPager(
         modifier = modifier,
-        userScrollEnabled = true,
+        userScrollEnabled = false,
         state = pagerState,
         beyondViewportPageCount = 2,
         flingBehavior = flingBehavior,
@@ -55,6 +55,7 @@ public fun NavigatorView(
             is LayoutResolver.Spread.Single -> {
                 val url = WebViewServer.publicationBaseHref.resolve(spread.url).toString()
                 val webViewState = rememberWebViewState(url)
+
                 WebView(
                     modifier = Modifier
                         .fillMaxSize(),
@@ -74,11 +75,6 @@ public fun NavigatorView(
                     onDispose = {
                         Timber.d("WebView onDispose $url")
                     }
-                        /*factory = { context ->
-                            LoggingWebView(context).apply {
-                                this.nestedScrollDispatcher = nestedScrollDispatcher
-                            }
-                        }*/
                 )
             }
         }
