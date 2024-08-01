@@ -4,7 +4,14 @@ All notable changes to this project will be documented in this file. Take a look
 
 **Warning:** Features marked as *experimental* may change or be removed in a future release without notice. Use with caution.
 
-<!-- ## [Unreleased] -->
+## [Unreleased]
+
+### Fixed
+
+#### Navigator
+
+* Fixed computing the total progression of audiobook locators.
+
 
 ## [3.0.0-beta.2]
 
