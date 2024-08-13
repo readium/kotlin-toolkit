@@ -11,6 +11,7 @@ All notable changes to this project will be documented in this file. Take a look
 #### Navigator
 
 * Fixed computing the total progression of audiobook locators.
+* Fixed starting the TTS from the current resource in a fixed-layout EPUB.
 
 
 ## [3.0.0-beta.2]
