@@ -10,7 +10,6 @@ dependencyResolutionManagement {
         google()
         mavenLocal()
         mavenCentral()
-        maven(url = "https://jcenter.bintray.com")
         maven(url = "https://s3.amazonaws.com/repo.commonsware.com")
         maven(url = "https://customers.pspdfkit.com/maven")
     }
@@ -73,5 +72,9 @@ project(":readium:shared")
 include(":readium:streamer")
 project(":readium:streamer")
     .name = "readium-streamer"
+
+include(":readium:adapters:pdfium:android-pdf-viewer")
+project(":readium:adapters:pdfium:android-pdf-viewer")
+    .name = "android-pdf-viewer"
 
 include("test-app")
