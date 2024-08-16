@@ -21,9 +21,10 @@ dependencies {
     api(project(":readium:readium-shared"))
     api(project(":readium:readium-navigator"))
     api(project(":readium:adapters:pdfium:readium-adapter-pdfium-document"))
+    api(project(":readium:adapters:pdfium:android-pdf-viewer"))
 
-    api(libs.pdf.viewer)
     implementation(libs.androidx.fragment.ktx)
+    implementation(libs.pdfium)
     implementation(libs.timber)
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.kotlinx.serialization.json)
