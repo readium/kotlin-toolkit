@@ -1008,12 +1008,19 @@ public class EpubNavigatorFragment internal constructor(
     override suspend fun firstVisibleElementLocator(): Locator? {
         if (!::resourcePager.isInitialized) return null
 
-        val resource = readingOrder[resourcePager.currentItem]
-        return currentReflowablePageFragment?.webView?.findFirstVisibleLocator()
-            ?.copy(
-                href = resource.url(),
-                mediaType = resource.mediaType ?: MediaType.XHTML
-            )
+        return when (viewModel.layout) {
+            EpubLayout.FIXED ->
+                currentLocator.value
+
+            EpubLayout.REFLOWABLE -> {
+                val resource = readingOrder[resourcePager.currentItem]
+                currentReflowablePageFragment?.webView?.findFirstVisibleLocator()
+                    ?.copy(
+                        href = resource.url(),
+                        mediaType = resource.mediaType ?: MediaType.XHTML
+                    )
+            }
+        }
     }
 
     /**

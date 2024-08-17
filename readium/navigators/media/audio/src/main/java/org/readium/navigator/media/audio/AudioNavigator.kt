@@ -90,11 +90,12 @@ public class AudioNavigator<S : Configurable.Settings, P : Configurable.Preferen
             val currentItem = readingOrder.items[playback.index]
             val link = requireNotNull(publication.linkWithHref(currentItem.href))
             val item = readingOrder.items[playback.index]
-            val itemStartPosition = readingOrder.items
-                .slice(0 until playback.index)
-                .mapNotNull { it.duration }
-                .takeIf { it.size == readingOrder.items.size }
-                ?.sum()
+            val itemStartPosition =
+                readingOrder.items
+                    .takeIf { readingOrderHasDuration }
+                    ?.slice(0 until playback.index)
+                    ?.mapNotNull { it.duration }
+                    ?.sum()
 
             val coercedOffset =
                 playback.coerceOffset(currentItem.duration)
@@ -113,6 +114,9 @@ public class AudioNavigator<S : Configurable.Settings, P : Configurable.Preferen
                 totalProgression = totalProgression
             )
         }
+
+    private val readingOrderHasDuration: Boolean =
+        readingOrder.items.all { it.duration != null }
 
     override val playback: StateFlow<Playback> =
         audioEngine.playback.mapStateIn(coroutineScope) { playback ->

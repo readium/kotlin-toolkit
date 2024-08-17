@@ -210,6 +210,14 @@ public class ExoPlayerEngine private constructor(
     private val sessionPlayer = object :
         ForwardingPlayer(exoPlayer) {
 
+        override fun getAvailableCommands(): Player.Commands {
+            val commands = super.getAvailableCommands()
+            return Player.Commands.Builder()
+                .addAll(commands)
+                .remove(COMMAND_STOP) // STOP would unprepare the player.
+                .build()
+        }
+
         override fun release() {
             // This object does not own the ExoAudiobookPlayer instance, do not close it.
         }

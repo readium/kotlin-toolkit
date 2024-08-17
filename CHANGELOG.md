@@ -4,7 +4,15 @@ All notable changes to this project will be documented in this file. Take a look
 
 **Warning:** Features marked as *experimental* may change or be removed in a future release without notice. Use with caution.
 
-<!-- ## [Unreleased] -->
+## [Unreleased]
+
+### Fixed
+
+#### Navigator
+
+* Fixed computing the total progression of audiobook locators.
+* Fixed starting the TTS from the current resource in a fixed-layout EPUB.
+
 
 ## [3.0.0-beta.2]
 
