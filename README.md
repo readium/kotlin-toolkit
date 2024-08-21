@@ -25,7 +25,7 @@ A [Test App](test-app) demonstrates how to integrate the Readium Kotlin toolkit 
 
 ## Setting Up Readium
 
-Readium modules are distributed with [Maven Central](https://search.maven.org/search?q=g:org.readium.kotlin-toolkit). Make sure that you have the `$readium_version` property set in your root `build.gradle`, then add the Maven Central and JCenter repositories.
+Readium modules are distributed with [Maven Central](https://search.maven.org/search?q=g:org.readium.kotlin-toolkit). Make sure that you have the `$readium_version` property set in your root `build.gradle`, then add the Maven Central repository.
 
 ```groovy
 buildscript {
@@ -34,7 +34,6 @@ buildscript {
 
 allprojects {
     repositories {
-        jcenter()
         mavenCentral()
     }
 }
