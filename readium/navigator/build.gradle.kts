@@ -15,6 +15,10 @@ android {
     buildFeatures {
         viewBinding = true
     }
+
+    kotlinOptions {
+        freeCompilerArgs = freeCompilerArgs + ("-Xconsistent-data-class-copy-visibility")
+    }
 }
 
 dependencies {
