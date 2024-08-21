@@ -10,6 +10,7 @@ import android.webkit.URLUtil
 import java.io.InputStream
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.extensions.read
 import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.publication.Link
@@ -33,6 +34,7 @@ import timber.log.Timber
  * @param client HTTP client used to perform HTTP requests.
  * @param baseUrl Base URL from which relative HREF are served.
  */
+@OptIn(InternalReadiumApi::class)
 class HttpFetcher(
     private val client: HttpClient,
     private val baseUrl: String? = null,

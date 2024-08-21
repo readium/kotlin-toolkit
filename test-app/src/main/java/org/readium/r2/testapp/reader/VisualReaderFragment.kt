@@ -361,12 +361,12 @@ abstract class VisualReaderFragment : BaseReaderFragment(), VisualNavigator.List
 
     private fun showHighlightPopupWithStyle(style: Highlight.Style) =
         viewLifecycleOwner.lifecycleScope.launch {
-        // Get the rect of the current selection to know where to position the highlight
-        // popup.
-        (navigator as? SelectableNavigator)?.currentSelection()?.rect?.let { selectionRect ->
-            showHighlightPopup(selectionRect, style)
+            // Get the rect of the current selection to know where to position the highlight
+            // popup.
+            (navigator as? SelectableNavigator)?.currentSelection()?.rect?.let { selectionRect ->
+                showHighlightPopup(selectionRect, style)
+            }
         }
-    }
 
     private fun showHighlightPopup(rect: RectF, style: Highlight.Style, highlightId: Long? = null) =
         viewLifecycleOwner.lifecycleScope.launch {
