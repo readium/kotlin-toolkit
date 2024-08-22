@@ -8,23 +8,23 @@ plugins {
     id("com.android.library")
     kotlin("android")
     kotlin("plugin.parcelize")
-    kotlin("kapt")
+    id("com.google.devtools.ksp")
 }
 
 android {
 
-    compileSdk = 33
+    compileSdk = 34
     defaultConfig {
         minSdk = 21
         targetSdk = 33
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = JavaVersion.VERSION_17.toString()
         allWarningsAsErrors = true
         freeCompilerArgs = freeCompilerArgs + listOf(
             "-opt-in=kotlin.RequiresOptIn",
@@ -36,6 +36,9 @@ android {
             isMinifyEnabled = false
             proguardFiles(getDefaultProguardFile("proguard-android.txt"))
         }
+    }
+    buildFeatures {
+        buildConfig = true
     }
     namespace = "org.readium.r2.lcp"
 }
@@ -63,8 +66,7 @@ dependencies {
     implementation(libs.androidx.browser)
 
     implementation(libs.bundles.room)
-    kapt(libs.androidx.room.compiler)
-    kapt("org.jetbrains.kotlinx:kotlinx-metadata-jvm:0.5.0")
+    ksp(libs.androidx.room.compiler)
 
     // Tests
     testImplementation(libs.junit)

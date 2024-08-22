@@ -7,6 +7,8 @@
  * LICENSE file present in the project repository where this source code is maintained.
  */
 
+@file:OptIn(org.readium.r2.shared.InternalReadiumApi::class)
+
 package org.readium.r2.navigator.extensions
 
 import java.util.*
@@ -70,5 +72,5 @@ internal val Locator.Locations.time: Duration? get() =
  */
 @OptIn(ExperimentalTime::class)
 internal fun Locator.Locations.timeWithDuration(duration: Duration?): Duration? =
-    let(duration, progression) { d, p -> (p * d.inSeconds).seconds }
+    let(duration, progression) { d, p -> (p * d.inWholeSeconds).seconds }
         ?: time

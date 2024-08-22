@@ -4,7 +4,7 @@
  * available in the top-level LICENSE file of the project.
  */
 
-@file:OptIn(InternalReadiumApi::class)
+@file:OptIn(org.readium.r2.shared.InternalReadiumApi::class)
 @file:Suppress("DEPRECATION")
 
 package org.readium.r2.shared.publication

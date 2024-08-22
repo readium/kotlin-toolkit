@@ -17,7 +17,10 @@ import androidx.appcompat.widget.SearchView
 import androidx.fragment.app.FragmentResultListener
 import androidx.fragment.app.commit
 import androidx.fragment.app.commitNow
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
+import kotlinx.coroutines.launch
 import org.readium.r2.navigator.DecorableNavigator
 import org.readium.r2.navigator.Decoration
 import org.readium.r2.navigator.ExperimentalDecorator
@@ -121,7 +124,7 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
         savedInstanceState: Bundle?
     ): View {
         val view = super.onCreateView(inflater, container, savedInstanceState)
-        val navigatorFragmentTag = getString(R.string.epub_navigator_tag)
+        val navigatorFragmentTag = getString(org.readium.r2.navigator.R.string.epub_navigator_tag)
 
         if (savedInstanceState == null) {
             childFragmentManager.commitNow {
@@ -140,9 +143,11 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
         (model.settings as UserPreferencesViewModel<EpubSettings, EpubPreferences>)
             .bind(navigator, viewLifecycleOwner)
 
-        viewLifecycleOwner.lifecycleScope.launchWhenStarted {
-            // Display page number labels if the book contains a `page-list` navigation document.
-            (navigator as? DecorableNavigator)?.applyPageNumberDecorations()
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                // Display page number labels if the book contains a `page-list` navigation document.
+                (navigator as? DecorableNavigator)?.applyPageNumberDecorations()
+            }
         }
     }
 
@@ -220,7 +225,7 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
             }
         })
 
-        menuSearchView.findViewById<ImageView>(R.id.search_close_btn).setOnClickListener {
+        menuSearchView.findViewById<ImageView>(androidx.appcompat.R.id.search_close_btn).setOnClickListener {
             menuSearchView.requestFocus()
             model.cancelSearch()
             menuSearchView.setQuery("", false)

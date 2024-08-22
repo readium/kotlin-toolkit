@@ -7,6 +7,8 @@
  * LICENSE file present in the project repository where this source code is maintained.
  */
 
+@file:OptIn(org.readium.r2.shared.InternalReadiumApi::class)
+
 package org.readium.r2.navigator.epub.fxl
 
 import android.annotation.SuppressLint
@@ -29,6 +31,7 @@ import java.util.Locale
 import kotlin.math.min
 import kotlin.math.roundToInt
 import kotlin.math.roundToLong
+import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.extensions.equalsDelta
 
 class R2FXLLayout : FrameLayout {
@@ -299,8 +302,7 @@ class R2FXLLayout : FrameLayout {
                 dispatchOnLongTap(e)
             }
         }
-
-        override fun onScroll(e1: MotionEvent, e2: MotionEvent, distanceX: Float, distanceY: Float): Boolean {
+        override fun onScroll(e1: MotionEvent?, e2: MotionEvent, distanceX: Float, distanceY: Float): Boolean {
             var consumed = false
             if (e2.pointerCount == 1 && !scaleDetector!!.isInProgress) {
                 // only drag if we have one pointer and aren't already scaling
@@ -319,7 +321,7 @@ class R2FXLLayout : FrameLayout {
             return consumed
         }
 
-        override fun onFling(e1: MotionEvent, e2: MotionEvent, velocityX: Float, velocityY: Float): Boolean {
+        override fun onFling(e1: MotionEvent?, e2: MotionEvent, velocityX: Float, velocityY: Float): Boolean {
             val scale = scale
             val newScale = scale.coerceIn(minScale, maxScale)
             if (newScale.equalsDelta(scale)) {

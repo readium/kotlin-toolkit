@@ -21,7 +21,8 @@ A [Test App](test-app) demonstrates how to integrate the Readium Kotlin toolkit 
 
 | Readium | Android min SDK | Android compile SDK | Kotlin compiler | Gradle |
 |---------|-----------------|---------------------|-----------------|--------|
-| latest  | 21              | 33                  | 1.7.10          | 6.9.3  |
+| latest  | 21              | 33                  | 1.9.0           | 8.6.0  |
+| 2.3.0   | 21              | 33                  | 1.7.10          | 6.9.3  |
 
 ## Setting Up Readium
 

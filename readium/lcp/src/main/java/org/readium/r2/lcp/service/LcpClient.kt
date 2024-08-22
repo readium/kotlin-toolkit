@@ -31,7 +31,7 @@ internal object LcpClient {
     }
 
     private val instance: Any by lazy {
-        klass.newInstance()
+        klass.getDeclaredConstructor().newInstance()
     }
 
     private val klass: Class<*> by lazy {
