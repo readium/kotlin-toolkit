@@ -7,12 +7,15 @@
  * LICENSE file present in the project repository where this source code is maintained.
  */
 
+@file:OptIn(org.readium.r2.shared.InternalReadiumApi::class)
+
 package org.readium.r2.streamer.parser.readium
 
 import android.content.Context
 import java.io.File
 import java.io.FileNotFoundException
 import kotlinx.coroutines.runBlocking
+import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.PdfSupport
 import org.readium.r2.shared.drm.DRM
 import org.readium.r2.shared.fetcher.*

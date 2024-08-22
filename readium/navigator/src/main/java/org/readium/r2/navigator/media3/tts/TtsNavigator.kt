@@ -4,6 +4,8 @@
  * available in the top-level LICENSE file of the project.
  */
 
+@file:OptIn(org.readium.r2.shared.InternalReadiumApi::class)
+
 package org.readium.r2.navigator.media3.tts
 
 import android.app.Application
@@ -19,6 +21,7 @@ import org.readium.r2.navigator.media3.api.SynchronizedMediaNavigator
 import org.readium.r2.navigator.media3.tts.session.TtsSessionAdapter
 import org.readium.r2.navigator.preferences.Configurable
 import org.readium.r2.shared.ExperimentalReadiumApi
+import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.extensions.mapStateIn
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator

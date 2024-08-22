@@ -7,6 +7,8 @@
  * LICENSE file present in the project repository where this source code is maintained.
  */
 
+@file:OptIn(org.readium.r2.shared.InternalReadiumApi::class)
+
 package org.readium.r2.navigator.cbz
 
 import android.app.Activity

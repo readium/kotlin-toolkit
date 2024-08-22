@@ -7,6 +7,8 @@
  * LICENSE file present in the project repository where this source code is maintained.
  */
 
+@file:OptIn(org.readium.r2.shared.InternalReadiumApi::class)
+
 package org.readium.r2.shared.util.pdf
 
 import android.content.Context
@@ -14,6 +16,7 @@ import android.graphics.Bitmap
 import java.io.File
 import kotlin.reflect.KClass
 import org.readium.r2.shared.ExperimentalReadiumApi
+import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication

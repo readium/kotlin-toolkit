@@ -7,7 +7,7 @@
  * LICENSE file present in the project repository where this source code is maintained.
  */
 
-@file:OptIn(InternalReadiumApi::class)
+@file:OptIn(org.readium.r2.shared.InternalReadiumApi::class)
 
 package org.readium.r2.shared.util.archive
 

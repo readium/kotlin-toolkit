@@ -4,7 +4,7 @@
  * available in the top-level LICENSE file of the project.
  */
 
-@file:OptIn(ExperimentalReadiumApi::class)
+@file:OptIn(ExperimentalReadiumApi::class, InternalReadiumApi::class)
 
 package org.readium.r2.navigator.epub
 
@@ -32,6 +32,7 @@ import org.readium.r2.navigator.util.createViewModelFactory
 import org.readium.r2.shared.COLUMN_COUNT_REF
 import org.readium.r2.shared.DelicateReadiumApi
 import org.readium.r2.shared.ExperimentalReadiumApi
+import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.SCROLL_REF
 import org.readium.r2.shared.extensions.addPrefix
 import org.readium.r2.shared.extensions.mapStateIn

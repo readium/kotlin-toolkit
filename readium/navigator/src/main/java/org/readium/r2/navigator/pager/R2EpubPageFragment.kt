@@ -7,7 +7,7 @@
  * LICENSE file present in the project repository where this source code is maintained.
  */
 
-@file:OptIn(ExperimentalReadiumApi::class)
+@file:OptIn(ExperimentalReadiumApi::class, InternalReadiumApi::class)
 
 package org.readium.r2.navigator.pager
 
