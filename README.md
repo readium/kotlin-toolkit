@@ -21,7 +21,7 @@ A [Test App](test-app) demonstrates how to integrate the Readium Kotlin toolkit 
 
 | Readium | Android min SDK | Android compile SDK | Kotlin compiler | Gradle |
 |---------|-----------------|---------------------|-----------------|--------|
-| latest  | 21              | 33                  | 1.9.24          | 8.6.0  |
+| 2.4.2   | 21              | 33                  | 1.9.24          | 8.6.0  |
 | 2.3.0   | 21              | 33                  | 1.7.10          | 6.9.3  |
 
 ## Setting Up Readium
@@ -30,7 +30,7 @@ Readium modules are distributed with [Maven Central](https://search.maven.org/se
 
 ```groovy
 buildscript {
-    ext.readium_version = '2.4.1'
+    ext.readium_version = '2.4.2'
 }
 
 allprojects {

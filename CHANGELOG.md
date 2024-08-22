@@ -6,6 +6,12 @@ All notable changes to this project will be documented in this file. Take a look
 
 <!-- ## [Unreleased] -->
 
+## [2.4.2]
+
+* Bump to Kotlin 1.9.24.
+* Remove JCenter dependencies.
+
+
 ## [2.4.1]
 
 ### Added
@@ -708,4 +714,5 @@ progression. Now if no reading progression is set, the `effectiveReadingProgress
 [2.3.0]: https://github.com/readium/kotlin-toolkit/compare/2.2.1...2.3.0
 [2.4.0]: https://github.com/readium/kotlin-toolkit/compare/2.3.0...2.4.0
 [2.4.1]: https://github.com/readium/kotlin-toolkit/compare/2.4.0...2.4.1
+[2.4.2]: https://github.com/readium/kotlin-toolkit/compare/2.4.1...2.4.2
 
