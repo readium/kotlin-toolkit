@@ -57,8 +57,4 @@ include(":readium:streamer")
 project(":readium:streamer")
     .name = "readium-streamer"
 
-include(":readium:adapters:pdfium:android-pdf-viewer")
-project(":readium:adapters:pdfium:android-pdf-viewer")
-    .name = "android-pdf-viewer"
-
 include("test-app")
