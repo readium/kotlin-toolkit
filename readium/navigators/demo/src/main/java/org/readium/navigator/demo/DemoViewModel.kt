@@ -11,6 +11,9 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import org.readium.navigator.web.NavigatorFactory
 import org.readium.navigator.web.NavigatorState
+import org.readium.navigator.web.preferences.NavigatorPreferences
+import org.readium.r2.navigator.preferences.Fit
+import org.readium.r2.navigator.preferences.ReadingProgression
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.DebugError
@@ -88,10 +91,17 @@ class DemoViewModel(
                     return@launch
                 }
 
-            val navigatorState = navigatorFactory.createNavigator()
-                .getOrElse {
-                    throw IllegalStateException()
-                }
+            val preferences = NavigatorPreferences(
+                fit = Fit.CONTAIN,
+                readingProgression = ReadingProgression.LTR,
+                spreads = false
+            )
+
+            val navigatorState = navigatorFactory.createNavigator(
+                initialPreferences = preferences
+            ).getOrElse {
+                throw IllegalStateException()
+            }
 
             stateMutable.value = State.Reader(navigatorState)
         }

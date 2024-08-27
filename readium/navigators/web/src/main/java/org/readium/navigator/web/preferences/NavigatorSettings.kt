@@ -8,5 +8,6 @@ import org.readium.r2.shared.ExperimentalReadiumApi
 @ExperimentalReadiumApi
 public data class NavigatorSettings(
     val fit: Fit,
-    val readingProgression: ReadingProgression
+    val readingProgression: ReadingProgression,
+    val spreads: Boolean
 ) : Configurable.Settings

@@ -37,9 +37,9 @@ internal fun Resource.injectHtml(
         var content = bytes.toString(mediaType.charset ?: Charsets.UTF_8).trim()
         val injectables = mutableListOf<String>()
 
-        injectables.add(
+        /*injectables.add(
             script(baseHref.resolve(Url("readium/scripts/readium-fixed.js")!!))
-        )
+        )*/
 
         // Disable the text selection if the publication is protected.
         // FIXME: This is a hack until proper LCP copy is implemented, see https://github.com/readium/kotlin-toolkit/issues/221

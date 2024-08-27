@@ -51,6 +51,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.view.ViewCompat
+import androidx.core.view.postDelayed
+import androidx.webkit.WebViewCompat
+import androidx.webkit.WebViewFeature
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -221,6 +224,7 @@ internal fun WebView(
                             content.encoding,
                             content.historyUrl
                         )
+                        wv.onContentReady { content.onLoaded(wv) }
                     }
 
                     is WebContent.Post -> {
@@ -362,7 +366,8 @@ internal sealed class WebContent {
         val baseUrl: String? = null,
         val encoding: String = "utf-8",
         val mimeType: String? = null,
-        val historyUrl: String? = null
+        val historyUrl: String? = null,
+        val onLoaded: WebView.() -> Unit
     ) : WebContent()
 
     internal data class Post(
@@ -706,17 +711,19 @@ internal fun rememberWebViewStateWithHTMLData(
     baseUrl: String? = null,
     encoding: String = "utf-8",
     mimeType: String? = null,
-    historyUrl: String? = null
+    historyUrl: String? = null,
+    onLoaded: WebView.() -> Unit
 ): WebViewState =
     remember {
-        WebViewState(WebContent.Data(data, baseUrl, encoding, mimeType, historyUrl))
+        WebViewState(WebContent.Data(data, baseUrl, encoding, mimeType, historyUrl, onLoaded))
     }.apply {
         this.content = WebContent.Data(
             data,
             baseUrl,
             encoding,
             mimeType,
-            historyUrl
+            historyUrl,
+            onLoaded
         )
     }
 
@@ -781,4 +788,22 @@ internal val WebStateSaver: Saver<WebViewState, Any> = run {
             }
         }
     )
+}
+
+/**
+ * Will run the given [action] when the content of the [WebView] is fully laid out.
+ */
+private fun WebView.onContentReady(action: () -> Unit) {
+    if (WebViewFeature.isFeatureSupported(WebViewFeature.VISUAL_STATE_CALLBACK)) {
+        WebViewCompat.postVisualStateCallback(this, 0) {
+            action()
+        }
+    } else {
+        // On older devices, there's no reliable way to guarantee the page is fully laid out.
+        // As a workaround, we run a dummy JavaScript, then wait for a short delay before
+        // assuming it's ready.
+        evaluateJavascript("true") {
+            postDelayed(500, action)
+        }
+    }
 }

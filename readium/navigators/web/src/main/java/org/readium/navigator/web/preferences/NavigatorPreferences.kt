@@ -10,12 +10,14 @@ import org.readium.r2.shared.ExperimentalReadiumApi
 @ExperimentalReadiumApi
 public data class NavigatorPreferences(
     val fit: Fit? = null,
-    val readingProgression: ReadingProgression? = null
+    val readingProgression: ReadingProgression? = null,
+    val spreads: Boolean? = null
 ) : Configurable.Preferences<NavigatorPreferences> {
 
     override operator fun plus(other: NavigatorPreferences): NavigatorPreferences =
         NavigatorPreferences(
             fit = other.fit ?: fit,
-            readingProgression = other.readingProgression ?: readingProgression
+            readingProgression = other.readingProgression ?: readingProgression,
+            spreads = other.spreads ?: spreads
         )
 }

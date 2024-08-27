@@ -1,4 +1,5 @@
 SCRIPTS_PATH := readium/navigator/src/main/assets/_scripts
+SCRIPTS_NAVIGATOR_WEB_PATH := readium/navigators/web/scripts
 
 help:
 	@echo "Usage: make <target>\n\n\
@@ -25,3 +26,11 @@ scripts:
 	pnpm run format; \
 	pnpm run lint; \
 	pnpm run bundle
+	
+	cd $(SCRIPTS_NAVIGATOR_WEB_PATH); \
+	corepack install; \
+	pnpm install --frozen-lockfile; \
+	pnpm run format; \
+	pnpm run lint; \
+	pnpm run bundle; \
+	cp -t ../src/main/assets/readium/navigators/web/ dist/*

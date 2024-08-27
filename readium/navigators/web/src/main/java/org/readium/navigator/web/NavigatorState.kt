@@ -24,14 +24,17 @@ public class NavigatorState internal constructor(
     initialPreferences: NavigatorPreferences,
     defaults: NavigatorDefaults,
     initialItem: Int,
-    internal val webViewServer: WebViewServer
+    internal val webViewServer: WebViewServer,
+    internal val fxlSpreadOne: String,
+    internal val fxlSpreadTwo: String
 ) {
     public data class ReadingOrder(
         val items: List<Item>
     ) {
 
         public data class Item(
-            val href: Url
+            val href: Url,
+            val position: Position?
         )
     }
 
@@ -43,7 +46,7 @@ public class NavigatorState internal constructor(
         NavigatorSettingsResolver(publicationMetadata, defaults)
 
     private val layoutResolver =
-        LayoutResolver(readingOrder.items.map { LayoutResolver.Page(it.href) })
+        LayoutResolver(readingOrder.items.map { LayoutResolver.Page(it.href, it.position) })
 
     private val preferences: MutableState<NavigatorPreferences> =
         mutableStateOf(initialPreferences)

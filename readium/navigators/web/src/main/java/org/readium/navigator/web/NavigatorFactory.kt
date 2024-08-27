@@ -18,6 +18,8 @@ import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.indexOfFirstWithHref
+import org.readium.r2.shared.publication.presentation.Presentation
+import org.readium.r2.shared.publication.presentation.page
 import org.readium.r2.shared.util.Try
 
 @ExperimentalReadiumApi
@@ -63,7 +65,13 @@ public class NavigatorFactory private constructor(
     ): Try<NavigatorState, Nothing> {
         val items = readingOrder.map {
             NavigatorState.ReadingOrder.Item(
-                href = it.url()
+                href = it.url(),
+                position = when (it.properties.page) {
+                    Presentation.Page.LEFT -> Position.Left
+                    Presentation.Page.RIGHT -> Position.Right
+                    Presentation.Page.CENTER -> null
+                    null -> null
+                }
             )
         }
 
@@ -81,6 +89,18 @@ public class NavigatorFactory private constructor(
                 onResourceLoadFailed = { _, _ -> }
             )
 
+        val fxlSpreadOne = application.assets
+            .open("readium/navigators/web/prepaginated-single-index.html")
+            .bufferedReader()
+            .use { it.readText() }
+            .replace("{{ASSETS_URL}}", WebViewServer.assetUrl("readium/navigators/web").toString())
+
+        val fxlSpreadTwo = application.assets
+            .open("readium/navigators/web/prepaginated-double-index.html")
+            .bufferedReader()
+            .use { it.readText() }
+            .replace("{{ASSETS_URL}}", WebViewServer.assetUrl("readium/navigators/web").toString())
+
         val navigatorState =
             NavigatorState(
                 publicationMetadata = publication.metadata,
@@ -88,7 +108,9 @@ public class NavigatorFactory private constructor(
                 initialPreferences = initialPreferences ?: NavigatorPreferences(),
                 defaults = defaults,
                 initialItem = initialIndex,
-                webViewServer = webViewServer
+                webViewServer = webViewServer,
+                fxlSpreadOne = fxlSpreadOne,
+                fxlSpreadTwo = fxlSpreadTwo
             )
 
         return Try.success(navigatorState)

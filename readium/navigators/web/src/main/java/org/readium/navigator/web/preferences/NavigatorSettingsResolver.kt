@@ -27,7 +27,8 @@ internal class NavigatorSettingsResolver(
 
         return NavigatorSettings(
             fit = fit,
-            readingProgression = readingProgression
+            readingProgression = readingProgression,
+            spreads = preferences.spreads ?: false
         )
     }
 }
