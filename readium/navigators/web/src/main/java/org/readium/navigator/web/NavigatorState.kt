@@ -48,7 +48,7 @@ public class NavigatorState internal constructor(
     private val layoutResolver =
         LayoutResolver(readingOrder.items.map { LayoutResolver.Page(it.href, it.position) })
 
-    private val preferences: MutableState<NavigatorPreferences> =
+    public val preferences: MutableState<NavigatorPreferences> =
         mutableStateOf(initialPreferences)
 
     public val settings: State<NavigatorSettings> =

@@ -1,3 +1,9 @@
+/*
+ * Copyright 2024 Readium Foundation. All rights reserved.
+ * Use of this source code is governed by the BSD-style license
+ * available in the top-level LICENSE file of the project.
+ */
+
 @file:OptIn(ExperimentalReadiumApi::class)
 
 package org.readium.navigator.demo
@@ -8,12 +14,14 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import org.readium.navigator.demo.preferences.PreferencesManager
+import org.readium.navigator.demo.preferences.UserPreferencesViewModel
 import org.readium.navigator.web.NavigatorFactory
 import org.readium.navigator.web.NavigatorState
 import org.readium.navigator.web.preferences.NavigatorPreferences
-import org.readium.r2.navigator.preferences.Fit
-import org.readium.r2.navigator.preferences.ReadingProgression
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.DebugError
@@ -41,7 +49,8 @@ class DemoViewModel(
         ) : State
 
         data class Reader(
-            val state: NavigatorState
+            val navigatorState: NavigatorState,
+            val preferencesViewModel: UserPreferencesViewModel<NavigatorPreferences>
         ) : State
     }
 
@@ -91,19 +100,26 @@ class DemoViewModel(
                     return@launch
                 }
 
-            val preferences = NavigatorPreferences(
-                fit = Fit.CONTAIN,
-                readingProgression = ReadingProgression.LTR,
-                spreads = false
-            )
+            val initialPreferences = NavigatorPreferences()
+
+            val preferencesViewModel =
+                UserPreferencesViewModel(
+                    viewModelScope = viewModelScope,
+                    preferencesManager = PreferencesManager(initialPreferences),
+                    createPreferencesEditor = navigatorFactory::createPreferencesEditor
+                )
 
             val navigatorState = navigatorFactory.createNavigator(
-                initialPreferences = preferences
+                initialPreferences = initialPreferences
             ).getOrElse {
                 throw IllegalStateException()
             }
 
-            stateMutable.value = State.Reader(navigatorState)
+            preferencesViewModel.preferences
+                .onEach { navigatorState.preferences.value = it }
+                .launchIn(viewModelScope)
+
+            stateMutable.value = State.Reader(navigatorState, preferencesViewModel)
         }
     }
 

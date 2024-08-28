@@ -1,7 +1,6 @@
 package org.readium.navigator.web
 
 import android.annotation.SuppressLint
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxSize
@@ -12,19 +11,16 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
-import org.readium.navigator.web.javascript.PrepaginatedDoubleLayout
-import org.readium.navigator.web.javascript.PrepaginatedSingleLayout
-import org.readium.navigator.web.util.LoggingNestedScrollConnection
-import org.readium.navigator.web.util.LoggingTargetedFlingBehavior
+import org.readium.navigator.web.logging.LoggingNestedScrollConnection
+import org.readium.navigator.web.logging.LoggingTargetedFlingBehavior
 import org.readium.navigator.web.util.PagerNestedConnection
 import org.readium.navigator.web.util.WebViewServer
+import org.readium.navigator.web.webapi.PrepaginatedDoubleLayout
+import org.readium.navigator.web.webapi.PrepaginatedSingleLayout
 import org.readium.navigator.web.webview.WebView
 import org.readium.navigator.web.webview.rememberWebViewStateWithHTMLData
 import org.readium.r2.shared.ExperimentalReadiumApi
-import timber.log.Timber
 
-@OptIn(ExperimentalFoundationApi::class)
 @SuppressLint("SetJavaScriptEnabled")
 @ExperimentalReadiumApi
 @Composable
@@ -58,7 +54,6 @@ public fun NavigatorView(
             propagateMinConstraints = true
         ) {
             val size = Size(maxWidth.value, maxHeight.value)
-            Timber.d("size $size")
 
             val webViewState = when (val spread = state.spreads.value[it]) {
                 is LayoutResolver.Spread.Double ->
@@ -108,5 +103,3 @@ public fun NavigatorView(
         }
     }
 }
-
-private val NoOpScrollConnection = object : NestedScrollConnection {}

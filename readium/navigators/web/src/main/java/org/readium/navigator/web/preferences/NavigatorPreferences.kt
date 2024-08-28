@@ -14,6 +14,10 @@ public data class NavigatorPreferences(
     val spreads: Boolean? = null
 ) : Configurable.Preferences<NavigatorPreferences> {
 
+    init {
+        require(fit in listOf(null, Fit.CONTAIN, Fit.WIDTH, Fit.HEIGHT))
+    }
+
     override operator fun plus(other: NavigatorPreferences): NavigatorPreferences =
         NavigatorPreferences(
             fit = other.fit ?: fit,

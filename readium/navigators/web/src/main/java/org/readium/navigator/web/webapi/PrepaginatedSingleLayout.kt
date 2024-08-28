@@ -1,4 +1,4 @@
-package org.readium.navigator.web.javascript
+package org.readium.navigator.web.webapi
 
 import android.webkit.WebView
 import org.readium.navigator.web.LayoutResolver

@@ -1,4 +1,4 @@
-package org.readium.navigator.web.util
+package org.readium.navigator.web.logging
 
 import androidx.compose.foundation.gestures.ScrollScope
 import androidx.compose.foundation.gestures.TargetedFlingBehavior

@@ -22,13 +22,14 @@ internal class NavigatorSettingsResolver(
                 } ?: defaults.readingProgression
                 ?: ReadingProgression.LTR
 
-        val fit: Fit =
-            preferences.fit ?: Fit.CONTAIN
+        val fit = preferences.fit ?: defaults.fit ?: Fit.CONTAIN
+
+        val spreads = preferences.spreads ?: defaults.spreads ?: false
 
         return NavigatorSettings(
             fit = fit,
             readingProgression = readingProgression,
-            spreads = preferences.spreads ?: false
+            spreads = spreads
         )
     }
 }

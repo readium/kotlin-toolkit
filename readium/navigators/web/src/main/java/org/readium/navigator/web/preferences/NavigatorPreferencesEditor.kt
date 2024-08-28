@@ -6,7 +6,13 @@
 
 package org.readium.navigator.web.preferences
 
-import org.readium.r2.navigator.preferences.*
+import org.readium.r2.navigator.preferences.EnumPreference
+import org.readium.r2.navigator.preferences.EnumPreferenceDelegate
+import org.readium.r2.navigator.preferences.Fit
+import org.readium.r2.navigator.preferences.Preference
+import org.readium.r2.navigator.preferences.PreferenceDelegate
+import org.readium.r2.navigator.preferences.PreferencesEditor
+import org.readium.r2.navigator.preferences.ReadingProgression
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.publication.Metadata
@@ -50,7 +56,7 @@ public class NavigatorPreferencesEditor internal constructor(
             getEffectiveValue = { state.settings.fit },
             getIsEffective = { true },
             updateValue = { value -> updateValues { it.copy(fit = value) } },
-            supportedValues = listOf(Fit.CONTAIN, Fit.WIDTH, Fit.HEIGHT, Fit.COVER)
+            supportedValues = listOf(Fit.CONTAIN, Fit.WIDTH, Fit.HEIGHT)
         )
 
     public val readingProgression: EnumPreference<ReadingProgression> =
@@ -60,6 +66,14 @@ public class NavigatorPreferencesEditor internal constructor(
             getIsEffective = { true },
             updateValue = { value -> updateValues { it.copy(readingProgression = value) } },
             supportedValues = listOf(ReadingProgression.LTR, ReadingProgression.RTL)
+        )
+
+    public val spreads: Preference<Boolean> =
+        PreferenceDelegate(
+            getValue = { preferences.spreads },
+            getEffectiveValue = { state.settings.spreads },
+            getIsEffective = { true },
+            updateValue = { value -> updateValues { it.copy(spreads = value) } }
         )
 
     private fun updateValues(updater: (NavigatorPreferences) -> NavigatorPreferences) {
