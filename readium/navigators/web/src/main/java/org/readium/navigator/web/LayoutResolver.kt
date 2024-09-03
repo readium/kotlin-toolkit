@@ -3,6 +3,7 @@ package org.readium.navigator.web
 import org.readium.navigator.web.preferences.NavigatorSettings
 import org.readium.r2.navigator.preferences.ReadingProgression
 import org.readium.r2.shared.ExperimentalReadiumApi
+import org.readium.r2.shared.publication.presentation.Presentation
 import org.readium.r2.shared.util.Url
 
 @ExperimentalReadiumApi
@@ -11,7 +12,7 @@ internal class LayoutResolver(
 ) {
     data class Page(
         val url: Url,
-        val position: Position?
+        val page: Presentation.Page?
     )
 
     sealed class Spread {
@@ -41,14 +42,19 @@ internal class LayoutResolver(
             var pending: Page? = null
 
             for (page in readingOrder) {
-                when (page.position) {
-                    Position.Left -> {
+                when (page.page) {
+                    Presentation.Page.LEFT -> {
                         pending?.let { add(Spread.Double(it.url, null)) }
                         pending = page
                     }
-                    Position.Right -> {
+                    Presentation.Page.RIGHT -> {
                         add(Spread.Double(pending?.url, page.url))
                         pending = null
+                    }
+                    Presentation.Page.CENTER -> {
+                        pending?.let { add(Spread.Double(it.url, null)) }
+                        pending = null
+                        add(Spread.Single(page.url))
                     }
                     null -> {
                         if (pending == null) {
@@ -69,14 +75,19 @@ internal class LayoutResolver(
             var pending: Page? = null
 
             for (page in readingOrder) {
-                when (page.position) {
-                    Position.Left -> {
+                when (page.page) {
+                    Presentation.Page.LEFT -> {
                         add(Spread.Double(page.url, pending?.url))
                         pending = null
                     }
-                    Position.Right -> {
+                    Presentation.Page.RIGHT -> {
                         pending?.let { add(Spread.Double(null, it.url)) }
                         pending = page
+                    }
+                    Presentation.Page.CENTER -> {
+                        pending?.let { add(Spread.Double(null, it.url)) }
+                        pending = null
+                        add(Spread.Single(page.url))
                     }
                     null -> {
                         if (pending == null) {

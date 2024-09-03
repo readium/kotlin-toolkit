@@ -14,6 +14,7 @@ import org.readium.navigator.web.util.WebViewServer
 import org.readium.r2.navigator.preferences.Fit
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Metadata
+import org.readium.r2.shared.publication.presentation.Presentation
 import org.readium.r2.shared.util.Url
 
 @ExperimentalReadiumApi
@@ -35,7 +36,7 @@ public class NavigatorState internal constructor(
 
         public data class Item(
             val href: Url,
-            val position: Position?
+            val page: Presentation.Page?
         )
     }
 
@@ -47,7 +48,7 @@ public class NavigatorState internal constructor(
         NavigatorSettingsResolver(publicationMetadata, defaults)
 
     private val layoutResolver =
-        LayoutResolver(readingOrder.items.map { LayoutResolver.Page(it.href, it.position) })
+        LayoutResolver(readingOrder.items.map { LayoutResolver.Page(it.href, it.page) })
 
     public val preferences: MutableState<NavigatorPreferences> =
         mutableStateOf(initialPreferences)

@@ -18,7 +18,6 @@ import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.indexOfFirstWithHref
-import org.readium.r2.shared.publication.presentation.Presentation
 import org.readium.r2.shared.publication.presentation.page
 import org.readium.r2.shared.util.Try
 
@@ -66,12 +65,7 @@ public class NavigatorFactory private constructor(
         val items = readingOrder.map {
             NavigatorState.ReadingOrder.Item(
                 href = it.url(),
-                position = when (it.properties.page) {
-                    Presentation.Page.LEFT -> Position.Left
-                    Presentation.Page.RIGHT -> Position.Right
-                    Presentation.Page.CENTER -> null
-                    null -> null
-                }
+                page = it.properties.page
             )
         }
 

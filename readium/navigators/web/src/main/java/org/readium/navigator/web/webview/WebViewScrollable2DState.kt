@@ -1,4 +1,4 @@
-package org.readium.navigator.web.util
+package org.readium.navigator.web.webview
 
 import androidx.compose.ui.geometry.Offset
 import kotlin.math.abs
@@ -6,7 +6,6 @@ import kotlin.math.ceil
 import kotlin.math.sign
 import org.readium.navigator.web.gestures.DefaultScrollable2DState
 import org.readium.navigator.web.gestures.Scrollable2DState
-import org.readium.navigator.web.webview.RelaxedWebView
 
 internal class WebViewScrollable2DState private constructor(
     private val webViewDeltaDispatcher: WebViewDeltaDispatcher

@@ -1,4 +1,4 @@
-package org.readium.navigator.web.util
+package org.readium.navigator.web
 
 import androidx.compose.foundation.MutatePriority
 import androidx.compose.foundation.gestures.Orientation

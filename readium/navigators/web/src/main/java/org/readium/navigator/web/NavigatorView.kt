@@ -20,7 +20,6 @@ import org.readium.navigator.web.spread.DoubleSpread
 import org.readium.navigator.web.spread.DoubleSpreadState
 import org.readium.navigator.web.spread.SingleSpread
 import org.readium.navigator.web.spread.SingleSpreadState
-import org.readium.navigator.web.util.PagerNestedConnection
 import org.readium.navigator.web.util.WebViewServer
 import org.readium.r2.navigator.preferences.ReadingProgression
 import org.readium.r2.shared.ExperimentalReadiumApi

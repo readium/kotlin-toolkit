@@ -33,7 +33,6 @@ import androidx.webkit.WebViewCompat
 import androidx.webkit.WebViewFeature
 import org.readium.navigator.web.gestures.Fling2DBehavior
 import org.readium.navigator.web.gestures.scrollable2D
-import org.readium.navigator.web.util.WebViewScrollable2DState
 import org.readium.navigator.web.webview.LoadingState.Finished
 import org.readium.navigator.web.webview.LoadingState.Loading
 
