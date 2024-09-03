@@ -11,6 +11,7 @@ import org.readium.navigator.web.preferences.NavigatorSettings
 import org.readium.navigator.web.preferences.NavigatorSettingsResolver
 import org.readium.navigator.web.util.WebViewClient
 import org.readium.navigator.web.util.WebViewServer
+import org.readium.r2.navigator.preferences.Fit
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Metadata
 import org.readium.r2.shared.util.Url
@@ -59,4 +60,7 @@ public class NavigatorState internal constructor(
 
     internal val spreads: State<List<LayoutResolver.Spread>> =
         derivedStateOf { layoutResolver.layout(settings.value) }
+
+    internal val fit: State<Fit> =
+        derivedStateOf { settings.value.fit }
 }

@@ -3,11 +3,10 @@ package org.readium.navigator.web.util
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
-import org.readium.navigator.web.webview.AccompanistWebViewClient
 
 internal class WebViewClient(
     private val webViewServer: WebViewServer
-) : AccompanistWebViewClient() {
+) : android.webkit.WebViewClient() {
 
     override fun shouldInterceptRequest(
         view: WebView,
