@@ -11,7 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Size
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import org.readium.navigator.web.LayoutResolver
+import org.readium.navigator.web.layout.Spread
 import org.readium.navigator.web.util.WebViewClient
 import org.readium.navigator.web.webapi.PrepaginatedSingleApi
 import org.readium.navigator.web.webview.LoadingState
@@ -73,10 +73,10 @@ internal class SingleSpreadState(
     val htmlData: String,
     val publicationBaseUrl: AbsoluteUrl,
     val webViewClient: WebViewClient,
-    val spread: LayoutResolver.Spread.Single,
+    val spread: Spread.Single,
     val fit: State<Fit>,
     val viewport: State<Size>
 ) {
     val url: AbsoluteUrl =
-        publicationBaseUrl.resolve(spread.value)
+        publicationBaseUrl.resolve(spread.page)
 }

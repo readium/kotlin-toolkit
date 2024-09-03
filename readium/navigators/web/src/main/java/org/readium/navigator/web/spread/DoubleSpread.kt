@@ -11,7 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Size
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import org.readium.navigator.web.LayoutResolver
+import org.readium.navigator.web.layout.Spread
 import org.readium.navigator.web.util.WebViewClient
 import org.readium.navigator.web.webapi.PrepaginatedDoubleApi
 import org.readium.navigator.web.webview.LoadingState
@@ -73,13 +73,13 @@ internal class DoubleSpreadState(
     val htmlData: String,
     val publicationBaseUrl: AbsoluteUrl,
     val webViewClient: WebViewClient,
-    val spread: LayoutResolver.Spread.Double,
+    val spread: Spread.Double,
     val fit: State<Fit>,
     val viewport: State<Size>
 ) {
     val left: AbsoluteUrl? =
-        spread.left?.let { publicationBaseUrl.resolve(it) }
+        spread.leftPage?.let { publicationBaseUrl.resolve(it) }
 
     val right: AbsoluteUrl? =
-        spread.right?.let { publicationBaseUrl.resolve(it) }
+        spread.rightPage?.let { publicationBaseUrl.resolve(it) }
 }

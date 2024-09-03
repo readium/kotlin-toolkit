@@ -1,31 +1,14 @@
-package org.readium.navigator.web
+package org.readium.navigator.web.layout
 
 import org.readium.navigator.web.preferences.NavigatorSettings
 import org.readium.r2.navigator.preferences.ReadingProgression
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.presentation.Presentation
-import org.readium.r2.shared.util.Url
 
 @ExperimentalReadiumApi
 internal class LayoutResolver(
     private val readingOrder: List<Page>
 ) {
-    data class Page(
-        val url: Url,
-        val page: Presentation.Page?
-    )
-
-    sealed class Spread {
-
-        data class Single(
-            val value: Url
-        ) : Spread()
-
-        data class Double(
-            val left: Url?,
-            val right: Url?
-        ) : Spread()
-    }
 
     fun layout(settings: NavigatorSettings): List<Spread> =
         if (settings.spreads) {

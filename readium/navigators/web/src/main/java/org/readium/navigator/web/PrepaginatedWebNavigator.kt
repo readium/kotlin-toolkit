@@ -1,11 +1,7 @@
 package org.readium.navigator.web
 
-import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.PagerDefaults
-import androidx.compose.foundation.pager.PagerSnapDistance
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -14,8 +10,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.LayoutDirection
-import org.readium.navigator.web.logging.LoggingNestedScrollConnection
-import org.readium.navigator.web.logging.LoggingTargetedFlingBehavior
+import org.readium.navigator.web.layout.Spread
+import org.readium.navigator.web.pager.NavigatorPager
 import org.readium.navigator.web.spread.DoubleSpread
 import org.readium.navigator.web.spread.DoubleSpreadState
 import org.readium.navigator.web.spread.SingleSpread
@@ -26,34 +22,22 @@ import org.readium.r2.shared.ExperimentalReadiumApi
 
 @ExperimentalReadiumApi
 @Composable
-public fun NavigatorView(
+public fun PrepaginatedWebNavigator(
     modifier: Modifier,
-    state: NavigatorState
+    state: PrepaginatedWebNavigatorState
 ) {
     val pagerState = rememberPagerState {
         state.spreads.value.size
     }
 
-    val flingBehavior = LoggingTargetedFlingBehavior(
-        PagerDefaults.flingBehavior(
-            state = pagerState,
-            pagerSnapDistance = PagerSnapDistance.atMost(0)
-        )
-    )
-
     val reverseLayout =
         LocalLayoutDirection.current.toReadingProgression() != state.settings.value.readingProgression
 
-    HorizontalPager(
+    NavigatorPager(
         modifier = modifier,
-        userScrollEnabled = false,
         state = pagerState,
         beyondViewportPageCount = 2,
-        reverseLayout = reverseLayout,
-        flingBehavior = flingBehavior,
-        pageNestedScrollConnection = LoggingNestedScrollConnection(
-            PagerNestedConnection(pagerState, flingBehavior, Orientation.Horizontal)
-        )
+        reverseLayout = reverseLayout
     ) {
         BoxWithConstraints(
             modifier = Modifier.fillMaxSize(),
@@ -62,10 +46,10 @@ public fun NavigatorView(
             val viewportState = rememberUpdatedState(Size(maxWidth.value, maxHeight.value))
 
             when (val spread = state.spreads.value[it]) {
-                is LayoutResolver.Spread.Single -> {
+                is Spread.Single -> {
                     val spreadState = remember {
                         SingleSpreadState(
-                            htmlData = state.fxlSpreadOne,
+                            htmlData = state.preloadedData.prepaginatedSingleContent,
                             publicationBaseUrl = WebViewServer.publicationBaseHref,
                             webViewClient = state.webViewClient,
                             spread = spread,
@@ -76,10 +60,10 @@ public fun NavigatorView(
 
                     SingleSpread(state = spreadState)
                 }
-                is LayoutResolver.Spread.Double -> {
+                is Spread.Double -> {
                     val spreadState = remember {
                         DoubleSpreadState(
-                            htmlData = state.fxlSpreadTwo,
+                            htmlData = state.preloadedData.prepaginatedDoubleContent,
                             publicationBaseUrl = WebViewServer.publicationBaseHref,
                             webViewClient = state.webViewClient,
                             spread = spread,

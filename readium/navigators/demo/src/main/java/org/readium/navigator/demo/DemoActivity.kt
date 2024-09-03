@@ -36,7 +36,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import org.readium.navigator.demo.preferences.UserPreferences
-import org.readium.navigator.web.NavigatorView
+import org.readium.navigator.web.PrepaginatedWebNavigator
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.toAbsoluteUrl
 
@@ -108,7 +108,7 @@ class DemoActivity : ComponentActivity() {
                                     }
                                 }
 
-                                NavigatorView(
+                                PrepaginatedWebNavigator(
                                     modifier = Modifier.fillMaxSize(),
                                     state = stateNow.navigatorState
                                 )

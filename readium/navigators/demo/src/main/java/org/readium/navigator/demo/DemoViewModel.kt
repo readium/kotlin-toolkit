@@ -19,8 +19,8 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import org.readium.navigator.demo.preferences.PreferencesManager
 import org.readium.navigator.demo.preferences.UserPreferencesViewModel
-import org.readium.navigator.web.NavigatorFactory
-import org.readium.navigator.web.NavigatorState
+import org.readium.navigator.web.PrepaginatedWebNavigatorFactory
+import org.readium.navigator.web.PrepaginatedWebNavigatorState
 import org.readium.navigator.web.preferences.NavigatorPreferences
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.AbsoluteUrl
@@ -49,7 +49,7 @@ class DemoViewModel(
         ) : State
 
         data class Reader(
-            val navigatorState: NavigatorState,
+            val navigatorState: PrepaginatedWebNavigatorState,
             val preferencesViewModel: UserPreferencesViewModel<NavigatorPreferences>
         ) : State
     }
@@ -92,7 +92,7 @@ class DemoViewModel(
                     return@launch
                 }
 
-            val navigatorFactory = NavigatorFactory(getApplication(), publication)
+            val navigatorFactory = PrepaginatedWebNavigatorFactory(getApplication(), publication)
                 ?: run {
                     publication.close()
                     val error = DebugError("Publication not supported")

@@ -1,4 +1,4 @@
-package org.readium.navigator.web.logging
+package org.readium.navigator.web.pager
 
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection

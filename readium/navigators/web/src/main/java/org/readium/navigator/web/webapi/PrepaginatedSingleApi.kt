@@ -1,17 +1,33 @@
 package org.readium.navigator.web.webapi
 
+import android.content.res.AssetManager
 import android.webkit.WebView
-import org.readium.navigator.web.LayoutResolver
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import org.readium.navigator.web.layout.Spread
 import org.readium.navigator.web.util.WebViewServer
 import org.readium.r2.navigator.preferences.Fit
 import org.readium.r2.shared.ExperimentalReadiumApi
+import org.readium.r2.shared.util.AbsoluteUrl
 
 @OptIn(ExperimentalReadiumApi::class)
 internal class PrepaginatedSingleApi(
     private val webView: WebView
 ) {
-    fun loadSpread(spread: LayoutResolver.Spread.Single) {
-        val resourceUrl = WebViewServer.publicationBaseHref.resolve(spread.value)
+
+    companion object {
+
+        suspend fun getPageContent(assetManager: AssetManager, assetsUrl: AbsoluteUrl): String =
+            withContext(Dispatchers.IO) {
+                assetManager.open("readium/navigators/web/prepaginated-single-index.html")
+                    .bufferedReader()
+                    .use { it.readText() }
+                    .replace("{{ASSETS_URL}}", assetsUrl.toString())
+            }
+    }
+
+    fun loadSpread(spread: Spread.Single) {
+        val resourceUrl = WebViewServer.publicationBaseHref.resolve(spread.page)
         val script = "layout.loadResource(`$resourceUrl`);"
         webView.evaluateJavascript(script) {}
     }

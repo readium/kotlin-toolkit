@@ -5,6 +5,9 @@ import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableStateOf
+import org.readium.navigator.web.layout.LayoutResolver
+import org.readium.navigator.web.layout.Page
+import org.readium.navigator.web.layout.Spread
 import org.readium.navigator.web.preferences.NavigatorDefaults
 import org.readium.navigator.web.preferences.NavigatorPreferences
 import org.readium.navigator.web.preferences.NavigatorSettings
@@ -20,16 +23,20 @@ import org.readium.r2.shared.util.Url
 @ExperimentalReadiumApi
 @Stable
 @Suppress("Unused_parameter")
-public class NavigatorState internal constructor(
+public class PrepaginatedWebNavigatorState internal constructor(
     publicationMetadata: Metadata,
     readingOrder: ReadingOrder,
     initialPreferences: NavigatorPreferences,
     defaults: NavigatorDefaults,
     initialItem: Int,
     internal val webViewServer: WebViewServer,
-    internal val fxlSpreadOne: String,
-    internal val fxlSpreadTwo: String
+    internal val preloadedData: PreloadedData
 ) {
+
+    internal data class PreloadedData(
+        val prepaginatedSingleContent: String,
+        val prepaginatedDoubleContent: String
+    )
     public data class ReadingOrder(
         val items: List<Item>
     ) {
@@ -48,7 +55,7 @@ public class NavigatorState internal constructor(
         NavigatorSettingsResolver(publicationMetadata, defaults)
 
     private val layoutResolver =
-        LayoutResolver(readingOrder.items.map { LayoutResolver.Page(it.href, it.page) })
+        LayoutResolver(readingOrder.items.map { Page(it.href, it.page) })
 
     public val preferences: MutableState<NavigatorPreferences> =
         mutableStateOf(initialPreferences)
@@ -59,7 +66,7 @@ public class NavigatorState internal constructor(
     internal val webViewClient =
         WebViewClient(webViewServer)
 
-    internal val spreads: State<List<LayoutResolver.Spread>> =
+    internal val spreads: State<List<Spread>> =
         derivedStateOf { layoutResolver.layout(settings.value) }
 
     internal val fit: State<Fit> =

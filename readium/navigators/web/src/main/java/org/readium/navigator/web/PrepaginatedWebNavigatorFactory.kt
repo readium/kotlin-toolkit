@@ -11,6 +11,8 @@ import org.readium.navigator.web.preferences.NavigatorDefaults
 import org.readium.navigator.web.preferences.NavigatorPreferences
 import org.readium.navigator.web.preferences.NavigatorPreferencesEditor
 import org.readium.navigator.web.util.WebViewServer
+import org.readium.navigator.web.webapi.PrepaginatedDoubleApi
+import org.readium.navigator.web.webapi.PrepaginatedSingleApi
 import org.readium.r2.navigator.extensions.normalizeLocator
 import org.readium.r2.shared.DelicateReadiumApi
 import org.readium.r2.shared.ExperimentalReadiumApi
@@ -23,7 +25,7 @@ import org.readium.r2.shared.util.Try
 
 @ExperimentalReadiumApi
 @OptIn(DelicateReadiumApi::class)
-public class NavigatorFactory private constructor(
+public class PrepaginatedWebNavigatorFactory private constructor(
     private val application: Application,
     private val publication: Publication,
     private val defaults: NavigatorDefaults
@@ -34,7 +36,7 @@ public class NavigatorFactory private constructor(
         public operator fun invoke(
             application: Application,
             publication: Publication
-        ): NavigatorFactory? {
+        ): PrepaginatedWebNavigatorFactory? {
             if (!publication.conformsTo(Publication.Profile.EPUB)) {
                 return null
             }
@@ -43,7 +45,7 @@ public class NavigatorFactory private constructor(
                 return null
             }
 
-            return NavigatorFactory(application, publication, NavigatorDefaults())
+            return PrepaginatedWebNavigatorFactory(application, publication, NavigatorDefaults())
         }
     }
 
@@ -61,9 +63,9 @@ public class NavigatorFactory private constructor(
         initialLocator: Locator? = null,
         initialPreferences: NavigatorPreferences? = null,
         readingOrder: List<Link> = publication.readingOrder
-    ): Try<NavigatorState, Nothing> {
+    ): Try<PrepaginatedWebNavigatorState, Nothing> {
         val items = readingOrder.map {
-            NavigatorState.ReadingOrder.Item(
+            PrepaginatedWebNavigatorState.ReadingOrder.Item(
                 href = it.url(),
                 page = it.properties.page
             )
@@ -83,28 +85,28 @@ public class NavigatorFactory private constructor(
                 onResourceLoadFailed = { _, _ -> }
             )
 
-        val fxlSpreadOne = application.assets
-            .open("readium/navigators/web/prepaginated-single-index.html")
-            .bufferedReader()
-            .use { it.readText() }
-            .replace("{{ASSETS_URL}}", WebViewServer.assetUrl("readium/navigators/web").toString())
+        val prepaginatedSingleContent = PrepaginatedSingleApi.getPageContent(
+            assetManager = application.assets,
+            assetsUrl = WebViewServer.assetUrl("readium/navigators/web")!!
+        )
 
-        val fxlSpreadTwo = application.assets
-            .open("readium/navigators/web/prepaginated-double-index.html")
-            .bufferedReader()
-            .use { it.readText() }
-            .replace("{{ASSETS_URL}}", WebViewServer.assetUrl("readium/navigators/web").toString())
+        val prepaginatedDoubleContent = PrepaginatedDoubleApi.getPageContent(
+            assetManager = application.assets,
+            assetsUrl = WebViewServer.assetUrl("readium/navigators/web")!!
+        )
 
         val navigatorState =
-            NavigatorState(
+            PrepaginatedWebNavigatorState(
                 publicationMetadata = publication.metadata,
-                readingOrder = NavigatorState.ReadingOrder(items),
+                readingOrder = PrepaginatedWebNavigatorState.ReadingOrder(items),
                 initialPreferences = initialPreferences ?: NavigatorPreferences(),
                 defaults = defaults,
                 initialItem = initialIndex,
                 webViewServer = webViewServer,
-                fxlSpreadOne = fxlSpreadOne,
-                fxlSpreadTwo = fxlSpreadTwo
+                preloadedData = PrepaginatedWebNavigatorState.PreloadedData(
+                    prepaginatedSingleContent = prepaginatedSingleContent,
+                    prepaginatedDoubleContent = prepaginatedDoubleContent
+                )
             )
 
         return Try.success(navigatorState)

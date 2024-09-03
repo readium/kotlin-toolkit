@@ -15,7 +15,6 @@ import android.webkit.WebResourceResponse
 import androidx.webkit.WebViewAssetLoader
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.publication.Href
 import org.readium.r2.shared.publication.Link
@@ -34,7 +33,6 @@ import org.readium.r2.shared.util.resource.fallback
 /**
  * Serves the publication resources and application assets in the EPUB navigator web views.
  */
-@OptIn(ExperimentalReadiumApi::class)
 internal class WebViewServer(
     private val application: Application,
     private val publication: Publication,
@@ -46,7 +44,7 @@ internal class WebViewServer(
         val publicationBaseHref = AbsoluteUrl("https://readium/publication/")!!
         val assetsBaseHref = AbsoluteUrl("https://readium/assets/")!!
 
-        fun assetUrl(path: String): Url? =
+        fun assetUrl(path: String): AbsoluteUrl? =
             Url.fromDecodedPath(path)?.let { assetsBaseHref.resolve(it) }
     }
 
