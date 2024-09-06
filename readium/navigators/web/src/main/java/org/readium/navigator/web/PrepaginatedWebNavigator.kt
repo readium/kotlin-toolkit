@@ -19,6 +19,7 @@ import org.readium.navigator.web.spread.SingleSpreadState
 import org.readium.navigator.web.util.WebViewServer
 import org.readium.r2.navigator.preferences.ReadingProgression
 import org.readium.r2.shared.ExperimentalReadiumApi
+import timber.log.Timber
 
 @ExperimentalReadiumApi
 @Composable
@@ -38,14 +39,22 @@ public fun PrepaginatedWebNavigator(
         state = pagerState,
         beyondViewportPageCount = 2,
         reverseLayout = reverseLayout
-    ) {
+    ) { index ->
+
         BoxWithConstraints(
             modifier = Modifier.fillMaxSize(),
             propagateMinConstraints = true
         ) {
             val viewportState = rememberUpdatedState(Size(maxWidth.value, maxHeight.value))
 
-            when (val spread = state.spreads.value[it]) {
+            // For some reason, index can be higher than the value of state.spreads.value.size
+            // at this point. Try to skip composition of those extra items.
+            if (index >= state.spreads.value.size) {
+                Timber.e("Compose bug")
+                return@BoxWithConstraints
+            }
+
+            when (val spread = state.spreads.value[index]) {
                 is Spread.Single -> {
                     val spreadState = remember {
                         SingleSpreadState(

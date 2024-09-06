@@ -116,7 +116,9 @@ class DemoViewModel(
             }
 
             preferencesViewModel.preferences
-                .onEach { navigatorState.preferences.value = it }
+                .onEach {
+                    navigatorState.preferences.value = it
+                }
                 .launchIn(viewModelScope)
 
             stateMutable.value = State.Reader(navigatorState, preferencesViewModel)

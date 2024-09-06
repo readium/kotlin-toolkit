@@ -18,6 +18,8 @@ export class DoubleAreaManager {
 
   private viewport?: Size
 
+  private spread?: { left?: string, right?: string }
+
   constructor(
     leftIframe: HTMLIFrameElement,
     rightIframe: HTMLIFrameElement,
@@ -32,10 +34,12 @@ export class DoubleAreaManager {
   loadSpread(spread: { left?: string, right?: string }) {
     this.leftPage.hide()
     this.rightPage.hide()
+    this.spread = spread
 
     if (spread.left) {
       this.leftPage.loadPage(spread.left)
     }
+
     if (spread.right) {
       this.rightPage.loadPage(spread.right)
     }
@@ -61,7 +65,11 @@ export class DoubleAreaManager {
   }
 
   private layout() {
-    if (!this.viewport || (!this.leftPage.size && !this.rightPage.size)) {
+    if (
+      !this.viewport || 
+      (!this.leftPage.size && this.spread!.left) ||
+      (!this.rightPage.size && this.spread!.right)
+     ) {
       return
     }
 
@@ -70,8 +78,15 @@ export class DoubleAreaManager {
     const rightMargins = { top: this.insets.top, right: this.insets.right, bottom: this.insets.bottom, left: 0 }
     this.rightPage.setMargins(rightMargins)
 
-    const contentWidth = (this.leftPage.size?.width ?? 0) + (this.rightPage.size?.width ?? 0)
-    const contentHeight = Math.max(this.leftPage.size?.height ?? 0, this.rightPage.size?.height ?? 0)
+    if (!this.spread!.right) {
+      this.rightPage.setPlaceholder(this.leftPage.size!)
+
+    } else if (!this.spread!.left) {
+      this.leftPage.setPlaceholder(this.rightPage.size!)
+    }
+
+    const contentWidth = this.leftPage.size!.width + this.rightPage.size!.width
+    const contentHeight = Math.max(this.leftPage.size!.height, this.rightPage.size!.height)
     const contentSize = { width: contentWidth, height: contentHeight }
     const scale = computeScale(this.fit, contentSize, this.viewport)
 

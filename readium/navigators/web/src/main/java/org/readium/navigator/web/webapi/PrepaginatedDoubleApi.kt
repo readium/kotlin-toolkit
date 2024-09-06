@@ -29,7 +29,11 @@ internal class PrepaginatedDoubleApi(
     fun loadSpread(spread: Spread.Double) {
         val leftUrl = spread.leftPage?.let { WebViewServer.publicationBaseHref.resolve(it) }
         val rightUrl = spread.rightPage?.let { WebViewServer.publicationBaseHref.resolve(it) }
-        webView.evaluateJavascript("layout.loadSpread({ left: `$leftUrl`, right: `$rightUrl`});") {}
+        val argument = buildList {
+            leftUrl?.let { add("left: `$it`") }
+            rightUrl?.let { add("right: `$it`") }
+        }.joinToString(separator = ", ", prefix = "{ ", postfix = " }")
+        webView.evaluateJavascript("layout.loadSpread($argument);") {}
     }
 
     fun setViewport(width: Float, height: Float) {

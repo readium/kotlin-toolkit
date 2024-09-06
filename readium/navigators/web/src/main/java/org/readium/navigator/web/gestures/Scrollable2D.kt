@@ -62,7 +62,6 @@ import kotlin.coroutines.cancellation.CancellationException
 import kotlin.math.abs
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import timber.log.Timber
 
 /**
  * Configure touch scrolling and flinging for the UI element in a single [Orientation].
@@ -287,11 +286,9 @@ private class Scrollable2DNode(
     override suspend fun drag(
         forEachDelta: suspend ((dragDelta: DragEvent.DragDelta) -> Unit) -> Unit
     ) {
-        Timber.d("drag")
         with(scrollingLogic) {
             scroll(scrollPriority = MutatePriority.UserInput) {
                 forEachDelta {
-                    Timber.d("forEachDelta ${it.delta} $this@with")
                     scrollByWithOverscroll(
                         it.delta,
                         source = NestedScrollSource.UserInput
@@ -544,7 +541,6 @@ internal class ScrollingLogic(
     private fun Scroll2DScope.performScroll(delta: Offset, source: NestedScrollSource): Offset {
         val consumedByPreScroll =
             nestedScrollDispatcher.dispatchPreScroll(delta, source)
-        Timber.d("ConsumedByPreScroll $consumedByPreScroll")
 
         val scrollAvailableAfterPreScroll = delta - consumedByPreScroll
 
@@ -554,7 +550,6 @@ internal class ScrollingLogic(
         // Consume on a single axis.
         val consumedBySelfScroll =
             scrollBy(deltaForSelfScroll).reverseIfNeeded()
-        Timber.d("ConsumedBySelfScroll $consumedBySelfScroll")
 
         val deltaAvailableAfterScroll = scrollAvailableAfterPreScroll - consumedBySelfScroll
         val consumedByPostScroll = nestedScrollDispatcher.dispatchPostScroll(
@@ -562,7 +557,7 @@ internal class ScrollingLogic(
             deltaAvailableAfterScroll,
             source
         )
-        Timber.d("ConsumedByPostScroll $consumedByPostScroll")
+
         return consumedByPreScroll + consumedBySelfScroll + consumedByPostScroll
     }
 
@@ -586,8 +581,6 @@ internal class ScrollingLogic(
             val available = velocity - preConsumedByParent
 
             val velocityLeft = doFlingAnimation(available)
-
-            Timber.d("dispatchPostFling available $available left $velocityLeft")
 
             val consumedPost =
                 nestedScrollDispatcher.dispatchPostFling(
@@ -732,14 +725,12 @@ internal class DefaultFling2DBehavior(
                     animationState.animateDecay(flingDecay) {
                         val delta = value - lastValue
                         val consumed = scrollBy(delta)
-                        Timber.d("animationStep $delta $consumed")
                         lastValue = value
                         velocityLeft = this.velocity
                         // avoid rounding errors and stop if anything is unconsumed on both axes
                         val unconsumedX = abs(delta.x) <= 0.5f || abs(delta.x - consumed.x) > 0.5f
                         val unconsumedY = abs(delta.y) <= 0.5f || abs(delta.y - consumed.y) > 0.5f
                         if (hasStarted && unconsumedX && unconsumedY) {
-                            Timber.d("delta $delta consumed $consumed")
                             this.cancelAnimation()
                         }
                         lastAnimationCycleCount++

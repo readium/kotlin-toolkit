@@ -46,9 +46,17 @@ export class PageManager {
     this.iframe.src = url
   }
 
+  /** Sets the size of this page without content. */
+  setPlaceholder(size: Size) {
+    this.iframe.style.width = size.width + "px";
+    this.iframe.style.height = size.height + "px";
+    this.size = size
+  }
+
   private onIframeLoaded() {
     const viewport = this.iframe.contentWindow!.document.querySelector("meta[name=viewport]")
-    if (viewport !instanceof HTMLMetaElement) {
+    if (!viewport || viewport !instanceof HTMLMetaElement) {
+      //FIXME: handle edge case
       return;
     }
 
