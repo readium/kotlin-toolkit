@@ -50,21 +50,7 @@ internal class PagerNestedConnection(
     }
 
     override suspend fun onPreFling(available: Velocity): Velocity {
-        if (state.layoutInfo.visiblePagesInfo.size <= 1) {
-            return Velocity.Zero
-        }
-        var remaining: Float = available.x
-        state.scroll(scrollPriority = MutatePriority.PreventUserInput) {
-            with(flingBehavior) {
-                remaining = -performFling(-available.x)
-            }
-        }
-
-        if ((available.x - remaining).isNaN()) {
-            return available
-        }
-
-        return Velocity(available.x - remaining, available.y)
+        return Velocity.Zero
     }
 
     override fun onPostScroll(
@@ -81,9 +67,6 @@ internal class PagerNestedConnection(
         available: Velocity
     ): Velocity {
         var remaining = available.x
-        if (state.isScrollInProgress) {
-            return available
-        }
 
         state.scroll(scrollPriority = MutatePriority.Default) {
             with(flingBehavior) {
