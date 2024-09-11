@@ -42,8 +42,8 @@ public interface MemoryObserver {
         public fun asComponentCallbacks2(observer: MemoryObserver): ComponentCallbacks2 =
             object : ComponentCallbacks2 {
                 override fun onConfigurationChanged(config: Configuration) {}
-                @Deprecated("Deprecated in Java")
 
+                @Deprecated("Deprecated in Java")
                 override fun onLowMemory() {}
 
                 override fun onTrimMemory(level: Int) {
