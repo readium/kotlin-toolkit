@@ -17,7 +17,7 @@ public interface MemoryObserver {
         Moderate, Low, Critical;
 
         public companion object {
-            //FIXME Need to determine how to replace TRIM_MEMORY_ here
+            // FIXME Need to determine how to replace TRIM_MEMORY_ here
             @Suppress("DEPRECATION")
             public fun fromLevel(level: Int): Level =
                 when {
@@ -43,6 +43,7 @@ public interface MemoryObserver {
             object : ComponentCallbacks2 {
                 override fun onConfigurationChanged(config: Configuration) {}
                 @Deprecated("Deprecated in Java")
+
                 override fun onLowMemory() {}
 
                 override fun onTrimMemory(level: Int) {
