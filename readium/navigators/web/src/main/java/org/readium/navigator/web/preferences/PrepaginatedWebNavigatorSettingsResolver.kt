@@ -7,12 +7,12 @@ import org.readium.r2.shared.publication.Metadata
 import org.readium.r2.shared.publication.ReadingProgression as PublicationReadingProgression
 
 @ExperimentalReadiumApi
-internal class NavigatorSettingsResolver(
+internal class PrepaginatedWebNavigatorSettingsResolver(
     private val metadata: Metadata,
-    private val defaults: NavigatorDefaults
+    private val defaults: PrepaginatedWebNavigatorDefaults
 ) {
 
-    fun settings(preferences: NavigatorPreferences): NavigatorSettings {
+    fun settings(preferences: PrepaginatedWebNavigatorPreferences): PrepaginatedWebNavigatorSettings {
         val readingProgression: ReadingProgression =
             preferences.readingProgression
                 ?: when (metadata.readingProgression) {
@@ -26,7 +26,7 @@ internal class NavigatorSettingsResolver(
 
         val spreads = preferences.spreads ?: defaults.spreads ?: false
 
-        return NavigatorSettings(
+        return PrepaginatedWebNavigatorSettings(
             fit = fit,
             readingProgression = readingProgression,
             spreads = spreads

@@ -7,9 +7,9 @@
 package org.readium.navigator.web
 
 import android.app.Application
-import org.readium.navigator.web.preferences.NavigatorDefaults
-import org.readium.navigator.web.preferences.NavigatorPreferences
-import org.readium.navigator.web.preferences.NavigatorPreferencesEditor
+import org.readium.navigator.web.preferences.PrepaginatedWebNavigatorDefaults
+import org.readium.navigator.web.preferences.PrepaginatedWebNavigatorPreferences
+import org.readium.navigator.web.preferences.PrepaginatedWebNavigatorPreferencesEditor
 import org.readium.navigator.web.util.WebViewServer
 import org.readium.navigator.web.webapi.PrepaginatedDoubleApi
 import org.readium.navigator.web.webapi.PrepaginatedSingleApi
@@ -28,7 +28,7 @@ import org.readium.r2.shared.util.Try
 public class PrepaginatedWebNavigatorFactory private constructor(
     private val application: Application,
     private val publication: Publication,
-    private val defaults: NavigatorDefaults
+    private val defaults: PrepaginatedWebNavigatorDefaults
 ) {
 
     public companion object {
@@ -45,7 +45,11 @@ public class PrepaginatedWebNavigatorFactory private constructor(
                 return null
             }
 
-            return PrepaginatedWebNavigatorFactory(application, publication, NavigatorDefaults())
+            return PrepaginatedWebNavigatorFactory(
+                application,
+                publication,
+                PrepaginatedWebNavigatorDefaults()
+            )
         }
     }
 
@@ -61,7 +65,7 @@ public class PrepaginatedWebNavigatorFactory private constructor(
 
     public suspend fun createNavigator(
         initialLocator: Locator? = null,
-        initialPreferences: NavigatorPreferences? = null,
+        initialPreferences: PrepaginatedWebNavigatorPreferences? = null,
         readingOrder: List<Link> = publication.readingOrder
     ): Try<PrepaginatedWebNavigatorState, Nothing> {
         val items = readingOrder.map {
@@ -99,7 +103,7 @@ public class PrepaginatedWebNavigatorFactory private constructor(
             PrepaginatedWebNavigatorState(
                 publicationMetadata = publication.metadata,
                 readingOrder = PrepaginatedWebNavigatorState.ReadingOrder(items),
-                initialPreferences = initialPreferences ?: NavigatorPreferences(),
+                initialPreferences = initialPreferences ?: PrepaginatedWebNavigatorPreferences(),
                 defaults = defaults,
                 initialItem = initialIndex,
                 webViewServer = webViewServer,
@@ -113,9 +117,9 @@ public class PrepaginatedWebNavigatorFactory private constructor(
     }
 
     public fun createPreferencesEditor(
-        currentPreferences: NavigatorPreferences
-    ): NavigatorPreferencesEditor =
-        NavigatorPreferencesEditor(
+        currentPreferences: PrepaginatedWebNavigatorPreferences
+    ): PrepaginatedWebNavigatorPreferencesEditor =
+        PrepaginatedWebNavigatorPreferencesEditor(
             currentPreferences,
             publication.metadata,
             defaults

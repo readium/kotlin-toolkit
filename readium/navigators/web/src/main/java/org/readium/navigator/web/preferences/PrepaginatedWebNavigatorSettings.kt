@@ -6,7 +6,7 @@ import org.readium.r2.navigator.preferences.ReadingProgression
 import org.readium.r2.shared.ExperimentalReadiumApi
 
 @ExperimentalReadiumApi
-public data class NavigatorSettings(
+public data class PrepaginatedWebNavigatorSettings(
     val fit: Fit,
     val readingProgression: ReadingProgression,
     val spreads: Boolean

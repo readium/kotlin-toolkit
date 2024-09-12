@@ -1,6 +1,6 @@
 package org.readium.navigator.web.layout
 
-import org.readium.navigator.web.preferences.NavigatorSettings
+import org.readium.navigator.web.preferences.PrepaginatedWebNavigatorSettings
 import org.readium.r2.navigator.preferences.ReadingProgression
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.presentation.Presentation
@@ -10,7 +10,7 @@ internal class LayoutResolver(
     private val readingOrder: List<Page>
 ) {
 
-    fun layout(settings: NavigatorSettings): List<Spread> =
+    fun layout(settings: PrepaginatedWebNavigatorSettings): List<Spread> =
         if (settings.spreads) {
             when (settings.readingProgression) {
                 ReadingProgression.LTR -> layoutSpreadsLtr()

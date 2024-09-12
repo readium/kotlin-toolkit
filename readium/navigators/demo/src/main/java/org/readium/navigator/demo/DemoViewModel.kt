@@ -21,7 +21,7 @@ import org.readium.navigator.demo.preferences.PreferencesManager
 import org.readium.navigator.demo.preferences.UserPreferencesViewModel
 import org.readium.navigator.web.PrepaginatedWebNavigatorFactory
 import org.readium.navigator.web.PrepaginatedWebNavigatorState
-import org.readium.navigator.web.preferences.NavigatorPreferences
+import org.readium.navigator.web.preferences.PrepaginatedWebNavigatorPreferences
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.DebugError
@@ -50,7 +50,7 @@ class DemoViewModel(
 
         data class Reader(
             val navigatorState: PrepaginatedWebNavigatorState,
-            val preferencesViewModel: UserPreferencesViewModel<NavigatorPreferences>
+            val preferencesViewModel: UserPreferencesViewModel<PrepaginatedWebNavigatorPreferences>
         ) : State
     }
 
@@ -100,7 +100,7 @@ class DemoViewModel(
                     return@launch
                 }
 
-            val initialPreferences = NavigatorPreferences()
+            val initialPreferences = PrepaginatedWebNavigatorPreferences()
 
             val preferencesViewModel =
                 UserPreferencesViewModel(

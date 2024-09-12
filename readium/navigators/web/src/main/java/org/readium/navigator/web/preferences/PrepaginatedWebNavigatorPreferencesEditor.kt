@@ -18,36 +18,36 @@ import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.publication.Metadata
 
 /**
- * Interactive editor of [NavigatorPreferences].
+ * Interactive editor of [PrepaginatedWebNavigatorPreferences].
  *
  * This can be used as a view model for a user preferences screen.
  *
- * @see NavigatorPreferences
+ * @see PrepaginatedWebNavigatorPreferences
  */
 @ExperimentalReadiumApi
 @OptIn(InternalReadiumApi::class)
-public class NavigatorPreferencesEditor internal constructor(
-    initialPreferences: NavigatorPreferences,
+public class PrepaginatedWebNavigatorPreferencesEditor internal constructor(
+    initialPreferences: PrepaginatedWebNavigatorPreferences,
     publicationMetadata: Metadata,
-    defaults: NavigatorDefaults
-) : PreferencesEditor<NavigatorPreferences> {
+    defaults: PrepaginatedWebNavigatorDefaults
+) : PreferencesEditor<PrepaginatedWebNavigatorPreferences> {
 
     private data class State(
-        val preferences: NavigatorPreferences,
-        val settings: NavigatorSettings
+        val preferences: PrepaginatedWebNavigatorPreferences,
+        val settings: PrepaginatedWebNavigatorSettings
     )
 
-    private val settingsResolver: NavigatorSettingsResolver =
-        NavigatorSettingsResolver(publicationMetadata, defaults)
+    private val settingsResolver: PrepaginatedWebNavigatorSettingsResolver =
+        PrepaginatedWebNavigatorSettingsResolver(publicationMetadata, defaults)
 
     private var state: State =
         initialPreferences.toState()
 
-    override val preferences: NavigatorPreferences
+    override val preferences: PrepaginatedWebNavigatorPreferences
         get() = state.preferences
 
     override fun clear() {
-        updateValues { NavigatorPreferences() }
+        updateValues { PrepaginatedWebNavigatorPreferences() }
     }
 
     public val fit: EnumPreference<Fit> =
@@ -76,11 +76,13 @@ public class NavigatorPreferencesEditor internal constructor(
             updateValue = { value -> updateValues { it.copy(spreads = value) } }
         )
 
-    private fun updateValues(updater: (NavigatorPreferences) -> NavigatorPreferences) {
+    private fun updateValues(
+        updater: (PrepaginatedWebNavigatorPreferences) -> PrepaginatedWebNavigatorPreferences
+    ) {
         val newPreferences = updater(preferences)
         state = newPreferences.toState()
     }
 
-    private fun NavigatorPreferences.toState() =
+    private fun PrepaginatedWebNavigatorPreferences.toState() =
         State(preferences = this, settings = settingsResolver.settings(this))
 }

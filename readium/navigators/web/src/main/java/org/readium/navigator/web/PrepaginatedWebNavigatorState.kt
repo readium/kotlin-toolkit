@@ -8,10 +8,10 @@ import androidx.compose.runtime.mutableStateOf
 import org.readium.navigator.web.layout.LayoutResolver
 import org.readium.navigator.web.layout.Page
 import org.readium.navigator.web.layout.Spread
-import org.readium.navigator.web.preferences.NavigatorDefaults
-import org.readium.navigator.web.preferences.NavigatorPreferences
-import org.readium.navigator.web.preferences.NavigatorSettings
-import org.readium.navigator.web.preferences.NavigatorSettingsResolver
+import org.readium.navigator.web.preferences.PrepaginatedWebNavigatorDefaults
+import org.readium.navigator.web.preferences.PrepaginatedWebNavigatorPreferences
+import org.readium.navigator.web.preferences.PrepaginatedWebNavigatorSettings
+import org.readium.navigator.web.preferences.PrepaginatedWebNavigatorSettingsResolver
 import org.readium.navigator.web.util.WebViewClient
 import org.readium.navigator.web.util.WebViewServer
 import org.readium.r2.navigator.preferences.Fit
@@ -26,8 +26,8 @@ import org.readium.r2.shared.util.Url
 public class PrepaginatedWebNavigatorState internal constructor(
     publicationMetadata: Metadata,
     readingOrder: ReadingOrder,
-    initialPreferences: NavigatorPreferences,
-    defaults: NavigatorDefaults,
+    initialPreferences: PrepaginatedWebNavigatorPreferences,
+    defaults: PrepaginatedWebNavigatorDefaults,
     initialItem: Int,
     internal val webViewServer: WebViewServer,
     internal val preloadedData: PreloadedData
@@ -52,15 +52,15 @@ public class PrepaginatedWebNavigatorState internal constructor(
     )
 
     private val settingsResolver =
-        NavigatorSettingsResolver(publicationMetadata, defaults)
+        PrepaginatedWebNavigatorSettingsResolver(publicationMetadata, defaults)
 
     private val layoutResolver =
         LayoutResolver(readingOrder.items.map { Page(it.href, it.page) })
 
-    public val preferences: MutableState<NavigatorPreferences> =
+    public val preferences: MutableState<PrepaginatedWebNavigatorPreferences> =
         mutableStateOf(initialPreferences)
 
-    public val settings: State<NavigatorSettings> =
+    public val settings: State<PrepaginatedWebNavigatorSettings> =
         derivedStateOf { settingsResolver.settings(preferences.value) }
 
     internal val webViewClient =
