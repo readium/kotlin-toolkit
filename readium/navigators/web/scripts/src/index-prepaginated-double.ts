@@ -32,7 +32,7 @@ namespace Layout {
 		insetBottom: number,
 		insetRight: number
 	) {
-		const viewport: Size = { width: viewporttWidth, height: viewportHeight }
+		const viewport: Size = { width: viewporttWidth, height: viewportHeight}
 		const insets: Insets = { top: insetTop, left: insetLeft, bottom: insetBottom, right: insetRight }
 		manager.setViewport(viewport, insets)
 	}

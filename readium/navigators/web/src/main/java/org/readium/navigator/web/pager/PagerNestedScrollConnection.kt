@@ -10,11 +10,13 @@ import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.unit.Velocity
 import kotlin.math.abs
 
-internal class PagerNestedConnection(
+internal class PagerNestedScrollConnection(
     private val state: PagerState,
     private val flingBehavior: TargetedFlingBehavior,
     private val orientation: Orientation
 ) : NestedScrollConnection {
+
+    private var spreadConsumedVertically = false
 
     private val PagerState.firstVisibleOffset get() =
         layoutInfo.visiblePagesInfo.first().offset
@@ -50,6 +52,16 @@ internal class PagerNestedConnection(
     }
 
     override suspend fun onPreFling(available: Velocity): Velocity {
+        if (state.layoutInfo.visiblePagesInfo.size > 1) {
+            state.scroll(scrollPriority = MutatePriority.Default) {
+                with(flingBehavior) {
+                    performFling(-available.x)
+                }
+            }
+
+            return available
+        }
+
         return Velocity.Zero
     }
 
@@ -58,6 +70,13 @@ internal class PagerNestedConnection(
         available: Offset,
         source: NestedScrollSource
     ): Offset {
+        if (abs(consumed.y) > 0) {
+            spreadConsumedVertically = true
+        }
+
+        if (spreadConsumedVertically) {
+            return Offset.Zero
+        }
         val consumedX = -state.dispatchRawDelta(-available.x)
         return Offset(consumedX, 0f)
     }
@@ -66,6 +85,11 @@ internal class PagerNestedConnection(
         consumed: Velocity,
         available: Velocity
     ): Velocity {
+        if (spreadConsumedVertically) {
+            spreadConsumedVertically = false
+            return Velocity.Zero
+        }
+
         var remaining = available.x
 
         state.scroll(scrollPriority = MutatePriority.Default) {

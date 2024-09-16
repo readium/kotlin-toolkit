@@ -61,7 +61,7 @@ internal fun SingleSpread(
             }
         }
 
-        PageWebView(
+        SpreadWebView(
             state = webViewState,
             client = state.webViewClient
         )

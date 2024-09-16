@@ -60,6 +60,7 @@ import org.readium.navigator.web.webview.LoadingState.Loading
 internal fun WebView(
     state: WebViewState,
     modifier: Modifier = Modifier,
+    scrollableState: WebViewScrollable2DState = remember { WebViewScrollable2DState() },
     flingBehavior: Fling2DBehavior? = null,
     onCreated: (WebView) -> Unit = {},
     onDispose: (WebView) -> Unit = {},
@@ -101,6 +102,7 @@ internal fun WebView(
             item {
                 WebView(
                     state,
+                    scrollableState,
                     flingBehavior,
                     layoutParams,
                     Modifier.fillParentMaxSize(),
@@ -139,6 +141,7 @@ internal fun WebView(
 @Composable
 internal fun WebView(
     state: WebViewState,
+    scrollableState: WebViewScrollable2DState,
     flingBehavior: Fling2DBehavior?,
     layoutParams: FrameLayout.LayoutParams,
     modifier: Modifier = Modifier,
@@ -174,8 +177,6 @@ internal fun WebView(
         }
     }
 
-    val draggableState = remember { WebViewScrollable2DState() }
-
     AndroidView(
         factory = { context ->
             (factory?.let { it(context) } ?: RelaxedWebView(context)).apply {
@@ -190,14 +191,14 @@ internal fun WebView(
 
                 webChromeClient = chromeClient
                 webViewClient = client
-                draggableState.webView = this
+                scrollableState.webView = this
             }.also { state.webView = it }
         },
         modifier = modifier
-            .scrollable2D(draggableState, flingBehavior = flingBehavior),
+            .scrollable2D(scrollableState, flingBehavior = flingBehavior),
         onRelease = {
             onDispose(it)
-            draggableState.webView = null
+            scrollableState.webView = null
             state.webView = null
         }
     )

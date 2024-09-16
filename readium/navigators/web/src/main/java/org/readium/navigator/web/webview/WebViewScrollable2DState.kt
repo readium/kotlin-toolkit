@@ -43,6 +43,7 @@ private class WebViewDeltaDispatcher {
         val consumedX = (currentX - webViewNow.scrollX).toFloat().coerceAbsAtMost(abs(delta.x))
         val consumedY = (currentY - webViewNow.scrollY).toFloat().coerceAbsAtMost(abs(delta.y))
         val consumed = Offset(consumedX, consumedY)
+
         return consumed
     }
 

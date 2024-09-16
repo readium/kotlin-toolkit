@@ -30,7 +30,8 @@ internal fun NavigatorPager(
         beyondViewportPageCount = beyondViewportPageCount,
         reverseLayout = reverseLayout,
         flingBehavior = flingBehavior,
-        pageNestedScrollConnection = PagerNestedConnection(
+        pageNestedScrollConnection =
+        PagerNestedScrollConnection(
             state,
             flingBehavior,
             Orientation.Horizontal

@@ -15,6 +15,7 @@ import androidx.activity.viewModels
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -63,7 +64,9 @@ class DemoActivity : ComponentActivity() {
                 var showPreferences by remember { mutableStateOf(false) }
 
                 Scaffold(
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier
+                        .safeDrawingPadding()
+                        .fillMaxSize(),
                     topBar = {
                         TopBar(
                             onPreferencesActivated = {
@@ -109,7 +112,8 @@ class DemoActivity : ComponentActivity() {
                                 }
 
                                 PrepaginatedWebNavigator(
-                                    modifier = Modifier.fillMaxSize(),
+                                    modifier = Modifier
+                                        .fillMaxSize(),
                                     state = stateNow.navigatorState
                                 )
                             }
