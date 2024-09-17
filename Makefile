@@ -33,4 +33,4 @@ scripts:
 	pnpm run format; \
 	pnpm run lint; \
 	pnpm run bundle; \
-	cp -t ../src/main/assets/readium/navigators/web/ dist/*
+	cp dist/* ../src/main/assets/readium/navigators/web/ 
