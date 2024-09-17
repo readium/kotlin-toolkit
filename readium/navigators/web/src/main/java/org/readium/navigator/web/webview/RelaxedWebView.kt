@@ -5,6 +5,12 @@ import android.webkit.WebView
 
 internal class RelaxedWebView(context: Context) : WebView(context) {
 
+    val maxScrollX: Int get() =
+        horizontalScrollRange - horizontalScrollExtent
+
+    val maxScrollY: Int get() =
+        verticalScrollRange - verticalScrollExtent
+
     val verticalScrollRange: Int get() =
         computeVerticalScrollRange()
 

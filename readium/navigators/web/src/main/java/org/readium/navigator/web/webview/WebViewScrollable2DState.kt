@@ -30,8 +30,8 @@ private class WebViewDeltaDispatcher {
 
         val currentX = webViewNow.scrollX
         val currentY = webViewNow.scrollY
-        val maxX = webViewNow.horizontalScrollRange - webViewNow.horizontalScrollExtent
-        val maxY = webViewNow.verticalScrollRange - webViewNow.verticalScrollExtent
+        val maxX = webViewNow.maxScrollX
+        val maxY = webViewNow.maxScrollY
 
         // Consume slightly more than delta si we have to because
         // we don't want the pager to consume any rounding error

@@ -14,11 +14,9 @@ internal class SpreadNestedScrollConnection(
     override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
         val webViewNow = webviewState.webView ?: return Offset.Zero
 
-        val maxX =
-            webViewNow.horizontalScrollRange - webViewNow.horizontalScrollExtent
-
         val webViewCannotScrollHorizontally =
-            webViewNow.scrollX < 1 && available.x > 0 || (maxX - webViewNow.scrollX) < 1 && available.x < 0
+            (webViewNow.scrollX < 1 && available.x > 0) ||
+                ((webViewNow.maxScrollX - webViewNow.scrollX) < 1 && available.x < 0)
 
         val isGestureHorizontal =
             (abs(available.y) / abs(available.x)) < 0.58 // tan(Pi/6)
@@ -35,11 +33,8 @@ internal class SpreadNestedScrollConnection(
     override suspend fun onPostFling(consumed: Velocity, available: Velocity): Velocity {
         val webViewNow = webviewState.webView ?: return Velocity.Zero
 
-        val maxX =
-            webViewNow.horizontalScrollRange - webViewNow.horizontalScrollExtent
-
-        if ((maxX - webViewNow.scrollX) < 15) {
-            webViewNow.scrollTo(maxX, webViewNow.scrollY)
+        if ((webViewNow.maxScrollX - webViewNow.scrollX) < 15) {
+            webViewNow.scrollTo(webViewNow.maxScrollX, webViewNow.scrollY)
         } else if (webViewNow.scrollX in (0 until 15)) {
             webViewNow.scrollTo(0, webViewNow.scrollY)
         }
