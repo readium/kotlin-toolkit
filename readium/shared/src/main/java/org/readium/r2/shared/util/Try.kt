@@ -68,7 +68,7 @@ public sealed class Try<out Success, out Failure> {
     public inline fun <F> mapFailure(transform: (value: Failure) -> F): Try<Success, F> =
         when (this) {
             is Try.Success -> success(value)
-            is Try.Failure -> failure(transform(failureOrNull()!!))
+            is Try.Failure -> failure(transform(failureOrNull()))
         }
 
     /**
@@ -81,7 +81,7 @@ public sealed class Try<out Success, out Failure> {
     ): R =
         when (this) {
             is Try.Success -> onSuccess(value)
-            is Try.Failure -> onFailure(failureOrNull()!!)
+            is Try.Failure -> onFailure(failureOrNull())
         }
 
     /**
@@ -98,7 +98,7 @@ public sealed class Try<out Success, out Failure> {
      * Returns the original [Try] unchanged.
      */
     public inline fun onFailure(action: (exception: Failure) -> Unit): Try<Success, Failure> {
-        if (this is Try.Failure) action(failureOrNull()!!)
+        if (this is Try.Failure) action(failureOrNull())
         return this
     }
 }

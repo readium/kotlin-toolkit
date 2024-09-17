@@ -143,7 +143,6 @@ kotlinx-datetime = { group = "org.jetbrains.kotlinx", name = "kotlinx-datetime",
 kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinx-serialization-json" }
 
 pdfium = { group = "com.github.barteksc", name = "pdfium-android", version.ref="pdfium" }
-pdf-viewer = { group = "com.github.barteksc", name ="android-pdf-viewer", version.ref="pdf-viewer" }
 picasso = { group = "com.squareup.picasso", name = "picasso", version.ref = "picasso" }
 pspdfkit = { group = "com.pspdfkit", name = "pspdfkit", version.ref ="pspdfkit" }
 
