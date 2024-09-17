@@ -23,6 +23,7 @@ import timber.log.Timber
  * @param baseHref Base URL where and scripts are served.
  */
 @OptIn(ExperimentalReadiumApi::class)
+@Suppress("UNUSED_PARAMETER")
 internal fun Resource.injectHtml(
     publication: Publication,
     mediaType: MediaType,
