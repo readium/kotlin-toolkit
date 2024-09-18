@@ -8,12 +8,10 @@ package org.readium.r2.navigator.epub
 
 import kotlinx.serialization.json.Json
 import org.readium.r2.navigator.preferences.PreferencesSerializer
-import org.readium.r2.shared.ExperimentalReadiumApi
 
 /**
  * JSON serializer of [EpubPreferences].
  */
-@ExperimentalReadiumApi
 public class EpubPreferencesSerializer : PreferencesSerializer<EpubPreferences> {
 
     override fun serialize(preferences: EpubPreferences): String =

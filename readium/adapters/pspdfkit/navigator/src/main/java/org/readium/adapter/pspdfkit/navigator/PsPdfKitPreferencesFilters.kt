@@ -7,12 +7,10 @@
 package org.readium.adapter.pspdfkit.navigator
 
 import org.readium.r2.navigator.preferences.PreferencesFilter
-import org.readium.r2.shared.ExperimentalReadiumApi
 
 /**
  * Suggested filter to keep only shared [PsPdfKitPreferences].
  */
-@ExperimentalReadiumApi
 public object PsPdfKitSharedPreferencesFilter : PreferencesFilter<PsPdfKitPreferences> {
 
     override fun filter(preferences: PsPdfKitPreferences): PsPdfKitPreferences =
@@ -26,7 +24,6 @@ public object PsPdfKitSharedPreferencesFilter : PreferencesFilter<PsPdfKitPrefer
 /**
  * Suggested filter to keep only publication-specific [PsPdfKitPreferences].
  */
-@ExperimentalReadiumApi
 public object PsPdfKitPublicationPreferencesFilter : PreferencesFilter<PsPdfKitPreferences> {
 
     override fun filter(preferences: PsPdfKitPreferences): PsPdfKitPreferences =

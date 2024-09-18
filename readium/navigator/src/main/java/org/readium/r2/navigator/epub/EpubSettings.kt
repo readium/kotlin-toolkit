@@ -35,8 +35,7 @@ import org.readium.r2.shared.util.Language
  *
  * @see EpubPreferences
  */
-@ExperimentalReadiumApi
-public data class EpubSettings(
+public data class EpubSettings @ExperimentalReadiumApi constructor(
     val backgroundColor: Color?,
     val columnCount: ColumnCount,
     val fontFamily: FontFamily?,

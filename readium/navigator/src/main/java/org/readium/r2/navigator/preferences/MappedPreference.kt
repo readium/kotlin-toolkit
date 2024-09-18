@@ -1,26 +1,21 @@
 package org.readium.r2.navigator.preferences
 
-import org.readium.r2.shared.ExperimentalReadiumApi
-
 /**
  * Creates a new [Preference] object wrapping the receiver and converting its value [from] and [to]
  * the target type [V].
  */
-@ExperimentalReadiumApi
 public fun <T, V> Preference<T>.map(from: (T) -> V, to: (V) -> T): Preference<V> =
     MappedPreference(this, from, to)
 
 /**
  * Creates a new [EnumPreference] object wrapping the receiver with the provided [supportedValues].
  */
-@ExperimentalReadiumApi
 public fun <T> Preference<T>.withSupportedValues(vararg supportedValues: T): EnumPreference<T> =
     withSupportedValues(supportedValues.toList())
 
 /**
  * Creates a new [EnumPreference] object wrapping the receiver with the provided [supportedValues].
  */
-@ExperimentalReadiumApi
 public fun <T> Preference<T>.withSupportedValues(supportedValues: List<T>): EnumPreference<T> =
     PreferenceWithSupportedValues(this, supportedValues)
 
@@ -28,7 +23,6 @@ public fun <T> Preference<T>.withSupportedValues(supportedValues: List<T>): Enum
  * Creates a new [EnumPreference] object wrapping the receiver and converting its value and
  * [supportedValues], [from] and [to] the target type [V].
  */
-@ExperimentalReadiumApi
 public fun <T, V> EnumPreference<T>.map(
     from: (T) -> V,
     to: (V) -> T,
@@ -39,14 +33,12 @@ public fun <T, V> EnumPreference<T>.map(
 /**
  * Creates a new [EnumPreference] object wrapping the receiver with the provided [supportedValues].
  */
-@ExperimentalReadiumApi
 public fun <T> EnumPreference<T>.withSupportedValues(vararg supportedValues: T): EnumPreference<T> =
     withSupportedValues(supportedValues.toList())
 
 /**
  * Creates a new [EnumPreference] object wrapping the receiver with the provided [supportedValues].
  */
-@ExperimentalReadiumApi
 public fun <T> EnumPreference<T>.withSupportedValues(supportedValues: List<T>): EnumPreference<T> =
     map(from = { it }, to = { it }, supportedValues = { supportedValues })
 
@@ -54,7 +46,6 @@ public fun <T> EnumPreference<T>.withSupportedValues(supportedValues: List<T>): 
  * Creates a new [EnumPreference] object wrapping the receiver and transforming its supported
  * values with [transform].
  */
-@ExperimentalReadiumApi
 public fun <T> EnumPreference<T>.mapSupportedValues(transform: (List<T>) -> List<T>): EnumPreference<T> =
     map(from = { it }, to = { it }, supportedValues = transform)
 
@@ -64,7 +55,6 @@ public fun <T> EnumPreference<T>.mapSupportedValues(transform: (List<T>) -> List
  *
  * The value formatter, or [increment] and [decrement] strategy of the receiver can be overwritten.
  */
-@ExperimentalReadiumApi
 public fun <T : Comparable<T>, V : Comparable<V>> RangePreference<T>.map(
     from: (T) -> V,
     to: (V) -> T,
@@ -87,7 +77,6 @@ public fun <T : Comparable<T>, V : Comparable<V>> RangePreference<T>.map(
  * Creates a new [RangePreference] object wrapping the receiver and transforming its
  * [supportedRange], or overwriting its [formatValue] or [increment] and [decrement] strategy.
  */
-@ExperimentalReadiumApi
 public fun <T : Comparable<T>> RangePreference<T>.map(
     supportedRange: (ClosedRange<T>) -> ClosedRange<T> = { it },
     formatValue: ((T) -> String)? = null,
@@ -109,7 +98,6 @@ public fun <T : Comparable<T>> RangePreference<T>.map(
  * [range]. A new [progressionStrategy] can be provided to customize the implementation of increment
  * and decrement.
  */
-@ExperimentalReadiumApi
 public fun <T : Comparable<T>> RangePreference<T>.withSupportedRange(
     range: ClosedRange<T> = supportedRange,
     progressionStrategy: ProgressionStrategy<T>
@@ -126,7 +114,6 @@ public fun <T : Comparable<T>> RangePreference<T>.withSupportedRange(
         }
     )
 
-@ExperimentalReadiumApi
 private open class MappedPreference<T, V>(
     protected open val original: Preference<T>,
     protected val from: (T) -> V,
@@ -144,13 +131,11 @@ private open class MappedPreference<T, V>(
     }
 }
 
-@ExperimentalReadiumApi
 private class PreferenceWithSupportedValues<T>(
     override val original: Preference<T>,
     override val supportedValues: List<T>
 ) : MappedPreference<T, T>(original, from = { it }, to = { it }), EnumPreference<T>
 
-@ExperimentalReadiumApi
 private class MappedEnumPreference<T, V>(
     override val original: EnumPreference<T>,
     from: (T) -> V,
@@ -167,7 +152,6 @@ private class MappedEnumPreference<T, V>(
     }
 }
 
-@ExperimentalReadiumApi
 private class MappedRangePreference<T : Comparable<T>, V : Comparable<V>>(
     override val original: RangePreference<T>,
     from: (T) -> V,

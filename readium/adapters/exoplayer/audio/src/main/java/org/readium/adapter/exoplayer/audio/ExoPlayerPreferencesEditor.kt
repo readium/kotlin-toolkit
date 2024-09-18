@@ -13,7 +13,6 @@ import org.readium.r2.navigator.preferences.DoubleIncrement
 import org.readium.r2.navigator.preferences.PreferencesEditor
 import org.readium.r2.navigator.preferences.RangePreference
 import org.readium.r2.navigator.preferences.RangePreferenceDelegate
-import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.publication.Metadata
 
@@ -24,7 +23,6 @@ import org.readium.r2.shared.publication.Metadata
  * existing preferences. It includes rules for adjusting preferences, such as the supported values
  * or ranges.
  */
-@ExperimentalReadiumApi
 public class ExoPlayerPreferencesEditor(
     initialPreferences: ExoPlayerPreferences,
     @Suppress("UNUSED_PARAMETER") publicationMetadata: Metadata,

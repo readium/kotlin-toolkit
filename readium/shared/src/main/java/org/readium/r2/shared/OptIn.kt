@@ -30,9 +30,10 @@ public annotation class InternalReadiumApi
 @Retention(AnnotationRetention.BINARY)
 @Target(
     AnnotationTarget.CLASS,
+    AnnotationTarget.CONSTRUCTOR,
     AnnotationTarget.FUNCTION,
-    AnnotationTarget.TYPEALIAS,
-    AnnotationTarget.PROPERTY
+    AnnotationTarget.PROPERTY,
+    AnnotationTarget.TYPEALIAS
 )
 public annotation class ExperimentalReadiumApi
 

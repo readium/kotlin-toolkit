@@ -8,12 +8,10 @@ package org.readium.navigator.media.tts.android
 
 import kotlinx.serialization.json.Json
 import org.readium.r2.navigator.preferences.PreferencesSerializer
-import org.readium.r2.shared.ExperimentalReadiumApi
 
 /**
  * JSON serializer of [AndroidTtsPreferences].
  */
-@ExperimentalReadiumApi
 public class AndroidTtsPreferencesSerializer : PreferencesSerializer<AndroidTtsPreferences> {
 
     override fun serialize(preferences: AndroidTtsPreferences): String =

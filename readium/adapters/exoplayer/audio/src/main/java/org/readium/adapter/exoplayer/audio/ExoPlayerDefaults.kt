@@ -6,8 +6,6 @@
 
 package org.readium.adapter.exoplayer.audio
 
-import org.readium.r2.shared.ExperimentalReadiumApi
-
 /**
  * Default values for the ExoPlayer engine.
  *
@@ -16,7 +14,6 @@ import org.readium.r2.shared.ExperimentalReadiumApi
  *
  * @see ExoPlayerPreferences
  */
-@ExperimentalReadiumApi
 public data class ExoPlayerDefaults(
     val pitch: Double? = null,
     val speed: Double? = null

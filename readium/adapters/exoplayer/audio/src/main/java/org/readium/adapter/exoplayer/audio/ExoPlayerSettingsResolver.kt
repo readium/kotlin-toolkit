@@ -8,7 +8,7 @@ package org.readium.adapter.exoplayer.audio
 
 import org.readium.r2.shared.ExperimentalReadiumApi
 
-@ExperimentalReadiumApi
+@OptIn(ExperimentalReadiumApi::class)
 internal class ExoPlayerSettingsResolver(
     private val defaults: ExoPlayerDefaults
 ) : ExoPlayerEngine.SettingsResolver {
