@@ -5,7 +5,7 @@ import org.readium.r2.navigator.preferences.ReadingProgression
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.presentation.Presentation
 
-@ExperimentalReadiumApi
+@OptIn(ExperimentalReadiumApi::class)
 internal class LayoutResolver(
     private val readingOrder: ReadingOrder
 ) {

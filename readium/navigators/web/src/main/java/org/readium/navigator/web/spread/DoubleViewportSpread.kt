@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalReadiumApi::class)
+
 package org.readium.navigator.web.spread
 
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -20,7 +22,6 @@ import org.readium.r2.navigator.preferences.Fit
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.AbsoluteUrl
 
-@OptIn(ExperimentalReadiumApi::class)
 @Composable
 internal fun DoubleSpread(
     state: DoubleSpreadState
@@ -68,7 +69,6 @@ internal fun DoubleSpread(
     }
 }
 
-@OptIn(ExperimentalReadiumApi::class)
 internal class DoubleSpreadState(
     val htmlData: String,
     val publicationBaseUrl: AbsoluteUrl,

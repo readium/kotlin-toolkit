@@ -26,6 +26,8 @@ internal fun NavigatorPager(
 
     HorizontalPager(
         modifier = modifier,
+        // Pages must intercept all scroll gestures so the pager moves
+        // only through the PagerNestedScrollConnection.
         userScrollEnabled = false,
         state = state,
         beyondViewportPageCount = beyondViewportPageCount,
