@@ -9,7 +9,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.LayoutDirection
-import org.readium.navigator.web.layout.Spread
+import org.readium.navigator.web.layout.DoubleViewportSpread
+import org.readium.navigator.web.layout.SingleViewportSpread
 import org.readium.navigator.web.pager.NavigatorPager
 import org.readium.navigator.web.spread.DoubleSpread
 import org.readium.navigator.web.spread.DoubleSpreadState
@@ -33,7 +34,7 @@ public fun PrepaginatedWebNavigator(
         modifier = modifier,
         state = state.pagerState,
         beyondViewportPageCount = 2,
-        key = { index -> state.spreadKey(state.spreads.value[index]) },
+        key = { index -> state.layout.value.pageIndexForSpread(index) },
         reverseLayout = reverseLayout
     ) { index ->
 
@@ -45,13 +46,13 @@ public fun PrepaginatedWebNavigator(
 
             // For some reason, index can be higher than the value of state.spreads.value.size
             // at this point. Try to skip composition of those extra items.
-            if (index >= state.spreads.value.size) {
+            if (index >= state.layout.value.spreads.size) {
                 Timber.e("Compose bug")
                 return@BoxWithConstraints
             }
 
-            when (val spread = state.spreads.value[index]) {
-                is Spread.Single -> {
+            when (val spread = state.layout.value.spreads[index]) {
+                is SingleViewportSpread -> {
                     val spreadState = remember {
                         SingleSpreadState(
                             htmlData = state.preloadedData.prepaginatedSingleContent,
@@ -65,7 +66,7 @@ public fun PrepaginatedWebNavigator(
 
                     SingleSpread(state = spreadState)
                 }
-                is Spread.Double -> {
+                is DoubleViewportSpread -> {
                     val spreadState = remember {
                         DoubleSpreadState(
                             htmlData = state.preloadedData.prepaginatedDoubleContent,

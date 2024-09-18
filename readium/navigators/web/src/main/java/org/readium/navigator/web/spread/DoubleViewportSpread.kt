@@ -11,9 +11,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Size
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import org.readium.navigator.web.layout.Spread
+import org.readium.navigator.web.layout.DoubleViewportSpread
 import org.readium.navigator.web.util.WebViewClient
-import org.readium.navigator.web.webapi.PrepaginatedSingleApi
+import org.readium.navigator.web.webapi.PrepaginatedDoubleApi
 import org.readium.navigator.web.webview.LoadingState
 import org.readium.navigator.web.webview.rememberWebViewStateWithHTMLData
 import org.readium.r2.navigator.preferences.Fit
@@ -22,8 +22,8 @@ import org.readium.r2.shared.util.AbsoluteUrl
 
 @OptIn(ExperimentalReadiumApi::class)
 @Composable
-internal fun SingleSpread(
-    state: SingleSpreadState
+internal fun DoubleSpread(
+    state: DoubleSpreadState
 ) {
     BoxWithConstraints(
         modifier = Modifier.fillMaxSize(),
@@ -38,7 +38,7 @@ internal fun SingleSpread(
             webViewState.webView
                 ?.takeIf { webViewState.loadingState is LoadingState.Finished }
                 ?.let {
-                    PrepaginatedSingleApi(it)
+                    PrepaginatedDoubleApi(it)
                 }
         }
 
@@ -69,14 +69,17 @@ internal fun SingleSpread(
 }
 
 @OptIn(ExperimentalReadiumApi::class)
-internal class SingleSpreadState(
+internal class DoubleSpreadState(
     val htmlData: String,
     val publicationBaseUrl: AbsoluteUrl,
     val webViewClient: WebViewClient,
-    val spread: Spread.Single,
+    val spread: DoubleViewportSpread,
     val fit: State<Fit>,
     val viewport: State<Size>
 ) {
-    val url: AbsoluteUrl =
-        publicationBaseUrl.resolve(spread.page)
+    val left: AbsoluteUrl? =
+        spread.leftPage?.let { publicationBaseUrl.resolve(it.href) }
+
+    val right: AbsoluteUrl? =
+        spread.rightPage?.let { publicationBaseUrl.resolve(it.href) }
 }

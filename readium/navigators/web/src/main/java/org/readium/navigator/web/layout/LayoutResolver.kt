@@ -7,7 +7,7 @@ import org.readium.r2.shared.publication.presentation.Presentation
 
 @ExperimentalReadiumApi
 internal class LayoutResolver(
-    private val readingOrder: List<Page>
+    private val readingOrder: ReadingOrder
 ) {
 
     fun layout(settings: PrepaginatedWebNavigatorSettings): List<Spread> =
@@ -17,72 +17,80 @@ internal class LayoutResolver(
                 ReadingProgression.RTL -> layoutSpreadsRtl()
             }
         } else {
-            readingOrder.map { Spread.Single(it.url) }
+            readingOrder.items.mapIndexed { index, item ->
+                SingleViewportSpread(
+                    Page(index, item.href)
+                )
+            }
         }
 
     private fun layoutSpreadsLtr(): List<Spread> =
         buildList {
             var pending: Page? = null
 
-            for (page in readingOrder) {
-                when (page.page) {
+            for ((index, item) in readingOrder.items.withIndex()) {
+                val page = Page(index, item.href)
+
+                when (item.page) {
                     Presentation.Page.LEFT -> {
-                        pending?.let { add(Spread.Double(it.url, null)) }
+                        pending?.let { add(LeftOnlySpread(it)) }
                         pending = page
                     }
                     Presentation.Page.RIGHT -> {
-                        add(Spread.Double(pending?.url, page.url))
+                        add(DoubleViewportSpread(pending, page))
                         pending = null
                     }
                     Presentation.Page.CENTER -> {
-                        pending?.let { add(Spread.Double(it.url, null)) }
+                        pending?.let { add(LeftOnlySpread(it)) }
                         pending = null
-                        add(Spread.Single(page.url))
+                        add(SingleViewportSpread(page))
                     }
                     null -> {
                         if (pending == null) {
                             pending = page
                         } else {
-                            add(Spread.Double(pending.url, page.url))
+                            add(DoubleSpread(pending, page))
                             pending = null
                         }
                     }
                 }
             }
 
-            pending?.let { add(Spread.Double(it.url, null)) }
+            pending?.let { add(LeftOnlySpread(it)) }
         }
 
     private fun layoutSpreadsRtl(): List<Spread> =
         buildList {
             var pending: Page? = null
 
-            for (page in readingOrder) {
-                when (page.page) {
+            for ((index, item) in readingOrder.items.withIndex()) {
+                val page = Page(index, item.href)
+
+                when (item.page) {
                     Presentation.Page.LEFT -> {
-                        add(Spread.Double(page.url, pending?.url))
+                        add(DoubleViewportSpread(page, pending))
                         pending = null
                     }
                     Presentation.Page.RIGHT -> {
-                        pending?.let { add(Spread.Double(null, it.url)) }
+                        pending?.let { add(RightOnlySpread(it)) }
                         pending = page
                     }
                     Presentation.Page.CENTER -> {
-                        pending?.let { add(Spread.Double(null, it.url)) }
+                        pending?.let { add(RightOnlySpread(it)) }
                         pending = null
-                        add(Spread.Single(page.url))
+                        add(SingleViewportSpread(page))
                     }
                     null -> {
                         if (pending == null) {
                             pending = page
                         } else {
-                            add(Spread.Double(page.url, pending.url))
+                            add(DoubleSpread(page, pending))
                             pending = null
                         }
                     }
                 }
             }
 
-            pending?.let { add(Spread.Double(null, it.url)) }
+            pending?.let { add(RightOnlySpread(it)) }
         }
 }

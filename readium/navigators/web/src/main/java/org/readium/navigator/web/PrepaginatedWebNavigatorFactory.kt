@@ -8,6 +8,8 @@ package org.readium.navigator.web
 
 import android.app.Application
 import java.io.IOException
+import org.readium.navigator.web.layout.ReadingOrder
+import org.readium.navigator.web.layout.ReadingOrderItem
 import org.readium.navigator.web.preferences.PrepaginatedWebNavigatorDefaults
 import org.readium.navigator.web.preferences.PrepaginatedWebNavigatorPreferences
 import org.readium.navigator.web.preferences.PrepaginatedWebNavigatorPreferencesEditor
@@ -76,7 +78,7 @@ public class PrepaginatedWebNavigatorFactory private constructor(
         readingOrder: List<Link> = publication.readingOrder
     ): Try<PrepaginatedWebNavigatorState, Error> {
         val items = readingOrder.map {
-            PrepaginatedWebNavigatorState.ReadingOrder.Item(
+            ReadingOrderItem(
                 href = it.url(),
                 page = it.properties.page
             )
@@ -102,7 +104,7 @@ public class PrepaginatedWebNavigatorFactory private constructor(
         val navigatorState =
             PrepaginatedWebNavigatorState(
                 publicationMetadata = publication.metadata,
-                readingOrder = PrepaginatedWebNavigatorState.ReadingOrder(items),
+                readingOrder = ReadingOrder(items),
                 initialPreferences = initialPreferences ?: PrepaginatedWebNavigatorPreferences(),
                 defaults = defaults,
                 initialItem = initialIndex,

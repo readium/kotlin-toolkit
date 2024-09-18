@@ -4,7 +4,7 @@ import android.content.res.AssetManager
 import android.webkit.WebView
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.readium.navigator.web.layout.Spread
+import org.readium.navigator.web.layout.DoubleViewportSpread
 import org.readium.navigator.web.util.WebViewServer
 import org.readium.r2.navigator.preferences.Fit
 import org.readium.r2.shared.ExperimentalReadiumApi
@@ -26,9 +26,9 @@ internal class PrepaginatedDoubleApi(
             }
     }
 
-    fun loadSpread(spread: Spread.Double) {
-        val leftUrl = spread.leftPage?.let { WebViewServer.publicationBaseHref.resolve(it) }
-        val rightUrl = spread.rightPage?.let { WebViewServer.publicationBaseHref.resolve(it) }
+    fun loadSpread(spread: DoubleViewportSpread) {
+        val leftUrl = spread.leftPage?.let { WebViewServer.publicationBaseHref.resolve(it.href) }
+        val rightUrl = spread.rightPage?.let { WebViewServer.publicationBaseHref.resolve(it.href) }
         val argument = buildList {
             leftUrl?.let { add("left: `$it`") }
             rightUrl?.let { add("right: `$it`") }

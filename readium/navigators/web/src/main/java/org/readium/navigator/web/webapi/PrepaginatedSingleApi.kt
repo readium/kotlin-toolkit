@@ -4,7 +4,7 @@ import android.content.res.AssetManager
 import android.webkit.WebView
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.readium.navigator.web.layout.Spread
+import org.readium.navigator.web.layout.SingleViewportSpread
 import org.readium.navigator.web.util.WebViewServer
 import org.readium.r2.navigator.preferences.Fit
 import org.readium.r2.shared.ExperimentalReadiumApi
@@ -26,8 +26,8 @@ internal class PrepaginatedSingleApi(
             }
     }
 
-    fun loadSpread(spread: Spread.Single) {
-        val resourceUrl = WebViewServer.publicationBaseHref.resolve(spread.page)
+    fun loadSpread(spread: SingleViewportSpread) {
+        val resourceUrl = WebViewServer.publicationBaseHref.resolve(spread.page.href)
         val script = "layout.loadResource(`$resourceUrl`);"
         webView.evaluateJavascript(script) {}
     }
