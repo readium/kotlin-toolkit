@@ -10,7 +10,6 @@ package org.readium.adapter.pdfium.navigator
 
 import org.readium.r2.navigator.extensions.format
 import org.readium.r2.navigator.preferences.*
-import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.publication.Metadata
 
@@ -21,7 +20,6 @@ import org.readium.r2.shared.publication.Metadata
  * existing preferences. It includes rules for adjusting preferences, such as the supported values
  * or ranges.
  */
-@ExperimentalReadiumApi
 public class PdfiumPreferencesEditor internal constructor(
     initialPreferences: PdfiumPreferences,
     publicationMetadata: Metadata,

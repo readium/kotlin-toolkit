@@ -19,7 +19,7 @@ import org.readium.r2.shared.util.Language
  *  @param speed Playback speed rate.
  *  @param voices Map of preferred voices for specific languages.
  */
-@ExperimentalReadiumApi
+@OptIn(ExperimentalReadiumApi::class)
 @Serializable
 public data class AndroidTtsPreferences(
     override val language: Language? = null,

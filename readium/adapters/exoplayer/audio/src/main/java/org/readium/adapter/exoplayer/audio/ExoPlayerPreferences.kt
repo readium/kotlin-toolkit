@@ -7,7 +7,6 @@
 package org.readium.adapter.exoplayer.audio
 
 import org.readium.r2.navigator.preferences.Configurable
-import org.readium.r2.shared.ExperimentalReadiumApi
 
 /**
  * Preferences for the the ExoPlayer engine.
@@ -15,7 +14,6 @@ import org.readium.r2.shared.ExperimentalReadiumApi
  *  @param pitch Playback pitch rate.
  *  @param speed Playback speed rate.
  */
-@ExperimentalReadiumApi
 @kotlinx.serialization.Serializable
 public data class ExoPlayerPreferences(
     val pitch: Double? = null,

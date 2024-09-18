@@ -15,7 +15,7 @@ import org.readium.r2.shared.util.Language
  *
  * @see AndroidTtsPreferences
  */
-@ExperimentalReadiumApi
+@OptIn(ExperimentalReadiumApi::class)
 public data class AndroidTtsSettings(
     override val language: Language,
     override val overrideContentLanguage: Boolean,

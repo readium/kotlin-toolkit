@@ -23,7 +23,7 @@ import org.readium.r2.shared.publication.presentation.presentation
  * @param publication EPUB publication to render in the navigator.
  * @param configuration Configuration of the factory to create.
  */
-@ExperimentalReadiumApi
+@OptIn(ExperimentalReadiumApi::class)
 public class EpubNavigatorFactory(
     private val publication: Publication,
     private val configuration: Configuration = Configuration()

@@ -8,7 +8,6 @@ package org.readium.adapter.pspdfkit.navigator
 
 import org.readium.r2.navigator.preferences.ReadingProgression
 import org.readium.r2.navigator.preferences.Spread
-import org.readium.r2.shared.ExperimentalReadiumApi
 
 /**
  * Default values for the PDF navigator with the PSPDFKit adapter.
@@ -17,7 +16,6 @@ import org.readium.r2.shared.ExperimentalReadiumApi
  *
  * @see PsPdfKitPreferences
  */
-@ExperimentalReadiumApi
 public data class PsPdfKitDefaults(
     val offsetFirstPage: Boolean? = null,
     val pageSpacing: Double? = null,

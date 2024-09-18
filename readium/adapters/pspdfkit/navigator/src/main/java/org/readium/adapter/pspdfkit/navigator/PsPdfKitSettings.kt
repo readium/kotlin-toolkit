@@ -7,14 +7,12 @@
 package org.readium.adapter.pspdfkit.navigator
 
 import org.readium.r2.navigator.preferences.*
-import org.readium.r2.shared.ExperimentalReadiumApi
 
 /**
  * Settings values of the PDF navigator with the PSPDFKit adapter.
  *
  * @see PsPdfKitPreferences
  */
-@ExperimentalReadiumApi
 public data class PsPdfKitSettings(
     val fit: Fit,
     val offsetFirstPage: Boolean,

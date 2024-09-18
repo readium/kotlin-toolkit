@@ -8,12 +8,10 @@ package org.readium.adapter.exoplayer.audio
 
 import kotlinx.serialization.json.Json
 import org.readium.r2.navigator.preferences.PreferencesSerializer
-import org.readium.r2.shared.ExperimentalReadiumApi
 
 /**
  * JSON serializer of [ExoPlayerPreferences].
  */
-@ExperimentalReadiumApi
 public class ExoPlayerPreferencesSerializer : PreferencesSerializer<ExoPlayerPreferences> {
 
     override fun serialize(preferences: ExoPlayerPreferences): String =

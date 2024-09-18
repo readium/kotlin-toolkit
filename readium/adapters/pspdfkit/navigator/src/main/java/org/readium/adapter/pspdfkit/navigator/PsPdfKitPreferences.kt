@@ -8,7 +8,6 @@ package org.readium.adapter.pspdfkit.navigator
 
 import kotlinx.serialization.Serializable
 import org.readium.r2.navigator.preferences.*
-import org.readium.r2.shared.ExperimentalReadiumApi
 
 /**
  * Preferences for the PDF navigator with the PSPDFKit adapter.
@@ -21,7 +20,6 @@ import org.readium.r2.shared.ExperimentalReadiumApi
  *  @param scrollAxis Indicates the axis along which pages should be laid out in scroll mode.
  *  @param spread Indicates if the publication should be rendered with a synthetic spread (dual-page).
  */
-@ExperimentalReadiumApi
 @Serializable
 public data class PsPdfKitPreferences(
     val fit: Fit? = null,
