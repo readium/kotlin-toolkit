@@ -15,6 +15,7 @@ internal fun NavigatorPager(
     state: PagerState,
     reverseLayout: Boolean,
     beyondViewportPageCount: Int = 2,
+    key: ((index: Int) -> Any)? = null,
     pageContent: @Composable PagerScope.(Int) -> Unit
 
 ) {
@@ -30,6 +31,7 @@ internal fun NavigatorPager(
         beyondViewportPageCount = beyondViewportPageCount,
         reverseLayout = reverseLayout,
         flingBehavior = flingBehavior,
+        key = key,
         pageNestedScrollConnection =
         PagerNestedScrollConnection(
             state,

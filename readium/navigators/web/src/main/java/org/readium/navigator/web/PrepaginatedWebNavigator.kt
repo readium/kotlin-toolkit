@@ -2,7 +2,6 @@ package org.readium.navigator.web
 
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
@@ -27,17 +26,14 @@ public fun PrepaginatedWebNavigator(
     modifier: Modifier,
     state: PrepaginatedWebNavigatorState
 ) {
-    val pagerState = rememberPagerState {
-        state.spreads.value.size
-    }
-
     val reverseLayout =
         LocalLayoutDirection.current.toReadingProgression() != state.settings.value.readingProgression
 
     NavigatorPager(
         modifier = modifier,
-        state = pagerState,
+        state = state.pagerState,
         beyondViewportPageCount = 2,
+        key = { index -> state.spreadKey(state.spreads.value[index]) },
         reverseLayout = reverseLayout
     ) { index ->
 

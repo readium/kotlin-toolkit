@@ -1,5 +1,6 @@
 package org.readium.navigator.web
 
+import androidx.compose.foundation.pager.PagerState
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
@@ -15,6 +16,8 @@ import org.readium.navigator.web.preferences.PrepaginatedWebNavigatorSettingsRes
 import org.readium.navigator.web.util.WebViewClient
 import org.readium.navigator.web.util.WebViewServer
 import org.readium.r2.navigator.preferences.Fit
+import org.readium.r2.navigator.preferences.ReadingProgression
+import org.readium.r2.shared.DelicateReadiumApi
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Metadata
 import org.readium.r2.shared.publication.presentation.Presentation
@@ -22,16 +25,19 @@ import org.readium.r2.shared.util.Url
 
 @ExperimentalReadiumApi
 @Stable
-@Suppress("Unused_parameter")
 public class PrepaginatedWebNavigatorState internal constructor(
     publicationMetadata: Metadata,
-    readingOrder: ReadingOrder,
+    private val readingOrder: ReadingOrder,
     initialPreferences: PrepaginatedWebNavigatorPreferences,
     defaults: PrepaginatedWebNavigatorDefaults,
     initialItem: Int,
     internal val webViewServer: WebViewServer,
     internal val preloadedData: PreloadedData
 ) {
+
+    init {
+        require(initialItem < readingOrder.items.size)
+    }
 
     internal data class PreloadedData(
         val prepaginatedSingleContent: String,
@@ -71,4 +77,38 @@ public class PrepaginatedWebNavigatorState internal constructor(
 
     internal val fit: State<Fit> =
         derivedStateOf { settings.value.fit }
+
+    internal val pagerState: PagerState =
+        PagerState(currentPage = spreadIndexOfItem(initialItem)) { spreads.value.size }
+
+    public val currentItem: State<Int> =
+        derivedStateOf { itemIndexOfSpread(spreads.value[pagerState.currentPage]) }
+
+    private fun spreadIndexOfItem(item: Int): Int {
+        val href = readingOrder.items[item].href
+        return spreads.value.indexOfFirst { it.contains(href) }
+    }
+
+    @OptIn(DelicateReadiumApi::class)
+    private fun itemIndexOfSpread(spread: Spread): Int =
+        when (spread) {
+            is Spread.Single ->
+                readingOrder.items
+                    .indexOfFirst { spread.page == it.href }
+            is Spread.Double ->
+                readingOrder.items
+                    .indexOfFirst { spread.leftPage == it.href }
+                    .takeUnless { it == -1 }
+                    ?: readingOrder.items
+                        .indexOfFirst { spread.rightPage == it.href }
+        }
+
+    internal fun spreadKey(spread: Spread): Any =
+        when (spread) {
+            is Spread.Double -> when (settings.value.readingProgression) {
+                ReadingProgression.LTR -> spread.leftPage ?: spread.rightPage!!
+                ReadingProgression.RTL -> spread.rightPage ?: spread.leftPage!!
+            }
+            is Spread.Single -> spread.page
+        }
 }
