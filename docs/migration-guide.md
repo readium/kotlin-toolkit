@@ -4,64 +4,23 @@ All migration steps necessary in reading apps to upgrade to major versions of th
 
 <!-- ## Unreleased -->
 
-## 3.0.0-beta.1
+## 3.0.0
 
-### Core library desugaring
+:warning: If you synchronize `Locator` objects between iOS and Android, you should wait for the 3.0 release of the Swift toolkit to upgrade your HREFs at the same time.
 
-If you target Android devices running below API 26, you now must enable [core library desugaring](https://developer.android.com/studio/write/java8-support#library-desugaring) in your application module.
-
-### Removing JVM dependencies
-
-To reduce our depency to the JVM, we no longer use `Date` objects in the toolkit. Instead, we added a custom `Instant` type.
-
-You can still translate from and to a `Date` object with `Instant.fromJavaDate()` and `instant.toJavaDate()`.
-
-
-## 3.0.0-alpha.2
-
-### Deprecation of `DownloadManager`
-
-The `DownloadManager` introduced in version 3.0.0-alpha.1 has been removed due to the Android Download Manager introducing unnecessary complexities in the toolkit. Instead, we chose to enable apps to manually handle an LCP download with `LcpService.injectLicenseDocument()`.
-
-### EPUB footnote pop-ups
-
-The EPUB navigator no longer displays a pop-up when the user activates a footnote link. This change was made to give reading apps control over the entire user interface.
-
-The navigator now moves to the footnote content by default. To show your own pop-up instead, implement the new callback `HyperlinkNavigator.Listener.shouldFollowInternalLink(Link, LinkContext?)`.
-
-```kotlin
-override fun shouldFollowInternalLink(
-    link: Link,
-    context: HyperlinkNavigator.LinkContext?
-): Boolean =
-    when (context) {
-        is HyperlinkNavigator.FootnoteContext -> {
-            val text =
-                if (link.mediaType?.isHtml == true) {
-                    Html.fromHtml(context.noteContent, Html.FROM_HTML_MODE_COMPACT)
-                } else {
-                    context.noteContent
-                }
-
-            showPopup(text)
-            false
-        }
-        else -> true
-    }
-```
-
-
-## 3.0.0-alpha.1
-
-First of all, upgrade to version 2.4.0 and resolve any deprecation notices. This will help you avoid troubles, as the APIs that were deprecated in version 2.x have been removed in version 3.0.
+First of all, upgrade to version 2.4.3 and resolve any deprecation notices. This will help you avoid troubles, as the APIs that were deprecated in version 2.x have been removed in version 3.0.
 
 ### Minimum requirements
 
-If you integrate Readium 3.0 as a submodule, it requires Kotlin 1.9.22 and Gradle 8.2.2. You should start by updating these dependencies in your application.
+If you integrate Readium 3.0 as a submodule, it requires Kotlin 1.9.24 and Gradle 8.6.0. You should start by updating these dependencies in your application.
 
 #### Targeting Android SDK 34
 
 The modules now target Android SDK 34. If your app also targets it, you will need the `FOREGROUND_SERVICE_MEDIA_PLAYBACK` permission in your `AndroidManifest.xml` file to use TTS and audiobook playback.
+
+#### Core library desugaring
+
+If you target Android devices running below API 26, you now must enable [core library desugaring](https://developer.android.com/studio/write/java8-support#library-desugaring) in your application module.
 
 ### `Publication`
 
@@ -219,6 +178,33 @@ navigator.addInputListener(object : InputListener {
 })
 ```
 
+#### EPUB footnote pop-ups
+
+The EPUB navigator no longer displays a pop-up when the user activates a footnote link. This change was made to give reading apps control over the entire user interface.
+
+The navigator now moves to the footnote content by default. To show your own pop-up instead, implement the new callback `HyperlinkNavigator.Listener.shouldFollowInternalLink(Link, LinkContext?)`.
+
+```kotlin
+override fun shouldFollowInternalLink(
+    link: Link,
+    context: HyperlinkNavigator.LinkContext?
+): Boolean =
+    when (context) {
+        is HyperlinkNavigator.FootnoteContext -> {
+            val text =
+                if (link.mediaType?.isHtml == true) {
+                    Html.fromHtml(context.noteContent, Html.FROM_HTML_MODE_COMPACT)
+                } else {
+                    context.noteContent
+                }
+
+            showPopup(text)
+            false
+        }
+        else -> true
+    }
+```
+
 ### LCP
 
 #### Creating an `LcpService`
@@ -241,6 +227,12 @@ Instead, call on your instance of `LcpDialogAuthentication`:
 * `onParentViewDetachedFromWindow` every time it gets detached
 
 You can monitor these events by setting a `View.OnAttachStateChangeListener` on your view. [See the Test App for an example](https://github.com/readium/kotlin-toolkit/blob/01d6c7936accea2d6b953d435e669260676e8c99/test-app/src/main/java/org/readium/r2/testapp/bookshelf/BookshelfFragment.kt#L68).
+
+### Removing JVM dependencies
+
+To reduce our depency to the JVM, we no longer use `Date` objects in the toolkit. Instead, we added a custom `Instant` type.
+
+You can still translate from and to a `Date` object with `Instant.fromJavaDate()` and `instant.toJavaDate()`.
 
 ### Removal of Fuel and Kovenant
 
