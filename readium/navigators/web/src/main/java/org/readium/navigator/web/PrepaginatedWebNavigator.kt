@@ -12,10 +12,10 @@ import androidx.compose.ui.unit.LayoutDirection
 import org.readium.navigator.web.layout.DoubleViewportSpread
 import org.readium.navigator.web.layout.SingleViewportSpread
 import org.readium.navigator.web.pager.NavigatorPager
-import org.readium.navigator.web.spread.DoubleSpread
 import org.readium.navigator.web.spread.DoubleSpreadState
-import org.readium.navigator.web.spread.SingleSpread
+import org.readium.navigator.web.spread.DoubleViewportSpread
 import org.readium.navigator.web.spread.SingleSpreadState
+import org.readium.navigator.web.spread.SingleViewportSpread
 import org.readium.navigator.web.util.WebViewServer
 import org.readium.r2.navigator.preferences.ReadingProgression
 import org.readium.r2.shared.ExperimentalReadiumApi
@@ -56,7 +56,7 @@ public fun PrepaginatedWebNavigator(
                         )
                     }
 
-                    SingleSpread(state = spreadState)
+                    SingleViewportSpread(state = spreadState)
                 }
                 is DoubleViewportSpread -> {
                     val spreadState = remember {
@@ -70,7 +70,7 @@ public fun PrepaginatedWebNavigator(
                         )
                     }
 
-                    DoubleSpread(state = spreadState)
+                    DoubleViewportSpread(state = spreadState)
                 }
             }
         }

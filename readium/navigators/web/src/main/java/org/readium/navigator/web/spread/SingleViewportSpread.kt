@@ -23,7 +23,7 @@ import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.AbsoluteUrl
 
 @Composable
-internal fun SingleSpread(
+internal fun SingleViewportSpread(
     state: SingleSpreadState
 ) {
     Box(
