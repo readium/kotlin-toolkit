@@ -19,7 +19,6 @@ import org.readium.navigator.web.spread.SingleSpreadState
 import org.readium.navigator.web.util.WebViewServer
 import org.readium.r2.navigator.preferences.ReadingProgression
 import org.readium.r2.shared.ExperimentalReadiumApi
-import timber.log.Timber
 
 @ExperimentalReadiumApi
 @Composable
@@ -27,29 +26,22 @@ public fun PrepaginatedWebNavigator(
     modifier: Modifier,
     state: PrepaginatedWebNavigatorState
 ) {
-    val reverseLayout =
-        LocalLayoutDirection.current.toReadingProgression() != state.settings.value.readingProgression
+    BoxWithConstraints(
+        modifier = Modifier.fillMaxSize(),
+        propagateMinConstraints = true
+    ) {
+        val viewportState = rememberUpdatedState(Size(maxWidth.value, maxHeight.value))
 
-    NavigatorPager(
-        modifier = modifier,
-        state = state.pagerState,
-        beyondViewportPageCount = 2,
-        key = { index -> state.layout.value.pageIndexForSpread(index) },
-        reverseLayout = reverseLayout
-    ) { index ->
+        val reverseLayout =
+            LocalLayoutDirection.current.toReadingProgression() != state.settings.value.readingProgression
 
-        BoxWithConstraints(
-            modifier = Modifier.fillMaxSize(),
-            propagateMinConstraints = true
-        ) {
-            val viewportState = rememberUpdatedState(Size(maxWidth.value, maxHeight.value))
-
-            // For some reason, index can be higher than the value of state.spreads.value.size
-            // at this point. Try to skip composition of those extra items.
-            if (index >= state.layout.value.spreads.size) {
-                Timber.e("Compose bug")
-                return@BoxWithConstraints
-            }
+        NavigatorPager(
+            modifier = modifier,
+            state = state.pagerState,
+            beyondViewportPageCount = 2,
+            key = { index -> state.layout.value.pageIndexForSpread(index) },
+            reverseLayout = reverseLayout
+        ) { index ->
 
             when (val spread = state.layout.value.spreads[index]) {
                 is SingleViewportSpread -> {
