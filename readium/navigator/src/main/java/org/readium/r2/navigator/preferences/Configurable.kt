@@ -9,12 +9,10 @@ package org.readium.r2.navigator.preferences
 import kotlinx.coroutines.flow.StateFlow
 import org.readium.r2.navigator.preferences.Configurable.Preferences
 import org.readium.r2.navigator.preferences.Configurable.Settings
-import org.readium.r2.shared.ExperimentalReadiumApi
 
 /**
  * A [Configurable] is a component with a set of configurable [Settings].
  */
-@ExperimentalReadiumApi
 public interface Configurable<S : Settings, P : Preferences<P>> {
 
     /**
@@ -52,7 +50,6 @@ public interface Configurable<S : Settings, P : Preferences<P>> {
 /**
  * JSON serializer of [P].
  */
-@ExperimentalReadiumApi
 public interface PreferencesSerializer<P : Preferences<P>> {
 
     /**
@@ -71,7 +68,6 @@ public interface PreferencesSerializer<P : Preferences<P>> {
  *
  * This can be used as a helper for a user preferences screen.
  */
-@ExperimentalReadiumApi
 public interface PreferencesEditor<P : Preferences<P>> {
 
     /**
@@ -88,17 +84,14 @@ public interface PreferencesEditor<P : Preferences<P>> {
 /**
  * A filter to keep only some preferences and filter out some others.
  */
-@ExperimentalReadiumApi
 public fun interface PreferencesFilter<P : Preferences<P>> {
 
     public fun filter(preferences: P): P
 }
 
-@ExperimentalReadiumApi
 public operator fun <P : Preferences<P>> PreferencesFilter<P>.plus(other: PreferencesFilter<P>): PreferencesFilter<P> =
     CombinedPreferencesFilter(this, other)
 
-@ExperimentalReadiumApi
 private class CombinedPreferencesFilter<P : Preferences<P>>(
     private val inner: PreferencesFilter<P>,
     private val outer: PreferencesFilter<P>

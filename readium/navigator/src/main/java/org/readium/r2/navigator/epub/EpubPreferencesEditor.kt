@@ -24,7 +24,7 @@ import org.readium.r2.shared.util.Language
  * existing preferences. It includes rules for adjusting preferences, such as the supported values
  * or ranges.
  */
-@ExperimentalReadiumApi
+@OptIn(ExperimentalReadiumApi::class)
 public class EpubPreferencesEditor internal constructor(
     initialPreferences: EpubPreferences,
     publicationMetadata: Metadata,
@@ -50,6 +50,7 @@ public class EpubPreferencesEditor internal constructor(
     /**
      * Reset all preferences.
      */
+    @OptIn(ExperimentalReadiumApi::class)
     override fun clear() {
         updateValues { EpubPreferences() }
     }
@@ -81,6 +82,7 @@ public class EpubPreferencesEditor internal constructor(
      *  - the publication is reflowable
      *  - [scroll] is off
      */
+    @ExperimentalReadiumApi
     public val columnCount: EnumPreference<ColumnCount> =
         EnumPreferenceDelegate(
             getValue = { preferences.columnCount },
@@ -246,6 +248,7 @@ public class EpubPreferencesEditor internal constructor(
      *
      * Only effective with reflowable publications.
      */
+    @ExperimentalReadiumApi
     public val pageMargins: RangePreference<Double> =
         RangePreferenceDelegate(
             getValue = { preferences.pageMargins },
@@ -425,6 +428,7 @@ public class EpubPreferencesEditor internal constructor(
      *  - the publication is reflowable
      *  - [publisherStyles] is off
      */
+    @ExperimentalReadiumApi
     public val typeScale: RangePreference<Double> =
         RangePreferenceDelegate(
             getValue = { preferences.typeScale },

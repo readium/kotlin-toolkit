@@ -6,13 +6,10 @@
 
 package org.readium.r2.navigator.preferences
 
-import org.readium.r2.shared.ExperimentalReadiumApi
-
 /**
  * A handle to edit the value of a specific preference which is able to predict
  * which value the [Configurable] will effectively use.
  */
-@ExperimentalReadiumApi
 public interface Preference<T> {
 
     /**
@@ -41,7 +38,6 @@ public interface Preference<T> {
 /**
  * Unset the preference.
  */
-@ExperimentalReadiumApi
 public fun <T> Preference<T>.clear() {
     set(null)
 }
@@ -50,7 +46,6 @@ public fun <T> Preference<T>.clear() {
  * Toggle the preference value. A default value is taken as the initial one if
  * the preference is currently unset.
  */
-@OptIn(ExperimentalReadiumApi::class)
 public fun Preference<Boolean>.toggle() {
     set(!(value ?: effectiveValue))
 }
@@ -58,14 +53,12 @@ public fun Preference<Boolean>.toggle() {
 /**
  * Returns a new preference with its boolean value flipped.
  */
-@OptIn(ExperimentalReadiumApi::class)
 public fun Preference<Boolean>.flipped(): Preference<Boolean> =
     map(from = { !it }, to = { !it })
 
 /**
  * A [Preference] which accepts a closed set of values.
  */
-@ExperimentalReadiumApi
 public interface EnumPreference<T> : Preference<T> {
     /**
      * List of valid values for this preference.
@@ -76,7 +69,6 @@ public interface EnumPreference<T> : Preference<T> {
 /**
  * A [Preference] whose values must be in a [ClosedRange] of [T].
  */
-@ExperimentalReadiumApi
 public interface RangePreference<T : Comparable<T>> : Preference<T> {
 
     public val supportedRange: ClosedRange<T>

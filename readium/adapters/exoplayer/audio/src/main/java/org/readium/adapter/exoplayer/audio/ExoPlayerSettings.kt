@@ -7,14 +7,12 @@
 package org.readium.adapter.exoplayer.audio
 
 import org.readium.r2.navigator.preferences.Configurable
-import org.readium.r2.shared.ExperimentalReadiumApi
 
 /**
  * Settings values of the ExoPlayer engine.
  *
  * @see ExoPlayerPreferences
  */
-@ExperimentalReadiumApi
 public data class ExoPlayerSettings(
     val pitch: Double,
     val speed: Double

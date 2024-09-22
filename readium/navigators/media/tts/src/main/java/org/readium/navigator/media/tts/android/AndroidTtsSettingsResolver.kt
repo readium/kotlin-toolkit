@@ -11,7 +11,7 @@ import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Metadata
 import org.readium.r2.shared.util.Language
 
-@ExperimentalReadiumApi
+@OptIn(ExperimentalReadiumApi::class)
 internal class AndroidTtsSettingsResolver(
     private val metadata: Metadata,
     private val defaults: AndroidTtsDefaults

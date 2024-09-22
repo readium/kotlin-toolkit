@@ -27,7 +27,6 @@ import org.readium.r2.shared.ExperimentalReadiumApi
 
 @ColorInt private val sepiaBackgroundColor: Int = AndroidColor.parseColor("#faf4e8")
 
-@ExperimentalReadiumApi
 @Serializable
 public enum class Theme(
     @ColorInt public val contentColor: Int,
@@ -43,7 +42,6 @@ public enum class Theme(
     SEPIA(contentColor = sepiaContentColor, backgroundColor = sepiaBackgroundColor);
 }
 
-@ExperimentalReadiumApi
 @Serializable
 public enum class TextAlign {
     /** Align the text in the center of the page. */
@@ -84,7 +82,6 @@ public enum class ColumnCount {
     TWO;
 }
 
-@ExperimentalReadiumApi
 @Serializable
 public enum class ImageFilter {
     @SerialName("darken")
@@ -100,7 +97,6 @@ public enum class ImageFilter {
  * For a list of vetted font families, see https://readium.org/readium-css/docs/CSS10-libre_fonts.
  */
 @JvmInline
-@ExperimentalReadiumApi
 @Serializable
 public value class FontFamily(public val name: String) {
 
@@ -123,7 +119,6 @@ public value class FontFamily(public val name: String) {
 /**
  * Packed color int.
  */
-@ExperimentalReadiumApi
 @Serializable
 @JvmInline
 public value class Color(@ColorInt public val int: Int)
@@ -131,7 +126,6 @@ public value class Color(@ColorInt public val int: Int)
 /**
  * Layout axis.
  */
-@ExperimentalReadiumApi
 @Serializable
 public enum class Axis(public val value: String) {
     @SerialName("horizontal")
@@ -144,7 +138,6 @@ public enum class Axis(public val value: String) {
 /**
  * Synthetic spread policy.
  */
-@ExperimentalReadiumApi
 @Serializable
 public enum class Spread(public val value: String) {
     @SerialName("auto")
@@ -160,7 +153,6 @@ public enum class Spread(public val value: String) {
 /**
  * Direction of the reading progression across resources.
  */
-@ExperimentalReadiumApi
 @Serializable
 public enum class ReadingProgression(public val value: String) {
     @SerialName("ltr")
@@ -173,7 +165,6 @@ public enum class ReadingProgression(public val value: String) {
 /**
  * Method for constraining a resource inside the viewport.
  */
-@ExperimentalReadiumApi
 @Serializable
 public enum class Fit(public val value: String) {
     @SerialName("cover")

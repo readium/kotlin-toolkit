@@ -47,9 +47,8 @@ import org.readium.r2.shared.util.Language
  *   no preference is given.
  * @param wordSpacing Space between words.
  */
-@ExperimentalReadiumApi
 @Serializable
-public data class EpubPreferences(
+public data class EpubPreferences @ExperimentalReadiumApi constructor(
     val backgroundColor: Color? = null,
     val columnCount: ColumnCount? = null,
     val fontFamily: FontFamily? = null,
@@ -88,6 +87,7 @@ public data class EpubPreferences(
         require(wordSpacing == null || wordSpacing >= 0)
     }
 
+    @OptIn(ExperimentalReadiumApi::class)
     override operator fun plus(other: EpubPreferences): EpubPreferences =
         EpubPreferences(
             backgroundColor = other.backgroundColor ?: backgroundColor,
