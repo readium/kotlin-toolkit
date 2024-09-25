@@ -88,7 +88,11 @@ export class DoubleAreaManager {
     const contentWidth = this.leftPage.size!.width + this.rightPage.size!.width
     const contentHeight = Math.max(this.leftPage.size!.height, this.rightPage.size!.height)
     const contentSize = { width: contentWidth, height: contentHeight }
-    const scale = computeScale(this.fit, contentSize, this.viewport)
+    const safeDrawingSize = {
+      width: this.viewport.width - this.insets.left - this.insets.right,
+      height: this.viewport.height - this.insets.top - this.insets.bottom
+    }
+    const scale = computeScale(this.fit, contentSize, safeDrawingSize)
 
     this.metaViewport.content = new ViewportStringBuilder()
       .setInitialScale(scale)

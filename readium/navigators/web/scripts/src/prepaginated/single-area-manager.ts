@@ -58,10 +58,19 @@ export class SingleAreaManager {
       return
     }
 
-    const margins = { top: this.insets.top, right: this.insets.right, bottom: this.insets.bottom, left: this.insets.left }
+    const margins = {
+      top: this.insets.top,
+      right: this.insets.right, 
+      bottom: this.insets.bottom,
+      left: this.insets.left
+    }
     this.page.setMargins(margins)
 
-    const scale = computeScale(this.fit, this.page.size, this.viewport)
+    const safeDrawingSize = {
+      width: this.viewport.width - this.insets.left - this.insets.right,
+      height: this.viewport.height - this.insets.top - this.insets.bottom
+    }
+    const scale = computeScale(this.fit, this.page.size, safeDrawingSize)
     this.metaViewport.content = new ViewportStringBuilder()
     .setInitialScale(scale)
     .setMinimumScale(scale)

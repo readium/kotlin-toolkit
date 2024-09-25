@@ -10,38 +10,19 @@ import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawingPadding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material3.CenterAlignedTopAppBar
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.rememberModalBottomSheetState
-import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Modifier
-import org.readium.navigator.demo.preferences.UserPreferences
-import org.readium.navigator.web.PrepaginatedWebNavigator
-import org.readium.r2.shared.ExperimentalReadiumApi
+import androidx.core.view.WindowCompat
+import org.readium.navigator.demo.util.Fullscreenable
 import org.readium.r2.shared.util.toAbsoluteUrl
 
-@OptIn(ExperimentalReadiumApi::class, ExperimentalMaterial3Api::class)
 class DemoActivity : ComponentActivity() {
 
     private val viewModel: DemoViewModel by viewModels()
@@ -56,90 +37,55 @@ class DemoActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
 
         setContent {
             MaterialTheme {
-                val snackbarHostState = remember { SnackbarHostState() }
-                val preferencesSheetState = rememberModalBottomSheetState()
-                var showPreferences by remember { mutableStateOf(false) }
+                val fullscreenState = remember { mutableStateOf(false) }
 
-                Scaffold(
-                    modifier = Modifier
-                        .safeDrawingPadding()
-                        .fillMaxSize(),
-                    topBar = {
-                        TopBar(
-                            onPreferencesActivated = {
-                                showPreferences = !showPreferences
-                            }
-                        )
-                    },
-                    snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
-                ) { paddingValues ->
+                Fullscreenable(
+                    fullscreenState = fullscreenState,
+                    insetsController = WindowCompat.getInsetsController(window, window.decorView)
+                ) {
+                    val snackbarHostState = remember { SnackbarHostState() }
+                    val state = viewModel.state.collectAsState()
 
-                    Box(
-                        modifier = Modifier
-                            .padding(paddingValues)
-                            .fillMaxSize(),
-                        propagateMinConstraints = true
-                    ) {
-                        val state = viewModel.state.collectAsState()
+                    LaunchedEffect(state.value) {
+                        fullscreenState.value = when (state.value) {
+                            DemoViewModel.State.BookSelection -> true
+                            is DemoViewModel.State.Error -> false
+                            DemoViewModel.State.Loading -> true
+                            is DemoViewModel.State.Reader -> true
+                        }
+                    }
 
-                        when (val stateNow = state.value) {
-                            DemoViewModel.State.BookSelection -> {
+                    when (val stateNow = state.value) {
+                        DemoViewModel.State.BookSelection -> {
+                            LaunchedEffect(stateNow) {
                                 sharedStoragePickerLauncher.launch(arrayOf("*/*"))
                             }
-                            is DemoViewModel.State.Error -> {
-                                LaunchedEffect(stateNow.error) {
-                                    snackbarHostState.showSnackbar(stateNow.error.message)
-                                    viewModel.acknowledgeError()
-                                }
-                            }
-                            DemoViewModel.State.Loading -> {
-                                // Display nothing
-                            }
-                            is DemoViewModel.State.Reader -> {
-                                if (showPreferences) {
-                                    ModalBottomSheet(
-                                        sheetState = preferencesSheetState,
-                                        onDismissRequest = { showPreferences = false }
-                                    ) {
-                                        UserPreferences(
-                                            model = stateNow.preferencesViewModel,
-                                            title = "Preferences"
-                                        )
-                                    }
-                                }
+                        }
 
-                                PrepaginatedWebNavigator(
-                                    modifier = Modifier
-                                        .fillMaxSize(),
-                                    state = stateNow.navigatorState
-                                )
+                        is DemoViewModel.State.Error -> {
+                            LaunchedEffect(stateNow.error) {
+                                snackbarHostState.showSnackbar(stateNow.error.message)
+                                viewModel.acknowledgeError()
                             }
+                        }
+
+                        DemoViewModel.State.Loading -> {
+                            // Display and do nothing
+                        }
+
+                        is DemoViewModel.State.Reader -> {
+                            Reader(
+                                state = stateNow,
+                                fullScreenState = fullscreenState
+                            )
                         }
                     }
                 }
             }
         }
-    }
-
-    @Composable
-    private fun TopBar(
-        onPreferencesActivated: () -> Unit
-    ) {
-        CenterAlignedTopAppBar(
-            title = {},
-            actions = {
-                IconButton(
-                    onClick = onPreferencesActivated
-                ) {
-                    Icon(
-                        imageVector = Icons.Filled.Settings,
-                        contentDescription = "Preferences"
-                    )
-                }
-            }
-        )
     }
 }

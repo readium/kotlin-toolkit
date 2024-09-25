@@ -7,6 +7,7 @@ module.exports = {
   entry: {
     "prepaginated-single-script": "./src/index-prepaginated-single.ts",
     "prepaginated-double-script": "./src/index-prepaginated-double.ts",
+    "prepaginated-injectable-script": "./src/index-prepaginated-injectable.ts",
   },
   resolve: {
     // Add '.ts' and '.tsx' as resolvable extensions.

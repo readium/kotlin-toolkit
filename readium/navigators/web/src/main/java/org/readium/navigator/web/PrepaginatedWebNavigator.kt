@@ -1,12 +1,15 @@
 package org.readium.navigator.web
 
 import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.LayoutDirection
 import org.readium.navigator.web.layout.DoubleViewportSpread
@@ -16,21 +19,35 @@ import org.readium.navigator.web.spread.DoubleSpreadState
 import org.readium.navigator.web.spread.DoubleViewportSpread
 import org.readium.navigator.web.spread.SingleSpreadState
 import org.readium.navigator.web.spread.SingleViewportSpread
+import org.readium.navigator.web.util.AbsolutePaddingValues
+import org.readium.navigator.web.util.DisplayArea
 import org.readium.navigator.web.util.WebViewServer
+import org.readium.r2.navigator.input.TapEvent
 import org.readium.r2.navigator.preferences.ReadingProgression
 import org.readium.r2.shared.ExperimentalReadiumApi
 
 @ExperimentalReadiumApi
 @Composable
 public fun PrepaginatedWebNavigator(
-    modifier: Modifier,
+    modifier: Modifier = Modifier,
+    displayCutout: WindowInsets = WindowInsets.displayCutout,
+    onTap: (TapEvent) -> Unit = {},
     state: PrepaginatedWebNavigatorState
 ) {
     BoxWithConstraints(
         modifier = Modifier.fillMaxSize(),
         propagateMinConstraints = true
     ) {
-        val viewportState = rememberUpdatedState(Size(maxWidth.value, maxHeight.value))
+        val viewportSize = Size(maxWidth.value, maxHeight.value)
+
+        val safeDrawingPadding = AbsolutePaddingValues(
+            top = displayCutout.getTop(LocalDensity.current),
+            right = displayCutout.getRight(LocalDensity.current, LocalLayoutDirection.current),
+            bottom = displayCutout.getBottom(LocalDensity.current),
+            left = displayCutout.getLeft(LocalDensity.current, LocalLayoutDirection.current)
+        )
+
+        val displayArea = rememberUpdatedState(DisplayArea(viewportSize, safeDrawingPadding))
 
         val reverseLayout =
             LocalLayoutDirection.current.toReadingProgression() != state.settings.value.readingProgression
@@ -52,11 +69,14 @@ public fun PrepaginatedWebNavigator(
                             webViewClient = state.webViewClient,
                             spread = spread,
                             fit = state.fit,
-                            viewport = viewportState
+                            displayArea = displayArea
                         )
                     }
 
-                    SingleViewportSpread(state = spreadState)
+                    SingleViewportSpread(
+                        onTap = onTap,
+                        state = spreadState
+                    )
                 }
                 is DoubleViewportSpread -> {
                     val spreadState = remember {
@@ -66,11 +86,14 @@ public fun PrepaginatedWebNavigator(
                             webViewClient = state.webViewClient,
                             spread = spread,
                             fit = state.fit,
-                            viewport = viewportState
+                            displayArea = displayArea
                         )
                     }
 
-                    DoubleViewportSpread(state = spreadState)
+                    DoubleViewportSpread(
+                        onTap = onTap,
+                        state = spreadState
+                    )
                 }
             }
         }

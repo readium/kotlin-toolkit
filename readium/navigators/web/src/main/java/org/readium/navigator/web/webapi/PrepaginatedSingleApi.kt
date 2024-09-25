@@ -5,6 +5,7 @@ import android.webkit.WebView
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.readium.navigator.web.layout.SingleViewportSpread
+import org.readium.navigator.web.util.DisplayArea
 import org.readium.navigator.web.util.WebViewServer
 import org.readium.r2.navigator.preferences.Fit
 import org.readium.r2.shared.ExperimentalReadiumApi
@@ -32,8 +33,13 @@ internal class PrepaginatedSingleApi(
         webView.evaluateJavascript(script) {}
     }
 
-    fun setViewport(width: Float, height: Float) {
-        val script = "layout.setViewport($width, $height, 0, 0, 0, 0);"
+    fun setDisplayArea(displayArea: DisplayArea) {
+        val (width, height) = displayArea.viewportSize
+        val top = displayArea.safeDrawingPadding.top
+        val right = displayArea.safeDrawingPadding.right
+        val bottom = displayArea.safeDrawingPadding.bottom
+        val left = displayArea.safeDrawingPadding.left
+        val script = "layout.setViewport($width, $height, $top, $right, $bottom, $left);"
         webView.evaluateJavascript(script) {}
     }
 

@@ -10,20 +10,22 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Size
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import org.readium.navigator.web.layout.DoubleViewportSpread
+import org.readium.navigator.web.util.DisplayArea
 import org.readium.navigator.web.util.WebViewClient
 import org.readium.navigator.web.webapi.PrepaginatedDoubleApi
 import org.readium.navigator.web.webview.LoadingState
 import org.readium.navigator.web.webview.rememberWebViewStateWithHTMLData
+import org.readium.r2.navigator.input.TapEvent
 import org.readium.r2.navigator.preferences.Fit
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.AbsoluteUrl
 
 @Composable
 internal fun DoubleViewportSpread(
+    onTap: (TapEvent) -> Unit,
     state: DoubleSpreadState
 ) {
     Box(
@@ -35,7 +37,7 @@ internal fun DoubleViewportSpread(
             baseUrl = state.publicationBaseUrl.toString()
         )
 
-        val webApi = remember(webViewState.webView, webViewState.loadingState) {
+        val layoutApi = remember(webViewState.webView, webViewState.loadingState) {
             webViewState.webView
                 ?.takeIf { webViewState.loadingState is LoadingState.Finished }
                 ?.let {
@@ -43,7 +45,7 @@ internal fun DoubleViewportSpread(
                 }
         }
 
-        webApi?.let { api ->
+        layoutApi?.let { api ->
             LaunchedEffect(api) {
                 snapshotFlow {
                     state.fit.value
@@ -52,10 +54,9 @@ internal fun DoubleViewportSpread(
                 }.launchIn(this)
 
                 snapshotFlow {
-                    state.viewport.value
+                    state.displayArea.value
                 }.onEach {
-                    val (width, height) = state.viewport.value
-                    api.setViewport(width, height)
+                    api.setDisplayArea(it)
                 }.launchIn(this)
 
                 api.loadSpread(state.spread)
@@ -64,7 +65,8 @@ internal fun DoubleViewportSpread(
 
         SpreadWebView(
             state = webViewState,
-            client = state.webViewClient
+            client = state.webViewClient,
+            onTap = onTap
         )
     }
 }
@@ -75,7 +77,7 @@ internal class DoubleSpreadState(
     val webViewClient: WebViewClient,
     val spread: DoubleViewportSpread,
     val fit: State<Fit>,
-    val viewport: State<Size>
+    val displayArea: State<DisplayArea>
 ) {
     val left: AbsoluteUrl? =
         spread.leftPage?.let { publicationBaseUrl.resolve(it.href) }

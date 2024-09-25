@@ -28,9 +28,9 @@ namespace Layout {
 		viewporttWidth: number,
 		viewportHeight: number,
 		insetTop: number,
-		insetLeft: number,
+		insetRight: number,
 		insetBottom: number,
-		insetRight: number
+		insetLeft: number,
 	) {
 		const viewport: Size = { width: viewporttWidth, height: viewportHeight}
 		const insets: Insets = { top: insetTop, left: insetLeft, bottom: insetBottom, right: insetRight }
