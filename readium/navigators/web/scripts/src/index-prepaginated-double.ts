@@ -4,56 +4,56 @@
 //  available in the top-level LICENSE file of the project.
 //
 
-import { Insets, Size } from "./common/types";
-import { DoubleAreaManager } from "./prepaginated/double-area-manager";
-import { Fit } from "./util/fit";
+import { Insets, Size } from "./common/types"
+import { DoubleAreaManager } from "./prepaginated/double-area-manager"
+import { Fit } from "./util/fit"
 
 namespace Layout {
+  const leftIframe = document.getElementById("page-left") as HTMLIFrameElement
 
-  const leftIframe = document.getElementById("page-left") as HTMLIFrameElement;
+  const rightIframe = document.getElementById("page-right") as HTMLIFrameElement
 
-  const rightIframe = document.getElementById("page-right") as HTMLIFrameElement;
+  const metaViewport = document.querySelector(
+    "meta[name=viewport]"
+  ) as HTMLMetaElement
 
-  const metaViewport = document.querySelector("meta[name=viewport]") as HTMLMetaElement;
+  const manager = new DoubleAreaManager(leftIframe, rightIframe, metaViewport)
 
-	const manager = new DoubleAreaManager(leftIframe, rightIframe, metaViewport);
-
-  export function loadSpread(
-    spread: { left?: string, right?: string }
-  ) {
+  export function loadSpread(spread: { left?: string; right?: string }) {
     manager.loadSpread(spread)
   }
 
-	export function setViewport(
-		viewporttWidth: number,
-		viewportHeight: number,
-		insetTop: number,
-		insetRight: number,
-		insetBottom: number,
-		insetLeft: number,
-	) {
-		const viewport: Size = { width: viewporttWidth, height: viewportHeight}
-		const insets: Insets = { top: insetTop, left: insetLeft, bottom: insetBottom, right: insetRight }
-		manager.setViewport(viewport, insets)
-	}
+  export function setViewport(
+    viewporttWidth: number,
+    viewportHeight: number,
+    insetTop: number,
+    insetRight: number,
+    insetBottom: number,
+    insetLeft: number
+  ) {
+    const viewport: Size = { width: viewporttWidth, height: viewportHeight }
+    const insets: Insets = {
+      top: insetTop,
+      left: insetLeft,
+      bottom: insetBottom,
+      right: insetRight,
+    }
+    manager.setViewport(viewport, insets)
+  }
 
-  export function setFit(
-		fit: string
-	) {
-		if (fit != "contain" && fit != "width" && fit != "height") {
-			throw Error(`Invalid fit value: ${fit}`)
-		}
+  export function setFit(fit: string) {
+    if (fit != "contain" && fit != "width" && fit != "height") {
+      throw Error(`Invalid fit value: ${fit}`)
+    }
 
-		manager.setFit(fit as Fit)
+    manager.setFit(fit as Fit)
   }
 }
 
 declare global {
-
-	interface Window {
-		
-		layout: any
-	}
+  interface Window {
+    layout: any
+  }
 }
 
 Window.prototype.layout = Layout

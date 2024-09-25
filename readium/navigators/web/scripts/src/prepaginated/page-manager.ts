@@ -1,8 +1,7 @@
-import {Margins, Size} from "../common/types"
+import { Margins, Size } from "../common/types"
 
 /** Manages a fixed layout resource embedded in an iframe. */
 export class PageManager {
-
   private readonly iframe: HTMLIFrameElement
 
   private readonly listener: PageManager.Listener
@@ -18,7 +17,9 @@ export class PageManager {
 
     this.listener = listener
     this.iframe = iframe
-    this.iframe.addEventListener("load", () => { this.onIframeLoaded() })
+    this.iframe.addEventListener("load", () => {
+      this.onIframeLoaded()
+    })
   }
 
   show() {
@@ -48,44 +49,46 @@ export class PageManager {
 
   /** Sets the size of this page without content. */
   setPlaceholder(size: Size) {
-    this.iframe.style.width = size.width + "px";
-    this.iframe.style.height = size.height + "px";
+    this.iframe.style.width = size.width + "px"
+    this.iframe.style.height = size.height + "px"
     this.size = size
   }
 
   private onIframeLoaded() {
-    const viewport = this.iframe.contentWindow!.document.querySelector("meta[name=viewport]")
-    if (!viewport || viewport !instanceof HTMLMetaElement) {
+    const viewport = this.iframe.contentWindow!.document.querySelector(
+      "meta[name=viewport]"
+    )
+    if (!viewport || viewport! instanceof HTMLMetaElement) {
       //FIXME: handle edge case
-      return;
+      return
     }
 
-    const pageSize = this.parsePageSize(viewport as HTMLMetaElement);
+    const pageSize = this.parsePageSize(viewport as HTMLMetaElement)
     if (!pageSize) {
       //FIXME: handle edge case
       return
     }
-    this.iframe.style.width = pageSize.width + "px";
-    this.iframe.style.height = pageSize.height + "px";
+    this.iframe.style.width = pageSize.width + "px"
+    this.iframe.style.height = pageSize.height + "px"
     this.size = pageSize
-    this.listener.onIframeLoaded() 
+    this.listener.onIframeLoaded()
   }
 
   /** Parses the page size from the viewport meta tag of the loaded resource. */
   private parsePageSize(viewportMeta: HTMLMetaElement): Size | undefined {
-    const regex = /(\w+) *= *([^\s,]+)/g;
-    const properties = new Map<any, any>();
-    let match;
+    const regex = /(\w+) *= *([^\s,]+)/g
+    const properties = new Map<any, any>()
+    let match
     while ((match = regex.exec(viewportMeta.content))) {
       if (match != null) {
-        properties.set(match[1], match[2]);
+        properties.set(match[1], match[2])
       }
     }
-    const width = parseFloat(properties.get("width"));
-    const height = parseFloat(properties.get("height"));
+    const width = parseFloat(properties.get("width"))
+    const height = parseFloat(properties.get("height"))
 
     if (width && height) {
-      return { width,  height };
+      return { width, height }
     } else {
       return undefined
     }
@@ -93,9 +96,7 @@ export class PageManager {
 }
 
 export namespace PageManager {
-
   export interface Listener {
-
     onIframeLoaded(): void
-	}
+  }
 }

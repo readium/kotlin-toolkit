@@ -1,38 +1,32 @@
-import { GesturesManager, GesturesListener } from "./common/gestures";
+import { GesturesManager, GesturesListener } from "./common/gestures"
 
 interface Listener {
-
-	onTap(event: string): void
-
+  onTap(event: string): void
 }
 
 interface TapEvent {
+  x: number
 
-	x: number
-
-	y: number
+  y: number
 }
 
 declare global {
-
-	interface Window {
-		
-		gestures: Listener
-	}
+  interface Window {
+    gestures: Listener
+  }
 }
 
 class AdapterGesturesListener implements GesturesListener {
+  readonly listener: Listener
 
-	readonly listener: Listener
+  constructor(listener: Listener) {
+    this.listener = listener
+  }
 
-	constructor(listener: Listener) {
-		this.listener = listener
-	}
-
-	onTap(event: MouseEvent): void {
-		const tapEvent: TapEvent = { x: event.clientX, y: event.clientY }
-		this.listener.onTap(JSON.stringify(tapEvent))
-	}
+  onTap(event: MouseEvent): void {
+    const tapEvent: TapEvent = { x: event.clientX, y: event.clientY }
+    this.listener.onTap(JSON.stringify(tapEvent))
+  }
 }
 
 new GesturesManager(window, new AdapterGesturesListener(window.gestures))

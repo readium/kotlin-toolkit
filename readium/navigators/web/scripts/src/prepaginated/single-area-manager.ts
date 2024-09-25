@@ -4,7 +4,6 @@ import { PageManager } from "./page-manager"
 import { ViewportStringBuilder } from "../util/viewport"
 
 export class SingleAreaManager {
-
   private readonly metaViewport: HTMLMetaElement
 
   private readonly page: PageManager
@@ -17,7 +16,11 @@ export class SingleAreaManager {
 
   constructor(iframe: HTMLIFrameElement, metaViewport: HTMLMetaElement) {
     this.metaViewport = metaViewport
-    const listener = { onIframeLoaded: () => { this.onIframeLoaded() } }
+    const listener = {
+      onIframeLoaded: () => {
+        this.onIframeLoaded()
+      },
+    }
     this.page = new PageManager(iframe, listener)
   }
 
@@ -50,7 +53,7 @@ export class SingleAreaManager {
       // FIXME: raise error
     } else {
       this.layout()
-    }    
+    }
   }
 
   private layout() {
@@ -60,23 +63,23 @@ export class SingleAreaManager {
 
     const margins = {
       top: this.insets.top,
-      right: this.insets.right, 
+      right: this.insets.right,
       bottom: this.insets.bottom,
-      left: this.insets.left
+      left: this.insets.left,
     }
     this.page.setMargins(margins)
 
     const safeDrawingSize = {
       width: this.viewport.width - this.insets.left - this.insets.right,
-      height: this.viewport.height - this.insets.top - this.insets.bottom
+      height: this.viewport.height - this.insets.top - this.insets.bottom,
     }
     const scale = computeScale(this.fit, this.page.size, safeDrawingSize)
     this.metaViewport.content = new ViewportStringBuilder()
-    .setInitialScale(scale)
-    .setMinimumScale(scale)
-    .setWidth(this.page.size.width)
-    .setHeight(this.page.size.height)
-    .build()
+      .setInitialScale(scale)
+      .setMinimumScale(scale)
+      .setWidth(this.page.size.width)
+      .setHeight(this.page.size.height)
+      .build()
 
     this.page.show()
   }

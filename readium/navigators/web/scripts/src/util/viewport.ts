@@ -1,5 +1,4 @@
-export class ViewportStringBuilder{
-
+export class ViewportStringBuilder {
   private initialScale?: number
 
   private minimumScale?: number
@@ -7,7 +6,6 @@ export class ViewportStringBuilder{
   private width?: number
 
   private height?: number
-
 
   setInitialScale(scale: number): ViewportStringBuilder {
     this.initialScale = scale
@@ -41,11 +39,11 @@ export class ViewportStringBuilder{
     }
 
     if (this.width) {
-      components.push("width=" + this.width )
+      components.push("width=" + this.width)
     }
 
     if (this.height) {
-      components.push("height=" + this.height )
+      components.push("height=" + this.height)
     }
 
     return components.join(", ")
