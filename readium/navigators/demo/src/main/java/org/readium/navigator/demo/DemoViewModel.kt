@@ -19,9 +19,9 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import org.readium.navigator.demo.preferences.PreferencesManager
 import org.readium.navigator.demo.preferences.UserPreferencesViewModel
-import org.readium.navigator.web.PrepaginatedWebNavigatorFactory
-import org.readium.navigator.web.PrepaginatedWebNavigatorState
-import org.readium.navigator.web.preferences.PrepaginatedWebNavigatorPreferences
+import org.readium.navigator.web.FixedWebNavigatorFactory
+import org.readium.navigator.web.FixedWebNavigatorState
+import org.readium.navigator.web.preferences.FixedWebPreferences
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.DebugError
@@ -49,8 +49,8 @@ class DemoViewModel(
         ) : State
 
         data class Reader(
-            val navigatorState: PrepaginatedWebNavigatorState,
-            val preferencesViewModel: UserPreferencesViewModel<PrepaginatedWebNavigatorPreferences>
+            val navigatorState: FixedWebNavigatorState,
+            val preferencesViewModel: UserPreferencesViewModel<FixedWebPreferences>
         ) : State
     }
 
@@ -92,7 +92,7 @@ class DemoViewModel(
                     return@launch
                 }
 
-            val navigatorFactory = PrepaginatedWebNavigatorFactory(getApplication(), publication)
+            val navigatorFactory = FixedWebNavigatorFactory(getApplication(), publication)
                 ?: run {
                     publication.close()
                     val error = DebugError("Publication not supported")
@@ -100,7 +100,7 @@ class DemoViewModel(
                     return@launch
                 }
 
-            val initialPreferences = PrepaginatedWebNavigatorPreferences()
+            val initialPreferences = FixedWebPreferences()
 
             val preferencesViewModel =
                 UserPreferencesViewModel(

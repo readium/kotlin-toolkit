@@ -18,36 +18,36 @@ import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.publication.Metadata
 
 /**
- * Interactive editor of [PrepaginatedWebNavigatorPreferences].
+ * Interactive editor of [FixedWebPreferences].
  *
  * This can be used as a view model for a user preferences screen.
  *
- * @see PrepaginatedWebNavigatorPreferences
+ * @see FixedWebPreferences
  */
 @ExperimentalReadiumApi
 @OptIn(InternalReadiumApi::class)
-public class PrepaginatedWebNavigatorPreferencesEditor internal constructor(
-    initialPreferences: PrepaginatedWebNavigatorPreferences,
+public class FixedWebPreferencesEditor internal constructor(
+    initialPreferences: FixedWebPreferences,
     publicationMetadata: Metadata,
-    defaults: PrepaginatedWebNavigatorDefaults
-) : PreferencesEditor<PrepaginatedWebNavigatorPreferences> {
+    defaults: FixedWebDefaults
+) : PreferencesEditor<FixedWebPreferences> {
 
     private data class State(
-        val preferences: PrepaginatedWebNavigatorPreferences,
-        val settings: PrepaginatedWebNavigatorSettings
+        val preferences: FixedWebPreferences,
+        val settings: FixedWebSettings
     )
 
-    private val settingsResolver: PrepaginatedWebNavigatorSettingsResolver =
-        PrepaginatedWebNavigatorSettingsResolver(publicationMetadata, defaults)
+    private val settingsResolver: FixedWebSettingsResolver =
+        FixedWebSettingsResolver(publicationMetadata, defaults)
 
     private var state: State =
         initialPreferences.toState()
 
-    override val preferences: PrepaginatedWebNavigatorPreferences
+    override val preferences: FixedWebPreferences
         get() = state.preferences
 
     override fun clear() {
-        updateValues { PrepaginatedWebNavigatorPreferences() }
+        updateValues { FixedWebPreferences() }
     }
 
     public val fit: EnumPreference<Fit> =
@@ -77,12 +77,12 @@ public class PrepaginatedWebNavigatorPreferencesEditor internal constructor(
         )
 
     private fun updateValues(
-        updater: (PrepaginatedWebNavigatorPreferences) -> PrepaginatedWebNavigatorPreferences
+        updater: (FixedWebPreferences) -> FixedWebPreferences
     ) {
         val newPreferences = updater(preferences)
         state = newPreferences.toState()
     }
 
-    private fun PrepaginatedWebNavigatorPreferences.toState() =
+    private fun FixedWebPreferences.toState() =
         State(preferences = this, settings = settingsResolver.settings(this))
 }

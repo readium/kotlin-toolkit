@@ -28,11 +28,11 @@ import org.readium.r2.shared.ExperimentalReadiumApi
 
 @ExperimentalReadiumApi
 @Composable
-public fun PrepaginatedWebNavigator(
+public fun FixedWebNavigator(
     modifier: Modifier = Modifier,
     displayCutout: WindowInsets = WindowInsets.displayCutout,
     onTap: (TapEvent) -> Unit = {},
-    state: PrepaginatedWebNavigatorState
+    state: FixedWebNavigatorState
 ) {
     BoxWithConstraints(
         modifier = Modifier.fillMaxSize(),

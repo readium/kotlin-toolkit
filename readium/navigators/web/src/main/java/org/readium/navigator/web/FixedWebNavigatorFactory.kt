@@ -10,9 +10,9 @@ import android.app.Application
 import java.io.IOException
 import org.readium.navigator.web.layout.ReadingOrder
 import org.readium.navigator.web.layout.ReadingOrderItem
-import org.readium.navigator.web.preferences.PrepaginatedWebNavigatorDefaults
-import org.readium.navigator.web.preferences.PrepaginatedWebNavigatorPreferences
-import org.readium.navigator.web.preferences.PrepaginatedWebNavigatorPreferencesEditor
+import org.readium.navigator.web.preferences.FixedWebDefaults
+import org.readium.navigator.web.preferences.FixedWebPreferences
+import org.readium.navigator.web.preferences.FixedWebPreferencesEditor
 import org.readium.navigator.web.util.WebViewServer
 import org.readium.navigator.web.webapi.PrepaginatedDoubleApi
 import org.readium.navigator.web.webapi.PrepaginatedSingleApi
@@ -32,10 +32,10 @@ import org.readium.r2.shared.util.getOrElse
 
 @ExperimentalReadiumApi
 @OptIn(DelicateReadiumApi::class)
-public class PrepaginatedWebNavigatorFactory private constructor(
+public class FixedWebNavigatorFactory private constructor(
     private val application: Application,
     private val publication: Publication,
-    private val defaults: PrepaginatedWebNavigatorDefaults
+    private val defaults: FixedWebDefaults
 ) {
 
     public companion object {
@@ -43,7 +43,7 @@ public class PrepaginatedWebNavigatorFactory private constructor(
         public operator fun invoke(
             application: Application,
             publication: Publication
-        ): PrepaginatedWebNavigatorFactory? {
+        ): FixedWebNavigatorFactory? {
             if (!publication.conformsTo(Publication.Profile.EPUB) ||
                 publication.metadata.presentation.layout != EpubLayout.FIXED
             ) {
@@ -54,10 +54,10 @@ public class PrepaginatedWebNavigatorFactory private constructor(
                 return null
             }
 
-            return PrepaginatedWebNavigatorFactory(
+            return FixedWebNavigatorFactory(
                 application,
                 publication,
-                PrepaginatedWebNavigatorDefaults()
+                FixedWebDefaults()
             )
         }
     }
@@ -74,9 +74,9 @@ public class PrepaginatedWebNavigatorFactory private constructor(
 
     public suspend fun createNavigator(
         initialLocator: Locator? = null,
-        initialPreferences: PrepaginatedWebNavigatorPreferences? = null,
+        initialPreferences: FixedWebPreferences? = null,
         readingOrder: List<Link> = publication.readingOrder
-    ): Try<PrepaginatedWebNavigatorState, Error> {
+    ): Try<FixedWebNavigatorState, Error> {
         val items = readingOrder.map {
             ReadingOrderItem(
                 href = it.url(),
@@ -102,10 +102,10 @@ public class PrepaginatedWebNavigatorFactory private constructor(
             .getOrElse { return Try.failure(it) }
 
         val navigatorState =
-            PrepaginatedWebNavigatorState(
+            FixedWebNavigatorState(
                 publicationMetadata = publication.metadata,
                 readingOrder = ReadingOrder(items),
-                initialPreferences = initialPreferences ?: PrepaginatedWebNavigatorPreferences(),
+                initialPreferences = initialPreferences ?: FixedWebPreferences(),
                 defaults = defaults,
                 initialItem = initialIndex,
                 webViewServer = webViewServer,
@@ -115,7 +115,7 @@ public class PrepaginatedWebNavigatorFactory private constructor(
         return Try.success(navigatorState)
     }
 
-    private suspend fun preloadData(): Try<PrepaginatedWebNavigatorState.PreloadedData, Error.Initialization> =
+    private suspend fun preloadData(): Try<FixedWebNavigatorState.PreloadedData, Error.Initialization> =
         try {
             val assetsUrl = WebViewServer.assetUrl("readium/navigators/web")!!
 
@@ -129,7 +129,7 @@ public class PrepaginatedWebNavigatorFactory private constructor(
                 assetsUrl = assetsUrl
             )
 
-            val preloadData = PrepaginatedWebNavigatorState.PreloadedData(
+            val preloadData = FixedWebNavigatorState.PreloadedData(
                 prepaginatedSingleContent = prepaginatedSingleContent,
                 prepaginatedDoubleContent = prepaginatedDoubleContent
             )
@@ -140,9 +140,9 @@ public class PrepaginatedWebNavigatorFactory private constructor(
         }
 
     public fun createPreferencesEditor(
-        currentPreferences: PrepaginatedWebNavigatorPreferences
-    ): PrepaginatedWebNavigatorPreferencesEditor =
-        PrepaginatedWebNavigatorPreferencesEditor(
+        currentPreferences: FixedWebPreferences
+    ): FixedWebPreferencesEditor =
+        FixedWebPreferencesEditor(
             currentPreferences,
             publication.metadata,
             defaults

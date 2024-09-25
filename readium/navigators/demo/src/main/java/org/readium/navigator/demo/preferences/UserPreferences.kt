@@ -26,7 +26,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import org.readium.navigator.web.preferences.PrepaginatedWebNavigatorPreferencesEditor
+import org.readium.navigator.web.preferences.FixedWebPreferencesEditor
 import org.readium.r2.navigator.preferences.Configurable
 import org.readium.r2.navigator.preferences.EnumPreference
 import org.readium.r2.navigator.preferences.Fit
@@ -90,7 +90,7 @@ private fun <P : Configurable.Preferences<P>, E : PreferencesEditor<P>> UserPref
         Divider()
 
         when (editor) {
-            is PrepaginatedWebNavigatorPreferencesEditor ->
+            is FixedWebPreferencesEditor ->
                 FixedLayoutUserPreferences(
                     commit = commit,
                     readingProgression = editor.readingProgression,

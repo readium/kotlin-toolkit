@@ -5,8 +5,8 @@ import org.readium.r2.navigator.preferences.ReadingProgression
 import org.readium.r2.shared.ExperimentalReadiumApi
 
 @ExperimentalReadiumApi
-public data class PrepaginatedWebNavigatorDefaults(
-    val fit: Fit? = Fit.CONTAIN,
+public data class FixedWebDefaults(
+    val fit: Fit? = null,
     val readingProgression: ReadingProgression? = null,
-    val spreads: Boolean? = false
+    val spreads: Boolean? = null
 )

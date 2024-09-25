@@ -8,18 +8,18 @@ import org.readium.r2.shared.ExperimentalReadiumApi
 
 @Serializable
 @ExperimentalReadiumApi
-public data class PrepaginatedWebNavigatorPreferences(
+public data class FixedWebPreferences(
     val fit: Fit? = null,
     val readingProgression: ReadingProgression? = null,
     val spreads: Boolean? = null
-) : Configurable.Preferences<PrepaginatedWebNavigatorPreferences> {
+) : Configurable.Preferences<FixedWebPreferences> {
 
     init {
         require(fit in listOf(null, Fit.CONTAIN, Fit.WIDTH, Fit.HEIGHT))
     }
 
-    override operator fun plus(other: PrepaginatedWebNavigatorPreferences): PrepaginatedWebNavigatorPreferences =
-        PrepaginatedWebNavigatorPreferences(
+    override operator fun plus(other: FixedWebPreferences): FixedWebPreferences =
+        FixedWebPreferences(
             fit = other.fit ?: fit,
             readingProgression = other.readingProgression ?: readingProgression,
             spreads = other.spreads ?: spreads

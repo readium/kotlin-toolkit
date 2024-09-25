@@ -26,7 +26,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.zIndex
 import org.readium.navigator.demo.preferences.UserPreferences
-import org.readium.navigator.web.PrepaginatedWebNavigator
+import org.readium.navigator.web.FixedWebNavigator
 import org.readium.r2.shared.ExperimentalReadiumApi
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalReadiumApi::class)
@@ -57,7 +57,7 @@ fun Reader(
             onPreferencesActivated = { showPreferences.value = !showPreferences.value }
         )
 
-        PrepaginatedWebNavigator(
+        FixedWebNavigator(
             modifier = Modifier.fillMaxSize(),
             state = state.navigatorState,
             onTap = { fullScreenState.value = !fullScreenState.value; true }
