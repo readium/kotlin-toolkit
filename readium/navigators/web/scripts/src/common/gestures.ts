@@ -27,8 +27,10 @@ export class GesturesManager {
     }
 
     const selection = this.window.getSelection()
-    if (selection && selection.isCollapsed) {
+    if (selection && selection.type == "Range") {
       // There's an on-going selection, the tap will dismiss it so we don't forward it.
+      // selection.type might be None (collapsed) or Caret with a collapsed range
+      // when there is not true selection.
       return
     }
 
