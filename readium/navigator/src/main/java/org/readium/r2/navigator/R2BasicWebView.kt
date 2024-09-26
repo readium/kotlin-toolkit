@@ -47,7 +47,6 @@ import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.data.decodeString
 import org.readium.r2.shared.util.flatMap
 import org.readium.r2.shared.util.resource.Resource
-import org.readium.r2.shared.util.toUrl
 import org.readium.r2.shared.util.use
 import timber.log.Timber
 
@@ -89,7 +88,7 @@ internal open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebV
         fun shouldInterceptRequest(webView: WebView, request: WebResourceRequest): WebResourceResponse? = null
 
         @InternalReadiumApi
-        fun shouldFollowFootnoteLink(url: AbsoluteUrl, context: HyperlinkNavigator.FootnoteContext): Boolean
+        fun onFootnoteLinkActivated(url: AbsoluteUrl, context: HyperlinkNavigator.FootnoteContext)
 
         @InternalReadiumApi
         fun resourceAtUrl(url: Url): Resource? = null
@@ -130,12 +129,6 @@ internal open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebV
     var callback: OnOverScrolledCallback? = null
 
     private val uiScope = CoroutineScope(Dispatchers.Main)
-
-    /*
-     * Url already handled by listener.shouldFollowFootnoteLink,
-     * Tries to ignore the matching shouldOverrideUrlLoading call.
-     */
-    private var urlNotToOverrideLoading: AbsoluteUrl? = null
 
     init {
         setWebContentsDebuggingEnabled(BuildConfig.DEBUG)
@@ -382,14 +375,10 @@ internal open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebV
             noteContent = safe
         )
 
-        val shouldFollowLink = listener?.shouldFollowFootnoteLink(absoluteUrl, context) ?: true
+        listener?.onFootnoteLinkActivated(absoluteUrl, context)
 
-        if (shouldFollowLink) {
-            urlNotToOverrideLoading = absoluteUrl
-        }
-
-        // Consume event if the link should not be followed.
-        return !shouldFollowLink
+        // Consume the event to prevent the Webview from loading the link.
+        return true
     }
 
     @android.webkit.JavascriptInterface
@@ -584,15 +573,7 @@ internal open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebV
     }
 
     internal fun shouldOverrideUrlLoading(request: WebResourceRequest): Boolean {
-        val requestUrl = request.url.toUrl() ?: return false
-
-        // FIXME: I doubt this can work well. hasGesture considers itself unreliable.
-        return if (urlNotToOverrideLoading?.isEquivalent(requestUrl) == true && request.hasGesture()) {
-            urlNotToOverrideLoading = null
-            false
-        } else {
-            listener?.shouldOverrideUrlLoading(this, request) ?: false
-        }
+        return listener?.shouldOverrideUrlLoading(this, request) ?: false
     }
 
     internal fun shouldInterceptRequest(webView: WebView, request: WebResourceRequest): WebResourceResponse? {
