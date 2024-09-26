@@ -13,7 +13,6 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -21,6 +20,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.core.view.WindowCompat
 import org.readium.navigator.demo.util.Fullscreenable
+import org.readium.navigator.demo.util.Theme
 import org.readium.r2.shared.util.toAbsoluteUrl
 
 class DemoActivity : ComponentActivity() {
@@ -40,7 +40,7 @@ class DemoActivity : ComponentActivity() {
         enableEdgeToEdge()
 
         setContent {
-            MaterialTheme {
+            Theme {
                 val fullscreenState = remember { mutableStateOf(false) }
 
                 Fullscreenable(
