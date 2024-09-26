@@ -4,11 +4,13 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.LayoutDirection
@@ -31,6 +33,7 @@ import org.readium.r2.shared.ExperimentalReadiumApi
 public fun FixedWebNavigator(
     modifier: Modifier = Modifier,
     displayCutout: WindowInsets = WindowInsets.displayCutout,
+    backgroundColor: Color = MaterialTheme.colorScheme.background,
     onTap: (TapEvent) -> Unit = {},
     state: FixedWebNavigatorState
 ) {
@@ -75,7 +78,8 @@ public fun FixedWebNavigator(
 
                     SingleViewportSpread(
                         onTap = onTap,
-                        state = spreadState
+                        state = spreadState,
+                        backgroundColor = backgroundColor
                     )
                 }
                 is DoubleViewportSpread -> {
@@ -92,7 +96,8 @@ public fun FixedWebNavigator(
 
                     DoubleViewportSpread(
                         onTap = onTap,
-                        state = spreadState
+                        state = spreadState,
+                        backgroundColor = backgroundColor
                     )
                 }
             }

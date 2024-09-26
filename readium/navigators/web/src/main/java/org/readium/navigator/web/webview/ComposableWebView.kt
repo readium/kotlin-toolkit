@@ -172,7 +172,9 @@ internal fun WebView(
                         )
                     }
                 }
-                wv.onContentReady { state.loadingState = LoadingState.Finished }
+                wv.onContentReady {
+                    state.loadingState = LoadingState.Finished
+                }
             }
         }
     }

@@ -7,6 +7,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalDensity
 import org.readium.navigator.web.util.WebViewClient
@@ -22,7 +24,8 @@ import org.readium.r2.navigator.input.TapEvent
 internal fun SpreadWebView(
     state: WebViewState,
     client: WebViewClient,
-    onTap: (TapEvent) -> Unit
+    onTap: (TapEvent) -> Unit,
+    backgroundColor: Color
 ) {
     val scrollableState = remember { WebViewScrollable2DState() }
 
@@ -58,6 +61,7 @@ internal fun SpreadWebView(
             webview.settings.useWideViewPort = true
             webview.isVerticalScrollBarEnabled = false
             webview.isHorizontalScrollBarEnabled = false
+            webview.setBackgroundColor(backgroundColor.toArgb())
         }
     )
 }

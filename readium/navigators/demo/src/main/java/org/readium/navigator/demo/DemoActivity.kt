@@ -13,11 +13,15 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Surface
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
 import androidx.core.view.WindowCompat
 import org.readium.navigator.demo.util.Fullscreenable
 import org.readium.navigator.demo.util.Theme
@@ -61,12 +65,14 @@ class DemoActivity : ComponentActivity() {
 
                     when (val stateNow = state.value) {
                         DemoViewModel.State.BookSelection -> {
+                            Placeholder()
                             LaunchedEffect(stateNow) {
                                 sharedStoragePickerLauncher.launch(arrayOf("*/*"))
                             }
                         }
 
                         is DemoViewModel.State.Error -> {
+                            Placeholder()
                             LaunchedEffect(stateNow.error) {
                                 snackbarHostState.showSnackbar(stateNow.error.message)
                                 viewModel.acknowledgeError()
@@ -74,6 +80,7 @@ class DemoActivity : ComponentActivity() {
                         }
 
                         DemoViewModel.State.Loading -> {
+                            Placeholder()
                             // Display and do nothing
                         }
 
@@ -87,5 +94,11 @@ class DemoActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    // This is useful for setting a background color.
+    @Composable
+    private fun Placeholder() {
+        Surface(modifier = Modifier.fillMaxSize()) {}
     }
 }

@@ -10,6 +10,7 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import org.readium.navigator.web.layout.DoubleViewportSpread
@@ -26,7 +27,8 @@ import org.readium.r2.shared.util.AbsoluteUrl
 @Composable
 internal fun DoubleViewportSpread(
     onTap: (TapEvent) -> Unit,
-    state: DoubleSpreadState
+    state: DoubleSpreadState,
+    backgroundColor: Color
 ) {
     Box(
         modifier = Modifier.fillMaxSize(),
@@ -66,7 +68,8 @@ internal fun DoubleViewportSpread(
         SpreadWebView(
             state = webViewState,
             client = state.webViewClient,
-            onTap = onTap
+            onTap = onTap,
+            backgroundColor = backgroundColor
         )
     }
 }
