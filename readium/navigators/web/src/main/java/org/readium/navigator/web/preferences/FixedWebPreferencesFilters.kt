@@ -17,7 +17,9 @@ public object FixedWebSharedPreferencesFilter : PreferencesFilter<FixedWebPrefer
 
     override fun filter(preferences: FixedWebPreferences): FixedWebPreferences =
         preferences.copy(
-            readingProgression = null
+            fit = null,
+            readingProgression = null,
+            spreads = null
         )
 }
 
@@ -29,6 +31,8 @@ public object FixedWebPublicationPreferencesFilter : PreferencesFilter<FixedWebP
 
     override fun filter(preferences: FixedWebPreferences): FixedWebPreferences =
         FixedWebPreferences(
-            readingProgression = preferences.readingProgression
+            fit = preferences.fit,
+            readingProgression = preferences.readingProgression,
+            spreads = preferences.spreads
         )
 }
