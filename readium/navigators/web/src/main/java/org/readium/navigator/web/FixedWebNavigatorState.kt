@@ -1,5 +1,7 @@
 package org.readium.navigator.web
 
+import androidx.compose.animation.core.AnimationSpec
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.Stable
@@ -23,7 +25,7 @@ import org.readium.r2.shared.publication.Metadata
 @Stable
 public class FixedWebNavigatorState internal constructor(
     publicationMetadata: Metadata,
-    readingOrder: ReadingOrder,
+    private val readingOrder: ReadingOrder,
     initialPreferences: FixedWebPreferences,
     defaults: FixedWebDefaults,
     initialItem: Int,
@@ -69,4 +71,16 @@ public class FixedWebNavigatorState internal constructor(
 
     public val currentItem: State<Int> =
         derivedStateOf { layout.value.pageIndexForSpread(pagerState.currentPage) }
+
+    public suspend fun goTo(item: Int): Unit =
+        pagerState.scrollToPage(layout.value.spreadIndexForPage(item))
+
+    public suspend fun animateGoTo(
+        item: Int,
+        animationSpec: AnimationSpec<Float> = spring()
+    ): Unit =
+        pagerState.animateScrollToPage(
+            layout.value.spreadIndexForPage(item),
+            animationSpec = animationSpec
+        )
 }
