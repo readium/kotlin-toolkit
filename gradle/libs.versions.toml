@@ -1,6 +1,6 @@
 [versions]
 
-kotlin = "1.9.24"
+kotlin = "2.0.20"
 agp = "8.4.0"
 desugar_jdk_libs = "2.0.4"
 gradle-maven-publish-plugin = "0.28.0"
@@ -9,9 +9,6 @@ androidx-activity = "1.9.0"
 androidx-appcompat = "1.6.1"
 androidx-browser = "1.8.0"
 androidx-cardview = "1.0.0"
-# Make sure to align with the Kotlin version
-# https://developer.android.com/jetpack/androidx/releases/compose-kotlin
-androidx-compose-compiler = "1.5.14"
 androidx-compose-animation = "1.6.7"
 androidx-compose-foundation = "1.6.7"
 androidx-compose-material = "1.6.7"
@@ -55,7 +52,7 @@ kotlinx-serialization-json = "1.6.3"
 
 # Make sure to align with the Kotlin version.
 # See https://github.com/google/ksp/releases
-ksp = "1.9.24-1.0.20"
+ksp = "2.0.20-1.0.25"
 
 ktlint = "11.5.1"
 
@@ -160,6 +157,7 @@ kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", versi
 dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 ktlint = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlint" }
+compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 
 [bundles]
 
