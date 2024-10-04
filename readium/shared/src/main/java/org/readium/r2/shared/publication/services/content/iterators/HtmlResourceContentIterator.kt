@@ -392,7 +392,7 @@ public class HtmlResourceContentIterator internal constructor(
                 if (node.isBlock) {
                     assert(breadcrumbs.last().element == node)
                     flushText()
-                    breadcrumbs.removeLast()
+                    breadcrumbs.removeAt(breadcrumbs.lastIndex)
                 }
             }
         }
