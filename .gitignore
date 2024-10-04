@@ -91,3 +91,6 @@ lcp.patch
 
 # direnv file containing Maven Central secrets
 .envrc
+
+# Kotlin
+.kotlin/
