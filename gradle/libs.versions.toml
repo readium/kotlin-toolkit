@@ -48,7 +48,7 @@ junit = "4.13.2"
 kotlinx-coroutines = "1.8.1"
 kotlinx-coroutines-test = "1.8.1"
 kotlinx-datetime = "0.6.0"
-kotlinx-serialization-json = "1.6.3"
+kotlinx-serialization-json = "1.7.3"
 
 # Make sure to align with the Kotlin version.
 # See https://github.com/google/ksp/releases
