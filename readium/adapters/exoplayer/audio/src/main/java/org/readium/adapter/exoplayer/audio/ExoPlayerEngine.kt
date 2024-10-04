@@ -120,7 +120,7 @@ public class ExoPlayerEngine private constructor(
 
         private suspend fun prepareExoPlayer(player: ExoPlayer) {
             lateinit var listener: Player.Listener
-            suspendCancellableCoroutine { continuation ->
+            suspendCancellableCoroutine<Unit> { continuation ->
                 listener = object : Player.Listener {
                     override fun onPlaybackStateChanged(playbackState: Int) {
                         when (playbackState) {
