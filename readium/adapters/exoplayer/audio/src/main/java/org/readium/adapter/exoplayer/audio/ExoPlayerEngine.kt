@@ -124,9 +124,9 @@ public class ExoPlayerEngine private constructor(
                 listener = object : Player.Listener {
                     override fun onPlaybackStateChanged(playbackState: Int) {
                         when (playbackState) {
-                            Player.STATE_READY -> continuation.resume(Unit) {}
+                            Player.STATE_READY -> continuation.resume(Unit) { _, _, _ -> }
                             Player.STATE_IDLE -> if (player.playerError != null) {
-                                continuation.resume(Unit) {}
+                                continuation.resume(Unit) { _, _, _ -> }
                             }
                             else -> {}
                         }
