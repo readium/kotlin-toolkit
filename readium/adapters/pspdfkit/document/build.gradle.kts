@@ -15,13 +15,7 @@ android {
 dependencies {
     api(project(":readium:readium-shared"))
 
-    implementation(libs.androidx.core)
     implementation(libs.timber)
     implementation(libs.pspdfkit)
     implementation(libs.kotlinx.coroutines.android)
-
-    testImplementation(libs.junit)
-
-    androidTestImplementation(libs.androidx.ext.junit)
-    androidTestImplementation(libs.androidx.expresso.core)
 }

@@ -22,27 +22,22 @@ dependencies {
 
     implementation(files("libs/PhotoView-2.3.0.jar"))
 
-    implementation(libs.androidx.activity.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.browser)
     implementation(libs.androidx.constraintlayout)
     implementation(libs.androidx.core)
     implementation(libs.androidx.fragment.ktx)
     implementation(libs.androidx.legacy.ui)
-    implementation(libs.androidx.legacy.v4)
-    implementation(libs.bundles.lifecycle)
+    implementation(libs.androidx.lifecycle.common)
     implementation(libs.androidx.recyclerview)
     implementation(libs.androidx.media)
     implementation(libs.bundles.media3)
-    implementation(libs.androidx.viewpager2)
     implementation(libs.androidx.webkit)
 
     implementation(libs.bundles.media2)
     // ExoPlayer is used by the Audio Navigator.
     api(libs.bundles.exoplayer)
-    implementation(libs.google.material)
     implementation(libs.timber)
-    implementation(libs.joda.time)
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.jsoup)
@@ -50,8 +45,6 @@ dependencies {
     // Tests
     testImplementation(libs.junit)
 
-    androidTestImplementation(libs.androidx.ext.junit)
-    androidTestImplementation(libs.androidx.expresso.core)
     testImplementation(libs.kotlin.junit)
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.robolectric)
