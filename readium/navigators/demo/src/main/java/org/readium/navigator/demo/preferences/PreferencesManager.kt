@@ -15,7 +15,7 @@ import org.readium.r2.navigator.preferences.Configurable
 import org.readium.r2.shared.ExperimentalReadiumApi
 
 /**
- * Trivial user preferences manager without persistence.
+ * Trivial user preferences manager. You can add persistence.
  */
 class PreferencesManager<P : Configurable.Preferences<P>>(
     initialPreferences: P

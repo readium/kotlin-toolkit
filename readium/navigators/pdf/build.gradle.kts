@@ -10,7 +10,7 @@ plugins {
 }
 
 android {
-    namespace = "org.readium.navigators.web"
+    namespace = "org.readium.navigators.pdf"
 
     composeOptions {
         kotlinCompilerExtensionVersion = libs.versions.androidx.compose.compiler.get()
@@ -25,9 +25,10 @@ dependencies {
     api(project(":readium:readium-navigator"))
     api(project(":readium:navigators:readium-navigator-common"))
 
+    implementation(libs.androidx.fragment.ktx)
+    implementation(libs.androidx.fragment.compose)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.bundles.compose)
     implementation(libs.timber)
     implementation(libs.kotlinx.coroutines.android)
-    implementation(libs.androidx.webkit)
 }

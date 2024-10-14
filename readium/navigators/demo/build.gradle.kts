@@ -59,9 +59,12 @@ android {
 }
 
 dependencies {
-    api(project(":readium:navigators:readium-navigator-web"))
-    api(project(":readium:readium-shared"))
-    api(project(":readium:readium-streamer"))
+    implementation(project(":readium:readium-shared"))
+    implementation(project(":readium:readium-streamer"))
+    implementation(project(":readium:readium-navigator"))
+    implementation(project(":readium:navigators:readium-navigator-web"))
+    implementation(project(":readium:navigators:readium-navigator-pdf"))
+    implementation(project(":readium:adapters:pdfium"))
 
     coreLibraryDesugaring(libs.desugar.jdk.libs)
 
@@ -71,9 +74,7 @@ dependencies {
     implementation(libs.androidx.legacy.v4)
     implementation(libs.bundles.compose)
     implementation(libs.androidx.core)
+    implementation(libs.androidx.fragment.ktx)
+    implementation(libs.androidx.fragment.compose)
     implementation(libs.androidx.appcompat)
-
-    testImplementation(libs.junit)
-    androidTestImplementation(libs.androidx.ext.junit)
-    androidTestImplementation(libs.androidx.expresso.core)
 }

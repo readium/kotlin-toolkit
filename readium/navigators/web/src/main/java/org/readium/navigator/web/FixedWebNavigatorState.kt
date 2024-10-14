@@ -8,6 +8,8 @@ import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableStateOf
+import org.readium.navigator.common.Configurable
+import org.readium.navigator.common.NavigatorState
 import org.readium.navigator.web.layout.Layout
 import org.readium.navigator.web.layout.LayoutResolver
 import org.readium.navigator.web.layout.ReadingOrder
@@ -25,13 +27,13 @@ import org.readium.r2.shared.publication.Metadata
 @Stable
 public class FixedWebNavigatorState internal constructor(
     publicationMetadata: Metadata,
-    private val readingOrder: ReadingOrder,
+    readingOrder: ReadingOrder,
     initialPreferences: FixedWebPreferences,
     defaults: FixedWebDefaults,
     initialItem: Int,
     internal val webViewServer: WebViewServer,
     internal val preloadedData: PreloadedData
-) {
+) : NavigatorState, Configurable<FixedWebSettings, FixedWebPreferences> {
 
     init {
         require(initialItem < readingOrder.items.size)
@@ -48,10 +50,10 @@ public class FixedWebNavigatorState internal constructor(
     private val layoutResolver =
         LayoutResolver(readingOrder)
 
-    public val preferences: MutableState<FixedWebPreferences> =
+    public override val preferences: MutableState<FixedWebPreferences> =
         mutableStateOf(initialPreferences)
 
-    public val settings: State<FixedWebSettings> =
+    public override val settings: State<FixedWebSettings> =
         derivedStateOf { settingsResolver.settings(preferences.value) }
 
     internal val webViewClient =

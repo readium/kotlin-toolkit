@@ -23,7 +23,7 @@ androidx-core = "1.13.1"
 androidx-datastore = "1.1.1"
 androidx-expresso-core = "3.5.1"
 androidx-ext-junit = "1.1.5"
-androidx-fragment-ktx = "1.7.1"
+androidx-fragment = "1.8.4"
 androidx-legacy = "1.0.0"
 androidx-lifecycle = "2.8.0"
 androidx-lifecycle-extensions = "2.2.0"
@@ -93,7 +93,8 @@ androidx-core = { group = "androidx.core", name = "core-ktx", version.ref = "and
 androidx-datastore-preferences = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "androidx-datastore" }
 androidx-expresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "androidx-expresso-core" }
 androidx-ext-junit = { group = "androidx.test.ext", name = "junit", version.ref = "androidx-ext-junit" }
-androidx-fragment-ktx = { group = "androidx.fragment", name = "fragment-ktx", version.ref = "androidx-fragment-ktx" }
+androidx-fragment-ktx = { group = "androidx.fragment", name = "fragment-ktx", version.ref = "androidx-fragment" }
+androidx-fragment-compose = { group = "androidx.fragment", name = "fragment-compose", version.ref = "androidx-fragment" }
 androidx-legacy-v4 = { group = "androidx.legacy", name = "legacy-support-v4", version.ref = "androidx-legacy" }
 androidx-legacy-ui = { group = "androidx.legacy", name = "legacy-support-core-ui", version.ref = "androidx-legacy" }
 androidx-lifecycle-common = { group = "androidx.lifecycle", name = "lifecycle-common-java8", version.ref = "androidx-lifecycle" }

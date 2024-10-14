@@ -26,12 +26,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import org.readium.adapter.pdfium.navigator.PdfiumPreferencesEditor
 import org.readium.navigator.web.preferences.FixedWebPreferencesEditor
+import org.readium.r2.navigator.preferences.Axis
 import org.readium.r2.navigator.preferences.Configurable
 import org.readium.r2.navigator.preferences.EnumPreference
 import org.readium.r2.navigator.preferences.Fit
 import org.readium.r2.navigator.preferences.Preference
 import org.readium.r2.navigator.preferences.PreferencesEditor
+import org.readium.r2.navigator.preferences.RangePreference
 import org.readium.r2.navigator.preferences.ReadingProgression
 import org.readium.r2.shared.ExperimentalReadiumApi
 
@@ -40,7 +43,7 @@ import org.readium.r2.shared.ExperimentalReadiumApi
  */
 @Composable
 fun UserPreferences(
-    model: UserPreferencesViewModel<*>,
+    model: UserPreferencesViewModel<*, *>,
     title: String
 ) {
     val editor by model.editor.collectAsState()
@@ -97,6 +100,14 @@ private fun <P : Configurable.Preferences<P>, E : PreferencesEditor<P>> UserPref
                     fit = editor.fit,
                     spreads = editor.spreads
                 )
+            is PdfiumPreferencesEditor ->
+                FixedLayoutUserPreferences(
+                    commit = commit,
+                    readingProgression = editor.readingProgression,
+                    scrollAxis = editor.scrollAxis,
+                    fit = editor.fit,
+                    pageSpacing = editor.pageSpacing
+                )
         }
     }
 }
@@ -107,36 +118,74 @@ private fun <P : Configurable.Preferences<P>, E : PreferencesEditor<P>> UserPref
 @Composable
 private fun FixedLayoutUserPreferences(
     commit: () -> Unit,
-    readingProgression: EnumPreference<ReadingProgression>,
-    fit: EnumPreference<Fit>,
-    spreads: Preference<Boolean>
+    readingProgression: EnumPreference<ReadingProgression>? = null,
+    scrollAxis: EnumPreference<Axis>? = null,
+    fit: EnumPreference<Fit>? = null,
+    spreads: Preference<Boolean>? = null,
+    offsetFirstPage: Preference<Boolean>? = null,
+    pageSpacing: RangePreference<Double>? = null
 ) {
-    ButtonGroupItem(
-        title = "Reading progression",
-        preference = readingProgression,
-        commit = commit,
-        formatValue = { it.name }
-    )
+    if (readingProgression != null) {
+        ButtonGroupItem(
+            title = "Reading progression",
+            preference = readingProgression,
+            commit = commit,
+            formatValue = { it.name }
+        )
 
-    Divider()
+        Divider()
+    }
 
-    SwitchItem(
-        title = "Spreads",
-        preference = spreads,
-        commit = commit
-    )
-
-    ButtonGroupItem(
-        title = "Fit",
-        preference = fit,
-        commit = commit
-    ) { value ->
-        when (value) {
-            Fit.CONTAIN -> "Contain"
-            Fit.COVER -> "Cover"
-            Fit.WIDTH -> "Width"
-            Fit.HEIGHT -> "Height"
+    if (scrollAxis != null) {
+        ButtonGroupItem(
+            title = "Scroll axis",
+            preference = scrollAxis,
+            commit = commit
+        ) { value ->
+            when (value) {
+                Axis.HORIZONTAL -> "Horizontal"
+                Axis.VERTICAL -> "Vertical"
+            }
         }
+    }
+
+    if (spreads != null) {
+        SwitchItem(
+            title = "Spreads",
+            preference = spreads,
+            commit = commit
+        )
+
+        if (offsetFirstPage != null) {
+            SwitchItem(
+                title = "Offset",
+                preference = offsetFirstPage,
+                commit = commit
+            )
+        }
+    }
+
+    if (fit != null) {
+        ButtonGroupItem(
+            title = "Fit",
+            preference = fit,
+            commit = commit
+        ) { value ->
+            when (value) {
+                Fit.CONTAIN -> "Contain"
+                Fit.COVER -> "Cover"
+                Fit.WIDTH -> "Width"
+                Fit.HEIGHT -> "Height"
+            }
+        }
+    }
+
+    if (pageSpacing != null) {
+        StepperItem(
+            title = "Page spacing",
+            preference = pageSpacing,
+            commit = commit
+        )
     }
 }
 
