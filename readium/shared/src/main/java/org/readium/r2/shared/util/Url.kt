@@ -205,7 +205,7 @@ public sealed class Url : Parcelable {
      * WARNING: Strict URL comparisons can be a source of bug, if the URLs are not normalized.
      * In most cases, you should compare using [Url.isEquivalent].
      */
-    @DelicateReadiumApi
+//    @DelicateReadiumApi
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false

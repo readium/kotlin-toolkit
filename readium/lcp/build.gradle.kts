@@ -11,6 +11,10 @@ plugins {
 
 android {
     namespace = "org.readium.r2.lcp"
+
+    kotlinOptions {
+        freeCompilerArgs = freeCompilerArgs + ("-Xconsistent-data-class-copy-visibility")
+    }
 }
 
 dependencies {
