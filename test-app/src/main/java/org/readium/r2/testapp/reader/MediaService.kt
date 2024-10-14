@@ -171,7 +171,7 @@ class MediaService : MediaSessionService() {
         return binder.session.value?.mediaSession
     }
 
-    override fun onTaskRemoved(rootIntent: Intent) {
+    override fun onTaskRemoved(rootIntent: Intent?) {
         super.onTaskRemoved(rootIntent)
         Timber.d("Task removed. Stopping session and service.")
         // Close the session to allow the service to be stopped.
