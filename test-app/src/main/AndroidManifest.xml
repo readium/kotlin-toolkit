@@ -112,9 +112,7 @@
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
 
-                <data
-                    android:host="org.readium.r2.testapp"
-                    android:scheme="app" />
+                <data android:scheme="app" />
                 <data android:scheme="content" />
                 <data android:scheme="file" />
                 <data android:scheme="http" />
