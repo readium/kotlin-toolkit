@@ -18,6 +18,7 @@ import org.readium.navigator.web.webview.WebView
 import org.readium.navigator.web.webview.WebViewScrollable2DState
 import org.readium.navigator.web.webview.WebViewState
 import org.readium.r2.navigator.input.TapEvent
+import org.readium.r2.shared.util.AbsoluteUrl
 
 @SuppressLint("SetJavaScriptEnabled")
 @Composable
@@ -25,6 +26,7 @@ internal fun SpreadWebView(
     state: WebViewState,
     client: WebViewClient,
     onTap: (TapEvent) -> Unit,
+    onLinkActivated: (AbsoluteUrl) -> Unit,
     backgroundColor: Color
 ) {
     val scrollableState = remember { WebViewScrollable2DState() }
@@ -36,6 +38,10 @@ internal fun SpreadWebView(
         val listener = object : GesturesListener {
             override fun onTap(point: PointF) {
                 onTap(TapEvent(point))
+            }
+
+            override fun onLinkActivated(href: AbsoluteUrl) {
+                onLinkActivated(href)
             }
         }
         GesturesApi(density, listener)

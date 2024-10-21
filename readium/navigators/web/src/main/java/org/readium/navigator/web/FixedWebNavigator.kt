@@ -62,7 +62,6 @@ public fun FixedWebNavigator(
             key = { index -> state.layout.value.pageIndexForSpread(index) },
             reverseLayout = reverseLayout
         ) { index ->
-
             when (val spread = state.layout.value.spreads[index]) {
                 is SingleViewportSpread -> {
                     val spreadState = remember {
@@ -78,6 +77,9 @@ public fun FixedWebNavigator(
 
                     SingleViewportSpread(
                         onTap = onTap,
+                        onLinkActivated = { url ->
+                            state.readingOrder.indexOfHref(url)?.let { state.goToSync(it) }
+                        },
                         state = spreadState,
                         backgroundColor = backgroundColor
                     )
@@ -96,6 +98,9 @@ public fun FixedWebNavigator(
 
                     DoubleViewportSpread(
                         onTap = onTap,
+                        onLinkActivated = { url ->
+                            state.readingOrder.indexOfHref(url)?.let { state.goToSync(it) }
+                        },
                         state = spreadState,
                         backgroundColor = backgroundColor
                     )

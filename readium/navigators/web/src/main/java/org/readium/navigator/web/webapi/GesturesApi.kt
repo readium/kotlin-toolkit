@@ -6,12 +6,14 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
+import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.RelativeUrl
 import timber.log.Timber
 
 internal interface GesturesListener {
 
     fun onTap(point: PointF)
+    fun onLinkActivated(href: AbsoluteUrl)
 }
 
 internal class GesturesApi(
@@ -36,6 +38,12 @@ internal class GesturesApi(
         val point = with(density) { PointF(tapEvent.x.dp.toPx(), tapEvent.y.dp.toPx()) }
         Timber.d("onTap ${point.x} ${point.y}")
         listener.onTap(point)
+    }
+
+    @android.webkit.JavascriptInterface
+    fun onLinkActivated(href: String) {
+        val url = AbsoluteUrl(href) ?: return
+        listener.onLinkActivated(url)
     }
 }
 

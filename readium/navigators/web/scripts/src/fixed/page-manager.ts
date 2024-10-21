@@ -91,6 +91,8 @@ export class PageManager {
   private onMessageFromIframe(message: MessageEvent) {
     if (message.data.x && message.data.y) {
       this.listener.onTap({ x: message.data.x, y: message.data.y })
+    } else if (message.data.href) {
+      this.listener.onLinkActivated(message.data.href)
     }
   }
 
@@ -119,5 +121,6 @@ export namespace PageManager {
   export interface Listener {
     onIframeLoaded(): void
     onTap(event: TapEvent): void
+    onLinkActivated(href: string): void
   }
 }

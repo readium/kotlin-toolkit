@@ -2,6 +2,7 @@ import { AreaManager } from "../fixed/area-manager"
 
 export interface GesturesBridge {
   onTap(event: string): void
+  onLinkActivated(href: string): void
 }
 
 export interface TapEvent {
@@ -18,5 +19,9 @@ export class BridgeGesturesAdapter implements AreaManager.Listener {
 
   onTap(event: TapEvent): void {
     this.nativeApi.onTap(JSON.stringify(event))
+  }
+
+  onLinkActivated(href: string): void {
+    this.nativeApi.onLinkActivated(href)
   }
 }

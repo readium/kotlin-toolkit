@@ -47,6 +47,10 @@ export class SingleAreaManager {
         }
         listener.onTap(tapEvent)
       },
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      onLinkActivated: (_: string) => {
+        throw Error("No interactive element in the root document.")
+      },
     }
     new GesturesDetector(window, wrapperGesturesListener)
 
@@ -75,6 +79,9 @@ export class SingleAreaManager {
             (window.visualViewport!.scale * this.scale),
         }
         listener.onTap(tapEvent)
+      },
+      onLinkActivated: (href: string) => {
+        listener.onLinkActivated(href)
       },
     }
     this.page = new PageManager(window, iframe, pageListener)

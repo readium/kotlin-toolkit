@@ -31,4 +31,8 @@ class MessagingGesturesListener implements GesturesListener {
     const tapEvent = { x: event.clientX, y: event.clientY }
     this.messagePort.postMessage(tapEvent)
   }
+
+  onLinkActivated(href: string): void {
+    this.messagePort.postMessage({ href: href })
+  }
 }

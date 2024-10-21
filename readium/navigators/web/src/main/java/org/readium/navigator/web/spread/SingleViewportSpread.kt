@@ -23,10 +23,12 @@ import org.readium.r2.navigator.input.TapEvent
 import org.readium.r2.navigator.preferences.Fit
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.AbsoluteUrl
+import org.readium.r2.shared.util.Url
 
 @Composable
 internal fun SingleViewportSpread(
     onTap: (TapEvent) -> Unit,
+    onLinkActivated: (Url) -> Unit,
     state: SingleSpreadState,
     backgroundColor: Color
 ) {
@@ -69,6 +71,7 @@ internal fun SingleViewportSpread(
             state = webViewState,
             client = state.webViewClient,
             onTap = onTap,
+            onLinkActivated = { onLinkActivated(state.publicationBaseUrl.relativize(it)) },
             backgroundColor = backgroundColor
         )
     }

@@ -32,6 +32,10 @@ export class DoubleAreaManager {
       onTap: (event: MouseEvent) => {
         listener.onTap({ x: event.clientX, y: event.clientY })
       },
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      onLinkActivated: (_: string) => {
+        throw Error("No interactive element in the root document.")
+      },
     }
     new GesturesDetector(window, wrapperGesturesListener)
 
@@ -41,6 +45,9 @@ export class DoubleAreaManager {
       },
       onTap: (event: TapEvent) => {
         listener.onTap(event)
+      },
+      onLinkActivated: (href: string) => {
+        listener.onLinkActivated(href)
       },
     }
     this.leftPage = new PageManager(window, leftIframe, pageListener)

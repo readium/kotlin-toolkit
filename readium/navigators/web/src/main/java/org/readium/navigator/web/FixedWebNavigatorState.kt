@@ -8,6 +8,9 @@ import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableStateOf
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.launch
 import org.readium.navigator.common.Configurable
 import org.readium.navigator.common.NavigatorState
 import org.readium.navigator.web.layout.Layout
@@ -27,7 +30,7 @@ import org.readium.r2.shared.publication.Metadata
 @Stable
 public class FixedWebNavigatorState internal constructor(
     publicationMetadata: Metadata,
-    readingOrder: ReadingOrder,
+    internal val readingOrder: ReadingOrder,
     initialPreferences: FixedWebPreferences,
     defaults: FixedWebDefaults,
     initialItem: Int,
@@ -43,6 +46,9 @@ public class FixedWebNavigatorState internal constructor(
         val prepaginatedSingleContent: String,
         val prepaginatedDoubleContent: String
     )
+
+    private val coroutineScope: CoroutineScope =
+        MainScope()
 
     private val settingsResolver =
         FixedWebSettingsResolver(publicationMetadata, defaults)
@@ -85,4 +91,10 @@ public class FixedWebNavigatorState internal constructor(
             layout.value.spreadIndexForPage(item),
             animationSpec = animationSpec
         )
+
+    internal fun goToSync(item: Int) {
+        coroutineScope.launch {
+            goTo((item))
+        }
+    }
 }
