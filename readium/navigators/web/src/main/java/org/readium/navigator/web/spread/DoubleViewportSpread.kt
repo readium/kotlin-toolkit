@@ -16,7 +16,7 @@ import kotlinx.coroutines.flow.onEach
 import org.readium.navigator.web.layout.DoubleViewportSpread
 import org.readium.navigator.web.util.DisplayArea
 import org.readium.navigator.web.util.WebViewClient
-import org.readium.navigator.web.webapi.PrepaginatedDoubleApi
+import org.readium.navigator.web.webapi.FixedDoubleApi
 import org.readium.navigator.web.webview.LoadingState
 import org.readium.navigator.web.webview.rememberWebViewStateWithHTMLData
 import org.readium.r2.navigator.input.TapEvent
@@ -43,7 +43,7 @@ internal fun DoubleViewportSpread(
             webViewState.webView
                 ?.takeIf { webViewState.loadingState is LoadingState.Finished }
                 ?.let {
-                    PrepaginatedDoubleApi(it)
+                    FixedDoubleApi(it)
                 }
         }
 

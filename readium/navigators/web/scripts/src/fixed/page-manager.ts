@@ -1,4 +1,5 @@
 import { Margins, Size } from "../common/types"
+import { TapEvent } from "../common/events"
 
 /** Manages a fixed layout resource embedded in an iframe. */
 export class PageManager {
@@ -8,9 +9,15 @@ export class PageManager {
 
   private margins: Margins = { top: 0, right: 0, bottom: 0, left: 0 }
 
+  private readonly channel = new MessageChannel()
+
   size?: Size
 
-  constructor(iframe: HTMLIFrameElement, listener: PageManager.Listener) {
+  constructor(
+    window: Window,
+    iframe: HTMLIFrameElement,
+    listener: PageManager.Listener
+  ) {
     if (!iframe.contentWindow) {
       throw Error("Iframe argument must have been attached to DOM.")
     }
@@ -71,7 +78,20 @@ export class PageManager {
     this.iframe.style.width = pageSize.width + "px"
     this.iframe.style.height = pageSize.height + "px"
     this.size = pageSize
+
+    this.channel.port1.onmessage = (message) => {
+      console.log(`onmessage ${message}`)
+      this.onMessageFromIframe(message)
+    }
+    this.iframe.contentWindow!.postMessage("Init", "*", [this.channel.port2])
+
     this.listener.onIframeLoaded()
+  }
+
+  private onMessageFromIframe(message: MessageEvent) {
+    if (message.data.x && message.data.y) {
+      this.listener.onTap({ x: message.data.x, y: message.data.y })
+    }
   }
 
   /** Parses the page size from the viewport meta tag of the loaded resource. */
@@ -98,5 +118,6 @@ export class PageManager {
 export namespace PageManager {
   export interface Listener {
     onIframeLoaded(): void
+    onTap(event: TapEvent): void
   }
 }

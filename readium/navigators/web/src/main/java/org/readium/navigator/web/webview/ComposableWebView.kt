@@ -35,6 +35,7 @@ import org.readium.navigator.web.gestures.Fling2DBehavior
 import org.readium.navigator.web.gestures.scrollable2D
 import org.readium.navigator.web.webview.LoadingState.Finished
 import org.readium.navigator.web.webview.LoadingState.Loading
+import timber.log.Timber
 
 /**
  * A wrapper around the Android View WebView to provide a basic WebView composable.
@@ -92,6 +93,8 @@ internal fun WebView(
             width,
             height
         )
+
+        Timber.d("constraints ${constraints.maxWidth} ${constraints.maxHeight}")
 
         LazyRow(
             horizontalArrangement = Arrangement.Center,

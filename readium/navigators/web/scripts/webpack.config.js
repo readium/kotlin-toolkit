@@ -5,9 +5,9 @@ module.exports = {
   mode: "production",
   devtool: "source-map",
   entry: {
-    "prepaginated-single-script": "./src/index-prepaginated-single.ts",
-    "prepaginated-double-script": "./src/index-prepaginated-double.ts",
-    "prepaginated-injectable-script": "./src/index-prepaginated-injectable.ts",
+    "fixed-single-script": "./src/index-fixed-single.ts",
+    "fixed-double-script": "./src/index-fixed-double.ts",
+    "fixed-injectable-script": "./src/index-fixed-injectable.ts",
   },
   resolve: {
     // Add '.ts' and '.tsx' as resolvable extensions.

@@ -14,8 +14,8 @@ import org.readium.navigator.web.preferences.FixedWebDefaults
 import org.readium.navigator.web.preferences.FixedWebPreferences
 import org.readium.navigator.web.preferences.FixedWebPreferencesEditor
 import org.readium.navigator.web.util.WebViewServer
-import org.readium.navigator.web.webapi.PrepaginatedDoubleApi
-import org.readium.navigator.web.webapi.PrepaginatedSingleApi
+import org.readium.navigator.web.webapi.FixedDoubleApi
+import org.readium.navigator.web.webapi.FixedSingleApi
 import org.readium.r2.navigator.extensions.normalizeLocator
 import org.readium.r2.shared.DelicateReadiumApi
 import org.readium.r2.shared.ExperimentalReadiumApi
@@ -119,12 +119,12 @@ public class FixedWebNavigatorFactory private constructor(
         try {
             val assetsUrl = WebViewServer.assetUrl("readium/navigators/web")!!
 
-            val prepaginatedSingleContent = PrepaginatedSingleApi.getPageContent(
+            val prepaginatedSingleContent = FixedSingleApi.getPageContent(
                 assetManager = application.assets,
                 assetsUrl = assetsUrl
             )
 
-            val prepaginatedDoubleContent = PrepaginatedDoubleApi.getPageContent(
+            val prepaginatedDoubleContent = FixedDoubleApi.getPageContent(
                 assetManager = application.assets,
                 assetsUrl = assetsUrl
             )

@@ -1,7 +1,10 @@
 import { Size, Insets } from "../common/types"
 import { computeScale, Fit } from "../util/fit"
 import { PageManager } from "./page-manager"
+import { AreaManager } from "./area-manager"
 import { ViewportStringBuilder } from "../util/viewport"
+import { GesturesDetector } from "../common/gestures"
+import { TapEvent } from "../common/events"
 
 export class DoubleAreaManager {
   private readonly metaViewport: HTMLMetaElement
@@ -19,17 +22,29 @@ export class DoubleAreaManager {
   private spread?: { left?: string; right?: string }
 
   constructor(
+    window: Window,
     leftIframe: HTMLIFrameElement,
     rightIframe: HTMLIFrameElement,
-    metaViewport: HTMLMetaElement
+    metaViewport: HTMLMetaElement,
+    listener: AreaManager.Listener
   ) {
-    const listener = {
+    const wrapperGesturesListener = {
+      onTap: (event: MouseEvent) => {
+        listener.onTap({ x: event.clientX, y: event.clientY })
+      },
+    }
+    new GesturesDetector(window, wrapperGesturesListener)
+
+    const pageListener = {
       onIframeLoaded: () => {
         this.layout()
       },
+      onTap: (event: TapEvent) => {
+        listener.onTap(event)
+      },
     }
-    this.leftPage = new PageManager(leftIframe, listener)
-    this.rightPage = new PageManager(rightIframe, listener)
+    this.leftPage = new PageManager(window, leftIframe, pageListener)
+    this.rightPage = new PageManager(window, rightIframe, pageListener)
     this.metaViewport = metaViewport
   }
 

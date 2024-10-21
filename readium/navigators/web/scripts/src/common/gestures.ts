@@ -2,23 +2,26 @@ export interface GesturesListener {
   onTap(event: MouseEvent): void
 }
 
-export class GesturesManager {
+export class GesturesDetector {
   private readonly listener: GesturesListener
 
   private readonly window: Window
 
   constructor(window: Window, listener: GesturesListener) {
+    console.log(`Constructing Gesturesdetector for window ${window}`)
     this.window = window
     this.listener = listener
-    window.addEventListener("DOMContentLoaded", () => {
-      document.addEventListener(
-        "click",
-        (event) => {
-          this.onClick(event)
-        },
-        false
-      )
-    })
+    document.addEventListener(
+      "click",
+      (event) => {
+        console.log("onClick")
+        this.onClick(event)
+      },
+      false
+    )
+    /*document.addEventListener("DOMContentLoaded", () => {
+      console.log("DOM content loaded")
+    })*/
   }
 
   private onClick(event: MouseEvent) {
@@ -41,6 +44,7 @@ export class GesturesManager {
       return
     }
 
+    console.log("tap detected")
     this.listener.onTap(event)
 
     event.stopPropagation()
