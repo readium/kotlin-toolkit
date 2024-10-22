@@ -26,6 +26,11 @@ public class PdfNavigatorFactory<S : Settings, P : Preferences<P>, E : Preferenc
         initialLocator: Locator? = null,
         initialPreferences: P? = null
     ): Try<PdfNavigatorState<S, P>, Nothing> {
+        val readingOrder =
+            ReadingOrder(
+                publication.readingOrder.map { ReadingOrderItem(it.url()) }
+            )
+
         val actualInitialLocator = initialLocator
             ?: publication.locatorFromLink(publication.readingOrder[0])!!
 
@@ -39,10 +44,16 @@ public class PdfNavigatorFactory<S : Settings, P : Preferences<P>, E : Preferenc
             pdfEngineProvider.computeSettings(publication.metadata, preferences)
         }
 
+        val overflowResolver = { settings: S ->
+            pdfEngineProvider.computeOverflow(settings)
+        }
+
         val navigatorState =
             PdfNavigatorState(
+                readingOrder,
                 legacyNavigatorFactory,
                 settingsResolver,
+                overflowResolver,
                 actualInitialLocator,
                 actualInitialPreferences
             )

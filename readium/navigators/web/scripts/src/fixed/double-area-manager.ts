@@ -30,7 +30,14 @@ export class DoubleAreaManager {
   ) {
     const wrapperGesturesListener = {
       onTap: (event: MouseEvent) => {
-        listener.onTap({ x: event.clientX, y: event.clientY })
+        const tapEvent = {
+          x:
+            (event.clientX - visualViewport!.offsetLeft) *
+            visualViewport!.scale,
+          y:
+            (event.clientY - visualViewport!.offsetTop) * visualViewport!.scale,
+        }
+        listener.onTap(tapEvent)
       },
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       onLinkActivated: (_: string) => {
@@ -39,19 +46,49 @@ export class DoubleAreaManager {
     }
     new GesturesDetector(window, wrapperGesturesListener)
 
-    const pageListener = {
+    const leftPageListener = {
       onIframeLoaded: () => {
         this.layout()
       },
       onTap: (event: TapEvent) => {
-        listener.onTap(event)
+        const boundingRect = leftIframe.getBoundingClientRect()
+        const tapEvent = {
+          x:
+            (event.x + boundingRect.left - visualViewport!.offsetLeft) *
+            visualViewport!.scale,
+          y:
+            (event.y + boundingRect.top - visualViewport!.offsetTop) *
+            visualViewport!.scale,
+        }
+        listener.onTap(tapEvent)
       },
       onLinkActivated: (href: string) => {
         listener.onLinkActivated(href)
       },
     }
-    this.leftPage = new PageManager(window, leftIframe, pageListener)
-    this.rightPage = new PageManager(window, rightIframe, pageListener)
+
+    const rightPageListener = {
+      onIframeLoaded: () => {
+        this.layout()
+      },
+      onTap: (event: TapEvent) => {
+        const boundingRect = rightIframe.getBoundingClientRect()
+        const tapEvent = {
+          x:
+            (event.x + boundingRect.left - visualViewport!.offsetLeft) *
+            visualViewport!.scale,
+          y:
+            (event.y + boundingRect.top - visualViewport!.offsetTop) *
+            visualViewport!.scale,
+        }
+        listener.onTap(tapEvent)
+      },
+      onLinkActivated: (href: string) => {
+        listener.onLinkActivated(href)
+      },
+    }
+    this.leftPage = new PageManager(window, leftIframe, leftPageListener)
+    this.rightPage = new PageManager(window, rightIframe, rightPageListener)
     this.metaViewport = metaViewport
   }
 

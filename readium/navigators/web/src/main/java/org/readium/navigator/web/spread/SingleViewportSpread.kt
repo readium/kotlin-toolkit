@@ -13,13 +13,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import org.readium.navigator.common.LinkContext
+import org.readium.navigator.common.TapEvent
 import org.readium.navigator.web.layout.SingleViewportSpread
 import org.readium.navigator.web.util.DisplayArea
 import org.readium.navigator.web.util.WebViewClient
 import org.readium.navigator.web.webapi.FixedSingleApi
 import org.readium.navigator.web.webview.LoadingState
 import org.readium.navigator.web.webview.rememberWebViewStateWithHTMLData
-import org.readium.r2.navigator.input.TapEvent
 import org.readium.r2.navigator.preferences.Fit
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.AbsoluteUrl
@@ -28,7 +29,7 @@ import org.readium.r2.shared.util.Url
 @Composable
 internal fun SingleViewportSpread(
     onTap: (TapEvent) -> Unit,
-    onLinkActivated: (Url) -> Unit,
+    onLinkActivated: (Url, LinkContext?) -> Unit,
     state: SingleSpreadState,
     backgroundColor: Color
 ) {
@@ -71,7 +72,12 @@ internal fun SingleViewportSpread(
             state = webViewState,
             client = state.webViewClient,
             onTap = onTap,
-            onLinkActivated = { onLinkActivated(state.publicationBaseUrl.relativize(it)) },
+            onLinkActivated = { url, context ->
+                onLinkActivated(
+                    state.publicationBaseUrl.relativize(url),
+                    context
+                )
+            },
             backgroundColor = backgroundColor
         )
     }

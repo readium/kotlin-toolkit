@@ -77,4 +77,5 @@ dependencies {
     implementation(libs.androidx.fragment.ktx)
     implementation(libs.androidx.fragment.compose)
     implementation(libs.androidx.appcompat)
+    implementation(libs.androidx.browser)
 }

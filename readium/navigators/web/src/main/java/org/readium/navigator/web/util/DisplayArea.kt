@@ -1,15 +1,16 @@
 package org.readium.navigator.web.util
 
-import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.DpSize
 
 internal data class DisplayArea(
-    val viewportSize: Size,
+    val viewportSize: DpSize,
     val safeDrawingPadding: AbsolutePaddingValues
 )
 
 internal data class AbsolutePaddingValues(
-    val top: Int,
-    val right: Int,
-    val bottom: Int,
-    val left: Int
+    val top: Dp,
+    val right: Dp,
+    val bottom: Dp,
+    val left: Dp
 )

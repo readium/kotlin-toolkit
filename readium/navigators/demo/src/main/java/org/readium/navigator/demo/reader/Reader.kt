@@ -4,6 +4,8 @@
  * available in the top-level LICENSE file of the project.
  */
 
+@file:OptIn(ExperimentalReadiumApi::class)
+
 package org.readium.navigator.demo.reader
 
 import androidx.compose.animation.AnimatedVisibility
@@ -24,24 +26,33 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.zIndex
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.cancel
-import org.readium.navigator.common.NavigatorState
+import org.readium.navigator.common.InputListener
+import org.readium.navigator.common.Navigator
+import org.readium.navigator.common.Overflowable
+import org.readium.navigator.common.ReadingOrder
+import org.readium.navigator.common.TapContext
+import org.readium.navigator.common.TapEvent
+import org.readium.navigator.common.defaultHyperlinkListener
+import org.readium.navigator.common.defaultInputListener
 import org.readium.navigator.demo.preferences.UserPreferences
 import org.readium.navigator.demo.preferences.UserPreferencesViewModel
+import org.readium.navigator.demo.util.launchWebBrowser
 import org.readium.navigator.pdf.PdfNavigator
 import org.readium.navigator.pdf.PdfNavigatorState
 import org.readium.navigator.web.FixedWebNavigator
 import org.readium.navigator.web.FixedWebNavigatorState
-import org.readium.r2.navigator.input.TapEvent
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.util.toUri
 
-data class ReaderState(
+data class ReaderState<R : ReadingOrder>(
     val coroutineScope: CoroutineScope,
     val publication: Publication,
-    val navigatorState: NavigatorState,
+    val navigatorState: Navigator<R>,
     val preferencesViewModel: UserPreferencesViewModel<*, *>
 ) {
 
@@ -53,8 +64,8 @@ data class ReaderState(
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalReadiumApi::class)
 @Composable
-fun Reader(
-    state: ReaderState,
+fun <R : ReadingOrder> Reader(
+    state: ReaderState<R>,
     fullScreenState: MutableState<Boolean>
 ) {
     val showPreferences = remember { mutableStateOf(false) }
@@ -79,23 +90,46 @@ fun Reader(
             onPreferencesActivated = { showPreferences.value = !showPreferences.value }
         )
 
-        val onTap = remember(fullScreenState) {
-            { _: TapEvent -> fullScreenState.value = !fullScreenState.value }
+        val fallbackInputListener = remember {
+            object : InputListener {
+                override fun onTap(event: TapEvent, context: TapContext) {
+                    fullScreenState.value = !fullScreenState.value
+                }
+            }
         }
+
+        val inputListener =
+            if (state.navigatorState is Overflowable) {
+                defaultInputListener(
+                    navigatorState = state.navigatorState,
+                    fallbackListener = fallbackInputListener
+                )
+            } else {
+                fallbackInputListener
+            }
+
+        val context = LocalContext.current
+
+        val hyperlinkListener =
+            defaultHyperlinkListener(
+                navigatorState = state.navigatorState,
+                onExternalLinkActivated = { url, _ -> launchWebBrowser(context, url.toUri()) }
+            )
 
         when (state.navigatorState) {
             is FixedWebNavigatorState -> {
                 FixedWebNavigator(
                     modifier = Modifier.fillMaxSize(),
                     state = state.navigatorState,
-                    onTap = onTap
+                    inputListener = inputListener,
+                    hyperlinkListener = hyperlinkListener
                 )
             }
             is PdfNavigatorState<*, *> -> {
                 PdfNavigator(
                     modifier = Modifier.fillMaxSize(),
                     state = state.navigatorState,
-                    onTap = onTap
+                    inputListener = inputListener
                 )
             }
         }

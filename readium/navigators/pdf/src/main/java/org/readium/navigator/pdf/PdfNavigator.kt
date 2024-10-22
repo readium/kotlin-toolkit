@@ -8,6 +8,9 @@ import android.widget.FrameLayout
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.DpOffset
+import androidx.compose.ui.unit.DpSize
+import androidx.compose.ui.unit.dp
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentContainerView
 import androidx.fragment.app.FragmentFactory
@@ -17,9 +20,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import org.readium.navigator.common.InputListener
 import org.readium.navigator.common.Preferences
 import org.readium.navigator.common.Settings
-import org.readium.r2.navigator.input.InputListener
+import org.readium.navigator.common.TapContext
 import org.readium.r2.navigator.input.TapEvent
 import org.readium.r2.navigator.pdf.PdfNavigatorFactory
 import org.readium.r2.navigator.pdf.PdfNavigatorFragment
@@ -31,7 +35,7 @@ import org.readium.r2.shared.publication.Locator
 public fun <S : Settings, P : Preferences<P>> PdfNavigator(
     modifier: Modifier = Modifier,
     state: PdfNavigatorState<S, P>,
-    onTap: (TapEvent) -> Unit
+    inputListener: InputListener
 ) {
     val preferencesFlow = snapshotFlow { state.preferences.value }
 
@@ -40,14 +44,20 @@ public fun <S : Settings, P : Preferences<P>> PdfNavigator(
         onUpdate = {
             val onFragmentCreated: (PdfNavigatorFragment<S, P>) -> Unit = { fragment ->
 
-                val inputListener =
-                    object : InputListener {
+                val legacyInputListener =
+                    object : org.readium.r2.navigator.input.InputListener {
                         override fun onTap(event: TapEvent): Boolean {
-                            onTap.invoke(event)
+                            val viewport = DpSize(
+                                width = fragment.publicationView.width.toFloat().dp,
+                                height = fragment.publicationView.height.toFloat().dp
+                            )
+                            val offset = DpOffset(event.point.x.dp, event.point.y.dp)
+                            val dpEvent = org.readium.navigator.common.TapEvent(offset)
+                            inputListener.onTap(dpEvent, TapContext(viewport))
                             return true
                         }
                     }
-                fragment.addInputListener(inputListener)
+                fragment.addInputListener(legacyInputListener)
 
                 fragment.currentLocator
                     .onEach { locator ->

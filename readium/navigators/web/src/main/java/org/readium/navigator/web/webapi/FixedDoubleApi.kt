@@ -38,11 +38,12 @@ internal class FixedDoubleApi(
     }
 
     fun setDisplayArea(displayArea: DisplayArea) {
-        val (width, height) = displayArea.viewportSize
-        val top = displayArea.safeDrawingPadding.top
-        val right = displayArea.safeDrawingPadding.right
-        val bottom = displayArea.safeDrawingPadding.bottom
-        val left = displayArea.safeDrawingPadding.left
+        val width = displayArea.viewportSize.width.value
+        val height = displayArea.viewportSize.height.value
+        val top = displayArea.safeDrawingPadding.top.value
+        val right = displayArea.safeDrawingPadding.right.value
+        val bottom = displayArea.safeDrawingPadding.bottom.value
+        val left = displayArea.safeDrawingPadding.left.value
         val script = "doubleArea.setViewport($width, $height, $top, $right, $bottom, $left);"
         webView.evaluateJavascript(script) {}
     }

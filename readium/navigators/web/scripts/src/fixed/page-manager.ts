@@ -24,9 +24,13 @@ export class PageManager {
 
     this.listener = listener
     this.iframe = iframe
-    this.iframe.addEventListener("load", () => {
-      this.onIframeLoaded()
-    })
+    this.iframe.addEventListener(
+      "load",
+      () => {
+        this.onIframeLoaded()
+      },
+      { once: true }
+    )
   }
 
   show() {
@@ -56,6 +60,7 @@ export class PageManager {
 
   /** Sets the size of this page without content. */
   setPlaceholder(size: Size) {
+    this.iframe.style.visibility = "hidden"
     this.iframe.style.width = size.width + "px"
     this.iframe.style.height = size.height + "px"
     this.size = size
@@ -80,7 +85,6 @@ export class PageManager {
     this.size = pageSize
 
     this.channel.port1.onmessage = (message) => {
-      console.log(`onmessage ${message}`)
       this.onMessageFromIframe(message)
     }
     this.iframe.contentWindow!.postMessage("Init", "*", [this.channel.port2])

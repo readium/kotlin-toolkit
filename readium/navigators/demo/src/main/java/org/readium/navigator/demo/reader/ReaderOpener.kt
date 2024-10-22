@@ -56,7 +56,7 @@ class ReaderOpener(
     private val pdfEngineProvider =
         PdfiumEngineProvider()
 
-    suspend fun open(url: AbsoluteUrl): Try<ReaderState, Error> {
+    suspend fun open(url: AbsoluteUrl): Try<ReaderState<*>, Error> {
         val asset = assetRetriever.retrieve(url)
             .getOrElse { return Try.failure(it) }
 
@@ -83,7 +83,7 @@ class ReaderOpener(
 
     private suspend fun createFixedWebReader(
         publication: Publication
-    ): Try<ReaderState, Error> {
+    ): Try<ReaderState<*>, Error> {
         val navigatorFactory = FixedWebNavigatorFactory(application, publication)
             ?: return Try.failure(DebugError("Publication not supported"))
 
@@ -121,7 +121,7 @@ class ReaderOpener(
 
     private fun createPdfReader(
         publication: Publication
-    ): Try<ReaderState, Error> {
+    ): Try<ReaderState<*>, Error> {
         val navigatorFactory = PdfNavigatorFactory(publication, pdfEngineProvider)
 
         val initialPreferences = PdfiumPreferences()

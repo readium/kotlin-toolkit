@@ -1,8 +1,7 @@
 package org.readium.navigator.web.webapi
 
-import android.graphics.PointF
 import android.webkit.WebView
-import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
@@ -12,12 +11,11 @@ import timber.log.Timber
 
 internal interface GesturesListener {
 
-    fun onTap(point: PointF)
+    fun onTap(offset: DpOffset)
     fun onLinkActivated(href: AbsoluteUrl)
 }
 
 internal class GesturesApi(
-    private val density: Density,
     private val listener: GesturesListener
 ) {
 
@@ -35,9 +33,7 @@ internal class GesturesApi(
     fun onTap(eventJson: String) {
         Timber.d("onTap start $eventJson")
         val tapEvent = Json.decodeFromString<JsonTapEvent>(eventJson)
-        val point = with(density) { PointF(tapEvent.x.dp.toPx(), tapEvent.y.dp.toPx()) }
-        Timber.d("onTap ${point.x} ${point.y}")
-        listener.onTap(point)
+        listener.onTap(DpOffset(tapEvent.x.dp, tapEvent.y.dp))
     }
 
     @android.webkit.JavascriptInterface

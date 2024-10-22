@@ -9,12 +9,19 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.LayoutDirection
+import org.readium.navigator.common.HyperlinkListener
+import org.readium.navigator.common.InputListener
+import org.readium.navigator.common.LinkContext
+import org.readium.navigator.common.TapContext
+import org.readium.navigator.common.defaultHyperlinkListener
+import org.readium.navigator.common.defaultInputListener
 import org.readium.navigator.web.layout.DoubleViewportSpread
+import org.readium.navigator.web.layout.ReadingOrder
 import org.readium.navigator.web.layout.SingleViewportSpread
 import org.readium.navigator.web.pager.NavigatorPager
 import org.readium.navigator.web.spread.DoubleSpreadState
@@ -24,32 +31,29 @@ import org.readium.navigator.web.spread.SingleViewportSpread
 import org.readium.navigator.web.util.AbsolutePaddingValues
 import org.readium.navigator.web.util.DisplayArea
 import org.readium.navigator.web.util.WebViewServer
-import org.readium.r2.navigator.input.TapEvent
 import org.readium.r2.navigator.preferences.ReadingProgression
 import org.readium.r2.shared.ExperimentalReadiumApi
+import org.readium.r2.shared.util.AbsoluteUrl
+import org.readium.r2.shared.util.RelativeUrl
+import org.readium.r2.shared.util.Url
 
 @ExperimentalReadiumApi
 @Composable
 public fun FixedWebNavigator(
     modifier: Modifier = Modifier,
-    displayCutout: WindowInsets = WindowInsets.displayCutout,
+    state: FixedWebNavigatorState,
+    windowInsets: WindowInsets = WindowInsets.displayCutout,
     backgroundColor: Color = MaterialTheme.colorScheme.background,
-    onTap: (TapEvent) -> Unit = {},
-    state: FixedWebNavigatorState
+    inputListener: InputListener = defaultInputListener(navigatorState = state),
+    hyperlinkListener: HyperlinkListener = defaultHyperlinkListener(navigatorState = state)
 ) {
     BoxWithConstraints(
         modifier = Modifier.fillMaxSize(),
         propagateMinConstraints = true
     ) {
-        val viewportSize = Size(maxWidth.value, maxHeight.value)
+        val viewportSize = DpSize(maxWidth, maxHeight)
 
-        val safeDrawingPadding = AbsolutePaddingValues(
-            top = displayCutout.getTop(LocalDensity.current),
-            right = displayCutout.getRight(LocalDensity.current, LocalLayoutDirection.current),
-            bottom = displayCutout.getBottom(LocalDensity.current),
-            left = displayCutout.getLeft(LocalDensity.current, LocalLayoutDirection.current)
-        )
-
+        val safeDrawingPadding = windowInsets.asAbsolutePaddingValues()
         val displayArea = rememberUpdatedState(DisplayArea(viewportSize, safeDrawingPadding))
 
         val reverseLayout =
@@ -76,9 +80,9 @@ public fun FixedWebNavigator(
                     }
 
                     SingleViewportSpread(
-                        onTap = onTap,
-                        onLinkActivated = { url ->
-                            state.readingOrder.indexOfHref(url)?.let { state.goToSync(it) }
+                        onTap = { inputListener.onTap(it, TapContext(viewportSize)) },
+                        onLinkActivated = { url, context ->
+                            onLinkActivated(url, context, state.readingOrder, hyperlinkListener)
                         },
                         state = spreadState,
                         backgroundColor = backgroundColor
@@ -97,9 +101,9 @@ public fun FixedWebNavigator(
                     }
 
                     DoubleViewportSpread(
-                        onTap = onTap,
-                        onLinkActivated = { url ->
-                            state.readingOrder.indexOfHref(url)?.let { state.goToSync(it) }
+                        onTap = { inputListener.onTap(it, TapContext(viewportSize)) },
+                        onLinkActivated = { url, context ->
+                            onLinkActivated(url, context, state.readingOrder, hyperlinkListener)
                         },
                         state = spreadState,
                         backgroundColor = backgroundColor
@@ -110,9 +114,37 @@ public fun FixedWebNavigator(
     }
 }
 
+@Composable
+private fun WindowInsets.asAbsolutePaddingValues(): AbsolutePaddingValues {
+    val density = LocalDensity.current
+    val layoutDirection = LocalLayoutDirection.current
+    val top = with(density) { getTop(density).toDp() }
+    val right = with(density) { getRight(density, layoutDirection).toDp() }
+    val bottom = with(density) { getBottom(density).toDp() }
+    val left = with(density) { getLeft(density, layoutDirection).toDp() }
+    return AbsolutePaddingValues(top = top, right = right, bottom = bottom, left = left)
+}
+
 @OptIn(ExperimentalReadiumApi::class)
 private fun LayoutDirection.toReadingProgression(): ReadingProgression =
     when (this) {
         LayoutDirection.Ltr -> ReadingProgression.LTR
         LayoutDirection.Rtl -> ReadingProgression.RTL
     }
+
+@OptIn(ExperimentalReadiumApi::class)
+private fun onLinkActivated(
+    url: Url,
+    context: LinkContext?,
+    readingOrder: ReadingOrder,
+    listener: HyperlinkListener
+) {
+    readingOrder.indexOfHref(url)
+        ?.let { listener.onReadingOrderLinkActivated(url, context) }
+        ?: run {
+            when (url) {
+                is RelativeUrl -> listener.onResourceLinkActivated(url, context)
+                is AbsoluteUrl -> listener.onExternalLinkActivated(url, context)
+            }
+        }
+}

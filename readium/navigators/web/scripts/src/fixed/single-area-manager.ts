@@ -27,23 +27,12 @@ export class SingleAreaManager {
   ) {
     const wrapperGesturesListener = {
       onTap: (event: MouseEvent) => {
-        console.log(`metaViewport ${metaViewport.content}`)
-        const docElement = window.document.documentElement
-        console.log(
-          `docElement ${docElement.scrollLeft} ${docElement.scrollTop}`
-        )
-        console.log(`scale ${window.visualViewport?.scale}`)
-        console.log(
-          `visualviewport ${window.visualViewport?.width} ${window.visualViewport?.height}`
-        )
-
         const tapEvent = {
           x:
-            (event.clientX * this.scale) /
-            (window.visualViewport!.scale * this.scale),
+            (event.clientX - visualViewport!.offsetLeft) *
+            visualViewport!.scale,
           y:
-            (event.clientY * this.scale) /
-            (window.visualViewport!.scale * this.scale),
+            (event.clientY - visualViewport!.offsetTop) * visualViewport!.scale,
         }
         listener.onTap(tapEvent)
       },
@@ -60,23 +49,14 @@ export class SingleAreaManager {
         this.onIframeLoaded()
       },
       onTap: (event: TapEvent) => {
-        const docElement = window.document.documentElement
-        console.log(
-          `docElement ${docElement.scrollLeft} ${docElement.scrollTop}`
-        )
-        console.log(`scale ${window.visualViewport?.scale}`)
-        console.log(
-          `visualviewport ${window.visualViewport?.width} ${window.visualViewport?.height}`
-        )
         const boundingRect = iframe.getBoundingClientRect()
-        console.log(`boundingRect $} ${boundingRect.left} ${boundingRect.top}`)
         const tapEvent = {
           x:
-            ((event.x + boundingRect.left) * this.scale) /
-            (window.visualViewport!.scale * this.scale),
+            (event.x + boundingRect.left - visualViewport!.offsetLeft) *
+            visualViewport!.scale,
           y:
-            ((event.y + boundingRect.top) * this.scale) /
-            (window.visualViewport!.scale * this.scale),
+            (event.y + boundingRect.top - visualViewport!.offsetTop) *
+            visualViewport!.scale,
         }
         listener.onTap(tapEvent)
       },
@@ -136,7 +116,9 @@ export class SingleAreaManager {
       width: this.viewport.width - this.insets.left - this.insets.right,
       height: this.viewport.height - this.insets.top - this.insets.bottom,
     }
+
     const scale = computeScale(this.fit, this.page.size, safeDrawingSize)
+
     this.metaViewport.content = new ViewportStringBuilder()
       .setInitialScale(scale)
       .setMinimumScale(scale)

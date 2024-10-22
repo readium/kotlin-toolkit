@@ -9,20 +9,15 @@ export class GesturesDetector {
   private readonly window: Window
 
   constructor(window: Window, listener: GesturesListener) {
-    console.log(`Constructing Gesturesdetector for window ${window}`)
     this.window = window
     this.listener = listener
     document.addEventListener(
       "click",
       (event) => {
-        console.log("onClick")
         this.onClick(event)
       },
       false
     )
-    /*document.addEventListener("DOMContentLoaded", () => {
-      console.log("DOM content loaded")
-    })*/
   }
 
   private onClick(event: MouseEvent) {
@@ -50,7 +45,6 @@ export class GesturesDetector {
         this.listener.onLinkActivated(nearestElement.href)
       }
     } else {
-      console.log("tap detected")
       this.listener.onTap(event)
     }
 
