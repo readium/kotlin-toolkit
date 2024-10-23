@@ -28,6 +28,18 @@ export class DoubleAreaManager {
     metaViewport: HTMLMetaElement,
     listener: AreaManager.Listener
   ) {
+    window.addEventListener("message", (event) => {
+      if (!event.ports[0]) {
+        return
+      }
+
+      if (event.source === leftIframe.contentWindow) {
+        this.leftPage.setMessagePort(event.ports[0])
+      } else if (event.source == rightIframe.contentWindow) {
+        this.rightPage.setMessagePort(event.ports[0])
+      }
+    })
+
     const wrapperGesturesListener = {
       onTap: (event: MouseEvent) => {
         const tapEvent = {

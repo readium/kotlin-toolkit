@@ -1,3 +1,5 @@
+import { Size } from "../common/types"
+
 export class ViewportStringBuilder {
   private initialScale?: number
 
@@ -47,5 +49,23 @@ export class ViewportStringBuilder {
     }
 
     return components.join(", ")
+  }
+}
+
+export function parseViewportString(viewportString: string): Size | undefined {
+  const regex = /(\w+) *= *([^\s,]+)/g
+  const properties = new Map<any, any>()
+  let match
+  while ((match = regex.exec(viewportString))) {
+    if (match != null) {
+      properties.set(match[1], match[2])
+    }
+  }
+  const width = parseFloat(properties.get("width"))
+  const height = parseFloat(properties.get("height"))
+  if (width && height) {
+    return { width, height }
+  } else {
+    return undefined
   }
 }

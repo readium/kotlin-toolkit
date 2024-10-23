@@ -1,5 +1,6 @@
 import { Margins, Size } from "../common/types"
 import { TapEvent } from "../common/events"
+import { IframeMessage } from "./iframe-message"
 
 /** Manages a fixed layout resource embedded in an iframe. */
 export class PageManager {
@@ -9,7 +10,7 @@ export class PageManager {
 
   private margins: Margins = { top: 0, right: 0, bottom: 0, left: 0 }
 
-  private readonly channel = new MessageChannel()
+  private messagePort?: MessagePort
 
   size?: Size
 
@@ -24,13 +25,12 @@ export class PageManager {
 
     this.listener = listener
     this.iframe = iframe
-    this.iframe.addEventListener(
-      "load",
-      () => {
-        this.onIframeLoaded()
-      },
-      { once: true }
-    )
+  }
+
+  setMessagePort(messagePort: MessagePort) {
+    messagePort.onmessage = (message) => {
+      this.onMessageFromIframe(message)
+    }
   }
 
   show() {
@@ -66,58 +66,28 @@ export class PageManager {
     this.size = size
   }
 
-  private onIframeLoaded() {
-    const viewport = this.iframe.contentWindow!.document.querySelector(
-      "meta[name=viewport]"
-    )
-    if (!viewport || viewport! instanceof HTMLMetaElement) {
+  private onMessageFromIframe(event: MessageEvent) {
+    const message = event.data as IframeMessage
+    switch (message.kind) {
+      case "contentSize":
+        return this.onContentSizeAvailable(message.size)
+      case "tap":
+        return this.listener.onTap({ x: message.x, y: message.y })
+      case "linkActivated":
+        return this.listener.onLinkActivated(message.href)
+    }
+  }
+
+  private onContentSizeAvailable(size?: Size) {
+    if (!size) {
       //FIXME: handle edge case
       return
     }
-
-    const pageSize = this.parsePageSize(viewport as HTMLMetaElement)
-    if (!pageSize) {
-      //FIXME: handle edge case
-      return
-    }
-    this.iframe.style.width = pageSize.width + "px"
-    this.iframe.style.height = pageSize.height + "px"
-    this.size = pageSize
-
-    this.channel.port1.onmessage = (message) => {
-      this.onMessageFromIframe(message)
-    }
-    this.iframe.contentWindow!.postMessage("Init", "*", [this.channel.port2])
+    this.iframe.style.width = size.width + "px"
+    this.iframe.style.height = size.height + "px"
+    this.size = size
 
     this.listener.onIframeLoaded()
-  }
-
-  private onMessageFromIframe(message: MessageEvent) {
-    if (message.data.x && message.data.y) {
-      this.listener.onTap({ x: message.data.x, y: message.data.y })
-    } else if (message.data.href) {
-      this.listener.onLinkActivated(message.data.href)
-    }
-  }
-
-  /** Parses the page size from the viewport meta tag of the loaded resource. */
-  private parsePageSize(viewportMeta: HTMLMetaElement): Size | undefined {
-    const regex = /(\w+) *= *([^\s,]+)/g
-    const properties = new Map<any, any>()
-    let match
-    while ((match = regex.exec(viewportMeta.content))) {
-      if (match != null) {
-        properties.set(match[1], match[2])
-      }
-    }
-    const width = parseFloat(properties.get("width"))
-    const height = parseFloat(properties.get("height"))
-
-    if (width && height) {
-      return { width, height }
-    } else {
-      return undefined
-    }
   }
 }
 

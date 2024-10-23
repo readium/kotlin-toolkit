@@ -25,6 +25,12 @@ export class SingleAreaManager {
     metaViewport: HTMLMetaElement,
     listener: AreaManager.Listener
   ) {
+    window.addEventListener("message", (event) => {
+      if (event.source === iframe.contentWindow && event.ports[0]) {
+        this.page.setMessagePort(event.ports[0])
+      }
+    })
+
     const wrapperGesturesListener = {
       onTap: (event: MouseEvent) => {
         const tapEvent = {
