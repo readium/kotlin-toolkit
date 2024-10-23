@@ -52,7 +52,7 @@ import org.readium.r2.shared.util.toUri
 data class ReaderState<R : ReadingOrder>(
     val coroutineScope: CoroutineScope,
     val publication: Publication,
-    val navigatorState: Navigator<R>,
+    val navigatorState: Navigator<R, *>,
     val preferencesViewModel: UserPreferencesViewModel<*, *>
 ) {
 

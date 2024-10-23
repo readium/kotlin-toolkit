@@ -21,7 +21,7 @@ import org.readium.navigator.common.TapContext
 import org.readium.navigator.common.defaultHyperlinkListener
 import org.readium.navigator.common.defaultInputListener
 import org.readium.navigator.web.layout.DoubleViewportSpread
-import org.readium.navigator.web.layout.ReadingOrder
+import org.readium.navigator.web.layout.FixedWebReadingOrder
 import org.readium.navigator.web.layout.SingleViewportSpread
 import org.readium.navigator.web.pager.NavigatorPager
 import org.readium.navigator.web.spread.DoubleSpreadState
@@ -136,10 +136,10 @@ private fun LayoutDirection.toReadingProgression(): ReadingProgression =
 private fun onLinkActivated(
     url: Url,
     context: LinkContext?,
-    readingOrder: ReadingOrder,
+    readingOrder: FixedWebReadingOrder,
     listener: HyperlinkListener
 ) {
-    readingOrder.indexOfHref(url)
+    readingOrder.indexOfHref(url.removeFragment())
         ?.let { listener.onReadingOrderLinkActivated(url, context) }
         ?: run {
             when (url) {

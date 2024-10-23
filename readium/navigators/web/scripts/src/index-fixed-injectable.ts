@@ -12,7 +12,6 @@ import { GesturesDetector, GesturesListener } from "./common/gestures"
 
 window.addEventListener("message", (event) => {
   if (event.ports[0]) {
-    console.log("receiving port")
     const messagePort = event.ports[0]
     const messagingListener = new MessagingGesturesListener(messagePort)
     new GesturesDetector(window, messagingListener)
@@ -27,7 +26,6 @@ class MessagingGesturesListener implements GesturesListener {
   }
 
   onTap(event: MouseEvent): void {
-    console.log("posting event")
     const tapEvent = { x: event.clientX, y: event.clientY }
     this.messagePort.postMessage(tapEvent)
   }

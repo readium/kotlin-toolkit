@@ -51,7 +51,7 @@ public fun <T, R : ReadingOrder> defaultInputListener(
     horizontalEdgeThresholdPercent: Double? = 0.3,
     minimumVerticalEdgeSize: Dp = 80.0.dp,
     verticalEdgeThresholdPercent: Double? = 0.3
-): InputListener where T : Navigator<R>, T : Overflowable {
+): InputListener where T : Navigator<R, *>, T : Overflowable {
     val coroutineScope = rememberCoroutineScope()
 
     return DefaultInputListener(
@@ -78,7 +78,7 @@ private class DefaultInputListener<T, R : ReadingOrder>(
     private val horizontalEdgeThresholdPercent: Double?,
     private val minimumVerticalEdgeSize: Dp,
     private val verticalEdgeThresholdPercent: Double?
-) : InputListener where T : Navigator<R>, T : Overflowable {
+) : InputListener where T : Navigator<R, *>, T : Overflowable {
 
     override fun onTap(event: TapEvent, context: TapContext) {
         if (!handleTap(event, context)) {

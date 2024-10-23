@@ -12,9 +12,9 @@ import org.readium.navigator.common.Configurable
 import org.readium.navigator.common.Navigator
 import org.readium.navigator.common.Overflow
 import org.readium.navigator.common.Overflowable
+import org.readium.navigator.web.layout.FixedWebReadingOrder
 import org.readium.navigator.web.layout.Layout
 import org.readium.navigator.web.layout.LayoutResolver
-import org.readium.navigator.web.layout.ReadingOrder
 import org.readium.navigator.web.preferences.FixedWebDefaults
 import org.readium.navigator.web.preferences.FixedWebPreferences
 import org.readium.navigator.web.preferences.FixedWebSettings
@@ -32,13 +32,13 @@ import org.readium.r2.shared.publication.Metadata
 @Stable
 public class FixedWebNavigatorState internal constructor(
     publicationMetadata: Metadata,
-    override val readingOrder: ReadingOrder,
+    override val readingOrder: FixedWebReadingOrder,
     initialPreferences: FixedWebPreferences,
     defaults: FixedWebDefaults,
     initialItem: Int,
     internal val webViewServer: WebViewServer,
     internal val preloadedData: PreloadedData
-) : Navigator<ReadingOrder>, Configurable<FixedWebSettings, FixedWebPreferences>, Overflowable {
+) : Navigator<FixedWebReadingOrder, FixedWebNavigatorLocation>, Configurable<FixedWebSettings, FixedWebPreferences>, Overflowable {
 
     init {
         require(initialItem < readingOrder.items.size)
@@ -79,8 +79,16 @@ public class FixedWebNavigatorState internal constructor(
     public val currentItem: State<Int> =
         derivedStateOf { layout.value.pageIndexForSpread(pagerState.currentPage) }
 
-    public override suspend fun goTo(item: Int) {
-        pagerState.scrollToPage(layout.value.spreadIndexForPage(item))
+    override val location: State<FixedWebNavigatorLocation> =
+        derivedStateOf { FixedWebNavigatorLocation(readingOrder.items[currentItem.value].href) }
+
+    override suspend fun goTo(location: FixedWebNavigatorLocation) {
+        val pageIndex = checkNotNull(readingOrder.indexOfHref(location.href))
+        pagerState.scrollToPage(layout.value.spreadIndexForPage(pageIndex))
+    }
+
+    public override suspend fun goTo(readingOrderItem: Int) {
+        pagerState.scrollToPage(layout.value.spreadIndexForPage(readingOrderItem))
     }
 
     public suspend fun animateGoTo(

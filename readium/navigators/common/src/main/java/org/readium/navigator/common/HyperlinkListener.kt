@@ -35,14 +35,14 @@ public data class FootnoteContext(
 
 @ExperimentalReadiumApi
 @Composable
-public fun <R : ReadingOrder> defaultHyperlinkListener(
-    navigatorState: Navigator<R>,
+public fun <R : ReadingOrder, L : Location> defaultHyperlinkListener(
+    navigatorState: Navigator<R, L>,
     shouldFollowReadingOrderLink: (Url, LinkContext?) -> Boolean = { _, _ -> true },
-    // shouldFollowResourceLink: (Url, LinkContext?) -> Boolean = { _, _ -> true },
+    // TODO: shouldFollowResourceLink: (Url, LinkContext?) -> Boolean = { _, _ -> true },
     onExternalLinkActivated: (AbsoluteUrl, LinkContext?) -> Unit = { _, _ -> }
 ): HyperlinkListener {
     val coroutineScope = rememberCoroutineScope()
-    val navigationHistory: MutableList<Int> = remember { mutableListOf() }
+    val navigationHistory: MutableList<L> = remember { mutableListOf() }
 
     BackHandler(enabled = navigationHistory.isNotEmpty()) {
         val previousItem = navigationHistory.removeLast()
@@ -59,19 +59,18 @@ public fun <R : ReadingOrder> defaultHyperlinkListener(
 }
 
 @ExperimentalReadiumApi
-private class DefaultHyperlinkListener<R : ReadingOrder>(
+private class DefaultHyperlinkListener<R : ReadingOrder, L : Location>(
     private val coroutineScope: CoroutineScope,
-    private val navigatorState: Navigator<R>,
-    private val navigationHistory: MutableList<Int>,
+    private val navigatorState: Navigator<R, L>,
+    private val navigationHistory: MutableList<L>,
     private val shouldFollowReadingOrderLink: (Url, LinkContext?) -> Boolean,
     private val onExternalLinkActivatedDelegate: (AbsoluteUrl, LinkContext?) -> Unit
 ) : HyperlinkListener {
 
     override fun onReadingOrderLinkActivated(url: Url, context: LinkContext?) {
         if (shouldFollowReadingOrderLink(url, context)) {
-            val item = checkNotNull(navigatorState.readingOrder.indexOfHref(url))
-            navigationHistory.add(item)
-            coroutineScope.launch { navigatorState.goTo(item) }
+            navigationHistory.add(navigatorState.location.value)
+            coroutineScope.launch { navigatorState.goTo(url) }
         }
     }
 

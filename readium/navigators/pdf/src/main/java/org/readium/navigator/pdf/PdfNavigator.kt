@@ -39,6 +39,8 @@ public fun <S : Settings, P : Preferences<P>> PdfNavigator(
 ) {
     val preferencesFlow = snapshotFlow { state.preferences.value }
 
+    val pendingPositionFlow = snapshotFlow { state.pendingLocator.value }
+
     AndroidFragment<PdfFragment<S, P>>(
         modifier = modifier,
         onUpdate = {
@@ -62,11 +64,19 @@ public fun <S : Settings, P : Preferences<P>> PdfNavigator(
                 fragment.currentLocator
                     .onEach { locator ->
                         state.locator.value = locator
-                    }
-                    .launchIn(fragment.lifecycleScope)
+                    }.launchIn(fragment.lifecycleScope)
 
                 preferencesFlow
                     .onEach { preferences -> fragment.submitPreferences(preferences) }
+                    .launchIn(fragment.lifecycleScope)
+
+                pendingPositionFlow
+                    .onEach { locator ->
+                        if (locator != null) {
+                            fragment.go(locator)
+                            state.pendingLocator.value = null
+                        }
+                    }
                     .launchIn(fragment.lifecycleScope)
             }
 
