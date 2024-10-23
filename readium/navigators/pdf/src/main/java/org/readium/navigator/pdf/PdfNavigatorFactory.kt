@@ -60,4 +60,7 @@ public class PdfNavigatorFactory<S : Settings, P : Preferences<P>, E : Preferenc
         currentPreferences: P
     ): E =
         pdfEngineProvider.createPreferenceEditor(publication, currentPreferences)
+
+    public fun createLocatorAdapter(): PdfLocatorAdapter =
+        PdfLocatorAdapter(publication)
 }

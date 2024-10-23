@@ -11,6 +11,7 @@ import org.readium.navigator.common.Preferences
 import org.readium.navigator.common.Settings
 import org.readium.r2.navigator.pdf.PdfNavigatorFactory
 import org.readium.r2.shared.ExperimentalReadiumApi
+import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 
 @ExperimentalReadiumApi
@@ -21,7 +22,7 @@ public class PdfNavigatorState<S : Settings, P : Preferences<P>> internal constr
     private val settingsResolver: (P) -> S,
     initialLocator: Locator,
     initialPreferences: P
-) : Navigator<PdfReadingOrder, PdfNavigatorLocation>, Configurable<S, P> {
+) : Navigator<PdfReadingOrder, PdfLocation, PdfGoLocation>, Configurable<S, P> {
 
     override val preferences: MutableState<P> =
         mutableStateOf(initialPreferences)
@@ -35,14 +36,23 @@ public class PdfNavigatorState<S : Settings, P : Preferences<P>> internal constr
     internal val pendingLocator: MutableState<Locator?> =
         mutableStateOf(null)
 
-    override val location: State<PdfNavigatorLocation> =
-        derivedStateOf { PdfNavigatorLocation(locator.value) }
+    override val location: State<PdfLocation> =
+        derivedStateOf {
+            PdfLocation(href = locator.value.href, page = locator.value.locations.position!!)
+        }
 
-    override suspend fun goTo(location: PdfNavigatorLocation) {
-        pendingLocator.value = locator.value
+    override suspend fun goTo(link: Link) {
+        goTo(PageLocation(link.url(), 0))
     }
 
-    override suspend fun goTo(readingOrderItem: Int) {
-        pendingLocator.value = locator.value.copy(locations = Locator.Locations(position = 0))
+    override suspend fun goTo(location: PdfLocation) {
+        pendingLocator.value = locator.value.copyWithLocations(position = location.page)
+    }
+
+    override suspend fun goTo(goLocation: PdfGoLocation) {
+        pendingLocator.value = when (goLocation) {
+            is PositionLocation -> locator.value.copyWithLocations(position = goLocation.position)
+            is PageLocation -> locator.value.copyWithLocations(position = goLocation.page)
+        }
     }
 }

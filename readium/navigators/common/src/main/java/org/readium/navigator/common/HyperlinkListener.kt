@@ -35,8 +35,8 @@ public data class FootnoteContext(
 
 @ExperimentalReadiumApi
 @Composable
-public fun <R : ReadingOrder, L : Location> defaultHyperlinkListener(
-    navigatorState: Navigator<R, L>,
+public fun <L : Location> defaultHyperlinkListener(
+    navigatorState: Navigator<*, L, *>,
     shouldFollowReadingOrderLink: (Url, LinkContext?) -> Boolean = { _, _ -> true },
     // TODO: shouldFollowResourceLink: (Url, LinkContext?) -> Boolean = { _, _ -> true },
     onExternalLinkActivated: (AbsoluteUrl, LinkContext?) -> Unit = { _, _ -> }
@@ -59,9 +59,9 @@ public fun <R : ReadingOrder, L : Location> defaultHyperlinkListener(
 }
 
 @ExperimentalReadiumApi
-private class DefaultHyperlinkListener<R : ReadingOrder, L : Location>(
+private class DefaultHyperlinkListener<L : Location>(
     private val coroutineScope: CoroutineScope,
-    private val navigatorState: Navigator<R, L>,
+    private val navigatorState: Navigator<*, L, *>,
     private val navigationHistory: MutableList<L>,
     private val shouldFollowReadingOrderLink: (Url, LinkContext?) -> Boolean,
     private val onExternalLinkActivatedDelegate: (AbsoluteUrl, LinkContext?) -> Unit
@@ -70,7 +70,7 @@ private class DefaultHyperlinkListener<R : ReadingOrder, L : Location>(
     override fun onReadingOrderLinkActivated(url: Url, context: LinkContext?) {
         if (shouldFollowReadingOrderLink(url, context)) {
             navigationHistory.add(navigatorState.location.value)
-            coroutineScope.launch { navigatorState.goTo(url) }
+            coroutineScope.launch { navigatorState.goTo(Link(url)) }
         }
     }
 

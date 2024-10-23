@@ -15,6 +15,9 @@ import org.readium.navigator.common.Overflowable
 import org.readium.navigator.web.layout.FixedWebReadingOrder
 import org.readium.navigator.web.layout.Layout
 import org.readium.navigator.web.layout.LayoutResolver
+import org.readium.navigator.web.location.FixedWebGoLocation
+import org.readium.navigator.web.location.FixedWebLocation
+import org.readium.navigator.web.location.HrefLocation
 import org.readium.navigator.web.preferences.FixedWebDefaults
 import org.readium.navigator.web.preferences.FixedWebPreferences
 import org.readium.navigator.web.preferences.FixedWebSettings
@@ -26,6 +29,7 @@ import org.readium.r2.navigator.preferences.Axis
 import org.readium.r2.navigator.preferences.Fit
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.InternalReadiumApi
+import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Metadata
 
 @ExperimentalReadiumApi
@@ -35,13 +39,13 @@ public class FixedWebNavigatorState internal constructor(
     override val readingOrder: FixedWebReadingOrder,
     initialPreferences: FixedWebPreferences,
     defaults: FixedWebDefaults,
-    initialItem: Int,
+    initialLocation: Int,
     internal val webViewServer: WebViewServer,
     internal val preloadedData: PreloadedData
-) : Navigator<FixedWebReadingOrder, FixedWebNavigatorLocation>, Configurable<FixedWebSettings, FixedWebPreferences>, Overflowable {
+) : Navigator<FixedWebReadingOrder, FixedWebLocation, FixedWebGoLocation>, Configurable<FixedWebSettings, FixedWebPreferences>, Overflowable {
 
     init {
-        require(initialItem < readingOrder.items.size)
+        require(initialLocation < readingOrder.items.size)
     }
 
     internal data class PreloadedData(
@@ -74,20 +78,34 @@ public class FixedWebNavigatorState internal constructor(
         derivedStateOf { settings.value.fit }
 
     internal val pagerState: PagerState =
-        PagerState(currentPage = layout.value.spreadIndexForPage(initialItem)) { layout.value.spreads.size }
+        PagerState(currentPage = layout.value.spreadIndexForPage(initialLocation)) { layout.value.spreads.size }
 
-    public val currentItem: State<Int> =
+    private val currentItem: State<Int> =
         derivedStateOf { layout.value.pageIndexForSpread(pagerState.currentPage) }
 
-    override val location: State<FixedWebNavigatorLocation> =
-        derivedStateOf { FixedWebNavigatorLocation(readingOrder.items[currentItem.value].href) }
+    override val location: State<FixedWebLocation> =
+        derivedStateOf { FixedWebLocation(readingOrder.items[currentItem.value].href) }
 
-    override suspend fun goTo(location: FixedWebNavigatorLocation) {
-        val pageIndex = checkNotNull(readingOrder.indexOfHref(location.href))
-        pagerState.scrollToPage(layout.value.spreadIndexForPage(pageIndex))
+    override suspend fun goTo(link: Link) {
+        val href = link.url().removeFragment()
+        val location = HrefLocation(href)
+        goTo(location)
     }
 
-    public override suspend fun goTo(readingOrderItem: Int) {
+    override suspend fun goTo(goLocation: FixedWebGoLocation) {
+        when (goLocation) {
+            is HrefLocation -> {
+                val pageIndex = checkNotNull(readingOrder.indexOfHref(goLocation.href))
+                pagerState.scrollToPage(layout.value.spreadIndexForPage(pageIndex))
+            }
+        }
+    }
+
+    override suspend fun goTo(location: FixedWebLocation) {
+        return goTo(HrefLocation(location.href))
+    }
+
+    public suspend fun goTo(readingOrderItem: Int) {
         pagerState.scrollToPage(layout.value.spreadIndexForPage(readingOrderItem))
     }
 

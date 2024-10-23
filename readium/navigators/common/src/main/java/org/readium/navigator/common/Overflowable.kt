@@ -1,6 +1,7 @@
 package org.readium.navigator.common
 
 import androidx.compose.runtime.State
+import org.readium.r2.navigator.preferences.ReadingProgression
 import org.readium.r2.shared.ExperimentalReadiumApi
 
 /**
@@ -33,3 +34,31 @@ public interface Overflowable {
 
 @ExperimentalReadiumApi
 public typealias Overflow = org.readium.r2.navigator.OverflowableNavigator.Overflow
+
+/**
+ * Moves to the left content portion (eg. page) relative to the reading progression direction.
+ */
+@ExperimentalReadiumApi
+public suspend fun Overflowable.moveLeft() {
+    return when (overflow.value.readingProgression) {
+        ReadingProgression.LTR ->
+            moveBackward()
+
+        ReadingProgression.RTL ->
+            moveForward()
+    }
+}
+
+/**
+ * Moves to the right content portion (eg. page) relative to the reading progression direction.
+ */
+@ExperimentalReadiumApi
+public suspend fun Overflowable.moveRight() {
+    return when (overflow.value.readingProgression) {
+        ReadingProgression.LTR ->
+            moveForward()
+
+        ReadingProgression.RTL ->
+            moveBackward()
+    }
+}

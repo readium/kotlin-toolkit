@@ -10,6 +10,7 @@ import android.app.Application
 import java.io.IOException
 import org.readium.navigator.web.layout.FixedWebReadingOrder
 import org.readium.navigator.web.layout.FixedWebReadingOrderItem
+import org.readium.navigator.web.location.FixedWebLocatorAdapter
 import org.readium.navigator.web.preferences.FixedWebDefaults
 import org.readium.navigator.web.preferences.FixedWebPreferences
 import org.readium.navigator.web.preferences.FixedWebPreferencesEditor
@@ -107,7 +108,7 @@ public class FixedWebNavigatorFactory private constructor(
                 readingOrder = FixedWebReadingOrder(items),
                 initialPreferences = initialPreferences ?: FixedWebPreferences(),
                 defaults = defaults,
-                initialItem = initialIndex,
+                initialLocation = initialIndex,
                 webViewServer = webViewServer,
                 preloadedData = preloads
             )
@@ -147,4 +148,7 @@ public class FixedWebNavigatorFactory private constructor(
             publication.metadata,
             defaults
         )
+
+    public fun createLocatorAdapter(): FixedWebLocatorAdapter =
+        FixedWebLocatorAdapter(publication)
 }

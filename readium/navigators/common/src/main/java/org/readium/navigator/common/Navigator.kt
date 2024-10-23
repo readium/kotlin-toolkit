@@ -3,10 +3,11 @@ package org.readium.navigator.common
 import androidx.compose.runtime.State
 import org.readium.r2.shared.DelicateReadiumApi
 import org.readium.r2.shared.ExperimentalReadiumApi
+import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.util.Url
 
 @ExperimentalReadiumApi
-public interface Navigator<R : ReadingOrder, L : Location> {
+public interface Navigator<R : ReadingOrder, L : Location, G : GoLocation> {
 
     public val readingOrder: R
 
@@ -14,27 +15,16 @@ public interface Navigator<R : ReadingOrder, L : Location> {
 
     public suspend fun goTo(location: L)
 
-    public suspend fun goTo(readingOrderItem: Int)
+    public suspend fun goTo(goLocation: G)
 
-    public suspend fun goTo(url: Url) {
-        val itemIndex = readingOrder.indexOfHref(url) ?: return
-        goTo(itemIndex)
-    }
+    public suspend fun goTo(link: Link)
 }
 
-/**
- * Data about the content to play.
- */
+@ExperimentalReadiumApi
 public interface ReadingOrder {
 
-    /**
-     * List of items to play.
-     */
     public val items: List<Item>
 
-    /**
-     * A piece of the content to play.
-     */
     public interface Item {
 
         public val href: Url
@@ -49,7 +39,11 @@ public interface ReadingOrder {
 /**
  *  Location of the navigator.
  */
+@ExperimentalReadiumApi
 public interface Location {
 
     public val href: Url
 }
+
+@ExperimentalReadiumApi
+public interface GoLocation

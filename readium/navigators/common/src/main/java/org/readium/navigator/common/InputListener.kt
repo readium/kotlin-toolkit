@@ -40,8 +40,8 @@ public data class TapContext(
 
 @ExperimentalReadiumApi
 @Composable
-public fun <T, R : ReadingOrder> defaultInputListener(
-    navigatorState: T,
+public fun defaultInputListener(
+    navigatorState: Overflowable,
     fallbackListener: InputListener? = null,
     tapEdges: Set<DirectionalNavigationAdapter.TapEdge> = setOf(
         DirectionalNavigationAdapter.TapEdge.Horizontal
@@ -51,7 +51,7 @@ public fun <T, R : ReadingOrder> defaultInputListener(
     horizontalEdgeThresholdPercent: Double? = 0.3,
     minimumVerticalEdgeSize: Dp = 80.0.dp,
     verticalEdgeThresholdPercent: Double? = 0.3
-): InputListener where T : Navigator<R, *>, T : Overflowable {
+): InputListener {
     val coroutineScope = rememberCoroutineScope()
 
     return DefaultInputListener(
@@ -68,17 +68,17 @@ public fun <T, R : ReadingOrder> defaultInputListener(
 }
 
 @OptIn(ExperimentalReadiumApi::class)
-private class DefaultInputListener<T, R : ReadingOrder>(
+private class DefaultInputListener(
     private val coroutineScope: CoroutineScope,
     private val fallbackListener: InputListener?,
-    private val navigatorState: T,
+    private val navigatorState: Overflowable,
     private val tapEdges: Set<DirectionalNavigationAdapter.TapEdge>,
     private val handleTapsWhileScrolling: Boolean,
     private val minimumHorizontalEdgeSize: Dp,
     private val horizontalEdgeThresholdPercent: Double?,
     private val minimumVerticalEdgeSize: Dp,
     private val verticalEdgeThresholdPercent: Double?
-) : InputListener where T : Navigator<R, *>, T : Overflowable {
+) : InputListener {
 
     override fun onTap(event: TapEvent, context: TapContext) {
         if (!handleTap(event, context)) {
@@ -101,10 +101,10 @@ private class DefaultInputListener<T, R : ReadingOrder>(
             val rightRange = (width - horizontalEdgeSize)..width
 
             if (event.offset.x in rightRange && navigatorState.canMoveRight) {
-                coroutineScope.launch { navigatorState.goRight() }
+                coroutineScope.launch { navigatorState.moveRight() }
                 return true
             } else if (event.offset.x in leftRange && navigatorState.canMoveLeft) {
-                coroutineScope.launch { navigatorState.goLeft() }
+                coroutineScope.launch { navigatorState.moveLeft() }
                 return true
             }
         }
@@ -147,30 +147,4 @@ private class DefaultInputListener<T, R : ReadingOrder>(
             ReadingProgression.RTL ->
                 canMoveBackward
         }
-
-    /**
-     * Moves to the left content portion (eg. page) relative to the reading progression direction.
-     */
-    private suspend fun Overflowable.goLeft() {
-        return when (overflow.value.readingProgression) {
-            ReadingProgression.LTR ->
-                moveBackward()
-
-            ReadingProgression.RTL ->
-                moveForward()
-        }
-    }
-
-    /**
-     * Moves to the right content portion (eg. page) relative to the reading progression direction.
-     */
-    private suspend fun Overflowable.goRight() {
-        return when (overflow.value.readingProgression) {
-            ReadingProgression.LTR ->
-                moveForward()
-
-            ReadingProgression.RTL ->
-                moveBackward()
-        }
-    }
 }

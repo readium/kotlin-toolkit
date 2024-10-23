@@ -16,6 +16,7 @@ import org.readium.adapter.pdfium.document.PdfiumDocumentFactory
 import org.readium.adapter.pdfium.navigator.PdfiumEngineProvider
 import org.readium.adapter.pdfium.navigator.PdfiumPreferences
 import org.readium.adapter.pdfium.navigator.PdfiumSettings
+import org.readium.navigator.demo.persistence.LocatorRepository
 import org.readium.navigator.demo.preferences.PreferencesManager
 import org.readium.navigator.demo.preferences.UserPreferencesViewModel
 import org.readium.navigator.pdf.PdfNavigatorFactory
@@ -23,6 +24,7 @@ import org.readium.navigator.web.FixedWebNavigatorFactory
 import org.readium.navigator.web.preferences.FixedWebPreferences
 import org.readium.navigator.web.preferences.FixedWebSettings
 import org.readium.r2.shared.ExperimentalReadiumApi
+import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.DebugError
@@ -56,7 +58,7 @@ class ReaderOpener(
     private val pdfEngineProvider =
         PdfiumEngineProvider()
 
-    suspend fun open(url: AbsoluteUrl): Try<ReaderState<*>, Error> {
+    suspend fun open(url: AbsoluteUrl): Try<ReaderState<*, *>, Error> {
         val asset = assetRetriever.retrieve(url)
             .getOrElse { return Try.failure(it) }
 
@@ -66,11 +68,13 @@ class ReaderOpener(
                 return Try.failure(it)
             }
 
+        val initialLocator = LocatorRepository.getLocator(url)
+
         val readerState = when {
             publication.conformsTo(Publication.Profile.EPUB) ->
-                createFixedWebReader(publication)
+                createFixedWebReader(url, publication, initialLocator)
             publication.conformsTo(Publication.Profile.PDF) ->
-                createPdfReader(publication)
+                createPdfReader(url, publication, initialLocator)
             else ->
                 Try.failure(DebugError("Publication not supported"))
         }.getOrElse { error ->
@@ -82,14 +86,17 @@ class ReaderOpener(
     }
 
     private suspend fun createFixedWebReader(
-        publication: Publication
-    ): Try<ReaderState<*>, Error> {
+        url: AbsoluteUrl,
+        publication: Publication,
+        initialLocator: Locator?
+    ): Try<ReaderState<*, *>, Error> {
         val navigatorFactory = FixedWebNavigatorFactory(application, publication)
             ?: return Try.failure(DebugError("Publication not supported"))
 
         val initialPreferences = FixedWebPreferences()
 
         val navigatorState = navigatorFactory.createNavigator(
+            initialLocator = initialLocator,
             initialPreferences = initialPreferences
         ).getOrElse {
             return Try.failure(it)
@@ -109,24 +116,31 @@ class ReaderOpener(
                 navigatorState.preferences.value = it
             }.launchIn(coroutineScope)
 
+        val locatorAdapter = navigatorFactory.createLocatorAdapter()
+
         val readerState = ReaderState(
+            url = url,
             coroutineScope = coroutineScope,
             publication = publication,
             navigatorState = navigatorState,
-            preferencesViewModel = preferencesViewModel
+            preferencesViewModel = preferencesViewModel,
+            locatorAdapter = locatorAdapter
         )
 
         return Try.success(readerState)
     }
 
     private fun createPdfReader(
-        publication: Publication
-    ): Try<ReaderState<*>, Error> {
+        url: AbsoluteUrl,
+        publication: Publication,
+        initialLocator: Locator?
+    ): Try<ReaderState<*, *>, Error> {
         val navigatorFactory = PdfNavigatorFactory(publication, pdfEngineProvider)
 
         val initialPreferences = PdfiumPreferences()
 
         val navigatorState = navigatorFactory.createNavigator(
+            initialLocator = initialLocator,
             initialPreferences = initialPreferences
         ).getOrElse {
             throw IllegalStateException()
@@ -145,11 +159,15 @@ class ReaderOpener(
             .onEach { navigatorState.preferences.value = it }
             .launchIn(coroutineScope)
 
+        val locatorAdapter = navigatorFactory.createLocatorAdapter()
+
         val readerState = ReaderState(
+            url = url,
             coroutineScope = coroutineScope,
             publication = publication,
             navigatorState = navigatorState,
-            preferencesViewModel = preferencesViewModel
+            preferencesViewModel = preferencesViewModel,
+            locatorAdapter = locatorAdapter
         )
 
         return Try.success(readerState)

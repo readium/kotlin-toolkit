@@ -22,15 +22,21 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.zIndex
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import org.readium.navigator.common.InputListener
+import org.readium.navigator.common.Location
+import org.readium.navigator.common.LocatorAdapter
 import org.readium.navigator.common.Navigator
 import org.readium.navigator.common.Overflowable
 import org.readium.navigator.common.ReadingOrder
@@ -38,6 +44,7 @@ import org.readium.navigator.common.TapContext
 import org.readium.navigator.common.TapEvent
 import org.readium.navigator.common.defaultHyperlinkListener
 import org.readium.navigator.common.defaultInputListener
+import org.readium.navigator.demo.persistence.LocatorRepository
 import org.readium.navigator.demo.preferences.UserPreferences
 import org.readium.navigator.demo.preferences.UserPreferencesViewModel
 import org.readium.navigator.demo.util.launchWebBrowser
@@ -47,13 +54,16 @@ import org.readium.navigator.web.FixedWebNavigator
 import org.readium.navigator.web.FixedWebNavigatorState
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.toUri
 
-data class ReaderState<R : ReadingOrder>(
+data class ReaderState<R : ReadingOrder, L : Location>(
+    val url: AbsoluteUrl,
     val coroutineScope: CoroutineScope,
     val publication: Publication,
-    val navigatorState: Navigator<R, *>,
-    val preferencesViewModel: UserPreferencesViewModel<*, *>
+    val navigatorState: Navigator<R, L, *>,
+    val preferencesViewModel: UserPreferencesViewModel<*, *>,
+    val locatorAdapter: LocatorAdapter<L, *>
 ) {
 
     fun close() {
@@ -62,10 +72,10 @@ data class ReaderState<R : ReadingOrder>(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalReadiumApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun <R : ReadingOrder> Reader(
-    state: ReaderState<R>,
+fun <R : ReadingOrder, L : Location> Reader(
+    state: ReaderState<R, L>,
     fullScreenState: MutableState<Boolean>
 ) {
     val showPreferences = remember { mutableStateOf(false) }
@@ -115,6 +125,21 @@ fun <R : ReadingOrder> Reader(
                 navigatorState = state.navigatorState,
                 onExternalLinkActivated = { url, _ -> launchWebBrowser(context, url.toUri()) }
             )
+
+        val locationFlow = remember {
+            snapshotFlow {
+                state.navigatorState.location.value
+            }
+        }
+
+        LaunchedEffect(locationFlow) {
+            locationFlow
+                .onEach {
+                    val locator = with(state.locatorAdapter) { it.toLocator() }
+                    LocatorRepository.saveLocator(state.url, locator)
+                }
+                .launchIn(state.coroutineScope)
+        }
 
         when (state.navigatorState) {
             is FixedWebNavigatorState -> {
