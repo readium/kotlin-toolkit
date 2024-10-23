@@ -7,7 +7,7 @@ import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.util.Url
 
 @ExperimentalReadiumApi
-public interface Navigator<R : ReadingOrder, L : Location, G : GoLocation> {
+public interface Navigator<R : ReadingOrder, L : Location, G : TargetLocation> {
 
     public val readingOrder: R
 
@@ -15,7 +15,7 @@ public interface Navigator<R : ReadingOrder, L : Location, G : GoLocation> {
 
     public suspend fun goTo(location: L)
 
-    public suspend fun goTo(goLocation: G)
+    public suspend fun goTo(targetLocation: G)
 
     public suspend fun goTo(link: Link)
 }
@@ -46,4 +46,4 @@ public interface Location {
 }
 
 @ExperimentalReadiumApi
-public interface GoLocation
+public interface TargetLocation

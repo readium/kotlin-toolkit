@@ -15,8 +15,8 @@ import org.readium.navigator.common.Overflowable
 import org.readium.navigator.web.layout.FixedWebReadingOrder
 import org.readium.navigator.web.layout.Layout
 import org.readium.navigator.web.layout.LayoutResolver
-import org.readium.navigator.web.location.FixedWebGoLocation
 import org.readium.navigator.web.location.FixedWebLocation
+import org.readium.navigator.web.location.FixedWebTargetLocation
 import org.readium.navigator.web.location.HrefLocation
 import org.readium.navigator.web.preferences.FixedWebDefaults
 import org.readium.navigator.web.preferences.FixedWebPreferences
@@ -42,7 +42,7 @@ public class FixedWebNavigatorState internal constructor(
     initialLocation: Int,
     internal val webViewServer: WebViewServer,
     internal val preloadedData: PreloadedData
-) : Navigator<FixedWebReadingOrder, FixedWebLocation, FixedWebGoLocation>, Configurable<FixedWebSettings, FixedWebPreferences>, Overflowable {
+) : Navigator<FixedWebReadingOrder, FixedWebLocation, FixedWebTargetLocation>, Configurable<FixedWebSettings, FixedWebPreferences>, Overflowable {
 
     init {
         require(initialLocation < readingOrder.items.size)
@@ -86,16 +86,19 @@ public class FixedWebNavigatorState internal constructor(
     override val location: State<FixedWebLocation> =
         derivedStateOf { FixedWebLocation(readingOrder.items[currentItem.value].href) }
 
+    internal fun updateLocation(location: FixedWebLocation) {
+    }
+
     override suspend fun goTo(link: Link) {
         val href = link.url().removeFragment()
         val location = HrefLocation(href)
         goTo(location)
     }
 
-    override suspend fun goTo(goLocation: FixedWebGoLocation) {
-        when (goLocation) {
+    override suspend fun goTo(targetLocation: FixedWebTargetLocation) {
+        when (targetLocation) {
             is HrefLocation -> {
-                val pageIndex = checkNotNull(readingOrder.indexOfHref(goLocation.href))
+                val pageIndex = checkNotNull(readingOrder.indexOfHref(targetLocation.href))
                 pagerState.scrollToPage(layout.value.spreadIndexForPage(pageIndex))
             }
         }

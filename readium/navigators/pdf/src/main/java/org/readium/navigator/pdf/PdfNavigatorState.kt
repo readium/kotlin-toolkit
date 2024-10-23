@@ -49,10 +49,12 @@ public class PdfNavigatorState<S : Settings, P : Preferences<P>> internal constr
         pendingLocator.value = locator.value.copyWithLocations(position = location.page)
     }
 
-    override suspend fun goTo(goLocation: PdfGoLocation) {
-        pendingLocator.value = when (goLocation) {
-            is PositionLocation -> locator.value.copyWithLocations(position = goLocation.position)
-            is PageLocation -> locator.value.copyWithLocations(position = goLocation.page)
+    override suspend fun goTo(targetLocation: PdfGoLocation) {
+        pendingLocator.value = when (targetLocation) {
+            is PositionLocation -> locator.value.copyWithLocations(
+                position = targetLocation.position
+            )
+            is PageLocation -> locator.value.copyWithLocations(position = targetLocation.page)
         }
     }
 }

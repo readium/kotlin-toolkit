@@ -1,8 +1,8 @@
 package org.readium.navigator.pdf
 
-import org.readium.navigator.common.GoLocation
 import org.readium.navigator.common.Location
 import org.readium.navigator.common.LocatorAdapter
+import org.readium.navigator.common.TargetLocation
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
@@ -10,7 +10,7 @@ import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.util.Url
 
 @ExperimentalReadiumApi
-public sealed interface PdfGoLocation : GoLocation
+public sealed interface PdfGoLocation : TargetLocation
 
 @ExperimentalReadiumApi
 public data class PageLocation(
