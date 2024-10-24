@@ -99,7 +99,7 @@ fun <L : Location, N : Navigator<*, L, *>> Reader(
             onPreferencesActivated = { showPreferences.value = !showPreferences.value }
         )
 
-        val navigatorNow = readerState.navigatorState.state.value.navigator
+        val navigatorNow = readerState.navigatorState.initState.value.navigator
 
         val fallbackInputListener = remember {
             object : InputListener {

@@ -8,7 +8,6 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableStateOf
 import org.readium.navigator.common.Configurable
 import org.readium.navigator.common.Navigator
-import org.readium.navigator.common.NavigatorInitializationState
 import org.readium.navigator.common.NavigatorState
 import org.readium.navigator.common.Overflow
 import org.readium.navigator.common.Overflowable
@@ -61,14 +60,14 @@ public class FixedWebState internal constructor(
             initialLocation = initialLocation
         )
 
-    private val stateMutable: MutableState<NavigatorInitializationState<FixedWebNavigator>> =
-        mutableStateOf(NavigatorInitializationState.Pending())
+    private val stateMutable: MutableState<NavigatorState.InitializationState<FixedWebNavigator>> =
+        mutableStateOf(NavigatorState.InitializationState.Pending())
 
-    public override val state: State<NavigatorInitializationState<FixedWebNavigator>> =
+    public override val initState: State<NavigatorState.InitializationState<FixedWebNavigator>> =
         stateMutable
 
-    internal val navigator: FixedWebNavigator? get() =
-        state.value.navigator
+    override val navigator: FixedWebNavigator? get() =
+        initState.value.navigator
 
     public val preferences: MutableState<FixedWebPreferences> =
         core.preferences
@@ -87,12 +86,12 @@ public class FixedWebState internal constructor(
 
     private fun initNavigatorIfNeeded(location: FixedWebLocation): FixedWebNavigator {
         when (val initStateNow = stateMutable.value) {
-            is NavigatorInitializationState.Initialized<*> -> {
+            is NavigatorState.InitializationState.Initialized<*> -> {
                 return initStateNow.navigator as FixedWebNavigator
             }
-            is NavigatorInitializationState.Pending -> {
+            is NavigatorState.InitializationState.Pending -> {
                 val navigator = FixedWebNavigator(core, location)
-                stateMutable.value = NavigatorInitializationState.Initialized(navigator)
+                stateMutable.value = NavigatorState.InitializationState.Initialized(navigator)
                 return navigator
             }
         }

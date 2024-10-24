@@ -6,20 +6,20 @@ import org.readium.r2.shared.ExperimentalReadiumApi
 @ExperimentalReadiumApi
 public interface NavigatorState<N : Navigator<*, *, *>> {
 
-    public val state: State<NavigatorInitializationState<N>>
-}
+    public sealed interface InitializationState<N> {
+        public class Pending<N> : InitializationState<N> {
+            override val navigator: Nothing? = null
+        }
 
-@ExperimentalReadiumApi
-public sealed interface NavigatorInitializationState<N> {
+        public data class Initialized<N>(
+            override val navigator: N
+        ) : InitializationState<N>
 
-    public val navigator: N?
-
-    public class Pending<N> : NavigatorInitializationState<N> {
-
-        override val navigator: Nothing? = null
+        public val navigator: N?
     }
 
-    public data class Initialized<N>(
-        override val navigator: N
-    ) : NavigatorInitializationState<N>
+    public val initState: State<InitializationState<N>>
+
+    public val navigator: N? get() =
+        initState.value.navigator
 }
