@@ -102,7 +102,7 @@ class DemoActivity : FragmentActivity() {
                                 }
 
                                 Reader(
-                                    state = stateNow.readerState,
+                                    readerState = stateNow.readerState,
                                     fullScreenState = fullscreenState
                                 )
                             }

@@ -38,8 +38,10 @@ import org.readium.navigator.common.InputListener
 import org.readium.navigator.common.Location
 import org.readium.navigator.common.LocatorAdapter
 import org.readium.navigator.common.Navigator
+import org.readium.navigator.common.NavigatorInitializationState
+import org.readium.navigator.common.NavigatorState
+import org.readium.navigator.common.NullHyperlinkListener
 import org.readium.navigator.common.Overflowable
-import org.readium.navigator.common.ReadingOrder
 import org.readium.navigator.common.TapContext
 import org.readium.navigator.common.TapEvent
 import org.readium.navigator.common.defaultHyperlinkListener
@@ -48,20 +50,18 @@ import org.readium.navigator.demo.persistence.LocatorRepository
 import org.readium.navigator.demo.preferences.UserPreferences
 import org.readium.navigator.demo.preferences.UserPreferencesViewModel
 import org.readium.navigator.demo.util.launchWebBrowser
-import org.readium.navigator.pdf.PdfNavigator
-import org.readium.navigator.pdf.PdfNavigatorState
 import org.readium.navigator.web.FixedWebNavigator
-import org.readium.navigator.web.FixedWebNavigatorState
+import org.readium.navigator.web.FixedWebState
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.toUri
 
-data class ReaderState<R : ReadingOrder, L : Location>(
+data class ReaderState<L : Location, N : Navigator<*, L, *>>(
     val url: AbsoluteUrl,
     val coroutineScope: CoroutineScope,
     val publication: Publication,
-    val navigatorState: Navigator<R, L, *>,
+    val navigatorState: NavigatorState<N>,
     val preferencesViewModel: UserPreferencesViewModel<*, *>,
     val locatorAdapter: LocatorAdapter<L, *>
 ) {
@@ -74,8 +74,8 @@ data class ReaderState<R : ReadingOrder, L : Location>(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun <R : ReadingOrder, L : Location> Reader(
-    state: ReaderState<R, L>,
+fun <L : Location, N : Navigator<*, L, *>> Reader(
+    readerState: ReaderState<L, N>,
     fullScreenState: MutableState<Boolean>
 ) {
     val showPreferences = remember { mutableStateOf(false) }
@@ -87,7 +87,7 @@ fun <R : ReadingOrder, L : Location> Reader(
             onDismissRequest = { showPreferences.value = false }
         ) {
             UserPreferences(
-                model = state.preferencesViewModel,
+                model = readerState.preferencesViewModel,
                 title = "Preferences"
             )
         }
@@ -109,54 +109,59 @@ fun <R : ReadingOrder, L : Location> Reader(
         }
 
         val inputListener =
-            if (state.navigatorState is Overflowable) {
-                defaultInputListener(
-                    navigatorState = state.navigatorState,
-                    fallbackListener = fallbackInputListener
-                )
-            } else {
-                fallbackInputListener
+            when (val stateNow = readerState.navigatorState.state.value) {
+                is NavigatorInitializationState.Pending -> fallbackInputListener
+                is NavigatorInitializationState.Initialized -> {
+                    (stateNow.navigator as? Overflowable)?.let {
+                        defaultInputListener(
+                            navigatorState = it,
+                            fallbackListener = fallbackInputListener
+                        )
+                    } ?: fallbackInputListener
+                }
             }
-
-        val context = LocalContext.current
 
         val hyperlinkListener =
-            defaultHyperlinkListener(
-                navigatorState = state.navigatorState,
-                onExternalLinkActivated = { url, _ -> launchWebBrowser(context, url.toUri()) }
-            )
-
-        val locationFlow = remember {
-            snapshotFlow {
-                state.navigatorState.location.value
-            }
-        }
-
-        LaunchedEffect(locationFlow) {
-            locationFlow
-                .onEach {
-                    val locator = with(state.locatorAdapter) { it.toLocator() }
-                    LocatorRepository.saveLocator(state.url, locator)
+            when (val stateNow = readerState.navigatorState.state.value) {
+                is NavigatorInitializationState.Pending -> NullHyperlinkListener
+                is NavigatorInitializationState.Initialized -> {
+                    val context = LocalContext.current
+                    defaultHyperlinkListener(
+                        navigatorState = stateNow.navigator,
+                        onExternalLinkActivated = { url, _ -> launchWebBrowser(context, url.toUri()) }
+                    )
                 }
-                .launchIn(state.coroutineScope)
+            }
+
+        val navigatorNow = readerState.navigatorState.state.value.navigator
+
+        LaunchedEffect(readerState.navigatorState) {
+            navigatorNow ?: return@LaunchedEffect
+
+            snapshotFlow {
+                navigatorNow.location.value
+            }.onEach {
+                val locator = with(readerState.locatorAdapter) { it.toLocator() }
+                LocatorRepository.saveLocator(readerState.url, locator)
+            }.launchIn(readerState.coroutineScope)
         }
 
-        when (state.navigatorState) {
-            is FixedWebNavigatorState -> {
+        when (readerState.navigatorState) {
+            is FixedWebState -> {
                 FixedWebNavigator(
                     modifier = Modifier.fillMaxSize(),
-                    state = state.navigatorState,
+                    state = readerState.navigatorState,
                     inputListener = inputListener,
                     hyperlinkListener = hyperlinkListener
                 )
             }
-            is PdfNavigatorState<*, *> -> {
+            /*is PdfNavigatorState<*, *> -> {
                 PdfNavigator(
                     modifier = Modifier.fillMaxSize(),
                     state = state.navigatorState,
                     inputListener = inputListener
                 )
-            }
+            }*/
         }
     }
 }

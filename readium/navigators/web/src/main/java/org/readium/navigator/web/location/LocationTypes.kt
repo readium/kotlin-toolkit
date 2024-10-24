@@ -1,7 +1,7 @@
 package org.readium.navigator.web.location
 
+import org.readium.navigator.common.GoLocation
 import org.readium.navigator.common.Location
-import org.readium.navigator.common.TargetLocation
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.Url
 
@@ -24,16 +24,16 @@ public value class TextFragment(
 )
 
 @ExperimentalReadiumApi
-public sealed interface FixedWebTargetLocation : TargetLocation
+public sealed interface FixedWebGoLocation : GoLocation
 
 @ExperimentalReadiumApi
-public sealed interface ReflowableWebTargetLocation : TargetLocation
+public sealed interface ReflowableWebGoLocation : GoLocation
 
 @ExperimentalReadiumApi
 public data class ProgressionLocation(
     val href: Url,
     val progression: Double
-) : ReflowableWebTargetLocation
+) : ReflowableWebGoLocation
 
 @ExperimentalReadiumApi
 public data class TextLocation(
@@ -41,17 +41,17 @@ public data class TextLocation(
     val cssSelector: String?,
     val textBefore: String?,
     val textAfter: String?
-) : ReflowableWebTargetLocation
+) : ReflowableWebGoLocation
 
 @ExperimentalReadiumApi
 public data class PositionLocation(
     val position: Int
-) : ReflowableWebTargetLocation
+) : ReflowableWebGoLocation
 
 @ExperimentalReadiumApi
 public data class HrefLocation(
     val href: Url
-) : ReflowableWebTargetLocation, FixedWebTargetLocation
+) : ReflowableWebGoLocation, FixedWebGoLocation
 
 @ExperimentalReadiumApi
 public data class ReflowableWebLocation(

@@ -7,7 +7,7 @@ import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.util.Url
 
 @ExperimentalReadiumApi
-public interface Navigator<R : ReadingOrder, L : Location, G : TargetLocation> {
+public interface Navigator<R : ReadingOrder, L : Location, G : GoLocation> {
 
     public val readingOrder: R
 
@@ -46,4 +46,4 @@ public interface Location {
 }
 
 @ExperimentalReadiumApi
-public interface TargetLocation
+public interface GoLocation

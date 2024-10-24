@@ -17,12 +17,15 @@ import androidx.compose.ui.unit.LayoutDirection
 import org.readium.navigator.common.HyperlinkListener
 import org.readium.navigator.common.InputListener
 import org.readium.navigator.common.LinkContext
+import org.readium.navigator.common.NullHyperlinkListener
+import org.readium.navigator.common.NullInputListener
 import org.readium.navigator.common.TapContext
 import org.readium.navigator.common.defaultHyperlinkListener
 import org.readium.navigator.common.defaultInputListener
 import org.readium.navigator.web.layout.DoubleViewportSpread
 import org.readium.navigator.web.layout.FixedWebReadingOrder
 import org.readium.navigator.web.layout.SingleViewportSpread
+import org.readium.navigator.web.location.FixedWebLocation
 import org.readium.navigator.web.pager.NavigatorPager
 import org.readium.navigator.web.spread.DoubleSpreadState
 import org.readium.navigator.web.spread.DoubleViewportSpread
@@ -41,11 +44,16 @@ import org.readium.r2.shared.util.Url
 @Composable
 public fun FixedWebNavigator(
     modifier: Modifier = Modifier,
-    state: FixedWebNavigatorState,
+    state: FixedWebState,
     windowInsets: WindowInsets = WindowInsets.displayCutout,
     backgroundColor: Color = MaterialTheme.colorScheme.background,
-    inputListener: InputListener = defaultInputListener(navigatorState = state),
-    hyperlinkListener: HyperlinkListener = defaultHyperlinkListener(navigatorState = state)
+    inputListener: InputListener = state.navigator
+        ?.let { defaultInputListener(navigatorState = it) }
+        ?: NullInputListener,
+    hyperlinkListener: HyperlinkListener =
+        state.navigator
+            ?.let { defaultHyperlinkListener(navigatorState = it) }
+            ?: NullHyperlinkListener
 ) {
     BoxWithConstraints(
         modifier = Modifier.fillMaxSize(),
@@ -58,6 +66,14 @@ public fun FixedWebNavigator(
 
         val reverseLayout =
             LocalLayoutDirection.current.toReadingProgression() != state.settings.value.readingProgression
+
+        // This is barely needed as location could be computed on the state side without any
+        // data from the layout pass. I keep it so for demonstration purposes of the way the
+        // reflowable navigator could fit the architecture as well.
+        val spreadIndex = state.pagerState.currentPage
+        val itemIndex = state.layout.value.pageIndexForSpread(spreadIndex)
+        val itemHref = state.readingOrder.items[itemIndex].href
+        state.updateLocation(FixedWebLocation(itemHref))
 
         NavigatorPager(
             modifier = modifier,

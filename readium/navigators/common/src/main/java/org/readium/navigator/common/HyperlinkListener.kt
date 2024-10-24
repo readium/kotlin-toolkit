@@ -2,6 +2,8 @@ package org.readium.navigator.common
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import kotlinx.coroutines.CoroutineScope
@@ -34,6 +36,18 @@ public data class FootnoteContext(
 ) : LinkContext
 
 @ExperimentalReadiumApi
+public object NullHyperlinkListener : HyperlinkListener {
+    override fun onReadingOrderLinkActivated(url: Url, context: LinkContext?) {
+    }
+
+    override fun onResourceLinkActivated(url: Url, context: LinkContext?) {
+    }
+
+    override fun onExternalLinkActivated(url: AbsoluteUrl, context: LinkContext?) {
+    }
+}
+
+@ExperimentalReadiumApi
 @Composable
 public fun <L : Location> defaultHyperlinkListener(
     navigatorState: Navigator<*, L, *>,
@@ -42,18 +56,23 @@ public fun <L : Location> defaultHyperlinkListener(
     onExternalLinkActivated: (AbsoluteUrl, LinkContext?) -> Unit = { _, _ -> }
 ): HyperlinkListener {
     val coroutineScope = rememberCoroutineScope()
-    val navigationHistory: MutableList<L> = remember { mutableListOf() }
+    val navigationHistory: MutableState<List<L>> = remember { mutableStateOf(emptyList()) }
 
-    BackHandler(enabled = navigationHistory.isNotEmpty()) {
-        val previousItem = navigationHistory.removeLast()
+    BackHandler(enabled = navigationHistory.value.isNotEmpty()) {
+        val previousItem = navigationHistory.value.last()
+        navigationHistory.value -= previousItem
         coroutineScope.launch { navigatorState.goTo(previousItem) }
+    }
+
+    val onPreFollowingReadingOrder = {
+        navigationHistory.value += navigatorState.location.value
     }
 
     return DefaultHyperlinkListener(
         coroutineScope = coroutineScope,
         navigatorState = navigatorState,
-        navigationHistory = navigationHistory,
         shouldFollowReadingOrderLink = shouldFollowReadingOrderLink,
+        onPreFollowingReadingOrderLink = onPreFollowingReadingOrder,
         onExternalLinkActivatedDelegate = onExternalLinkActivated
     )
 }
@@ -62,14 +81,14 @@ public fun <L : Location> defaultHyperlinkListener(
 private class DefaultHyperlinkListener<L : Location>(
     private val coroutineScope: CoroutineScope,
     private val navigatorState: Navigator<*, L, *>,
-    private val navigationHistory: MutableList<L>,
     private val shouldFollowReadingOrderLink: (Url, LinkContext?) -> Boolean,
+    private val onPreFollowingReadingOrderLink: () -> Unit,
     private val onExternalLinkActivatedDelegate: (AbsoluteUrl, LinkContext?) -> Unit
 ) : HyperlinkListener {
 
     override fun onReadingOrderLinkActivated(url: Url, context: LinkContext?) {
         if (shouldFollowReadingOrderLink(url, context)) {
-            navigationHistory.add(navigatorState.location.value)
+            onPreFollowingReadingOrderLink()
             coroutineScope.launch { navigatorState.goTo(Link(url)) }
         }
     }

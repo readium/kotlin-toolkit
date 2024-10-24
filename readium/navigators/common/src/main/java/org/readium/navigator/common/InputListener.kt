@@ -39,6 +39,13 @@ public data class TapContext(
 )
 
 @ExperimentalReadiumApi
+public object NullInputListener : InputListener {
+    override fun onTap(event: TapEvent, context: TapContext) {
+        // Do nothing
+    }
+}
+
+@ExperimentalReadiumApi
 @Composable
 public fun defaultInputListener(
     navigatorState: Overflowable,

@@ -4,7 +4,7 @@ import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Locator
 
 @ExperimentalReadiumApi
-public interface LocatorAdapter<L : Location, G : TargetLocation> {
+public interface LocatorAdapter<L : Location, G : GoLocation> {
 
     public fun Locator.toGoLocation(): G
 

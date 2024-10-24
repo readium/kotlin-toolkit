@@ -14,13 +14,12 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import org.readium.adapter.pdfium.document.PdfiumDocumentFactory
 import org.readium.adapter.pdfium.navigator.PdfiumEngineProvider
-import org.readium.adapter.pdfium.navigator.PdfiumPreferences
-import org.readium.adapter.pdfium.navigator.PdfiumSettings
 import org.readium.navigator.demo.persistence.LocatorRepository
 import org.readium.navigator.demo.preferences.PreferencesManager
 import org.readium.navigator.demo.preferences.UserPreferencesViewModel
-import org.readium.navigator.pdf.PdfNavigatorFactory
+import org.readium.navigator.web.FixedWebNavigator
 import org.readium.navigator.web.FixedWebNavigatorFactory
+import org.readium.navigator.web.location.FixedWebLocation
 import org.readium.navigator.web.preferences.FixedWebPreferences
 import org.readium.navigator.web.preferences.FixedWebSettings
 import org.readium.r2.shared.ExperimentalReadiumApi
@@ -73,8 +72,10 @@ class ReaderOpener(
         val readerState = when {
             publication.conformsTo(Publication.Profile.EPUB) ->
                 createFixedWebReader(url, publication, initialLocator)
-            publication.conformsTo(Publication.Profile.PDF) ->
-                createPdfReader(url, publication, initialLocator)
+
+            /*publication.conformsTo(Publication.Profile.PDF) ->
+                createPdfReader(url, publication, initialLocator)*/
+
             else ->
                 Try.failure(DebugError("Publication not supported"))
         }.getOrElse { error ->
@@ -89,13 +90,13 @@ class ReaderOpener(
         url: AbsoluteUrl,
         publication: Publication,
         initialLocator: Locator?
-    ): Try<ReaderState<*, *>, Error> {
+    ): Try<ReaderState<FixedWebLocation, FixedWebNavigator>, Error> {
         val navigatorFactory = FixedWebNavigatorFactory(application, publication)
             ?: return Try.failure(DebugError("Publication not supported"))
 
         val initialPreferences = FixedWebPreferences()
 
-        val navigatorState = navigatorFactory.createNavigator(
+        val navigatorState = navigatorFactory.createState(
             initialLocator = initialLocator,
             initialPreferences = initialPreferences
         ).getOrElse {
@@ -129,7 +130,7 @@ class ReaderOpener(
 
         return Try.success(readerState)
     }
-
+/*
     private fun createPdfReader(
         url: AbsoluteUrl,
         publication: Publication,
@@ -172,4 +173,5 @@ class ReaderOpener(
 
         return Try.success(readerState)
     }
+    */
 }

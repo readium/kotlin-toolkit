@@ -73,11 +73,11 @@ public class FixedWebNavigatorFactory private constructor(
         ) : Error("Could not initialize the navigator.", cause)
     }
 
-    public suspend fun createNavigator(
+    public suspend fun createState(
         initialLocator: Locator? = null,
         initialPreferences: FixedWebPreferences? = null,
         readingOrder: List<Link> = publication.readingOrder
-    ): Try<FixedWebNavigatorState, Error> {
+    ): Try<FixedWebState, Error> {
         val items = readingOrder.map {
             FixedWebReadingOrderItem(
                 href = it.url(),
@@ -102,8 +102,8 @@ public class FixedWebNavigatorFactory private constructor(
         val preloads = preloadData()
             .getOrElse { return Try.failure(it) }
 
-        val navigatorState =
-            FixedWebNavigatorState(
+        val state =
+            FixedWebState(
                 publicationMetadata = publication.metadata,
                 readingOrder = FixedWebReadingOrder(items),
                 initialPreferences = initialPreferences ?: FixedWebPreferences(),
@@ -113,10 +113,10 @@ public class FixedWebNavigatorFactory private constructor(
                 preloadedData = preloads
             )
 
-        return Try.success(navigatorState)
+        return Try.success(state)
     }
 
-    private suspend fun preloadData(): Try<FixedWebNavigatorState.PreloadedData, Error.Initialization> =
+    private suspend fun preloadData(): Try<FixedWebPreloadedData, Error.Initialization> =
         try {
             val assetsUrl = WebViewServer.assetUrl("readium/navigators/web")!!
 
@@ -130,7 +130,7 @@ public class FixedWebNavigatorFactory private constructor(
                 assetsUrl = assetsUrl
             )
 
-            val preloadData = FixedWebNavigatorState.PreloadedData(
+            val preloadData = FixedWebPreloadedData(
                 prepaginatedSingleContent = prepaginatedSingleContent,
                 prepaginatedDoubleContent = prepaginatedDoubleContent
             )

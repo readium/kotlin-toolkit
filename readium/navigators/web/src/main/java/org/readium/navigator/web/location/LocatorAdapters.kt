@@ -11,13 +11,13 @@ import org.readium.r2.shared.publication.indexOfFirstWithHref
 @ExperimentalReadiumApi
 public class FixedWebLocatorAdapter(
     private val publication: Publication
-) : LocatorAdapter<FixedWebLocation, FixedWebTargetLocation> {
-    public fun FixedWebTargetLocation.toLocator(): Locator =
+) : LocatorAdapter<FixedWebLocation, FixedWebGoLocation> {
+    public fun FixedWebGoLocation.toLocator(): Locator =
         when (this) {
             is HrefLocation -> publication.locatorFromLink(Link(href))!!
         }
 
-    public override fun Locator.toGoLocation(): FixedWebTargetLocation =
+    public override fun Locator.toGoLocation(): FixedWebGoLocation =
         HrefLocation(href)
 
     override fun FixedWebLocation.toLocator(): Locator {
@@ -31,7 +31,7 @@ public class FixedWebLocatorAdapter(
 public class ReflowableWebLocatorAdapter(
     private val publication: Publication,
     private val allowProduceHrefLocation: Boolean = false
-) : LocatorAdapter<ReflowableWebLocation, ReflowableWebTargetLocation> {
+) : LocatorAdapter<ReflowableWebLocation, ReflowableWebGoLocation> {
     public override fun ReflowableWebLocation.toLocator(): Locator =
         publication.locatorFromLink(Link(href))!!
             .copy(
@@ -46,7 +46,7 @@ public class ReflowableWebLocatorAdapter(
                 otherLocations = buildMap { cssSelector?.let { put("cssSelector", cssSelector) } }
             )
 
-    public override fun Locator.toGoLocation(): ReflowableWebTargetLocation {
+    public override fun Locator.toGoLocation(): ReflowableWebGoLocation {
         return when {
             text.highlight != null || text.before != null || text.after != null -> {
                 TextLocation(
