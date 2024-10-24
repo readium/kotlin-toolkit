@@ -1,6 +1,7 @@
 package org.readium.navigator.web.spread
 
 import android.annotation.SuppressLint
+import android.view.View
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -69,6 +70,7 @@ internal fun SpreadWebView(
             webview.isVerticalScrollBarEnabled = false
             webview.isHorizontalScrollBarEnabled = false
             webview.setBackgroundColor(backgroundColor.toArgb())
+            webview.setLayerType(View.LAYER_TYPE_HARDWARE, null)
         }
     )
 }
