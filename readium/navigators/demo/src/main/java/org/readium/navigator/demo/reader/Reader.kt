@@ -38,7 +38,6 @@ import org.readium.navigator.common.InputListener
 import org.readium.navigator.common.Location
 import org.readium.navigator.common.LocatorAdapter
 import org.readium.navigator.common.Navigator
-import org.readium.navigator.common.NavigatorInitializationState
 import org.readium.navigator.common.NavigatorState
 import org.readium.navigator.common.NullHyperlinkListener
 import org.readium.navigator.common.Overflowable
@@ -100,6 +99,8 @@ fun <L : Location, N : Navigator<*, L, *>> Reader(
             onPreferencesActivated = { showPreferences.value = !showPreferences.value }
         )
 
+        val navigatorNow = readerState.navigatorState.state.value.navigator
+
         val fallbackInputListener = remember {
             object : InputListener {
                 override fun onTap(event: TapEvent, context: TapContext) {
@@ -109,41 +110,37 @@ fun <L : Location, N : Navigator<*, L, *>> Reader(
         }
 
         val inputListener =
-            when (val stateNow = readerState.navigatorState.state.value) {
-                is NavigatorInitializationState.Pending -> fallbackInputListener
-                is NavigatorInitializationState.Initialized -> {
-                    (stateNow.navigator as? Overflowable)?.let {
-                        defaultInputListener(
-                            navigatorState = it,
-                            fallbackListener = fallbackInputListener
-                        )
-                    } ?: fallbackInputListener
-                }
+            if (navigatorNow == null) {
+                fallbackInputListener
+            } else {
+                (navigatorNow as? Overflowable)?.let {
+                    defaultInputListener(
+                        navigator = it,
+                        fallbackListener = fallbackInputListener
+                    )
+                } ?: fallbackInputListener
             }
 
         val hyperlinkListener =
-            when (val stateNow = readerState.navigatorState.state.value) {
-                is NavigatorInitializationState.Pending -> NullHyperlinkListener
-                is NavigatorInitializationState.Initialized -> {
-                    val context = LocalContext.current
-                    defaultHyperlinkListener(
-                        navigatorState = stateNow.navigator,
-                        onExternalLinkActivated = { url, _ -> launchWebBrowser(context, url.toUri()) }
-                    )
-                }
+            if (navigatorNow == null) {
+                NullHyperlinkListener
+            } else {
+                val context = LocalContext.current
+                defaultHyperlinkListener(
+                    navigator = navigatorNow,
+                    onExternalLinkActivated = { url, _ -> launchWebBrowser(context, url.toUri()) }
+                )
             }
 
-        val navigatorNow = readerState.navigatorState.state.value.navigator
-
-        LaunchedEffect(readerState.navigatorState) {
-            navigatorNow ?: return@LaunchedEffect
-
-            snapshotFlow {
-                navigatorNow.location.value
-            }.onEach {
-                val locator = with(readerState.locatorAdapter) { it.toLocator() }
-                LocatorRepository.saveLocator(readerState.url, locator)
-            }.launchIn(readerState.coroutineScope)
+        if (navigatorNow != null) {
+            LaunchedEffect(navigatorNow) {
+                snapshotFlow {
+                    navigatorNow.location.value
+                }.onEach {
+                    val locator = with(readerState.locatorAdapter) { it.toLocator() }
+                    LocatorRepository.saveLocator(readerState.url, locator)
+                }.launchIn(readerState.coroutineScope)
+            }
         }
 
         when (readerState.navigatorState) {

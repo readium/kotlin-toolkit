@@ -48,11 +48,11 @@ public fun FixedWebNavigator(
     windowInsets: WindowInsets = WindowInsets.displayCutout,
     backgroundColor: Color = MaterialTheme.colorScheme.background,
     inputListener: InputListener = state.navigator
-        ?.let { defaultInputListener(navigatorState = it) }
+        ?.let { defaultInputListener(navigator = it) }
         ?: NullInputListener,
     hyperlinkListener: HyperlinkListener =
         state.navigator
-            ?.let { defaultHyperlinkListener(navigatorState = it) }
+            ?.let { defaultHyperlinkListener(navigator = it) }
             ?: NullHyperlinkListener
 ) {
     BoxWithConstraints(

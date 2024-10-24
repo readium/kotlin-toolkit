@@ -48,7 +48,7 @@ public object NullInputListener : InputListener {
 @ExperimentalReadiumApi
 @Composable
 public fun defaultInputListener(
-    navigatorState: Overflowable,
+    navigator: Overflowable,
     fallbackListener: InputListener? = null,
     tapEdges: Set<DirectionalNavigationAdapter.TapEdge> = setOf(
         DirectionalNavigationAdapter.TapEdge.Horizontal
@@ -64,7 +64,7 @@ public fun defaultInputListener(
     return DefaultInputListener(
         coroutineScope,
         fallbackListener,
-        navigatorState,
+        navigator,
         tapEdges,
         handleTapsWhileScrolling,
         minimumHorizontalEdgeSize,

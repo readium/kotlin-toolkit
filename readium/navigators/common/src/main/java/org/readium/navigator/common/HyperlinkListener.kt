@@ -50,7 +50,7 @@ public object NullHyperlinkListener : HyperlinkListener {
 @ExperimentalReadiumApi
 @Composable
 public fun <L : Location> defaultHyperlinkListener(
-    navigatorState: Navigator<*, L, *>,
+    navigator: Navigator<*, L, *>,
     shouldFollowReadingOrderLink: (Url, LinkContext?) -> Boolean = { _, _ -> true },
     // TODO: shouldFollowResourceLink: (Url, LinkContext?) -> Boolean = { _, _ -> true },
     onExternalLinkActivated: (AbsoluteUrl, LinkContext?) -> Unit = { _, _ -> }
@@ -61,16 +61,16 @@ public fun <L : Location> defaultHyperlinkListener(
     BackHandler(enabled = navigationHistory.value.isNotEmpty()) {
         val previousItem = navigationHistory.value.last()
         navigationHistory.value -= previousItem
-        coroutineScope.launch { navigatorState.goTo(previousItem) }
+        coroutineScope.launch { navigator.goTo(previousItem) }
     }
 
     val onPreFollowingReadingOrder = {
-        navigationHistory.value += navigatorState.location.value
+        navigationHistory.value += navigator.location.value
     }
 
     return DefaultHyperlinkListener(
         coroutineScope = coroutineScope,
-        navigatorState = navigatorState,
+        navigatorState = navigator,
         shouldFollowReadingOrderLink = shouldFollowReadingOrderLink,
         onPreFollowingReadingOrderLink = onPreFollowingReadingOrder,
         onExternalLinkActivatedDelegate = onExternalLinkActivated
