@@ -96,7 +96,7 @@ class ReaderOpener(
 
         val initialPreferences = FixedWebPreferences()
 
-        val navigatorState = navigatorFactory.createState(
+        val navigatorState = navigatorFactory.createRenditionState(
             initialLocator = initialLocator,
             initialPreferences = initialPreferences
         ).getOrElse {
@@ -123,7 +123,7 @@ class ReaderOpener(
             url = url,
             coroutineScope = coroutineScope,
             publication = publication,
-            navigatorState = navigatorState,
+            renditionState = navigatorState,
             preferencesViewModel = preferencesViewModel,
             locatorAdapter = locatorAdapter
         )

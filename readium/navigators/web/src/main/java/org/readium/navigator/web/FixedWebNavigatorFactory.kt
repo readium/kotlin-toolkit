@@ -73,11 +73,11 @@ public class FixedWebNavigatorFactory private constructor(
         ) : Error("Could not initialize the navigator.", cause)
     }
 
-    public suspend fun createState(
+    public suspend fun createRenditionState(
         initialLocator: Locator? = null,
         initialPreferences: FixedWebPreferences? = null,
         readingOrder: List<Link> = publication.readingOrder
-    ): Try<FixedWebState, Error> {
+    ): Try<FixedWebRenditionState, Error> {
         val items = readingOrder.map {
             FixedWebReadingOrderItem(
                 href = it.url(),
@@ -103,7 +103,7 @@ public class FixedWebNavigatorFactory private constructor(
             .getOrElse { return Try.failure(it) }
 
         val state =
-            FixedWebState(
+            FixedWebRenditionState(
                 publicationMetadata = publication.metadata,
                 readingOrder = FixedWebReadingOrder(items),
                 initialPreferences = initialPreferences ?: FixedWebPreferences(),
@@ -131,8 +131,8 @@ public class FixedWebNavigatorFactory private constructor(
             )
 
             val preloadData = FixedWebPreloadedData(
-                prepaginatedSingleContent = prepaginatedSingleContent,
-                prepaginatedDoubleContent = prepaginatedDoubleContent
+                fixedSingleContent = prepaginatedSingleContent,
+                fixedDoubleContent = prepaginatedDoubleContent
             )
 
             Try.success(preloadData)

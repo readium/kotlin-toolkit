@@ -70,7 +70,7 @@ public fun <L : Location> defaultHyperlinkListener(
 
     return DefaultHyperlinkListener(
         coroutineScope = coroutineScope,
-        navigatorState = navigator,
+        navigator = navigator,
         shouldFollowReadingOrderLink = shouldFollowReadingOrderLink,
         onPreFollowingReadingOrderLink = onPreFollowingReadingOrder,
         onExternalLinkActivatedDelegate = onExternalLinkActivated
@@ -80,7 +80,7 @@ public fun <L : Location> defaultHyperlinkListener(
 @ExperimentalReadiumApi
 private class DefaultHyperlinkListener<L : Location>(
     private val coroutineScope: CoroutineScope,
-    private val navigatorState: Navigator<*, L, *>,
+    private val navigator: Navigator<*, L, *>,
     private val shouldFollowReadingOrderLink: (Url, LinkContext?) -> Boolean,
     private val onPreFollowingReadingOrderLink: () -> Unit,
     private val onExternalLinkActivatedDelegate: (AbsoluteUrl, LinkContext?) -> Unit
@@ -89,7 +89,7 @@ private class DefaultHyperlinkListener<L : Location>(
     override fun onReadingOrderLinkActivated(url: Url, context: LinkContext?) {
         if (shouldFollowReadingOrderLink(url, context)) {
             onPreFollowingReadingOrderLink()
-            coroutineScope.launch { navigatorState.goTo(Link(url)) }
+            coroutineScope.launch { navigator.goTo(Link(url)) }
         }
     }
 

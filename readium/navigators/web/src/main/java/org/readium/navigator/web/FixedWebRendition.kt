@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
@@ -42,9 +43,9 @@ import org.readium.r2.shared.util.Url
 
 @ExperimentalReadiumApi
 @Composable
-public fun FixedWebNavigator(
+public fun FixedWebRendition(
     modifier: Modifier = Modifier,
-    state: FixedWebState,
+    state: FixedWebRenditionState,
     windowInsets: WindowInsets = WindowInsets.displayCutout,
     backgroundColor: Color = MaterialTheme.colorScheme.background,
     inputListener: InputListener = state.navigator
@@ -75,6 +76,8 @@ public fun FixedWebNavigator(
         val itemHref = state.readingOrder.items[itemIndex].href
         state.updateLocation(FixedWebLocation(itemHref))
 
+        val fitState = remember { derivedStateOf { state.settings.value.fit } }
+
         NavigatorPager(
             modifier = modifier,
             state = state.pagerState,
@@ -86,11 +89,11 @@ public fun FixedWebNavigator(
                 is SingleViewportSpread -> {
                     val spreadState = remember {
                         SingleSpreadState(
-                            htmlData = state.preloadedData.prepaginatedSingleContent,
+                            htmlData = state.preloadedData.fixedSingleContent,
                             publicationBaseUrl = WebViewServer.publicationBaseHref,
                             webViewClient = state.webViewClient,
                             spread = spread,
-                            fit = state.fit,
+                            fit = fitState,
                             displayArea = displayArea
                         )
                     }
@@ -107,11 +110,11 @@ public fun FixedWebNavigator(
                 is DoubleViewportSpread -> {
                     val spreadState = remember {
                         DoubleSpreadState(
-                            htmlData = state.preloadedData.prepaginatedDoubleContent,
+                            htmlData = state.preloadedData.fixedDoubleContent,
                             publicationBaseUrl = WebViewServer.publicationBaseHref,
                             webViewClient = state.webViewClient,
                             spread = spread,
-                            fit = state.fit,
+                            fit = fitState,
                             displayArea = displayArea
                         )
                     }

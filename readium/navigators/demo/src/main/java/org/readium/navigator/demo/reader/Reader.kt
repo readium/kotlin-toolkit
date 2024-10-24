@@ -38,9 +38,9 @@ import org.readium.navigator.common.InputListener
 import org.readium.navigator.common.Location
 import org.readium.navigator.common.LocatorAdapter
 import org.readium.navigator.common.Navigator
-import org.readium.navigator.common.NavigatorState
 import org.readium.navigator.common.NullHyperlinkListener
 import org.readium.navigator.common.Overflowable
+import org.readium.navigator.common.RenditionState
 import org.readium.navigator.common.TapContext
 import org.readium.navigator.common.TapEvent
 import org.readium.navigator.common.defaultHyperlinkListener
@@ -49,8 +49,8 @@ import org.readium.navigator.demo.persistence.LocatorRepository
 import org.readium.navigator.demo.preferences.UserPreferences
 import org.readium.navigator.demo.preferences.UserPreferencesViewModel
 import org.readium.navigator.demo.util.launchWebBrowser
-import org.readium.navigator.web.FixedWebNavigator
-import org.readium.navigator.web.FixedWebState
+import org.readium.navigator.web.FixedWebRendition
+import org.readium.navigator.web.FixedWebRenditionState
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.util.AbsoluteUrl
@@ -60,7 +60,7 @@ data class ReaderState<L : Location, N : Navigator<*, L, *>>(
     val url: AbsoluteUrl,
     val coroutineScope: CoroutineScope,
     val publication: Publication,
-    val navigatorState: NavigatorState<N>,
+    val renditionState: RenditionState<N>,
     val preferencesViewModel: UserPreferencesViewModel<*, *>,
     val locatorAdapter: LocatorAdapter<L, *>
 ) {
@@ -99,7 +99,7 @@ fun <L : Location, N : Navigator<*, L, *>> Reader(
             onPreferencesActivated = { showPreferences.value = !showPreferences.value }
         )
 
-        val navigatorNow = readerState.navigatorState.initState.value.navigator
+        val navigatorNow = readerState.renditionState.controllerState.value.navigator
 
         val fallbackInputListener = remember {
             object : InputListener {
@@ -143,11 +143,11 @@ fun <L : Location, N : Navigator<*, L, *>> Reader(
             }
         }
 
-        when (readerState.navigatorState) {
-            is FixedWebState -> {
-                FixedWebNavigator(
+        when (readerState.renditionState) {
+            is FixedWebRenditionState -> {
+                FixedWebRendition(
                     modifier = Modifier.fillMaxSize(),
-                    state = readerState.navigatorState,
+                    state = readerState.renditionState,
                     inputListener = inputListener,
                     hyperlinkListener = hyperlinkListener
                 )

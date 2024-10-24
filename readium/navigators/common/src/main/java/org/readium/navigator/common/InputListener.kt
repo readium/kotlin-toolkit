@@ -78,7 +78,7 @@ public fun defaultInputListener(
 private class DefaultInputListener(
     private val coroutineScope: CoroutineScope,
     private val fallbackListener: InputListener?,
-    private val navigatorState: Overflowable,
+    private val navigator: Overflowable,
     private val tapEdges: Set<DirectionalNavigationAdapter.TapEdge>,
     private val handleTapsWhileScrolling: Boolean,
     private val minimumHorizontalEdgeSize: Dp,
@@ -94,7 +94,7 @@ private class DefaultInputListener(
     }
 
     private fun handleTap(event: TapEvent, context: TapContext): Boolean {
-        if (navigatorState.overflow.value.scroll && !handleTapsWhileScrolling) {
+        if (navigator.overflow.value.scroll && !handleTapsWhileScrolling) {
             return false
         }
 
@@ -107,11 +107,11 @@ private class DefaultInputListener(
             val leftRange = 0.0.dp..horizontalEdgeSize
             val rightRange = (width - horizontalEdgeSize)..width
 
-            if (event.offset.x in rightRange && navigatorState.canMoveRight) {
-                coroutineScope.launch { navigatorState.moveRight() }
+            if (event.offset.x in rightRange && navigator.canMoveRight) {
+                coroutineScope.launch { navigator.moveRight() }
                 return true
-            } else if (event.offset.x in leftRange && navigatorState.canMoveLeft) {
-                coroutineScope.launch { navigatorState.moveLeft() }
+            } else if (event.offset.x in leftRange && navigator.canMoveLeft) {
+                coroutineScope.launch { navigator.moveLeft() }
                 return true
             }
         }
@@ -125,11 +125,11 @@ private class DefaultInputListener(
             val topRange = 0.0.dp..verticalEdgeSize
             val bottomRange = (height - verticalEdgeSize)..height
 
-            if (event.offset.y in bottomRange && navigatorState.canMoveForward) {
-                coroutineScope.launch { navigatorState.moveForward() }
+            if (event.offset.y in bottomRange && navigator.canMoveForward) {
+                coroutineScope.launch { navigator.moveForward() }
                 return true
-            } else if (event.offset.y in topRange && navigatorState.canMoveBackward) {
-                coroutineScope.launch { navigatorState.moveBackward() }
+            } else if (event.offset.y in topRange && navigator.canMoveBackward) {
+                coroutineScope.launch { navigator.moveBackward() }
                 return true
             }
         }

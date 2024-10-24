@@ -8,9 +8,9 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableStateOf
 import org.readium.navigator.common.Configurable
 import org.readium.navigator.common.Navigator
-import org.readium.navigator.common.NavigatorState
 import org.readium.navigator.common.Overflow
 import org.readium.navigator.common.Overflowable
+import org.readium.navigator.common.RenditionState
 import org.readium.navigator.web.layout.FixedWebReadingOrder
 import org.readium.navigator.web.layout.Layout
 import org.readium.navigator.web.layout.LayoutResolver
@@ -33,7 +33,7 @@ import org.readium.r2.shared.publication.Metadata
 
 @ExperimentalReadiumApi
 @Stable
-public class FixedWebState internal constructor(
+public class FixedWebRenditionState internal constructor(
     publicationMetadata: Metadata,
     public val readingOrder: FixedWebReadingOrder,
     initialPreferences: FixedWebPreferences,
@@ -41,7 +41,7 @@ public class FixedWebState internal constructor(
     initialLocation: Int,
     internal val webViewServer: WebViewServer,
     internal val preloadedData: FixedWebPreloadedData
-) : NavigatorState<FixedWebNavigator> {
+) : RenditionState<FixedWebNavigator> {
     init {
         require(initialLocation < readingOrder.items.size)
     }
@@ -60,14 +60,11 @@ public class FixedWebState internal constructor(
             initialLocation = initialLocation
         )
 
-    private val stateMutable: MutableState<NavigatorState.InitializationState<FixedWebNavigator>> =
-        mutableStateOf(NavigatorState.InitializationState.Pending())
-
-    public override val initState: State<NavigatorState.InitializationState<FixedWebNavigator>> =
-        stateMutable
+    private val navigatorState: MutableState<FixedWebNavigator?> =
+        mutableStateOf(null)
 
     override val navigator: FixedWebNavigator? get() =
-        initState.value.navigator
+        navigatorState.value
 
     public val preferences: MutableState<FixedWebPreferences> =
         core.preferences
@@ -78,28 +75,19 @@ public class FixedWebState internal constructor(
     internal val layout: State<Layout> =
         core.layout
 
-    internal val fit: State<Fit> =
-        core.fit
-
     internal val pagerState: PagerState =
         core.pagerState
 
-    private fun initNavigatorIfNeeded(location: FixedWebLocation): FixedWebNavigator {
-        when (val initStateNow = stateMutable.value) {
-            is NavigatorState.InitializationState.Initialized<*> -> {
-                return initStateNow.navigator as FixedWebNavigator
-            }
-            is NavigatorState.InitializationState.Pending -> {
-                val navigator = FixedWebNavigator(core, location)
-                stateMutable.value = NavigatorState.InitializationState.Initialized(navigator)
-                return navigator
-            }
-        }
+    internal fun updateLocation(location: FixedWebLocation) {
+        initNavigatorIfNeeded(location)
+        navigator!!.updateLocation(location)
     }
 
-    internal fun updateLocation(location: FixedWebLocation) {
-        val navigator = initNavigatorIfNeeded(location)
-        navigator.updateLocation(location)
+    private fun initNavigatorIfNeeded(location: FixedWebLocation) {
+        if (navigator == null) {
+            val navigator = FixedWebNavigator(core, location)
+            navigatorState.value = navigator
+        }
     }
 }
 
@@ -221,6 +209,6 @@ internal class FixedWebCore(
 }
 
 internal data class FixedWebPreloadedData(
-    val prepaginatedSingleContent: String,
-    val prepaginatedDoubleContent: String
+    val fixedSingleContent: String,
+    val fixedDoubleContent: String
 )
