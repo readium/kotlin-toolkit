@@ -26,11 +26,6 @@ public class PdfNavigatorFactory<S : Settings, P : Preferences<P>, E : Preferenc
         initialLocator: Locator? = null,
         initialPreferences: P? = null
     ): Try<PdfNavigatorState<S, P>, Nothing> {
-        val readingOrder =
-            PdfReadingOrder(
-                publication.readingOrder.map { PdfReadingOrderItem(it.url()) }
-            )
-
         val actualInitialLocator = initialLocator
             ?: publication.locatorFromLink(publication.readingOrder[0])!!
 
@@ -46,7 +41,6 @@ public class PdfNavigatorFactory<S : Settings, P : Preferences<P>, E : Preferenc
 
         val navigatorState =
             PdfNavigatorState(
-                readingOrder,
                 legacyNavigatorFactory,
                 settingsResolver,
                 actualInitialLocator,

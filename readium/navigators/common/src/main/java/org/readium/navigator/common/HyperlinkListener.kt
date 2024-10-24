@@ -50,7 +50,7 @@ public object NullHyperlinkListener : HyperlinkListener {
 @ExperimentalReadiumApi
 @Composable
 public fun <L : Location> defaultHyperlinkListener(
-    navigator: Navigator<*, L, *>,
+    navigator: Navigator<L, *>,
     shouldFollowReadingOrderLink: (Url, LinkContext?) -> Boolean = { _, _ -> true },
     // TODO: shouldFollowResourceLink: (Url, LinkContext?) -> Boolean = { _, _ -> true },
     onExternalLinkActivated: (AbsoluteUrl, LinkContext?) -> Unit = { _, _ -> }
@@ -80,7 +80,7 @@ public fun <L : Location> defaultHyperlinkListener(
 @ExperimentalReadiumApi
 private class DefaultHyperlinkListener<L : Location>(
     private val coroutineScope: CoroutineScope,
-    private val navigator: Navigator<*, L, *>,
+    private val navigator: Navigator<L, *>,
     private val shouldFollowReadingOrderLink: (Url, LinkContext?) -> Boolean,
     private val onPreFollowingReadingOrderLink: () -> Unit,
     private val onExternalLinkActivatedDelegate: (AbsoluteUrl, LinkContext?) -> Unit

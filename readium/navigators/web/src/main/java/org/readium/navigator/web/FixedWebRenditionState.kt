@@ -104,7 +104,7 @@ public class FixedWebRenditionState internal constructor(
 public class FixedWebNavigator internal constructor(
     private val navigationDelegate: NavigationDelegate,
     layoutDelegate: LayoutDelegate
-) : Navigator<FixedWebReadingOrder, FixedWebLocation, FixedWebGoLocation> by navigationDelegate,
+) : Navigator<FixedWebLocation, FixedWebGoLocation> by navigationDelegate,
     Overflowable by navigationDelegate,
     Configurable<FixedWebSettings, FixedWebPreferences> by layoutDelegate
 
@@ -145,12 +145,12 @@ internal class LayoutDelegate(
 
 @OptIn(ExperimentalReadiumApi::class, InternalReadiumApi::class)
 internal class NavigationDelegate(
-    override val readingOrder: FixedWebReadingOrder,
+    private val readingOrder: FixedWebReadingOrder,
     private val pagerState: PagerState,
     private val layout: State<Layout>,
     private val settings: State<FixedWebSettings>,
     initialLocation: FixedWebLocation
-) : Navigator<FixedWebReadingOrder, FixedWebLocation, FixedWebGoLocation>, Overflowable {
+) : Navigator<FixedWebLocation, FixedWebGoLocation>, Overflowable {
 
     private val locationMutable: MutableState<FixedWebLocation> =
         mutableStateOf(initialLocation)
@@ -168,10 +168,10 @@ internal class NavigationDelegate(
         goTo(location)
     }
 
-    override suspend fun goTo(targetLocation: FixedWebGoLocation) {
-        when (targetLocation) {
+    override suspend fun goTo(location: FixedWebGoLocation) {
+        when (location) {
             is HrefLocation -> {
-                val pageIndex = checkNotNull(readingOrder.indexOfHref(targetLocation.href))
+                val pageIndex = checkNotNull(readingOrder.indexOfHref(location.href))
                 pagerState.scrollToPage(layout.value.spreadIndexForPage(pageIndex))
             }
         }

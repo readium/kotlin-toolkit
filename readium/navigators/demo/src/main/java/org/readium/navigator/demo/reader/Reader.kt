@@ -56,7 +56,7 @@ import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.toUri
 
-data class ReaderState<L : Location, N : Navigator<*, L, *>>(
+data class ReaderState<L : Location, N : Navigator<L, *>>(
     val url: AbsoluteUrl,
     val coroutineScope: CoroutineScope,
     val publication: Publication,
@@ -74,7 +74,7 @@ data class ReaderState<L : Location, N : Navigator<*, L, *>>(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun <L : Location, N : Navigator<*, L, *>> Reader(
+fun <L : Location, N : Navigator<L, *>> Reader(
     readerState: ReaderState<L, N>,
     fullScreenState: MutableState<Boolean>
 ) {

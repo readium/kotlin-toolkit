@@ -17,12 +17,11 @@ import org.readium.r2.shared.publication.Locator
 @ExperimentalReadiumApi
 @Stable
 public class PdfNavigatorState<S : Settings, P : Preferences<P>> internal constructor(
-    override val readingOrder: PdfReadingOrder,
     internal val pdfNavigatorFactory: PdfNavigatorFactory<S, P, *>,
     private val settingsResolver: (P) -> S,
     initialLocator: Locator,
     initialPreferences: P
-) : Navigator<PdfReadingOrder, PdfLocation, PdfGoLocation>, Configurable<S, P> {
+) : Navigator<PdfLocation, PdfGoLocation>, Configurable<S, P> {
 
     override val preferences: MutableState<P> =
         mutableStateOf(initialPreferences)
@@ -49,12 +48,12 @@ public class PdfNavigatorState<S : Settings, P : Preferences<P>> internal constr
         pendingLocator.value = locator.value.copyWithLocations(position = location.page)
     }
 
-    override suspend fun goTo(targetLocation: PdfGoLocation) {
-        pendingLocator.value = when (targetLocation) {
+    override suspend fun goTo(location: PdfGoLocation) {
+        pendingLocator.value = when (location) {
             is PositionLocation -> locator.value.copyWithLocations(
-                position = targetLocation.position
+                position = location.position
             )
-            is PageLocation -> locator.value.copyWithLocations(position = targetLocation.page)
+            is PageLocation -> locator.value.copyWithLocations(position = location.page)
         }
     }
 }
