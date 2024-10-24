@@ -34,31 +34,14 @@ import org.readium.r2.shared.publication.Metadata
 @ExperimentalReadiumApi
 @Stable
 public class FixedWebRenditionState internal constructor(
-    publicationMetadata: Metadata,
     public val readingOrder: FixedWebReadingOrder,
-    initialPreferences: FixedWebPreferences,
+    publicationMetadata: Metadata,
     defaults: FixedWebDefaults,
-    initialLocation: Int,
+    initialPreferences: FixedWebPreferences,
+    initialLocation: FixedWebGoLocation,
     internal val webViewServer: WebViewServer,
     internal val preloadedData: FixedWebPreloadedData
 ) : RenditionState<FixedWebNavigator> {
-    init {
-        require(initialLocation < readingOrder.items.size)
-    }
-
-    private val settingsResolver: FixedWebSettingsResolver =
-        FixedWebSettingsResolver(publicationMetadata, defaults)
-
-    internal val webViewClient: WebViewClient =
-        WebViewClient(webViewServer)
-
-    private val core: FixedWebCore =
-        FixedWebCore(
-            readingOrder = readingOrder,
-            settingsResolver = settingsResolver,
-            initialPreferences = initialPreferences,
-            initialLocation = initialLocation
-        )
 
     private val navigatorState: MutableState<FixedWebNavigator?> =
         mutableStateOf(null)
@@ -66,88 +49,88 @@ public class FixedWebRenditionState internal constructor(
     override val navigator: FixedWebNavigator? get() =
         navigatorState.value
 
-    public val preferences: MutableState<FixedWebPreferences> =
-        core.preferences
+    internal val layoutDelegate: LayoutDelegate =
+        LayoutDelegate(
+            readingOrder,
+            publicationMetadata,
+            defaults,
+            initialPreferences
+        )
 
-    public val settings: State<FixedWebSettings> =
-        core.settings
+    internal val webViewClient: WebViewClient =
+        WebViewClient(webViewServer)
 
-    internal val layout: State<Layout> =
-        core.layout
+    internal val pagerState: PagerState = run {
+        val initialPage = when (initialLocation) {
+            is HrefLocation -> layoutDelegate.layout.value.spreadIndexForPage(initialLocation.href)
+        }
 
-    internal val pagerState: PagerState =
-        core.pagerState
+        PagerState(
+            currentPage = layoutDelegate.layout.value.spreadIndexForPage(initialPage),
+            pageCount = { layoutDelegate.layout.value.spreads.size }
+        )
+    }
+
+    private lateinit var navigationDelegate: NavigationDelegate
 
     internal fun updateLocation(location: FixedWebLocation) {
         initNavigatorIfNeeded(location)
-        navigator!!.updateLocation(location)
+        navigationDelegate.updateLocation(location)
     }
 
     private fun initNavigatorIfNeeded(location: FixedWebLocation) {
-        if (navigator == null) {
-            val navigator = FixedWebNavigator(core, location)
-            navigatorState.value = navigator
+        if (navigator != null) {
+            return
         }
+
+        navigationDelegate =
+            NavigationDelegate(
+                readingOrder,
+                pagerState,
+                layoutDelegate.layout,
+                layoutDelegate.settings,
+                location
+            )
+        navigatorState.value =
+            FixedWebNavigator(
+                navigationDelegate,
+                layoutDelegate
+            )
     }
 }
 
 @ExperimentalReadiumApi
 @Stable
 public class FixedWebNavigator internal constructor(
-    private val core: FixedWebCore,
-    initialLocation: FixedWebLocation
-) : Navigator<FixedWebReadingOrder, FixedWebLocation, FixedWebGoLocation>,
-    Configurable<FixedWebSettings, FixedWebPreferences>,
-    Overflowable by core {
+    private val navigationDelegate: NavigationDelegate,
+    layoutDelegate: LayoutDelegate
+) : Navigator<FixedWebReadingOrder, FixedWebLocation, FixedWebGoLocation> by navigationDelegate,
+    Overflowable by navigationDelegate,
+    Configurable<FixedWebSettings, FixedWebPreferences> by layoutDelegate
 
-    private val locationMutable: MutableState<FixedWebLocation> =
-        mutableStateOf(initialLocation)
-
-    override val readingOrder: FixedWebReadingOrder =
-        core.readingOrder
-
-    override val location: State<FixedWebLocation> =
-        locationMutable
-
-    override suspend fun goTo(targetLocation: FixedWebGoLocation) {
-        core.goTo(targetLocation)
-    }
-
-    override suspend fun goTo(location: FixedWebLocation) {
-        core.goTo(location)
-    }
-
-    override val preferences: MutableState<FixedWebPreferences> =
-        core.preferences
-
-    override val settings: State<FixedWebSettings> =
-        core.settings
-
-    internal fun updateLocation(location: FixedWebLocation) {
-        locationMutable.value = location
-    }
-
-    override suspend fun goTo(link: Link) {
-        val href = link.url().removeFragment()
-        val location = HrefLocation(href)
-        goTo(location)
-    }
-}
+internal data class FixedWebPreloadedData(
+    val fixedSingleContent: String,
+    val fixedDoubleContent: String
+)
 
 @OptIn(ExperimentalReadiumApi::class)
-internal class FixedWebCore(
-    val readingOrder: FixedWebReadingOrder,
-    private val settingsResolver: FixedWebSettingsResolver,
-    initialPreferences: FixedWebPreferences,
-    initialLocation: Int
-) : Overflowable {
+internal class LayoutDelegate(
+    readingOrder: FixedWebReadingOrder,
+    publicationMetadata: Metadata,
+    defaults: FixedWebDefaults,
+    initialPreferences: FixedWebPreferences
+) : Configurable<FixedWebSettings, FixedWebPreferences> {
+
+    private val settingsResolver: FixedWebSettingsResolver =
+        FixedWebSettingsResolver(publicationMetadata, defaults)
+
     private val layoutResolver =
         LayoutResolver(readingOrder)
 
-    val preferences: MutableState<FixedWebPreferences> =
+    override val preferences: MutableState<FixedWebPreferences> =
         mutableStateOf(initialPreferences)
 
-    val settings: State<FixedWebSettings> =
+    override val settings: State<FixedWebSettings> =
         derivedStateOf { settingsResolver.settings(preferences.value) }
 
     val layout: State<Layout> =
@@ -158,14 +141,34 @@ internal class FixedWebCore(
 
     val fit: State<Fit> =
         derivedStateOf { settings.value.fit }
+}
 
-    val pagerState: PagerState =
-        PagerState(
-            currentPage = layout.value.spreadIndexForPage(initialLocation),
-            pageCount = { layout.value.spreads.size }
-        )
+@OptIn(ExperimentalReadiumApi::class, InternalReadiumApi::class)
+internal class NavigationDelegate(
+    override val readingOrder: FixedWebReadingOrder,
+    private val pagerState: PagerState,
+    private val layout: State<Layout>,
+    private val settings: State<FixedWebSettings>,
+    initialLocation: FixedWebLocation
+) : Navigator<FixedWebReadingOrder, FixedWebLocation, FixedWebGoLocation>, Overflowable {
 
-    suspend fun goTo(targetLocation: FixedWebGoLocation) {
+    private val locationMutable: MutableState<FixedWebLocation> =
+        mutableStateOf(initialLocation)
+
+    internal fun updateLocation(location: FixedWebLocation) {
+        locationMutable.value = location
+    }
+
+    override val location: State<FixedWebLocation> =
+        locationMutable
+
+    override suspend fun goTo(link: Link) {
+        val href = link.url().removeFragment()
+        val location = HrefLocation(href)
+        goTo(location)
+    }
+
+    override suspend fun goTo(targetLocation: FixedWebGoLocation) {
         when (targetLocation) {
             is HrefLocation -> {
                 val pageIndex = checkNotNull(readingOrder.indexOfHref(targetLocation.href))
@@ -174,12 +177,10 @@ internal class FixedWebCore(
         }
     }
 
-    suspend fun goTo(location: FixedWebLocation) {
+    override suspend fun goTo(location: FixedWebLocation) {
         return goTo(HrefLocation(location.href))
     }
 
-    @ExperimentalReadiumApi
-    @OptIn(InternalReadiumApi::class)
     override val overflow: State<Overflow> =
         derivedStateOf {
             SimpleOverflow(
@@ -207,8 +208,3 @@ internal class FixedWebCore(
         }
     }
 }
-
-internal data class FixedWebPreloadedData(
-    val fixedSingleContent: String,
-    val fixedDoubleContent: String
-)

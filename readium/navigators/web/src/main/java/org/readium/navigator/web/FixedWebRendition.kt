@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
@@ -65,27 +64,28 @@ public fun FixedWebRendition(
         val safeDrawingPadding = windowInsets.asAbsolutePaddingValues()
         val displayArea = rememberUpdatedState(DisplayArea(viewportSize, safeDrawingPadding))
 
+        val readingProgression =
+            state.layoutDelegate.settings.value.readingProgression
+
         val reverseLayout =
-            LocalLayoutDirection.current.toReadingProgression() != state.settings.value.readingProgression
+            LocalLayoutDirection.current.toReadingProgression() != readingProgression
 
         // This is barely needed as location could be computed on the state side without any
         // data from the layout pass. I keep it so for demonstration purposes of the way the
         // reflowable navigator could fit the architecture as well.
         val spreadIndex = state.pagerState.currentPage
-        val itemIndex = state.layout.value.pageIndexForSpread(spreadIndex)
+        val itemIndex = state.layoutDelegate.layout.value.pageIndexForSpread(spreadIndex)
         val itemHref = state.readingOrder.items[itemIndex].href
         state.updateLocation(FixedWebLocation(itemHref))
-
-        val fitState = remember { derivedStateOf { state.settings.value.fit } }
 
         NavigatorPager(
             modifier = modifier,
             state = state.pagerState,
             beyondViewportPageCount = 2,
-            key = { index -> state.layout.value.pageIndexForSpread(index) },
+            key = { index -> state.layoutDelegate.layout.value.pageIndexForSpread(index) },
             reverseLayout = reverseLayout
         ) { index ->
-            when (val spread = state.layout.value.spreads[index]) {
+            when (val spread = state.layoutDelegate.layout.value.spreads[index]) {
                 is SingleViewportSpread -> {
                     val spreadState = remember {
                         SingleSpreadState(
@@ -93,7 +93,7 @@ public fun FixedWebRendition(
                             publicationBaseUrl = WebViewServer.publicationBaseHref,
                             webViewClient = state.webViewClient,
                             spread = spread,
-                            fit = fitState,
+                            fit = state.layoutDelegate.fit,
                             displayArea = displayArea
                         )
                     }
@@ -114,7 +114,7 @@ public fun FixedWebRendition(
                             publicationBaseUrl = WebViewServer.publicationBaseHref,
                             webViewClient = state.webViewClient,
                             spread = spread,
-                            fit = fitState,
+                            fit = state.layoutDelegate.fit,
                             displayArea = displayArea
                         )
                     }

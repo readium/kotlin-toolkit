@@ -10,21 +10,19 @@ import android.app.Application
 import java.io.IOException
 import org.readium.navigator.web.layout.FixedWebReadingOrder
 import org.readium.navigator.web.layout.FixedWebReadingOrderItem
+import org.readium.navigator.web.location.FixedWebGoLocation
 import org.readium.navigator.web.location.FixedWebLocatorAdapter
+import org.readium.navigator.web.location.HrefLocation
 import org.readium.navigator.web.preferences.FixedWebDefaults
 import org.readium.navigator.web.preferences.FixedWebPreferences
 import org.readium.navigator.web.preferences.FixedWebPreferencesEditor
 import org.readium.navigator.web.util.WebViewServer
 import org.readium.navigator.web.webapi.FixedDoubleApi
 import org.readium.navigator.web.webapi.FixedSingleApi
-import org.readium.r2.navigator.extensions.normalizeLocator
-import org.readium.r2.shared.DelicateReadiumApi
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Link
-import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.epub.EpubLayout
-import org.readium.r2.shared.publication.indexOfFirstWithHref
 import org.readium.r2.shared.publication.presentation.page
 import org.readium.r2.shared.publication.presentation.presentation
 import org.readium.r2.shared.util.ThrowableError
@@ -32,7 +30,6 @@ import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.getOrElse
 
 @ExperimentalReadiumApi
-@OptIn(DelicateReadiumApi::class)
 public class FixedWebNavigatorFactory private constructor(
     private val application: Application,
     private val publication: Publication,
@@ -74,7 +71,7 @@ public class FixedWebNavigatorFactory private constructor(
     }
 
     public suspend fun createRenditionState(
-        initialLocator: Locator? = null,
+        initialLocation: FixedWebGoLocation? = null,
         initialPreferences: FixedWebPreferences? = null,
         readingOrder: List<Link> = publication.readingOrder
     ): Try<FixedWebRenditionState, Error> {
@@ -84,11 +81,6 @@ public class FixedWebNavigatorFactory private constructor(
                 page = it.properties.page
             )
         }
-
-        val initialIndex = initialLocator
-            ?.let { publication.normalizeLocator(it) }
-            ?.let { readingOrder.indexOfFirstWithHref(it.href) }
-            ?: 0
 
         val webViewServer =
             WebViewServer(
@@ -108,7 +100,7 @@ public class FixedWebNavigatorFactory private constructor(
                 readingOrder = FixedWebReadingOrder(items),
                 initialPreferences = initialPreferences ?: FixedWebPreferences(),
                 defaults = defaults,
-                initialLocation = initialIndex,
+                initialLocation = initialLocation ?: HrefLocation(items[0].href),
                 webViewServer = webViewServer,
                 preloadedData = preloads
             )

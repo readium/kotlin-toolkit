@@ -96,8 +96,12 @@ class ReaderOpener(
 
         val initialPreferences = FixedWebPreferences()
 
+        val locatorAdapter = navigatorFactory.createLocatorAdapter()
+
+        val initialLocation = with(locatorAdapter) { initialLocator?.toGoLocation() }
+
         val navigatorState = navigatorFactory.createRenditionState(
-            initialLocator = initialLocator,
+            initialLocation = initialLocation,
             initialPreferences = initialPreferences
         ).getOrElse {
             return Try.failure(it)
@@ -112,12 +116,11 @@ class ReaderOpener(
                 createPreferencesEditor = navigatorFactory::createPreferencesEditor
             )
 
-        preferencesViewModel.preferences
-            .onEach {
-                navigatorState.preferences.value = it
-            }.launchIn(coroutineScope)
-
-        val locatorAdapter = navigatorFactory.createLocatorAdapter()
+        val onNavigatorCreated: (FixedWebNavigator) -> Unit = { navigator ->
+            preferencesViewModel.preferences
+                .onEach { navigator.preferences.value = it }
+                .launchIn(coroutineScope)
+        }
 
         val readerState = ReaderState(
             url = url,
@@ -125,7 +128,8 @@ class ReaderOpener(
             publication = publication,
             renditionState = navigatorState,
             preferencesViewModel = preferencesViewModel,
-            locatorAdapter = locatorAdapter
+            locatorAdapter = locatorAdapter,
+            onNavigatorCreated = onNavigatorCreated
         )
 
         return Try.success(readerState)

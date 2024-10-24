@@ -11,6 +11,10 @@ internal class Layout(
     val spreads: List<Spread>
 ) {
 
+    fun spreadIndexForPage(href: Url): Int = spreads
+        .indexOfFirst { href in it.pages.map { page -> page.href } }
+        .also { check(it != -1) }
+
     fun spreadIndexForPage(pageIndex: Int): Int = spreads
         .indexOfFirst { pageIndex in it.pages.map { page -> page.index } }
         .also { check(it != -1) }

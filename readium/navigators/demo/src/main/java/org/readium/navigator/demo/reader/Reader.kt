@@ -62,7 +62,8 @@ data class ReaderState<L : Location, N : Navigator<*, L, *>>(
     val publication: Publication,
     val renditionState: RenditionState<N>,
     val preferencesViewModel: UserPreferencesViewModel<*, *>,
-    val locatorAdapter: LocatorAdapter<L, *>
+    val locatorAdapter: LocatorAdapter<L, *>,
+    val onNavigatorCreated: (N) -> Unit
 ) {
 
     fun close() {
@@ -99,7 +100,22 @@ fun <L : Location, N : Navigator<*, L, *>> Reader(
             onPreferencesActivated = { showPreferences.value = !showPreferences.value }
         )
 
-        val navigatorNow = readerState.renditionState.controllerState.value.navigator
+        val navigatorNow = readerState.renditionState.navigator
+
+        if (navigatorNow != null) {
+            LaunchedEffect(navigatorNow) {
+                readerState.onNavigatorCreated(navigatorNow)
+            }
+
+            LaunchedEffect(navigatorNow) {
+                snapshotFlow {
+                    navigatorNow.location.value
+                }.onEach {
+                    val locator = with(readerState.locatorAdapter) { it.toLocator() }
+                    LocatorRepository.saveLocator(readerState.url, locator)
+                }.launchIn(readerState.coroutineScope)
+            }
+        }
 
         val fallbackInputListener = remember {
             object : InputListener {
@@ -131,17 +147,6 @@ fun <L : Location, N : Navigator<*, L, *>> Reader(
                     onExternalLinkActivated = { url, _ -> launchWebBrowser(context, url.toUri()) }
                 )
             }
-
-        if (navigatorNow != null) {
-            LaunchedEffect(navigatorNow) {
-                snapshotFlow {
-                    navigatorNow.location.value
-                }.onEach {
-                    val locator = with(readerState.locatorAdapter) { it.toLocator() }
-                    LocatorRepository.saveLocator(readerState.url, locator)
-                }.launchIn(readerState.coroutineScope)
-            }
-        }
 
         when (readerState.renditionState) {
             is FixedWebRenditionState -> {
