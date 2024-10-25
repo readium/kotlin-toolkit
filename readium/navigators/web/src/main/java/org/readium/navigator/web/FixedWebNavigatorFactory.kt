@@ -8,8 +8,8 @@ package org.readium.navigator.web
 
 import android.app.Application
 import java.io.IOException
-import org.readium.navigator.web.layout.FixedWebReadingOrder
-import org.readium.navigator.web.layout.FixedWebReadingOrderItem
+import org.readium.navigator.web.layout.ReadingOrder
+import org.readium.navigator.web.layout.ReadingOrderItem
 import org.readium.navigator.web.location.FixedWebGoLocation
 import org.readium.navigator.web.location.FixedWebLocatorAdapter
 import org.readium.navigator.web.location.HrefLocation
@@ -76,7 +76,7 @@ public class FixedWebNavigatorFactory private constructor(
         readingOrder: List<Link> = publication.readingOrder
     ): Try<FixedWebRenditionState, Error> {
         val items = readingOrder.map {
-            FixedWebReadingOrderItem(
+            ReadingOrderItem(
                 href = it.url(),
                 page = it.properties.page
             )
@@ -97,7 +97,7 @@ public class FixedWebNavigatorFactory private constructor(
         val state =
             FixedWebRenditionState(
                 publicationMetadata = publication.metadata,
-                readingOrder = FixedWebReadingOrder(items),
+                readingOrder = ReadingOrder(items),
                 initialPreferences = initialPreferences ?: FixedWebPreferences(),
                 defaults = defaults,
                 initialLocation = initialLocation ?: HrefLocation(items[0].href),

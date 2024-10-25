@@ -1,7 +1,6 @@
 package org.readium.navigator.common
 
 import androidx.compose.runtime.State
-import org.readium.r2.shared.DelicateReadiumApi
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.util.Url
@@ -16,22 +15,6 @@ public interface Navigator<L : Location, G : GoLocation> {
     public suspend fun goTo(location: G)
 
     public suspend fun goTo(link: Link)
-}
-
-@ExperimentalReadiumApi
-public interface ReadingOrder {
-
-    public val items: List<Item>
-
-    public interface Item {
-
-        public val href: Url
-    }
-
-    @OptIn(DelicateReadiumApi::class)
-    public fun indexOfHref(href: Url): Int? = items
-        .indexOfFirst { it.href == href }
-        .takeUnless { it == -1 }
 }
 
 /**

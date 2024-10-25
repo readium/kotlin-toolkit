@@ -11,9 +11,9 @@ import org.readium.navigator.common.Navigator
 import org.readium.navigator.common.Overflow
 import org.readium.navigator.common.Overflowable
 import org.readium.navigator.common.RenditionState
-import org.readium.navigator.web.layout.FixedWebReadingOrder
 import org.readium.navigator.web.layout.Layout
 import org.readium.navigator.web.layout.LayoutResolver
+import org.readium.navigator.web.layout.ReadingOrder
 import org.readium.navigator.web.location.FixedWebGoLocation
 import org.readium.navigator.web.location.FixedWebLocation
 import org.readium.navigator.web.location.HrefLocation
@@ -34,7 +34,7 @@ import org.readium.r2.shared.publication.Metadata
 @ExperimentalReadiumApi
 @Stable
 public class FixedWebRenditionState internal constructor(
-    public val readingOrder: FixedWebReadingOrder,
+    internal val readingOrder: ReadingOrder,
     publicationMetadata: Metadata,
     defaults: FixedWebDefaults,
     initialPreferences: FixedWebPreferences,
@@ -115,7 +115,7 @@ internal data class FixedWebPreloadedData(
 
 @OptIn(ExperimentalReadiumApi::class)
 internal class LayoutDelegate(
-    readingOrder: FixedWebReadingOrder,
+    readingOrder: ReadingOrder,
     publicationMetadata: Metadata,
     defaults: FixedWebDefaults,
     initialPreferences: FixedWebPreferences
@@ -145,7 +145,7 @@ internal class LayoutDelegate(
 
 @OptIn(ExperimentalReadiumApi::class, InternalReadiumApi::class)
 internal class NavigationDelegate(
-    private val readingOrder: FixedWebReadingOrder,
+    private val readingOrder: ReadingOrder,
     private val pagerState: PagerState,
     private val layout: State<Layout>,
     private val settings: State<FixedWebSettings>,
