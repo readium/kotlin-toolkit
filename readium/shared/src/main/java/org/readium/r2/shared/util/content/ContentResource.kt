@@ -13,17 +13,21 @@ import android.net.Uri
 import android.provider.MediaStore
 import java.io.FileNotFoundException
 import java.io.IOException
-import java.io.InputStream
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.InternalReadiumApi
-import org.readium.r2.shared.extensions.*
+import org.readium.r2.shared.extensions.coerceFirstNonNegative
+import org.readium.r2.shared.extensions.queryProjection
+import org.readium.r2.shared.extensions.readFully
+import org.readium.r2.shared.extensions.requireLengthFitInt
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.DebugError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.flatMap
+import org.readium.r2.shared.util.getOrElse
+import org.readium.r2.shared.util.io.CountingInputStream
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.shared.util.resource.filename
@@ -45,9 +49,12 @@ public class ContentResource(
 
     private lateinit var _properties: Try<Resource.Properties, ReadError>
 
+    private var stream: CountingInputStream? = null
+
     override val sourceUrl: AbsoluteUrl? = uri.toUrl() as? AbsoluteUrl
 
     override fun close() {
+        stream?.close()
     }
 
     override suspend fun properties(): Try<Resource.Properties, ReadError> {
@@ -95,22 +102,12 @@ public class ContentResource(
     }
 
     private suspend fun readFully(): Try<ByteArray, ReadError> =
-        withStream { it.readFully() }
+        withStream(fromIndex = 0) { it.readFully() }
 
     private suspend fun readRange(range: LongRange): Try<ByteArray, ReadError> =
-        withStream {
+        withStream(fromIndex = range.first) {
             withContext(Dispatchers.IO) {
-                var skipped: Long = 0
-
-                while (skipped != range.first) {
-                    skipped += it.skip(range.first - skipped)
-                    if (skipped == 0L) {
-                        throw IOException("Could not skip InputStream to read ranges from $uri.")
-                    }
-                }
-
-                val length = range.last - range.first + 1
-                it.read(length)
+                it.readRange(range)
             }
         }
 
@@ -134,16 +131,37 @@ public class ContentResource(
         return _length
     }
 
-    private suspend fun <T> withStream(block: suspend (InputStream) -> T): Try<T, ReadError> {
+    private suspend fun <T> withStream(
+        fromIndex: Long,
+        block: suspend (CountingInputStream) -> T
+    ): Try<T, ReadError> {
+        val stream = stream(fromIndex)
+            .getOrElse { return Try.failure(it) }
+
         return Try.catching {
-            val stream = contentResolver.openInputStream(uri)
+            block(stream)
+        }
+    }
+
+    private fun stream(fromIndex: Long): Try<CountingInputStream, ReadError> {
+        // Reuse the current stream if it didn't exceed the requested index.
+        stream
+            ?.takeIf { it.count <= fromIndex }
+            ?.let { return Try.success(it) }
+
+        stream?.close()
+
+        val contentStream =
+            contentResolver.openInputStream(uri)
                 ?: return Try.failure(
                     ReadError.Access(
                         ContentResolverError.NotAvailable()
                     )
                 )
-            stream.use { block(stream) }
-        }
+
+        stream = CountingInputStream(contentStream)
+
+        return Try.success(stream!!)
     }
 
     private inline fun <T> Try.Companion.catching(closure: () -> T): Try<T, ReadError> =
