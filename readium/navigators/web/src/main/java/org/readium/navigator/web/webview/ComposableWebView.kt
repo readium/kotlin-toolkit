@@ -28,9 +28,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.view.ViewCompat
-import androidx.core.view.postDelayed
-import androidx.webkit.WebViewCompat
-import androidx.webkit.WebViewFeature
 import org.readium.navigator.web.gestures.Fling2DBehavior
 import org.readium.navigator.web.gestures.scrollable2D
 import org.readium.navigator.web.webview.LoadingState.Finished
@@ -159,7 +156,6 @@ internal fun WebView(
     webView?.let { wv ->
         LaunchedEffect(wv, state) {
             snapshotFlow { state.content }.collect { content ->
-                state.loadingState = LoadingState.Loading
                 when (content) {
                     is WebContent.Url -> {
                         wv.loadUrl(content.url, content.additionalHttpHeaders)
@@ -174,9 +170,6 @@ internal fun WebView(
                             content.historyUrl
                         )
                     }
-                }
-                wv.onContentReady {
-                    state.loadingState = LoadingState.Finished
                 }
             }
         }
@@ -255,12 +248,6 @@ internal class WebViewState(webContent: WebContent) {
      *  The content being loaded by the WebView
      */
     var content: WebContent by mutableStateOf(webContent)
-
-    /**
-     * Whether the WebView is currently [LoadingState.Loading] data in its main frame (along with
-     * progress) or the data loading has [LoadingState.Finished]. See [LoadingState]
-     */
-    internal var loadingState: LoadingState by mutableStateOf(LoadingState.Initializing)
 
     /**
      * A list for errors captured in the last load. Reset when a new page is loaded.
@@ -348,21 +335,3 @@ internal fun rememberWebViewStateWithHTMLData(
             historyUrl
         )
     }
-
-/**
- * Will run the given [action] when the content of the [WebView] is fully laid out.
- */
-private fun WebView.onContentReady(action: () -> Unit) {
-    if (WebViewFeature.isFeatureSupported(WebViewFeature.VISUAL_STATE_CALLBACK)) {
-        WebViewCompat.postVisualStateCallback(this, 0) {
-            action()
-        }
-    } else {
-        // On older devices, there's no reliable way to guarantee the page is fully laid out.
-        // As a workaround, we run a dummy JavaScript, then wait for a short delay before
-        // assuming it's ready.
-        evaluateJavascript("true") {
-            postDelayed(500, action)
-        }
-    }
-}

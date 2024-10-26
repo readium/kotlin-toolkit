@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
@@ -19,7 +20,6 @@ import org.readium.navigator.web.layout.DoubleViewportSpread
 import org.readium.navigator.web.util.DisplayArea
 import org.readium.navigator.web.util.WebViewClient
 import org.readium.navigator.web.webapi.FixedDoubleApi
-import org.readium.navigator.web.webview.LoadingState
 import org.readium.navigator.web.webview.rememberWebViewStateWithHTMLData
 import org.readium.r2.navigator.preferences.Fit
 import org.readium.r2.shared.ExperimentalReadiumApi
@@ -42,12 +42,14 @@ internal fun DoubleViewportSpread(
             baseUrl = state.publicationBaseUrl.toString()
         )
 
-        val layoutApi = remember(webViewState.webView, webViewState.loadingState) {
+        val scriptsLoaded = remember(webViewState.webView) {
+            mutableStateOf(false)
+        }
+
+        val layoutApi = remember(webViewState.webView, scriptsLoaded.value) {
             webViewState.webView
-                ?.takeIf { webViewState.loadingState is LoadingState.Finished }
-                ?.let {
-                    FixedDoubleApi(it)
-                }
+                .takeIf { scriptsLoaded.value }
+                ?.let { FixedDoubleApi(it) }
         }
 
         layoutApi?.let { api ->
@@ -78,7 +80,8 @@ internal fun DoubleViewportSpread(
                     context
                 )
             },
-            backgroundColor = backgroundColor
+            backgroundColor = backgroundColor,
+            onScriptsLoaded = { scriptsLoaded.value = true }
         )
     }
 }

@@ -10,9 +10,11 @@
 
 import { GesturesBridge } from "./bridge/fixed-gestures-bridge"
 import { FixedDoubleBridge } from "./bridge/fixed-double-bridge"
+import { InitializationBridge } from "./bridge/fixed-initialization-bridge"
 
 declare global {
   interface Window {
+    initialization: InitializationBridge
     doubleArea: FixedDoubleBridge
     gestures: GesturesBridge
   }
@@ -33,3 +35,5 @@ Window.prototype.doubleArea = new FixedDoubleBridge(
   metaViewport,
   window.gestures
 )
+
+window.initialization.onScriptsLoaded()

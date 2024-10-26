@@ -16,6 +16,7 @@ import org.readium.navigator.common.TapEvent
 import org.readium.navigator.web.util.WebViewClient
 import org.readium.navigator.web.webapi.GesturesApi
 import org.readium.navigator.web.webapi.GesturesListener
+import org.readium.navigator.web.webapi.InitializationApi
 import org.readium.navigator.web.webview.WebView
 import org.readium.navigator.web.webview.WebViewScrollable2DState
 import org.readium.navigator.web.webview.WebViewState
@@ -28,6 +29,7 @@ import org.readium.r2.shared.util.AbsoluteUrl
 internal fun SpreadWebView(
     state: WebViewState,
     client: WebViewClient,
+    onScriptsLoaded: () -> Unit,
     onTap: (TapEvent) -> Unit,
     onLinkActivated: (AbsoluteUrl, LinkContext?) -> Unit,
     backgroundColor: Color
@@ -35,6 +37,10 @@ internal fun SpreadWebView(
     val scrollableState = remember { WebViewScrollable2DState() }
 
     val spreadNestedScrollConnection = SpreadNestedScrollConnection(scrollableState)
+
+    val initializationApi = remember(onScriptsLoaded) {
+        InitializationApi(onScriptsLoaded)
+    }
 
     val gesturesApi = remember(onTap) {
         val listener = object : GesturesListener {
@@ -50,6 +56,7 @@ internal fun SpreadWebView(
     }
 
     LaunchedEffect(state.webView) {
+        state.webView?.let { initializationApi.registerOnWebView(it) }
         state.webView?.let { gesturesApi.registerOnWebView(it) }
     }
 

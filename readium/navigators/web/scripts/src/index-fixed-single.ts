@@ -9,10 +9,12 @@
  */
 
 import { GesturesBridge } from "./bridge/fixed-gestures-bridge"
+import { InitializationBridge } from "./bridge/fixed-initialization-bridge"
 import { FixedSingleBridge } from "./bridge/fixed-single-bridge"
 
 declare global {
   interface Window {
+    initialization: InitializationBridge
     singleArea: FixedSingleBridge
     gestures: GesturesBridge
   }
@@ -30,3 +32,5 @@ window.singleArea = new FixedSingleBridge(
   metaViewport,
   window.gestures
 )
+
+window.initialization.onScriptsLoaded()
