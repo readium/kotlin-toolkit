@@ -43,7 +43,7 @@ class DemoActivity : FragmentActivity() {
             uri?.let {
                 val url = requireNotNull(it.toAbsoluteUrl())
                 viewModel.onBookSelected(url)
-            }
+            } ?: run { finish() }
         }
 
     override fun onCreate(savedInstanceState: Bundle?) {
