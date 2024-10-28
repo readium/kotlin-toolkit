@@ -41,10 +41,10 @@ import timber.log.Timber
 class PublicationRetriever(
     context: Context,
     private val assetRetriever: AssetRetriever,
-    httpClient: HttpClient,
+    private val httpClient: HttpClient,
     lcpService: LcpService?,
     private val bookshelfDir: File,
-    tempDir: File
+    private val tempDir: File
 ) {
     data class Result(
         val publication: File,
@@ -91,6 +91,46 @@ class PublicationRetriever(
             .retrieve(opdsResult.tempFile, opdsResult.mediaType, opdsResult.coverUrl)
             .getOrElse {
                 tryOrLog { opdsResult.tempFile.delete() }
+                return Try.failure(it)
+            }
+
+        val finalResult = moveToBookshelfDir(
+            localResult.tempFile,
+            localResult.format,
+            localResult.coverUrl
+        )
+            .getOrElse {
+                tryOrLog { localResult.tempFile.delete() }
+                return Try.failure(it)
+            }
+
+        return Try.success(
+            Result(finalResult.publication, finalResult.format, finalResult.coverUrl)
+        )
+    }
+
+    suspend fun retrieveFromHttp(
+        url: AbsoluteUrl
+    ): Try<Result, ImportError> {
+        val request = HttpRequest(
+            url,
+            headers = emptyMap()
+        )
+
+        val tempFile = when (val result = httpClient.stream(request)) {
+            is Try.Failure ->
+                return Try.failure(ImportError.Download(result.value))
+            is Try.Success -> {
+                result.value.body
+                    .copyToNewFile(tempDir)
+                    .getOrElse { return Try.failure(ImportError.FileSystem(it)) }
+            }
+        }
+
+        val localResult = localPublicationRetriever
+            .retrieve(tempFile)
+            .getOrElse {
+                tryOrLog { tempFile.delete() }
                 return Try.failure(it)
             }
 
@@ -167,7 +207,7 @@ private class LocalPublicationRetriever(
     ): Try<Result, ImportError> {
         val tempFile = uri.copyToTempFile(context, tempDir)
             .getOrElse {
-                return Try.failure(ImportError.FileSystem(FileSystemError.IO(it)))
+                return Try.failure(ImportError.ContentResolver(it))
             }
         return retrieveFromStorage(tempFile, coverUrl = null)
             .onFailure { tryOrLog { tempFile.delete() } }

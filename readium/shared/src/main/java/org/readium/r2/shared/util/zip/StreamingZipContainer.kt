@@ -39,13 +39,17 @@ import org.readium.r2.shared.util.zip.compress.archivers.zip.ZipFile
 
 internal class StreamingZipContainer(
     private val zipFile: ZipFile,
-    override val sourceUrl: AbsoluteUrl?
+    override val sourceUrl: AbsoluteUrl?,
+    private val cacheEntryMaxSize: Int = 0
 ) : Container<Resource> {
 
     private inner class Entry(
         private val url: Url,
         private val entry: ZipArchiveEntry
     ) : Resource {
+
+        private var cache: ByteArray? =
+            null
 
         override val sourceUrl: AbsoluteUrl? get() = null
 
@@ -102,8 +106,25 @@ internal class StreamingZipContainer(
                 it.readFully()
             }
 
-        private fun readRange(range: LongRange): ByteArray =
-            stream(range.first).readRange(range)
+        private suspend fun readRange(range: LongRange): ByteArray =
+            when {
+                cache != null -> {
+                    // If the entry is cached, its size fit into an Int.
+                    val rangeSize = (range.last - range.first + 1).toInt()
+                    cache!!.copyInto(
+                        ByteArray(rangeSize),
+                        startIndex = range.first.toInt(),
+                        endIndex = range.last.toInt() + 1
+                    )
+                }
+
+                entry.size in 0 until cacheEntryMaxSize -> {
+                    cache = readFully()
+                    readRange(range)
+                }
+                else ->
+                    stream(range.first).readRange(range)
+            }
 
         /**
          * Reading an entry in chunks (e.g. from the HTTP server) can be really slow if the entry

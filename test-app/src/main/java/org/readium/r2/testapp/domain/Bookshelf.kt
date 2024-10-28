@@ -63,6 +63,14 @@ class Bookshelf(
         }
     }
 
+    fun importPublicationFromHttp(
+        url: AbsoluteUrl
+    ) {
+        coroutineScope.launch {
+            addBookFeedback(publicationRetriever.retrieveFromHttp(url))
+        }
+    }
+
     fun importPublicationFromOpds(
         publication: Publication
     ) {
