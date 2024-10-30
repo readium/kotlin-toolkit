@@ -63,7 +63,6 @@ dependencies {
     implementation(project(":readium:readium-streamer"))
     implementation(project(":readium:readium-navigator"))
     implementation(project(":readium:navigators:readium-navigator-web"))
-    implementation(project(":readium:navigators:readium-navigator-pdf"))
     implementation(project(":readium:adapters:pdfium"))
 
     coreLibraryDesugaring(libs.desugar.jdk.libs)

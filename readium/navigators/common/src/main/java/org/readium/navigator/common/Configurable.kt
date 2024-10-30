@@ -1,15 +1,12 @@
 package org.readium.navigator.common
 
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.State
 import org.readium.r2.shared.ExperimentalReadiumApi
 
 @ExperimentalReadiumApi
-public interface Configurable<S : Any, P : Any> {
+public interface Configurable<S : Settings> {
 
-    public val preferences: MutableState<P>
-
-    public val settings: State<S>
+    public val settings: MutableState<S>
 }
 
 @ExperimentalReadiumApi
@@ -17,3 +14,27 @@ public typealias Settings = org.readium.r2.navigator.preferences.Configurable.Se
 
 @ExperimentalReadiumApi
 public typealias Preferences<P> = org.readium.r2.navigator.preferences.Configurable.Preferences<P>
+
+/**
+ * Interactive editor of preferences.
+ *
+ * This can be used as a helper for a user preferences screen.
+ */
+@ExperimentalReadiumApi
+public interface SettingsEditor<P : Preferences<P>, S : Settings> {
+
+    /**
+     * The current preferences.
+     */
+    public val preferences: P
+
+    /**
+     * The current computed settings
+     */
+    public val settings: S
+
+    /**
+     * Unset all preferences.
+     */
+    public fun clear()
+}

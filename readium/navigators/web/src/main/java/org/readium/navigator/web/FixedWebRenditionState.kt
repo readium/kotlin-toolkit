@@ -17,10 +17,7 @@ import org.readium.navigator.web.layout.ReadingOrder
 import org.readium.navigator.web.location.FixedWebGoLocation
 import org.readium.navigator.web.location.FixedWebLocation
 import org.readium.navigator.web.location.HrefLocation
-import org.readium.navigator.web.preferences.FixedWebDefaults
-import org.readium.navigator.web.preferences.FixedWebPreferences
 import org.readium.navigator.web.preferences.FixedWebSettings
-import org.readium.navigator.web.preferences.FixedWebSettingsResolver
 import org.readium.navigator.web.util.WebViewClient
 import org.readium.navigator.web.util.WebViewServer
 import org.readium.r2.navigator.SimpleOverflow
@@ -29,15 +26,12 @@ import org.readium.r2.navigator.preferences.Fit
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.publication.Link
-import org.readium.r2.shared.publication.Metadata
 
 @ExperimentalReadiumApi
 @Stable
 public class FixedWebRenditionState internal constructor(
     internal val readingOrder: ReadingOrder,
-    publicationMetadata: Metadata,
-    defaults: FixedWebDefaults,
-    initialPreferences: FixedWebPreferences,
+    initialSettings: FixedWebSettings,
     initialLocation: FixedWebGoLocation,
     internal val webViewServer: WebViewServer,
     internal val preloadedData: FixedWebPreloadedData
@@ -52,9 +46,7 @@ public class FixedWebRenditionState internal constructor(
     internal val layoutDelegate: LayoutDelegate =
         LayoutDelegate(
             readingOrder,
-            publicationMetadata,
-            defaults,
-            initialPreferences
+            initialSettings
         )
 
     internal val webViewClient: WebViewClient =
@@ -106,7 +98,7 @@ public class FixedWebNavigator internal constructor(
     layoutDelegate: LayoutDelegate
 ) : Navigator<FixedWebLocation, FixedWebGoLocation> by navigationDelegate,
     Overflowable by navigationDelegate,
-    Configurable<FixedWebSettings, FixedWebPreferences> by layoutDelegate
+    Configurable<FixedWebSettings> by layoutDelegate
 
 internal data class FixedWebPreloadedData(
     val fixedSingleContent: String,
@@ -116,22 +108,14 @@ internal data class FixedWebPreloadedData(
 @OptIn(ExperimentalReadiumApi::class)
 internal class LayoutDelegate(
     readingOrder: ReadingOrder,
-    publicationMetadata: Metadata,
-    defaults: FixedWebDefaults,
-    initialPreferences: FixedWebPreferences
-) : Configurable<FixedWebSettings, FixedWebPreferences> {
-
-    private val settingsResolver: FixedWebSettingsResolver =
-        FixedWebSettingsResolver(publicationMetadata, defaults)
+    initialSettings: FixedWebSettings
+) : Configurable<FixedWebSettings> {
 
     private val layoutResolver =
         LayoutResolver(readingOrder)
 
-    override val preferences: MutableState<FixedWebPreferences> =
-        mutableStateOf(initialPreferences)
-
-    override val settings: State<FixedWebSettings> =
-        derivedStateOf { settingsResolver.settings(preferences.value) }
+    override val settings: MutableState<FixedWebSettings> =
+        mutableStateOf(initialSettings)
 
     val layout: State<Layout> =
         derivedStateOf {

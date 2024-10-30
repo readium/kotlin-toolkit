@@ -15,7 +15,8 @@ import org.readium.navigator.web.location.FixedWebLocatorAdapter
 import org.readium.navigator.web.location.HrefLocation
 import org.readium.navigator.web.preferences.FixedWebDefaults
 import org.readium.navigator.web.preferences.FixedWebPreferences
-import org.readium.navigator.web.preferences.FixedWebPreferencesEditor
+import org.readium.navigator.web.preferences.FixedWebSettings
+import org.readium.navigator.web.preferences.FixedWebSettingsEditor
 import org.readium.navigator.web.util.WebViewServer
 import org.readium.navigator.web.webapi.FixedDoubleApi
 import org.readium.navigator.web.webapi.FixedSingleApi
@@ -71,8 +72,8 @@ public class FixedWebNavigatorFactory private constructor(
     }
 
     public suspend fun createRenditionState(
+        initialSettings: FixedWebSettings,
         initialLocation: FixedWebGoLocation? = null,
-        initialPreferences: FixedWebPreferences? = null,
         readingOrder: List<Link> = publication.readingOrder
     ): Try<FixedWebRenditionState, Error> {
         val items = readingOrder.map {
@@ -96,10 +97,8 @@ public class FixedWebNavigatorFactory private constructor(
 
         val state =
             FixedWebRenditionState(
-                publicationMetadata = publication.metadata,
                 readingOrder = ReadingOrder(items),
-                initialPreferences = initialPreferences ?: FixedWebPreferences(),
-                defaults = defaults,
+                initialSettings = initialSettings,
                 initialLocation = initialLocation ?: HrefLocation(items[0].href),
                 webViewServer = webViewServer,
                 preloadedData = preloads
@@ -132,10 +131,10 @@ public class FixedWebNavigatorFactory private constructor(
             Try.failure(Error.Initialization(ThrowableError(e)))
         }
 
-    public fun createPreferencesEditor(
+    public fun createSettingsEditor(
         currentPreferences: FixedWebPreferences
-    ): FixedWebPreferencesEditor =
-        FixedWebPreferencesEditor(
+    ): FixedWebSettingsEditor =
+        FixedWebSettingsEditor(
             currentPreferences,
             publication.metadata,
             defaults

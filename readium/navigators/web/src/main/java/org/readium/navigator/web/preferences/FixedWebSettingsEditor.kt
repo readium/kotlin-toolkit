@@ -6,31 +6,32 @@
 
 package org.readium.navigator.web.preferences
 
+import org.readium.navigator.common.SettingsEditor
 import org.readium.r2.navigator.preferences.EnumPreference
 import org.readium.r2.navigator.preferences.EnumPreferenceDelegate
 import org.readium.r2.navigator.preferences.Fit
 import org.readium.r2.navigator.preferences.Preference
 import org.readium.r2.navigator.preferences.PreferenceDelegate
-import org.readium.r2.navigator.preferences.PreferencesEditor
 import org.readium.r2.navigator.preferences.ReadingProgression
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.publication.Metadata
 
 /**
- * Interactive editor of [FixedWebPreferences].
+ * Interactive editor of [FixedWebSettings].
  *
  * This can be used as a view model for a user preferences screen.
  *
  * @see FixedWebPreferences
+ * @see FixedWebSettings
  */
 @ExperimentalReadiumApi
 @OptIn(InternalReadiumApi::class)
-public class FixedWebPreferencesEditor internal constructor(
+public class FixedWebSettingsEditor internal constructor(
     initialPreferences: FixedWebPreferences,
     publicationMetadata: Metadata,
     defaults: FixedWebDefaults
-) : PreferencesEditor<FixedWebPreferences> {
+) : SettingsEditor<FixedWebPreferences, FixedWebSettings> {
 
     private data class State(
         val preferences: FixedWebPreferences,
@@ -45,6 +46,8 @@ public class FixedWebPreferencesEditor internal constructor(
 
     override val preferences: FixedWebPreferences
         get() = state.preferences
+    override val settings: FixedWebSettings
+        get() = state.settings
 
     override fun clear() {
         updateValues { FixedWebPreferences() }

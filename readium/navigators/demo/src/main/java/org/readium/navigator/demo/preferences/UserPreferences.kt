@@ -26,14 +26,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import org.readium.adapter.pdfium.navigator.PdfiumPreferencesEditor
-import org.readium.navigator.web.preferences.FixedWebPreferencesEditor
+import org.readium.navigator.common.Preferences
+import org.readium.navigator.common.Settings
+import org.readium.navigator.common.SettingsEditor
+import org.readium.navigator.web.preferences.FixedWebSettingsEditor
 import org.readium.r2.navigator.preferences.Axis
-import org.readium.r2.navigator.preferences.Configurable
 import org.readium.r2.navigator.preferences.EnumPreference
 import org.readium.r2.navigator.preferences.Fit
 import org.readium.r2.navigator.preferences.Preference
-import org.readium.r2.navigator.preferences.PreferencesEditor
 import org.readium.r2.navigator.preferences.RangePreference
 import org.readium.r2.navigator.preferences.ReadingProgression
 import org.readium.r2.shared.ExperimentalReadiumApi
@@ -56,7 +56,7 @@ fun UserPreferences(
 }
 
 @Composable
-private fun <P : Configurable.Preferences<P>, E : PreferencesEditor<P>> UserPreferences(
+private fun <P : Preferences<P>, S : Settings, E : SettingsEditor<P, S>> UserPreferences(
     editor: E,
     commit: () -> Unit,
     title: String
@@ -93,20 +93,12 @@ private fun <P : Configurable.Preferences<P>, E : PreferencesEditor<P>> UserPref
         Divider()
 
         when (editor) {
-            is FixedWebPreferencesEditor ->
+            is FixedWebSettingsEditor ->
                 FixedLayoutUserPreferences(
                     commit = commit,
                     readingProgression = editor.readingProgression,
                     fit = editor.fit,
                     spreads = editor.spreads
-                )
-            is PdfiumPreferencesEditor ->
-                FixedLayoutUserPreferences(
-                    commit = commit,
-                    readingProgression = editor.readingProgression,
-                    scrollAxis = editor.scrollAxis,
-                    fit = editor.fit,
-                    pageSpacing = editor.pageSpacing
                 )
         }
     }

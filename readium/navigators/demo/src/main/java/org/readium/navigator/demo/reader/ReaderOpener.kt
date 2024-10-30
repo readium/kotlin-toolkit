@@ -12,8 +12,6 @@ import android.app.Application
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import org.readium.adapter.pdfium.document.PdfiumDocumentFactory
-import org.readium.adapter.pdfium.navigator.PdfiumEngineProvider
 import org.readium.navigator.demo.persistence.LocatorRepository
 import org.readium.navigator.demo.preferences.PreferencesManager
 import org.readium.navigator.demo.preferences.UserPreferencesViewModel
@@ -21,7 +19,6 @@ import org.readium.navigator.web.FixedWebNavigator
 import org.readium.navigator.web.FixedWebNavigatorFactory
 import org.readium.navigator.web.location.FixedWebLocation
 import org.readium.navigator.web.preferences.FixedWebPreferences
-import org.readium.navigator.web.preferences.FixedWebSettings
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
@@ -45,17 +42,11 @@ class ReaderOpener(
     private val assetRetriever =
         AssetRetriever(application.contentResolver, httpClient)
 
-    private val pdfiumDocumentFactory =
-        PdfiumDocumentFactory(application)
-
     private val publicationParser =
-        DefaultPublicationParser(application, httpClient, assetRetriever, pdfiumDocumentFactory)
+        DefaultPublicationParser(application, httpClient, assetRetriever, null)
 
     private val publicationOpener =
         PublicationOpener(publicationParser)
-
-    private val pdfEngineProvider =
-        PdfiumEngineProvider()
 
     suspend fun open(url: AbsoluteUrl): Try<ReaderState<*, *>, Error> {
         val asset = assetRetriever.retrieve(url)
@@ -100,25 +91,25 @@ class ReaderOpener(
 
         val initialLocation = with(locatorAdapter) { initialLocator?.toGoLocation() }
 
+        val coroutineScope = MainScope()
+
+        val preferencesViewModel =
+            UserPreferencesViewModel(
+                viewModelScope = coroutineScope,
+                preferencesManager = PreferencesManager(initialPreferences),
+                createSettingsEditor = navigatorFactory::createSettingsEditor
+            )
+
         val navigatorState = navigatorFactory.createRenditionState(
-            initialLocation = initialLocation,
-            initialPreferences = initialPreferences
+            initialSettings = preferencesViewModel.editor.value.settings,
+            initialLocation = initialLocation
         ).getOrElse {
             return Try.failure(it)
         }
 
-        val coroutineScope = MainScope()
-
-        val preferencesViewModel =
-            UserPreferencesViewModel<FixedWebSettings, FixedWebPreferences>(
-                viewModelScope = coroutineScope,
-                preferencesManager = PreferencesManager(initialPreferences),
-                createPreferencesEditor = navigatorFactory::createPreferencesEditor
-            )
-
         val onNavigatorCreated: (FixedWebNavigator) -> Unit = { navigator ->
-            preferencesViewModel.preferences
-                .onEach { navigator.preferences.value = it }
+            preferencesViewModel.settings
+                .onEach { navigator.settings.value = it }
                 .launchIn(coroutineScope)
         }
 
@@ -134,48 +125,4 @@ class ReaderOpener(
 
         return Try.success(readerState)
     }
-/*
-    private fun createPdfReader(
-        url: AbsoluteUrl,
-        publication: Publication,
-        initialLocator: Locator?
-    ): Try<ReaderState<*, *>, Error> {
-        val navigatorFactory = PdfNavigatorFactory(publication, pdfEngineProvider)
-
-        val initialPreferences = PdfiumPreferences()
-
-        val navigatorState = navigatorFactory.createNavigator(
-            initialLocator = initialLocator,
-            initialPreferences = initialPreferences
-        ).getOrElse {
-            throw IllegalStateException()
-        }
-
-        val coroutineScope = MainScope()
-
-        val preferencesViewModel =
-            UserPreferencesViewModel<PdfiumSettings, PdfiumPreferences>(
-                viewModelScope = coroutineScope,
-                preferencesManager = PreferencesManager(initialPreferences),
-                createPreferencesEditor = navigatorFactory::createPreferencesEditor
-            )
-
-        preferencesViewModel.preferences
-            .onEach { navigatorState.preferences.value = it }
-            .launchIn(coroutineScope)
-
-        val locatorAdapter = navigatorFactory.createLocatorAdapter()
-
-        val readerState = ReaderState(
-            url = url,
-            coroutineScope = coroutineScope,
-            publication = publication,
-            navigatorState = navigatorState,
-            preferencesViewModel = preferencesViewModel,
-            locatorAdapter = locatorAdapter
-        )
-
-        return Try.success(readerState)
-    }
-    */
 }
