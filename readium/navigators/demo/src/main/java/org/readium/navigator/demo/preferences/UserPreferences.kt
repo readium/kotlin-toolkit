@@ -20,8 +20,6 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
@@ -41,24 +39,10 @@ import org.readium.r2.shared.ExperimentalReadiumApi
 /**
  * Stateful user settings component.
  */
-@Composable
-fun UserPreferences(
-    model: UserPreferencesViewModel<*, *>,
-    title: String
-) {
-    val editor by model.editor.collectAsState()
-
-    UserPreferences(
-        editor = editor,
-        commit = model::commit,
-        title = title
-    )
-}
 
 @Composable
-private fun <P : Preferences<P>, S : Settings, E : SettingsEditor<P, S>> UserPreferences(
+fun <P : Preferences<P>, S : Settings, E : SettingsEditor<P, S>> UserPreferences(
     editor: E,
-    commit: () -> Unit,
     title: String
 ) {
     val scrollState = rememberScrollState()
@@ -84,7 +68,7 @@ private fun <P : Preferences<P>, S : Settings, E : SettingsEditor<P, S>> UserPre
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Button(
-                onClick = { editor.clear(); commit() }
+                onClick = { editor.clear() }
             ) {
                 Text("Reset")
             }
@@ -95,7 +79,6 @@ private fun <P : Preferences<P>, S : Settings, E : SettingsEditor<P, S>> UserPre
         when (editor) {
             is FixedWebSettingsEditor ->
                 FixedLayoutUserPreferences(
-                    commit = commit,
                     readingProgression = editor.readingProgression,
                     fit = editor.fit,
                     spreads = editor.spreads
@@ -109,7 +92,6 @@ private fun <P : Preferences<P>, S : Settings, E : SettingsEditor<P, S>> UserPre
  */
 @Composable
 private fun FixedLayoutUserPreferences(
-    commit: () -> Unit,
     readingProgression: EnumPreference<ReadingProgression>? = null,
     scrollAxis: EnumPreference<Axis>? = null,
     fit: EnumPreference<Fit>? = null,
@@ -121,7 +103,6 @@ private fun FixedLayoutUserPreferences(
         ButtonGroupItem(
             title = "Reading progression",
             preference = readingProgression,
-            commit = commit,
             formatValue = { it.name }
         )
 
@@ -131,8 +112,7 @@ private fun FixedLayoutUserPreferences(
     if (scrollAxis != null) {
         ButtonGroupItem(
             title = "Scroll axis",
-            preference = scrollAxis,
-            commit = commit
+            preference = scrollAxis
         ) { value ->
             when (value) {
                 Axis.HORIZONTAL -> "Horizontal"
@@ -144,15 +124,13 @@ private fun FixedLayoutUserPreferences(
     if (spreads != null) {
         SwitchItem(
             title = "Spreads",
-            preference = spreads,
-            commit = commit
+            preference = spreads
         )
 
         if (offsetFirstPage != null) {
             SwitchItem(
                 title = "Offset",
-                preference = offsetFirstPage,
-                commit = commit
+                preference = offsetFirstPage
             )
         }
     }
@@ -160,8 +138,7 @@ private fun FixedLayoutUserPreferences(
     if (fit != null) {
         ButtonGroupItem(
             title = "Fit",
-            preference = fit,
-            commit = commit
+            preference = fit
         ) { value ->
             when (value) {
                 Fit.CONTAIN -> "Contain"
@@ -175,8 +152,7 @@ private fun FixedLayoutUserPreferences(
     if (pageSpacing != null) {
         StepperItem(
             title = "Page spacing",
-            preference = pageSpacing,
-            commit = commit
+            preference = pageSpacing
         )
     }
 }

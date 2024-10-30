@@ -6,6 +6,10 @@
 
 package org.readium.navigator.web.preferences
 
+import androidx.compose.runtime.Stable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import org.readium.navigator.common.SettingsEditor
 import org.readium.r2.navigator.preferences.EnumPreference
 import org.readium.r2.navigator.preferences.EnumPreferenceDelegate
@@ -27,6 +31,7 @@ import org.readium.r2.shared.publication.Metadata
  */
 @ExperimentalReadiumApi
 @OptIn(InternalReadiumApi::class)
+@Stable
 public class FixedWebSettingsEditor internal constructor(
     initialPreferences: FixedWebPreferences,
     publicationMetadata: Metadata,
@@ -41,8 +46,7 @@ public class FixedWebSettingsEditor internal constructor(
     private val settingsResolver: FixedWebSettingsResolver =
         FixedWebSettingsResolver(publicationMetadata, defaults)
 
-    private var state: State =
-        initialPreferences.toState()
+    private var state by mutableStateOf(initialPreferences.toState())
 
     override val preferences: FixedWebPreferences
         get() = state.preferences

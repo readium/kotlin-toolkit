@@ -41,7 +41,6 @@ import org.readium.r2.navigator.preferences.toggle
 fun <T> ButtonGroupItem(
     title: String,
     preference: EnumPreference<T>,
-    commit: () -> Unit,
     formatValue: (T) -> String
 ) {
     ButtonGroupItem(
@@ -51,7 +50,7 @@ fun <T> ButtonGroupItem(
         activeOption = preference.effectiveValue,
         selectedOption = preference.value,
         formatValue = formatValue,
-        onClear = { preference.clear(); commit() }
+        onClear = { preference.clear() }
             .takeIf { preference.value != null },
         onSelectedOptionChanged = { newValue ->
             if (newValue == preference.value) {
@@ -59,7 +58,6 @@ fun <T> ButtonGroupItem(
             } else {
                 preference.set(newValue)
             }
-            commit()
         }
     )
 }
@@ -99,17 +97,16 @@ private fun <T> ButtonGroupItem(
 @Composable
 fun <T : Comparable<T>> StepperItem(
     title: String,
-    preference: RangePreference<T>,
-    commit: () -> Unit
+    preference: RangePreference<T>
 ) {
     StepperItem(
         title = title,
         isActive = preference.isEffective,
         value = preference.value ?: preference.effectiveValue,
         formatValue = preference::formatValue,
-        onDecrement = { preference.decrement(); commit() },
-        onIncrement = { preference.increment(); commit() },
-        onClear = { preference.clear(); commit() }
+        onDecrement = { preference.decrement() },
+        onIncrement = { preference.increment() },
+        onClear = { preference.clear() }
             .takeIf { preference.value != null }
     )
 }
@@ -161,16 +158,15 @@ private fun <T> StepperItem(
 @Composable
 fun SwitchItem(
     title: String,
-    preference: Preference<Boolean>,
-    commit: () -> Unit
+    preference: Preference<Boolean>
 ) {
     SwitchItem(
         title = title,
         value = preference.value ?: preference.effectiveValue,
         isActive = preference.isEffective,
-        onCheckedChange = { preference.set(it); commit() },
-        onToggle = { preference.toggle(); commit() },
-        onClear = { preference.clear(); commit() }
+        onCheckedChange = { preference.set(it) },
+        onToggle = { preference.toggle() },
+        onClear = { preference.clear() }
             .takeIf { preference.value != null }
     )
 }

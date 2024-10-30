@@ -9,12 +9,12 @@
 package org.readium.navigator.demo.reader
 
 import android.app.Application
+import androidx.compose.runtime.snapshotFlow
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import org.readium.navigator.demo.persistence.LocatorRepository
 import org.readium.navigator.demo.preferences.PreferencesManager
-import org.readium.navigator.demo.preferences.UserPreferencesViewModel
 import org.readium.navigator.web.FixedWebNavigator
 import org.readium.navigator.web.FixedWebNavigatorFactory
 import org.readium.navigator.web.location.FixedWebLocation
@@ -93,22 +93,23 @@ class ReaderOpener(
 
         val initialPreferences = FixedWebPreferences()
 
-        val preferencesViewModel =
-            UserPreferencesViewModel(
-                viewModelScope = coroutineScope,
-                preferencesManager = PreferencesManager(initialPreferences),
-                createSettingsEditor = navigatorFactory::createSettingsEditor
-            )
+        val preferencesManager = PreferencesManager(initialPreferences)
+
+        val settingsEditor = navigatorFactory.createSettingsEditor(initialPreferences)
+
+        snapshotFlow { settingsEditor.preferences }
+            .onEach { preferencesManager.setPreferences(it) }
+            .launchIn(coroutineScope)
 
         val navigatorState = navigatorFactory.createRenditionState(
-            initialSettings = preferencesViewModel.editor.value.settings,
+            initialSettings = settingsEditor.settings,
             initialLocation = initialLocation
         ).getOrElse {
             return Try.failure(it)
         }
 
         val onNavigatorCreated: (FixedWebNavigator) -> Unit = { navigator ->
-            preferencesViewModel.settings
+            snapshotFlow { settingsEditor.settings }
                 .onEach { navigator.settings.value = it }
                 .launchIn(coroutineScope)
         }
@@ -118,7 +119,7 @@ class ReaderOpener(
             coroutineScope = coroutineScope,
             publication = publication,
             renditionState = navigatorState,
-            preferencesViewModel = preferencesViewModel,
+            settingsEditor = settingsEditor,
             locatorAdapter = locatorAdapter,
             onNavigatorCreated = onNavigatorCreated
         )
