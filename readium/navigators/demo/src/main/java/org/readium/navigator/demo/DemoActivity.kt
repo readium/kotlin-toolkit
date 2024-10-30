@@ -29,7 +29,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.core.view.WindowCompat
 import androidx.fragment.app.FragmentActivity
-import kotlinx.coroutines.launch
 import org.readium.navigator.demo.reader.Reader
 import org.readium.navigator.demo.util.Fullscreenable
 import org.readium.navigator.demo.util.Theme
@@ -86,12 +85,10 @@ class DemoActivity : FragmentActivity() {
                             is DemoViewModel.State.Error -> {
                                 Placeholder()
                                 LaunchedEffect(stateNow.error) {
-                                    launch {
-                                        snackbarHostState.showSnackbar(
-                                            message = stateNow.error.message,
-                                            duration = SnackbarDuration.Short
-                                        )
-                                    }
+                                    snackbarHostState.showSnackbar(
+                                        message = stateNow.error.message,
+                                        duration = SnackbarDuration.Short
+                                    )
                                     viewModel.onErrorDisplayed()
                                 }
                             }
