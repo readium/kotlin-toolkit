@@ -12,6 +12,9 @@ import androidx.compose.runtime.State
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 
+/**
+ * Hides or shows system bars depending on [fullscreenState].
+ */
 @Composable
 fun Fullscreenable(
     fullscreenState: State<Boolean>,

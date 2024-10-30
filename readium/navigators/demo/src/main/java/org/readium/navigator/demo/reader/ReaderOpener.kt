@@ -64,8 +64,8 @@ class ReaderOpener(
             publication.conformsTo(Publication.Profile.EPUB) ->
                 createFixedWebReader(url, publication, initialLocator)
 
-            /*publication.conformsTo(Publication.Profile.PDF) ->
-                createPdfReader(url, publication, initialLocator)*/
+            /* publication.conformsTo(Publication.Profile.PDF) ->
+                createPdfReader(url, publication, initialLocator) */
 
             else ->
                 Try.failure(DebugError("Publication not supported"))
@@ -85,13 +85,13 @@ class ReaderOpener(
         val navigatorFactory = FixedWebNavigatorFactory(application, publication)
             ?: return Try.failure(DebugError("Publication not supported"))
 
-        val initialPreferences = FixedWebPreferences()
-
         val locatorAdapter = navigatorFactory.createLocatorAdapter()
 
         val initialLocation = with(locatorAdapter) { initialLocator?.toGoLocation() }
 
         val coroutineScope = MainScope()
+
+        val initialPreferences = FixedWebPreferences()
 
         val preferencesViewModel =
             UserPreferencesViewModel(

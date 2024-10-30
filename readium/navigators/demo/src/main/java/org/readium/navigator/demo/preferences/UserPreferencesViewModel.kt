@@ -22,12 +22,11 @@ class UserPreferencesViewModel<S : Settings, P : Preferences<P>>(
     private val preferencesManager: PreferencesManager<P>,
     createSettingsEditor: (P) -> SettingsEditor<P, S>
 ) {
-    val preferences: StateFlow<P> = preferencesManager.preferences
-
-    val editor: StateFlow<SettingsEditor<P, S>> = preferences
+    val editor: StateFlow<SettingsEditor<P, S>> = preferencesManager.preferences
         .mapStateIn(viewModelScope, createSettingsEditor)
 
-    val settings: StateFlow<S> = editor.mapStateIn(viewModelScope) { it.settings }
+    val settings: StateFlow<S> = editor
+        .mapStateIn(viewModelScope) { it.settings }
 
     fun commit() {
         viewModelScope.launch {

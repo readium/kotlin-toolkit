@@ -157,13 +157,13 @@ fun <L : Location, N : Navigator<L, *>> Reader(
                     hyperlinkListener = hyperlinkListener
                 )
             }
-            /*is PdfNavigatorState<*, *> -> {
+            /* is PdfNavigatorState<*, *> -> {
                 PdfNavigator(
                     modifier = Modifier.fillMaxSize(),
                     state = state.navigatorState,
                     inputListener = inputListener
                 )
-            }*/
+            } */
         }
     }
 }

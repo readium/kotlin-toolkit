@@ -29,6 +29,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.core.view.WindowCompat
 import androidx.fragment.app.FragmentActivity
+import kotlinx.coroutines.launch
 import org.readium.navigator.demo.reader.Reader
 import org.readium.navigator.demo.util.Fullscreenable
 import org.readium.navigator.demo.util.Theme
@@ -40,10 +41,12 @@ class DemoActivity : FragmentActivity() {
 
     private val sharedStoragePickerLauncher =
         registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri: Uri? ->
-            uri?.let {
-                val url = requireNotNull(it.toAbsoluteUrl())
+            if (uri == null) {
+                finish()
+            } else {
+                val url = requireNotNull(uri.toAbsoluteUrl())
                 viewModel.onBookSelected(url)
-            } ?: run { finish() }
+            }
         }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -83,10 +86,12 @@ class DemoActivity : FragmentActivity() {
                             is DemoViewModel.State.Error -> {
                                 Placeholder()
                                 LaunchedEffect(stateNow.error) {
-                                    snackbarHostState.showSnackbar(
-                                        message = stateNow.error.message,
-                                        duration = SnackbarDuration.Short
-                                    )
+                                    launch {
+                                        snackbarHostState.showSnackbar(
+                                            message = stateNow.error.message,
+                                            duration = SnackbarDuration.Short
+                                        )
+                                    }
                                     viewModel.onErrorDisplayed()
                                 }
                             }
