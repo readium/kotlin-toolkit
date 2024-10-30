@@ -26,10 +26,6 @@ public interface HyperlinkListener {
 @ExperimentalReadiumApi
 public sealed interface LinkContext
 
-/**
- * @param noteContent Content of the footnote. Look at the [Link.mediaType] for the format
- * of the footnote (e.g. HTML).
- */
 @ExperimentalReadiumApi
 public data class FootnoteContext(
     public val noteContent: String

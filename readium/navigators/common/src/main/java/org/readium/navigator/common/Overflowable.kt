@@ -17,17 +17,29 @@ public interface Overflowable {
      */
     public val overflow: State<Overflow>
 
+    /**
+     * Whether one can move forward through the content or not because the content shown is
+     * the end.
+     */
     public val canMoveForward: Boolean
 
+    /**
+     * Whether one can move backward through the content or not because the content shown is
+     * the beginning.
+     */
     public val canMoveBackward: Boolean
 
     /**
      * Moves to the next content portion (eg. page) in the reading progression direction.
+     *
+     * Does nothing if the end of the content has already been reached.
      */
     public suspend fun moveForward()
 
     /**
      * Moves to the previous content portion (eg. page) in the reading progression direction.
+     *
+     * Does nothing if the beginning of the content has already been reached.
      */
     public suspend fun moveBackward()
 }

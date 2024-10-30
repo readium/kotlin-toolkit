@@ -26,7 +26,7 @@ public interface InputListener {
 /**
  * Represents a tap event emitted by a navigator at the given [offset].
  *
- * All the points are relative to the navigator view.
+ * All the offsets are relative to the navigator view.
  */
 @ExperimentalReadiumApi
 public data class TapEvent(
@@ -41,7 +41,6 @@ public data class TapContext(
 @ExperimentalReadiumApi
 public object NullInputListener : InputListener {
     override fun onTap(event: TapEvent, context: TapContext) {
-        // Do nothing
     }
 }
 
@@ -101,9 +100,9 @@ private class DefaultInputListener(
         if (tapEdges.contains(DirectionalNavigationAdapter.TapEdge.Horizontal)) {
             val width = context.viewport.width
 
-            val horizontalEdgeSize = horizontalEdgeThresholdPercent?.let {
-                max(minimumHorizontalEdgeSize, it * width)
-            } ?: minimumHorizontalEdgeSize
+            val horizontalEdgeSize = horizontalEdgeThresholdPercent
+                ?.let { max(minimumHorizontalEdgeSize, it * width) }
+                ?: minimumHorizontalEdgeSize
             val leftRange = 0.0.dp..horizontalEdgeSize
             val rightRange = (width - horizontalEdgeSize)..width
 
@@ -119,9 +118,9 @@ private class DefaultInputListener(
         if (tapEdges.contains(DirectionalNavigationAdapter.TapEdge.Vertical)) {
             val height = context.viewport.height
 
-            val verticalEdgeSize = verticalEdgeThresholdPercent?.let {
-                max(minimumVerticalEdgeSize, it * height)
-            } ?: minimumVerticalEdgeSize
+            val verticalEdgeSize = verticalEdgeThresholdPercent
+                ?.let { max(minimumVerticalEdgeSize, it * height) }
+                ?: minimumVerticalEdgeSize
             val topRange = 0.0.dp..verticalEdgeSize
             val bottomRange = (height - verticalEdgeSize)..height
 

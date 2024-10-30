@@ -9,14 +9,20 @@ public interface Configurable<S : Settings> {
     public val settings: MutableState<S>
 }
 
+/**
+ * Marker interface for the [Settings] properties holder.
+ */
 @ExperimentalReadiumApi
 public typealias Settings = org.readium.r2.navigator.preferences.Configurable.Settings
 
+/**
+ * Marker interface for the [Preferences] properties holder.
+ */
 @ExperimentalReadiumApi
 public typealias Preferences<P> = org.readium.r2.navigator.preferences.Configurable.Preferences<P>
 
 /**
- * Interactive editor of preferences.
+ * Interactive editor of settings.
  *
  * This can be used as a helper for a user preferences screen.
  */
@@ -29,7 +35,7 @@ public interface SettingsEditor<P : Preferences<P>, S : Settings> {
     public val preferences: P
 
     /**
-     * The current computed settings
+     * The current computed settings.
      */
     public val settings: S
 

@@ -26,5 +26,8 @@ public interface Location {
     public val href: Url
 }
 
+/**
+ * Location the navigator can go to.
+ */
 @ExperimentalReadiumApi
 public interface GoLocation
