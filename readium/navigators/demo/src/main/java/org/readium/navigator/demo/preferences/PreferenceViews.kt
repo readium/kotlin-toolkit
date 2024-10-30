@@ -4,8 +4,6 @@
  * available in the top-level LICENSE file of the project.
  */
 
-@file:OptIn(ExperimentalReadiumApi::class)
-
 package org.readium.navigator.demo.preferences
 
 import androidx.compose.foundation.clickable
@@ -34,7 +32,6 @@ import org.readium.r2.navigator.preferences.Preference
 import org.readium.r2.navigator.preferences.RangePreference
 import org.readium.r2.navigator.preferences.clear
 import org.readium.r2.navigator.preferences.toggle
-import org.readium.r2.shared.ExperimentalReadiumApi
 
 /**
  * Component for an [EnumPreference] displayed as a group of mutually exclusive buttons.

@@ -4,15 +4,12 @@
  * available in the top-level LICENSE file of the project.
  */
 
-@file:OptIn(ExperimentalReadiumApi::class)
-
 package org.readium.navigator.demo.preferences
 
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import org.readium.r2.navigator.preferences.Configurable
-import org.readium.r2.shared.ExperimentalReadiumApi
 
 /**
  * Trivial user preferences manager. You can add persistence.
