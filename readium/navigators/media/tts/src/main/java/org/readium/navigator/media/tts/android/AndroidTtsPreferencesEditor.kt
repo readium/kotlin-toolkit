@@ -22,7 +22,7 @@ import org.readium.r2.shared.util.Language
  * existing preferences. It includes rules for adjusting preferences, such as the supported values
  * or ranges.
  */
-@ExperimentalReadiumApi
+@OptIn(ExperimentalReadiumApi::class)
 public class AndroidTtsPreferencesEditor(
     initialPreferences: AndroidTtsPreferences,
     publicationMetadata: Metadata,

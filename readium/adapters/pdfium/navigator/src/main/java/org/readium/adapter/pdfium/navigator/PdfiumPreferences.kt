@@ -11,7 +11,6 @@ import org.readium.r2.navigator.preferences.Axis
 import org.readium.r2.navigator.preferences.Configurable
 import org.readium.r2.navigator.preferences.Fit
 import org.readium.r2.navigator.preferences.ReadingProgression
-import org.readium.r2.shared.ExperimentalReadiumApi
 
 /**
  * Preferences for the PDF navigator with the PDFium adapter.
@@ -21,7 +20,6 @@ import org.readium.r2.shared.ExperimentalReadiumApi
  *  @param readingProgression Direction of the horizontal progression across pages.
  *  @param scrollAxis Indicates the axis along which pages should be laid out in scroll mode.
  */
-@ExperimentalReadiumApi
 @Serializable
 public data class PdfiumPreferences(
     val fit: Fit? = null,

@@ -12,9 +12,9 @@ import org.readium.r2.shared.ExperimentalReadiumApi
 /**
  * Suggested filter to keep only shared [AndroidTtsPreferences].
  */
-@ExperimentalReadiumApi
 public object AndroidTtsSharedPreferencesFilter : PreferencesFilter<AndroidTtsPreferences> {
 
+    @OptIn(ExperimentalReadiumApi::class)
     override fun filter(preferences: AndroidTtsPreferences): AndroidTtsPreferences =
         preferences.copy(
             language = null
@@ -24,9 +24,9 @@ public object AndroidTtsSharedPreferencesFilter : PreferencesFilter<AndroidTtsPr
 /**
  * Suggested filter to keep only publication-specific [AndroidTtsPreferences].
  */
-@ExperimentalReadiumApi
 public object AndroidTtsPublicationPreferencesFilter : PreferencesFilter<AndroidTtsPreferences> {
 
+    @OptIn(ExperimentalReadiumApi::class)
     override fun filter(preferences: AndroidTtsPreferences): AndroidTtsPreferences =
         AndroidTtsPreferences(
             language = preferences.language

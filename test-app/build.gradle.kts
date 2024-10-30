@@ -19,7 +19,7 @@ android {
 
         applicationId = "org.readium.r2reader"
 
-        versionName = "3.0.0-beta.2"
+        versionName = "3.0.0"
         versionCode = 300000
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"

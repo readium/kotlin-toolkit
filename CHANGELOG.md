@@ -10,6 +10,15 @@ All notable changes to this project will be documented in this file. Take a look
 
 #### Navigator
 
+* Fixed crash in the image navigator.
+
+
+## [3.0.0]
+
+### Fixed
+
+#### Navigator
+
 * Fixed computing the total progression of audiobook locators.
 * Fixed starting the TTS from the current resource in a fixed-layout EPUB.
 
@@ -885,4 +894,5 @@ progression. Now if no reading progression is set, the `effectiveReadingProgress
 [3.0.0-alpha.2]: https://github.com/readium/kotlin-toolkit/compare/3.0.0-alpha.1...3.0.0-alpha.2
 [3.0.0-beta.1]: https://github.com/readium/kotlin-toolkit/compare/3.0.0-alpha.2...3.0.0-beta.1
 [3.0.0-beta.2]: https://github.com/readium/kotlin-toolkit/compare/3.0.0-beta.1...3.0.0-beta.2
+[3.0.0]: https://github.com/readium/kotlin-toolkit/compare/3.0.0-beta.2...3.0.0
 

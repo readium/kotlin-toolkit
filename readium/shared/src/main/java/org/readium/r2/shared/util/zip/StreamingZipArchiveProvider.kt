@@ -79,7 +79,13 @@ internal class StreamingZipArchiveProvider {
         val datasourceChannel = ReadableChannelAdapter(readable, wrapError)
         val channel = wrapBaseChannel(datasourceChannel)
         val zipFile = ZipFile(channel, true)
-        StreamingZipContainer(zipFile, sourceUrl)
+        val sourceScheme = (readable as? Resource)?.sourceUrl?.scheme
+        val cacheEntryMaxSize =
+            when {
+                sourceScheme?.isContent ?: false -> 5242880
+                else -> 0
+            }
+        StreamingZipContainer(zipFile, sourceUrl, cacheEntryMaxSize)
     }
 
     internal suspend fun openFile(file: File): Container<Resource> = withContext(Dispatchers.IO) {

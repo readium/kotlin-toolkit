@@ -21,7 +21,6 @@ import org.readium.r2.navigator.preferences.RangePreference
 import org.readium.r2.navigator.preferences.RangePreferenceDelegate
 import org.readium.r2.navigator.preferences.ReadingProgression
 import org.readium.r2.navigator.preferences.Spread
-import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.publication.Metadata
 
@@ -32,7 +31,6 @@ import org.readium.r2.shared.publication.Metadata
  * existing preferences. It includes rules for adjusting preferences, such as the supported values
  * or ranges.
  */
-@ExperimentalReadiumApi
 public class PsPdfKitPreferencesEditor internal constructor(
     initialPreferences: PsPdfKitPreferences,
     publicationMetadata: Metadata,

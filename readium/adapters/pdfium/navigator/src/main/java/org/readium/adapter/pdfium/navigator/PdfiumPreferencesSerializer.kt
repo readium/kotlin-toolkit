@@ -8,12 +8,10 @@ package org.readium.adapter.pdfium.navigator
 
 import kotlinx.serialization.json.Json
 import org.readium.r2.navigator.preferences.PreferencesSerializer
-import org.readium.r2.shared.ExperimentalReadiumApi
 
 /**
  * JSON serializer of [PdfiumPreferences].
  */
-@ExperimentalReadiumApi
 public class PdfiumPreferencesSerializer : PreferencesSerializer<PdfiumPreferences> {
 
     override fun serialize(preferences: PdfiumPreferences): String =

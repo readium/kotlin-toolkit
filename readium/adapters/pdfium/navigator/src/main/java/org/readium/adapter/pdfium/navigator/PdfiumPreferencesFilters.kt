@@ -7,12 +7,10 @@
 package org.readium.adapter.pdfium.navigator
 
 import org.readium.r2.navigator.preferences.PreferencesFilter
-import org.readium.r2.shared.ExperimentalReadiumApi
 
 /**
  * Suggested filter to keep only shared [PdfiumPreferences].
  */
-@ExperimentalReadiumApi
 public object PdfiumSharedPreferencesFilter : PreferencesFilter<PdfiumPreferences> {
 
     override fun filter(preferences: PdfiumPreferences): PdfiumPreferences =
@@ -24,7 +22,6 @@ public object PdfiumSharedPreferencesFilter : PreferencesFilter<PdfiumPreference
 /**
  * Suggested filter to keep only publication-specific [PdfiumPreferences].
  */
-@ExperimentalReadiumApi
 public object PdfiumPublicationPreferencesFilter : PreferencesFilter<PdfiumPreferences> {
 
     override fun filter(preferences: PdfiumPreferences): PdfiumPreferences =

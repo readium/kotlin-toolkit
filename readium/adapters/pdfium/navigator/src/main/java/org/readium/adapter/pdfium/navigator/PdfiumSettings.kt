@@ -7,14 +7,12 @@
 package org.readium.adapter.pdfium.navigator
 
 import org.readium.r2.navigator.preferences.*
-import org.readium.r2.shared.ExperimentalReadiumApi
 
 /**
  *  Settings values of the PDF navigator with the PDFium adapter.
  *
  *  @see PdfiumPreferences
  */
-@ExperimentalReadiumApi
 public data class PdfiumSettings(
     val fit: Fit,
     val pageSpacing: Double,
