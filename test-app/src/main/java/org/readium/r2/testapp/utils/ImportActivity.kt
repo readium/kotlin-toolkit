@@ -11,10 +11,12 @@
 package org.readium.r2.testapp.utils
 
 import android.app.Activity
+import android.content.ContentResolver
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import androidx.core.content.IntentCompat
+import org.readium.r2.shared.util.toAbsoluteUrl
 import org.readium.r2.testapp.Application
 import org.readium.r2.testapp.MainActivity
 import timber.log.Timber
@@ -42,7 +44,19 @@ class ImportActivity : Activity() {
             }
 
         val app = application as Application
-        app.bookshelf.importPublicationFromStorage(uri)
+        when {
+            uri.scheme == ContentResolver.SCHEME_CONTENT -> {
+                app.bookshelf.importPublicationFromStorage(uri)
+            }
+            else -> {
+                val url = uri.toAbsoluteUrl()
+                    ?: run {
+                        Timber.d("Uri is not an Url.")
+                        return
+                    }
+                app.bookshelf.importPublicationFromHttp(url)
+            }
+        }
     }
 
     private fun uriFromIntent(intent: Intent): Uri? =

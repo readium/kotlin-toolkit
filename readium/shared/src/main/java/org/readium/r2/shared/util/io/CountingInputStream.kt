@@ -75,7 +75,16 @@ public class CountingInputStream(
             return ByteArray(0)
         }
 
-        skip(range.first - count)
+        val toSkip = range.first - count
+        var skipped: Long = 0
+
+        while (skipped != toSkip) {
+            skipped += skip(toSkip - skipped)
+            if (skipped == 0L) {
+                throw IOException("Could not skip InputStream to read ranges.")
+            }
+        }
+
         val length = range.last - range.first + 1
         return read(length)
     }
