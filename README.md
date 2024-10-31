@@ -21,7 +21,7 @@ Readium modules are distributed with [Maven Central](https://search.maven.org/se
 
 ```groovy
 buildscript {
-    ext.readium_version = '3.0.0'
+    ext.readium_version = '3.0.1'
 }
 
 allprojects {
@@ -42,6 +42,8 @@ dependencies {
     implementation "org.readium.kotlin-toolkit:readium-lcp:$readium_version"
 }
 ```
+
+:warning: If you target Android devices running below API 26, you must enable [core library desugaring](https://developer.android.com/studio/write/java8-support#library-desugaring) in your application module.
 
 ### Using a local Git clone
 
