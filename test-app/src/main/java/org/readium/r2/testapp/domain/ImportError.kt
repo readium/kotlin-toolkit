@@ -9,6 +9,7 @@ package org.readium.r2.testapp.domain
 import org.readium.r2.lcp.LcpError
 import org.readium.r2.shared.util.DebugError
 import org.readium.r2.shared.util.Error
+import org.readium.r2.shared.util.content.ContentResolverError
 import org.readium.r2.shared.util.file.FileSystemError
 import org.readium.r2.shared.util.http.HttpError
 import org.readium.r2.testapp.R
@@ -36,6 +37,10 @@ sealed class ImportError(
         override val cause: FileSystemError
     ) : ImportError(cause)
 
+    class ContentResolver(
+        override val cause: ContentResolverError
+    ) : ImportError(cause)
+
     class Download(
         override val cause: HttpError
     ) : ImportError(cause)
@@ -57,6 +62,7 @@ sealed class ImportError(
         is Opds -> UserError(R.string.import_publication_no_acquisition, cause = this)
         is Publication -> cause.toUserError()
         is FileSystem -> cause.toUserError()
+        is ContentResolver -> cause.toUserError()
         is InconsistentState -> UserError(
             R.string.import_publication_inconsistent_state,
             cause = this

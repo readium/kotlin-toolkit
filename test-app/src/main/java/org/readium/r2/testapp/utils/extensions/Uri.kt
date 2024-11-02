@@ -11,20 +11,32 @@ import android.content.Context
 import android.net.Uri
 import android.provider.MediaStore
 import java.io.File
-import java.util.*
+import java.io.FileNotFoundException
+import java.io.IOException
+import java.util.UUID
 import org.readium.r2.shared.util.Try
-import org.readium.r2.testapp.utils.ContentResolverUtil
+import org.readium.r2.shared.util.content.ContentResolverError
+import org.readium.r2.testapp.utils.toFile
 import org.readium.r2.testapp.utils.tryOrNull
 
-suspend fun Uri.copyToTempFile(context: Context, dir: File): Try<File, Exception> =
+suspend fun Uri.copyToTempFile(context: Context, dir: File): Try<File, ContentResolverError> {
+    val filename = UUID.randomUUID().toString()
+    val file = File(dir, "$filename.${extension(context)}")
+
+    val inputStream = try {
+        context.contentResolver.openInputStream(this)
+    } catch (e: FileNotFoundException) {
+        return Try.failure(ContentResolverError.FileNotFound(e))
+    } ?: return Try.failure(ContentResolverError.NotAvailable())
+
     try {
-        val filename = UUID.randomUUID().toString()
-        val file = File(dir, "$filename.${extension(context)}")
-        ContentResolverUtil.getContentInputStream(context, this, file)
-        Try.success(file)
-    } catch (e: Exception) {
-        Try.failure(e)
+        inputStream.toFile(file)
+    } catch (e: IOException) {
+        return Try.failure(ContentResolverError.IO(e))
     }
+
+    return Try.success(file)
+}
 
 private fun Uri.extension(context: Context): String? {
     if (scheme == ContentResolver.SCHEME_CONTENT) {
