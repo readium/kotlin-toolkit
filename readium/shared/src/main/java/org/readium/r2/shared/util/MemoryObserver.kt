@@ -14,14 +14,25 @@ public interface MemoryObserver {
      * Level of memory trim.
      */
     public enum class Level {
-        Moderate, Low, Critical;
+        /**
+         * The process has gone on to the LRU list. This is a good opportunity to clean up resources
+         * that can efficiently and quickly be re-built if the user returns to the app.
+         */
+        Background,
+
+        /**
+         * The process had been showing a user interface, and is no longer doing so. Large
+         * allocations with the UI should be released at this point to allow memory to be better
+         * managed.
+         */
+        UiHidden;
 
         public companion object {
             public fun fromLevel(level: Int): Level =
-                when {
-                    level <= ComponentCallbacks2.TRIM_MEMORY_RUNNING_MODERATE -> Moderate
-                    level == ComponentCallbacks2.TRIM_MEMORY_RUNNING_LOW -> Low
-                    else -> Critical
+                when (level) {
+                    ComponentCallbacks2.TRIM_MEMORY_BACKGROUND -> Background
+                    ComponentCallbacks2.TRIM_MEMORY_UI_HIDDEN -> UiHidden
+                    else -> Background
                 }
         }
     }
@@ -40,6 +51,8 @@ public interface MemoryObserver {
         public fun asComponentCallbacks2(observer: MemoryObserver): ComponentCallbacks2 =
             object : ComponentCallbacks2 {
                 override fun onConfigurationChanged(config: Configuration) {}
+
+                @Deprecated("Deprecated in Java")
                 override fun onLowMemory() {}
 
                 override fun onTrimMemory(level: Int) {
