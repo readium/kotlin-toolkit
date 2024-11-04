@@ -8,10 +8,11 @@
 
 ## Minimum Requirements
 
-| Readium | Android min SDK | Android compile SDK | Kotlin compiler (✻) | Gradle (✻) |
-|---------|-----------------|---------------------|---------------------|------------|
-| 3.0.0   | 21              | 34                  | 1.9.24              | 8.6.0      |
-| 2.3.0   | 21              | 33                  | 1.7.10              | 6.9.3      |
+| Readium   | Android min SDK | Android compile SDK | Kotlin compiler (✻) | Gradle (✻) |
+|-----------|-----------------|---------------------|---------------------|------------|
+| `develop` | 21              | 34                  | 1.9.24              | 8.10.2     |
+| 3.0.0     | 21              | 34                  | 1.9.24              | 8.6.0      |
+| 2.3.0     | 21              | 33                  | 1.7.10              | 6.9.3      |
 
 ✻ Only required if you integrate Readium as a submodule instead of using Maven Central.
 

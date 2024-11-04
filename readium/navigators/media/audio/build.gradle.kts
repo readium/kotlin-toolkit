@@ -22,7 +22,6 @@ dependencies {
     implementation(libs.androidx.media3.common)
     implementation(libs.androidx.media3.session)
 
-    implementation(libs.androidx.core)
     implementation(libs.timber)
     implementation(libs.kotlinx.coroutines.android)
 }
