@@ -13,15 +13,15 @@ plugins {
 }
 
 android {
-    compileSdk = 34
+    compileSdk = (property("android.compileSdk") as String).toInt()
     defaultConfig {
-        minSdk = 21
-        targetSdk = 34
+        minSdk = (property("android.minSdk") as String).toInt()
+        targetSdk = (property("android.targetSdk") as String).toInt()
 
         applicationId = "org.readium.r2reader"
 
-        versionName = "3.0.0"
-        versionCode = 300000
+        versionName = "3.0.1"
+        versionCode = 300001
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         ndk.abiFilters.add("armeabi-v7a")
@@ -67,7 +67,6 @@ dependencies {
     coreLibraryDesugaring(libs.desugar.jdk.libs)
 
     implementation(libs.kotlin.stdlib)
-    implementation(libs.androidx.legacy.v4)
 
     implementation(project(":readium:readium-shared"))
     implementation(project(":readium:readium-streamer"))
@@ -94,7 +93,7 @@ dependencies {
     implementation(libs.androidx.core)
     implementation(libs.androidx.datastore.preferences)
     implementation(libs.androidx.fragment.ktx)
-    implementation(libs.bundles.lifecycle)
+    implementation(libs.androidx.lifecycle.common)
     implementation(libs.androidx.navigation.fragment)
     implementation(libs.androidx.navigation.ui)
     implementation(libs.androidx.paging)
@@ -113,10 +112,4 @@ dependencies {
     // Room database
     implementation(libs.bundles.room)
     ksp(libs.androidx.room.compiler)
-
-    // Tests
-    testImplementation(libs.junit)
-
-    androidTestImplementation(libs.androidx.ext.junit)
-    androidTestImplementation(libs.androidx.expresso.core)
 }

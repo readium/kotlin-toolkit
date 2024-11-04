@@ -123,7 +123,7 @@ public class InMemoryCache<V> : Cache<V> {
 
     @OptIn(DelicateCoroutinesApi::class)
     override fun onTrimMemory(level: MemoryObserver.Level) {
-        if (level == MemoryObserver.Level.Critical) {
+        if (level == MemoryObserver.Level.Background) {
             GlobalScope.launch { transaction { clear() } }
         }
     }
