@@ -15,6 +15,11 @@ android {
     buildFeatures {
         viewBinding = true
     }
+
+    kotlinOptions {
+        // See https://github.com/readium/kotlin-toolkit/pull/525#issuecomment-2300084041
+        freeCompilerArgs = freeCompilerArgs + ("-Xconsistent-data-class-copy-visibility")
+    }
 }
 
 dependencies {
