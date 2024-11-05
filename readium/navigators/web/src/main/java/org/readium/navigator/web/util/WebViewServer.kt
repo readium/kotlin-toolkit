@@ -16,16 +16,15 @@ import androidx.webkit.WebViewAssetLoader
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.InternalReadiumApi
-import org.readium.r2.shared.publication.Href
-import org.readium.r2.shared.publication.Link
-import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.data.Container
 import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.data.asInputStream
 import org.readium.r2.shared.util.http.HttpHeaders
 import org.readium.r2.shared.util.http.HttpRange
+import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.shared.util.resource.StringResource
 import org.readium.r2.shared.util.resource.fallback
@@ -35,9 +34,10 @@ import org.readium.r2.shared.util.resource.fallback
  */
 internal class WebViewServer(
     private val application: Application,
-    private val publication: Publication,
+    private val container: Container<Resource>,
+    private val mediaTypes: Map<Url, MediaType>,
     servedAssets: List<String>,
-    private val disableSelectionWhenProtected: Boolean,
+    private val disableSelection: Boolean,
     private val onResourceLoadFailed: (Url, ReadError) -> Unit
 ) {
     companion object {
@@ -61,6 +61,9 @@ internal class WebViewServer(
         return when {
             path.startsWith("/publication/") -> {
                 val href = Url.fromDecodedPath(path.removePrefix("/publication/"))
+                    // Drop anchor because it is meant to be interpreted by the client.
+                    // Query parameters must be kept as they might be relevant for the container.
+                    ?.removeFragment()
                     ?: return null
 
                 servePublicationResource(
@@ -81,35 +84,27 @@ internal class WebViewServer(
      * If the [Resource] is an HTML document, injects the required JavaScript and CSS files.
      */
     private fun servePublicationResource(href: Url, range: HttpRange?): WebResourceResponse {
-        val link = publication.linkWithHref(href)
-            // Query parameters must be kept as they might be relevant for the fetcher.
-            ?.copy(href = Href(href))
-            ?: Link(href = href)
-
-        // Drop anchor because it is meant to be interpreted by the client.
-        val urlWithoutAnchor = href.removeFragment()
-
-        var resource = publication
-            .get(urlWithoutAnchor)
+        var resource = container[href]
             ?.fallback {
-                onResourceLoadFailed(urlWithoutAnchor, it)
+                onResourceLoadFailed(href, it)
                 errorResource()
             } ?: run {
             val error = ReadError.Decoding(
-                "Resource not found at $urlWithoutAnchor in publication."
+                "Resource not found at $href in publication."
             )
-            onResourceLoadFailed(urlWithoutAnchor, error)
+            onResourceLoadFailed(href, error)
             errorResource()
         }
 
-        link.mediaType
+        val mediaType = mediaTypes[href]
+
+        mediaType
             ?.takeIf { it.isHtml }
             ?.let {
                 resource = resource.injectHtml(
-                    publication,
                     mediaType = it,
                     baseHref = assetsBaseHref,
-                    disableSelectionWhenProtected = disableSelectionWhenProtected
+                    disableSelection = disableSelection
                 )
             }
 
@@ -119,7 +114,7 @@ internal class WebViewServer(
 
         if (range == null) {
             return WebResourceResponse(
-                link.mediaType?.toString(),
+                mediaType?.toString(),
                 null,
                 200,
                 "OK",
@@ -135,7 +130,7 @@ internal class WebViewServer(
             // headers["Content-Length"] = (longRange.last - longRange.first + 1).toString()
             // Weirdly, the WebView will call itself stream.skip to skip to the requested range.
             return WebResourceResponse(
-                link.mediaType?.toString(),
+                mediaType?.toString(),
                 null,
                 206,
                 "Partial Content",

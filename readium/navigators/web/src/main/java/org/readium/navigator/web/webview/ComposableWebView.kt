@@ -10,8 +10,6 @@ import android.content.Context
 import android.os.Bundle
 import android.view.ViewGroup.LayoutParams
 import android.webkit.WebChromeClient
-import android.webkit.WebResourceError
-import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.FrameLayout
@@ -20,25 +18,19 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
-import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.view.ViewCompat
 import org.readium.navigator.web.gestures.Fling2DBehavior
 import org.readium.navigator.web.gestures.scrollable2D
-import org.readium.navigator.web.webview.LoadingState.Finished
-import org.readium.navigator.web.webview.LoadingState.Loading
-import timber.log.Timber
 
 /**
  * A wrapper around the Android View WebView to provide a basic WebView composable.
@@ -96,8 +88,6 @@ internal fun WebView(
             width,
             height
         )
-
-        Timber.d("constraints ${constraints.maxWidth} ${constraints.maxHeight}")
 
         LazyRow(
             horizontalArrangement = Arrangement.Center,
@@ -224,27 +214,6 @@ internal sealed class WebContent {
 }
 
 /**
- * Sealed class for constraining possible loading states.
- * See [Loading] and [Finished].
- */
-internal sealed class LoadingState {
-    /**
-     * Describes a WebView that has not yet loaded for the first time.
-     */
-    internal data object Initializing : LoadingState()
-
-    /**
-     * Describes a webview between `onPageStarted` and `onPageFinished` events.
-     */
-    internal data object Loading : LoadingState()
-
-    /**
-     * Describes a webview that has finished loading content.
-     */
-    internal data object Finished : LoadingState()
-}
-
-/**
  * A state holder to hold the state for the WebView. In most cases this will be remembered
  * using the rememberWebViewState(uri) function.
  */
@@ -254,13 +223,6 @@ internal class WebViewState(webContent: WebContent) {
      *  The content being loaded by the WebView
      */
     var content: WebContent by mutableStateOf(webContent)
-
-    /**
-     * A list for errors captured in the last load. Reset when a new page is loaded.
-     * Errors could be from any resource (iframe, image, etc.), not just for the main page.
-     * For more fine grained control use the OnError callback of the WebView.
-     */
-    internal val errorsForCurrentRequest: SnapshotStateList<WebViewError> = mutableStateListOf()
 
     /**
      * The saved view state from when the view was destroyed last. To restore state,
@@ -273,21 +235,6 @@ internal class WebViewState(webContent: WebContent) {
     // onDestroy is called after the state saver and so can't be used.
     internal var webView by mutableStateOf<WebView?>(null)
 }
-
-/**
- * A wrapper class to hold errors from the WebView.
- */
-@Immutable
-internal data class WebViewError(
-    /**
-     * The request the error came from.
-     */
-    val request: WebResourceRequest?,
-    /**
-     * The error that was reported.
-     */
-    val error: WebResourceError
-)
 
 /**
  * Creates a WebView state that is remembered across Compositions.

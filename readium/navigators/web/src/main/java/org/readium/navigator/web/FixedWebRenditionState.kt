@@ -6,6 +6,7 @@
 
 package org.readium.navigator.web
 
+import android.app.Application
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.Stable
@@ -32,14 +33,22 @@ import org.readium.r2.navigator.preferences.Fit
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.publication.Link
+import org.readium.r2.shared.publication.services.ContentProtectionService
+import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.data.Container
+import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.shared.util.resource.Resource
 
 @ExperimentalReadiumApi
 @Stable
 public class FixedWebRenditionState internal constructor(
+    application: Application,
     internal val readingOrder: ReadingOrder,
+    container: Container<Resource>,
+    resourceMediaTypes: Map<Url, MediaType>,
+    protectionService: ContentProtectionService?,
     initialSettings: FixedWebSettings,
     initialLocation: FixedWebGoLocation,
-    internal val webViewServer: WebViewServer,
     internal val preloadedData: FixedWebPreloadedData
 ) : RenditionState<FixedWebNavigator> {
 
@@ -53,6 +62,16 @@ public class FixedWebRenditionState internal constructor(
         LayoutDelegate(
             readingOrder,
             initialSettings
+        )
+
+    private val webViewServer =
+        WebViewServer(
+            application = application,
+            container = container,
+            mediaTypes = resourceMediaTypes,
+            servedAssets = listOf("readium/.*"),
+            disableSelection = protectionService?.isRestricted ?: false,
+            onResourceLoadFailed = { _, _ -> }
         )
 
     internal val webViewClient: WebViewClient =

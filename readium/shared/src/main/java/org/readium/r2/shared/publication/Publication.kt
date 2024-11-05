@@ -50,13 +50,13 @@ public typealias PublicationId = String
  *
  * @param manifest The manifest holding the publication metadata extracted from the publication file.
  * @param container The underlying container used to read publication resources.
- * The default implementation returns Resource.Exception.NotFound for all HREFs.
+ * The default implementation returns null for all HREFs.
  * @param servicesBuilder Holds the list of service factories used to create the instances of
  * Publication.Service attached to this Publication.
  */
 public class Publication(
     public val manifest: Manifest,
-    private val container: Container<Resource> = EmptyContainer(),
+    public val container: Container<Resource> = EmptyContainer(),
     private val servicesBuilder: ServicesBuilder = ServicesBuilder(),
     @Deprecated(
         "Migrate to the new Settings API (see migration guide)",

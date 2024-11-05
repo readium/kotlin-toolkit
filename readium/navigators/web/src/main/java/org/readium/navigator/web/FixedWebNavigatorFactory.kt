@@ -26,6 +26,7 @@ import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.publication.presentation.page
 import org.readium.r2.shared.publication.presentation.presentation
+import org.readium.r2.shared.publication.services.ContentProtectionService
 import org.readium.r2.shared.util.ThrowableError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.getOrElse
@@ -76,31 +77,29 @@ public class FixedWebNavigatorFactory private constructor(
         initialLocation: FixedWebGoLocation? = null,
         readingOrder: List<Link> = publication.readingOrder
     ): Try<FixedWebRenditionState, Error> {
-        val items = readingOrder.map {
+        val readingOrderItems = readingOrder.map {
             ReadingOrderItem(
                 href = it.url(),
                 page = it.properties.page
             )
         }
 
-        val webViewServer =
-            WebViewServer(
-                application = application,
-                publication = publication,
-                servedAssets = listOf("readium/.*"),
-                disableSelectionWhenProtected = false,
-                onResourceLoadFailed = { _, _ -> }
-            )
-
         val preloads = preloadData()
             .getOrElse { return Try.failure(it) }
 
+        val resourceMediaTypes = (publication.readingOrder + publication.resources)
+            .mapNotNull { link -> link.mediaType?.let { link.url() to it } }
+            .associate { it }
+
         val state =
             FixedWebRenditionState(
-                readingOrder = ReadingOrder(items),
+                application = application,
+                readingOrder = ReadingOrder(readingOrderItems),
+                resourceMediaTypes = resourceMediaTypes,
+                protectionService = publication.findService(ContentProtectionService::class),
                 initialSettings = initialSettings,
-                initialLocation = initialLocation ?: HrefLocation(items[0].href),
-                webViewServer = webViewServer,
+                initialLocation = initialLocation ?: HrefLocation(readingOrderItems[0].href),
+                container = publication.container,
                 preloadedData = preloads
             )
 

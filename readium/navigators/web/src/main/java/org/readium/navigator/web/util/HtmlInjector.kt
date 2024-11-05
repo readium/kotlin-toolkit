@@ -7,8 +7,6 @@
 package org.readium.navigator.web.util
 
 import org.readium.navigator.web.webapi.GesturesApi
-import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.publication.services.isProtected
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
@@ -23,10 +21,9 @@ import timber.log.Timber
  * @param baseHref Base URL where and scripts are served.
  */
 internal fun Resource.injectHtml(
-    publication: Publication,
     mediaType: MediaType,
     baseHref: AbsoluteUrl,
-    disableSelectionWhenProtected: Boolean
+    disableSelection: Boolean
 ): Resource =
     TransformingResource(this) { bytes ->
         if (!mediaType.isHtml) {
@@ -42,7 +39,7 @@ internal fun Resource.injectHtml(
 
         // Disable the text selection if the publication is protected.
         // FIXME: This is a hack until proper LCP copy is implemented, see https://github.com/readium/kotlin-toolkit/issues/221
-        if (disableSelectionWhenProtected && publication.isProtected) {
+        if (disableSelection) {
             injectables.add(
                 """
                 <style>
