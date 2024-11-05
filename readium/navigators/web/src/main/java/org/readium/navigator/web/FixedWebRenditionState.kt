@@ -7,6 +7,7 @@
 package org.readium.navigator.web
 
 import android.app.Application
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.Stable
@@ -39,6 +40,7 @@ import org.readium.r2.shared.util.data.Container
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.resource.Resource
 
+@OptIn(ExperimentalFoundationApi::class)
 @ExperimentalReadiumApi
 @Stable
 public class FixedWebRenditionState internal constructor(

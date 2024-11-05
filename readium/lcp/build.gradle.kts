@@ -11,6 +11,11 @@ plugins {
 
 android {
     namespace = "org.readium.r2.lcp"
+
+    kotlinOptions {
+        // See https://github.com/readium/kotlin-toolkit/pull/525#issuecomment-2300084041
+        freeCompilerArgs = freeCompilerArgs + ("-Xconsistent-data-class-copy-visibility")
+    }
 }
 
 dependencies {
@@ -37,7 +42,4 @@ dependencies {
     // Tests
     testImplementation(libs.junit)
     testImplementation(libs.kotlin.junit)
-
-    androidTestImplementation(libs.androidx.ext.junit)
-    androidTestImplementation(libs.androidx.expresso.core)
 }

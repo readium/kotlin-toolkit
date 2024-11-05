@@ -76,11 +76,11 @@ internal class TtsEngineFacade<S : TtsEngine.Settings, P : TtsEngine.Preferences
         }
 
         override fun onDone(requestId: TtsEngine.RequestId) {
-            popTask(requestId)?.continuation?.resume(null) {}
+            popTask(requestId)?.continuation?.resume(null) { _, _, _ -> }
         }
 
         override fun onError(requestId: TtsEngine.RequestId, error: E) {
-            popTask(requestId)?.continuation?.resume(error) {}
+            popTask(requestId)?.continuation?.resume(error) { _, _, _ -> }
         }
     }
 }

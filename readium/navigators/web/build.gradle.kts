@@ -7,14 +7,12 @@
 plugins {
     id("readium.library-conventions")
     alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.compose.compiler)
 }
 
 android {
     namespace = "org.readium.navigators.web"
 
-    composeOptions {
-        kotlinCompilerExtensionVersion = libs.versions.androidx.compose.compiler.get()
-    }
     buildFeatures {
         compose = true
     }

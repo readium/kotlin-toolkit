@@ -3,20 +3,37 @@ plugins {
     kotlin("android")
     kotlin("plugin.parcelize")
     alias(libs.plugins.ksp)
+    alias(libs.plugins.compose.compiler)
 }
 
 android {
-    namespace = "org.readium.navigator.demo"
-    compileSdk = 34
+    compileSdk = (property("android.compileSdk") as String).toInt()
 
     defaultConfig {
+        minSdk = (property("android.minSdk") as String).toInt()
+        targetSdk = (property("android.targetSdk") as String).toInt()
+
         applicationId = "org.readium.navigator.demo"
-        minSdk = 21
-        targetSdk = 34
+
         versionCode = 1
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
+        isCoreLibraryDesugaringEnabled = true
+    }
+    kotlinOptions {
+        jvmTarget = JavaVersion.VERSION_1_8.toString()
+        freeCompilerArgs = freeCompilerArgs + "-opt-in=kotlin.RequiresOptIn"
+    }
+    buildFeatures {
+        viewBinding = true
+        compose = true
+        buildConfig = true
     }
 
     buildTypes {
@@ -27,23 +44,6 @@ android {
                 "proguard-rules.pro"
             )
         }
-    }
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
-        isCoreLibraryDesugaringEnabled = true
-    }
-    kotlinOptions {
-        jvmTarget = "1.8"
-        freeCompilerArgs = freeCompilerArgs + "-opt-in=kotlin.RequiresOptIn"
-    }
-    composeOptions {
-        kotlinCompilerExtensionVersion = libs.versions.androidx.compose.compiler.get()
-    }
-    buildFeatures {
-        viewBinding = true
-        compose = true
-        buildConfig = true
     }
     packaging {
         resources.excludes.add("META-INF/*")
@@ -56,6 +56,7 @@ android {
             assets.srcDirs("src/main/assets")
         }
     }
+    namespace = "org.readium.navigator.demo"
 }
 
 dependencies {
@@ -70,11 +71,9 @@ dependencies {
     implementation(libs.timber)
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.kotlin.stdlib)
-    implementation(libs.androidx.legacy.v4)
     implementation(libs.bundles.compose)
     implementation(libs.androidx.core)
     implementation(libs.androidx.fragment.ktx)
-    implementation(libs.androidx.fragment.compose)
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.browser)
 }
