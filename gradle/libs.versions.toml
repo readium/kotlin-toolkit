@@ -52,7 +52,7 @@ kotlinx-serialization-json = "1.7.3"
 # See https://github.com/google/ksp/releases
 ksp = "2.0.21-1.0.25"
 
-ktlint = "11.5.1"
+ktlint = "12.1.1"
 
 # We cannot upgrade to 1.9.0 as it conflicts with liblcp.
 # See https://github.com/readium/kotlin-toolkit/issues/29
