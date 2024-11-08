@@ -5,6 +5,9 @@ ij_continuation_indent_size = 4
 
 [*.{kt,kts}]
 ij_kotlin_code_style_defaults = KOTLIN_OFFICIAL
+# Imports must be ordered in lexicographic order without any empty lines in-between.
+# https://github.com/pinterest/ktlint/issues/1236
+ij_kotlin_imports_layout=*
 ktlint_code_style = intellij_idea
 ktlint_standard_no-wildcard-imports = disabled
 ktlint_standard_max-line-length = disabled
@@ -21,7 +24,3 @@ ktlint_standard_statement-wrapping = disabled
 ktlint_standard_trailing-comma-on-call-site = disabled
 ktlint_standard_trailing-comma-on-declaration-site = disabled
 ktlint_standard_wrapping = disabled
-
-# Imports must be ordered in lexicographic order without any empty lines in-between.
-# https://github.com/pinterest/ktlint/issues/1236
-ij_kotlin_imports_layout=*
