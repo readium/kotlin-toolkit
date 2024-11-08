@@ -48,7 +48,7 @@ public class AndroidTtsEngine private constructor(
     override val voices: Set<Voice>,
     initialPreferences: AndroidTtsPreferences
 ) : TtsEngine<AndroidTtsSettings, AndroidTtsPreferences,
-        AndroidTtsEngine.Error, AndroidTtsEngine.Voice> {
+    AndroidTtsEngine.Error, AndroidTtsEngine.Voice> {
 
     public companion object {
 

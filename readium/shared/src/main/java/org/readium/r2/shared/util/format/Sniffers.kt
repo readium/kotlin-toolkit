@@ -227,10 +227,10 @@ public object Opds2Sniffer : FormatSniffer {
                     firstOrNull { it.rels.any(predicate) }
 
                 if (rwpm.links.firstWithRelMatching {
-                    it.startsWith(
+                        it.startsWith(
                             "http://opds-spec.org/acquisition"
                         )
-                } != null
+                    } != null
                 ) {
                     return Try.success(opds2PublicationFormat)
                 }
