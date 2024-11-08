@@ -14,7 +14,6 @@ ktlint_standard_comment-wrapping = disabled
 ktlint_standard_discouraged-comment-location = disabled
 ktlint_standard_enum-wrapping = disabled
 ktlint_standard_function-naming = disabled
-ktlint_standard_function-return-type-spacing = disabled
 ktlint_standard_function-signature = disabled
 ktlint_standard_indent = disabled
 ktlint_standard_kdoc-wrapping = disabled
