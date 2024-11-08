@@ -67,23 +67,4 @@ public interface Navigator {
          */
         public fun onJumpToLocator(locator: Locator) {}
     }
-
-    @Deprecated(
-        "Use [currentLocator.value] instead",
-        ReplaceWith("currentLocator.value"),
-        level = DeprecationLevel.ERROR
-    )
-    public val currentLocation: Locator? get() = currentLocator.value
-
-    @Deprecated(
-        "Use [VisualNavigator.Listener] instead",
-        ReplaceWith("VisualNavigator.Listener"),
-        level = DeprecationLevel.ERROR
-    )
-    public interface VisualListener : VisualNavigator.Listener
-}
-
-public interface NavigatorDelegate {
-    @Deprecated("Observe [currentLocator] instead", level = DeprecationLevel.ERROR)
-    public fun locationDidChange(navigator: Navigator? = null, locator: Locator) {}
 }

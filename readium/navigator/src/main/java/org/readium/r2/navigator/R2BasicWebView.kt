@@ -104,15 +104,6 @@ internal open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebV
 
         @InternalReadiumApi
         fun goToPreviousResource(jump: Boolean, animated: Boolean): Boolean = false
-
-        @Deprecated("Not available anymore", level = DeprecationLevel.ERROR)
-        fun onScroll() {}
-
-        @Deprecated("Not available anymore", level = DeprecationLevel.ERROR)
-        fun onHighlightActivated(id: String) {}
-
-        @Deprecated("Not available anymore", level = DeprecationLevel.ERROR)
-        fun onHighlightAnnotationMarkActivated(id: String) {}
     }
 
     var listener: Listener? = null

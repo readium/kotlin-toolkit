@@ -7,7 +7,7 @@
  * LICENSE file present in the project repository where this source code is maintained.
  */
 
-@file:Suppress("UnusedReceiverParameter", "UnusedParameter")
+@file:Suppress("UnusedReceiverParameter", "UnusedParameter", "ktlint:filename")
 @file:OptIn(InternalReadiumApi::class)
 
 package org.readium.r2.navigator
@@ -16,12 +16,6 @@ import kotlin.time.Duration
 import kotlinx.coroutines.flow.Flow
 import org.readium.r2.navigator.media.MediaPlayback
 import org.readium.r2.shared.InternalReadiumApi
-
-@Deprecated("Use navigator fragments.", level = DeprecationLevel.ERROR)
-public interface IR2Activity
-
-@Deprecated("Use TtsNavigator.", level = DeprecationLevel.ERROR)
-public interface IR2TTS
 
 /**
  * A navigator rendering an audio or video publication.

@@ -9,6 +9,7 @@
 
 package org.readium.r2.navigator.pager
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.util.AttributeSet
 import android.view.MotionEvent
@@ -23,9 +24,6 @@ internal class R2ViewPager : R2RTLViewPager {
 
     internal lateinit var publicationType: PublicationType
 
-    @Deprecated(message = "You shouldn't be using these internals.", level = DeprecationLevel.ERROR)
-    val type = Unit
-
     constructor(context: Context) : super(context)
     constructor(context: Context, attrs: AttributeSet) : super(context, attrs)
 
@@ -33,6 +31,7 @@ internal class R2ViewPager : R2RTLViewPager {
         super.setCurrentItem(item, false)
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(ev: MotionEvent): Boolean {
         if (DEBUG) Timber.d("ev.action ${ev.action}")
         if (publicationType == PublicationType.EPUB) {

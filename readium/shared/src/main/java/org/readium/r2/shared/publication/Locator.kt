@@ -108,13 +108,6 @@ public data class Locator(
                 )
             }
         }
-
-        @Deprecated(
-            "Renamed to [fragments]",
-            ReplaceWith("fragments"),
-            level = DeprecationLevel.ERROR
-        )
-        val fragment: String? get() = fragments.firstOrNull()
     }
 
     /**
@@ -192,27 +185,6 @@ public data class Locator(
         putIfNotEmpty("text", text)
     }
 
-    @Suppress("UNUSED_PARAMETER")
-    @Deprecated(
-        "Provide a `Url` and `MediaType` instances.",
-        ReplaceWith("Locator(href = Url(href)!!, mediaType = MediaType(type)!!"),
-        level = DeprecationLevel.ERROR
-    )
-    public constructor(
-        href: String,
-        type: String,
-        title: String? = null,
-        locations: Locations = Locations(),
-        text: Text = Text()
-    ) : this(Url("#")!!, MediaType.BINARY)
-
-    @Deprecated(
-        "Use [mediaType.toString()] instead",
-        ReplaceWith("mediaType.toString()"),
-        level = DeprecationLevel.ERROR
-    )
-    public val type: String get() = throw NotImplementedError()
-
     public companion object {
 
         /**
@@ -283,15 +255,6 @@ public data class Locator(
         }
     }
 }
-
-/**
- * Creates a [Locator] from a reading order [Link].
- */
-@Deprecated(
-    "This may create an incorrect `Locator` if the link `type` is missing. Use `publication.locatorFromLink()` instead.",
-    level = DeprecationLevel.ERROR
-)
-public fun Link.toLocator(): Locator = throw NotImplementedError()
 
 /**
  * Represents a sequential list of `Locator` objects.
