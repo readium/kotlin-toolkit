@@ -3,9 +3,6 @@ root = true
 [*]
 ij_continuation_indent_size = 4
 
-[*.swift]
-ij_any_keep_simple_blocks_in_one_line = true
-
 [*.{kt,kts}]
 ij_kotlin_code_style_defaults = KOTLIN_OFFICIAL
 ktlint_code_style = intellij_idea
