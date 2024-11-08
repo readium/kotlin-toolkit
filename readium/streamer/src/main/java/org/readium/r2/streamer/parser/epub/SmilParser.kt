@@ -22,7 +22,7 @@ internal object SmilParser {
        This might be possible only using Canonical Fragment Identifiers
        since the unique body and each seq element MUST reference
        one EPUB Content Document by means of its attribute epub:textref
-    */
+     */
 
     fun parse(document: ElementNode, filePath: Url): MediaOverlays? {
         val body = document.getFirst("body", Namespaces.SMIL) ?: return null
@@ -43,7 +43,7 @@ internal object SmilParser {
         /* No wrapping media overlay can be created unless:
        - all child media overlays reference the same audio file
        - the seq element has an textref attribute (this is mandatory according to the EPUB spec)
-       */
+         */
         val textref = node.getAttrNs("textref", Namespaces.OPS)
             ?.let { Url.fromEpubHref(it) }
         val audioFiles = children.mapNotNull(MediaOverlayNode::audioFile)
