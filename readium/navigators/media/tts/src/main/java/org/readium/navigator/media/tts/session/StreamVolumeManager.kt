@@ -27,7 +27,7 @@ import androidx.media3.common.util.Log
 import androidx.media3.common.util.Util
 
 @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
-/** A manager that wraps [AudioManager] to control/listen audio stream volume.  */ /* package */
+/** A manager that wraps [AudioManager] to control/listen audio stream volume.  */
 internal class StreamVolumeManager(context: Context, eventHandler: Handler, listener: Listener) {
     /** A listener for changes in the manager.  */
     interface Listener {
