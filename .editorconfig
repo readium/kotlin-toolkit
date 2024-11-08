@@ -9,7 +9,6 @@ ktlint_code_style = intellij_idea
 ktlint_standard_no-wildcard-imports = disabled
 ktlint_standard_max-line-length = disabled
 
-ktlint_standard_annotation-spacing = disabled
 ktlint_standard_class-naming = disabled
 ktlint_standard_comment-wrapping = disabled
 ktlint_standard_discouraged-comment-location = disabled

@@ -20,13 +20,12 @@ import org.readium.r2.shared.util.CursorList
 import org.readium.r2.shared.util.Language
 import org.readium.r2.shared.util.tokenizer.TextTokenizer
 
-@ExperimentalReadiumApi
-
 /**
  * A Content Iterator able to provide short utterances.
  *
  * Not thread-safe.
  */
+@ExperimentalReadiumApi
 internal class TtsUtteranceIterator(
     private val publication: Publication,
     private val tokenizerFactory: (language: Language?) -> TextTokenizer,
