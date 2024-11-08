@@ -145,7 +145,7 @@ private class ReadableInputStreamAdapter(
         }
     }
 
-    private fun<S> Try<S, ReadError>.recover(): S =
+    private fun <S> Try<S, ReadError>.recover(): S =
         when (this) {
             is Try.Success -> {
                 value

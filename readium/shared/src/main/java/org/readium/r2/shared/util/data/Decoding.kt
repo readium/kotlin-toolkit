@@ -55,7 +55,7 @@ public sealed class DecodeError(
  * Decodes receiver properly wrapping exceptions into [DecodeError]s.
  */
 @InternalReadiumApi
-public suspend fun<R, S> S.decode(
+public suspend fun <R, S> S.decode(
     block: (value: S) -> R,
     wrapError: (Exception) -> Error
 ): Try<R, DecodeError> =
@@ -130,7 +130,7 @@ public suspend fun ByteArray.decodeBitmap(): Try<Bitmap, DecodeError> =
 
 @Suppress("RedundantSuspendModifier")
 @InternalReadiumApi
-public suspend inline fun<R> Try<ByteArray, ReadError>.decodeOrElse(
+public suspend inline fun <R> Try<ByteArray, ReadError>.decodeOrElse(
     decode: (value: ByteArray) -> Try<R, DecodeError>,
     recover: (DecodeError.Decoding) -> R
 ): Try<R, ReadError> =
@@ -148,13 +148,13 @@ public suspend inline fun<R> Try<ByteArray, ReadError>.decodeOrElse(
 
 @Suppress("RedundantSuspendModifier")
 @InternalReadiumApi
-public suspend inline fun<R> Try<ByteArray, ReadError>.decodeOrNull(
+public suspend inline fun <R> Try<ByteArray, ReadError>.decodeOrNull(
     decode: (value: ByteArray) -> Try<R, DecodeError>
 ): R? =
     flatMap { decode(it) }.getOrNull()
 
 @InternalReadiumApi
-public suspend inline fun<R> Readable.readDecodeOrElse(
+public suspend inline fun <R> Readable.readDecodeOrElse(
     decode: (value: ByteArray) -> Try<R, DecodeError>,
     recoverRead: (ReadError) -> R,
     recoverDecode: (DecodeError.Decoding) -> R
@@ -162,14 +162,14 @@ public suspend inline fun<R> Readable.readDecodeOrElse(
     read().decodeOrElse(decode, recoverDecode).getOrElse(recoverRead)
 
 @InternalReadiumApi
-public suspend inline fun<R> Readable.readDecodeOrElse(
+public suspend inline fun <R> Readable.readDecodeOrElse(
     decode: (value: ByteArray) -> Try<R, DecodeError>,
     recover: (ReadError) -> R
 ): R =
     readDecodeOrElse(decode, recover) { recover(ReadError.Decoding(it)) }
 
 @InternalReadiumApi
-public suspend inline fun<R> Readable.readDecodeOrNull(
+public suspend inline fun <R> Readable.readDecodeOrNull(
     decode: (value: ByteArray) -> Try<R, DecodeError>
 ): R? =
     read().decodeOrNull(decode)

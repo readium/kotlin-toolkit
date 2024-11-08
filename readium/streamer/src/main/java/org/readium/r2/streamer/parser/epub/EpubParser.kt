@@ -202,7 +202,7 @@ public class EpubParser(
             ?.toMap().orEmpty()
     }
 
-    public suspend inline fun<R> Readable.readDecodeOrElse(
+    public suspend inline fun <R> Readable.readDecodeOrElse(
         url: Url,
         decode: (value: ByteArray) -> Try<R, DecodeError>,
         recover: (ReadError) -> R

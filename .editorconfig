@@ -20,7 +20,6 @@ ktlint_standard_property-naming = disabled
 ktlint_standard_statement-wrapping = disabled
 ktlint_standard_trailing-comma-on-call-site = disabled
 ktlint_standard_trailing-comma-on-declaration-site = disabled
-ktlint_standard_type-parameter-list-spacing = disabled
 ktlint_standard_wrapping = disabled
 
 # Imports must be ordered in lexicographic order without any empty lines in-between.

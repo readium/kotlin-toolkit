@@ -122,7 +122,7 @@ internal class TtsPlayer<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
          */
         sealed class Failure : State {
 
-            data class Engine<E : TtsEngine.Error> (val error: E) : Failure()
+            data class Engine<E : TtsEngine.Error>(val error: E) : Failure()
 
             data class Content(val error: Error) : Failure()
         }

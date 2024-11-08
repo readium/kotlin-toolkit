@@ -90,7 +90,7 @@ public class TtsNavigator<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
         override val cause: org.readium.r2.shared.util.Error?
     ) : org.readium.r2.shared.util.Error {
 
-        public data class EngineError<E : TtsEngine.Error> (override val cause: E) :
+        public data class EngineError<E : TtsEngine.Error>(override val cause: E) :
             Error("An error occurred in the TTS engine.", cause)
 
         public data class ContentError(override val cause: org.readium.r2.shared.util.Error) :

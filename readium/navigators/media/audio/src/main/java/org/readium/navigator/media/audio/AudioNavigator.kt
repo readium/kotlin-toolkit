@@ -78,7 +78,7 @@ public class AudioNavigator<S : Configurable.Settings, P : Configurable.Preferen
         public data object Buffering :
             State, MediaNavigator.State.Buffering
 
-        public data class Failure<E : AudioEngine.Error> (val error: E) :
+        public data class Failure<E : AudioEngine.Error>(val error: E) :
             State, MediaNavigator.State.Failure
     }
 

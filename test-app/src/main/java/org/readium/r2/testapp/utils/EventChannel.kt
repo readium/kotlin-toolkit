@@ -32,7 +32,7 @@ class EventChannel<T>(private val channel: Channel<T>, private val sendScope: Co
     }
 }
 
-class FlowObserver<T> (
+class FlowObserver<T>(
     private val lifecycleOwner: LifecycleOwner,
     private val flow: Flow<T>,
     private val collector: suspend (T) -> Unit
