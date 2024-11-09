@@ -57,6 +57,10 @@ public class StatusDocument(public val data: ByteArray) {
         License("license"),
         Return("return"),
         Renew("renew");
+
+        public companion object {
+            public operator fun invoke(value: String): Rel? = entries.firstOrNull { it.value == value }
+        }
     }
 
     init {
