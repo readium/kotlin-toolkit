@@ -98,7 +98,7 @@ public class FixedWebNavigatorFactory private constructor(
                 application = application,
                 readingOrder = ReadingOrder(readingOrderItems),
                 resourceMediaTypes = resourceMediaTypes,
-                protectionService = publication.findService(ContentProtectionService::class),
+                isRestricted = publication.findService(ContentProtectionService::class)?.isRestricted ?: false,
                 initialSettings = initialSettings,
                 initialLocation = initialLocation ?: HrefLocation(readingOrderItems[0].href),
                 container = publication.container,

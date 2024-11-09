@@ -34,7 +34,6 @@ import org.readium.r2.navigator.preferences.Axis
 import org.readium.r2.navigator.preferences.Fit
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.InternalReadiumApi
-import org.readium.r2.shared.publication.services.ContentProtectionService
 import org.readium.r2.shared.util.RelativeUrl
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.data.Container
@@ -48,7 +47,7 @@ public class FixedWebRenditionState internal constructor(
     internal val readingOrder: ReadingOrder,
     container: Container<Resource>,
     resourceMediaTypes: Map<Url, MediaType>,
-    protectionService: ContentProtectionService?,
+    isRestricted: Boolean,
     initialSettings: FixedWebSettings,
     initialLocation: FixedWebGoLocation,
     internal val preloadedData: FixedWebPreloadedData
@@ -74,7 +73,7 @@ public class FixedWebRenditionState internal constructor(
             errorPage = RelativeUrl("readium/navigators/web/error.xhtml")!!,
             injectableScript = RelativeUrl("readium/navigators/web/fixed-injectable-script.js")!!,
             servedAssets = listOf("readium/.*"),
-            disableSelection = protectionService?.isRestricted ?: false,
+            disableSelection = isRestricted,
             onResourceLoadFailed = { _, _ -> }
         )
 

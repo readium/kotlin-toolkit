@@ -17,7 +17,7 @@ format:
 	./gradlew ktlintFormat
 
 .PHONY: scripts
-scripts:
+scripts-legacy:
 	@which corepack >/dev/null 2>&1 || (echo "ERROR: corepack is required, please install it first\nhttps://pnpm.io/installation#using-corepack"; exit 1)
 
 	cd $(SCRIPTS_PATH); \
@@ -26,11 +26,18 @@ scripts:
 	pnpm run format; \
 	pnpm run lint; \
 	pnpm run bundle
-	
+
+.PHONY: scripts
+scripts-new:
+	@which corepack >/dev/null 2>&1 || (echo "ERROR: corepack is required, please install it first\nhttps://pnpm.io/installation#using-corepack"; exit 1)
+
 	cd $(SCRIPTS_NAVIGATOR_WEB_PATH); \
 	corepack install; \
 	pnpm install --frozen-lockfile; \
 	pnpm run format; \
 	pnpm run lint; \
 	pnpm run bundle; \
-	cp dist/* ../src/main/assets/readium/navigators/web/ 
+	mv dist/* ../src/main/assets/readium/navigators/web/
+
+.PHONY: scripts
+scripts: scripts-legacy scripts-new

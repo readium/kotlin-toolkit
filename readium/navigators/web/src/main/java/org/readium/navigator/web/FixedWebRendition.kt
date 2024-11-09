@@ -50,8 +50,8 @@ import org.readium.r2.shared.util.Url
 @ExperimentalReadiumApi
 @Composable
 public fun FixedWebRendition(
-    modifier: Modifier = Modifier,
     state: FixedWebRenditionState,
+    modifier: Modifier = Modifier,
     windowInsets: WindowInsets = WindowInsets.displayCutout,
     backgroundColor: Color = MaterialTheme.colorScheme.background,
     inputListener: InputListener = state.controller
