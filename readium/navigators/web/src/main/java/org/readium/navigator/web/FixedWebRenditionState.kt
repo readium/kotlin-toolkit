@@ -7,7 +7,6 @@
 package org.readium.navigator.web
 
 import android.app.Application
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.Stable
@@ -15,6 +14,7 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableStateOf
 import org.readium.navigator.common.Configurable
+import org.readium.navigator.common.HyperlinkLocation
 import org.readium.navigator.common.Navigator
 import org.readium.navigator.common.Overflow
 import org.readium.navigator.common.Overflowable
@@ -23,6 +23,7 @@ import org.readium.navigator.web.layout.Layout
 import org.readium.navigator.web.layout.LayoutResolver
 import org.readium.navigator.web.layout.ReadingOrder
 import org.readium.navigator.web.location.FixedWebGoLocation
+import org.readium.navigator.web.location.FixedWebGoLocationList
 import org.readium.navigator.web.location.FixedWebLocation
 import org.readium.navigator.web.location.HrefLocation
 import org.readium.navigator.web.preferences.FixedWebSettings
@@ -33,14 +34,13 @@ import org.readium.r2.navigator.preferences.Axis
 import org.readium.r2.navigator.preferences.Fit
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.InternalReadiumApi
-import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.services.ContentProtectionService
+import org.readium.r2.shared.util.RelativeUrl
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.data.Container
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.resource.Resource
 
-@OptIn(ExperimentalFoundationApi::class)
 @ExperimentalReadiumApi
 @Stable
 public class FixedWebRenditionState internal constructor(
@@ -71,6 +71,8 @@ public class FixedWebRenditionState internal constructor(
             application = application,
             container = container,
             mediaTypes = resourceMediaTypes,
+            errorPage = RelativeUrl("readium/navigators/web/error.xhtml")!!,
+            injectableScript = RelativeUrl("readium/navigators/web/fixed-injectable-script.js")!!,
             servedAssets = listOf("readium/.*"),
             disableSelection = protectionService?.isRestricted ?: false,
             onResourceLoadFailed = { _, _ -> }
@@ -80,12 +82,12 @@ public class FixedWebRenditionState internal constructor(
         WebViewClient(webViewServer)
 
     internal val pagerState: PagerState = run {
-        val initialPage = when (initialLocation) {
-            is HrefLocation -> layoutDelegate.layout.value.spreadIndexForPage(initialLocation.href)
-        }
+        val initialSpread = layoutDelegate.layout.value
+            .spreadIndexForHref(initialLocation.getHref())
+            ?: 0
 
         PagerState(
-            currentPage = layoutDelegate.layout.value.spreadIndexForPage(initialPage),
+            currentPage = initialSpread,
             pageCount = { layoutDelegate.layout.value.spreads.size }
         )
     }
@@ -104,7 +106,6 @@ public class FixedWebRenditionState internal constructor(
 
         navigationDelegate =
             NavigationDelegate(
-                readingOrder,
                 pagerState,
                 layoutDelegate.layout,
                 layoutDelegate.settings,
@@ -156,7 +157,6 @@ internal class LayoutDelegate(
 
 @OptIn(ExperimentalReadiumApi::class, InternalReadiumApi::class)
 internal class NavigationDelegate(
-    private val readingOrder: ReadingOrder,
     private val pagerState: PagerState,
     private val layout: State<Layout>,
     private val settings: State<FixedWebSettings>,
@@ -173,23 +173,13 @@ internal class NavigationDelegate(
     override val location: State<FixedWebLocation> =
         locationMutable
 
-    override suspend fun goTo(link: Link) {
-        val href = link.url().removeFragment()
-        val location = HrefLocation(href)
-        goTo(location)
+    override suspend fun goTo(location: HyperlinkLocation) {
+        goTo(HrefLocation(location.href, location.fragment) as FixedWebGoLocation)
     }
 
     override suspend fun goTo(location: FixedWebGoLocation) {
-        when (location) {
-            is HrefLocation -> {
-                val pageIndex = checkNotNull(readingOrder.indexOfHref(location.href))
-                pagerState.scrollToPage(layout.value.spreadIndexForPage(pageIndex))
-            }
-        }
-    }
-
-    override suspend fun goTo(location: FixedWebLocation) {
-        return goTo(HrefLocation(location.href))
+        val spreadIndex = layout.value.spreadIndexForHref(location.getHref()) ?: return
+        pagerState.scrollToPage(spreadIndex)
     }
 
     override val overflow: State<Overflow> =
@@ -219,3 +209,10 @@ internal class NavigationDelegate(
         }
     }
 }
+
+@OptIn(ExperimentalReadiumApi::class)
+private fun FixedWebGoLocation.getHref(): Url =
+    when (this) {
+        is HrefLocation -> this.href
+        is FixedWebGoLocationList -> locations.first().getHref()
+    }

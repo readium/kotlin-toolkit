@@ -32,6 +32,7 @@ import org.readium.navigator.web.layout.DoubleViewportSpread
 import org.readium.navigator.web.layout.ReadingOrder
 import org.readium.navigator.web.layout.SingleViewportSpread
 import org.readium.navigator.web.location.FixedWebLocation
+import org.readium.navigator.web.location.HrefLocation
 import org.readium.navigator.web.pager.NavigatorPager
 import org.readium.navigator.web.spread.DoubleSpreadState
 import org.readium.navigator.web.spread.DoubleViewportSpread
@@ -55,11 +56,11 @@ public fun FixedWebRendition(
     backgroundColor: Color = MaterialTheme.colorScheme.background,
     inputListener: InputListener = state.navigator
         ?.let { defaultInputListener(navigator = it) }
-        ?: NullInputListener,
+        ?: NullInputListener(),
     hyperlinkListener: HyperlinkListener =
         state.navigator
             ?.let { defaultHyperlinkListener(navigator = it) }
-            ?: NullHyperlinkListener
+            ?: NullHyperlinkListener()
 ) {
     BoxWithConstraints(
         modifier = Modifier.fillMaxSize(),
@@ -163,12 +164,13 @@ private fun onLinkActivated(
     readingOrder: ReadingOrder,
     listener: HyperlinkListener
 ) {
-    readingOrder.indexOfHref(url.removeFragment())
-        ?.let { listener.onReadingOrderLinkActivated(url, context) }
-        ?: run {
-            when (url) {
-                is RelativeUrl -> listener.onResourceLinkActivated(url, context)
-                is AbsoluteUrl -> listener.onExternalLinkActivated(url, context)
-            }
+    val location = HrefLocation(url.removeFragment())
+    val isReadingOrder = readingOrder.indexOfHref(url.removeFragment()) != null
+    when {
+        isReadingOrder -> listener.onReadingOrderLinkActivated(location, context)
+        else -> when (url) {
+            is RelativeUrl -> listener.onResourceLinkActivated(location, context)
+            is AbsoluteUrl -> listener.onExternalLinkActivated(url, context)
         }
+    }
 }

@@ -15,12 +15,13 @@ import org.readium.navigator.web.location.FixedWebLocatorAdapter
 import org.readium.navigator.web.location.HrefLocation
 import org.readium.navigator.web.preferences.FixedWebDefaults
 import org.readium.navigator.web.preferences.FixedWebPreferences
+import org.readium.navigator.web.preferences.FixedWebPreferencesEditor
 import org.readium.navigator.web.preferences.FixedWebSettings
-import org.readium.navigator.web.preferences.FixedWebSettingsEditor
 import org.readium.navigator.web.util.WebViewServer
 import org.readium.navigator.web.webapi.FixedDoubleApi
 import org.readium.navigator.web.webapi.FixedSingleApi
 import org.readium.r2.shared.ExperimentalReadiumApi
+import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.epub.EpubLayout
@@ -31,6 +32,7 @@ import org.readium.r2.shared.util.ThrowableError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.getOrElse
 
+@OptIn(InternalReadiumApi::class)
 @ExperimentalReadiumApi
 public class FixedWebNavigatorFactory private constructor(
     private val application: Application,
@@ -132,8 +134,8 @@ public class FixedWebNavigatorFactory private constructor(
 
     public fun createSettingsEditor(
         currentPreferences: FixedWebPreferences
-    ): FixedWebSettingsEditor =
-        FixedWebSettingsEditor(
+    ): FixedWebPreferencesEditor =
+        FixedWebPreferencesEditor(
             currentPreferences,
             publication.metadata,
             defaults

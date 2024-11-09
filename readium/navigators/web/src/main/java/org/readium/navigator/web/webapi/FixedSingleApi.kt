@@ -14,10 +14,8 @@ import org.readium.navigator.web.layout.SingleViewportSpread
 import org.readium.navigator.web.util.DisplayArea
 import org.readium.navigator.web.util.WebViewServer
 import org.readium.r2.navigator.preferences.Fit
-import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.AbsoluteUrl
 
-@OptIn(ExperimentalReadiumApi::class)
 internal class FixedSingleApi(
     private val webView: WebView
 ) {

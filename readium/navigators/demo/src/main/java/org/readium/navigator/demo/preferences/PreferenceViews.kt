@@ -23,9 +23,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import org.readium.navigator.demo.util.Group
 import org.readium.navigator.demo.util.ToggleButtonGroup
 import org.readium.r2.navigator.preferences.EnumPreference
 import org.readium.r2.navigator.preferences.Preference
@@ -212,9 +212,8 @@ private fun Item(
             Modifier
         },
         headlineContent = {
-            Group(enabled = isActive) {
-                Text(title)
-            }
+            val alpha = if (isActive) 1.0f else 0.5f
+            Text(title, modifier = Modifier.alpha(alpha))
         },
         trailingContent = {
             Row {

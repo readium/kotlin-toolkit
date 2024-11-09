@@ -119,7 +119,7 @@ class ReaderOpener(
             coroutineScope = coroutineScope,
             publication = publication,
             renditionState = navigatorState,
-            settingsEditor = settingsEditor,
+            preferencesEditor = settingsEditor,
             locatorAdapter = locatorAdapter,
             onNavigatorCreated = onNavigatorCreated
         )

@@ -56,6 +56,7 @@ public typealias PublicationId = String
  */
 public class Publication(
     public val manifest: Manifest,
+    @InternalReadiumApi
     public val container: Container<Resource> = EmptyContainer(),
     private val servicesBuilder: ServicesBuilder = ServicesBuilder(),
     @Deprecated(

@@ -40,8 +40,8 @@ import org.readium.navigator.common.LocatorAdapter
 import org.readium.navigator.common.Navigator
 import org.readium.navigator.common.NullHyperlinkListener
 import org.readium.navigator.common.Overflowable
+import org.readium.navigator.common.PreferencesEditor
 import org.readium.navigator.common.RenditionState
-import org.readium.navigator.common.SettingsEditor
 import org.readium.navigator.common.TapContext
 import org.readium.navigator.common.TapEvent
 import org.readium.navigator.common.defaultHyperlinkListener
@@ -61,7 +61,7 @@ data class ReaderState<L : Location, N : Navigator<L, *>>(
     val coroutineScope: CoroutineScope,
     val publication: Publication,
     val renditionState: RenditionState<N>,
-    val settingsEditor: SettingsEditor<*, *>,
+    val preferencesEditor: PreferencesEditor<*, *>,
     val locatorAdapter: LocatorAdapter<L, *>,
     val onNavigatorCreated: (N) -> Unit
 ) {
@@ -87,7 +87,7 @@ fun <L : Location, N : Navigator<L, *>> Reader(
             onDismissRequest = { showPreferences.value = false }
         ) {
             UserPreferences(
-                editor = readerState.settingsEditor,
+                editor = readerState.preferencesEditor,
                 title = "Preferences"
             )
         }
@@ -139,7 +139,7 @@ fun <L : Location, N : Navigator<L, *>> Reader(
 
         val hyperlinkListener =
             if (navigatorNow == null) {
-                NullHyperlinkListener
+                NullHyperlinkListener()
             } else {
                 val context = LocalContext.current
                 defaultHyperlinkListener(

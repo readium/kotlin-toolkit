@@ -33,7 +33,7 @@ public typealias Preferences<P> = org.readium.r2.navigator.preferences.Configura
  * This can be used as a helper for a user preferences screen.
  */
 @ExperimentalReadiumApi
-public interface SettingsEditor<P : Preferences<P>, S : Settings> {
+public interface PreferencesEditor<P : Preferences<P>, S : Settings> {
 
     /**
      * The current preferences.

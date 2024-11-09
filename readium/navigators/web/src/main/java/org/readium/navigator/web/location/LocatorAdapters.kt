@@ -15,13 +15,9 @@ import org.readium.r2.shared.publication.html.cssSelector
 import org.readium.r2.shared.publication.indexOfFirstWithHref
 
 @ExperimentalReadiumApi
-public class FixedWebLocatorAdapter(
+public class FixedWebLocatorAdapter internal constructor(
     private val publication: Publication
 ) : LocatorAdapter<FixedWebLocation, FixedWebGoLocation> {
-    public fun FixedWebGoLocation.toLocator(): Locator =
-        when (this) {
-            is HrefLocation -> publication.locatorFromLink(Link(href))!!
-        }
 
     public override fun Locator.toGoLocation(): FixedWebGoLocation =
         HrefLocation(href)
@@ -34,10 +30,10 @@ public class FixedWebLocatorAdapter(
 }
 
 @ExperimentalReadiumApi
-public class ReflowableWebLocatorAdapter(
-    private val publication: Publication,
-    private val allowProduceHrefLocation: Boolean = false
+public class ReflowableWebLocatorAdapter internal constructor(
+    private val publication: Publication
 ) : LocatorAdapter<ReflowableWebLocation, ReflowableWebGoLocation> {
+
     public override fun ReflowableWebLocation.toLocator(): Locator =
         publication.locatorFromLink(Link(href))!!
             .copy(
@@ -53,32 +49,42 @@ public class ReflowableWebLocatorAdapter(
             )
 
     public override fun Locator.toGoLocation(): ReflowableWebGoLocation {
-        return when {
-            text.highlight != null || text.before != null || text.after != null -> {
-                TextLocation(
-                    href = href,
-                    textBefore = text.before,
-                    textAfter = text.highlight?.let { it + text.after } ?: text.after,
-                    cssSelector = locations.cssSelector
+        val locations = buildList {
+            if (text.highlight != null || text.before != null || text.after != null) {
+                add(
+                    TextLocation(
+                        href = href,
+                        textBefore = text.before,
+                        textAfter = text.highlight?.let { it + text.after } ?: text.after,
+                        cssSelector = locations.cssSelector
+                    )
                 )
             }
-            locations.progression != null -> {
-                ProgressionLocation(
-                    href = href,
-                    progression = locations.progression!!
+
+            if (locations.progression != null) {
+                add(
+                    ProgressionLocation(
+                        href = href,
+                        progression = locations.progression!!
+                    )
                 )
             }
-            locations.position != null -> {
-                PositionLocation(
-                    position = locations.position!!
+
+            if (locations.position != null) {
+                add(
+                    PositionLocation(
+                        position = locations.position!!
+                    )
                 )
             }
-            else ->
-                if (allowProduceHrefLocation) {
-                    HrefLocation(href = href)
-                } else {
-                    throw IllegalArgumentException("No supported location found in locator.")
-                }
+
+            add(HrefLocation(href = href))
+        }
+
+        return if (locations.size == 1) {
+            locations.first()
+        } else {
+            ReflowableWebGoLocationList(locations)
         }
     }
 }

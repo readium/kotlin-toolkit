@@ -6,8 +6,8 @@
 
 package org.readium.navigator.web.util
 
-import org.readium.navigator.web.webapi.GesturesApi
 import org.readium.r2.shared.util.AbsoluteUrl
+import org.readium.r2.shared.util.RelativeUrl
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
@@ -18,11 +18,12 @@ import timber.log.Timber
 /**
  * Injects scripts in the HTML [Resource] receiver.
  *
- * @param baseHref Base URL where and scripts are served.
+ * @param assetsBaseHref Base URL where and scripts are served.
  */
 internal fun Resource.injectHtml(
+    injectableScript: RelativeUrl,
     mediaType: MediaType,
-    baseHref: AbsoluteUrl,
+    assetsBaseHref: AbsoluteUrl,
     disableSelection: Boolean
 ): Resource =
     TransformingResource(this) { bytes ->
@@ -34,7 +35,7 @@ internal fun Resource.injectHtml(
         val injectables = mutableListOf<String>()
 
         injectables.add(
-            script(baseHref.resolve(GesturesApi.path))
+            script(assetsBaseHref.resolve(injectableScript))
         )
 
         // Disable the text selection if the publication is protected.

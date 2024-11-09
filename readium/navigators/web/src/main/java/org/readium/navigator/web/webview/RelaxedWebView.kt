@@ -9,6 +9,9 @@ package org.readium.navigator.web.webview
 import android.content.Context
 import android.webkit.WebView
 
+/**
+ * WebView allowing access to protected fields.
+ */
 internal class RelaxedWebView(context: Context) : WebView(context) {
 
     val maxScrollX: Int get() =

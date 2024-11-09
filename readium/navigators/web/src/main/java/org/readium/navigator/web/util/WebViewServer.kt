@@ -17,6 +17,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.util.AbsoluteUrl
+import org.readium.r2.shared.util.RelativeUrl
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.data.Container
@@ -36,6 +37,8 @@ internal class WebViewServer(
     private val application: Application,
     private val container: Container<Resource>,
     private val mediaTypes: Map<Url, MediaType>,
+    private val errorPage: RelativeUrl,
+    private val injectableScript: RelativeUrl,
     servedAssets: List<String>,
     private val disableSelection: Boolean,
     private val onResourceLoadFailed: (Url, ReadError) -> Unit
@@ -102,8 +105,9 @@ internal class WebViewServer(
             ?.takeIf { it.isHtml }
             ?.let {
                 resource = resource.injectHtml(
+                    injectableScript = injectableScript,
                     mediaType = it,
-                    baseHref = assetsBaseHref,
+                    assetsBaseHref = assetsBaseHref,
                     disableSelection = disableSelection
                 )
             }
@@ -144,7 +148,7 @@ internal class WebViewServer(
             withContext(Dispatchers.IO) {
                 Try.success(
                     application.assets
-                        .open("readium/error.xhtml")
+                        .open(errorPage.toString())
                         .bufferedReader()
                         .use { it.readText() }
                 )

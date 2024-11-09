@@ -7,6 +7,7 @@
 package org.readium.navigator.web.location
 
 import org.readium.navigator.common.GoLocation
+import org.readium.navigator.common.HyperlinkLocation
 import org.readium.navigator.common.Location
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.Url
@@ -33,7 +34,27 @@ public value class TextFragment(
 public sealed interface FixedWebGoLocation : GoLocation
 
 @ExperimentalReadiumApi
+public data class FixedWebGoLocationList(
+    val locations: List<FixedWebGoLocation>
+) : FixedWebGoLocation {
+
+    init {
+        require(locations.isNotEmpty())
+    }
+}
+
+@ExperimentalReadiumApi
 public sealed interface ReflowableWebGoLocation : GoLocation
+
+@ExperimentalReadiumApi
+public data class ReflowableWebGoLocationList(
+    val locations: List<ReflowableWebGoLocation>
+) : ReflowableWebGoLocation {
+
+    init {
+        require(locations.isNotEmpty())
+    }
+}
 
 @ExperimentalReadiumApi
 public data class ProgressionLocation(
@@ -56,8 +77,9 @@ public data class PositionLocation(
 
 @ExperimentalReadiumApi
 public data class HrefLocation(
-    val href: Url
-) : ReflowableWebGoLocation, FixedWebGoLocation
+    override val href: Url,
+    override val fragment: String? = null
+) : ReflowableWebGoLocation, FixedWebGoLocation, HyperlinkLocation
 
 @ExperimentalReadiumApi
 public data class ReflowableWebLocation(

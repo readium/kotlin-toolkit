@@ -25,9 +25,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import org.readium.navigator.common.Preferences
+import org.readium.navigator.common.PreferencesEditor
 import org.readium.navigator.common.Settings
-import org.readium.navigator.common.SettingsEditor
-import org.readium.navigator.web.preferences.FixedWebSettingsEditor
+import org.readium.navigator.web.preferences.FixedWebPreferencesEditor
 import org.readium.r2.navigator.preferences.Axis
 import org.readium.r2.navigator.preferences.EnumPreference
 import org.readium.r2.navigator.preferences.Fit
@@ -41,7 +41,7 @@ import org.readium.r2.shared.ExperimentalReadiumApi
  */
 
 @Composable
-fun <P : Preferences<P>, S : Settings, E : SettingsEditor<P, S>> UserPreferences(
+fun <P : Preferences<P>, S : Settings, E : PreferencesEditor<P, S>> UserPreferences(
     editor: E,
     title: String
 ) {
@@ -77,7 +77,7 @@ fun <P : Preferences<P>, S : Settings, E : SettingsEditor<P, S>> UserPreferences
         Divider()
 
         when (editor) {
-            is FixedWebSettingsEditor ->
+            is FixedWebPreferencesEditor ->
                 FixedLayoutUserPreferences(
                     readingProgression = editor.readingProgression,
                     fit = editor.fit,
