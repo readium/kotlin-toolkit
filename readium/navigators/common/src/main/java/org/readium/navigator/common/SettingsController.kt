@@ -10,7 +10,7 @@ import androidx.compose.runtime.MutableState
 import org.readium.r2.shared.ExperimentalReadiumApi
 
 @ExperimentalReadiumApi
-public interface Configurable<S : Settings> {
+public interface SettingsController<S : Settings> {
 
     public val settings: MutableState<S>
 }

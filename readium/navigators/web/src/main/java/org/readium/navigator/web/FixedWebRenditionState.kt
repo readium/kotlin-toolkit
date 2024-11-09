@@ -13,12 +13,12 @@ import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableStateOf
-import org.readium.navigator.common.Configurable
 import org.readium.navigator.common.HyperlinkLocation
-import org.readium.navigator.common.Navigator
 import org.readium.navigator.common.Overflow
-import org.readium.navigator.common.Overflowable
+import org.readium.navigator.common.OverflowController
+import org.readium.navigator.common.RenditionController
 import org.readium.navigator.common.RenditionState
+import org.readium.navigator.common.SettingsController
 import org.readium.navigator.web.layout.Layout
 import org.readium.navigator.web.layout.LayoutResolver
 import org.readium.navigator.web.layout.ReadingOrder
@@ -52,12 +52,12 @@ public class FixedWebRenditionState internal constructor(
     initialSettings: FixedWebSettings,
     initialLocation: FixedWebGoLocation,
     internal val preloadedData: FixedWebPreloadedData
-) : RenditionState<FixedWebNavigator> {
+) : RenditionState<FixedWebRenditionController> {
 
-    private val navigatorState: MutableState<FixedWebNavigator?> =
+    private val navigatorState: MutableState<FixedWebRenditionController?> =
         mutableStateOf(null)
 
-    override val navigator: FixedWebNavigator? get() =
+    override val controller: FixedWebRenditionController? get() =
         navigatorState.value
 
     internal val layoutDelegate: LayoutDelegate =
@@ -95,12 +95,12 @@ public class FixedWebRenditionState internal constructor(
     private lateinit var navigationDelegate: NavigationDelegate
 
     internal fun updateLocation(location: FixedWebLocation) {
-        initNavigatorIfNeeded(location)
+        initControllerIfNeeded(location)
         navigationDelegate.updateLocation(location)
     }
 
-    private fun initNavigatorIfNeeded(location: FixedWebLocation) {
-        if (navigator != null) {
+    private fun initControllerIfNeeded(location: FixedWebLocation) {
+        if (controller != null) {
             return
         }
 
@@ -112,7 +112,7 @@ public class FixedWebRenditionState internal constructor(
                 location
             )
         navigatorState.value =
-            FixedWebNavigator(
+            FixedWebRenditionController(
                 navigationDelegate,
                 layoutDelegate
             )
@@ -121,12 +121,12 @@ public class FixedWebRenditionState internal constructor(
 
 @ExperimentalReadiumApi
 @Stable
-public class FixedWebNavigator internal constructor(
+public class FixedWebRenditionController internal constructor(
     private val navigationDelegate: NavigationDelegate,
     layoutDelegate: LayoutDelegate
-) : Navigator<FixedWebLocation, FixedWebGoLocation> by navigationDelegate,
-    Overflowable by navigationDelegate,
-    Configurable<FixedWebSettings> by layoutDelegate
+) : RenditionController<FixedWebLocation, FixedWebGoLocation> by navigationDelegate,
+    OverflowController by navigationDelegate,
+    SettingsController<FixedWebSettings> by layoutDelegate
 
 internal data class FixedWebPreloadedData(
     val fixedSingleContent: String,
@@ -137,7 +137,7 @@ internal data class FixedWebPreloadedData(
 internal class LayoutDelegate(
     readingOrder: ReadingOrder,
     initialSettings: FixedWebSettings
-) : Configurable<FixedWebSettings> {
+) : SettingsController<FixedWebSettings> {
 
     private val layoutResolver =
         LayoutResolver(readingOrder)
@@ -161,7 +161,7 @@ internal class NavigationDelegate(
     private val layout: State<Layout>,
     private val settings: State<FixedWebSettings>,
     initialLocation: FixedWebLocation
-) : Navigator<FixedWebLocation, FixedWebGoLocation>, Overflowable {
+) : RenditionController<FixedWebLocation, FixedWebGoLocation>, OverflowController {
 
     private val locationMutable: MutableState<FixedWebLocation> =
         mutableStateOf(initialLocation)

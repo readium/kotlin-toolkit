@@ -37,10 +37,10 @@ import kotlinx.coroutines.flow.onEach
 import org.readium.navigator.common.InputListener
 import org.readium.navigator.common.Location
 import org.readium.navigator.common.LocatorAdapter
-import org.readium.navigator.common.Navigator
 import org.readium.navigator.common.NullHyperlinkListener
-import org.readium.navigator.common.Overflowable
+import org.readium.navigator.common.OverflowController
 import org.readium.navigator.common.PreferencesEditor
+import org.readium.navigator.common.RenditionController
 import org.readium.navigator.common.RenditionState
 import org.readium.navigator.common.TapContext
 import org.readium.navigator.common.TapEvent
@@ -56,7 +56,7 @@ import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.toUri
 
-data class ReaderState<L : Location, N : Navigator<L, *>>(
+data class ReaderState<L : Location, N : RenditionController<L, *>>(
     val url: AbsoluteUrl,
     val coroutineScope: CoroutineScope,
     val publication: Publication,
@@ -74,7 +74,7 @@ data class ReaderState<L : Location, N : Navigator<L, *>>(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun <L : Location, N : Navigator<L, *>> Reader(
+fun <L : Location, N : RenditionController<L, *>> Reader(
     readerState: ReaderState<L, N>,
     fullScreenState: MutableState<Boolean>
 ) {
@@ -100,16 +100,16 @@ fun <L : Location, N : Navigator<L, *>> Reader(
             onPreferencesActivated = { showPreferences.value = !showPreferences.value }
         )
 
-        val navigatorNow = readerState.renditionState.navigator
+        val controllerNow = readerState.renditionState.controller
 
-        if (navigatorNow != null) {
-            LaunchedEffect(navigatorNow) {
-                readerState.onNavigatorCreated(navigatorNow)
+        if (controllerNow != null) {
+            LaunchedEffect(controllerNow) {
+                readerState.onNavigatorCreated(controllerNow)
             }
 
-            LaunchedEffect(navigatorNow) {
+            LaunchedEffect(controllerNow) {
                 snapshotFlow {
-                    navigatorNow.location.value
+                    controllerNow.location.value
                 }.onEach {
                     val locator = with(readerState.locatorAdapter) { it.toLocator() }
                     LocatorRepository.saveLocator(readerState.url, locator)
@@ -126,24 +126,24 @@ fun <L : Location, N : Navigator<L, *>> Reader(
         }
 
         val inputListener =
-            if (navigatorNow == null) {
+            if (controllerNow == null) {
                 fallbackInputListener
             } else {
-                (navigatorNow as? Overflowable)?.let {
+                (controllerNow as? OverflowController)?.let {
                     defaultInputListener(
-                        navigator = it,
+                        controller = it,
                         fallbackListener = fallbackInputListener
                     )
                 } ?: fallbackInputListener
             }
 
         val hyperlinkListener =
-            if (navigatorNow == null) {
+            if (controllerNow == null) {
                 NullHyperlinkListener()
             } else {
                 val context = LocalContext.current
                 defaultHyperlinkListener(
-                    navigator = navigatorNow,
+                    controller = controllerNow,
                     onExternalLinkActivated = { url, _ -> launchWebBrowser(context, url.toUri()) }
                 )
             }

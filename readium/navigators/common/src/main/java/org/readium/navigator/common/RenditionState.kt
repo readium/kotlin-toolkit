@@ -9,10 +9,10 @@ package org.readium.navigator.common
 import org.readium.r2.shared.ExperimentalReadiumApi
 
 /**
- * The state of the rendition, giving access to a [Navigator] after the first composition.
+ * The state of the rendition, giving access to a [RenditionController] after the first composition.
  */
 @ExperimentalReadiumApi
-public interface RenditionState<N : Navigator<*, *>> {
+public interface RenditionState<N : RenditionController<*, *>> {
 
-    public val navigator: N?
+    public val controller: N?
 }

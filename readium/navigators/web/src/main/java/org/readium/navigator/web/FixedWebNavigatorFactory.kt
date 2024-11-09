@@ -132,11 +132,11 @@ public class FixedWebNavigatorFactory private constructor(
             Try.failure(Error.Initialization(ThrowableError(e)))
         }
 
-    public fun createSettingsEditor(
-        currentPreferences: FixedWebPreferences
+    public fun createPreferencesEditor(
+        initialPreferences: FixedWebPreferences
     ): FixedWebPreferencesEditor =
         FixedWebPreferencesEditor(
-            currentPreferences,
+            initialPreferences,
             publication.metadata,
             defaults
         )

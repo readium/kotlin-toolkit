@@ -22,9 +22,11 @@ import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.publication.Metadata
 
 /**
- * Interactive editor of [FixedWebSettings].
+ * Interactive editor of [FixedWebPreferences].
  *
- * This can be used as a view model for a user preferences screen.
+ * This can be used as a view model for a user preferences screen. Every data you can get
+ * from the editor is observable so if you use it in a composable function,
+ * it will be recomposed on every change.
  *
  * @see FixedWebPreferences
  * @see FixedWebSettings

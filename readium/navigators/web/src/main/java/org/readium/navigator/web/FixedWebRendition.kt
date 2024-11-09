@@ -54,12 +54,12 @@ public fun FixedWebRendition(
     state: FixedWebRenditionState,
     windowInsets: WindowInsets = WindowInsets.displayCutout,
     backgroundColor: Color = MaterialTheme.colorScheme.background,
-    inputListener: InputListener = state.navigator
-        ?.let { defaultInputListener(navigator = it) }
+    inputListener: InputListener = state.controller
+        ?.let { defaultInputListener(controller = it) }
         ?: NullInputListener(),
     hyperlinkListener: HyperlinkListener =
-        state.navigator
-            ?.let { defaultHyperlinkListener(navigator = it) }
+        state.controller
+            ?.let { defaultHyperlinkListener(controller = it) }
             ?: NullHyperlinkListener()
 ) {
     BoxWithConstraints(

@@ -15,8 +15,8 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import org.readium.navigator.demo.persistence.LocatorRepository
 import org.readium.navigator.demo.preferences.PreferencesManager
-import org.readium.navigator.web.FixedWebNavigator
 import org.readium.navigator.web.FixedWebNavigatorFactory
+import org.readium.navigator.web.FixedWebRenditionController
 import org.readium.navigator.web.location.FixedWebLocation
 import org.readium.navigator.web.preferences.FixedWebPreferences
 import org.readium.r2.shared.ExperimentalReadiumApi
@@ -81,7 +81,7 @@ class ReaderOpener(
         url: AbsoluteUrl,
         publication: Publication,
         initialLocator: Locator?
-    ): Try<ReaderState<FixedWebLocation, FixedWebNavigator>, Error> {
+    ): Try<ReaderState<FixedWebLocation, FixedWebRenditionController>, Error> {
         val navigatorFactory = FixedWebNavigatorFactory(application, publication)
             ?: return Try.failure(DebugError("Publication not supported"))
 
@@ -95,7 +95,7 @@ class ReaderOpener(
 
         val preferencesManager = PreferencesManager(initialPreferences)
 
-        val settingsEditor = navigatorFactory.createSettingsEditor(initialPreferences)
+        val settingsEditor = navigatorFactory.createPreferencesEditor(initialPreferences)
 
         snapshotFlow { settingsEditor.preferences }
             .onEach { preferencesManager.setPreferences(it) }
@@ -108,7 +108,7 @@ class ReaderOpener(
             return Try.failure(it)
         }
 
-        val onNavigatorCreated: (FixedWebNavigator) -> Unit = { navigator ->
+        val onNavigatorCreated: (FixedWebRenditionController) -> Unit = { navigator ->
             snapshotFlow { settingsEditor.settings }
                 .onEach { navigator.settings.value = it }
                 .launchIn(coroutineScope)

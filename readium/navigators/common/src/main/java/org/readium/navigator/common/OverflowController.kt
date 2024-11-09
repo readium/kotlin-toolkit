@@ -16,7 +16,7 @@ import org.readium.r2.shared.ExperimentalReadiumApi
  * The user typically navigates through the viewport by scrolling or tapping its edges.
  */
 @ExperimentalReadiumApi
-public interface Overflowable {
+public interface OverflowController {
 
     /**
      * Current presentation rendered by the navigator.
@@ -57,7 +57,7 @@ public typealias Overflow = org.readium.r2.navigator.OverflowableNavigator.Overf
  * Moves to the left content portion (eg. page) relative to the reading progression direction.
  */
 @ExperimentalReadiumApi
-public suspend fun Overflowable.moveLeft() {
+public suspend fun OverflowController.moveLeft() {
     return when (overflow.value.readingProgression) {
         ReadingProgression.LTR ->
             moveBackward()
@@ -71,7 +71,7 @@ public suspend fun Overflowable.moveLeft() {
  * Moves to the right content portion (eg. page) relative to the reading progression direction.
  */
 @ExperimentalReadiumApi
-public suspend fun Overflowable.moveRight() {
+public suspend fun OverflowController.moveRight() {
     return when (overflow.value.readingProgression) {
         ReadingProgression.LTR ->
             moveForward()

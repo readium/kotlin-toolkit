@@ -53,7 +53,7 @@ public class NullInputListener : InputListener {
 @ExperimentalReadiumApi
 @Composable
 public fun defaultInputListener(
-    navigator: Overflowable,
+    controller: OverflowController,
     fallbackListener: InputListener? = null,
     tapEdges: Set<DirectionalNavigationAdapter.TapEdge> = setOf(
         DirectionalNavigationAdapter.TapEdge.Horizontal
@@ -69,7 +69,7 @@ public fun defaultInputListener(
     return DefaultInputListener(
         coroutineScope,
         fallbackListener,
-        navigator,
+        controller,
         tapEdges,
         handleTapsWhileScrolling,
         minimumHorizontalEdgeSize,
@@ -83,7 +83,7 @@ public fun defaultInputListener(
 private class DefaultInputListener(
     private val coroutineScope: CoroutineScope,
     private val fallbackListener: InputListener?,
-    private val navigator: Overflowable,
+    private val controller: OverflowController,
     private val tapEdges: Set<DirectionalNavigationAdapter.TapEdge>,
     private val handleTapsWhileScrolling: Boolean,
     private val minimumHorizontalEdgeSize: Dp,
@@ -99,7 +99,7 @@ private class DefaultInputListener(
     }
 
     private fun handleTap(event: TapEvent, context: TapContext): Boolean {
-        if (navigator.overflow.value.scroll && !handleTapsWhileScrolling) {
+        if (controller.overflow.value.scroll && !handleTapsWhileScrolling) {
             return false
         }
 
@@ -112,11 +112,11 @@ private class DefaultInputListener(
             val leftRange = 0.0.dp..horizontalEdgeSize
             val rightRange = (width - horizontalEdgeSize)..width
 
-            if (event.offset.x in rightRange && navigator.canMoveRight) {
-                coroutineScope.launch { navigator.moveRight() }
+            if (event.offset.x in rightRange && controller.canMoveRight) {
+                coroutineScope.launch { controller.moveRight() }
                 return true
-            } else if (event.offset.x in leftRange && navigator.canMoveLeft) {
-                coroutineScope.launch { navigator.moveLeft() }
+            } else if (event.offset.x in leftRange && controller.canMoveLeft) {
+                coroutineScope.launch { controller.moveLeft() }
                 return true
             }
         }
@@ -130,11 +130,11 @@ private class DefaultInputListener(
             val topRange = 0.0.dp..verticalEdgeSize
             val bottomRange = (height - verticalEdgeSize)..height
 
-            if (event.offset.y in bottomRange && navigator.canMoveForward) {
-                coroutineScope.launch { navigator.moveForward() }
+            if (event.offset.y in bottomRange && controller.canMoveForward) {
+                coroutineScope.launch { controller.moveForward() }
                 return true
-            } else if (event.offset.y in topRange && navigator.canMoveBackward) {
-                coroutineScope.launch { navigator.moveBackward() }
+            } else if (event.offset.y in topRange && controller.canMoveBackward) {
+                coroutineScope.launch { controller.moveBackward() }
                 return true
             }
         }
@@ -142,7 +142,7 @@ private class DefaultInputListener(
         return false
     }
 
-    private val Overflowable.canMoveLeft get() =
+    private val OverflowController.canMoveLeft get() =
         when (overflow.value.readingProgression) {
             ReadingProgression.LTR ->
                 canMoveBackward
@@ -151,7 +151,7 @@ private class DefaultInputListener(
                 canMoveForward
         }
 
-    private val Overflowable.canMoveRight get() =
+    private val OverflowController.canMoveRight get() =
         when (overflow.value.readingProgression) {
             ReadingProgression.LTR ->
                 canMoveForward

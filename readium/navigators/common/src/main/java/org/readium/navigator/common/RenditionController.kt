@@ -11,7 +11,7 @@ import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.Url
 
 @ExperimentalReadiumApi
-public interface Navigator<L : Location, G : GoLocation> {
+public interface RenditionController<L : Location, G : GoLocation> {
 
     public val location: State<L>
 
