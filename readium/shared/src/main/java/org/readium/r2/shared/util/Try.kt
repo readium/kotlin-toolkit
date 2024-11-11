@@ -41,14 +41,6 @@ public sealed class Try<out Success, out Failure> {
         override val isFailure: Boolean get() = true
         override fun getOrNull(): S? = null
         override fun failureOrNull(): F = value
-
-        @Deprecated(
-            "Renamed to value.",
-            level = DeprecationLevel.ERROR,
-            replaceWith = ReplaceWith("value")
-        )
-        public val exception: F
-            get() = value
     }
 
     /**
@@ -112,20 +104,6 @@ public fun <S, F : Throwable> Try<S, F>.getOrThrow(): S =
         is Success -> value
         is Failure -> throw value
     }
-
-/**
- * Returns the encapsulated value if this instance represents success
- * or throws the encapsulated ThrowableError exception if it is failure.
- */
-@Suppress("UnusedReceiverParameter")
-@Deprecated(
-    "An `Error` is not a throwable object. Refactor or wrap in an `ErrorException`.",
-    ReplaceWith("getOrElse { throw ErrorException(it) }"),
-    DeprecationLevel.ERROR
-)
-@JvmName("getOrThrowError")
-public fun <S, F : Error> Try<S, F>.getOrThrow(): S =
-    throw NotImplementedError()
 
 /**
  * Returns the encapsulated value if this instance represents success or the [defaultValue] if it is failure.

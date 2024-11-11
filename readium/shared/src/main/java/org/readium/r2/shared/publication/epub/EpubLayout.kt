@@ -28,20 +28,5 @@ public enum class EpubLayout(public val value: String) : Parcelable {
     public companion object : MapCompanion<String, EpubLayout>(
         entries.toTypedArray(),
         EpubLayout::value
-    ) {
-
-        @Deprecated(
-            "Renamed to [FIXED]",
-            ReplaceWith("EpubLayout.FIXED"),
-            level = DeprecationLevel.ERROR
-        )
-        public val Fixed: EpubLayout get() = FIXED
-
-        @Deprecated(
-            "Renamed to [REFLOWABLE]",
-            ReplaceWith("EpubLayout.REFLOWABLE"),
-            level = DeprecationLevel.ERROR
-        )
-        public val Reflowable: EpubLayout get() = REFLOWABLE
-    }
+    )
 }

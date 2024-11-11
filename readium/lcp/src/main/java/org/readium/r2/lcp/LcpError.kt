@@ -251,17 +251,3 @@ public sealed class LcpError(
 }
 
 internal class LcpException(val error: LcpError) : Exception(error.message, ErrorException(error))
-
-@Deprecated(
-    "Renamed to `LcpException`",
-    replaceWith = ReplaceWith("LcpException"),
-    level = DeprecationLevel.ERROR
-)
-public typealias LCPError = LcpError
-
-@Deprecated(
-    "Use `getUserMessage()` instead",
-    replaceWith = ReplaceWith("getUserMessage(context)"),
-    level = DeprecationLevel.ERROR
-)
-public val LcpError.errorDescription: String get() = message
