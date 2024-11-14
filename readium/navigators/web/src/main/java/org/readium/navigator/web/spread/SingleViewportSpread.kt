@@ -20,7 +20,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import org.readium.navigator.common.LinkContext
 import org.readium.navigator.common.TapEvent
 import org.readium.navigator.web.layout.SingleViewportSpread
 import org.readium.navigator.web.util.DisplayArea
@@ -35,7 +34,7 @@ import org.readium.r2.shared.util.Url
 @Composable
 internal fun SingleViewportSpread(
     onTap: (TapEvent) -> Unit,
-    onLinkActivated: (Url, LinkContext?) -> Unit,
+    onLinkActivated: (Url, String) -> Unit,
     state: SingleSpreadState,
     backgroundColor: Color
 ) {
@@ -80,10 +79,10 @@ internal fun SingleViewportSpread(
             state = webViewState,
             client = state.webViewClient,
             onTap = onTap,
-            onLinkActivated = { url, context ->
+            onLinkActivated = { url, outerHtml ->
                 onLinkActivated(
                     state.publicationBaseUrl.relativize(url),
-                    context
+                    outerHtml
                 )
             },
             backgroundColor = backgroundColor,

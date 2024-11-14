@@ -1,6 +1,6 @@
 export interface GesturesListener {
   onTap(event: MouseEvent): void
-  onLinkActivated(href: string): void
+  onLinkActivated(href: string, outerHtml: string): void
 }
 
 export class GesturesDetector {
@@ -42,7 +42,10 @@ export class GesturesDetector {
 
     if (nearestElement) {
       if (nearestElement instanceof HTMLAnchorElement) {
-        this.listener.onLinkActivated(nearestElement.href)
+        this.listener.onLinkActivated(
+          nearestElement.href,
+          nearestElement.outerHTML
+        )
       }
     } else {
       this.listener.onTap(event)

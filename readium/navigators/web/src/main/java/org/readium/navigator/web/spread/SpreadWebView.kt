@@ -17,7 +17,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.DpOffset
-import org.readium.navigator.common.LinkContext
 import org.readium.navigator.common.TapEvent
 import org.readium.navigator.web.util.WebViewClient
 import org.readium.navigator.web.webapi.GesturesApi
@@ -37,7 +36,7 @@ internal fun SpreadWebView(
     client: WebViewClient,
     onScriptsLoaded: () -> Unit,
     onTap: (TapEvent) -> Unit,
-    onLinkActivated: (AbsoluteUrl, LinkContext?) -> Unit,
+    onLinkActivated: (AbsoluteUrl, String) -> Unit,
     backgroundColor: Color
 ) {
     val scrollableState = remember { WebViewScrollable2DState() }
@@ -54,8 +53,8 @@ internal fun SpreadWebView(
                 onTap(TapEvent(offset))
             }
 
-            override fun onLinkActivated(href: AbsoluteUrl) {
-                onLinkActivated(href, null)
+            override fun onLinkActivated(href: AbsoluteUrl, outerHtml: String) {
+                onLinkActivated(href, outerHtml)
             }
         }
         GesturesApi(listener)

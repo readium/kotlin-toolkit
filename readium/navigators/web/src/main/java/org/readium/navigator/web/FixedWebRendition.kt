@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -20,17 +21,16 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.LayoutDirection
+import kotlinx.coroutines.launch
 import org.readium.navigator.common.HyperlinkListener
 import org.readium.navigator.common.HyperlinkLocation
 import org.readium.navigator.common.InputListener
-import org.readium.navigator.common.LinkContext
 import org.readium.navigator.common.NullHyperlinkListener
 import org.readium.navigator.common.NullInputListener
 import org.readium.navigator.common.TapContext
 import org.readium.navigator.common.defaultHyperlinkListener
 import org.readium.navigator.common.defaultInputListener
 import org.readium.navigator.web.layout.DoubleViewportSpread
-import org.readium.navigator.web.layout.ReadingOrder
 import org.readium.navigator.web.layout.SingleViewportSpread
 import org.readium.navigator.web.location.FixedWebLocation
 import org.readium.navigator.web.pager.NavigatorPager
@@ -85,6 +85,8 @@ public fun FixedWebRendition(
         val itemHref = state.readingOrder.items[itemIndex].href
         state.updateLocation(FixedWebLocation(itemHref))
 
+        val coroutineScope = rememberCoroutineScope()
+
         NavigatorPager(
             modifier = modifier,
             state = state.pagerState,
@@ -107,8 +109,10 @@ public fun FixedWebRendition(
 
                     SingleViewportSpread(
                         onTap = { inputListener.onTap(it, TapContext(viewportSize)) },
-                        onLinkActivated = { url, context ->
-                            onLinkActivated(url, context, state.readingOrder, hyperlinkListener)
+                        onLinkActivated = { url, outerHtml ->
+                            coroutineScope.launch {
+                                onLinkActivated(url, outerHtml, state, hyperlinkListener)
+                            }
                         },
                         state = spreadState,
                         backgroundColor = backgroundColor
@@ -128,8 +132,10 @@ public fun FixedWebRendition(
 
                     DoubleViewportSpread(
                         onTap = { inputListener.onTap(it, TapContext(viewportSize)) },
-                        onLinkActivated = { url, context ->
-                            onLinkActivated(url, context, state.readingOrder, hyperlinkListener)
+                        onLinkActivated = { url, outerHtml ->
+                            coroutineScope.launch {
+                                onLinkActivated(url, outerHtml, state, hyperlinkListener)
+                            }
                         },
                         state = spreadState,
                         backgroundColor = backgroundColor
@@ -158,14 +164,15 @@ private fun LayoutDirection.toReadingProgression(): ReadingProgression =
     }
 
 @OptIn(ExperimentalReadiumApi::class)
-private fun onLinkActivated(
+private suspend fun onLinkActivated(
     url: Url,
-    context: LinkContext?,
-    readingOrder: ReadingOrder,
+    outerHtml: String,
+    state: FixedWebRenditionState,
     listener: HyperlinkListener
 ) {
     val location = HyperlinkLocation(url.removeFragment())
-    val isReadingOrder = readingOrder.indexOfHref(url.removeFragment()) != null
+    val isReadingOrder = state.readingOrder.indexOfHref(url.removeFragment()) != null
+    val context = state.computeHyperlinkContext(url, outerHtml)
     when {
         isReadingOrder -> listener.onReadingOrderLinkActivated(location, context)
         else -> when (url) {

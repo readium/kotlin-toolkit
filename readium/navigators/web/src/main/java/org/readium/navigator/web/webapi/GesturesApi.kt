@@ -16,7 +16,7 @@ import org.readium.r2.shared.util.AbsoluteUrl
 internal interface GesturesListener {
 
     fun onTap(offset: DpOffset)
-    fun onLinkActivated(href: AbsoluteUrl)
+    fun onLinkActivated(href: AbsoluteUrl, outerHtml: String)
 }
 
 internal class GesturesApi(
@@ -34,9 +34,9 @@ internal class GesturesApi(
     }
 
     @android.webkit.JavascriptInterface
-    fun onLinkActivated(href: String) {
+    fun onLinkActivated(href: String, outerHtml: String) {
         val url = AbsoluteUrl(href) ?: return
-        listener.onLinkActivated(url)
+        listener.onLinkActivated(url, outerHtml)
     }
 }
 

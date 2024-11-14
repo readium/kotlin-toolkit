@@ -14,6 +14,7 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableStateOf
 import org.readium.navigator.common.HyperlinkLocation
+import org.readium.navigator.common.LinkContext
 import org.readium.navigator.common.NavigationController
 import org.readium.navigator.common.Overflow
 import org.readium.navigator.common.OverflowController
@@ -25,6 +26,7 @@ import org.readium.navigator.web.layout.ReadingOrder
 import org.readium.navigator.web.location.FixedWebGoLocation
 import org.readium.navigator.web.location.FixedWebLocation
 import org.readium.navigator.web.preferences.FixedWebSettings
+import org.readium.navigator.web.util.HyperlinkProcessor
 import org.readium.navigator.web.util.WebViewClient
 import org.readium.navigator.web.util.WebViewServer
 import org.readium.r2.navigator.SimpleOverflow
@@ -63,6 +65,9 @@ public class FixedWebRenditionState internal constructor(
             initialSettings
         )
 
+    internal val hyperlinkProcessor =
+        HyperlinkProcessor(container)
+
     private val webViewServer =
         WebViewServer(
             application = application,
@@ -88,6 +93,9 @@ public class FixedWebRenditionState internal constructor(
             pageCount = { layoutDelegate.layout.value.spreads.size }
         )
     }
+
+    internal suspend fun computeHyperlinkContext(originUrl: Url, outerHtml: String): LinkContext? =
+        hyperlinkProcessor.computeLinkContext(originUrl, outerHtml)
 
     private lateinit var navigationDelegate: NavigationDelegate
 

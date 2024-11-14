@@ -1,6 +1,6 @@
 import { Margins, Size } from "../common/types"
 import { TapEvent } from "../common/events"
-import { IframeMessage } from "./iframe-message"
+import { IframeMessage, LinkActivatedMessage } from "./iframe-message"
 
 /** Manages a fixed layout resource embedded in an iframe. */
 export class PageManager {
@@ -9,8 +9,6 @@ export class PageManager {
   private readonly listener: PageManager.Listener
 
   private margins: Margins = { top: 0, right: 0, bottom: 0, left: 0 }
-
-  private messagePort?: MessagePort
 
   size?: Size
 
@@ -74,7 +72,16 @@ export class PageManager {
       case "tap":
         return this.listener.onTap({ x: message.x, y: message.y })
       case "linkActivated":
-        return this.listener.onLinkActivated(message.href)
+        return this.onLinkActivated(message)
+    }
+  }
+
+  private onLinkActivated(message: LinkActivatedMessage) {
+    try {
+      const url = new URL(message.href, this.iframe.src)
+      this.listener.onLinkActivated(url.toString(), message.outerHtml)
+    } catch {
+      // Do nothing if url is not valid.
     }
   }
 
@@ -95,6 +102,6 @@ export namespace PageManager {
   export interface Listener {
     onIframeLoaded(): void
     onTap(event: TapEvent): void
-    onLinkActivated(href: string): void
+    onLinkActivated(href: string, outerHtml: string): void
   }
 }

@@ -1,19 +1,20 @@
 import { Size } from "../common/types"
 
-interface ContentSizeMessage {
+export interface ContentSizeMessage {
   kind: "contentSize"
   size?: Size
 }
 
-interface TapMessage {
+export interface TapMessage {
   kind: "tap"
   x: number
   y: number
 }
 
-interface LinkActivatedMessage {
+export interface LinkActivatedMessage {
   kind: "linkActivated"
   href: string
+  outerHtml: string
 }
 
 export type IframeMessage =

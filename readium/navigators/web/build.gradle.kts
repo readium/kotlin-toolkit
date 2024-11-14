@@ -28,4 +28,5 @@ dependencies {
     implementation(libs.timber)
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.androidx.webkit)
+    implementation(libs.jsoup)
 }

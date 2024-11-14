@@ -74,8 +74,8 @@ export class DoubleAreaManager {
         }
         listener.onTap(tapEvent)
       },
-      onLinkActivated: (href: string) => {
-        listener.onLinkActivated(href)
+      onLinkActivated: (href: string, outerHtml: string) => {
+        listener.onLinkActivated(href, outerHtml)
       },
     }
 
@@ -95,8 +95,8 @@ export class DoubleAreaManager {
         }
         listener.onTap(tapEvent)
       },
-      onLinkActivated: (href: string) => {
-        listener.onLinkActivated(href)
+      onLinkActivated: (href: string, outerHtml: string) => {
+        listener.onLinkActivated(href, outerHtml)
       },
     }
     this.leftPage = new PageManager(window, leftIframe, leftPageListener)

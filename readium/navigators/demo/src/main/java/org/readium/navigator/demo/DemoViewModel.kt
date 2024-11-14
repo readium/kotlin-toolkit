@@ -16,6 +16,7 @@ import kotlinx.coroutines.launch
 import org.readium.navigator.demo.reader.ReaderOpener
 import org.readium.navigator.demo.reader.ReaderState
 import org.readium.r2.shared.util.AbsoluteUrl
+import org.readium.r2.shared.util.toDebugDescription
 import timber.log.Timber
 
 class DemoViewModel(
@@ -56,7 +57,10 @@ class DemoViewModel(
 
         viewModelScope.launch {
             readerOpener.open(url)
-                .onFailure { stateMutable.value = State.Error(it) }
+                .onFailure {
+                    Timber.d(it.toDebugDescription())
+                    stateMutable.value = State.Error(it)
+                }
                 .onSuccess { stateMutable.value = State.Reader(it) }
         }
     }

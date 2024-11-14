@@ -66,8 +66,8 @@ export class SingleAreaManager {
         }
         listener.onTap(tapEvent)
       },
-      onLinkActivated: (href: string) => {
-        listener.onLinkActivated(href)
+      onLinkActivated: (href: string, outerHtml: string) => {
+        listener.onLinkActivated(href, outerHtml)
       },
     }
     this.page = new PageManager(window, iframe, pageListener)

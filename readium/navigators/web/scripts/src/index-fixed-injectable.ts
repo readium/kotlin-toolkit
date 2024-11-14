@@ -31,8 +31,12 @@ class MessagingGesturesListener implements GesturesListener {
     this.messageSender.send({ kind: "tap", x: event.clientX, y: event.clientY })
   }
 
-  onLinkActivated(href: string): void {
-    this.messageSender.send({ kind: "linkActivated", href: href })
+  onLinkActivated(href: string, outerHtml: string): void {
+    this.messageSender.send({
+      kind: "linkActivated",
+      href: href,
+      outerHtml: outerHtml,
+    })
   }
 }
 
