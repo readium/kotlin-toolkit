@@ -9,7 +9,6 @@
 
 package org.readium.r2.shared.publication.services
 
-import org.readium.r2.shared.publication.LocalizedString
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.PublicationServicesHolder
 import org.readium.r2.shared.publication.ServiceFactory
@@ -198,19 +197,6 @@ public val Publication.rights: ContentProtectionService.UserRights
  */
 public val Publication.protectionScheme: ContentProtection.Scheme?
     get() = protectionService?.scheme
-
-/**
- * User-facing localized name for this Content Protection, e.g. "Readium LCP".
- * It could be used in a sentence such as "Protected by {name}".
- */
-@Suppress("UnusedReceiverParameter")
-@Deprecated(
-    "Localize protection names yourself.",
-    level = DeprecationLevel.ERROR,
-    replaceWith = ReplaceWith("protectionName")
-)
-public val Publication.protectionLocalizedName: LocalizedString
-    get() = throw NotImplementedError()
 
 /**
  * User-facing name for this Content Protection, e.g. "Readium LCP".

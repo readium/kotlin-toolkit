@@ -124,11 +124,8 @@ public class LicenseDocument internal constructor(public val json: JSONObject) {
         Support("support"),
         Status("status");
 
-        @Deprecated("Use [value] instead", ReplaceWith("value"), level = DeprecationLevel.ERROR)
-        public val rawValue: String get() = value
-
         public companion object {
-            public operator fun invoke(value: String): Rel? = values().firstOrNull { it.value == value }
+            public operator fun invoke(value: String): Rel? = entries.firstOrNull { it.value == value }
         }
     }
 

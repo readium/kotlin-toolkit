@@ -21,8 +21,6 @@ import org.readium.r2.shared.extensions.optPositiveInt
 import org.readium.r2.shared.extensions.optStringsFromArrayOrSingle
 import org.readium.r2.shared.extensions.putIfNotEmpty
 import org.readium.r2.shared.extensions.toMap
-import org.readium.r2.shared.publication.presentation.Presentation
-import org.readium.r2.shared.publication.presentation.presentation
 import org.readium.r2.shared.util.Instant
 import org.readium.r2.shared.util.Language
 import org.readium.r2.shared.util.logging.WarningLogger
@@ -166,20 +164,6 @@ public data class Metadata(
     val language: Language? by lazy {
         languages.firstOrNull()?.let { Language(it) }
     }
-
-    /**
-     * Computes a [ReadingProgression] when the value of [readingProgression] is set to
-     * auto, using the publication language.
-     *
-     * See this issue for more details: https://github.com/readium/architecture/issues/113
-     */
-    @Deprecated(
-        "You should resolve [ReadingProgression.AUTO] by yourself.",
-        level = DeprecationLevel.ERROR
-    )
-    @IgnoredOnParcel
-    val effectiveReadingProgression: ReadingProgression get() =
-        throw NotImplementedError()
 
     /**
      * Serializes a [Metadata] to its RWPM JSON representation.
@@ -365,63 +349,4 @@ public data class Metadata(
             )
         }
     }
-
-    @Deprecated("Use [type] instead", ReplaceWith("type"), level = DeprecationLevel.ERROR)
-    val rdfType: String? get() = type
-
-    @Deprecated(
-        "Use [localizeTitle] instead.",
-        ReplaceWith("localizedTitle"),
-        level = DeprecationLevel.ERROR
-    )
-    val multilanguageTitle: LocalizedString?
-        get() = localizedTitle
-
-    @Deprecated(
-        "Use [localizedTitle.get] instead",
-        ReplaceWith("localizedTitle.translationForLanguage(key)?.string"),
-        level = DeprecationLevel.ERROR
-    )
-    public fun titleForLang(key: String): String? =
-        localizedTitle?.getOrFallback(key)?.string
-
-    @Deprecated(
-        "Use [readingProgression] instead.",
-        ReplaceWith("readingProgression"),
-        level = DeprecationLevel.ERROR
-    )
-    val direction: String
-        get() {
-            throw NotImplementedError()
-        }
-
-    @Deprecated(
-        "Use [published] instead",
-        ReplaceWith("published?.toIso8601String()"),
-        level = DeprecationLevel.ERROR
-    )
-    val publicationDate: String?
-        get() = published?.toString()
-
-    @Deprecated(
-        "Use [presentation] instead",
-        ReplaceWith("presentation", "org.readium.r2.shared.publication.presentation.presentation"),
-        level = DeprecationLevel.ERROR
-    )
-    val rendition: Presentation
-        get() = presentation
-
-    @Deprecated(
-        "Access from [otherMetadata] instead",
-        ReplaceWith("otherMetadata[\"source\"] as? String"),
-        level = DeprecationLevel.ERROR
-    )
-    val source: String?
-        get() = otherMetadata["source"] as? String
-
-    @Deprecated("Not used anymore", ReplaceWith("null"), level = DeprecationLevel.ERROR)
-    val rights: String? get() = null
-
-    @Deprecated("Renamed into [toJSON]", ReplaceWith("toJSON()"), level = DeprecationLevel.ERROR)
-    public fun writeJSON(): JSONObject = toJSON()
 }

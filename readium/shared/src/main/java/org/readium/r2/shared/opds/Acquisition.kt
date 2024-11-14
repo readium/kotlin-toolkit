@@ -77,28 +77,4 @@ public data class Acquisition(
             return json.parseObjects { fromJSON(it as? JSONObject, warnings) }
         }
     }
-
-    @Deprecated("Use [type] instead", ReplaceWith("type"), level = DeprecationLevel.ERROR)
-    val typeAcquisition: String?
-        get() = type
-
-    @Deprecated("Use [children] instead", ReplaceWith("children"), level = DeprecationLevel.ERROR)
-    val child: List<Acquisition>
-        get() = children
 }
-
-@Deprecated(
-    "Renamed into [Acquisition]",
-    ReplaceWith("Acquisition"),
-    level = DeprecationLevel.ERROR
-)
-public typealias IndirectAcquisition = Acquisition
-
-@Deprecated(
-    "Use [Acquisition::fromJSON] instead",
-    ReplaceWith("Acquisition.fromJSON"),
-    level = DeprecationLevel.ERROR
-)
-public fun parseIndirectAcquisition(indirectAcquisitionDict: JSONObject): Acquisition =
-    Acquisition.fromJSON(indirectAcquisitionDict)
-        ?: throw Exception("Invalid indirect acquisition")

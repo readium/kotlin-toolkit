@@ -32,26 +32,6 @@ public data class HttpResponse(
     private val httpHeaders = HttpHeaders(headers)
 
     /**
-     * Finds the first value of the first header matching the given name.
-     * In keeping with the HTTP RFC, HTTP header field names are case-insensitive.
-     */
-    @Deprecated("Use the header method instead.", level = DeprecationLevel.ERROR)
-    @Suppress("Unused_parameter")
-    public fun valueForHeader(name: String): String? {
-        throw NotImplementedError()
-    }
-
-    /**
-     * Finds all the values of the first header matching the given name.
-     * In keeping with the HTTP RFC, HTTP header field names are case-insensitive.
-     */
-    @Deprecated("Use the headers method instead.", level = DeprecationLevel.ERROR)
-    @Suppress("Unused_parameter")
-    public fun valuesForHeader(name: String): List<String> {
-        throw NotImplementedError()
-    }
-
-    /**
      * Finds the last header matching the given name.
      * In keeping with the HTTP RFC, HTTP header field names are case-insensitive.
      * The returned string can contain a single value or a comma-separated list of values if

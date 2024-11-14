@@ -13,7 +13,6 @@ import java.io.File
 import java.io.FileInputStream
 import java.security.MessageDigest
 import org.readium.r2.shared.InternalReadiumApi
-import org.readium.r2.shared.util.mediatype.MediaType
 import timber.log.Timber
 
 /**
@@ -61,16 +60,3 @@ public fun File.isParentOf(other: File): Boolean {
     }
     return false
 }
-
-/**
- * Sniffs the media type of the file.
- *
- * If unknown, fallback on `MediaType.BINARY`.
- */
-@Suppress("UnusedReceiverParameter", "RedundantSuspendModifier", "UNUSED_PARAMETER")
-@Deprecated(
-    message = "Use an `AssetRetriever` instead to retrieve the format of a file. See the migration guide.",
-    level = DeprecationLevel.ERROR
-)
-public suspend fun File.mediaType(mediaTypeHint: String? = null): MediaType =
-    throw NotImplementedError()

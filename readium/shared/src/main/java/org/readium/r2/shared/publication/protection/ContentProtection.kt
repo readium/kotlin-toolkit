@@ -9,7 +9,6 @@
 
 package org.readium.r2.shared.publication.protection
 
-import org.readium.r2.shared.publication.LocalizedString
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.services.ContentProtectionService
 import org.readium.r2.shared.util.Error
@@ -73,9 +72,6 @@ public interface ContentProtection {
     public value class Scheme(
         public val uri: String
     ) {
-
-        @Deprecated("Define yourself the name to print to users.", level = DeprecationLevel.ERROR)
-        public val name: LocalizedString? get() = null
 
         public companion object {
             /** Readium LCP DRM scheme. */

@@ -45,7 +45,6 @@ import org.readium.r2.shared.extensions.mapStateIn
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.publication.ReadingProgression as PublicationReadingProgression
 import org.readium.r2.shared.publication.services.isRestricted
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
@@ -258,14 +257,6 @@ public class PdfNavigatorFragment<S : Configurable.Settings, P : Configurable.Pr
         get() = settings.mapStateIn(lifecycleScope) { settings ->
             pdfEngineProvider.computeOverflow(settings)
         }
-
-    @Deprecated(
-        "Use `presentation.value.readingProgression` instead",
-        replaceWith = ReplaceWith("presentation.value.readingProgression"),
-        level = DeprecationLevel.ERROR
-    )
-    override val readingProgression: PublicationReadingProgression
-        get() = throw NotImplementedError()
 
     override fun addInputListener(listener: InputListener) {
         inputListener.add(listener)

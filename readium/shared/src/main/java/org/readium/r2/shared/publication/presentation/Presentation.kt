@@ -150,27 +150,6 @@ public data class Presentation(
              * Default value for [Orientation], if not specified.
              */
             public val DEFAULT: Orientation = AUTO
-
-            @Deprecated(
-                "Renamed to [AUTO]",
-                ReplaceWith("Orientation.AUTO"),
-                level = DeprecationLevel.ERROR
-            )
-            public val Auto: Orientation = AUTO
-
-            @Deprecated(
-                "Renamed to [LANDSCAPE]",
-                ReplaceWith("Orientation.LANDSCAPE"),
-                level = DeprecationLevel.ERROR
-            )
-            public val Landscape: Orientation = LANDSCAPE
-
-            @Deprecated(
-                "Renamed to [PORTRAIT]",
-                ReplaceWith("Orientation.PORTRAIT"),
-                level = DeprecationLevel.ERROR
-            )
-            public val Portrait: Orientation = PORTRAIT
         }
     }
 
@@ -198,27 +177,6 @@ public data class Presentation(
              * Default value for [Overflow], if not specified.
              */
             public val DEFAULT: Overflow = AUTO
-
-            @Deprecated(
-                "Renamed to [PAGINATED]",
-                ReplaceWith("Overflow.PAGINATED"),
-                level = DeprecationLevel.ERROR
-            )
-            public val Paginated: Overflow = PAGINATED
-
-            @Deprecated(
-                "Use [presentation.continuous] instead",
-                ReplaceWith("presentation.continuous"),
-                level = DeprecationLevel.ERROR
-            )
-            public val Continuous: Overflow = SCROLLED
-
-            @Deprecated(
-                "Renamed to [SCROLLED]",
-                ReplaceWith("Overflow.SCROLLED"),
-                level = DeprecationLevel.ERROR
-            )
-            public val Document: Overflow = SCROLLED
         }
     }
 
@@ -269,47 +227,6 @@ public data class Presentation(
              * Default value for [Spread], if not specified.
              */
             public val DEFAULT: Spread = AUTO
-
-            @Deprecated(
-                "Renamed to [AUTO]",
-                ReplaceWith("Spread.AUTO"),
-                level = DeprecationLevel.ERROR
-            )
-            public val Auto: Spread = AUTO
-
-            @Deprecated(
-                "Renamed to [LANDSCAPE]",
-                ReplaceWith("Spread.LANDSCAPE"),
-                level = DeprecationLevel.ERROR
-            )
-            public val Landscape: Spread = LANDSCAPE
-
-            @Deprecated(
-                "Renamed to [BOTH]",
-                ReplaceWith("Spread.BOTH"),
-                level = DeprecationLevel.ERROR
-            )
-            public val Portrait: Spread = BOTH
-
-            @Deprecated(
-                "Renamed to [BOTH]",
-                ReplaceWith("Spread.BOTH"),
-                level = DeprecationLevel.ERROR
-            )
-            public val Both: Spread = BOTH
-
-            @Deprecated(
-                "Renamed to [NONE]",
-                ReplaceWith("Spread.NONE"),
-                level = DeprecationLevel.ERROR
-            )
-            public val None: Spread = NONE
         }
     }
-
-    @Deprecated("Use [toJSON] instead", ReplaceWith("toJSON()"), level = DeprecationLevel.ERROR)
-    public fun getJSON(): JSONObject = toJSON()
-
-    @Deprecated("Use [overflow] instead", ReplaceWith("overflow"), level = DeprecationLevel.ERROR)
-    val flow: Overflow? get() = overflow
 }
