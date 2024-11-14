@@ -7,79 +7,19 @@
 package org.readium.navigator.web.location
 
 import org.readium.navigator.common.GoLocation
-import org.readium.navigator.common.HyperlinkLocation
 import org.readium.navigator.common.Location
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.Url
 
 @ExperimentalReadiumApi
-@JvmInline
-public value class CssSelector(
-    public val value: String
-)
-
-@ExperimentalReadiumApi
-@JvmInline
-public value class Progression(
-    public val value: Double
-)
-
-@ExperimentalReadiumApi
-@JvmInline
-public value class TextFragment(
-    public val value: String
-)
-
-@ExperimentalReadiumApi
-public sealed interface FixedWebGoLocation : GoLocation
-
-@ExperimentalReadiumApi
-public data class FixedWebGoLocationList(
-    val locations: List<FixedWebGoLocation>
-) : FixedWebGoLocation {
-
-    init {
-        require(locations.isNotEmpty())
-    }
-}
-
-@ExperimentalReadiumApi
-public sealed interface ReflowableWebGoLocation : GoLocation
-
-@ExperimentalReadiumApi
-public data class ReflowableWebGoLocationList(
-    val locations: List<ReflowableWebGoLocation>
-) : ReflowableWebGoLocation {
-
-    init {
-        require(locations.isNotEmpty())
-    }
-}
-
-@ExperimentalReadiumApi
-public data class ProgressionLocation(
+public data class ReflowableWebGoLocation(
     val href: Url,
-    val progression: Double
-) : ReflowableWebGoLocation
-
-@ExperimentalReadiumApi
-public data class TextLocation(
-    val href: Url,
+    val progression: Double?,
     val cssSelector: String?,
     val textBefore: String?,
-    val textAfter: String?
-) : ReflowableWebGoLocation
-
-@ExperimentalReadiumApi
-public data class PositionLocation(
-    val position: Int
-) : ReflowableWebGoLocation
-
-@ExperimentalReadiumApi
-public data class HrefLocation(
-    override val href: Url,
-    override val fragment: String? = null
-) : ReflowableWebGoLocation, FixedWebGoLocation, HyperlinkLocation
+    val textAfter: String?,
+    val position: Int?
+) : GoLocation
 
 @ExperimentalReadiumApi
 public data class ReflowableWebLocation(
@@ -90,6 +30,11 @@ public data class ReflowableWebLocation(
     val textAfter: String?,
     val position: Int?
 ) : Location
+
+@ExperimentalReadiumApi
+public data class FixedWebGoLocation(
+    val href: Url
+) : GoLocation
 
 @ExperimentalReadiumApi
 public data class FixedWebLocation(

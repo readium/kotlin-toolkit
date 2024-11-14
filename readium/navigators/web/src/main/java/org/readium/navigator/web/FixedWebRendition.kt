@@ -21,6 +21,7 @@ import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.LayoutDirection
 import org.readium.navigator.common.HyperlinkListener
+import org.readium.navigator.common.HyperlinkLocation
 import org.readium.navigator.common.InputListener
 import org.readium.navigator.common.LinkContext
 import org.readium.navigator.common.NullHyperlinkListener
@@ -32,7 +33,6 @@ import org.readium.navigator.web.layout.DoubleViewportSpread
 import org.readium.navigator.web.layout.ReadingOrder
 import org.readium.navigator.web.layout.SingleViewportSpread
 import org.readium.navigator.web.location.FixedWebLocation
-import org.readium.navigator.web.location.HrefLocation
 import org.readium.navigator.web.pager.NavigatorPager
 import org.readium.navigator.web.spread.DoubleSpreadState
 import org.readium.navigator.web.spread.DoubleViewportSpread
@@ -164,12 +164,12 @@ private fun onLinkActivated(
     readingOrder: ReadingOrder,
     listener: HyperlinkListener
 ) {
-    val location = HrefLocation(url.removeFragment())
+    val location = HyperlinkLocation(url.removeFragment())
     val isReadingOrder = readingOrder.indexOfHref(url.removeFragment()) != null
     when {
         isReadingOrder -> listener.onReadingOrderLinkActivated(location, context)
         else -> when (url) {
-            is RelativeUrl -> listener.onResourceLinkActivated(location, context)
+            is RelativeUrl -> listener.onNonLinearLinkActivated(location, context)
             is AbsoluteUrl -> listener.onExternalLinkActivated(url, context)
         }
     }

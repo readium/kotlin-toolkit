@@ -8,6 +8,7 @@
 
 package org.readium.navigator.demo.reader
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -26,6 +27,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -34,13 +36,14 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
 import org.readium.navigator.common.InputListener
 import org.readium.navigator.common.Location
 import org.readium.navigator.common.LocatorAdapter
+import org.readium.navigator.common.NavigationController
 import org.readium.navigator.common.NullHyperlinkListener
 import org.readium.navigator.common.OverflowController
 import org.readium.navigator.common.PreferencesEditor
-import org.readium.navigator.common.RenditionController
 import org.readium.navigator.common.RenditionState
 import org.readium.navigator.common.TapContext
 import org.readium.navigator.common.TapEvent
@@ -56,7 +59,7 @@ import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.toUri
 
-data class ReaderState<L : Location, N : RenditionController<L, *>>(
+data class ReaderState<L : Location, N : NavigationController<L, *>>(
     val url: AbsoluteUrl,
     val coroutineScope: CoroutineScope,
     val publication: Publication,
@@ -74,7 +77,7 @@ data class ReaderState<L : Location, N : RenditionController<L, *>>(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun <L : Location, N : RenditionController<L, *>> Reader(
+fun <L : Location, N : NavigationController<L, *>> Reader(
     readerState: ReaderState<L, N>,
     fullScreenState: MutableState<Boolean>
 ) {
@@ -100,6 +103,8 @@ fun <L : Location, N : RenditionController<L, *>> Reader(
             onPreferencesActivated = { showPreferences.value = !showPreferences.value }
         )
 
+        val navigationHistory: MutableState<List<L>> = remember { mutableStateOf(emptyList()) }
+
         val controllerNow = readerState.renditionState.controller
 
         if (controllerNow != null) {
@@ -114,6 +119,14 @@ fun <L : Location, N : RenditionController<L, *>> Reader(
                     val locator = with(readerState.locatorAdapter) { it.toLocator() }
                     LocatorRepository.saveLocator(readerState.url, locator)
                 }.launchIn(readerState.coroutineScope)
+            }
+
+            val coroutineScope = rememberCoroutineScope()
+
+            BackHandler(enabled = navigationHistory.value.isNotEmpty()) {
+                val previousItem = navigationHistory.value.last()
+                navigationHistory.value -= previousItem
+                coroutineScope.launch { controllerNow.goTo(previousItem) }
             }
         }
 
@@ -142,8 +155,11 @@ fun <L : Location, N : RenditionController<L, *>> Reader(
                 NullHyperlinkListener()
             } else {
                 val context = LocalContext.current
+                val onFollowingLink = { navigationHistory.value += controllerNow.location.value }
+
                 defaultHyperlinkListener(
                     controller = controllerNow,
+                    shouldFollowReadingOrderLink = { _, _ -> onFollowingLink(); true },
                     onExternalLinkActivated = { url, _ -> launchWebBrowser(context, url.toUri()) }
                 )
             }

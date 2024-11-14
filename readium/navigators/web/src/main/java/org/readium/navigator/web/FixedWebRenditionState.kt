@@ -14,18 +14,16 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableStateOf
 import org.readium.navigator.common.HyperlinkLocation
+import org.readium.navigator.common.NavigationController
 import org.readium.navigator.common.Overflow
 import org.readium.navigator.common.OverflowController
-import org.readium.navigator.common.RenditionController
 import org.readium.navigator.common.RenditionState
 import org.readium.navigator.common.SettingsController
 import org.readium.navigator.web.layout.Layout
 import org.readium.navigator.web.layout.LayoutResolver
 import org.readium.navigator.web.layout.ReadingOrder
 import org.readium.navigator.web.location.FixedWebGoLocation
-import org.readium.navigator.web.location.FixedWebGoLocationList
 import org.readium.navigator.web.location.FixedWebLocation
-import org.readium.navigator.web.location.HrefLocation
 import org.readium.navigator.web.preferences.FixedWebSettings
 import org.readium.navigator.web.util.WebViewClient
 import org.readium.navigator.web.util.WebViewServer
@@ -82,7 +80,7 @@ public class FixedWebRenditionState internal constructor(
 
     internal val pagerState: PagerState = run {
         val initialSpread = layoutDelegate.layout.value
-            .spreadIndexForHref(initialLocation.getHref())
+            .spreadIndexForHref(initialLocation.href)
             ?: 0
 
         PagerState(
@@ -123,7 +121,7 @@ public class FixedWebRenditionState internal constructor(
 public class FixedWebRenditionController internal constructor(
     private val navigationDelegate: NavigationDelegate,
     layoutDelegate: LayoutDelegate
-) : RenditionController<FixedWebLocation, FixedWebGoLocation> by navigationDelegate,
+) : NavigationController<FixedWebLocation, FixedWebGoLocation> by navigationDelegate,
     OverflowController by navigationDelegate,
     SettingsController<FixedWebSettings> by layoutDelegate
 
@@ -160,7 +158,7 @@ internal class NavigationDelegate(
     private val layout: State<Layout>,
     private val settings: State<FixedWebSettings>,
     initialLocation: FixedWebLocation
-) : RenditionController<FixedWebLocation, FixedWebGoLocation>, OverflowController {
+) : NavigationController<FixedWebLocation, FixedWebGoLocation>, OverflowController {
 
     private val locationMutable: MutableState<FixedWebLocation> =
         mutableStateOf(initialLocation)
@@ -173,12 +171,16 @@ internal class NavigationDelegate(
         locationMutable
 
     override suspend fun goTo(location: HyperlinkLocation) {
-        goTo(HrefLocation(location.href, location.fragment) as FixedWebGoLocation)
+        goTo(FixedWebGoLocation(location.href))
     }
 
     override suspend fun goTo(location: FixedWebGoLocation) {
-        val spreadIndex = layout.value.spreadIndexForHref(location.getHref()) ?: return
+        val spreadIndex = layout.value.spreadIndexForHref(location.href) ?: return
         pagerState.scrollToPage(spreadIndex)
+    }
+
+    override suspend fun goTo(location: FixedWebLocation) {
+        goTo(FixedWebGoLocation(location.href))
     }
 
     override val overflow: State<Overflow> =
@@ -208,10 +210,3 @@ internal class NavigationDelegate(
         }
     }
 }
-
-@OptIn(ExperimentalReadiumApi::class)
-private fun FixedWebGoLocation.getHref(): Url =
-    when (this) {
-        is HrefLocation -> this.href
-        is FixedWebGoLocationList -> locations.first().getHref()
-    }

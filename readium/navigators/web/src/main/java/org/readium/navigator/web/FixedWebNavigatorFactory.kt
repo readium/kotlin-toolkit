@@ -12,7 +12,6 @@ import org.readium.navigator.web.layout.ReadingOrder
 import org.readium.navigator.web.layout.ReadingOrderItem
 import org.readium.navigator.web.location.FixedWebGoLocation
 import org.readium.navigator.web.location.FixedWebLocatorAdapter
-import org.readium.navigator.web.location.HrefLocation
 import org.readium.navigator.web.preferences.FixedWebDefaults
 import org.readium.navigator.web.preferences.FixedWebPreferences
 import org.readium.navigator.web.preferences.FixedWebPreferencesEditor
@@ -34,6 +33,12 @@ import org.readium.r2.shared.util.getOrElse
 
 @OptIn(InternalReadiumApi::class)
 @ExperimentalReadiumApi
+/**
+ * Creates components to render a fixed layout publication.
+ *
+ * These components are meant to work together. DO not mix components from different
+ * factory instances.
+ */
 public class FixedWebNavigatorFactory private constructor(
     private val application: Application,
     private val publication: Publication,
@@ -100,7 +105,7 @@ public class FixedWebNavigatorFactory private constructor(
                 resourceMediaTypes = resourceMediaTypes,
                 isRestricted = publication.findService(ContentProtectionService::class)?.isRestricted ?: false,
                 initialSettings = initialSettings,
-                initialLocation = initialLocation ?: HrefLocation(readingOrderItems[0].href),
+                initialLocation = initialLocation ?: FixedWebGoLocation(readingOrderItems[0].href),
                 container = publication.container,
                 preloadedData = preloads
             )

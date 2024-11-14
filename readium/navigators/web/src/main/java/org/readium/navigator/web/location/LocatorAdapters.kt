@@ -20,12 +20,13 @@ public class FixedWebLocatorAdapter internal constructor(
 ) : LocatorAdapter<FixedWebLocation, FixedWebGoLocation> {
 
     public override fun Locator.toGoLocation(): FixedWebGoLocation =
-        HrefLocation(href)
+        FixedWebGoLocation(href)
 
     override fun FixedWebLocation.toLocator(): Locator {
-        val position = publication.readingOrder.indexOfFirstWithHref(href)
+        val position = publication.readingOrder.indexOfFirstWithHref(href)!!
+        val totalProgression = position.toDouble() / publication.readingOrder.size
         return publication.locatorFromLink(Link(href))!!
-            .copyWithLocations(position = position)
+            .copyWithLocations(position = position, totalProgression = totalProgression)
     }
 }
 
@@ -48,43 +49,13 @@ public class ReflowableWebLocatorAdapter internal constructor(
                 otherLocations = buildMap { cssSelector?.let { put("cssSelector", cssSelector) } }
             )
 
-    public override fun Locator.toGoLocation(): ReflowableWebGoLocation {
-        val locations = buildList {
-            if (text.highlight != null || text.before != null || text.after != null) {
-                add(
-                    TextLocation(
-                        href = href,
-                        textBefore = text.before,
-                        textAfter = text.highlight?.let { it + text.after } ?: text.after,
-                        cssSelector = locations.cssSelector
-                    )
-                )
-            }
-
-            if (locations.progression != null) {
-                add(
-                    ProgressionLocation(
-                        href = href,
-                        progression = locations.progression!!
-                    )
-                )
-            }
-
-            if (locations.position != null) {
-                add(
-                    PositionLocation(
-                        position = locations.position!!
-                    )
-                )
-            }
-
-            add(HrefLocation(href = href))
-        }
-
-        return if (locations.size == 1) {
-            locations.first()
-        } else {
-            ReflowableWebGoLocationList(locations)
-        }
-    }
+    public override fun Locator.toGoLocation(): ReflowableWebGoLocation =
+        ReflowableWebGoLocation(
+            href = href,
+            progression = locations.progression,
+            cssSelector = locations.cssSelector,
+            textBefore = text.before,
+            textAfter = text.highlight?.let { it + text.after } ?: text.after,
+            position = locations.position
+        )
 }

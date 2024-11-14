@@ -11,11 +11,13 @@ import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.Url
 
 @ExperimentalReadiumApi
-public interface RenditionController<L : Location, G : GoLocation> {
+public interface NavigationController<L : Location, G : GoLocation> {
 
     public val location: State<L>
 
     public suspend fun goTo(location: G)
+
+    public suspend fun goTo(location: L)
 
     public suspend fun goTo(location: HyperlinkLocation)
 }

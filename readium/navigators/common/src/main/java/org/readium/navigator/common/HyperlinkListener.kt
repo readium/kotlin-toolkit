@@ -14,21 +14,25 @@ import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Url
 
+/**
+ * This listener lets you decide what to do when hyperlinks are activated, whether they point to
+ * a readingOrder item, a non-linear resource or external content.
+ */
 @ExperimentalReadiumApi
 public interface HyperlinkListener {
 
     public fun onReadingOrderLinkActivated(location: HyperlinkLocation, context: LinkContext?)
 
-    public fun onResourceLinkActivated(location: HyperlinkLocation, context: LinkContext?)
+    public fun onNonLinearLinkActivated(location: HyperlinkLocation, context: LinkContext?)
 
     public fun onExternalLinkActivated(url: AbsoluteUrl, context: LinkContext?)
 }
 
 @ExperimentalReadiumApi
-public interface HyperlinkLocation : GoLocation {
-    public val href: Url
-    public val fragment: String?
-}
+public data class HyperlinkLocation(
+    public val href: Url,
+    public val fragment: String? = null
+)
 
 @ExperimentalReadiumApi
 public sealed interface LinkContext
@@ -43,19 +47,25 @@ public class NullHyperlinkListener : HyperlinkListener {
     override fun onReadingOrderLinkActivated(location: HyperlinkLocation, context: LinkContext?) {
     }
 
-    override fun onResourceLinkActivated(location: HyperlinkLocation, context: LinkContext?) {
+    override fun onNonLinearLinkActivated(location: HyperlinkLocation, context: LinkContext?) {
     }
 
     override fun onExternalLinkActivated(url: AbsoluteUrl, context: LinkContext?) {
     }
 }
 
+/**
+ * A [HyperlinkListener] following links to readingOrder items.
+ *
+ * Activations of links to external content or non-linear items are ignored by default.
+ * To handle them, pass [onNonLinearLinkActivated] and [onExternalLinkActivated] delegates.
+ */
 @ExperimentalReadiumApi
 @Composable
 public fun <L : Location> defaultHyperlinkListener(
-    controller: RenditionController<L, *>,
+    controller: NavigationController<L, *>,
     shouldFollowReadingOrderLink: (HyperlinkLocation, LinkContext?) -> Boolean = { _, _ -> true },
-    // TODO: shouldFollowResourceLink: (HyperlinkLocation, LinkContext?) -> Boolean = { _, _ -> true },
+    onNonLinearLinkActivated: (HyperlinkLocation, LinkContext?) -> Unit = { _, _ -> },
     onExternalLinkActivated: (AbsoluteUrl, LinkContext?) -> Unit = { _, _ -> }
 ): HyperlinkListener {
     val coroutineScope = rememberCoroutineScope()
@@ -64,6 +74,7 @@ public fun <L : Location> defaultHyperlinkListener(
         coroutineScope = coroutineScope,
         controller = controller,
         shouldFollowReadingOrderLink = shouldFollowReadingOrderLink,
+        onNonLinearLinkActivatedDelegate = onNonLinearLinkActivated,
         onExternalLinkActivatedDelegate = onExternalLinkActivated
     )
 }
@@ -71,8 +82,9 @@ public fun <L : Location> defaultHyperlinkListener(
 @ExperimentalReadiumApi
 private class DefaultHyperlinkListener<L : Location>(
     private val coroutineScope: CoroutineScope,
-    private val controller: RenditionController<L, *>,
+    private val controller: NavigationController<L, *>,
     private val shouldFollowReadingOrderLink: (HyperlinkLocation, LinkContext?) -> Boolean,
+    private val onNonLinearLinkActivatedDelegate: (HyperlinkLocation, LinkContext?) -> Unit,
     private val onExternalLinkActivatedDelegate: (AbsoluteUrl, LinkContext?) -> Unit
 ) : HyperlinkListener {
 
@@ -82,7 +94,8 @@ private class DefaultHyperlinkListener<L : Location>(
         }
     }
 
-    override fun onResourceLinkActivated(location: HyperlinkLocation, context: LinkContext?) {
+    override fun onNonLinearLinkActivated(location: HyperlinkLocation, context: LinkContext?) {
+        onNonLinearLinkActivatedDelegate(location, context)
     }
 
     override fun onExternalLinkActivated(url: AbsoluteUrl, context: LinkContext?) {
