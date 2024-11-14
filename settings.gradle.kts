@@ -82,4 +82,4 @@ project(":readium:streamer")
     .name = "readium-streamer"
 
 include("test-app")
-include(":readium:navigators:demo")
+// include(":readium:navigators:demo")
