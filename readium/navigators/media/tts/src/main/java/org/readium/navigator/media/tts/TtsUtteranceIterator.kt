@@ -133,7 +133,8 @@ internal class TtsUtteranceIterator(
         next(Direction.Forward)
 
     private enum class Direction {
-        Forward, Backward;
+        Forward,
+        Backward;
     }
 
     /**

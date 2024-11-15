@@ -20,7 +20,9 @@ public typealias TextTokenizer = Tokenizer<String, IntRange>
 /** A text token unit which can be used with a [TextTokenizer]. */
 @ExperimentalReadiumApi
 public enum class TextUnit {
-    Word, Sentence, Paragraph
+    Word,
+    Sentence,
+    Paragraph
 }
 
 /**

@@ -18,7 +18,8 @@ public data class KeyEvent(
 ) {
 
     public enum class Type {
-        Down, Up
+        Down,
+        Up
     }
 
     public companion object {

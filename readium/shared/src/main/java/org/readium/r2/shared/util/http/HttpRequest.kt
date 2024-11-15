@@ -44,7 +44,12 @@ public class HttpRequest(
 
     /** Supported HTTP methods. */
     public enum class Method : Serializable {
-        DELETE, GET, HEAD, PATCH, POST, PUT;
+        DELETE,
+        GET,
+        HEAD,
+        PATCH,
+        POST,
+        PUT;
     }
 
     /** Supported body values. */

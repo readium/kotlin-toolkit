@@ -19,7 +19,12 @@ import timber.log.Timber
 internal class R2ViewPager : R2RTLViewPager {
 
     internal enum class PublicationType {
-        EPUB, CBZ, FXL, WEBPUB, AUDIO, DiViNa
+        EPUB,
+        CBZ,
+        FXL,
+        WEBPUB,
+        AUDIO,
+        DiViNa
     }
 
     internal lateinit var publicationType: PublicationType

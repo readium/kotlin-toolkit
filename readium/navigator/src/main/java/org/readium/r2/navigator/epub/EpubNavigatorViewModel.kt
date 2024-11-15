@@ -39,7 +39,9 @@ import org.readium.r2.shared.util.RelativeUrl
 import org.readium.r2.shared.util.Url
 
 internal enum class DualPage {
-    AUTO, OFF, ON
+    AUTO,
+    OFF,
+    ON
 }
 
 @OptIn(ExperimentalReadiumApi::class, DelicateReadiumApi::class)

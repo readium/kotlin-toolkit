@@ -52,7 +52,8 @@ public class DirectionalNavigationAdapter(
      * Indicates which viewport edges trigger page turns on tap.
      */
     public enum class TapEdge {
-        Horizontal, Vertical;
+        Horizontal,
+        Vertical;
     }
 
     override fun onTap(event: TapEvent): Boolean {

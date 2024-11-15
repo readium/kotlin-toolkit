@@ -44,7 +44,9 @@ internal data class Layout(
     }
 
     enum class HtmlDir {
-        Unspecified, Ltr, Rtl;
+        Unspecified,
+        Ltr,
+        Rtl;
     }
 
     companion object {

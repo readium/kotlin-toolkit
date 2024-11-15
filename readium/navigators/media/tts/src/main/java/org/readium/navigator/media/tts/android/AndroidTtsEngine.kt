@@ -221,7 +221,11 @@ public class AndroidTtsEngine private constructor(
         public value class Id(public val value: String)
 
         public enum class Quality {
-            Lowest, Low, Normal, High, Highest
+            Lowest,
+            Low,
+            Normal,
+            High,
+            Highest
         }
     }
 

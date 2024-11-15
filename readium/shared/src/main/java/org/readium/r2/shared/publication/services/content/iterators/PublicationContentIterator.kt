@@ -177,7 +177,8 @@ public class PublicationContentIterator(
     }
 
     private enum class Direction(val delta: Int) {
-        Forward(+1), Backward(-1)
+        Forward(+1),
+        Backward(-1)
     }
 
     private suspend fun IndexedIterator.nextContentIn(direction: Direction): Content.Element? =

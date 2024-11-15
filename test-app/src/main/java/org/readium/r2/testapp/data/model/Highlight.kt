@@ -96,7 +96,8 @@ data class Highlight(
     )
 
     enum class Style(val value: String) {
-        HIGHLIGHT("highlight"), UNDERLINE("underline");
+        HIGHLIGHT("highlight"),
+        UNDERLINE("underline");
 
         companion object {
             val DEFAULT = HIGHLIGHT

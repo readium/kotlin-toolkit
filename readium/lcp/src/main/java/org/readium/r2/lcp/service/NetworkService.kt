@@ -36,7 +36,9 @@ internal class NetworkException(val status: Int?, cause: Throwable? = null) : Ex
 
 internal class NetworkService {
     enum class Method(val value: String) {
-        GET("GET"), POST("POST"), PUT("PUT");
+        GET("GET"),
+        POST("POST"),
+        PUT("PUT");
 
         companion object {
             operator fun invoke(value: String) = values().firstOrNull { it.value == value }

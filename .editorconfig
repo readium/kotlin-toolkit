@@ -15,7 +15,6 @@ ktlint_standard_max-line-length = disabled
 ktlint_standard_class-naming = disabled
 ktlint_standard_comment-wrapping = disabled
 ktlint_standard_discouraged-comment-location = disabled
-ktlint_standard_enum-wrapping = disabled
 ktlint_standard_function-naming = disabled
 ktlint_standard_function-signature = disabled
 ktlint_standard_no-semi = disabled
