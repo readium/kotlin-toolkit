@@ -16,7 +16,6 @@ ktlint_standard_class-naming = disabled
 ktlint_standard_comment-wrapping = disabled
 ktlint_standard_discouraged-comment-location = disabled
 ktlint_standard_function-naming = disabled
-ktlint_standard_no-semi = disabled
 ktlint_standard_property-naming = disabled
 ktlint_standard_statement-wrapping = disabled
 ktlint_standard_trailing-comma-on-call-site = disabled

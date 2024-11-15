@@ -52,7 +52,7 @@ public data class HtmlDecorationTemplate(
         BOUNDS("bounds"),
 
         /** One HTML element for each CSS border box (e.g. line of text). */
-        BOXES("boxes");
+        BOXES("boxes")
     }
 
     /**
@@ -70,7 +70,7 @@ public data class HtmlDecorationTemplate(
         VIEWPORT("viewport"),
 
         /** Fills the whole viewport. */
-        PAGE("page");
+        PAGE("page")
     }
 
     private data class Padding(

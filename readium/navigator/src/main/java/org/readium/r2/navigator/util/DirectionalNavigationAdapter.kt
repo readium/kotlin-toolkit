@@ -53,7 +53,7 @@ public class DirectionalNavigationAdapter(
      */
     public enum class TapEdge {
         Horizontal,
-        Vertical;
+        Vertical
     }
 
     override fun onTap(event: TapEvent): Boolean {

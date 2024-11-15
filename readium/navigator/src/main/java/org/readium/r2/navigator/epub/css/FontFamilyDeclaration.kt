@@ -183,7 +183,7 @@ public data class MutableFontFaceDeclaration internal constructor(
 @ExperimentalReadiumApi
 public enum class FontStyle {
     NORMAL,
-    ITALIC;
+    ITALIC
 }
 
 /**
@@ -201,5 +201,5 @@ public enum class FontWeight(public val value: Int) {
     SEMI_BOLD(600),
     BOLD(700),
     EXTRA_BOLD(800),
-    BLACK(900);
+    BLACK(900)
 }

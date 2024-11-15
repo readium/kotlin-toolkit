@@ -49,7 +49,7 @@ public class HttpRequest(
         HEAD,
         PATCH,
         POST,
-        PUT;
+        PUT
     }
 
     /** Supported body values. */

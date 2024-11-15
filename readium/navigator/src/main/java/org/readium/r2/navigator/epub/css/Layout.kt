@@ -40,13 +40,13 @@ internal data class Layout(
         CjkVertical("cjk-vertical", HtmlDir.Unspecified),
 
         /** Asian language, laid out horizontally */
-        CjkHorizontal("cjk-horizontal", HtmlDir.Ltr);
+        CjkHorizontal("cjk-horizontal", HtmlDir.Ltr)
     }
 
     enum class HtmlDir {
         Unspecified,
         Ltr,
-        Rtl;
+        Rtl
     }
 
     companion object {
