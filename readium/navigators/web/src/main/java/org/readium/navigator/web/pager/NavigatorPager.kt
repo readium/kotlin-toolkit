@@ -23,7 +23,6 @@ internal fun NavigatorPager(
     beyondViewportPageCount: Int = 2,
     key: ((index: Int) -> Any)? = null,
     pageContent: @Composable PagerScope.(Int) -> Unit
-
 ) {
     val flingBehavior = PagerDefaults.flingBehavior(
         state = state,

@@ -33,7 +33,10 @@ public class LcpContentProtectionService(
 
     public companion object {
 
-        public fun createFactory(license: LcpLicense?, error: LcpError?): (
+        public fun createFactory(
+            license: LcpLicense?,
+            error: LcpError?
+        ): (
             Publication.Service.Context
         ) -> LcpContentProtectionService =
             { LcpContentProtectionService(license, error) }
