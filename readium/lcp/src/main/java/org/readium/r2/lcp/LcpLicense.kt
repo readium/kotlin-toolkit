@@ -6,13 +6,7 @@
 
 package org.readium.r2.lcp
 
-import java.net.URL
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
-import org.joda.time.DateTime
 import org.readium.r2.lcp.license.model.LicenseDocument
 import org.readium.r2.lcp.license.model.StatusDocument
 import org.readium.r2.shared.publication.services.ContentProtectionService
@@ -20,8 +14,6 @@ import org.readium.r2.shared.util.Closeable
 import org.readium.r2.shared.util.Instant
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
-import org.readium.r2.shared.util.toDebugDescription
-import timber.log.Timber
 
 /**
  * Opened license, used to decipher a protected publication and manage its license.
@@ -67,7 +59,10 @@ public interface LcpLicense : ContentProtectionService.UserRights, Closeable {
      * @param prefersWebPage Indicates whether the loan should be renewed through a web page if
      *        available, instead of programmatically.
      */
-    public suspend fun renewLoan(listener: RenewListener, prefersWebPage: Boolean = false): Try<Instant?, LcpError>
+    public suspend fun renewLoan(
+        listener: RenewListener,
+        prefersWebPage: Boolean = false
+    ): Try<Instant?, LcpError>
 
     /**
      * Can the user return the loaned publication?
@@ -108,68 +103,4 @@ public interface LcpLicense : ContentProtectionService.UserRights, Closeable {
          */
         public suspend fun openWebPage(url: Url)
     }
-
-    @Deprecated(
-        "Use `license.encryption.profile` instead",
-        ReplaceWith("license.encryption.profile"),
-        level = DeprecationLevel.ERROR
-    )
-    public val encryptionProfile: String? get() =
-        license.encryption.profile
-
-    @Deprecated(
-        "Use `decrypt()` with coroutines instead",
-        ReplaceWith("decrypt(data)"),
-        level = DeprecationLevel.ERROR
-    )
-    public fun decipher(data: ByteArray): ByteArray? =
-        runBlocking { decrypt(data) }
-            .onFailure { Timber.e(it.toDebugDescription()) }
-            .getOrNull()
-
-    @Deprecated(
-        "Use `renewLoan` with `RenewListener` instead",
-        ReplaceWith("renewLoan(LcpLicense.RenewListener)"),
-        level = DeprecationLevel.ERROR
-    )
-    public suspend fun renewLoan(end: DateTime?, urlPresenter: suspend (URL) -> Unit): Try<Unit, LcpError> = Try.success(
-        Unit
-    )
-
-    @Deprecated(
-        "Use `renewLoan` with `RenewListener` instead",
-        ReplaceWith("renewLoan(LcpLicense.RenewListener)"),
-        level = DeprecationLevel.ERROR
-    )
-    public fun renewLoan(
-        end: DateTime?,
-        present: (URL, dismissed: () -> Unit) -> Unit,
-        completion: (LcpError?) -> Unit
-    ) {}
-
-    @Deprecated(
-        "Use `returnPublication()` with coroutines instead",
-        ReplaceWith("returnPublication"),
-        level = DeprecationLevel.ERROR
-    )
-    @DelicateCoroutinesApi
-    public fun returnPublication(completion: (LcpError?) -> Unit) {
-        GlobalScope.launch {
-            completion(returnPublication().failureOrNull())
-        }
-    }
 }
-
-@Deprecated(
-    "Renamed to `LcpService`",
-    replaceWith = ReplaceWith("LcpService"),
-    level = DeprecationLevel.ERROR
-)
-public typealias LCPService = LcpService
-
-@Deprecated(
-    "Renamed to `LcpLicense`",
-    replaceWith = ReplaceWith("LcpLicense"),
-    level = DeprecationLevel.ERROR
-)
-public typealias LCPLicense = LcpLicense

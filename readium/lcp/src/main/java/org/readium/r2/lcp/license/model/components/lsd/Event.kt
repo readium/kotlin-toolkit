@@ -29,11 +29,8 @@ public data class Event(val json: JSONObject) {
         Revoke("revoke"),
         Cancel("cancel");
 
-        @Deprecated("Use [value] instead", ReplaceWith("value"), level = DeprecationLevel.ERROR)
-        public val rawValue: String get() = value
-
         public companion object {
-            public operator fun invoke(value: String): EventType? = values().firstOrNull { it.value == value }
+            public operator fun invoke(value: String): EventType? = entries.firstOrNull { it.value == value }
         }
     }
 }

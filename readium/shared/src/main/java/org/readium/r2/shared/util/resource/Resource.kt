@@ -9,7 +9,6 @@ package org.readium.r2.shared.util.resource
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.data.ReadError
-import org.readium.r2.shared.util.data.ReadTry
 import org.readium.r2.shared.util.data.Readable
 
 /**
@@ -44,13 +43,6 @@ public interface Resource : Readable {
         public class Builder(properties: Map<String, Any> = emptyMap()) :
             MutableMap<String, Any> by properties.toMutableMap()
     }
-
-    @Deprecated(
-        "`Resource.Exception` was split into several `Error` classes. You probably need `ReadError`.",
-        ReplaceWith("org.readium.r2.shared.util.data.ReadError"),
-        DeprecationLevel.ERROR
-    )
-    public class Exception
 }
 
 /** Creates a Resource that will always return the given [error]. */
@@ -85,16 +77,3 @@ private class BorrowedResource(
         // Do nothing
     }
 }
-
-@Deprecated(
-    "Catch exceptions yourself to the most suitable ReadError.",
-    level = DeprecationLevel.ERROR,
-    replaceWith = ReplaceWith("map(transform)")
-)
-@Suppress("UnusedReceiverParameter")
-public fun <R, S, E> Try<S, E>.mapCatching(): ReadTry<R> =
-    throw NotImplementedError()
-
-@Suppress("UnusedReceiverParameter")
-public fun <R, S, E> Try<S, E>.flatMapCatching(): ReadTry<R> =
-    throw NotImplementedError()

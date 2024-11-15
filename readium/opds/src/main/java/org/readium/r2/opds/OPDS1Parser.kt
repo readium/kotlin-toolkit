@@ -11,7 +11,6 @@
 
 package org.readium.r2.opds
 
-import java.net.URL
 import org.readium.r2.shared.DelicateReadiumApi
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.extensions.toList
@@ -93,16 +92,6 @@ public class OPDS1Parser {
             }
         }
 
-        @Suppress("UNUSED_PARAMETER")
-        @Deprecated(
-            "Provide an instance of `Url` instead",
-            ReplaceWith("parse(jsonData, url.toUrl()!!)"),
-            DeprecationLevel.ERROR
-        )
-        public fun parse(xmlData: ByteArray, url: URL): ParseData =
-            throw NotImplementedError()
-
-        @OptIn(DelicateReadiumApi::class)
         private fun parseFeed(root: ElementNode, url: Url): Feed {
             val feedTitle = root.getFirst("title", Namespaces.Atom)?.text
                 ?: throw Exception(OPDSParserError.MissingTitle.name)

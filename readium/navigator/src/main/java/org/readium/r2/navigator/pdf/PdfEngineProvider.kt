@@ -37,14 +37,6 @@ public interface PdfEngineProvider<S : Configurable.Settings, P : Configurable.P
      */
     public fun computeSettings(metadata: Metadata, preferences: P): S
 
-    @Deprecated(
-        "Renamed to computeOverflow",
-        replaceWith = ReplaceWith("computeOverflow"),
-        level = DeprecationLevel.ERROR
-    )
-    public fun computePresentation(settings: S): Any =
-        throw NotImplementedError()
-
     /**
      * Infers a [OverflowableNavigator.Overflow] from [settings].
      */

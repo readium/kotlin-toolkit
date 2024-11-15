@@ -75,7 +75,6 @@ dependencies {
     implementation(project(":readium:navigators:media:readium-navigator-media-tts"))
     // Only required if you want to support audiobooks using ExoPlayer.
     implementation(project(":readium:adapters:exoplayer"))
-    implementation(project(":readium:readium-navigator-media2"))
     implementation(project(":readium:readium-opds"))
     implementation(project(":readium:readium-lcp"))
     // Only required if you want to support PDF files using PDFium.

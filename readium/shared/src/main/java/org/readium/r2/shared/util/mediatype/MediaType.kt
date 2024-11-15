@@ -9,12 +9,9 @@
 
 package org.readium.r2.shared.util.mediatype
 
-import android.content.ContentResolver
-import android.net.Uri
 import android.os.Parcelable
-import java.io.File
 import java.nio.charset.Charset
-import java.util.*
+import java.util.Locale
 import kotlinx.parcelize.Parcelize
 
 /**
@@ -57,22 +54,6 @@ public class MediaType private constructor(
      */
     public val charset: Charset? get() =
         parameters["charset"]?.let { Charset.forName(it) }
-
-    /**
-     * Returns the canonical version of this media type, if it is known.
-     *
-     * This is useful to find the name and file extension of a known media type, or to get the
-     * canonical media type from an alias. For example, `application/x-cbz` is an alias of the
-     * canonical `application/vnd.comicbook+zip`.
-     *
-     * Non-significant parameters are also discarded.
-     */
-    @Deprecated(
-        "Use FormatRegistry.canonicalize() instead",
-        replaceWith = ReplaceWith("formatRegistry.canonicalize(this)"),
-        level = DeprecationLevel.ERROR
-    )
-    public fun canonicalMediaType(): MediaType = TODO()
 
     /** The string representation of this media type. */
     override fun toString(): String {
@@ -209,14 +190,6 @@ public class MediaType private constructor(
     public val isPublication: Boolean get() =
         matchesAny(CBZ, EPUB, LPF, PDF, W3C_WPUB_MANIFEST, ZAB) || isRwpm || isRpf
 
-    @Suppress("RedundantNullableReturnType")
-    @Deprecated(
-        message = "The file extension is now in `Format`, which you can sniff using an `AssetRetriever`",
-        level = DeprecationLevel.ERROR
-    )
-    public val fileExtension: String? get() =
-        throw NotImplementedError()
-
     public companion object {
 
         /**
@@ -259,8 +232,13 @@ public class MediaType private constructor(
             // > https://www.iana.org/assignments/character-sets/character-sets.xhtml
             parameters["charset"]?.let {
                 parameters["charset"] =
-                    (try { Charset.forName(it).name() } catch (e: Exception) { it })
-                        .uppercase(Locale.ROOT)
+                    (
+                        try {
+                            Charset.forName(it).name()
+                        } catch (e: Exception) {
+                            it
+                        }
+                        ).uppercase(Locale.ROOT)
             }
 
             return MediaType(
@@ -269,15 +247,6 @@ public class MediaType private constructor(
                 parameters = parameters
             )
         }
-
-        @Suppress("UNUSED_PARAMETER")
-        @Deprecated(
-            "Use `MediaType(string)` instead",
-            replaceWith = ReplaceWith("MediaType(string)"),
-            level = DeprecationLevel.ERROR
-        )
-        public fun parse(string: String, name: String? = null, fileExtension: String? = null): MediaType? =
-            MediaType(string)
 
         // Known Media Types
         //
@@ -349,7 +318,8 @@ public class MediaType private constructor(
         public val TEXT: MediaType = MediaType("text/plain")!!
         public val TIFF: MediaType = MediaType("image/tiff")!!
         public val TTF: MediaType = MediaType("font/ttf")!!
-        public val W3C_WPUB_MANIFEST: MediaType = MediaType("application/x.readium.w3c.wpub+json")!! // non-existent
+        public val W3C_WPUB_MANIFEST: MediaType =
+            MediaType("application/x.readium.w3c.wpub+json")!! // non-existent
         public val WAV: MediaType = MediaType("audio/wav")!!
         public val WEBM_AUDIO: MediaType = MediaType("audio/webm")!!
         public val WEBM_VIDEO: MediaType = MediaType("video/webm")!!
@@ -360,305 +330,5 @@ public class MediaType private constructor(
         public val XML: MediaType = MediaType("application/xml")!!
         public val ZAB: MediaType = MediaType("application/x.readium.zab+zip")!! // non-existent
         public val ZIP: MediaType = MediaType("application/zip")!!
-
-        // Sniffing
-
-        /**
-         * The default sniffers provided by Readium 2 to resolve a [MediaType].
-         * You can register additional sniffers globally by modifying this list.
-         * The sniffers order is important, because some formats are subsets of other formats.
-         */
-        @Deprecated(message = "Use FormatRegistry instead", level = DeprecationLevel.ERROR)
-        public val sniffers: MutableList<Any> = mutableListOf()
-
-        @Deprecated(
-            message = "Create the `MediaType` directly instead",
-            replaceWith = ReplaceWith("MediaType(mediaType)"),
-            level = DeprecationLevel.ERROR
-        )
-        public fun of(mediaType: String): MediaType? = MediaType(mediaType)
-
-        /**
-         * Resolves a format from a single file extension and media type hint, without checking the actual
-         * content.
-         */
-        @Deprecated(
-            message = "Use an `AssetRetriever` instead to retrieve the format of a file. See the migration guide.",
-            level = DeprecationLevel.ERROR
-        )
-        @Suppress("UNUSED_PARAMETER")
-        public fun of(
-            mediaType: String? = null,
-            fileExtension: String? = null
-        ): MediaType? {
-            TODO()
-        }
-
-        /**
-         * Resolves a format from file extension and media type hints, without checking the actual
-         * content.
-         */
-        @Deprecated(
-            message = "Use an `AssetRetriever` instead to retrieve the format of a file. See the migration guide.",
-            level = DeprecationLevel.ERROR
-        )
-        @Suppress("UNUSED_PARAMETER")
-        public fun of(
-            mediaTypes: List<String>,
-            fileExtensions: List<String>
-        ): MediaType? {
-            TODO()
-        }
-
-        /**
-         * Resolves a format from a local file path.
-         */
-        @Suppress("UNUSED_PARAMETER")
-        @Deprecated(
-            message = "Use an `AssetRetriever` instead to retrieve the format of a file. See the migration guide.",
-            level = DeprecationLevel.ERROR
-        )
-        public fun ofFile(
-            file: File,
-            mediaType: String? = null,
-            fileExtension: String? = null
-        ): MediaType? {
-            TODO()
-        }
-
-        /**
-         * Resolves a format from a local file path.
-         */
-        @Deprecated(
-            message = "Use an `AssetRetriever` instead to retrieve the format of a file. See the migration guide.",
-            level = DeprecationLevel.ERROR
-        )
-        @Suppress("UNUSED_PARAMETER")
-        public fun ofFile(
-            file: File,
-            mediaTypes: List<String>,
-            fileExtensions: List<String>
-        ): MediaType? {
-            TODO()
-        }
-
-        /**
-         * Resolves a format from a local file path.
-         */
-        @Suppress("UNUSED_PARAMETER")
-        @Deprecated(
-            message = "Use an `AssetRetriever` instead to retrieve the format of a file. See the migration guide.",
-            level = DeprecationLevel.ERROR
-        )
-        public fun ofFile(
-            path: String,
-            mediaType: String? = null,
-            fileExtension: String? = null
-        ): MediaType? {
-            TODO()
-        }
-
-        /**
-         * Resolves a format from a local file path.
-         */
-        @Suppress("UNUSED_PARAMETER")
-        @Deprecated(
-            message = "Use an `AssetRetriever` instead to retrieve the format of a file. See the migration guide.",
-            level = DeprecationLevel.ERROR
-        )
-        public fun ofFile(
-            path: String,
-            mediaTypes: List<String>,
-            fileExtensions: List<String>
-        ): MediaType? {
-            TODO()
-        }
-
-        /**
-         * Resolves a format from bytes, e.g. from an HTTP response.
-         */
-        @Suppress("UNUSED_PARAMETER")
-        @Deprecated(
-            message = "Use an `AssetRetriever` instead to retrieve the format of a file. See the migration guide.",
-            level = DeprecationLevel.ERROR
-        )
-        public fun ofBytes(
-            bytes: () -> ByteArray,
-            mediaType: String? = null,
-            fileExtension: String? = null
-        ): MediaType? {
-            TODO()
-        }
-
-        /**
-         * Resolves a format from bytes, e.g. from an HTTP response.
-         */
-        @Suppress("UNUSED_PARAMETER")
-        @Deprecated(
-            message = "Use an `AssetRetriever` instead to retrieve the format of a file. See the migration guide.",
-            level = DeprecationLevel.ERROR
-        )
-        public fun ofBytes(
-            bytes: () -> ByteArray,
-            mediaTypes: List<String>,
-            fileExtensions: List<String>
-        ): MediaType? {
-            TODO()
-        }
-
-        /**
-         * Resolves a format from a content URI and a [ContentResolver].
-         * Accepts the following URI schemes: content, android.resource, file.
-         */
-        @Suppress("UNUSED_PARAMETER")
-        @Deprecated(
-            message = "Use an `AssetRetriever` instead to retrieve the format of a file. See the migration guide.",
-            level = DeprecationLevel.ERROR
-        )
-        public fun ofUri(
-            uri: Uri,
-            contentResolver: ContentResolver,
-            mediaType: String? = null,
-            fileExtension: String? = null
-        ): MediaType? {
-            TODO()
-        }
-
-        /**
-         * Resolves a format from a content URI and a [ContentResolver].
-         * Accepts the following URI schemes: content, android.resource, file.
-         */
-        @Suppress("UNUSED_PARAMETER")
-        @Deprecated(
-            message = "Use an `AssetRetriever` instead to retrieve the format of a file. See the migration guide.",
-            level = DeprecationLevel.ERROR
-        )
-        public fun ofUri(
-            uri: Uri,
-            contentResolver: ContentResolver,
-            mediaTypes: List<String>,
-            fileExtensions: List<String>
-        ): MediaType? {
-            TODO()
-        }
-
-        /* Deprecated */
-
-        @Deprecated(
-            "Use [READIUM_AUDIOBOOK] instead",
-            ReplaceWith("MediaType.READIUM_AUDIOBOOK"),
-            level = DeprecationLevel.ERROR
-        )
-        public val AUDIOBOOK: MediaType get() = READIUM_AUDIOBOOK
-
-        @Deprecated(
-            "Use [READIUM_AUDIOBOOK_MANIFEST] instead",
-            ReplaceWith("MediaType.READIUM_AUDIOBOOK_MANIFEST"),
-            level = DeprecationLevel.ERROR
-        )
-        public val AUDIOBOOK_MANIFEST: MediaType get() = READIUM_AUDIOBOOK_MANIFEST
-
-        @Deprecated(
-            "Use [READIUM_WEBPUB] instead",
-            ReplaceWith("MediaType.READIUM_WEBPUB"),
-            level = DeprecationLevel.ERROR
-        )
-        public val WEBPUB: MediaType get() = READIUM_WEBPUB
-
-        @Deprecated(
-            "Use [READIUM_WEBPUB_MANIFEST] instead",
-            ReplaceWith("MediaType.READIUM_WEBPUB_MANIFEST"),
-            level = DeprecationLevel.ERROR
-        )
-        public val WEBPUB_MANIFEST: MediaType get() = READIUM_WEBPUB_MANIFEST
-
-        @Deprecated(
-            "Use [OPDS1] instead",
-            ReplaceWith("MediaType.OPDS1"),
-            level = DeprecationLevel.ERROR
-        )
-        public val OPDS1_FEED: MediaType get() = OPDS1
-
-        @Deprecated(
-            "Use [OPDS2] instead",
-            ReplaceWith("MediaType.OPDS2"),
-            level = DeprecationLevel.ERROR
-        )
-        public val OPDS2_FEED: MediaType get() = OPDS2
-
-        @Deprecated(
-            "Use [LCP_LICENSE_DOCUMENT] instead",
-            ReplaceWith("MediaType.LCP_LICENSE_DOCUMENT"),
-            level = DeprecationLevel.ERROR
-        )
-        public val LCP_LICENSE: MediaType get() = LCP_LICENSE_DOCUMENT
-
-        @Suppress("UNUSED_PARAMETER")
-        @Deprecated(
-            message = "Use an `AssetRetriever` instead to retrieve the format of a file. See the migration guide.",
-            level = DeprecationLevel.ERROR
-        )
-        public fun of(
-            file: File,
-            mediaType: String? = null,
-            fileExtension: String? = null
-        ): MediaType? = null
-
-        @Suppress("UNUSED_PARAMETER")
-        @Deprecated(
-            message = "Use an `AssetRetriever` instead to retrieve the format of a file. See the migration guide.",
-            level = DeprecationLevel.ERROR
-        )
-        public fun of(
-            file: File,
-            mediaTypes: List<String>,
-            fileExtensions: List<String>
-        ): MediaType? = null
-
-        @Suppress("UNUSED_PARAMETER")
-        @Deprecated(
-            message = "Use an `AssetRetriever` instead to retrieve the format of a file. See the migration guide.",
-            level = DeprecationLevel.ERROR
-        )
-        public fun of(
-            bytes: () -> ByteArray,
-            mediaType: String? = null,
-            fileExtension: String? = null
-        ): MediaType? = null
-
-        @Suppress("UNUSED_PARAMETER")
-        @Deprecated(
-            message = "Use an `AssetRetriever` instead to retrieve the format of a file. See the migration guide.",
-            level = DeprecationLevel.ERROR
-        )
-        public fun of(
-            bytes: () -> ByteArray,
-            mediaTypes: List<String>,
-            fileExtensions: List<String>
-        ): MediaType? = null
-
-        @Suppress("UNUSED_PARAMETER")
-        @Deprecated(
-            message = "Use an `AssetRetriever` instead to retrieve the format of a file. See the migration guide.",
-            level = DeprecationLevel.ERROR
-        )
-        public fun of(
-            uri: Uri,
-            contentResolver: ContentResolver,
-            mediaType: String? = null,
-            fileExtension: String? = null
-        ): MediaType? = null
-
-        @Suppress("UNUSED_PARAMETER")
-        @Deprecated(
-            message = "Use an `AssetRetriever` instead to retrieve the format of a file. See the migration guide.",
-            level = DeprecationLevel.ERROR
-        )
-        public fun of(
-            uri: Uri,
-            contentResolver: ContentResolver,
-            mediaTypes: List<String>,
-            fileExtensions: List<String>
-        ): MediaType? = null
     }
 }

@@ -6,28 +6,19 @@
 
 package org.readium.r2.navigator
 
-import android.graphics.PointF
 import android.view.View
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import org.readium.r2.navigator.input.InputListener
 import org.readium.r2.navigator.preferences.Axis
 import org.readium.r2.navigator.preferences.ReadingProgression
 import org.readium.r2.shared.ExperimentalReadiumApi
-import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
-import org.readium.r2.shared.publication.ReadingProgression as PublicationReadingProgression
 
 /**
  * A navigator rendering the publication visually on-screen.
  */
 public interface VisualNavigator : Navigator {
 
-    @Deprecated(
-        "Renamed to OverflowableNavigator.Overflow",
-        level = DeprecationLevel.ERROR
-    )
-    @OptIn(ExperimentalReadiumApi::class)
     public interface Presentation {
         /**
          * Horizontal direction of progression across resources.
@@ -51,15 +42,6 @@ public interface VisualNavigator : Navigator {
     public val publicationView: View
 
     /**
-     * Current presentation rendered by the navigator.
-     */
-    @Deprecated(
-        "Moved to OverflowableNavigator.overflow",
-        level = DeprecationLevel.ERROR
-    )
-    public val presentation: StateFlow<Any> get() = MutableStateFlow(Any())
-
-    /**
      * Returns the [Locator] to the first content element that begins on the current screen.
      */
     @ExperimentalReadiumApi
@@ -81,46 +63,7 @@ public interface VisualNavigator : Navigator {
     @ExperimentalReadiumApi
     public fun removeInputListener(listener: InputListener)
 
-    public interface Listener : Navigator.Listener {
-
-        /**
-         * Called when a link to an internal resource was clicked in the navigator.
-         *
-         * You can use this callback to perform custom navigation like opening a new window
-         * or other operations.
-         *
-         * By returning false the navigator wont try to open the link itself and it is up
-         * to the calling app to decide how to display the link.
-         */
-        @Deprecated(
-            "Use `HyperlinkNavigator.Listener.shouldFollowInternalLink` instead",
-            replaceWith = ReplaceWith("shouldFollowInternalLink(link)"),
-            level = DeprecationLevel.ERROR
-        )
-        public fun shouldJumpToLink(link: Link): Boolean { return true }
-
-        @Deprecated("Use `addInputListener` instead", level = DeprecationLevel.ERROR)
-        public fun onTap(point: PointF): Boolean = false
-
-        @Deprecated("Use `addInputListener` instead", level = DeprecationLevel.ERROR)
-        public fun onDragStart(startPoint: PointF, offset: PointF): Boolean = false
-
-        @Deprecated("Use `addInputListener` instead", level = DeprecationLevel.ERROR)
-        public fun onDragMove(startPoint: PointF, offset: PointF): Boolean = false
-
-        @Deprecated("Use `addInputListener` instead", level = DeprecationLevel.ERROR)
-        public fun onDragEnd(startPoint: PointF, offset: PointF): Boolean = false
-    }
-
-    /**
-     * Current reading progression direction.
-     */
-    @Deprecated(
-        "Use `presentation.value.readingProgression` instead",
-        ReplaceWith("presentation.value.readingProgression"),
-        level = DeprecationLevel.ERROR
-    )
-    public val readingProgression: PublicationReadingProgression
+    public interface Listener : Navigator.Listener
 }
 
 /**

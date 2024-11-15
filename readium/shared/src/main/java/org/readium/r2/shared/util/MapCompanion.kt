@@ -51,13 +51,6 @@ public open class MapCompanion<K, E>(protected val map: Map<K, E>) {
      * Alias to [get], to be used like `keyMapper("a_key")`.
      */
     public open operator fun invoke(key: K?): E? = get(key)
-
-    @Deprecated(
-        "Use `Enum(\"value\")` instead",
-        ReplaceWith("get(key)"),
-        level = DeprecationLevel.ERROR
-    )
-    public open fun from(key: K?): E? = get(key)
 }
 
 /**
@@ -81,11 +74,4 @@ public open class MapWithDefaultCompanion<K, E>(map: Map<K, E>, public val defau
      * Alias to [getOrDefault], to be used like `keyMapper("a_key")`.
      */
     override operator fun invoke(key: K?): E = getOrDefault(key)
-
-    @Deprecated(
-        "Use `Enum(\"value\")` instead",
-        ReplaceWith("getOrDefault(key)"),
-        level = DeprecationLevel.ERROR
-    )
-    override fun from(key: K?): E? = getOrDefault(key)
 }

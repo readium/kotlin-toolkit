@@ -50,24 +50,6 @@ public class DefaultHttpClient(
     public var callback: Callback = object : Callback {}
 ) : HttpClient {
 
-    @Suppress("UNUSED_PARAMETER")
-    @Deprecated(
-        "If you used [additionalHeaders], pass all headers when building your request or modify it in Callback.onStartRequest instead.",
-        level = DeprecationLevel.ERROR
-    )
-    public constructor(
-        userAgent: String? = null,
-        additionalHeaders: Map<String, String> = mapOf(),
-        connectTimeout: Duration? = null,
-        readTimeout: Duration? = null,
-        callback: Callback = object : Callback {}
-    ) : this(
-        userAgent = userAgent,
-        connectTimeout = connectTimeout,
-        readTimeout = readTimeout,
-        callback = callback
-    )
-
     public companion object {
         /**
          * [HttpRequest.extras] key for the number of redirections performed for a request.
