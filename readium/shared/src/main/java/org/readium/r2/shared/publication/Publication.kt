@@ -52,7 +52,8 @@ public typealias PublicationId = String
  */
 public class Publication(
     public val manifest: Manifest,
-    private val container: Container<Resource> = EmptyContainer(),
+    @InternalReadiumApi
+    public val container: Container<Resource> = EmptyContainer(),
     private val servicesBuilder: ServicesBuilder = ServicesBuilder()
 ) : PublicationServicesHolder {
 

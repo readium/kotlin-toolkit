@@ -94,3 +94,6 @@ lcp.patch
 
 # Kotlin
 .kotlin/
+
+# Script outpouts
+readium/navigators/web/scripts/dist/

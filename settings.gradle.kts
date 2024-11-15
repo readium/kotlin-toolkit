@@ -41,6 +41,14 @@ include(":readium:navigator")
 project(":readium:navigator")
     .name = "readium-navigator"
 
+include(":readium:navigators:common")
+project(":readium:navigators:common")
+    .name = "readium-navigator-common"
+
+include(":readium:navigators:web")
+project(":readium:navigators:web")
+    .name = "readium-navigator-web"
+
 include(":readium:navigators:media:common")
 project(":readium:navigators:media:common")
     .name = "readium-navigator-media-common"
@@ -70,3 +78,4 @@ project(":readium:streamer")
     .name = "readium-streamer"
 
 include("test-app")
+// include(":readium:navigators:demo")
