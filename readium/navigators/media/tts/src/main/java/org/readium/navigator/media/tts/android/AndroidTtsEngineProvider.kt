@@ -23,8 +23,13 @@ public class AndroidTtsEngineProvider(
     private val context: Context,
     private val defaults: AndroidTtsDefaults = AndroidTtsDefaults(),
     private val voiceSelector: AndroidTtsEngine.VoiceSelector = AndroidTtsEngine.VoiceSelector { _, _ -> null }
-) : TtsEngineProvider<AndroidTtsSettings, AndroidTtsPreferences, AndroidTtsPreferencesEditor,
-    AndroidTtsEngine.Error, AndroidTtsEngine.Voice> {
+) : TtsEngineProvider<
+    AndroidTtsSettings,
+    AndroidTtsPreferences,
+    AndroidTtsPreferencesEditor,
+    AndroidTtsEngine.Error,
+    AndroidTtsEngine.Voice
+    > {
 
     override suspend fun createEngine(
         publication: Publication,

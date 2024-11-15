@@ -18,8 +18,11 @@ import org.readium.r2.shared.util.Try
  * To be implemented by adapters for third-party audio engines which can be used with [AudioNavigator].
  */
 @ExperimentalReadiumApi
-public interface AudioEngineProvider<S : Configurable.Settings, P : Configurable.Preferences<P>,
-    E : PreferencesEditor<P>> {
+public interface AudioEngineProvider<
+    S : Configurable.Settings,
+    P : Configurable.Preferences<P>,
+    E : PreferencesEditor<P>
+    > {
 
     public suspend fun createEngine(
         publication: Publication,

@@ -39,8 +39,13 @@ import org.readium.r2.shared.util.tokenizer.TextUnit
 
 @ExperimentalReadiumApi
 @OptIn(DelicateReadiumApi::class)
-public class TtsNavigatorFactory<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>, E : PreferencesEditor<P>,
-    F : TtsEngine.Error, V : TtsEngine.Voice> private constructor(
+public class TtsNavigatorFactory<
+    S : TtsEngine.Settings,
+    P : TtsEngine.Preferences<P>,
+    E : PreferencesEditor<P>,
+    F : TtsEngine.Error,
+    V : TtsEngine.Voice
+    > private constructor(
     private val application: Application,
     private val publication: Publication,
     private val ttsEngineProvider: TtsEngineProvider<S, P, E, F, V>,
@@ -72,8 +77,13 @@ public class TtsNavigatorFactory<S : TtsEngine.Settings, P : TtsEngine.Preferenc
             )
         }
 
-        public operator fun <S : TtsEngine.Settings, P : TtsEngine.Preferences<P>, E : PreferencesEditor<P>,
-            F : TtsEngine.Error, V : TtsEngine.Voice> invoke(
+        public operator fun <
+            S : TtsEngine.Settings,
+            P : TtsEngine.Preferences<P>,
+            E : PreferencesEditor<P>,
+            F : TtsEngine.Error,
+            V : TtsEngine.Voice
+            > invoke(
             application: Application,
             publication: Publication,
             ttsEngineProvider: TtsEngineProvider<S, P, E, F, V>,
@@ -88,8 +98,13 @@ public class TtsNavigatorFactory<S : TtsEngine.Settings, P : TtsEngine.Preferenc
                 metadataProvider
             )
 
-        private fun <S : TtsEngine.Settings, P : TtsEngine.Preferences<P>, E : PreferencesEditor<P>,
-            F : TtsEngine.Error, V : TtsEngine.Voice> createNavigatorFactory(
+        private fun <
+            S : TtsEngine.Settings,
+            P : TtsEngine.Preferences<P>,
+            E : PreferencesEditor<P>,
+            F : TtsEngine.Error,
+            V : TtsEngine.Voice
+            > createNavigatorFactory(
             application: Application,
             publication: Publication,
             ttsEngineProvider: TtsEngineProvider<S, P, E, F, V>,

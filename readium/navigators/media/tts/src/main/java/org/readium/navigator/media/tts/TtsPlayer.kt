@@ -40,8 +40,12 @@ import timber.log.Timber
  * Plays the content from a [TtsUtteranceIterator] with a [TtsEngine].
  */
 @ExperimentalReadiumApi
-internal class TtsPlayer<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
-    E : TtsEngine.Error, V : TtsEngine.Voice> private constructor(
+internal class TtsPlayer<
+    S : TtsEngine.Settings,
+    P : TtsEngine.Preferences<P>,
+    E : TtsEngine.Error,
+    V : TtsEngine.Voice
+    > private constructor(
     private val engineFacade: TtsEngineFacade<S, P, E, V>,
     private val contentIterator: TtsUtteranceIterator,
     initialWindow: UtteranceWindow,
@@ -50,8 +54,12 @@ internal class TtsPlayer<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
 
     companion object {
 
-        suspend operator fun <S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
-            E : TtsEngine.Error, V : TtsEngine.Voice> invoke(
+        suspend operator fun <
+            S : TtsEngine.Settings,
+            P : TtsEngine.Preferences<P>,
+            E : TtsEngine.Error,
+            V : TtsEngine.Voice
+            > invoke(
             engine: TtsEngine<S, P, E, V>,
             contentIterator: TtsUtteranceIterator,
             initialPreferences: P

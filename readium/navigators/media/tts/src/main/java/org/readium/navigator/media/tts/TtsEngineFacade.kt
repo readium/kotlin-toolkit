@@ -16,8 +16,12 @@ import org.readium.r2.shared.util.Language
 
 @ExperimentalReadiumApi
 @OptIn(ExperimentalCoroutinesApi::class)
-internal class TtsEngineFacade<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
-    E : TtsEngine.Error, V : TtsEngine.Voice>(
+internal class TtsEngineFacade<
+    S : TtsEngine.Settings,
+    P : TtsEngine.Preferences<P>,
+    E : TtsEngine.Error,
+    V : TtsEngine.Voice
+    >(
     private val engine: TtsEngine<S, P, E, V>
 ) : Configurable<S, P> by engine {
 

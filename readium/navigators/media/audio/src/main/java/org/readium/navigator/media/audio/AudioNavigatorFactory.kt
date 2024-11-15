@@ -27,16 +27,22 @@ import org.readium.r2.shared.util.getOrElse
 
 @ExperimentalReadiumApi
 @OptIn(ExperimentalTime::class, DelicateReadiumApi::class)
-public class AudioNavigatorFactory<S : Configurable.Settings, P : Configurable.Preferences<P>,
-    E : PreferencesEditor<P>> private constructor(
+public class AudioNavigatorFactory<
+    S : Configurable.Settings,
+    P : Configurable.Preferences<P>,
+    E : PreferencesEditor<P>
+    > private constructor(
     private val publication: Publication,
     private val audioEngineProvider: AudioEngineProvider<S, P, E>
 ) {
 
     public companion object {
 
-        public operator fun <S : Configurable.Settings, P : Configurable.Preferences<P>,
-            E : PreferencesEditor<P>> invoke(
+        public operator fun <
+            S : Configurable.Settings,
+            P : Configurable.Preferences<P>,
+            E : PreferencesEditor<P>
+            > invoke(
             publication: Publication,
             audioEngineProvider: AudioEngineProvider<S, P, E>
         ): AudioNavigatorFactory<S, P, E>? {

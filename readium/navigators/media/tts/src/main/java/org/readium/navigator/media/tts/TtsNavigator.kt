@@ -32,8 +32,12 @@ import org.readium.r2.shared.util.Url
  */
 @ExperimentalReadiumApi
 @OptIn(DelicateReadiumApi::class)
-public class TtsNavigator<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
-    E : TtsEngine.Error, V : TtsEngine.Voice> internal constructor(
+public class TtsNavigator<
+    S : TtsEngine.Settings,
+    P : TtsEngine.Preferences<P>,
+    E : TtsEngine.Error,
+    V : TtsEngine.Voice
+    > internal constructor(
     coroutineScope: CoroutineScope,
     private val publication: Publication,
     private val player: TtsPlayer<S, P, E, V>,
