@@ -18,7 +18,9 @@ fun DropdownMenuButton(
     content: @Composable ColumnScope.(dismiss: () -> Unit) -> Unit
 ) {
     var isExpanded by remember { mutableStateOf(false) }
-    fun dismiss() { isExpanded = false }
+    fun dismiss() {
+        isExpanded = false
+    }
 
     OutlinedButton(
         onClick = { isExpanded = true }

@@ -196,8 +196,10 @@ class HtmlResourceContentIteratorTest {
     @Test
     fun `cannot call previous() without first hasPrevious()`() = runTest {
         val iter = iterator(html)
-        iter.hasNext(); iter.next()
-        iter.hasNext(); iter.next()
+        iter.hasNext()
+        iter.next()
+        iter.hasNext()
+        iter.next()
 
         assertThrows(IllegalStateException::class.java) { iter.previous() }
         iter.hasPrevious()
@@ -252,8 +254,10 @@ class HtmlResourceContentIteratorTest {
     @Test
     fun `calling hasPrevious() several times doesn't move the index`() = runTest {
         val iter = iterator(html)
-        iter.hasNext(); iter.next()
-        iter.hasNext(); iter.next()
+        iter.hasNext()
+        iter.next()
+        iter.hasNext()
+        iter.next()
         assertTrue(iter.hasPrevious())
         assertTrue(iter.hasPrevious())
         assertTrue(iter.hasPrevious())

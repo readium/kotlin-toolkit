@@ -78,7 +78,10 @@ private fun <P : Configurable.Preferences<P>, E : PreferencesEditor<P>> UserPref
             PresetsMenuButton(presets = editor.presets, commit = commit, clear = editor::clear)
 
             Button(
-                onClick = { editor.clear(); commit() }
+                onClick = {
+                    editor.clear()
+                    commit()
+                }
             ) {
                 Text("Reset")
             }

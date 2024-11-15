@@ -88,27 +88,39 @@ internal class AccessibilityAdapter {
 
         var certification = remainingItems
             .takeFirstWithProperty(Vocabularies.A11Y + "certifiedBy")
-            .let { remainingItems = it.second; it.first }
+            .let {
+                remainingItems = it.second
+                it.first
+            }
             ?.toCertification()
             ?: Accessibility.Certification(certifiedBy = null, credential = null, report = null)
 
         if (certification.credential == null) {
             remainingItems.takeFirstWithProperty(Vocabularies.A11Y + "certifierCredential")
-                .let { remainingItems = it.second; it.first }
+                .let {
+                    remainingItems = it.second
+                    it.first
+                }
                 ?.let { certification = certification.copy(credential = it.value) }
         }
 
         if (certification.report == null) {
             remainingItems
                 .takeFirstWithProperty(Vocabularies.A11Y + "certifierReport")
-                .let { remainingItems = it.second; it.first }
+                .let {
+                    remainingItems = it.second
+                    it.first
+                }
                 ?.let { certification = certification.copy(report = it.value) }
         }
 
         if (certification.report == null) {
             remainingItems
                 .takeFirstWithRel(Vocabularies.A11Y + "certifierReport")
-                .let { remainingItems = it.second; it.first }
+                .let {
+                    remainingItems = it.second
+                    it.first
+                }
                 ?.let { certification = certification.copy(report = it.href.toString()) }
         }
 

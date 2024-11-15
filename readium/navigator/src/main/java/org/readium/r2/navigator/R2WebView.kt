@@ -1100,10 +1100,18 @@ internal class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView
  * May crash with java.lang.IllegalArgumentException: pointerIndex out of range
  */
 private fun MotionEvent.safeGetX(pointerIndex: Int): Float =
-    try { getX(pointerIndex) } catch (e: IllegalArgumentException) { 0F }
+    try {
+        getX(pointerIndex)
+    } catch (e: IllegalArgumentException) {
+        0F
+    }
 
 /**
  * May crash with java.lang.IllegalArgumentException: pointerIndex out of range
  */
 private fun MotionEvent.safeGetY(pointerIndex: Int): Float =
-    try { getY(pointerIndex) } catch (e: IllegalArgumentException) { 0F }
+    try {
+        getY(pointerIndex)
+    } catch (e: IllegalArgumentException) {
+        0F
+    }

@@ -54,7 +54,10 @@ fun <T> ButtonGroupItem(
         activeOption = preference.effectiveValue,
         selectedOption = preference.value,
         formatValue = formatValue,
-        onClear = { preference.clear(); commit() }
+        onClear = {
+            preference.clear()
+            commit()
+        }
             .takeIf { preference.value != null },
         onSelectedOptionChanged = { newValue ->
             if (newValue == preference.value) {
@@ -112,7 +115,10 @@ fun <T> MenuItem(
         values = preference.supportedValues,
         isActive = preference.isEffective,
         formatValue = formatValue,
-        onClear = { preference.clear(); commit() }
+        onClear = {
+            preference.clear()
+            commit()
+        }
             .takeIf { preference.value != null },
         onValueChanged = { value ->
             preference.set(value)
@@ -170,9 +176,18 @@ fun <T : Comparable<T>> StepperItem(
         isActive = preference.isEffective,
         value = preference.value ?: preference.effectiveValue,
         formatValue = preference::formatValue,
-        onDecrement = { preference.decrement(); commit() },
-        onIncrement = { preference.increment(); commit() },
-        onClear = { preference.clear(); commit() }
+        onDecrement = {
+            preference.decrement()
+            commit()
+        },
+        onIncrement = {
+            preference.increment()
+            commit()
+        },
+        onClear = {
+            preference.clear()
+            commit()
+        }
             .takeIf { preference.value != null }
     )
 }
@@ -231,9 +246,18 @@ fun SwitchItem(
         title = title,
         value = preference.value ?: preference.effectiveValue,
         isActive = preference.isEffective,
-        onCheckedChange = { preference.set(it); commit() },
-        onToggle = { preference.toggle(); commit() },
-        onClear = { preference.clear(); commit() }
+        onCheckedChange = {
+            preference.set(it)
+            commit()
+        },
+        onToggle = {
+            preference.toggle()
+            commit()
+        },
+        onClear = {
+            preference.clear()
+            commit()
+        }
             .takeIf { preference.value != null }
     )
 }
@@ -277,8 +301,14 @@ fun ColorItem(
         isActive = preference.isEffective,
         value = preference.value ?: preference.effectiveValue,
         noValueSelected = preference.value == null,
-        onColorChanged = { preference.set(it); commit() },
-        onClear = { preference.clear(); commit() }
+        onColorChanged = {
+            preference.set(it)
+            commit()
+        },
+        onClear = {
+            preference.clear()
+            commit()
+        }
             .takeIf { preference.value != null }
     )
 }
@@ -434,7 +464,9 @@ private fun <T> SelectorListItem(
     enabled: Boolean = values.isNotEmpty()
 ) {
     var isExpanded by remember { mutableStateOf(false) }
-    fun dismiss() { isExpanded = false }
+    fun dismiss() {
+        isExpanded = false
+    }
 
     ListItem(
         modifier = Modifier

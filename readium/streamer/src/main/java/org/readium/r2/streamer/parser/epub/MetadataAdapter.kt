@@ -324,7 +324,10 @@ private class CollectionAdapter {
 
         val collectionItems = remainingItems
             .takeAllWithProperty(Vocabularies.META + "belongs-to-collection")
-            .let { remainingItems = it.second; it.first }
+            .let {
+                remainingItems = it.second
+                it.first
+            }
 
         val allCollections = collectionItems
             .map { it.toCollection() }
@@ -333,7 +336,12 @@ private class CollectionAdapter {
 
         val belongsToCollections = collections.map(Pair<String?, Collection>::second)
         val belongsToSeries = series.map(Pair<String?, Collection>::second)
-            .ifEmpty { legacySeries(items).let { remainingItems = it.second; it.first } }
+            .ifEmpty {
+                legacySeries(items).let {
+                    remainingItems = it.second
+                    it.first
+                }
+            }
 
         return Result(belongsToCollections, belongsToSeries) to remainingItems
     }

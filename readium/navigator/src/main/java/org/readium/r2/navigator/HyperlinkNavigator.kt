@@ -41,7 +41,9 @@ public interface HyperlinkNavigator : Navigator {
          * to the calling app to decide how to display the resource.
          */
         @ExperimentalReadiumApi
-        public fun shouldFollowInternalLink(link: Link, context: LinkContext?): Boolean { return true }
+        public fun shouldFollowInternalLink(link: Link, context: LinkContext?): Boolean {
+            return true
+        }
 
         /**
          * Called when a link to an external URL was activated in the navigator.
