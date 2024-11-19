@@ -100,7 +100,7 @@ abstract class VisualReaderFragment : BaseReaderFragment() {
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedInstanceState: Bundle?
+        savedInstanceState: Bundle?,
     ): View {
         binding = FragmentReaderBinding.inflate(inflater, container, false)
         return binding.root
@@ -485,7 +485,7 @@ abstract class VisualReaderFragment : BaseReaderFragment() {
     private fun selectHighlightTint(
         highlightId: Long? = null,
         style: Highlight.Style,
-        @ColorInt tint: Int
+        @ColorInt tint: Int,
     ) =
         viewLifecycleOwner.lifecycleScope.launch {
             if (highlightId != null) {
@@ -570,7 +570,7 @@ abstract class VisualReaderFragment : BaseReaderFragment() {
     }
 
     private fun showFootnotePopup(
-        text: CharSequence
+        text: CharSequence,
     ) {
         viewLifecycleOwner.lifecycleScope.launch {
             // Initialize a new instance of LayoutInflater service

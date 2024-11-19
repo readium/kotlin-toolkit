@@ -61,7 +61,7 @@ public interface LcpLicense : ContentProtectionService.UserRights, Closeable {
      */
     public suspend fun renewLoan(
         listener: RenewListener,
-        prefersWebPage: Boolean = false
+        prefersWebPage: Boolean = false,
     ): Try<Instant?, LcpError>
 
     /**

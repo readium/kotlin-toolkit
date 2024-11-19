@@ -15,7 +15,7 @@ import org.readium.r2.shared.util.data.ReadError
  */
 public open class LazyResource(
     override val sourceUrl: AbsoluteUrl? = null,
-    private val factory: suspend () -> Resource
+    private val factory: suspend () -> Resource,
 ) : Resource {
 
     private lateinit var _resource: Resource

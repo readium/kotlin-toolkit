@@ -14,7 +14,7 @@ import org.readium.navigator.web.gestures.DefaultScrollable2DState
 import org.readium.navigator.web.gestures.Scrollable2DState
 
 internal class WebViewScrollable2DState private constructor(
-    private val webViewDeltaDispatcher: WebViewDeltaDispatcher
+    private val webViewDeltaDispatcher: WebViewDeltaDispatcher,
 ) : Scrollable2DState by DefaultScrollable2DState(webViewDeltaDispatcher::onDelta) {
 
     constructor() : this(WebViewDeltaDispatcher())

@@ -16,9 +16,13 @@ import org.readium.r2.shared.util.Language
 
 @ExperimentalReadiumApi
 @OptIn(ExperimentalCoroutinesApi::class)
-internal class TtsEngineFacade<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
-    E : TtsEngine.Error, V : TtsEngine.Voice>(
-    private val engine: TtsEngine<S, P, E, V>
+internal class TtsEngineFacade<
+    S : TtsEngine.Settings,
+    P : TtsEngine.Preferences<P>,
+    E : TtsEngine.Error,
+    V : TtsEngine.Voice,
+    >(
+    private val engine: TtsEngine<S, P, E, V>,
 ) : Configurable<S, P> by engine {
 
     init {
@@ -48,7 +52,7 @@ internal class TtsEngineFacade<S : TtsEngine.Settings, P : TtsEngine.Preferences
     private data class UtteranceTask<E : TtsEngine.Error>(
         val requestId: TtsEngine.RequestId,
         val continuation: CancellableContinuation<E?>,
-        val onRange: (IntRange) -> Unit
+        val onRange: (IntRange) -> Unit,
     )
 
     private fun getTask(id: TtsEngine.RequestId) =

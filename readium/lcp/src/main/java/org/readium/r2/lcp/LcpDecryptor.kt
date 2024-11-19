@@ -34,7 +34,7 @@ import org.readium.r2.shared.util.resource.flatMap
  */
 internal class LcpDecryptor(
     val license: LcpLicense?,
-    val encryptionData: Map<Url, Encryption>
+    val encryptionData: Map<Url, Encryption>,
 ) {
 
     fun transform(url: Url, resource: Resource): Resource {
@@ -73,7 +73,7 @@ internal class LcpDecryptor(
     private class FullLcpResource(
         resource: Resource,
         private val encryption: Encryption,
-        private val license: LcpLicense
+        private val license: LcpLicense,
     ) : TransformingResource(resource) {
 
         override suspend fun transform(data: Try<ByteArray, ReadError>): Try<ByteArray, ReadError> =
@@ -92,17 +92,17 @@ internal class LcpDecryptor(
     private class CbcLcpResource(
         private val resource: Resource,
         private val encryption: Encryption,
-        private val license: LcpLicense
+        private val license: LcpLicense,
     ) : Resource by resource {
 
         private class Cache(
             var startIndex: Int? = null,
-            val data: ByteArray = ByteArray(3 * AES_BLOCK_SIZE)
+            val data: ByteArray = ByteArray(3 * AES_BLOCK_SIZE),
         )
 
         private lateinit var _length: Try<Long, ReadError>
 
-        /*
+       /*
         * Decryption needs to look around the data strictly matching the content to decipher.
         * That means that in case of contiguous read requests, data fetched from the underlying
         * resource are not contiguous. Every request to the underlying resource starts slightly
@@ -252,7 +252,7 @@ internal class LcpDecryptor(
 
 private suspend fun LcpLicense.decryptFully(
     data: Try<ByteArray, ReadError>,
-    isDeflated: Boolean
+    isDeflated: Boolean,
 ): Try<ByteArray, ReadError> =
     data.flatMap { encryptedData ->
         // Decrypts the resource.

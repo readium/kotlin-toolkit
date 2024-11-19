@@ -26,7 +26,7 @@ import org.readium.r2.shared.publication.presentation.presentation
 @OptIn(ExperimentalReadiumApi::class)
 public class EpubNavigatorFactory(
     private val publication: Publication,
-    private val configuration: Configuration = Configuration()
+    private val configuration: Configuration = Configuration(),
 ) {
 
     /**
@@ -35,7 +35,7 @@ public class EpubNavigatorFactory(
      * @param defaults navigator fallbacks for some preferences
      */
     public data class Configuration(
-        val defaults: EpubDefaults = EpubDefaults()
+        val defaults: EpubDefaults = EpubDefaults(),
     )
 
     private val layout: EpubLayout =
@@ -60,7 +60,7 @@ public class EpubNavigatorFactory(
         initialPreferences: EpubPreferences = EpubPreferences(),
         listener: EpubNavigatorFragment.Listener? = null,
         paginationListener: EpubNavigatorFragment.PaginationListener? = null,
-        configuration: EpubNavigatorFragment.Configuration = EpubNavigatorFragment.Configuration()
+        configuration: EpubNavigatorFragment.Configuration = EpubNavigatorFragment.Configuration(),
     ): FragmentFactory = org.readium.r2.navigator.util.createFragmentFactory {
         EpubNavigatorFragment(
             publication = publication,
@@ -76,7 +76,7 @@ public class EpubNavigatorFactory(
     }
 
     public fun createPreferencesEditor(
-        currentPreferences: EpubPreferences
+        currentPreferences: EpubPreferences,
     ): EpubPreferencesEditor =
         EpubPreferencesEditor(
             initialPreferences = currentPreferences,

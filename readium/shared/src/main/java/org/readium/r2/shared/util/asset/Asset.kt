@@ -30,7 +30,7 @@ public sealed class Asset : Closeable {
  */
 public class ContainerAsset(
     override val format: Format,
-    public val container: Container<Resource>
+    public val container: Container<Resource>,
 ) : Asset() {
 
     override fun close() {
@@ -46,7 +46,7 @@ public class ContainerAsset(
  */
 public class ResourceAsset(
     override val format: Format,
-    public val resource: Resource
+    public val resource: Resource,
 ) : Asset() {
 
     override fun close() {

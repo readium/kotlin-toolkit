@@ -10,7 +10,7 @@ import org.readium.r2.shared.ExperimentalReadiumApi
 
 @OptIn(ExperimentalReadiumApi::class)
 internal class ExoPlayerSettingsResolver(
-    private val defaults: ExoPlayerDefaults
+    private val defaults: ExoPlayerDefaults,
 ) : ExoPlayerEngine.SettingsResolver {
 
     override fun settings(preferences: ExoPlayerPreferences): ExoPlayerSettings {

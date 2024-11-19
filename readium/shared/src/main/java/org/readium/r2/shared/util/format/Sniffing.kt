@@ -19,12 +19,12 @@ import org.readium.r2.shared.util.mediatype.MediaType
  */
 public data class FormatHints(
     val mediaTypes: List<MediaType> = emptyList(),
-    val fileExtensions: List<FileExtension> = emptyList()
+    val fileExtensions: List<FileExtension> = emptyList(),
 ) {
     public companion object {
         public operator fun invoke(
             mediaType: MediaType? = null,
-            fileExtension: FileExtension? = null
+            fileExtension: FileExtension? = null,
         ): FormatHints =
             FormatHints(
                 mediaTypes = listOfNotNull(mediaType),
@@ -33,7 +33,7 @@ public data class FormatHints(
 
         public operator fun invoke(
             mediaTypes: List<String> = emptyList(),
-            fileExtensions: List<String> = emptyList()
+            fileExtensions: List<String> = emptyList(),
         ): FormatHints =
             FormatHints(
                 mediaTypes = mediaTypes.mapNotNull { MediaType(it) },
@@ -94,7 +94,7 @@ public data class FormatHints(
 public interface FormatHintsSniffer {
 
     public fun sniffHints(
-        hints: FormatHints
+        hints: FormatHints,
     ): Format?
 }
 
@@ -105,7 +105,7 @@ public interface BlobSniffer {
 
     public suspend fun sniffBlob(
         format: Format,
-        source: Readable
+        source: Readable,
     ): Try<Format, ReadError>
 }
 
@@ -116,7 +116,7 @@ public interface ContainerSniffer {
 
     public suspend fun sniffContainer(
         format: Format,
-        container: Container<Readable>
+        container: Container<Readable>,
     ): Try<Format, ReadError>
 }
 
@@ -129,24 +129,24 @@ public interface FormatSniffer :
     ContainerSniffer {
 
     public override fun sniffHints(
-        hints: FormatHints
+        hints: FormatHints,
     ): Format? = null
 
     public override suspend fun sniffBlob(
         format: Format,
-        source: Readable
+        source: Readable,
     ): Try<Format, ReadError> =
         Try.success(format)
 
     public override suspend fun sniffContainer(
         format: Format,
-        container: Container<Readable>
+        container: Container<Readable>,
     ): Try<Format, ReadError> =
         Try.success(format)
 }
 
 public class CompositeFormatSniffer(
-    private val sniffers: List<FormatSniffer>
+    private val sniffers: List<FormatSniffer>,
 ) : FormatSniffer {
 
     public constructor(vararg sniffers: FormatSniffer) : this(sniffers.toList())
@@ -171,7 +171,7 @@ public class CompositeFormatSniffer(
 
     override suspend fun sniffContainer(
         format: Format,
-        container: Container<Readable>
+        container: Container<Readable>,
     ): Try<Format, ReadError> =
         sniffers.fold(Try.success(format)) { acc: Try<Format, ReadError>, sniffer ->
             when (acc) {

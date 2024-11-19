@@ -15,8 +15,12 @@ import org.readium.r2.shared.util.Language
  * A text-to-speech engine synthesizes text utterances (e.g. sentence).
  */
 @ExperimentalReadiumApi
-public interface TtsEngine<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
-    E : TtsEngine.Error, V : TtsEngine.Voice> : Configurable<S, P>, Closeable {
+public interface TtsEngine<
+    S : TtsEngine.Settings,
+    P : TtsEngine.Preferences<P>,
+    E : TtsEngine.Error,
+    V : TtsEngine.Voice,
+    > : Configurable<S, P>, Closeable {
 
     public interface Preferences<P : Configurable.Preferences<P>> : Configurable.Preferences<P> {
 

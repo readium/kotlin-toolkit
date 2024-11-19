@@ -26,7 +26,7 @@ import org.readium.r2.shared.InternalReadiumApi
  */
 @InternalReadiumApi
 public class CoroutineQueue(
-    dispatcher: CoroutineDispatcher = Dispatchers.Main
+    dispatcher: CoroutineDispatcher = Dispatchers.Main,
 ) {
     private val scope: CoroutineScope =
         CoroutineScope(dispatcher + SupervisorJob())
@@ -83,7 +83,7 @@ public class CoroutineQueue(
 
     private class Task<T>(
         val task: suspend () -> T,
-        val deferred: CompletableDeferred<T>? = null
+        val deferred: CompletableDeferred<T>? = null,
     ) {
         suspend operator fun invoke() {
             try {

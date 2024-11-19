@@ -31,7 +31,7 @@ public interface HyperlinkListener {
 @ExperimentalReadiumApi
 public data class HyperlinkLocation(
     public val href: Url,
-    public val fragment: String? = null
+    public val fragment: String? = null,
 )
 
 @ExperimentalReadiumApi
@@ -39,7 +39,7 @@ public sealed interface LinkContext
 
 @ExperimentalReadiumApi
 public data class FootnoteContext(
-    public val noteContent: String
+    public val noteContent: String,
 ) : LinkContext
 
 @ExperimentalReadiumApi
@@ -66,7 +66,7 @@ public fun <L : Location> defaultHyperlinkListener(
     controller: NavigationController<L, *>,
     shouldFollowReadingOrderLink: (HyperlinkLocation, LinkContext?) -> Boolean = { _, _ -> true },
     onNonLinearLinkActivated: (HyperlinkLocation, LinkContext?) -> Unit = { _, _ -> },
-    onExternalLinkActivated: (AbsoluteUrl, LinkContext?) -> Unit = { _, _ -> }
+    onExternalLinkActivated: (AbsoluteUrl, LinkContext?) -> Unit = { _, _ -> },
 ): HyperlinkListener {
     val coroutineScope = rememberCoroutineScope()
 
@@ -85,7 +85,7 @@ private class DefaultHyperlinkListener<L : Location>(
     private val controller: NavigationController<L, *>,
     private val shouldFollowReadingOrderLink: (HyperlinkLocation, LinkContext?) -> Boolean,
     private val onNonLinearLinkActivatedDelegate: (HyperlinkLocation, LinkContext?) -> Unit,
-    private val onExternalLinkActivatedDelegate: (AbsoluteUrl, LinkContext?) -> Unit
+    private val onExternalLinkActivatedDelegate: (AbsoluteUrl, LinkContext?) -> Unit,
 ) : HyperlinkListener {
 
     override fun onReadingOrderLinkActivated(location: HyperlinkLocation, context: LinkContext?) {

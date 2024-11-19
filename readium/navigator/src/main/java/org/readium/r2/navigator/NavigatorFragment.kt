@@ -12,7 +12,7 @@ import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.services.isRestricted
 
 public abstract class NavigatorFragment internal constructor(
-    protected val publication: Publication
+    protected val publication: Publication,
 ) : Fragment(), Navigator {
 
     override fun onCreate(savedInstanceState: Bundle?) {

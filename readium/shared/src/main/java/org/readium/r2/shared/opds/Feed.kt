@@ -24,7 +24,7 @@ public data class Feed(
     val groups: List<Group> = emptyList(),
     val publications: List<Publication> = emptyList(),
     val navigation: List<Link> = emptyList(),
-    val context: List<String> = emptyList()
+    val context: List<String> = emptyList(),
 ) {
     @InternalReadiumApi
     public data class Builder(
@@ -37,7 +37,7 @@ public data class Feed(
         val groups: MutableList<Group.Builder> = mutableListOf(),
         val publications: MutableList<Publication> = mutableListOf(),
         val navigation: MutableList<Link> = mutableListOf(),
-        val context: MutableList<String> = mutableListOf()
+        val context: MutableList<String> = mutableListOf(),
     ) {
         public fun build(): Feed =
             Feed(

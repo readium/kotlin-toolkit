@@ -18,12 +18,12 @@ import org.readium.r2.testapp.utils.UserError
 
 class LcpManagementViewModel(
     private val lcpLicense: LcpLicense,
-    private val renewListener: LcpLicense.RenewListener
+    private val renewListener: LcpLicense.RenewListener,
 ) : DrmManagementViewModel() {
 
     class Factory(
         private val lcpLicense: LcpLicense,
-        private val renewListener: LcpLicense.RenewListener
+        private val renewListener: LcpLicense.RenewListener,
     ) : ViewModelProvider.NewInstanceFactory() {
 
         override fun <T : ViewModel> create(modelClass: Class<T>): T =
@@ -35,7 +35,7 @@ class LcpManagementViewModel(
     }
 
     class LcpDrmError(
-        override val error: LcpError
+        override val error: LcpError,
     ) : DrmError {
 
         override fun toUserError(): UserError =

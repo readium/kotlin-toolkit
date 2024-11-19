@@ -11,7 +11,7 @@ import org.readium.r2.shared.publication.presentation.Presentation
 
 internal class PresentationAdapter(
     private val epubVersion: Double,
-    private val displayOptions: Map<String, String>
+    private val displayOptions: Map<String, String>,
 ) {
 
     fun adapt(items: List<MetadataItem>): Pair<Presentation, List<MetadataItem>> {

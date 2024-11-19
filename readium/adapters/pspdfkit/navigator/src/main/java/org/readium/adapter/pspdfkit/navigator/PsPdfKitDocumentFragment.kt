@@ -68,7 +68,7 @@ public class PsPdfKitDocumentFragment internal constructor(
     private val href: Url,
     initialPageIndex: Int,
     initialSettings: PsPdfKitSettings,
-    private val listener: Listener?
+    private val listener: Listener?,
 ) : PdfDocumentFragment<PsPdfKitSettings>() {
 
     internal interface Listener {
@@ -93,7 +93,7 @@ public class PsPdfKitDocumentFragment internal constructor(
     private val psPdfKitListener = PsPdfKitListener()
 
     private class DocumentViewModel(
-        document: suspend () -> ReadTry<PsPdfKitDocument>
+        document: suspend () -> ReadTry<PsPdfKitDocument>,
     ) : ViewModel() {
 
         private val _document: Deferred<ReadTry<PsPdfKitDocument>> =
@@ -142,7 +142,7 @@ public class PsPdfKitDocumentFragment internal constructor(
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedInstanceState: Bundle?
+        savedInstanceState: Bundle?,
     ): View =
         FragmentContainerView(inflater.context)
             .apply {
@@ -276,7 +276,7 @@ public class PsPdfKitDocumentFragment internal constructor(
             pageIndex: Int,
             event: MotionEvent?,
             pagePosition: PointF?,
-            clickedAnnotation: Annotation?
+            clickedAnnotation: Annotation?,
         ): Boolean {
             if (
                 pagePosition == null || clickedAnnotation is LinkAnnotation ||

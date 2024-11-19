@@ -27,7 +27,8 @@ public data class Event(val json: JSONObject) {
         Renew("renew"),
         Return("return"),
         Revoke("revoke"),
-        Cancel("cancel");
+        Cancel("cancel"),
+        ;
 
         public companion object {
             public operator fun invoke(value: String): EventType? = entries.firstOrNull { it.value == value }

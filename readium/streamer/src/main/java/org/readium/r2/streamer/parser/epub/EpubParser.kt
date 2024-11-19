@@ -48,12 +48,12 @@ import org.readium.r2.streamer.parser.PublicationParser
  */
 @OptIn(ExperimentalReadiumApi::class)
 public class EpubParser(
-    private val reflowablePositionsStrategy: EpubPositionsService.ReflowableStrategy = EpubPositionsService.ReflowableStrategy.recommended
+    private val reflowablePositionsStrategy: EpubPositionsService.ReflowableStrategy = EpubPositionsService.ReflowableStrategy.recommended,
 ) : PublicationParser {
 
     override suspend fun parse(
         asset: Asset,
-        warnings: WarningLogger?
+        warnings: WarningLogger?,
     ): Try<Publication.Builder, PublicationParser.ParseError> {
         if (asset !is ContainerAsset || !asset.format.conformsTo(Specification.Epub)) {
             return Try.failure(PublicationParser.ParseError.FormatNotSupported())
@@ -150,7 +150,7 @@ public class EpubParser(
 
     private suspend fun parseNavigationData(
         packageDocument: PackageDocument,
-        container: Container<Resource>
+        container: Container<Resource>,
     ): Map<String, List<Link>> =
         parseNavigationDocument(packageDocument, container)
             ?: parseNcx(packageDocument, container)
@@ -158,7 +158,7 @@ public class EpubParser(
 
     private suspend fun parseNavigationDocument(
         packageDocument: PackageDocument,
-        container: Container<Resource>
+        container: Container<Resource>,
     ): Map<String, List<Link>>? =
         packageDocument.manifest
             .firstOrNull { it.properties.contains(Vocabularies.ITEM + "nav") }
@@ -170,7 +170,7 @@ public class EpubParser(
 
     private suspend fun parseNcx(
         packageDocument: PackageDocument,
-        container: Container<Resource>
+        container: Container<Resource>,
     ): Map<String, List<Link>>? {
         val ncxItem =
             if (packageDocument.spine.toc != null) {
@@ -202,10 +202,10 @@ public class EpubParser(
             ?.toMap().orEmpty()
     }
 
-    public suspend inline fun<R> Readable.readDecodeOrElse(
+    public suspend inline fun <R> Readable.readDecodeOrElse(
         url: Url,
         decode: (value: ByteArray) -> Try<R, DecodeError>,
-        recover: (ReadError) -> R
+        recover: (ReadError) -> R,
     ): R =
         readDecodeOrElse(decode, recover) {
             recover(
@@ -216,13 +216,13 @@ public class EpubParser(
         }
 
     private suspend inline fun Container<Readable>.readDecodeXmlOrNull(
-        path: String
+        path: String,
     ): ElementNode? =
         Url.fromDecodedPath(path)?.let { url -> readDecodeXmlOrNull(url) }
 
     /** Returns the resource data as an XML Document at the given [url], or null. */
     private suspend inline fun Container<Readable>.readDecodeXmlOrNull(
-        url: Url
+        url: Url,
     ): ElementNode? =
         readDecodeOrNull(url) { it.decodeXml() }
 }

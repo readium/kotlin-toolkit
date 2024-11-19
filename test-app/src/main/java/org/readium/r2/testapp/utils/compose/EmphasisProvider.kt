@@ -15,7 +15,7 @@ val LocalContentEmphasis = compositionLocalOf { Emphasis.Medium }
 enum class Emphasis {
     Disabled,
     Medium,
-    High
+    High,
 }
 
 @Composable

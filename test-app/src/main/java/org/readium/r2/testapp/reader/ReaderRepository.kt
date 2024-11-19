@@ -47,7 +47,7 @@ class ReaderRepository(
     private val application: Application,
     private val readium: Readium,
     private val bookRepository: BookRepository,
-    private val preferencesDataStore: DataStore<JetpackPreferences>
+    private val preferencesDataStore: DataStore<JetpackPreferences>,
 ) {
 
     private val coroutineQueue: CoroutineQueue =
@@ -139,7 +139,7 @@ class ReaderRepository(
     private suspend fun openAudio(
         bookId: Long,
         publication: Publication,
-        initialLocator: Locator?
+        initialLocator: Locator?,
     ): Try<MediaReaderInitData, OpeningError> {
         val preferencesManager = ExoPlayerPreferencesManagerFactory(preferencesDataStore)
             .createPreferenceManager(bookId)
@@ -181,7 +181,7 @@ class ReaderRepository(
     private suspend fun openEpub(
         bookId: Long,
         publication: Publication,
-        initialLocator: Locator?
+        initialLocator: Locator?,
     ): Try<EpubReaderInitData, OpeningError> {
         val preferencesManager = EpubPreferencesManagerFactory(preferencesDataStore)
             .createPreferenceManager(bookId)
@@ -202,7 +202,7 @@ class ReaderRepository(
     private suspend fun openPdf(
         bookId: Long,
         publication: Publication,
-        initialLocator: Locator?
+        initialLocator: Locator?,
     ): Try<PdfReaderInitData, OpeningError> {
         val preferencesManager = PdfiumPreferencesManagerFactory(preferencesDataStore)
             .createPreferenceManager(bookId)
@@ -224,7 +224,7 @@ class ReaderRepository(
     private suspend fun openImage(
         bookId: Long,
         publication: Publication,
-        initialLocator: Locator?
+        initialLocator: Locator?,
     ): Try<ImageReaderInitData, OpeningError> {
         val initData = ImageReaderInitData(
             bookId = bookId,
@@ -237,7 +237,7 @@ class ReaderRepository(
 
     private suspend fun getTtsInitData(
         bookId: Long,
-        publication: Publication
+        publication: Publication,
     ): TtsInitData? {
         val preferencesManager = AndroidTtsPreferencesManagerFactory(preferencesDataStore)
             .createPreferenceManager(bookId)

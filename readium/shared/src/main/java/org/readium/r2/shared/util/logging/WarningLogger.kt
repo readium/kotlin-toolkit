@@ -72,7 +72,7 @@ public interface Warning {
     public enum class SeverityLevel {
         MINOR,
         MODERATE,
-        MAJOR
+        MAJOR,
     }
 
     /**
@@ -104,7 +104,7 @@ public data class JsonWarning(
     val modelClass: Class<*>,
     val reason: String,
     override val severity: Warning.SeverityLevel,
-    val json: JSONObject? = null
+    val json: JSONObject? = null,
 ) : Warning {
 
     override val tag: String = "json"
@@ -124,7 +124,7 @@ public fun WarningLogger.log(
     modelClass: Class<*>,
     reason: String,
     json: JSONObject? = null,
-    severity: Warning.SeverityLevel = Warning.SeverityLevel.MAJOR
+    severity: Warning.SeverityLevel = Warning.SeverityLevel.MAJOR,
 ) {
     log(JsonWarning(modelClass, reason, severity, json))
 }

@@ -23,22 +23,22 @@ public interface ArchiveOpener {
 
     public sealed class OpenError(
         override val message: String,
-        override val cause: Error?
+        override val cause: Error?,
     ) : Error {
 
         public class FormatNotSupported(
             public val format: Format,
-            cause: Error? = null
+            cause: Error? = null,
         ) : OpenError("Format not supported.", cause)
 
         public class Reading(
-            override val cause: ReadError
+            override val cause: ReadError,
         ) : OpenError("An error occurred while attempting to read the resource.", cause)
     }
 
     public sealed class SniffOpenError(
         override val message: String,
-        override val cause: Error?
+        override val cause: Error?,
     ) : Error {
 
         public data object NotRecognized :
@@ -53,14 +53,14 @@ public interface ArchiveOpener {
      */
     public suspend fun open(
         format: Format,
-        source: Readable
+        source: Readable,
     ): Try<ContainerAsset, OpenError>
 
     /**
      * Creates a new [ContainerAsset] to access the entries of an archive after sniffing its format.
      */
     public suspend fun sniffOpen(
-        source: Readable
+        source: Readable,
     ): Try<ContainerAsset, SniffOpenError>
 }
 
@@ -69,7 +69,7 @@ public interface ArchiveOpener {
  * the format.
 */
 public class CompositeArchiveOpener(
-    private val openers: List<ArchiveOpener>
+    private val openers: List<ArchiveOpener>,
 ) : ArchiveOpener {
 
     public constructor(vararg factories: ArchiveOpener) :
@@ -77,7 +77,7 @@ public class CompositeArchiveOpener(
 
     override suspend fun open(
         format: Format,
-        source: Readable
+        source: Readable,
     ): Try<ContainerAsset, ArchiveOpener.OpenError> {
         for (factory in openers) {
             factory.open(format, source)
@@ -94,7 +94,7 @@ public class CompositeArchiveOpener(
     }
 
     override suspend fun sniffOpen(
-        source: Readable
+        source: Readable,
     ): Try<ContainerAsset, ArchiveOpener.SniffOpenError> {
         for (factory in openers) {
             factory.sniffOpen(source)

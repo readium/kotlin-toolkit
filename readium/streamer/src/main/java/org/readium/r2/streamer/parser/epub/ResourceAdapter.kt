@@ -22,11 +22,11 @@ internal class ResourceAdapter(
     private val manifest: List<Item>,
     private val encryptionData: Map<Url, Encryption>,
     private val coverId: String?,
-    private val durationById: Map<String, Double?>
+    private val durationById: Map<String, Double?>,
 ) {
     data class Links(
         val readingOrder: List<Link>,
-        val resources: List<Link>
+        val resources: List<Link>,
     )
 
     @Suppress("Unchecked_cast")
@@ -153,9 +153,11 @@ internal class ResourceAdapter(
             when (property) {
                 Vocabularies.RENDITION + "page-spread-center" -> "center"
                 Vocabularies.RENDITION + "page-spread-left",
-                Vocabularies.ITEMREF + "page-spread-left" -> "left"
+                Vocabularies.ITEMREF + "page-spread-left",
+                -> "left"
                 Vocabularies.RENDITION + "page-spread-right",
-                Vocabularies.ITEMREF + "page-spread-right" -> "right"
+                Vocabularies.ITEMREF + "page-spread-right",
+                -> "right"
                 else -> null
             }?.let { linkProperties["page"] = it }
             //  Spread
@@ -164,7 +166,8 @@ internal class ResourceAdapter(
                 Vocabularies.RENDITION + "spread-auto" -> "auto"
                 Vocabularies.RENDITION + "spread-landscape" -> "landscape"
                 Vocabularies.RENDITION + "spread-portrait",
-                Vocabularies.RENDITION + "spread-both" -> "both"
+                Vocabularies.RENDITION + "spread-both",
+                -> "both"
                 else -> null
             }?.let { linkProperties["spread"] = it }
             //  Layout
@@ -185,7 +188,8 @@ internal class ResourceAdapter(
                 Vocabularies.RENDITION + "flow-auto" -> "auto"
                 Vocabularies.RENDITION + "flow-paginated" -> "paginated"
                 Vocabularies.RENDITION + "flow-scrolled-continuous",
-                Vocabularies.RENDITION + "flow-scrolled-doc" -> "scrolled"
+                Vocabularies.RENDITION + "flow-scrolled-doc",
+                -> "scrolled"
                 else -> null
             }?.let { linkProperties["overflow"] = it }
         }

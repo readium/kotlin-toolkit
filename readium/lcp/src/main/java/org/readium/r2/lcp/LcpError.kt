@@ -18,7 +18,7 @@ import org.readium.r2.shared.util.Url
 
 public sealed class LcpError(
     override val message: String,
-    override val cause: Error? = null
+    override val cause: Error? = null,
 ) : Error {
 
     public object MissingPassphrase :
@@ -69,7 +69,7 @@ public sealed class LcpError(
      */
     public sealed class LicenseStatus(
         message: String,
-        cause: Error? = null
+        cause: Error? = null,
     ) : LcpError(message, cause) {
 
         public class Cancelled(public val date: Instant) :
@@ -101,7 +101,7 @@ public sealed class LcpError(
      */
     public sealed class Renew(
         message: String,
-        cause: Error? = null
+        cause: Error? = null,
     ) : LcpError(message, cause) {
 
         /** Your publication could not be renewed properly. */
@@ -122,7 +122,7 @@ public sealed class LcpError(
      */
     public sealed class Return(
         message: String,
-        cause: Error? = null
+        cause: Error? = null,
     ) : LcpError(message, cause) {
 
         /** Your publication could not be returned properly. */
@@ -144,7 +144,7 @@ public sealed class LcpError(
      */
     public sealed class Parsing(
         message: String,
-        cause: Error? = null
+        cause: Error? = null,
     ) : LcpError(message, cause) {
 
         /** The JSON is malformed and can't be parsed. */
@@ -181,7 +181,7 @@ public sealed class LcpError(
      */
     public sealed class Container(
         message: String,
-        cause: Error? = null
+        cause: Error? = null,
     ) : LcpError(message, cause) {
 
         /** Can't access the container, it's format is wrong. */
@@ -206,7 +206,7 @@ public sealed class LcpError(
      */
     public sealed class LicenseIntegrity(
         message: String,
-        cause: Error? = null
+        cause: Error? = null,
     ) : LcpError(message, cause) {
 
         public object CertificateRevoked :
@@ -227,7 +227,7 @@ public sealed class LcpError(
 
     public sealed class Decryption(
         message: String,
-        cause: Error? = null
+        cause: Error? = null,
     ) : LcpError(message, cause) {
 
         public object ContentKeyDecryptError :

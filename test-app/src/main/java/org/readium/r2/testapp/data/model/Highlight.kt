@@ -64,7 +64,7 @@ data class Highlight(
     @ColumnInfo(name = TEXT, defaultValue = "{}")
     var text: Locator.Text = Locator.Text(),
     @ColumnInfo(name = ANNOTATION, defaultValue = "")
-    var annotation: String = ""
+    var annotation: String = "",
 ) {
 
     constructor(
@@ -72,7 +72,7 @@ data class Highlight(
         style: Style,
         @ColorInt tint: Int,
         locator: Locator,
-        annotation: String
+        annotation: String,
     ) :
         this(
             bookId = bookId,
@@ -96,7 +96,9 @@ data class Highlight(
     )
 
     enum class Style(val value: String) {
-        HIGHLIGHT("highlight"), UNDERLINE("underline");
+        HIGHLIGHT("highlight"),
+        UNDERLINE("underline"),
+        ;
 
         companion object {
             val DEFAULT = HIGHLIGHT

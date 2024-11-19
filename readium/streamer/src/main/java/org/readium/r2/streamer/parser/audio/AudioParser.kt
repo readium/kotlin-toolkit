@@ -39,12 +39,12 @@ import org.readium.r2.streamer.parser.PublicationParser
  * It can also work for a standalone audio file.
  */
 public class AudioParser(
-    private val assetSniffer: AssetRetriever
+    private val assetSniffer: AssetRetriever,
 ) : PublicationParser {
 
     override suspend fun parse(
         asset: Asset,
-        warnings: WarningLogger?
+        warnings: WarningLogger?,
     ): Try<Publication.Builder, PublicationParser.ParseError> =
         when (asset) {
             is ResourceAsset -> parseResourceAsset(asset)
@@ -52,7 +52,7 @@ public class AudioParser(
         }
 
     private fun parseResourceAsset(
-        asset: ResourceAsset
+        asset: ResourceAsset,
     ): Try<Publication.Builder, PublicationParser.ParseError> {
         if (!asset.format.conformsToAny(audioSpecifications)) {
             return Try.failure(PublicationParser.ParseError.FormatNotSupported())
@@ -68,7 +68,7 @@ public class AudioParser(
     }
 
     private suspend fun parseContainerAsset(
-        asset: ContainerAsset
+        asset: ContainerAsset,
     ): Try<Publication.Builder, PublicationParser.ParseError> {
         if (!asset.format.conformsTo(Specification.InformalAudiobook)) {
             return Try.failure(PublicationParser.ParseError.FormatNotSupported())
@@ -105,7 +105,7 @@ public class AudioParser(
     private fun finalizeParsing(
         container: Container<Resource>,
         readingOrderWithFormat: List<Pair<Url, Format>>,
-        title: String?
+        title: String?,
     ): Try<Publication.Builder, PublicationParser.ParseError> {
         val readingOrder = readingOrderWithFormat.map { (url, format) ->
             Link(href = url, mediaType = format.mediaType)

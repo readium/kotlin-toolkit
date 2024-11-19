@@ -31,7 +31,7 @@ public class TextContentTokenizer(
     private val language: Language?,
     private val overrideContentLanguage: Boolean = false,
     private val contextSnippetLength: Int = 50,
-    private val textTokenizerFactory: (Language?) -> TextTokenizer
+    private val textTokenizerFactory: (Language?) -> TextTokenizer,
 ) : ContentTokenizer {
 
     /**
@@ -40,7 +40,7 @@ public class TextContentTokenizer(
     public constructor(
         language: Language?,
         unit: TextUnit,
-        overrideContentLanguage: Boolean = false
+        overrideContentLanguage: Boolean = false,
     ) : this(
         language = language,
         textTokenizerFactory = { contentLanguage ->

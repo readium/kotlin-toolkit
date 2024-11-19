@@ -23,7 +23,7 @@ class NavigationAdapter(val type: Int) :
 
     override fun onCreateViewHolder(
         parent: ViewGroup,
-        viewType: Int
+        viewType: Int,
     ): ViewHolder {
         return ViewHolder(
             ItemRecycleButtonBinding.inflate(
@@ -62,14 +62,14 @@ class NavigationAdapter(val type: Int) :
 
         override fun areItemsTheSame(
             oldItem: Link,
-            newItem: Link
+            newItem: Link,
         ): Boolean {
             return oldItem == newItem
         }
 
         override fun areContentsTheSame(
             oldItem: Link,
-            newItem: Link
+            newItem: Link,
         ): Boolean {
             return oldItem == newItem
         }

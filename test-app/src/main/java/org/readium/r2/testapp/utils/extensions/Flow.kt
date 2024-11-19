@@ -84,7 +84,7 @@ suspend fun <P> Flow<P>.stateInFirst(scope: CoroutineScope, sharingStarted: Shar
  */
 fun <T, M> StateFlow<T>.mapStateIn(
     coroutineScope: CoroutineScope,
-    transform: (value: T) -> M
+    transform: (value: T) -> M,
 ): StateFlow<M> =
     map { transform(it) }
         .stateIn(

@@ -27,13 +27,13 @@ internal enum class DEFAULT_VOCAB(val iri: String) {
     LINK(Vocabularies.LINK),
     ITEM(Vocabularies.ITEM),
     ITEMREF(Vocabularies.ITEMREF),
-    TYPE(Vocabularies.TYPE)
+    TYPE(Vocabularies.TYPE),
 }
 
 internal fun resolveProperty(
     property: String,
     prefixMap: Map<String, String>,
-    defaultVocab: DEFAULT_VOCAB? = null
+    defaultVocab: DEFAULT_VOCAB? = null,
 ): String {
     val splitted = property.split(":", limit = 2).filterNot(String::isEmpty)
     return if (splitted.size == 1 && defaultVocab != null) {

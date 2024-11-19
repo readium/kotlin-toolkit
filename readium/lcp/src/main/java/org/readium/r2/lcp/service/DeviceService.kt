@@ -21,7 +21,7 @@ internal class DeviceService(
     deviceName: String?,
     private val repository: DeviceRepository,
     private val network: NetworkService,
-    val context: Context
+    val context: Context,
 ) : Serializable {
 
     private val preferences: SharedPreferences = context.getSharedPreferences(

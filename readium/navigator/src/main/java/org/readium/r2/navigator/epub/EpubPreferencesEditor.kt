@@ -29,13 +29,13 @@ public class EpubPreferencesEditor internal constructor(
     initialPreferences: EpubPreferences,
     publicationMetadata: Metadata,
     public val layout: EpubLayout,
-    defaults: EpubDefaults
+    defaults: EpubDefaults,
 ) : PreferencesEditor<EpubPreferences> {
 
     private data class State(
         val preferences: EpubPreferences,
         val settings: EpubSettings,
-        val layout: Layout
+        val layout: Layout,
     )
 
     private val settingsResolver: EpubSettingsResolver =

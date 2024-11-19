@@ -11,7 +11,7 @@ import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.getEquivalent
 
 internal class CachingReadable(
-    private val source: Readable
+    private val source: Readable,
 ) : Readable by source {
 
     private var startCache: ByteArray? = null
@@ -63,7 +63,7 @@ internal class CachingReadable(
 }
 
 internal class CachingContainer(
-    private val container: Container<Readable>
+    private val container: Container<Readable>,
 ) : Container<Readable> by container {
 
     private val cache: MutableMap<Url, CachingReadable> =

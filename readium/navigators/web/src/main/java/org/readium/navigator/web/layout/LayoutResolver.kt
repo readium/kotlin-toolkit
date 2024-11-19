@@ -13,7 +13,7 @@ import org.readium.r2.shared.publication.presentation.Presentation
 
 @OptIn(ExperimentalReadiumApi::class)
 internal class LayoutResolver(
-    private val readingOrder: ReadingOrder
+    private val readingOrder: ReadingOrder,
 ) {
 
     fun layout(settings: FixedWebSettings): List<Spread> =

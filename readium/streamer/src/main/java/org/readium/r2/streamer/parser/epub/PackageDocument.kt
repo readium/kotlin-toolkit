@@ -20,7 +20,7 @@ internal data class PackageDocument(
     val uniqueIdentifierId: String?,
     val metadata: List<MetadataItem>,
     val manifest: List<Item>,
-    val spine: Spine
+    val spine: Spine,
 ) {
 
     companion object {
@@ -54,7 +54,7 @@ internal data class Item(
     val fallback: String?,
     val mediaOverlay: String?,
     val mediaType: String?,
-    val properties: List<String>
+    val properties: List<String>,
 ) {
     companion object {
         fun parse(element: ElementNode, filePath: Url, prefixMap: Map<String, String>): Item? {
@@ -85,7 +85,7 @@ internal data class Item(
 internal data class Spine(
     val itemrefs: List<Itemref>,
     val direction: ReadingProgression?,
-    val toc: String? = null
+    val toc: String? = null,
 ) {
     companion object {
         fun parse(element: ElementNode, prefixMap: Map<String, String>, epubVersion: Double): Spine {
@@ -109,7 +109,7 @@ internal data class Spine(
 internal data class Itemref(
     val idref: String,
     val linear: Boolean,
-    val properties: List<String>
+    val properties: List<String>,
 ) {
     companion object {
         fun parse(element: ElementNode, prefixMap: Map<String, String>): Itemref? {

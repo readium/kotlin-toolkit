@@ -82,7 +82,7 @@ public sealed class Url : Parcelable {
      * Represents a list of query parameters in a URL.
      */
     public data class Query(
-        public val parameters: List<QueryParameter>
+        public val parameters: List<QueryParameter>,
     ) {
 
         /**
@@ -103,7 +103,7 @@ public sealed class Url : Parcelable {
      */
     public data class QueryParameter(
         public val name: String,
-        public val value: String?
+        public val value: String?,
     )
 
     /**
@@ -418,7 +418,7 @@ private fun String.isValidUrl(): Boolean =
 
 @JvmInline
 public value class FileExtension(
-    public val value: String
+    public val value: String,
 ) {
     override fun toString(): String = value
 }

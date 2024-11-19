@@ -17,7 +17,7 @@ import org.readium.r2.shared.extensions.tryOrNull
  */
 public class SingleFragmentFactory<T : Fragment>(
     public val fragmentClass: Class<T>,
-    private val factory: () -> T
+    private val factory: () -> T,
 ) : FragmentFactory() {
 
     public operator fun invoke(): T =

@@ -13,7 +13,7 @@ import androidx.compose.ui.unit.Velocity
 import timber.log.Timber
 
 internal class LoggingNestedScrollConnection(
-    private val delegateNestedScrollConnection: NestedScrollConnection
+    private val delegateNestedScrollConnection: NestedScrollConnection,
 ) : NestedScrollConnection {
 
     override suspend fun onPostFling(consumed: Velocity, available: Velocity): Velocity {
@@ -24,7 +24,7 @@ internal class LoggingNestedScrollConnection(
     override fun onPostScroll(
         consumed: Offset,
         available: Offset,
-        source: NestedScrollSource
+        source: NestedScrollSource,
     ): Offset {
         Timber.d("onPostScroll consumed, $consumed, available $available")
         return delegateNestedScrollConnection.onPostScroll(consumed, available, source)

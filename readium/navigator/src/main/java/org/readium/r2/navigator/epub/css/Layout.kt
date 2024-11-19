@@ -19,7 +19,7 @@ import org.readium.r2.shared.util.Language
 internal data class Layout(
     val language: Language? = null,
     val stylesheets: Stylesheets = Stylesheets.Default,
-    val readingProgression: ReadingProgression = ReadingProgression.LTR
+    val readingProgression: ReadingProgression = ReadingProgression.LTR,
 ) {
     /**
      * Readium CSS stylesheet variants.
@@ -40,11 +40,13 @@ internal data class Layout(
         CjkVertical("cjk-vertical", HtmlDir.Unspecified),
 
         /** Asian language, laid out horizontally */
-        CjkHorizontal("cjk-horizontal", HtmlDir.Ltr);
+        CjkHorizontal("cjk-horizontal", HtmlDir.Ltr),
     }
 
     enum class HtmlDir {
-        Unspecified, Ltr, Rtl;
+        Unspecified,
+        Ltr,
+        Rtl,
     }
 
     companion object {

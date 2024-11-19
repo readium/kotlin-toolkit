@@ -16,7 +16,7 @@ import org.readium.r2.shared.util.Language
 @OptIn(ExperimentalReadiumApi::class)
 class TtsPreferencesEditor(
     private val editor: AndroidTtsPreferencesEditor,
-    private val availableVoices: Set<AndroidTtsEngine.Voice>
+    private val availableVoices: Set<AndroidTtsEngine.Voice>,
 ) : PreferencesEditor<AndroidTtsPreferences> {
 
     override val preferences: AndroidTtsPreferences

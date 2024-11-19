@@ -15,7 +15,7 @@ import org.readium.r2.testapp.reader.ReaderViewModel
 import org.readium.r2.testapp.utils.compose.ComposeBottomSheetDialogFragment
 
 abstract class UserPreferencesBottomSheetDialogFragment(
-    private val title: String
+    private val title: String,
 ) : ComposeBottomSheetDialogFragment(
     isScrollable = true
 ) {

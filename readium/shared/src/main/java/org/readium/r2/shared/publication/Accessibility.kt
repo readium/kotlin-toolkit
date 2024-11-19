@@ -55,7 +55,7 @@ public data class Accessibility(
     val accessModes: Set<AccessMode>,
     val accessModesSufficient: Set<Set<PrimaryAccessMode>>,
     val features: Set<Feature>,
-    val hazards: Set<Hazard>
+    val hazards: Set<Hazard>,
 ) : JSONable, Parcelable {
 
     /**
@@ -97,7 +97,7 @@ public data class Accessibility(
     public data class Certification(
         val certifiedBy: String?,
         val credential: String?,
-        val report: String?
+        val report: String?,
     ) : JSONable, Parcelable {
 
         override fun toJSON(): JSONObject = JSONObject().apply {
@@ -115,7 +115,7 @@ public data class Accessibility(
              */
             public fun fromJSON(
                 json: JSONObject?,
-                warnings: WarningLogger? = null
+                warnings: WarningLogger? = null,
             ): Certification? {
                 json ?: return null
                 val certifiedBy = json.optNullableString("certifiedBy")
@@ -253,7 +253,8 @@ public data class Accessibility(
          * Indicates that visual perception is necessary to consume the information.
          */
         @SerialName("visual")
-        VISUAL("visual");
+        VISUAL("visual"),
+        ;
 
         public companion object : MapCompanion<String, PrimaryAccessMode>(
             entries.toTypedArray(),

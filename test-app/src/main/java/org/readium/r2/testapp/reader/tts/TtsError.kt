@@ -18,7 +18,7 @@ import org.readium.r2.testapp.utils.UserError
 @OptIn(ExperimentalReadiumApi::class)
 sealed class TtsError(
     override val message: String,
-    override val cause: Error? = null
+    override val cause: Error? = null,
 ) : Error {
 
     class ContentError(override val cause: TtsNavigator.Error.ContentError) :

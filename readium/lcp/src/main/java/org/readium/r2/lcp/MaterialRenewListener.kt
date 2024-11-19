@@ -34,7 +34,7 @@ import org.readium.r2.shared.util.Url
 public class MaterialRenewListener(
     private val license: LcpLicense,
     private val caller: ActivityResultCaller,
-    private val fragmentManager: FragmentManager
+    private val fragmentManager: FragmentManager,
 ) : LcpLicense.RenewListener {
 
     override suspend fun preferredEndDate(maximumDate: Instant?): Instant? = suspendCancellableCoroutine { cont ->

@@ -56,13 +56,13 @@ private var observers: MutableList<Pair<Observer, ObserverPolicy>> = mutableList
 
 internal enum class ObserverPolicy {
     Once,
-    Always
+    Always,
 }
 
 internal data class ValidatedDocuments constructor(
     val license: LicenseDocument,
     private val context: Context,
-    val status: StatusDocument? = null
+    val status: StatusDocument? = null,
 ) {
     fun getContext(): LcpClient.Context {
         when (context) {
@@ -81,13 +81,13 @@ internal sealed class State {
     data class checkLicenseStatus(
         val license: LicenseDocument,
         val status: StatusDocument?,
-        val statusDocumentTakesPrecedence: Boolean
+        val statusDocumentTakesPrecedence: Boolean,
     ) : State()
     data class retrievePassphrase(val license: LicenseDocument, val status: StatusDocument?) : State()
     data class validateIntegrity(
         val license: LicenseDocument,
         val status: StatusDocument?,
-        val passphrase: String
+        val passphrase: String,
     ) : State()
     data class registerDevice(val documents: ValidatedDocuments, val link: Link) : State()
     data class valid(val documents: ValidatedDocuments) : State()
@@ -121,7 +121,7 @@ internal class LicenseValidation(
     val network: NetworkService,
     val passphrases: PassphrasesService,
     val context: android.content.Context,
-    val onLicenseValidated: (LicenseDocument) -> Unit
+    val onLicenseValidated: (LicenseDocument) -> Unit,
 ) {
 
     var state: State = State.start
@@ -395,7 +395,7 @@ internal class LicenseValidation(
     private fun checkLicenseStatus(
         license: LicenseDocument,
         status: StatusDocument?,
-        statusDocumentTakesPrecedence: Boolean
+        statusDocumentTakesPrecedence: Boolean,
     ) {
         var error: LcpError.LicenseStatus? = null
         val now = Instant.now()
@@ -471,7 +471,7 @@ internal class LicenseValidation(
         fun observe(
             licenseValidation: LicenseValidation,
             policy: ObserverPolicy = ObserverPolicy.Always,
-            observer: Observer
+            observer: Observer,
         ) {
             var notified = true
             when (licenseValidation.stateMachine.state) {

@@ -27,12 +27,12 @@ import org.readium.r2.shared.util.tryRecover
 
 internal class AssetSniffer(
     private val formatSniffer: FormatSniffer = DefaultFormatSniffer(),
-    private val archiveOpener: ArchiveOpener = DefaultArchiveOpener()
+    private val archiveOpener: ArchiveOpener = DefaultArchiveOpener(),
 ) {
 
     sealed class SniffError(
         override val message: String,
-        override val cause: Error?
+        override val cause: Error?,
     ) : Error {
 
         data object NotRecognized :
@@ -44,7 +44,7 @@ internal class AssetSniffer(
 
     suspend fun sniff(
         source: Either<Resource, Container<Resource>>,
-        hints: FormatHints
+        hints: FormatHints,
     ): Try<Asset, SniffError> {
         val initialFormat = formatSniffer
             .sniffHints(hints)
@@ -73,7 +73,7 @@ internal class AssetSniffer(
         source: Either<Resource, Container<Resource>>,
         cache: Either<Readable, Container<Readable>>,
         hints: FormatHints,
-        forceRefine: Boolean
+        forceRefine: Boolean,
     ): Try<Asset, ReadError> {
         when (cache) {
             is Either.Left ->
@@ -115,7 +115,7 @@ internal class AssetSniffer(
 
     private suspend fun tryOpenArchive(
         format: Format,
-        source: Readable
+        source: Readable,
     ): Try<ContainerAsset?, ReadError> =
         if (!format.isValid()) {
             archiveOpener.sniffOpen(source)

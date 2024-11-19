@@ -54,7 +54,7 @@ public class Publication(
     public val manifest: Manifest,
     @InternalReadiumApi
     public val container: Container<Resource> = EmptyContainer(),
-    private val servicesBuilder: ServicesBuilder = ServicesBuilder()
+    private val servicesBuilder: ServicesBuilder = ServicesBuilder(),
 ) : PublicationServicesHolder {
 
     private val services = ListPublicationServicesHolder()
@@ -226,7 +226,7 @@ public class Publication(
         public class Context(
             public val manifest: Manifest,
             public val container: Container<Resource>,
-            public val services: PublicationServicesHolder
+            public val services: PublicationServicesHolder,
         )
 
         /**
@@ -241,7 +241,7 @@ public class Publication(
      * Provides helpers to manipulate the list of services of a [Publication].
      */
     public class ServicesBuilder private constructor(
-        private val serviceFactories: MutableMap<String, ServiceFactory>
+        private val serviceFactories: MutableMap<String, ServiceFactory>,
     ) {
 
         @OptIn(ExperimentalReadiumApi::class)
@@ -253,7 +253,7 @@ public class Publication(
             cover: ServiceFactory? = null,
             locator: ServiceFactory? = null,
             positions: ServiceFactory? = null,
-            search: ServiceFactory? = null
+            search: ServiceFactory? = null,
         ) : this(
             mapOf(
                 CacheService::class.java.simpleName to cache,
@@ -317,7 +317,7 @@ public class Publication(
          */
         public fun <T : Service> decorate(
             serviceType: KClass<T>,
-            transform: ((ServiceFactory)?) -> ServiceFactory
+            transform: ((ServiceFactory)?) -> ServiceFactory,
         ) {
             val key = requireNotNull(serviceType.simpleName)
             serviceFactories[key] = transform(serviceFactories[key])
@@ -333,7 +333,7 @@ public class Publication(
     public class Builder(
         public var manifest: Manifest,
         public var container: Container<Resource>,
-        public var servicesBuilder: ServicesBuilder = ServicesBuilder()
+        public var servicesBuilder: ServicesBuilder = ServicesBuilder(),
     ) {
 
         public fun build(): Publication = Publication(

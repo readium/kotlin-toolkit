@@ -27,7 +27,7 @@ import androidx.media3.common.util.Log
 import androidx.media3.common.util.Util
 
 @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
-/** A manager that wraps [AudioManager] to control/listen audio stream volume.  */ /* package */
+/** A manager that wraps [AudioManager] to control/listen audio stream volume.  */
 internal class StreamVolumeManager(context: Context, eventHandler: Handler, listener: Listener) {
     /** A listener for changes in the manager.  */
     interface Listener {
@@ -190,7 +190,7 @@ internal class StreamVolumeManager(context: Context, eventHandler: Handler, list
         private const val VOLUME_FLAGS = AudioManager.FLAG_SHOW_UI
         private fun getVolumeFromManager(
             audioManager: AudioManager,
-            streamType: @C.StreamType Int
+            streamType: @C.StreamType Int,
         ): Int {
             // AudioManager#getStreamVolume(int) throws an exception on some devices. See
             // https://github.com/google/ExoPlayer/issues/8191.
@@ -208,7 +208,7 @@ internal class StreamVolumeManager(context: Context, eventHandler: Handler, list
 
         private fun getMutedFromManager(
             audioManager: AudioManager,
-            streamType: @C.StreamType Int
+            streamType: @C.StreamType Int,
         ): Boolean {
             return if (Util.SDK_INT >= 23) {
                 audioManager.isStreamMute(streamType)

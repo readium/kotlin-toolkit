@@ -32,7 +32,7 @@ import org.readium.r2.shared.util.Try
  */
 public fun Readable.buffered(
     contentLength: Long? = null,
-    bufferSize: Int = DEFAULT_BUFFER_SIZE
+    bufferSize: Int = DEFAULT_BUFFER_SIZE,
 ): Readable =
     ReadableBuffer(source = this, contentLength = contentLength, bufferSize = bufferSize)
 
@@ -47,7 +47,7 @@ public fun Readable.buffered(
 internal class ReadableBuffer internal constructor(
     private val source: Readable,
     contentLength: Long? = null,
-    private val bufferSize: Int = DEFAULT_BUFFER_SIZE
+    private val bufferSize: Int = DEFAULT_BUFFER_SIZE,
 ) : Readable by source {
 
     /**

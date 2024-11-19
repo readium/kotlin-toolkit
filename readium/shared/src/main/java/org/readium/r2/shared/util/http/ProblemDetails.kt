@@ -38,7 +38,7 @@ public data class ProblemDetails(
     val type: String? = null,
     val status: Int? = null,
     val detail: String? = null,
-    val instance: String? = null
+    val instance: String? = null,
 ) : Parcelable {
 
     public companion object {

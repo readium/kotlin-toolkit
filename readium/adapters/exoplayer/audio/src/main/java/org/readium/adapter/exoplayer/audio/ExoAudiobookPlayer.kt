@@ -22,7 +22,7 @@ internal class ExoAudiobookPlayer(
     private val player: ExoPlayer,
     private val itemDurations: List<Duration>?,
     private val seekForwardIncrement: Duration,
-    private val seekBackwardIncrement: Duration
+    private val seekBackwardIncrement: Duration,
 ) : ForwardingPlayer(player) {
 
     fun seekBy(offset: Duration) {
@@ -46,7 +46,7 @@ internal class ExoAudiobookPlayer(
     @OptIn(ExperimentalTime::class)
     private fun smartSeekBy(
         offset: Duration,
-        durations: List<Duration>
+        durations: List<Duration>,
     ) {
         val (newIndex, newPosition) =
             SmartSeeker.dispatchSeek(

@@ -16,13 +16,13 @@ import org.readium.r2.lcp.LcpAuthenticating
  */
 public class LcpPassphraseAuthentication(
     private val passphrase: String,
-    private val fallback: LcpAuthenticating? = null
+    private val fallback: LcpAuthenticating? = null,
 ) : LcpAuthenticating {
 
     override suspend fun retrievePassphrase(
         license: LcpAuthenticating.AuthenticatedLicense,
         reason: LcpAuthenticating.AuthenticationReason,
-        allowUserInteraction: Boolean
+        allowUserInteraction: Boolean,
     ): String? {
         if (reason != LcpAuthenticating.AuthenticationReason.PassphraseNotFound) {
             return fallback?.retrievePassphrase(

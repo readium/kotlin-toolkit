@@ -41,7 +41,7 @@ class CatalogFeedListFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedInstanceState: Bundle?
+        savedInstanceState: Bundle?,
     ): View {
         catalogFeedListViewModel.eventChannel.receive(this) { handleEvent(it) }
         binding = FragmentCatalogFeedListBinding.inflate(inflater, container, false)
@@ -164,7 +164,7 @@ class CatalogFeedListFragment : Fragment() {
             outRect: Rect,
             view: View,
             parent: RecyclerView,
-            state: RecyclerView.State
+            state: RecyclerView.State,
         ) {
             outRect.bottom = verticalSpaceHeight
         }

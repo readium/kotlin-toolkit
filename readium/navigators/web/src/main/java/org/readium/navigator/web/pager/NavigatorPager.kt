@@ -22,8 +22,7 @@ internal fun NavigatorPager(
     reverseLayout: Boolean,
     beyondViewportPageCount: Int = 2,
     key: ((index: Int) -> Any)? = null,
-    pageContent: @Composable PagerScope.(Int) -> Unit
-
+    pageContent: @Composable PagerScope.(Int) -> Unit,
 ) {
     val flingBehavior = PagerDefaults.flingBehavior(
         state = state,

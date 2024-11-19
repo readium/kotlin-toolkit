@@ -43,7 +43,7 @@ data class Bookmark(
     @ColumnInfo(name = LOCATION)
     val location: String,
     @ColumnInfo(name = LOCATOR_TEXT)
-    val locatorText: String
+    val locatorText: String,
 ) {
 
     val locator

@@ -41,7 +41,7 @@ internal class WebViewServer(
     private val publication: Publication,
     servedAssets: List<String>,
     private val disableSelectionWhenProtected: Boolean,
-    private val onResourceLoadFailed: (Url, ReadError) -> Unit
+    private val onResourceLoadFailed: (Url, ReadError) -> Unit,
 ) {
     companion object {
         val publicationBaseHref = AbsoluteUrl("https://readium/publication/")!!

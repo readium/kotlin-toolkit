@@ -38,7 +38,7 @@ public fun interface ResourceContentIteratorFactory {
         readingOrderIndex: Int,
         resource: Resource,
         mediaType: MediaType,
-        locator: Locator
+        locator: Locator,
     ): Content.Iterator?
 }
 
@@ -58,7 +58,7 @@ public class PublicationContentIterator(
     private val container: Container<Resource>,
     private val services: PublicationServicesHolder,
     private val startLocator: Locator?,
-    private val resourceContentIteratorFactories: List<ResourceContentIteratorFactory>
+    private val resourceContentIteratorFactories: List<ResourceContentIteratorFactory>,
 ) : Content.Iterator {
 
     /**
@@ -66,7 +66,7 @@ public class PublicationContentIterator(
      */
     private data class IndexedIterator(
         val index: Int,
-        val iterator: Content.Iterator
+        val iterator: Content.Iterator,
     )
 
     /**
@@ -74,7 +74,7 @@ public class PublicationContentIterator(
      */
     private data class ElementInDirection(
         val element: Content.Element,
-        val direction: Direction
+        val direction: Direction,
     )
 
     private var _currentIterator: IndexedIterator? = null
@@ -177,7 +177,8 @@ public class PublicationContentIterator(
     }
 
     private enum class Direction(val delta: Int) {
-        Forward(+1), Backward(-1)
+        Forward(+1),
+        Backward(-1),
     }
 
     private suspend fun IndexedIterator.nextContentIn(direction: Direction): Content.Element? =

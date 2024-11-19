@@ -13,7 +13,7 @@ import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.shared.util.resource.StringResource
 
 class TestContainer(
-    private val resources: Map<Url, String> = emptyMap()
+    private val resources: Map<Url, String> = emptyMap(),
 ) : Container<Resource> {
 
     companion object {

@@ -27,18 +27,24 @@ import org.readium.r2.shared.util.getOrElse
 
 @ExperimentalReadiumApi
 @OptIn(ExperimentalTime::class, DelicateReadiumApi::class)
-public class AudioNavigatorFactory<S : Configurable.Settings, P : Configurable.Preferences<P>,
-    E : PreferencesEditor<P>> private constructor(
+public class AudioNavigatorFactory<
+    S : Configurable.Settings,
+    P : Configurable.Preferences<P>,
+    E : PreferencesEditor<P>,
+    > private constructor(
     private val publication: Publication,
-    private val audioEngineProvider: AudioEngineProvider<S, P, E>
+    private val audioEngineProvider: AudioEngineProvider<S, P, E>,
 ) {
 
     public companion object {
 
-        public operator fun <S : Configurable.Settings, P : Configurable.Preferences<P>,
-            E : PreferencesEditor<P>> invoke(
+        public operator fun <
+            S : Configurable.Settings,
+            P : Configurable.Preferences<P>,
+            E : PreferencesEditor<P>,
+            > invoke(
             publication: Publication,
-            audioEngineProvider: AudioEngineProvider<S, P, E>
+            audioEngineProvider: AudioEngineProvider<S, P, E>,
         ): AudioNavigatorFactory<S, P, E>? {
             if (!publication.conformsTo(Publication.Profile.AUDIOBOOK)) {
                 return null
@@ -61,22 +67,22 @@ public class AudioNavigatorFactory<S : Configurable.Settings, P : Configurable.P
 
     public sealed class Error(
         override val message: String,
-        override val cause: org.readium.r2.shared.util.Error?
+        override val cause: org.readium.r2.shared.util.Error?,
     ) : org.readium.r2.shared.util.Error {
 
         public class UnsupportedPublication(
-            cause: org.readium.r2.shared.util.Error? = null
+            cause: org.readium.r2.shared.util.Error? = null,
         ) : Error("Publication is not supported.", cause)
 
         public class EngineInitialization(
-            cause: org.readium.r2.shared.util.Error? = null
+            cause: org.readium.r2.shared.util.Error? = null,
         ) : Error("Failed to initialize audio engine.", cause)
     }
 
     public suspend fun createNavigator(
         initialLocator: Locator? = null,
         initialPreferences: P? = null,
-        readingOrder: List<Link> = publication.readingOrder
+        readingOrder: List<Link> = publication.readingOrder,
     ): Try<AudioNavigator<S, P>, Error> {
         fun duration(link: Link, publication: Publication): Duration? {
             var duration: Duration? = link.duration?.seconds
@@ -128,6 +134,6 @@ public class AudioNavigatorFactory<S : Configurable.Settings, P : Configurable.P
     }
 
     public fun createAudioPreferencesEditor(
-        currentPreferences: P
+        currentPreferences: P,
     ): E = audioEngineProvider.createPreferenceEditor(publication, currentPreferences)
 }

@@ -16,7 +16,7 @@ package org.readium.adapter.exoplayer.audio
  */
 public data class ExoPlayerDefaults(
     val pitch: Double? = null,
-    val speed: Double? = null
+    val speed: Double? = null,
 ) {
     init {
         require(pitch == null || pitch > 0)

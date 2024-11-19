@@ -37,13 +37,13 @@ public class ExoPlayerEngineProvider(
     private val metadataProvider: MediaMetadataProvider = DefaultMediaMetadataProvider(),
     private val cacheProvider: ExoPlayerCacheProvider? = null,
     private val defaults: ExoPlayerDefaults = ExoPlayerDefaults(),
-    private val configuration: ExoPlayerEngine.Configuration = ExoPlayerEngine.Configuration()
+    private val configuration: ExoPlayerEngine.Configuration = ExoPlayerEngine.Configuration(),
 ) : AudioEngineProvider<ExoPlayerSettings, ExoPlayerPreferences, ExoPlayerPreferencesEditor> {
 
     override suspend fun createEngine(
         publication: Publication,
         initialLocator: Locator,
-        initialPreferences: ExoPlayerPreferences
+        initialPreferences: ExoPlayerPreferences,
     ): Try<ExoPlayerEngine, Nothing> {
         val metadataFactory = metadataProvider.createMetadataFactory(publication)
         val settingsResolver = ExoPlayerSettingsResolver(defaults)
@@ -80,7 +80,7 @@ public class ExoPlayerEngineProvider(
 
     override fun createPreferenceEditor(
         publication: Publication,
-        initialPreferences: ExoPlayerPreferences
+        initialPreferences: ExoPlayerPreferences,
     ): ExoPlayerPreferencesEditor =
         ExoPlayerPreferencesEditor(
             initialPreferences,

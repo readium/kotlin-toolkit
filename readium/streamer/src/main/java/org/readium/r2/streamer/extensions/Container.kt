@@ -57,7 +57,7 @@ internal fun ResourceAsset.toContainer(): Container<Resource> {
 
 internal suspend fun AssetRetriever.sniffContainerEntries(
     container: Container<Resource>,
-    filter: (Url) -> Boolean
+    filter: (Url) -> Boolean,
 ): Try<Map<Url, Format>, ReadError> =
     container
         .filter(filter)

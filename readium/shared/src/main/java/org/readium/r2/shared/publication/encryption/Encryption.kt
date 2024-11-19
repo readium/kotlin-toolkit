@@ -38,7 +38,7 @@ public data class Encryption(
     val compression: String? = null,
     val originalLength: Long? = null,
     val profile: String? = null,
-    val scheme: String? = null
+    val scheme: String? = null,
 ) : JSONable, Parcelable {
 
     /**

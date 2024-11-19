@@ -34,7 +34,7 @@ import org.readium.r2.shared.util.mediatype.MediaType
 /** Sniffs an HTML or XHTML document. */
 public object HtmlSniffer : FormatSniffer {
     override fun sniffHints(
-        hints: FormatHints
+        hints: FormatHints,
     ): Format? {
         if (
             hints.hasFileExtension("htm", "html") ||
@@ -55,7 +55,7 @@ public object HtmlSniffer : FormatSniffer {
 
     override suspend fun sniffBlob(
         format: Format,
-        source: Readable
+        source: Readable,
     ): Try<Format, ReadError> {
         if (format.hasMoreThan(Specification.Xml) || !source.canReadWholeBlob()) {
             return Try.success(format)
@@ -106,7 +106,7 @@ public object HtmlSniffer : FormatSniffer {
 public object Opds1Sniffer : FormatSniffer {
 
     override fun sniffHints(
-        hints: FormatHints
+        hints: FormatHints,
     ): Format? {
         // OPDS 1
         if (hints.hasMediaType("application/atom+xml;type=entry;profile=opds-catalog")) {
@@ -127,7 +127,7 @@ public object Opds1Sniffer : FormatSniffer {
 
     override suspend fun sniffBlob(
         format: Format,
-        source: Readable
+        source: Readable,
     ): Try<Format, ReadError> {
         if (format.hasMoreThan(Specification.Xml) || !source.canReadWholeBlob()) {
             return Try.success(format)
@@ -202,7 +202,7 @@ public object Opds2Sniffer : FormatSniffer {
 
     override suspend fun sniffBlob(
         format: Format,
-        source: Readable
+        source: Readable,
     ): Try<Format, ReadError> {
         if (format.hasMoreThan(Specification.Json) || !source.canReadWholeBlob()) {
             return Try.success(format)
@@ -227,10 +227,10 @@ public object Opds2Sniffer : FormatSniffer {
                     firstOrNull { it.rels.any(predicate) }
 
                 if (rwpm.links.firstWithRelMatching {
-                    it.startsWith(
+                        it.startsWith(
                             "http://opds-spec.org/acquisition"
                         )
-                } != null
+                    } != null
                 ) {
                     return Try.success(opds2PublicationFormat)
                 }
@@ -267,7 +267,7 @@ public object Opds2Sniffer : FormatSniffer {
 /** Sniffs an LCP License Document. */
 public object LcpLicenseSniffer : FormatSniffer {
     override fun sniffHints(
-        hints: FormatHints
+        hints: FormatHints,
     ): Format? {
         if (
             hints.hasFileExtension("lcpl") ||
@@ -281,7 +281,7 @@ public object LcpLicenseSniffer : FormatSniffer {
 
     override suspend fun sniffBlob(
         format: Format,
-        source: Readable
+        source: Readable,
     ): Try<Format, ReadError> {
         if (
             format.hasMoreThan(Specification.Json) ||
@@ -309,7 +309,7 @@ public object LcpLicenseSniffer : FormatSniffer {
 public object BitmapSniffer : FormatSniffer {
 
     override fun sniffHints(
-        hints: FormatHints
+        hints: FormatHints,
     ): Format? {
         if (
             hints.hasFileExtension("avif") ||
@@ -496,7 +496,7 @@ public object AudioSniffer : FormatSniffer {
 /** Sniffs a Readium Web Manifest. */
 public object RwpmSniffer : FormatSniffer {
     override fun sniffHints(
-        hints: FormatHints
+        hints: FormatHints,
     ): Format? {
         if (hints.hasMediaType("application/audiobook+json")) {
             return rwpmAudioFormat
@@ -515,7 +515,7 @@ public object RwpmSniffer : FormatSniffer {
 
     public override suspend fun sniffBlob(
         format: Format,
-        source: Readable
+        source: Readable,
     ): Try<Format, ReadError> {
         if (
             format.hasMoreThan(Specification.Json) ||
@@ -568,7 +568,7 @@ public object RwpmSniffer : FormatSniffer {
 public object RpfSniffer : FormatSniffer {
 
     override fun sniffHints(
-        hints: FormatHints
+        hints: FormatHints,
     ): Format? {
         if (
             hints.hasFileExtension("audiobook") ||
@@ -609,7 +609,7 @@ public object RpfSniffer : FormatSniffer {
 
     override suspend fun sniffContainer(
         format: Format,
-        container: Container<Readable>
+        container: Container<Readable>,
     ): Try<Format, ReadError> {
         if (
             format.hasMoreThan(Specification.Zip, Specification.Rpf, Specification.Lcp)
@@ -701,7 +701,7 @@ public object W3cWpubSniffer : FormatSniffer {
 
     override suspend fun sniffBlob(
         format: Format,
-        source: Readable
+        source: Readable,
     ): Try<Format, ReadError> {
         if (format.hasMoreThan(Specification.Json) || !source.canReadWholeBlob()) {
             return Try.success(format)
@@ -740,7 +740,7 @@ public object W3cWpubSniffer : FormatSniffer {
  */
 public object EpubSniffer : FormatSniffer {
     override fun sniffHints(
-        hints: FormatHints
+        hints: FormatHints,
     ): Format? {
         if (
             hints.hasFileExtension("epub") ||
@@ -754,7 +754,7 @@ public object EpubSniffer : FormatSniffer {
 
     override suspend fun sniffContainer(
         format: Format,
-        container: Container<Readable>
+        container: Container<Readable>,
     ): Try<Format, ReadError> {
         if (format.hasMoreThan(Specification.Zip)) {
             return Try.success(format)
@@ -790,7 +790,7 @@ public object EpubSniffer : FormatSniffer {
  */
 public object LpfSniffer : FormatSniffer {
     override fun sniffHints(
-        hints: FormatHints
+        hints: FormatHints,
     ): Format? {
         if (
             hints.hasFileExtension("lpf") ||
@@ -804,7 +804,7 @@ public object LpfSniffer : FormatSniffer {
 
     override suspend fun sniffContainer(
         format: Format,
-        container: Container<Readable>
+        container: Container<Readable>,
     ): Try<Format, ReadError> {
         if (format.hasMoreThan(Specification.Zip)) {
             return Try.success(format)
@@ -846,7 +846,7 @@ public object LpfSniffer : FormatSniffer {
 public object RarSniffer : FormatSniffer {
 
     override fun sniffHints(
-        hints: FormatHints
+        hints: FormatHints,
     ): Format? {
         if (
             hints.hasFileExtension("rar") ||
@@ -871,7 +871,7 @@ public object RarSniffer : FormatSniffer {
 public object ZipSniffer : FormatSniffer {
 
     override fun sniffHints(
-        hints: FormatHints
+        hints: FormatHints,
     ): Format? {
         if (hints.hasMediaType("application/zip") ||
             hints.hasFileExtension("zip")
@@ -938,7 +938,7 @@ public object ArchiveSniffer : FormatSniffer {
     )
 
     override fun sniffHints(
-        hints: FormatHints
+        hints: FormatHints,
     ): Format? {
         if (
             hints.hasFileExtension("cbz") ||
@@ -982,7 +982,7 @@ public object ArchiveSniffer : FormatSniffer {
 
     override suspend fun sniffContainer(
         format: Format,
-        container: Container<Readable>
+        container: Container<Readable>,
     ): Try<Format, ReadError> {
         if (format.hasMoreThan(Specification.Zip, Specification.Rar)) {
             return Try.success(format)
@@ -1063,7 +1063,7 @@ public object ArchiveSniffer : FormatSniffer {
  */
 public object PdfSniffer : FormatSniffer {
     override fun sniffHints(
-        hints: FormatHints
+        hints: FormatHints,
     ): Format? {
         if (
             hints.hasFileExtension("pdf") ||
@@ -1077,7 +1077,7 @@ public object PdfSniffer : FormatSniffer {
 
     override suspend fun sniffBlob(
         format: Format,
-        source: Readable
+        source: Readable,
     ): Try<Format, ReadError> {
         if (format.hasAnySpecification()) {
             return Try.success(format)
@@ -1102,7 +1102,7 @@ public object PdfSniffer : FormatSniffer {
 /** Sniffs a JSON document. */
 public object JsonSniffer : FormatSniffer {
     override fun sniffHints(
-        hints: FormatHints
+        hints: FormatHints,
     ): Format? {
         if (hints.hasFileExtension("json") ||
             hints.hasMediaType("application/json")
@@ -1130,7 +1130,7 @@ public object JsonSniffer : FormatSniffer {
 
     override suspend fun sniffBlob(
         format: Format,
-        source: Readable
+        source: Readable,
     ): Try<Format, ReadError> {
         if (format.hasMoreThan() || !source.canReadWholeBlob()) {
             return Try.success(format)
@@ -1161,7 +1161,7 @@ public object EpubDrmSniffer : FormatSniffer {
 
     override suspend fun sniffContainer(
         format: Format,
-        container: Container<Readable>
+        container: Container<Readable>,
     ): Try<Format, ReadError> {
         if (
             !format.conformsTo(Specification.Epub) ||
@@ -1261,7 +1261,7 @@ private suspend fun Readable.canReadWholeBlob() =
  */
 @Suppress("SameParameterValue")
 private suspend fun Readable.containsJsonKeys(
-    vararg keys: String
+    vararg keys: String,
 ): Try<Boolean, ReadError> {
     val json = readDecodeOrElse(
         decode = { it.decodeJson() },
@@ -1272,7 +1272,7 @@ private suspend fun Readable.containsJsonKeys(
 }
 
 private fun Format.addSpecifications(
-    vararg specifications: Specification
+    vararg specifications: Specification,
 ): Format =
     copy(specification = specification + specifications.toSet())
 

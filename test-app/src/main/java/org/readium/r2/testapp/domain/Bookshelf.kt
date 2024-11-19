@@ -38,14 +38,14 @@ class Bookshelf(
     private val coverStorage: CoverStorage,
     private val publicationOpener: PublicationOpener,
     private val assetRetriever: AssetRetriever,
-    private val publicationRetriever: PublicationRetriever
+    private val publicationRetriever: PublicationRetriever,
 ) {
     sealed class Event {
         data object ImportPublicationSuccess :
             Event()
 
         class ImportPublicationError(
-            val error: ImportError
+            val error: ImportError,
         ) : Event()
     }
 
@@ -56,7 +56,7 @@ class Bookshelf(
         MainScope()
 
     fun importPublicationFromStorage(
-        uri: Uri
+        uri: Uri,
     ) {
         coroutineScope.launch {
             addBookFeedback(publicationRetriever.retrieveFromStorage(uri))
@@ -64,7 +64,7 @@ class Bookshelf(
     }
 
     fun importPublicationFromHttp(
-        url: AbsoluteUrl
+        url: AbsoluteUrl,
     ) {
         coroutineScope.launch {
             addBookFeedback(publicationRetriever.retrieveFromHttp(url))
@@ -72,7 +72,7 @@ class Bookshelf(
     }
 
     fun importPublicationFromOpds(
-        publication: Publication
+        publication: Publication,
     ) {
         coroutineScope.launch {
             addBookFeedback(publicationRetriever.retrieveFromOpds(publication))
@@ -80,7 +80,7 @@ class Bookshelf(
     }
 
     fun addPublicationFromWeb(
-        url: AbsoluteUrl
+        url: AbsoluteUrl,
     ) {
         coroutineScope.launch {
             addBookFeedback(url)
@@ -88,7 +88,7 @@ class Bookshelf(
     }
 
     fun addPublicationFromStorage(
-        url: AbsoluteUrl
+        url: AbsoluteUrl,
     ) {
         coroutineScope.launch {
             addBookFeedback(url)
@@ -96,7 +96,7 @@ class Bookshelf(
     }
 
     private suspend fun addBookFeedback(
-        retrieverResult: Try<PublicationRetriever.Result, ImportError>
+        retrieverResult: Try<PublicationRetriever.Result, ImportError>,
     ) {
         retrieverResult
             .map { addBook(it.publication.toUrl(), it.format, it.coverUrl) }
@@ -107,7 +107,7 @@ class Bookshelf(
     private suspend fun addBookFeedback(
         url: AbsoluteUrl,
         format: Format? = null,
-        coverUrl: AbsoluteUrl? = null
+        coverUrl: AbsoluteUrl? = null,
     ) {
         addBook(url, format, coverUrl)
             .onSuccess { channel.send(Event.ImportPublicationSuccess) }
@@ -117,7 +117,7 @@ class Bookshelf(
     private suspend fun addBook(
         url: AbsoluteUrl,
         format: Format? = null,
-        coverUrl: AbsoluteUrl? = null
+        coverUrl: AbsoluteUrl? = null,
     ): Try<Unit, ImportError> {
         val asset =
             if (format == null) {

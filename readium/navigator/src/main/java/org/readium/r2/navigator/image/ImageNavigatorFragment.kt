@@ -58,7 +58,7 @@ import org.readium.r2.shared.util.mediatype.MediaType
 public class ImageNavigatorFragment private constructor(
     publication: Publication,
     private val initialLocator: Locator? = null,
-    internal val listener: Listener? = null
+    internal val listener: Listener? = null,
 ) : NavigatorFragment(publication), OverflowableNavigator {
 
     public interface Listener : VisualNavigator.Listener
@@ -95,7 +95,7 @@ public class ImageNavigatorFragment private constructor(
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedInstanceState: Bundle?
+        savedInstanceState: Bundle?,
     ): View {
         currentActivity = requireActivity()
         _binding = ReadiumNavigatorViewpagerBinding.inflate(inflater, container, false)
@@ -254,7 +254,7 @@ public class ImageNavigatorFragment private constructor(
         public fun createFactory(
             publication: Publication,
             initialLocator: Locator? = null,
-            listener: Listener? = null
+            listener: Listener? = null,
         ): FragmentFactory =
             createFragmentFactory { ImageNavigatorFragment(publication, initialLocator, listener) }
 

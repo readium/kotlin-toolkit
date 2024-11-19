@@ -30,7 +30,7 @@ internal class PassphrasesRepository(private val lcpDao: LcpDao) {
         passphraseHash: String,
         licenseId: String,
         provider: String,
-        userId: String?
+        userId: String?,
     ) {
         val transaction = Passphrase(
             licenseId = licenseId,

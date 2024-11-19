@@ -21,5 +21,5 @@ public data class AndroidTtsSettings(
     override val overrideContentLanguage: Boolean,
     val pitch: Double,
     val speed: Double,
-    val voices: Map<Language, AndroidTtsEngine.Voice.Id>
+    val voices: Map<Language, AndroidTtsEngine.Voice.Id>,
 ) : TtsEngine.Settings

@@ -34,7 +34,7 @@ import org.readium.r2.shared.util.data.ReadError
 @ExperimentalReadiumApi
 public class PsPdfKitEngineProvider(
     private val defaults: PsPdfKitDefaults = PsPdfKitDefaults(),
-    private val listener: Listener? = null
+    private val listener: Listener? = null,
 ) : PdfEngineProvider<PsPdfKitSettings, PsPdfKitPreferences, PsPdfKitPreferencesEditor> {
 
     public interface Listener : PdfEngineProvider.Listener {
@@ -44,7 +44,7 @@ public class PsPdfKitEngineProvider(
     }
 
     override fun createDocumentFragmentFactory(
-        input: PdfDocumentFragmentInput<PsPdfKitSettings>
+        input: PdfDocumentFragmentInput<PsPdfKitSettings>,
     ): SingleFragmentFactory<PsPdfKitDocumentFragment> =
         createFragmentFactory {
             PsPdfKitDocumentFragment(
@@ -80,7 +80,7 @@ public class PsPdfKitEngineProvider(
 
     override fun createPreferenceEditor(
         publication: Publication,
-        initialPreferences: PsPdfKitPreferences
+        initialPreferences: PsPdfKitPreferences,
     ): PsPdfKitPreferencesEditor =
         PsPdfKitPreferencesEditor(
             initialPreferences = initialPreferences,

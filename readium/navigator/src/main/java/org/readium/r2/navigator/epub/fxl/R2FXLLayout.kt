@@ -564,7 +564,7 @@ internal class R2FXLLayout : FrameLayout {
             targetZoom: Float,
             focalX: Float,
             focalY: Float,
-            ensureTranslations: Boolean
+            ensureTranslations: Boolean,
         ): AnimatedZoomRunnable {
             mFocalX = focalX
             mFocalY = focalY

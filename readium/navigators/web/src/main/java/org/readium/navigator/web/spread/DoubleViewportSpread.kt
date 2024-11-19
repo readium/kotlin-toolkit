@@ -36,7 +36,7 @@ internal fun DoubleViewportSpread(
     onTap: (TapEvent) -> Unit,
     onLinkActivated: (Url, String) -> Unit,
     state: DoubleSpreadState,
-    backgroundColor: Color
+    backgroundColor: Color,
 ) {
     Box(
         modifier = Modifier.fillMaxSize(),
@@ -97,7 +97,7 @@ internal class DoubleSpreadState(
     val webViewClient: WebViewClient,
     val spread: DoubleViewportSpread,
     val fit: State<Fit>,
-    val displayArea: State<DisplayArea>
+    val displayArea: State<DisplayArea>,
 ) {
     val left: AbsoluteUrl? =
         spread.leftPage?.let { publicationBaseUrl.resolve(it.href) }

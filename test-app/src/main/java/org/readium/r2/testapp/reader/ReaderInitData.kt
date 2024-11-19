@@ -30,14 +30,14 @@ sealed class VisualReaderInitData(
     override val bookId: Long,
     override val publication: Publication,
     val initialLocation: Locator?,
-    val ttsInitData: TtsInitData?
+    val ttsInitData: TtsInitData?,
 ) : ReaderInitData()
 
 class ImageReaderInitData(
     bookId: Long,
     publication: Publication,
     initialLocation: Locator?,
-    ttsInitData: TtsInitData?
+    ttsInitData: TtsInitData?,
 ) : VisualReaderInitData(bookId, publication, initialLocation, ttsInitData)
 
 class EpubReaderInitData(
@@ -46,7 +46,7 @@ class EpubReaderInitData(
     initialLocation: Locator?,
     val preferencesManager: PreferencesManager<EpubPreferences>,
     val navigatorFactory: EpubNavigatorFactory,
-    ttsInitData: TtsInitData?
+    ttsInitData: TtsInitData?,
 ) : VisualReaderInitData(bookId, publication, initialLocation, ttsInitData)
 
 class PdfReaderInitData(
@@ -55,13 +55,13 @@ class PdfReaderInitData(
     initialLocation: Locator?,
     val preferencesManager: PreferencesManager<PdfiumPreferences>,
     val navigatorFactory: PdfiumNavigatorFactory,
-    ttsInitData: TtsInitData?
+    ttsInitData: TtsInitData?,
 ) : VisualReaderInitData(bookId, publication, initialLocation, ttsInitData)
 
 class TtsInitData(
     val mediaServiceFacade: MediaServiceFacade,
     val navigatorFactory: AndroidTtsNavigatorFactory,
-    val preferencesManager: PreferencesManager<AndroidTtsPreferences>
+    val preferencesManager: PreferencesManager<AndroidTtsPreferences>,
 )
 
 class MediaReaderInitData(
@@ -69,11 +69,11 @@ class MediaReaderInitData(
     override val publication: Publication,
     val mediaNavigator: ExoPlayerNavigator,
     val preferencesManager: PreferencesManager<ExoPlayerPreferences>,
-    val navigatorFactory: ExoPlayerNavigatorFactory
+    val navigatorFactory: ExoPlayerNavigatorFactory,
 ) : ReaderInitData()
 
 class DummyReaderInitData(
-    override val bookId: Long
+    override val bookId: Long,
 ) : ReaderInitData() {
     override val publication: Publication = Publication(
         Manifest(

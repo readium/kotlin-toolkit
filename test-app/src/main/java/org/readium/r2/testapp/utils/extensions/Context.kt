@@ -27,7 +27,7 @@ fun Context.color(@ColorRes id: Int): Int {
 suspend fun Context.confirmDialog(
     message: String,
     @StringRes positiveButton: Int = R.string.ok,
-    @StringRes negativeButton: Int = R.string.cancel
+    @StringRes negativeButton: Int = R.string.cancel,
 ): Boolean =
     suspendCancellableCoroutine { cont ->
         AlertDialog.Builder(this)

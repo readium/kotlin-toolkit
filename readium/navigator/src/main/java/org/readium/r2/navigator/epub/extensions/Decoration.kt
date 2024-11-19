@@ -19,7 +19,7 @@ import timber.log.Timber
  */
 internal fun List<DecorationChange>.javascriptForGroup(
     group: String,
-    templates: HtmlDecorationTemplates
+    templates: HtmlDecorationTemplates,
 ): String? {
     if (isEmpty()) return null
 

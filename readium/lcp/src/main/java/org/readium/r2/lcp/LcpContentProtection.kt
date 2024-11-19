@@ -39,13 +39,13 @@ import org.readium.r2.shared.util.resource.TransformingContainer
 internal class LcpContentProtection(
     private val lcpService: LcpService,
     private val authentication: LcpAuthenticating,
-    private val assetRetriever: AssetRetriever
+    private val assetRetriever: AssetRetriever,
 ) : ContentProtection {
 
     override suspend fun open(
         asset: Asset,
         credentials: String?,
-        allowUserInteraction: Boolean
+        allowUserInteraction: Boolean,
     ): Try<ContentProtection.OpenResult, ContentProtection.OpenError> =
         when (asset) {
             is ContainerAsset -> openPublication(asset, credentials, allowUserInteraction)
@@ -55,7 +55,7 @@ internal class LcpContentProtection(
     private suspend fun openPublication(
         asset: ContainerAsset,
         credentials: String?,
-        allowUserInteraction: Boolean
+        allowUserInteraction: Boolean,
     ): Try<ContentProtection.OpenResult, ContentProtection.OpenError> {
         if (
             !asset.format.conformsTo(Specification.Lcp)
@@ -70,7 +70,7 @@ internal class LcpContentProtection(
     private suspend fun retrieveLicense(
         asset: Asset,
         credentials: String?,
-        allowUserInteraction: Boolean
+        allowUserInteraction: Boolean,
     ): Try<LcpLicense, LcpError> {
         val authentication = credentials
             ?.let { LcpPassphraseAuthentication(it, fallback = this.authentication) }
@@ -81,7 +81,7 @@ internal class LcpContentProtection(
 
     private suspend fun createResultAsset(
         asset: ContainerAsset,
-        license: Try<LcpLicense, LcpError>
+        license: Try<LcpLicense, LcpError>,
     ): Try<ContentProtection.OpenResult, ContentProtection.OpenError> {
         // ContentProtectionService should not expose errors due to user cancellation
         val error = license.failureOrNull()
@@ -150,7 +150,7 @@ internal class LcpContentProtection(
     private suspend fun openLicense(
         licenseAsset: ResourceAsset,
         credentials: String?,
-        allowUserInteraction: Boolean
+        allowUserInteraction: Boolean,
     ): Try<ContentProtection.OpenResult, ContentProtection.OpenError> {
         if (!licenseAsset.format.conformsTo(Specification.LcpLicense)) {
             return Try.failure(ContentProtection.OpenError.AssetNotSupported())

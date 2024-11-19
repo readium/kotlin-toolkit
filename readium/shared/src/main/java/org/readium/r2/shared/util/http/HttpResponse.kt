@@ -26,7 +26,7 @@ public data class HttpResponse(
     val url: AbsoluteUrl,
     val statusCode: HttpStatus,
     val headers: Map<String, List<String>>,
-    val mediaType: MediaType?
+    val mediaType: MediaType?,
 ) {
 
     private val httpHeaders = HttpHeaders(headers)

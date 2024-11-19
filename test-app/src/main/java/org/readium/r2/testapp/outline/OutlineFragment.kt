@@ -50,7 +50,7 @@ class OutlineFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedInstanceState: Bundle?
+        savedInstanceState: Bundle?,
     ): View {
         binding = FragmentOutlineBinding.inflate(inflater, container, false)
         return binding.root
@@ -82,7 +82,7 @@ class OutlineFragment : Fragment() {
 private class OutlineFragmentStateAdapter(
     fragment: Fragment,
     val publication: Publication,
-    val outlines: List<Outline>
+    val outlines: List<Outline>,
 ) :
     FragmentStateAdapter(fragment) {
 
@@ -122,5 +122,5 @@ private enum class Outline(val label: Int) {
     Bookmarks(R.string.bookmarks_tab_label),
     Highlights(R.string.highlights_tab_label),
     PageList(R.string.pagelist_tab_label),
-    Landmarks(R.string.landmarks_tab_label)
+    Landmarks(R.string.landmarks_tab_label),
 }

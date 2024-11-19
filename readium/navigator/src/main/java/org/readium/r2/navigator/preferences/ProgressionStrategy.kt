@@ -30,7 +30,7 @@ public interface ProgressionStrategy<V> {
  */
 public class StepsProgression<T : Comparable<T>>(
     private val steps: List<T>,
-    private val equalsDelta: (T, T) -> Boolean
+    private val equalsDelta: (T, T) -> Boolean,
 ) : ProgressionStrategy<T> {
 
     public companion object {

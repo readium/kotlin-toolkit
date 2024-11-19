@@ -39,7 +39,7 @@ import org.readium.r2.shared.util.toUrl
 
 internal class FileZipContainer(
     private val archive: ZipFile,
-    file: File
+    file: File,
 ) : Container<Resource> {
 
     private inner class Entry(private val url: Url, private val entry: ZipEntry) :

@@ -30,7 +30,7 @@ import org.readium.r2.shared.ExperimentalReadiumApi
 @Serializable
 public enum class Theme(
     @ColorInt public val contentColor: Int,
-    @ColorInt public val backgroundColor: Int
+    @ColorInt public val backgroundColor: Int,
 ) {
     @SerialName("light")
     LIGHT(contentColor = dayContentColor, backgroundColor = dayBackgroundColor),
@@ -39,7 +39,7 @@ public enum class Theme(
     DARK(contentColor = nightContentColor, backgroundColor = nightBackgroundColor),
 
     @SerialName("sepia")
-    SEPIA(contentColor = sepiaContentColor, backgroundColor = sepiaBackgroundColor);
+    SEPIA(contentColor = sepiaContentColor, backgroundColor = sepiaBackgroundColor),
 }
 
 @Serializable
@@ -66,7 +66,7 @@ public enum class TextAlign {
 
     /** Align the text on the right edge of the page. */
     @SerialName("right")
-    RIGHT;
+    RIGHT,
 }
 
 @ExperimentalReadiumApi
@@ -79,7 +79,7 @@ public enum class ColumnCount {
     ONE,
 
     @SerialName("2")
-    TWO;
+    TWO,
 }
 
 @Serializable
@@ -88,7 +88,7 @@ public enum class ImageFilter {
     DARKEN,
 
     @SerialName("invert")
-    INVERT;
+    INVERT,
 }
 
 /**
@@ -132,7 +132,7 @@ public enum class Axis(public val value: String) {
     HORIZONTAL("horizontal"),
 
     @SerialName("vertical")
-    VERTICAL("vertical");
+    VERTICAL("vertical"),
 }
 
 /**
@@ -147,7 +147,7 @@ public enum class Spread(public val value: String) {
     NEVER("never"),
 
     @SerialName("always")
-    ALWAYS("always");
+    ALWAYS("always"),
 }
 
 /**
@@ -159,7 +159,7 @@ public enum class ReadingProgression(public val value: String) {
     LTR("ltr"),
 
     @SerialName("rtl")
-    RTL("rtl");
+    RTL("rtl"),
 }
 
 /**
@@ -177,5 +177,5 @@ public enum class Fit(public val value: String) {
     WIDTH("width"),
 
     @SerialName("height")
-    HEIGHT("height");
+    HEIGHT("height"),
 }

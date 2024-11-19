@@ -21,7 +21,7 @@ import org.readium.r2.shared.InternalReadiumApi
  */
 @InternalReadiumApi
 public class SingleJob(
-    private val scope: CoroutineScope
+    private val scope: CoroutineScope,
 ) {
     private var job: Job? = null
     private val mutex = Mutex()

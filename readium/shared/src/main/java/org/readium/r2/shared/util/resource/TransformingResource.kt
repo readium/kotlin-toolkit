@@ -27,7 +27,7 @@ import org.readium.r2.shared.util.flatMap
  */
 public abstract class TransformingResource(
     private val resource: Resource,
-    private val cacheBytes: Boolean = true
+    private val cacheBytes: Boolean = true,
 ) : Resource by resource {
 
     public companion object {
@@ -36,7 +36,7 @@ public abstract class TransformingResource(
          */
         public operator fun invoke(
             resource: Resource,
-            transform: suspend (ByteArray) -> Try<ByteArray, ReadError>
+            transform: suspend (ByteArray) -> Try<ByteArray, ReadError>,
         ): TransformingResource =
             object : TransformingResource(resource) {
                 override suspend fun transform(data: Try<ByteArray, ReadError>): Try<ByteArray, ReadError> =

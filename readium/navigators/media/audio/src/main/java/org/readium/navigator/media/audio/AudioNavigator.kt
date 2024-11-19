@@ -36,7 +36,7 @@ import timber.log.Timber
 public class AudioNavigator<S : Configurable.Settings, P : Configurable.Preferences<P>> internal constructor(
     private val publication: Publication,
     private val audioEngine: AudioEngine<S, P>,
-    override val readingOrder: ReadingOrder
+    override val readingOrder: ReadingOrder,
 ) :
     MediaNavigator<AudioNavigator.Location, AudioNavigator.Playback, AudioNavigator.ReadingOrder>,
     TimeBasedMediaNavigator<AudioNavigator.Location, AudioNavigator.Playback, AudioNavigator.ReadingOrder>,
@@ -45,17 +45,17 @@ public class AudioNavigator<S : Configurable.Settings, P : Configurable.Preferen
 
     public data class Location(
         override val href: Url,
-        override val offset: Duration
+        override val offset: Duration,
     ) : TimeBasedMediaNavigator.Location
 
     public data class ReadingOrder(
         override val duration: Duration?,
-        override val items: List<Item>
+        override val items: List<Item>,
     ) : TimeBasedMediaNavigator.ReadingOrder {
 
         public data class Item(
             val href: Url,
-            override val duration: Duration?
+            override val duration: Duration?,
         ) : TimeBasedMediaNavigator.ReadingOrder.Item
     }
 
@@ -64,7 +64,7 @@ public class AudioNavigator<S : Configurable.Settings, P : Configurable.Preferen
         override val playWhenReady: Boolean,
         override val index: Int,
         override val offset: Duration,
-        override val buffered: Duration?
+        override val buffered: Duration?,
     ) : TimeBasedMediaNavigator.Playback
 
     public sealed interface State {
@@ -78,7 +78,7 @@ public class AudioNavigator<S : Configurable.Settings, P : Configurable.Preferen
         public data object Buffering :
             State, MediaNavigator.State.Buffering
 
-        public data class Failure<E : AudioEngine.Error> (val error: E) :
+        public data class Failure<E : AudioEngine.Error>(val error: E) :
             State, MediaNavigator.State.Failure
     }
 

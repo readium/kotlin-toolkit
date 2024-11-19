@@ -65,7 +65,7 @@ internal class R2FXLPageFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedInstanceState: Bundle?
+        savedInstanceState: Bundle?,
     ): View {
         secondResourceUrl?.let {
             _doubleBinding = ReadiumNavigatorFragmentFxllayoutDoubleBinding.inflate(

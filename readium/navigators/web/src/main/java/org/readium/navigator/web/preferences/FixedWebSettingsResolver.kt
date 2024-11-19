@@ -15,7 +15,7 @@ import org.readium.r2.shared.publication.ReadingProgression as PublicationReadin
 @ExperimentalReadiumApi
 internal class FixedWebSettingsResolver(
     private val metadata: Metadata,
-    private val defaults: FixedWebDefaults
+    private val defaults: FixedWebDefaults,
 ) {
 
     fun settings(preferences: FixedWebPreferences): FixedWebSettings {

@@ -34,12 +34,12 @@ import org.readium.r2.shared.publication.Metadata
 public class PsPdfKitPreferencesEditor internal constructor(
     initialPreferences: PsPdfKitPreferences,
     publicationMetadata: Metadata,
-    defaults: PsPdfKitDefaults
+    defaults: PsPdfKitDefaults,
 ) : PreferencesEditor<PsPdfKitPreferences> {
 
     private data class State(
         val preferences: PsPdfKitPreferences,
-        val settings: PsPdfKitSettings
+        val settings: PsPdfKitSettings,
     )
 
     private val settingsResolver: PsPdfKitSettingsResolver =

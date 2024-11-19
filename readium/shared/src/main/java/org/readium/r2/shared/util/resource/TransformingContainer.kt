@@ -24,7 +24,7 @@ public typealias EntryTransformer = (Url, Resource) -> Resource
  */
 public class TransformingContainer(
     private val container: Container<Resource>,
-    private val transformers: List<EntryTransformer>
+    private val transformers: List<EntryTransformer>,
 ) : Container<Resource> {
 
     public constructor(container: Container<Resource>, transformer: EntryTransformer) :

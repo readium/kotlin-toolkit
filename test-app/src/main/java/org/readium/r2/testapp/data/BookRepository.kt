@@ -22,7 +22,7 @@ import org.readium.r2.testapp.data.model.Highlight
 import org.readium.r2.testapp.utils.extensions.readium.authorName
 
 class BookRepository(
-    private val booksDao: BooksDao
+    private val booksDao: BooksDao,
 ) {
     fun books(): Flow<List<Book>> = booksDao.getAllBooks()
 
@@ -63,7 +63,7 @@ class BookRepository(
         style: Highlight.Style,
         @ColorInt tint: Int,
         locator: Locator,
-        annotation: String
+        annotation: String,
     ): Long =
         booksDao.insertHighlight(Highlight(bookId, style, tint, locator, annotation))
 
@@ -81,7 +81,7 @@ class BookRepository(
         url: Url,
         mediaType: MediaType,
         publication: Publication,
-        cover: File
+        cover: File,
     ): Long {
         val book = Book(
             creation = DateTime().toDate().time,

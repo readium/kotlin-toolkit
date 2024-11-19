@@ -11,7 +11,7 @@ package org.readium.r2.shared.util.http
  * Status code of an HTTP response.
  */
 public value class HttpStatus(
-    public val code: Int
+    public val code: Int,
 ) : Comparable<HttpStatus> {
 
     override fun compareTo(other: HttpStatus): Int =

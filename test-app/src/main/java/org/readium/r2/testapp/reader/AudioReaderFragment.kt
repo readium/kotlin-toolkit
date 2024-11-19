@@ -62,7 +62,7 @@ class AudioReaderFragment : BaseReaderFragment(), SeekBar.OnSeekBarChangeListene
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedInstanceState: Bundle?
+        savedInstanceState: Bundle?,
     ): View {
         binding = FragmentAudiobookBinding.inflate(inflater, container, false)
         return binding.root
@@ -93,7 +93,7 @@ class AudioReaderFragment : BaseReaderFragment(), SeekBar.OnSeekBarChangeListene
     }
 
     private fun onPlaybackChanged(
-        playback: TimeBasedMediaNavigator.Playback
+        playback: TimeBasedMediaNavigator.Playback,
     ) {
         Timber.v("onPlaybackChanged $playback")
         val failureState = playback.state as? AudioNavigator.State.Failure<*>
@@ -121,7 +121,7 @@ class AudioReaderFragment : BaseReaderFragment(), SeekBar.OnSeekBarChangeListene
     }
 
     private fun updateTimeline(
-        playback: TimeBasedMediaNavigator.Playback
+        playback: TimeBasedMediaNavigator.Playback,
     ) {
         val currentItem = navigator.readingOrder.items[playback.index]
         binding.timelineBar.max = currentItem.duration?.inWholeSeconds?.toInt() ?: 0

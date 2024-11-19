@@ -45,7 +45,8 @@ public class StatusDocument(public val data: ByteArray) {
         Revoked("revoked"),
         Returned("returned"),
         Cancelled("cancelled"),
-        Expired("expired");
+        Expired("expired"),
+        ;
 
         public companion object {
             public operator fun invoke(value: String): Status? = entries.firstOrNull { it.value == value }
@@ -56,7 +57,8 @@ public class StatusDocument(public val data: ByteArray) {
         Register("register"),
         License("license"),
         Return("return"),
-        Renew("renew");
+        Renew("renew"),
+        ;
 
         public companion object {
             public operator fun invoke(value: String): Rel? = entries.firstOrNull { it.value == value }
@@ -111,7 +113,7 @@ public class StatusDocument(public val data: ByteArray) {
     public fun url(
         rel: Rel,
         preferredType: MediaType? = null,
-        parameters: URLParameters = emptyMap()
+        parameters: URLParameters = emptyMap(),
     ): Url {
         val link = link(rel, preferredType)
             ?: linkWithNoType(rel)

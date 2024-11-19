@@ -26,7 +26,7 @@ import timber.log.Timber
  */
 class UserError private constructor(
     val content: Content,
-    val cause: Error?
+    val cause: Error?,
 ) {
 
     constructor(@StringRes userMessageId: Int, vararg args: Any?, cause: Error?) :
@@ -36,7 +36,7 @@ class UserError private constructor(
         @PluralsRes userMessageId: Int,
         quantity: Int?,
         vararg args: Any?,
-        cause: Error?
+        cause: Error?,
     ) :
         this(Content(userMessageId, quantity, *args), cause)
 
@@ -95,7 +95,7 @@ class UserError private constructor(
         class LocalizedString(
             private val userMessageId: Int,
             private val args: Array<out Any?>,
-            private val quantity: Int?
+            private val quantity: Int?,
         ) : Content() {
             override fun getUserMessage(context: Context): String {
                 // Convert complex objects to strings, such as Date, to be interpolated.
@@ -136,7 +136,7 @@ class UserError private constructor(
             operator fun invoke(
                 @PluralsRes userMessageId: Int,
                 quantity: Int?,
-                vararg args: Any?
+                vararg args: Any?,
             ): Content =
                 LocalizedString(userMessageId, args, quantity)
 

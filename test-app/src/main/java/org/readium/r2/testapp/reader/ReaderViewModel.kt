@@ -59,7 +59,7 @@ import timber.log.Timber
 class ReaderViewModel(
     private val bookId: Long,
     private val readerRepository: ReaderRepository,
-    private val bookRepository: BookRepository
+    private val bookRepository: BookRepository,
 ) : ViewModel(),
     EpubNavigatorFragment.Listener,
     ImageNavigatorFragment.Listener,
@@ -198,7 +198,7 @@ class ReaderViewModel(
         locator: Locator,
         style: Highlight.Style,
         @ColorInt tint: Int,
-        annotation: String = ""
+        annotation: String = "",
     ) = viewModelScope.launch {
         bookRepository.addHighlight(bookId, style, tint, locator, annotation)
     }
@@ -285,7 +285,7 @@ class ReaderViewModel(
 
     override fun shouldFollowInternalLink(
         link: Link,
-        context: HyperlinkNavigator.LinkContext?
+        context: HyperlinkNavigator.LinkContext?,
     ): Boolean =
         when (context) {
             is HyperlinkNavigator.FootnoteContext -> {

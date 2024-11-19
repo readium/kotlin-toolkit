@@ -30,7 +30,7 @@ import org.readium.r2.shared.util.data.ReadableBuffer
 public class BufferingResource(
     private val resource: Resource,
     resourceLength: Long? = null,
-    private val bufferSize: Int = DEFAULT_BUFFER_SIZE
+    private val bufferSize: Int = DEFAULT_BUFFER_SIZE,
 ) : Resource by resource {
 
     private val buffer: ReadableBuffer =
@@ -49,6 +49,6 @@ public class BufferingResource(
  */
 public fun Resource.buffered(
     resourceLength: Long? = null,
-    bufferSize: Int = DEFAULT_BUFFER_SIZE
+    bufferSize: Int = DEFAULT_BUFFER_SIZE,
 ): BufferingResource =
     BufferingResource(resource = this, resourceLength = resourceLength, bufferSize = bufferSize)

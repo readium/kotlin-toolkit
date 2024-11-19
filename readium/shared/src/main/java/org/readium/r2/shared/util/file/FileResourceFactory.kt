@@ -17,7 +17,7 @@ import org.readium.r2.shared.util.resource.ResourceFactory
 public class FileResourceFactory : ResourceFactory {
 
     override suspend fun create(
-        url: AbsoluteUrl
+        url: AbsoluteUrl,
     ): Try<Resource, ResourceFactory.Error> {
         val file = url.toFile()
             ?: return Try.failure(ResourceFactory.Error.SchemeNotSupported(url.scheme))

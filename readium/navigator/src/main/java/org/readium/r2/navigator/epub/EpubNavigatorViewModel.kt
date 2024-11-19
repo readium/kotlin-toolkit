@@ -39,7 +39,9 @@ import org.readium.r2.shared.util.RelativeUrl
 import org.readium.r2.shared.util.Url
 
 internal enum class DualPage {
-    AUTO, OFF, ON
+    AUTO,
+    OFF,
+    ON,
 }
 
 @OptIn(ExperimentalReadiumApi::class, DelicateReadiumApi::class)
@@ -51,7 +53,7 @@ internal class EpubNavigatorViewModel(
     val layout: EpubLayout,
     val listener: EpubNavigatorFragment.Listener?,
     private val defaults: EpubDefaults,
-    private val server: WebViewServer
+    private val server: WebViewServer,
 ) : AndroidViewModel(application) {
 
     // Make a copy to prevent new decoration templates from being registered after initializing
@@ -175,7 +177,7 @@ internal class EpubNavigatorViewModel(
      */
     fun navigateToUrl(
         url: AbsoluteUrl,
-        context: HyperlinkNavigator.LinkContext? = null
+        context: HyperlinkNavigator.LinkContext? = null,
     ) = viewModelScope.launch {
         val link = internalLinkFromUrl(url)
         if (link != null) {
@@ -345,7 +347,7 @@ internal class EpubNavigatorViewModel(
             listener: EpubNavigatorFragment.Listener?,
             defaults: EpubDefaults,
             config: EpubNavigatorFragment.Configuration,
-            initialPreferences: EpubPreferences
+            initialPreferences: EpubPreferences,
         ) = createViewModelFactory {
             EpubNavigatorViewModel(
                 application,

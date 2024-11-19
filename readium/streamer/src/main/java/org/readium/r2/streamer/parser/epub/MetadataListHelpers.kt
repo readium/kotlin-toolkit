@@ -17,7 +17,10 @@ internal class MetadataItemsHolder(private var items: List<MetadataItem>) {
         get() = items
 
     fun <T> adapt(adapter: MetadataItemsAdapter<T>): T =
-        adapter.adapt(items).let { items = it.second; it.first }
+        adapter.adapt(items).let {
+            items = it.second
+            it.first
+        }
 }
 
 /**

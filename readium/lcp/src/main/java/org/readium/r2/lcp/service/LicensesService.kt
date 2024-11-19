@@ -61,17 +61,17 @@ internal class LicensesService(
     private val network: NetworkService,
     private val passphrases: PassphrasesService,
     private val context: Context,
-    private val assetRetriever: AssetRetriever
+    private val assetRetriever: AssetRetriever,
 ) : LcpService, CoroutineScope by MainScope() {
 
     override fun contentProtection(
-        authentication: LcpAuthenticating
+        authentication: LcpAuthenticating,
     ): ContentProtection =
         LcpContentProtection(this, authentication, assetRetriever)
 
     override suspend fun injectLicenseDocument(
         licenseDocument: LicenseDocument,
-        publicationFile: File
+        publicationFile: File,
     ): Try<Unit, LcpError> {
         val hashIsCorrect = licenseDocument.publicationLink.hash
             ?.let { publicationFile.checkSha256(it) }
@@ -109,7 +109,7 @@ internal class LicensesService(
 
     override suspend fun acquirePublication(
         lcpl: File,
-        onProgress: (Double) -> Unit
+        onProgress: (Double) -> Unit,
     ): Try<LcpService.AcquiredPublication, LcpError> {
         coroutineContext.ensureActive()
         val bytes = try {
@@ -123,7 +123,7 @@ internal class LicensesService(
 
     override suspend fun acquirePublication(
         lcpl: ByteArray,
-        onProgress: (Double) -> Unit
+        onProgress: (Double) -> Unit,
     ): Try<LcpService.AcquiredPublication, LcpError> {
         val destination =
             try {
@@ -149,7 +149,7 @@ internal class LicensesService(
     private suspend fun fetchPublication(
         license: LicenseDocument,
         destination: File,
-        onProgress: (Double) -> Unit
+        onProgress: (Double) -> Unit,
     ): LcpService.AcquiredPublication {
         val link = license.link(LicenseDocument.Rel.Publication)!!
         val url = link.url()
@@ -233,7 +233,7 @@ internal class LicensesService(
     override suspend fun retrieveLicense(
         asset: Asset,
         authentication: LcpAuthenticating,
-        allowUserInteraction: Boolean
+        allowUserInteraction: Boolean,
     ): Try<LcpLicense, LcpError> =
         try {
             val licenseContainer = createLicenseContainer(context, asset)
@@ -248,7 +248,7 @@ internal class LicensesService(
         }
 
     override suspend fun retrieveLicenseDocument(
-        asset: ContainerAsset
+        asset: ContainerAsset,
     ): Try<LicenseDocument, LcpError> =
         withContext(Dispatchers.IO) {
             try {
@@ -265,7 +265,7 @@ internal class LicensesService(
     private suspend fun retrieveLicense(
         container: LicenseContainer,
         authentication: LcpAuthenticating,
-        allowUserInteraction: Boolean
+        allowUserInteraction: Boolean,
     ): LcpLicense {
         // WARNING: Using the Default dispatcher in the state machine code is critical. If we were using the Main Dispatcher,
         // calling runBlocking in LicenseValidation.handle would block the main thread and cause a severe issue
@@ -286,7 +286,7 @@ internal class LicensesService(
     private suspend fun retrieveLicenseUnsafe(
         container: LicenseContainer,
         authentication: LcpAuthenticating?,
-        allowUserInteraction: Boolean
+        allowUserInteraction: Boolean,
     ): License =
         suspendCancellableCoroutine { cont ->
             retrieveLicense(
@@ -304,7 +304,7 @@ internal class LicensesService(
         container: LicenseContainer,
         authentication: LcpAuthenticating?,
         allowUserInteraction: Boolean,
-        completion: (License) -> Unit
+        completion: (License) -> Unit,
     ) {
         var initialData = container.read()
         Timber.d("license ${LicenseDocument(data = initialData).json}")

@@ -17,7 +17,7 @@ import org.readium.r2.shared.ExperimentalReadiumApi
 public data class FixedWebPreferences(
     val fit: Fit? = null,
     val readingProgression: ReadingProgression? = null,
-    val spreads: Boolean? = null
+    val spreads: Boolean? = null,
 ) : Configurable.Preferences<FixedWebPreferences> {
 
     init {

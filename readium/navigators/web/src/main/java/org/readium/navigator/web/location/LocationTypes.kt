@@ -18,7 +18,7 @@ public data class ReflowableWebGoLocation(
     val cssSelector: String?,
     val textBefore: String?,
     val textAfter: String?,
-    val position: Int?
+    val position: Int?,
 ) : GoLocation
 
 @ExperimentalReadiumApi
@@ -28,15 +28,15 @@ public data class ReflowableWebLocation(
     val cssSelector: String?,
     val textBefore: String?,
     val textAfter: String?,
-    val position: Int?
+    val position: Int?,
 ) : Location
 
 @ExperimentalReadiumApi
 public data class FixedWebGoLocation(
-    val href: Url
+    val href: Url,
 ) : GoLocation
 
 @ExperimentalReadiumApi
 public data class FixedWebLocation(
-    override val href: Url
+    override val href: Url,
 ) : Location

@@ -41,12 +41,12 @@ import org.readium.r2.streamer.parser.PublicationParser
  * It can also work for a standalone bitmap file.
  */
 public class ImageParser(
-    private val assetRetriever: AssetRetriever
+    private val assetRetriever: AssetRetriever,
 ) : PublicationParser {
 
     override suspend fun parse(
         asset: Asset,
-        warnings: WarningLogger?
+        warnings: WarningLogger?,
     ): Try<Publication.Builder, PublicationParser.ParseError> =
         when (asset) {
             is ResourceAsset -> parseResourceAsset(asset)
@@ -54,7 +54,7 @@ public class ImageParser(
         }
 
     private fun parseResourceAsset(
-        asset: ResourceAsset
+        asset: ResourceAsset,
     ): Try<Publication.Builder, PublicationParser.ParseError> {
         if (!asset.format.conformsToAny(bitmapSpecifications)) {
             return Try.failure(PublicationParser.ParseError.FormatNotSupported())
@@ -70,7 +70,7 @@ public class ImageParser(
     }
 
     private suspend fun parseContainerAsset(
-        asset: ContainerAsset
+        asset: ContainerAsset,
     ): Try<Publication.Builder, PublicationParser.ParseError> {
         if (!asset.format.conformsTo(Specification.InformalComic)) {
             return Try.failure(PublicationParser.ParseError.FormatNotSupported())
@@ -107,7 +107,7 @@ public class ImageParser(
     private fun finalizeParsing(
         container: Container<Resource>,
         readingOrderWithFormat: List<Pair<Url, Format>>,
-        title: String?
+        title: String?,
     ): Try<Publication.Builder, PublicationParser.ParseError> {
         val readingOrder = readingOrderWithFormat.map { (url, format) ->
             Link(href = url, mediaType = format.mediaType)

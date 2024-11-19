@@ -31,7 +31,7 @@ class EpubSettingsResolverTest {
         languages: List<String> = emptyList(),
         readingProgression: PublicationReadingProgression? = null,
         defaults: EpubDefaults = EpubDefaults(),
-        preferences: EpubPreferences = EpubPreferences()
+        preferences: EpubPreferences = EpubPreferences(),
     ): Layout {
         val metadata = Metadata(
             localizedTitle = LocalizedString("fake title"),

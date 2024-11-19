@@ -40,7 +40,7 @@ internal interface WritableLicenseContainer : LicenseContainer {
 
 internal fun createLicenseContainer(
     file: File,
-    formatSpecification: FormatSpecification
+    formatSpecification: FormatSpecification,
 ): WritableLicenseContainer =
     when {
         formatSpecification.conformsTo(Specification.Epub) -> FileZipLicenseContainer(
@@ -54,7 +54,7 @@ internal fun createLicenseContainer(
 
 internal fun createLicenseContainer(
     context: Context,
-    asset: Asset
+    asset: Asset,
 ): LicenseContainer =
     when (asset) {
         is ResourceAsset -> createLicenseContainer(asset.resource, asset.format.specification)
@@ -67,7 +67,7 @@ internal fun createLicenseContainer(
 
 internal fun createLicenseContainer(
     resource: Resource,
-    formatSpecification: FormatSpecification
+    formatSpecification: FormatSpecification,
 ): LicenseContainer {
     if (!formatSpecification.conformsTo(Specification.LcpLicense)) {
         throw LcpException(LcpError.Container.OpenFailed)
@@ -84,7 +84,7 @@ internal fun createLicenseContainer(
 internal fun createLicenseContainer(
     context: Context,
     container: Container<Resource>,
-    formatSpecification: FormatSpecification
+    formatSpecification: FormatSpecification,
 ): LicenseContainer {
     val licensePath = when {
         formatSpecification.conformsTo(Specification.Epub) -> LICENSE_IN_EPUB

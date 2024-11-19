@@ -23,7 +23,7 @@ import org.readium.r2.shared.util.use
 
 @OptIn(ExperimentalReadiumApi::class, InternalReadiumApi::class)
 internal class HyperlinkProcessor(
-    private val container: Container<Resource>
+    private val container: Container<Resource>,
 ) {
 
     suspend fun computeLinkContext(originUrl: Url, outerHtml: String): LinkContext? {

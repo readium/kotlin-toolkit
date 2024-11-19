@@ -50,7 +50,7 @@ class HighlightsFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedInstanceState: Bundle?
+        savedInstanceState: Bundle?,
     ): View {
         binding = FragmentListviewBinding.inflate(inflater, container, false)
         return binding.root
@@ -85,13 +85,13 @@ class HighlightsFragment : Fragment() {
 class HighlightAdapter(
     private val publication: Publication,
     private val onDeleteHighlightRequested: (Highlight) -> Unit,
-    private val onHighlightSelectedRequested: (Highlight) -> Unit
+    private val onHighlightSelectedRequested: (Highlight) -> Unit,
 ) :
     ListAdapter<Highlight, HighlightAdapter.ViewHolder>(HighlightsDiff()) {
 
     override fun onCreateViewHolder(
         parent: ViewGroup,
-        viewType: Int
+        viewType: Int,
     ): ViewHolder {
         return ViewHolder(
             ItemRecycleHighlightBinding.inflate(

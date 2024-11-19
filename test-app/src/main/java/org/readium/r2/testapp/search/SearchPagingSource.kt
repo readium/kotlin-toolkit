@@ -17,7 +17,7 @@ import org.readium.r2.shared.util.getOrThrow
 
 @OptIn(ExperimentalReadiumApi::class)
 class SearchPagingSource(
-    private val listener: Listener?
+    private val listener: Listener?,
 ) : PagingSource<Unit, Locator>() {
 
     interface Listener {

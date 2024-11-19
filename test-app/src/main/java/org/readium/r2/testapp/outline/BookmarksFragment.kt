@@ -55,7 +55,7 @@ class BookmarksFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedInstanceState: Bundle?
+        savedInstanceState: Bundle?,
     ): View {
         binding = FragmentListviewBinding.inflate(inflater, container, false)
         return binding.root
@@ -99,13 +99,13 @@ class BookmarksFragment : Fragment() {
 class BookmarkAdapter(
     private val publication: Publication,
     private val onBookmarkDeleteRequested: (Bookmark) -> Unit,
-    private val onBookmarkSelectedRequested: (Bookmark) -> Unit
+    private val onBookmarkSelectedRequested: (Bookmark) -> Unit,
 ) :
     ListAdapter<Bookmark, BookmarkAdapter.ViewHolder>(BookmarksDiff()) {
 
     override fun onCreateViewHolder(
         parent: ViewGroup,
-        viewType: Int
+        viewType: Int,
     ): ViewHolder {
         return ViewHolder(
             ItemRecycleBookmarkBinding.inflate(
@@ -178,14 +178,14 @@ private class BookmarksDiff : DiffUtil.ItemCallback<Bookmark>() {
 
     override fun areItemsTheSame(
         oldItem: Bookmark,
-        newItem: Bookmark
+        newItem: Bookmark,
     ): Boolean {
         return oldItem.id == newItem.id
     }
 
     override fun areContentsTheSame(
         oldItem: Bookmark,
-        newItem: Bookmark
+        newItem: Bookmark,
     ): Boolean {
         return oldItem.bookId == newItem.bookId &&
             oldItem.location == newItem.location

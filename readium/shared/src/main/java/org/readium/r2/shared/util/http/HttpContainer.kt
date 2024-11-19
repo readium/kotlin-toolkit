@@ -25,7 +25,7 @@ import org.readium.r2.shared.util.resource.Resource
 public class HttpContainer(
     private val baseUrl: Url? = null,
     override val entries: Set<Url>,
-    private val client: HttpClient
+    private val client: HttpClient,
 ) : Container<Resource> {
 
     @OptIn(DelicateReadiumApi::class)

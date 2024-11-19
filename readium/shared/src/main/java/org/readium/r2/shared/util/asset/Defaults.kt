@@ -48,7 +48,7 @@ import org.readium.r2.shared.util.zip.ZipArchiveOpener
 public class DefaultResourceFactory(
     contentResolver: ContentResolver,
     httpClient: HttpClient,
-    additionalFactories: List<ResourceFactory> = emptyList()
+    additionalFactories: List<ResourceFactory> = emptyList(),
 ) : ResourceFactory by CompositeResourceFactory(
     *additionalFactories.toTypedArray(),
     FileResourceFactory(),
@@ -62,7 +62,7 @@ public class DefaultResourceFactory(
  * @param additionalOpeners Additional openers to be used.
  */
 public class DefaultArchiveOpener(
-    additionalOpeners: List<ArchiveOpener> = emptyList()
+    additionalOpeners: List<ArchiveOpener> = emptyList(),
 ) : ArchiveOpener by CompositeArchiveOpener(
     *additionalOpeners.toTypedArray(),
     ZipArchiveOpener()
@@ -75,7 +75,7 @@ public class DefaultArchiveOpener(
  * @param additionalSniffers Additional sniffers to be used to guess content format.
  */
 public class DefaultFormatSniffer(
-    additionalSniffers: List<FormatSniffer> = emptyList()
+    additionalSniffers: List<FormatSniffer> = emptyList(),
 ) : FormatSniffer by CompositeFormatSniffer(
     *additionalSniffers.toTypedArray(),
     ZipSniffer,

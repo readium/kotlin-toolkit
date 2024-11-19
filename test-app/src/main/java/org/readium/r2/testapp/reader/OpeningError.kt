@@ -13,25 +13,25 @@ import org.readium.r2.testapp.domain.toUserError
 import org.readium.r2.testapp.utils.UserError
 
 sealed class OpeningError(
-    override val cause: Error?
+    override val cause: Error?,
 ) : Error {
 
     override val message: String =
         "Could not open publication"
 
     class PublicationError(
-        override val cause: org.readium.r2.testapp.domain.PublicationError
+        override val cause: org.readium.r2.testapp.domain.PublicationError,
     ) : OpeningError(cause)
 
     class RestrictedPublication(
-        cause: Error
+        cause: Error,
     ) : OpeningError(cause)
 
     class CannotRender(cause: Error) :
         OpeningError(cause)
 
     class AudioEngineInitialization(
-        cause: Error
+        cause: Error,
     ) : OpeningError(cause)
 
     fun toUserError(): UserError =

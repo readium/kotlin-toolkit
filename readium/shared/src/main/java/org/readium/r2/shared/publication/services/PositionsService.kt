@@ -76,7 +76,7 @@ public var Publication.ServicesBuilder.positionsServiceFactory: ServiceFactory?
  */
 public class PerResourcePositionsService(
     private val readingOrder: List<Link>,
-    private val fallbackMediaType: MediaType
+    private val fallbackMediaType: MediaType,
 ) : PositionsService {
 
     override suspend fun positionsByReadingOrder(): List<List<Locator>> {
@@ -111,7 +111,7 @@ public class PerResourcePositionsService(
 @InternalReadiumApi
 public class WebPositionsService(
     private val manifest: Manifest,
-    private val httpClient: HttpClient
+    private val httpClient: HttpClient,
 ) : PositionsService {
 
     private lateinit var _positions: List<Locator>

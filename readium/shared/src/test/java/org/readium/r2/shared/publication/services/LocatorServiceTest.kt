@@ -168,7 +168,7 @@ class LocatorServiceTest {
 
     private fun createService(
         readingOrder: List<Link> = emptyList(),
-        positions: List<List<Locator>> = emptyList()
+        positions: List<List<Locator>> = emptyList(),
     ) = DefaultLocatorService(
         readingOrder = readingOrder,
         positionsByReadingOrder = { positions }
