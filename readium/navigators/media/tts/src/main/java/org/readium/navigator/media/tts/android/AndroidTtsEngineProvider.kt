@@ -22,7 +22,7 @@ import org.readium.r2.shared.util.Try
 public class AndroidTtsEngineProvider(
     private val context: Context,
     private val defaults: AndroidTtsDefaults = AndroidTtsDefaults(),
-    private val voiceSelector: AndroidTtsEngine.VoiceSelector = AndroidTtsEngine.VoiceSelector { _, _ -> null }
+    private val voiceSelector: AndroidTtsEngine.VoiceSelector = AndroidTtsEngine.VoiceSelector { _, _ -> null },
 ) : TtsEngineProvider<
     AndroidTtsSettings,
     AndroidTtsPreferences,
@@ -33,7 +33,7 @@ public class AndroidTtsEngineProvider(
 
     override suspend fun createEngine(
         publication: Publication,
-        initialPreferences: AndroidTtsPreferences
+        initialPreferences: AndroidTtsPreferences,
     ): Try<AndroidTtsEngine, Error> {
         val settingsResolver =
             AndroidTtsSettingsResolver(publication.metadata, defaults)
@@ -52,7 +52,7 @@ public class AndroidTtsEngineProvider(
 
     override fun createPreferencesEditor(
         publication: Publication,
-        initialPreferences: AndroidTtsPreferences
+        initialPreferences: AndroidTtsPreferences,
     ): AndroidTtsPreferencesEditor =
         AndroidTtsPreferencesEditor(initialPreferences, publication.metadata, defaults)
 
@@ -60,14 +60,14 @@ public class AndroidTtsEngineProvider(
         AndroidTtsPreferences()
 
     override fun getPlaybackParameters(
-        settings: AndroidTtsSettings
+        settings: AndroidTtsSettings,
     ): PlaybackParameters {
         return PlaybackParameters(settings.speed.toFloat(), settings.pitch.toFloat())
     }
 
     override fun updatePlaybackParameters(
         previousPreferences: AndroidTtsPreferences,
-        playbackParameters: PlaybackParameters
+        playbackParameters: PlaybackParameters,
     ): AndroidTtsPreferences {
         return previousPreferences.copy(
             speed = playbackParameters.speed.toDouble(),
@@ -89,7 +89,8 @@ public class AndroidTtsEngineProvider(
             AndroidTtsEngine.Error.Service,
             AndroidTtsEngine.Error.Synthesis,
             is AndroidTtsEngine.Error.LanguageMissingData,
-            AndroidTtsEngine.Error.NotInstalledYet ->
+            AndroidTtsEngine.Error.NotInstalledYet,
+            ->
                 ERROR_CODE_UNSPECIFIED
         }
 

@@ -42,7 +42,7 @@ internal object NavigationDocumentParser {
     private fun parseNavElement(
         nav: ElementNode,
         filePath: Url,
-        prefixMap: Map<String, String>
+        prefixMap: Map<String, String>,
     ): Pair<List<String>, List<Link>>? {
         val typeAttr = nav.getAttrNs("type", Namespaces.OPS) ?: return null
         val types = parseProperties(typeAttr).map {

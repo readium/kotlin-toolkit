@@ -54,7 +54,7 @@ public class ExoPlayerEngine private constructor(
     private val exoPlayer: ExoAudiobookPlayer,
     private val settingsResolver: SettingsResolver,
     private val configuration: Configuration,
-    initialPreferences: ExoPlayerPreferences
+    initialPreferences: ExoPlayerPreferences,
 ) : AudioEngine<ExoPlayerSettings, ExoPlayerPreferences> {
 
     public companion object {
@@ -67,7 +67,7 @@ public class ExoPlayerEngine private constructor(
             configuration: Configuration,
             initialIndex: Int,
             initialPosition: Duration,
-            initialPreferences: ExoPlayerPreferences
+            initialPreferences: ExoPlayerPreferences,
         ): ExoPlayerEngine {
             val exoPlayer = ExoPlayer.Builder(application)
                 .setMediaSourceFactory(DefaultMediaSourceFactory(dataSourceFactory))
@@ -143,18 +143,18 @@ public class ExoPlayerEngine private constructor(
     public data class Configuration(
         val positionRefreshRate: Hz = 2.0.hz,
         val seekBackwardIncrement: Duration = 15.seconds,
-        val seekForwardIncrement: Duration = 30.seconds
+        val seekForwardIncrement: Duration = 30.seconds,
     )
 
     public data class Playlist(
         val mediaMetadata: MediaMetadata,
         val duration: Duration?,
-        val items: List<Item>
+        val items: List<Item>,
     ) {
         public data class Item(
             val url: Url,
             val mediaMetadata: MediaMetadata,
-            val duration: Duration?
+            val duration: Duration?,
         )
     }
 
@@ -184,7 +184,7 @@ public class ExoPlayerEngine private constructor(
 
     public sealed class Error(
         override val message: String,
-        override val cause: org.readium.r2.shared.util.Error?
+        override val cause: org.readium.r2.shared.util.Error?,
     ) : AudioEngine.Error {
 
         public data class Engine(override val cause: ThrowableError<ExoPlaybackException>) :

@@ -25,7 +25,7 @@ public class FallbackContentProtection : ContentProtection {
     override suspend fun open(
         asset: Asset,
         credentials: String?,
-        allowUserInteraction: Boolean
+        allowUserInteraction: Boolean,
     ): Try<ContentProtection.OpenResult, ContentProtection.OpenError> {
         if (asset !is ContainerAsset) {
             return Try.failure(
@@ -54,7 +54,7 @@ public class FallbackContentProtection : ContentProtection {
 
     public class SchemeNotSupportedError(
         public val scheme: Scheme,
-        public val name: String
+        public val name: String,
     ) : Error {
 
         override val message: String = "$name DRM scheme is not supported."
@@ -64,7 +64,7 @@ public class FallbackContentProtection : ContentProtection {
 
     private class Service(
         override val scheme: Scheme,
-        override val name: String
+        override val name: String,
     ) : ContentProtectionService {
 
         override val isRestricted: Boolean =
@@ -83,7 +83,7 @@ public class FallbackContentProtection : ContentProtection {
 
             fun createFactory(
                 scheme: Scheme,
-                name: String
+                name: String,
             ): (Publication.Service.Context) -> ContentProtectionService =
                 { Service(scheme, name) }
         }

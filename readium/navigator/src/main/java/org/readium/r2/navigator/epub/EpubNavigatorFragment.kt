@@ -118,7 +118,7 @@ public class EpubNavigatorFragment internal constructor(
     internal val paginationListener: PaginationListener?,
     epubLayout: EpubLayout,
     private val defaults: EpubDefaults,
-    configuration: Configuration
+    configuration: Configuration,
 ) : NavigatorFragment(publication),
     OverflowableNavigator,
     SelectableNavigator,
@@ -204,14 +204,14 @@ public class EpubNavigatorFragment internal constructor(
         var disableSelectionWhenProtected: Boolean,
 
         internal var fontFamilyDeclarations: List<FontFamilyDeclaration>,
-        internal var javascriptInterfaces: Map<String, JavascriptInterfaceFactory>
+        internal var javascriptInterfaces: Map<String, JavascriptInterfaceFactory>,
     ) {
         public constructor(
             servedAssets: List<String> = emptyList(),
             readiumCssRsProperties: RsProperties = RsProperties(),
             decorationTemplates: HtmlDecorationTemplates = HtmlDecorationTemplates.defaultTemplates(),
             selectionActionModeCallback: ActionMode.Callback? = null,
-            shouldApplyInsetsPadding: Boolean? = true
+            shouldApplyInsetsPadding: Boolean? = true,
         ) : this(
             servedAssets = servedAssets,
             readiumCssRsProperties = readiumCssRsProperties,
@@ -243,7 +243,7 @@ public class EpubNavigatorFragment internal constructor(
         public fun addFontFamilyDeclaration(
             fontFamily: FontFamily,
             alternates: List<FontFamily> = emptyList(),
-            builderAction: (MutableFontFamilyDeclaration).() -> Unit
+            builderAction: (MutableFontFamilyDeclaration).() -> Unit,
         ) {
             fontFamilyDeclarations += buildFontFamilyDeclaration(
                 fontFamily = fontFamily.name,
@@ -335,7 +335,7 @@ public class EpubNavigatorFragment internal constructor(
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedInstanceState: Bundle?
+        savedInstanceState: Bundle?,
     ): View {
         currentActivity = requireActivity()
         _binding = ReadiumNavigatorViewpagerBinding.inflate(inflater, container, false)
@@ -810,7 +810,7 @@ public class EpubNavigatorFragment internal constructor(
             id: DecorationId,
             group: String,
             rect: RectF,
-            point: PointF
+            point: PointF,
         ): Boolean =
             viewModel.onDecorationActivated(
                 id = id,
@@ -845,7 +845,7 @@ public class EpubNavigatorFragment internal constructor(
 
         override fun onFootnoteLinkActivated(
             url: AbsoluteUrl,
-            context: HyperlinkNavigator.FootnoteContext
+            context: HyperlinkNavigator.FootnoteContext,
         ) {
             viewModel.navigateToUrl(url, context)
         }

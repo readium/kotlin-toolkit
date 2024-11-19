@@ -16,7 +16,7 @@ import org.readium.r2.shared.util.data.ReadError
  * Protects the access to a wrapped resource with a mutex to make it thread-safe.
  */
 public class SynchronizedResource(
-    private val resource: Resource
+    private val resource: Resource,
 ) : Resource {
 
     // This doesn't use `Resource by resource` to avoid forgetting the synchronization for a future API.

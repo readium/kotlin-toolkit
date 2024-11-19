@@ -22,7 +22,7 @@ internal data class ReadiumCss(
     val userProperties: UserProperties = UserProperties(),
     val fontFamilyDeclarations: List<FontFamilyDeclaration> = emptyList(),
     val googleFonts: List<FontFamily> = emptyList(),
-    val assetsBaseHref: Url
+    val assetsBaseHref: Url,
 ) {
 
     /**

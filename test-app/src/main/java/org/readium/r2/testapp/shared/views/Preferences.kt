@@ -45,7 +45,7 @@ fun <T> ButtonGroupItem(
     title: String,
     preference: EnumPreference<T>,
     commit: () -> Unit,
-    formatValue: (T) -> String
+    formatValue: (T) -> String,
 ) {
     ButtonGroupItem(
         title = title,
@@ -82,7 +82,7 @@ private fun <T> ButtonGroupItem(
     selectedOption: T?,
     formatValue: (T) -> String,
     onClear: (() -> Unit)?,
-    onSelectedOptionChanged: (T) -> Unit
+    onSelectedOptionChanged: (T) -> Unit,
 ) {
     Item(title, isActive = isActive, onClear = onClear) {
         ToggleButtonGroup(
@@ -107,7 +107,7 @@ fun <T> MenuItem(
     title: String,
     preference: EnumPreference<T>,
     commit: () -> Unit,
-    formatValue: (T) -> String
+    formatValue: (T) -> String,
 ) {
     MenuItem(
         title = title,
@@ -138,7 +138,7 @@ private fun <T> MenuItem(
     isActive: Boolean,
     formatValue: (T) -> String,
     onValueChanged: (T) -> Unit,
-    onClear: (() -> Unit)?
+    onClear: (() -> Unit)?,
 ) {
     Item(title, isActive = isActive, onClear = onClear) {
         DropdownMenuButton(
@@ -169,7 +169,7 @@ private fun <T> MenuItem(
 fun <T : Comparable<T>> StepperItem(
     title: String,
     preference: RangePreference<T>,
-    commit: () -> Unit
+    commit: () -> Unit,
 ) {
     StepperItem(
         title = title,
@@ -203,7 +203,7 @@ private fun <T> StepperItem(
     formatValue: (T) -> String,
     onDecrement: () -> Unit,
     onIncrement: () -> Unit,
-    onClear: (() -> Unit)?
+    onClear: (() -> Unit)?,
 ) {
     Item(title, isActive = isActive, onClear = onClear) {
         Row(
@@ -240,7 +240,7 @@ private fun <T> StepperItem(
 fun SwitchItem(
     title: String,
     preference: Preference<Boolean>,
-    commit: () -> Unit
+    commit: () -> Unit,
 ) {
     SwitchItem(
         title = title,
@@ -272,7 +272,7 @@ private fun SwitchItem(
     isActive: Boolean,
     onCheckedChange: (Boolean) -> Unit,
     onToggle: () -> Unit,
-    onClear: (() -> Unit)?
+    onClear: (() -> Unit)?,
 ) {
     Item(
         title = title,
@@ -294,7 +294,7 @@ private fun SwitchItem(
 fun ColorItem(
     title: String,
     preference: Preference<ReadiumColor>,
-    commit: () -> Unit
+    commit: () -> Unit,
 ) {
     ColorItem(
         title = title,
@@ -323,7 +323,7 @@ private fun ColorItem(
     value: ReadiumColor,
     noValueSelected: Boolean,
     onColorChanged: (ReadiumColor?) -> Unit,
-    onClear: (() -> Unit)?
+    onClear: (() -> Unit)?,
 ) {
     var isPicking by remember { mutableStateOf(false) }
 
@@ -379,7 +379,7 @@ private fun ColorItem(
 @Composable
 fun LanguageItem(
     preference: Preference<Language?>,
-    commit: () -> Unit
+    commit: () -> Unit,
 ) {
     val languages = remember {
         Locale.getAvailableLocales()
@@ -402,7 +402,7 @@ private fun Item(
     isActive: Boolean = true,
     onClick: (() -> Unit)? = null,
     onClear: (() -> Unit)? = null,
-    content: @Composable () -> Unit
+    content: @Composable () -> Unit,
 ) {
     ListItem(
         modifier =
@@ -436,7 +436,7 @@ fun <T> SelectorListItem(
     title: String,
     preference: EnumPreference<T>,
     formatValue: (T) -> String,
-    commit: () -> Unit
+    commit: () -> Unit,
 ) {
     SelectorListItem(
         title = title,
@@ -461,7 +461,7 @@ private fun <T> SelectorListItem(
     selection: T,
     formatValue: (T) -> String,
     onSelected: (T) -> Unit,
-    enabled: Boolean = values.isNotEmpty()
+    enabled: Boolean = values.isNotEmpty(),
 ) {
     var isExpanded by remember { mutableStateOf(false) }
     fun dismiss() {

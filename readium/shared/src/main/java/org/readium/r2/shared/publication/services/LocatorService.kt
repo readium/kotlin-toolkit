@@ -42,7 +42,7 @@ public var Publication.ServicesBuilder.locatorServiceFactory: ServiceFactory?
 
 public open class DefaultLocatorService(
     public val readingOrder: List<Link>,
-    public val positionsByReadingOrder: suspend () -> List<List<Locator>>
+    public val positionsByReadingOrder: suspend () -> List<List<Locator>>,
 ) : LocatorService {
 
     public constructor(readingOrder: List<Link>, services: PublicationServicesHolder) :
@@ -104,7 +104,7 @@ public open class DefaultLocatorService(
     private fun resourceProgressionFor(
         totalProgression: Double,
         positions: List<List<Locator>>,
-        readingOrderIndex: Int
+        readingOrderIndex: Int,
     ): Double? {
         val startProgression = positions[readingOrderIndex].firstOrNull()?.locations?.totalProgression ?: return null
         val endProgression = positions.getOrNull(readingOrderIndex + 1)?.firstOrNull()?.locations?.totalProgression ?: 1.0

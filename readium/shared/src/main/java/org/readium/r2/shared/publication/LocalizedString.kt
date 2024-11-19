@@ -29,7 +29,7 @@ public data class LocalizedString(val translations: Map<String?, Translation> = 
 
     @Parcelize
     public data class Translation(
-        val string: String
+        val string: String,
     ) : Parcelable
 
     /**

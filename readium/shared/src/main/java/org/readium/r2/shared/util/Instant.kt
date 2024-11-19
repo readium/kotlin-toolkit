@@ -32,7 +32,7 @@ import org.readium.r2.shared.extensions.tryOrNull
 @TypeParceler<kotlinx.datetime.Instant, InstantParceler>()
 @Serializable(with = InstantSerializer::class)
 public class Instant private constructor(
-    private val value: kotlinx.datetime.Instant
+    private val value: kotlinx.datetime.Instant,
 ) : Parcelable, Comparable<Instant> {
     public companion object {
         /**

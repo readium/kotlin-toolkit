@@ -20,12 +20,12 @@ import org.readium.r2.testapp.utils.singleClick
 
 class BookshelfAdapter(
     private val onBookClick: (Book) -> Unit,
-    private val onBookLongClick: (Book) -> Unit
+    private val onBookLongClick: (Book) -> Unit,
 ) : ListAdapter<Book, BookshelfAdapter.ViewHolder>(BookListDiff()) {
 
     override fun onCreateViewHolder(
         parent: ViewGroup,
-        viewType: Int
+        viewType: Int,
     ): ViewHolder {
         return ViewHolder(
             ItemRecycleBookBinding.inflate(
@@ -65,14 +65,14 @@ class BookshelfAdapter(
 
         override fun areItemsTheSame(
             oldItem: Book,
-            newItem: Book
+            newItem: Book,
         ): Boolean {
             return oldItem.id == newItem.id
         }
 
         override fun areContentsTheSame(
             oldItem: Book,
-            newItem: Book
+            newItem: Book,
         ): Boolean {
             return oldItem.title == newItem.title &&
                 oldItem.href == newItem.href &&

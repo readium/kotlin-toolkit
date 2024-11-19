@@ -35,7 +35,7 @@ public class PdfiumDocument(
     @InternalReadiumApi public val core: PdfiumCore,
     @InternalReadiumApi public val document: _PdfiumDocument,
     override val identifier: String?,
-    override val pageCount: Int
+    override val pageCount: Int,
 ) : PdfDocument {
 
     private val metadata: _PdfiumDocument.Meta by lazy { core.getDocumentMeta(document) }

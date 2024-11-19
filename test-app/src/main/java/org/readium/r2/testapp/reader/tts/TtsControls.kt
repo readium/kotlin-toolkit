@@ -31,7 +31,7 @@ import org.readium.r2.testapp.utils.extensions.asStateWhenStarted
 fun TtsControls(
     model: TtsViewModel,
     onPreferences: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val showControls by model.showControls.asStateWhenStarted()
     val isPlaying by model.isPlaying.asStateWhenStarted()
@@ -57,7 +57,7 @@ fun TtsControls(
     onPrevious: () -> Unit,
     onNext: () -> Unit,
     onPreferences: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Card(
         modifier = modifier

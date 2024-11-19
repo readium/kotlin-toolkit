@@ -19,7 +19,7 @@ import org.readium.r2.testapp.utils.tryOrLog
 
 class CoverStorage(
     private val appStorageDir: File,
-    private val httpClient: HttpClient
+    private val httpClient: HttpClient,
 ) {
 
     suspend fun storeCover(publication: Publication, overrideUrl: AbsoluteUrl?): Try<File, Exception> {

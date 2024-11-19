@@ -20,7 +20,7 @@ import org.readium.r2.shared.extensions.requireLengthFitInt
 @InternalReadiumApi
 public class CountingInputStream(
     inputStream: InputStream,
-    initialCount: Long = 0
+    initialCount: Long = 0,
 ) : FilterInputStream(inputStream) {
 
     public var count: Long = initialCount

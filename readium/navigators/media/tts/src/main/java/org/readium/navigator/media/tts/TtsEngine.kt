@@ -19,7 +19,7 @@ public interface TtsEngine<
     S : TtsEngine.Settings,
     P : TtsEngine.Preferences<P>,
     E : TtsEngine.Error,
-    V : TtsEngine.Voice
+    V : TtsEngine.Voice,
     > : Configurable<S, P>, Closeable {
 
     public interface Preferences<P : Configurable.Preferences<P>> : Configurable.Preferences<P> {

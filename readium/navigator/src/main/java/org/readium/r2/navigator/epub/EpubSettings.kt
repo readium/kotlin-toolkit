@@ -60,7 +60,7 @@ public data class EpubSettings @ExperimentalReadiumApi constructor(
     val theme: Theme,
     val typeScale: Double?,
     val verticalText: Boolean,
-    val wordSpacing: Double?
+    val wordSpacing: Double?,
 ) : Configurable.Settings
 
 @OptIn(ExperimentalReadiumApi::class)

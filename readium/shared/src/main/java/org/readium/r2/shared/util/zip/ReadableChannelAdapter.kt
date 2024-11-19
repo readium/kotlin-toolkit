@@ -23,7 +23,7 @@ import org.readium.r2.shared.util.zip.jvm.SeekableByteChannel
 
 internal class ReadableChannelAdapter(
     private val readable: Readable,
-    private val wrapError: (ReadError) -> IOException
+    private val wrapError: (ReadError) -> IOException,
 ) : SeekableByteChannel {
 
     private val coroutineScope: CoroutineScope =

@@ -25,7 +25,7 @@ import org.readium.r2.shared.util.resource.Resource
 
 @RequiresApi(Build.VERSION_CODES.M)
 internal class MetadataRetriever(
-    resource: Resource
+    resource: Resource,
 ) {
 
     private val retriever: MediaMetadataRetriever =
@@ -47,7 +47,7 @@ internal class MetadataRetriever(
     }
 
     private class ResourceMediaDataSource(
-        private val resource: Resource
+        private val resource: Resource,
     ) : MediaDataSource() {
 
         override fun readAt(position: Long, buffer: ByteArray, offset: Int, size: Int): Int {

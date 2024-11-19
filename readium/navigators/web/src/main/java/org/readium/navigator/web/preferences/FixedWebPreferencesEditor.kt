@@ -37,12 +37,12 @@ import org.readium.r2.shared.publication.Metadata
 public class FixedWebPreferencesEditor internal constructor(
     initialPreferences: FixedWebPreferences,
     publicationMetadata: Metadata,
-    defaults: FixedWebDefaults
+    defaults: FixedWebDefaults,
 ) : PreferencesEditor<FixedWebPreferences, FixedWebSettings> {
 
     private data class State(
         val preferences: FixedWebPreferences,
-        val settings: FixedWebSettings
+        val settings: FixedWebSettings,
     )
 
     private val settingsResolver: FixedWebSettingsResolver =
@@ -87,7 +87,7 @@ public class FixedWebPreferencesEditor internal constructor(
         )
 
     private fun updateValues(
-        updater: (FixedWebPreferences) -> FixedWebPreferences
+        updater: (FixedWebPreferences) -> FixedWebPreferences,
     ) {
         val newPreferences = updater(preferences)
         state = newPreferences.toState()

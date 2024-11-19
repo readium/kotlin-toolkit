@@ -37,5 +37,5 @@ public data class EpubDefaults @ExperimentalReadiumApi constructor(
     val textAlign: TextAlign? = null,
     val textNormalization: Boolean? = null,
     val typeScale: Double? = null,
-    val wordSpacing: Double? = null
+    val wordSpacing: Double? = null,
 )

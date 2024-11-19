@@ -487,7 +487,7 @@ class EpubPositionsServiceTest {
         readingOrder: List<ReadingOrderItem>,
         reflowableStrategy: EpubPositionsService.ReflowableStrategy = EpubPositionsService.ReflowableStrategy.ArchiveEntryLength(
             pageLength = 50
-        )
+        ),
     ) = EpubPositionsService(
         readingOrder = readingOrder.map { it.link },
         container = object : Container<Resource> {
@@ -529,7 +529,7 @@ class EpubPositionsServiceTest {
         val title: String? = null,
         val archiveEntryLength: Long? = null,
         val originalLength: Long? = null,
-        val layout: EpubLayout? = null
+        val layout: EpubLayout? = null,
     ) {
         val link: Link = Link(
             href = href,

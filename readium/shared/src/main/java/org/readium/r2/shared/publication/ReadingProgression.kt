@@ -28,7 +28,8 @@ public enum class ReadingProgression(public val value: String) : Parcelable {
 
     /** Left to right */
     @SerialName("ltr")
-    LTR("ltr");
+    LTR("ltr"),
+    ;
 
     public companion object : MapCompanion<String, ReadingProgression>(
         entries.toTypedArray(),

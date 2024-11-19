@@ -15,25 +15,25 @@ import org.readium.r2.shared.util.data.AccessError
  */
 public sealed class FileSystemError(
     override val message: String,
-    override val cause: Error? = null
+    override val cause: Error? = null,
 ) : AccessError {
 
     public class FileNotFound(
-        cause: Error?
+        cause: Error?,
     ) : FileSystemError("File not found.", cause) {
 
         public constructor(exception: Exception) : this(ThrowableError(exception))
     }
 
     public class Forbidden(
-        cause: Error?
+        cause: Error?,
     ) : FileSystemError("You are not allowed to access this file.", cause) {
 
         public constructor(exception: Exception) : this(ThrowableError(exception))
     }
 
     public class IO(
-        cause: Error?
+        cause: Error?,
     ) : FileSystemError("An unexpected IO error occurred on the filesystem.", cause) {
 
         public constructor(exception: Exception) : this(ThrowableError(exception))
@@ -42,6 +42,6 @@ public sealed class FileSystemError(
     public class InsufficientSpace(
         public val requiredSpace: Long? = null,
         public val freespace: Long? = null,
-        cause: Error? = null
+        cause: Error? = null,
     ) : FileSystemError("There is not enough space to do the operation.", cause)
 }

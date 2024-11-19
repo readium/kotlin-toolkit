@@ -22,7 +22,7 @@ import org.readium.r2.testapp.utils.showSystemUi
 class FullscreenReaderActivityDelegate(
     private val activity: AppCompatActivity,
     private val readerFragment: VisualReaderFragment,
-    private val binding: ActivityReaderBinding
+    private val binding: ActivityReaderBinding,
 ) : DefaultLifecycleObserver {
 
     override fun onCreate(owner: LifecycleOwner) {

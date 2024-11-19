@@ -22,7 +22,7 @@ class CatalogFeedListAdapter(private val onLongClick: (Catalog) -> Unit) :
 
     override fun onCreateViewHolder(
         parent: ViewGroup,
-        viewType: Int
+        viewType: Int,
     ): ViewHolder {
         return ViewHolder(
             ItemRecycleButtonBinding.inflate(LayoutInflater.from(parent.context), parent, false)
@@ -60,14 +60,14 @@ class CatalogFeedListAdapter(private val onLongClick: (Catalog) -> Unit) :
 
         override fun areItemsTheSame(
             oldItem: Catalog,
-            newItem: Catalog
+            newItem: Catalog,
         ): Boolean {
             return oldItem.id == newItem.id
         }
 
         override fun areContentsTheSame(
             oldItem: Catalog,
-            newItem: Catalog
+            newItem: Catalog,
         ): Boolean {
             return oldItem.title == newItem.title &&
                 oldItem.href == newItem.href &&

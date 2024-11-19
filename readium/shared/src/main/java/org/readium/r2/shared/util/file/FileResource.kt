@@ -36,7 +36,7 @@ import org.readium.r2.shared.util.toUrl
  * @param file the file to read.
  */
 public class FileResource(
-    private val file: File
+    private val file: File,
 ) : Resource {
 
     private val randomAccessFile by lazy {

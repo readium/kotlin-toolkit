@@ -29,14 +29,14 @@ import org.readium.r2.shared.util.tokenizer.TextTokenizer
 internal class TtsUtteranceIterator(
     private val publication: Publication,
     private val tokenizerFactory: (language: Language?) -> TextTokenizer,
-    initialLocator: Locator?
+    initialLocator: Locator?,
 ) {
     data class Utterance(
         val utterance: String,
         val resourceIndex: Int,
         val locations: Locator.Locations,
         val text: Locator.Text,
-        val language: Language?
+        val language: Language?,
     )
 
     private val contentService: ContentService =
@@ -134,7 +134,7 @@ internal class TtsUtteranceIterator(
 
     private enum class Direction {
         Forward,
-        Backward
+        Backward,
     }
 
     /**

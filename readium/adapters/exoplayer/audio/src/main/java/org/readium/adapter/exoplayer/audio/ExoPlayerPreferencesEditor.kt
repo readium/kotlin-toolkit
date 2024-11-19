@@ -26,12 +26,12 @@ import org.readium.r2.shared.publication.Metadata
 public class ExoPlayerPreferencesEditor(
     initialPreferences: ExoPlayerPreferences,
     @Suppress("UNUSED_PARAMETER") publicationMetadata: Metadata,
-    defaults: ExoPlayerDefaults
+    defaults: ExoPlayerDefaults,
 ) : PreferencesEditor<ExoPlayerPreferences> {
 
     private data class State(
         val preferences: ExoPlayerPreferences,
-        val settings: ExoPlayerSettings
+        val settings: ExoPlayerSettings,
     )
 
     private val settingsResolver: ExoPlayerSettingsResolver =

@@ -37,17 +37,17 @@ import org.readium.r2.shared.util.use
 public class AssetRetriever private constructor(
     private val assetSniffer: AssetSniffer,
     private val resourceFactory: ResourceFactory,
-    private val archiveOpener: ArchiveOpener
+    private val archiveOpener: ArchiveOpener,
 ) {
     public constructor(
         resourceFactory: ResourceFactory,
         archiveOpener: ArchiveOpener,
-        formatSniffer: FormatSniffer
+        formatSniffer: FormatSniffer,
     ) : this(AssetSniffer(formatSniffer, archiveOpener), resourceFactory, archiveOpener)
 
     public constructor(
         contentResolver: ContentResolver,
-        httpClient: HttpClient
+        httpClient: HttpClient,
     ) : this(
         DefaultResourceFactory(contentResolver, httpClient),
         DefaultArchiveOpener(),
@@ -59,7 +59,7 @@ public class AssetRetriever private constructor(
      */
     public sealed class RetrieveUrlError(
         override val message: String,
-        override val cause: Error?
+        override val cause: Error?,
     ) : Error {
 
         /**
@@ -67,14 +67,14 @@ public class AssetRetriever private constructor(
          */
         public class SchemeNotSupported(
             public val scheme: Url.Scheme,
-            cause: Error? = null
+            cause: Error? = null,
         ) : RetrieveUrlError("Url scheme $scheme is not supported.", cause)
 
         /**
          * The format of the resource at the requested [Url] is not recognized.
          */
         public class FormatNotSupported(
-            cause: Error? = null
+            cause: Error? = null,
         ) : RetrieveUrlError("Asset format is not supported.", cause)
 
         /**
@@ -89,14 +89,14 @@ public class AssetRetriever private constructor(
      */
     public sealed class RetrieveError(
         override val message: String,
-        override val cause: Error?
+        override val cause: Error?,
     ) : Error {
 
         /**
          * The format of the resource is not recognized.
          */
         public class FormatNotSupported(
-            cause: Error? = null
+            cause: Error? = null,
         ) : RetrieveError("Asset format is not supported.", cause)
 
         /**
@@ -111,7 +111,7 @@ public class AssetRetriever private constructor(
      */
     public suspend fun retrieve(
         url: AbsoluteUrl,
-        format: Format
+        format: Format,
     ): Try<Asset, RetrieveUrlError> {
         val resource = resourceFactory.create(url)
             .getOrElse {
@@ -140,7 +140,7 @@ public class AssetRetriever private constructor(
      */
     public suspend fun retrieve(
         file: File,
-        formatHints: FormatHints = FormatHints()
+        formatHints: FormatHints = FormatHints(),
     ): Try<Asset, RetrieveError> =
         retrieve(FileResource(file), formatHints)
 
@@ -149,7 +149,7 @@ public class AssetRetriever private constructor(
      */
     public suspend fun retrieve(
         url: AbsoluteUrl,
-        formatHints: FormatHints = FormatHints()
+        formatHints: FormatHints = FormatHints(),
     ): Try<Asset, RetrieveUrlError> {
         val resource = resourceFactory.create(url)
             .getOrElse {
@@ -177,7 +177,7 @@ public class AssetRetriever private constructor(
      */
     public suspend fun retrieve(
         url: AbsoluteUrl,
-        mediaType: MediaType
+        mediaType: MediaType,
     ): Try<Asset, RetrieveUrlError> =
         retrieve(url, FormatHints(mediaType = mediaType))
 
@@ -186,7 +186,7 @@ public class AssetRetriever private constructor(
      */
     public suspend fun retrieve(
         file: File,
-        mediaType: MediaType
+        mediaType: MediaType,
     ): Try<Asset, RetrieveError> =
         retrieve(file, FormatHints(mediaType = mediaType))
 
@@ -195,7 +195,7 @@ public class AssetRetriever private constructor(
      */
     public suspend fun retrieve(
         resource: Resource,
-        hints: FormatHints = FormatHints()
+        hints: FormatHints = FormatHints(),
     ): Try<Asset, RetrieveError> {
         val properties = resource.properties()
             .getOrElse { return Try.failure(RetrieveError.Reading(it)) }
@@ -222,7 +222,7 @@ public class AssetRetriever private constructor(
      */
     public suspend fun retrieve(
         container: Container<Resource>,
-        hints: FormatHints = FormatHints()
+        hints: FormatHints = FormatHints(),
     ): Try<Asset, RetrieveError> =
         assetSniffer
             .sniff(Either.Right(container), hints)
@@ -238,7 +238,7 @@ public class AssetRetriever private constructor(
      */
     public suspend fun retrieve(
         resource: Resource,
-        mediaType: MediaType
+        mediaType: MediaType,
     ): Try<Asset, RetrieveError> =
         retrieve(resource, FormatHints(mediaType = mediaType))
 
@@ -247,7 +247,7 @@ public class AssetRetriever private constructor(
      */
     public suspend fun retrieve(
         container: Container<Resource>,
-        mediaType: MediaType
+        mediaType: MediaType,
     ): Try<Asset, RetrieveError> =
         retrieve(container, FormatHints(mediaType = mediaType))
 
@@ -256,7 +256,7 @@ public class AssetRetriever private constructor(
      */
     public suspend fun sniffFormat(
         file: File,
-        hints: FormatHints = FormatHints()
+        hints: FormatHints = FormatHints(),
     ): Try<Format, RetrieveError> =
         FileResource(file).use { sniffFormat(it, hints) }
 
@@ -265,7 +265,7 @@ public class AssetRetriever private constructor(
      */
     public suspend fun sniffFormat(
         url: AbsoluteUrl,
-        hints: FormatHints = FormatHints()
+        hints: FormatHints = FormatHints(),
     ): Try<Format, RetrieveUrlError> =
         retrieve(url, hints)
             .map { asset -> asset.use { it.format } }
@@ -275,7 +275,7 @@ public class AssetRetriever private constructor(
      */
     public suspend fun sniffFormat(
         resource: Resource,
-        hints: FormatHints = FormatHints()
+        hints: FormatHints = FormatHints(),
     ): Try<Format, RetrieveError> =
         retrieve(resource.borrow(), hints)
             .map { asset -> asset.use { it.format } }
@@ -285,7 +285,7 @@ public class AssetRetriever private constructor(
      */
     public suspend fun sniffFormat(
         container: Container<Resource>,
-        hints: FormatHints = FormatHints()
+        hints: FormatHints = FormatHints(),
     ): Try<Format, RetrieveError> =
         retrieve(container, hints)
             .map { asset -> asset.use { it.format } }

@@ -27,14 +27,14 @@ public interface Error {
  */
 public class DebugError(
     override val message: String,
-    override val cause: Error? = null
+    override val cause: Error? = null,
 ) : Error
 
 /**
  * An error caused by the catch of a throwable.
  */
 public class ThrowableError<E : Throwable>(
-    public val throwable: E
+    public val throwable: E,
 ) : Error {
     override val message: String = throwable.message ?: throwable.toString()
     override val cause: Error? = throwable.cause?.let { ThrowableError(it) }
@@ -44,7 +44,7 @@ public class ThrowableError<E : Throwable>(
  * A throwable caused by an [Error].
  */
 public class ErrorException(
-    public val error: Error
+    public val error: Error,
 ) : Exception(error.message, error.cause?.let { ErrorException(it) })
 
 /**

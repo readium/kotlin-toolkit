@@ -69,7 +69,7 @@ public sealed class Try<out Success, out Failure> {
      */
     public inline fun <R> fold(
         onSuccess: (value: Success) -> R,
-        onFailure: (exception: Failure) -> R
+        onFailure: (exception: Failure) -> R,
     ): R =
         when (this) {
             is Try.Success -> onSuccess(value)

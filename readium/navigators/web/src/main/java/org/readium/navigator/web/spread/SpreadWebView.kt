@@ -37,7 +37,7 @@ internal fun SpreadWebView(
     onScriptsLoaded: () -> Unit,
     onTap: (TapEvent) -> Unit,
     onLinkActivated: (AbsoluteUrl, String) -> Unit,
-    backgroundColor: Color
+    backgroundColor: Color,
 ) {
     val scrollableState = remember { WebViewScrollable2DState() }
 

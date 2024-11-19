@@ -19,7 +19,7 @@ public data class OpdsMetadata(
     val currentPage: Int? = null,
     val modified: Instant? = null,
     val position: Int? = null,
-    val rdfType: String? = null
+    val rdfType: String? = null,
 ) {
     @InternalReadiumApi
     public data class Builder(
@@ -29,7 +29,7 @@ public data class OpdsMetadata(
         var currentPage: Int? = null,
         var modified: Instant? = null,
         var position: Int? = null,
-        var rdfType: String? = null
+        var rdfType: String? = null,
     ) {
         public fun build(): OpdsMetadata =
             OpdsMetadata(

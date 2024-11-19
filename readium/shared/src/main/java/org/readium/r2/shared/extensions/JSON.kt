@@ -173,7 +173,7 @@ public fun JSONObject.optPositiveInt(name: String, fallback: Int = -1, remove: B
 public fun JSONObject.optPositiveDouble(
     name: String,
     fallback: Double = -1.0,
-    remove: Boolean = false
+    remove: Boolean = false,
 ): Double? {
     val double = optDouble(name, fallback)
     val value = if (double >= 0) double else null

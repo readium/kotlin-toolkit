@@ -60,7 +60,7 @@ public fun FixedWebRendition(
     hyperlinkListener: HyperlinkListener =
         state.controller
             ?.let { defaultHyperlinkListener(controller = it) }
-            ?: NullHyperlinkListener()
+            ?: NullHyperlinkListener(),
 ) {
     BoxWithConstraints(
         modifier = Modifier.fillMaxSize(),
@@ -168,7 +168,7 @@ private suspend fun onLinkActivated(
     url: Url,
     outerHtml: String,
     state: FixedWebRenditionState,
-    listener: HyperlinkListener
+    listener: HyperlinkListener,
 ) {
     val location = HyperlinkLocation(url.removeFragment())
     val isReadingOrder = state.readingOrder.indexOfHref(url.removeFragment()) != null

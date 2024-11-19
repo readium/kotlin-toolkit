@@ -75,7 +75,7 @@ public var Publication.ServicesBuilder.coverServiceFactory: ServiceFactory?
 
 internal class ResourceCoverService(
     private val coverUrl: Url,
-    private val container: Container<Resource>
+    private val container: Container<Resource>,
 ) : CoverService {
 
     override suspend fun cover(): Bitmap? =

@@ -28,7 +28,7 @@ public data class PsPdfKitPreferences(
     val readingProgression: ReadingProgression? = null,
     val scroll: Boolean? = null,
     val scrollAxis: Axis? = null,
-    val spread: Spread? = null
+    val spread: Spread? = null,
 ) : Configurable.Preferences<PsPdfKitPreferences> {
 
     init {

@@ -15,7 +15,7 @@ import org.readium.r2.shared.publication.services.ContentProtectionService
 
 public class LcpContentProtectionService(
     public val license: LcpLicense?,
-    override val error: LcpError?
+    override val error: LcpError?,
 ) : ContentProtectionService {
 
     override val isRestricted: Boolean = license == null
@@ -35,9 +35,9 @@ public class LcpContentProtectionService(
 
         public fun createFactory(
             license: LcpLicense?,
-            error: LcpError?
+            error: LcpError?,
         ): (
-            Publication.Service.Context
+            Publication.Service.Context,
         ) -> LcpContentProtectionService =
             { LcpContentProtectionService(license, error) }
     }

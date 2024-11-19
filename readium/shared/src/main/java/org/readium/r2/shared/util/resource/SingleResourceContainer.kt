@@ -12,7 +12,7 @@ import org.readium.r2.shared.util.data.Container
 /** A [Container] for a single [Resource]. */
 public class SingleResourceContainer(
     private val entryUrl: Url,
-    private val resource: Resource
+    private val resource: Resource,
 ) : Container<Resource> {
 
     override val entries: Set<Url> = setOf(entryUrl)

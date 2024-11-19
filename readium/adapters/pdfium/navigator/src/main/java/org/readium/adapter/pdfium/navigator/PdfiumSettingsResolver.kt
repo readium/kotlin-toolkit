@@ -14,7 +14,7 @@ import org.readium.r2.shared.publication.ReadingProgression as PublicationReadin
 
 internal class PdfiumSettingsResolver(
     private val metadata: Metadata,
-    private val defaults: PdfiumDefaults
+    private val defaults: PdfiumDefaults,
 ) {
 
     fun settings(preferences: PdfiumPreferences): PdfiumSettings {

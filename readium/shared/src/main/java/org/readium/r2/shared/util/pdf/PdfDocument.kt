@@ -47,7 +47,7 @@ public interface PdfDocumentFactory<T : PdfDocument> {
  */
 @ExperimentalReadiumApi
 public suspend fun <T : PdfDocument> PdfDocumentFactory<T>.cachedIn(
-    holder: PublicationServicesHolder
+    holder: PublicationServicesHolder,
 ): PdfDocumentFactory<T> {
     val namespace = requireNotNull(documentType.qualifiedName)
     val cache = holder.cacheService?.cacheOf(documentType, namespace) ?: return this
@@ -56,7 +56,7 @@ public suspend fun <T : PdfDocument> PdfDocumentFactory<T>.cachedIn(
 
 private class CachingPdfDocumentFactory<T : PdfDocument>(
     private val factory: PdfDocumentFactory<T>,
-    private val cache: Cache<T>
+    private val cache: Cache<T>,
 ) : PdfDocumentFactory<T> by factory {
 
     override suspend fun open(resource: Resource, password: String?): ReadTry<T> {
@@ -125,7 +125,7 @@ public interface PdfDocument : Closeable {
     public data class OutlineNode(
         val title: String?,
         val pageNumber: Int?, // Starts from 1.
-        val children: List<OutlineNode>
+        val children: List<OutlineNode>,
     )
 
     // To allow extensions on the Companion object.

@@ -26,7 +26,7 @@ import org.xmlpull.v1.XmlPullParserFactory
 @InternalReadiumApi
 public class XmlParser(
     private val isNamespaceAware: Boolean = true,
-    private val isCaseSensitive: Boolean = true
+    private val isCaseSensitive: Boolean = true,
 ) {
 
     private val parser: XmlPullParser = XmlPullParserFactory.newInstance().let {
@@ -131,7 +131,7 @@ public data class ElementNode(
     val namespace: String = "",
     val lang: String = "",
     val attributes: AttributeMap = emptyMap(),
-    val children: List<Node> = listOf()
+    val children: List<Node> = listOf(),
 ) : Node() {
 
     /** Text of the first child if it is a [TextNode], or null otherwise */

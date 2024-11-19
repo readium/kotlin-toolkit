@@ -19,7 +19,7 @@ import org.readium.r2.shared.util.Language
 public data class AndroidTtsDefaults(
     val language: Language? = null,
     val pitch: Double? = null,
-    val speed: Double? = null
+    val speed: Double? = null,
 ) {
     init {
         require(pitch == null || pitch > 0)

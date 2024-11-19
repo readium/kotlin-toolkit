@@ -45,7 +45,7 @@ public typealias ReadTry<SuccessT> = Try<SuccessT, ReadError>
  */
 public sealed class ReadError(
     override val message: String,
-    override val cause: Error
+    override val cause: Error,
 ) : Error {
 
     /**
@@ -107,7 +107,7 @@ public interface AccessError : Error
  * This is meant to be used in contexts where [IOException] are expected.
  */
 public class ReadException(
-    public val error: ReadError
+    public val error: ReadError,
 ) : IOException(error.message, ErrorException(error))
 
 /**
@@ -117,7 +117,7 @@ public fun Readable.borrow(): Readable =
     BorrowedReadable(this)
 
 private class BorrowedReadable(
-    private val readable: Readable
+    private val readable: Readable,
 ) : Readable by readable {
 
     override fun close() {
@@ -127,6 +127,6 @@ private class BorrowedReadable(
 
 @InternalReadiumApi
 public suspend inline fun Readable.readOrElse(
-    recover: (ReadError) -> ByteArray
+    recover: (ReadError) -> ByteArray,
 ): ByteArray =
     read().getOrElse(recover)

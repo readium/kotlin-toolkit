@@ -64,7 +64,7 @@ public interface AudioEngine<S : Configurable.Settings, P : Configurable.Prefere
         val playWhenReady: Boolean,
         val index: Int,
         val offset: Duration,
-        val buffered: Duration?
+        val buffered: Duration?,
     )
 
     /**

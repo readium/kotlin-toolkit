@@ -12,7 +12,7 @@ import org.readium.r2.shared.util.mediatype.MediaType
 public data class Format(
     public val specification: FormatSpecification,
     public val mediaType: MediaType,
-    public val fileExtension: FileExtension
+    public val fileExtension: FileExtension,
 ) {
     public fun conformsTo(specification: Specification): Boolean =
         this.specification.conformsTo(specification)

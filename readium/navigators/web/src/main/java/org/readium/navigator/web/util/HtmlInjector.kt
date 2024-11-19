@@ -24,7 +24,7 @@ internal fun Resource.injectHtml(
     injectableScript: RelativeUrl,
     mediaType: MediaType,
     assetsBaseHref: AbsoluteUrl,
-    disableSelection: Boolean
+    disableSelection: Boolean,
 ): Resource =
     TransformingResource(this) { bytes ->
         if (!mediaType.isHtml) {

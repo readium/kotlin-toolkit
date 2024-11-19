@@ -36,12 +36,12 @@ public class TtsNavigator<
     S : TtsEngine.Settings,
     P : TtsEngine.Preferences<P>,
     E : TtsEngine.Error,
-    V : TtsEngine.Voice
+    V : TtsEngine.Voice,
     > internal constructor(
     coroutineScope: CoroutineScope,
     private val publication: Publication,
     private val player: TtsPlayer<S, P, E, V>,
-    private val sessionAdapter: TtsSessionAdapter<E>
+    private val sessionAdapter: TtsSessionAdapter<E>,
 ) :
     MediaNavigator<TtsNavigator.Location, TtsNavigator.Playback, TtsNavigator.ReadingOrder>,
     TextAwareMediaNavigator<TtsNavigator.Location, TtsNavigator.Playback, TtsNavigator.ReadingOrder>,
@@ -60,7 +60,7 @@ public class TtsNavigator<
         override val textBefore: String?,
         override val textAfter: String?,
         override val utteranceLocator: Locator,
-        override val tokenLocator: Locator?
+        override val tokenLocator: Locator?,
     ) : TextAwareMediaNavigator.Location
 
     public data class Playback(
@@ -68,15 +68,15 @@ public class TtsNavigator<
         override val playWhenReady: Boolean,
         override val index: Int,
         override val utterance: String,
-        override val range: IntRange?
+        override val range: IntRange?,
     ) : TextAwareMediaNavigator.Playback
 
     public data class ReadingOrder(
-        override val items: List<Item>
+        override val items: List<Item>,
     ) : TextAwareMediaNavigator.ReadingOrder {
 
         public data class Item(
-            val href: Url
+            val href: Url,
         ) : TextAwareMediaNavigator.ReadingOrder.Item
     }
 
@@ -91,7 +91,7 @@ public class TtsNavigator<
 
     public sealed class Error(
         override val message: String,
-        override val cause: org.readium.r2.shared.util.Error?
+        override val cause: org.readium.r2.shared.util.Error?,
     ) : org.readium.r2.shared.util.Error {
 
         public data class EngineError<E : TtsEngine.Error>(override val cause: E) :

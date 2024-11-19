@@ -99,7 +99,7 @@ class PdfPositionsServiceTest {
 
     private fun createService(
         link: Link = Link(href = Href("publication.pdf")!!),
-        pageCount: Int
+        pageCount: Int,
     ) = PdfPositionsService(
         link = link,
         pageCount = pageCount,

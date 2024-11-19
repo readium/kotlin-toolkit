@@ -15,7 +15,7 @@ import org.readium.r2.shared.util.data.ReadError
  */
 public class FallbackResource(
     private val originalResource: Resource,
-    private val fallbackResourceFactory: (ReadError) -> Resource?
+    private val fallbackResourceFactory: (ReadError) -> Resource?,
 ) : Resource {
 
     override val sourceUrl: AbsoluteUrl? = null
@@ -61,7 +61,7 @@ public class FallbackResource(
  * Falls back to alternative resources when the receiver fails.
  */
 public fun Resource.fallback(
-    fallbackResourceFactory: (ReadError) -> Resource?
+    fallbackResourceFactory: (ReadError) -> Resource?,
 ): Resource =
     FallbackResource(this, fallbackResourceFactory)
 

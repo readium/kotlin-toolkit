@@ -33,7 +33,7 @@ import org.readium.r2.shared.util.data.ReadError
 @ExperimentalReadiumApi
 public class PdfiumEngineProvider(
     private val defaults: PdfiumDefaults = PdfiumDefaults(),
-    private val listener: Listener? = null
+    private val listener: Listener? = null,
 ) : PdfEngineProvider<PdfiumSettings, PdfiumPreferences, PdfiumPreferencesEditor> {
 
     public interface Listener : PdfEngineProvider.Listener {
@@ -43,7 +43,7 @@ public class PdfiumEngineProvider(
     }
 
     override fun createDocumentFragmentFactory(
-        input: PdfDocumentFragmentInput<PdfiumSettings>
+        input: PdfDocumentFragmentInput<PdfiumSettings>,
     ): SingleFragmentFactory<PdfiumDocumentFragment> =
         createFragmentFactory {
             PdfiumDocumentFragment(
@@ -80,7 +80,7 @@ public class PdfiumEngineProvider(
 
     override fun createPreferenceEditor(
         publication: Publication,
-        initialPreferences: PdfiumPreferences
+        initialPreferences: PdfiumPreferences,
     ): PdfiumPreferencesEditor =
         PdfiumPreferencesEditor(
             initialPreferences,

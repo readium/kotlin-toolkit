@@ -24,7 +24,7 @@ internal class R2ViewPager : R2RTLViewPager {
         FXL,
         WEBPUB,
         AUDIO,
-        DiViNa
+        DiViNa,
     }
 
     internal lateinit var publicationType: PublicationType

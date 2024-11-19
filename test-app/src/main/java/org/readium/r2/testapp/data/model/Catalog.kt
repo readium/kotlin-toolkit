@@ -23,7 +23,7 @@ data class Catalog(
     @ColumnInfo(name = HREF)
     var href: String,
     @ColumnInfo(name = TYPE)
-    var type: Int
+    var type: Int,
 ) : Parcelable {
     companion object {
 

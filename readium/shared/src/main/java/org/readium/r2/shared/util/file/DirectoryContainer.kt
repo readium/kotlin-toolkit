@@ -21,7 +21,7 @@ import org.readium.r2.shared.util.toUrl
  */
 public class DirectoryContainer(
     private val root: File,
-    override val entries: Set<Url>
+    override val entries: Set<Url>,
 ) : Container<Resource> {
 
     override fun get(url: Url): Resource? = url

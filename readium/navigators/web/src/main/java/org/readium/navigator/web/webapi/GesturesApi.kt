@@ -20,7 +20,7 @@ internal interface GesturesListener {
 }
 
 internal class GesturesApi(
-    private val listener: GesturesListener
+    private val listener: GesturesListener,
 ) {
 
     fun registerOnWebView(webView: WebView) {
@@ -43,5 +43,5 @@ internal class GesturesApi(
 @Serializable
 private data class JsonTapEvent(
     val x: Float,
-    val y: Float
+    val y: Float,
 )

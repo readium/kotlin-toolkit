@@ -21,13 +21,13 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment
  * A bottom sheet whose content is built using Jetpack Compose.
  */
 abstract class ComposeBottomSheetDialogFragment(
-    private val isScrollable: Boolean = false
+    private val isScrollable: Boolean = false,
 ) : BottomSheetDialogFragment() {
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedInstanceState: Bundle?
+        savedInstanceState: Bundle?,
     ): View {
         val context = requireContext()
         val composeView = ComposeView(context).apply {

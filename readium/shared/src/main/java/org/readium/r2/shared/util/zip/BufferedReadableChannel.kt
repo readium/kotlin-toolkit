@@ -12,7 +12,7 @@ import org.readium.r2.shared.util.zip.jvm.SeekableByteChannel
 
 internal class BufferedReadableChannel(
     private val innerChannel: SeekableByteChannel,
-    bufferSize: Int
+    bufferSize: Int,
 ) : SeekableByteChannel {
 
     private val dataBuffer: ByteBuffer =

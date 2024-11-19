@@ -24,7 +24,7 @@ import kotlinx.coroutines.supervisorScope
  * As with a SupervisorJob, children can be cancelled or fail independently one from the other.
  */
 class CoroutineQueue(
-    dispatcher: CoroutineDispatcher = Dispatchers.Main
+    dispatcher: CoroutineDispatcher = Dispatchers.Main,
 ) {
     private val scope: CoroutineScope =
         CoroutineScope(dispatcher + SupervisorJob())
@@ -81,7 +81,7 @@ class CoroutineQueue(
 
     private class Task<T>(
         val task: suspend () -> T,
-        val deferred: CompletableDeferred<T>? = null
+        val deferred: CompletableDeferred<T>? = null,
     ) {
         suspend operator fun invoke() {
             try {

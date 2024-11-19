@@ -50,7 +50,7 @@ public class FixedWebRenditionState internal constructor(
     isRestricted: Boolean,
     initialSettings: FixedWebSettings,
     initialLocation: FixedWebGoLocation,
-    internal val preloadedData: FixedWebPreloadedData
+    internal val preloadedData: FixedWebPreloadedData,
 ) : RenditionState<FixedWebRenditionController> {
 
     private val navigatorState: MutableState<FixedWebRenditionController?> =
@@ -128,20 +128,20 @@ public class FixedWebRenditionState internal constructor(
 @Stable
 public class FixedWebRenditionController internal constructor(
     private val navigationDelegate: NavigationDelegate,
-    layoutDelegate: LayoutDelegate
+    layoutDelegate: LayoutDelegate,
 ) : NavigationController<FixedWebLocation, FixedWebGoLocation> by navigationDelegate,
     OverflowController by navigationDelegate,
     SettingsController<FixedWebSettings> by layoutDelegate
 
 internal data class FixedWebPreloadedData(
     val fixedSingleContent: String,
-    val fixedDoubleContent: String
+    val fixedDoubleContent: String,
 )
 
 @OptIn(ExperimentalReadiumApi::class)
 internal class LayoutDelegate(
     readingOrder: ReadingOrder,
-    initialSettings: FixedWebSettings
+    initialSettings: FixedWebSettings,
 ) : SettingsController<FixedWebSettings> {
 
     private val layoutResolver =
@@ -165,7 +165,7 @@ internal class NavigationDelegate(
     private val pagerState: PagerState,
     private val layout: State<Layout>,
     private val settings: State<FixedWebSettings>,
-    initialLocation: FixedWebLocation
+    initialLocation: FixedWebLocation,
 ) : NavigationController<FixedWebLocation, FixedWebGoLocation>, OverflowController {
 
     private val locationMutable: MutableState<FixedWebLocation> =

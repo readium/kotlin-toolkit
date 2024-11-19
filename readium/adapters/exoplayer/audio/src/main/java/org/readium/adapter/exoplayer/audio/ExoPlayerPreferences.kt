@@ -17,7 +17,7 @@ import org.readium.r2.navigator.preferences.Configurable
 @kotlinx.serialization.Serializable
 public data class ExoPlayerPreferences(
     val pitch: Double? = null,
-    val speed: Double? = null
+    val speed: Double? = null,
 ) : Configurable.Preferences<ExoPlayerPreferences> {
 
     override fun plus(other: ExoPlayerPreferences): ExoPlayerPreferences =

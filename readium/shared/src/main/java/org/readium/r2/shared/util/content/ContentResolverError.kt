@@ -15,32 +15,32 @@ import org.readium.r2.shared.util.data.AccessError
  */
 public sealed class ContentResolverError(
     override val message: String,
-    override val cause: Error? = null
+    override val cause: Error? = null,
 ) : AccessError {
 
     public class FileNotFound(
-        cause: Error? = null
+        cause: Error? = null,
     ) : ContentResolverError("File not found.", cause) {
 
         public constructor(exception: Exception) : this(ThrowableError(exception))
     }
 
     public class Forbidden(
-        cause: Error?
+        cause: Error?,
     ) : ContentResolverError("You are not allowed to access this file.", cause) {
 
         public constructor(exception: Exception) : this(ThrowableError(exception))
     }
 
     public class NotAvailable(
-        cause: Error? = null
+        cause: Error? = null,
     ) : ContentResolverError("Content Provider recently crashed.", cause) {
 
         public constructor(exception: Exception) : this(ThrowableError(exception))
     }
 
     public class IO(
-        override val cause: Error
+        override val cause: Error,
     ) : ContentResolverError("An IO error occurred.", cause) {
 
         public constructor(exception: Exception) : this(ThrowableError(exception))

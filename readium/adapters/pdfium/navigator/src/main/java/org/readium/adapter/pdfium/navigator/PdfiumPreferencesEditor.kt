@@ -23,12 +23,12 @@ import org.readium.r2.shared.publication.Metadata
 public class PdfiumPreferencesEditor internal constructor(
     initialPreferences: PdfiumPreferences,
     publicationMetadata: Metadata,
-    defaults: PdfiumDefaults
+    defaults: PdfiumDefaults,
 ) : PreferencesEditor<PdfiumPreferences> {
 
     private data class State(
         val preferences: PdfiumPreferences,
-        val settings: PdfiumSettings
+        val settings: PdfiumSettings,
     )
 
     private val settingsResolver: PdfiumSettingsResolver =

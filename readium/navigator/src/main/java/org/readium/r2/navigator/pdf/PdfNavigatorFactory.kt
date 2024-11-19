@@ -26,7 +26,7 @@ import org.readium.r2.shared.publication.Publication
 @ExperimentalReadiumApi
 public class PdfNavigatorFactory<S : Configurable.Settings, P : Configurable.Preferences<P>, E : PreferencesEditor<P>>(
     private val publication: Publication,
-    private val pdfEngineProvider: PdfEngineProvider<S, P, E>
+    private val pdfEngineProvider: PdfEngineProvider<S, P, E>,
 ) {
 
     /**
@@ -41,7 +41,7 @@ public class PdfNavigatorFactory<S : Configurable.Settings, P : Configurable.Pre
     public fun createFragmentFactory(
         initialLocator: Locator? = null,
         initialPreferences: P? = null,
-        listener: PdfNavigatorFragment.Listener? = null
+        listener: PdfNavigatorFragment.Listener? = null,
     ): FragmentFactory = createFragmentFactory {
         PdfNavigatorFragment(
             publication = publication,
@@ -58,7 +58,7 @@ public class PdfNavigatorFactory<S : Configurable.Settings, P : Configurable.Pre
      * @param initialPreferences Initial set of preferences for the editor.
      */
     public fun createPreferencesEditor(
-        initialPreferences: P
+        initialPreferences: P,
     ): E =
         pdfEngineProvider.createPreferenceEditor(
             publication,

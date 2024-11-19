@@ -16,7 +16,7 @@ import org.readium.r2.shared.publication.indexOfFirstWithHref
 
 @ExperimentalReadiumApi
 public class FixedWebLocatorAdapter internal constructor(
-    private val publication: Publication
+    private val publication: Publication,
 ) : LocatorAdapter<FixedWebLocation, FixedWebGoLocation> {
 
     public override fun Locator.toGoLocation(): FixedWebGoLocation =
@@ -32,7 +32,7 @@ public class FixedWebLocatorAdapter internal constructor(
 
 @ExperimentalReadiumApi
 public class ReflowableWebLocatorAdapter internal constructor(
-    private val publication: Publication
+    private val publication: Publication,
 ) : LocatorAdapter<ReflowableWebLocation, ReflowableWebGoLocation> {
 
     public override fun ReflowableWebLocation.toLocator(): Locator =

@@ -22,7 +22,7 @@ public typealias TextTokenizer = Tokenizer<String, IntRange>
 public enum class TextUnit {
     Word,
     Sentence,
-    Paragraph
+    Paragraph,
 }
 
 /**
@@ -31,7 +31,7 @@ public enum class TextUnit {
  */
 @ExperimentalReadiumApi
 public class DefaultTextContentTokenizer private constructor(
-    private val tokenizer: TextTokenizer
+    private val tokenizer: TextTokenizer,
 ) : TextTokenizer by tokenizer {
     public constructor(unit: TextUnit, language: Language?) : this(
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {

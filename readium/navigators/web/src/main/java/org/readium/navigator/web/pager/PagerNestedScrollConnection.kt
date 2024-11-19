@@ -19,7 +19,7 @@ import kotlin.math.abs
 internal class PagerNestedScrollConnection(
     private val state: PagerState,
     private val flingBehavior: TargetedFlingBehavior,
-    private val orientation: Orientation
+    private val orientation: Orientation,
 ) : NestedScrollConnection {
 
     private var spreadConsumedVertically = false
@@ -74,7 +74,7 @@ internal class PagerNestedScrollConnection(
     override fun onPostScroll(
         consumed: Offset,
         available: Offset,
-        source: NestedScrollSource
+        source: NestedScrollSource,
     ): Offset {
         if (abs(consumed.y) > 0) {
             spreadConsumedVertically = true
@@ -89,7 +89,7 @@ internal class PagerNestedScrollConnection(
 
     override suspend fun onPostFling(
         consumed: Velocity,
-        available: Velocity
+        available: Velocity,
     ): Velocity {
         if (spreadConsumedVertically) {
             spreadConsumedVertically = false

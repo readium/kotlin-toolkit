@@ -7,5 +7,5 @@ public enum class InputModifier {
     Alt,
     Control,
     Meta,
-    Shift
+    Shift,
 }

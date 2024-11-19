@@ -19,7 +19,7 @@ import org.readium.r2.shared.util.resource.Resource
  */
 internal class ContainerLicenseContainer(
     private val container: Container<Resource>,
-    private val entryUrl: Url
+    private val entryUrl: Url,
 ) : LicenseContainer {
 
     override fun read(): ByteArray {

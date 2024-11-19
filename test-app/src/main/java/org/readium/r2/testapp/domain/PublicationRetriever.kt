@@ -44,12 +44,12 @@ class PublicationRetriever(
     private val httpClient: HttpClient,
     lcpService: LcpService?,
     private val bookshelfDir: File,
-    private val tempDir: File
+    private val tempDir: File,
 ) {
     data class Result(
         val publication: File,
         val format: Format,
-        val coverUrl: AbsoluteUrl?
+        val coverUrl: AbsoluteUrl?,
     )
 
     private val localPublicationRetriever: LocalPublicationRetriever =
@@ -59,7 +59,7 @@ class PublicationRetriever(
         OpdsPublicationRetriever(httpClient, tempDir)
 
     suspend fun retrieveFromStorage(
-        uri: Uri
+        uri: Uri,
     ): Try<Result, ImportError> {
         val localResult = localPublicationRetriever
             .retrieve(uri)
@@ -81,7 +81,7 @@ class PublicationRetriever(
     }
 
     suspend fun retrieveFromOpds(
-        publication: Publication
+        publication: Publication,
     ): Try<Result, ImportError> {
         val opdsResult = opdsPublicationRetriever
             .retrieve(publication)
@@ -110,7 +110,7 @@ class PublicationRetriever(
     }
 
     suspend fun retrieveFromHttp(
-        url: AbsoluteUrl
+        url: AbsoluteUrl,
     ): Try<Result, ImportError> {
         val request = HttpRequest(
             url,
@@ -152,7 +152,7 @@ class PublicationRetriever(
     private suspend fun moveToBookshelfDir(
         tempFile: File,
         format: Format?,
-        coverUrl: AbsoluteUrl?
+        coverUrl: AbsoluteUrl?,
     ): Try<Result, ImportError> {
         val actualFormat = format
             ?: assetRetriever.sniffFormat(tempFile)
@@ -190,20 +190,20 @@ private class LocalPublicationRetriever(
     private val context: Context,
     private val tempDir: File,
     private val assetRetriever: AssetRetriever,
-    private val lcpService: LcpService?
+    private val lcpService: LcpService?,
 ) {
 
     data class Result(
         val tempFile: File,
         val format: Format?,
-        val coverUrl: AbsoluteUrl?
+        val coverUrl: AbsoluteUrl?,
     )
 
     /**
      * Retrieves the publication from the given local [uri].
      */
     suspend fun retrieve(
-        uri: Uri
+        uri: Uri,
     ): Try<Result, ImportError> {
         val tempFile = uri.copyToTempFile(context, tempDir)
             .getOrElse {
@@ -219,7 +219,7 @@ private class LocalPublicationRetriever(
     suspend fun retrieve(
         tempFile: File,
         mediaType: MediaType? = null,
-        coverUrl: AbsoluteUrl? = null
+        coverUrl: AbsoluteUrl? = null,
     ): Try<Result, ImportError> {
         return retrieveFromStorage(tempFile, mediaType, coverUrl)
     }
@@ -227,7 +227,7 @@ private class LocalPublicationRetriever(
     private suspend fun retrieveFromStorage(
         tempFile: File,
         mediaType: MediaType? = null,
-        coverUrl: AbsoluteUrl? = null
+        coverUrl: AbsoluteUrl? = null,
     ): Try<Result, ImportError> {
         val sourceAsset = assetRetriever.retrieve(tempFile, FormatHints(mediaType))
             .getOrElse {
@@ -267,13 +267,13 @@ private class LocalPublicationRetriever(
  */
 private class OpdsPublicationRetriever(
     private val httpClient: HttpClient,
-    private val tempDir: File
+    private val tempDir: File,
 ) {
 
     data class Result(
         val tempFile: File,
         val mediaType: MediaType?,
-        val coverUrl: AbsoluteUrl?
+        val coverUrl: AbsoluteUrl?,
     )
 
     /**

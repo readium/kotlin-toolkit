@@ -11,12 +11,12 @@ import android.webkit.WebResourceResponse
 import android.webkit.WebView
 
 internal class WebViewClient(
-    private val webViewServer: WebViewServer
+    private val webViewServer: WebViewServer,
 ) : android.webkit.WebViewClient() {
 
     override fun shouldInterceptRequest(
         view: WebView,
-        request: WebResourceRequest
+        request: WebResourceRequest,
     ): WebResourceResponse? {
         return webViewServer.shouldInterceptRequest(request)
     }

@@ -45,7 +45,7 @@ import org.readium.r2.shared.util.logging.log
 @Parcelize
 public data class DomRange(
     val start: Point,
-    val end: Point? = null
+    val end: Point? = null,
 ) : JSONable, Parcelable {
 
     /**
@@ -67,7 +67,7 @@ public data class DomRange(
     public data class Point(
         val cssSelector: String,
         val textNodeIndex: Int,
-        val charOffset: Int? = null
+        val charOffset: Int? = null,
     ) : JSONable, Parcelable {
 
         override fun toJSON(): JSONObject = JSONObject().apply {

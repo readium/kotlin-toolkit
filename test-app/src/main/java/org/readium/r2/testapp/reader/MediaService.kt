@@ -36,7 +36,7 @@ class MediaService : MediaSessionService() {
     class Session(
         val bookId: Long,
         val navigator: AnyMediaNavigator,
-        val mediaSession: MediaSession
+        val mediaSession: MediaSession,
     ) {
         val coroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
     }
@@ -68,7 +68,7 @@ class MediaService : MediaSessionService() {
         @OptIn(FlowPreview::class)
         fun <N> openSession(
             navigator: N,
-            bookId: Long
+            bookId: Long,
         ) where N : AnyMediaNavigator, N : Media3Adapter {
             Timber.d("openSession")
             val activityIntent = createSessionActivityIntent()

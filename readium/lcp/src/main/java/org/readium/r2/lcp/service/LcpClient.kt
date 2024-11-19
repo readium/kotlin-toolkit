@@ -14,7 +14,7 @@ internal object LcpClient {
         val hashedPassphrase: String,
         val encryptedContentKey: String,
         val token: String,
-        val profile: String
+        val profile: String,
     ) {
         companion object {
 

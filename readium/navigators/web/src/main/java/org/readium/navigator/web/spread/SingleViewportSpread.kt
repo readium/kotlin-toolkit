@@ -36,7 +36,7 @@ internal fun SingleViewportSpread(
     onTap: (TapEvent) -> Unit,
     onLinkActivated: (Url, String) -> Unit,
     state: SingleSpreadState,
-    backgroundColor: Color
+    backgroundColor: Color,
 ) {
     Box(
         modifier = Modifier.fillMaxSize(),
@@ -97,7 +97,7 @@ internal class SingleSpreadState(
     val webViewClient: WebViewClient,
     val spread: SingleViewportSpread,
     val fit: State<Fit>,
-    val displayArea: State<DisplayArea>
+    val displayArea: State<DisplayArea>,
 ) {
     val url: AbsoluteUrl =
         publicationBaseUrl.resolve(spread.page.href)

@@ -23,7 +23,7 @@ public interface TtsEngineProvider<
     P : TtsEngine.Preferences<P>,
     E : PreferencesEditor<P>,
     F : TtsEngine.Error,
-    V : TtsEngine.Voice
+    V : TtsEngine.Voice,
     > {
 
     /**
@@ -51,7 +51,7 @@ public interface TtsEngineProvider<
      */
     public fun updatePlaybackParameters(
         previousPreferences: P,
-        playbackParameters: PlaybackParameters
+        playbackParameters: PlaybackParameters,
     ): P
 
     /**

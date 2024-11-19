@@ -15,7 +15,7 @@ import org.readium.navigator.web.webview.RelaxedWebView
 import org.readium.navigator.web.webview.WebViewScrollable2DState
 
 internal class SpreadNestedScrollConnection(
-    private val webviewState: WebViewScrollable2DState
+    private val webviewState: WebViewScrollable2DState,
 ) : NestedScrollConnection {
 
     override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {

@@ -45,7 +45,7 @@ public class DirectionalNavigationAdapter(
     private val horizontalEdgeThresholdPercent: Double? = 0.3,
     private val minimumVerticalEdgeSize: Double = 80.0,
     private val verticalEdgeThresholdPercent: Double? = 0.3,
-    private val animatedTransition: Boolean = false
+    private val animatedTransition: Boolean = false,
 ) : InputListener {
 
     /**
@@ -53,7 +53,7 @@ public class DirectionalNavigationAdapter(
      */
     public enum class TapEdge {
         Horizontal,
-        Vertical
+        Vertical,
     }
 
     override fun onTap(event: TapEvent): Boolean {

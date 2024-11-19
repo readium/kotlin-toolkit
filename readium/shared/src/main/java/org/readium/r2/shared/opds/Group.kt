@@ -18,7 +18,7 @@ public data class Group(
     val metadata: OpdsMetadata = OpdsMetadata(title = title),
     val links: List<Link> = emptyList(),
     val publications: List<Publication> = emptyList(),
-    val navigation: List<Link> = emptyList()
+    val navigation: List<Link> = emptyList(),
 ) {
     @InternalReadiumApi
     public data class Builder(
@@ -26,7 +26,7 @@ public data class Group(
         val metadata: OpdsMetadata.Builder = OpdsMetadata.Builder(title = title),
         val links: MutableList<Link> = mutableListOf(),
         val publications: MutableList<Publication> = mutableListOf(),
-        val navigation: MutableList<Link> = mutableListOf()
+        val navigation: MutableList<Link> = mutableListOf(),
     ) {
         public fun build(): Group =
             Group(

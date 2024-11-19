@@ -25,7 +25,7 @@ public class ZipArchiveOpener : ArchiveOpener {
 
     override suspend fun open(
         format: Format,
-        source: Readable
+        source: Readable,
     ): Try<ContainerAsset, ArchiveOpener.OpenError> {
         val container = (source as? Resource)?.sourceUrl?.toFile()
             ?.let { fileZipArchiveProvider.open(format, it) }
@@ -35,7 +35,7 @@ public class ZipArchiveOpener : ArchiveOpener {
     }
 
     override suspend fun sniffOpen(
-        source: Readable
+        source: Readable,
     ): Try<ContainerAsset, ArchiveOpener.SniffOpenError> {
         val container = (source as? Resource)?.sourceUrl?.toFile()
             ?.let { fileZipArchiveProvider.sniffOpen(it) }

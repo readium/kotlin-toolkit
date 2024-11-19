@@ -17,7 +17,7 @@ import org.readium.r2.shared.ExperimentalReadiumApi
 public interface TimeBasedMediaNavigator<
     L : TimeBasedMediaNavigator.Location,
     P : TimeBasedMediaNavigator.Playback,
-    R : TimeBasedMediaNavigator.ReadingOrder
+    R : TimeBasedMediaNavigator.ReadingOrder,
     > : MediaNavigator<L, P, R> {
 
     /**

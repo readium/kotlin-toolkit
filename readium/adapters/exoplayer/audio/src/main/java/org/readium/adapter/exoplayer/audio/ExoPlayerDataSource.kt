@@ -29,12 +29,12 @@ import timber.log.Timber
  */
 @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
 internal class ExoPlayerDataSource internal constructor(
-    private val publication: Publication
+    private val publication: Publication,
 ) : BaseDataSource(/* isNetwork = */ true) {
 
     class Factory(
         private val publication: Publication,
-        private val transferListener: TransferListener? = null
+        private val transferListener: TransferListener? = null,
     ) : DataSource.Factory {
 
         override fun createDataSource(): DataSource =
@@ -49,7 +49,7 @@ internal class ExoPlayerDataSource internal constructor(
         val resource: Resource,
         val uri: Uri,
         var position: Long,
-        var remaining: Long
+        var remaining: Long,
     )
 
     private var openedResource: OpenedResource? = null

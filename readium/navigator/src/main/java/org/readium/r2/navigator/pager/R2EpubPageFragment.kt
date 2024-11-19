@@ -137,7 +137,7 @@ internal class R2EpubPageFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedInstanceState: Bundle?
+        savedInstanceState: Bundle?,
     ): View {
         _binding = ReadiumNavigatorViewpagerFragmentEpubBinding.inflate(inflater, container, false)
         containerView = binding.root
@@ -178,7 +178,7 @@ internal class R2EpubPageFragment : Fragment() {
                 scrollX: Int,
                 scrollY: Int,
                 clampedX: Boolean,
-                clampedY: Boolean
+                clampedY: Boolean,
             ) {
                 activity ?: return
                 val metrics = DisplayMetrics()
@@ -435,7 +435,7 @@ internal class R2EpubPageFragment : Fragment() {
     private suspend fun loadLocator(
         webView: R2WebView,
         readingProgression: ReadingProgression,
-        locator: Locator
+        locator: Locator,
     ) {
         if (locator.text.highlight != null) {
             if (webView.scrollToLocator(locator)) {
@@ -491,7 +491,7 @@ internal class R2EpubPageFragment : Fragment() {
             url: AbsoluteUrl,
             link: Link? = null,
             initialLocator: Locator? = null,
-            positionCount: Int = 0
+            positionCount: Int = 0,
         ): R2EpubPageFragment =
             R2EpubPageFragment().apply {
                 arguments = Bundle().apply {

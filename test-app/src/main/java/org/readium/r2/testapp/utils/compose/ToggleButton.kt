@@ -27,7 +27,7 @@ fun <T> ToggleButtonGroup(
     selectedOption: T?,
     onSelectOption: (T) -> Unit,
     enabled: (T) -> Boolean = { true },
-    content: @Composable RowScope.(T) -> Unit
+    content: @Composable RowScope.(T) -> Unit,
 ) {
     Row {
         for (option in options) {
@@ -48,7 +48,7 @@ fun ToggleButton(
     enabled: Boolean = true,
     active: Boolean = false,
     selected: Boolean = false,
-    content: @Composable RowScope.() -> Unit
+    content: @Composable RowScope.() -> Unit,
 ) {
     OutlinedButton(
         onClick = onClick,

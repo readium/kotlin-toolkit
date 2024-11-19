@@ -26,7 +26,7 @@ import org.readium.r2.shared.extensions.optPositiveInt
 @Parcelize
 public data class Holds(
     val total: Int? = null,
-    val position: Int? = null
+    val position: Int? = null,
 ) : JSONable, Parcelable {
 
     /**

@@ -45,7 +45,7 @@ public interface LcpAuthenticating {
     public suspend fun retrievePassphrase(
         license: AuthenticatedLicense,
         reason: AuthenticationReason,
-        allowUserInteraction: Boolean
+        allowUserInteraction: Boolean,
     ): String?
 
     public enum class AuthenticationReason {
@@ -54,7 +54,9 @@ public interface LcpAuthenticating {
         PassphraseNotFound,
 
         /** The provided passphrase was invalid. */
-        InvalidPassphrase;
+        InvalidPassphrase,
+
+        ;
 
         public companion object
     }

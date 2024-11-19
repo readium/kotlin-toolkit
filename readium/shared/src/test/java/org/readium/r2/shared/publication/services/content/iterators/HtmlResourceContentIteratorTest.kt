@@ -163,7 +163,7 @@ class HtmlResourceContentIteratorTest {
         selector: String? = null,
         before: String? = null,
         highlight: String? = null,
-        after: String? = null
+        after: String? = null,
     ): Locator =
         locator.copy(
             locations = Locator.Locations(
@@ -178,7 +178,7 @@ class HtmlResourceContentIteratorTest {
     private fun iterator(
         html: String,
         startLocator: Locator = locator,
-        totalProgressionRange: ClosedRange<Double>? = null
+        totalProgressionRange: ClosedRange<Double>? = null,
     ): HtmlResourceContentIterator =
         HtmlResourceContentIterator(
             StringResource(html),

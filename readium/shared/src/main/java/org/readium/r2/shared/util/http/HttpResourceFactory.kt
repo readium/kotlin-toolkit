@@ -15,11 +15,11 @@ import org.readium.r2.shared.util.resource.ResourceFactory
  * Creates [HttpResource] instances granting access to `http://` URLs using an [HttpClient].
  */
 public class HttpResourceFactory(
-    private val httpClient: HttpClient
+    private val httpClient: HttpClient,
 ) : ResourceFactory {
 
     override suspend fun create(
-        url: AbsoluteUrl
+        url: AbsoluteUrl,
     ): Try<Resource, ResourceFactory.Error> {
         if (!url.isHttp) {
             return Try.failure(ResourceFactory.Error.SchemeNotSupported(url.scheme))

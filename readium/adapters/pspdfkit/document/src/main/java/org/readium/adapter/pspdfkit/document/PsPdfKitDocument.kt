@@ -55,7 +55,7 @@ public class PsPdfKitDocumentFactory(context: Context) : PdfDocumentFactory<PsPd
 }
 
 public class PsPdfKitDocument(
-    public val document: _PsPdfKitDocument
+    public val document: _PsPdfKitDocument,
 ) : PdfDocument {
 
     // FIXME: Doesn't seem to be exposed by PSPDFKit.

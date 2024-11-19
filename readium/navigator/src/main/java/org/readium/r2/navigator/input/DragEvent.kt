@@ -10,7 +10,7 @@ import android.graphics.PointF
 public data class DragEvent(
     val type: Type,
     val start: PointF,
-    val offset: PointF
+    val offset: PointF,
 ) {
     public enum class Type { Start, Move, End }
 }

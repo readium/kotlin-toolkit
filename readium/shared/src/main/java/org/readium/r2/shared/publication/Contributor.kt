@@ -44,7 +44,7 @@ public data class Contributor(
     val identifier: String? = null,
     val roles: Set<String> = emptySet(),
     val position: Double? = null,
-    val links: List<Link> = emptyList()
+    val links: List<Link> = emptyList(),
 ) : JSONable, Parcelable {
 
     /**
@@ -86,7 +86,7 @@ public data class Contributor(
          */
         public fun fromJSON(
             json: Any?,
-            warnings: WarningLogger? = null
+            warnings: WarningLogger? = null,
         ): Contributor? {
             json ?: return null
 
@@ -121,7 +121,7 @@ public data class Contributor(
          */
         public fun fromJSONArray(
             json: Any?,
-            warnings: WarningLogger? = null
+            warnings: WarningLogger? = null,
         ): List<Contributor> {
             return when (json) {
                 is String, is JSONObject ->

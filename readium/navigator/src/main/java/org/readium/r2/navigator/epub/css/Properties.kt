@@ -127,7 +127,7 @@ public data class UserProperties(
     // Accessibility
     val a11yNormalize: Boolean? = null,
 
-    val overrides: Map<String, String?> = emptyMap()
+    val overrides: Map<String, String?> = emptyMap(),
 ) : Properties {
 
     override fun toCssProperties(): Map<String, String?> = buildMap {
@@ -282,7 +282,7 @@ public data class RsProperties(
     val compFontFamily: List<String>? = null,
     val codeFontFamily: List<String>? = null,
 
-    val overrides: Map<String, String?> = emptyMap()
+    val overrides: Map<String, String?> = emptyMap(),
 ) : Properties {
 
     override fun toCssProperties(): Map<String, String?> = buildMap {
@@ -349,7 +349,8 @@ public data class RsProperties(
 @ExperimentalReadiumApi
 public enum class View(private val css: String) : Cssable {
     PAGED("readium-paged-on"),
-    SCROLL("readium-scroll-on");
+    SCROLL("readium-scroll-on"),
+    ;
 
     override fun toCss(): String = css
 }
@@ -358,7 +359,8 @@ public enum class View(private val css: String) : Cssable {
 @ExperimentalReadiumApi
 public enum class Appearance(private val css: String?) : Cssable {
     NIGHT("readium-night-on"),
-    SEPIA("readium-sepia-on");
+    SEPIA("readium-sepia-on"),
+    ;
 
     override fun toCss(): String? = css
 }
@@ -493,7 +495,8 @@ public interface Length : Cssable {
 public enum class ColCount(private val css: String) : Cssable {
     AUTO("auto"),
     ONE("1"),
-    TWO("2");
+    TWO("2"),
+    ;
 
     override fun toCss(): String? = css
 }
@@ -504,7 +507,8 @@ public enum class TextAlign(private val css: String) : Cssable {
     START("start"),
     LEFT("left"),
     RIGHT("right"),
-    JUSTIFY("justify");
+    JUSTIFY("justify"),
+    ;
 
     override fun toCss(): String? = css
 }
@@ -513,7 +517,8 @@ public enum class TextAlign(private val css: String) : Cssable {
 @ExperimentalReadiumApi
 public enum class Hyphens(private val css: String) : Cssable {
     NONE("none"),
-    AUTO("auto");
+    AUTO("auto"),
+    ;
 
     override fun toCss(): String? = css
 }
@@ -522,7 +527,8 @@ public enum class Hyphens(private val css: String) : Cssable {
 @ExperimentalReadiumApi
 public enum class Ligatures(private val css: String) : Cssable {
     NONE("none"),
-    COMMON("common-ligatures");
+    COMMON("common-ligatures"),
+    ;
 
     override fun toCss(): String? = css
 }
@@ -531,7 +537,8 @@ public enum class Ligatures(private val css: String) : Cssable {
 @ExperimentalReadiumApi
 public enum class BoxSizing(private val css: String) : Cssable {
     CONTENT_BOX("content-box"),
-    BORDER_BOX("border-box");
+    BORDER_BOX("border-box"),
+    ;
 
     override fun toCss(): String? = css
 }

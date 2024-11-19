@@ -29,7 +29,7 @@ internal class PdfNavigatorViewModel<S : Configurable.Settings, P : Configurable
     private val publication: Publication,
     initialLocations: Locator.Locations?,
     initialPreferences: P,
-    private val pdfEngineProvider: PdfEngineProvider<S, P, *>
+    private val pdfEngineProvider: PdfEngineProvider<S, P, *>,
 ) : AndroidViewModel(application) {
 
     private val _currentLocator: MutableStateFlow<Locator> =
@@ -64,7 +64,7 @@ internal class PdfNavigatorViewModel<S : Configurable.Settings, P : Configurable
             publication: Publication,
             initialLocations: Locator.Locations?,
             initialPreferences: P,
-            pdfEngineProvider: PdfEngineProvider<S, P, *>
+            pdfEngineProvider: PdfEngineProvider<S, P, *>,
         ) = createViewModelFactory {
             PdfNavigatorViewModel(
                 application = application,

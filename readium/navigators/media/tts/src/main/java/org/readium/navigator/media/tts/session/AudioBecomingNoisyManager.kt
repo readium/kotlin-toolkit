@@ -26,7 +26,7 @@ import android.os.Handler
 internal class AudioBecomingNoisyManager(
     context: Context,
     eventHandler: Handler,
-    listener: EventListener
+    listener: EventListener,
 ) {
     private val context: Context
     private val receiver: AudioBecomingNoisyReceiver
@@ -62,7 +62,7 @@ internal class AudioBecomingNoisyManager(
 
     private inner class AudioBecomingNoisyReceiver(
         private val eventHandler: Handler,
-        private val listener: EventListener
+        private val listener: EventListener,
     ) :
         BroadcastReceiver(), Runnable {
         override fun onReceive(context: Context, intent: Intent) {

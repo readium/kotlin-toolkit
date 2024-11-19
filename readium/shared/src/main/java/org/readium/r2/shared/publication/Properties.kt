@@ -28,7 +28,7 @@ import org.readium.r2.shared.extensions.toMap
  */
 @Parcelize
 public data class Properties(
-    val otherProperties: @WriteWith<JSONParceler> Map<String, Any> = emptyMap()
+    val otherProperties: @WriteWith<JSONParceler> Map<String, Any> = emptyMap(),
 ) : JSONable, Parcelable {
 
     /**

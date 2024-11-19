@@ -21,13 +21,13 @@ import org.readium.r2.shared.util.Try
 public interface AudioEngineProvider<
     S : Configurable.Settings,
     P : Configurable.Preferences<P>,
-    E : PreferencesEditor<P>
+    E : PreferencesEditor<P>,
     > {
 
     public suspend fun createEngine(
         publication: Publication,
         initialLocator: Locator,
-        initialPreferences: P
+        initialPreferences: P,
     ): Try<AudioEngine<S, P>, Error>
 
     /**

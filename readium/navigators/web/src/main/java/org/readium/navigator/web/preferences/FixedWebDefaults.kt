@@ -14,5 +14,5 @@ import org.readium.r2.shared.ExperimentalReadiumApi
 public data class FixedWebDefaults(
     val fit: Fit? = null,
     val readingProgression: ReadingProgression? = null,
-    val spreads: Boolean? = null
+    val spreads: Boolean? = null,
 )

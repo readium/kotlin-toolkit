@@ -19,7 +19,7 @@ import org.robolectric.RobolectricTestRunner
 class PublicationTest {
 
     private fun createPublication(
-        subcollections: Map<String, List<PublicationCollection>> = emptyMap()
+        subcollections: Map<String, List<PublicationCollection>> = emptyMap(),
     ) = Publication(
         manifest = Manifest(
             metadata = Metadata(localizedTitle = LocalizedString("Title")),

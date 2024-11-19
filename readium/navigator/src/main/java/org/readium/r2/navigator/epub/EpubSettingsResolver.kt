@@ -17,7 +17,7 @@ import org.readium.r2.shared.util.Language
 @OptIn(ExperimentalReadiumApi::class)
 internal class EpubSettingsResolver(
     private val metadata: Metadata,
-    private val defaults: EpubDefaults
+    private val defaults: EpubDefaults,
 ) {
 
     fun settings(preferences: EpubPreferences): EpubSettings {
@@ -67,7 +67,7 @@ internal class EpubSettingsResolver(
 
     private fun resolveReadingProgression(
         metadata: Metadata,
-        preferences: EpubPreferences
+        preferences: EpubPreferences,
     ): Pair<Language?, ReadingProgression> {
         val rpPref = preferences.readingProgression
         val langPref = preferences.language
@@ -112,7 +112,7 @@ internal class EpubSettingsResolver(
     private fun resolveVerticalText(
         verticalPreference: Boolean?,
         language: Language?,
-        readingProgression: ReadingProgression
+        readingProgression: ReadingProgression,
     ) = when {
         verticalPreference != null -> verticalPreference
         language != null -> language.isCjk && readingProgression == ReadingProgression.RTL

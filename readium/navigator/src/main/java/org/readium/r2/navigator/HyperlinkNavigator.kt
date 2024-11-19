@@ -25,7 +25,7 @@ public interface HyperlinkNavigator : Navigator {
      */
     @ExperimentalReadiumApi
     public data class FootnoteContext(
-        public val noteContent: String
+        public val noteContent: String,
     ) : LinkContext
 
     @ExperimentalReadiumApi

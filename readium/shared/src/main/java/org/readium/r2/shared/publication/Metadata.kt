@@ -62,7 +62,7 @@ public data class Metadata(
     val duration: Double? = null,
     val numberOfPages: Int? = null,
     val belongsTo: Map<String, List<Collection>> = emptyMap(),
-    val otherMetadata: @WriteWith<JSONParceler> Map<String, Any> = mapOf()
+    val otherMetadata: @WriteWith<JSONParceler> Map<String, Any> = mapOf(),
 ) : JSONable, Parcelable {
 
     public constructor(
@@ -97,7 +97,7 @@ public data class Metadata(
         belongsTo: Map<String, List<Collection>> = emptyMap(),
         belongsToCollections: List<Collection> = emptyList(),
         belongsToSeries: List<Collection> = emptyList(),
-        otherMetadata: Map<String, Any> = mapOf()
+        otherMetadata: Map<String, Any> = mapOf(),
     ) : this(
         identifier = identifier,
         type = type,
@@ -215,7 +215,7 @@ public data class Metadata(
          */
         public fun fromJSON(
             json: JSONObject?,
-            warnings: WarningLogger? = null
+            warnings: WarningLogger? = null,
         ): Metadata? {
             json ?: return null
             val localizedTitle = LocalizedString.fromJSON(json.remove("title"), warnings)

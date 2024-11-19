@@ -29,7 +29,7 @@ public interface Resource : Readable {
     public suspend fun properties(): Try<Properties, ReadError>
 
     public class Properties(
-        properties: Map<String, Any> = emptyMap()
+        properties: Map<String, Any> = emptyMap(),
     ) : Map<String, Any> by properties {
 
         public companion object {
@@ -47,7 +47,7 @@ public interface Resource : Readable {
 
 /** Creates a Resource that will always return the given [error]. */
 public class FailureResource(
-    private val error: ReadError
+    private val error: ReadError,
 ) : Resource {
 
     override val sourceUrl: AbsoluteUrl? = null
@@ -70,7 +70,7 @@ public fun Resource.borrow(): Resource =
     BorrowedResource(this)
 
 private class BorrowedResource(
-    private val resource: Resource
+    private val resource: Resource,
 ) : Resource by resource {
 
     override fun close() {

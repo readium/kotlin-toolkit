@@ -88,7 +88,7 @@ internal suspend fun PointerInputScope.detectDragGestures(
     onDragCancel: () -> Unit,
     shouldAwaitTouchSlop: () -> Boolean,
     orientationLock: Orientation?,
-    onDrag: (change: PointerInputChange, dragAmount: Offset) -> Unit
+    onDrag: (change: PointerInputChange, dragAmount: Offset) -> Unit,
 ) {
     awaitEachGesture {
         val initialDown =
@@ -158,7 +158,7 @@ internal suspend inline fun AwaitPointerEventScope.drag(
     pointerId: PointerId,
     onDrag: (PointerInputChange) -> Unit,
     orientation: Orientation?,
-    motionConsumed: (PointerInputChange) -> Boolean
+    motionConsumed: (PointerInputChange) -> Boolean,
 ): PointerInputChange? {
     if (currentEvent.isPointerUp(pointerId)) {
         return null // The pointer has already been lifted, so the gesture is canceled
@@ -200,7 +200,7 @@ internal suspend inline fun AwaitPointerEventScope.drag(
  */
 private suspend inline fun AwaitPointerEventScope.awaitDragOrUp(
     pointerId: PointerId,
-    hasDragged: (PointerInputChange) -> Boolean
+    hasDragged: (PointerInputChange) -> Boolean,
 ): PointerInputChange? {
     var pointer = pointerId
     while (true) {
@@ -244,7 +244,7 @@ private suspend inline fun AwaitPointerEventScope.awaitPointerSlopOrCancellation
     pointerId: PointerId,
     pointerType: PointerType,
     orientation: Orientation?,
-    onPointerSlopReached: (PointerInputChange, Offset) -> Unit
+    onPointerSlopReached: (PointerInputChange, Offset) -> Unit,
 ): PointerInputChange? {
     if (currentEvent.isPointerUp(pointerId)) {
         return null // The pointer has already been lifted, so the gesture is canceled
@@ -311,7 +311,7 @@ private class TouchSlopDetector(val orientation: Orientation? = null) {
      */
     fun addPointerInputChange(
         dragEvent: PointerInputChange,
-        touchSlop: Float
+        touchSlop: Float,
     ): Offset? {
         val currentPosition = dragEvent.position
         val previousPosition = dragEvent.previousPosition

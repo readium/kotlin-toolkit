@@ -16,7 +16,7 @@ import org.readium.r2.shared.publication.Publication
 public class DefaultMediaMetadataProvider(
     private val title: String? = null,
     private val author: String? = null,
-    private val cover: Uri? = null
+    private val cover: Uri? = null,
 ) : MediaMetadataProvider {
 
     override fun createMetadataFactory(publication: Publication): MediaMetadataFactory {

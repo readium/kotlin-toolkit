@@ -32,14 +32,14 @@ import org.readium.r2.streamer.parser.PublicationParser
 @OptIn(ExperimentalReadiumApi::class)
 public class PdfParser(
     context: Context,
-    private val pdfFactory: PdfDocumentFactory<*>
+    private val pdfFactory: PdfDocumentFactory<*>,
 ) : PublicationParser {
 
     private val context = context.applicationContext
 
     override suspend fun parse(
         asset: Asset,
-        warnings: WarningLogger?
+        warnings: WarningLogger?,
     ): Try<Publication.Builder, PublicationParser.ParseError> {
         if (asset !is ResourceAsset || !asset.format.conformsTo(Specification.Pdf)) {
             return Try.failure(PublicationParser.ParseError.FormatNotSupported())

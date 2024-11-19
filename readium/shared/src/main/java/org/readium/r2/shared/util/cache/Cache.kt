@@ -71,7 +71,7 @@ public suspend fun <V> CacheTransaction<V>.getOrPut(key: String, defaultValue: s
  */
 public suspend fun <V, F> CacheTransaction<V>.getOrTryPut(
     key: String,
-    defaultValue: suspend () -> Try<V, F>
+    defaultValue: suspend () -> Try<V, F>,
 ): Try<V, F> =
     get(key)?.let { Try.success(it) }
         ?: defaultValue()

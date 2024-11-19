@@ -18,7 +18,7 @@ import org.readium.r2.testapp.utils.CoroutineQueue
  */
 @OptIn(ExperimentalReadiumApi::class)
 class MediaServiceFacade(
-    private val application: Application
+    private val application: Application,
 ) {
     private val coroutineScope: CoroutineScope =
         MainScope()
@@ -43,7 +43,7 @@ class MediaServiceFacade(
      */
     suspend fun <N> openSession(
         bookId: Long,
-        navigator: N
+        navigator: N,
     ) where N : AnyMediaNavigator, N : Media3Adapter {
         coroutineQueue.await {
             MediaService.start(application)
