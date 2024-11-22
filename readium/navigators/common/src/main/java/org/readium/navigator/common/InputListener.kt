@@ -36,12 +36,12 @@ public interface InputListener {
  */
 @ExperimentalReadiumApi
 public data class TapEvent(
-    val offset: DpOffset
+    val offset: DpOffset,
 )
 
 @ExperimentalReadiumApi
 public data class TapContext(
-    val viewport: DpSize
+    val viewport: DpSize,
 )
 
 @ExperimentalReadiumApi
@@ -62,7 +62,7 @@ public fun defaultInputListener(
     minimumHorizontalEdgeSize: Dp = 80.0.dp,
     horizontalEdgeThresholdPercent: Double? = 0.3,
     minimumVerticalEdgeSize: Dp = 80.0.dp,
-    verticalEdgeThresholdPercent: Double? = 0.3
+    verticalEdgeThresholdPercent: Double? = 0.3,
 ): InputListener {
     val coroutineScope = rememberCoroutineScope()
 
@@ -89,7 +89,7 @@ private class DefaultInputListener(
     private val minimumHorizontalEdgeSize: Dp,
     private val horizontalEdgeThresholdPercent: Double?,
     private val minimumVerticalEdgeSize: Dp,
-    private val verticalEdgeThresholdPercent: Double?
+    private val verticalEdgeThresholdPercent: Double?,
 ) : InputListener {
 
     override fun onTap(event: TapEvent, context: TapContext) {

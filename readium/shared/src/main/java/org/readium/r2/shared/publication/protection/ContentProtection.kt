@@ -28,15 +28,15 @@ public interface ContentProtection {
 
     public sealed class OpenError(
         override val message: String,
-        override val cause: Error?
+        override val cause: Error?,
     ) : Error {
 
         public class Reading(
-            override val cause: ReadError
+            override val cause: ReadError,
         ) : OpenError("An error occurred while trying to read asset.", cause)
 
         public class AssetNotSupported(
-            override val cause: Error? = null
+            override val cause: Error? = null,
         ) : OpenError("Asset is not supported.", cause)
     }
 
@@ -50,7 +50,7 @@ public interface ContentProtection {
      */
     public data class OpenResult(
         val asset: Asset,
-        val onCreatePublication: Publication.Builder.() -> Unit = {}
+        val onCreatePublication: Publication.Builder.() -> Unit = {},
     )
 
     /**
@@ -62,7 +62,7 @@ public interface ContentProtection {
     public suspend fun open(
         asset: Asset,
         credentials: String?,
-        allowUserInteraction: Boolean
+        allowUserInteraction: Boolean,
     ): Try<OpenResult, OpenError>
 
     /**
@@ -70,7 +70,7 @@ public interface ContentProtection {
      */
     @JvmInline
     public value class Scheme(
-        public val uri: String
+        public val uri: String,
     ) {
 
         public companion object {

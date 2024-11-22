@@ -43,7 +43,7 @@ public class PdfiumDocumentFragment internal constructor(
     private val href: Url,
     private val initialPageIndex: Int,
     initialSettings: PdfiumSettings,
-    private val listener: Listener?
+    private val listener: Listener?,
 ) : PdfDocumentFragment<PdfiumSettings>() {
 
     // Dummy constructor to address https://github.com/readium/kotlin-toolkit/issues/395
@@ -78,7 +78,7 @@ public class PdfiumDocumentFragment internal constructor(
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedInstanceState: Bundle?
+        savedInstanceState: Bundle?,
     ): View =
         PDFView(inflater.context, null)
             .also { pdfView = it }

@@ -25,7 +25,9 @@ public interface MemoryObserver {
          * allocations with the UI should be released at this point to allow memory to be better
          * managed.
          */
-        UiHidden;
+        UiHidden,
+
+        ;
 
         public companion object {
             public fun fromLevel(level: Int): Level =

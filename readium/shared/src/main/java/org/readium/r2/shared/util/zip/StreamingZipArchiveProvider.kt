@@ -47,7 +47,7 @@ internal class StreamingZipArchiveProvider {
 
     suspend fun open(
         format: Format,
-        source: Readable
+        source: Readable,
     ): Try<Container<Resource>, ArchiveOpener.OpenError> {
         if (!format.conformsTo(Specification.Zip)) {
             return Try.failure(
@@ -74,7 +74,7 @@ internal class StreamingZipArchiveProvider {
     private suspend fun openBlob(
         readable: Readable,
         wrapError: (ReadError) -> IOException,
-        sourceUrl: AbsoluteUrl?
+        sourceUrl: AbsoluteUrl?,
     ): Container<Resource> = withContext(Dispatchers.IO) {
         val datasourceChannel = ReadableChannelAdapter(readable, wrapError)
         val channel = wrapBaseChannel(datasourceChannel)

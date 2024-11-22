@@ -85,5 +85,5 @@ public data class PdfDocumentFragmentInput<S : Configurable.Settings>(
     val pageIndex: Int,
     val settings: S,
     val navigatorListener: Navigator.Listener?,
-    val inputListener: InputListener?
+    val inputListener: InputListener?,
 )

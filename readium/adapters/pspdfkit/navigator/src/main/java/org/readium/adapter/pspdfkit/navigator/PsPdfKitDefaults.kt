@@ -21,5 +21,5 @@ public data class PsPdfKitDefaults(
     val pageSpacing: Double? = null,
     val readingProgression: ReadingProgression? = null,
     val scroll: Boolean? = null,
-    val spread: Spread? = null
+    val spread: Spread? = null,
 )

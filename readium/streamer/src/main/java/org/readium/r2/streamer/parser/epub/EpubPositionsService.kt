@@ -36,15 +36,15 @@ public class EpubPositionsService(
     private val readingOrder: List<Link>,
     private val presentation: Presentation,
     private val container: Container<Resource>,
-    private val reflowableStrategy: ReflowableStrategy
+    private val reflowableStrategy: ReflowableStrategy,
 ) : PositionsService {
 
     public companion object {
 
         public fun createFactory(
-            reflowableStrategy: ReflowableStrategy = ReflowableStrategy.recommended
+            reflowableStrategy: ReflowableStrategy = ReflowableStrategy.recommended,
         ): (
-            Publication.Service.Context
+            Publication.Service.Context,
         ) -> EpubPositionsService =
             { context ->
                 EpubPositionsService(
@@ -184,7 +184,7 @@ public class EpubPositionsService(
         type: MediaType?,
         title: String?,
         progression: Double,
-        position: Int
+        position: Int,
     ): Locator =
         Locator(
             href = href,

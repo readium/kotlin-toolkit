@@ -18,7 +18,7 @@ import timber.log.Timber
 
 internal class ResourceDataProvider(
     resource: Resource,
-    private val onResourceError: (ReadError) -> Unit = { Timber.e(it.toDebugDescription()) }
+    private val onResourceError: (ReadError) -> Unit = { Timber.e(it.toDebugDescription()) },
 ) : DataProvider {
 
     var error: ReadError? = null

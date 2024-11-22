@@ -31,7 +31,7 @@ import org.readium.r2.shared.publication.Publication
 
 internal class R2CbzPageFragment(
     private val publication: Publication,
-    private val onTapListener: (Float, Float) -> Unit
+    private val onTapListener: (Float, Float) -> Unit,
 ) :
     androidx.fragment.app.Fragment(), CoroutineScope {
 
@@ -50,7 +50,7 @@ internal class R2CbzPageFragment(
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedInstanceState: Bundle?
+        savedInstanceState: Bundle?,
     ): View? {
         _binding = ReadiumNavigatorViewpagerFragmentCbzBinding.inflate(inflater, container, false)
         containerView = binding.root

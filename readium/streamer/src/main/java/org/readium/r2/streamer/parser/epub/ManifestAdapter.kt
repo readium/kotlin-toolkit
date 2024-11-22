@@ -22,7 +22,7 @@ internal class ManifestAdapter(
     private val packageDocument: PackageDocument,
     private val navigationData: Map<String, List<Link>> = emptyMap(),
     private val encryptionData: Map<Url, Encryption> = emptyMap(),
-    private val displayOptions: Map<String, String> = emptyMap()
+    private val displayOptions: Map<String, String> = emptyMap(),
 ) {
     private val epubVersion = packageDocument.epubVersion
     private val spine = packageDocument.spine

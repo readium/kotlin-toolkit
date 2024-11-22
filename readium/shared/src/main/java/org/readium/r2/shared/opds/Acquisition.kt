@@ -32,7 +32,7 @@ import org.readium.r2.shared.util.mediatype.MediaType
 @Parcelize
 public data class Acquisition(
     val type: String,
-    val children: List<Acquisition> = emptyList()
+    val children: List<Acquisition> = emptyList(),
 ) : JSONable, Parcelable {
 
     /** Media type of the resource to acquire. */
@@ -72,7 +72,7 @@ public data class Acquisition(
          */
         public fun fromJSONArray(
             json: JSONArray?,
-            warnings: WarningLogger? = null
+            warnings: WarningLogger? = null,
         ): List<Acquisition> {
             return json.parseObjects { fromJSON(it as? JSONObject, warnings) }
         }

@@ -12,7 +12,7 @@ import org.readium.r2.shared.util.Url
 
 @ExperimentalReadiumApi
 internal data class ReadingOrder(
-    val items: List<ReadingOrderItem>
+    val items: List<ReadingOrderItem>,
 ) {
 
     fun indexOfHref(href: Url): Int? = items
@@ -23,5 +23,5 @@ internal data class ReadingOrder(
 @ExperimentalReadiumApi
 internal data class ReadingOrderItem(
     val href: Url,
-    val page: Presentation.Page?
+    val page: Presentation.Page?,
 )

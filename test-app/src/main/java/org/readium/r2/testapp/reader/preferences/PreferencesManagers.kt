@@ -44,7 +44,7 @@ class PreferencesManager<P : Configurable.Preferences<P>> internal constructor(
     val preferences: StateFlow<P>,
     @Suppress("Unused") // Keep the scope alive until the PreferencesManager is garbage collected
     private val coroutineScope: CoroutineScope,
-    private val editPreferences: suspend (P) -> Unit
+    private val editPreferences: suspend (P) -> Unit,
 ) {
 
     suspend fun setPreferences(preferences: P) {
@@ -58,7 +58,7 @@ sealed class PreferencesManagerFactory<P : Configurable.Preferences<P>>(
     private val sharedPreferencesFilter: PreferencesFilter<P>,
     private val publicationPreferencesFilter: PreferencesFilter<P>,
     private val preferencesSerializer: PreferencesSerializer<P>,
-    private val emptyPreferences: P
+    private val emptyPreferences: P,
 ) {
     suspend fun createPreferenceManager(bookId: Long): PreferencesManager<P> {
         val coroutineScope = CoroutineScope(Dispatchers.IO)
@@ -116,7 +116,7 @@ sealed class PreferencesManagerFactory<P : Configurable.Preferences<P>>(
 }
 
 class EpubPreferencesManagerFactory(
-    dataStore: DataStore<Preferences>
+    dataStore: DataStore<Preferences>,
 ) : PreferencesManagerFactory<EpubPreferences>(
     dataStore = dataStore,
     klass = EpubPreferences::class,
@@ -127,7 +127,7 @@ class EpubPreferencesManagerFactory(
 )
 
 class PdfiumPreferencesManagerFactory(
-    dataStore: DataStore<Preferences>
+    dataStore: DataStore<Preferences>,
 ) : PreferencesManagerFactory<PdfiumPreferences>(
     dataStore = dataStore,
     klass = PdfiumPreferences::class,
@@ -138,7 +138,7 @@ class PdfiumPreferencesManagerFactory(
 )
 
 class ExoPlayerPreferencesManagerFactory(
-    dataStore: DataStore<Preferences>
+    dataStore: DataStore<Preferences>,
 ) : PreferencesManagerFactory<ExoPlayerPreferences>(
     dataStore = dataStore,
     klass = ExoPlayerPreferences::class,
@@ -149,7 +149,7 @@ class ExoPlayerPreferencesManagerFactory(
 )
 
 class AndroidTtsPreferencesManagerFactory(
-    dataStore: DataStore<Preferences>
+    dataStore: DataStore<Preferences>,
 ) : PreferencesManagerFactory<AndroidTtsPreferences>(
     dataStore = dataStore,
     klass = AndroidTtsPreferences::class,

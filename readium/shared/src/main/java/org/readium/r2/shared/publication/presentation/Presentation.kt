@@ -52,7 +52,7 @@ public data class Presentation(
     val orientation: Orientation? = null,
     val overflow: Overflow? = null,
     val spread: Spread? = null,
-    val layout: EpubLayout? = null
+    val layout: EpubLayout? = null,
 ) : JSONable, Parcelable {
 
     /**
@@ -115,7 +115,8 @@ public data class Presentation(
         CONTAIN("contain"),
 
         @SerialName("cover")
-        COVER("cover");
+        COVER("cover"),
+        ;
 
         public companion object : MapCompanion<String, Fit>(entries.toTypedArray(), Fit::value) {
 
@@ -139,7 +140,8 @@ public data class Presentation(
         LANDSCAPE("landscape"),
 
         @SerialName("portrait")
-        PORTRAIT("portrait");
+        PORTRAIT("portrait"),
+        ;
 
         public companion object : MapCompanion<String, Orientation>(
             entries.toTypedArray(),
@@ -166,7 +168,8 @@ public data class Presentation(
         PAGINATED("paginated"),
 
         @SerialName("scrolled")
-        SCROLLED("scrolled");
+        SCROLLED("scrolled"),
+        ;
 
         public companion object : MapCompanion<String, Overflow>(
             entries.toTypedArray(),
@@ -194,7 +197,8 @@ public data class Presentation(
         RIGHT("right"),
 
         @SerialName("center")
-        CENTER("center");
+        CENTER("center"),
+        ;
 
         public companion object : MapCompanion<String, Page>(entries.toTypedArray(), Page::value)
     }
@@ -216,7 +220,8 @@ public data class Presentation(
         NONE("none"),
 
         @SerialName("landscape")
-        LANDSCAPE("landscape");
+        LANDSCAPE("landscape"),
+        ;
 
         public companion object : MapCompanion<String, Spread>(
             entries.toTypedArray(),

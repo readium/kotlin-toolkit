@@ -88,7 +88,7 @@ public data class HttpHeaders(val headers: Map<String, List<String>>) {
  */
 public data class HttpRange(
     val start: Long,
-    val end: Long?
+    val end: Long?,
 ) {
     public fun toLongRange(contentLength: Long): LongRange =
         start..(end ?: (contentLength - 1))

@@ -15,5 +15,5 @@ import org.readium.r2.shared.ExperimentalReadiumApi
 public data class FixedWebSettings(
     val fit: Fit,
     val readingProgression: ReadingProgression,
-    val spreads: Boolean
+    val spreads: Boolean,
 ) : Configurable.Settings

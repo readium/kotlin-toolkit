@@ -50,12 +50,12 @@ import timber.log.Timber
 public class ReadiumWebPubParser(
     private val context: Context? = null,
     private val httpClient: HttpClient,
-    private val pdfFactory: PdfDocumentFactory<*>?
+    private val pdfFactory: PdfDocumentFactory<*>?,
 ) : PublicationParser {
 
     override suspend fun parse(
         asset: Asset,
-        warnings: WarningLogger?
+        warnings: WarningLogger?,
     ): Try<Publication.Builder, PublicationParser.ParseError> = when (asset) {
         is ResourceAsset -> parseResourceAsset(asset.resource, asset.format.specification)
         is ContainerAsset -> parseContainerAsset(asset.container, asset.format.specification)
@@ -63,7 +63,7 @@ public class ReadiumWebPubParser(
 
     private suspend fun parseContainerAsset(
         container: Container<Resource>,
-        formatSpecification: FormatSpecification
+        formatSpecification: FormatSpecification,
     ): Try<Publication.Builder, PublicationParser.ParseError> {
         if (!formatSpecification.conformsTo(Specification.Rpf)) {
             return Try.failure(PublicationParser.ParseError.FormatNotSupported())
@@ -147,7 +147,7 @@ public class ReadiumWebPubParser(
     @OptIn(DelicateReadiumApi::class)
     private suspend fun parseResourceAsset(
         resource: Resource,
-        formatSpecification: FormatSpecification
+        formatSpecification: FormatSpecification,
     ): Try<Publication.Builder, PublicationParser.ParseError> {
         if (!formatSpecification.conformsTo(Specification.Rwpm)) {
             return Try.failure(PublicationParser.ParseError.FormatNotSupported())

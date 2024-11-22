@@ -20,5 +20,5 @@ public data class PsPdfKitSettings(
     val readingProgression: ReadingProgression,
     val scroll: Boolean,
     val scrollAxis: Axis,
-    val spread: Spread
+    val spread: Spread,
 ) : Configurable.Settings

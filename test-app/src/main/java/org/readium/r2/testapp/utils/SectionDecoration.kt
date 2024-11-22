@@ -20,7 +20,7 @@ import org.readium.r2.testapp.databinding.SectionHeaderBinding
 
 class SectionDecoration(
     private val context: Context,
-    private val listener: Listener
+    private val listener: Listener,
 ) : RecyclerView.ItemDecoration() {
 
     interface Listener {
@@ -35,7 +35,7 @@ class SectionDecoration(
         outRect: Rect,
         view: View,
         parent: RecyclerView,
-        state: RecyclerView.State
+        state: RecyclerView.State,
     ) {
         super.getItemOffsets(outRect, view, parent, state)
         val pos = parent.getChildAdapterPosition(view)

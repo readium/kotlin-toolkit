@@ -19,13 +19,13 @@ import org.readium.r2.testapp.R
 import org.readium.r2.testapp.databinding.ItemRecycleCatalogBinding
 
 class PublicationAdapter(
-    private val setModelPublication: (Publication) -> Unit
+    private val setModelPublication: (Publication) -> Unit,
 ) :
     ListAdapter<Publication, PublicationAdapter.ViewHolder>(PublicationListDiff()) {
 
     override fun onCreateViewHolder(
         parent: ViewGroup,
-        viewType: Int
+        viewType: Int,
     ): ViewHolder {
         return ViewHolder(
             ItemRecycleCatalogBinding.inflate(LayoutInflater.from(parent.context), parent, false)
@@ -68,14 +68,14 @@ class PublicationAdapter(
 
         override fun areItemsTheSame(
             oldItem: Publication,
-            newItem: Publication
+            newItem: Publication,
         ): Boolean {
             return oldItem.metadata.identifier == newItem.metadata.identifier
         }
 
         override fun areContentsTheSame(
             oldItem: Publication,
-            newItem: Publication
+            newItem: Publication,
         ): Boolean {
             return oldItem.manifest == newItem.manifest
         }

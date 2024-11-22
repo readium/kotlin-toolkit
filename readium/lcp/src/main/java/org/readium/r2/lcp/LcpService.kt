@@ -46,7 +46,7 @@ public interface LcpService {
      */
     public suspend fun acquirePublication(
         lcpl: ByteArray,
-        onProgress: (Double) -> Unit = {}
+        onProgress: (Double) -> Unit = {},
     ): Try<AcquiredPublication, LcpError>
 
     /**
@@ -60,7 +60,7 @@ public interface LcpService {
      */
     public suspend fun acquirePublication(
         lcpl: File,
-        onProgress: (Double) -> Unit = {}
+        onProgress: (Double) -> Unit = {},
     ): Try<AcquiredPublication, LcpError>
 
     /**
@@ -80,14 +80,14 @@ public interface LcpService {
     public suspend fun retrieveLicense(
         asset: Asset,
         authentication: LcpAuthenticating,
-        allowUserInteraction: Boolean
+        allowUserInteraction: Boolean,
     ): Try<LcpLicense, LcpError>
 
     /**
      * Retrieves the license document from a LCP-protected publication asset.
      */
     public suspend fun retrieveLicenseDocument(
-        asset: ContainerAsset
+        asset: ContainerAsset,
     ): Try<LicenseDocument, LcpError>
 
     /**
@@ -97,7 +97,7 @@ public interface LcpService {
      */
     public suspend fun injectLicenseDocument(
         licenseDocument: LicenseDocument,
-        publicationFile: File
+        publicationFile: File,
     ): Try<Unit, LcpError>
 
     /**
@@ -109,7 +109,7 @@ public interface LcpService {
      * user to enter their passphrase.
      */
     public fun contentProtection(
-        authentication: LcpAuthenticating
+        authentication: LcpAuthenticating,
     ): ContentProtection
 
     /**
@@ -124,7 +124,7 @@ public interface LcpService {
         val localFile: File,
         val suggestedFilename: String,
         val format: Format,
-        val licenseDocument: LicenseDocument
+        val licenseDocument: LicenseDocument,
     )
 
     public companion object {
@@ -139,7 +139,7 @@ public interface LcpService {
         public operator fun invoke(
             context: Context,
             assetRetriever: AssetRetriever,
-            deviceName: String? = null
+            deviceName: String? = null,
         ): LcpService? {
             if (!LcpClient.isAvailable()) {
                 return null

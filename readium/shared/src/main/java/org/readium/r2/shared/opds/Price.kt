@@ -33,7 +33,7 @@ import org.readium.r2.shared.util.logging.log
 @Parcelize
 public data class Price(
     val currency: String,
-    val value: Double
+    val value: Double,
 ) : JSONable, Parcelable {
 
     /**

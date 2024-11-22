@@ -26,7 +26,7 @@ import org.readium.r2.shared.util.resource.Resource
  */
 public data class ArchiveProperties(
     val entryLength: Long,
-    val isEntryCompressed: Boolean
+    val isEntryCompressed: Boolean,
 ) : JSONable {
 
     override fun toJSON(): JSONObject = JSONObject().apply {

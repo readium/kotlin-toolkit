@@ -34,14 +34,15 @@ import org.readium.r2.shared.util.logging.log
 public data class Availability(
     val state: State,
     val since: Instant? = null,
-    val until: Instant? = null
+    val until: Instant? = null,
 ) : JSONable, Parcelable {
 
     public enum class State(public val value: String) {
         AVAILABLE("available"),
         UNAVAILABLE("unavailable"),
         RESERVED("reserved"),
-        READY("ready");
+        READY("ready"),
+        ;
 
         public companion object : MapCompanion<String, State>(entries.toTypedArray(), State::value)
     }

@@ -12,7 +12,7 @@ import org.readium.r2.shared.util.zip.jvm.SeekableByteChannel
 
 internal class CachingReadableChannel(
     private val innerChannel: SeekableByteChannel,
-    private val cacheFrom: Long = 0
+    private val cacheFrom: Long = 0,
 ) : SeekableByteChannel {
 
     init {

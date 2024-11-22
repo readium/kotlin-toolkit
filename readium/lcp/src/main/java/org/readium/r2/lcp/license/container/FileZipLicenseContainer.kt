@@ -22,7 +22,7 @@ import org.readium.r2.shared.util.Url
  */
 internal class FileZipLicenseContainer(
     private val zip: String,
-    private val pathInZIP: Url
+    private val pathInZIP: Url,
 ) : WritableLicenseContainer {
 
     override fun read(): ByteArray {

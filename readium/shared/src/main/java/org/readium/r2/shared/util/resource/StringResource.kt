@@ -13,19 +13,19 @@ import org.readium.r2.shared.util.data.ReadError
 
 /** Creates a Resource serving a [String]. */
 public class StringResource private constructor(
-    private val resource: Resource
+    private val resource: Resource,
 ) : Resource by resource {
 
     public constructor(
         source: AbsoluteUrl? = null,
         properties: Resource.Properties = Resource.Properties(),
-        string: suspend () -> Try<String, ReadError>
+        string: suspend () -> Try<String, ReadError>,
     ) : this(InMemoryResource(source, properties) { string().map { it.toByteArray() } })
 
     public constructor(
         string: String,
         source: AbsoluteUrl? = null,
-        properties: Resource.Properties = Resource.Properties()
+        properties: Resource.Properties = Resource.Properties(),
     ) : this(source, properties, { Try.success(string) })
 
     override fun toString(): String =

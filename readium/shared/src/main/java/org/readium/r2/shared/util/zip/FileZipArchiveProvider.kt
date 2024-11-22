@@ -52,7 +52,7 @@ internal class FileZipArchiveProvider {
 
     suspend fun open(
         format: Format,
-        file: File
+        file: File,
     ): Try<Container<Resource>, ArchiveOpener.OpenError> {
         if (!format.conformsTo(Specification.Zip)) {
             return Try.failure(

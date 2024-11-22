@@ -25,7 +25,7 @@ public data class PdfiumPreferences(
     val fit: Fit? = null,
     val pageSpacing: Double? = null,
     val readingProgression: ReadingProgression? = null,
-    val scrollAxis: Axis? = null
+    val scrollAxis: Axis? = null,
 ) : Configurable.Preferences<PdfiumPreferences> {
 
     init {

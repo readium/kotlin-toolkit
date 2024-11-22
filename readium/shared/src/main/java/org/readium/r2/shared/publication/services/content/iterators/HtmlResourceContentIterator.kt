@@ -62,7 +62,7 @@ public class HtmlResourceContentIterator internal constructor(
     private val resource: Resource,
     private val totalProgressionRange: ClosedRange<Double>?,
     private val locator: Locator,
-    private val beforeMaxLength: Int = 50
+    private val beforeMaxLength: Int = 50,
 ) : Content.Iterator {
 
     public class Factory : ResourceContentIteratorFactory {
@@ -72,7 +72,7 @@ public class HtmlResourceContentIterator internal constructor(
             readingOrderIndex: Int,
             resource: Resource,
             mediaType: MediaType,
-            locator: Locator
+            locator: Locator,
         ): Content.Iterator? {
             if (!mediaType.matchesAny(MediaType.HTML, MediaType.XHTML)) {
                 return null
@@ -100,7 +100,7 @@ public class HtmlResourceContentIterator internal constructor(
      */
     private data class ElementWithDelta(
         val element: Content.Element,
-        val delta: Int
+        val delta: Int,
     )
 
     private var currentElement: ElementWithDelta? = null
@@ -228,13 +228,13 @@ public class HtmlResourceContentIterator internal constructor(
      */
     public data class ParsedElements(
         val elements: List<Content.Element> = emptyList(),
-        val startIndex: Int = 0
+        val startIndex: Int = 0,
     )
 
     private class ContentParser(
         private val baseLocator: Locator,
         private val startElement: Element?,
-        private val beforeMaxLength: Int
+        private val beforeMaxLength: Int,
     ) : NodeVisitor {
 
         fun result() = ParsedElements(
@@ -272,7 +272,7 @@ public class HtmlResourceContentIterator internal constructor(
 
         private data class ParentElement(
             val element: Element,
-            val cssSelector: String?
+            val cssSelector: String?,
         ) {
             constructor(element: Element) : this(
                 element = element,
@@ -532,7 +532,7 @@ private fun Node.srcRelativeToHref(baseUrl: Url): Url? =
  */
 private fun StringBuilder.appendNormalisedWhitespace(
     string: String,
-    stripLeading: Boolean
+    stripLeading: Boolean,
 ) {
     var lastWasWhite = false
     var reachedNonWhite = false

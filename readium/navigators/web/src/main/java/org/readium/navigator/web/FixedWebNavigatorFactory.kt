@@ -42,14 +42,14 @@ import org.readium.r2.shared.util.getOrElse
 public class FixedWebNavigatorFactory private constructor(
     private val application: Application,
     private val publication: Publication,
-    private val defaults: FixedWebDefaults
+    private val defaults: FixedWebDefaults,
 ) {
 
     public companion object {
 
         public operator fun invoke(
             application: Application,
-            publication: Publication
+            publication: Publication,
         ): FixedWebNavigatorFactory? {
             if (!publication.conformsTo(Publication.Profile.EPUB) ||
                 publication.metadata.presentation.layout != EpubLayout.FIXED
@@ -71,18 +71,18 @@ public class FixedWebNavigatorFactory private constructor(
 
     public sealed class Error(
         override val message: String,
-        override val cause: org.readium.r2.shared.util.Error?
+        override val cause: org.readium.r2.shared.util.Error?,
     ) : org.readium.r2.shared.util.Error {
 
         public class Initialization(
-            cause: org.readium.r2.shared.util.Error
+            cause: org.readium.r2.shared.util.Error,
         ) : Error("Could not initialize the navigator.", cause)
     }
 
     public suspend fun createRenditionState(
         initialSettings: FixedWebSettings,
         initialLocation: FixedWebGoLocation? = null,
-        readingOrder: List<Link> = publication.readingOrder
+        readingOrder: List<Link> = publication.readingOrder,
     ): Try<FixedWebRenditionState, Error> {
         val readingOrderItems = readingOrder.map {
             ReadingOrderItem(
@@ -138,7 +138,7 @@ public class FixedWebNavigatorFactory private constructor(
         }
 
     public fun createPreferencesEditor(
-        initialPreferences: FixedWebPreferences
+        initialPreferences: FixedWebPreferences,
     ): FixedWebPreferencesEditor =
         FixedWebPreferencesEditor(
             initialPreferences,

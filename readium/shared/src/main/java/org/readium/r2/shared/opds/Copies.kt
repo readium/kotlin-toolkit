@@ -26,7 +26,7 @@ import org.readium.r2.shared.extensions.optPositiveInt
 @Parcelize
 public data class Copies(
     val total: Int? = null,
-    val available: Int? = null
+    val available: Int? = null,
 ) : JSONable, Parcelable {
 
     /**

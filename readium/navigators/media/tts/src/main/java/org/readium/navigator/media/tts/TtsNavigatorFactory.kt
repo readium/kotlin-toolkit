@@ -39,13 +39,18 @@ import org.readium.r2.shared.util.tokenizer.TextUnit
 
 @ExperimentalReadiumApi
 @OptIn(DelicateReadiumApi::class)
-public class TtsNavigatorFactory<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>, E : PreferencesEditor<P>,
-    F : TtsEngine.Error, V : TtsEngine.Voice> private constructor(
+public class TtsNavigatorFactory<
+    S : TtsEngine.Settings,
+    P : TtsEngine.Preferences<P>,
+    E : PreferencesEditor<P>,
+    F : TtsEngine.Error,
+    V : TtsEngine.Voice,
+    > private constructor(
     private val application: Application,
     private val publication: Publication,
     private val ttsEngineProvider: TtsEngineProvider<S, P, E, F, V>,
     private val tokenizerFactory: (language: Language?) -> TextTokenizer,
-    private val metadataProvider: MediaMetadataProvider
+    private val metadataProvider: MediaMetadataProvider,
 ) {
     public companion object {
 
@@ -55,7 +60,7 @@ public class TtsNavigatorFactory<S : TtsEngine.Settings, P : TtsEngine.Preferenc
             tokenizerFactory: (language: Language?) -> TextTokenizer = defaultTokenizerFactory,
             metadataProvider: MediaMetadataProvider = defaultMediaMetadataProvider,
             defaults: AndroidTtsDefaults = AndroidTtsDefaults(),
-            voiceSelector: (Language?, Set<AndroidTtsEngine.Voice>) -> AndroidTtsEngine.Voice? = defaultVoiceSelector
+            voiceSelector: (Language?, Set<AndroidTtsEngine.Voice>) -> AndroidTtsEngine.Voice? = defaultVoiceSelector,
         ): AndroidTtsNavigatorFactory? {
             val engineProvider = AndroidTtsEngineProvider(
                 context = application,
@@ -72,13 +77,18 @@ public class TtsNavigatorFactory<S : TtsEngine.Settings, P : TtsEngine.Preferenc
             )
         }
 
-        public operator fun <S : TtsEngine.Settings, P : TtsEngine.Preferences<P>, E : PreferencesEditor<P>,
-            F : TtsEngine.Error, V : TtsEngine.Voice> invoke(
+        public operator fun <
+            S : TtsEngine.Settings,
+            P : TtsEngine.Preferences<P>,
+            E : PreferencesEditor<P>,
+            F : TtsEngine.Error,
+            V : TtsEngine.Voice,
+            > invoke(
             application: Application,
             publication: Publication,
             ttsEngineProvider: TtsEngineProvider<S, P, E, F, V>,
             tokenizerFactory: (language: Language?) -> TextTokenizer = defaultTokenizerFactory,
-            metadataProvider: MediaMetadataProvider = defaultMediaMetadataProvider
+            metadataProvider: MediaMetadataProvider = defaultMediaMetadataProvider,
         ): TtsNavigatorFactory<S, P, E, F, V>? =
             createNavigatorFactory(
                 application,
@@ -88,13 +98,18 @@ public class TtsNavigatorFactory<S : TtsEngine.Settings, P : TtsEngine.Preferenc
                 metadataProvider
             )
 
-        private fun <S : TtsEngine.Settings, P : TtsEngine.Preferences<P>, E : PreferencesEditor<P>,
-            F : TtsEngine.Error, V : TtsEngine.Voice> createNavigatorFactory(
+        private fun <
+            S : TtsEngine.Settings,
+            P : TtsEngine.Preferences<P>,
+            E : PreferencesEditor<P>,
+            F : TtsEngine.Error,
+            V : TtsEngine.Voice,
+            > createNavigatorFactory(
             application: Application,
             publication: Publication,
             ttsEngineProvider: TtsEngineProvider<S, P, E, F, V>,
             tokenizerFactory: (language: Language?) -> TextTokenizer,
-            metadataProvider: MediaMetadataProvider
+            metadataProvider: MediaMetadataProvider,
         ): TtsNavigatorFactory<S, P, E, F, V>? {
             publication.content() ?: return null
 
@@ -123,22 +138,22 @@ public class TtsNavigatorFactory<S : TtsEngine.Settings, P : TtsEngine.Preferenc
 
     public sealed class Error(
         override val message: String,
-        override val cause: org.readium.r2.shared.util.Error?
+        override val cause: org.readium.r2.shared.util.Error?,
     ) : org.readium.r2.shared.util.Error {
 
         public class UnsupportedPublication(
-            cause: org.readium.r2.shared.util.Error? = null
+            cause: org.readium.r2.shared.util.Error? = null,
         ) : Error("Publication is not supported.", cause)
 
         public class EngineInitialization(
-            cause: org.readium.r2.shared.util.Error? = null
+            cause: org.readium.r2.shared.util.Error? = null,
         ) : Error("Failed to initialize TTS engine.", cause)
     }
 
     public suspend fun createNavigator(
         listener: TtsNavigator.Listener,
         initialLocator: Locator? = null,
-        initialPreferences: P? = null
+        initialPreferences: P? = null,
     ): Try<TtsNavigator<S, P, F, V>, Error> {
         if (publication.findService(ContentService::class) == null) {
             return Try.failure(

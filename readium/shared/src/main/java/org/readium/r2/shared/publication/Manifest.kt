@@ -35,7 +35,7 @@ public data class Manifest(
     val readingOrder: List<Link> = emptyList(),
     val resources: List<Link> = emptyList(),
     val tableOfContents: List<Link> = emptyList(),
-    val subcollections: Map<String, List<PublicationCollection>> = emptyMap()
+    val subcollections: Map<String, List<PublicationCollection>> = emptyMap(),
 ) : JSONable {
 
     /**
@@ -159,7 +159,7 @@ public data class Manifest(
          */
         public fun fromJSON(
             json: JSONObject?,
-            warnings: WarningLogger? = ConsoleWarningLogger()
+            warnings: WarningLogger? = ConsoleWarningLogger(),
         ): Manifest? {
             json ?: return null
 

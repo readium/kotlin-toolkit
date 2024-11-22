@@ -115,7 +115,7 @@ internal fun Modifier.scrollable2D(
     enabled: Boolean = true,
     reverseDirection: Boolean = false,
     flingBehavior: Fling2DBehavior? = null,
-    interactionSource: MutableInteractionSource? = null
+    interactionSource: MutableInteractionSource? = null,
 ): Modifier = scrollable2D(
     state = state,
     enabled = enabled,
@@ -170,7 +170,7 @@ internal fun Modifier.scrollable2D(
     enabled: Boolean = true,
     reverseDirection: Boolean = false,
     flingBehavior: Fling2DBehavior? = null,
-    interactionSource: MutableInteractionSource? = null
+    interactionSource: MutableInteractionSource? = null,
 ) = this then Scrollable2DElement(
     state,
     overscrollEffect,
@@ -187,7 +187,7 @@ private class Scrollable2DElement(
     val enabled: Boolean,
     val reverseDirection: Boolean,
     val flingBehavior: Fling2DBehavior?,
-    val interactionSource: MutableInteractionSource?
+    val interactionSource: MutableInteractionSource?,
 ) : ModifierNodeElement<Scrollable2DNode>() {
     override fun create(): Scrollable2DNode {
         return Scrollable2DNode(
@@ -254,7 +254,7 @@ private class Scrollable2DNode(
     private var flingBehavior: Fling2DBehavior?,
     enabled: Boolean,
     reverseDirection: Boolean,
-    interactionSource: MutableInteractionSource?
+    interactionSource: MutableInteractionSource?,
 ) : DragGestureNode(
     canDrag = CanDragCalculation,
     enabled = enabled,
@@ -306,7 +306,7 @@ private class Scrollable2DNode(
     }
 
     override suspend fun drag(
-        forEachDelta: suspend ((dragDelta: DragEvent.DragDelta) -> Unit) -> Unit
+        forEachDelta: suspend ((dragDelta: DragEvent.DragDelta) -> Unit) -> Unit,
     ) {
         with(scrollingLogic) {
             scroll(scrollPriority = MutatePriority.UserInput) {
@@ -338,7 +338,7 @@ private class Scrollable2DNode(
         enabled: Boolean,
         reverseDirection: Boolean,
         flingBehavior: Fling2DBehavior?,
-        interactionSource: MutableInteractionSource?
+        interactionSource: MutableInteractionSource?,
     ) {
         var shouldInvalidateSemantics = false
         if (this.enabled != enabled) { // enabled changed
@@ -400,7 +400,7 @@ private class Scrollable2DNode(
     override fun onPointerEvent(
         pointerEvent: PointerEvent,
         pass: PointerEventPass,
-        bounds: IntSize
+        bounds: IntSize,
     ) {
         super.onPointerEvent(pointerEvent, pass, bounds)
         if (pass == PointerEventPass.Main && pointerEvent.type == PointerEventType.Scroll) {
@@ -494,7 +494,7 @@ internal object Scrollable2DDefaults {
     fun reverseDirection(
         layoutDirection: LayoutDirection,
         orientation: Orientation,
-        reverseScrolling: Boolean
+        reverseScrolling: Boolean,
     ): Boolean {
         // A finger moves with the content, not with the viewport. Therefore,
         // always reverse once to have "natural" gesture that goes reversed to layout
@@ -525,7 +525,7 @@ internal class ScrollingLogic(
     private var overscrollEffect: OverscrollEffect?,
     private var flingBehavior: Fling2DBehavior,
     private var reverseDirection: Boolean,
-    private var nestedScrollDispatcher: NestedScrollDispatcher
+    private var nestedScrollDispatcher: NestedScrollDispatcher,
 ) {
     fun Offset.reverseIfNeeded(): Offset = if (reverseDirection) this * -1f else this
 
@@ -656,7 +656,7 @@ internal class ScrollingLogic(
      */
     suspend fun scroll(
         scrollPriority: MutatePriority = MutatePriority.Default,
-        block: suspend NestedScrollScope.() -> Unit
+        block: suspend NestedScrollScope.() -> Unit,
     ) {
         scrollableState.scroll(scrollPriority) {
             outerStateScope = this
@@ -672,7 +672,7 @@ internal class ScrollingLogic(
         overscrollEffect: OverscrollEffect?,
         reverseDirection: Boolean,
         flingBehavior: Fling2DBehavior,
-        nestedScrollDispatcher: NestedScrollDispatcher
+        nestedScrollDispatcher: NestedScrollDispatcher,
     ): Boolean {
         var resetPointerInputHandling = false
         if (this.scrollableState != scrollableState) {
@@ -696,13 +696,13 @@ private val NoOpScrollScope: Scroll2DScope = object : Scroll2DScope {
 
 private class ScrollableNestedScrollConnection(
     val scrollingLogic: ScrollingLogic,
-    var enabled: Boolean
+    var enabled: Boolean,
 ) : NestedScrollConnection {
 
     override fun onPostScroll(
         consumed: Offset,
         available: Offset,
-        source: NestedScrollSource
+        source: NestedScrollSource,
     ): Offset = if (enabled) {
         scrollingLogic.performRawScroll(available)
     } else {
@@ -711,7 +711,7 @@ private class ScrollableNestedScrollConnection(
 
     override suspend fun onPostFling(
         consumed: Velocity,
-        available: Velocity
+        available: Velocity,
     ): Velocity {
         return if (enabled) {
             val velocityLeft = scrollingLogic.doFlingAnimation(available)
@@ -724,7 +724,7 @@ private class ScrollableNestedScrollConnection(
 
 internal class DefaultFling2DBehavior(
     var flingDecay: DecayAnimationSpec<Offset>,
-    private val motionDurationScale: MotionDurationScale = DefaultScrollMotionDurationScale
+    private val motionDurationScale: MotionDurationScale = DefaultScrollMotionDurationScale,
 ) : Fling2DBehavior {
 
     // For Testing
@@ -807,12 +807,12 @@ internal val UnityDensity = object : Density {
 internal interface NestedScrollScope {
     fun scrollBy(
         offset: Offset,
-        source: NestedScrollSource
+        source: NestedScrollSource,
     ): Offset
 
     fun scrollByWithOverscroll(
         offset: Offset,
-        source: NestedScrollSource
+        source: NestedScrollSource,
     ): Offset
 }
 

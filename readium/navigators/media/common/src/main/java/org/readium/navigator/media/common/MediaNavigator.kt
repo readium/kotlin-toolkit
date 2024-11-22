@@ -19,7 +19,7 @@ import org.readium.r2.shared.util.Url
 public interface MediaNavigator<
     L : MediaNavigator.Location,
     P : MediaNavigator.Playback,
-    R : MediaNavigator.ReadingOrder
+    R : MediaNavigator.ReadingOrder,
     > : Navigator, Closeable {
 
     /**

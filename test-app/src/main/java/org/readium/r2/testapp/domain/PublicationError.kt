@@ -15,7 +15,7 @@ import org.readium.r2.testapp.utils.UserError
 
 sealed class PublicationError(
     override val message: String,
-    override val cause: Error? = null
+    override val cause: Error? = null,
 ) : Error {
 
     class Reading(override val cause: ReadError) :

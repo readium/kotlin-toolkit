@@ -26,7 +26,7 @@ public typealias SearchTry<SuccessT> = Try<SuccessT, SearchError>
 @ExperimentalReadiumApi
 public sealed class SearchError(
     override val message: String,
-    override val cause: Error? = null
+    override val cause: Error? = null,
 ) : Error {
 
     /**
@@ -75,7 +75,7 @@ public interface SearchService : Publication.Service {
         val exact: Boolean? = null,
         val language: String? = null,
         val regularExpression: Boolean? = null,
-        val otherOptions: Map<String, String> = emptyMap()
+        val otherOptions: Map<String, String> = emptyMap(),
     ) : Parcelable {
         /**
          * Syntactic sugar to access the [otherOptions] values by subscripting [Options] directly.

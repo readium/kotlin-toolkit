@@ -25,7 +25,7 @@ internal data class License(
     @ColumnInfo(name = RIGHTCOPY)
     val rightCopy: Int?,
     @ColumnInfo(name = REGISTERED, defaultValue = "0")
-    val registered: Boolean = false
+    val registered: Boolean = false,
 ) {
 
     companion object {

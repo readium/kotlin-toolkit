@@ -15,10 +15,12 @@ import androidx.compose.runtime.*
 @Composable
 fun DropdownMenuButton(
     text: @Composable RowScope.() -> Unit,
-    content: @Composable ColumnScope.(dismiss: () -> Unit) -> Unit
+    content: @Composable ColumnScope.(dismiss: () -> Unit) -> Unit,
 ) {
     var isExpanded by remember { mutableStateOf(false) }
-    fun dismiss() { isExpanded = false }
+    fun dismiss() {
+        isExpanded = false
+    }
 
     OutlinedButton(
         onClick = { isExpanded = true }

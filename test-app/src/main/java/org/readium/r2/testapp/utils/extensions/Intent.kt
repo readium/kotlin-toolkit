@@ -16,7 +16,7 @@ import androidx.core.app.ShareCompat
 fun createShareIntent(
     launchingContext: Context,
     text: String,
-    title: String? = null
+    title: String? = null,
 ): Intent {
     val intent =
         ShareCompat.IntentBuilder(launchingContext)

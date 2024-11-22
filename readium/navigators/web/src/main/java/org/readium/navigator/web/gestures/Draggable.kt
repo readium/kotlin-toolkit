@@ -55,7 +55,7 @@ internal abstract class DragGestureNode(
     canDrag: (PointerInputChange) -> Boolean,
     enabled: Boolean,
     interactionSource: MutableInteractionSource?,
-    private var orientationLock: Orientation?
+    private var orientationLock: Orientation?,
 ) : DelegatingNode(), PointerInputModifierNode, CompositionLocalConsumerModifierNode {
 
     protected var canDrag = canDrag
@@ -142,7 +142,7 @@ internal abstract class DragGestureNode(
     override fun onPointerEvent(
         pointerEvent: PointerEvent,
         pass: PointerEventPass,
-        bounds: IntSize
+        bounds: IntSize,
     ) {
         if (enabled && pointerInputNode == null) {
             pointerInputNode = delegate(initializePointerInputNode())
@@ -259,7 +259,7 @@ internal abstract class DragGestureNode(
         enabled: Boolean = this.enabled,
         interactionSource: MutableInteractionSource? = this.interactionSource,
         orientationLock: Orientation? = this.orientationLock,
-        shouldResetPointerInputHandling: Boolean = false
+        shouldResetPointerInputHandling: Boolean = false,
     ) {
         var resetPointerInputHandling = shouldResetPointerInputHandling
 
@@ -299,7 +299,7 @@ private class DefaultDraggableState(val onDelta: (Float) -> Unit) : DraggableSta
 
     override suspend fun drag(
         dragPriority: MutatePriority,
-        block: suspend DragScope.() -> Unit
+        block: suspend DragScope.() -> Unit,
     ): Unit = coroutineScope {
         scrollMutex.mutateWith(dragScope, dragPriority, block)
     }

@@ -17,12 +17,12 @@ public interface ResourceFactory {
 
     public sealed class Error(
         override val message: String,
-        override val cause: org.readium.r2.shared.util.Error?
+        override val cause: org.readium.r2.shared.util.Error?,
     ) : org.readium.r2.shared.util.Error {
 
         public class SchemeNotSupported(
             public val scheme: Url.Scheme,
-            cause: org.readium.r2.shared.util.Error? = null
+            cause: org.readium.r2.shared.util.Error? = null,
         ) : Error("Url scheme $scheme is not supported.", cause)
     }
 
@@ -32,7 +32,7 @@ public interface ResourceFactory {
      * @param url The url the resource will access.
      */
     public suspend fun create(
-        url: AbsoluteUrl
+        url: AbsoluteUrl,
     ): Try<Resource, Error>
 }
 
@@ -41,13 +41,13 @@ public interface ResourceFactory {
  * the url scheme.
  */
 public class CompositeResourceFactory(
-    private val factories: List<ResourceFactory>
+    private val factories: List<ResourceFactory>,
 ) : ResourceFactory {
 
     public constructor(vararg factories: ResourceFactory) : this(factories.toList())
 
     override suspend fun create(
-        url: AbsoluteUrl
+        url: AbsoluteUrl,
     ): Try<Resource, ResourceFactory.Error> {
         for (factory in factories) {
             factory.create(url)

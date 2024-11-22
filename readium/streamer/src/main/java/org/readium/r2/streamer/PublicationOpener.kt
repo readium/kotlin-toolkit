@@ -29,19 +29,19 @@ import org.readium.r2.streamer.parser.PublicationParser
 public class PublicationOpener(
     private val publicationParser: PublicationParser,
     contentProtections: List<ContentProtection> = emptyList(),
-    private val onCreatePublication: Publication.Builder.() -> Unit = {}
+    private val onCreatePublication: Publication.Builder.() -> Unit = {},
 ) {
     public sealed class OpenError(
         override val message: String,
-        override val cause: Error?
+        override val cause: Error?,
     ) : Error {
 
         public class Reading(
-            override val cause: ReadError
+            override val cause: ReadError,
         ) : OpenError("An error occurred while trying to read asset.", cause)
 
         public class FormatNotSupported(
-            override val cause: Error? = null
+            override val cause: Error? = null,
         ) : OpenError("Asset is not supported.", cause)
     }
 
@@ -76,7 +76,7 @@ public class PublicationOpener(
         credentials: String? = null,
         allowUserInteraction: Boolean,
         onCreatePublication: Publication.Builder.() -> Unit = {},
-        warnings: WarningLogger? = null
+        warnings: WarningLogger? = null,
     ): Try<Publication, OpenError> {
         var protectionOnCreatePublication: Publication.Builder.() -> Unit = {}
 

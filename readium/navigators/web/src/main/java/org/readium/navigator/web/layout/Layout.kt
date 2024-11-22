@@ -11,7 +11,7 @@ import org.readium.r2.shared.util.Url
 
 internal class Layout(
     val readingProgression: ReadingProgression,
-    val spreads: List<Spread>
+    val spreads: List<Spread>,
 ) {
 
     fun spreadIndexForHref(href: Url): Int? = spreads
@@ -40,7 +40,7 @@ internal class Layout(
 
 internal data class Page(
     val index: Int,
-    val href: Url
+    val href: Url,
 )
 
 internal sealed interface Spread {
@@ -52,14 +52,14 @@ internal sealed interface Spread {
 }
 
 internal data class SingleViewportSpread(
-    val page: Page
+    val page: Page,
 ) : Spread {
 
     override val pages: List<Page> get() = listOfNotNull(page)
 }
 
 internal sealed class DoubleViewportSpread(
-    override val pages: List<Page>
+    override val pages: List<Page>,
 ) : Spread {
     abstract val leftPage: Page?
 
@@ -78,7 +78,7 @@ internal sealed class DoubleViewportSpread(
 }
 
 internal data class LeftOnlySpread(
-    val page: Page
+    val page: Page,
 ) : DoubleViewportSpread(listOf(page)) {
 
     override val leftPage: Page = page
@@ -87,7 +87,7 @@ internal data class LeftOnlySpread(
 }
 
 internal data class RightOnlySpread(
-    val page: Page
+    val page: Page,
 ) : DoubleViewportSpread(listOf(page)) {
 
     override val leftPage: Page? = null
@@ -97,5 +97,5 @@ internal data class RightOnlySpread(
 
 internal data class DoubleSpread(
     override val leftPage: Page,
-    override val rightPage: Page
+    override val rightPage: Page,
 ) : DoubleViewportSpread(listOf(leftPage, rightPage))

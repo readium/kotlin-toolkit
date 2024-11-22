@@ -17,7 +17,7 @@ import java.util.zip.ZipOutputStream
 internal fun ZipFile.addOrReplaceEntry(
     name: String,
     inputStream: InputStream,
-    dest: File
+    dest: File,
 ) {
     addOrReplaceEntry(name, inputStream, FileOutputStream(dest))
 }
@@ -25,7 +25,7 @@ internal fun ZipFile.addOrReplaceEntry(
 internal fun ZipFile.addOrReplaceEntry(
     name: String,
     inputStream: InputStream,
-    dest: OutputStream
+    dest: OutputStream,
 ) {
     val outZip = ZipOutputStream(dest)
     var entryAdded = false
@@ -79,7 +79,7 @@ private fun ZipEntry.copy(): ZipEntry {
 private fun addEntry(
     entry: ZipEntry,
     source: InputStream,
-    outStream: ZipOutputStream
+    outStream: ZipOutputStream,
 ) {
     outStream.putNextEntry(entry)
     source.copyTo(outStream)
@@ -89,7 +89,7 @@ private fun addEntry(
 private fun copyEntry(
     entry: ZipEntry,
     srcZip: ZipFile,
-    outStream: ZipOutputStream
+    outStream: ZipOutputStream,
 ) {
     addEntry(entry, srcZip.getInputStream(entry), outStream)
 }

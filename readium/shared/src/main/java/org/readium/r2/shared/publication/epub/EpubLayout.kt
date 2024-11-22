@@ -23,7 +23,8 @@ import org.readium.r2.shared.util.MapCompanion
 @Parcelize
 public enum class EpubLayout(public val value: String) : Parcelable {
     FIXED("fixed"),
-    REFLOWABLE("reflowable");
+    REFLOWABLE("reflowable"),
+    ;
 
     public companion object : MapCompanion<String, EpubLayout>(
         entries.toTypedArray(),

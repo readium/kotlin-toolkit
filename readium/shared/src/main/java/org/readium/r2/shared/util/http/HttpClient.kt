@@ -45,7 +45,7 @@ public interface HttpClient {
  */
 public class HttpStreamResponse(
     public val response: HttpResponse,
-    public val body: InputStream
+    public val body: InputStream,
 )
 
 /**
@@ -75,7 +75,7 @@ public suspend fun HttpClient.fetch(request: HttpRequest): HttpTry<HttpFetchResp
  */
 public suspend fun <T> HttpClient.fetchWithDecoder(
     request: HttpRequest,
-    decoder: (HttpFetchResponse) -> T
+    decoder: (HttpFetchResponse) -> T,
 ): HttpTry<T> =
     fetch(request)
         .flatMap {
@@ -111,7 +111,7 @@ public suspend fun HttpClient.fetchJSONObject(request: HttpRequest): HttpTry<JSO
  */
 public class HttpFetchResponse(
     public val response: HttpResponse,
-    public val body: ByteArray
+    public val body: ByteArray,
 )
 
 /**

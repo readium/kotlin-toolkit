@@ -24,7 +24,7 @@ import org.readium.r2.streamer.extensions.toHexByteArray
  */
 internal class EpubDeobfuscator(
     private val pubId: String,
-    private val encryptionData: Map<Url, Encryption>
+    private val encryptionData: Map<Url, Encryption>,
 ) {
 
     @Suppress("Unused_parameter")
@@ -40,7 +40,7 @@ internal class EpubDeobfuscator(
 
     inner class DeobfuscatingResource(
         private val resource: Resource,
-        private val algorithm: String
+        private val algorithm: String,
     ) : TransformingResource(resource) {
 
         // The obfuscation doesn't change the length of the resource.

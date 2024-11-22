@@ -38,7 +38,7 @@ class UserPreferencesViewModel<S : Configurable.Settings, P : Configurable.Prefe
     private val viewModelScope: CoroutineScope,
     private val bookId: Long,
     private val preferencesManager: PreferencesManager<P>,
-    private val createPreferencesEditor: (P) -> PreferencesEditor<P>
+    private val createPreferencesEditor: (P) -> PreferencesEditor<P>,
 ) {
     val editor: StateFlow<PreferencesEditor<P>> = preferencesManager.preferences
         .mapStateIn(viewModelScope, createPreferencesEditor)
@@ -62,7 +62,7 @@ class UserPreferencesViewModel<S : Configurable.Settings, P : Configurable.Prefe
 
         operator fun invoke(
             viewModelScope: CoroutineScope,
-            readerInitData: ReaderInitData
+            readerInitData: ReaderInitData,
         ): UserPreferencesViewModel<*, *>? =
             when (readerInitData) {
                 is EpubReaderInitData -> with(readerInitData) {

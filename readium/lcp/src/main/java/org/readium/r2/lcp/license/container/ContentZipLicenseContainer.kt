@@ -25,7 +25,7 @@ import org.readium.r2.shared.util.toUri
 internal class ContentZipLicenseContainer(
     context: Context,
     private val container: Container<Resource>,
-    private val pathInZip: Url
+    private val pathInZip: Url,
 ) : LicenseContainer by ContainerLicenseContainer(container, pathInZip), WritableLicenseContainer {
 
     private val zipUri: Uri =

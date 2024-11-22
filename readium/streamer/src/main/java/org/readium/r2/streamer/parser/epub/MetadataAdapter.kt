@@ -19,13 +19,13 @@ internal class MetadataAdapter(
     private val epubVersion: Double,
     private val uniqueIdentifierId: String?,
     private val readingProgression: ReadingProgression?,
-    private val displayOptions: Map<String, String>
+    private val displayOptions: Map<String, String>,
 ) {
     data class Result(
         val links: List<Link>,
         val metadata: Metadata,
         val durationById: Map<String, Double?>,
-        val coverId: String?
+        val coverId: String?,
     )
 
     fun adapt(items: List<MetadataItem>): Result {
@@ -197,7 +197,7 @@ private class TitleAdapter() {
     data class Result(
         val localizedTitle: LocalizedString?,
         val localizedSortAs: LocalizedString?,
-        val localizedSubtitle: LocalizedString?
+        val localizedSubtitle: LocalizedString?,
     )
 
     fun adapt(items: List<MetadataItem>): Pair<Result, List<MetadataItem>> {
@@ -316,7 +316,7 @@ private class CollectionAdapter {
 
     data class Result(
         val belongsToCollections: List<Collection>,
-        val belongsToSeries: List<Collection>
+        val belongsToSeries: List<Collection>,
     )
 
     fun adapt(items: List<MetadataItem>): Pair<Result, List<MetadataItem>> {
@@ -324,7 +324,10 @@ private class CollectionAdapter {
 
         val collectionItems = remainingItems
             .takeAllWithProperty(Vocabularies.META + "belongs-to-collection")
-            .let { remainingItems = it.second; it.first }
+            .let {
+                remainingItems = it.second
+                it.first
+            }
 
         val allCollections = collectionItems
             .map { it.toCollection() }
@@ -333,7 +336,12 @@ private class CollectionAdapter {
 
         val belongsToCollections = collections.map(Pair<String?, Collection>::second)
         val belongsToSeries = series.map(Pair<String?, Collection>::second)
-            .ifEmpty { legacySeries(items).let { remainingItems = it.second; it.first } }
+            .ifEmpty {
+                legacySeries(items).let {
+                    remainingItems = it.second
+                    it.first
+                }
+            }
 
         return Result(belongsToCollections, belongsToSeries) to remainingItems
     }
@@ -386,7 +394,7 @@ private data class Title(
     val value: LocalizedString,
     val fileAs: LocalizedString? = null,
     val type: String? = null,
-    val displaySeq: Int? = null
+    val displaySeq: Int? = null,
 )
 
 private val MetadataItem.Meta.title: Title

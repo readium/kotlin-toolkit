@@ -24,7 +24,11 @@ public inline fun <T> tryOrNull(closure: () -> T): T? =
  */
 @InternalReadiumApi
 public inline fun <T> tryOr(default: T, closure: () -> T): T =
-    try { closure() } catch (e: Exception) { default }
+    try {
+        closure()
+    } catch (e: Exception) {
+        default
+    }
 
 /**
  * Returns the result of the given [closure], or null if an [Exception] was raised.
@@ -32,7 +36,9 @@ public inline fun <T> tryOr(default: T, closure: () -> T): T =
  */
 @InternalReadiumApi
 public inline fun <T> tryOrLog(closure: () -> T): T? =
-    try { closure() } catch (e: Exception) {
+    try {
+        closure()
+    } catch (e: Exception) {
         Timber.e(e)
         null
     }

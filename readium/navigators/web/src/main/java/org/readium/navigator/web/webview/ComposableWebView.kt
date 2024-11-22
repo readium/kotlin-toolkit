@@ -62,7 +62,7 @@ internal fun WebView(
     onDispose: (WebView) -> Unit = {},
     client: WebViewClient = remember { WebViewClient() },
     chromeClient: WebChromeClient = remember { WebChromeClient() },
-    factory: ((Context) -> RelaxedWebView)? = null
+    factory: ((Context) -> RelaxedWebView)? = null,
 ) {
     BoxWithConstraints(
         modifier = modifier,
@@ -145,7 +145,7 @@ internal fun WebView(
     onDispose: (WebView) -> Unit = {},
     client: WebViewClient = remember { WebViewClient() },
     chromeClient: WebChromeClient = remember { WebChromeClient() },
-    factory: ((Context) -> RelaxedWebView)? = null
+    factory: ((Context) -> RelaxedWebView)? = null,
 ) {
     val webView = state.webView
 
@@ -201,7 +201,7 @@ internal fun WebView(
 internal sealed class WebContent {
     internal data class Url(
         val url: String,
-        val additionalHttpHeaders: Map<String, String> = emptyMap()
+        val additionalHttpHeaders: Map<String, String> = emptyMap(),
     ) : WebContent()
 
     internal data class Data(
@@ -209,7 +209,7 @@ internal sealed class WebContent {
         val baseUrl: String? = null,
         val encoding: String = "utf-8",
         val mimeType: String? = null,
-        val historyUrl: String? = null
+        val historyUrl: String? = null,
     ) : WebContent()
 }
 
@@ -246,7 +246,7 @@ internal class WebViewState(webContent: WebContent) {
 @Composable
 internal fun rememberWebViewState(
     url: String,
-    additionalHttpHeaders: Map<String, String> = emptyMap()
+    additionalHttpHeaders: Map<String, String> = emptyMap(),
 ): WebViewState =
     // Rather than using .apply {} here we will recreate the state, this prevents
     // a recomposition loop when the webview updates the url itself.
@@ -275,7 +275,7 @@ internal fun rememberWebViewStateWithHTMLData(
     baseUrl: String? = null,
     encoding: String = "utf-8",
     mimeType: String? = null,
-    historyUrl: String? = null
+    historyUrl: String? = null,
 ): WebViewState =
     remember {
         WebViewState(WebContent.Data(data, baseUrl, encoding, mimeType, historyUrl))

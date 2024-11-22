@@ -30,5 +30,5 @@ public interface SelectableNavigator : Navigator {
  */
 public data class Selection(
     val locator: Locator,
-    val rect: RectF?
+    val rect: RectF?,
 )

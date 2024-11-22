@@ -36,7 +36,10 @@ internal class NetworkException(val status: Int?, cause: Throwable? = null) : Ex
 
 internal class NetworkService {
     enum class Method(val value: String) {
-        GET("GET"), POST("POST"), PUT("PUT");
+        GET("GET"),
+        POST("POST"),
+        PUT("PUT"),
+        ;
 
         companion object {
             operator fun invoke(value: String) = values().firstOrNull { it.value == value }
@@ -48,7 +51,7 @@ internal class NetworkService {
         method: Method = Method.GET,
         parameters: URLParameters = emptyMap(),
         timeout: Duration? = null,
-        headers: Map<String, String> = emptyMap()
+        headers: Map<String, String> = emptyMap(),
     ): Try<ByteArray, NetworkException> =
         withContext(Dispatchers.IO) {
             try {
@@ -94,7 +97,7 @@ internal class NetworkService {
         url: Url,
         destination: File,
         mediaType: MediaType? = null,
-        onProgress: (Double) -> Unit
+        onProgress: (Double) -> Unit,
     ): MediaType? = withContext(Dispatchers.IO) {
         coroutineContext.ensureActive()
         try {

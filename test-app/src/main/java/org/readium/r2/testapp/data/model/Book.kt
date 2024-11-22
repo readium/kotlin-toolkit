@@ -32,7 +32,7 @@ data class Book(
     @ColumnInfo(name = MEDIA_TYPE)
     val rawMediaType: String,
     @ColumnInfo(name = COVER)
-    val cover: String
+    val cover: String,
 ) {
 
     constructor(
@@ -44,7 +44,7 @@ data class Book(
         identifier: String,
         progression: String? = null,
         mediaType: MediaType,
-        cover: String
+        cover: String,
     ) : this(
         id = id,
         creation = creation,

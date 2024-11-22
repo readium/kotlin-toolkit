@@ -37,7 +37,7 @@ public data class Subject(
     val localizedSortAs: LocalizedString? = null,
     val scheme: String? = null,
     val code: String? = null,
-    val links: List<Link> = emptyList()
+    val links: List<Link> = emptyList(),
 ) : JSONable, Parcelable {
 
     /**
@@ -78,7 +78,7 @@ public data class Subject(
          */
         public fun fromJSON(
             json: Any?,
-            warnings: WarningLogger? = null
+            warnings: WarningLogger? = null,
         ): Subject? {
             json ?: return null
 
@@ -112,7 +112,7 @@ public data class Subject(
          */
         public fun fromJSONArray(
             json: Any?,
-            warnings: WarningLogger? = null
+            warnings: WarningLogger? = null,
         ): List<Subject> {
             return when (json) {
                 is String, is JSONObject ->

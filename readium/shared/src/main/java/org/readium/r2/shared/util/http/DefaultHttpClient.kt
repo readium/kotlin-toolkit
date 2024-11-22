@@ -47,7 +47,7 @@ public class DefaultHttpClient(
     private val userAgent: String? = null,
     private val connectTimeout: Duration? = null,
     private val readTimeout: Duration? = null,
-    public var callback: Callback = object : Callback {}
+    public var callback: Callback = object : Callback {},
 ) : HttpClient {
 
     public companion object {
@@ -98,7 +98,7 @@ public class DefaultHttpClient(
         public suspend fun onFollowUnsafeRedirect(
             request: HttpRequest,
             response: HttpResponse,
-            newRequest: HttpRequest
+            newRequest: HttpRequest,
         ): HttpTry<HttpRequest> =
             Try.failure(
                 HttpError.Redirection(
@@ -319,7 +319,7 @@ private fun wrap(cause: IOException): HttpError =
  * [HttpURLConnection]'s input stream which disconnects when closed.
  */
 private class HttpURLConnectionInputStream(
-    private val connection: HttpURLConnection
+    private val connection: HttpURLConnection,
 ) : InputStream() {
 
     private val inputStream = connection.inputStream

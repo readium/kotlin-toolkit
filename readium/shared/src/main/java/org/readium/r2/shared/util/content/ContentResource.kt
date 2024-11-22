@@ -42,7 +42,7 @@ import org.readium.r2.shared.util.toUrl
  */
 public class ContentResource(
     private val uri: Uri,
-    private val contentResolver: ContentResolver
+    private val contentResolver: ContentResolver,
 ) : Resource {
 
     private lateinit var _length: Try<Long, ReadError>
@@ -133,7 +133,7 @@ public class ContentResource(
 
     private suspend fun <T> withStream(
         fromIndex: Long,
-        block: suspend (CountingInputStream) -> T
+        block: suspend (CountingInputStream) -> T,
     ): Try<T, ReadError> {
         val stream = stream(fromIndex)
             .getOrElse { return Try.failure(it) }

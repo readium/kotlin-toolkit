@@ -60,7 +60,7 @@ internal interface Scrollable2DState {
      */
     suspend fun scroll(
         scrollPriority: MutatePriority = MutatePriority.Default,
-        block: suspend Scroll2DScope.() -> Unit
+        block: suspend Scroll2DScope.() -> Unit,
     )
 
     /**
@@ -170,7 +170,7 @@ internal class DefaultScrollable2DState(val onDelta: (Offset) -> Offset) : Scrol
 
     override suspend fun scroll(
         scrollPriority: MutatePriority,
-        block: suspend Scroll2DScope.() -> Unit
+        block: suspend Scroll2DScope.() -> Unit,
     ): Unit = coroutineScope {
         scrollMutex.mutateWith(scrollScope, scrollPriority) {
             isScrollingState.value = true

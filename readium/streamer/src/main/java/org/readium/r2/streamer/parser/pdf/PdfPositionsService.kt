@@ -26,7 +26,7 @@ import timber.log.Timber
 internal class PdfPositionsService(
     private val link: Link,
     private val pageCount: Int,
-    private val tableOfContents: List<Link>
+    private val tableOfContents: List<Link>,
 ) : PositionsService {
 
     override suspend fun positionsByReadingOrder(): List<List<Locator>> = _positions

@@ -14,11 +14,12 @@ public data class KeyEvent(
     val type: Type,
     val key: Key,
     val modifiers: Set<InputModifier>,
-    val characters: String?
+    val characters: String?,
 ) {
 
     public enum class Type {
-        Down, Up
+        Down,
+        Up,
     }
 
     public companion object {

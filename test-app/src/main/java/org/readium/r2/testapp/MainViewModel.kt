@@ -18,7 +18,7 @@ import org.readium.r2.testapp.domain.ImportError
 import org.readium.r2.testapp.utils.EventChannel
 
 class MainViewModel(
-    application: Application
+    application: Application,
 ) : AndroidViewModel(application) {
 
     private val app =
@@ -50,7 +50,7 @@ class MainViewModel(
             Event()
 
         class ImportPublicationError(
-            val error: ImportError
+            val error: ImportError,
         ) : Event()
     }
 }

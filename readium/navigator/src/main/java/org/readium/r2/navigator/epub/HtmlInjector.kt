@@ -32,7 +32,7 @@ internal fun Resource.injectHtml(
     mediaType: MediaType,
     css: ReadiumCss,
     baseHref: AbsoluteUrl,
-    disableSelectionWhenProtected: Boolean
+    disableSelectionWhenProtected: Boolean,
 ): Resource =
     TransformingResource(this) { bytes ->
         if (!mediaType.isHtml) {

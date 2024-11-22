@@ -73,7 +73,7 @@ public data class EpubPreferences @ExperimentalReadiumApi constructor(
     val theme: Theme? = null,
     val typeScale: Double? = null,
     val verticalText: Boolean? = null,
-    val wordSpacing: Double? = null
+    val wordSpacing: Double? = null,
 ) : Configurable.Preferences<EpubPreferences> {
 
     init {
@@ -141,7 +141,7 @@ public data class EpubPreferences @ExperimentalReadiumApi constructor(
                 "OpenDyslexic",
                 "AccessibleDfA",
                 "IA Writer Duospace"
-            )
+            ),
         ): EpubPreferences {
             val sp: SharedPreferences =
                 context.getSharedPreferences(sharedPreferencesName, Context.MODE_PRIVATE)

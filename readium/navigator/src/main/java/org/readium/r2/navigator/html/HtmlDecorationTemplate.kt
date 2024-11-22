@@ -39,7 +39,7 @@ public data class HtmlDecorationTemplate(
     val layout: Layout,
     val width: Width = Width.WRAP,
     val element: (Decoration) -> String = { "<div/>" },
-    val stylesheet: String? = null
+    val stylesheet: String? = null,
 ) : JSONable {
 
     /**
@@ -52,7 +52,7 @@ public data class HtmlDecorationTemplate(
         BOUNDS("bounds"),
 
         /** One HTML element for each CSS border box (e.g. line of text). */
-        BOXES("boxes");
+        BOXES("boxes"),
     }
 
     /**
@@ -70,14 +70,14 @@ public data class HtmlDecorationTemplate(
         VIEWPORT("viewport"),
 
         /** Fills the whole viewport. */
-        PAGE("page");
+        PAGE("page"),
     }
 
     private data class Padding(
         val left: Int = 0,
         val top: Int = 0,
         val right: Int = 0,
-        val bottom: Int = 0
+        val bottom: Int = 0,
     )
 
     override fun toJSON(): JSONObject = JSONObject().apply {
@@ -93,7 +93,7 @@ public data class HtmlDecorationTemplate(
             @ColorInt defaultTint: Int,
             lineWeight: Int,
             cornerRadius: Int,
-            alpha: Double
+            alpha: Double,
         ): HtmlDecorationTemplate =
             createTemplate(
                 asHighlight = true,
@@ -108,7 +108,7 @@ public data class HtmlDecorationTemplate(
             @ColorInt defaultTint: Int,
             lineWeight: Int,
             cornerRadius: Int,
-            alpha: Double
+            alpha: Double,
         ): HtmlDecorationTemplate =
             createTemplate(
                 asHighlight = false,
@@ -127,7 +127,7 @@ public data class HtmlDecorationTemplate(
             @ColorInt defaultTint: Int,
             lineWeight: Int,
             cornerRadius: Int,
-            alpha: Double
+            alpha: Double,
         ): HtmlDecorationTemplate {
             val className = createUniqueClassName(if (asHighlight) "highlight" else "underline")
             val padding = Padding(left = 1, right = 1)
@@ -167,7 +167,7 @@ public data class HtmlDecorationTemplate(
 }
 
 public class HtmlDecorationTemplates private constructor(
-    internal val styles: MutableMap<KClass<*>, HtmlDecorationTemplate> = mutableMapOf()
+    internal val styles: MutableMap<KClass<*>, HtmlDecorationTemplate> = mutableMapOf(),
 ) : JSONable {
 
     public operator fun <S : Style> get(style: KClass<S>): HtmlDecorationTemplate? =
@@ -196,7 +196,7 @@ public class HtmlDecorationTemplates private constructor(
             @ColorInt defaultTint: Int = Color.YELLOW,
             lineWeight: Int = 2,
             cornerRadius: Int = 3,
-            alpha: Double = 0.3
+            alpha: Double = 0.3,
         ): HtmlDecorationTemplates = HtmlDecorationTemplates {
             set(
                 Style.Highlight::class,

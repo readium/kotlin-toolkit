@@ -18,7 +18,7 @@ import org.readium.r2.shared.util.Try
  */
 public fun Readable.asInputStream(
     range: LongRange? = null,
-    wrapError: (ReadError) -> IOException = { ReadException(it) }
+    wrapError: (ReadError) -> IOException = { ReadException(it) },
 ): InputStream =
     ReadableInputStreamAdapter(this, range, wrapError)
 
@@ -31,7 +31,7 @@ public fun Readable.asInputStream(
 private class ReadableInputStreamAdapter(
     private val readable: Readable,
     private val range: LongRange? = null,
-    private val wrapError: (ReadError) -> IOException = { ReadException(it) }
+    private val wrapError: (ReadError) -> IOException = { ReadException(it) },
 ) : InputStream() {
 
     private var isClosed = false
@@ -145,7 +145,7 @@ private class ReadableInputStreamAdapter(
         }
     }
 
-    private fun<S> Try<S, ReadError>.recover(): S =
+    private fun <S> Try<S, ReadError>.recover(): S =
         when (this) {
             is Try.Success -> {
                 value

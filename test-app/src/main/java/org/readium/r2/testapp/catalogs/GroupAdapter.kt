@@ -23,13 +23,13 @@ import org.readium.r2.testapp.databinding.ItemGroupViewBinding
 
 class GroupAdapter(
     val type: Int,
-    private val setModelPublication: (Publication) -> Unit
+    private val setModelPublication: (Publication) -> Unit,
 ) :
     ListAdapter<Group, GroupAdapter.ViewHolder>(GroupDiff()) {
 
     override fun onCreateViewHolder(
         parent: ViewGroup,
-        viewType: Int
+        viewType: Int,
     ): ViewHolder {
         return ViewHolder(
             ItemGroupViewBinding.inflate(
@@ -90,14 +90,14 @@ class GroupAdapter(
 
         override fun areItemsTheSame(
             oldItem: Group,
-            newItem: Group
+            newItem: Group,
         ): Boolean {
             return oldItem == newItem
         }
 
         override fun areContentsTheSame(
             oldItem: Group,
-            newItem: Group
+            newItem: Group,
         ): Boolean {
             return oldItem == newItem
         }

@@ -46,7 +46,7 @@ class TtsViewModel private constructor(
     private val publication: Publication,
     private val ttsNavigatorFactory: AndroidTtsNavigatorFactory,
     private val mediaServiceFacade: MediaServiceFacade,
-    private val preferencesManager: PreferencesManager<AndroidTtsPreferences>
+    private val preferencesManager: PreferencesManager<AndroidTtsPreferences>,
 ) : TtsNavigator.Listener {
 
     companion object {
@@ -56,7 +56,7 @@ class TtsViewModel private constructor(
          */
         operator fun invoke(
             viewModelScope: CoroutineScope,
-            readerInitData: ReaderInitData
+            readerInitData: ReaderInitData,
         ): TtsViewModel? {
             if (readerInitData !is VisualReaderInitData || readerInitData.ttsInitData == null) {
                 return null

@@ -32,7 +32,7 @@ import org.readium.r2.shared.util.xml.XmlParser
  */
 public sealed class DecodeError(
     override val message: String,
-    override val cause: Error
+    override val cause: Error,
 ) : Error {
 
     /**
@@ -55,9 +55,9 @@ public sealed class DecodeError(
  * Decodes receiver properly wrapping exceptions into [DecodeError]s.
  */
 @InternalReadiumApi
-public suspend fun<R, S> S.decode(
+public suspend fun <R, S> S.decode(
     block: (value: S) -> R,
-    wrapError: (Exception) -> Error
+    wrapError: (Exception) -> Error,
 ): Try<R, DecodeError> =
     withContext(Dispatchers.Default) {
         try {
@@ -73,7 +73,7 @@ public suspend fun<R, S> S.decode(
  * Content as plain text.
  */
 public suspend fun ByteArray.decodeString(
-    charset: Charset = Charsets.UTF_8
+    charset: Charset = Charsets.UTF_8,
 ): Try<String, DecodeError> =
     decode(
         { String(it, charset = charset) },
@@ -130,9 +130,9 @@ public suspend fun ByteArray.decodeBitmap(): Try<Bitmap, DecodeError> =
 
 @Suppress("RedundantSuspendModifier")
 @InternalReadiumApi
-public suspend inline fun<R> Try<ByteArray, ReadError>.decodeOrElse(
+public suspend inline fun <R> Try<ByteArray, ReadError>.decodeOrElse(
     decode: (value: ByteArray) -> Try<R, DecodeError>,
-    recover: (DecodeError.Decoding) -> R
+    recover: (DecodeError.Decoding) -> R,
 ): Try<R, ReadError> =
     flatMap {
         decode(it)
@@ -148,28 +148,28 @@ public suspend inline fun<R> Try<ByteArray, ReadError>.decodeOrElse(
 
 @Suppress("RedundantSuspendModifier")
 @InternalReadiumApi
-public suspend inline fun<R> Try<ByteArray, ReadError>.decodeOrNull(
-    decode: (value: ByteArray) -> Try<R, DecodeError>
+public suspend inline fun <R> Try<ByteArray, ReadError>.decodeOrNull(
+    decode: (value: ByteArray) -> Try<R, DecodeError>,
 ): R? =
     flatMap { decode(it) }.getOrNull()
 
 @InternalReadiumApi
-public suspend inline fun<R> Readable.readDecodeOrElse(
+public suspend inline fun <R> Readable.readDecodeOrElse(
     decode: (value: ByteArray) -> Try<R, DecodeError>,
     recoverRead: (ReadError) -> R,
-    recoverDecode: (DecodeError.Decoding) -> R
+    recoverDecode: (DecodeError.Decoding) -> R,
 ): R =
     read().decodeOrElse(decode, recoverDecode).getOrElse(recoverRead)
 
 @InternalReadiumApi
-public suspend inline fun<R> Readable.readDecodeOrElse(
+public suspend inline fun <R> Readable.readDecodeOrElse(
     decode: (value: ByteArray) -> Try<R, DecodeError>,
-    recover: (ReadError) -> R
+    recover: (ReadError) -> R,
 ): R =
     readDecodeOrElse(decode, recover) { recover(ReadError.Decoding(it)) }
 
 @InternalReadiumApi
-public suspend inline fun<R> Readable.readDecodeOrNull(
-    decode: (value: ByteArray) -> Try<R, DecodeError>
+public suspend inline fun <R> Readable.readDecodeOrNull(
+    decode: (value: ByteArray) -> Try<R, DecodeError>,
 ): R? =
     read().decodeOrNull(decode)

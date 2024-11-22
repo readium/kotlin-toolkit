@@ -15,5 +15,5 @@ import org.readium.r2.navigator.preferences.Configurable
  */
 public data class ExoPlayerSettings(
     val pitch: Double,
-    val speed: Double
+    val speed: Double,
 ) : Configurable.Settings

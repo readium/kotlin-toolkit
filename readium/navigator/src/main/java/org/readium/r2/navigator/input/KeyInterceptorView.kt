@@ -14,7 +14,7 @@ import org.readium.r2.shared.ExperimentalReadiumApi
 @OptIn(ExperimentalReadiumApi::class)
 internal class KeyInterceptorView(
     view: View,
-    private val listener: InputListener?
+    private val listener: InputListener?,
 ) : FrameLayout(view.context) {
 
     init {

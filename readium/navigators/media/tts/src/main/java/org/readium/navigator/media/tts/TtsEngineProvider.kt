@@ -18,8 +18,13 @@ import org.readium.r2.shared.util.Try
  * To be implemented by adapters for third-party TTS engines which can be used with [TtsNavigator].
  */
 @ExperimentalReadiumApi
-public interface TtsEngineProvider<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>, E : PreferencesEditor<P>,
-    F : TtsEngine.Error, V : TtsEngine.Voice> {
+public interface TtsEngineProvider<
+    S : TtsEngine.Settings,
+    P : TtsEngine.Preferences<P>,
+    E : PreferencesEditor<P>,
+    F : TtsEngine.Error,
+    V : TtsEngine.Voice,
+    > {
 
     /**
      * Creates a [TtsEngine] for [publication] and [initialPreferences].
@@ -46,7 +51,7 @@ public interface TtsEngineProvider<S : TtsEngine.Settings, P : TtsEngine.Prefere
      */
     public fun updatePlaybackParameters(
         previousPreferences: P,
-        playbackParameters: PlaybackParameters
+        playbackParameters: PlaybackParameters,
     ): P
 
     /**

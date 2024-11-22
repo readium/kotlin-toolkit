@@ -16,7 +16,7 @@ import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.xml.ElementNode
 
 internal class MetadataParser(
-    private val prefixMap: Map<String, String>
+    private val prefixMap: Map<String, String>,
 ) {
 
     fun parse(document: ElementNode, filePath: Url): List<MetadataItem>? {
@@ -202,7 +202,7 @@ internal class MetadataParser(
     private fun computeMetadataItem(
         expr: MetadataItem,
         items: Map<String, List<MetadataItem>>,
-        chain: Set<String>
+        chain: Set<String>,
     ): MetadataItem {
         val updatedChain = expr.id?.let { chain + it } ?: chain
         val refinedBy = expr.id?.let { items[it] }?.filter { it.id !in chain }.orEmpty()
@@ -229,7 +229,7 @@ internal sealed class MetadataItem {
         val href: Href,
         val rels: Set<String>,
         val mediaType: MediaType?,
-        val properties: List<String> = emptyList()
+        val properties: List<String> = emptyList(),
     ) : MetadataItem() {
         fun url(): Url = href.resolve()
     }
@@ -241,6 +241,6 @@ internal sealed class MetadataItem {
         val property: String,
         val value: String,
         val lang: String,
-        val scheme: String? = null
+        val scheme: String? = null,
     ) : MetadataItem()
 }

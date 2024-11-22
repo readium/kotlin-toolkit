@@ -45,7 +45,7 @@ class BookshelfViewModel(application: Application) : AndroidViewModel(applicatio
     }
 
     fun openPublication(
-        bookId: Long
+        bookId: Long,
     ) {
         viewModelScope.launch {
             app.readerRepository
@@ -63,11 +63,11 @@ class BookshelfViewModel(application: Application) : AndroidViewModel(applicatio
     sealed class Event {
 
         class OpenPublicationError(
-            val error: OpeningError
+            val error: OpeningError,
         ) : Event()
 
         class LaunchReader(
-            val arguments: ReaderActivityContract.Arguments
+            val arguments: ReaderActivityContract.Arguments,
         ) : Event()
     }
 }

@@ -40,7 +40,7 @@ import org.readium.r2.testapp.utils.compose.DropdownMenuButton
 @Composable
 fun UserPreferences(
     model: UserPreferencesViewModel<*, *>,
-    title: String
+    title: String,
 ) {
     val editor by model.editor.collectAsState()
 
@@ -55,7 +55,7 @@ fun UserPreferences(
 private fun <P : Configurable.Preferences<P>, E : PreferencesEditor<P>> UserPreferences(
     editor: E,
     commit: () -> Unit,
-    title: String
+    title: String,
 ) {
     Column(
         modifier = Modifier.padding(vertical = 24.dp)
@@ -78,7 +78,10 @@ private fun <P : Configurable.Preferences<P>, E : PreferencesEditor<P>> UserPref
             PresetsMenuButton(presets = editor.presets, commit = commit, clear = editor::clear)
 
             Button(
-                onClick = { editor.clear(); commit() }
+                onClick = {
+                    editor.clear()
+                    commit()
+                }
             ) {
                 Text("Reset")
             }
@@ -159,7 +162,7 @@ private fun MediaUserPreferences(
     language: Preference<Language?>? = null,
     voice: EnumPreference<AndroidTtsEngine.Voice.Id?>? = null,
     speed: RangePreference<Double>? = null,
-    pitch: RangePreference<Double>? = null
+    pitch: RangePreference<Double>? = null,
 ) {
     Column {
         if (speed != null) {
@@ -209,7 +212,7 @@ private fun FixedLayoutUserPreferences(
     fit: EnumPreference<Fit>? = null,
     spread: EnumPreference<Spread>? = null,
     offsetFirstPage: Preference<Boolean>? = null,
-    pageSpacing: RangePreference<Double>? = null
+    pageSpacing: RangePreference<Double>? = null,
 ) {
     if (language != null || readingProgression != null) {
         if (language != null) {
@@ -338,7 +341,7 @@ private fun ReflowableUserPreferences(
     theme: EnumPreference<Theme>? = null,
     typeScale: RangePreference<Double>? = null,
     verticalText: Preference<Boolean>? = null,
-    wordSpacing: RangePreference<Double>? = null
+    wordSpacing: RangePreference<Double>? = null,
 ) {
     if (language != null || readingProgression != null || verticalText != null) {
         if (language != null) {
@@ -602,7 +605,7 @@ private fun Divider() {
 private fun PresetsMenuButton(
     presets: List<Preset>,
     clear: () -> Unit,
-    commit: () -> Unit
+    commit: () -> Unit,
 ) {
     if (presets.isEmpty()) return
 
@@ -633,7 +636,7 @@ private fun PresetsMenuButton(
  */
 class Preset(
     val title: String,
-    val apply: () -> Unit
+    val apply: () -> Unit,
 )
 
 /**

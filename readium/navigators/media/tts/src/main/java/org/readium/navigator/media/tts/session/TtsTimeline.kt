@@ -13,7 +13,7 @@ import java.util.*
 
 @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
 internal class TtsTimeline(
-    private val mediaItems: List<MediaItem>
+    private val mediaItems: List<MediaItem>,
 ) : Timeline() {
 
     private val uuids = mediaItems.indices
@@ -26,7 +26,7 @@ internal class TtsTimeline(
     override fun getWindow(
         windowIndex: Int,
         window: Window,
-        defaultPositionProjectionUs: Long
+        defaultPositionProjectionUs: Long,
     ): Window {
         window.uid = uuids[windowIndex]
         window.firstPeriodIndex = windowIndex

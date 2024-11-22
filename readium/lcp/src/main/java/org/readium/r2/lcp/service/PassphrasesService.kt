@@ -18,7 +18,7 @@ internal class PassphrasesService(private val repository: PassphrasesRepository)
     suspend fun request(
         license: LicenseDocument,
         authentication: LcpAuthenticating?,
-        allowUserInteraction: Boolean
+        allowUserInteraction: Boolean,
     ): String? {
         val candidates = this@PassphrasesService.possiblePassphrasesFromRepository(license)
         val passphrase = try {
@@ -42,7 +42,7 @@ internal class PassphrasesService(private val repository: PassphrasesRepository)
         license: LicenseDocument,
         reason: LcpAuthenticating.AuthenticationReason,
         authentication: LcpAuthenticating,
-        allowUserInteraction: Boolean
+        allowUserInteraction: Boolean,
     ): String? {
         val authenticatedLicense = LcpAuthenticating.AuthenticatedLicense(document = license)
         val clearPassphrase = authentication.retrievePassphrase(
@@ -78,7 +78,7 @@ internal class PassphrasesService(private val repository: PassphrasesRepository)
         hashed: Boolean,
         licenseId: String,
         provider: String,
-        userId: String?
+        userId: String?,
     ) {
         val hashedPassphrase = if (hashed) passphrase else HASH.sha256(passphrase)
         this.repository.addPassphrase(hashedPassphrase, licenseId, provider, userId)

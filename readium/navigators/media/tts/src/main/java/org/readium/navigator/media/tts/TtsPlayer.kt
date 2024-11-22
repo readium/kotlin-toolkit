@@ -40,21 +40,29 @@ import timber.log.Timber
  * Plays the content from a [TtsUtteranceIterator] with a [TtsEngine].
  */
 @ExperimentalReadiumApi
-internal class TtsPlayer<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
-    E : TtsEngine.Error, V : TtsEngine.Voice> private constructor(
+internal class TtsPlayer<
+    S : TtsEngine.Settings,
+    P : TtsEngine.Preferences<P>,
+    E : TtsEngine.Error,
+    V : TtsEngine.Voice,
+    > private constructor(
     private val engineFacade: TtsEngineFacade<S, P, E, V>,
     private val contentIterator: TtsUtteranceIterator,
     initialWindow: UtteranceWindow,
-    initialPreferences: P
+    initialPreferences: P,
 ) : Configurable<S, P> {
 
     companion object {
 
-        suspend operator fun <S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
-            E : TtsEngine.Error, V : TtsEngine.Voice> invoke(
+        suspend operator fun <
+            S : TtsEngine.Settings,
+            P : TtsEngine.Preferences<P>,
+            E : TtsEngine.Error,
+            V : TtsEngine.Voice,
+            > invoke(
             engine: TtsEngine<S, P, E, V>,
             contentIterator: TtsUtteranceIterator,
-            initialPreferences: P
+            initialPreferences: P,
         ): TtsPlayer<S, P, E, V>? {
             val initialContext = tryOrNull { contentIterator.startContext() }
                 ?: return null
@@ -122,7 +130,7 @@ internal class TtsPlayer<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
          */
         sealed class Failure : State {
 
-            data class Engine<E : TtsEngine.Error> (val error: E) : Failure()
+            data class Engine<E : TtsEngine.Error>(val error: E) : Failure()
 
             data class Content(val error: Error) : Failure()
         }
@@ -130,19 +138,19 @@ internal class TtsPlayer<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
 
     data class Playback(
         val state: State,
-        val playWhenReady: Boolean
+        val playWhenReady: Boolean,
     )
 
     data class Utterance(
         val text: String,
         val position: Position,
-        val range: IntRange?
+        val range: IntRange?,
     ) {
 
         data class Position(
             val resourceIndex: Int,
             val locations: Locator.Locations,
-            val text: Locator.Text
+            val text: Locator.Text,
         )
     }
 
@@ -150,7 +158,7 @@ internal class TtsPlayer<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
         val previousUtterance: TtsUtteranceIterator.Utterance?,
         val currentUtterance: TtsUtteranceIterator.Utterance,
         val nextUtterance: TtsUtteranceIterator.Utterance?,
-        val ended: Boolean = false
+        val ended: Boolean = false,
     )
 
     private val coroutineScope: CoroutineScope =

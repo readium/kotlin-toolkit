@@ -49,7 +49,7 @@ internal class License private constructor(
     private val device: DeviceService,
     private val network: NetworkService,
     private val printsLeft: StateFlow<Int?>,
-    private val copiesLeft: StateFlow<Int?>
+    private val copiesLeft: StateFlow<Int?>,
 ) : LcpLicense {
 
     companion object {
@@ -59,7 +59,7 @@ internal class License private constructor(
             validation: LicenseValidation,
             licenses: LicensesRepository,
             device: DeviceService,
-            network: NetworkService
+            network: NetworkService,
         ): License {
             val coroutineScope = MainScope()
 

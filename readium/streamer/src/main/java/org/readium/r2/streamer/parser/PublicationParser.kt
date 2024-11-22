@@ -35,12 +35,12 @@ public interface PublicationParser {
      */
     public suspend fun parse(
         asset: Asset,
-        warnings: WarningLogger? = null
+        warnings: WarningLogger? = null,
     ): Try<Publication.Builder, ParseError>
 
     public sealed class ParseError(
         public override val message: String,
-        public override val cause: org.readium.r2.shared.util.Error?
+        public override val cause: org.readium.r2.shared.util.Error?,
     ) : org.readium.r2.shared.util.Error {
 
         public class FormatNotSupported :
@@ -65,7 +65,7 @@ public class DefaultPublicationParser(
     private val httpClient: HttpClient,
     assetRetriever: AssetRetriever,
     pdfFactory: PdfDocumentFactory<*>?,
-    additionalParsers: List<PublicationParser> = emptyList()
+    additionalParsers: List<PublicationParser> = emptyList(),
 ) : PublicationParser by CompositePublicationParser(
     additionalParsers + listOfNotNull(
         EpubParser(),
@@ -81,7 +81,7 @@ public class DefaultPublicationParser(
  * the asset.
  */
 public class CompositePublicationParser(
-    private val parsers: List<PublicationParser>
+    private val parsers: List<PublicationParser>,
 ) : PublicationParser {
 
     public constructor(vararg parsers: PublicationParser) :
@@ -89,7 +89,7 @@ public class CompositePublicationParser(
 
     override suspend fun parse(
         asset: Asset,
-        warnings: WarningLogger?
+        warnings: WarningLogger?,
     ): Try<Publication.Builder, PublicationParser.ParseError> {
         for (parser in parsers) {
             val result = parser.parse(asset, warnings)

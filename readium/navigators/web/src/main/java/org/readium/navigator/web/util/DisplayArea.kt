@@ -11,12 +11,12 @@ import androidx.compose.ui.unit.DpSize
 
 internal data class DisplayArea(
     val viewportSize: DpSize,
-    val safeDrawingPadding: AbsolutePaddingValues
+    val safeDrawingPadding: AbsolutePaddingValues,
 )
 
 internal data class AbsolutePaddingValues(
     val top: Dp,
     val right: Dp,
     val bottom: Dp,
-    val left: Dp
+    val left: Dp,
 )

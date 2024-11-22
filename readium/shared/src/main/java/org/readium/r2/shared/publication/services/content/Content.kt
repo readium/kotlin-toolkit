@@ -50,14 +50,14 @@ public interface Content {
     public data class AudioElement(
         override val locator: Locator,
         override val embeddedLink: Link,
-        override val attributes: List<Attribute<*>> = emptyList()
+        override val attributes: List<Attribute<*>> = emptyList(),
     ) : EmbeddedElement, TextualElement
 
     /** A video clip. */
     public data class VideoElement(
         override val locator: Locator,
         override val embeddedLink: Link,
-        override val attributes: List<Attribute<*>> = emptyList()
+        override val attributes: List<Attribute<*>> = emptyList(),
     ) : EmbeddedElement, TextualElement
 
     /**
@@ -69,7 +69,7 @@ public interface Content {
         override val locator: Locator,
         override val embeddedLink: Link,
         val caption: String?,
-        override val attributes: List<Attribute<*>> = emptyList()
+        override val attributes: List<Attribute<*>> = emptyList(),
     ) : EmbeddedElement, TextualElement {
 
         override val text: String? get() =
@@ -89,7 +89,7 @@ public interface Content {
         override val locator: Locator,
         val role: Role,
         val segments: List<Segment>,
-        override val attributes: List<Attribute<*>> = emptyList()
+        override val attributes: List<Attribute<*>> = emptyList(),
     ) : TextualElement {
 
         override val text: String
@@ -124,7 +124,7 @@ public interface Content {
              */
             public data class Quote(
                 val referenceUrl: URL?,
-                val referenceTitle: String?
+                val referenceTitle: String?,
             ) : Role
         }
 
@@ -138,7 +138,7 @@ public interface Content {
         public data class Segment(
             val locator: Locator,
             val text: String,
-            override val attributes: List<Attribute<*>>
+            override val attributes: List<Attribute<*>>,
         ) : AttributesHolder
     }
 
@@ -147,7 +147,7 @@ public interface Content {
      */
     public data class Attribute<V>(
         val key: AttributeKey<V>,
-        val value: V
+        val value: V,
     )
 
     /**

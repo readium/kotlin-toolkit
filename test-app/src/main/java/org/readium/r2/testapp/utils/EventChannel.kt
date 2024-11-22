@@ -32,10 +32,10 @@ class EventChannel<T>(private val channel: Channel<T>, private val sendScope: Co
     }
 }
 
-class FlowObserver<T> (
+class FlowObserver<T>(
     private val lifecycleOwner: LifecycleOwner,
     private val flow: Flow<T>,
-    private val collector: suspend (T) -> Unit
+    private val collector: suspend (T) -> Unit,
 ) : DefaultLifecycleObserver {
 
     private var job: Job? = null
@@ -56,7 +56,7 @@ class FlowObserver<T> (
 
 inline fun <reified T> Flow<T>.observeWhenStarted(
     lifecycleOwner: LifecycleOwner,
-    noinline collector: suspend (T) -> Unit
+    noinline collector: suspend (T) -> Unit,
 ) {
     val observer = FlowObserver(lifecycleOwner, this, collector)
     lifecycleOwner.lifecycle.addObserver(observer)

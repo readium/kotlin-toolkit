@@ -17,7 +17,7 @@ public data class Clip(
     val audioResource: String? = null,
     val fragmentId: String? = null,
     val start: Double? = null,
-    val end: Double? = null
+    val end: Double? = null,
 )
 
 @InternalReadiumApi
@@ -25,7 +25,7 @@ public data class MediaOverlayNode(
     val text: Url, // an URI possibly finishing by a fragment (textFile#id)
     val audio: Url?, // an URI possibly finishing by a simple timer (audioFile#t=start,end)
     val children: List<MediaOverlayNode> = listOf(),
-    val role: List<String> = listOf()
+    val role: List<String> = listOf(),
 ) : Serializable {
 
     val audioFile: String?

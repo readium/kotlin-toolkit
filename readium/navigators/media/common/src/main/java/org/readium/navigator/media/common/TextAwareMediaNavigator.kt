@@ -17,7 +17,7 @@ import org.readium.r2.shared.publication.Locator
 public interface TextAwareMediaNavigator<
     L : TextAwareMediaNavigator.Location,
     P : TextAwareMediaNavigator.Playback,
-    R : TextAwareMediaNavigator.ReadingOrder
+    R : TextAwareMediaNavigator.ReadingOrder,
     > : MediaNavigator<L, P, R> {
 
     /**

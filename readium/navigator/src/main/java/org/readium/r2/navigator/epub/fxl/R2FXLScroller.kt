@@ -28,7 +28,7 @@ internal abstract class R2FXLScroller {
         minY: Int,
         maxY: Int,
         overX: Int,
-        overY: Int
+        overY: Int,
     )
     abstract fun forceFinished(finished: Boolean)
 
@@ -59,7 +59,7 @@ internal abstract class R2FXLScroller {
             minY: Int,
             maxY: Int,
             overX: Int,
-            overY: Int
+            overY: Int,
         ) {
             scroller.fling(startX, startY, velocityX, velocityY, minX, maxX, minY, maxY)
         }

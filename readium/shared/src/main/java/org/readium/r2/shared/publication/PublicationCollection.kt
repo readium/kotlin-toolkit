@@ -35,7 +35,7 @@ import org.readium.r2.shared.util.logging.log
 public data class PublicationCollection(
     val metadata: @WriteWith<JSONParceler> Map<String, Any> = emptyMap(),
     val links: List<Link> = emptyList(),
-    val subcollections: Map<String, List<PublicationCollection>> = emptyMap()
+    val subcollections: Map<String, List<PublicationCollection>> = emptyMap(),
 ) : JSONable, Parcelable {
 
     /**
@@ -56,7 +56,7 @@ public data class PublicationCollection(
          */
         public fun fromJSON(
             json: Any?,
-            warnings: WarningLogger? = null
+            warnings: WarningLogger? = null,
         ): PublicationCollection? {
             json ?: return null
 
@@ -111,7 +111,7 @@ public data class PublicationCollection(
          */
         public fun collectionsFromJSON(
             json: JSONObject,
-            warnings: WarningLogger? = null
+            warnings: WarningLogger? = null,
         ): Map<String, List<PublicationCollection>> {
             val collections = mutableMapOf<String, MutableList<PublicationCollection>>()
             for (role in json.keys().asSequence().sorted()) {

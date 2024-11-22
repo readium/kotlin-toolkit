@@ -129,7 +129,7 @@ internal suspend fun checkExceedingRangesAreAllowed(publication: Publication) {
 internal suspend fun Resource.readByChunks(
     chunkSize: Long,
     groundTruth: ByteArray,
-    shuffle: Boolean = true
+    shuffle: Boolean = true,
 ) =
     try {
         val length = length()

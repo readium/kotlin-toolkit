@@ -21,7 +21,7 @@ import org.readium.r2.shared.util.mediatype.MediaType
  */
 public sealed class HttpError(
     public override val message: String,
-    public override val cause: Error? = null
+    public override val cause: Error? = null,
 ) : AccessError {
 
     /** Malformed HTTP response. */
@@ -61,7 +61,7 @@ public sealed class HttpError(
     public class ErrorResponse(
         public val status: HttpStatus,
         public val mediaType: MediaType? = null,
-        public val body: ByteArray? = null
+        public val body: ByteArray? = null,
     ) : HttpError("HTTP Error ${status.code}", null) {
 
         /** Response body parsed as a JSON problem details. */

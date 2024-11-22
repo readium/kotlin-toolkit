@@ -39,7 +39,7 @@ public enum class OPDS2ParserError {
     InvalidLink,
     MissingTitle,
     InvalidFacet,
-    InvalidGroup
+    InvalidGroup,
 }
 
 public class OPDS2Parser {
@@ -48,7 +48,7 @@ public class OPDS2Parser {
 
         public suspend fun parseUrlString(
             url: String,
-            client: HttpClient = DefaultHttpClient()
+            client: HttpClient = DefaultHttpClient(),
         ): Try<ParseData, Exception> =
             AbsoluteUrl(url)
                 ?.let { parseRequest(HttpRequest(it), client) }
@@ -56,7 +56,7 @@ public class OPDS2Parser {
 
         public suspend fun parseRequest(
             request: HttpRequest,
-            client: HttpClient = DefaultHttpClient()
+            client: HttpClient = DefaultHttpClient(),
         ): Try<ParseData, Exception> {
             return client.fetchWithDecoder(request) {
                 this.parse(it.body, request.url)

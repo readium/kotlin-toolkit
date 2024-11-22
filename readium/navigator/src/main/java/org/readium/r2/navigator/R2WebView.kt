@@ -222,7 +222,7 @@ internal class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView
 
                 override fun onApplyWindowInsets(
                     v: View,
-                    originalInsets: WindowInsetsCompat
+                    originalInsets: WindowInsetsCompat,
                 ): WindowInsetsCompat {
                     // First let the ViewPager itself try and consume them...
                     val applied = ViewCompat.onApplyWindowInsets(v, originalInsets)
@@ -857,7 +857,7 @@ internal class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView
         currentPage: Int,
         initialVelocity: Int,
         currentVelocity: Int,
-        deltaX: Int
+        deltaX: Int,
     ): Int {
         // If the initialVelocity and currentVelocity don't have the same sign, it means the user
         // reversed the drag direction. In which case we consider this as a cancellation.
@@ -1100,10 +1100,18 @@ internal class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView
  * May crash with java.lang.IllegalArgumentException: pointerIndex out of range
  */
 private fun MotionEvent.safeGetX(pointerIndex: Int): Float =
-    try { getX(pointerIndex) } catch (e: IllegalArgumentException) { 0F }
+    try {
+        getX(pointerIndex)
+    } catch (e: IllegalArgumentException) {
+        0F
+    }
 
 /**
  * May crash with java.lang.IllegalArgumentException: pointerIndex out of range
  */
 private fun MotionEvent.safeGetY(pointerIndex: Int): Float =
-    try { getY(pointerIndex) } catch (e: IllegalArgumentException) { 0F }
+    try {
+        getY(pointerIndex)
+    } catch (e: IllegalArgumentException) {
+        0F
+    }

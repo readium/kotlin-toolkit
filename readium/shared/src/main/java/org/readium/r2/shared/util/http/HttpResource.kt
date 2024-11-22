@@ -31,7 +31,7 @@ import org.readium.r2.shared.util.resource.mediaType
 public class HttpResource(
     override val sourceUrl: AbsoluteUrl,
     private val client: HttpClient,
-    private val maxSkipBytes: Long = MAX_SKIP_BYTES
+    private val maxSkipBytes: Long = MAX_SKIP_BYTES,
 ) : Resource {
 
     override suspend fun properties(): Try<Resource.Properties, ReadError> =

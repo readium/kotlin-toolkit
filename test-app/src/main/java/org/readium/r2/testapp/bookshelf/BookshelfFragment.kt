@@ -61,7 +61,7 @@ class BookshelfFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedInstanceState: Bundle?
+        savedInstanceState: Bundle?,
     ): View {
         binding = FragmentBookshelfBinding.inflate(inflater, container, false)
         return binding.root
@@ -183,7 +183,7 @@ class BookshelfFragment : Fragment() {
             outRect: Rect,
             view: View,
             parent: RecyclerView,
-            state: RecyclerView.State
+            state: RecyclerView.State,
         ) {
             outRect.bottom = verticalSpaceHeight
         }

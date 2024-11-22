@@ -18,11 +18,11 @@ import org.readium.r2.shared.util.toUri
  * [contentResolver].
  */
 public class ContentResourceFactory(
-    private val contentResolver: ContentResolver
+    private val contentResolver: ContentResolver,
 ) : ResourceFactory {
 
     override suspend fun create(
-        url: AbsoluteUrl
+        url: AbsoluteUrl,
     ): Try<Resource, ResourceFactory.Error> {
         if (!url.isContent) {
             return Try.failure(ResourceFactory.Error.SchemeNotSupported(url.scheme))

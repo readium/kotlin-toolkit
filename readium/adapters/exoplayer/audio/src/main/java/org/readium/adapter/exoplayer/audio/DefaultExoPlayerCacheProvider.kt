@@ -17,7 +17,7 @@ import org.readium.r2.shared.util.toUrl
  */
 @OptIn(UnstableApi::class)
 public class DefaultExoPlayerCacheProvider(
-    private val cache: Cache
+    private val cache: Cache,
 ) : ExoPlayerCacheProvider {
 
     @kotlin.OptIn(DelicateReadiumApi::class)
@@ -30,7 +30,7 @@ public class DefaultExoPlayerCacheProvider(
 
 @OptIn(UnstableApi::class)
 public fun ExoPlayerCacheProvider.createCacheDataSourceFactory(
-    publication: Publication
+    publication: Publication,
 ): CacheDataSource.Factory? {
     val cache = getCache(publication) ?: return null
     val upstreamDataSourceFactory = ExoPlayerDataSource.Factory(publication)

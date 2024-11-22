@@ -84,7 +84,7 @@ public interface DecorableNavigator : Navigator {
         val decoration: Decoration,
         val group: String,
         val rect: RectF? = null,
-        val point: PointF? = null
+        val point: PointF? = null,
     )
 }
 
@@ -104,7 +104,7 @@ public data class Decoration(
     val id: DecorationId,
     val locator: Locator,
     val style: Style,
-    val extras: @WriteWith<JSONParceler> Map<String, Any> = mapOf()
+    val extras: @WriteWith<JSONParceler> Map<String, Any> = mapOf(),
 ) : JSONable, Parcelable {
 
     /**
@@ -118,13 +118,13 @@ public data class Decoration(
         @Parcelize
         public data class Highlight(
             @ColorInt override val tint: Int,
-            override val isActive: Boolean = false
+            override val isActive: Boolean = false,
         ) : Style, Tinted, Activable
 
         @Parcelize
         public data class Underline(
             @ColorInt override val tint: Int,
-            override val isActive: Boolean = false
+            override val isActive: Boolean = false,
         ) : Style, Tinted, Activable
 
         /** A type of [Style] which has a tint color. */

@@ -17,5 +17,5 @@ public data class PdfiumSettings(
     val fit: Fit,
     val pageSpacing: Double,
     val readingProgression: ReadingProgression,
-    val scrollAxis: Axis
+    val scrollAxis: Axis,
 ) : Configurable.Settings

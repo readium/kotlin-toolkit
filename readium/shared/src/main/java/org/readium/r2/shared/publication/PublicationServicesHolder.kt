@@ -29,7 +29,7 @@ public interface PublicationServicesHolder : Closeable {
 }
 
 internal class ListPublicationServicesHolder(
-    var services: List<Publication.Service> = emptyList()
+    var services: List<Publication.Service> = emptyList(),
 ) : PublicationServicesHolder {
     override fun <T : Publication.Service> findService(serviceType: KClass<T>): T? =
         findServices(serviceType).firstOrNull()

@@ -29,7 +29,7 @@ internal class DefaultMediaMetadataFactory(
     private val publication: Publication,
     title: String? = null,
     author: String? = null,
-    private val cover: Uri? = null
+    private val cover: Uri? = null,
 ) : MediaMetadataFactory {
 
     private val coroutineScope =

@@ -25,7 +25,7 @@ internal data class Passphrase(
     @ColumnInfo(name = USERID)
     val userId: String?,
     @ColumnInfo(name = PASSPHRASE)
-    val passphrase: String
+    val passphrase: String,
 ) {
 
     companion object {

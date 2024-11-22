@@ -31,7 +31,7 @@ import org.readium.r2.shared.InternalReadiumApi
 internal fun InputStream.copyTo(
     out: OutputStream,
     limit: Long,
-    bufferSize: Int = DEFAULT_BUFFER_SIZE
+    bufferSize: Int = DEFAULT_BUFFER_SIZE,
 ): Int {
     var bytesCopied: Int = 0
     var toRead: Int = limit.toInt()

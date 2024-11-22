@@ -41,7 +41,7 @@ public fun String.addSuffix(suffix: CharSequence): String {
 
 internal enum class HashAlgorithm(val key: String) {
     MD5("MD5"),
-    SHA256("SHA-256")
+    SHA256("SHA-256"),
 }
 
 internal fun String.hash(algorithm: HashAlgorithm): String =

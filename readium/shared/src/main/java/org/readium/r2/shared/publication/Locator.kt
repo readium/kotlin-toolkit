@@ -45,7 +45,7 @@ public data class Locator(
     val mediaType: MediaType,
     val title: String? = null,
     val locations: Locations = Locations(),
-    val text: Text = Text()
+    val text: Text = Text(),
 ) : JSONable, Parcelable {
 
     /**
@@ -65,7 +65,7 @@ public data class Locator(
         val progression: Double? = null,
         val position: Int? = null,
         val totalProgression: Double? = null,
-        val otherLocations: @WriteWith<JSONParceler> Map<String, Any> = emptyMap()
+        val otherLocations: @WriteWith<JSONParceler> Map<String, Any> = emptyMap(),
     ) : JSONable, Parcelable {
 
         override fun toJSON(): JSONObject = JSONObject(otherLocations).apply {
@@ -84,7 +84,7 @@ public data class Locator(
         public companion object {
 
             public fun fromJSON(
-                json: JSONObject?
+                json: JSONObject?,
             ): Locations {
                 val fragments = json?.optStringsFromArrayOrSingle("fragments", remove = true)?.takeIf { it.isNotEmpty() }
                     ?: json?.optStringsFromArrayOrSingle("fragment", remove = true)
@@ -125,7 +125,7 @@ public data class Locator(
     public data class Text(
         val before: String? = null,
         val highlight: String? = null,
-        val after: String? = null
+        val after: String? = null,
     ) : JSONable, Parcelable {
 
         override fun toJSON(): JSONObject = JSONObject().apply {
@@ -166,7 +166,7 @@ public data class Locator(
         progression: Double? = locations.progression,
         position: Int? = locations.position,
         totalProgression: Double? = locations.totalProgression,
-        otherLocations: Map<String, Any> = locations.otherLocations
+        otherLocations: Map<String, Any> = locations.otherLocations,
     ): Locator = copy(
         locations = locations.copy(
             fragments = fragments,
@@ -192,7 +192,7 @@ public data class Locator(
          */
         public fun fromJSON(
             json: JSONObject?,
-            warnings: WarningLogger? = null
+            warnings: WarningLogger? = null,
         ): Locator? =
             fromJSON(json, warnings, withLegacyHref = false)
 
@@ -205,7 +205,7 @@ public data class Locator(
         @DelicateReadiumApi
         public fun fromLegacyJSON(
             json: JSONObject?,
-            warnings: WarningLogger? = null
+            warnings: WarningLogger? = null,
         ): Locator? =
             fromJSON(json, warnings, withLegacyHref = true)
 
@@ -213,7 +213,7 @@ public data class Locator(
         private fun fromJSON(
             json: JSONObject?,
             warnings: WarningLogger? = null,
-            withLegacyHref: Boolean = false
+            withLegacyHref: Boolean = false,
         ): Locator? {
             val href = json?.optNullableString("href")
             val type = json?.optNullableString("type")
@@ -249,7 +249,7 @@ public data class Locator(
 
         public fun fromJSONArray(
             json: JSONArray?,
-            warnings: WarningLogger? = null
+            warnings: WarningLogger? = null,
         ): List<Locator> {
             return json.parseObjects { fromJSON(it as? JSONObject, warnings) }
         }
@@ -265,7 +265,7 @@ public data class Locator(
 public data class LocatorCollection(
     val metadata: Metadata = Metadata(),
     val links: List<Link> = emptyList(),
-    val locators: List<Locator> = emptyList()
+    val locators: List<Locator> = emptyList(),
 ) : JSONable, Parcelable {
 
     /**
@@ -277,7 +277,7 @@ public data class LocatorCollection(
     public data class Metadata(
         val localizedTitle: LocalizedString? = null,
         val numberOfItems: Int? = null,
-        val otherMetadata: @WriteWith<JSONParceler> Map<String, Any> = mapOf()
+        val otherMetadata: @WriteWith<JSONParceler> Map<String, Any> = mapOf(),
     ) : JSONable, Parcelable {
 
         /**
@@ -317,7 +317,7 @@ public data class LocatorCollection(
 
         public fun fromJSON(
             json: JSONObject?,
-            warnings: WarningLogger? = null
+            warnings: WarningLogger? = null,
         ): LocatorCollection {
             return LocatorCollection(
                 metadata = Metadata.fromJSON(json?.optJSONObject("metadata"), warnings),

@@ -34,7 +34,7 @@ import org.readium.r2.shared.util.resource.flatMap
  */
 internal class LcpDecryptor(
     val license: LcpLicense?,
-    val encryptionData: Map<Url, Encryption>
+    val encryptionData: Map<Url, Encryption>,
 ) {
 
     fun transform(url: Url, resource: Resource): Resource {
@@ -73,7 +73,7 @@ internal class LcpDecryptor(
     private class FullLcpResource(
         resource: Resource,
         private val encryption: Encryption,
-        private val license: LcpLicense
+        private val license: LcpLicense,
     ) : TransformingResource(resource) {
 
         override suspend fun transform(data: Try<ByteArray, ReadError>): Try<ByteArray, ReadError> =
@@ -91,25 +91,25 @@ internal class LcpDecryptor(
      */
     private class CbcLcpResource(
         private val resource: Resource,
-        private val license: LcpLicense
+        private val license: LcpLicense,
     ) : Resource by resource {
 
         private class Cache(
             var startIndex: Int? = null,
-            val data: ByteArray = ByteArray(3 * AES_BLOCK_SIZE)
+            val data: ByteArray = ByteArray(3 * AES_BLOCK_SIZE),
         )
 
         private lateinit var _length: Try<Long, ReadError>
 
         /*
-        * Decryption needs to look around the data strictly matching the content to decipher.
-        * That means that in case of contiguous read requests, data fetched from the underlying
-        * resource are not contiguous. Every request to the underlying resource starts slightly
-        * before the end of the previous one. This is an issue with remote publications because
-        * you have to make a new HTTP request every time instead of reusing the previous one.
-        * To alleviate this, we cache the three last bytes read in each call and reuse them
-        * in the next call if possible.
-        */
+         * Decryption needs to look around the data strictly matching the content to decipher.
+         * That means that in case of contiguous read requests, data fetched from the underlying
+         * resource are not contiguous. Every request to the underlying resource starts slightly
+         * before the end of the previous one. This is an issue with remote publications because
+         * you have to make a new HTTP request every time instead of reusing the previous one.
+         * To alleviate this, we cache the three last bytes read in each call and reuse them
+         * in the next call if possible.
+         */
         private val _cache: Cache = Cache()
 
         /** Plain text size. */
@@ -145,7 +145,7 @@ internal class LcpDecryptor(
 
         private suspend fun lengthFromLastTwoBlocks(
             cipheredLength: Long,
-            lastTwoBlocks: ByteArray
+            lastTwoBlocks: ByteArray,
         ): Try<Long, ReadError> {
             require(lastTwoBlocks.size == 2 * AES_BLOCK_SIZE)
 
@@ -299,7 +299,7 @@ internal class LcpDecryptor(
 
 private suspend fun LcpLicense.decryptFully(
     data: Try<ByteArray, ReadError>,
-    isDeflated: Boolean
+    isDeflated: Boolean,
 ): Try<ByteArray, ReadError> =
     data.flatMap { encryptedData ->
         // Decrypts the resource.

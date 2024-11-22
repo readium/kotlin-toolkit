@@ -21,7 +21,7 @@ internal object SmartSeeker {
         offset: Duration,
         currentPosition: Duration,
         currentIndex: Int,
-        playlist: List<Duration>
+        playlist: List<Duration>,
     ): Result {
         val currentDuration = playlist[currentIndex]
         val dummyNewPosition = currentPosition + offset

@@ -35,7 +35,7 @@ import kotlinx.parcelize.Parcelize
 public class MediaType private constructor(
     public val type: String,
     public val subtype: String,
-    public val parameters: Map<String, String>
+    public val parameters: Map<String, String>,
 ) : Parcelable {
 
     /**

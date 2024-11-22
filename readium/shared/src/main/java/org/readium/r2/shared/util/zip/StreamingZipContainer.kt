@@ -40,12 +40,12 @@ import org.readium.r2.shared.util.zip.compress.archivers.zip.ZipFile
 internal class StreamingZipContainer(
     private val zipFile: ZipFile,
     override val sourceUrl: AbsoluteUrl?,
-    private val cacheEntryMaxSize: Int = 0
+    private val cacheEntryMaxSize: Int = 0,
 ) : Container<Resource> {
 
     private inner class Entry(
         private val url: Url,
-        private val entry: ZipArchiveEntry
+        private val entry: ZipArchiveEntry,
     ) : Resource {
 
         private var cache: ByteArray? =

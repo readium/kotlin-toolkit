@@ -29,7 +29,7 @@ class PublicationDetailFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedInstanceState: Bundle?
+        savedInstanceState: Bundle?,
     ): View {
         _binding = FragmentPublicationDetailBinding.inflate(
             inflater,

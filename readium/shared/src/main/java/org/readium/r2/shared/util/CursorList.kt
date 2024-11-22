@@ -21,7 +21,7 @@ import org.readium.r2.shared.InternalReadiumApi
 @InternalReadiumApi
 public class CursorList<E>(
     private val list: List<E> = emptyList(),
-    private var index: Int = -1
+    private var index: Int = -1,
 ) : List<E> by list {
 
     init {

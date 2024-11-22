@@ -34,7 +34,7 @@ class PublicationTest {
         links: List<Link> = listOf(),
         readingOrder: List<Link> = emptyList(),
         resources: List<Link> = emptyList(),
-        servicesBuilder: Publication.ServicesBuilder = Publication.ServicesBuilder()
+        servicesBuilder: Publication.ServicesBuilder = Publication.ServicesBuilder(),
     ) = Publication(
         manifest = Manifest(
             metadata = Metadata(

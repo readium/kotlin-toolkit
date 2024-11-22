@@ -16,7 +16,7 @@ import org.readium.r2.testapp.R
 import org.readium.r2.testapp.utils.UserError
 
 sealed class ImportError(
-    override val cause: Error?
+    override val cause: Error?,
 ) : Error {
 
     override val message: String =
@@ -26,23 +26,23 @@ sealed class ImportError(
         ImportError(DebugError("Lcp support is missing."))
 
     class LcpAcquisitionFailed(
-        override val cause: LcpError
+        override val cause: LcpError,
     ) : ImportError(cause)
 
     class Publication(
-        override val cause: PublicationError
+        override val cause: PublicationError,
     ) : ImportError(cause)
 
     class FileSystem(
-        override val cause: FileSystemError
+        override val cause: FileSystemError,
     ) : ImportError(cause)
 
     class ContentResolver(
-        override val cause: ContentResolverError
+        override val cause: ContentResolverError,
     ) : ImportError(cause)
 
     class Download(
-        override val cause: HttpError
+        override val cause: HttpError,
     ) : ImportError(cause)
 
     class Opds(override val cause: Error) :

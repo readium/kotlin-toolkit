@@ -1,7 +1,20 @@
+root = true
+
+[*]
+ij_continuation_indent_size = 4
+
 [*.{kt,kts}]
-
-ktlint_disabled_rules=no-wildcard-imports,max-line-length
-
+ij_kotlin_code_style_defaults = KOTLIN_OFFICIAL
 # Imports must be ordered in lexicographic order without any empty lines in-between.
 # https://github.com/pinterest/ktlint/issues/1236
 ij_kotlin_imports_layout=*
+ktlint_code_style = intellij_idea
+ktlint_standard_no-wildcard-imports = disabled
+ktlint_standard_max-line-length = disabled
+
+ktlint_standard_class-naming = disabled
+ktlint_standard_comment-wrapping = disabled
+ktlint_standard_discouraged-comment-location = disabled
+ktlint_standard_function-naming = disabled
+ktlint_standard_property-naming = disabled
+ktlint_standard_trailing-comma-on-call-site = disabled

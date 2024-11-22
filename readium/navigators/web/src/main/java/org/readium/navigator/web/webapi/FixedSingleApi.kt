@@ -17,7 +17,7 @@ import org.readium.r2.navigator.preferences.Fit
 import org.readium.r2.shared.util.AbsoluteUrl
 
 internal class FixedSingleApi(
-    private val webView: WebView
+    private val webView: WebView,
 ) {
 
     companion object {

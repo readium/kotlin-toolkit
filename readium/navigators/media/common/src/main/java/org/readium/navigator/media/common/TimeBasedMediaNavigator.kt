@@ -14,8 +14,11 @@ import org.readium.r2.shared.ExperimentalReadiumApi
  * A [MediaNavigator] whose locations provide time offsets.
  */
 @ExperimentalReadiumApi
-public interface TimeBasedMediaNavigator<L : TimeBasedMediaNavigator.Location, P : TimeBasedMediaNavigator.Playback,
-    R : TimeBasedMediaNavigator.ReadingOrder> : MediaNavigator<L, P, R> {
+public interface TimeBasedMediaNavigator<
+    L : TimeBasedMediaNavigator.Location,
+    P : TimeBasedMediaNavigator.Playback,
+    R : TimeBasedMediaNavigator.ReadingOrder,
+    > : MediaNavigator<L, P, R> {
 
     /**
      * Location of the navigator.

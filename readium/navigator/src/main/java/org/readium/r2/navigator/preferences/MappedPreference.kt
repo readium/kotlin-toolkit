@@ -26,7 +26,7 @@ public fun <T> Preference<T>.withSupportedValues(supportedValues: List<T>): Enum
 public fun <T, V> EnumPreference<T>.map(
     from: (T) -> V,
     to: (V) -> T,
-    supportedValues: (List<T>) -> List<V> = { it.map(from) }
+    supportedValues: (List<T>) -> List<V> = { it.map(from) },
 ): EnumPreference<V> =
     MappedEnumPreference(this, from, to, supportedValues)
 
@@ -61,7 +61,7 @@ public fun <T : Comparable<T>, V : Comparable<V>> RangePreference<T>.map(
     supportedRange: (ClosedRange<T>) -> ClosedRange<V> = { from(it.start)..from(it.endInclusive) },
     formatValue: ((V) -> String)? = null,
     increment: (RangePreference<V>.() -> Unit)? = null,
-    decrement: (RangePreference<V>.() -> Unit)? = null
+    decrement: (RangePreference<V>.() -> Unit)? = null,
 ): RangePreference<V> =
     MappedRangePreference(
         this,
@@ -81,7 +81,7 @@ public fun <T : Comparable<T>> RangePreference<T>.map(
     supportedRange: (ClosedRange<T>) -> ClosedRange<T> = { it },
     formatValue: ((T) -> String)? = null,
     increment: (RangePreference<T>.() -> Unit)? = null,
-    decrement: (RangePreference<T>.() -> Unit)? = null
+    decrement: (RangePreference<T>.() -> Unit)? = null,
 ): RangePreference<T> =
     MappedRangePreference(
         this,
@@ -100,7 +100,7 @@ public fun <T : Comparable<T>> RangePreference<T>.map(
  */
 public fun <T : Comparable<T>> RangePreference<T>.withSupportedRange(
     range: ClosedRange<T> = supportedRange,
-    progressionStrategy: ProgressionStrategy<T>
+    progressionStrategy: ProgressionStrategy<T>,
 ): RangePreference<T> =
     map(
         supportedRange = { range },
@@ -117,7 +117,7 @@ public fun <T : Comparable<T>> RangePreference<T>.withSupportedRange(
 private open class MappedPreference<T, V>(
     protected open val original: Preference<T>,
     protected val from: (T) -> V,
-    protected val to: (V) -> T
+    protected val to: (V) -> T,
 ) : Preference<V> {
     override val value: V?
         get() = original.value?.let(from)
@@ -133,14 +133,14 @@ private open class MappedPreference<T, V>(
 
 private class PreferenceWithSupportedValues<T>(
     override val original: Preference<T>,
-    override val supportedValues: List<T>
+    override val supportedValues: List<T>,
 ) : MappedPreference<T, T>(original, from = { it }, to = { it }), EnumPreference<T>
 
 private class MappedEnumPreference<T, V>(
     override val original: EnumPreference<T>,
     from: (T) -> V,
     to: (V) -> T,
-    private val transformSupportedValues: (List<T>) -> List<V>
+    private val transformSupportedValues: (List<T>) -> List<V>,
 ) : MappedPreference<T, V>(original, from, to), EnumPreference<V> {
 
     override val supportedValues: List<V>
@@ -159,7 +159,7 @@ private class MappedRangePreference<T : Comparable<T>, V : Comparable<V>>(
     private val transformSupportedRange: (ClosedRange<T>) -> ClosedRange<V>,
     private val valueFormatter: ((V) -> String)?,
     private val incrementer: (RangePreference<V>.() -> Unit)?,
-    private val decrementer: (RangePreference<V>.() -> Unit)?
+    private val decrementer: (RangePreference<V>.() -> Unit)?,
 ) : MappedPreference<T, V>(original, from, to), RangePreference<V> {
 
     override val supportedRange: ClosedRange<V>
