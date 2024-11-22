@@ -75,13 +75,20 @@ public class CountingInputStream(
             return ByteArray(0)
         }
 
+        require(range.first >= count)
+
         val toSkip = range.first - count
         var skipped: Long = 0
 
         while (skipped != toSkip) {
             skipped += skip(toSkip - skipped)
             if (skipped == 0L) {
-                throw IOException("Could not skip InputStream to read ranges.")
+                if (read() == -1) {
+                    // End reached, range.first was greater or equal to content length
+                    return ByteArray(0)
+                } else {
+                    throw IOException("Could not skip InputStream to read ranges.")
+                }
             }
         }
 
