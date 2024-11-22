@@ -164,7 +164,15 @@ internal class LcpDecryptor(
                 AES_BLOCK_SIZE - // Minus IV
                 decryptedBytes.last().toInt() // Minus padding size
 
-            return Try.success(adjustedLength)
+            return if (adjustedLength >= 0) {
+                Try.success(adjustedLength)
+            } else {
+                Try.failure(
+                    ReadError.Decoding(
+                        DebugError("Padding length seems invalid.")
+                    )
+                )
+            }
         }
 
         override suspend fun read(range: LongRange?): Try<ByteArray, ReadError> {
@@ -230,20 +238,10 @@ internal class LcpDecryptor(
                         }.getOrElse { return Try.failure(it) }
 
                     // use decrypted length to ensure range.last doesn't exceed decrypted length - 1
-                    val dataLength = range.last.coerceAtMost(decryptedLength - 1) - range.first + 1
+                    val dataLength = (range.last + 1).coerceAtMost(decryptedLength) - range.first
 
                     // keep only enough bytes to fit the length corrected request in order to never include padding
                     val sliceEnd = startPadding + dataLength.toInt()
-
-                    if (sliceEnd > bytes.size) {
-                        return Try.failure(
-                            ReadError.Decoding(
-                                DebugError(
-                                    "Length provided in padding seems wrong in: ${resource.sourceUrl}"
-                                )
-                            )
-                        )
-                    }
 
                     startPadding.toInt() until sliceEnd.toInt()
                 } else {
