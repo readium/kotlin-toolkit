@@ -47,7 +47,7 @@ kotlinx-serialization-json = "1.7.3"
 
 # Make sure to align with the Kotlin version.
 # See https://github.com/google/ksp/releases
-ksp = "2.0.21-1.0.25"
+ksp = "2.0.21-1.0.28"
 
 ktlint = "12.1.1"
 
