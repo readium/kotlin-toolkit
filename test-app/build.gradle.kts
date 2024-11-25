@@ -19,8 +19,8 @@ android {
 
         applicationId = "org.readium.r2reader"
 
-        versionName = "3.0.1"
-        versionCode = 300001
+        versionName = "3.0.2"
+        versionCode = 1
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         ndk.abiFilters.add("armeabi-v7a")
