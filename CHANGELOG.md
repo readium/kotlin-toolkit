@@ -4,7 +4,18 @@ All notable changes to this project will be documented in this file. Take a look
 
 **Warning:** Features marked as *experimental* may change or be removed in a future release without notice. Use with caution.
 
-<!-- ## [Unreleased] -->
+## [Unreleased]
+
+### Fixed
+
+#### Navigator
+
+* Fixed the value of the `scroll` setting when switching from a reflowable EPUB to a fixed-layout one.
+
+#### LCP
+
+* Fixed `IndexOutOfBoundsException` occurring when an LCP-protected EPUB contains incorrect original lengths in its `META-INF/encryption.xml` file.
+
 
 ## [3.0.1]
 

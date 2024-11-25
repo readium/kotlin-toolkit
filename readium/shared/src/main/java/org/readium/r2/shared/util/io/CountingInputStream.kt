@@ -71,6 +71,8 @@ public class CountingInputStream(
             .coerceFirstNonNegative()
             .requireLengthFitInt()
 
+        require(range.first >= count)
+
         if (range.isEmpty()) {
             return ByteArray(0)
         }
@@ -81,7 +83,12 @@ public class CountingInputStream(
         while (skipped != toSkip) {
             skipped += skip(toSkip - skipped)
             if (skipped == 0L) {
-                throw IOException("Could not skip InputStream to read ranges.")
+                if (read() == -1) {
+                    // End reached, range.first was greater or equal to content length
+                    return ByteArray(0)
+                } else {
+                    throw IOException("Could not skip InputStream to read ranges.")
+                }
             }
         }
 

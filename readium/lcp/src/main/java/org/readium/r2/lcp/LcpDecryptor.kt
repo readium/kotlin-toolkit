@@ -59,7 +59,7 @@ internal class LcpDecryptor(
                 encryption.isDeflated || !encryption.isCbcEncrypted ->
                     FullLcpResource(resource, encryption, license)
                 else ->
-                    CbcLcpResource(resource, encryption, license)
+                    CbcLcpResource(resource, license)
             }
         }
     }
@@ -91,7 +91,6 @@ internal class LcpDecryptor(
      */
     private class CbcLcpResource(
         private val resource: Resource,
-        private val encryption: Encryption,
         private val license: LcpLicense
     ) : Resource by resource {
 
@@ -103,14 +102,14 @@ internal class LcpDecryptor(
         private lateinit var _length: Try<Long, ReadError>
 
         /*
-        * Decryption needs to look around the data strictly matching the content to decipher.
-        * That means that in case of contiguous read requests, data fetched from the underlying
-        * resource are not contiguous. Every request to the underlying resource starts slightly
-        * before the end of the previous one. This is an issue with remote publications because
-        * you have to make a new HTTP request every time instead of reusing the previous one.
-        * To alleviate this, we cache the three last bytes read in each call and reuse them
-        * in the next call if possible.
-        */
+         * Decryption needs to look around the data strictly matching the content to decipher.
+         * That means that in case of contiguous read requests, data fetched from the underlying
+         * resource are not contiguous. Every request to the underlying resource starts slightly
+         * before the end of the previous one. This is an issue with remote publications because
+         * you have to make a new HTTP request every time instead of reusing the previous one.
+         * To alleviate this, we cache the three last bytes read in each call and reuse them
+         * in the next call if possible.
+         */
         private val _cache: Cache = Cache()
 
         /** Plain text size. */
@@ -119,8 +118,8 @@ internal class LcpDecryptor(
                 return _length
             }
 
-            _length = encryption.originalLength?.let { Try.success(it) }
-                ?: lengthFromPadding()
+            // Unfortunately, encryption.originalLength is not reliable.
+            _length = lengthFromPadding()
 
             return _length
         }
@@ -141,7 +140,16 @@ internal class LcpDecryptor(
             val bytes = resource.read(readOffset..length)
                 .getOrElse { return Try.failure(it) }
 
-            val decryptedBytes = license.decrypt(bytes)
+            return lengthFromLastTwoBlocks(length, bytes)
+        }
+
+        private suspend fun lengthFromLastTwoBlocks(
+            cipheredLength: Long,
+            lastTwoBlocks: ByteArray
+        ): Try<Long, ReadError> {
+            require(lastTwoBlocks.size == 2 * AES_BLOCK_SIZE)
+
+            val decryptedBytes = license.decrypt(lastTwoBlocks)
                 .getOrElse {
                     return Try.failure(
                         ReadError.Decoding(
@@ -152,11 +160,19 @@ internal class LcpDecryptor(
 
             check(decryptedBytes.size == AES_BLOCK_SIZE)
 
-            val adjustedLength = length -
+            val adjustedLength = cipheredLength -
                 AES_BLOCK_SIZE - // Minus IV
                 decryptedBytes.last().toInt() // Minus padding size
 
-            return Try.success(adjustedLength)
+            return if (adjustedLength >= 0) {
+                Try.success(adjustedLength)
+            } else {
+                Try.failure(
+                    ReadError.Decoding(
+                        DebugError("Padding length seems invalid.")
+                    )
+                )
+            }
         }
 
         override suspend fun read(range: LongRange?): Try<ByteArray, ReadError> {
@@ -173,25 +189,27 @@ internal class LcpDecryptor(
                 return Try.success(ByteArray(0))
             }
 
+            val rangeSize = range.last + 1 - range.first
+
             val encryptedLength = resource.length()
                 .getOrElse { return Try.failure(it) }
 
+            // range bounds must be multiple of AES_BLOCK_SIZE and
+            val startPadding = range.first - range.first.floorMultipleOf(AES_BLOCK_SIZE.toLong())
+            val endPadding = (range.last + 1).ceilMultipleOf(AES_BLOCK_SIZE.toLong()) - range.last - 1
+
             // encrypted data is shifted by AES_BLOCK_SIZE because of IV and
             // the previous block must be provided to perform XOR on intermediate blocks
-            val encryptedStart = range.first.floorMultipleOf(AES_BLOCK_SIZE.toLong())
-            val encryptedEndExclusive = (range.last + 1).ceilMultipleOf(AES_BLOCK_SIZE.toLong()) + AES_BLOCK_SIZE
+            val encryptedStart = range.first - startPadding
+            val encryptedEndExclusive = range.last + 1 + endPadding + AES_BLOCK_SIZE
 
             val encryptedData = getEncryptedData(encryptedStart until encryptedEndExclusive)
                 .getOrElse { return Try.failure(it) }
 
-            if (encryptedData.size >= _cache.data.size) {
-                // cache the three last encrypted blocks that have been read for future use
-                val cacheStart = encryptedData.size - _cache.data.size
-                _cache.startIndex = (encryptedEndExclusive - _cache.data.size).toInt()
-                encryptedData.copyInto(_cache.data, 0, cacheStart)
-            }
-
             val bytes = license.decrypt(encryptedData)
+                .onSuccess {
+                    check(it.isEmpty() || it.size == encryptedData.size - AES_BLOCK_SIZE)
+                }
                 .getOrElse {
                     return Try.failure(
                         ReadError.Decoding(
@@ -203,29 +221,49 @@ internal class LcpDecryptor(
                     )
                 }
 
-            // exclude the bytes added to match a multiple of AES_BLOCK_SIZE
-            val sliceStart = (range.first - encryptedStart).toInt()
-
             // was the last block read to provide the desired range
             val lastBlockRead = encryptedLength - encryptedEndExclusive <= AES_BLOCK_SIZE
 
-            val rangeLength =
+            val dataSlice =
                 if (lastBlockRead) {
+                    val decryptedLength =
+                        if (::_length.isInitialized) {
+                            _length
+                        } else {
+                            val lastTwoBlocks = encryptedData.sliceArray(
+                                encryptedData.size - 2 until encryptedData.size
+                            )
+                            lengthFromLastTwoBlocks(encryptedLength, lastTwoBlocks)
+                                .onSuccess { _length = Try.success(it) }
+                        }.getOrElse { return Try.failure(it) }
+
                     // use decrypted length to ensure range.last doesn't exceed decrypted length - 1
-                    val decryptedLength = length()
-                        .getOrElse { return Try.failure(it) }
-                    range.last.coerceAtMost(decryptedLength - 1) - range.first + 1
+                    val dataLength = (range.last + 1).coerceAtMost(decryptedLength) - range.first
+
+                    // keep only enough bytes to fit the length corrected request in order to never include padding
+                    val sliceEnd = startPadding + dataLength.toInt()
+
+                    startPadding.toInt() until sliceEnd.toInt()
                 } else {
-                    // the last block won't be read, so there's no need to compute length
-                    range.last - range.first + 1
+                    // the last block was not read, so there's no need to compute decrypted length
+
+                    // bytes contains deciphered data for startPadding, then for the requested
+                    // range, and then for endPadding
+                    // the requested range might have been far too large, in which case bytes doesn't
+                    // content all of that data
+                    // if there are any data for endPadding, it begins at endPaddingStartIndex.
+                    val endPaddingStartIndex = (startPadding + rangeSize).coerceAtMost(
+                        bytes.size.toLong()
+                    )
+                    startPadding.toInt() until endPaddingStartIndex.toInt()
                 }
 
-            // keep only enough bytes to fit the length corrected request in order to never include padding
-            val sliceEnd = sliceStart + rangeLength.toInt()
-
-            return Try.success(bytes.sliceArray(sliceStart until sliceEnd))
+            return Try.success(bytes.sliceArray(dataSlice))
         }
 
+        /**
+         * Reads encrypted data using the cache when suitable.
+         */
         private suspend fun getEncryptedData(range: LongRange): Try<ByteArray, ReadError> {
             val cacheStartIndex = _cache.startIndex
                 ?.takeIf { cacheStart ->
@@ -241,6 +279,13 @@ internal class LcpDecryptor(
                 _cache.data.copyInto(bytes, 0, offsetInCache)
                 it.copyInto(bytes, fromCacheLength)
                 bytes
+            }.onSuccess { result ->
+                if (result.size >= _cache.data.size) {
+                    // cache the three last encrypted blocks that have been read for future use
+                    val cacheStart = result.size - _cache.data.size
+                    _cache.startIndex = (range.last + 1 - _cache.data.size).toInt()
+                    result.copyInto(_cache.data, 0, cacheStart)
+                }
             }
         }
 
