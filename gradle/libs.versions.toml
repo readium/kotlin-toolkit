@@ -1,6 +1,6 @@
 [versions]
 
-kotlin = "2.0.21"
+kotlin = "2.1.0"
 agp = "8.7.2"
 desugar_jdk_libs = "2.1.2"
 gradle-maven-publish-plugin = "0.28.0"
@@ -47,7 +47,7 @@ kotlinx-serialization-json = "1.7.3"
 
 # Make sure to align with the Kotlin version.
 # See https://github.com/google/ksp/releases
-ksp = "2.0.21-1.0.28"
+ksp = "2.1.0-1.0.29"
 
 ktlint = "12.1.1"
 
