@@ -36,7 +36,7 @@ public class EpubPositionsService(
     private val presentation: Presentation,
     private val pageList: List<Link>,
     private val container: Container<Resource>,
-    private val reflowableStrategy: ReflowableStrategy
+    private val reflowableStrategy: ReflowableStrategy,
 ) : PositionsService {
 
     public companion object {
@@ -184,7 +184,7 @@ public class EpubPositionsService(
         type: MediaType?,
         title: String?,
         progression: Double,
-        position: Int
+        position: Int,
     ): Locator =
         Locator(
             href = href,
