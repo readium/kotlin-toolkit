@@ -21,6 +21,7 @@ import org.readium.r2.shared.util.archive.archive
 import org.readium.r2.shared.util.data.Container
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.resource.Resource
+import org.readium.r2.shared.util.use
 
 /**
  * Positions Service for an EPUB from its [readingOrder] and [container].
