@@ -21,7 +21,6 @@ import org.readium.r2.shared.util.archive.archive
 import org.readium.r2.shared.util.data.Container
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.resource.Resource
-import org.readium.r2.shared.util.use
 
 /**
  * Positions Service for an EPUB from its [readingOrder] and [container].
@@ -35,8 +34,9 @@ import org.readium.r2.shared.util.use
 public class EpubPositionsService(
     private val readingOrder: List<Link>,
     private val presentation: Presentation,
+    private val pageList: List<Link>,
     private val container: Container<Resource>,
-    private val reflowableStrategy: ReflowableStrategy,
+    private val reflowableStrategy: ReflowableStrategy
 ) : PositionsService {
 
     public companion object {
@@ -50,6 +50,7 @@ public class EpubPositionsService(
                 EpubPositionsService(
                     readingOrder = context.manifest.readingOrder,
                     presentation = context.manifest.metadata.presentation,
+                    pageList = context.manifest.subcollections["pageList"]?.firstOrNull()?.links ?: emptyList(),
                     container = context.container,
                     reflowableStrategy = reflowableStrategy
                 )
@@ -165,8 +166,7 @@ public class EpubPositionsService(
     private suspend fun createReflowable(link: Link, startPosition: Int, resource: Resource): List<Locator> {
         val href = link.url()
 
-        val positionCount =
-            reflowableStrategy.positionCount(link, resource)
+        val positionCount = pageList.count { it.href.toString().startsWith(href.toString()) }
 
         return (1..positionCount).mapNotNull { position ->
             createLocator(
@@ -184,7 +184,7 @@ public class EpubPositionsService(
         type: MediaType?,
         title: String?,
         progression: Double,
-        position: Int,
+        position: Int
     ): Locator =
         Locator(
             href = href,
