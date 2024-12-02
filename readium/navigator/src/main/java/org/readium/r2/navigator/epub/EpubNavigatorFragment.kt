@@ -474,14 +474,12 @@ public class EpubNavigatorFragment internal constructor(
             EpubLayout.REFLOWABLE, null -> {
                 R2PagerAdapter(childFragmentManager, resourcesSingle)
             }
-
             EpubLayout.FIXED -> {
                 when (viewModel.dualPageMode) {
                     // FIXME: Properly implement DualPage.AUTO depending on the device orientation.
                     DualPage.OFF, DualPage.AUTO -> {
                         R2PagerAdapter(childFragmentManager, resourcesSingle)
                     }
-
                     DualPage.ON -> {
                         R2PagerAdapter(childFragmentManager, resourcesDouble)
                     }
@@ -540,11 +538,9 @@ public class EpubNavigatorFragment internal constructor(
             is EpubNavigatorViewModel.Event.RunScript -> {
                 run(event.command)
             }
-
             is EpubNavigatorViewModel.Event.OpenInternalLink -> {
                 go(event.target)
             }
-
             EpubNavigatorViewModel.Event.InvalidateViewPager -> {
                 invalidateResourcePager()
             }
@@ -620,14 +616,10 @@ public class EpubNavigatorFragment internal constructor(
                 when (res) {
                     is PageResource.EpubReflowable ->
                         res.link.url().isEquivalent(href)
-
                     is PageResource.EpubFxl ->
-                        res.leftUrl?.toString()
-                            ?.endsWith(href.toString()) == true || res.rightUrl?.toString()
-                            ?.endsWith(
-                                href.toString()
-                            ) == true
-
+                        res.leftUrl?.toString()?.endsWith(href.toString()) == true || res.rightUrl?.toString()?.endsWith(
+                            href.toString()
+                        ) == true
                     else -> false
                 }
             } ?: return
@@ -647,7 +639,6 @@ public class EpubNavigatorFragment internal constructor(
                 DualPage.OFF, DualPage.AUTO -> {
                     setCurrent(resourcesSingle)
                 }
-
                 DualPage.ON -> {
                     setCurrent(resourcesDouble)
                 }
@@ -672,19 +663,16 @@ public class EpubNavigatorFragment internal constructor(
                 currentReflowablePageFragment
                     ?.runJavaScript(command.script)
             }
-
             RunScriptCommand.Scope.LoadedResources -> {
                 r2PagerAdapter?.mFragments?.forEach { _, fragment ->
                     (fragment as? R2EpubPageFragment)
                         ?.runJavaScript(command.script)
                 }
             }
-
             is RunScriptCommand.Scope.Resource -> {
                 loadedFragmentForHref(command.scope.href)
                     ?.runJavaScript(command.script)
             }
-
             is RunScriptCommand.Scope.WebView -> {
                 command.scope.webView.runJavaScript(command.script)
             }
@@ -851,10 +839,7 @@ public class EpubNavigatorFragment internal constructor(
         /**
          * Prevents opening external links in the web view and handles internal links.
          */
-        override fun shouldOverrideUrlLoading(
-            webView: WebView,
-            request: WebResourceRequest
-        ): Boolean {
+        override fun shouldOverrideUrlLoading(webView: WebView, request: WebResourceRequest): Boolean {
             val url = request.url.toAbsoluteUrl() ?: return false
             viewModel.navigateToUrl(url)
             return true
@@ -867,10 +852,7 @@ public class EpubNavigatorFragment internal constructor(
             viewModel.navigateToUrl(url, context)
         }
 
-        override fun shouldInterceptRequest(
-            webView: WebView,
-            request: WebResourceRequest
-        ): WebResourceResponse? =
+        override fun shouldInterceptRequest(webView: WebView, request: WebResourceRequest): WebResourceResponse? =
             viewModel.shouldInterceptRequest(request)
 
         override fun resourceAtUrl(url: Url): Resource? =
@@ -994,13 +976,11 @@ public class EpubNavigatorFragment internal constructor(
             null
         }
 
-    private val currentReflowablePageFragment: R2EpubPageFragment?
-        get() =
-            currentFragment as? R2EpubPageFragment
+    private val currentReflowablePageFragment: R2EpubPageFragment? get() =
+        currentFragment as? R2EpubPageFragment
 
-    private val currentFragment: Fragment?
-        get() =
-            fragmentAt(resourcePager.currentItem)
+    private val currentFragment: Fragment? get() =
+        fragmentAt(resourcePager.currentItem)
 
     private fun fragmentAt(index: Int): Fragment? =
         r2PagerAdapter?.mFragments?.get(adapter.getItemId(index))
@@ -1107,7 +1087,6 @@ public class EpubNavigatorFragment internal constructor(
                 is PageResource.EpubFxl -> checkNotNull(
                     pageResource.leftLink ?: pageResource.rightLink
                 )
-
                 is PageResource.EpubReflowable -> pageResource.link
                 else -> throw IllegalStateException(
                     "Expected EpubFxl or EpubReflowable page resources"
@@ -1121,8 +1100,7 @@ public class EpubNavigatorFragment internal constructor(
             val currentLocator = Locator(
                 href = link.url(),
                 mediaType = link.mediaType ?: MediaType.XHTML,
-                title = tableOfContentsTitleByHref[link.href] ?: positionLocator?.title
-                ?: link.title,
+                title = tableOfContentsTitleByHref[link.href] ?: positionLocator?.title ?: link.title,
                 locations = (positionLocator?.locations ?: Locator.Locations()).copy(
                     progression = progression
                 ),
@@ -1175,6 +1153,5 @@ public class EpubNavigatorFragment internal constructor(
 }
 
 @ExperimentalReadiumApi
-private val EpubSettings.effectiveBackgroundColor: Int
-    get() =
-        backgroundColor?.int ?: theme.backgroundColor
+private val EpubSettings.effectiveBackgroundColor: Int get() =
+    backgroundColor?.int ?: theme.backgroundColor
