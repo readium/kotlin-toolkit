@@ -29,6 +29,7 @@ import androidx.media3.common.C
 import androidx.media3.common.Player
 import androidx.media3.common.util.Log
 import androidx.media3.common.util.Util
+import java.util.Objects
 import org.readium.navigator.media.tts.session.AudioFocusManager.PlayerControl
 
 @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
@@ -134,7 +135,7 @@ internal class AudioFocusManager(
      * managed automatically.
      */
     fun setAudioAttributes(audioAttributes: AudioAttributes?) {
-        if (!Util.areEqual(this.audioAttributes, audioAttributes)) {
+        if (!Objects.equals(this.audioAttributes, audioAttributes)) {
             this.audioAttributes = audioAttributes
             focusGainToRequest = convertAudioAttributesToFocusGain(audioAttributes)
             require(

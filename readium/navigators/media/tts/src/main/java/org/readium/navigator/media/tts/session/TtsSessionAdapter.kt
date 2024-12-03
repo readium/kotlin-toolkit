@@ -343,23 +343,8 @@ internal class TtsSessionAdapter<E : TtsEngine.Error>(
         ttsPlayer.nextUtterance()
     }
 
-    @Deprecated("Deprecated in Java", ReplaceWith("hasPreviousMediaItem()"))
-    override fun hasPrevious(): Boolean {
-        return hasPreviousMediaItem()
-    }
-
-    @Deprecated("Deprecated in Java", ReplaceWith("hasPreviousMediaItem()"))
-    override fun hasPreviousWindow(): Boolean {
-        return hasPreviousMediaItem()
-    }
-
     override fun hasPreviousMediaItem(): Boolean {
         return previousMediaItemIndex != INDEX_UNSET
-    }
-
-    @Deprecated("Deprecated in Java", ReplaceWith("TODO(\"Not yet implemented\")"))
-    override fun previous() {
-        seekToPreviousMediaItem()
     }
 
     @Deprecated("Deprecated in Java", ReplaceWith("TODO(\"Not yet implemented\")"))
