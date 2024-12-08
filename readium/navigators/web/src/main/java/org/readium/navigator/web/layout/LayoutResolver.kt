@@ -6,6 +6,7 @@
 
 package org.readium.navigator.web.layout
 
+import org.readium.navigator.web.layout.DoubleViewportSpread.Companion.invoke
 import org.readium.navigator.web.preferences.FixedWebSettings
 import org.readium.r2.navigator.preferences.ReadingProgression
 import org.readium.r2.shared.ExperimentalReadiumApi

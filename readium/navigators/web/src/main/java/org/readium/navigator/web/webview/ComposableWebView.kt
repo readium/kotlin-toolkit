@@ -6,8 +6,8 @@
 
 package org.readium.navigator.web.webview
 
+import android.annotation.SuppressLint
 import android.content.Context
-import android.os.Bundle
 import android.view.ViewGroup.LayoutParams
 import android.webkit.WebChromeClient
 import android.webkit.WebView
@@ -28,15 +28,9 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.core.view.ViewCompat
-import org.readium.navigator.web.gestures.Fling2DBehavior
-import org.readium.navigator.web.gestures.scrollable2D
 
 /**
  * A wrapper around the Android View WebView to provide a basic WebView composable.
- *
- * If you require more customisation you are most likely better rolling your own and using this
- * wrapper as an example.
  *
  * The WebView attempts to set the layoutParams based on the Compose modifier passed in. If it
  * is incorrectly sizing, use the layoutParams composable function instead.
@@ -50,19 +44,55 @@ import org.readium.navigator.web.gestures.scrollable2D
  * if you need to save and restore state in this WebView.
  * @param client Provides access to WebViewClient via subclassing
  * @param chromeClient Provides access to WebChromeClient via subclassing
- * @param factory An optional WebView factory for using a custom subclass of WebView
  */
+@SuppressLint("UnusedBoxWithConstraintsScope")
 @Composable
 internal fun WebView(
     state: WebViewState,
     modifier: Modifier = Modifier,
-    scrollableState: WebViewScrollable2DState = remember { WebViewScrollable2DState() },
-    flingBehavior: Fling2DBehavior? = null,
     onCreated: (WebView) -> Unit = {},
     onDispose: (WebView) -> Unit = {},
     client: WebViewClient = remember { WebViewClient() },
     chromeClient: WebChromeClient = remember { WebChromeClient() },
-    factory: ((Context) -> RelaxedWebView)? = null,
+) {
+    WebView(
+        state = state,
+        factory = { WebView((it)) },
+        modifier = modifier,
+        onCreated = onCreated,
+        onDispose = onDispose,
+        client = client,
+        chromeClient = chromeClient
+    )
+}
+
+/**
+ * A wrapper around the Android View WebView to provide a basic WebView composable.
+ *
+ * The WebView attempts to set the layoutParams based on the Compose modifier passed in. If it
+ * is incorrectly sizing, use the layoutParams composable function instead.
+ *
+ * @param state The webview state holder where the Uri to load is defined.
+ * @param modifier A compose modifier
+ * @param onCreated Called when the WebView is first created, this can be used to set additional
+ * settings on the WebView. WebChromeClient and WebViewClient should not be set here as they will be
+ * subsequently overwritten after this lambda is called.
+ * @param onDispose Called when the WebView is destroyed. Provides a bundle which can be saved
+ * if you need to save and restore state in this WebView.
+ * @param client Provides access to WebViewClient via subclassing
+ * @param chromeClient Provides access to WebChromeClient via subclassing
+ * @param factory A WebView factory for using a custom subclass of WebView
+ */
+@SuppressLint("UnusedBoxWithConstraintsScope")
+@Composable
+internal fun <T : WebView> WebView(
+    state: WebViewState,
+    factory: ((Context) -> T),
+    modifier: Modifier = Modifier,
+    onCreated: (T) -> Unit = {},
+    onDispose: (T) -> Unit = {},
+    client: WebViewClient = remember { WebViewClient() },
+    chromeClient: WebChromeClient = remember { WebChromeClient() },
 ) {
     BoxWithConstraints(
         modifier = modifier,
@@ -98,15 +128,13 @@ internal fun WebView(
             item {
                 WebView(
                     state,
-                    scrollableState,
-                    flingBehavior,
+                    factory,
                     layoutParams,
                     Modifier.fillParentMaxSize(),
                     onCreated,
                     onDispose,
                     client,
                     chromeClient,
-                    factory
                 )
             }
         }
@@ -115,9 +143,6 @@ internal fun WebView(
 
 /**
  * A wrapper around the Android View WebView to provide a basic WebView composable.
- *
- * If you require more customisation you are most likely better rolling your own and using this
- * wrapper as an example.
  *
  * The WebView attempts to set the layoutParams based on the Compose modifier passed in. If it
  * is incorrectly sizing, use the layoutParams composable function instead.
@@ -132,20 +157,18 @@ internal fun WebView(
  * if you need to save and restore state in this WebView.
  * @param client Provides access to WebViewClient via subclassing
  * @param chromeClient Provides access to WebChromeClient via subclassing
- * @param factory An optional WebView factory for using a custom subclass of WebView
+ * @param factory A WebView factory for using a custom subclass of WebView
  */
 @Composable
-internal fun WebView(
+internal fun <T : WebView> WebView(
     state: WebViewState,
-    scrollableState: WebViewScrollable2DState,
-    flingBehavior: Fling2DBehavior?,
+    factory: ((Context) -> T),
     layoutParams: FrameLayout.LayoutParams,
     modifier: Modifier = Modifier,
-    onCreated: (WebView) -> Unit = {},
-    onDispose: (WebView) -> Unit = {},
+    onCreated: (T) -> Unit = {},
+    onDispose: (T) -> Unit = {},
     client: WebViewClient = remember { WebViewClient() },
     chromeClient: WebChromeClient = remember { WebChromeClient() },
-    factory: ((Context) -> RelaxedWebView)? = null,
 ) {
     val webView = state.webView
 
@@ -173,26 +196,17 @@ internal fun WebView(
 
     AndroidView(
         factory = { context ->
-            (factory?.let { it(context) } ?: RelaxedWebView(context)).apply {
-                onCreated(this)
-                ViewCompat.setNestedScrollingEnabled(this, true)
-
+            factory(context).apply {
                 this.layoutParams = layoutParams
-
-                state.viewState?.let {
-                    this.restoreState(it)
-                }
-
-                webChromeClient = chromeClient
-                webViewClient = client
-                scrollableState.webView = this
-            }.also { state.webView = it }
+                this.webChromeClient = chromeClient
+                this.webViewClient = client
+                state.webView = this
+                onCreated(this)
+            }
         },
-        modifier = modifier
-            .scrollable2D(scrollableState, flingBehavior = flingBehavior),
+        modifier = modifier,
         onRelease = {
             onDispose(it)
-            scrollableState.webView = null
             state.webView = null
         }
     )
@@ -224,15 +238,8 @@ internal class WebViewState(webContent: WebContent) {
      */
     var content: WebContent by mutableStateOf(webContent)
 
-    /**
-     * The saved view state from when the view was destroyed last. To restore state,
-     * use the navigator and only call loadUrl if the bundle is null.
-     * See WebViewSaveStateSample.
-     */
-    internal var viewState: Bundle? = null
-
-    // We need access to this in the state saver. An internal DisposableEffect or AndroidView
-    // onDestroy is called after the state saver and so can't be used.
+    // An internal DisposableEffect or AndroidView onDestroy is called
+    // after the state saver and so can't be used.
     internal var webView by mutableStateOf<WebView?>(null)
 }
 
@@ -241,7 +248,7 @@ internal class WebViewState(webContent: WebContent) {
  *
  * @param url The url to load in the WebView
  * @param additionalHttpHeaders Optional, additional HTTP headers that are passed to [WebView.loadUrl].
- *                              Note that these headers are used for all subsequent requests of the WebView.
+ *   Note that these headers are used for all subsequent requests of the WebView.
  */
 @Composable
 internal fun rememberWebViewState(

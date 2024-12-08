@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+@file:Suppress("unused")
+
 package org.readium.navigator.web.gestures
 
 import androidx.compose.foundation.MutatePriority
@@ -55,7 +57,7 @@ internal abstract class DragGestureNode(
     canDrag: (PointerInputChange) -> Boolean,
     enabled: Boolean,
     interactionSource: MutableInteractionSource?,
-    private var orientationLock: Orientation?,
+    private var orientation: Orientation?,
 ) : DelegatingNode(), PointerInputModifierNode, CompositionLocalConsumerModifierNode {
 
     protected var canDrag = canDrag
@@ -202,7 +204,7 @@ internal abstract class DragGestureNode(
             coroutineScope {
                 try {
                     detectDragGestures(
-                        orientationLock = orientationLock,
+                        orientationLock = orientation,
                         onDragStart = onDragStart,
                         onDragEnd = onDragEnd,
                         onDragCancel = onDragCancel,
@@ -258,7 +260,7 @@ internal abstract class DragGestureNode(
         canDrag: (PointerInputChange) -> Boolean = this.canDrag,
         enabled: Boolean = this.enabled,
         interactionSource: MutableInteractionSource? = this.interactionSource,
-        orientationLock: Orientation? = this.orientationLock,
+        orientationLock: Orientation? = this.orientation,
         shouldResetPointerInputHandling: Boolean = false,
     ) {
         var resetPointerInputHandling = shouldResetPointerInputHandling
@@ -278,8 +280,8 @@ internal abstract class DragGestureNode(
             this.interactionSource = interactionSource
         }
 
-        if (this.orientationLock != orientationLock) {
-            this.orientationLock = orientationLock
+        if (this.orientation != orientationLock) {
+            this.orientation = orientationLock
             resetPointerInputHandling = true
         }
 

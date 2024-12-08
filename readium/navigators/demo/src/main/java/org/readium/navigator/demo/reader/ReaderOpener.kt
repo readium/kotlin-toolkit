@@ -17,11 +17,17 @@ import org.readium.navigator.demo.persistence.LocatorRepository
 import org.readium.navigator.demo.preferences.PreferencesManager
 import org.readium.navigator.web.FixedWebNavigatorFactory
 import org.readium.navigator.web.FixedWebRenditionController
+import org.readium.navigator.web.ReflowableWebNavigatorFactory
+import org.readium.navigator.web.ReflowableWebRenditionController
 import org.readium.navigator.web.location.FixedWebLocation
+import org.readium.navigator.web.location.ReflowableWebLocation
 import org.readium.navigator.web.preferences.FixedWebPreferences
+import org.readium.navigator.web.preferences.ReflowableWebPreferences
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.publication.epub.EpubLayout
+import org.readium.r2.shared.publication.presentation.presentation
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.DebugError
 import org.readium.r2.shared.util.Error
@@ -33,7 +39,7 @@ import org.readium.r2.streamer.PublicationOpener
 import org.readium.r2.streamer.parser.DefaultPublicationParser
 
 class ReaderOpener(
-    private val application: Application
+    private val application: Application,
 ) {
 
     private val httpClient =
@@ -62,7 +68,12 @@ class ReaderOpener(
 
         val readerState = when {
             publication.conformsTo(Publication.Profile.EPUB) ->
-                createFixedWebReader(url, publication, initialLocator)
+                when (publication.metadata.presentation.layout) {
+                    EpubLayout.FIXED ->
+                        createFixedWebReader(url, publication, initialLocator)
+                    EpubLayout.REFLOWABLE, null ->
+                        createReflowableWebReader(url, publication, initialLocator)
+                }
 
             /* publication.conformsTo(Publication.Profile.PDF) ->
                 createPdfReader(url, publication, initialLocator) */
@@ -77,10 +88,60 @@ class ReaderOpener(
         return Try.success(readerState)
     }
 
+    private suspend fun createReflowableWebReader(
+        url: AbsoluteUrl,
+        publication: Publication,
+        initialLocator: Locator?,
+    ): Try<ReaderState<ReflowableWebLocation, ReflowableWebRenditionController>, Error> {
+        val navigatorFactory = ReflowableWebNavigatorFactory(application, publication)
+            ?: return Try.failure(DebugError("Publication not supported"))
+
+        val locatorAdapter = navigatorFactory.createLocatorAdapter()
+
+        val initialLocation = with(locatorAdapter) { initialLocator?.toGoLocation() }
+
+        val coroutineScope = MainScope()
+
+        val initialPreferences = ReflowableWebPreferences()
+
+        val preferencesManager = PreferencesManager(initialPreferences)
+
+        val settingsEditor = navigatorFactory.createPreferencesEditor(initialPreferences)
+
+        snapshotFlow { settingsEditor.preferences }
+            .onEach { preferencesManager.setPreferences(it) }
+            .launchIn(coroutineScope)
+
+        val navigatorState = navigatorFactory.createRenditionState(
+            initialSettings = settingsEditor.settings,
+            initialLocation = initialLocation
+        ).getOrElse {
+            return Try.failure(it)
+        }
+
+        val onNavigatorCreated: (ReflowableWebRenditionController) -> Unit = { navigator ->
+            snapshotFlow { settingsEditor.settings }
+                .onEach { navigator.settings.value = it }
+                .launchIn(coroutineScope)
+        }
+
+        val readerState = ReaderState(
+            url = url,
+            coroutineScope = coroutineScope,
+            publication = publication,
+            renditionState = navigatorState,
+            preferencesEditor = settingsEditor,
+            locatorAdapter = locatorAdapter,
+            onNavigatorCreated = onNavigatorCreated
+        )
+
+        return Try.success(readerState)
+    }
+
     private suspend fun createFixedWebReader(
         url: AbsoluteUrl,
         publication: Publication,
-        initialLocator: Locator?
+        initialLocator: Locator?,
     ): Try<ReaderState<FixedWebLocation, FixedWebRenditionController>, Error> {
         val navigatorFactory = FixedWebNavigatorFactory(application, publication)
             ?: return Try.failure(DebugError("Publication not supported"))

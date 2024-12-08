@@ -1,7 +1,7 @@
 import { Insets, Size } from "../common/types"
 import { SingleAreaManager } from "../fixed/single-area-manager"
 import { Fit } from "../util/fit"
-import { GesturesBridge, BridgeGesturesAdapter } from "./fixed-gestures-bridge"
+import { GesturesBridge, BridgeGesturesAdapter } from "./all-gestures-bridge"
 
 export class FixedSingleBridge {
   private readonly manager: SingleAreaManager

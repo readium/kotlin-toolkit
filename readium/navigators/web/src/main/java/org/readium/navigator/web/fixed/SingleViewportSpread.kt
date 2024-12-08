@@ -6,7 +6,7 @@
 
 @file:OptIn(ExperimentalReadiumApi::class)
 
-package org.readium.navigator.web.spread
+package org.readium.navigator.web.fixed
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -21,10 +21,10 @@ import androidx.compose.ui.graphics.Color
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import org.readium.navigator.common.TapEvent
-import org.readium.navigator.web.layout.DoubleViewportSpread
+import org.readium.navigator.web.layout.SingleViewportSpread
 import org.readium.navigator.web.util.DisplayArea
 import org.readium.navigator.web.util.WebViewClient
-import org.readium.navigator.web.webapi.FixedDoubleApi
+import org.readium.navigator.web.webapi.FixedSingleApi
 import org.readium.navigator.web.webview.rememberWebViewStateWithHTMLData
 import org.readium.r2.navigator.preferences.Fit
 import org.readium.r2.shared.ExperimentalReadiumApi
@@ -32,11 +32,12 @@ import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Url
 
 @Composable
-internal fun DoubleViewportSpread(
+internal fun SingleViewportSpread(
     onTap: (TapEvent) -> Unit,
     onLinkActivated: (Url, String) -> Unit,
-    state: DoubleSpreadState,
+    state: SingleSpreadState,
     backgroundColor: Color,
+    reverseScrollDirection: Boolean,
 ) {
     Box(
         modifier = Modifier.fillMaxSize(),
@@ -54,7 +55,7 @@ internal fun DoubleViewportSpread(
         val layoutApi = remember(webViewState.webView, scriptsLoaded.value) {
             webViewState.webView
                 .takeIf { scriptsLoaded.value }
-                ?.let { FixedDoubleApi(it) }
+                ?.let { FixedSingleApi(it) }
         }
 
         layoutApi?.let { api ->
@@ -62,7 +63,7 @@ internal fun DoubleViewportSpread(
                 snapshotFlow {
                     state.fit.value
                 }.onEach {
-                    api.setFit(state.fit.value)
+                    api.setFit(it)
                 }.launchIn(this)
 
                 snapshotFlow {
@@ -86,22 +87,20 @@ internal fun DoubleViewportSpread(
                 )
             },
             backgroundColor = backgroundColor,
-            onScriptsLoaded = { scriptsLoaded.value = true }
+            onScriptsLoaded = { scriptsLoaded.value = true },
+            reverseScrollDirection = reverseScrollDirection
         )
     }
 }
 
-internal class DoubleSpreadState(
+internal class SingleSpreadState(
     val htmlData: String,
     val publicationBaseUrl: AbsoluteUrl,
     val webViewClient: WebViewClient,
-    val spread: DoubleViewportSpread,
+    val spread: SingleViewportSpread,
     val fit: State<Fit>,
     val displayArea: State<DisplayArea>,
 ) {
-    val left: AbsoluteUrl? =
-        spread.leftPage?.let { publicationBaseUrl.resolve(it.href) }
-
-    val right: AbsoluteUrl? =
-        spread.rightPage?.let { publicationBaseUrl.resolve(it.href) }
+    val url: AbsoluteUrl =
+        publicationBaseUrl.resolve(spread.page.href)
 }

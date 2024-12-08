@@ -38,9 +38,8 @@ internal class WebViewServer(
     private val container: Container<Resource>,
     private val mediaTypes: Map<Url, MediaType>,
     private val errorPage: RelativeUrl,
-    private val injectableScript: RelativeUrl,
+    private val htmlInjector: (Resource, MediaType) -> Resource,
     servedAssets: List<String>,
-    private val disableSelection: Boolean,
     private val onResourceLoadFailed: (Url, ReadError) -> Unit,
 ) {
     companion object {
@@ -104,12 +103,7 @@ internal class WebViewServer(
         mediaType
             ?.takeIf { it.isHtml }
             ?.let {
-                resource = resource.injectHtml(
-                    injectableScript = injectableScript,
-                    mediaType = it,
-                    assetsBaseHref = assetsBaseHref,
-                    disableSelection = disableSelection
-                )
+                resource = htmlInjector(resource, it)
             }
 
         val headers = mutableMapOf(

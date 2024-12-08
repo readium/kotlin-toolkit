@@ -29,6 +29,8 @@ import org.readium.navigator.web.preferences.FixedWebSettings
 import org.readium.navigator.web.util.HyperlinkProcessor
 import org.readium.navigator.web.util.WebViewClient
 import org.readium.navigator.web.util.WebViewServer
+import org.readium.navigator.web.util.WebViewServer.Companion.assetsBaseHref
+import org.readium.navigator.web.util.injectHtml
 import org.readium.r2.navigator.SimpleOverflow
 import org.readium.r2.navigator.preferences.Axis
 import org.readium.r2.navigator.preferences.Fit
@@ -68,15 +70,23 @@ public class FixedWebRenditionState internal constructor(
     internal val hyperlinkProcessor =
         HyperlinkProcessor(container)
 
+    private val htmlInjector: (Resource, MediaType) -> Resource = { resource, mediaType ->
+        resource.injectHtml(
+            charset = mediaType.charset,
+            injectableScript = RelativeUrl("readium/navigators/web/fixed-injectable-script.js")!!,
+            assetsBaseHref = assetsBaseHref,
+            disableSelection = isRestricted
+        )
+    }
+
     private val webViewServer =
         WebViewServer(
             application = application,
             container = container,
             mediaTypes = resourceMediaTypes,
             errorPage = RelativeUrl("readium/navigators/web/error.xhtml")!!,
-            injectableScript = RelativeUrl("readium/navigators/web/fixed-injectable-script.js")!!,
+            htmlInjector = htmlInjector,
             servedAssets = listOf("readium/.*"),
-            disableSelection = isRestricted,
             onResourceLoadFailed = { _, _ -> }
         )
 

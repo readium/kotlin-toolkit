@@ -54,6 +54,8 @@ import org.readium.navigator.demo.preferences.UserPreferences
 import org.readium.navigator.demo.util.launchWebBrowser
 import org.readium.navigator.web.FixedWebRendition
 import org.readium.navigator.web.FixedWebRenditionState
+import org.readium.navigator.web.ReflowableWebRendition
+import org.readium.navigator.web.ReflowableWebRenditionState
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.util.AbsoluteUrl
@@ -66,7 +68,7 @@ data class ReaderState<L : Location, N : NavigationController<L, *>>(
     val renditionState: RenditionState<N>,
     val preferencesEditor: PreferencesEditor<*, *>,
     val locatorAdapter: LocatorAdapter<L, *>,
-    val onNavigatorCreated: (N) -> Unit
+    val onNavigatorCreated: (N) -> Unit,
 ) {
 
     fun close() {
@@ -79,7 +81,7 @@ data class ReaderState<L : Location, N : NavigationController<L, *>>(
 @Composable
 fun <L : Location, N : NavigationController<L, *>> Reader(
     readerState: ReaderState<L, N>,
-    fullScreenState: MutableState<Boolean>
+    fullScreenState: MutableState<Boolean>,
 ) {
     val showPreferences = remember { mutableStateOf(false) }
     val preferencesSheetState = rememberModalBottomSheetState()
@@ -159,7 +161,10 @@ fun <L : Location, N : NavigationController<L, *>> Reader(
 
                 defaultHyperlinkListener(
                     controller = controllerNow,
-                    shouldFollowReadingOrderLink = { _, _ -> onFollowingLink(); true },
+                    shouldFollowReadingOrderLink = { _, _ ->
+                        onFollowingLink()
+                        true
+                    },
                     onExternalLinkActivated = { url, _ -> launchWebBrowser(context, url.toUri()) }
                 )
             }
@@ -167,6 +172,14 @@ fun <L : Location, N : NavigationController<L, *>> Reader(
         when (readerState.renditionState) {
             is FixedWebRenditionState -> {
                 FixedWebRendition(
+                    modifier = Modifier.fillMaxSize(),
+                    state = readerState.renditionState,
+                    inputListener = inputListener,
+                    hyperlinkListener = hyperlinkListener
+                )
+            }
+            is ReflowableWebRenditionState -> {
+                ReflowableWebRendition(
                     modifier = Modifier.fillMaxSize(),
                     state = readerState.renditionState,
                     inputListener = inputListener,
@@ -189,7 +202,7 @@ fun <L : Location, N : NavigationController<L, *>> Reader(
 private fun TopBar(
     modifier: Modifier,
     visible: Boolean,
-    onPreferencesActivated: () -> Unit
+    onPreferencesActivated: () -> Unit,
 ) {
     AnimatedVisibility(
         modifier = modifier,

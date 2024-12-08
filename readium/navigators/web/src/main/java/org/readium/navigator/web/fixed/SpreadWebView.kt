@@ -4,7 +4,7 @@
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.navigator.web.spread
+package org.readium.navigator.web.fixed
 
 import android.annotation.SuppressLint
 import android.view.View
@@ -18,10 +18,12 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.DpOffset
 import org.readium.navigator.common.TapEvent
+import org.readium.navigator.web.gestures.scrollable2D
 import org.readium.navigator.web.util.WebViewClient
 import org.readium.navigator.web.webapi.GesturesApi
 import org.readium.navigator.web.webapi.GesturesListener
 import org.readium.navigator.web.webapi.InitializationApi
+import org.readium.navigator.web.webview.RelaxedWebView
 import org.readium.navigator.web.webview.WebView
 import org.readium.navigator.web.webview.WebViewScrollable2DState
 import org.readium.navigator.web.webview.WebViewState
@@ -38,13 +40,14 @@ internal fun SpreadWebView(
     onTap: (TapEvent) -> Unit,
     onLinkActivated: (AbsoluteUrl, String) -> Unit,
     backgroundColor: Color,
+    reverseScrollDirection: Boolean,
 ) {
     val scrollableState = remember { WebViewScrollable2DState() }
 
     val spreadNestedScrollConnection = SpreadNestedScrollConnection(scrollableState)
 
     val initializationApi = remember(onScriptsLoaded) {
-        InitializationApi(onScriptsLoaded)
+        InitializationApi(onScriptsLoaded, {})
     }
 
     val gesturesApi = remember(onTap) {
@@ -66,13 +69,18 @@ internal fun SpreadWebView(
     }
 
     WebView(
-        modifier = Modifier
-            .fillMaxSize()
-            .nestedScroll(spreadNestedScrollConnection),
         state = state,
+        factory = { RelaxedWebView(it) },
+        modifier = Modifier
+            .nestedScroll(spreadNestedScrollConnection)
+            .scrollable2D(
+                state = scrollableState,
+                reverseDirection = reverseScrollDirection,
+            )
+            .fillMaxSize(),
         client = client,
-        scrollableState = scrollableState,
         onCreated = { webview ->
+            scrollableState.webView = webview
             webview.settings.javaScriptEnabled = true
             webview.settings.setSupportZoom(true)
             webview.settings.builtInZoomControls = true
@@ -83,6 +91,9 @@ internal fun SpreadWebView(
             webview.isHorizontalScrollBarEnabled = false
             webview.setBackgroundColor(backgroundColor.toArgb())
             webview.setLayerType(View.LAYER_TYPE_HARDWARE, null)
+        },
+        onDispose = {
+            scrollableState.webView = null
         }
     )
 }

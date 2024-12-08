@@ -4,17 +4,16 @@
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.navigator.web.spread
+package org.readium.navigator.web.reflowable
 
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.unit.Velocity
-import kotlin.math.abs
 import org.readium.navigator.web.webview.RelaxedWebView
 import org.readium.navigator.web.webview.WebViewScrollable2DState
 
-internal class SpreadNestedScrollConnection(
+internal class ReflowableNestedScrollConnection(
     private val webviewState: WebViewScrollable2DState,
 ) : NestedScrollConnection {
 
@@ -30,16 +29,11 @@ internal class SpreadNestedScrollConnection(
             snapWebview(webViewNow)
         }
 
-        val isGestureHorizontal =
-            (abs(available.y) / abs(available.x)) < 0.58 // tan(Pi/6)
+        return Offset(0f, available.y)
+    }
 
-        return if (webViewCannotScrollHorizontally && isGestureHorizontal) {
-            // If the gesture is mostly horizontal and the spread has nothing to consume horizontally,
-            // we consume everything vertically.
-            Offset(0f, available.y)
-        } else {
-            Offset.Zero
-        }
+    override suspend fun onPreFling(available: Velocity): Velocity {
+        return Velocity(0f, available.y)
     }
 
     override suspend fun onPostFling(consumed: Velocity, available: Velocity): Velocity {

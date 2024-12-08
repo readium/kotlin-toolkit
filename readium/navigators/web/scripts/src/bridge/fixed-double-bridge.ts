@@ -1,6 +1,6 @@
 import { Insets, Size } from "../common/types"
 import { DoubleAreaManager } from "../fixed/double-area-manager"
-import { GesturesBridge, BridgeGesturesAdapter } from "./fixed-gestures-bridge"
+import { GesturesBridge, BridgeGesturesAdapter } from "./all-gestures-bridge"
 import { Fit } from "../util/fit"
 
 export class FixedDoubleBridge {

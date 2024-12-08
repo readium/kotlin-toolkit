@@ -30,7 +30,7 @@ fun Scaffold(
     fullscreenState: State<Boolean>,
     insetsController: WindowInsetsControllerCompat,
     snackbarHostState: SnackbarHostState,
-    content: @Composable () -> Unit
+    content: @Composable () -> Unit,
 ) {
     Fullscreenable(
         fullscreenState = fullscreenState,
@@ -56,7 +56,7 @@ fun MainContent(
     viewmodel: DemoViewModel,
     launchBookSelection: () -> Unit,
     snackbarHostState: SnackbarHostState,
-    fullscreenState: MutableState<Boolean>
+    fullscreenState: MutableState<Boolean>,
 ) {
     val viewmodelState = viewmodel.state.collectAsState().value
 

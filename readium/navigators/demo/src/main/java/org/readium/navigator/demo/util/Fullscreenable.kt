@@ -19,7 +19,7 @@ import androidx.core.view.WindowInsetsControllerCompat
 fun Fullscreenable(
     fullscreenState: State<Boolean>,
     insetsController: WindowInsetsControllerCompat,
-    content: @Composable () -> Unit
+    content: @Composable () -> Unit,
 ) {
     insetsController.systemBarsBehavior =
         WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE

@@ -39,15 +39,15 @@ private class WebViewDeltaDispatcher {
         val maxX = webViewNow.maxScrollX
         val maxY = webViewNow.maxScrollY
 
-        // Consume slightly more than delta si we have to because
+        // Consume slightly more than delta if we have to because
         // we don't want the pager to consume any rounding error
-        val newX = (currentX - sign(delta.x) * ceil(abs(delta.x))).toInt().coerceIn(0, maxX)
-        val newY = (currentY - sign(delta.y) * ceil(abs(delta.y))).toInt().coerceIn(0, maxY)
+        val newX = (currentX + sign(delta.x) * ceil(abs(delta.x))).toInt().coerceIn(0, maxX)
+        val newY = (currentY + sign(delta.y) * ceil(abs(delta.y))).toInt().coerceIn(0, maxY)
         webViewNow.scrollTo(newX, newY)
 
         // Fake that we never consume more than delta
-        val consumedX = (currentX - webViewNow.scrollX).toFloat().coerceAbsAtMost(abs(delta.x))
-        val consumedY = (currentY - webViewNow.scrollY).toFloat().coerceAbsAtMost(abs(delta.y))
+        val consumedX = -(currentX - webViewNow.scrollX).toFloat().coerceAbsAtMost(abs(delta.x))
+        val consumedY = -(currentY - webViewNow.scrollY).toFloat().coerceAbsAtMost(abs(delta.y))
         val consumed = Offset(consumedX, consumedY)
 
         return consumed

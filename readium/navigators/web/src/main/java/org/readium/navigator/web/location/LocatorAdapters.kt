@@ -39,14 +39,14 @@ public class ReflowableWebLocatorAdapter internal constructor(
         publication.locatorFromLink(Link(href))!!
             .copy(
                 text = Locator.Text(
-                    after = textAfter,
-                    before = textBefore
+                    // after = textAfter,
+                    // before = textBefore
                 )
             )
             .copyWithLocations(
-                progression = progression,
-                position = position,
-                otherLocations = buildMap { cssSelector?.let { put("cssSelector", cssSelector) } }
+                // progression = progression,
+                // position = position,
+                // otherLocations = buildMap { cssSelector?.let { put("cssSelector", cssSelector) } }
             )
 
     public override fun Locator.toGoLocation(): ReflowableWebGoLocation =

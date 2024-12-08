@@ -12,6 +12,7 @@ import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.unit.Velocity
 import timber.log.Timber
 
+@Suppress("unused")
 internal class LoggingNestedScrollConnection(
     private val delegateNestedScrollConnection: NestedScrollConnection,
 ) : NestedScrollConnection {

@@ -10,6 +10,7 @@ import androidx.compose.foundation.gestures.ScrollScope
 import androidx.compose.foundation.gestures.TargetedFlingBehavior
 import timber.log.Timber
 
+@Suppress("unused")
 internal class LoggingTargetedFlingBehavior(
     private val delegate: TargetedFlingBehavior,
 ) : TargetedFlingBehavior {

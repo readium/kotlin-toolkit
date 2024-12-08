@@ -20,13 +20,12 @@
  * limitations under the License.
  */
 
+@file:Suppress("unused")
+
 package org.readium.navigator.web.gestures
 
 import androidx.compose.foundation.MutatePriority
 import androidx.compose.foundation.MutatorMutex
-import androidx.compose.foundation.gestures.ScrollableState
-import androidx.compose.foundation.gestures.animateScrollBy
-import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -35,23 +34,12 @@ import androidx.compose.ui.geometry.Offset
 import kotlinx.coroutines.coroutineScope
 
 /**
- * An object representing something that can be scrolled. This interface is implemented by states
- * of scrollable containers such as [androidx.compose.foundation.lazy.LazyListState] or
- * [androidx.compose.foundation.ScrollState] in order to provide low-level scrolling control via
- * [scroll], as well as allowing for higher-level scrolling functions like
- * [animateScrollBy] to be implemented as extension
- * functions on [ScrollableState].
- *
- * Subclasses may also have their own methods that are specific to their interaction paradigm, such
- * as [androidx.compose.foundation.lazy.LazyListState.scrollToItem].
- *
- * @see androidx.compose.foundation.gestures.animateScrollBy
- * @see androidx.compose.foundation.gestures.scrollable
+ * An object representing something that can be scrolled.
  */
 internal interface Scrollable2DState {
     /**
      * Call this function to take control of scrolling and gain the ability to send scroll events
-     * via [ScrollScope.scrollBy]. All actions that change the logical scroll position must be
+     * via [Scroll2DScope.scrollBy]. All actions that change the logical scroll position must be
      * performed within a [scroll] block (even if they don't call any other methods on this
      * object) in order to guarantee that mutual exclusion is enforced.
      *
@@ -71,7 +59,7 @@ internal interface Scrollable2DState {
      * This method will also ignore `reverseDirection` and other parameters set in scrollable.
      *
      * This method is used internally for nested scrolling dispatch and other low level
-     * operations, allowing implementers of [ScrollableState] influence the consumption as suits
+     * operations, allowing implementers of [Scrollable2DState] influence the consumption as suits
      * them. Manually dispatching delta via this method will likely result in a bad user experience,
      * you must prefer [scroll] method over this one.
      *
@@ -82,8 +70,8 @@ internal interface Scrollable2DState {
     fun dispatchRawDelta(delta: Offset): Offset
 
     /**
-     * Whether this [ScrollableState] is currently scrolling by gesture, fling or programmatically or
-     * not.
+     * Whether this [Scrollable2DState] is currently scrolling by gesture, fling or programmatically
+     * or not.
      */
     val isScrollInProgress: Boolean
 
@@ -101,14 +89,14 @@ internal interface Scrollable2DState {
 }
 
 /**
- * Default implementation of [ScrollableState] interface that contains necessary information about the
- * ongoing fling and provides smooth scrolling capabilities.
+ * Default implementation of [Scrollable2DState] interface that contains necessary information about
+ * the ongoing fling and provides smooth scrolling capabilities.
  *
- * This is the simplest way to set up a [scrollable] modifier. When constructing this
- * [ScrollableState], you must provide a [consumeScrollDelta] lambda, which will be invoked whenever
- * scroll happens (by gesture input, by smooth scrolling, by flinging or nested scroll) with the
- * delta in pixels. The amount of scrolling delta consumed must be returned from this lambda to
- * ensure proper nested scrolling behaviour.
+ * This is the simplest way to set up a [scrollable2D] modifier. When constructing this
+ * [Scrollable2DState], you must provide a [consumeScrollDelta] lambda, which will be invoked
+ * whenever scroll happens (by gesture input, by smooth scrolling, by flinging or nested scroll)
+ * with the delta in pixels. The amount of scrolling delta consumed must be returned from this
+ * lambda to ensure proper nested scrolling behaviour.
  *
  * @param consumeScrollDelta callback invoked when drag/fling/smooth scrolling occurs. The
  * callback receives the delta in pixels. Callers should update their state in this lambda and
@@ -119,11 +107,11 @@ internal fun Scrollable2DState(consumeScrollDelta: (Offset) -> Offset): Scrollab
 }
 
 /**
- * Create and remember the default implementation of [ScrollableState] interface that contains
+ * Create and remember the default implementation of [Scrollable2DState] interface that contains
  * necessary information about the ongoing fling and provides smooth scrolling capabilities.
  *
- * This is the simplest way to set up a [scrollable] modifier. When constructing this
- * [ScrollableState], you must provide a [consumeScrollDelta] lambda, which will be invoked whenever
+ * This is the simplest way to set up a [scrollable2D] modifier. When constructing this
+ * [Scrollable2DState], you must provide a [consumeScrollDelta] lambda, which will be invoked whenever
  * scroll happens (by gesture input, by smooth scrolling, by flinging or nested scroll) with the
  * delta in pixels. The amount of scrolling delta consumed must be returned from this lambda to
  * ensure proper nested scrolling behaviour.

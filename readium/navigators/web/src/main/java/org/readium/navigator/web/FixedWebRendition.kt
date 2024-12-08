@@ -6,6 +6,7 @@
 
 package org.readium.navigator.web
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.displayCutout
@@ -30,14 +31,14 @@ import org.readium.navigator.common.NullInputListener
 import org.readium.navigator.common.TapContext
 import org.readium.navigator.common.defaultHyperlinkListener
 import org.readium.navigator.common.defaultInputListener
+import org.readium.navigator.web.fixed.DoubleSpreadState
+import org.readium.navigator.web.fixed.DoubleViewportSpread
+import org.readium.navigator.web.fixed.SingleSpreadState
+import org.readium.navigator.web.fixed.SingleViewportSpread
 import org.readium.navigator.web.layout.DoubleViewportSpread
 import org.readium.navigator.web.layout.SingleViewportSpread
 import org.readium.navigator.web.location.FixedWebLocation
 import org.readium.navigator.web.pager.NavigatorPager
-import org.readium.navigator.web.spread.DoubleSpreadState
-import org.readium.navigator.web.spread.DoubleViewportSpread
-import org.readium.navigator.web.spread.SingleSpreadState
-import org.readium.navigator.web.spread.SingleViewportSpread
 import org.readium.navigator.web.util.AbsolutePaddingValues
 import org.readium.navigator.web.util.DisplayArea
 import org.readium.navigator.web.util.WebViewServer
@@ -47,6 +48,7 @@ import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.RelativeUrl
 import org.readium.r2.shared.util.Url
 
+@SuppressLint("UnusedBoxWithConstraintsScope")
 @ExperimentalReadiumApi
 @Composable
 public fun FixedWebRendition(
@@ -115,7 +117,8 @@ public fun FixedWebRendition(
                             }
                         },
                         state = spreadState,
-                        backgroundColor = backgroundColor
+                        backgroundColor = backgroundColor,
+                        reverseScrollDirection = !reverseLayout
                     )
                 }
                 is DoubleViewportSpread -> {
@@ -138,7 +141,8 @@ public fun FixedWebRendition(
                             }
                         },
                         state = spreadState,
-                        backgroundColor = backgroundColor
+                        backgroundColor = backgroundColor,
+                        reverseScrollDirection = !reverseLayout
                     )
                 }
             }

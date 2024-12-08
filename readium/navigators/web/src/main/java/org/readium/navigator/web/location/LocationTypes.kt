@@ -14,21 +14,21 @@ import org.readium.r2.shared.util.Url
 @ExperimentalReadiumApi
 public data class ReflowableWebGoLocation(
     val href: Url,
-    val progression: Double?,
-    val cssSelector: String?,
-    val textBefore: String?,
-    val textAfter: String?,
-    val position: Int?,
+    val progression: Double? = null,
+    val cssSelector: String? = null,
+    val textBefore: String? = null,
+    val textAfter: String? = null,
+    val position: Int? = null,
 ) : GoLocation
 
 @ExperimentalReadiumApi
 public data class ReflowableWebLocation(
     override val href: Url,
-    val progression: Double,
-    val cssSelector: String?,
-    val textBefore: String?,
-    val textAfter: String?,
-    val position: Int?,
+    // val progression: Double,
+    // val cssSelector: String?,
+    // val textBefore: String?,
+    // val textAfter: String?,
+    // val position: Int?
 ) : Location
 
 @ExperimentalReadiumApi

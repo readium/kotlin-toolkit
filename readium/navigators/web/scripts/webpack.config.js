@@ -8,6 +8,7 @@ module.exports = {
     "fixed-single-script": "./src/index-fixed-single.ts",
     "fixed-double-script": "./src/index-fixed-double.ts",
     "fixed-injectable-script": "./src/index-fixed-injectable.ts",
+    "reflowable-injectable-script": "./src/index-reflowable-injectable.ts",
   },
   resolve: {
     // Add '.ts' and '.tsx' as resolvable extensions.

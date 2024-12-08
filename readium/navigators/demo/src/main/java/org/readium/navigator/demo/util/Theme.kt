@@ -15,7 +15,7 @@ import androidx.compose.runtime.Composable
 @Composable
 fun Theme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    content: @Composable () -> Unit
+    content: @Composable () -> Unit,
 ) {
     val colors = if (darkTheme) {
         darkColorScheme()

@@ -20,6 +20,12 @@ internal class RelaxedWebView(context: Context) : WebView(context) {
     val maxScrollY: Int get() =
         verticalScrollRange - verticalScrollExtent
 
+    val canScrollRight: Boolean get() =
+        scrollX < maxScrollY
+
+    val canScrollLeft: Boolean get() =
+        scrollX > 0
+
     val verticalScrollRange: Int get() =
         computeVerticalScrollRange()
 

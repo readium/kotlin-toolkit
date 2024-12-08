@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+@file:Suppress("unused")
+
 package org.readium.navigator.web.gestures
 
 import androidx.compose.foundation.gestures.Orientation
@@ -39,7 +41,8 @@ import kotlin.math.sign
 /**
  * A Gesture detector that waits for pointer down and touch slop in the direction specified by
  * [orientationLock] and then calls [onDrag] for each drag event.
- * It follows the touch slop detection of [awaitTouchSlopOrCancellation] but will consume the
+ * It follows the touch slop detection of
+ * [androidx.compose.foundation.gestures.awaitTouchSlopOrCancellation] but will consume the
  * position change automatically once the touch slop has been crossed, the amount of drag over
  * the touch slop is reported as the first drag event [onDrag] after the slop is crossed.
  * If [shouldAwaitTouchSlop] returns true the touch slop recognition phase will be ignored
@@ -74,13 +77,6 @@ import kotlin.math.sign
  * and drag events will be dispatched if present in either direction.
  * @param onDrag A lambda to be called for each delta event in the gesture. It contains information
  * about the [PointerInputChange] and the movement offset.
- *
- * Example Usage:
- * @sample androidx.compose.foundation.samples.DetectDragGesturesSample
- *
- * @see detectVerticalDragGestures
- * @see detectHorizontalDragGestures
- * @see detectDragGesturesAfterLongPress to detect gestures after long press
  */
 internal suspend fun PointerInputScope.detectDragGestures(
     onDragStart: (change: PointerInputChange, initialDelta: Offset) -> Unit,
@@ -232,9 +228,10 @@ private suspend inline fun AwaitPointerEventScope.awaitDragOrUp(
  * position change, pointer slop will not have been considered detected and the detection will
  * continue or, if it is consumed, the [PointerInputChange] that was consumed will be returned.
  *
- * This works with [awaitTouchSlopOrCancellation] for the other axis to ensure that only horizontal
+ * This works with [androidx.compose.foundation.gestures.awaitTouchSlopOrCancellation]
+ * for the other axis to ensure that only horizontal
  * or vertical dragging is done, but not both. It also works for dragging in two ways when using
- * [awaitTouchSlopOrCancellation]
+ * [androidx.compose.foundation.gestures.awaitTouchSlopOrCancellation]
  *
  * @return The [PointerInputChange] of the event that was consumed in [onPointerSlopReached] or
  * `null` if all pointers are raised or the position change was consumed by another gesture

@@ -43,7 +43,7 @@ import org.readium.r2.shared.ExperimentalReadiumApi
 @Composable
 fun <P : Preferences<P>, S : Settings, E : PreferencesEditor<P, S>> UserPreferences(
     editor: E,
-    title: String
+    title: String,
 ) {
     val scrollState = rememberScrollState()
 
@@ -97,7 +97,7 @@ private fun FixedLayoutUserPreferences(
     fit: EnumPreference<Fit>? = null,
     spreads: Preference<Boolean>? = null,
     offsetFirstPage: Preference<Boolean>? = null,
-    pageSpacing: RangePreference<Double>? = null
+    pageSpacing: RangePreference<Double>? = null,
 ) {
     if (readingProgression != null) {
         ButtonGroupItem(

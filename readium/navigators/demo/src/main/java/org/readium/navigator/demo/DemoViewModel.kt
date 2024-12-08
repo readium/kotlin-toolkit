@@ -20,7 +20,7 @@ import org.readium.r2.shared.util.toDebugDescription
 import timber.log.Timber
 
 class DemoViewModel(
-    application: Application
+    application: Application,
 ) : AndroidViewModel(application) {
 
     sealed interface State {
@@ -32,11 +32,11 @@ class DemoViewModel(
             State
 
         data class Error(
-            val error: org.readium.r2.shared.util.Error
+            val error: org.readium.r2.shared.util.Error,
         ) : State
 
         data class Reader(
-            val readerState: ReaderState<*, *>
+            val readerState: ReaderState<*, *>,
         ) : State
     }
 

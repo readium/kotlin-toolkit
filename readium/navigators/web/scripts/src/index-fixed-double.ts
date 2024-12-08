@@ -8,9 +8,9 @@
  *  Script loaded by the single area HTML wrapper for fixed layout resources.
  */
 
-import { GesturesBridge } from "./bridge/fixed-gestures-bridge"
+import { GesturesBridge } from "./bridge/all-gestures-bridge"
 import { FixedDoubleBridge } from "./bridge/fixed-double-bridge"
-import { InitializationBridge } from "./bridge/fixed-initialization-bridge"
+import { InitializationBridge } from "./bridge/all-initialization-bridge"
 
 declare global {
   interface Window {
@@ -37,3 +37,7 @@ Window.prototype.doubleArea = new FixedDoubleBridge(
 )
 
 window.initialization.onScriptsLoaded()
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+window.addEventListener("load", (event) => {
+  window.initialization.onDocumentLoaded()
+})

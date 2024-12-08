@@ -41,7 +41,7 @@ import org.readium.r2.navigator.preferences.toggle
 fun <T> ButtonGroupItem(
     title: String,
     preference: EnumPreference<T>,
-    formatValue: (T) -> String
+    formatValue: (T) -> String,
 ) {
     ButtonGroupItem(
         title = title,
@@ -74,7 +74,7 @@ private fun <T> ButtonGroupItem(
     selectedOption: T?,
     formatValue: (T) -> String,
     onClear: (() -> Unit)?,
-    onSelectedOptionChanged: (T) -> Unit
+    onSelectedOptionChanged: (T) -> Unit,
 ) {
     Item(title, isActive = isActive, onClear = onClear) {
         ToggleButtonGroup(
@@ -97,7 +97,7 @@ private fun <T> ButtonGroupItem(
 @Composable
 fun <T : Comparable<T>> StepperItem(
     title: String,
-    preference: RangePreference<T>
+    preference: RangePreference<T>,
 ) {
     StepperItem(
         title = title,
@@ -122,7 +122,7 @@ private fun <T> StepperItem(
     formatValue: (T) -> String,
     onDecrement: () -> Unit,
     onIncrement: () -> Unit,
-    onClear: (() -> Unit)?
+    onClear: (() -> Unit)?,
 ) {
     Item(title, isActive = isActive, onClear = onClear) {
         Row(
@@ -158,7 +158,7 @@ private fun <T> StepperItem(
 @Composable
 fun SwitchItem(
     title: String,
-    preference: Preference<Boolean>
+    preference: Preference<Boolean>,
 ) {
     SwitchItem(
         title = title,
@@ -181,7 +181,7 @@ private fun SwitchItem(
     isActive: Boolean,
     onCheckedChange: (Boolean) -> Unit,
     onToggle: () -> Unit,
-    onClear: (() -> Unit)?
+    onClear: (() -> Unit)?,
 ) {
     Item(
         title = title,
@@ -202,7 +202,7 @@ private fun Item(
     isActive: Boolean = true,
     onClick: (() -> Unit)? = null,
     onClear: (() -> Unit)? = null,
-    content: @Composable () -> Unit
+    content: @Composable () -> Unit,
 ) {
     ListItem(
         modifier =

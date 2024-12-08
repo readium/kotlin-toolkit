@@ -25,7 +25,6 @@ package org.readium.navigator.web.gestures
 import androidx.compose.animation.core.AnimationState
 import androidx.compose.animation.core.AnimationVector2D
 import androidx.compose.animation.core.DecayAnimationSpec
-import androidx.compose.animation.core.TwoWayConverter
 import androidx.compose.animation.core.VectorConverter
 import androidx.compose.animation.core.animate
 import androidx.compose.animation.core.animateDecay
@@ -35,10 +34,9 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.MutatePriority
 import androidx.compose.foundation.OverscrollEffect
 import androidx.compose.foundation.gestures.FlingBehavior
-import androidx.compose.foundation.gestures.LocalBringIntoViewSpec
 import androidx.compose.foundation.gestures.Orientation
-import androidx.compose.foundation.gestures.ScrollableState
-import androidx.compose.foundation.gestures.draggable
+import androidx.compose.foundation.gestures.ScrollableDefaults
+import androidx.compose.foundation.gestures.draggable2D
 import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.runtime.Composable
@@ -86,27 +84,29 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 /**
- * Configure touch scrolling and flinging for the UI element in a single [Orientation].
+ * Configure touch scrolling and flinging for the UI element in one or both [Orientation].
  *
- * Users should update their state themselves using default [ScrollableState] and its
- * `consumeScrollDelta` callback or by implementing [ScrollableState] interface manually and reflect
+ * Users should update their state themselves using default [Scrollable2DState] and its
+ * `consumeScrollDelta` callback or by implementing [Scrollable2DState] interface manually and reflect
  * their own state in UI when using this component.
  *
  * If you don't need to have fling or nested scroll support, but want to make component simply
- * draggable, consider using [draggable].
+ * draggable, consider using [draggable2D].
  *
- * @sample androidx.compose.foundation.samples.ScrollableSample
- *
- * @param state [ScrollableState] state of the scrollable. Defines how scroll events will be
+ * @param state [Scrollable2DState] state of the scrollable. Defines how scroll events will be
  * interpreted by the user land logic and contains useful information about on-going events.
- * @param orientation orientation of the scrolling
+ * @param orientation orientation of the scrolling or null for both orientations
  * @param enabled whether or not scrolling in enabled
  * @param reverseDirection reverse the direction of the scroll, so top to bottom scroll will
  * behave like bottom to top and left to right will behave like right to left.
  * @param flingBehavior logic describing fling behavior when drag has finished with velocity. If
- * `null`, default from [ScrollableDefaults.flingBehavior] will be used.
+ * `null`, default from [Scrollable2DDefaults.flingBehavior] will be used.
  * @param interactionSource [MutableInteractionSource] that will be used to emit
  * drag events when this scrollable is being dragged.
+ *
+ * WARNING: Unlike the scrollable modifier and to make it more predictable, nested scroll is not
+ * triggered while performing fling: preScroll and postScroll connection' methods do not get called
+ * during the fling, only preFling beforehand and postFling afterwards.
  */
 @Stable
 @OptIn(ExperimentalFoundationApi::class)
@@ -116,34 +116,34 @@ internal fun Modifier.scrollable2D(
     reverseDirection: Boolean = false,
     flingBehavior: Fling2DBehavior? = null,
     interactionSource: MutableInteractionSource? = null,
+    orientation: Orientation? = null,
 ): Modifier = scrollable2D(
     state = state,
     enabled = enabled,
     reverseDirection = reverseDirection,
     flingBehavior = flingBehavior,
     interactionSource = interactionSource,
-    overscrollEffect = null
+    overscrollEffect = null,
+    orientation = orientation
 )
 
 /**
- * Configure touch scrolling and flinging for the UI element in a single [Orientation].
+ * Configure touch scrolling and flinging for the UI element in one or both [Orientation].
  *
- * Users should update their state themselves using default [ScrollableState] and its
- * `consumeScrollDelta` callback or by implementing [ScrollableState] interface manually and reflect
+ * Users should update their state themselves using default [Scrollable2DState] and its
+ * `consumeScrollDelta` callback or by implementing [Scrollable2DState] interface manually and reflect
  * their own state in UI when using this component.
  *
  * If you don't need to have fling or nested scroll support, but want to make component simply
- * draggable, consider using [draggable].
+ * draggable, consider using [draggable2D].
  *
  * This overload provides the access to [OverscrollEffect] that defines the behaviour of the
- * over scrolling logic. Consider using [ScrollableDefaults.overscrollEffect] for the platform
+ * over scrolling logic. Consider using [Scrollable2DDefaults.overscrollEffect] for the platform
  * look-and-feel.
  *
- * @sample androidx.compose.foundation.samples.ScrollableSample
- *
- * @param state [ScrollableState] state of the scrollable. Defines how scroll events will be
+ * @param state [Scrollable2DState] state of the scrollable. Defines how scroll events will be
  * interpreted by the user land logic and contains useful information about on-going events.
- * @param orientation orientation of the scrolling
+ * @param orientation orientation of the scrolling or null for both orientations.
  * @param overscrollEffect effect to which the deltas will be fed when the scrollable have
  * some scrolling delta left. Pass `null` for no overscroll. If you pass an effect you should
  * also apply [androidx.compose.foundation.overscroll] modifier.
@@ -151,16 +151,9 @@ internal fun Modifier.scrollable2D(
  * @param reverseDirection reverse the direction of the scroll, so top to bottom scroll will
  * behave like bottom to top and left to right will behave like right to left.
  * @param flingBehavior logic describing fling behavior when drag has finished with velocity. If
- * `null`, default from [ScrollableDefaults.flingBehavior] will be used.
+ * `null`, default from [Scrollable2DDefaults.flingBehavior] will be used.
  * @param interactionSource [MutableInteractionSource] that will be used to emit
  * drag events when this scrollable is being dragged.
- * @param bringIntoViewSpec The configuration that this scrollable should use to perform
- * scrolling when scroll requests are received from the focus system. If null is provided the
- * system will use the behavior provided by [LocalBringIntoViewSpec] which by default has a
- * platform dependent implementation.
- *
- * Note: This API is experimental as it brings support for some experimental features:
- * [overscrollEffect] and [bringIntoViewSpec].
  */
 @Stable
 @ExperimentalFoundationApi
@@ -171,13 +164,15 @@ internal fun Modifier.scrollable2D(
     reverseDirection: Boolean = false,
     flingBehavior: Fling2DBehavior? = null,
     interactionSource: MutableInteractionSource? = null,
+    orientation: Orientation? = null,
 ) = this then Scrollable2DElement(
     state,
     overscrollEffect,
     enabled,
     reverseDirection,
     flingBehavior,
-    interactionSource
+    interactionSource,
+    orientation
 )
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -188,6 +183,7 @@ private class Scrollable2DElement(
     val reverseDirection: Boolean,
     val flingBehavior: Fling2DBehavior?,
     val interactionSource: MutableInteractionSource?,
+    val orientation: Orientation?,
 ) : ModifierNodeElement<Scrollable2DNode>() {
     override fun create(): Scrollable2DNode {
         return Scrollable2DNode(
@@ -196,7 +192,8 @@ private class Scrollable2DElement(
             flingBehavior,
             enabled,
             reverseDirection,
-            interactionSource
+            interactionSource,
+            orientation
         )
     }
 
@@ -207,7 +204,8 @@ private class Scrollable2DElement(
             enabled,
             reverseDirection,
             flingBehavior,
-            interactionSource
+            interactionSource,
+            orientation
         )
     }
 
@@ -218,6 +216,7 @@ private class Scrollable2DElement(
         result = 31 * result + reverseDirection.hashCode()
         result = 31 * result + flingBehavior.hashCode()
         result = 31 * result + interactionSource.hashCode()
+        result = 31 * result + orientation.hashCode()
         return result
     }
 
@@ -232,6 +231,7 @@ private class Scrollable2DElement(
         if (reverseDirection != other.reverseDirection) return false
         if (flingBehavior != other.flingBehavior) return false
         if (interactionSource != other.interactionSource) return false
+        if (orientation != other.orientation) return false
 
         return true
     }
@@ -244,6 +244,7 @@ private class Scrollable2DElement(
         properties["reverseDirection"] = reverseDirection
         properties["flingBehavior"] = flingBehavior
         properties["interactionSource"] = interactionSource
+        properties["orientation"] = orientation
     }
 }
 
@@ -255,11 +256,12 @@ private class Scrollable2DNode(
     enabled: Boolean,
     reverseDirection: Boolean,
     interactionSource: MutableInteractionSource?,
+    private var orientation: Orientation?,
 ) : DragGestureNode(
     canDrag = CanDragCalculation,
     enabled = enabled,
     interactionSource = interactionSource,
-    orientationLock = null
+    orientation = orientation
 ),
     ObserverModifierNode,
     CompositionLocalConsumerModifierNode,
@@ -311,8 +313,14 @@ private class Scrollable2DNode(
         with(scrollingLogic) {
             scroll(scrollPriority = MutatePriority.UserInput) {
                 forEachDelta {
+                    val directionalDelta =
+                        when (orientation) {
+                            null -> it.delta
+                            Orientation.Horizontal -> it.delta.copy(y = 0f)
+                            Orientation.Vertical -> it.delta.copy(x = 0f)
+                        }
                     scrollByWithOverscroll(
-                        it.delta,
+                        directionalDelta,
                         source = NestedScrollSource.UserInput
                     )
                 }
@@ -323,8 +331,14 @@ private class Scrollable2DNode(
     override fun onDragStarted(startedPosition: Offset) {}
 
     override fun onDragStopped(velocity: Velocity) {
+        val directionalVelocity =
+            when (orientation) {
+                null -> velocity
+                Orientation.Horizontal -> velocity.copy(y = 0f)
+                Orientation.Vertical -> velocity.copy(x = 0f)
+            }
         nestedScrollDispatcher.coroutineScope.launch {
-            scrollingLogic.onDragStopped(velocity)
+            scrollingLogic.onDragStopped(directionalVelocity)
         }
     }
 
@@ -339,6 +353,7 @@ private class Scrollable2DNode(
         reverseDirection: Boolean,
         flingBehavior: Fling2DBehavior?,
         interactionSource: MutableInteractionSource?,
+        orientationLock: Orientation?,
     ) {
         var shouldInvalidateSemantics = false
         if (this.enabled != enabled) { // enabled changed
@@ -359,13 +374,14 @@ private class Scrollable2DNode(
 
         this.overscrollEffect = overscrollEffect
         this.flingBehavior = flingBehavior
+        this.orientation = orientationLock
 
         // update DragGestureNode
         update(
             canDrag = CanDragCalculation,
             enabled = enabled,
             interactionSource = interactionSource,
-            orientationLock = null,
+            orientationLock = orientationLock,
             shouldResetPointerInputHandling = resetPointerInputHandling
         )
 
@@ -453,8 +469,14 @@ private class Scrollable2DNode(
                 // to communicate the scroll amount to the UI thread.
                 coroutineScope.launch {
                     scrollingLogic.scroll(scrollPriority = MutatePriority.UserInput) {
+                        val directionalDelta =
+                            when (orientation) {
+                                null -> scrollAmount
+                                Orientation.Horizontal -> scrollAmount.copy(y = 0f)
+                                Orientation.Vertical -> scrollAmount.copy(x = 0f)
+                            }
                         scrollBy(
-                            offset = scrollAmount,
+                            offset = directionalDelta,
                             source = NestedScrollSource.UserInput
                         )
                     }
@@ -479,6 +501,16 @@ internal object Scrollable2DDefaults {
         return remember(flingSpec) {
             DefaultFling2DBehavior(flingSpec)
         }
+    }
+
+    /**
+     * Create and remember default [OverscrollEffect] that will be used for showing over scroll
+     * effects.
+     */
+    @Composable
+    @ExperimentalFoundationApi
+    fun overscrollEffect(): OverscrollEffect {
+        return ScrollableDefaults.overscrollEffect()
     }
 
     /**
@@ -628,27 +660,17 @@ internal class ScrollingLogic(
         // so that nested scroll is more predictable : ancestors do not get called while
         // this is performing fling, only preFling beforehand and postFling afterwards.
         scrollableState.scroll(scrollPriority = MutatePriority.Default) {
-            val scrollScope = this
-            val reverseScope = object : Scroll2DScope {
-                override fun scrollBy(pixels: Offset): Offset {
-                    return scrollScope.scrollBy(
-                        pixels = pixels.reverseIfNeeded()
-                    ).reverseIfNeeded()
-                }
-            }
-
-            with(reverseScope) {
-                with(flingBehavior) {
-                    result = performFling(available.reverseIfNeeded()).reverseIfNeeded()
-                }
+            with(flingBehavior) {
+                result = performFling(available.reverseIfNeeded()).reverseIfNeeded()
             }
         }
+
         return result
     }
 
     fun shouldScrollImmediately(): Boolean {
         return scrollableState.isScrollInProgress ||
-            overscrollEffect?.isInProgress ?: false
+            overscrollEffect?.isInProgress == true
     }
 
     /**
@@ -758,7 +780,7 @@ internal class DefaultFling2DBehavior(
                         lastAnimationCycleCount++
                         hasStarted = true
                     }
-                } catch (exception: CancellationException) {
+                } catch (_: CancellationException) {
                     velocityLeft = animationState.velocity
                 }
                 Velocity(velocityLeft.x, velocityLeft.y)
@@ -835,18 +857,3 @@ private suspend fun ScrollingLogic.semanticsScrollBy(offset: Offset): Offset {
     }
     return previousValue
 }
-
-/**
- * A type converter that converts a [Velocity] to a [AnimationVector2D], and vice versa.
- */
-internal val Velocity.Companion.VectorConverter: TwoWayConverter<Velocity, AnimationVector2D>
-    get() = VelocityToVector
-
-/**
- * A type converter that converts a [Velocity] to a [AnimationVector2D], and vice versa.
- */
-private val VelocityToVector: TwoWayConverter<Velocity, AnimationVector2D> =
-    TwoWayConverter(
-        convertToVector = { AnimationVector2D(it.x, it.y) },
-        convertFromVector = { Velocity(it.v1, it.v2) }
-    )

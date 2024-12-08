@@ -11,6 +11,7 @@ import android.webkit.WebView
 
 internal class InitializationApi(
     private val onScriptsLoadedDelegate: () -> Unit,
+    private val onDocumentLoadedDelegate: () -> Unit,
 ) {
 
     fun registerOnWebView(webView: WebView) {
@@ -20,5 +21,10 @@ internal class InitializationApi(
     @JavascriptInterface
     fun onScriptsLoaded() {
         onScriptsLoadedDelegate.invoke()
+    }
+
+    @JavascriptInterface
+    fun onDocumentLoaded() {
+        onDocumentLoadedDelegate.invoke()
     }
 }
