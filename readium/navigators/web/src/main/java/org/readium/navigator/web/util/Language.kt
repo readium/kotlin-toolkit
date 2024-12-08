@@ -4,8 +4,6 @@
  * available in the top-level LICENSE file of the project.
  */
 
-@file:Suppress("unused")
-
 package org.readium.navigator.web.util
 
 import org.readium.r2.shared.util.Language

@@ -25,6 +25,7 @@ import org.readium.navigator.web.layout.ReadingOrder
 import org.readium.navigator.web.location.ReflowableWebGoLocation
 import org.readium.navigator.web.location.ReflowableWebLocation
 import org.readium.navigator.web.preferences.ReflowableWebSettings
+import org.readium.navigator.web.preferences.update
 import org.readium.navigator.web.util.HyperlinkProcessor
 import org.readium.navigator.web.util.WebViewClient
 import org.readium.navigator.web.util.WebViewServer
@@ -66,13 +67,16 @@ public class ReflowableWebRenditionState internal constructor(
     internal val hyperlinkProcessor =
         HyperlinkProcessor(container)
 
-    internal val readiumCss: MutableState<ReadiumCss> =
-        mutableStateOf(
+    internal val readiumCss: State<ReadiumCss> =
+        derivedStateOf {
             ReadiumCss(
                 assetsBaseHref = assetsBaseHref,
                 readiumCssAssets = RelativeUrl("readium/navigators/web/readium-css/")!!
+            ).update(
+                settings = layoutDelegate.settings.value,
+                useReadiumCssFontSize = true
             )
-        )
+        }
 
     private val htmlInjector: (Resource, MediaType) -> Resource = { resource, mediaType ->
         resource.injectHtmlReflowable(

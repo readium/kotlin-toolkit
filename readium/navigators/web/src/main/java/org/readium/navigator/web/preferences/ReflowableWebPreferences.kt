@@ -7,27 +7,106 @@
 package org.readium.navigator.web.preferences
 
 import kotlinx.serialization.Serializable
-import org.readium.r2.navigator.preferences.Configurable
-import org.readium.r2.navigator.preferences.Fit
-import org.readium.r2.navigator.preferences.ReadingProgression
+import org.readium.navigator.common.Preferences
+import org.readium.r2.navigator.preferences.*
 import org.readium.r2.shared.ExperimentalReadiumApi
+import org.readium.r2.shared.util.Language
 
+/**
+ * Preferences for the Reflowable Web navigator.
+ *
+ * @param backgroundColor Default page background color.
+ * @param columnCount Number of reflowable columns to display.
+ * @param fontFamily Default typeface for the text.
+ * @param fontSize Base text font size.
+ * @param fontWeight Default boldness for the text.
+ * @param hyphens Enable hyphenation.
+ * @param imageFilter Filter applied to images in dark theme.
+ * @param language Language of the publication content.
+ * @param letterSpacing Space between letters.
+ * @param ligatures Enable ligatures in Arabic.
+ * @param lineHeight Leading line height.
+ * @param paragraphIndent Text indentation for paragraphs.
+ * @param paragraphSpacing Vertical margins for paragraphs.
+ * @param publisherStyles Indicates whether the original publisher styles should be observed.
+ *   Many settings require this to be off.
+ * @param readingProgression Direction of the reading progression across resources.
+ * @param scroll Indicates if the overflow of resources should be handled using scrolling
+ *   instead of synthetic pagination.
+ * @param spread Indicates if the fixed-layout publication should be rendered with a
+ *   synthetic spread (dual-page).
+ * @param textAlign Page text alignment.
+ * @param textColor Default page text color.
+ * @param textNormalization Normalize text styles to increase accessibility.
+ * @param theme Reader theme.
+ * @param verticalText Indicates whether the text should be laid out vertically. This is used
+ *   for example with CJK languages. This setting is automatically derived from the language if
+ *   no preference is given.
+ * @param wordSpacing Space between words.
+ */
 @Serializable
 @ExperimentalReadiumApi
 public data class ReflowableWebPreferences(
-    val fit: Fit? = null,
+    val backgroundColor: Color? = null,
+    val columnCount: Int? = null,
+    val fontFamily: FontFamily? = null,
+    val fontSize: Double? = null,
+    val fontWeight: Double? = null,
+    val hyphens: Boolean? = null,
+    val imageFilter: ImageFilter? = null,
+    val language: Language? = null,
+    val letterSpacing: Double? = null,
+    val ligatures: Boolean? = null,
+    val lineHeight: Double? = null,
+    val paragraphIndent: Double? = null,
+    val paragraphSpacing: Double? = null,
+    val publisherStyles: Boolean? = null,
     val readingProgression: ReadingProgression? = null,
-    val spreads: Boolean? = null,
-) : Configurable.Preferences<ReflowableWebPreferences> {
+    val scroll: Boolean? = null,
+    val spread: Spread? = null,
+    val textAlign: TextAlign? = null,
+    val textColor: Color? = null,
+    val textNormalization: Boolean? = null,
+    val theme: Theme? = null,
+    val verticalText: Boolean? = null,
+    val wordSpacing: Double? = null,
+) : Preferences<ReflowableWebPreferences> {
 
     init {
-        require(fit in listOf(null, Fit.CONTAIN, Fit.WIDTH, Fit.HEIGHT))
+        require(columnCount == null || columnCount > 1)
+        require(fontSize == null || fontSize >= 0)
+        require(fontWeight == null || fontWeight in 0.0..2.5)
+        require(letterSpacing == null || letterSpacing >= 0)
+        require(paragraphSpacing == null || paragraphSpacing >= 0)
+        require(spread in listOf(null, Spread.NEVER, Spread.ALWAYS))
+        require(wordSpacing == null || wordSpacing >= 0)
     }
 
+    @OptIn(ExperimentalReadiumApi::class)
     override operator fun plus(other: ReflowableWebPreferences): ReflowableWebPreferences =
         ReflowableWebPreferences(
-            fit = other.fit ?: fit,
+            backgroundColor = other.backgroundColor ?: backgroundColor,
+            columnCount = other.columnCount ?: columnCount,
+            fontFamily = other.fontFamily ?: fontFamily,
+            fontWeight = other.fontWeight ?: fontWeight,
+            fontSize = other.fontSize ?: fontSize,
+            hyphens = other.hyphens ?: hyphens,
+            imageFilter = other.imageFilter ?: imageFilter,
+            language = other.language ?: language,
+            letterSpacing = other.letterSpacing ?: letterSpacing,
+            ligatures = other.ligatures ?: ligatures,
+            lineHeight = other.lineHeight ?: lineHeight,
+            paragraphIndent = other.paragraphIndent ?: paragraphIndent,
+            paragraphSpacing = other.paragraphSpacing ?: paragraphSpacing,
+            publisherStyles = other.publisherStyles ?: publisherStyles,
             readingProgression = other.readingProgression ?: readingProgression,
-            spreads = other.spreads ?: spreads
+            scroll = other.scroll ?: scroll,
+            spread = other.spread ?: spread,
+            textAlign = other.textAlign ?: textAlign,
+            textColor = other.textColor ?: textColor,
+            textNormalization = other.textNormalization ?: textNormalization,
+            theme = other.theme ?: theme,
+            verticalText = other.verticalText ?: verticalText,
+            wordSpacing = other.wordSpacing ?: wordSpacing
         )
 }

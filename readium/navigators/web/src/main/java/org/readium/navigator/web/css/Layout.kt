@@ -6,9 +6,10 @@
 
 package org.readium.navigator.web.css
 
+import org.readium.navigator.web.preferences.ReflowableWebSettings
 import org.readium.navigator.web.util.isCjk
-import org.readium.r2.navigator.epub.EpubSettings
 import org.readium.r2.navigator.preferences.ReadingProgression
+import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.Language
 import org.readium.r2.shared.util.RelativeUrl
 
@@ -52,7 +53,8 @@ internal data class Layout(
 
     companion object {
 
-        internal fun from(settingsValues: EpubSettings): Layout {
+        @OptIn(ExperimentalReadiumApi::class)
+        internal fun from(settingsValues: ReflowableWebSettings): Layout {
             val stylesheets = when {
                 settingsValues.verticalText -> Stylesheets.CjkVertical
                 settingsValues.language?.isCjk == true -> Stylesheets.CjkHorizontal

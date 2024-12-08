@@ -17,22 +17,22 @@ public object ReflowableWebSharedPreferencesFilter : PreferencesFilter<Reflowabl
 
     override fun filter(preferences: ReflowableWebPreferences): ReflowableWebPreferences =
         preferences.copy(
-            fit = null,
             readingProgression = null,
-            spreads = null
+            language = null,
+            verticalText = null
         )
 }
 
 /**
- * Suggested filter to keep only publication-specific [FixedWebPreferences].
+ * Suggested filter to keep only publication-specific [ReflowableWebPreferences].
  */
 @ExperimentalReadiumApi
 public object ReflowableWebPublicationPreferencesFilter : PreferencesFilter<ReflowableWebPreferences> {
 
     override fun filter(preferences: ReflowableWebPreferences): ReflowableWebPreferences =
         ReflowableWebPreferences(
-            fit = preferences.fit,
             readingProgression = preferences.readingProgression,
-            spreads = preferences.spreads
+            language = preferences.language,
+            verticalText = preferences.verticalText
         )
 }

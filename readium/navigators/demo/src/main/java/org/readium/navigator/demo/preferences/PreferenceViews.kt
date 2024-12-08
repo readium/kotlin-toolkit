@@ -8,30 +8,50 @@ package org.readium.navigator.demo.preferences
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Backspace
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.Remove
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import java.util.Locale
+import kotlin.collections.plus
+import org.readium.navigator.demo.util.ColorPicker
+import org.readium.navigator.demo.util.DropdownMenuButton
 import org.readium.navigator.demo.util.ToggleButtonGroup
+import org.readium.r2.navigator.preferences.Color as ReadiumColor
 import org.readium.r2.navigator.preferences.EnumPreference
 import org.readium.r2.navigator.preferences.Preference
 import org.readium.r2.navigator.preferences.RangePreference
 import org.readium.r2.navigator.preferences.clear
 import org.readium.r2.navigator.preferences.toggle
+import org.readium.r2.navigator.preferences.withSupportedValues
+import org.readium.r2.shared.util.Language
 
 /**
  * Component for an [EnumPreference] displayed as a group of mutually exclusive buttons.
@@ -193,6 +213,170 @@ private fun SwitchItem(
             checked = value,
             onCheckedChange = onCheckedChange
         )
+    }
+}
+
+/**
+ * Component for a [Preference<ReadiumColor>].
+ */
+@Composable
+fun ColorItem(
+    title: String,
+    preference: Preference<ReadiumColor>,
+) {
+    ColorItem(
+        title = title,
+        isActive = preference.isEffective,
+        value = preference.value ?: preference.effectiveValue,
+        noValueSelected = preference.value == null,
+        onColorChanged = {
+            preference.set(it)
+        },
+        onClear = {
+            preference.clear()
+        }
+            .takeIf { preference.value != null }
+    )
+}
+
+/**
+ * Color picker
+ */
+@Composable
+private fun ColorItem(
+    title: String,
+    isActive: Boolean,
+    value: ReadiumColor,
+    noValueSelected: Boolean,
+    onColorChanged: (ReadiumColor?) -> Unit,
+    onClear: (() -> Unit)?,
+) {
+    var isPicking by remember { mutableStateOf(false) }
+
+    Item(
+        title = title,
+        isActive = isActive,
+        onClick = { isPicking = true },
+        onClear = onClear
+    ) {
+        val color = Color(value.int)
+
+        OutlinedButton(
+            onClick = { isPicking = true },
+            colors = ButtonDefaults.buttonColors(containerColor = color)
+        ) {
+            if (noValueSelected) {
+                Icon(
+                    imageVector = Icons.Default.Palette,
+                    contentDescription = "Change color",
+                    tint = if (color.luminance() > 0.5) Color.Black else Color.White
+                )
+            }
+        }
+
+        if (isPicking) {
+            Dialog(
+                onDismissRequest = { isPicking = false }
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.End
+                ) {
+                    ColorPicker { color ->
+                        isPicking = false
+                        onColorChanged(ReadiumColor(color))
+                    }
+                    Button(
+                        onClick = {
+                            isPicking = false
+                            onColorChanged(null)
+                        }
+                    ) {
+                        Text("Clear")
+                    }
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Component for a [Preference<Language?>]`.
+ */
+@Composable
+fun LanguageItem(
+    preference: Preference<Language?>,
+) {
+    val languages = remember {
+        Locale.getAvailableLocales()
+            .map { Language(it).removeRegion() }
+            .distinct()
+            .sortedBy { it.locale.displayName }
+    }
+
+    MenuItem(
+        title = "Language",
+        preference = preference.withSupportedValues(languages + null),
+        formatValue = { it?.locale?.displayName ?: "Unknown" }
+    )
+}
+
+/**
+ * Component for an [EnumPreference] displayed as a dropdown menu.
+ */
+@Composable
+fun <T> MenuItem(
+    title: String,
+    preference: EnumPreference<T>,
+    formatValue: (T) -> String,
+) {
+    MenuItem(
+        title = title,
+        value = preference.value ?: preference.effectiveValue,
+        values = preference.supportedValues,
+        isActive = preference.isEffective,
+        formatValue = formatValue,
+        onClear = {
+            preference.clear()
+        }
+            .takeIf { preference.value != null },
+        onValueChanged = { value ->
+            preference.set(value)
+        }
+    )
+}
+
+/**
+ * Dropdown menu.
+ */
+@Composable
+private fun <T> MenuItem(
+    title: String,
+    value: T,
+    values: List<T>,
+    isActive: Boolean,
+    formatValue: (T) -> String,
+    onValueChanged: (T) -> Unit,
+    onClear: (() -> Unit)?,
+) {
+    Item(title, isActive = isActive, onClear = onClear) {
+        DropdownMenuButton(
+            text = {
+                Text(
+                    text = formatValue(value),
+                    style = MaterialTheme.typography.labelMedium
+                )
+            }
+        ) { dismiss ->
+            for (aValue in values) {
+                DropdownMenuItem(
+                    text = { Text(formatValue(aValue)) },
+                    onClick = {
+                        dismiss()
+                        onValueChanged(aValue)
+                    }
+                )
+            }
+        }
     }
 }
 

@@ -43,9 +43,6 @@ public interface Properties : Cssable {
  * @param view User view: paged or scrolled.
  * @param colCount The number of columns (column-count) the user wants displayed (one-page view
  * or two-page spread). To reset, change the value to auto.
- * @param pageMargins A factor applied to horizontal margins (padding-left and padding-right)
- * the user wants to set. Recommended values: a range from 0.5 to 2. Increments are left to
- * implementers’ judgment. To reset, change the value to 1.
  * @param appearance This flag applies a reading mode (sepia or night).
  * @param darkenImages This will only apply in night mode to darken images and impact img.
  * Requires: appearance = Appearance.Night
@@ -61,11 +58,9 @@ public interface Properties : Cssable {
  * remove the required flag. Requires: fontOverride
  * @param fontSize Increasing and decreasing the root font-size. It will serve as a reference
  * for the cascade. To reset, remove the required flag.
+ * @param lineLength Increasing and decreasing the line length.
  * @param advancedSettings This flag is required to apply the font-size and/or advanced user
  * settings.
- * @param typeScale The type scale the user wants to use for the publication. It impacts
- * headings, p, li, div, pre, dd, small, sub, and sup. Recommended values: a range from 75% to
- * 250%. Increments are left to implementers’ judgment. Requires: advancedSettings
  * @param textAlign The alignment (text-align) the user prefers. It impacts body, li, and p
  * which are not children of blockquote and figcaption. Requires: advancedSettings
  * @param lineHeight Increasing and decreasing leading (line-height). It impacts body, p, li and
@@ -95,8 +90,7 @@ public data class UserProperties(
     val view: View? = null,
 
     // Pagination
-    val colCount: ColCount? = null,
-    val pageMargins: Double? = null,
+    val colCount: Int? = null,
 
     // Appearance
     val appearance: Appearance? = null,
@@ -111,10 +105,10 @@ public data class UserProperties(
     val fontOverride: Boolean? = null,
     val fontFamily: List<String>? = null,
     val fontSize: Length? = null,
+    val lineLength: Length? = null,
 
     // Advanced settings
     val advancedSettings: Boolean? = null,
-    val typeScale: Double? = null,
     val textAlign: TextAlign? = null,
     val lineHeight: Either<Length, Double>? = null, // line-height supports unitless numbers
     val paraSpacing: Length? = null,
@@ -136,7 +130,6 @@ public data class UserProperties(
 
         // Pagination
         putCss("--USER__colCount", colCount)
-        putCss("--USER__pageMargins", pageMargins)
 
         // Appearance
         putCss("--USER__appearance", appearance)
@@ -151,10 +144,10 @@ public data class UserProperties(
         putCss("--USER__fontOverride", flag("font", fontOverride))
         putCss("--USER__fontFamily", fontFamily)
         putCss("--USER__fontSize", fontSize)
+        putCss("--USER__lineLength", lineLength)
 
         // Advanced settings
         putCss("--USER__advancedSettings", flag("advanced", advancedSettings))
-        putCss("--USER__typeScale", typeScale)
         putCss("--USER__textAlign", textAlign)
         lineHeight
             ?.onLeft { putCss("--USER__lineHeight", it) }
@@ -190,7 +183,7 @@ public data class UserProperties(
  * @param paraSpacing The default vertical margins for paragraphs.
  * @param paraIndent The default text-indent for paragraphs.
  * @param maxLineLength The optimal line-length. It must be set in rem in order to take :root’s
- * font-size as a reference, whichever the body’s font-size might be.
+ * font-size as a reference, whichever the body’s    font-size might be.
  * @param maxMediaWidth The max-width for media elements i.e. img, svg, audio and video.
  * @param maxMediaHeight The max-height for media elements i.e. img, svg, audio and video.
  * @param boxSizingMedia The box model (box-sizing) you want to use for media elements.
@@ -205,9 +198,6 @@ public data class UserProperties(
  * other element of your choice.
  * @param secondaryColor An optional secondary accentuation color you could use for any element
  * of your choice.
- * @param typeScale The scale to be used for computing all elements’ font-size. Since those font
- * sizes are computed dynamically, you can set a smaller type scale when the user sets one
- * of the largest font sizes.
  * @param baseFontFamily The default typeface for body copy in case the ebook doesn’t have one
  * declared. Please note some languages have a specific font-stack (japanese, hindi, etc.)
  * @param baseLineHeight The default line-height for body copy in case the ebook doesn’t have
@@ -234,7 +224,7 @@ public data class UserProperties(
 public data class RsProperties(
     // Pagination
     val colWidth: Length? = null,
-    val colCount: ColCount? = null,
+    val colCount: Int? = null,
     val colGap: Length.Absolute? = null,
     val pageGutter: Length.Absolute? = null,
 
@@ -261,7 +251,6 @@ public data class RsProperties(
     val secondaryColor: Color? = null,
 
     // Typography
-    val typeScale: Double? = null,
     val baseFontFamily: List<String>? = null,
     val baseLineHeight: Either<Length, Double>? = null, // line-height supports unitless numbers
 
@@ -315,7 +304,6 @@ public data class RsProperties(
         putCss("--RS__secondaryColor", secondaryColor)
 
         // Typography
-        putCss("--RS__typeScale", typeScale)
         putCss("--RS__baseFontFamily", baseFontFamily)
         baseLineHeight
             ?.onLeft { putCss("--RS__baseLineHeight", it) }
@@ -552,16 +540,21 @@ private fun MutableMap<String, String?>.putCss(name: String, value: Cssable?) {
     put(name, value?.toCss())
 }
 
-private fun MutableMap<String, String?>.putCss(name: String, double: Double?) {
-    put(name, double?.toString())
+private fun MutableMap<String, String?>.putCss(name: String, value: Double?) {
+    put(name, value?.toString())
 }
 
-private fun MutableMap<String, String?>.putCss(name: String, string: String?) {
-    put(name, string?.toCss())
+private fun MutableMap<String, String?>.putCss(name: String, value: Int?) {
+    put(name, value?.toString())
 }
 
-private fun MutableMap<String, String?>.putCss(name: String, strings: List<String>?) {
-    val value = strings?.joinToString(", ") { it.toCss() }
+@Suppress("unused")
+private fun MutableMap<String, String?>.putCss(name: String, value: String?) {
+    put(name, value?.toCss())
+}
+
+private fun MutableMap<String, String?>.putCss(name: String, values: List<String>?) {
+    val value = values?.joinToString(", ") { it.toCss() }
     put(name, value)
 }
 
@@ -578,7 +571,7 @@ private fun flag(name: String, value: Boolean?) = Cssable {
 * Converts a [String] to a CSS literal.
 */
 private fun String.toCss(): String =
-    '"' + replace("\"", "\\\"") + '"'
+    "\\\"" + replace("\"", "\\\"") + "\\\""
 
 /**
  * Converts a [Double] to a string literal with the given [unit].
