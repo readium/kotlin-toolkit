@@ -32,6 +32,8 @@ androidx-room = "2.6.1"
 androidx-viewpager2 = "1.1.0"
 androidx-webkit = "1.12.1"
 
+boocoReadiumLibs = "0.0.1"
+
 assertj = "3.26.3"
 
 dokka = "1.9.20"
@@ -107,6 +109,8 @@ androidx-viewpager2 = { group = "androidx.viewpager2", name = "viewpager2", vers
 androidx-webkit = { group = "androidx.webkit", name = "webkit", version.ref = "androidx-webkit" }
 
 assertj = { group = "org.assertj", name = "assertj-core", version.ref = "assertj" }
+
+booco-readium-libs-shared = { group = "org.readium.r2", name = "readium-shared-android", version.ref = "boocoReadiumLibs" }
 
 desugar_jdk_libs = { module = "com.android.tools:desugar_jdk_libs", version.ref = "desugar_jdk_libs" }
 google-exoplayer-core = { group = "com.google.android.exoplayer", name = "exoplayer-core", version.ref = "google-exoplayer" }

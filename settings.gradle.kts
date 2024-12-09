@@ -1,8 +1,38 @@
+import java.util.Properties
+
 /*
  * Copyright 2021 Readium Foundation. All rights reserved.
  * Use of this source code is governed by the BSD-style license
  * available in the top-level LICENSE file of the project.
  */
+
+val prop by lazy {
+    File("shared.properties")
+        .takeIf { it.exists() }
+        ?.let { Properties().apply { load(it.inputStream()) } }
+}
+
+val mavenBoocoRepos by lazy {
+    listOf(
+        "s3://booco-android-libs/maven/snapshots",
+        "s3://booco-android-libs/maven/releases",
+        "s3://booco-android-readium/maven/snapshots",
+        "s3://booco-android-readium/maven/releases",
+    )
+}
+
+fun RepositoryHandler.mavenBooco() = mavenBoocoRepos
+    .forEach {
+        maven {
+            url = uri(it)
+            credentials(AwsCredentials::class) {
+                accessKey = "BOOCO_AWS_ACCESS_KEY_ID"
+                    .let { System.getenv(it) ?: prop?.getProperty(it) }
+                secretKey = "BOOCO_AWS_SECRET_ACCESS_KEY"
+                    .let { System.getenv(it) ?: prop?.getProperty(it) }
+            }
+        }
+    }
 
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
@@ -10,6 +40,7 @@ dependencyResolutionManagement {
         google()
         mavenLocal()
         mavenCentral()
+        mavenBooco()
         maven(url = "https://s3.amazonaws.com/repo.commonsware.com")
         maven(url = "https://customers.pspdfkit.com/maven")
     }
