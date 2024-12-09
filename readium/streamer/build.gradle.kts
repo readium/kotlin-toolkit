@@ -16,7 +16,7 @@ android {
 }
 
 dependencies {
-    api(project(":readium:readium-shared"))
+    implementation(libs.booco.readium.libs.shared)
 
     api(files("libs/nanohttpd-2.3.2.jar", "libs/nanohttpd-nanolets-2.3.2.jar"))
 

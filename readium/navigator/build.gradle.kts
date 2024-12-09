@@ -26,7 +26,7 @@ android {
 }
 
 dependencies {
-    api(project(":readium:readium-shared"))
+    implementation(libs.booco.readium.libs.shared)
 
     implementation(files("libs/PhotoView-2.3.0.jar"))
 
