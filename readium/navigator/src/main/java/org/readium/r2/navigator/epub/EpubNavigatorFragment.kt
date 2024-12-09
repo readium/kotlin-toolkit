@@ -126,6 +126,8 @@ public class EpubNavigatorFragment internal constructor(
     HyperlinkNavigator,
     Configurable<EpubSettings, EpubPreferences> {
 
+    private val scrollPositionsHashMap: HashMap<String, Locator> = hashMapOf()
+
     // Make a copy to prevent the user from modifying the configuration after initialization.
     internal val config: Configuration = configuration.copy().apply {
         servedAssets += "readium/.*"
@@ -904,10 +906,20 @@ public class EpubNavigatorFragment internal constructor(
 
         resourcePager.setCurrentItem(resourcePager.currentItem + 1, animated)
 
+        scrollPositionsHashMap[currentLocator.value.href.toString()] = currentLocator.value
+
         currentReflowablePageFragment?.webView?.let { webView ->
             if (settings.value.readingProgression == ReadingProgression.RTL) {
                 webView.setCurrentItem(webView.numPages - 1, false)
             } else {
+                lifecycleScope.launch {
+                    val locator =
+                        scrollPositionsHashMap[locatorToResourceAtIndex(resourcePager.currentItem)?.href.toString()]
+                    locator?.let {
+                        val progression = it.locations.progression ?: 0.0
+                        webView.scrollToPosition(progression)
+                    }
+                }
                 webView.setCurrentItem(0, false)
             }
         }
@@ -926,10 +938,20 @@ public class EpubNavigatorFragment internal constructor(
 
         resourcePager.setCurrentItem(resourcePager.currentItem - 1, animated)
 
+        scrollPositionsHashMap[currentLocator.value.href.toString()] = currentLocator.value
+
         currentReflowablePageFragment?.webView?.let { webView ->
             if (settings.value.readingProgression == ReadingProgression.RTL) {
                 webView.setCurrentItem(0, false)
             } else {
+                lifecycleScope.launch {
+                    val locator =
+                        scrollPositionsHashMap[locatorToResourceAtIndex(resourcePager.currentItem)?.href.toString()]
+                    locator?.let {
+                        val progression = it.locations.progression ?: 0.0
+                        webView.scrollToPosition(progression)
+                    }
+                }
                 webView.setCurrentItem(webView.numPages - 1, false)
             }
         }
