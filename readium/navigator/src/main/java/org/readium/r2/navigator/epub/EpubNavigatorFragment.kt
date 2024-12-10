@@ -932,6 +932,14 @@ public class EpubNavigatorFragment internal constructor(
             if (settings.value.readingProgression == ReadingProgression.RTL) {
                 webView.setCurrentItem(webView.numPages - 1, false)
             } else {
+                lifecycleScope.launch {
+                    val locator =
+                        scrollPositionsHashMap[locatorToResourceAtIndex(resourcePager.currentItem)?.href.toString()]
+                    locator?.let {
+                        val progression = it.locations.progression ?: 0.0
+                        webView.scrollToPosition(progression)
+                    }
+                }
                 webView.setCurrentItem(0, false)
             }
         }
@@ -956,6 +964,14 @@ public class EpubNavigatorFragment internal constructor(
             if (settings.value.readingProgression == ReadingProgression.RTL) {
                 webView.setCurrentItem(0, false)
             } else {
+                lifecycleScope.launch {
+                    val locator =
+                        scrollPositionsHashMap[locatorToResourceAtIndex(resourcePager.currentItem)?.href.toString()]
+                    locator?.let {
+                        val progression = it.locations.progression ?: 0.0
+                        webView.scrollToPosition(progression)
+                    }
+                }
                 webView.setCurrentItem(webView.numPages - 1, false)
             }
         }

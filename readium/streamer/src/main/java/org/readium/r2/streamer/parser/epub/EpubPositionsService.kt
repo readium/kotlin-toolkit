@@ -51,7 +51,8 @@ public class EpubPositionsService(
                 EpubPositionsService(
                     readingOrder = context.manifest.readingOrder,
                     presentation = context.manifest.metadata.presentation,
-                    pageList = context.manifest.subcollections["pageList"]?.firstOrNull()?.links ?: emptyList(),
+                    pageList = context.manifest.subcollections["pageList"]?.firstOrNull()?.links
+                        ?: emptyList(),
                     container = context.container,
                     reflowableStrategy = reflowableStrategy
                 )
@@ -164,20 +165,56 @@ public class EpubPositionsService(
             )
         )
 
-    private suspend fun createReflowable(link: Link, startPosition: Int, resource: Resource): List<Locator> {
+    private suspend fun createReflowable(
+        link: Link,
+        startPosition: Int,
+        resource: Resource
+    ): List<Locator> {
         val href = link.url()
-
+        var startIndexPosition = startPosition
+        var positionRange = pageList.filter { it.href.toString().startsWith(href.toString()) }
+            .mapNotNull { it.title }.map { it.toInt() }
         val positionCount = pageList.count { it.href.toString().startsWith(href.toString()) }
-
-        return (1..positionCount).mapNotNull { position ->
+        if (positionRange.isNotEmpty()) startIndexPosition = positionRange.first()
+        val skippedPages = findMissingNumbersUsingXor(positionRange)
+        return (0..< positionCount).mapNotNull { position ->
+            val locatorPosition = startIndexPosition + position
+            if (skippedPages.contains(locatorPosition)) return@mapNotNull null
             createLocator(
                 href = href,
                 type = link.mediaType,
                 title = link.title,
                 progression = (position - 1) / positionCount.toDouble(),
-                position = startPosition + position
+                position = locatorPosition
             )
         }
+    }
+
+    /**
+     * Find missing number in a list of increasing numbers
+     * According to Content Team, it is possible to have skipped page numbers in Epub page-list
+     * To handle this, this function looks for the missing number and skips it when creating Publication.positions()
+     */
+    private fun findMissingNumbersUsingXor(numbers: List<Int>): List<Int> {
+        if (numbers.isEmpty()) return emptyList()
+        val min = numbers.min()
+        val max = numbers.max()
+
+        // XOR of all numbers in the range [min, max]
+        var xorRange = 0
+        for (num in min..max) {
+            xorRange = xorRange xor num
+        }
+        var xorList = 0
+        for (num in numbers) {
+            xorList = xorList xor num
+        }
+        val xorMissing = xorRange xor xorList
+
+        // Identify missing numbers using the XOR result
+        val fullRange = (min..max).toSet()
+        val actualNumbers = numbers.toSet()
+        return fullRange.subtract(actualNumbers).toList().sorted()
     }
 
     private fun createLocator(
