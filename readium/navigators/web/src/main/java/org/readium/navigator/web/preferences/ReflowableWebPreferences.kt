@@ -26,6 +26,7 @@ import org.readium.r2.shared.util.Language
  * @param letterSpacing Space between letters.
  * @param ligatures Enable ligatures in Arabic.
  * @param lineHeight Leading line height.
+ * @param pageMargins Factor applied to horizontal margins.
  * @param paragraphIndent Text indentation for paragraphs.
  * @param paragraphSpacing Vertical margins for paragraphs.
  * @param publisherStyles Indicates whether the original publisher styles should be observed.
@@ -58,6 +59,7 @@ public data class ReflowableWebPreferences(
     val letterSpacing: Double? = null,
     val ligatures: Boolean? = null,
     val lineHeight: Double? = null,
+    val pageMargins: Double? = null,
     val paragraphIndent: Double? = null,
     val paragraphSpacing: Double? = null,
     val publisherStyles: Boolean? = null,
@@ -77,6 +79,7 @@ public data class ReflowableWebPreferences(
         require(fontSize == null || fontSize >= 0)
         require(fontWeight == null || fontWeight in 0.0..2.5)
         require(letterSpacing == null || letterSpacing >= 0)
+        require(pageMargins == null || pageMargins >= 0)
         require(paragraphSpacing == null || paragraphSpacing >= 0)
         require(spread in listOf(null, Spread.NEVER, Spread.ALWAYS))
         require(wordSpacing == null || wordSpacing >= 0)
@@ -96,6 +99,7 @@ public data class ReflowableWebPreferences(
             letterSpacing = other.letterSpacing ?: letterSpacing,
             ligatures = other.ligatures ?: ligatures,
             lineHeight = other.lineHeight ?: lineHeight,
+            pageMargins = other.pageMargins ?: pageMargins,
             paragraphIndent = other.paragraphIndent ?: paragraphIndent,
             paragraphSpacing = other.paragraphSpacing ?: paragraphSpacing,
             publisherStyles = other.publisherStyles ?: publisherStyles,

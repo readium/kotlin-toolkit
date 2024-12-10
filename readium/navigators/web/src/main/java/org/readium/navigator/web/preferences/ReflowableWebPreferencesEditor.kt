@@ -264,6 +264,23 @@ public class ReflowableWebPreferencesEditor internal constructor(
         )
 
     /**
+     * Factor applied to horizontal margins. Default to 1.
+     *
+     * Only effective with reflowable publications.
+     */
+    @ExperimentalReadiumApi
+    public val pageMargins: RangePreference<Double> =
+        RangePreferenceDelegate(
+            getValue = { preferences.pageMargins },
+            getEffectiveValue = { state.settings.pageMargins },
+            getIsEffective = { true },
+            updateValue = { value -> updateValues { it.copy(pageMargins = value) } },
+            supportedRange = 0.0..4.0,
+            progressionStrategy = DoubleIncrement(0.3),
+            valueFormatter = { it.format(5) }
+        )
+
+    /**
      * Text indentation for paragraphs.
      *
      * Only effective when:

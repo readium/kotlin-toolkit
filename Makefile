@@ -37,7 +37,8 @@ scripts-new:
 	pnpm run format; \
 	pnpm run lint; \
 	pnpm run bundle; \
-	mv dist/* ../src/main/assets/readium/navigators/web/
+	rm -r ../src/main/assets/readium/navigators/web/generated/*; \
+	mv dist/* ../src/main/assets/readium/navigators/web/generated/
 
 .PHONY: scripts
 scripts: scripts-legacy scripts-new

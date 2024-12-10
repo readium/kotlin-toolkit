@@ -42,6 +42,7 @@ public data class ReflowableWebSettings(
     val letterSpacing: Double?,
     val ligatures: Boolean?,
     val lineHeight: Double?,
+    val pageMargins: Double,
     val paragraphIndent: Double?,
     val paragraphSpacing: Double?,
     val publisherStyles: Boolean,
@@ -78,6 +79,9 @@ internal fun ReadiumCss.update(settings: ReflowableWebSettings, useReadiumCssFon
     return with(settings) {
         copy(
             layout = Layout.from(settings),
+            rsProperties = rsProperties.copy(
+                pageGutter = Length.Px((rsProperties.pageGutter?.value ?: 20.0) * pageMargins)
+            ),
             userProperties = userProperties.copy(
                 view = when (scroll) {
                     false -> View.PAGED

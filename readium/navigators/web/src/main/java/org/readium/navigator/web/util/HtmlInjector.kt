@@ -68,9 +68,7 @@ internal fun Resource.injectHtmlReflowable(
         val injectables = buildList {
             add(
                 script(
-                    assetsBaseHref.resolve(
-                        Url("readium/navigators/web/reflowable-injectable-script.js")!!
-                    )
+                    assetsBaseHref.resolve(injectableScript)
                 )
             )
 

@@ -226,7 +226,7 @@ public data class RsProperties(
     val colWidth: Length? = null,
     val colCount: Int? = null,
     val colGap: Length.Absolute? = null,
-    val pageGutter: Length.Absolute? = null,
+    val pageGutter: Length.Px? = null,
 
     // Vertical rhythm
     val flowSpacing: Length? = null,

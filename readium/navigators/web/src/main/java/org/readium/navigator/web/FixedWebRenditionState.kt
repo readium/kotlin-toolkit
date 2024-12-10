@@ -73,7 +73,7 @@ public class FixedWebRenditionState internal constructor(
     private val htmlInjector: (Resource, MediaType) -> Resource = { resource, mediaType ->
         resource.injectHtml(
             charset = mediaType.charset,
-            injectableScript = RelativeUrl("readium/navigators/web/fixed-injectable-script.js")!!,
+            injectableScript = RelativeUrl("readium/navigators/web/generated/fixed-injectable-script.js")!!,
             assetsBaseHref = assetsBaseHref,
             disableSelection = isRestricted
         )

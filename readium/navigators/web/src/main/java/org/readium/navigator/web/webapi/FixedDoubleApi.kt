@@ -24,7 +24,7 @@ internal class FixedDoubleApi(
 
         suspend fun getPageContent(assetManager: AssetManager, assetsUrl: AbsoluteUrl): String =
             withContext(Dispatchers.IO) {
-                assetManager.open("readium/navigators/web/fixed-double-index.html")
+                assetManager.open("readium/navigators/web/generated/fixed-double-index.html")
                     .bufferedReader()
                     .use { it.readText() }
                     .replace("{{ASSETS_URL}}", assetsUrl.toString())

@@ -21,6 +21,7 @@ import org.readium.navigator.common.OverflowController
 import org.readium.navigator.common.RenditionState
 import org.readium.navigator.common.SettingsController
 import org.readium.navigator.web.css.ReadiumCss
+import org.readium.navigator.web.css.RsProperties
 import org.readium.navigator.web.layout.ReadingOrder
 import org.readium.navigator.web.location.ReflowableWebGoLocation
 import org.readium.navigator.web.location.ReflowableWebLocation
@@ -51,6 +52,7 @@ public class ReflowableWebRenditionState internal constructor(
     isRestricted: Boolean,
     initialSettings: ReflowableWebSettings,
     initialLocation: ReflowableWebGoLocation,
+    private val rsProperties: RsProperties = RsProperties(),
 ) : RenditionState<ReflowableWebRenditionController> {
 
     private val navigatorState: MutableState<ReflowableWebRenditionController?> =
@@ -71,7 +73,8 @@ public class ReflowableWebRenditionState internal constructor(
         derivedStateOf {
             ReadiumCss(
                 assetsBaseHref = assetsBaseHref,
-                readiumCssAssets = RelativeUrl("readium/navigators/web/readium-css/")!!
+                readiumCssAssets = RelativeUrl("readium/navigators/web/generated/readium-css/")!!,
+                rsProperties = rsProperties
             ).update(
                 settings = layoutDelegate.settings.value,
                 useReadiumCssFontSize = true
@@ -82,7 +85,7 @@ public class ReflowableWebRenditionState internal constructor(
         resource.injectHtmlReflowable(
             charset = mediaType.charset,
             readiumCss = readiumCss.value,
-            injectableScript = RelativeUrl("readium/navigators/web/reflowable-injectable-script.js")!!,
+            injectableScript = RelativeUrl("readium/navigators/web/generated/reflowable-injectable-script.js")!!,
             assetsBaseHref = assetsBaseHref,
             disableSelection = isRestricted
         )

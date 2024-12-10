@@ -104,6 +104,7 @@ fun <P : Preferences<P>, S : Settings, E : PreferencesEditor<P, S>> UserPreferen
                     letterSpacing = editor.letterSpacing,
                     ligatures = editor.ligatures,
                     lineHeight = editor.lineHeight,
+                    pageMargins = editor.pageMargins,
                     paragraphIndent = editor.paragraphIndent,
                     paragraphSpacing = editor.paragraphSpacing,
                     publisherStyles = editor.publisherStyles,

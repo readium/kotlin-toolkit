@@ -31,6 +31,9 @@ devDependencies:
   '@babel/preset-env':
     specifier: ^7.22.20
     version: 7.22.20(@babel/core@7.23.0)
+  '@readium/css':
+    specifier: 2.0.0-alpha.5
+    version: 2.0.0-alpha.5
   '@typescript-eslint/eslint-plugin':
     specifier: ^8.3.0
     version: 8.3.0(@typescript-eslint/parser@8.3.0)(eslint@8.57.0)(typescript@5.5.4)
@@ -1548,6 +1551,10 @@ packages:
     dependencies:
       '@nodelib/fs.scandir': 2.1.5
       fastq: 1.17.1
+    dev: true
+
+  /@readium/css@2.0.0-alpha.5:
+    resolution: {integrity: sha512-m3wC4z8lO0ny9k+SuCUpuAWDF4rF3FnfSvYXMUfQb4yYUGi5YEMzVIFPiexs3gDUU2JtpVPGXDAVZmTmRbSjPQ==}
     dev: true
 
   /@rollup/rollup-android-arm-eabi@4.20.0:

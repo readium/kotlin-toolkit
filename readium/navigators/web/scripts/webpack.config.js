@@ -35,7 +35,10 @@ module.exports = {
   },
   plugins: [
     new CopyPlugin({
-      patterns: [{ from: "public" }],
+      patterns: [
+        { from: "public" },
+        { from: "node_modules/@readium/css/css/dist", to: "readium-css" },
+      ],
     }),
   ],
 }

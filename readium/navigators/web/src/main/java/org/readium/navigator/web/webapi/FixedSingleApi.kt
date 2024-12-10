@@ -24,7 +24,7 @@ internal class FixedSingleApi(
 
         suspend fun getPageContent(assetManager: AssetManager, assetsUrl: AbsoluteUrl): String =
             withContext(Dispatchers.IO) {
-                assetManager.open("readium/navigators/web/fixed-single-index.html")
+                assetManager.open("readium/navigators/web/generated/fixed-single-index.html")
                     .bufferedReader()
                     .use { it.readText() }
                     .replace("{{ASSETS_URL}}", assetsUrl.toString())
