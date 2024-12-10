@@ -7,6 +7,7 @@
 package org.readium.navigator.web
 
 import android.annotation.SuppressLint
+import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.displayCutout
@@ -92,6 +93,7 @@ public fun FixedWebRendition(
         NavigatorPager(
             modifier = modifier,
             state = state.pagerState,
+            orientation = Orientation.Horizontal,
             beyondViewportPageCount = 2,
             key = { index -> state.layoutDelegate.layout.value.pageIndexForSpread(index) },
             reverseLayout = reverseLayout

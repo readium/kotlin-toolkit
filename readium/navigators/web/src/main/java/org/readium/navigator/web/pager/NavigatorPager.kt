@@ -12,6 +12,7 @@ import androidx.compose.foundation.pager.PagerDefaults
 import androidx.compose.foundation.pager.PagerScope
 import androidx.compose.foundation.pager.PagerSnapDistance
 import androidx.compose.foundation.pager.PagerState
+import androidx.compose.foundation.pager.VerticalPager
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 
@@ -19,6 +20,7 @@ import androidx.compose.ui.Modifier
 internal fun NavigatorPager(
     modifier: Modifier = Modifier,
     state: PagerState,
+    orientation: Orientation,
     reverseLayout: Boolean,
     beyondViewportPageCount: Int = 2,
     key: ((index: Int) -> Any)? = null,
@@ -29,22 +31,43 @@ internal fun NavigatorPager(
         pagerSnapDistance = PagerSnapDistance.atMost(0)
     )
 
-    HorizontalPager(
-        modifier = modifier,
-        // Pages must intercept all scroll gestures so the pager moves
-        // only through the PagerNestedScrollConnection.
-        userScrollEnabled = false,
-        state = state,
-        beyondViewportPageCount = beyondViewportPageCount,
-        reverseLayout = reverseLayout,
-        flingBehavior = flingBehavior,
-        key = key,
-        pageNestedScrollConnection =
-        PagerNestedScrollConnection(
-            state,
-            flingBehavior,
-            Orientation.Horizontal
-        ),
-        pageContent = pageContent
-    )
+    if (orientation == Orientation.Horizontal) {
+        HorizontalPager(
+            modifier = modifier,
+            // Pages must intercept all scroll gestures so the pager moves
+            // only through the PagerNestedScrollConnection.
+            userScrollEnabled = false,
+            state = state,
+            beyondViewportPageCount = beyondViewportPageCount,
+            reverseLayout = reverseLayout,
+            flingBehavior = flingBehavior,
+            key = key,
+            pageNestedScrollConnection =
+            PagerNestedScrollConnection(
+                state,
+                flingBehavior,
+                Orientation.Horizontal
+            ),
+            pageContent = pageContent
+        )
+    } else {
+        VerticalPager(
+            modifier = modifier,
+            // Pages must intercept all scroll gestures so the pager moves
+            // only through the PagerNestedScrollConnection.
+            userScrollEnabled = false,
+            state = state,
+            beyondViewportPageCount = beyondViewportPageCount,
+            reverseLayout = reverseLayout,
+            flingBehavior = flingBehavior,
+            key = key,
+            pageNestedScrollConnection =
+            ScrollPagerNestedScrollConnection(
+                state,
+                flingBehavior,
+                Orientation.Vertical
+            ),
+            pageContent = pageContent
+        )
+    }
 }

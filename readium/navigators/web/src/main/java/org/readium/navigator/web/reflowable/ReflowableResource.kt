@@ -62,6 +62,7 @@ internal fun ReflowableResource(
     webViewClient: WebViewClient,
     displayArea: DisplayArea,
     reverseLayout: Boolean,
+    scroll: Boolean,
     userProperties: UserProperties,
     rsProperties: RsProperties,
     onTap: (TapEvent) -> Unit,
@@ -142,24 +143,34 @@ internal fun ReflowableResource(
         val scrollableState = remember { WebViewScrollable2DState() }
 
         val reflowableNestedScrollConnection =
-            ReflowableNestedScrollConnection(scrollableState)
+            if (scroll) {
+                ScrollReflowableNestedScrollConnection(scrollableState)
+            } else {
+                ReflowableNestedScrollConnection(scrollableState)
+            }
 
         val density = LocalDensity.current
 
-        val flingBehavior = (webViewState.webView as? RelaxedWebView)
-            ?.let {
-                pagingFlingBehavior(
-                    WebViewLayoutInfoProvider(
-                        density,
-                        Orientation.Horizontal,
-                        reverseLayout,
-                        displayArea,
-                        scrollableState,
-                        it
-                    )
-                )
+        val scrollOrientation = if (scroll) Orientation.Vertical else Orientation.Horizontal
+
+        val flingBehavior =
+            if (scroll) {
+                null
+            } else {
+                (webViewState.webView as? RelaxedWebView)
+                    ?.let {
+                        pagingFlingBehavior(
+                            WebViewLayoutInfoProvider(
+                                density,
+                                scrollOrientation,
+                                reverseLayout,
+                                displayArea,
+                                it
+                            )
+                        )
+                    }
+                    ?.toFling2DBehavior(orientation = scrollOrientation)
             }
-            ?.toFling2DBehavior(orientation = Orientation.Horizontal)
 
         WebView(
             modifier = Modifier
@@ -168,7 +179,7 @@ internal fun ReflowableResource(
                     state = scrollableState,
                     flingBehavior = flingBehavior,
                     reverseDirection = !reverseLayout,
-                    orientation = Orientation.Horizontal
+                    orientation = scrollOrientation
                 )
                 .fillMaxSize()
                 .nestedScroll(reflowableNestedScrollConnection),
@@ -187,14 +198,16 @@ internal fun ReflowableResource(
                 webview.isHorizontalScrollBarEnabled = false
                 webview.setBackgroundColor(backgroundColor.toArgb())
                 webview.setLayerType(View.LAYER_TYPE_HARDWARE, null)
-                // Prevents vertical scrolling towards blank space.
-                // See https://github.com/readium/readium-css/issues/158
-                webview.setOnTouchListener(object : View.OnTouchListener {
-                    @SuppressLint("ClickableViewAccessibility")
-                    override fun onTouch(view: View, event: MotionEvent): Boolean {
-                        return (event.action == MotionEvent.ACTION_MOVE)
-                    }
-                })
+                if (!scroll) {
+                    // Prevents vertical scrolling towards blank space.
+                    // See https://github.com/readium/readium-css/issues/158
+                    webview.setOnTouchListener(object : View.OnTouchListener {
+                        @SuppressLint("ClickableViewAccessibility")
+                        override fun onTouch(view: View, event: MotionEvent): Boolean {
+                            return (event.action == MotionEvent.ACTION_MOVE)
+                        }
+                    })
+                }
             },
             onDispose = {
                 scrollableState.webView = null

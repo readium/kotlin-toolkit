@@ -14,7 +14,6 @@ internal class WebViewLayoutInfoProvider(
     override val orientation: Orientation,
     override val reverseLayout: Boolean,
     private val displayArea: DisplayArea,
-    private val webViewScrollState: WebViewScrollable2DState,
     private val webView: RelaxedWebView,
 ) : PagingLayoutInfo {
 
@@ -48,10 +47,28 @@ internal class WebViewLayoutInfoProvider(
         }
 
     override val canScrollForward: Boolean
-        get() = if (reverseLayout) webView.canScrollLeft else webView.canScrollRight
+        get() = when {
+            orientation == Orientation.Horizontal && reverseLayout ->
+                webView.canScrollLeft
+            orientation == Orientation.Horizontal ->
+                webView.canScrollRight
+            orientation == Orientation.Vertical && reverseLayout ->
+                webView.canScrollTop
+            else ->
+                webView.canScrollBottom
+        }
 
     override val canScrollBackward: Boolean
-        get() = if (reverseLayout) webView.canScrollRight else webView.canScrollLeft
+        get() = when {
+            orientation == Orientation.Horizontal && reverseLayout ->
+                webView.canScrollRight
+            orientation == Orientation.Horizontal ->
+                webView.canScrollLeft
+            orientation == Orientation.Vertical && reverseLayout ->
+                webView.canScrollBottom
+            else ->
+                webView.canScrollTop
+        }
 }
 
 internal val DefaultPositionThreshold = 56.dp

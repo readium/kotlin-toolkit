@@ -7,6 +7,7 @@
 package org.readium.navigator.web
 
 import android.annotation.SuppressLint
+import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.displayCutout
@@ -83,7 +84,13 @@ public fun ReflowableWebRendition(
             modifier = modifier,
             state = state.pagerState,
             beyondViewportPageCount = 2,
-            reverseLayout = reverseLayout
+            reverseLayout = reverseLayout,
+            orientation =
+            if (state.layoutDelegate.settings.value.scroll) {
+                Orientation.Vertical
+            } else {
+                Orientation.Horizontal
+            }
         ) { index ->
             ReflowableResource(
                 href = state.readingOrder.items[index].href,
@@ -91,6 +98,7 @@ public fun ReflowableWebRendition(
                 webViewClient = state.webViewClient,
                 displayArea = displayArea.value,
                 reverseLayout = reverseLayout,
+                scroll = state.layoutDelegate.settings.value.scroll,
                 rsProperties = state.readiumCss.value.rsProperties,
                 userProperties = state.readiumCss.value.userProperties,
                 onTap = { inputListener.onTap(it, TapContext(viewportSize)) },
