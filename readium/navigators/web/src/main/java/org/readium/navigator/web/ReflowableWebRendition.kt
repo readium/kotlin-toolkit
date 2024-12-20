@@ -112,10 +112,14 @@ public fun ReflowableWebRendition(
             reverseLayout = reverseLayout,
             orientation =
             if (state.layoutDelegate.settings.value.scroll) {
-                Orientation.Vertical
+                if (state.layoutDelegate.settings.value.verticalText) {
+                    Orientation.Horizontal
+                } else {
+                    Orientation.Vertical
+                }
             } else {
                 Orientation.Horizontal
-            }
+            },
         ) { index ->
             ReflowableResource(
                 href = state.readingOrder.items[index].href,
@@ -126,6 +130,7 @@ public fun ReflowableWebRendition(
                 scroll = state.layoutDelegate.settings.value.scroll,
                 rsProperties = state.readiumCss.value.rsProperties,
                 userProperties = state.readiumCss.value.userProperties,
+                layout = state.readiumCss.value.layout,
                 onTap = { inputListener.onTap(it, TapContext(viewportSize)) },
                 onLinkActivated = { url, outerHtml ->
                     coroutineScope.launch {

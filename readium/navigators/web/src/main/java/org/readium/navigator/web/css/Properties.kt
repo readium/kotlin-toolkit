@@ -275,6 +275,9 @@ public data class RsProperties(
 ) : Properties {
 
     override fun toCssProperties(): Map<String, String?> = buildMap {
+        // Properties not exposed through RsProperties
+        putCss("--RS__disablePagination", flag("noVerticalPagination", true))
+
         // Pagination
         putCss("--RS__colWidth", colWidth)
         putCss("--RS__colCount", colCount)

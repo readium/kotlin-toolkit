@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -31,6 +32,7 @@ import androidx.webkit.WebViewCompat
 import androidx.webkit.WebViewFeature
 import kotlin.Float
 import org.readium.navigator.common.TapEvent
+import org.readium.navigator.web.css.Layout
 import org.readium.navigator.web.css.RsProperties
 import org.readium.navigator.web.css.UserProperties
 import org.readium.navigator.web.gestures.Fling2DBehavior
@@ -63,6 +65,7 @@ internal fun ReflowableResource(
     scroll: Boolean,
     userProperties: UserProperties,
     rsProperties: RsProperties,
+    layout: Layout,
     onTap: (TapEvent) -> Unit,
     onLinkActivated: (Url, String) -> Unit,
 ) {
@@ -70,9 +73,10 @@ internal fun ReflowableResource(
         modifier = Modifier.fillMaxSize(),
         propagateMinConstraints = true
     ) {
-        val webViewState = rememberWebViewState(
-            url = publicationBaseUrl.resolve(href).toString()
-        )
+        val webViewState =
+            rememberWebViewState(
+                url = publicationBaseUrl.resolve(href).toString()
+            )
 
         val scriptsLoaded = remember(webViewState.webView) {
             mutableStateOf(false)
@@ -169,46 +173,48 @@ internal fun ReflowableResource(
                     ?.toFling2DBehavior(orientation = scrollOrientation)
             }
 
-        WebView(
-            modifier = Modifier
-                .scrollable2D(
-                    enabled = contentIsLaidOut.value,
-                    state = scrollableState,
-                    flingBehavior = flingBehavior,
-                    reverseDirection = !reverseLayout,
-                    orientation = scrollOrientation
-                )
-                .fillMaxSize()
-                .nestedScroll(reflowableNestedScrollConnection),
-            state = webViewState,
-            factory = { RelaxedWebView(it) },
-            client = webViewClient,
-            onCreated = { webview ->
-                scrollableState.webView = webview
-                webview.settings.javaScriptEnabled = true
-                webview.settings.setSupportZoom(false)
-                webview.settings.builtInZoomControls = false
-                webview.settings.displayZoomControls = false
-                webview.settings.loadWithOverviewMode = false
-                webview.settings.useWideViewPort = false
-                webview.isVerticalScrollBarEnabled = false
-                webview.isHorizontalScrollBarEnabled = false
-                webview.setLayerType(View.LAYER_TYPE_HARDWARE, null)
-                if (!scroll) {
-                    // Prevents vertical scrolling towards blank space.
-                    // See https://github.com/readium/readium-css/issues/158
-                    webview.setOnTouchListener(object : View.OnTouchListener {
-                        @SuppressLint("ClickableViewAccessibility")
-                        override fun onTouch(view: View, event: MotionEvent): Boolean {
-                            return (event.action == MotionEvent.ACTION_MOVE)
-                        }
-                    })
+        key(layout) {
+            WebView(
+                modifier = Modifier
+                    .scrollable2D(
+                        enabled = contentIsLaidOut.value,
+                        state = scrollableState,
+                        flingBehavior = flingBehavior,
+                        reverseDirection = !reverseLayout,
+                        orientation = scrollOrientation
+                    )
+                    .fillMaxSize()
+                    .nestedScroll(reflowableNestedScrollConnection),
+                state = webViewState,
+                factory = { RelaxedWebView(it) },
+                client = webViewClient,
+                onCreated = { webview ->
+                    scrollableState.webView = webview
+                    webview.settings.javaScriptEnabled = true
+                    webview.settings.setSupportZoom(false)
+                    webview.settings.builtInZoomControls = false
+                    webview.settings.displayZoomControls = false
+                    webview.settings.loadWithOverviewMode = false
+                    webview.settings.useWideViewPort = false
+                    webview.isVerticalScrollBarEnabled = false
+                    webview.isHorizontalScrollBarEnabled = false
+                    webview.setLayerType(View.LAYER_TYPE_HARDWARE, null)
+                    if (!scroll) {
+                        // Prevents vertical scrolling towards blank space.
+                        // See https://github.com/readium/readium-css/issues/158
+                        webview.setOnTouchListener(object : View.OnTouchListener {
+                            @SuppressLint("ClickableViewAccessibility")
+                            override fun onTouch(view: View, event: MotionEvent): Boolean {
+                                return (event.action == MotionEvent.ACTION_MOVE)
+                            }
+                        })
+                    }
+                },
+                onDispose = {
+                    scrollableState.webView = null
                 }
-            },
-            onDispose = {
-                scrollableState.webView = null
-            }
-        )
+            )
+        }
     }
 }
 

@@ -24,11 +24,11 @@ import org.readium.navigator.web.css.FontFamilyDeclaration
 import org.readium.navigator.web.css.ReadiumCss
 import org.readium.navigator.web.css.RsProperties
 import org.readium.navigator.web.css.buildFontFamilyDeclaration
+import org.readium.navigator.web.css.update
 import org.readium.navigator.web.layout.ReadingOrder
 import org.readium.navigator.web.location.ReflowableWebGoLocation
 import org.readium.navigator.web.location.ReflowableWebLocation
 import org.readium.navigator.web.preferences.ReflowableWebSettings
-import org.readium.navigator.web.preferences.update
 import org.readium.navigator.web.util.HyperlinkProcessor
 import org.readium.navigator.web.util.WebViewClient
 import org.readium.navigator.web.util.WebViewServer
@@ -73,23 +73,26 @@ public class ReflowableWebRenditionState internal constructor(
     internal val hyperlinkProcessor =
         HyperlinkProcessor(container)
 
-    private val fontFamilyDeclarations = fontFamilyDeclarations +
-        buildFontFamilyDeclaration(
-            fontFamily = FontFamily.OPEN_DYSLEXIC.name,
-            alternates = emptyList()
-        ) {
-            addFontFace {
-                addSource("readium/fonts/OpenDyslexic-Regular.otf")
-            }
-        }
-
     internal val readiumCss: State<ReadiumCss> =
         derivedStateOf {
             ReadiumCss(
                 assetsBaseHref = assetsBaseHref,
                 readiumCssAssets = RelativeUrl("readium/navigators/web/generated/readium-css/")!!,
                 rsProperties = rsProperties,
-                fontFamilyDeclarations = fontFamilyDeclarations
+                fontFamilyDeclarations =
+                buildList {
+                    addAll(fontFamilyDeclarations)
+                    add(
+                        buildFontFamilyDeclaration(
+                            fontFamily = FontFamily.OPEN_DYSLEXIC.name,
+                            alternates = emptyList()
+                        ) {
+                            addFontFace {
+                                addSource("readium/fonts/OpenDyslexic-Regular.otf")
+                            }
+                        }
+                    )
+                }
             ).update(
                 settings = layoutDelegate.settings.value,
                 useReadiumCssFontSize = true
