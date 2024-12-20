@@ -16,11 +16,13 @@ import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.unit.Velocity
 import kotlin.math.abs
 
-internal class ScrollPagerNestedScrollConnection(
+internal class PagerNestedScrollConnection(
     private val state: PagerState,
     private val flingBehavior: TargetedFlingBehavior,
     private val orientation: Orientation,
 ) : NestedScrollConnection {
+
+    private var consumedCrossAxis = false
 
     private val PagerState.firstVisibleOffset get() =
         layoutInfo.visiblePagesInfo.first().offset
@@ -45,7 +47,6 @@ internal class ScrollPagerNestedScrollConnection(
         val maxBound = (state.layoutInfo.pageSize - state.lastVisibleOffset).toFloat()
 
         val coerced = delta.coerceIn(minBound, maxBound)
-        // dispatch and return reversed as usual
         val consumed = -state.dispatchRawDelta(-coerced)
 
         return Offset(
@@ -87,6 +88,13 @@ internal class ScrollPagerNestedScrollConnection(
         available: Offset,
         source: NestedScrollSource,
     ): Offset {
+        if (orientation == Orientation.Horizontal && abs(consumed.y) > 0 ||
+            orientation == Orientation.Vertical && abs(consumed.x) > 0
+        ) {
+            consumedCrossAxis = true
+            return Offset.Zero
+        }
+
         val availableDir =
             if (orientation == Orientation.Horizontal) available.x else available.y
 
@@ -101,11 +109,15 @@ internal class ScrollPagerNestedScrollConnection(
         consumed: Velocity,
         available: Velocity,
     ): Velocity {
+        if (consumedCrossAxis) {
+            consumedCrossAxis = false
+            return Velocity.Zero
+        }
+
         val availableDir =
             if (orientation == Orientation.Horizontal) available.x else available.y
 
         var remaining = availableDir
-
         state.scroll(scrollPriority = MutatePriority.Default) {
             with(flingBehavior) {
                 remaining = -performFling(-availableDir)

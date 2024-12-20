@@ -17,7 +17,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 
 @Composable
-internal fun NavigatorPager(
+internal fun RenditionPager(
     modifier: Modifier = Modifier,
     state: PagerState,
     orientation: Orientation,
@@ -31,6 +31,12 @@ internal fun NavigatorPager(
         pagerSnapDistance = PagerSnapDistance.atMost(0)
     )
 
+    val nestedScrollConnection = PagerNestedScrollConnection(
+        state,
+        flingBehavior,
+        orientation
+    )
+
     if (orientation == Orientation.Horizontal) {
         HorizontalPager(
             modifier = modifier,
@@ -42,12 +48,7 @@ internal fun NavigatorPager(
             reverseLayout = reverseLayout,
             flingBehavior = flingBehavior,
             key = key,
-            pageNestedScrollConnection =
-            PaginatedPagerNestedScrollConnection(
-                state,
-                flingBehavior,
-                Orientation.Horizontal
-            ),
+            pageNestedScrollConnection = nestedScrollConnection,
             pageContent = pageContent
         )
     } else {
@@ -61,12 +62,7 @@ internal fun NavigatorPager(
             reverseLayout = reverseLayout,
             flingBehavior = flingBehavior,
             key = key,
-            pageNestedScrollConnection =
-            ScrollPagerNestedScrollConnection(
-                state,
-                flingBehavior,
-                Orientation.Vertical
-            ),
+            pageNestedScrollConnection = nestedScrollConnection,
             pageContent = pageContent
         )
     }

@@ -23,7 +23,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.DpSize
@@ -144,12 +143,6 @@ internal fun ReflowableResource(
 
         val scrollableState = remember { WebViewScrollable2DState() }
 
-        val reflowableNestedScrollConnection = when {
-            verticalText -> PaginatedReflowableNestedScrollConnection(scrollableState)
-            scroll -> ScrollReflowableNestedScrollConnection(scrollableState)
-            else -> PaginatedReflowableNestedScrollConnection(scrollableState)
-        }
-
         val density = LocalDensity.current
 
         val scrollOrientation = when {
@@ -187,8 +180,7 @@ internal fun ReflowableResource(
                         reverseDirection = !reverseLayout,
                         orientation = scrollOrientation
                     )
-                    .fillMaxSize()
-                    .nestedScroll(reflowableNestedScrollConnection),
+                    .fillMaxSize(),
                 state = webViewState,
                 factory = { RelaxedWebView(it) },
                 client = webViewClient,

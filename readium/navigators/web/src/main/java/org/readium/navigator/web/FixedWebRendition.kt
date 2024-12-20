@@ -39,7 +39,7 @@ import org.readium.navigator.web.fixed.SingleViewportSpread
 import org.readium.navigator.web.layout.DoubleViewportSpread
 import org.readium.navigator.web.layout.SingleViewportSpread
 import org.readium.navigator.web.location.FixedWebLocation
-import org.readium.navigator.web.pager.NavigatorPager
+import org.readium.navigator.web.pager.RenditionPager
 import org.readium.navigator.web.util.AbsolutePaddingValues
 import org.readium.navigator.web.util.DisplayArea
 import org.readium.navigator.web.util.WebViewServer
@@ -90,7 +90,7 @@ public fun FixedWebRendition(
 
         val coroutineScope = rememberCoroutineScope()
 
-        NavigatorPager(
+        RenditionPager(
             modifier = modifier,
             state = state.pagerState,
             orientation = Orientation.Horizontal,

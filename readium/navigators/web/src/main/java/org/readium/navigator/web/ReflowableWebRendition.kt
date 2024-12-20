@@ -36,7 +36,7 @@ import org.readium.navigator.common.TapContext
 import org.readium.navigator.common.defaultHyperlinkListener
 import org.readium.navigator.common.defaultInputListener
 import org.readium.navigator.web.location.ReflowableWebLocation
-import org.readium.navigator.web.pager.NavigatorPager
+import org.readium.navigator.web.pager.RenditionPager
 import org.readium.navigator.web.reflowable.ReflowableResource
 import org.readium.navigator.web.util.WebViewServer
 import org.readium.r2.navigator.preferences.ReadingProgression
@@ -99,7 +99,7 @@ public fun ReflowableWebRendition(
 
         val coroutineScope = rememberCoroutineScope()
 
-        NavigatorPager(
+        RenditionPager(
             modifier = modifier,
             state = state.pagerState,
             beyondViewportPageCount = 2,
