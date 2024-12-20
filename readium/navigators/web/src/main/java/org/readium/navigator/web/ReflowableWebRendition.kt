@@ -7,21 +7,26 @@
 package org.readium.navigator.web
 
 import android.annotation.SuppressLint
+import android.content.res.Configuration
+import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import org.readium.navigator.common.HyperlinkListener
 import org.readium.navigator.common.HyperlinkLocation
@@ -50,7 +55,6 @@ public fun ReflowableWebRendition(
     state: ReflowableWebRenditionState,
     modifier: Modifier = Modifier,
     windowInsets: WindowInsets = WindowInsets.displayCutout,
-    backgroundColor: Color = MaterialTheme.colorScheme.background,
     inputListener: InputListener = state.controller
         ?.let { defaultInputListener(controller = it) }
         ?: NullInputListener(),
@@ -59,8 +63,29 @@ public fun ReflowableWebRendition(
             ?.let { defaultHyperlinkListener(controller = it) }
             ?: NullHyperlinkListener(),
 ) {
+    val paginatedVerticalPadding =
+        when (LocalConfiguration.current.orientation) {
+            Configuration.ORIENTATION_LANDSCAPE -> 20.dp
+            else -> 40.dp
+        }
+
+    val verticalPadding =
+        if (state.layoutDelegate.settings.value.scroll) {
+            0.dp
+        } else {
+            paginatedVerticalPadding
+        }
+
+    val backgroundColor = (
+        state.layoutDelegate.settings.value.backgroundColor?.int
+            ?: state.layoutDelegate.settings.value.theme.backgroundColor
+        )
+
     BoxWithConstraints(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier.fillMaxSize()
+            .background(Color(backgroundColor))
+            .padding(windowInsets.asPaddingValues())
+            .padding(vertical = verticalPadding),
         propagateMinConstraints = true
     ) {
         val viewportSize = DpSize(maxWidth, maxHeight)
@@ -106,8 +131,7 @@ public fun ReflowableWebRendition(
                     coroutineScope.launch {
                         onLinkActivated(url, outerHtml, state, hyperlinkListener)
                     }
-                },
-                backgroundColor = backgroundColor
+                }
             )
         }
     }

@@ -22,8 +22,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.DpOffset
@@ -67,7 +65,6 @@ internal fun ReflowableResource(
     rsProperties: RsProperties,
     onTap: (TapEvent) -> Unit,
     onLinkActivated: (Url, String) -> Unit,
-    backgroundColor: Color,
 ) {
     Box(
         modifier = Modifier.fillMaxSize(),
@@ -196,7 +193,6 @@ internal fun ReflowableResource(
                 webview.settings.useWideViewPort = false
                 webview.isVerticalScrollBarEnabled = false
                 webview.isHorizontalScrollBarEnabled = false
-                webview.setBackgroundColor(backgroundColor.toArgb())
                 webview.setLayerType(View.LAYER_TYPE_HARDWARE, null)
                 if (!scroll) {
                     // Prevents vertical scrolling towards blank space.
