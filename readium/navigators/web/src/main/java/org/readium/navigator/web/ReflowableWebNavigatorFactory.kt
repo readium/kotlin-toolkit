@@ -44,6 +44,7 @@ public class ReflowableWebNavigatorFactory private constructor(
         public operator fun invoke(
             application: Application,
             publication: Publication,
+            defaults: ReflowableWebDefaults = ReflowableWebDefaults(),
         ): ReflowableWebNavigatorFactory? {
             if (!publication.conformsTo(Publication.Profile.EPUB) ||
                 publication.metadata.presentation.layout != EpubLayout.REFLOWABLE
@@ -99,7 +100,8 @@ public class ReflowableWebNavigatorFactory private constructor(
                 initialLocation = initialLocation ?: ReflowableWebGoLocation(
                     readingOrderItems[0].href
                 ),
-                container = publication.container
+                container = publication.container,
+                fontFamilyDeclarations = emptyList()
             )
 
         return Try.success(state)
