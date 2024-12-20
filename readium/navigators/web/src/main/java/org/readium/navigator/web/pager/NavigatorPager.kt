@@ -43,7 +43,7 @@ internal fun NavigatorPager(
             flingBehavior = flingBehavior,
             key = key,
             pageNestedScrollConnection =
-            PagerNestedScrollConnection(
+            PaginatedPagerNestedScrollConnection(
                 state,
                 flingBehavior,
                 Orientation.Horizontal

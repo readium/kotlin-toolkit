@@ -26,6 +26,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.DpOffset
+import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.Velocity
 import androidx.core.view.postDelayed
 import androidx.webkit.WebViewCompat
@@ -38,7 +39,6 @@ import org.readium.navigator.web.css.UserProperties
 import org.readium.navigator.web.gestures.Fling2DBehavior
 import org.readium.navigator.web.gestures.Scroll2DScope
 import org.readium.navigator.web.gestures.scrollable2D
-import org.readium.navigator.web.util.DisplayArea
 import org.readium.navigator.web.util.WebViewClient
 import org.readium.navigator.web.webapi.CssApi
 import org.readium.navigator.web.webapi.GesturesApi
@@ -60,9 +60,10 @@ internal fun ReflowableResource(
     href: Url,
     publicationBaseUrl: AbsoluteUrl,
     webViewClient: WebViewClient,
-    displayArea: DisplayArea,
+    viewportSize: DpSize,
     reverseLayout: Boolean,
     scroll: Boolean,
+    verticalText: Boolean,
     userProperties: UserProperties,
     rsProperties: RsProperties,
     layout: Layout,
@@ -143,16 +144,19 @@ internal fun ReflowableResource(
 
         val scrollableState = remember { WebViewScrollable2DState() }
 
-        val reflowableNestedScrollConnection =
-            if (scroll) {
-                ScrollReflowableNestedScrollConnection(scrollableState)
-            } else {
-                ReflowableNestedScrollConnection(scrollableState)
-            }
+        val reflowableNestedScrollConnection = when {
+            verticalText -> PaginatedReflowableNestedScrollConnection(scrollableState)
+            scroll -> ScrollReflowableNestedScrollConnection(scrollableState)
+            else -> PaginatedReflowableNestedScrollConnection(scrollableState)
+        }
 
         val density = LocalDensity.current
 
-        val scrollOrientation = if (scroll) Orientation.Vertical else Orientation.Horizontal
+        val scrollOrientation = when {
+            verticalText -> Orientation.Horizontal
+            scroll -> Orientation.Vertical
+            else -> Orientation.Horizontal
+        }
 
         val flingBehavior =
             if (scroll) {
@@ -165,7 +169,7 @@ internal fun ReflowableResource(
                                 density,
                                 scrollOrientation,
                                 reverseLayout,
-                                displayArea,
+                                viewportSize,
                                 it
                             )
                         )
@@ -199,7 +203,7 @@ internal fun ReflowableResource(
                     webview.isVerticalScrollBarEnabled = false
                     webview.isHorizontalScrollBarEnabled = false
                     webview.setLayerType(View.LAYER_TYPE_HARDWARE, null)
-                    if (!scroll) {
+                    if (verticalText || !scroll) {
                         // Prevents vertical scrolling towards blank space.
                         // See https://github.com/readium/readium-css/issues/158
                         webview.setOnTouchListener(object : View.OnTouchListener {

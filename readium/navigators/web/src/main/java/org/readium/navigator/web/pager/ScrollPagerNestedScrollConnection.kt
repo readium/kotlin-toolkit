@@ -48,7 +48,6 @@ internal class ScrollPagerNestedScrollConnection(
         // dispatch and return reversed as usual
         val consumed = -state.dispatchRawDelta(-coerced)
 
-        check(state.layoutInfo.visiblePagesInfo.size == 1 || abs(consumed - available.y) < 1)
         return Offset(
             x = if (orientation == Orientation.Horizontal) consumed else available.x,
             y = if (orientation == Orientation.Vertical) consumed else available.y
@@ -57,18 +56,27 @@ internal class ScrollPagerNestedScrollConnection(
 
     override suspend fun onPreFling(available: Velocity): Velocity {
         if (state.layoutInfo.visiblePagesInfo.size > 1) {
-            var remaining: Float = available.y
+            val availableDir =
+                if (orientation == Orientation.Horizontal) available.x else available.y
+
+            var remaining: Float = availableDir
             state.scroll(scrollPriority = MutatePriority.Default) {
                 with(flingBehavior) {
-                    remaining = -performFling(-available.y)
+                    remaining = -performFling(-availableDir)
                 }
             }
 
-            if ((available.y - remaining).isNaN()) {
-                return available
-            }
+            val consumed =
+                if ((availableDir - remaining).isNaN()) {
+                    availableDir
+                } else {
+                    availableDir - remaining
+                }
 
-            return Velocity(0f, available.y - remaining)
+            return Velocity(
+                x = if (orientation == Orientation.Horizontal) consumed else 0f,
+                y = if (orientation == Orientation.Vertical) consumed else 0f
+            )
         }
 
         return Velocity.Zero
@@ -79,26 +87,41 @@ internal class ScrollPagerNestedScrollConnection(
         available: Offset,
         source: NestedScrollSource,
     ): Offset {
-        val consumedY = -state.dispatchRawDelta(-available.y)
-        return Offset(0f, consumedY)
+        val availableDir =
+            if (orientation == Orientation.Horizontal) available.x else available.y
+
+        val consumed = -state.dispatchRawDelta(-availableDir)
+        return Offset(
+            x = if (orientation == Orientation.Horizontal) consumed else 0f,
+            y = if (orientation == Orientation.Vertical) consumed else 0f
+        )
     }
 
     override suspend fun onPostFling(
         consumed: Velocity,
         available: Velocity,
     ): Velocity {
-        var remaining = available.y
+        val availableDir =
+            if (orientation == Orientation.Horizontal) available.x else available.y
+
+        var remaining = availableDir
 
         state.scroll(scrollPriority = MutatePriority.Default) {
             with(flingBehavior) {
-                remaining = -performFling(-available.y)
+                remaining = -performFling(-availableDir)
             }
         }
 
-        if ((available.y - remaining).isNaN()) {
-            return available
-        }
+        val consumed =
+            if ((availableDir - remaining).isNaN()) {
+                availableDir
+            } else {
+                availableDir - remaining
+            }
 
-        return Velocity(available.x, available.y - remaining)
+        return Velocity(
+            x = if (orientation == Orientation.Horizontal) consumed else available.x,
+            y = if (orientation == Orientation.Vertical) consumed else available.y
+        )
     }
 }

@@ -22,7 +22,6 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.LayoutDirection
@@ -39,8 +38,6 @@ import org.readium.navigator.common.defaultInputListener
 import org.readium.navigator.web.location.ReflowableWebLocation
 import org.readium.navigator.web.pager.NavigatorPager
 import org.readium.navigator.web.reflowable.ReflowableResource
-import org.readium.navigator.web.util.AbsolutePaddingValues
-import org.readium.navigator.web.util.DisplayArea
 import org.readium.navigator.web.util.WebViewServer
 import org.readium.r2.navigator.preferences.ReadingProgression
 import org.readium.r2.shared.ExperimentalReadiumApi
@@ -88,10 +85,7 @@ public fun ReflowableWebRendition(
             .padding(vertical = verticalPadding),
         propagateMinConstraints = true
     ) {
-        val viewportSize = DpSize(maxWidth, maxHeight)
-
-        val safeDrawingPadding = windowInsets.asAbsolutePaddingValues()
-        val displayArea = rememberUpdatedState(DisplayArea(viewportSize, safeDrawingPadding))
+        val viewportSize = rememberUpdatedState(DpSize(maxWidth, maxHeight))
 
         val readingProgression =
             state.layoutDelegate.settings.value.readingProgression
@@ -110,28 +104,24 @@ public fun ReflowableWebRendition(
             state = state.pagerState,
             beyondViewportPageCount = 2,
             reverseLayout = reverseLayout,
-            orientation =
-            if (state.layoutDelegate.settings.value.scroll) {
-                if (state.layoutDelegate.settings.value.verticalText) {
-                    Orientation.Horizontal
-                } else {
-                    Orientation.Vertical
-                }
-            } else {
-                Orientation.Horizontal
-            },
+            orientation = when {
+                state.layoutDelegate.settings.value.verticalText -> Orientation.Horizontal
+                state.layoutDelegate.settings.value.scroll -> Orientation.Vertical
+                else -> Orientation.Horizontal
+            }
         ) { index ->
             ReflowableResource(
                 href = state.readingOrder.items[index].href,
                 publicationBaseUrl = WebViewServer.publicationBaseHref,
                 webViewClient = state.webViewClient,
-                displayArea = displayArea.value,
+                viewportSize = viewportSize.value,
                 reverseLayout = reverseLayout,
                 scroll = state.layoutDelegate.settings.value.scroll,
+                verticalText = state.layoutDelegate.settings.value.verticalText,
                 rsProperties = state.readiumCss.value.rsProperties,
                 userProperties = state.readiumCss.value.userProperties,
                 layout = state.readiumCss.value.layout,
-                onTap = { inputListener.onTap(it, TapContext(viewportSize)) },
+                onTap = { inputListener.onTap(it, TapContext(viewportSize.value)) },
                 onLinkActivated = { url, outerHtml ->
                     coroutineScope.launch {
                         onLinkActivated(url, outerHtml, state, hyperlinkListener)
@@ -140,17 +130,6 @@ public fun ReflowableWebRendition(
             )
         }
     }
-}
-
-@Composable
-private fun WindowInsets.asAbsolutePaddingValues(): AbsolutePaddingValues {
-    val density = LocalDensity.current
-    val layoutDirection = LocalLayoutDirection.current
-    val top = with(density) { getTop(density).toDp() }
-    val right = with(density) { getRight(density, layoutDirection).toDp() }
-    val bottom = with(density) { getBottom(density).toDp() }
-    val left = with(density) { getLeft(density, layoutDirection).toDp() }
-    return AbsolutePaddingValues(top = top, right = right, bottom = bottom, left = left)
 }
 
 private fun LayoutDirection.toReadingProgression(): ReadingProgression =

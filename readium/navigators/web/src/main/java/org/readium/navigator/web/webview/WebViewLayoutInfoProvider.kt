@@ -3,17 +3,17 @@ package org.readium.navigator.web.webview
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import kotlin.math.ceil
 import kotlin.math.roundToInt
 import org.readium.navigator.web.snapping.PagingLayoutInfo
-import org.readium.navigator.web.util.DisplayArea
 
 internal class WebViewLayoutInfoProvider(
     override val density: Density,
     override val orientation: Orientation,
     override val reverseLayout: Boolean,
-    private val displayArea: DisplayArea,
+    private val viewportSize: DpSize,
     private val webView: RelaxedWebView,
 ) : PagingLayoutInfo {
 
@@ -24,7 +24,7 @@ internal class WebViewLayoutInfoProvider(
         }
 
     override val pageSize: Int =
-        with(density) { displayArea.viewportSize.width.toPx().roundToInt() }
+        with(density) { viewportSize.width.toPx().roundToInt() }
 
     override val pageSpacing: Int = 0
 

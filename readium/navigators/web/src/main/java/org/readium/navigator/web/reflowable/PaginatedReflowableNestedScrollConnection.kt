@@ -13,7 +13,7 @@ import androidx.compose.ui.unit.Velocity
 import org.readium.navigator.web.webview.RelaxedWebView
 import org.readium.navigator.web.webview.WebViewScrollable2DState
 
-internal class ReflowableNestedScrollConnection(
+internal class PaginatedReflowableNestedScrollConnection(
     private val webviewState: WebViewScrollable2DState,
 ) : NestedScrollConnection {
 

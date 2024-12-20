@@ -16,7 +16,7 @@ import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.unit.Velocity
 import kotlin.math.abs
 
-internal class PagerNestedScrollConnection(
+internal class PaginatedPagerNestedScrollConnection(
     private val state: PagerState,
     private val flingBehavior: TargetedFlingBehavior,
     private val orientation: Orientation,
