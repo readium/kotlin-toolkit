@@ -210,11 +210,13 @@ internal class ReflowableNavigationDelegate(
 
     override val overflow: State<Overflow> =
         derivedStateOf {
-            SimpleOverflow(
-                settings.value.readingProgression,
-                false,
-                Axis.HORIZONTAL
-            )
+            with(settings.value) {
+                SimpleOverflow(
+                    readingProgression = readingProgression,
+                    scroll = scroll,
+                    axis = if (scroll && !verticalText) Axis.VERTICAL else Axis.HORIZONTAL
+                )
+            }
         }
 
     override val canMoveForward: Boolean

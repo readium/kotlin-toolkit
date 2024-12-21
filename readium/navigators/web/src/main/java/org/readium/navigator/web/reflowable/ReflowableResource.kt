@@ -15,6 +15,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.FlingBehavior
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.ScrollScope
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
@@ -25,6 +26,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.DpSize
@@ -196,6 +198,18 @@ internal fun ReflowableResource(
         key(layout) {
             WebView(
                 modifier = Modifier
+                    // Detect taps on padding
+                    .pointerInput(Unit) {
+                        detectTapGestures(
+                            onTap = {
+                                if (it.x >= 0 && it.y >= 0) {
+                                    val offset = DpOffset(x = it.x.toDp(), y = it.y.toDp())
+                                    val event = TapEvent(offset)
+                                    onTap(event)
+                                }
+                            }
+                        )
+                    }
                     .scrollable2D(
                         enabled = contentIsLaidOut.value,
                         state = scrollableState,
