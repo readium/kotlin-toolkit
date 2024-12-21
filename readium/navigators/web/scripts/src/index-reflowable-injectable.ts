@@ -29,8 +29,8 @@ const bridgeListener = new BridgeGesturesAdapter(window.gestures)
 const gesturesListener = {
   onTap: (event: MouseEvent) => {
     const tapEvent = {
-      x: event.clientX * visualViewport!.scale,
-      y: event.clientY * visualViewport!.scale,
+      x: (event.clientX - visualViewport!.offsetLeft) * visualViewport!.scale,
+      y: (event.clientY - visualViewport!.offsetTop) * visualViewport!.scale,
     }
     bridgeListener.onTap(tapEvent)
   },

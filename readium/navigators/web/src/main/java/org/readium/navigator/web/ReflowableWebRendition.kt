@@ -8,20 +8,18 @@ package org.readium.navigator.web
 
 import android.annotation.SuppressLint
 import android.content.res.Configuration
-import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.LayoutDirection
@@ -38,6 +36,7 @@ import org.readium.navigator.common.defaultInputListener
 import org.readium.navigator.web.location.ReflowableWebLocation
 import org.readium.navigator.web.pager.RenditionPager
 import org.readium.navigator.web.reflowable.ReflowableResource
+import org.readium.navigator.web.util.AbsolutePaddingValues
 import org.readium.navigator.web.util.WebViewServer
 import org.readium.r2.navigator.preferences.ReadingProgression
 import org.readium.r2.shared.ExperimentalReadiumApi
@@ -60,29 +59,8 @@ public fun ReflowableWebRendition(
             ?.let { defaultHyperlinkListener(controller = it) }
             ?: NullHyperlinkListener(),
 ) {
-    val paginatedVerticalPadding =
-        when (LocalConfiguration.current.orientation) {
-            Configuration.ORIENTATION_LANDSCAPE -> 20.dp
-            else -> 40.dp
-        }
-
-    val verticalPadding =
-        if (state.layoutDelegate.settings.value.scroll) {
-            0.dp
-        } else {
-            paginatedVerticalPadding
-        }
-
-    val backgroundColor = (
-        state.layoutDelegate.settings.value.backgroundColor?.int
-            ?: state.layoutDelegate.settings.value.theme.backgroundColor
-        )
-
     BoxWithConstraints(
-        modifier = Modifier.fillMaxSize()
-            .background(Color(backgroundColor))
-            .padding(windowInsets.asPaddingValues())
-            .padding(vertical = verticalPadding),
+        modifier = Modifier.fillMaxSize(),
         propagateMinConstraints = true
     ) {
         val viewportSize = rememberUpdatedState(DpSize(maxWidth, maxHeight))
@@ -98,6 +76,26 @@ public fun ReflowableWebRendition(
         state.updateLocation(ReflowableWebLocation(itemHref))
 
         val coroutineScope = rememberCoroutineScope()
+
+        val paginatedVerticalPadding =
+            when (LocalConfiguration.current.orientation) {
+                Configuration.ORIENTATION_LANDSCAPE -> AbsolutePaddingValues(vertical = 20.dp)
+                else -> AbsolutePaddingValues(vertical = 40.dp)
+            }
+
+        val insetsPaddingValues = windowInsets.asAbsolutePaddingValues()
+
+        val padding =
+            if (state.layoutDelegate.settings.value.scroll) {
+                insetsPaddingValues
+            } else {
+                insetsPaddingValues + paginatedVerticalPadding
+            }
+
+        val backgroundColor = (
+            state.layoutDelegate.settings.value.backgroundColor?.int
+                ?: state.layoutDelegate.settings.value.theme.backgroundColor
+            )
 
         RenditionPager(
             modifier = modifier,
@@ -115,13 +113,18 @@ public fun ReflowableWebRendition(
                 publicationBaseUrl = WebViewServer.publicationBaseHref,
                 webViewClient = state.webViewClient,
                 viewportSize = viewportSize.value,
+                backgroundColor = Color(backgroundColor),
+                padding = padding,
                 reverseLayout = reverseLayout,
                 scroll = state.layoutDelegate.settings.value.scroll,
                 verticalText = state.layoutDelegate.settings.value.verticalText,
                 rsProperties = state.readiumCss.value.rsProperties,
                 userProperties = state.readiumCss.value.userProperties,
                 layout = state.readiumCss.value.layout,
-                onTap = { inputListener.onTap(it, TapContext(viewportSize.value)) },
+                initialProgression = if (index <= itemIndex) 0.0 else 100.0,
+                onTap = { tapEvent ->
+                    inputListener.onTap(tapEvent, TapContext(viewportSize.value))
+                },
                 onLinkActivated = { url, outerHtml ->
                     coroutineScope.launch {
                         onLinkActivated(url, outerHtml, state, hyperlinkListener)
@@ -130,6 +133,17 @@ public fun ReflowableWebRendition(
             )
         }
     }
+}
+
+@Composable
+private fun WindowInsets.asAbsolutePaddingValues(): AbsolutePaddingValues {
+    val density = LocalDensity.current
+    val layoutDirection = LocalLayoutDirection.current
+    val top = with(density) { getTop(density).toDp() }
+    val right = with(density) { getRight(density, layoutDirection).toDp() }
+    val bottom = with(density) { getBottom(density).toDp() }
+    val left = with(density) { getLeft(density, layoutDirection).toDp() }
+    return AbsolutePaddingValues(top = top, right = right, bottom = bottom, left = left)
 }
 
 private fun LayoutDirection.toReadingProgression(): ReadingProgression =

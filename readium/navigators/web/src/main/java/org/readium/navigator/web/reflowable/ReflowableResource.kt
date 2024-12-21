@@ -11,6 +11,7 @@ package org.readium.navigator.web.reflowable
 import android.annotation.SuppressLint
 import android.view.MotionEvent
 import android.view.View
+import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.FlingBehavior
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.ScrollScope
@@ -23,6 +24,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.DpSize
@@ -31,6 +33,8 @@ import androidx.core.view.postDelayed
 import androidx.webkit.WebViewCompat
 import androidx.webkit.WebViewFeature
 import kotlin.Float
+import kotlin.math.ceil
+import kotlin.math.floor
 import org.readium.navigator.common.TapEvent
 import org.readium.navigator.web.css.Layout
 import org.readium.navigator.web.css.RsProperties
@@ -38,7 +42,9 @@ import org.readium.navigator.web.css.UserProperties
 import org.readium.navigator.web.gestures.Fling2DBehavior
 import org.readium.navigator.web.gestures.Scroll2DScope
 import org.readium.navigator.web.gestures.scrollable2D
+import org.readium.navigator.web.util.AbsolutePaddingValues
 import org.readium.navigator.web.util.WebViewClient
+import org.readium.navigator.web.util.absolutePadding
 import org.readium.navigator.web.webapi.CssApi
 import org.readium.navigator.web.webapi.GesturesApi
 import org.readium.navigator.web.webapi.GesturesListener
@@ -60,12 +66,15 @@ internal fun ReflowableResource(
     publicationBaseUrl: AbsoluteUrl,
     webViewClient: WebViewClient,
     viewportSize: DpSize,
+    backgroundColor: Color,
+    padding: AbsolutePaddingValues,
     reverseLayout: Boolean,
     scroll: Boolean,
     verticalText: Boolean,
     userProperties: UserProperties,
     rsProperties: RsProperties,
     layout: Layout,
+    initialProgression: Double,
     onTap: (TapEvent) -> Unit,
     onLinkActivated: (Url, String) -> Unit,
 ) {
@@ -126,7 +135,11 @@ internal fun ReflowableResource(
         val gesturesApi = remember(onTap) {
             val listener = object : GesturesListener {
                 override fun onTap(offset: DpOffset) {
-                    onTap(TapEvent(offset))
+                    val shiftedOffset = DpOffset(
+                        x = offset.x + padding.left,
+                        y = offset.y + padding.top
+                    )
+                    onTap(TapEvent(shiftedOffset))
                 }
 
                 override fun onLinkActivated(href: AbsoluteUrl, outerHtml: String) {
@@ -149,6 +162,16 @@ internal fun ReflowableResource(
             verticalText -> Orientation.Horizontal
             scroll -> Orientation.Vertical
             else -> Orientation.Horizontal
+        }
+
+        LaunchedEffect(contentIsLaidOut, contentIsLaidOut.value, scrollableState.webView) {
+            scrollableState.webView?.let { webview ->
+                if (scrollOrientation == Orientation.Horizontal) {
+                    webview.scrollTo(floor(initialProgression * webview.maxScrollX).toInt(), 0)
+                } else {
+                    webview.scrollTo(0, ceil(initialProgression * webview.maxScrollY).toInt())
+                }
+            }
         }
 
         val flingBehavior =
@@ -180,6 +203,8 @@ internal fun ReflowableResource(
                         reverseDirection = !reverseLayout,
                         orientation = scrollOrientation
                     )
+                    .background(backgroundColor)
+                    .absolutePadding(padding)
                     .fillMaxSize(),
                 state = webViewState,
                 factory = { RelaxedWebView(it) },
