@@ -176,6 +176,11 @@ internal fun ReflowableResource(
             }
         }
 
+        val webViewViewport = DpSize(
+            width = viewportSize.width - padding.left - padding.right,
+            height = viewportSize.height - padding.top - padding.bottom
+        )
+
         val flingBehavior =
             if (scroll) {
                 null
@@ -187,7 +192,7 @@ internal fun ReflowableResource(
                                 density,
                                 scrollOrientation,
                                 reverseLayout,
-                                viewportSize,
+                                webViewViewport,
                                 it
                             )
                         )
@@ -217,9 +222,9 @@ internal fun ReflowableResource(
                         reverseDirection = !reverseLayout,
                         orientation = scrollOrientation
                     )
+                    .fillMaxSize()
                     .background(backgroundColor)
-                    .absolutePadding(padding)
-                    .fillMaxSize(),
+                    .absolutePadding(padding),
                 state = webViewState,
                 factory = { RelaxedWebView(it) },
                 client = webViewClient,
