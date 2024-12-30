@@ -94,7 +94,7 @@ class MediaService : MediaSessionService() {
             navigator.currentLocator
                 .sample(3000)
                 .onEach { locator ->
-                    Timber.d("Saving TTS progression $locator")
+                    Timber.d("Saving progression $locator")
                     app.bookRepository.saveProgression(locator, bookId)
                 }.launchIn(session.coroutineScope)
         }

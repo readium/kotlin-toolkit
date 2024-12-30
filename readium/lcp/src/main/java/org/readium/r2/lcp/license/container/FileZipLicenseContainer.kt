@@ -31,9 +31,11 @@ internal class FileZipLicenseContainer(
         } catch (e: Exception) {
             throw LcpException(LcpError.Container.OpenFailed)
         }
+
         val entry = try {
             archive.getEntry(pathInZIP.toString())!!
         } catch (e: Exception) {
+            archive.close()
             throw LcpException(LcpError.Container.FileNotFound(pathInZIP))
         }
 
@@ -41,6 +43,8 @@ internal class FileZipLicenseContainer(
             archive.getInputStream(entry).readBytes()
         } catch (e: Exception) {
             throw LcpException(LcpError.Container.ReadFailed(pathInZIP))
+        } finally {
+            archive.close()
         }
     }
 
@@ -49,12 +53,15 @@ internal class FileZipLicenseContainer(
             val source = File(zip)
             val tmpZip = File("$zip.tmp")
             val zipFile = ZipFile(source)
-            zipFile.addOrReplaceEntry(
-                pathInZIP.toString(),
-                ByteArrayInputStream(license.toByteArray()),
-                tmpZip
-            )
-            zipFile.close()
+            try {
+                zipFile.addOrReplaceEntry(
+                    pathInZIP.toString(),
+                    ByteArrayInputStream(license.toByteArray()),
+                    tmpZip
+                )
+            } finally {
+                zipFile.close()
+            }
             tmpZip.moveTo(source)
         } catch (e: Exception) {
             throw LcpException(LcpError.Container.WriteFailed(pathInZIP))

@@ -231,7 +231,7 @@ internal class LcpDecryptor(
                             _length
                         } else {
                             val lastTwoBlocks = encryptedData.sliceArray(
-                                encryptedData.size - 2 until encryptedData.size
+                                encryptedData.size - 2 * AES_BLOCK_SIZE until encryptedData.size
                             )
                             lengthFromLastTwoBlocks(encryptedLength, lastTwoBlocks)
                                 .onSuccess { _length = Try.success(it) }
