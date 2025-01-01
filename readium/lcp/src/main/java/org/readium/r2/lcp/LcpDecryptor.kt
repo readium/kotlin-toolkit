@@ -59,7 +59,7 @@ internal class LcpDecryptor(
                 encryption.isDeflated || !encryption.isCbcEncrypted ->
                     FullLcpResource(resource, encryption, license)
                 else ->
-                    CbcLcpResource(resource, license)
+                    CbcLcpResource(resource, encryption, license)
             }
         }
     }
@@ -90,39 +90,22 @@ internal class LcpDecryptor(
      * Supports random access for byte range requests, but the resource MUST NOT be deflated.
      */
     private class CbcLcpResource(
-        private val resource: Resource,
+        resource: Resource,
+        private val encryption: Encryption,
         private val license: LcpLicense
     ) : Resource by resource {
 
-        private class Cache(
-            var startIndex: Int? = null,
-            val data: ByteArray = ByteArray(3 * AES_BLOCK_SIZE)
-        )
+        private val resource = CachingResource(resource, 3 * AES_BLOCK_SIZE)
 
         private lateinit var _length: Try<Long, ReadError>
 
-        /*
-         * Decryption needs to look around the data strictly matching the content to decipher.
-         * That means that in case of contiguous read requests, data fetched from the underlying
-         * resource are not contiguous. Every request to the underlying resource starts slightly
-         * before the end of the previous one. This is an issue with remote publications because
-         * you have to make a new HTTP request every time instead of reusing the previous one.
-         * To alleviate this, we cache the three last bytes read in each call and reuse them
-         * in the next call if possible.
-         */
-        private val _cache: Cache = Cache()
-
         /** Plain text size. */
-        override suspend fun length(): Try<Long, ReadError> {
-            if (::_length.isInitialized) {
-                return _length
+        override suspend fun length(): Try<Long, ReadError> =
+            when {
+                ::_length.isInitialized -> _length
+                encryption.originalLength != null -> Try.success(encryption.originalLength!!)
+                else -> lengthFromPadding().also { _length = it }
             }
-
-            // Unfortunately, encryption.originalLength is not reliable.
-            _length = lengthFromPadding()
-
-            return _length
-        }
 
         private suspend fun lengthFromPadding(): Try<Long, ReadError> {
             val length = resource.length()
@@ -203,7 +186,7 @@ internal class LcpDecryptor(
             val encryptedStart = range.first - startPadding
             val encryptedEndExclusive = range.last + 1 + endPadding + AES_BLOCK_SIZE
 
-            val encryptedData = getEncryptedData(encryptedStart until encryptedEndExclusive)
+            val encryptedData = read(encryptedStart until encryptedEndExclusive)
                 .getOrElse { return Try.failure(it) }
 
             val bytes = license.decrypt(encryptedData)
@@ -261,34 +244,6 @@ internal class LcpDecryptor(
             return Try.success(bytes.sliceArray(dataSlice))
         }
 
-        /**
-         * Reads encrypted data using the cache when suitable.
-         */
-        private suspend fun getEncryptedData(range: LongRange): Try<ByteArray, ReadError> {
-            val cacheStartIndex = _cache.startIndex
-                ?.takeIf { cacheStart ->
-                    val cacheEnd = cacheStart + _cache.data.size
-                    range.first in cacheStart until cacheEnd && cacheEnd <= range.last + 1
-                } ?: return resource.read(range)
-
-            val bytes = ByteArray(range.last.toInt() - range.first.toInt() + 1)
-            val offsetInCache = (range.first - cacheStartIndex).toInt()
-            val fromCacheLength = _cache.data.size - offsetInCache
-
-            return resource.read(range.first + fromCacheLength..range.last).map {
-                _cache.data.copyInto(bytes, 0, offsetInCache)
-                it.copyInto(bytes, fromCacheLength)
-                bytes
-            }.onSuccess { result ->
-                if (result.size >= _cache.data.size) {
-                    // cache the three last encrypted blocks that have been read for future use
-                    val cacheStart = result.size - _cache.data.size
-                    _cache.startIndex = (range.last + 1 - _cache.data.size).toInt()
-                    result.copyInto(_cache.data, 0, cacheStart)
-                }
-            }
-        }
-
         companion object {
             private const val AES_BLOCK_SIZE = 16 // bytes
         }
@@ -341,6 +296,92 @@ private suspend fun LcpLicense.decryptFully(
 
         Try.success(bytes)
     }
+
+/**
+ * A resource caching the last bytes read on range requests.
+ *
+ * Decryption needs to look one block back into the ciphered data. This means that in case of
+ * contiguous read requests such as those you can expect from audio players, the data fetched from
+ * the underlying resource are not contiguous: every range request to the underlying resource starts
+ * one block before the end of the previous one.
+ *
+ * This is an issue with remote publications as you have to make a new HTTP request for each range
+ * instead of reusing the previous one. To alleviate this, we cache the last bytes read in each
+ * request and reuse them in the next one if possible.
+ */
+private class CachingResource(
+    private val resource: Resource,
+    cacheLength: Int
+) : Resource by resource {
+
+    private class Cache(
+        var startIndex: Int?,
+        val data: ByteArray
+    )
+
+    private val cache: Cache = Cache(null, ByteArray(cacheLength))
+
+    override suspend fun read(range: LongRange?): Try<ByteArray, ReadError> {
+        if (range == null) {
+            return resource.read(null)
+        }
+
+        @Suppress("NAME_SHADOWING")
+        val range = range
+            .coerceFirstNonNegative()
+            .requireLengthFitInt()
+
+        if (range.isEmpty()) {
+            return Try.success(ByteArray(0))
+        }
+
+        // cache start index or null if we can't read from the cache
+        val cacheStartIndex = cache.startIndex
+            ?.takeIf { cacheStart ->
+                val cacheEndExclusive = cacheStart + cache.data.size
+                val rangeBeginsInCache = range.first in cacheStart until cacheEndExclusive
+                val rangeGoesBeyondCache = cacheEndExclusive <= range.last + 1
+                rangeBeginsInCache && rangeGoesBeyondCache
+            }
+
+        val result =
+            if (cacheStartIndex == null) {
+                resource.read(range)
+            } else {
+                readWithCache(cacheStartIndex, cache.data, range)
+            }
+
+        // Cache the end of result if it's big enough
+        if (result is Try.Success && result.value.size >= cache.data.size) {
+            val offsetInResult = result.value.size - cache.data.size
+            cache.startIndex = (range.last + 1 - cache.data.size).toInt()
+            result.value.copyInto(cache.data, 0, offsetInResult)
+        }
+
+        return result
+    }
+
+    private suspend fun readWithCache(
+        cacheStartIndex: Int,
+        cachedData: ByteArray,
+        range: LongRange
+    ): Try<ByteArray, ReadError> {
+        require(range.first >= cacheStartIndex)
+        require(range.last + 1 >= cacheStartIndex + cachedData.size)
+
+        val offsetInCache = (range.first - cacheStartIndex).toInt()
+        val fromCacheLength = cachedData.size - offsetInCache
+
+        val newData = resource.read(range.first + fromCacheLength..range.last)
+            .getOrElse { return Try.failure((it)) }
+
+        val result = ByteArray(fromCacheLength + newData.size)
+        cachedData.copyInto(result, 0, offsetInCache)
+        newData.copyInto(result, fromCacheLength)
+
+        return Try.success(result)
+    }
+}
 
 private val Encryption.isDeflated: Boolean get() =
     compression?.lowercase(java.util.Locale.ROOT) == "deflate"
