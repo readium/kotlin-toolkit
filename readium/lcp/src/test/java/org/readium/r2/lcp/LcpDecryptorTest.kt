@@ -49,7 +49,7 @@ class LcpDecryptorTest(val testCase: TestCase) {
             add(TestCase(50 until 55L, 16))
 
             // Exhaustive testing, too long for CI
-            for (padding in 1 until 16) {
+            /*for (padding in 1 until 16) {
                 for (end in 0 until 60L) {
                     for (start in 0 until 100) {
                         add(
@@ -60,7 +60,7 @@ class LcpDecryptorTest(val testCase: TestCase) {
                         )
                     }
                 }
-            }
+            }*/
         }
     }
 
