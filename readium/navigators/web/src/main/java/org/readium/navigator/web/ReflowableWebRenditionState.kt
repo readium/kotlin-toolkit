@@ -109,7 +109,7 @@ public class ReflowableWebRenditionState internal constructor(
         )
     }
 
-    private val webViewServer =
+    internal val webViewServer =
         WebViewServer(
             application = application,
             container = container,
@@ -128,6 +128,11 @@ public class ReflowableWebRenditionState internal constructor(
             currentPage = readingOrder.indexOfHref(initialLocation.href) ?: 0,
             pageCount = { readingOrder.items.size }
         )
+
+    internal val currentProgression: Double =
+        controller?.location?.value?.progression
+            ?: initialLocation.progression
+            ?: 0.0
 
     internal suspend fun computeHyperlinkContext(originUrl: Url, outerHtml: String): LinkContext? =
         hyperlinkProcessor.computeLinkContext(originUrl, outerHtml)

@@ -24,7 +24,7 @@ public data class ReflowableWebGoLocation(
 @ExperimentalReadiumApi
 public data class ReflowableWebLocation(
     override val href: Url,
-    // val progression: Double,
+    val progression: Double,
     // val cssSelector: String?,
     // val textBefore: String?,
     // val textAfter: String?,

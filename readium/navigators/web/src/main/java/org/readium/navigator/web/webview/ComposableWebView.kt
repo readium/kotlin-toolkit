@@ -48,7 +48,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 @SuppressLint("UnusedBoxWithConstraintsScope")
 @Composable
 internal fun WebView(
-    state: WebViewState,
+    state: WebViewState<WebView>,
     modifier: Modifier = Modifier,
     onCreated: (WebView) -> Unit = {},
     onDispose: (WebView) -> Unit = {},
@@ -86,7 +86,7 @@ internal fun WebView(
 @SuppressLint("UnusedBoxWithConstraintsScope")
 @Composable
 internal fun <T : WebView> WebView(
-    state: WebViewState,
+    state: WebViewState<T>,
     factory: ((Context) -> T),
     modifier: Modifier = Modifier,
     onCreated: (T) -> Unit = {},
@@ -161,7 +161,7 @@ internal fun <T : WebView> WebView(
  */
 @Composable
 internal fun <T : WebView> WebView(
-    state: WebViewState,
+    state: WebViewState<T>,
     factory: ((Context) -> T),
     layoutParams: FrameLayout.LayoutParams,
     modifier: Modifier = Modifier,
@@ -232,7 +232,7 @@ internal sealed class WebContent {
  * using the rememberWebViewState(uri) function.
  */
 @Stable
-internal class WebViewState(webContent: WebContent) {
+internal class WebViewState<T : WebView>(webContent: WebContent) {
     /**
      *  The content being loaded by the WebView
      */
@@ -240,7 +240,7 @@ internal class WebViewState(webContent: WebContent) {
 
     // An internal DisposableEffect or AndroidView onDestroy is called
     // after the state saver and so can't be used.
-    internal var webView by mutableStateOf<WebView?>(null)
+    internal var webView by mutableStateOf<T?>(null)
 }
 
 /**
@@ -251,14 +251,14 @@ internal class WebViewState(webContent: WebContent) {
  *   Note that these headers are used for all subsequent requests of the WebView.
  */
 @Composable
-internal fun rememberWebViewState(
+internal fun <T : WebView> rememberWebViewState(
     url: String,
     additionalHttpHeaders: Map<String, String> = emptyMap(),
-): WebViewState =
+): WebViewState<T> =
     // Rather than using .apply {} here we will recreate the state, this prevents
     // a recomposition loop when the webview updates the url itself.
     remember {
-        WebViewState(
+        WebViewState<T>(
             WebContent.Url(
                 url = url,
                 additionalHttpHeaders = additionalHttpHeaders
@@ -277,15 +277,15 @@ internal fun rememberWebViewState(
  * @param data The uri to load in the WebView
  */
 @Composable
-internal fun rememberWebViewStateWithHTMLData(
+internal fun <T : WebView> rememberWebViewStateWithHTMLData(
     data: String,
     baseUrl: String? = null,
     encoding: String = "utf-8",
     mimeType: String? = null,
     historyUrl: String? = null,
-): WebViewState =
+): WebViewState<T> =
     remember {
-        WebViewState(WebContent.Data(data, baseUrl, encoding, mimeType, historyUrl))
+        WebViewState<T>(WebContent.Data(data, baseUrl, encoding, mimeType, historyUrl))
     }.apply {
         this.content = WebContent.Data(
             data,

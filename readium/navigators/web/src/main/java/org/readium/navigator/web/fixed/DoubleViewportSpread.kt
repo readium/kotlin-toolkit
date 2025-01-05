@@ -25,6 +25,7 @@ import org.readium.navigator.web.layout.DoubleViewportSpread
 import org.readium.navigator.web.util.DisplayArea
 import org.readium.navigator.web.util.WebViewClient
 import org.readium.navigator.web.webapi.FixedDoubleApi
+import org.readium.navigator.web.webview.RelaxedWebView
 import org.readium.navigator.web.webview.rememberWebViewStateWithHTMLData
 import org.readium.r2.navigator.preferences.Fit
 import org.readium.r2.shared.ExperimentalReadiumApi
@@ -43,7 +44,7 @@ internal fun DoubleViewportSpread(
         modifier = Modifier.fillMaxSize(),
         propagateMinConstraints = true
     ) {
-        val webViewState = rememberWebViewStateWithHTMLData(
+        val webViewState = rememberWebViewStateWithHTMLData<RelaxedWebView>(
             data = state.htmlData,
             baseUrl = state.publicationBaseUrl.toString()
         )

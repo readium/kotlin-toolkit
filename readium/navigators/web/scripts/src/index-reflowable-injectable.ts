@@ -46,5 +46,12 @@ Window.prototype.readiumcss = new CssBridge(window.document)
 window.initialization.onScriptsLoaded()
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 window.addEventListener("load", (event) => {
+  const observer = new ResizeObserver(() => {
+    requestAnimationFrame(() => {
+      window.initialization.onDocumentResized()
+    })
+  })
+  observer.observe(document.body)
+
   window.initialization.onDocumentLoaded()
 })

@@ -9,6 +9,7 @@
 package org.readium.navigator.web.reflowable
 
 import android.annotation.SuppressLint
+import android.os.Build
 import android.view.MotionEvent
 import android.view.View
 import androidx.compose.foundation.background
@@ -77,15 +78,25 @@ internal fun ReflowableResource(
     rsProperties: RsProperties,
     layout: Layout,
     initialProgression: Double,
+    stickToInitialProgression: Boolean,
+    enableScroll: Boolean,
+    onReadyToScroll: () -> Unit,
     onTap: (TapEvent) -> Unit,
     onLinkActivated: (Url, String) -> Unit,
+    onScrollChanged: (Double) -> Unit,
 ) {
+    val scrollOrientation = when {
+        verticalText -> Orientation.Horizontal
+        scroll -> Orientation.Vertical
+        else -> Orientation.Horizontal
+    }
+
     Box(
         modifier = Modifier.fillMaxSize(),
         propagateMinConstraints = true
     ) {
         val webViewState =
-            rememberWebViewState(
+            rememberWebViewState<RelaxedWebView>(
                 url = publicationBaseUrl.resolve(href).toString()
             )
 
@@ -96,7 +107,13 @@ internal fun ReflowableResource(
         val contentIsLaidOut =
             remember(webViewState.webView) { mutableStateOf(false) }
 
-        val initializationApi = remember(webViewState.webView) {
+        val readyToScroll = remember(webViewState.webView) { mutableStateOf(false) }
+
+        if (readyToScroll.value) {
+            onReadyToScroll()
+        }
+
+        val initializationApi = remember(webViewState.webView, stickToInitialProgression) {
             InitializationApi(
                 onScriptsLoadedDelegate = {
                     scriptsLoaded.value = true
@@ -117,6 +134,12 @@ internal fun ReflowableResource(
                                 }
                             }
                         }
+                    }
+                },
+                onDocumentResizedDelegate = {
+                    readyToScroll.value = true
+                    if (stickToInitialProgression) {
+                        webViewState.webView?.scrollToProgression(initialProgression, scrollOrientation)
                     }
                 }
             )
@@ -160,20 +183,21 @@ internal fun ReflowableResource(
 
         val density = LocalDensity.current
 
-        val scrollOrientation = when {
-            verticalText -> Orientation.Horizontal
-            scroll -> Orientation.Vertical
-            else -> Orientation.Horizontal
-        }
-
         LaunchedEffect(contentIsLaidOut, contentIsLaidOut.value, scrollableState.webView) {
-            scrollableState.webView?.let { webview ->
-                if (scrollOrientation == Orientation.Horizontal) {
-                    webview.scrollTo(floor(initialProgression * webview.maxScrollX).toInt(), 0)
-                } else {
-                    webview.scrollTo(0, ceil(initialProgression * webview.maxScrollY).toInt())
+            scrollableState.webView
+                .takeIf { contentIsLaidOut.value }
+                ?.let { webview ->
+                    webview.scrollToProgression(initialProgression, scrollOrientation)
+
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        webview.setOnScrollChangeListener { view, scrollX, scrollY, oldScrollX, oldScrollY ->
+                            onScrollChanged(webview.progression(scrollOrientation))
+                        }
+                    } else {
+                        // Broken
+                        throw IllegalStateException()
+                    }
                 }
-            }
         }
 
         val webViewViewport = DpSize(
@@ -185,7 +209,7 @@ internal fun ReflowableResource(
             if (scroll) {
                 null
             } else {
-                (webViewState.webView as? RelaxedWebView)
+                webViewState.webView
                     ?.let {
                         pagingFlingBehavior(
                             WebViewLayoutInfoProvider(
@@ -216,7 +240,7 @@ internal fun ReflowableResource(
                         )
                     }
                     .scrollable2D(
-                        enabled = contentIsLaidOut.value,
+                        enabled = enableScroll,
                         state = scrollableState,
                         flingBehavior = flingBehavior,
                         reverseDirection = !reverseLayout,
@@ -256,6 +280,19 @@ internal fun ReflowableResource(
             )
         }
     }
+}
+
+private fun RelaxedWebView.scrollToProgression(progression: Double, scrollOrientation: Orientation) {
+    if (scrollOrientation == Orientation.Horizontal) {
+        scrollTo(floor(progression * maxScrollX).toInt(), 0)
+    } else {
+        scrollTo(0, ceil(progression * maxScrollY).toInt())
+    }
+}
+
+private fun RelaxedWebView.progression(orientation: Orientation) = when (orientation) {
+    Orientation.Vertical -> scrollY / maxScrollY.toDouble()
+    Orientation.Horizontal -> scrollX / maxScrollX.toDouble()
 }
 
 private fun FlingBehavior.toFling2DBehavior(orientation: Orientation) =

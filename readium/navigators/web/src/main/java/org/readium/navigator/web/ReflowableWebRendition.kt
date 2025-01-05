@@ -14,6 +14,8 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
@@ -73,7 +75,7 @@ public fun ReflowableWebRendition(
 
         val itemIndex = state.pagerState.currentPage
         val itemHref = state.readingOrder.items[itemIndex].href
-        state.updateLocation(ReflowableWebLocation(itemHref))
+        state.updateLocation(ReflowableWebLocation(itemHref, state.currentProgression))
 
         val coroutineScope = rememberCoroutineScope()
 
@@ -97,10 +99,18 @@ public fun ReflowableWebRendition(
                 ?: state.layoutDelegate.settings.value.theme.backgroundColor
             )
 
+        val readyToScrollNext = remember(state.pagerState.currentPage) {
+            mutableStateOf(itemIndex == state.pagerState.pageCount - 1)
+        }
+
+        val readyToScrollPrev = remember(state.pagerState.currentPage) {
+            mutableStateOf(itemIndex == 0)
+        }
+
         RenditionPager(
             modifier = modifier,
             state = state.pagerState,
-            beyondViewportPageCount = 2,
+            beyondViewportPageCount = 3,
             reverseLayout = reverseLayout,
             orientation = when {
                 state.layoutDelegate.settings.value.verticalText -> Orientation.Horizontal
@@ -121,13 +131,33 @@ public fun ReflowableWebRendition(
                 rsProperties = state.readiumCss.value.rsProperties,
                 userProperties = state.readiumCss.value.userProperties,
                 layout = state.readiumCss.value.layout,
-                initialProgression = if (index <= itemIndex) 0.0 else 100.0,
+                initialProgression = when {
+                    index < itemIndex -> 1.0
+                    index > itemIndex -> 0.0
+                    else -> state.currentProgression
+                },
+                stickToInitialProgression = index != itemIndex,
+                enableScroll = readyToScrollNext.value && readyToScrollPrev.value,
                 onTap = { tapEvent ->
                     inputListener.onTap(tapEvent, TapContext(viewportSize.value))
                 },
                 onLinkActivated = { url, outerHtml ->
                     coroutineScope.launch {
                         onLinkActivated(url, outerHtml, state, hyperlinkListener)
+                    }
+                },
+                onScrollChanged = {
+                    if (index == itemIndex) {
+                        val itemIndex = state.pagerState.currentPage
+                        val itemHref = state.readingOrder.items[itemIndex].href
+                        state.updateLocation(ReflowableWebLocation(itemHref, state.currentProgression))
+                    }
+                },
+                onReadyToScroll = {
+                    when (index) {
+                        itemIndex - 1 -> readyToScrollPrev.value = true
+                        itemIndex + 1 -> readyToScrollNext.value = true
+                        else -> {}
                     }
                 }
             )

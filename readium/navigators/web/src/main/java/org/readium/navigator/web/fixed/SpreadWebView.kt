@@ -34,7 +34,7 @@ import org.readium.r2.shared.util.AbsoluteUrl
 @SuppressLint("SetJavaScriptEnabled")
 @Composable
 internal fun SpreadWebView(
-    state: WebViewState,
+    state: WebViewState<RelaxedWebView>,
     client: WebViewClient,
     onScriptsLoaded: () -> Unit,
     onTap: (TapEvent) -> Unit,
@@ -47,7 +47,7 @@ internal fun SpreadWebView(
     val spreadNestedScrollConnection = SpreadNestedScrollConnection(scrollableState)
 
     val initializationApi = remember(onScriptsLoaded) {
-        InitializationApi(onScriptsLoaded, {})
+        InitializationApi(onScriptsLoaded, {}, {})
     }
 
     val gesturesApi = remember(onTap) {
