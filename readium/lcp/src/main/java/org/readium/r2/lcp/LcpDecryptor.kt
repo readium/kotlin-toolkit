@@ -96,7 +96,7 @@ internal class CbcLcpResource(
     private val originalLength: Long? = null
 ) : Resource by resource {
 
-    private val resource = CachingResource(resource, 3 * AES_BLOCK_SIZE)
+    private val resource = CachingRangeTailResource(resource, 3 * AES_BLOCK_SIZE)
 
     private var builtinPaddingLength: Int? = null
 
@@ -185,22 +185,29 @@ internal class CbcLcpResource(
         val encryptedEndExclusive = range.last + 1 + endPadding + AES_BLOCK_SIZE
         val encryptedRangeSize = (encryptedEndExclusive - encryptedStart).toInt()
 
-        // read one extra byte to check if there is more data coming or we read the last block
-        val rawEncryptedData = resource.read(encryptedStart until encryptedEndExclusive + 1)
+        // read one extra block to check if there is more data coming or we read the last block
+        val encryptedData = resource.read(
+            encryptedStart until encryptedEndExclusive + AES_BLOCK_SIZE
+        )
             .getOrElse { return Try.failure(it) }
 
-        val dataIncludesBuiltinPadding = rawEncryptedData.size < encryptedRangeSize + 1
-
-        val encryptedData = rawEncryptedData
-            .sliceArray(0 until encryptedRangeSize.coerceAtMost(rawEncryptedData.size))
+        if (encryptedData.size % AES_BLOCK_SIZE != 0) {
+            return Try.failure(
+                ReadError.Decoding(
+                    DebugError("Encrypted data size is not a multiple of AES block size.")
+                )
+            )
+        }
 
         // Out of range request, there are no data to decrypt, only maybe a previous block.
         if (encryptedData.size <= AES_BLOCK_SIZE) {
             return Try.success(ByteArray(0))
         }
 
-        check(encryptedData.size <= encryptedRangeSize)
-        val missingEndSize = encryptedRangeSize - encryptedData.size
+        val dataIncludesBuiltinPadding = encryptedData.size < encryptedRangeSize + 1
+
+        check(encryptedData.size <= encryptedRangeSize + AES_BLOCK_SIZE)
+        val missingEndSize = encryptedRangeSize - encryptedData.size + AES_BLOCK_SIZE
 
         val bytes = license.decrypt(encryptedData)
             .getOrElse {
@@ -223,7 +230,7 @@ internal class CbcLcpResource(
                 0
             }
 
-        val correctedEndPadding = (endPadding.toInt() - missingEndSize)
+        val correctedEndPadding = (endPadding.toInt() + AES_BLOCK_SIZE - missingEndSize)
             .coerceAtLeast(builtinPaddingLength)
 
         val dataSlice = startPadding.toInt() until bytes.size - correctedEndPadding
@@ -299,7 +306,7 @@ private suspend fun LcpLicense.decryptFully(
  * instead of reusing the previous one. To alleviate this, we cache the last bytes read in each
  * request and reuse them in the next one if possible.
  */
-private class CachingResource(
+private class CachingRangeTailResource(
     private val resource: Resource,
     cacheLength: Int
 ) : Resource by resource {
@@ -310,6 +317,8 @@ private class CachingResource(
     )
 
     private val cache: Cache = Cache(null, ByteArray(cacheLength))
+
+    private val cacheLength = cache.data.size
 
     override suspend fun read(range: LongRange?): Try<ByteArray, ReadError> {
         if (range == null) {
@@ -328,7 +337,7 @@ private class CachingResource(
         // cache start index or null if we can't read from the cache
         val cacheStartIndex = cache.startIndex
             ?.takeIf { cacheStart ->
-                val cacheEndExclusive = cacheStart + cache.data.size
+                val cacheEndExclusive = cacheStart + cacheLength
                 val rangeBeginsInCache = range.first in cacheStart until cacheEndExclusive
                 val rangeGoesBeyondCache = cacheEndExclusive <= range.last + 1
                 rangeBeginsInCache && rangeGoesBeyondCache
@@ -342,9 +351,9 @@ private class CachingResource(
             }
 
         // Cache the end of result if it's big enough
-        if (result is Try.Success && result.value.size >= cache.data.size) {
-            val offsetInResult = result.value.size - cache.data.size
-            cache.startIndex = (range.last + 1 - cache.data.size).toInt()
+        if (result is Try.Success && result.value.size >= cacheLength) {
+            val offsetInResult = result.value.size - cacheLength
+            cache.startIndex = (range.last + 1 - cacheLength).toInt()
             result.value.copyInto(cache.data, 0, offsetInResult)
         }
 
