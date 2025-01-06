@@ -96,7 +96,7 @@ internal class CbcLcpResource(
     private val originalLength: Long? = null
 ) : Resource by resource {
 
-    private val resource = CachingRangeTailResource(resource, 3 * AES_BLOCK_SIZE)
+    private val resource = CachingRangeTailResource(resource, 4 * AES_BLOCK_SIZE)
 
     private var builtinPaddingLength: Int? = null
 
