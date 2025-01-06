@@ -181,14 +181,13 @@ internal class CbcLcpResource(
 
         // encrypted data is shifted by AES_BLOCK_SIZE because of IV and
         // the previous block must be provided to perform XOR on intermediate blocks
+        // we also try to read one extra block to check if there is more data coming or we read the
+        // last block
         val encryptedStart = range.first - startPadding
-        val encryptedEndExclusive = range.last + 1 + endPadding + AES_BLOCK_SIZE
+        val encryptedEndExclusive = range.last + 1 + endPadding + 2 * AES_BLOCK_SIZE
         val encryptedRangeSize = (encryptedEndExclusive - encryptedStart).toInt()
 
-        // read one extra block to check if there is more data coming or we read the last block
-        val encryptedData = resource.read(
-            encryptedStart until encryptedEndExclusive + AES_BLOCK_SIZE
-        )
+        val encryptedData = resource.read(encryptedStart until encryptedEndExclusive)
             .getOrElse { return Try.failure(it) }
 
         if (encryptedData.size % AES_BLOCK_SIZE != 0) {
@@ -200,14 +199,15 @@ internal class CbcLcpResource(
         }
 
         // Out of range request, there are no data to decrypt, only maybe a previous block.
-        if (encryptedData.size <= AES_BLOCK_SIZE) {
+        if (encryptedData.size < 2 * AES_BLOCK_SIZE) {
             return Try.success(ByteArray(0))
         }
 
-        val dataIncludesBuiltinPadding = encryptedData.size < encryptedRangeSize + 1
+        // Have we got all requested data with the extra block or less?
+        val dataIncludesBuiltinPadding = encryptedData.size < encryptedRangeSize
 
-        check(encryptedData.size <= encryptedRangeSize + AES_BLOCK_SIZE)
-        val missingEndSize = encryptedRangeSize - encryptedData.size + AES_BLOCK_SIZE
+        check(encryptedData.size <= encryptedRangeSize)
+        val missingEndSize = encryptedRangeSize - encryptedData.size
 
         val bytes = license.decrypt(encryptedData)
             .getOrElse {
