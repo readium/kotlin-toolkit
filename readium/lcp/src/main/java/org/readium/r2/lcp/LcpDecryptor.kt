@@ -308,7 +308,7 @@ private suspend fun LcpLicense.decryptFully(
  */
 private class CachingRangeTailResource(
     private val resource: Resource,
-    cacheLength: Int
+    private val cacheLength: Int
 ) : Resource by resource {
 
     private class Cache(
@@ -317,8 +317,6 @@ private class CachingRangeTailResource(
     )
 
     private val cache: Cache = Cache(null, ByteArray(cacheLength))
-
-    private val cacheLength = cache.data.size
 
     override suspend fun read(range: LongRange?): Try<ByteArray, ReadError> {
         if (range == null) {
