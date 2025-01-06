@@ -10,7 +10,7 @@ android {
     compileSdk = (property("android.compileSdk") as String).toInt()
 
     defaultConfig {
-        minSdk = (property("android.minSdk") as String).toInt()
+        minSdk = 23
         targetSdk = (property("android.targetSdk") as String).toInt()
 
         applicationId = "org.readium.navigator.demo"

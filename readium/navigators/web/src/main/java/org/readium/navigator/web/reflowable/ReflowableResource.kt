@@ -9,9 +9,9 @@
 package org.readium.navigator.web.reflowable
 
 import android.annotation.SuppressLint
-import android.os.Build
 import android.view.MotionEvent
 import android.view.View
+import android.webkit.WebView
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.FlingBehavior
 import androidx.compose.foundation.gestures.Orientation
@@ -32,9 +32,6 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.Velocity
-import androidx.core.view.postDelayed
-import androidx.webkit.WebViewCompat
-import androidx.webkit.WebViewFeature
 import kotlin.Float
 import kotlin.math.ceil
 import kotlin.math.floor
@@ -121,18 +118,14 @@ internal fun ReflowableResource(
                 onDocumentLoadedDelegate = {
                     webViewState.webView?.apply {
                         post {
-                            if (WebViewFeature.isFeatureSupported(WebViewFeature.VISUAL_STATE_CALLBACK)) {
-                                WebViewCompat.postVisualStateCallback(this, 0) {
-                                    contentIsLaidOut.value = true
+                            postVisualStateCallback(
+                                0,
+                                object : WebView.VisualStateCallback() {
+                                    override fun onComplete(requestId: Long) {
+                                        contentIsLaidOut.value = true
+                                    }
                                 }
-                            } else {
-                                // On older devices, there's no reliable way to guarantee the page is fully laid out.
-                                // As a workaround, we run a dummy JavaScript, then wait for a short delay before
-                                // assuming it's ready.
-                                evaluateJavascript("true") {
-                                    postDelayed(500) { contentIsLaidOut.value = true }
-                                }
-                            }
+                            )
                         }
                     }
                 },
@@ -188,14 +181,8 @@ internal fun ReflowableResource(
                 .takeIf { contentIsLaidOut.value }
                 ?.let { webview ->
                     webview.scrollToProgression(initialProgression, scrollOrientation)
-
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                        webview.setOnScrollChangeListener { view, scrollX, scrollY, oldScrollX, oldScrollY ->
-                            onScrollChanged(webview.progression(scrollOrientation))
-                        }
-                    } else {
-                        // Broken
-                        throw IllegalStateException()
+                    webview.setOnScrollChangeListener { view, scrollX, scrollY, oldScrollX, oldScrollY ->
+                        onScrollChanged(webview.progression(scrollOrientation))
                     }
                 }
         }
