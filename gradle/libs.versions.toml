@@ -69,6 +69,7 @@ picasso = "2.8"
 pspdfkit = "8.4.1"
 
 robolectric = "4.12.2"
+mockk = "1.13.14"
 
 timber = "5.0.1"
 
@@ -147,6 +148,7 @@ picasso = { group = "com.squareup.picasso", name = "picasso", version.ref = "pic
 pspdfkit = { group = "com.pspdfkit", name = "pspdfkit", version.ref ="pspdfkit" }
 
 robolectric = { group = "org.robolectric", name = "robolectric", version.ref = "robolectric" }
+mockk = { group = "io.mockk", name = "mockk", version.ref = "mockk"}
 
 timber = { group = "com.jakewharton.timber", name = "timber", version.ref = "timber" }
 
