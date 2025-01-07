@@ -206,6 +206,7 @@ internal class CbcLcpResource(
         // Have we got all requested data with the extra block or less?
         val dataIncludesBuiltinPadding = encryptedData.size < encryptedRangeSize
 
+        // We might not have got all data requested because range.last is allowed to be out of bounds.
         check(encryptedData.size <= encryptedRangeSize)
         val missingEndSize = encryptedRangeSize - encryptedData.size
 
