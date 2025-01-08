@@ -10,7 +10,7 @@ All notable changes to this project will be documented in this file. Take a look
 
 ### Fixed
 
-* Fixed `IllegalArgumentException` when trying to decrypt the end of a [CbcLcpResource].
+* Fixed `IllegalArgumentException` when trying to decrypt the end of a `CbcLcpResource`.
 
 
 #### LCP
@@ -925,4 +925,4 @@ progression. Now if no reading progression is set, the `effectiveReadingProgress
 [3.0.0]: https://github.com/readium/kotlin-toolkit/compare/3.0.0-beta.2...3.0.0
 [3.0.1]: https://github.com/readium/kotlin-toolkit/compare/3.0.0...3.0.1
 [3.0.2]: https://github.com/readium/kotlin-toolkit/compare/3.0.1...3.0.2
-
+[3.0.3]: https://github.com/readium/kotlin-toolkit/compare/3.0.2...3.0.3
