@@ -6,6 +6,15 @@ All notable changes to this project will be documented in this file. Take a look
 
 <!-- ## [Unreleased] -->
 
+## [3.0.3]
+
+### Fixed
+
+* Fixed `IllegalArgumentException` when trying to decrypt the end of a [CbcLcpResource].
+
+
+#### LCP
+
 ## [3.0.2]
 
 ### Fixed
