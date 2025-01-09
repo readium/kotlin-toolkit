@@ -39,4 +39,7 @@ dependencies {
     // Tests
     testImplementation(libs.junit)
     testImplementation(libs.kotlin.junit)
+    testImplementation(libs.mockk)
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.robolectric)
 }
