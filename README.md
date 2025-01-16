@@ -56,12 +56,6 @@ First, add the repository as a Git submodule of your app repository, then checko
 git submodule add https://github.com/readium/kotlin-toolkit.git
 ```
 
-Make sure you have Jetifier enabled in your `gradle.properties` file:
-
-```properties
-android.enableJetifier=true
-```
-
 Then, include the Readium build to your project's `settings.gradle` file. The Readium dependencies will automatically build against the local sources.
 
 ```groovy
