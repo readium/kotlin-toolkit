@@ -12,10 +12,12 @@
 package org.readium.r2.navigator.pager
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.graphics.PointF
 import android.os.Bundle
 import android.util.DisplayMetrics
 import android.view.*
+import android.webkit.JavascriptInterface
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
@@ -36,6 +38,7 @@ import kotlin.coroutines.suspendCoroutine
 import kotlin.math.roundToInt
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import org.json.JSONObject
 import org.readium.r2.navigator.R
 import org.readium.r2.navigator.R2BasicWebView
 import org.readium.r2.navigator.R2WebView
@@ -172,6 +175,9 @@ internal class R2EpubPageFragment : Fragment() {
         webView.setPadding(0, 0, 0, 0)
         webView.addJavascriptInterface(webView, "Android")
 
+        // Set JavaScript interface for image zoom functionality
+        webView.addJavascriptInterface(WebAppInterface(requireContext(),webView), "ZoomAndroid")
+
         var endReached = false
         webView.setOnOverScrolledCallback(object : R2BasicWebView.OnOverScrolledCallback {
             override fun onOverScrolled(
@@ -216,6 +222,21 @@ internal class R2EpubPageFragment : Fragment() {
             override fun onPageFinished(view: WebView?, url: String?) {
                 super.onPageFinished(view, url)
 
+                val imageZoomScript = """
+        document.querySelectorAll('img').forEach(img => {
+            img.style.cursor = 'pointer';
+            img.addEventListener('click', event => {
+                const rect = event.target.getBoundingClientRect();
+                const imageDetails = {
+                    src: event.target.src,
+                    width: rect.width,
+                    height: rect.height
+                };
+                window.ZoomAndroid.onImageTap(JSON.stringify(imageDetails));
+            });
+        });
+    """
+
                 onPageFinished()
 
                 link?.let {
@@ -223,7 +244,9 @@ internal class R2EpubPageFragment : Fragment() {
                 }
 
                 webView.onContentReady {
-                    onLoadPage()
+                    webView.evaluateJavascript(imageZoomScript) {
+                        onLoadPage()
+                    }
                 }
             }
 
@@ -253,6 +276,101 @@ internal class R2EpubPageFragment : Fragment() {
 
         return containerView
     }
+
+   private class WebAppInterface(private val context: Context, val webView: R2WebView) {
+
+        @JavascriptInterface
+        fun onImageTap(imageDetails: String) {
+            val imageJson = JSONObject(imageDetails)
+            val imageUrl = imageJson.getString("src")
+
+            val javascript = """
+    try {
+        console.log('JavaScript is executing');
+
+        // Get the height of the action bar if it's present (adjust this based on your layout)
+        var actionBarHeight = 0;
+        var actionBar = document.querySelector('header, .action-bar, .toolbar'); // Adjust if needed
+        if (actionBar) {
+            actionBarHeight = actionBar.offsetHeight;
+        }
+
+        // Create overlay
+        var overlay = document.createElement('div');
+        overlay.style.position = 'fixed';
+        overlay.style.top = actionBarHeight + 'px';  // Position below action bar
+        overlay.style.left = '0';
+        overlay.style.width = '100%';
+        overlay.style.height = 'calc(100% - ' + actionBarHeight + 'px)'; // Adjust height of the overlay
+        overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+        overlay.style.zIndex = '9999';
+        overlay.style.display = 'flex';
+        overlay.style.justifyContent = 'center';
+        overlay.style.alignItems = 'center';
+        overlay.style.cursor = 'zoom-out';
+
+        // Create image element
+        var zoomedImage = document.createElement('img');
+        zoomedImage.src = '$imageUrl';
+        zoomedImage.style.maxWidth = '90%';
+        zoomedImage.style.maxHeight = '90%';
+        zoomedImage.style.objectFit = 'contain';
+        zoomedImage.style.transition = 'transform 0.3s ease';  // Enable smooth zoom transition
+        zoomedImage.style.cursor = 'pointer';
+
+        // Append the zoomed image to overlay
+        overlay.appendChild(zoomedImage);
+
+        // Add Reset/Dismiss button
+        var dismissButton = document.createElement('button');
+        dismissButton.textContent = 'Dismiss';
+        dismissButton.style.position = 'absolute';
+        dismissButton.style.top = '10px';
+        dismissButton.style.right = '10px';
+        dismissButton.style.padding = '10px';
+        dismissButton.style.backgroundColor = '#fff';
+        dismissButton.style.border = 'none';
+        dismissButton.style.borderRadius = '5px';
+        dismissButton.style.cursor = 'pointer';
+
+        // Dismiss the overlay on button click
+        dismissButton.onclick = function() {
+            document.body.removeChild(overlay);
+        };
+
+        // Append button to overlay
+        overlay.appendChild(dismissButton);
+
+        // Allow zoom functionality
+        zoomedImage.onclick = function() {
+            if (zoomedImage.style.transform === 'scale(2)') {
+                zoomedImage.style.transform = 'scale(1)'; // Reset zoom on image click
+            } else {
+                zoomedImage.style.transform = 'scale(2)'; // Zoom in the image
+            }
+        };
+
+        // Dismiss overlay when clicking outside the image
+        overlay.onclick = function(event) {
+            if (event.target === overlay) {
+                document.body.removeChild(overlay);
+            }
+        };
+
+        // Append the overlay to the document body
+        document.body.appendChild(overlay);
+
+    } catch (e) {
+        console.error("Error creating image overlay:", e);
+    }
+"""
+
+            webView.post {
+                webView.evaluateJavascript(javascript, null)
+            }
+        }
+    }
+
 
     private var isPageFinished = false
     private val pendingPageFinished = mutableListOf<() -> Unit>()
