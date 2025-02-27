@@ -4,7 +4,12 @@ All notable changes to this project will be documented in this file. Take a look
 
 **Warning:** Features marked as *experimental* may change or be removed in a future release without notice. Use with caution.
 
-<!-- ## [Unreleased] -->
+## [Unreleased]
+
+### Changed
+
+* Jetifier is not required anymore, you can remove `android.enableJetifier=true` from your `gradle.properties` if you were using Readium as a local clone.
+
 
 ## [3.0.3]
 
