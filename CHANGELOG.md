@@ -4,11 +4,21 @@ All notable changes to this project will be documented in this file. Take a look
 
 **Warning:** Features marked as *experimental* may change or be removed in a future release without notice. Use with caution.
 
-<!-- ## [Unreleased] -->
+## [Unreleased]
+
+### Fixed
+
+#### Navigator
+
+* Fixed a race condition causing EPUB decorations to be applied twice when opening a publication.
+
+
 
 ## [3.0.3]
 
 ### Fixed
+
+#### LCP
 
 * Fixed `IllegalArgumentException` when trying to decrypt the end of a `CbcLcpResource`.
 
