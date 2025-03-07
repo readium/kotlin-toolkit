@@ -672,11 +672,13 @@ public class EpubNavigatorFragment internal constructor(
             RunScriptCommand.Scope.LoadedResources -> {
                 r2PagerAdapter?.mFragments?.forEach { _, fragment ->
                     (fragment as? R2EpubPageFragment)
+                        ?.takeIf { it.isLoaded.value }
                         ?.runJavaScript(command.script)
                 }
             }
-            is RunScriptCommand.Scope.Resource -> {
+            is RunScriptCommand.Scope.LoadedResource -> {
                 loadedFragmentForHref(command.scope.href)
+                    ?.takeIf { it.isLoaded.value }
                     ?.runJavaScript(command.script)
             }
             is RunScriptCommand.Scope.WebView -> {

@@ -62,7 +62,7 @@ internal class EpubNavigatorViewModel(
         sealed class Scope {
             object CurrentResource : Scope()
             object LoadedResources : Scope()
-            data class Resource(val href: Url) : Scope()
+            data class LoadedResource(val href: Url) : Scope()
             data class WebView(val webView: R2BasicWebView) : Scope()
         }
     }
@@ -145,22 +145,39 @@ internal class EpubNavigatorViewModel(
             .launchIn(viewModelScope)
     }
 
-    fun onResourceLoaded(webView: R2BasicWebView, link: Link): RunScriptCommand {
-        val templates = decorationTemplates.toJSON().toString()
-            .replace("\\n", " ")
-        var script = "readium.registerDecorationTemplates($templates);\n"
+    fun onResourceLoaded(webView: R2BasicWebView, link: Link): List<RunScriptCommand> =
+        buildList {
+            val scope = RunScriptCommand.Scope.WebView(webView)
 
-        for ((group, decorations) in decorations) {
-            val changes = decorations
-                .filter { it.locator.href == link.url() }
-                .map { DecorationChange.Added(it) }
+            // Applies the Readium CSS properties in case they changed since they were injected
+            // in the HTML document.
+            val properties = css.value.run {
+                rsProperties.toCssProperties() + userProperties.toCssProperties()
+            }
 
-            val groupScript = changes.javascriptForGroup(group, decorationTemplates) ?: continue
-            script += "$groupScript\n"
+            add(
+                RunScriptCommand(
+                    script = "readium.setCSSProperties(${JSONObject(properties.toMap())});",
+                    scope = scope
+                )
+            )
+
+            // Applies the decorations.
+            val templates = decorationTemplates.toJSON().toString()
+                .replace("\\n", " ")
+            var script = "readium.registerDecorationTemplates($templates);\n"
+
+            for ((group, decorations) in decorations) {
+                val changes = decorations
+                    .filter { it.locator.href == link.url() }
+                    .map { DecorationChange.Added(it) }
+
+                val groupScript = changes.javascriptForGroup(group, decorationTemplates) ?: continue
+                script += "$groupScript\n"
+            }
+
+            add(RunScriptCommand(script, scope = scope))
         }
-
-        return RunScriptCommand(script, scope = RunScriptCommand.Scope.WebView(webView))
-    }
 
     // Serving resources
 
@@ -296,7 +313,9 @@ internal class EpubNavigatorViewModel(
         } else {
             for ((href, changes) in source.changesByHref(target)) {
                 val script = changes.javascriptForGroup(group, decorationTemplates) ?: continue
-                cmds.add(RunScriptCommand(script, scope = RunScriptCommand.Scope.Resource(href)))
+                cmds.add(
+                    RunScriptCommand(script, scope = RunScriptCommand.Scope.LoadedResource(href))
+                )
             }
         }
 
