@@ -340,6 +340,20 @@ public class EpubPreferencesEditor internal constructor(
         )
 
     /**
+     * Indicates if a user can swipe to change resources while using scroll mode (above).
+     *
+     * Only effective when:
+     *  - [scroll] is on
+     */
+    public val scrollDisableSwipePagination: Preference<Boolean> =
+        PreferenceDelegate(
+            getValue = { preferences.scrollDisableSwipePagination },
+            getEffectiveValue = { state.settings.scrollDisableSwipePagination },
+            getIsEffective = { state.settings.scroll },
+            updateValue = { value -> updateValues { it.copy(scrollDisableSwipePagination = value) } }
+        )
+
+    /**
      * Indicates if the fixed-layout publication should be rendered with a synthetic spread
      * (dual-page).
      *

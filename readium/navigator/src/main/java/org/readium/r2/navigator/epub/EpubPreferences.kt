@@ -35,6 +35,8 @@ import org.readium.r2.shared.util.Language
  * @param readingProgression Direction of the reading progression across resources.
  * @param scroll Indicates if the overflow of resources should be handled using scrolling
  *   instead of synthetic pagination.
+ * @param scrollDisableSwipePagination Indicates if a user can swipe to change resources while using
+ *   scroll mode (above).
  * @param spread Indicates if the fixed-layout publication should be rendered with a
  *   synthetic spread (dual-page).
  * @param textAlign Page text alignment.
@@ -66,6 +68,7 @@ public data class EpubPreferences @ExperimentalReadiumApi constructor(
     val publisherStyles: Boolean? = null,
     val readingProgression: ReadingProgression? = null,
     val scroll: Boolean? = null,
+    val scrollDisableSwipePagination: Boolean? = null,
     val spread: Spread? = null,
     val textAlign: TextAlign? = null,
     val textColor: Color? = null,
@@ -107,6 +110,7 @@ public data class EpubPreferences @ExperimentalReadiumApi constructor(
             publisherStyles = other.publisherStyles ?: publisherStyles,
             readingProgression = other.readingProgression ?: readingProgression,
             scroll = other.scroll ?: scroll,
+            scrollDisableSwipePagination = other.scrollDisableSwipePagination ?: scrollDisableSwipePagination,
             spread = other.spread ?: spread,
             textAlign = other.textAlign ?: textAlign,
             textColor = other.textColor ?: textColor,

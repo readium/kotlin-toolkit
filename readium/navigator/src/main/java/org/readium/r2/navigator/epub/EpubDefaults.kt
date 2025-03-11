@@ -33,6 +33,7 @@ public data class EpubDefaults @ExperimentalReadiumApi constructor(
     val publisherStyles: Boolean? = null,
     val readingProgression: ReadingProgression? = null,
     val scroll: Boolean? = null,
+    val scrollDisableSwipePagination: Boolean? = null,
     val spread: Spread? = null,
     val textAlign: TextAlign? = null,
     val textNormalization: Boolean? = null,

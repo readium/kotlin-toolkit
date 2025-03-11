@@ -296,6 +296,7 @@ internal class R2EpubPageFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         val lifecycleOwner = viewLifecycleOwner
+        // TODO: do I need something like this for scrollDisableSwipePagination?
         lifecycleOwner.lifecycleScope.launch {
             viewModel.isScrollEnabled
                 .flowWithLifecycle(lifecycleOwner.lifecycle)

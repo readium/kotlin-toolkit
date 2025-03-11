@@ -30,6 +30,9 @@ internal class EpubSettingsResolver(
 
         var scroll = preferences.scroll ?: defaults.scroll ?: false
 
+        // TODO: test setting with vertical text
+        val scrollDisableSwipePagination = preferences.scrollDisableSwipePagination ?: defaults.scrollDisableSwipePagination ?: false
+
         // / We disable pagination with vertical text, because CSS columns don't support it properly.
         // / See https://github.com/readium/swift-toolkit/discussions/370
         if (verticalText) {
@@ -54,6 +57,7 @@ internal class EpubSettingsResolver(
             publisherStyles = preferences.publisherStyles ?: defaults.publisherStyles ?: true,
             readingProgression = readingProgression,
             scroll = scroll,
+            scrollDisableSwipePagination = scrollDisableSwipePagination,
             spread = preferences.spread ?: defaults.spread ?: Spread.NEVER,
             textAlign = preferences.textAlign ?: defaults.textAlign,
             textColor = preferences.textColor,
