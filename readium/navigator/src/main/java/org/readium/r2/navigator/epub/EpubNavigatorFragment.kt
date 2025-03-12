@@ -181,6 +181,11 @@ public class EpubNavigatorFragment internal constructor(
         var decorationTemplates: HtmlDecorationTemplates,
 
         /**
+         * Indicates if a user can swipe to change resources while using scroll mode (above).
+         */
+        var scrollModeDisableSwipePagination: Boolean,
+
+        /**
          * Custom [ActionMode.Callback] to be used when the user selects content.
          *
          * Provide one if you want to customize the selection context menu items.
@@ -210,12 +215,14 @@ public class EpubNavigatorFragment internal constructor(
             servedAssets: List<String> = emptyList(),
             readiumCssRsProperties: RsProperties = RsProperties(),
             decorationTemplates: HtmlDecorationTemplates = HtmlDecorationTemplates.defaultTemplates(),
+            scrollModeDisableSwipePagination: Boolean = false,
             selectionActionModeCallback: ActionMode.Callback? = null,
             shouldApplyInsetsPadding: Boolean? = true,
         ) : this(
             servedAssets = servedAssets,
             readiumCssRsProperties = readiumCssRsProperties,
             decorationTemplates = decorationTemplates,
+            scrollModeDisableSwipePagination = scrollModeDisableSwipePagination,
             selectionActionModeCallback = selectionActionModeCallback,
             shouldApplyInsetsPadding = shouldApplyInsetsPadding,
             disableSelectionWhenProtected = true,

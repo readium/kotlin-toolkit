@@ -31,7 +31,6 @@ import androidx.viewpager.widget.PagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 
 import org.readium.r2.navigator.preferences.ReadingProgression;
-import org.readium.r2.shared.ExperimentalReadiumApi;
 
 import java.util.HashMap;
 
