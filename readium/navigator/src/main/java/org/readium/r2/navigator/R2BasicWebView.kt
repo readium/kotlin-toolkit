@@ -111,13 +111,12 @@ internal open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebV
     var resourceUrl: AbsoluteUrl? = null
 
     internal val scrollModeFlow = MutableStateFlow(false)
-    internal val scrollModeDisableSwipePaginationFlow = MutableStateFlow(false)
 
     /** Indicates that a user text selection is active. */
     internal var isSelecting = false
 
     val scrollMode: Boolean get() = scrollModeFlow.value
-    private val scrollModeDisableSwipePagination: Boolean get() = this.scrollModeDisableSwipePaginationFlow.value
+    var scrollModeDisableSwipePagination: Boolean = false
 
     var callback: OnOverScrolledCallback? = null
 

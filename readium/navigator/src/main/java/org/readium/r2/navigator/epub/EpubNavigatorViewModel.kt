@@ -147,8 +147,6 @@ internal class EpubNavigatorViewModel(
     }
 
     fun onResourceLoaded(webView: R2BasicWebView, link: Link): RunScriptCommand {
-        webView.scrollModeDisableSwipePaginationFlow.value = config.scrollModeDisableSwipePagination
-
         val templates = decorationTemplates.toJSON().toString()
             .replace("\\n", " ")
         var script = "readium.registerDecorationTemplates($templates);\n"

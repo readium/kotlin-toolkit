@@ -159,6 +159,8 @@ internal class R2EpubPageFragment : Fragment() {
             }
         }
 
+        webView.scrollModeDisableSwipePagination =
+            navigator?.config?.scrollModeDisableSwipePagination ?: false
         webView.settings.javaScriptEnabled = true
         webView.isVerticalScrollBarEnabled = false
         webView.isHorizontalScrollBarEnabled = false
