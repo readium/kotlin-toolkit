@@ -104,5 +104,5 @@ mavenPublishing {
     }
 
     publishToMavenCentral(SonatypeHost.S01)
-    signAllPublications()
+//    signAllPublications()
 }
