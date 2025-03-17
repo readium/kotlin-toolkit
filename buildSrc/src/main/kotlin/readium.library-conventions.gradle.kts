@@ -66,11 +66,11 @@ mavenPublishing {
     pom {
         name.set(property("pom.artifactId") as String)
         description.set("A toolkit for ebooks, audiobooks and comics written in Kotlin")
-        url.set("https://github.com/readium/kotlin-toolkit")
+        url.set("https://github.com/shovel-kun/kotlin-toolkit")
         licenses {
             license {
                 name.set("BSD-3-Clause license")
-                url.set("https://github.com/readium/kotlin-toolkit/blob/main/LICENSE")
+                url.set("https://github.com/shovel-kun/kotlin-toolkit/blob/main/LICENSE")
             }
         }
         developers {
@@ -89,7 +89,6 @@ mavenPublishing {
                 name.set("Quentin Gliosca")
                 email.set("quentin.gliosca@gmail.com")
             }
-
             developer {
                 id.set("username")
                 name.set("User Name")
@@ -97,12 +96,22 @@ mavenPublishing {
             }
         }
         scm {
-            url.set("https://github.com/readium/kotlin-toolkit")
-            connection.set("scm:git:github.com/readium/kotlin-toolkit.git")
-            developerConnection.set("scm:git:ssh://github.com/readium/kotlin-toolkit.git")
+            url.set("https://github.com/shovel-kun/kotlin-toolkit")
+            connection.set("scm:git:github.com/shovel-kun/kotlin-toolkit.git")
+            developerConnection.set("scm:git:ssh://github.com/shovel-kun/kotlin-toolkit.git")
         }
     }
 
-    publishToMavenCentral(SonatypeHost.S01)
+    repositories {
+        maven {
+            name = "githubPackages"
+            url = uri("https://maven.pkg.github.com/shovel-kun/kotlin-toolkit")
+            credentials {
+                username = System.getenv("GITHUB_USERNAME")
+                password = System.getenv("GITHUB_TOKEN")
+            }
+        }
+    }
+//    publishToMavenCentral(SonatypeHost.S01)
 //    signAllPublications()
 }
