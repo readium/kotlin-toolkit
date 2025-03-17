@@ -97,6 +97,13 @@ export function isRTL() {
   return document.body.dir.toLowerCase() == "rtl";
 }
 
+export function isVerticalWritingMode() {
+  const writingMode = window
+    .getComputedStyle(document.documentElement)
+    .getPropertyValue("writing-mode");
+  return writingMode.startsWith("vertical");
+}
+
 // Scroll to the given TagId in document and snap.
 export function scrollToId(id) {
   var element = document.getElementById(id);
@@ -160,8 +167,12 @@ export function scrollToStart() {
   if (!isScrollModeEnabled()) {
     document.scrollingElement.scrollLeft = 0;
   } else {
-    document.scrollingElement.scrollTop = 0;
-    window.scrollTo(0, 0);
+    if (!isVerticalWritingMode()) {
+      document.scrollingElement.scrollTop = 0;
+      window.scrollTo(0, 0);
+    } else {
+      document.scrollingElement.scrollLeft = 0;
+    }
   }
 }
 
@@ -173,8 +184,12 @@ export function scrollToEnd() {
       document.scrollingElement.scrollWidth * factor
     );
   } else {
-    document.scrollingElement.scrollTop = document.body.scrollHeight;
-    window.scrollTo(0, document.body.scrollHeight);
+    if (!isVerticalWritingMode()) {
+      document.scrollingElement.scrollTop = document.body.scrollHeight;
+      window.scrollTo(0, document.body.scrollHeight);
+    } else {
+      document.scrollingElement.scrollLeft = -document.body.scrollWidth;
+    }
   }
 }
 
