@@ -56,6 +56,19 @@ dependencies {
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
 }
 
+publishing {
+    repositories {
+        maven {
+            name = "githubPackages"
+            url = uri("https://maven.pkg.github.com/shovel-kun/kotlin-toolkit")
+            credentials {
+                username = System.getenv("GITHUB_USERNAME")
+                password = System.getenv("GITHUB_TOKEN")
+            }
+        }
+    }
+}
+
 mavenPublishing {
     coordinates(
         groupId = group.toString(),
@@ -99,17 +112,6 @@ mavenPublishing {
             url.set("https://github.com/shovel-kun/kotlin-toolkit")
             connection.set("scm:git:github.com/shovel-kun/kotlin-toolkit.git")
             developerConnection.set("scm:git:ssh://github.com/shovel-kun/kotlin-toolkit.git")
-        }
-    }
-
-    repositories {
-        maven {
-            name = "githubPackages"
-            url = uri("https://maven.pkg.github.com/shovel-kun/kotlin-toolkit")
-            credentials {
-                username = System.getenv("GITHUB_USERNAME")
-                password = System.getenv("GITHUB_TOKEN")
-            }
         }
     }
 //    publishToMavenCentral(SonatypeHost.S01)
