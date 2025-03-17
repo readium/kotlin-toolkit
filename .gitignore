@@ -97,3 +97,7 @@ lcp.patch
 
 # Script outpouts
 readium/navigators/web/scripts/dist/
+test-app/.idea
+readium/navigators/demo/.idea
+kls_database.db
+.idea/AndroidProjectSystem.xml
