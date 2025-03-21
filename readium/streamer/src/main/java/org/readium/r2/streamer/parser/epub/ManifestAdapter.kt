@@ -59,6 +59,12 @@ internal class ManifestAdapter(
             }
             .mapValues { listOf(PublicationCollection(links = it.value)) }
 
+        val guide = if (epubVersion < 3.0) {
+            mapOf("landmarks" to listOf(PublicationCollection(links = packageDocument.guide)))
+        } else {
+            emptyMap()
+        }
+
         // Build Publication object
         return Manifest(
             metadata = metadata.metadata,
@@ -66,7 +72,7 @@ internal class ManifestAdapter(
             readingOrder = readingOrder,
             resources = resources,
             tableOfContents = toc,
-            subcollections = subcollections
+            subcollections = subcollections + guide
         )
     }
 }

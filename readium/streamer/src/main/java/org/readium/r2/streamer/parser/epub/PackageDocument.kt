@@ -9,6 +9,8 @@
 package org.readium.r2.streamer.parser.epub
 
 import org.readium.r2.shared.InternalReadiumApi
+import org.readium.r2.shared.publication.Link
+import org.readium.r2.shared.publication.Properties
 import org.readium.r2.shared.publication.ReadingProgression
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.fromEpubHref
@@ -21,6 +23,7 @@ internal data class PackageDocument(
     val metadata: List<MetadataItem>,
     val manifest: List<Item>,
     val spine: Spine,
+    val guide: List<Link>,
 ) {
 
     companion object {
@@ -34,6 +37,7 @@ internal data class PackageDocument(
                 ?: return null
             val spineElement = document.getFirst("spine", Namespaces.OPF)
                 ?: return null
+            val guideElement = document.getFirst("guide", Namespaces.OPF)
 
             return PackageDocument(
                 path = filePath,
@@ -42,7 +46,8 @@ internal data class PackageDocument(
                 metadata = metadata,
                 manifest = manifestElement.get("item", Namespaces.OPF)
                     .mapNotNull { Item.parse(it, filePath, prefixMap) },
-                spine = Spine.parse(spineElement, prefixMap, epubVersion)
+                spine = Spine.parse(spineElement, prefixMap, epubVersion),
+                guide = Guide.parse(guideElement, epubVersion),
             )
         }
     }
@@ -102,6 +107,26 @@ internal data class Spine(
             }
             val ncx = if (epubVersion < 3.0) element.getAttr("toc") else null
             return Spine(itemrefs, pageProgressionDirection, ncx)
+        }
+    }
+}
+
+internal data class Guide(
+    val links: List<Link>
+) {
+    companion object {
+        // Epub 3.0+ does not support the guide element
+        // https://idpf.org/epub/20/spec/OPF_2.0.1_draft.htm#TOC2.6
+        fun parse(element: ElementNode?, epubVersion: Double): List<Link> {
+            if (element == null || epubVersion >= 3.0) return emptyList()
+
+            return element.get("reference", Namespaces.OPF).mapNotNull { node ->
+                Link(
+                    href = node.getAttr("href")?.let { Url.fromEpubHref(it) } ?: return@mapNotNull null,
+                    title = node.getAttr("title"),
+                    properties = Properties().add(mapOf("type" to (node.getAttr("type") ?: "")))
+                )
+            }
         }
     }
 }
