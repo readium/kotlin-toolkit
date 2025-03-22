@@ -1,11 +1,8 @@
-import com.vanniktech.maven.publish.SonatypeHost
-
 plugins {
-    // FIXME: For now, we cannot use the versions catalog in precompiled scripts: https://github.com/gradle/gradle/issues/15383
     id("com.android.library")
-    id("com.vanniktech.maven.publish")
     id("org.jetbrains.kotlin.android")
     kotlin("plugin.parcelize")
+    `maven-publish`  // Add the maven-publish plugin
 }
 
 group = property("pom.groupId") as String
@@ -57,63 +54,50 @@ dependencies {
 }
 
 publishing {
-    repositories {
-        maven {
-            name = "githubPackages"
-            url = uri("https://maven.pkg.github.com/shovel-kun/kotlin-toolkit")
-            credentials {
-                username = System.getenv("GITHUB_USERNAME")
-                password = System.getenv("GITHUB_TOKEN")
+    publications {
+        create<MavenPublication>("maven") {
+            groupId = group.toString()
+            artifactId = property("pom.artifactId") as String
+            version = property("pom.version") as String
+
+            pom {
+                name.set(property("pom.artifactId") as String)
+                description.set("A toolkit for ebooks, audiobooks and comics written in Kotlin")
+                url.set("https://github.com/readium/kotlin-toolkit")
+                licenses {
+                    license {
+                        name.set("BSD-3-Clause license")
+                        url.set("https://github.com/readium/kotlin-toolkit/blob/main/LICENSE")
+                    }
+                }
+                developers {
+                    developer {
+                        id.set("aferditamuriqi")
+                        name.set("Aferdita Muriqi")
+                        email.set("aferdita.muriqi@gmail.com")
+                    }
+                    developer {
+                        id.set("mickael-menu")
+                        name.set("Mickaël Menu")
+                        email.set("mickael.menu@gmail.com")
+                    }
+                    developer {
+                        id.set("qnga")
+                        name.set("Quentin Gliosca")
+                        email.set("quentin.gliosca@gmail.com")
+                    }
+                    developer {
+                        id.set("username")
+                        name.set("User Name")
+                        url.set("https://github.com/username/")
+                    }
+                }
+                scm {
+                    url.set("https://github.com/readium/kotlin-toolkit")
+                    connection.set("scm:git:github.com/readium/kotlin-toolkit.git")
+                    developerConnection.set("scm:git:ssh://github.com/readium/kotlin-toolkit.git")
+                }
             }
         }
     }
-}
-
-mavenPublishing {
-    coordinates(
-        groupId = group.toString(),
-        artifactId = property("pom.artifactId") as String,
-        version = property("pom.version") as String
-    )
-
-    pom {
-        name.set(property("pom.artifactId") as String)
-        description.set("A toolkit for ebooks, audiobooks and comics written in Kotlin")
-        url.set("https://github.com/shovel-kun/kotlin-toolkit")
-        licenses {
-            license {
-                name.set("BSD-3-Clause license")
-                url.set("https://github.com/shovel-kun/kotlin-toolkit/blob/main/LICENSE")
-            }
-        }
-        developers {
-            developer {
-                id.set("aferditamuriqi")
-                name.set("Aferdita Muriqi")
-                email.set("aferdita.muriqi@gmail.com")
-            }
-            developer {
-                id.set("mickael-menu")
-                name.set("Mickaël Menu")
-                email.set("mickael.menu@gmail.com")
-            }
-            developer {
-                id.set("qnga")
-                name.set("Quentin Gliosca")
-                email.set("quentin.gliosca@gmail.com")
-            }
-            developer {
-                id.set("username")
-                name.set("User Name")
-                url.set("https://github.com/username/")
-            }
-        }
-        scm {
-            url.set("https://github.com/shovel-kun/kotlin-toolkit")
-            connection.set("scm:git:github.com/shovel-kun/kotlin-toolkit.git")
-            developerConnection.set("scm:git:ssh://github.com/shovel-kun/kotlin-toolkit.git")
-        }
-    }
-//    publishToMavenCentral(SonatypeHost.S01)
-//    signAllPublications()
 }
