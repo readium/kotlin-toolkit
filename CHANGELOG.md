@@ -8,7 +8,7 @@ All notable changes to this project will be documented in this file. Take a look
 
 ### Added
 
-* The EPUB 2 `<guide>` element is now parsed into the RWPM `landmarks` subcollection when no EPUB 3 `landmarks` navigation document is declared.
+* The EPUB 2 `<guide>` element is now parsed into the RWPM `landmarks` subcollection when no EPUB 3 `landmarks` navigation document is declared (contributed by [@erkasraim](https://github.com/readium/kotlin-toolkit/pull/628)).
 
 ### Changed
 
