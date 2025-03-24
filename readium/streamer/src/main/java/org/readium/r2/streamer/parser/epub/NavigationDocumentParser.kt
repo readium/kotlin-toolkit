@@ -76,11 +76,13 @@ internal object NavigationDocumentParser {
         } else {
             Url("#")!!
         }
-        val children = element.getFirst("ol", Namespaces.XHTML)?.let { parseOlElement(
-            it,
-            filePath,
-            prefixMap
-        ) }.orEmpty()
+        val children = element.getFirst("ol", Namespaces.XHTML)?.let {
+            parseOlElement(
+                it,
+                filePath,
+                prefixMap
+            )
+        }.orEmpty()
 
         val typeAttr = first.getAttrNs("type", Namespaces.OPS) ?: ""
         val rels = if (typeAttr.isNotEmpty()) {

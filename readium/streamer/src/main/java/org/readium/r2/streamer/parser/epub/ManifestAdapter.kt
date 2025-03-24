@@ -58,15 +58,15 @@ internal class ManifestAdapter(
                 }
             }
             .mapValues { listOf(PublicationCollection(links = it.value)) }
+            .toMutableMap()
 
-        // EPUB 3 Reading Systems must ignore the guide element when provided in EPUB 3 Publications whose EPUB Navigation Document includes the landmarks feature.
+        // EPUB 3 Reading Systems must ignore the guide element when provided in EPUB 3 Publications
+        // whose EPUB Navigation Document includes the landmarks feature.
         // https://idpf.org/epub/30/spec/epub30-publications.html#sec-guide-elem
-        val guide = if (subcollections.contains("landmarks").not()) {
+        if (!subcollections.contains("landmarks") && packageDocument.guide.isNotEmpty()) {
             // EPUB 2.0 doesn't have a landmarks collection, so we use the guide as a fallback
             // If an EPUB 3.0+ file does not have landmarks, it will use guide instead.
-            mapOf("landmarks" to listOf(PublicationCollection(links = packageDocument.guide)))
-        } else {
-            emptyMap()
+            subcollections["landmarks"] = listOf(PublicationCollection(links = packageDocument.guide))
         }
 
         // Build Publication object
@@ -76,7 +76,7 @@ internal class ManifestAdapter(
             readingOrder = readingOrder,
             resources = resources,
             tableOfContents = toc,
-            subcollections = subcollections + guide
+            subcollections = subcollections.toMap()
         )
     }
 }

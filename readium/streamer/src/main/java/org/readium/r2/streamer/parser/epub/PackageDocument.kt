@@ -111,7 +111,7 @@ internal data class Spine(
 }
 
 internal data class Guide(
-    val links: List<Link>
+    val links: List<Link>,
 ) {
     companion object {
         // Epub 3.0+ does not support the guide element

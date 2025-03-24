@@ -19,7 +19,6 @@ import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.publication.Href
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Manifest
-import org.readium.r2.shared.publication.Properties
 import org.readium.r2.shared.publication.PublicationCollection
 import org.readium.r2.shared.publication.ReadingProgression
 import org.readium.r2.shared.publication.epub.EpubLayout
@@ -242,25 +241,28 @@ class GuideTest {
     @Test
     fun `Guide is rightly computed`() {
         assertThat(guidePub.subcollections).containsExactly(
-            entry("landmarks",
+            entry(
+                "landmarks",
                 listOf(
-                    PublicationCollection(links = listOf(
-                        Link(
-                            href = Href("OEBPS/toc.html")!!,
-                            title = "Table of Contents",
-                            rels = setOf("${Vocabularies.TYPE}toc")
-                        ),
-                        Link(
-                            href = Href("OEBPS/toc.html#figures")!!,
-                            title = "List Of Illustrations",
-                            rels = setOf("${Vocabularies.TYPE}loi")
-                        ),
-                        Link(
-                            href = Href("OEBPS/beginpage.html")!!,
-                            title = "Introduction",
-                            rels = setOf("${Vocabularies.TYPE}bodymatter")
-                        ),
-                    ))
+                    PublicationCollection(
+                        links = listOf(
+                            Link(
+                                href = Href("OEBPS/toc.html")!!,
+                                title = "Table of Contents",
+                                rels = setOf("http://idpf.org/epub/vocab/structure/#toc")
+                            ),
+                            Link(
+                                href = Href("OEBPS/toc.html#figures")!!,
+                                title = "List Of Illustrations",
+                                rels = setOf("http://idpf.org/epub/vocab/structure/#loi")
+                            ),
+                            Link(
+                                href = Href("OEBPS/beginpage.html")!!,
+                                title = "Introduction",
+                                rels = setOf("http://idpf.org/epub/vocab/structure/#bodymatter")
+                            ),
+                        )
+                    )
                 )
             )
         )

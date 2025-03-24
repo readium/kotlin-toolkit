@@ -135,8 +135,8 @@ class NavigationDocumentParserTest {
     @Test
     fun `landmarks are rightly parsed`() {
         assertThat(navComplex["landmarks"]).containsExactly(
-            Link(title = "Table of Contents", href = Href("OEBPS/xhtml/nav.xhtml#toc")!!, rels = setOf("${Vocabularies.TYPE}toc")),
-            Link(title = "Begin Reading", href = Href("OEBPS/xhtml/chapter1.xhtml")!!, rels = setOf("${Vocabularies.TYPE}bodymatter"))
+            Link(title = "Table of Contents", href = Href("OEBPS/xhtml/nav.xhtml#toc")!!, rels = setOf("http://idpf.org/epub/vocab/structure/#toc")),
+            Link(title = "Begin Reading", href = Href("OEBPS/xhtml/chapter1.xhtml")!!, rels = setOf("http://idpf.org/epub/vocab/structure/#bodymatter"))
         )
     }
 
