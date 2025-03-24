@@ -9,6 +9,7 @@
 package org.readium.r2.streamer.parser.epub
 
 import org.readium.r2.shared.InternalReadiumApi
+import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.ReadingProgression
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.fromEpubHref
@@ -21,6 +22,7 @@ internal data class PackageDocument(
     val metadata: List<MetadataItem>,
     val manifest: List<Item>,
     val spine: Spine,
+    val guide: List<Link>,
 ) {
 
     companion object {
@@ -34,6 +36,7 @@ internal data class PackageDocument(
                 ?: return null
             val spineElement = document.getFirst("spine", Namespaces.OPF)
                 ?: return null
+            val guideElement = document.getFirst("guide", Namespaces.OPF)
 
             return PackageDocument(
                 path = filePath,
@@ -42,7 +45,8 @@ internal data class PackageDocument(
                 metadata = metadata,
                 manifest = manifestElement.get("item", Namespaces.OPF)
                     .mapNotNull { Item.parse(it, filePath, prefixMap) },
-                spine = Spine.parse(spineElement, prefixMap, epubVersion)
+                spine = Spine.parse(spineElement, prefixMap, epubVersion),
+                guide = Guide.parse(guideElement, filePath, prefixMap),
             )
         }
     }
@@ -102,6 +106,46 @@ internal data class Spine(
             }
             val ncx = if (epubVersion < 3.0) element.getAttr("toc") else null
             return Spine(itemrefs, pageProgressionDirection, ncx)
+        }
+    }
+}
+
+internal data class Guide(
+    val links: List<Link>,
+) {
+    companion object {
+        // Epub 3.0+ does not support the guide element
+        // https://idpf.org/epub/20/spec/OPF_2.0.1_draft.htm#TOC2.6
+        fun parse(element: ElementNode?, filePath: Url, prefixMap: Map<String, String>): List<Link> {
+            if (element == null) return emptyList()
+
+            return element.get("reference", Namespaces.OPF).mapNotNull { node ->
+                val href = node.getAttr("href")
+                    ?.let { Url.fromEpubHref(it) }
+                    ?.let { filePath.resolve(it) }
+                    ?: return@mapNotNull null
+                val rels = node.getAttr("type")?.let {
+                    setOf(mapToEPUB3Spec(it, prefixMap))
+                } ?: emptySet()
+
+                Link(
+                    href = href,
+                    title = node.getAttr("title"),
+                    rels = rels,
+                )
+            }
+        }
+
+        private fun mapToEPUB3Spec(type: String, prefixMap: Map<String, String>): String {
+            return when (type) {
+                "title-page" -> "titlepage"
+                "text" -> "bodymatter"
+                "acknowledgements" -> "acknowledgments" // American English
+                "notes" -> "endnotes" // endnotes or footnotes. https://www.w3.org/TR/epub-ssv-11/#notes
+                else -> type
+            }.let {
+                resolveProperty(it, prefixMap, DEFAULT_VOCAB.TYPE)
+            }
         }
     }
 }
