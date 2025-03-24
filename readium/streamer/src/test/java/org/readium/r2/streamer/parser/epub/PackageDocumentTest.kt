@@ -248,17 +248,17 @@ class GuideTest {
                         Link(
                             href = Href("OEBPS/toc.html")!!,
                             title = "Table of Contents",
-                            rels = setOf("toc")
+                            rels = setOf("${Vocabularies.TYPE}toc")
                         ),
                         Link(
                             href = Href("OEBPS/toc.html#figures")!!,
                             title = "List Of Illustrations",
-                            rels = setOf("loi")
+                            rels = setOf("${Vocabularies.TYPE}loi")
                         ),
                         Link(
                             href = Href("OEBPS/beginpage.html")!!,
                             title = "Introduction",
-                            rels = setOf("bodymatter")
+                            rels = setOf("${Vocabularies.TYPE}bodymatter")
                         ),
                     ))
                 )

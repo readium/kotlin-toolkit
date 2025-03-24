@@ -84,14 +84,13 @@ internal object NavigationDocumentParser {
 
         val typeAttr = first.getAttrNs("type", Namespaces.OPS) ?: ""
         val rels = if (typeAttr.isNotEmpty()) {
-            val types = parseProperties(typeAttr).map {
+            parseProperties(typeAttr).map {
                 resolveProperty(
                     it,
                     prefixMap,
                     DEFAULT_VOCAB.TYPE
                 )
-            }
-            types.map { it.removePrefix(Vocabularies.TYPE) }.toSet()
+            }.toSet()
         } else {
             emptySet()
         }

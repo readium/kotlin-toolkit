@@ -10,7 +10,6 @@ package org.readium.r2.streamer.parser.epub
 
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.publication.Link
-import org.readium.r2.shared.publication.Properties
 import org.readium.r2.shared.publication.ReadingProgression
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.fromEpubHref
@@ -47,7 +46,7 @@ internal data class PackageDocument(
                 manifest = manifestElement.get("item", Namespaces.OPF)
                     .mapNotNull { Item.parse(it, filePath, prefixMap) },
                 spine = Spine.parse(spineElement, prefixMap, epubVersion),
-                guide = Guide.parse(guideElement, filePath),
+                guide = Guide.parse(guideElement, filePath, prefixMap),
             )
         }
     }
@@ -117,7 +116,7 @@ internal data class Guide(
     companion object {
         // Epub 3.0+ does not support the guide element
         // https://idpf.org/epub/20/spec/OPF_2.0.1_draft.htm#TOC2.6
-        fun parse(element: ElementNode?, filePath: Url): List<Link> {
+        fun parse(element: ElementNode?, filePath: Url, prefixMap: Map<String, String>): List<Link> {
             if (element == null) return emptyList()
 
             return element.get("reference", Namespaces.OPF).mapNotNull { node ->
@@ -125,21 +124,27 @@ internal data class Guide(
                     ?.let { Url.fromEpubHref(it) }
                     ?.let { filePath.resolve(it) }
                     ?: return@mapNotNull null
+                val rels = node.getAttr("type")?.let {
+                    setOf(mapToEPUB3Spec(it, prefixMap))
+                } ?: emptySet()
+
                 Link(
                     href = href,
                     title = node.getAttr("title"),
-                    rels = setOf(mapToEPUB3Spec(node.getAttr("type") ?: "")),
+                    rels = rels,
                 )
             }
         }
 
-        private fun mapToEPUB3Spec(type: String): String {
+        private fun mapToEPUB3Spec(type: String, prefixMap: Map<String, String>): String {
             return when (type) {
                 "title-page" -> "titlepage"
                 "text" -> "bodymatter"
                 "acknowledgements" -> "acknowledgments" // American English
                 "notes" -> "endnotes" // endnotes or footnotes. https://www.w3.org/TR/epub-ssv-11/#notes
                 else -> type
+            }.let {
+                resolveProperty(it, prefixMap, DEFAULT_VOCAB.TYPE)
             }
         }
     }
