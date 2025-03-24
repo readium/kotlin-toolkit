@@ -181,9 +181,9 @@ public class EpubNavigatorFragment internal constructor(
         var decorationTemplates: HtmlDecorationTemplates,
 
         /**
-         * Indicates if a user can swipe to change resources while using scroll mode (above).
+         * Indicates if a user can swipe to change resources when scroll is enabled.
          */
-        var disablePageTurnsWhileScrolling  : Boolean,
+        var disablePageTurnsWhileScrolling: Boolean,
 
         /**
          * Custom [ActionMode.Callback] to be used when the user selects content.
