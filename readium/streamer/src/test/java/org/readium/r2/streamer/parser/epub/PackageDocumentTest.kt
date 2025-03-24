@@ -246,19 +246,19 @@ class GuideTest {
                 listOf(
                     PublicationCollection(links = listOf(
                         Link(
-                            href = Href("toc.html")!!,
+                            href = Href("OEBPS/toc.html")!!,
                             title = "Table of Contents",
-                            properties = Properties().add(mapOf("type" to "toc"))
+                            rels = setOf("toc")
                         ),
                         Link(
-                            href = Href("toc.html#figures")!!,
+                            href = Href("OEBPS/toc.html#figures")!!,
                             title = "List Of Illustrations",
-                            properties = Properties().add(mapOf("type" to "loi"))
+                            rels = setOf("loi")
                         ),
                         Link(
-                            href = Href("beginpage.html")!!,
+                            href = Href("OEBPS/beginpage.html")!!,
                             title = "Introduction",
-                            properties = Properties().add(mapOf("type" to "text"))
+                            rels = setOf("bodymatter")
                         ),
                     ))
                 )

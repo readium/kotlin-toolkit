@@ -47,7 +47,7 @@ internal data class PackageDocument(
                 manifest = manifestElement.get("item", Namespaces.OPF)
                     .mapNotNull { Item.parse(it, filePath, prefixMap) },
                 spine = Spine.parse(spineElement, prefixMap, epubVersion),
-                guide = Guide.parse(guideElement, epubVersion),
+                guide = Guide.parse(guideElement, filePath),
             )
         }
     }
@@ -117,15 +117,29 @@ internal data class Guide(
     companion object {
         // Epub 3.0+ does not support the guide element
         // https://idpf.org/epub/20/spec/OPF_2.0.1_draft.htm#TOC2.6
-        fun parse(element: ElementNode?, epubVersion: Double): List<Link> {
-            if (element == null || epubVersion >= 3.0) return emptyList()
+        fun parse(element: ElementNode?, filePath: Url): List<Link> {
+            if (element == null) return emptyList()
 
             return element.get("reference", Namespaces.OPF).mapNotNull { node ->
+                val href = node.getAttr("href")
+                    ?.let { Url.fromEpubHref(it) }
+                    ?.let { filePath.resolve(it) }
+                    ?: return@mapNotNull null
                 Link(
-                    href = node.getAttr("href")?.let { Url.fromEpubHref(it) } ?: return@mapNotNull null,
+                    href = href,
                     title = node.getAttr("title"),
-                    properties = Properties().add(mapOf("type" to (node.getAttr("type") ?: "")))
+                    rels = setOf(mapToEPUB3Spec(node.getAttr("type") ?: "")),
                 )
+            }
+        }
+
+        private fun mapToEPUB3Spec(type: String): String {
+            return when (type) {
+                "title-page" -> "titlepage"
+                "text" -> "bodymatter"
+                "acknowledgements" -> "acknowledgments" // American English
+                "notes" -> "endnotes" // endnotes or footnotes. https://www.w3.org/TR/epub-ssv-11/#notes
+                else -> type
             }
         }
     }
