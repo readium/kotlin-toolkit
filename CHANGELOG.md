@@ -8,6 +8,12 @@ All notable changes to this project will be documented in this file. Take a look
 
 ### Added
 
+#### Navigator
+
+* The `EpubNavigatorFragment.Configuration.disablePageTurnsWhileScrolling` property disables horizontal swipes for navigating to previous or next resources when scroll mode is enabled. When set to `true`, you must implement your own mechanism to move to the next resource (contributed by [@tm-bookshop](https://github.com/readium/kotlin-toolkit/pull/624)).
+
+#### Streamer
+
 * The EPUB 2 `<guide>` element is now parsed into the RWPM `landmarks` subcollection when no EPUB 3 `landmarks` navigation document is declared (contributed by [@erkasraim](https://github.com/readium/kotlin-toolkit/pull/628)).
 
 ### Changed
