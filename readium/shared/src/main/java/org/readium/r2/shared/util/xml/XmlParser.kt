@@ -66,7 +66,8 @@ public class XmlParser(
                 }
                 XmlPullParser.CDSECT,
                 XmlPullParser.TEXT,
-                XmlPullParser.ENTITY_REF, -> {
+                XmlPullParser.ENTITY_REF,
+                -> {
                     text += parser.text
                 }
             }
