@@ -39,6 +39,11 @@ internal class AccessibilityAdapter {
             .map { Accessibility.Hazard(it.value) }
             .toSet()
 
+        val exemptions = itemsHolder
+            .adapt { it.takeAllWithProperty(Vocabularies.A11Y + "exemption") }
+            .map { Accessibility.Exemption(it.value) }
+            .toSet()
+
         val certification = itemsHolder
             .adapt(::adaptCertification)
 
@@ -52,7 +57,8 @@ internal class AccessibilityAdapter {
                 accessModes = accessModes,
                 accessModesSufficient = accessModesSufficient,
                 features = features,
-                hazards = hazards
+                hazards = hazards,
+                exemptions = exemptions
             )
             accessibility to itemsHolder.remainingItems
         }

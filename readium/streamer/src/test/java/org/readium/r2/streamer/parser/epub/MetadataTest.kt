@@ -485,6 +485,21 @@ class AccessibilityTest {
             )
     }
 
+    @Test fun `exemptions are rightly parsed`() {
+        assertThat(epub2Metadata.accessibility?.exemptions)
+            .containsExactlyInAnyOrder(
+                Accessibility.Exemption.EAA_MICROENTERPRISE,
+                Accessibility.Exemption.EAA_FUNDAMENTAL_ALTERATION,
+                Accessibility.Exemption.EAA_DISPROPORTIONATE_BURDEN,
+            )
+        assertThat(epub3Metadata.accessibility?.exemptions)
+            .containsExactlyInAnyOrder(
+                Accessibility.Exemption.EAA_MICROENTERPRISE,
+                Accessibility.Exemption.EAA_FUNDAMENTAL_ALTERATION,
+                Accessibility.Exemption.EAA_DISPROPORTIONATE_BURDEN,
+            )
+    }
+
     @Test fun `accessModes are rightly parsed`() {
         assertThat(epub2Metadata.accessibility?.accessModes)
             .containsExactlyInAnyOrder(
