@@ -66,17 +66,47 @@ public data class Accessibility(
 
         public companion object {
 
+            /** EPUB Accessibility 1.0 - WCAG 2.0 Level A */
             public val EPUB_A11Y_10_WCAG_20_A: Profile = Profile(
                 "http://www.idpf.org/epub/a11y/accessibility-20170105.html#wcag-a"
             )
 
+            /** EPUB Accessibility 1.0 - WCAG 2.0 Level AA */
             public val EPUB_A11Y_10_WCAG_20_AA: Profile = Profile(
                 "http://www.idpf.org/epub/a11y/accessibility-20170105.html#wcag-aa"
             )
 
+            /** EPUB Accessibility 1.0 - WCAG 2.0 Level AAA */
             public val EPUB_A11Y_10_WCAG_20_AAA: Profile = Profile(
                 "http://www.idpf.org/epub/a11y/accessibility-20170105.html#wcag-aaa"
             )
+
+            /** EPUB Accessibility 1.1 - WCAG 2.0 Level A */
+            public val EPUB_A11Y_11_WCAG_20_A: Profile = Profile("https://www.w3.org/TR/epub-a11y-11#wcag-2.0-a")
+
+            /** EPUB Accessibility 1.1 - WCAG 2.0 Level AA */
+            public val EPUB_A11Y_11_WCAG_20_AA: Profile = Profile("https://www.w3.org/TR/epub-a11y-11#wcag-2.0-aa")
+
+            /** EPUB Accessibility 1.1 - WCAG 2.0 Level AAA */
+            public val EPUB_A11Y_11_WCAG_20_AAA: Profile = Profile("https://www.w3.org/TR/epub-a11y-11#wcag-2.0-aaa")
+
+            /** EPUB Accessibility 1.1 - WCAG 2.1 Level A */
+            public val EPUB_A11Y_11_WCAG_21_A: Profile = Profile("https://www.w3.org/TR/epub-a11y-11#wcag-2.1-a")
+
+            /** EPUB Accessibility 1.1 - WCAG 2.1 Level AA */
+            public val EPUB_A11Y_11_WCAG_21_AA: Profile = Profile("https://www.w3.org/TR/epub-a11y-11#wcag-2.1-aa")
+
+            /** EPUB Accessibility 1.1 - WCAG 2.1 Level AAA */
+            public val EPUB_A11Y_11_WCAG_21_AAA: Profile = Profile("https://www.w3.org/TR/epub-a11y-11#wcag-2.1-aaa")
+
+            /** EPUB Accessibility 1.1 - WCAG 2.2 Level A */
+            public val EPUB_A11Y_11_WCAG_22_A: Profile = Profile("https://www.w3.org/TR/epub-a11y-11#wcag-2.2-a")
+
+            /** EPUB Accessibility 1.1 - WCAG 2.2 Level AA */
+            public val EPUB_A11Y_11_WCAG_22_AA: Profile = Profile("https://www.w3.org/TR/epub-a11y-11#wcag-2.2-aa")
+
+            /** EPUB Accessibility 1.1 - WCAG 2.2 Level AAA */
+            public val EPUB_A11Y_11_WCAG_22_AAA: Profile = Profile("https://www.w3.org/TR/epub-a11y-11#wcag-2.2-aaa")
 
             public fun Set<Profile>.toJSONArray(): JSONArray =
                 JSONArray(this.map(Profile::uri))
