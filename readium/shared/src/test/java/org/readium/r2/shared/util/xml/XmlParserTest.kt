@@ -209,6 +209,21 @@ class XmlParserTest {
     fun `An input with no root raises an exception`() {
         parseXmlString("   \n    \n")
     }
+
+    @Test
+    fun `CDATA parsed rightly`() {
+        val doc = parseXmlString(
+            """
+            <text>
+                pre text <![CDATA["Some text like <, >, & are safe here"]]> post text
+            </text>
+            """.trimIndent()
+        )
+
+        val cdata = doc.children.first() as TextNode
+
+        assertEquals("pre text \"Some text like <, >, & are safe here\" post text", cdata.text.trim())
+    }
 }
 
 @RunWith(RobolectricTestRunner::class)
