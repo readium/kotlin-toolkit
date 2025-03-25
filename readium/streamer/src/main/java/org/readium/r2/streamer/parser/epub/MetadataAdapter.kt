@@ -13,6 +13,7 @@ import org.readium.r2.shared.extensions.toMap
 import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.publication.Collection
 import org.readium.r2.shared.publication.presentation.Presentation
+import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Instant
 
 internal class MetadataAdapter(
@@ -88,6 +89,9 @@ internal class MetadataAdapter(
         val presentation: Presentation = globalItemsHolder
             .adapt(PresentationAdapter(epubVersion, displayOptions)::adapt)
 
+        val tdm: Tdm? = globalItemsHolder
+            .adapt(TdmAdapter()::adapt)
+
         val links: List<Link> = globalItemsHolder
             .adapt(LinksAdapter()::adapt)
 
@@ -113,6 +117,7 @@ internal class MetadataAdapter(
             readingProgression = readingProgression,
             belongsToCollections = belongsToCollections,
             belongsToSeries = belongsToSeries,
+            tdm = tdm,
             otherMetadata = otherMetadata,
 
             authors = contributors("aut"),
@@ -182,6 +187,35 @@ private class IdentifierAdapter(private val uniqueIdentifierId: String?) {
         return items
             .takeFirstWithProperty(Vocabularies.DCTERMS + "identifier")
             .mapFirstNotNull { it.value }
+    }
+}
+
+private class TdmAdapter {
+
+    fun adapt(items: List<MetadataItem>): Pair<Tdm?, List<MetadataItem>> {
+        val itemsHolder = MetadataItemsHolder(items)
+
+        val reservation = itemsHolder
+            .adapt { it.takeAllWithProperty(Vocabularies.TDM + "reservation") }
+            .firstOrNull()
+            ?.let {
+                when (it.value) {
+                    "1" -> Tdm.Reservation.ALL
+                    "0" -> Tdm.Reservation.NONE
+                    else -> null
+                }
+            }
+
+        val policy = itemsHolder
+            .adapt { it.takeAllWithProperty(Vocabularies.TDM + "policy") }
+            .firstOrNull()
+            ?.let { AbsoluteUrl(it.value) }
+
+        val tdm = reservation?.let {
+            Tdm(reservation = it, policy = policy)
+        }
+
+        return tdm to itemsHolder.remainingItems
     }
 }
 

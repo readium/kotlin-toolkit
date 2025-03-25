@@ -12,6 +12,7 @@ import org.junit.Assert.assertNull
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.readium.r2.shared.assertJSONEquals
+import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Instant
 import org.readium.r2.shared.util.Language
 import org.robolectric.RobolectricTestRunner
@@ -83,6 +84,10 @@ class MetadataTest {
                 ),
                 belongsToCollections = listOf(Contributor(name = "Collection")),
                 belongsToSeries = listOf(Contributor(name = "Series")),
+                tdm = Tdm(
+                    reservation = Tdm.Reservation.ALL,
+                    policy = AbsoluteUrl("http://example.com/tdm-policy")!!
+                ),
                 otherMetadata = mapOf(
                     "other-metadata1" to "value",
                     "other-metadata2" to listOf(42)
@@ -133,6 +138,10 @@ class MetadataTest {
                     "series": "Series",
                     "schema:Periodical": "Periodical",
                     "schema:Newspaper": [ "Newspaper 1", "Newspaper 2" ]
+                },
+                "tdm": {
+                    "reservation": "all",
+                    "policy": "http://example.com/tdm-policy"
                 },
                 "other-metadata1": "value",
                 "other-metadata2": [42]
@@ -255,6 +264,10 @@ class MetadataTest {
                     "series": [{"name": {"und": "Series"}}],
                     "schema:Periodical": [{"name": {"und": "Periodical"}}]
                 },
+                "tdm": {
+                    "reservation": "all",
+                    "policy": "http://example.com/tdm-policy"
+                },
                 "other-metadata1": "value",
                 "other-metadata2": [42]
             }"""
@@ -312,6 +325,10 @@ class MetadataTest {
                 belongsTo = mapOf("schema:Periodical" to listOf(Contributor(name = "Periodical"))),
                 belongsToCollections = listOf(Contributor(name = "Collection")),
                 belongsToSeries = listOf(Contributor(name = "Series")),
+                tdm = Tdm(
+                    reservation = Tdm.Reservation.ALL,
+                    policy = AbsoluteUrl("http://example.com/tdm-policy")!!
+                ),
                 otherMetadata = mapOf(
                     "other-metadata1" to "value",
                     "other-metadata2" to listOf(42)
