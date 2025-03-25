@@ -306,9 +306,31 @@ public data class Accessibility(
             public val INDEX: Feature = Feature("index")
 
             /**
+             * The resource includes static page markers, such as those identified by the
+             * doc-pagebreak role (DPUB-ARIA-1.0).
+             *
+             * This value is most commonly used with ebooks for which there is a statically
+             * paginated equivalent, such as a print edition, but it is not required that the page
+             * markers correspond to another work. The markers may exist solely to facilitate
+             * navigation in purely digital works.
+             */
+            public val PAGE_BREAK_MARKERS: Feature = Feature("pageBreakMarkers")
+
+            /**
+             * The resource includes a means of navigating to static page break locations.
+             *
+             * The most common way of providing page navigation in digital publications is through
+             * a page list.
+             */
+            public val PAGE_NAVIGATION: Feature = Feature("pageNavigation")
+
+            /**
              * The work includes equivalent print page numbers. This setting is most commonly used
              * with ebooks for which there is a print equivalent.
+             *
+             * Deprecated: https://github.com/readium/go-toolkit/issues/92
              */
+            @Deprecated("Deprecated in favor of PAGE_NAVIGATION", ReplaceWith("PAGE_NAVIGATION"))
             public val PRINT_PAGE_NUMBERS: Feature = Feature("printPageNumbers")
 
             /**
