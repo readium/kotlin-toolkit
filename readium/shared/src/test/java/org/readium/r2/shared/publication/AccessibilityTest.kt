@@ -107,6 +107,10 @@ class AccessibilityTest {
                 hazards = setOf(
                     Accessibility.Hazard.FLASHING,
                     Accessibility.Hazard.MOTION_SIMULATION
+                ),
+                exemptions = setOf(
+                    Accessibility.Exemption.EAA_DISPROPORTIONATE_BURDEN,
+                    Accessibility.Exemption.EAA_MICROENTERPRISE
                 )
             ),
             Accessibility.fromJSON(
@@ -122,7 +126,8 @@ class AccessibilityTest {
                     "accessMode": ["auditory", "chartOnVisual"],
                     "accessModeSufficient": [["visual", "tactile"]],
                     "feature": ["readingOrder", "alternativeText"],
-                    "hazard": ["flashing", "motionSimulation"]
+                    "hazard": ["flashing", "motionSimulation"],
+                    "exemption": ["eaa-disproportionate-burden", "eaa-microenterprise"]
                 }"""
                 )
             )
@@ -270,12 +275,40 @@ class AccessibilityTest {
                     Accessibility.Hazard.FLASHING,
                     Accessibility.Hazard.NO_SOUND_HAZARD,
                     Accessibility.Hazard.MOTION_SIMULATION
-                )
+                ),
+                exemptions = emptySet()
             ),
             Accessibility.fromJSON(
                 JSONObject(
                     """{
                     "hazard": ["flashing", "noSoundHazard", "motionSimulation"]
+                }"""
+                )
+            )
+        )
+    }
+
+    @Test
+    fun `exemptions are correctly parsed`() {
+        assertEquals(
+            Accessibility(
+                conformsTo = setOf(),
+                certification = null,
+                summary = null,
+                accessModes = emptySet(),
+                accessModesSufficient = emptySet(),
+                features = emptySet(),
+                hazards = emptySet(),
+                exemptions = setOf(
+                    Accessibility.Exemption.EAA_DISPROPORTIONATE_BURDEN,
+                    Accessibility.Exemption.EAA_FUNDAMENTAL_ALTERATION,
+                    Accessibility.Exemption.EAA_MICROENTERPRISE,
+                )
+            ),
+            Accessibility.fromJSON(
+                JSONObject(
+                    """{
+                    "exemption": ["eaa-disproportionate-burden", "eaa-fundamental-alteration", "eaa-microenterprise"]
                 }"""
                 )
             )
@@ -297,7 +330,8 @@ class AccessibilityTest {
                 "accessMode": ["auditory", "chartOnVisual"],
                 "accessModeSufficient": [["auditory"], ["visual", "tactile"], ["visual"]],
                 "feature": ["readingOrder", "alternativeText"],
-                "hazard": ["flashing", "motionSimulation"]
+                "hazard": ["flashing", "motionSimulation"],
+                "exemption": ["eaa-disproportionate-burden", "eaa-microenterprise"]
             }"""
             ),
             Accessibility(
@@ -330,6 +364,10 @@ class AccessibilityTest {
                 hazards = setOf(
                     Accessibility.Hazard.FLASHING,
                     Accessibility.Hazard.MOTION_SIMULATION
+                ),
+                exemptions = setOf(
+                    Accessibility.Exemption.EAA_DISPROPORTIONATE_BURDEN,
+                    Accessibility.Exemption.EAA_MICROENTERPRISE
                 )
             ).toJSON()
         )
