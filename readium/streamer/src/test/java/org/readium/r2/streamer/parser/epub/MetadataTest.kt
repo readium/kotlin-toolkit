@@ -9,6 +9,7 @@
 
 package org.readium.r2.streamer.parser.epub
 
+import kotlin.test.assertEquals
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.entry
 import org.junit.Assert.assertNotNull
@@ -19,6 +20,7 @@ import org.readium.r2.shared.publication.Link as SharedLink
 import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.publication.presentation.Presentation
 import org.readium.r2.shared.publication.presentation.presentation
+import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Instant
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.robolectric.RobolectricTestRunner
@@ -545,5 +547,20 @@ class AccessibilityTest {
                 "any profile"
             )
         )
+    }
+}
+
+@RunWith(RobolectricTestRunner::class)
+class TdmTest {
+    private val epub2Metadata = parsePackageDocument("package/tdm-epub2.opf").metadata
+    private val epub3Metadata = parsePackageDocument("package/tdm-epub3.opf").metadata
+
+    @Test fun `TDM is rightly parsed`() {
+        val expected = Tdm(
+            reservation = Tdm.Reservation.ALL,
+            policy = AbsoluteUrl("https://provider.com/policies/policy.json")!!
+        )
+        assertEquals(expected, epub2Metadata.tdm)
+        assertEquals(expected, epub3Metadata.tdm)
     }
 }

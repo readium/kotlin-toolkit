@@ -35,6 +35,7 @@ internal object Vocabularies {
     const val ONIX = "http://www.editeur.org/ONIX/book/codelists/current.html#"
     const val SCHEMA = "http://schema.org/"
     const val XSD = "http://www.w3.org/2001/XMLSchema#"
+    const val TDM = "http://www.w3.org/ns/tdmrep#"
 
     const val MSV = "http://www.idpf.org/epub/vocab/structure/magazine/#"
     const val PRISM = "http://www.prismstandard.org/specifications/3.0/PRISM_CV_Spec_3.0.htm#"
