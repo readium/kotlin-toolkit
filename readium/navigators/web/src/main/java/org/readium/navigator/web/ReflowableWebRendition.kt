@@ -119,6 +119,8 @@ public fun ReflowableWebRendition(
             }
         ) { index ->
             ReflowableResource(
+                pagerState = state.pagerState,
+                index = index,
                 href = state.readingOrder.items[index].href,
                 publicationBaseUrl = WebViewServer.publicationBaseHref,
                 webViewClient = state.webViewClient,

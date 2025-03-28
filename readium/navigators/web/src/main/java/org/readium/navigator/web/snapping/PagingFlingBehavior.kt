@@ -23,7 +23,6 @@ import androidx.compose.animation.core.spring
 import androidx.compose.animation.rememberSplineBasedDecay
 import androidx.compose.foundation.gestures.FlingBehavior
 import androidx.compose.foundation.gestures.TargetedFlingBehavior
-import androidx.compose.foundation.gestures.snapping.snapFlingBehavior
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -32,6 +31,7 @@ import androidx.compose.ui.platform.LocalLayoutDirection
 import org.readium.navigator.web.snapping.PagingLayoutInfo
 import org.readium.navigator.web.snapping.SnapLayoutInfoProvider
 import org.readium.navigator.web.snapping.calculateFinalSnappingBound
+import org.readium.navigator.web.snapping.snapFlingBehavior
 
 /**
  * A [snapFlingBehavior] that will snap pages to the start of the layout. One can use the

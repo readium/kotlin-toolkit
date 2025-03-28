@@ -7,18 +7,19 @@
 package org.readium.navigator.web.pager
 
 import androidx.compose.foundation.MutatePriority
+import androidx.compose.foundation.gestures.FlingBehavior
 import androidx.compose.foundation.gestures.Orientation
-import androidx.compose.foundation.gestures.TargetedFlingBehavior
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.unit.Velocity
 import kotlin.math.abs
+import timber.log.Timber
 
 internal class PagerNestedScrollConnection(
     private val state: PagerState,
-    private val flingBehavior: TargetedFlingBehavior,
+    private val flingBehavior: FlingBehavior,
     private val orientation: Orientation,
 ) : NestedScrollConnection {
 
@@ -30,7 +31,7 @@ internal class PagerNestedScrollConnection(
     private val PagerState.lastVisibleOffset get() =
         layoutInfo.visiblePagesInfo.last().offset
 
-    override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
+    /*override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
         if (source != NestedScrollSource.UserInput) {
             return Offset.Zero
         }
@@ -57,7 +58,7 @@ internal class PagerNestedScrollConnection(
             x = if (orientation == Orientation.Horizontal) consumed else available.x,
             y = if (orientation == Orientation.Vertical) consumed else available.y
         )
-    }
+    }*/
 
     override suspend fun onPreFling(available: Velocity): Velocity {
         if (state.layoutInfo.visiblePagesInfo.size > 1) {
@@ -92,10 +93,6 @@ internal class PagerNestedScrollConnection(
         available: Offset,
         source: NestedScrollSource,
     ): Offset {
-        if (source != NestedScrollSource.UserInput) {
-            return Offset.Zero
-        }
-
         if (orientation == Orientation.Horizontal && abs(consumed.y) > 0 ||
             orientation == Orientation.Vertical && abs(consumed.x) > 0
         ) {
@@ -103,10 +100,15 @@ internal class PagerNestedScrollConnection(
             return Offset.Zero
         }
 
+        if (source != NestedScrollSource.UserInput) {
+            return Offset.Zero
+        }
+
         val availableDir =
             if (orientation == Orientation.Horizontal) available.x else available.y
 
         val consumed = -state.dispatchRawDelta(-availableDir)
+        Timber.d("pager onPostScroll available ${available.x} consumedNow $consumed")
         return Offset(
             x = if (orientation == Orientation.Horizontal) consumed else 0f,
             y = if (orientation == Orientation.Vertical) consumed else 0f
@@ -120,6 +122,12 @@ internal class PagerNestedScrollConnection(
         if (consumedCrossAxis) {
             consumedCrossAxis = false
             return Velocity.Zero
+        }
+
+        // fling has a weird behavior when velocity is null. Surprisingly, it doesn't snap to
+        // the closest position. It doesn't seem to be an issue in onPreFling though.
+        if (available == Velocity.Zero) {
+            return available
         }
 
         val availableDir =

@@ -7,6 +7,7 @@
 package org.readium.navigator.web.pager
 
 import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerDefaults
 import androidx.compose.foundation.pager.PagerScope
@@ -15,6 +16,7 @@ import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.VerticalPager
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 
 @Composable
 internal fun RenditionPager(
@@ -37,6 +39,15 @@ internal fun RenditionPager(
         orientation
     )
 
+    val updatedPageContent: @Composable PagerScope.(Int) -> Unit = { index ->
+        Box(
+            modifier = Modifier.nestedScroll(PageNestedScrollConnection(index, state)),
+            propagateMinConstraints = true
+        ) {
+            pageContent(index)
+        }
+    }
+
     if (orientation == Orientation.Horizontal) {
         HorizontalPager(
             modifier = modifier,
@@ -49,7 +60,7 @@ internal fun RenditionPager(
             flingBehavior = flingBehavior,
             key = key,
             pageNestedScrollConnection = nestedScrollConnection,
-            pageContent = pageContent
+            pageContent = updatedPageContent
         )
     } else {
         VerticalPager(
@@ -63,7 +74,7 @@ internal fun RenditionPager(
             flingBehavior = flingBehavior,
             key = key,
             pageNestedScrollConnection = nestedScrollConnection,
-            pageContent = pageContent
+            pageContent = updatedPageContent
         )
     }
 }

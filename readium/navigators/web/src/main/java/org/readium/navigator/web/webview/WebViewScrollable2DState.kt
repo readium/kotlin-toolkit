@@ -12,12 +12,14 @@ import kotlin.math.ceil
 import kotlin.math.sign
 import org.readium.navigator.web.gestures.DefaultScrollable2DState
 import org.readium.navigator.web.gestures.Scrollable2DState
+import org.readium.r2.shared.util.Url
+import timber.log.Timber
 
 internal class WebViewScrollable2DState private constructor(
     private val webViewDeltaDispatcher: WebViewDeltaDispatcher,
 ) : Scrollable2DState by DefaultScrollable2DState(webViewDeltaDispatcher::onDelta) {
 
-    constructor() : this(WebViewDeltaDispatcher())
+    constructor(href: Url? = null) : this(WebViewDeltaDispatcher(href))
 
     var webView: RelaxedWebView?
         get() =
@@ -27,7 +29,7 @@ internal class WebViewScrollable2DState private constructor(
         }
 }
 
-private class WebViewDeltaDispatcher {
+private class WebViewDeltaDispatcher(private val href: Url? = null) {
 
     var webView: RelaxedWebView? = null
 
@@ -38,6 +40,8 @@ private class WebViewDeltaDispatcher {
         val currentY = webViewNow.scrollY
         val maxX = webViewNow.maxScrollX
         val maxY = webViewNow.maxScrollY
+
+        Timber.d("Dispatching $delta to Webview $href current $currentX max $maxX")
 
         // Consume slightly more than delta if we have to because
         // we don't want the pager to consume any rounding error

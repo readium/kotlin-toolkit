@@ -19,6 +19,7 @@ import androidx.compose.foundation.gestures.ScrollScope
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.pager.PagerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.key
@@ -27,12 +28,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.Velocity
-import kotlin.Float
 import kotlin.math.ceil
 import kotlin.math.floor
 import org.readium.navigator.common.TapEvent
@@ -62,6 +63,8 @@ import pagingFlingBehavior
 @SuppressLint("SetJavaScriptEnabled", "ClickableViewAccessibility")
 @Composable
 internal fun ReflowableResource(
+    pagerState: PagerState,
+    index: Int,
     href: Url,
     publicationBaseUrl: AbsoluteUrl,
     webViewClient: WebViewClient,
@@ -172,7 +175,7 @@ internal fun ReflowableResource(
             webViewState.webView?.let { gesturesApi.registerOnWebView(it) }
         }
 
-        val scrollableState = remember { WebViewScrollable2DState() }
+        val scrollableState = remember { WebViewScrollable2DState(href) }
 
         val density = LocalDensity.current
 
@@ -211,6 +214,9 @@ internal fun ReflowableResource(
                     ?.toFling2DBehavior(orientation = scrollOrientation)
             }
 
+        val resourceScrollConnection =
+            ResourceNestedScrollConnection(pagerState, scrollableState, scrollOrientation)
+
         key(layout) {
             WebView(
                 modifier = Modifier
@@ -225,7 +231,7 @@ internal fun ReflowableResource(
                                 }
                             }
                         )
-                    }
+                    }.nestedScroll(resourceScrollConnection)
                     .scrollable2D(
                         enabled = enableScroll,
                         state = scrollableState,
