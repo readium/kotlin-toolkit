@@ -445,10 +445,14 @@ class AccessibilityTest {
 
     @Test fun `conformsTo contains WCAG profiles and only them`() {
         assertThat(epub2Metadata.accessibility?.conformsTo).containsExactlyInAnyOrder(
-            Accessibility.Profile.EPUB_A11Y_10_WCAG_20_A
+            Accessibility.Profile.EPUB_A11Y_10_WCAG_20_A,
+            Accessibility.Profile.EPUB_A11Y_11_WCAG_20_AAA,
+            Accessibility.Profile.EPUB_A11Y_11_WCAG_21_AA,
         )
         assertThat(epub3Metadata.accessibility?.conformsTo).containsExactlyInAnyOrder(
-            Accessibility.Profile.EPUB_A11Y_10_WCAG_20_A
+            Accessibility.Profile.EPUB_A11Y_10_WCAG_20_A,
+            Accessibility.Profile.EPUB_A11Y_11_WCAG_20_AAA,
+            Accessibility.Profile.EPUB_A11Y_11_WCAG_21_AA,
         )
     }
 
@@ -480,6 +484,21 @@ class AccessibilityTest {
             .containsExactlyInAnyOrder(
                 Accessibility.Hazard.MOTION_SIMULATION,
                 Accessibility.Hazard.NO_SOUND_HAZARD
+            )
+    }
+
+    @Test fun `exemptions are rightly parsed`() {
+        assertThat(epub2Metadata.accessibility?.exemptions)
+            .containsExactlyInAnyOrder(
+                Accessibility.Exemption.EAA_MICROENTERPRISE,
+                Accessibility.Exemption.EAA_FUNDAMENTAL_ALTERATION,
+                Accessibility.Exemption.EAA_DISPROPORTIONATE_BURDEN,
+            )
+        assertThat(epub3Metadata.accessibility?.exemptions)
+            .containsExactlyInAnyOrder(
+                Accessibility.Exemption.EAA_MICROENTERPRISE,
+                Accessibility.Exemption.EAA_FUNDAMENTAL_ALTERATION,
+                Accessibility.Exemption.EAA_DISPROPORTIONATE_BURDEN,
             )
     }
 
