@@ -19,6 +19,10 @@ internal class SpreadNestedScrollConnection(
 ) : NestedScrollConnection {
 
     override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
+        if (source != NestedScrollSource.UserInput) {
+            return Offset.Zero
+        }
+
         val webViewNow = webviewState.webView ?: return Offset.Zero
 
         // For some reason, scrollX can vary by 1 or 2 pixels without any call to scrollTo.

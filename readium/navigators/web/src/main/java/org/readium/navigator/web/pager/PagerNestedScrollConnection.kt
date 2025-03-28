@@ -31,6 +31,10 @@ internal class PagerNestedScrollConnection(
         layoutInfo.visiblePagesInfo.last().offset
 
     override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
+        if (source != NestedScrollSource.UserInput) {
+            return Offset.Zero
+        }
+
         if (state.layoutInfo.visiblePagesInfo.size <= 1) {
             return Offset.Zero
         }
@@ -88,6 +92,10 @@ internal class PagerNestedScrollConnection(
         available: Offset,
         source: NestedScrollSource,
     ): Offset {
+        if (source != NestedScrollSource.UserInput) {
+            return Offset.Zero
+        }
+
         if (orientation == Orientation.Horizontal && abs(consumed.y) > 0 ||
             orientation == Orientation.Vertical && abs(consumed.x) > 0
         ) {

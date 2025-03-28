@@ -51,6 +51,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollDispatcher
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
+import androidx.compose.ui.input.nestedscroll.NestedScrollSource.Companion.SideEffect
 import androidx.compose.ui.input.nestedscroll.nestedScrollModifierNode
 import androidx.compose.ui.input.pointer.PointerEvent
 import androidx.compose.ui.input.pointer.PointerEventPass
@@ -656,15 +657,22 @@ internal class ScrollingLogic(
     suspend fun doFlingAnimation(available: Velocity): Velocity {
         var result: Velocity = available
 
-        // Unlike the scrollable modifier, we bypass nested scroll while performing fling
-        // so that nested scroll is more predictable : ancestors do not get called while
-        // this is performing fling, only preFling beforehand and postFling afterwards.
-        scrollableState.scroll(scrollPriority = MutatePriority.Default) {
-            with(flingBehavior) {
-                result = performFling(available.reverseIfNeeded()).reverseIfNeeded()
+        scroll(scrollPriority = MutatePriority.Default) {
+            val nestedScrollScope = this
+            val reverseScope = object : Scroll2DScope {
+                override fun scrollBy(pixels: Offset): Offset {
+                    return nestedScrollScope.scrollByWithOverscroll(
+                        offset = pixels.reverseIfNeeded(),
+                        source = SideEffect
+                    ).reverseIfNeeded()
+                }
+            }
+            with(reverseScope) {
+                with(flingBehavior) {
+                    result = performFling(available.reverseIfNeeded()).reverseIfNeeded()
+                }
             }
         }
-
         return result
     }
 
