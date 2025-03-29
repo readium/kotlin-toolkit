@@ -34,9 +34,11 @@ import org.readium.navigator.web.util.WebViewClient
 import org.readium.navigator.web.util.WebViewServer
 import org.readium.navigator.web.util.WebViewServer.Companion.assetsBaseHref
 import org.readium.navigator.web.util.injectHtmlReflowable
+import org.readium.navigator.web.webview.WebViewScrollController
 import org.readium.r2.navigator.SimpleOverflow
 import org.readium.r2.navigator.preferences.Axis
 import org.readium.r2.navigator.preferences.FontFamily
+import org.readium.r2.navigator.preferences.ReadingProgression
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.util.RelativeUrl
@@ -54,7 +56,7 @@ public class ReflowableWebRenditionState internal constructor(
     resourceMediaTypes: Map<Url, MediaType>,
     isRestricted: Boolean,
     initialSettings: ReflowableWebSettings,
-    initialLocation: ReflowableWebGoLocation,
+    private val initialLocation: ReflowableWebGoLocation,
     private val rsProperties: RsProperties = RsProperties(),
     fontFamilyDeclarations: List<FontFamilyDeclaration>,
 ) : RenditionState<ReflowableWebRenditionController> {
@@ -129,7 +131,7 @@ public class ReflowableWebRenditionState internal constructor(
             pageCount = { readingOrder.items.size }
         )
 
-    internal val currentProgression: Double =
+    internal val currentProgression: Double get() =
         controller?.location?.value?.progression
             ?: initialLocation.progression
             ?: 0.0
@@ -142,6 +144,10 @@ public class ReflowableWebRenditionState internal constructor(
     internal fun updateLocation(location: ReflowableWebLocation) {
         initControllerIfNeeded(location)
         navigationDelegate.updateLocation(location)
+    }
+
+    internal fun updateScrollController(webViewScrollController: WebViewScrollController) {
+        navigationDelegate.updateScrollController(webViewScrollController)
     }
 
     private fun initControllerIfNeeded(location: ReflowableWebLocation) {
@@ -193,8 +199,14 @@ internal class ReflowableNavigationDelegate(
     private val locationMutable: MutableState<ReflowableWebLocation> =
         mutableStateOf(initialLocation)
 
+    private var scrollController: WebViewScrollController? = null
+
     internal fun updateLocation(location: ReflowableWebLocation) {
         locationMutable.value = location
+    }
+
+    internal fun updateScrollController(webViewScrollController: WebViewScrollController) {
+        scrollController = webViewScrollController
     }
 
     override val location: State<ReflowableWebLocation> =
@@ -210,7 +222,7 @@ internal class ReflowableNavigationDelegate(
     }
 
     override suspend fun goTo(location: ReflowableWebLocation) {
-        goTo(ReflowableWebGoLocation(location.href))
+        goTo(ReflowableWebGoLocation(location.href, location.progression))
     }
 
     override val overflow: State<Overflow> =
@@ -231,14 +243,54 @@ internal class ReflowableNavigationDelegate(
         get() = pagerState.currentPage > 0
 
     override suspend fun moveForward() {
-        if (canMoveForward) {
+        if (scrollController?.canMoveForward() != false) {
+            scrollController?.moveForward()
+        } else {
             pagerState.scrollToPage(pagerState.currentPage + 1)
         }
     }
 
     override suspend fun moveBackward() {
-        if (canMoveBackward) {
+        if (scrollController?.canMoveBackward() != false) {
+            scrollController?.moveBackward()
+        } else {
             pagerState.scrollToPage(pagerState.currentPage - 1)
         }
     }
+
+    private fun WebViewScrollController.moveForward() =
+        when (settings.value.scroll) {
+            true -> moveBottom()
+            false -> when (settings.value.readingProgression) {
+                ReadingProgression.LTR -> moveRight()
+                ReadingProgression.RTL -> moveLeft()
+            }
+        }
+
+    private fun WebViewScrollController.moveBackward() =
+        when (settings.value.scroll) {
+            true -> moveTop()
+            false -> when (settings.value.readingProgression) {
+                ReadingProgression.LTR -> moveLeft()
+                ReadingProgression.RTL -> moveRight()
+            }
+        }
+
+    private fun WebViewScrollController.canMoveForward(): Boolean =
+        when (settings.value.scroll) {
+            true -> canMoveBottom
+            false -> when (settings.value.readingProgression) {
+                ReadingProgression.LTR -> canMoveRight
+                ReadingProgression.RTL -> canMoveLeft
+            }
+        }
+
+    private fun WebViewScrollController.canMoveBackward(): Boolean =
+        when (settings.value.scroll) {
+            true -> canMoveTop
+            false -> when (settings.value.readingProgression) {
+                ReadingProgression.LTR -> canMoveLeft
+                ReadingProgression.RTL -> canMoveRight
+            }
+        }
 }

@@ -59,7 +59,7 @@ public class ReflowableWebNavigatorFactory private constructor(
             return ReflowableWebNavigatorFactory(
                 application,
                 publication,
-                ReflowableWebDefaults()
+                defaults
             )
         }
     }

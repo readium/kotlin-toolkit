@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -27,7 +28,9 @@ import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.readium.navigator.common.HyperlinkListener
 import org.readium.navigator.common.HyperlinkLocation
 import org.readium.navigator.common.InputListener
@@ -41,6 +44,7 @@ import org.readium.navigator.web.pager.RenditionPager
 import org.readium.navigator.web.reflowable.ReflowableResource
 import org.readium.navigator.web.util.AbsolutePaddingValues
 import org.readium.navigator.web.util.WebViewServer
+import org.readium.navigator.web.webview.WebViewScrollController
 import org.readium.r2.navigator.preferences.ReadingProgression
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.AbsoluteUrl
@@ -106,6 +110,22 @@ public fun ReflowableWebRendition(
             mutableStateOf(itemIndex.value == 0)
         }
 
+        val inputListenerState = rememberUpdatedState(inputListener)
+        state.updateLocation(
+            ReflowableWebLocation(
+                href = state.readingOrder.items[itemIndex.value].href,
+                progression = state.currentProgression
+            )
+        )
+
+        var scrollControllers = remember { mutableStateOf(emptyMap<Int, WebViewScrollController>()) }
+
+        LaunchedEffect(itemIndex.value, scrollControllers) {
+            scrollControllers.value[itemIndex.value]?.let {
+                state.updateScrollController(it)
+            }
+        }
+
         RenditionPager(
             modifier = modifier,
             state = state.pagerState,
@@ -140,7 +160,7 @@ public fun ReflowableWebRendition(
                 stickToInitialProgression = index != itemIndex.value,
                 enableScroll = readyToScrollNext.value && readyToScrollPrev.value,
                 onTap = { tapEvent ->
-                    inputListener.onTap(tapEvent, TapContext(viewportSize.value))
+                    inputListenerState.value.onTap(tapEvent, TapContext(viewportSize.value))
                 },
                 onLinkActivated = { url, outerHtml ->
                     coroutineScope.launch {
@@ -152,6 +172,13 @@ public fun ReflowableWebRendition(
                         val itemHref = state.readingOrder.items[index].href
                         val newLocation = ReflowableWebLocation(itemHref, it)
                         state.updateLocation(newLocation)
+                    }
+                },
+                onWebViewAvailable = {
+                    coroutineScope.launch {
+                        withContext(Dispatchers.Main) { // ensure thread safety
+                            scrollControllers.value += index to WebViewScrollController(it)
+                        }
                     }
                 },
                 onReadyToScroll = {

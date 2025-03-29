@@ -81,6 +81,7 @@ internal fun ReflowableResource(
     stickToInitialProgression: Boolean,
     enableScroll: Boolean,
     onReadyToScroll: () -> Unit,
+    onWebViewAvailable: (RelaxedWebView) -> Unit,
     onTap: (TapEvent) -> Unit,
     onLinkActivated: (Url, String) -> Unit,
     onScrollChanged: (Double) -> Unit,
@@ -111,6 +112,12 @@ internal fun ReflowableResource(
 
         if (readyToScroll.value) {
             onReadyToScroll()
+        }
+
+        LaunchedEffect(webViewState.webView) {
+            webViewState.webView?.let {
+                onWebViewAvailable(it)
+            }
         }
 
         val initializationApi = remember(webViewState.webView, stickToInitialProgression) {
