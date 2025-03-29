@@ -85,7 +85,7 @@ internal class TtsSessionAdapter<E : TtsEngine.Error>(
     )
 
     init {
-        val streamType = Util.getStreamTypeForAudioUsage(audioAttributes.usage)
+        val streamType = audioAttributes.streamType
         streamVolumeManager.setStreamType(streamType)
     }
 
@@ -452,7 +452,7 @@ internal class TtsSessionAdapter<E : TtsEngine.Error>(
     }
 
     override fun getTrackSelectionParameters(): TrackSelectionParameters {
-        return TrackSelectionParameters.Builder(application)
+        return TrackSelectionParameters.Builder()
             .build()
     }
 
