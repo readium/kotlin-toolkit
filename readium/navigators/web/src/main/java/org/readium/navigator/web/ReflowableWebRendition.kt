@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -73,9 +74,7 @@ public fun ReflowableWebRendition(
         val reverseLayout =
             LocalLayoutDirection.current.toReadingProgression() != readingProgression
 
-        val itemIndex = state.pagerState.currentPage
-        val itemHref = state.readingOrder.items[itemIndex].href
-        state.updateLocation(ReflowableWebLocation(itemHref, state.currentProgression))
+        val itemIndex = remember { derivedStateOf { state.pagerState.currentPage } }
 
         val coroutineScope = rememberCoroutineScope()
 
@@ -100,11 +99,11 @@ public fun ReflowableWebRendition(
             )
 
         val readyToScrollNext = remember(state.pagerState.currentPage) {
-            mutableStateOf(itemIndex == state.pagerState.pageCount - 1)
+            mutableStateOf(itemIndex.value == state.pagerState.pageCount - 1)
         }
 
         val readyToScrollPrev = remember(state.pagerState.currentPage) {
-            mutableStateOf(itemIndex == 0)
+            mutableStateOf(itemIndex.value == 0)
         }
 
         RenditionPager(
@@ -134,11 +133,11 @@ public fun ReflowableWebRendition(
                 userProperties = state.readiumCss.value.userProperties,
                 layout = state.readiumCss.value.layout,
                 initialProgression = when {
-                    index < itemIndex -> 1.0
-                    index > itemIndex -> 0.0
+                    index < itemIndex.value -> 1.0
+                    index > itemIndex.value -> 0.0
                     else -> state.currentProgression
                 },
-                stickToInitialProgression = index != itemIndex,
+                stickToInitialProgression = index != itemIndex.value,
                 enableScroll = readyToScrollNext.value && readyToScrollPrev.value,
                 onTap = { tapEvent ->
                     inputListener.onTap(tapEvent, TapContext(viewportSize.value))
@@ -149,16 +148,16 @@ public fun ReflowableWebRendition(
                     }
                 },
                 onScrollChanged = {
-                    if (index == itemIndex) {
-                        val itemIndex = state.pagerState.currentPage
-                        val itemHref = state.readingOrder.items[itemIndex].href
-                        state.updateLocation(ReflowableWebLocation(itemHref, state.currentProgression))
+                    if (index == itemIndex.value) {
+                        val itemHref = state.readingOrder.items[index].href
+                        val newLocation = ReflowableWebLocation(itemHref, it)
+                        state.updateLocation(newLocation)
                     }
                 },
                 onReadyToScroll = {
                     when (index) {
-                        itemIndex - 1 -> readyToScrollPrev.value = true
-                        itemIndex + 1 -> readyToScrollNext.value = true
+                        itemIndex.value - 1 -> readyToScrollPrev.value = true
+                        itemIndex.value + 1 -> readyToScrollNext.value = true
                         else -> {}
                     }
                 }

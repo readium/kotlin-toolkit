@@ -44,7 +44,7 @@ public class ReflowableWebLocatorAdapter internal constructor(
                 )
             )
             .copyWithLocations(
-                // progression = progression,
+                progression = progression,
                 // position = position,
                 // otherLocations = buildMap { cssSelector?.let { put("cssSelector", cssSelector) } }
             )
