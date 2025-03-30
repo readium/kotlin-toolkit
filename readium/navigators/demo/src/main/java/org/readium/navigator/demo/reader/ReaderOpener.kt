@@ -106,22 +106,22 @@ class ReaderOpener(
 
         val preferencesManager = PreferencesManager(initialPreferences)
 
-        val settingsEditor = navigatorFactory.createPreferencesEditor(initialPreferences)
+        val preferencesEditor = navigatorFactory.createPreferencesEditor(initialPreferences)
 
-        snapshotFlow { settingsEditor.preferences }
+        snapshotFlow { preferencesEditor.preferences }
             .onEach { preferencesManager.setPreferences(it) }
             .launchIn(coroutineScope)
 
-        val navigatorState = navigatorFactory.createRenditionState(
-            initialSettings = settingsEditor.settings,
+        val renditionState = navigatorFactory.createRenditionState(
+            initialSettings = preferencesEditor.settings,
             initialLocation = initialLocation
         ).getOrElse {
             return Try.failure(it)
         }
 
-        val onNavigatorCreated: (ReflowableWebRenditionController) -> Unit = { navigator ->
-            snapshotFlow { settingsEditor.settings }
-                .onEach { navigator.settings.value = it }
+        val onControllerAvailable: (ReflowableWebRenditionController) -> Unit = { controller ->
+            snapshotFlow { preferencesEditor.settings }
+                .onEach { controller.settings.value = it }
                 .launchIn(coroutineScope)
         }
 
@@ -129,10 +129,10 @@ class ReaderOpener(
             url = url,
             coroutineScope = coroutineScope,
             publication = publication,
-            renditionState = navigatorState,
-            preferencesEditor = settingsEditor,
+            renditionState = renditionState,
+            preferencesEditor = preferencesEditor,
             locatorAdapter = locatorAdapter,
-            onNavigatorCreated = onNavigatorCreated
+            onControllerAvailable = onControllerAvailable
         )
 
         return Try.success(readerState)
@@ -156,22 +156,22 @@ class ReaderOpener(
 
         val preferencesManager = PreferencesManager(initialPreferences)
 
-        val settingsEditor = navigatorFactory.createPreferencesEditor(initialPreferences)
+        val preferencesEditor = navigatorFactory.createPreferencesEditor(initialPreferences)
 
-        snapshotFlow { settingsEditor.preferences }
+        snapshotFlow { preferencesEditor.preferences }
             .onEach { preferencesManager.setPreferences(it) }
             .launchIn(coroutineScope)
 
-        val navigatorState = navigatorFactory.createRenditionState(
-            initialSettings = settingsEditor.settings,
+        val renditionState = navigatorFactory.createRenditionState(
+            initialSettings = preferencesEditor.settings,
             initialLocation = initialLocation
         ).getOrElse {
             return Try.failure(it)
         }
 
-        val onNavigatorCreated: (FixedWebRenditionController) -> Unit = { navigator ->
-            snapshotFlow { settingsEditor.settings }
-                .onEach { navigator.settings.value = it }
+        val onControllerAvailable: (FixedWebRenditionController) -> Unit = { controller ->
+            snapshotFlow { preferencesEditor.settings }
+                .onEach { controller.settings.value = it }
                 .launchIn(coroutineScope)
         }
 
@@ -179,10 +179,10 @@ class ReaderOpener(
             url = url,
             coroutineScope = coroutineScope,
             publication = publication,
-            renditionState = navigatorState,
-            preferencesEditor = settingsEditor,
+            renditionState = renditionState,
+            preferencesEditor = preferencesEditor,
             locatorAdapter = locatorAdapter,
-            onNavigatorCreated = onNavigatorCreated
+            onControllerAvailable = onControllerAvailable
         )
 
         return Try.success(readerState)

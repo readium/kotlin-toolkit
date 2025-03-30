@@ -15,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.graphics.toColorInt
 
 @Composable
 fun ColorPicker(onPick: (Int) -> Unit) {
@@ -55,7 +56,7 @@ fun ColorPicker(onPick: (Int) -> Unit) {
 
 @Composable
 private fun RowScope.ColorBox(colorHex: String, onClick: (Int) -> Unit) {
-    val color = remember(colorHex) { android.graphics.Color.parseColor(colorHex) }
+    val color = remember(colorHex) { colorHex.toColorInt() }
 
     Box(
         modifier = Modifier

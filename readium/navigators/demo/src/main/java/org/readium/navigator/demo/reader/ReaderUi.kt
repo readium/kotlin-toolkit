@@ -68,7 +68,7 @@ data class ReaderState<L : Location, N : NavigationController<L, *>>(
     val renditionState: RenditionState<N>,
     val preferencesEditor: PreferencesEditor<*, *>,
     val locatorAdapter: LocatorAdapter<L, *>,
-    val onNavigatorCreated: (N) -> Unit,
+    val onControllerAvailable: (N) -> Unit,
 ) {
 
     fun close() {
@@ -111,7 +111,7 @@ fun <L : Location, N : NavigationController<L, *>> Reader(
 
         if (controllerNow != null) {
             LaunchedEffect(controllerNow) {
-                readerState.onNavigatorCreated(controllerNow)
+                readerState.onControllerAvailable(controllerNow)
             }
 
             LaunchedEffect(controllerNow) {
