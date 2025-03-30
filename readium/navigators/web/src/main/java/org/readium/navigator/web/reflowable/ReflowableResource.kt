@@ -34,6 +34,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.Velocity
+import androidx.compose.ui.zIndex
 import kotlin.math.ceil
 import kotlin.math.floor
 import org.readium.navigator.common.TapEvent
@@ -118,6 +119,7 @@ internal fun ReflowableResource(
                                 0,
                                 object : WebView.VisualStateCallback() {
                                     override fun onComplete(requestId: Long) {
+                                        scrollToProgression(initialProgression, scrollOrientation)
                                         contentIsLaidOut.value = true
                                     }
                                 }
@@ -176,7 +178,6 @@ internal fun ReflowableResource(
             scrollableState.webView
                 .takeIf { contentIsLaidOut.value }
                 ?.let { webview ->
-                    webview.scrollToProgression(initialProgression, scrollOrientation)
                     webview.setOnScrollChangeListener { view, scrollX, scrollY, oldScrollX, oldScrollY ->
                         onScrollChanged(webview.progression(scrollOrientation))
                     }
@@ -209,6 +210,17 @@ internal fun ReflowableResource(
 
         val resourceScrollConnection =
             ResourceNestedScrollConnection(pagerState, scrollableState, scrollOrientation)
+
+        // Hide content before initial position is settled
+        if (!contentIsLaidOut.value) {
+            Box(
+                modifier = Modifier
+                    .background(backgroundColor)
+                    .zIndex(1f)
+                    .fillMaxSize(),
+                content = {}
+            )
+        }
 
         key(layout) {
             WebView(
