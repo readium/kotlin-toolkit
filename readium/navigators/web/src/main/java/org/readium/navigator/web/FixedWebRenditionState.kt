@@ -20,9 +20,10 @@ import org.readium.navigator.common.Overflow
 import org.readium.navigator.common.OverflowController
 import org.readium.navigator.common.RenditionState
 import org.readium.navigator.common.SettingsController
+import org.readium.navigator.web.fixed.FixedWebPublication
+import org.readium.navigator.web.fixed.FixedWebPublication.ReadingOrder
 import org.readium.navigator.web.layout.Layout
 import org.readium.navigator.web.layout.LayoutResolver
-import org.readium.navigator.web.layout.ReadingOrder
 import org.readium.navigator.web.location.FixedWebGoLocation
 import org.readium.navigator.web.location.FixedWebLocation
 import org.readium.navigator.web.preferences.FixedWebSettings
@@ -38,7 +39,6 @@ import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.util.RelativeUrl
 import org.readium.r2.shared.util.Url
-import org.readium.r2.shared.util.data.Container
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.resource.Resource
 
@@ -46,9 +46,7 @@ import org.readium.r2.shared.util.resource.Resource
 @Stable
 public class FixedWebRenditionState internal constructor(
     application: Application,
-    internal val readingOrder: ReadingOrder,
-    container: Container<Resource>,
-    resourceMediaTypes: Map<Url, MediaType>,
+    internal val publication: FixedWebPublication,
     isRestricted: Boolean,
     initialSettings: FixedWebSettings,
     initialLocation: FixedWebGoLocation,
@@ -63,12 +61,12 @@ public class FixedWebRenditionState internal constructor(
 
     internal val layoutDelegate: LayoutDelegate =
         LayoutDelegate(
-            readingOrder,
+            publication.readingOrder,
             initialSettings
         )
 
     internal val hyperlinkProcessor =
-        HyperlinkProcessor(container)
+        HyperlinkProcessor(publication.container)
 
     private val htmlInjector: (Resource, MediaType) -> Resource = { resource, mediaType ->
         resource.injectHtml(
@@ -82,8 +80,8 @@ public class FixedWebRenditionState internal constructor(
     private val webViewServer =
         WebViewServer(
             application = application,
-            container = container,
-            mediaTypes = resourceMediaTypes,
+            container = publication.container,
+            mediaTypes = publication.mediaTypes,
             errorPage = RelativeUrl("readium/navigators/web/error.xhtml")!!,
             htmlInjector = htmlInjector,
             servedAssets = listOf("readium/.*"),

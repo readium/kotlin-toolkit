@@ -6,7 +6,7 @@
 
 package org.readium.navigator.web.layout
 
-import org.readium.navigator.web.layout.DoubleViewportSpread.Companion.invoke
+import org.readium.navigator.web.fixed.FixedWebPublication
 import org.readium.navigator.web.preferences.FixedWebSettings
 import org.readium.r2.navigator.preferences.ReadingProgression
 import org.readium.r2.shared.ExperimentalReadiumApi
@@ -14,7 +14,7 @@ import org.readium.r2.shared.publication.presentation.Presentation
 
 @OptIn(ExperimentalReadiumApi::class)
 internal class LayoutResolver(
-    private val readingOrder: ReadingOrder,
+    private val readingOrder: FixedWebPublication.ReadingOrder,
 ) {
 
     fun layout(settings: FixedWebSettings): List<Spread> =

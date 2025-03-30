@@ -8,8 +8,10 @@ package org.readium.navigator.web
 
 import android.app.Application
 import java.io.IOException
-import org.readium.navigator.web.layout.ReadingOrder
-import org.readium.navigator.web.layout.ReadingOrderItem
+import org.readium.navigator.web.fixed.FixedWebPublication
+import org.readium.navigator.web.fixed.FixedWebPublication.OtherItem
+import org.readium.navigator.web.fixed.FixedWebPublication.ReadingOrder
+import org.readium.navigator.web.fixed.FixedWebPublication.ReadingOrderItem
 import org.readium.navigator.web.location.FixedWebGoLocation
 import org.readium.navigator.web.location.FixedWebLocatorAdapter
 import org.readium.navigator.web.preferences.FixedWebDefaults
@@ -31,14 +33,14 @@ import org.readium.r2.shared.util.ThrowableError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.getOrElse
 
-@OptIn(InternalReadiumApi::class)
-@ExperimentalReadiumApi
 /**
- * Creates components to render a fixed layout publication.
+ * Creates components to render a fixed layout Web publication.
  *
- * These components are meant to work together. DO not mix components from different
+ * These components are meant to work together. Do not mix components from different
  * factory instances.
  */
+@OptIn(InternalReadiumApi::class)
+@ExperimentalReadiumApi
 public class FixedWebRenditionFactory private constructor(
     private val application: Application,
     private val publication: Publication,
@@ -50,6 +52,7 @@ public class FixedWebRenditionFactory private constructor(
         public operator fun invoke(
             application: Application,
             publication: Publication,
+            defaults: FixedWebDefaults = FixedWebDefaults(),
         ): FixedWebRenditionFactory? {
             if (!publication.conformsTo(Publication.Profile.EPUB) ||
                 publication.metadata.presentation.layout != EpubLayout.FIXED
@@ -64,7 +67,7 @@ public class FixedWebRenditionFactory private constructor(
             return FixedWebRenditionFactory(
                 application,
                 publication,
-                FixedWebDefaults()
+                defaults
             )
         }
     }
@@ -76,7 +79,7 @@ public class FixedWebRenditionFactory private constructor(
 
         public class Initialization(
             cause: org.readium.r2.shared.util.Error,
-        ) : Error("Could not initialize the navigator.", cause)
+        ) : Error("Could not create a rendition state.", cause)
     }
 
     public suspend fun createRenditionState(
@@ -87,26 +90,34 @@ public class FixedWebRenditionFactory private constructor(
         val readingOrderItems = readingOrder.map {
             ReadingOrderItem(
                 href = it.url(),
-                page = it.properties.page
+                page = it.properties.page,
+                mediaType = it.mediaType
             )
         }
+
+        val otherResources = publication.resources.map {
+            OtherItem(
+                href = it.url(),
+                mediaType = it.mediaType
+            )
+        }
+
+        val renditionPublication = FixedWebPublication(
+            readingOrder = ReadingOrder(readingOrderItems),
+            otherResources = otherResources,
+            container = publication.container
+        )
 
         val preloads = preloadData()
             .getOrElse { return Try.failure(it) }
 
-        val resourceMediaTypes = (publication.readingOrder + publication.resources)
-            .mapNotNull { link -> link.mediaType?.let { link.url() to it } }
-            .associate { it }
-
         val state =
             FixedWebRenditionState(
                 application = application,
-                readingOrder = ReadingOrder(readingOrderItems),
-                resourceMediaTypes = resourceMediaTypes,
+                publication = renditionPublication,
                 isRestricted = publication.findService(ContentProtectionService::class)?.isRestricted ?: false,
                 initialSettings = initialSettings,
                 initialLocation = initialLocation ?: FixedWebGoLocation(readingOrderItems[0].href),
-                container = publication.container,
                 preloadedData = preloads
             )
 

@@ -25,10 +25,10 @@ import org.readium.navigator.web.css.ReadiumCss
 import org.readium.navigator.web.css.RsProperties
 import org.readium.navigator.web.css.buildFontFamilyDeclaration
 import org.readium.navigator.web.css.update
-import org.readium.navigator.web.layout.ReadingOrder
 import org.readium.navigator.web.location.ReflowableWebGoLocation
 import org.readium.navigator.web.location.ReflowableWebLocation
 import org.readium.navigator.web.preferences.ReflowableWebSettings
+import org.readium.navigator.web.reflowable.ReflowableWebPublication
 import org.readium.navigator.web.util.HyperlinkProcessor
 import org.readium.navigator.web.util.WebViewClient
 import org.readium.navigator.web.util.WebViewServer
@@ -43,7 +43,6 @@ import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.util.RelativeUrl
 import org.readium.r2.shared.util.Url
-import org.readium.r2.shared.util.data.Container
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.resource.Resource
 
@@ -51,9 +50,7 @@ import org.readium.r2.shared.util.resource.Resource
 @Stable
 public class ReflowableWebRenditionState internal constructor(
     application: Application,
-    internal val readingOrder: ReadingOrder,
-    container: Container<Resource>,
-    resourceMediaTypes: Map<Url, MediaType>,
+    internal val publication: ReflowableWebPublication,
     isRestricted: Boolean,
     initialSettings: ReflowableWebSettings,
     private val initialLocation: ReflowableWebGoLocation,
@@ -73,7 +70,7 @@ public class ReflowableWebRenditionState internal constructor(
         )
 
     internal val hyperlinkProcessor =
-        HyperlinkProcessor(container)
+        HyperlinkProcessor(publication.container)
 
     internal val readiumCss: State<ReadiumCss> =
         derivedStateOf {
@@ -114,8 +111,8 @@ public class ReflowableWebRenditionState internal constructor(
     internal val webViewServer =
         WebViewServer(
             application = application,
-            container = container,
-            mediaTypes = resourceMediaTypes,
+            container = publication.container,
+            mediaTypes = publication.mediaTypes,
             errorPage = RelativeUrl("readium/navigators/web/error.xhtml")!!,
             htmlInjector = htmlInjector,
             servedAssets = listOf("readium/.*"),
@@ -127,8 +124,8 @@ public class ReflowableWebRenditionState internal constructor(
 
     internal val pagerState: PagerState =
         PagerState(
-            currentPage = readingOrder.indexOfHref(initialLocation.href) ?: 0,
-            pageCount = { readingOrder.items.size }
+            currentPage = publication.readingOrder.indexOfHref(initialLocation.href) ?: 0,
+            pageCount = { publication.readingOrder.size }
         )
 
     internal val currentProgression: Double get() =
@@ -157,7 +154,7 @@ public class ReflowableWebRenditionState internal constructor(
 
         navigationDelegate =
             ReflowableNavigationDelegate(
-                readingOrder,
+                publication.readingOrder,
                 pagerState,
                 layoutDelegate.settings,
                 location
@@ -190,7 +187,7 @@ internal class ReflowableLayoutDelegate(
 
 @OptIn(ExperimentalReadiumApi::class, InternalReadiumApi::class)
 internal class ReflowableNavigationDelegate(
-    private val readingOrder: ReadingOrder,
+    private val readingOrder: ReflowableWebPublication.ReadingOrder,
     private val pagerState: PagerState,
     private val settings: State<ReflowableWebSettings>,
     initialLocation: ReflowableWebLocation,

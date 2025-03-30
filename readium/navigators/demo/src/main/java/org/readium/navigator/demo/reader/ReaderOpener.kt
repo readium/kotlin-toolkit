@@ -71,8 +71,9 @@ class ReaderOpener(
                 when (publication.metadata.presentation.layout) {
                     EpubLayout.FIXED ->
                         createFixedWebReader(url, publication, initialLocator)
-                    EpubLayout.REFLOWABLE, null ->
+                    EpubLayout.REFLOWABLE ->
                         createReflowableWebReader(url, publication, initialLocator)
+                    else -> Try.failure(DebugError("Publication not supported"))
                 }
 
             /* publication.conformsTo(Publication.Profile.PDF) ->

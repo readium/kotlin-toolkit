@@ -85,7 +85,7 @@ public fun FixedWebRendition(
         // reflowable navigator could fit the architecture as well.
         val spreadIndex = state.pagerState.currentPage
         val itemIndex = state.layoutDelegate.layout.value.pageIndexForSpread(spreadIndex)
-        val itemHref = state.readingOrder.items[itemIndex].href
+        val itemHref = state.publication.readingOrder[itemIndex].href
         state.updateLocation(FixedWebLocation(itemHref))
 
         val coroutineScope = rememberCoroutineScope()
@@ -177,7 +177,7 @@ private suspend fun onLinkActivated(
     listener: HyperlinkListener,
 ) {
     val location = HyperlinkLocation(url.removeFragment())
-    val isReadingOrder = state.readingOrder.indexOfHref(url.removeFragment()) != null
+    val isReadingOrder = state.publication.readingOrder.indexOfHref(url.removeFragment()) != null
     val context = state.computeHyperlinkContext(url, outerHtml)
     when {
         isReadingOrder -> listener.onReadingOrderLinkActivated(location, context)

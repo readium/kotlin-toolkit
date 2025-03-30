@@ -113,7 +113,7 @@ public fun ReflowableWebRendition(
         val inputListenerState = rememberUpdatedState(inputListener)
         state.updateLocation(
             ReflowableWebLocation(
-                href = state.readingOrder.items[itemIndex.value].href,
+                href = state.publication.readingOrder.items[itemIndex.value].href,
                 progression = state.currentProgression
             )
         )
@@ -140,7 +140,7 @@ public fun ReflowableWebRendition(
             ReflowableResource(
                 pagerState = state.pagerState,
                 index = index,
-                href = state.readingOrder.items[index].href,
+                href = state.publication.readingOrder.items[index].href,
                 publicationBaseUrl = WebViewServer.publicationBaseHref,
                 webViewClient = state.webViewClient,
                 viewportSize = viewportSize.value,
@@ -169,7 +169,7 @@ public fun ReflowableWebRendition(
                 },
                 onScrollChanged = {
                     if (index == itemIndex.value) {
-                        val itemHref = state.readingOrder.items[index].href
+                        val itemHref = state.publication.readingOrder.items[index].href
                         val newLocation = ReflowableWebLocation(itemHref, it)
                         state.updateLocation(newLocation)
                     }
@@ -218,7 +218,7 @@ private suspend fun onLinkActivated(
     listener: HyperlinkListener,
 ) {
     val location = HyperlinkLocation(url.removeFragment())
-    val isReadingOrder = state.readingOrder.indexOfHref(url.removeFragment()) != null
+    val isReadingOrder = state.publication.readingOrder.indexOfHref(url.removeFragment()) != null
     val context = state.computeHyperlinkContext(url, outerHtml)
     when {
         isReadingOrder -> listener.onReadingOrderLinkActivated(location, context)
