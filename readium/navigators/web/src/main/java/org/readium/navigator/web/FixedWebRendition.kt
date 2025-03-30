@@ -66,13 +66,13 @@ public fun FixedWebRendition(
             ?: NullHyperlinkListener(),
 ) {
     BoxWithConstraints(
-        modifier = Modifier.fillMaxSize(),
+        modifier = modifier.fillMaxSize(),
         propagateMinConstraints = true
     ) {
-        val viewportSize = DpSize(maxWidth, maxHeight)
+        val viewportSize = rememberUpdatedState(DpSize(maxWidth, maxHeight))
 
         val safeDrawingPadding = windowInsets.asAbsolutePaddingValues()
-        val displayArea = rememberUpdatedState(DisplayArea(viewportSize, safeDrawingPadding))
+        val displayArea = rememberUpdatedState(DisplayArea(viewportSize.value, safeDrawingPadding))
 
         val readingProgression =
             state.layoutDelegate.settings.value.readingProgression
@@ -90,8 +90,12 @@ public fun FixedWebRendition(
 
         val coroutineScope = rememberCoroutineScope()
 
+        val inputListenerState = rememberUpdatedState(inputListener)
+
+        val hyperlinkListenerState = rememberUpdatedState(hyperlinkListener)
+
         RenditionPager(
-            modifier = modifier,
+            modifier = Modifier,
             state = state.pagerState,
             orientation = Orientation.Horizontal,
             beyondViewportPageCount = 2,
@@ -112,10 +116,10 @@ public fun FixedWebRendition(
                     }
 
                     SingleViewportSpread(
-                        onTap = { inputListener.onTap(it, TapContext(viewportSize)) },
+                        onTap = { inputListenerState.value.onTap(it, TapContext(viewportSize.value)) },
                         onLinkActivated = { url, outerHtml ->
                             coroutineScope.launch {
-                                onLinkActivated(url, outerHtml, state, hyperlinkListener)
+                                onLinkActivated(url, outerHtml, state, hyperlinkListenerState.value)
                             }
                         },
                         state = spreadState,
@@ -136,10 +140,10 @@ public fun FixedWebRendition(
                     }
 
                     DoubleViewportSpread(
-                        onTap = { inputListener.onTap(it, TapContext(viewportSize)) },
+                        onTap = { inputListenerState.value.onTap(it, TapContext(viewportSize.value)) },
                         onLinkActivated = { url, outerHtml ->
                             coroutineScope.launch {
-                                onLinkActivated(url, outerHtml, state, hyperlinkListener)
+                                onLinkActivated(url, outerHtml, state, hyperlinkListenerState.value)
                             }
                         },
                         state = spreadState,

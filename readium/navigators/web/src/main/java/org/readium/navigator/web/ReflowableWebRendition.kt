@@ -16,10 +16,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
@@ -28,9 +30,9 @@ import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import org.readium.navigator.common.HyperlinkListener
 import org.readium.navigator.common.HyperlinkLocation
 import org.readium.navigator.common.InputListener
@@ -67,7 +69,7 @@ public fun ReflowableWebRendition(
             ?: NullHyperlinkListener(),
 ) {
     BoxWithConstraints(
-        modifier = Modifier.fillMaxSize(),
+        modifier = modifier.fillMaxSize(),
         propagateMinConstraints = true
     ) {
         val viewportSize = rememberUpdatedState(DpSize(maxWidth, maxHeight))
@@ -77,8 +79,6 @@ public fun ReflowableWebRendition(
 
         val reverseLayout =
             LocalLayoutDirection.current.toReadingProgression() != readingProgression
-
-        val itemIndex = remember { derivedStateOf { state.pagerState.currentPage } }
 
         val coroutineScope = rememberCoroutineScope()
 
@@ -102,32 +102,39 @@ public fun ReflowableWebRendition(
                 ?: state.layoutDelegate.settings.value.theme.backgroundColor
             )
 
+        val currentItemIndexState = remember { derivedStateOf { state.pagerState.currentPage } }
+
         val readyToScrollNext = remember(state.pagerState.currentPage) {
-            mutableStateOf(itemIndex.value == state.pagerState.pageCount - 1)
+            mutableStateOf(currentItemIndexState.value == state.pagerState.pageCount - 1)
         }
 
         val readyToScrollPrev = remember(state.pagerState.currentPage) {
-            mutableStateOf(itemIndex.value == 0)
+            mutableStateOf(currentItemIndexState.value == 0)
         }
 
         val inputListenerState = rememberUpdatedState(inputListener)
+
+        // First location update to enable controller creation.
+        // In the future, that should require access to the WebView.
         state.updateLocation(
             ReflowableWebLocation(
-                href = state.publication.readingOrder.items[itemIndex.value].href,
+                href = state.publication.readingOrder.items[currentItemIndexState.value].href,
                 progression = state.currentProgression
             )
         )
 
-        var scrollControllers = remember { mutableStateOf(emptyMap<Int, WebViewScrollController>()) }
+        val scrollControllers = remember { mutableStateMapOf<Int, WebViewScrollController>() }
 
-        LaunchedEffect(itemIndex.value, scrollControllers) {
-            scrollControllers.value[itemIndex.value]?.let {
-                state.updateScrollController(it)
-            }
+        LaunchedEffect(currentItemIndexState, scrollControllers) {
+            snapshotFlow<WebViewScrollController?> {
+                scrollControllers[currentItemIndexState.value]
+            }.onEach {
+                it?.let { state.updateScrollController(it) }
+            }.launchIn(coroutineScope)
         }
 
         RenditionPager(
-            modifier = modifier,
+            modifier = Modifier,
             state = state.pagerState,
             beyondViewportPageCount = 3,
             reverseLayout = reverseLayout,
@@ -153,11 +160,11 @@ public fun ReflowableWebRendition(
                 userProperties = state.readiumCss.value.userProperties,
                 layout = state.readiumCss.value.layout,
                 initialProgression = when {
-                    index < itemIndex.value -> 1.0
-                    index > itemIndex.value -> 0.0
+                    index < currentItemIndexState.value -> 1.0
+                    index > currentItemIndexState.value -> 0.0
                     else -> state.currentProgression
                 },
-                stickToInitialProgression = index != itemIndex.value,
+                stickToInitialProgression = index != currentItemIndexState.value,
                 enableScroll = readyToScrollNext.value && readyToScrollPrev.value,
                 onTap = { tapEvent ->
                     inputListenerState.value.onTap(tapEvent, TapContext(viewportSize.value))
@@ -168,23 +175,19 @@ public fun ReflowableWebRendition(
                     }
                 },
                 onScrollChanged = {
-                    if (index == itemIndex.value) {
+                    if (index == currentItemIndexState.value) {
                         val itemHref = state.publication.readingOrder.items[index].href
                         val newLocation = ReflowableWebLocation(itemHref, it)
                         state.updateLocation(newLocation)
                     }
                 },
                 onWebViewAvailable = {
-                    coroutineScope.launch {
-                        withContext(Dispatchers.Main) { // ensure thread safety
-                            scrollControllers.value += index to WebViewScrollController(it)
-                        }
-                    }
+                    scrollControllers[index] = WebViewScrollController(it)
                 },
                 onReadyToScroll = {
                     when (index) {
-                        itemIndex.value - 1 -> readyToScrollPrev.value = true
-                        itemIndex.value + 1 -> readyToScrollNext.value = true
+                        currentItemIndexState.value - 1 -> readyToScrollPrev.value = true
+                        currentItemIndexState.value + 1 -> readyToScrollNext.value = true
                         else -> {}
                     }
                 }
