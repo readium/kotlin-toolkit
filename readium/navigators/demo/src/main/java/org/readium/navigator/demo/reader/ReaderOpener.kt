@@ -15,10 +15,10 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import org.readium.navigator.demo.persistence.LocatorRepository
 import org.readium.navigator.demo.preferences.PreferencesManager
-import org.readium.navigator.web.FixedWebNavigatorFactory
 import org.readium.navigator.web.FixedWebRenditionController
-import org.readium.navigator.web.ReflowableWebNavigatorFactory
+import org.readium.navigator.web.FixedWebRenditionFactory
 import org.readium.navigator.web.ReflowableWebRenditionController
+import org.readium.navigator.web.ReflowableWebRenditionFactory
 import org.readium.navigator.web.location.FixedWebLocation
 import org.readium.navigator.web.location.ReflowableWebLocation
 import org.readium.navigator.web.preferences.FixedWebPreferences
@@ -93,7 +93,7 @@ class ReaderOpener(
         publication: Publication,
         initialLocator: Locator?,
     ): Try<ReaderState<ReflowableWebLocation, ReflowableWebRenditionController>, Error> {
-        val navigatorFactory = ReflowableWebNavigatorFactory(application, publication)
+        val navigatorFactory = ReflowableWebRenditionFactory(application, publication)
             ?: return Try.failure(DebugError("Publication not supported"))
 
         val locatorAdapter = navigatorFactory.createLocatorAdapter()
@@ -143,7 +143,7 @@ class ReaderOpener(
         publication: Publication,
         initialLocator: Locator?,
     ): Try<ReaderState<FixedWebLocation, FixedWebRenditionController>, Error> {
-        val navigatorFactory = FixedWebNavigatorFactory(application, publication)
+        val navigatorFactory = FixedWebRenditionFactory(application, publication)
             ?: return Try.failure(DebugError("Publication not supported"))
 
         val locatorAdapter = navigatorFactory.createLocatorAdapter()

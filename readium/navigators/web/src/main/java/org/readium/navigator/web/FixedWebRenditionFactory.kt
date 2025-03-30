@@ -39,7 +39,7 @@ import org.readium.r2.shared.util.getOrElse
  * These components are meant to work together. DO not mix components from different
  * factory instances.
  */
-public class FixedWebNavigatorFactory private constructor(
+public class FixedWebRenditionFactory private constructor(
     private val application: Application,
     private val publication: Publication,
     private val defaults: FixedWebDefaults,
@@ -50,7 +50,7 @@ public class FixedWebNavigatorFactory private constructor(
         public operator fun invoke(
             application: Application,
             publication: Publication,
-        ): FixedWebNavigatorFactory? {
+        ): FixedWebRenditionFactory? {
             if (!publication.conformsTo(Publication.Profile.EPUB) ||
                 publication.metadata.presentation.layout != EpubLayout.FIXED
             ) {
@@ -61,7 +61,7 @@ public class FixedWebNavigatorFactory private constructor(
                 return null
             }
 
-            return FixedWebNavigatorFactory(
+            return FixedWebRenditionFactory(
                 application,
                 publication,
                 FixedWebDefaults()

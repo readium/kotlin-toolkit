@@ -33,7 +33,7 @@ import org.readium.r2.shared.util.Try
  * These components are meant to work together. DO not mix components from different
  * factory instances.
  */
-public class ReflowableWebNavigatorFactory private constructor(
+public class ReflowableWebRenditionFactory private constructor(
     private val application: Application,
     private val publication: Publication,
     private val defaults: ReflowableWebDefaults,
@@ -45,7 +45,7 @@ public class ReflowableWebNavigatorFactory private constructor(
             application: Application,
             publication: Publication,
             defaults: ReflowableWebDefaults = ReflowableWebDefaults(),
-        ): ReflowableWebNavigatorFactory? {
+        ): ReflowableWebRenditionFactory? {
             if (!publication.conformsTo(Publication.Profile.EPUB) ||
                 publication.metadata.presentation.layout != EpubLayout.REFLOWABLE
             ) {
@@ -56,7 +56,7 @@ public class ReflowableWebNavigatorFactory private constructor(
                 return null
             }
 
-            return ReflowableWebNavigatorFactory(
+            return ReflowableWebRenditionFactory(
                 application,
                 publication,
                 defaults
