@@ -1,4 +1,8 @@
-package org.readium.navigator.web.snapping
+/*
+ * Copyright 2024 Readium Foundation. All rights reserved.
+ * Use of this source code is governed by the BSD-style license
+ * available in the top-level LICENSE file of the project.
+ */
 
 /*
  * Copyright 2022 The Android Open Source Project
@@ -15,6 +19,8 @@ package org.readium.navigator.web.snapping
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+package org.readium.navigator.web.snapping
 
 import androidx.compose.animation.core.AnimationScope
 import androidx.compose.animation.core.AnimationSpec
