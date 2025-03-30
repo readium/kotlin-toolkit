@@ -14,14 +14,10 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.mutableStateMapOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
@@ -30,8 +26,6 @@ import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import org.readium.navigator.common.HyperlinkListener
 import org.readium.navigator.common.HyperlinkLocation
@@ -46,7 +40,6 @@ import org.readium.navigator.web.pager.RenditionPager
 import org.readium.navigator.web.reflowable.ReflowableResource
 import org.readium.navigator.web.util.AbsolutePaddingValues
 import org.readium.navigator.web.util.WebViewServer
-import org.readium.navigator.web.webview.WebViewScrollController
 import org.readium.r2.navigator.preferences.ReadingProgression
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.AbsoluteUrl
@@ -104,14 +97,6 @@ public fun ReflowableWebRendition(
 
         val currentItemIndexState = remember { derivedStateOf { state.pagerState.currentPage } }
 
-        val readyToScrollNext = remember(state.pagerState.currentPage) {
-            mutableStateOf(currentItemIndexState.value == state.pagerState.pageCount - 1)
-        }
-
-        val readyToScrollPrev = remember(state.pagerState.currentPage) {
-            mutableStateOf(currentItemIndexState.value == 0)
-        }
-
         val inputListenerState = rememberUpdatedState(inputListener)
 
         // First location update to enable controller creation.
@@ -122,16 +107,6 @@ public fun ReflowableWebRendition(
                 progression = state.currentProgression
             )
         )
-
-        val scrollControllers = remember { mutableStateMapOf<Int, WebViewScrollController>() }
-
-        LaunchedEffect(currentItemIndexState, scrollControllers) {
-            snapshotFlow<WebViewScrollController?> {
-                scrollControllers[currentItemIndexState.value]
-            }.onEach {
-                it?.let { state.updateScrollController(it) }
-            }.launchIn(coroutineScope)
-        }
 
         RenditionPager(
             modifier = Modifier,
@@ -144,10 +119,15 @@ public fun ReflowableWebRendition(
                 else -> Orientation.Horizontal
             }
         ) { index ->
+            val prevReadyToScroll = index == 0 ||
+                state.resourceStates[index - 1].scrollController.value != null
+
+            val nextReadyToScroll = index == state.resourceStates.size - 1 ||
+                state.resourceStates[index + 1].scrollController.value != null
+
             ReflowableResource(
+                resourceState = state.resourceStates[index],
                 pagerState = state.pagerState,
-                index = index,
-                href = state.publication.readingOrder.items[index].href,
                 publicationBaseUrl = WebViewServer.publicationBaseHref,
                 webViewClient = state.webViewClient,
                 viewportSize = viewportSize.value,
@@ -165,7 +145,7 @@ public fun ReflowableWebRendition(
                     else -> state.currentProgression
                 },
                 stickToInitialProgression = index != currentItemIndexState.value,
-                enableScroll = readyToScrollNext.value && readyToScrollPrev.value,
+                enableScroll = prevReadyToScroll && nextReadyToScroll,
                 onTap = { tapEvent ->
                     inputListenerState.value.onTap(tapEvent, TapContext(viewportSize.value))
                 },
@@ -179,16 +159,6 @@ public fun ReflowableWebRendition(
                         val itemHref = state.publication.readingOrder.items[index].href
                         val newLocation = ReflowableWebLocation(itemHref, it)
                         state.updateLocation(newLocation)
-                    }
-                },
-                onWebViewAvailable = {
-                    scrollControllers[index] = WebViewScrollController(it)
-                },
-                onReadyToScroll = {
-                    when (index) {
-                        currentItemIndexState.value - 1 -> readyToScrollPrev.value = true
-                        currentItemIndexState.value + 1 -> readyToScrollNext.value = true
-                        else -> {}
                     }
                 }
             )

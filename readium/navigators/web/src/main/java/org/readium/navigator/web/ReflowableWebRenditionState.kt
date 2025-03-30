@@ -28,6 +28,7 @@ import org.readium.navigator.web.css.update
 import org.readium.navigator.web.location.ReflowableWebGoLocation
 import org.readium.navigator.web.location.ReflowableWebLocation
 import org.readium.navigator.web.preferences.ReflowableWebSettings
+import org.readium.navigator.web.reflowable.ReflowableResourceState
 import org.readium.navigator.web.reflowable.ReflowableWebPublication
 import org.readium.navigator.web.util.HyperlinkProcessor
 import org.readium.navigator.web.util.WebViewClient
@@ -58,11 +59,19 @@ public class ReflowableWebRenditionState internal constructor(
     fontFamilyDeclarations: List<FontFamilyDeclaration>,
 ) : RenditionState<ReflowableWebRenditionController> {
 
-    private val navigatorState: MutableState<ReflowableWebRenditionController?> =
+    internal val resourceStates: List<ReflowableResourceState> =
+        publication.readingOrder.items.mapIndexed { index, item ->
+            ReflowableResourceState(
+                index = index,
+                href = item.href
+            )
+        }
+
+    private val controllerState: MutableState<ReflowableWebRenditionController?> =
         mutableStateOf(null)
 
     override val controller: ReflowableWebRenditionController? get() =
-        navigatorState.value
+        controllerState.value
 
     internal val layoutDelegate: ReflowableLayoutDelegate =
         ReflowableLayoutDelegate(
@@ -143,10 +152,6 @@ public class ReflowableWebRenditionState internal constructor(
         navigationDelegate.updateLocation(location)
     }
 
-    internal fun updateScrollController(webViewScrollController: WebViewScrollController) {
-        navigationDelegate.updateScrollController(webViewScrollController)
-    }
-
     private fun initControllerIfNeeded(location: ReflowableWebLocation) {
         if (controller != null) {
             return
@@ -155,11 +160,12 @@ public class ReflowableWebRenditionState internal constructor(
         navigationDelegate =
             ReflowableNavigationDelegate(
                 publication.readingOrder,
+                resourceStates,
                 pagerState,
                 layoutDelegate.settings,
                 location
             )
-        navigatorState.value =
+        controllerState.value =
             ReflowableWebRenditionController(
                 navigationDelegate,
                 layoutDelegate
@@ -188,6 +194,7 @@ internal class ReflowableLayoutDelegate(
 @OptIn(ExperimentalReadiumApi::class, InternalReadiumApi::class)
 internal class ReflowableNavigationDelegate(
     private val readingOrder: ReflowableWebPublication.ReadingOrder,
+    private val resourceStates: List<ReflowableResourceState>,
     private val pagerState: PagerState,
     private val settings: State<ReflowableWebSettings>,
     initialLocation: ReflowableWebLocation,
@@ -196,14 +203,8 @@ internal class ReflowableNavigationDelegate(
     private val locationMutable: MutableState<ReflowableWebLocation> =
         mutableStateOf(initialLocation)
 
-    private var scrollController: WebViewScrollController? = null
-
     internal fun updateLocation(location: ReflowableWebLocation) {
         locationMutable.value = location
-    }
-
-    internal fun updateScrollController(webViewScrollController: WebViewScrollController) {
-        scrollController = webViewScrollController
     }
 
     override val location: State<ReflowableWebLocation> =
@@ -233,23 +234,38 @@ internal class ReflowableNavigationDelegate(
             }
         }
 
+    // This information is not available when the WebView has not yet been composed or laid out.
+    // We assume that the best UI behavior would be to have a possible forward button disabled
+    // and then return false when we can't tell.
     override val canMoveForward: Boolean
-        get() = pagerState.currentPage < readingOrder.items.size - 1
+        get() = pagerState.currentPage < readingOrder.items.size - 1 || run {
+            val currentResourceState = resourceStates[pagerState.currentPage]
+            val scrollController = currentResourceState.scrollController.value ?: return false
+            return scrollController.canMoveForward()
+        }
 
     override val canMoveBackward: Boolean
-        get() = pagerState.currentPage > 0
+        get() = pagerState.currentPage > 0 || run {
+            val currentResourceState = resourceStates[pagerState.currentPage]
+            val scrollController = currentResourceState.scrollController.value ?: return false
+            return scrollController.canMoveBackward()
+        }
 
     override suspend fun moveForward() {
-        if (scrollController?.canMoveForward() != false) {
-            scrollController?.moveForward()
+        val currentResourceState = resourceStates[pagerState.currentPage]
+        val scrollController = currentResourceState.scrollController.value ?: return
+        if (scrollController.canMoveForward()) {
+            scrollController.moveForward()
         } else {
             pagerState.scrollToPage(pagerState.currentPage + 1)
         }
     }
 
     override suspend fun moveBackward() {
-        if (scrollController?.canMoveBackward() != false) {
-            scrollController?.moveBackward()
+        val currentResourceState = resourceStates[pagerState.currentPage]
+        val scrollController = currentResourceState.scrollController.value ?: return
+        if (scrollController.canMoveBackward()) {
+            scrollController.moveBackward()
         } else {
             pagerState.scrollToPage(pagerState.currentPage - 1)
         }

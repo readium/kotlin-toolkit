@@ -53,6 +53,7 @@ import org.readium.navigator.web.webapi.InitializationApi
 import org.readium.navigator.web.webview.RelaxedWebView
 import org.readium.navigator.web.webview.WebView
 import org.readium.navigator.web.webview.WebViewLayoutInfoProvider
+import org.readium.navigator.web.webview.WebViewScrollController
 import org.readium.navigator.web.webview.WebViewScrollable2DState
 import org.readium.navigator.web.webview.rememberWebViewState
 import org.readium.r2.shared.ExperimentalReadiumApi
@@ -63,9 +64,8 @@ import pagingFlingBehavior
 @SuppressLint("SetJavaScriptEnabled", "ClickableViewAccessibility")
 @Composable
 internal fun ReflowableResource(
+    resourceState: ReflowableResourceState,
     pagerState: PagerState,
-    index: Int,
-    href: Url,
     publicationBaseUrl: AbsoluteUrl,
     webViewClient: WebViewClient,
     viewportSize: DpSize,
@@ -80,8 +80,6 @@ internal fun ReflowableResource(
     initialProgression: Double,
     stickToInitialProgression: Boolean,
     enableScroll: Boolean,
-    onReadyToScroll: () -> Unit,
-    onWebViewAvailable: (RelaxedWebView) -> Unit,
     onTap: (TapEvent) -> Unit,
     onLinkActivated: (Url, String) -> Unit,
     onScrollChanged: (Double) -> Unit,
@@ -98,7 +96,7 @@ internal fun ReflowableResource(
     ) {
         val webViewState =
             rememberWebViewState<RelaxedWebView>(
-                url = publicationBaseUrl.resolve(href).toString()
+                url = publicationBaseUrl.resolve(resourceState.href).toString()
             )
 
         val scriptsLoaded = remember(webViewState.webView) {
@@ -107,18 +105,6 @@ internal fun ReflowableResource(
 
         val contentIsLaidOut =
             remember(webViewState.webView) { mutableStateOf(false) }
-
-        val readyToScroll = remember(webViewState.webView) { mutableStateOf(false) }
-
-        if (readyToScroll.value) {
-            onReadyToScroll()
-        }
-
-        LaunchedEffect(webViewState.webView) {
-            webViewState.webView?.let {
-                onWebViewAvailable(it)
-            }
-        }
 
         val initializationApi = remember(webViewState.webView, stickToInitialProgression) {
             InitializationApi(
@@ -140,7 +126,7 @@ internal fun ReflowableResource(
                     }
                 },
                 onDocumentResizedDelegate = {
-                    readyToScroll.value = true
+                    resourceState.scrollController.value = webViewState.webView?.let { WebViewScrollController(it) }
                     if (stickToInitialProgression) {
                         webViewState.webView?.scrollToProgression(initialProgression, scrollOrientation)
                     }
@@ -182,7 +168,7 @@ internal fun ReflowableResource(
             webViewState.webView?.let { gesturesApi.registerOnWebView(it) }
         }
 
-        val scrollableState = remember { WebViewScrollable2DState(href) }
+        val scrollableState = remember { WebViewScrollable2DState(resourceState.href) }
 
         val density = LocalDensity.current
 
@@ -276,6 +262,7 @@ internal fun ReflowableResource(
                 },
                 onDispose = {
                     scrollableState.webView = null
+                    resourceState.scrollController.value = null
                 }
             )
         }

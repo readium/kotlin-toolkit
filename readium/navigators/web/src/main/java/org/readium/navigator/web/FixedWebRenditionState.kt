@@ -53,11 +53,11 @@ public class FixedWebRenditionState internal constructor(
     internal val preloadedData: FixedWebPreloadedData,
 ) : RenditionState<FixedWebRenditionController> {
 
-    private val navigatorState: MutableState<FixedWebRenditionController?> =
+    private val controllerState: MutableState<FixedWebRenditionController?> =
         mutableStateOf(null)
 
     override val controller: FixedWebRenditionController? get() =
-        navigatorState.value
+        controllerState.value
 
     internal val layoutDelegate: LayoutDelegate =
         LayoutDelegate(
@@ -124,7 +124,7 @@ public class FixedWebRenditionState internal constructor(
                 layoutDelegate.settings,
                 location
             )
-        navigatorState.value =
+        controllerState.value =
             FixedWebRenditionController(
                 navigationDelegate,
                 layoutDelegate

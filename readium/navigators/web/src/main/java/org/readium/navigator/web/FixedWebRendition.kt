@@ -104,7 +104,7 @@ public fun FixedWebRendition(
         ) { index ->
             when (val spread = state.layoutDelegate.layout.value.spreads[index]) {
                 is SingleViewportSpread -> {
-                    val spreadState = remember {
+                    val spreadState = remember(state) {
                         SingleSpreadState(
                             htmlData = state.preloadedData.fixedSingleContent,
                             publicationBaseUrl = WebViewServer.publicationBaseHref,
@@ -128,7 +128,7 @@ public fun FixedWebRendition(
                     )
                 }
                 is DoubleViewportSpread -> {
-                    val spreadState = remember {
+                    val spreadState = remember(state) {
                         DoubleSpreadState(
                             htmlData = state.preloadedData.fixedDoubleContent,
                             publicationBaseUrl = WebViewServer.publicationBaseHref,
