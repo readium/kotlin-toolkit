@@ -28,6 +28,8 @@ import org.readium.navigator.web.css.update
 import org.readium.navigator.web.location.ReflowableWebGoLocation
 import org.readium.navigator.web.location.ReflowableWebLocation
 import org.readium.navigator.web.preferences.ReflowableWebSettings
+import org.readium.navigator.web.reflowable.EndProgression
+import org.readium.navigator.web.reflowable.RatioProgression
 import org.readium.navigator.web.reflowable.ReflowableResourceState
 import org.readium.navigator.web.reflowable.ReflowableWebPublication
 import org.readium.navigator.web.util.HyperlinkProcessor
@@ -59,11 +61,18 @@ public class ReflowableWebRenditionState internal constructor(
     fontFamilyDeclarations: List<FontFamilyDeclaration>,
 ) : RenditionState<ReflowableWebRenditionController> {
 
+    private val initialIndex = publication.readingOrder.indexOfHref(initialLocation.href) ?: 0
+
     internal val resourceStates: List<ReflowableResourceState> =
         publication.readingOrder.items.mapIndexed { index, item ->
             ReflowableResourceState(
                 index = index,
-                href = item.href
+                href = item.href,
+                initialProgression = when {
+                    index < initialIndex -> EndProgression
+                    index > initialIndex -> RatioProgression(0.0)
+                    else -> RatioProgression(initialLocation.progression ?: 0.0)
+                }
             )
         }
 
@@ -133,14 +142,9 @@ public class ReflowableWebRenditionState internal constructor(
 
     internal val pagerState: PagerState =
         PagerState(
-            currentPage = publication.readingOrder.indexOfHref(initialLocation.href) ?: 0,
+            currentPage = initialIndex,
             pageCount = { publication.readingOrder.size }
         )
-
-    internal val currentProgression: Double get() =
-        controller?.location?.value?.progression
-            ?: initialLocation.progression
-            ?: 0.0
 
     internal suspend fun computeHyperlinkContext(originUrl: Url, outerHtml: String): LinkContext? =
         hyperlinkProcessor.computeLinkContext(originUrl, outerHtml)
@@ -204,6 +208,8 @@ internal class ReflowableNavigationDelegate(
         mutableStateOf(initialLocation)
 
     internal fun updateLocation(location: ReflowableWebLocation) {
+        val index = checkNotNull(readingOrder.indexOfHref(location.href))
+        resourceStates[index].progression = RatioProgression(location.progression)
         locationMutable.value = location
     }
 

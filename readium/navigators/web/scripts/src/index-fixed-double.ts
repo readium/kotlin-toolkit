@@ -10,11 +10,11 @@
 
 import { GesturesBridge } from "./bridge/all-gestures-bridge"
 import { FixedDoubleBridge } from "./bridge/fixed-double-bridge"
-import { InitializationBridge } from "./bridge/all-initialization-bridge"
+import { DocumentBridge } from "./bridge/all-document-bridge"
 
 declare global {
   interface Window {
-    initialization: InitializationBridge
+    documentState: DocumentBridge
     doubleArea: FixedDoubleBridge
     gestures: GesturesBridge
   }
@@ -36,8 +36,8 @@ Window.prototype.doubleArea = new FixedDoubleBridge(
   window.gestures
 )
 
-window.initialization.onScriptsLoaded()
+window.documentState.onScriptsLoaded()
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 window.addEventListener("load", (event) => {
-  window.initialization.onDocumentLoaded()
+  window.documentState.onDocumentLoaded()
 })

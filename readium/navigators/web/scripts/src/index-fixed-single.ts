@@ -9,12 +9,12 @@
  */
 
 import { GesturesBridge } from "./bridge/all-gestures-bridge"
-import { InitializationBridge } from "./bridge/all-initialization-bridge"
+import { DocumentBridge } from "./bridge/all-document-bridge"
 import { FixedSingleBridge } from "./bridge/fixed-single-bridge"
 
 declare global {
   interface Window {
-    initialization: InitializationBridge
+    documentState: DocumentBridge
     singleArea: FixedSingleBridge
     gestures: GesturesBridge
   }
@@ -33,8 +33,8 @@ window.singleArea = new FixedSingleBridge(
   window.gestures
 )
 
-window.initialization.onScriptsLoaded()
+window.documentState.onScriptsLoaded()
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 window.addEventListener("load", (event) => {
-  window.initialization.onDocumentLoaded()
+  window.documentState.onDocumentLoaded()
 })

@@ -20,9 +20,9 @@ import androidx.compose.ui.unit.DpOffset
 import org.readium.navigator.common.TapEvent
 import org.readium.navigator.web.gestures.scrollable2D
 import org.readium.navigator.web.util.WebViewClient
+import org.readium.navigator.web.webapi.DocumentStateApi
 import org.readium.navigator.web.webapi.GesturesApi
 import org.readium.navigator.web.webapi.GesturesListener
-import org.readium.navigator.web.webapi.InitializationApi
 import org.readium.navigator.web.webview.RelaxedWebView
 import org.readium.navigator.web.webview.WebView
 import org.readium.navigator.web.webview.WebViewScrollable2DState
@@ -46,8 +46,8 @@ internal fun SpreadWebView(
 
     val spreadNestedScrollConnection = SpreadNestedScrollConnection(scrollableState)
 
-    val initializationApi = remember(onScriptsLoaded) {
-        InitializationApi(onScriptsLoaded, {}, {})
+    val documentStateApi = remember(onScriptsLoaded) {
+        DocumentStateApi(onScriptsLoaded, {}, {})
     }
 
     val gesturesApi = remember(onTap) {
@@ -64,7 +64,7 @@ internal fun SpreadWebView(
     }
 
     LaunchedEffect(state.webView) {
-        state.webView?.let { initializationApi.registerOnWebView(it) }
+        state.webView?.let { documentStateApi.registerOnWebView(it) }
         state.webView?.let { gesturesApi.registerOnWebView(it) }
     }
 

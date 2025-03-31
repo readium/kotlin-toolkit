@@ -349,7 +349,7 @@ public class ReflowableWebPreferencesEditor internal constructor(
      * Indicates if the overflow of resources should be handled using scrolling instead of synthetic
      * pagination.
      *
-     * Only effective with reflowable publications.
+     * Only effective with reflowable publications and if [verticalText] is false.
      */
     public val scroll: Preference<Boolean> =
         PreferenceDelegate(

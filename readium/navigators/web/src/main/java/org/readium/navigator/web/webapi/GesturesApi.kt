@@ -13,9 +13,27 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import org.readium.r2.shared.util.AbsoluteUrl
 
+internal class DelegatingGesturesListener(
+    private val onTapDelegate: (DpOffset) -> Unit,
+    private val onLinkActivatedDelegate: (AbsoluteUrl, String) -> Unit,
+) : GesturesListener {
+
+    override fun onTap(offset: DpOffset) {
+        onTapDelegate(offset)
+    }
+
+    override fun onLinkActivated(
+        href: AbsoluteUrl,
+        outerHtml: String,
+    ) {
+        onLinkActivatedDelegate(href, outerHtml)
+    }
+}
+
 internal interface GesturesListener {
 
     fun onTap(offset: DpOffset)
+
     fun onLinkActivated(href: AbsoluteUrl, outerHtml: String)
 }
 

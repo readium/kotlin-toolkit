@@ -25,6 +25,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
@@ -35,8 +36,6 @@ import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.zIndex
-import kotlin.math.ceil
-import kotlin.math.floor
 import org.readium.navigator.common.TapEvent
 import org.readium.navigator.web.css.Layout
 import org.readium.navigator.web.css.RsProperties
@@ -48,9 +47,9 @@ import org.readium.navigator.web.util.AbsolutePaddingValues
 import org.readium.navigator.web.util.WebViewClient
 import org.readium.navigator.web.util.absolutePadding
 import org.readium.navigator.web.webapi.CssApi
+import org.readium.navigator.web.webapi.DelegatingGesturesListener
+import org.readium.navigator.web.webapi.DocumentStateApi
 import org.readium.navigator.web.webapi.GesturesApi
-import org.readium.navigator.web.webapi.GesturesListener
-import org.readium.navigator.web.webapi.InitializationApi
 import org.readium.navigator.web.webview.RelaxedWebView
 import org.readium.navigator.web.webview.WebView
 import org.readium.navigator.web.webview.WebViewLayoutInfoProvider
@@ -78,19 +77,11 @@ internal fun ReflowableResource(
     userProperties: UserProperties,
     rsProperties: RsProperties,
     layout: Layout,
-    initialProgression: Double,
-    stickToInitialProgression: Boolean,
     enableScroll: Boolean,
     onTap: (TapEvent) -> Unit,
     onLinkActivated: (Url, String) -> Unit,
     onScrollChanged: (Double) -> Unit,
 ) {
-    val scrollOrientation = when {
-        verticalText -> Orientation.Horizontal
-        scroll -> Orientation.Vertical
-        else -> Orientation.Horizontal
-    }
-
     Box(
         modifier = Modifier.fillMaxSize(),
         propagateMinConstraints = true
@@ -100,15 +91,23 @@ internal fun ReflowableResource(
                 url = publicationBaseUrl.resolve(resourceState.href).toString()
             )
 
-        val scriptsLoaded = remember(webViewState.webView) {
-            mutableStateOf(false)
-        }
+        val scrollOrientation =
+            rememberUpdatedState(
+                when {
+                    verticalText -> Orientation.Horizontal
+                    scroll -> Orientation.Vertical
+                    else -> Orientation.Horizontal
+                }
+            )
+
+        val scriptsLoaded =
+            remember(webViewState.webView) { mutableStateOf(false) }
 
         val contentIsLaidOut =
             remember(webViewState.webView) { mutableStateOf(false) }
 
-        val initializationApi = remember(webViewState.webView, stickToInitialProgression) {
-            InitializationApi(
+        val documentStateApi = remember(webViewState.webView) {
+            DocumentStateApi(
                 onScriptsLoadedDelegate = {
                     scriptsLoaded.value = true
                 },
@@ -119,7 +118,14 @@ internal fun ReflowableResource(
                                 0,
                                 object : WebView.VisualStateCallback() {
                                     override fun onComplete(requestId: Long) {
-                                        scrollToProgression(initialProgression, scrollOrientation)
+                                        with(this@apply) {
+                                            val scrollController = WebViewScrollController(this)
+                                            scrollController.scrollToProgression(resourceState.progression.ratio, scrollOrientation.value)
+                                            resourceState.scrollController.value = scrollController
+                                            setOnScrollChangeListener { view, scrollX, scrollY, oldScrollX, oldScrollY ->
+                                                onScrollChanged(scrollController.progression(scrollOrientation.value))
+                                            }
+                                        }
                                         contentIsLaidOut.value = true
                                     }
                                 }
@@ -128,12 +134,17 @@ internal fun ReflowableResource(
                     }
                 },
                 onDocumentResizedDelegate = {
-                    resourceState.scrollController.value = webViewState.webView?.let { WebViewScrollController(it) }
-                    if (stickToInitialProgression) {
-                        webViewState.webView?.scrollToProgression(initialProgression, scrollOrientation)
+                    // If a previous resource is resized, we might need to scroll it again to the end
+                    if (resourceState.progression is EndProgression) {
+                        val scrollControllerNow = resourceState.scrollController.value
+                        scrollControllerNow?.scrollToProgression(1.0, scrollOrientation.value)
                     }
                 }
             )
+        }
+
+        LaunchedEffect(webViewState.webView, documentStateApi) {
+            webViewState.webView?.let { documentStateApi.registerOnWebView(it) }
         }
 
         val cssApi = remember(webViewState.webView, scriptsLoaded.value) {
@@ -142,47 +153,34 @@ internal fun ReflowableResource(
                 ?.let { CssApi(it) }
         }
 
-        cssApi?.let { api ->
-            LaunchedEffect(rsProperties, userProperties) {
-                api.setProperties(userProperties, rsProperties)
-            }
+        LaunchedEffect(cssApi, rsProperties, userProperties) {
+            cssApi?.setProperties(userProperties, rsProperties)
         }
 
-        val gesturesApi = remember(onTap) {
-            val listener = object : GesturesListener {
-                override fun onTap(offset: DpOffset) {
-                    val shiftedOffset = DpOffset(
-                        x = offset.x + padding.left,
-                        y = offset.y + padding.top
-                    )
-                    onTap(TapEvent(shiftedOffset))
-                }
-
-                override fun onLinkActivated(href: AbsoluteUrl, outerHtml: String) {
-                    onLinkActivated(publicationBaseUrl.relativize(href), outerHtml)
-                }
-            }
-            GesturesApi(listener)
+        val gesturesApi = remember(onTap, onLinkActivated) {
+            GesturesApi(
+                DelegatingGesturesListener(
+                    onTapDelegate = { offset ->
+                        val shiftedOffset = DpOffset(
+                            x = offset.x + padding.left,
+                            y = offset.y + padding.top
+                        )
+                        onTap(TapEvent(shiftedOffset))
+                    },
+                    onLinkActivatedDelegate = { href, outerHtml ->
+                        onLinkActivated(publicationBaseUrl.relativize(href), outerHtml)
+                    }
+                )
+            )
         }
 
-        LaunchedEffect(webViewState.webView) {
-            webViewState.webView?.let { initializationApi.registerOnWebView(it) }
+        LaunchedEffect(webViewState.webView, gesturesApi) {
             webViewState.webView?.let { gesturesApi.registerOnWebView(it) }
         }
 
         val scrollableState = remember { WebViewScrollable2DState(resourceState.href) }
 
         val density = LocalDensity.current
-
-        LaunchedEffect(contentIsLaidOut, contentIsLaidOut.value, scrollableState.webView) {
-            scrollableState.webView
-                .takeIf { contentIsLaidOut.value }
-                ?.let { webview ->
-                    webview.setOnScrollChangeListener { view, scrollX, scrollY, oldScrollX, oldScrollY ->
-                        onScrollChanged(webview.progression(scrollOrientation))
-                    }
-                }
-        }
 
         val webViewViewport = DpSize(
             width = viewportSize.width - padding.left - padding.right,
@@ -198,18 +196,18 @@ internal fun ReflowableResource(
                         pagingFlingBehavior(
                             WebViewLayoutInfoProvider(
                                 density,
-                                scrollOrientation,
+                                scrollOrientation.value,
                                 reverseLayout,
                                 webViewViewport,
                                 it
                             )
                         )
                     }
-                    ?.toFling2DBehavior(orientation = scrollOrientation)
+                    ?.toFling2DBehavior(orientation = scrollOrientation.value)
             }
 
         val resourceScrollConnection =
-            ResourceNestedScrollConnection(pagerState, scrollableState, scrollOrientation)
+            ResourceNestedScrollConnection(pagerState, scrollableState, scrollOrientation.value)
 
         // Hide content before initial position is settled
         if (!contentIsLaidOut.value) {
@@ -222,7 +220,7 @@ internal fun ReflowableResource(
             )
         }
 
-        key(layout) {
+        key(layout, scrollOrientation.value) {
             WebView(
                 modifier = Modifier
                     // Detect taps on padding
@@ -242,7 +240,7 @@ internal fun ReflowableResource(
                         state = scrollableState,
                         flingBehavior = flingBehavior,
                         reverseDirection = !reverseLayout,
-                        orientation = scrollOrientation
+                        orientation = scrollOrientation.value
                     )
                     .fillMaxSize()
                     .background(backgroundColor)
@@ -261,7 +259,7 @@ internal fun ReflowableResource(
                     webview.isVerticalScrollBarEnabled = false
                     webview.isHorizontalScrollBarEnabled = false
                     webview.setLayerType(View.LAYER_TYPE_HARDWARE, null)
-                    if (verticalText || !scroll) {
+                    if (scrollOrientation.value == Orientation.Horizontal) {
                         // Prevents vertical scrolling towards blank space.
                         // See https://github.com/readium/readium-css/issues/158
                         webview.setOnTouchListener(object : View.OnTouchListener {
@@ -279,19 +277,6 @@ internal fun ReflowableResource(
             )
         }
     }
-}
-
-private fun RelaxedWebView.scrollToProgression(progression: Double, scrollOrientation: Orientation) {
-    if (scrollOrientation == Orientation.Horizontal) {
-        scrollTo(floor(progression * maxScrollX).toInt(), 0)
-    } else {
-        scrollTo(0, ceil(progression * maxScrollY).toInt())
-    }
-}
-
-private fun RelaxedWebView.progression(orientation: Orientation) = when (orientation) {
-    Orientation.Vertical -> scrollY / maxScrollY.toDouble()
-    Orientation.Horizontal -> scrollX / maxScrollX.toDouble()
 }
 
 private fun FlingBehavior.toFling2DBehavior(orientation: Orientation) =

@@ -99,12 +99,12 @@ public fun ReflowableWebRendition(
 
         val inputListenerState = rememberUpdatedState(inputListener)
 
-        // First location update to enable controller creation.
+        // First location update to trigger controller creation.
         // In the future, that should require access to the WebView.
         state.updateLocation(
             ReflowableWebLocation(
                 href = state.publication.readingOrder.items[currentItemIndexState.value].href,
-                progression = state.currentProgression
+                progression = state.resourceStates[currentItemIndexState.value].progression.ratio
             )
         )
 
@@ -119,11 +119,9 @@ public fun ReflowableWebRendition(
                 else -> Orientation.Horizontal
             }
         ) { index ->
-            val prevReadyToScroll = index == 0 ||
-                state.resourceStates[index - 1].scrollController.value != null
-
-            val nextReadyToScroll = index == state.resourceStates.size - 1 ||
-                state.resourceStates[index + 1].scrollController.value != null
+            val readyToScroll = ((index - 1)..(index + 1)).toList()
+                .mapNotNull { state.resourceStates.getOrNull(it) }
+                .all { it.scrollController.value != null }
 
             ReflowableResource(
                 resourceState = state.resourceStates[index],
@@ -139,13 +137,7 @@ public fun ReflowableWebRendition(
                 rsProperties = state.readiumCss.value.rsProperties,
                 userProperties = state.readiumCss.value.userProperties,
                 layout = state.readiumCss.value.layout,
-                initialProgression = when {
-                    index < currentItemIndexState.value -> 1.0
-                    index > currentItemIndexState.value -> 0.0
-                    else -> state.currentProgression
-                },
-                stickToInitialProgression = index != currentItemIndexState.value,
-                enableScroll = prevReadyToScroll && nextReadyToScroll,
+                enableScroll = readyToScroll,
                 onTap = { tapEvent ->
                     inputListenerState.value.onTap(tapEvent, TapContext(viewportSize.value))
                 },

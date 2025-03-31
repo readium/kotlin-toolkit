@@ -16,7 +16,22 @@ import org.readium.r2.shared.util.Url
 internal class ReflowableResourceState(
     val index: Int,
     val href: Url,
+    initialProgression: Progression,
 ) {
 
+    var progression: Progression = initialProgression
+
     val scrollController: MutableState<WebViewScrollController?> = mutableStateOf(null)
+}
+
+internal sealed interface Progression {
+
+    val ratio: Double
+}
+
+internal data class RatioProgression(override val ratio: Double) : Progression
+
+internal data object EndProgression : Progression {
+
+    override val ratio: Double = 1.0
 }

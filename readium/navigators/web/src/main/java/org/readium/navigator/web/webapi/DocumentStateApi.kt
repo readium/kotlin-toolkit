@@ -9,14 +9,14 @@ package org.readium.navigator.web.webapi
 import android.webkit.JavascriptInterface
 import android.webkit.WebView
 
-internal class InitializationApi(
+internal class DocumentStateApi(
     private val onScriptsLoadedDelegate: () -> Unit,
     private val onDocumentLoadedDelegate: () -> Unit,
     private val onDocumentResizedDelegate: () -> Unit,
 ) {
 
     fun registerOnWebView(webView: WebView) {
-        webView.addJavascriptInterface(this, "initialization")
+        webView.addJavascriptInterface(this, "documentState")
     }
 
     @JavascriptInterface
