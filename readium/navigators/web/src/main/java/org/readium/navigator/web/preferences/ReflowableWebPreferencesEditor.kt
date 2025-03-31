@@ -78,9 +78,6 @@ public class ReflowableWebPreferencesEditor internal constructor(
     /**
      * Default background color.
      *
-     * For fixed-layout publications, it applies to the navigator background but not the publication
-     * pages.
-     *
      * When unset, the current [theme] background color is effective.
      */
     public val backgroundColor: Preference<Color> =
@@ -91,7 +88,7 @@ public class ReflowableWebPreferencesEditor internal constructor(
                     (theme.value ?: theme.effectiveValue).backgroundColor
                 )
             },
-            getIsEffective = { preferences.backgroundColor != null },
+            getIsEffective = { true },
             updateValue = { value -> updateValues { it.copy(backgroundColor = value) } }
         )
 
@@ -99,10 +96,8 @@ public class ReflowableWebPreferencesEditor internal constructor(
      * Number of reflowable columns to display (one-page view or two-page spread).
      *
      * Only effective when:
-     *  - the publication is reflowable
      *  - [scroll] is off
      */
-    @ExperimentalReadiumApi
     public val columnCount: EnumPreference<Int> =
         EnumPreferenceDelegate(
             getValue = { preferences.columnCount },
@@ -114,8 +109,6 @@ public class ReflowableWebPreferencesEditor internal constructor(
 
     /**
      * Default typeface for the text.
-     *
-     * Only effective with reflowable publications.
      */
     public val fontFamily: Preference<FontFamily?> =
         PreferenceDelegate(
@@ -129,8 +122,6 @@ public class ReflowableWebPreferencesEditor internal constructor(
      * Base text font size as a percentage. Default to 100%.
      *
      * Note that allowing a font size that is too large could break the pagination.
-     *
-     * Only effective with reflowable publications.
      */
     public val fontSize: RangePreference<Double> =
         RangePreferenceDelegate(
@@ -148,14 +139,12 @@ public class ReflowableWebPreferencesEditor internal constructor(
      *
      * If you want to change the boldness of all text, including headers, you can use this with
      * [textNormalization].
-     *
-     * Only effective with reflowable publications.
      */
     public val fontWeight: RangePreference<Double> =
         RangePreferenceDelegate(
             getValue = { preferences.fontWeight },
             getEffectiveValue = { state.settings.fontWeight ?: 1.0 },
-            getIsEffective = { preferences.fontWeight != null },
+            getIsEffective = { true },
             updateValue = { value -> updateValues { it.copy(fontWeight = value) } },
             valueFormatter = percentFormatter(),
             supportedRange = 0.0..2.5,
@@ -166,7 +155,6 @@ public class ReflowableWebPreferencesEditor internal constructor(
      * Enable hyphenation for latin languages.
      *
      * Only effective when:
-     *  - the publication is reflowable
      *  - [publisherStyles] is off
      *  - the layout is LTR
      */
@@ -185,7 +173,6 @@ public class ReflowableWebPreferencesEditor internal constructor(
      * Filter applied to images in dark theme.
      *
      * Only effective when:
-     *  - the publication is reflowable
      *  - the [theme] is set to [Theme.DARK]
      */
     public val imageFilter: EnumPreference<ImageFilter?> =
@@ -214,7 +201,6 @@ public class ReflowableWebPreferencesEditor internal constructor(
      * Space between letters.
      *
      * Only effective when:
-     *  - the publication is reflowable
      *  - [publisherStyles] is off
      *  - the layout is LTR
      */
@@ -233,7 +219,6 @@ public class ReflowableWebPreferencesEditor internal constructor(
      * Enable ligatures in Arabic.
      *
      * Only effective when:
-     *  - the publication is reflowable
      *  - [publisherStyles] is off
      *  - the layout is RTL
      */
@@ -249,14 +234,13 @@ public class ReflowableWebPreferencesEditor internal constructor(
      * Leading line height.
      *
      * Only effective when:
-     *  - the publication is reflowable
      *  - [publisherStyles] is off
      */
     public val lineHeight: RangePreference<Double> =
         RangePreferenceDelegate(
             getValue = { preferences.lineHeight },
             getEffectiveValue = { state.settings.lineHeight ?: 1.2 },
-            getIsEffective = { !state.settings.publisherStyles && preferences.lineHeight != null },
+            getIsEffective = { !state.settings.publisherStyles },
             updateValue = { value -> updateValues { it.copy(lineHeight = value) } },
             supportedRange = 1.0..2.0,
             progressionStrategy = DoubleIncrement(0.1),
@@ -265,16 +249,13 @@ public class ReflowableWebPreferencesEditor internal constructor(
 
     /**
      * Factor applied to horizontal margins. Default to 1.
-     *
-     * Only effective with reflowable publications.
      */
-    @ExperimentalReadiumApi
-    public val pageMargins: RangePreference<Double> =
+    public val horizontalMargins: RangePreference<Double> =
         RangePreferenceDelegate(
-            getValue = { preferences.pageMargins },
-            getEffectiveValue = { state.settings.pageMargins },
+            getValue = { preferences.horizontalMargins },
+            getEffectiveValue = { state.settings.horizontalMargins },
             getIsEffective = { true },
-            updateValue = { value -> updateValues { it.copy(pageMargins = value) } },
+            updateValue = { value -> updateValues { it.copy(horizontalMargins = value) } },
             supportedRange = 0.0..4.0,
             progressionStrategy = DoubleIncrement(0.3),
             valueFormatter = { it.format(5) }
@@ -284,7 +265,6 @@ public class ReflowableWebPreferencesEditor internal constructor(
      * Text indentation for paragraphs.
      *
      * Only effective when:
-     *  - the publication is reflowable
      *  - [publisherStyles] is off
      *  - the layout is LTR or RTL
      */
@@ -303,14 +283,13 @@ public class ReflowableWebPreferencesEditor internal constructor(
      * Vertical margins for paragraphs.
      *
      * Only effective when:
-     *  - the publication is reflowable
      *  - [publisherStyles] is off
      */
     public val paragraphSpacing: RangePreference<Double> =
         RangePreferenceDelegate(
             getValue = { preferences.paragraphSpacing },
             getEffectiveValue = { state.settings.paragraphSpacing ?: 0.0 },
-            getIsEffective = { !state.settings.publisherStyles && preferences.paragraphSpacing != null },
+            getIsEffective = { !state.settings.publisherStyles },
             updateValue = { value -> updateValues { it.copy(paragraphSpacing = value) } },
             supportedRange = 0.0..2.0,
             progressionStrategy = DoubleIncrement(0.1),
@@ -320,8 +299,6 @@ public class ReflowableWebPreferencesEditor internal constructor(
     /**
      * Indicates whether the original publisher styles should be observed. Many advanced settings
      * require this to be off.
-     *
-     * Only effective with reflowable publications.
      */
     public val publisherStyles: Preference<Boolean> =
         PreferenceDelegate(
@@ -349,7 +326,8 @@ public class ReflowableWebPreferencesEditor internal constructor(
      * Indicates if the overflow of resources should be handled using scrolling instead of synthetic
      * pagination.
      *
-     * Only effective with reflowable publications and if [verticalText] is false.
+     * Only effective when:
+     *  - [verticalText] is off
      */
     public val scroll: Preference<Boolean> =
         PreferenceDelegate(
@@ -363,7 +341,6 @@ public class ReflowableWebPreferencesEditor internal constructor(
      * Page text alignment.
      *
      * Only effective when:
-     *  - the publication is reflowable
      *  - [publisherStyles] is off
      *  - the layout is LTR or RTL
      */
@@ -385,7 +362,6 @@ public class ReflowableWebPreferencesEditor internal constructor(
      * Default page text color.
      *
      * When unset, the current [theme] text color is effective.
-     * Only effective with reflowable publications.
      */
     public val textColor: Preference<Color> =
         PreferenceDelegate(
@@ -395,14 +371,12 @@ public class ReflowableWebPreferencesEditor internal constructor(
                     (theme.value ?: theme.effectiveValue).contentColor
                 )
             },
-            getIsEffective = { preferences.textColor != null },
+            getIsEffective = { true },
             updateValue = { value -> updateValues { it.copy(textColor = value) } }
         )
 
     /**
      * Normalize text styles to increase accessibility.
-     *
-     * Only effective with reflowable publications.
      */
     public val textNormalization: Preference<Boolean> =
         PreferenceDelegate(
@@ -414,8 +388,6 @@ public class ReflowableWebPreferencesEditor internal constructor(
 
     /**
      * Reader theme (light, dark, sepia).
-     *
-     * Only effective with reflowable publications.
      */
     public val theme: EnumPreference<Theme> =
         EnumPreferenceDelegate(
@@ -429,8 +401,6 @@ public class ReflowableWebPreferencesEditor internal constructor(
     /**
      * Indicates whether the text should be laid out vertically. This is used for example with CJK
      * languages. This setting is automatically derived from the language if no preference is given.
-     *
-     * Only effective with reflowable publications.
      */
     public val verticalText: Preference<Boolean> =
         PreferenceDelegate(
@@ -444,7 +414,6 @@ public class ReflowableWebPreferencesEditor internal constructor(
      * Space between words.
      *
      * Only effective when:
-     *  - the publication is reflowable
      *  - the layout is LTR
      */
     public val wordSpacing: RangePreference<Double> =
@@ -479,31 +448,25 @@ public class ReflowableWebPreferencesEditor internal constructor(
 
     private fun isHyphensEffective() =
         state.layout.stylesheets == Layout.Stylesheets.Default &&
-            !state.settings.publisherStyles &&
-            (preferences.hyphens != null || state.settings.textAlign == TextAlign.JUSTIFY)
+            !state.settings.publisherStyles
 
     private fun isLetterSpacingEffective() =
         state.layout.stylesheets == Layout.Stylesheets.Default &&
-            !state.settings.publisherStyles &&
-            preferences.letterSpacing != null
+            !state.settings.publisherStyles
 
     private fun isLigaturesEffective() =
         state.layout.stylesheets == Layout.Stylesheets.Rtl &&
-            !state.settings.publisherStyles &&
-            preferences.ligatures != null
+            !state.settings.publisherStyles
 
     private fun isParagraphIndentEffective() =
         state.layout.stylesheets in listOf(Layout.Stylesheets.Default, Layout.Stylesheets.Rtl) &&
-            !state.settings.publisherStyles &&
-            preferences.paragraphIndent != null
+            !state.settings.publisherStyles
 
     private fun isTextAlignEffective() =
         state.layout.stylesheets in listOf(Layout.Stylesheets.Default, Layout.Stylesheets.Rtl) &&
-            !state.settings.publisherStyles &&
-            preferences.textAlign != null
+            !state.settings.publisherStyles
 
     private fun isWordSpacingEffective(): Boolean =
         state.layout.stylesheets == Layout.Stylesheets.Default &&
-            !state.settings.publisherStyles &&
-            preferences.wordSpacing != null
+            !state.settings.publisherStyles
 }

@@ -119,7 +119,7 @@ public fun ReflowableWebRendition(
                 else -> Orientation.Horizontal
             }
         ) { index ->
-            val readyToScroll = ((index - 1)..(index + 1)).toList()
+            val readyToScroll = ((index - 2)..(index + 2)).toList()
                 .mapNotNull { state.resourceStates.getOrNull(it) }
                 .all { it.scrollController.value != null }
 

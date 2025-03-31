@@ -22,7 +22,6 @@ import org.readium.r2.navigator.preferences.Theme
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Either
-import org.readium.r2.shared.util.Either.Companion.invoke
 import org.readium.r2.shared.util.RelativeUrl
 import org.readium.r2.shared.util.Url
 
@@ -299,7 +298,7 @@ internal fun ReadiumCss.update(settings: ReflowableWebSettings, useReadiumCssFon
         copy(
             layout = Layout.from(settings),
             rsProperties = rsProperties.copy(
-                pageGutter = Length.Px((rsProperties.pageGutter?.value ?: 20.0) * pageMargins)
+                pageGutter = Length.Px((rsProperties.pageGutter?.value ?: 20.0) * horizontalMargins)
             ),
             userProperties = userProperties.copy(
                 view = when (scroll) {

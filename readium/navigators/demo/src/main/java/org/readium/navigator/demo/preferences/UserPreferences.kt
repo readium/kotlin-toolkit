@@ -104,7 +104,7 @@ fun <P : Preferences<P>, S : Settings, E : PreferencesEditor<P, S>> UserPreferen
                     letterSpacing = editor.letterSpacing,
                     ligatures = editor.ligatures,
                     lineHeight = editor.lineHeight,
-                    pageMargins = editor.pageMargins,
+                    horizontalMargins = editor.horizontalMargins,
                     paragraphIndent = editor.paragraphIndent,
                     paragraphSpacing = editor.paragraphSpacing,
                     publisherStyles = editor.publisherStyles,
@@ -208,7 +208,7 @@ private fun ReflowableUserPreferences(
     letterSpacing: RangePreference<Double>? = null,
     ligatures: Preference<Boolean>? = null,
     lineHeight: RangePreference<Double>? = null,
-    pageMargins: RangePreference<Double>? = null,
+    horizontalMargins: RangePreference<Double>? = null,
     paragraphIndent: RangePreference<Double>? = null,
     paragraphSpacing: RangePreference<Double>? = null,
     publisherStyles: Preference<Boolean>? = null,
@@ -247,7 +247,7 @@ private fun ReflowableUserPreferences(
         Divider()
     }
 
-    if (scroll != null || columnCount != null || pageMargins != null) {
+    if (scroll != null || columnCount != null || horizontalMargins != null) {
         if (scroll != null) {
             SwitchItem(
                 title = "Scroll",
@@ -263,10 +263,10 @@ private fun ReflowableUserPreferences(
             )
         }
 
-        if (pageMargins != null) {
+        if (horizontalMargins != null) {
             StepperItem(
-                title = "Page margins",
-                preference = pageMargins
+                title = "Horizontal margins",
+                preference = horizontalMargins
             )
         }
 

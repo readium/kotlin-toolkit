@@ -30,7 +30,7 @@ public data class ReflowableWebSettings(
     val letterSpacing: Double?,
     val ligatures: Boolean?,
     val lineHeight: Double?,
-    val pageMargins: Double,
+    val horizontalMargins: Double,
     val paragraphIndent: Double?,
     val paragraphSpacing: Double?,
     val publisherStyles: Boolean,

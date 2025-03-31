@@ -50,7 +50,7 @@ internal class ReflowableWebSettingsResolver(
             letterSpacing = preferences.letterSpacing ?: defaults.letterSpacing,
             ligatures = preferences.ligatures ?: defaults.ligatures,
             lineHeight = preferences.lineHeight ?: defaults.lineHeight,
-            pageMargins = preferences.pageMargins ?: defaults.pageMargins ?: 1.0,
+            horizontalMargins = preferences.horizontalMargins ?: defaults.pageMargins ?: 1.0,
             paragraphIndent = preferences.paragraphIndent ?: defaults.paragraphIndent,
             paragraphSpacing = preferences.paragraphSpacing ?: defaults.paragraphSpacing,
             publisherStyles = preferences.publisherStyles ?: defaults.publisherStyles ?: true,
