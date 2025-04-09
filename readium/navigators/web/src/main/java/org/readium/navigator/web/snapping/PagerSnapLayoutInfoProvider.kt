@@ -1,4 +1,10 @@
 /*
+ * Copyright 2024 Readium Foundation. All rights reserved.
+ * Use of this source code is governed by the BSD-style license
+ * available in the top-level LICENSE file of the project.
+ */
+
+/*
  * Copyright 2024 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -25,18 +31,22 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.util.fastForEach
 import kotlin.math.abs
 import kotlin.math.absoluteValue
+import org.readium.navigator.web.webview.DefaultPositionThreshold
+import timber.log.Timber
 
 internal interface PagingLayoutInfo {
     val orientation: Orientation
     val density: Density
-    val positionThresholdFraction: Float
+    val positionThresholdFraction: Float get() =
+        with(density) {
+            val minThreshold = minOf(DefaultPositionThreshold.toPx(), pageSize / 2f)
+            minThreshold / pageSize.toFloat()
+        }
     val pageSize: Int
     val pageSpacing: Int
     val upDownDifference: Offset
-    val pageCount: Int
-    val firstVisiblePage: Int
     val reverseLayout: Boolean
-    val visiblePageOffsets: List<Float>
+    val visiblePageOffsets: List<Int>
     val canScrollForward: Boolean
     val canScrollBackward: Boolean
 }
@@ -52,7 +62,9 @@ internal fun SnapLayoutInfoProvider(
         }
 
         override fun calculateSnapOffset(velocity: Float): Float {
+            Timber.d("Fling calculateSnapOffset $velocity")
             val (lowerBoundOffset, upperBoundOffset) = searchForSnappingBounds()
+            Timber.d("Fling lowerBound $lowerBoundOffset upperBound $upperBoundOffset")
 
             val finalDistance =
                 calculateFinalSnappingBound(
@@ -60,6 +72,8 @@ internal fun SnapLayoutInfoProvider(
                     lowerBoundOffset,
                     upperBoundOffset
                 )
+
+            Timber.d("Fling finalDistance $finalDistance")
 
             check(
                 finalDistance == lowerBoundOffset ||
@@ -92,12 +106,12 @@ internal fun SnapLayoutInfoProvider(
 
                 // Find page that is closest to the snap position, but before it
                 if (offset <= 0 && offset > lowerBoundOffset) {
-                    lowerBoundOffset = offset
+                    lowerBoundOffset = offset.toFloat()
                 }
 
                 // Find page that is closest to the snap position, but after it
                 if (offset >= 0 && offset < upperBoundOffset) {
-                    upperBoundOffset = offset
+                    upperBoundOffset = offset.toFloat()
                 }
             }
 

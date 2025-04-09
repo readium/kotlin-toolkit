@@ -14,7 +14,7 @@ internal class WebViewLayoutInfoProvider(
     override val orientation: Orientation,
     override val reverseLayout: Boolean,
     private val viewportSize: DpSize,
-    private val webView: RelaxedWebView,
+    private val webView: RelaxedWebView? = null,
 ) : PagingLayoutInfo {
 
     override val positionThresholdFraction: Float get() =
@@ -31,17 +31,17 @@ internal class WebViewLayoutInfoProvider(
     override val upDownDifference: Offset get() =
         Offset.Zero // FIXME
 
-    override val pageCount: Int get() =
-        ceil(webView.width / pageSize.toDouble()).toInt()
+    val pageCount: Int get() =
+        ceil(webView!!.width / pageSize.toDouble()).toInt()
 
-    override val firstVisiblePage: Int get() =
-        webView.scrollX * pageCount / webView.width
+    val firstVisiblePage: Int get() =
+        webView!!.scrollX * pageCount / webView.width
 
-    override val visiblePageOffsets: List<Float>
-        get() = buildList<Float> {
+    override val visiblePageOffsets: List<Int>
+        get() = buildList<Int> {
             // two pages are visible
             // the first one starts at firstVisiblePage * pageSize in the Webview document coordinates
-            val firstVisibleOffset = (firstVisiblePage * pageSize - webView.scrollX).toFloat()
+            val firstVisibleOffset = (firstVisiblePage * pageSize - webView!!.scrollX)
             add((firstVisibleOffset + pageSize))
             add(firstVisibleOffset)
         }
@@ -49,25 +49,25 @@ internal class WebViewLayoutInfoProvider(
     override val canScrollForward: Boolean
         get() = when {
             orientation == Orientation.Horizontal && reverseLayout ->
-                webView.canScrollLeft
+                webView!!.canScrollLeft
             orientation == Orientation.Horizontal ->
-                webView.canScrollRight
+                webView!!.canScrollRight
             orientation == Orientation.Vertical && reverseLayout ->
-                webView.canScrollTop
+                webView!!.canScrollTop
             else ->
-                webView.canScrollBottom
+                webView!!.canScrollBottom
         }
 
     override val canScrollBackward: Boolean
         get() = when {
             orientation == Orientation.Horizontal && reverseLayout ->
-                webView.canScrollRight
+                webView!!.canScrollRight
             orientation == Orientation.Horizontal ->
-                webView.canScrollLeft
+                webView!!.canScrollLeft
             orientation == Orientation.Vertical && reverseLayout ->
-                webView.canScrollBottom
+                webView!!.canScrollBottom
             else ->
-                webView.canScrollTop
+                webView!!.canScrollTop
         }
 }
 

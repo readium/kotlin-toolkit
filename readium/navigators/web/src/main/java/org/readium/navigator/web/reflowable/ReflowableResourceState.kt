@@ -10,6 +10,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.mutableStateOf
 import org.readium.navigator.web.webview.WebViewScrollController
+import org.readium.navigator.web.webview.WebViewScrollable2DState
 import org.readium.r2.shared.util.Url
 
 @Stable
@@ -22,6 +23,8 @@ internal class ReflowableResourceState(
     var progression: Progression = initialProgression
 
     val scrollController: MutableState<WebViewScrollController?> = mutableStateOf(null)
+
+    var scrollableState: WebViewScrollable2DState? = null
 }
 
 internal sealed interface Progression {

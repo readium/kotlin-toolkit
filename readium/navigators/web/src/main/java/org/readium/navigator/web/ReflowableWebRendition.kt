@@ -9,6 +9,7 @@ package org.readium.navigator.web
 import android.annotation.SuppressLint
 import android.content.res.Configuration
 import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.ScrollableDefaults
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.displayCutout
@@ -37,7 +38,9 @@ import org.readium.navigator.common.defaultHyperlinkListener
 import org.readium.navigator.common.defaultInputListener
 import org.readium.navigator.web.location.ReflowableWebLocation
 import org.readium.navigator.web.pager.RenditionPager
+import org.readium.navigator.web.reflowable.ReflowablePagingLayoutInfo
 import org.readium.navigator.web.reflowable.ReflowableResource
+import org.readium.navigator.web.reflowable.ReflowableScrollDispatcher
 import org.readium.navigator.web.util.AbsolutePaddingValues
 import org.readium.navigator.web.util.WebViewServer
 import org.readium.r2.navigator.preferences.ReadingProgression
@@ -45,6 +48,7 @@ import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.RelativeUrl
 import org.readium.r2.shared.util.Url
+import pagingFlingBehavior
 
 @SuppressLint("UnusedBoxWithConstraintsScope")
 @ExperimentalReadiumApi
@@ -108,16 +112,47 @@ public fun ReflowableWebRendition(
             )
         )
 
+        val orientation = when {
+            state.layoutDelegate.settings.value.verticalText -> Orientation.Horizontal
+            state.layoutDelegate.settings.value.scroll -> Orientation.Vertical
+            else -> Orientation.Horizontal
+        }
+
+        val density = LocalDensity.current
+
+        val flingBehavior = if (state.layoutDelegate.settings.value.scroll) {
+            ScrollableDefaults.flingBehavior()
+        } else {
+            val pagingLayoutInfo = remember(state) {
+                ReflowablePagingLayoutInfo(
+                    pagerState = state.pagerState,
+                    resourceStates = state.resourceStates,
+                    orientation = orientation,
+                    density = density
+                )
+            }
+            pagingFlingBehavior(pagingLayoutInfo)
+        }
+
+        val scrollDispatcher = remember(state) {
+            ReflowableScrollDispatcher(
+                pagerState = state.pagerState,
+                resourceStates = state.resourceStates,
+                flingBehavior = flingBehavior,
+                pagerOrientation = orientation,
+            )
+        }
+
+        scrollDispatcher.flingBehavior = flingBehavior
+        scrollDispatcher.pagerOrientation = orientation
+
         RenditionPager(
             modifier = Modifier,
             state = state.pagerState,
+            scrollDispatcher = scrollDispatcher,
             beyondViewportPageCount = 3,
             reverseLayout = reverseLayout,
-            orientation = when {
-                state.layoutDelegate.settings.value.verticalText -> Orientation.Horizontal
-                state.layoutDelegate.settings.value.scroll -> Orientation.Vertical
-                else -> Orientation.Horizontal
-            }
+            orientation = orientation
         ) { index ->
             val readyToScroll = ((index - 2)..(index + 2)).toList()
                 .mapNotNull { state.resourceStates.getOrNull(it) }

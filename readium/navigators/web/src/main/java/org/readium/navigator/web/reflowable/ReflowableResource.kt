@@ -29,7 +29,6 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.DpOffset
@@ -52,14 +51,12 @@ import org.readium.navigator.web.webapi.DocumentStateApi
 import org.readium.navigator.web.webapi.GesturesApi
 import org.readium.navigator.web.webview.RelaxedWebView
 import org.readium.navigator.web.webview.WebView
-import org.readium.navigator.web.webview.WebViewLayoutInfoProvider
 import org.readium.navigator.web.webview.WebViewScrollController
 import org.readium.navigator.web.webview.WebViewScrollable2DState
 import org.readium.navigator.web.webview.rememberWebViewState
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Url
-import pagingFlingBehavior
 
 @SuppressLint("SetJavaScriptEnabled", "ClickableViewAccessibility")
 @Composable
@@ -106,7 +103,45 @@ internal fun ReflowableResource(
         val contentIsLaidOut =
             remember(webViewState.webView) { mutableStateOf(false) }
 
-        val documentStateApi = remember(webViewState.webView) {
+        val density = LocalDensity.current
+
+        val webViewViewport = DpSize(
+            width = viewportSize.width - padding.left - padding.right,
+            height = viewportSize.height - padding.top - padding.bottom
+        )
+
+        val scrollableState = remember(resourceState) { WebViewScrollable2DState(resourceState.href) }
+
+        val flingBehavior =
+            object : Fling2DBehavior {
+                override suspend fun Scroll2DScope.performFling(
+                    initialVelocity: Velocity,
+                ): Velocity {
+                    return initialVelocity
+                }
+            }
+
+            /*if (scroll) {
+                null
+            } else {
+                webViewState.webView
+                    ?.let {
+                        pagingFlingBehavior(
+                            WebViewLayoutInfoProvider(
+                                density,
+                                scrollOrientation.value,
+                                reverseLayout,
+                                webViewViewport,
+                                it
+                            )
+                        )
+                    }
+            }
+        ?.toFling2DBehavior(orientation = scrollOrientation.value) */
+
+        resourceState.scrollableState = scrollableState
+
+        val documentStateApi = remember(webViewState.webView,) {
             DocumentStateApi(
                 onScriptsLoadedDelegate = {
                     scriptsLoaded.value = true
@@ -178,37 +213,9 @@ internal fun ReflowableResource(
             webViewState.webView?.let { gesturesApi.registerOnWebView(it) }
         }
 
-        val scrollableState = remember { WebViewScrollable2DState(resourceState.href) }
-
-        val density = LocalDensity.current
-
-        val webViewViewport = DpSize(
-            width = viewportSize.width - padding.left - padding.right,
-            height = viewportSize.height - padding.top - padding.bottom
-        )
-
-        val flingBehavior =
-            if (scroll) {
-                null
-            } else {
-                webViewState.webView
-                    ?.let {
-                        pagingFlingBehavior(
-                            WebViewLayoutInfoProvider(
-                                density,
-                                scrollOrientation.value,
-                                reverseLayout,
-                                webViewViewport,
-                                it
-                            )
-                        )
-                    }
-                    ?.toFling2DBehavior(orientation = scrollOrientation.value)
-            }
-
-        val resourceScrollConnection =
+        /*val resourceScrollConnection =
             ResourceNestedScrollConnection(pagerState, scrollableState, scrollOrientation.value)
-
+*/
         // Hide content before initial position is settled
         if (!contentIsLaidOut.value) {
             Box(
@@ -219,8 +226,8 @@ internal fun ReflowableResource(
                 content = {}
             )
         }
-
-        key(layout, scrollOrientation.value) {
+        // Changing font size invalidates the scroll position of the Webview
+        key(layout, scrollOrientation.value, userProperties) {
             WebView(
                 modifier = Modifier
                     // Detect taps on padding
@@ -234,7 +241,7 @@ internal fun ReflowableResource(
                                 }
                             }
                         )
-                    }.nestedScroll(resourceScrollConnection)
+                    } // .nestedScroll(resourceScrollConnection)
                     .scrollable2D(
                         enabled = enableScroll,
                         state = scrollableState,
