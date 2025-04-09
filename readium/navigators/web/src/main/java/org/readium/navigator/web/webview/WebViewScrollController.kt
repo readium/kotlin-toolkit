@@ -7,13 +7,10 @@ import androidx.compose.ui.util.fastCoerceAtMost
 import androidx.compose.ui.util.fastRoundToInt
 import kotlin.math.ceil
 import kotlin.math.floor
-import timber.log.Timber
 
 internal class WebViewScrollController(
     private val webView: RelaxedWebView,
 ) {
-    private var unconsumedDelta: Offset = Offset.Zero
-
     val scrollX: Int
         get() = webView.scrollX
 
@@ -55,8 +52,6 @@ internal class WebViewScrollController(
     }
 
     fun scrollBy(delta: Offset): Offset {
-        // val delta = delta + unconsumedDelta
-
         val coercedX =
             if (delta.x < 0) {
                 delta.x.fastCoerceAtLeast(-webView.scrollX.toFloat())
@@ -75,17 +70,27 @@ internal class WebViewScrollController(
 
         val roundedY = coercedY.fastRoundToInt()
 
-        Timber.d("Webview ${delta.x} $coercedX ${webView.scrollX} ${webView.maxScrollX}")
         webView.scrollBy(roundedX, roundedY)
-        /*unconsumedDelta = Offset(
-            x = coercedX - roundedX,
-            y = coercedY - roundedY
-        )*/
-        return Offset(coercedX, coercedY) - unconsumedDelta
+        return Offset(coercedX, coercedY)
     }
 
     fun scrollToProgression(progression: Double, scrollOrientation: Orientation) {
         webView.scrollToProgression(progression, scrollOrientation)
+    }
+
+    fun scrollToEnd(scrollOrientation: Orientation): Int {
+        return when (scrollOrientation) {
+            Orientation.Vertical -> {
+                val delta = webView.maxScrollY - scrollY
+                webView.scrollBy(0, delta)
+                delta
+            }
+            Orientation.Horizontal -> {
+                val delta = webView.maxScrollX - scrollX
+                webView.scrollBy(delta, 0)
+                delta
+            }
+        }
     }
 
     fun progression(scrollOrientation: Orientation) =

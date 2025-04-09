@@ -37,11 +37,11 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.Density
+import org.readium.navigator.web.snapping.DefaultPositionThreshold
 import org.readium.navigator.web.snapping.PagingLayoutInfo
 import org.readium.navigator.web.snapping.SnapLayoutInfoProvider
 import org.readium.navigator.web.snapping.calculateFinalSnappingBound
 import org.readium.navigator.web.snapping.snapFlingBehavior
-import org.readium.navigator.web.webview.DefaultPositionThreshold
 
 /**
  * A [snapFlingBehavior] that will snap pages to the start of the layout. One can use the

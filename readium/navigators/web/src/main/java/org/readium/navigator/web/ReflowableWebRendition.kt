@@ -187,6 +187,9 @@ public fun ReflowableWebRendition(
                         val newLocation = ReflowableWebLocation(itemHref, it)
                         state.updateLocation(newLocation)
                     }
+                },
+                onDocumentResized = {
+                    scrollDispatcher.onDocumentResized(index)
                 }
             )
         }

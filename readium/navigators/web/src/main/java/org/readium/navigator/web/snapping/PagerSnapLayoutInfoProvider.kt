@@ -28,10 +28,10 @@ import androidx.compose.foundation.gestures.snapping.SnapLayoutInfoProvider
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEach
 import kotlin.math.abs
 import kotlin.math.absoluteValue
-import org.readium.navigator.web.webview.DefaultPositionThreshold
 import timber.log.Timber
 
 internal interface PagingLayoutInfo {
@@ -255,3 +255,5 @@ internal fun calculateFinalSnappingBound(
 }
 
 private val debug: Boolean = false
+
+internal val DefaultPositionThreshold = 56.dp

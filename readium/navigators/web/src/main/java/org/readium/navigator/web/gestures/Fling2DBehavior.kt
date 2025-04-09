@@ -50,3 +50,12 @@ internal interface Fling2DBehavior {
      */
     suspend fun Scroll2DScope.performFling(initialVelocity: Velocity): Velocity
 }
+
+internal class ConsumingFling2DBehavior : Fling2DBehavior {
+
+    override suspend fun Scroll2DScope.performFling(
+        initialVelocity: Velocity,
+    ): Velocity {
+        return initialVelocity
+    }
+}

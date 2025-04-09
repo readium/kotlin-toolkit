@@ -121,6 +121,22 @@ internal class ReflowableScrollDispatcher(
         }
     }
 
+    fun onDocumentResized(index: Int) {
+        val firstPage = pagerState.layoutInfo.visiblePagesInfo.first()
+
+        val lastPage = pagerState.layoutInfo.visiblePagesInfo.last()
+
+        if (firstPage == lastPage || firstPage.index != index) {
+            return
+        }
+
+        val scrollController = resourceStates[index].scrollController.value!!
+        val scrolled = scrollController.scrollToEnd(pagerOrientation)
+        if (scrolled > 0) {
+            rawScrollBy(scrolled.toFloat())
+        }
+    }
+
     private val Offset.mainAxisValue: Float get() = when (pagerOrientation) {
         Orientation.Vertical -> y
         Orientation.Horizontal -> x
