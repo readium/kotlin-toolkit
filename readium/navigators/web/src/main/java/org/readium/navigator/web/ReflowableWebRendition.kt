@@ -39,7 +39,8 @@ import org.readium.navigator.common.defaultInputListener
 import org.readium.navigator.web.gestures.toFling2DBehavior
 import org.readium.navigator.web.location.ReflowableWebLocation
 import org.readium.navigator.web.pager.RenditionPager
-import org.readium.navigator.web.pager.ScrollDispatcherImpl
+import org.readium.navigator.web.pager.ScrollDispatcher
+import org.readium.navigator.web.pager.pagingFlingBehavior
 import org.readium.navigator.web.reflowable.ReflowablePagingLayoutInfo
 import org.readium.navigator.web.reflowable.ReflowableResource
 import org.readium.navigator.web.util.AbsolutePaddingValues
@@ -49,7 +50,6 @@ import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.RelativeUrl
 import org.readium.r2.shared.util.Url
-import pagingFlingBehavior
 
 @SuppressLint("UnusedBoxWithConstraintsScope")
 @ExperimentalReadiumApi
@@ -136,7 +136,7 @@ public fun ReflowableWebRendition(
         }.toFling2DBehavior(orientation)
 
         val scrollDispatcher = remember(state) {
-            ScrollDispatcherImpl(
+            ScrollDispatcher(
                 pagerState = state.pagerState,
                 resourceStates = state.resourceStates,
                 flingBehavior = flingBehavior,

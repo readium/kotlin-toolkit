@@ -4,6 +4,8 @@
  * available in the top-level LICENSE file of the project.
  */
 
+@file:OptIn(ExperimentalReadiumApi::class)
+
 package org.readium.navigator.web.css
 
 import org.readium.r2.shared.ExperimentalReadiumApi
@@ -16,7 +18,6 @@ import org.readium.r2.shared.util.Url
  * @param alternates Specifies a list of alternative font families used as fallbacks when symbols
  * are missing from [fontFamily].
  */
-@ExperimentalReadiumApi
 internal fun buildFontFamilyDeclaration(
     fontFamily: String,
     alternates: List<String>,
@@ -30,7 +31,6 @@ internal fun buildFontFamilyDeclaration(
  * @param alternates Specifies a list of alternative font families used as fallbacks when symbols
  * are missing from [fontFamily].
  */
-@ExperimentalReadiumApi
 internal data class FontFamilyDeclaration(
     val fontFamily: String,
     val alternates: List<String>,
@@ -40,7 +40,6 @@ internal data class FontFamilyDeclaration(
 /**
  * An immutable font face declaration.
  */
-@ExperimentalReadiumApi
 internal data class FontFaceDeclaration(
     val fontFamily: String,
     val sources: List<FontFaceSource>,

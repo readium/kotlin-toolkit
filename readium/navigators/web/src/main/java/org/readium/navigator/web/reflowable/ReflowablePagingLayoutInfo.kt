@@ -10,7 +10,7 @@ import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.unit.Density
-import org.readium.navigator.web.snapping.PagingLayoutInfo
+import org.readium.navigator.web.pager.PagingLayoutInfo
 import timber.log.Timber
 
 internal class ReflowablePagingLayoutInfo(

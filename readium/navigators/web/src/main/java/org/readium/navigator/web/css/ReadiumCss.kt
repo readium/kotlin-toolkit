@@ -4,6 +4,8 @@
  * available in the top-level LICENSE file of the project.
  */
 
+@file:OptIn(ExperimentalReadiumApi::class)
+
 package org.readium.navigator.web.css
 
 import androidx.core.net.toUri
@@ -25,7 +27,6 @@ import org.readium.r2.shared.util.Either
 import org.readium.r2.shared.util.RelativeUrl
 import org.readium.r2.shared.util.Url
 
-@ExperimentalReadiumApi
 internal data class ReadiumCss(
     val layout: Layout = Layout(language = null, Layout.Stylesheets.Default, ReadingProgression.LTR),
     val rsProperties: RsProperties = RsProperties(),

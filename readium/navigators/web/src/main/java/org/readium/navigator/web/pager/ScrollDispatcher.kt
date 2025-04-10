@@ -6,36 +6,157 @@
 
 package org.readium.navigator.web.pager
 
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.pager.PagerState
+import androidx.compose.runtime.MutableState
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
-import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.unit.Velocity
+import androidx.compose.ui.util.fastCoerceAtLeast
+import androidx.compose.ui.util.fastCoerceAtMost
+import org.readium.navigator.web.gestures.Fling2DBehavior
+import org.readium.navigator.web.gestures.Scroll2DScope
+import org.readium.navigator.web.webview.WebViewScrollController
+import timber.log.Timber
 
-internal interface ScrollDispatcher {
+internal interface PageScrollState {
 
-    fun onScroll(available: Offset): Offset
-
-    suspend fun onFling(available: Velocity): Velocity
+    val scrollController: MutableState<WebViewScrollController?>
 }
 
-internal class DelegatingNestedScrollConnection(
-    private val scrollDispatcher: ScrollDispatcher,
-) : NestedScrollConnection {
+internal class ScrollDispatcher(
+    private val pagerState: PagerState,
+    private val resourceStates: List<PageScrollState>,
+    internal var pagerOrientation: Orientation,
+    internal var flingBehavior: Fling2DBehavior,
+) : Scroll2DScope {
 
-    override fun onPostScroll(
-        consumed: Offset,
-        available: Offset,
-        source: NestedScrollSource,
-    ): Offset {
-        if (source == NestedScrollSource.UserInput) {
-            scrollDispatcher.onScroll(available)
+    override fun scrollBy(available: Offset): Offset {
+        return -rawScrollBy(-available.mainAxisValue).mainAxisOffset
+    }
+
+    private fun rawScrollBy(available: Float): Float {
+        Timber.Forest.d("scrollBy available $available")
+        var deltaLeft = available
+
+        val firstPage = pagerState.layoutInfo.visiblePagesInfo.first()
+
+        val lastPage = pagerState.layoutInfo.visiblePagesInfo.last()
+
+        val firstTargetPage = when {
+            available >= 0 -> lastPage
+            else -> firstPage
         }
 
-        return available
+        val secondTargetPage = when {
+            available >= 0 -> firstPage
+            else -> lastPage
+        }
+
+        val consumedInFirst = consumeInWebview(firstTargetPage.index, deltaLeft)
+        deltaLeft -= consumedInFirst
+        Timber.Forest.d("consumed $consumedInFirst in ${firstTargetPage.index}")
+
+        val availableForPager =
+            if (firstPage.index == lastPage.index) {
+                when {
+                    deltaLeft > 0 ->
+                        deltaLeft.fastCoerceAtMost(pagerState.layoutInfo.pageSize.toFloat())
+                    deltaLeft < 0 ->
+                        deltaLeft.coerceAtLeast(-pagerState.layoutInfo.pageSize.toFloat())
+                    else ->
+                        0f
+                }
+            } else {
+                when {
+                    deltaLeft > 0 -> {
+                        deltaLeft.fastCoerceAtMost(-firstPage.offset.toFloat())
+                    }
+                    deltaLeft < 0 -> {
+                        deltaLeft.fastCoerceAtLeast(-lastPage.offset.toFloat())
+                    }
+                    else ->
+                        0f
+                }
+            }
+
+        val consumedInPager = -pagerState.dispatchRawDelta(-availableForPager)
+        deltaLeft -= consumedInPager
+        Timber.Forest.d("consumed $consumedInPager in pager")
+
+        val consumedInSecond = consumeInWebview(secondTargetPage.index, deltaLeft)
+        deltaLeft -= consumedInSecond
+        Timber.Forest.d("consumed $consumedInSecond in ${secondTargetPage.index}")
+
+        Timber.Forest.d("scrollBy left $deltaLeft")
+
+        return when (deltaLeft) {
+            0f -> available
+            available -> 0f
+            else -> rawScrollBy(deltaLeft)
+        }
     }
 
-    override suspend fun onPostFling(consumed: Velocity, available: Velocity): Velocity {
-        scrollDispatcher.onFling(available)
-        return available
+    private fun consumeInWebview(targetPage: Int, available: Float): Float {
+        val scrollController = resourceStates[targetPage].scrollController.value
+            ?: return available // WebView is not ready, consume everything.
+
+        return -scrollController.scrollBy(-available.mainAxisOffset).mainAxisValue
     }
+
+    fun onScroll(available: Offset): Offset {
+        Timber.Forest.d("onScroll ${available.x}")
+        return -scrollBy(-available)
+    }
+
+    suspend fun onFling(available: Velocity): Velocity {
+        Timber.Forest.d("onFling ${available.x}")
+        var velocityLeft = available
+        pagerState.scroll {
+            with(flingBehavior) {
+                with(this@ScrollDispatcher) {
+                    velocityLeft = -performFling(-velocityLeft)
+                }
+            }
+        }
+
+        return Velocity(
+            x = if ((available.x - velocityLeft.x).isNaN()) {
+                available.x
+            } else {
+                available.x - velocityLeft.x
+            },
+            y = if ((available.y - velocityLeft.y).isNaN()) {
+                available.y
+            } else {
+                available.y - velocityLeft.y
+            }
+        )
+    }
+
+    fun onDocumentResized(index: Int) {
+        val firstPage = pagerState.layoutInfo.visiblePagesInfo.first()
+
+        val lastPage = pagerState.layoutInfo.visiblePagesInfo.last()
+
+        if (firstPage == lastPage || firstPage.index != index) {
+            return
+        }
+
+        val scrollController = resourceStates[index].scrollController.value!!
+        val scrolled = scrollController.scrollToEnd(pagerOrientation)
+        if (scrolled > 0) {
+            rawScrollBy(scrolled.toFloat())
+        }
+    }
+
+    private val Offset.mainAxisValue: Float get() = when (pagerOrientation) {
+        Orientation.Vertical -> y
+        Orientation.Horizontal -> x
+    }
+
+    private val Float.mainAxisOffset: Offset
+        get() = when (pagerOrientation) {
+            Orientation.Vertical -> Offset(0f, this)
+            Orientation.Horizontal -> Offset(this, 0f)
+        }
 }

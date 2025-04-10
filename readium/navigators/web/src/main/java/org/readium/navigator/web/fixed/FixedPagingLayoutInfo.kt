@@ -11,7 +11,7 @@ import androidx.compose.foundation.pager.PagerState
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.unit.Density
 import org.readium.navigator.web.pager.PageScrollState
-import org.readium.navigator.web.snapping.PagingLayoutInfo
+import org.readium.navigator.web.pager.PagingLayoutInfo
 
 internal class FixedPagingLayoutInfo(
     private val pagerState: PagerState,
