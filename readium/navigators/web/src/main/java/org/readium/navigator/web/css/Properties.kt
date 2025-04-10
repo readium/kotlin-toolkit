@@ -59,8 +59,6 @@ public interface Properties : Cssable {
  * @param fontSize Increasing and decreasing the root font-size. It will serve as a reference
  * for the cascade. To reset, remove the required flag.
  * @param lineLength Increasing and decreasing the line length.
- * @param advancedSettings This flag is required to apply the font-size and/or advanced user
- * settings.
  * @param textAlign The alignment (text-align) the user prefers. It impacts body, li, and p
  * which are not children of blockquote and figcaption. Requires: advancedSettings
  * @param lineHeight Increasing and decreasing leading (line-height). It impacts body, p, li and
@@ -108,7 +106,6 @@ public data class UserProperties(
     val lineLength: Length? = null,
 
     // Advanced settings
-    val advancedSettings: Boolean? = null,
     val textAlign: TextAlign? = null,
     val lineHeight: Either<Length, Double>? = null, // line-height supports unitless numbers
     val paraSpacing: Length? = null,
@@ -145,9 +142,6 @@ public data class UserProperties(
         putCss("--USER__fontFamily", fontFamily)
         putCss("--USER__fontSize", fontSize)
         putCss("--USER__lineLength", lineLength)
-
-        // Advanced settings
-        putCss("--USER__advancedSettings", flag("advanced", advancedSettings))
         putCss("--USER__textAlign", textAlign)
         lineHeight
             ?.onLeft { putCss("--USER__lineHeight", it) }

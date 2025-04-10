@@ -107,7 +107,6 @@ fun <P : Preferences<P>, S : Settings, E : PreferencesEditor<P, S>> UserPreferen
                     horizontalMargins = editor.horizontalMargins,
                     paragraphIndent = editor.paragraphIndent,
                     paragraphSpacing = editor.paragraphSpacing,
-                    publisherStyles = editor.publisherStyles,
                     readingProgression = editor.readingProgression,
                     scroll = editor.scroll,
                     textAlign = editor.textAlign,
@@ -211,14 +210,12 @@ private fun ReflowableUserPreferences(
     horizontalMargins: RangePreference<Double>? = null,
     paragraphIndent: RangePreference<Double>? = null,
     paragraphSpacing: RangePreference<Double>? = null,
-    publisherStyles: Preference<Boolean>? = null,
     readingProgression: EnumPreference<ReadingProgression>? = null,
     scroll: Preference<Boolean>? = null,
     textAlign: EnumPreference<ReadiumTextAlign?>? = null,
     textColor: Preference<Color>? = null,
     textNormalization: Preference<Boolean>? = null,
     theme: EnumPreference<Theme>? = null,
-    typeScale: RangePreference<Double>? = null,
     verticalText: Preference<Boolean>? = null,
     wordSpacing: RangePreference<Double>? = null,
 ) {
@@ -273,7 +270,7 @@ private fun ReflowableUserPreferences(
         Divider()
     }
 
-    if (theme != null || textColor != null || imageFilter != null) {
+    if (theme != null || imageFilter != null || textColor != null || backgroundColor != null) {
         if (theme != null) {
             ButtonGroupItem(
                 title = "Theme",
@@ -317,7 +314,10 @@ private fun ReflowableUserPreferences(
         Divider()
     }
 
-    if (fontFamily != null || fontSize != null || textNormalization != null) {
+    if (fontFamily != null || fontSize != null ||
+        fontWeight != null || textNormalization != null ||
+        lineHeight != null || paragraphSpacing != null
+    ) {
         if (fontFamily != null) {
             MenuItem(
                 title = "Typeface",
@@ -360,88 +360,80 @@ private fun ReflowableUserPreferences(
             )
         }
 
+        if (lineHeight != null) {
+            StepperItem(
+                title = "Line height",
+                preference = lineHeight
+            )
+        }
+
+        if (paragraphSpacing != null) {
+            StepperItem(
+                title = "Paragraph spacing",
+                preference = paragraphSpacing
+            )
+        }
+
         Divider()
     }
 
-    if (publisherStyles != null) {
-        SwitchItem(
-            title = "Publisher styles",
-            preference = publisherStyles
-        )
-
-        if (!(publisherStyles.value ?: publisherStyles.effectiveValue)) {
-            if (textAlign != null) {
-                ButtonGroupItem(
-                    title = "Alignment",
-                    preference = textAlign
-                ) { value ->
-                    when (value) {
-                        ReadiumTextAlign.CENTER -> "Center"
-                        ReadiumTextAlign.JUSTIFY -> "Justify"
-                        ReadiumTextAlign.START -> "Start"
-                        ReadiumTextAlign.END -> "End"
-                        ReadiumTextAlign.LEFT -> "Left"
-                        ReadiumTextAlign.RIGHT -> "Right"
-                        null -> "Default"
-                    }
+    if (textAlign != null || paragraphIndent != null || wordSpacing != null ||
+        letterSpacing != null || hyphens != null || ligatures != null
+    ) {
+        if (textAlign != null) {
+            ButtonGroupItem(
+                title = "Alignment",
+                preference = textAlign.withSupportedValues(
+                    ReadiumTextAlign.LEFT,
+                    ReadiumTextAlign.RIGHT,
+                    ReadiumTextAlign.JUSTIFY
+                )
+            ) { value ->
+                when (value) {
+                    ReadiumTextAlign.CENTER -> "Center"
+                    ReadiumTextAlign.JUSTIFY -> "Justify"
+                    ReadiumTextAlign.START -> "Start"
+                    ReadiumTextAlign.END -> "End"
+                    ReadiumTextAlign.LEFT -> "Left"
+                    ReadiumTextAlign.RIGHT -> "Right"
+                    null -> "Default"
                 }
             }
+        }
 
-            if (typeScale != null) {
-                StepperItem(
-                    title = "Type scale",
-                    preference = typeScale
-                )
-            }
+        if (paragraphIndent != null) {
+            StepperItem(
+                title = "Paragraph indent",
+                preference = paragraphIndent
+            )
+        }
 
-            if (lineHeight != null) {
-                StepperItem(
-                    title = "Line height",
-                    preference = lineHeight
-                )
-            }
+        if (wordSpacing != null) {
+            StepperItem(
+                title = "Word spacing",
+                preference = wordSpacing
+            )
+        }
 
-            if (paragraphIndent != null) {
-                StepperItem(
-                    title = "Paragraph indent",
-                    preference = paragraphIndent
-                )
-            }
+        if (letterSpacing != null) {
+            StepperItem(
+                title = "Letter spacing",
+                preference = letterSpacing
+            )
+        }
 
-            if (paragraphSpacing != null) {
-                StepperItem(
-                    title = "Paragraph spacing",
-                    preference = paragraphSpacing
-                )
-            }
+        if (hyphens != null) {
+            SwitchItem(
+                title = "Hyphens",
+                preference = hyphens
+            )
+        }
 
-            if (wordSpacing != null) {
-                StepperItem(
-                    title = "Word spacing",
-                    preference = wordSpacing
-                )
-            }
-
-            if (letterSpacing != null) {
-                StepperItem(
-                    title = "Letter spacing",
-                    preference = letterSpacing
-                )
-            }
-
-            if (hyphens != null) {
-                SwitchItem(
-                    title = "Hyphens",
-                    preference = hyphens
-                )
-            }
-
-            if (ligatures != null) {
-                SwitchItem(
-                    title = "Ligatures",
-                    preference = ligatures
-                )
-            }
+        if (ligatures != null) {
+            SwitchItem(
+                title = "Ligatures",
+                preference = ligatures
+            )
         }
     }
 }

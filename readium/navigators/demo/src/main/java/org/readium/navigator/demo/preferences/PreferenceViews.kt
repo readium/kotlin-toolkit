@@ -105,7 +105,7 @@ private fun <T> ButtonGroupItem(
         ) { option ->
             Text(
                 text = formatValue(option),
-                style = MaterialTheme.typography.labelSmall
+                style = MaterialTheme.typography.labelSmall,
             )
         }
     }

@@ -6,7 +6,7 @@
 
 package org.readium.navigator.web.css
 
-import android.net.Uri
+import androidx.core.net.toUri
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
@@ -144,7 +144,7 @@ internal data class ReadiumCss(
             if (googleFonts.isNotEmpty()) {
                 val families = googleFonts.joinToString("|") { it.name }
 
-                val uri = Uri.parse("https://fonts.googleapis.com/css")
+                val uri = "https://fonts.googleapis.com/css".toUri()
                     .buildUpon()
                     .appendQueryParameter("family", families)
                     .build()
@@ -322,7 +322,6 @@ internal fun ReadiumCss.update(settings: ReflowableWebSettings, useReadiumCssFon
                 } else {
                     null
                 },
-                advancedSettings = !publisherStyles,
                 textAlign = when (textAlign) {
                     TextAlign.JUSTIFY -> CssTextAlign.JUSTIFY
                     TextAlign.LEFT -> CssTextAlign.LEFT

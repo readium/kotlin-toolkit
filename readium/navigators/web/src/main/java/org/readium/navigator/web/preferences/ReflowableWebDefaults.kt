@@ -8,7 +8,6 @@ package org.readium.navigator.web.preferences
 
 import org.readium.r2.navigator.preferences.ImageFilter
 import org.readium.r2.navigator.preferences.ReadingProgression
-import org.readium.r2.navigator.preferences.Spread
 import org.readium.r2.navigator.preferences.TextAlign
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.Language
@@ -34,10 +33,8 @@ public data class ReflowableWebDefaults(
     val pageMargins: Double? = null,
     val paragraphIndent: Double? = null,
     val paragraphSpacing: Double? = null,
-    val publisherStyles: Boolean? = null,
     val readingProgression: ReadingProgression? = null,
     val scroll: Boolean? = null,
-    val spread: Spread? = null,
     val textAlign: TextAlign? = null,
     val textNormalization: Boolean? = null,
     val wordSpacing: Double? = null,

@@ -9,7 +9,6 @@ package org.readium.navigator.web.preferences
 import org.readium.navigator.web.util.isCjk
 import org.readium.navigator.web.util.isRtl
 import org.readium.r2.navigator.preferences.ReadingProgression
-import org.readium.r2.navigator.preferences.Spread
 import org.readium.r2.navigator.preferences.Theme
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Metadata
@@ -53,10 +52,8 @@ internal class ReflowableWebSettingsResolver(
             horizontalMargins = preferences.horizontalMargins ?: defaults.pageMargins ?: 1.0,
             paragraphIndent = preferences.paragraphIndent ?: defaults.paragraphIndent,
             paragraphSpacing = preferences.paragraphSpacing ?: defaults.paragraphSpacing,
-            publisherStyles = preferences.publisherStyles ?: defaults.publisherStyles ?: true,
             readingProgression = readingProgression,
             scroll = scroll,
-            spread = preferences.spread ?: defaults.spread ?: Spread.NEVER,
             textAlign = preferences.textAlign ?: defaults.textAlign,
             textColor = preferences.textColor,
             textNormalization = preferences.textNormalization ?: defaults.textNormalization ?: false,

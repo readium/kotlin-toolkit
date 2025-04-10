@@ -95,8 +95,7 @@ public class ReflowableWebPreferencesEditor internal constructor(
     /**
      * Number of reflowable columns to display (one-page view or two-page spread).
      *
-     * Only effective when:
-     *  - [scroll] is off
+     * Only effective when [scroll] is off.
      */
     public val columnCount: EnumPreference<Int> =
         EnumPreferenceDelegate(
@@ -154,9 +153,7 @@ public class ReflowableWebPreferencesEditor internal constructor(
     /**
      * Enable hyphenation for latin languages.
      *
-     * Only effective when:
-     *  - [publisherStyles] is off
-     *  - the layout is LTR
+     * Only effective when the layout is LTR.
      */
     public val hyphens: Preference<Boolean> =
         PreferenceDelegate(
@@ -165,15 +162,14 @@ public class ReflowableWebPreferencesEditor internal constructor(
                 state.settings.hyphens
                     ?: (state.settings.textAlign == TextAlign.JUSTIFY)
             },
-            getIsEffective = ::isHyphensEffective,
+            getIsEffective = { state.layout.stylesheets == Layout.Stylesheets.Default },
             updateValue = { value -> updateValues { it.copy(hyphens = value) } }
         )
 
     /**
      * Filter applied to images in dark theme.
      *
-     * Only effective when:
-     *  - the [theme] is set to [Theme.DARK]
+     * Only effective when the [theme] is set to [Theme.DARK].
      */
     public val imageFilter: EnumPreference<ImageFilter?> =
         EnumPreferenceDelegate(
@@ -200,15 +196,13 @@ public class ReflowableWebPreferencesEditor internal constructor(
     /**
      * Space between letters.
      *
-     * Only effective when:
-     *  - [publisherStyles] is off
-     *  - the layout is LTR
+     * Only effective when the layout is LTR.
      */
     public val letterSpacing: RangePreference<Double> =
         RangePreferenceDelegate(
             getValue = { preferences.letterSpacing },
             getEffectiveValue = { state.settings.letterSpacing ?: 0.0 },
-            getIsEffective = ::isLetterSpacingEffective,
+            getIsEffective = { state.layout.stylesheets == Layout.Stylesheets.Default },
             updateValue = { value -> updateValues { it.copy(letterSpacing = value) } },
             supportedRange = 0.0..1.0,
             progressionStrategy = DoubleIncrement(0.1),
@@ -218,29 +212,24 @@ public class ReflowableWebPreferencesEditor internal constructor(
     /**
      * Enable ligatures in Arabic.
      *
-     * Only effective when:
-     *  - [publisherStyles] is off
-     *  - the layout is RTL
+     * Only effective when the layout is RTL.
      */
     public val ligatures: Preference<Boolean> =
         PreferenceDelegate(
             getValue = { preferences.ligatures },
-            getEffectiveValue = { state.settings.ligatures ?: false },
-            getIsEffective = ::isLigaturesEffective,
+            getEffectiveValue = { state.settings.ligatures == true },
+            getIsEffective = { state.layout.stylesheets == Layout.Stylesheets.Rtl },
             updateValue = { value -> updateValues { it.copy(ligatures = value) } }
         )
 
     /**
      * Leading line height.
-     *
-     * Only effective when:
-     *  - [publisherStyles] is off
      */
     public val lineHeight: RangePreference<Double> =
         RangePreferenceDelegate(
             getValue = { preferences.lineHeight },
             getEffectiveValue = { state.settings.lineHeight ?: 1.2 },
-            getIsEffective = { !state.settings.publisherStyles },
+            getIsEffective = { true },
             updateValue = { value -> updateValues { it.copy(lineHeight = value) } },
             supportedRange = 1.0..2.0,
             progressionStrategy = DoubleIncrement(0.1),
@@ -264,9 +253,7 @@ public class ReflowableWebPreferencesEditor internal constructor(
     /**
      * Text indentation for paragraphs.
      *
-     * Only effective when:
-     *  - [publisherStyles] is off
-     *  - the layout is LTR or RTL
+     * Only effective when the layout is LTR or RTL.
      */
     public val paragraphIndent: RangePreference<Double> =
         RangePreferenceDelegate(
@@ -281,31 +268,16 @@ public class ReflowableWebPreferencesEditor internal constructor(
 
     /**
      * Vertical margins for paragraphs.
-     *
-     * Only effective when:
-     *  - [publisherStyles] is off
      */
     public val paragraphSpacing: RangePreference<Double> =
         RangePreferenceDelegate(
             getValue = { preferences.paragraphSpacing },
             getEffectiveValue = { state.settings.paragraphSpacing ?: 0.0 },
-            getIsEffective = { !state.settings.publisherStyles },
+            getIsEffective = { true },
             updateValue = { value -> updateValues { it.copy(paragraphSpacing = value) } },
             supportedRange = 0.0..2.0,
             progressionStrategy = DoubleIncrement(0.1),
             valueFormatter = percentFormatter()
-        )
-
-    /**
-     * Indicates whether the original publisher styles should be observed. Many advanced settings
-     * require this to be off.
-     */
-    public val publisherStyles: Preference<Boolean> =
-        PreferenceDelegate(
-            getValue = { preferences.publisherStyles },
-            getEffectiveValue = { state.settings.publisherStyles },
-            getIsEffective = { true },
-            updateValue = { value -> updateValues { it.copy(publisherStyles = value) } }
         )
 
     /**
@@ -326,8 +298,7 @@ public class ReflowableWebPreferencesEditor internal constructor(
      * Indicates if the overflow of resources should be handled using scrolling instead of synthetic
      * pagination.
      *
-     * Only effective when:
-     *  - [verticalText] is off
+     * Only effective when [verticalText] is off.
      */
     public val scroll: Preference<Boolean> =
         PreferenceDelegate(
@@ -340,9 +311,7 @@ public class ReflowableWebPreferencesEditor internal constructor(
     /**
      * Page text alignment.
      *
-     * Only effective when:
-     *  - [publisherStyles] is off
-     *  - the layout is LTR or RTL
+     * Only effective when the layout is LTR or RTL.
      */
     public val textAlign: EnumPreference<TextAlign?> =
         EnumPreferenceDelegate(
@@ -413,14 +382,13 @@ public class ReflowableWebPreferencesEditor internal constructor(
     /**
      * Space between words.
      *
-     * Only effective when:
-     *  - the layout is LTR
+     * Only effective when the layout is LTR.
      */
     public val wordSpacing: RangePreference<Double> =
         RangePreferenceDelegate(
             getValue = { preferences.wordSpacing },
             getEffectiveValue = { state.settings.wordSpacing ?: 0.0 },
-            getIsEffective = ::isWordSpacingEffective,
+            getIsEffective = { state.layout.stylesheets == Layout.Stylesheets.Default },
             updateValue = { value -> updateValues { it.copy(wordSpacing = value) } },
             supportedRange = 0.0..1.0,
             progressionStrategy = DoubleIncrement(0.1),
@@ -446,27 +414,9 @@ public class ReflowableWebPreferencesEditor internal constructor(
         )
     }
 
-    private fun isHyphensEffective() =
-        state.layout.stylesheets == Layout.Stylesheets.Default &&
-            !state.settings.publisherStyles
-
-    private fun isLetterSpacingEffective() =
-        state.layout.stylesheets == Layout.Stylesheets.Default &&
-            !state.settings.publisherStyles
-
-    private fun isLigaturesEffective() =
-        state.layout.stylesheets == Layout.Stylesheets.Rtl &&
-            !state.settings.publisherStyles
-
     private fun isParagraphIndentEffective() =
-        state.layout.stylesheets in listOf(Layout.Stylesheets.Default, Layout.Stylesheets.Rtl) &&
-            !state.settings.publisherStyles
+        state.layout.stylesheets in listOf(Layout.Stylesheets.Default, Layout.Stylesheets.Rtl)
 
     private fun isTextAlignEffective() =
-        state.layout.stylesheets in listOf(Layout.Stylesheets.Default, Layout.Stylesheets.Rtl) &&
-            !state.settings.publisherStyles
-
-    private fun isWordSpacingEffective(): Boolean =
-        state.layout.stylesheets == Layout.Stylesheets.Default &&
-            !state.settings.publisherStyles
+        state.layout.stylesheets in listOf(Layout.Stylesheets.Default, Layout.Stylesheets.Rtl)
 }

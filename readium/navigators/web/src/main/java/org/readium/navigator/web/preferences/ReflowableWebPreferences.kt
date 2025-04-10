@@ -29,13 +29,9 @@ import org.readium.r2.shared.util.Language
  * @param horizontalMargins Factor applied to horizontal margins.
  * @param paragraphIndent Text indentation for paragraphs.
  * @param paragraphSpacing Vertical margins for paragraphs.
- * @param publisherStyles Indicates whether the original publisher styles should be observed.
- *   Many settings require this to be off.
  * @param readingProgression Direction of the reading progression across resources.
  * @param scroll Indicates if the overflow of resources should be handled using scrolling
  *   instead of synthetic pagination.
- * @param spread Indicates if the fixed-layout publication should be rendered with a
- *   synthetic spread (dual-page).
  * @param textAlign Page text alignment.
  * @param textColor Default page text color.
  * @param textNormalization Normalize text styles to increase accessibility.
@@ -62,10 +58,8 @@ public data class ReflowableWebPreferences(
     val horizontalMargins: Double? = null,
     val paragraphIndent: Double? = null,
     val paragraphSpacing: Double? = null,
-    val publisherStyles: Boolean? = null,
     val readingProgression: ReadingProgression? = null,
     val scroll: Boolean? = null,
-    val spread: Spread? = null,
     val textAlign: TextAlign? = null,
     val textColor: Color? = null,
     val textNormalization: Boolean? = null,
@@ -81,7 +75,6 @@ public data class ReflowableWebPreferences(
         require(letterSpacing == null || letterSpacing >= 0)
         require(horizontalMargins == null || horizontalMargins >= 0)
         require(paragraphSpacing == null || paragraphSpacing >= 0)
-        require(spread in listOf(null, Spread.NEVER, Spread.ALWAYS))
         require(wordSpacing == null || wordSpacing >= 0)
     }
 
@@ -102,10 +95,8 @@ public data class ReflowableWebPreferences(
             horizontalMargins = other.horizontalMargins ?: horizontalMargins,
             paragraphIndent = other.paragraphIndent ?: paragraphIndent,
             paragraphSpacing = other.paragraphSpacing ?: paragraphSpacing,
-            publisherStyles = other.publisherStyles ?: publisherStyles,
             readingProgression = other.readingProgression ?: readingProgression,
             scroll = other.scroll ?: scroll,
-            spread = other.spread ?: spread,
             textAlign = other.textAlign ?: textAlign,
             textColor = other.textColor ?: textColor,
             textNormalization = other.textNormalization ?: textNormalization,
