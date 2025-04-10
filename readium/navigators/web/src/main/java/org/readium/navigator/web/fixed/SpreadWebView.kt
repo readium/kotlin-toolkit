@@ -8,16 +8,22 @@ package org.readium.navigator.web.fixed
 
 import android.annotation.SuppressLint
 import android.view.View
+import android.webkit.WebView
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.pager.PagerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.DpOffset
 import org.readium.navigator.common.TapEvent
+import org.readium.navigator.web.gestures.NullFling2DBehavior
+import org.readium.navigator.web.gestures.Scrollable2DDefaults
+import org.readium.navigator.web.gestures.Scrollable2DState
 import org.readium.navigator.web.gestures.scrollable2D
 import org.readium.navigator.web.util.WebViewClient
 import org.readium.navigator.web.webapi.DocumentStateApi
@@ -25,6 +31,7 @@ import org.readium.navigator.web.webapi.GesturesApi
 import org.readium.navigator.web.webapi.GesturesListener
 import org.readium.navigator.web.webview.RelaxedWebView
 import org.readium.navigator.web.webview.WebView
+import org.readium.navigator.web.webview.WebViewScrollController
 import org.readium.navigator.web.webview.WebViewScrollable2DState
 import org.readium.navigator.web.webview.WebViewState
 import org.readium.r2.shared.ExperimentalReadiumApi
@@ -34,7 +41,10 @@ import org.readium.r2.shared.util.AbsoluteUrl
 @SuppressLint("SetJavaScriptEnabled")
 @Composable
 internal fun SpreadWebView(
+    pagerState: PagerState,
+    spreadIndex: Int,
     state: WebViewState<RelaxedWebView>,
+    spreadScrollState: SpreadScrollState,
     client: WebViewClient,
     onScriptsLoaded: () -> Unit,
     onTap: (TapEvent) -> Unit,
@@ -44,10 +54,33 @@ internal fun SpreadWebView(
 ) {
     val scrollableState = remember { WebViewScrollable2DState() }
 
-    val spreadNestedScrollConnection = SpreadNestedScrollConnection(scrollableState)
+    val flingBehavior = Scrollable2DDefaults.flingBehavior()
+
+    val spreadNestedScrollConnection =
+        SpreadNestedScrollConnection(spreadIndex, pagerState, scrollableState, spreadScrollState, flingBehavior)
 
     val documentStateApi = remember(onScriptsLoaded) {
-        DocumentStateApi(onScriptsLoaded, {}, {})
+        DocumentStateApi(
+            onScriptsLoadedDelegate = onScriptsLoaded,
+            onDocumentLoadedDelegate = {
+                state.webView?.apply {
+                    post {
+                        postVisualStateCallback(
+                            0,
+                            object : WebView.VisualStateCallback() {
+                                override fun onComplete(requestId: Long) {
+                                    with(this@apply) {
+                                        val scrollController = WebViewScrollController(this)
+                                        spreadScrollState.scrollController.value = scrollController
+                                    }
+                                }
+                            }
+                        )
+                    }
+                }
+            },
+            onDocumentResizedDelegate = {}
+        )
     }
 
     val gesturesApi = remember(onTap) {
@@ -74,8 +107,9 @@ internal fun SpreadWebView(
         modifier = Modifier
             .nestedScroll(spreadNestedScrollConnection)
             .scrollable2D(
-                state = scrollableState,
+                state = Scrollable2DState { Offset.Zero },
                 reverseDirection = reverseScrollDirection,
+                flingBehavior = NullFling2DBehavior()
             )
             .fillMaxSize(),
         client = client,
@@ -93,6 +127,7 @@ internal fun SpreadWebView(
             webview.setLayerType(View.LAYER_TYPE_HARDWARE, null)
         },
         onDispose = {
+            spreadScrollState.scrollController.value = null
             scrollableState.webView = null
         }
     )

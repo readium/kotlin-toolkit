@@ -34,12 +34,16 @@ import org.readium.navigator.common.defaultHyperlinkListener
 import org.readium.navigator.common.defaultInputListener
 import org.readium.navigator.web.fixed.DoubleSpreadState
 import org.readium.navigator.web.fixed.DoubleViewportSpread
+import org.readium.navigator.web.fixed.FixedPagingLayoutInfo
 import org.readium.navigator.web.fixed.SingleSpreadState
 import org.readium.navigator.web.fixed.SingleViewportSpread
+import org.readium.navigator.web.fixed.SpreadScrollState
+import org.readium.navigator.web.gestures.toFling2DBehavior
 import org.readium.navigator.web.layout.DoubleViewportSpread
 import org.readium.navigator.web.layout.SingleViewportSpread
 import org.readium.navigator.web.location.FixedWebLocation
 import org.readium.navigator.web.pager.RenditionPager
+import org.readium.navigator.web.pager.ScrollDispatcherImpl
 import org.readium.navigator.web.util.AbsolutePaddingValues
 import org.readium.navigator.web.util.DisplayArea
 import org.readium.navigator.web.util.WebViewServer
@@ -48,6 +52,7 @@ import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.RelativeUrl
 import org.readium.r2.shared.util.Url
+import pagingFlingBehavior
 
 @SuppressLint("UnusedBoxWithConstraintsScope")
 @ExperimentalReadiumApi
@@ -94,9 +99,40 @@ public fun FixedWebRendition(
 
         val hyperlinkListenerState = rememberUpdatedState(hyperlinkListener)
 
+        val density = LocalDensity.current
+
+        val scrollStates = remember(state, state.layoutDelegate.layout.value) {
+            state.layoutDelegate.layout.value.spreads
+                .map { SpreadScrollState() }
+        }
+
+        val flingBehavior = run {
+            val pagingLayoutInfo = remember(state, scrollStates) {
+                FixedPagingLayoutInfo(
+                    pagerState = state.pagerState,
+                    pageStates = scrollStates,
+                    orientation = Orientation.Horizontal,
+                    density = density
+                )
+            }
+            pagingFlingBehavior(pagingLayoutInfo)
+        }.toFling2DBehavior(Orientation.Horizontal)
+
+        val scrollDispatcher = remember(state, scrollStates) {
+            ScrollDispatcherImpl(
+                pagerState = state.pagerState,
+                resourceStates = scrollStates,
+                flingBehavior = flingBehavior,
+                pagerOrientation = Orientation.Horizontal,
+            )
+        }
+
+        scrollDispatcher.flingBehavior = flingBehavior
+
         RenditionPager(
             modifier = Modifier,
             state = state.pagerState,
+            scrollDispatcher = scrollDispatcher,
             orientation = Orientation.Horizontal,
             beyondViewportPageCount = 2,
             key = { index -> state.layoutDelegate.layout.value.pageIndexForSpread(index) },
@@ -106,6 +142,7 @@ public fun FixedWebRendition(
                 is SingleViewportSpread -> {
                     val spreadState = remember(state) {
                         SingleSpreadState(
+                            index = index,
                             htmlData = state.preloadedData.fixedSingleContent,
                             publicationBaseUrl = WebViewServer.publicationBaseHref,
                             webViewClient = state.webViewClient,
@@ -116,6 +153,7 @@ public fun FixedWebRendition(
                     }
 
                     SingleViewportSpread(
+                        pagerState = state.pagerState,
                         onTap = { inputListenerState.value.onTap(it, TapContext(viewportSize.value)) },
                         onLinkActivated = { url, outerHtml ->
                             coroutineScope.launch {
@@ -123,6 +161,7 @@ public fun FixedWebRendition(
                             }
                         },
                         state = spreadState,
+                        scrollState = scrollStates[index],
                         backgroundColor = backgroundColor,
                         reverseScrollDirection = !reverseLayout
                     )
@@ -130,6 +169,7 @@ public fun FixedWebRendition(
                 is DoubleViewportSpread -> {
                     val spreadState = remember(state) {
                         DoubleSpreadState(
+                            index = index,
                             htmlData = state.preloadedData.fixedDoubleContent,
                             publicationBaseUrl = WebViewServer.publicationBaseHref,
                             webViewClient = state.webViewClient,
@@ -140,6 +180,7 @@ public fun FixedWebRendition(
                     }
 
                     DoubleViewportSpread(
+                        pagerState = state.pagerState,
                         onTap = { inputListenerState.value.onTap(it, TapContext(viewportSize.value)) },
                         onLinkActivated = { url, outerHtml ->
                             coroutineScope.launch {
@@ -147,6 +188,7 @@ public fun FixedWebRendition(
                             }
                         },
                         state = spreadState,
+                        scrollState = scrollStates[index],
                         backgroundColor = backgroundColor,
                         reverseScrollDirection = !reverseLayout
                     )

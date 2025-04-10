@@ -6,57 +6,77 @@
 
 package org.readium.navigator.web.fixed
 
+import androidx.compose.foundation.pager.PagerState
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.unit.Velocity
 import kotlin.math.abs
-import org.readium.navigator.web.webview.RelaxedWebView
+import org.readium.navigator.web.gestures.Fling2DBehavior
 import org.readium.navigator.web.webview.WebViewScrollable2DState
 
 internal class SpreadNestedScrollConnection(
+    private val spreadIndex: Int,
+    private val pagerState: PagerState,
     private val webviewState: WebViewScrollable2DState,
+    private val scrollController: SpreadScrollState,
+    private var flingBehavior: Fling2DBehavior,
 ) : NestedScrollConnection {
 
-    override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
+    var consumedHere: Boolean = false
+
+    override fun onPostScroll(
+        consumed: Offset,
+        available: Offset,
+        source: NestedScrollSource,
+    ): Offset {
         if (source != NestedScrollSource.UserInput) {
             return Offset.Zero
         }
 
-        val webViewNow = webviewState.webView ?: return Offset.Zero
-
-        // For some reason, scrollX can vary by 1 or 2 pixels without any call to scrollTo.
-        val webViewCannotScrollHorizontally =
-            (webViewNow.scrollX < 3 && available.x > 0) ||
-                ((webViewNow.maxScrollX - webViewNow.scrollX) < 3 && available.x < 0)
-
-        if (webViewCannotScrollHorizontally) {
-            snapWebview(webViewNow)
+        if (!pagerShowsOnlyThisSpread()) {
+            // Let the main dispatcher scroll only horizontally.
+            return Offset.Zero
         }
 
-        val isGestureHorizontal =
-            (abs(available.y) / abs(available.x)) < 0.58 // tan(Pi/6)
+        val scrollController = scrollController.scrollController.value
+            ?: return available
 
-        return if (webViewCannotScrollHorizontally && isGestureHorizontal) {
-            // If the gesture is mostly horizontal and the spread has nothing to consume horizontally,
-            // we consume everything vertically.
-            Offset(0f, available.y)
-        } else {
-            Offset.Zero
-        }
+        consumedHere = true
+
+        return -scrollController.scrollBy(-available)
     }
 
-    override suspend fun onPostFling(consumed: Velocity, available: Velocity): Velocity {
-        val webViewNow = webviewState.webView ?: return Velocity.Zero
-        snapWebview(webViewNow)
-        return Velocity.Zero
+    override suspend fun onPostFling(
+        consumed: Velocity,
+        available: Velocity,
+    ): Velocity {
+        var velocityLeft = available
+
+        // The main dispatcher will do a fling in any case. We restrain ourselves from
+        // doing one here if that of the main dispatcher will be significant to prevent
+        // strange visual behaviors.
+        if (consumedHere && pagerShowsOnlyThisSpread()) {
+            webviewState.scroll {
+                velocityLeft = with(flingBehavior) { -performFling(-velocityLeft) }
+            }
+        }
+
+        consumedHere = false
+
+        return Velocity(
+            x = if ((available.x - velocityLeft.x).isNaN()) available.x else available.x - velocityLeft.x,
+            y = if ((available.y - velocityLeft.y).isNaN()) available.y else available.y - velocityLeft.y
+        )
     }
 
-    private fun snapWebview(webview: RelaxedWebView) {
-        if ((webview.maxScrollX - webview.scrollX) < 15) {
-            webview.scrollTo(webview.maxScrollX, webview.scrollY)
-        } else if (webview.scrollX in (0 until 15)) {
-            webview.scrollTo(0, webview.scrollY)
+    private fun pagerShowsOnlyThisSpread(): Boolean {
+        val visiblePages = pagerState.layoutInfo.visiblePagesInfo
+        val otherPages = visiblePages.filter { it.index != spreadIndex }
+        val mostlyThis = otherPages.all { abs(it.offset) > 0.95 * pagerState.layoutInfo.pageSize }
+        if (mostlyThis) {
+            pagerState.requestScrollToPage(spreadIndex)
         }
+        return mostlyThis
     }
 }

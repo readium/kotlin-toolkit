@@ -22,7 +22,11 @@ internal class DelegatingNestedScrollConnection(
     private val scrollDispatcher: ScrollDispatcher,
 ) : NestedScrollConnection {
 
-    override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
+    override fun onPostScroll(
+        consumed: Offset,
+        available: Offset,
+        source: NestedScrollSource,
+    ): Offset {
         if (source == NestedScrollSource.UserInput) {
             scrollDispatcher.onScroll(available)
         }
@@ -30,7 +34,7 @@ internal class DelegatingNestedScrollConnection(
         return available
     }
 
-    override suspend fun onPreFling(available: Velocity): Velocity {
+    override suspend fun onPostFling(consumed: Velocity, available: Velocity): Velocity {
         scrollDispatcher.onFling(available)
         return available
     }

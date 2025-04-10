@@ -36,11 +36,12 @@ import org.readium.navigator.common.NullInputListener
 import org.readium.navigator.common.TapContext
 import org.readium.navigator.common.defaultHyperlinkListener
 import org.readium.navigator.common.defaultInputListener
+import org.readium.navigator.web.gestures.toFling2DBehavior
 import org.readium.navigator.web.location.ReflowableWebLocation
 import org.readium.navigator.web.pager.RenditionPager
+import org.readium.navigator.web.pager.ScrollDispatcherImpl
 import org.readium.navigator.web.reflowable.ReflowablePagingLayoutInfo
 import org.readium.navigator.web.reflowable.ReflowableResource
-import org.readium.navigator.web.reflowable.ReflowableScrollDispatcher
 import org.readium.navigator.web.util.AbsolutePaddingValues
 import org.readium.navigator.web.util.WebViewServer
 import org.readium.r2.navigator.preferences.ReadingProgression
@@ -132,10 +133,10 @@ public fun ReflowableWebRendition(
                 )
             }
             pagingFlingBehavior(pagingLayoutInfo)
-        }
+        }.toFling2DBehavior(orientation)
 
         val scrollDispatcher = remember(state) {
-            ReflowableScrollDispatcher(
+            ScrollDispatcherImpl(
                 pagerState = state.pagerState,
                 resourceStates = state.resourceStates,
                 flingBehavior = flingBehavior,

@@ -10,6 +10,7 @@ package org.readium.navigator.web.fixed
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.pager.PagerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
@@ -34,9 +35,11 @@ import org.readium.r2.shared.util.Url
 
 @Composable
 internal fun SingleViewportSpread(
+    pagerState: PagerState,
     onTap: (TapEvent) -> Unit,
     onLinkActivated: (Url, String) -> Unit,
     state: SingleSpreadState,
+    scrollState: SpreadScrollState,
     backgroundColor: Color,
     reverseScrollDirection: Boolean,
 ) {
@@ -78,7 +81,10 @@ internal fun SingleViewportSpread(
         }
 
         SpreadWebView(
+            spreadIndex = state.index,
+            pagerState = pagerState,
             state = webViewState,
+            spreadScrollState = scrollState,
             client = state.webViewClient,
             onTap = onTap,
             onLinkActivated = { url, outerHtml ->
@@ -95,6 +101,7 @@ internal fun SingleViewportSpread(
 }
 
 internal class SingleSpreadState(
+    val index: Int,
     val htmlData: String,
     val publicationBaseUrl: AbsoluteUrl,
     val webViewClient: WebViewClient,

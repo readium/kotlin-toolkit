@@ -25,6 +25,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.DpOffset
@@ -34,7 +35,8 @@ import org.readium.navigator.common.TapEvent
 import org.readium.navigator.web.css.Layout
 import org.readium.navigator.web.css.RsProperties
 import org.readium.navigator.web.css.UserProperties
-import org.readium.navigator.web.gestures.ConsumingFling2DBehavior
+import org.readium.navigator.web.gestures.NullFling2DBehavior
+import org.readium.navigator.web.gestures.Scrollable2DState
 import org.readium.navigator.web.gestures.scrollable2D
 import org.readium.navigator.web.util.AbsolutePaddingValues
 import org.readium.navigator.web.util.WebViewClient
@@ -46,7 +48,6 @@ import org.readium.navigator.web.webapi.GesturesApi
 import org.readium.navigator.web.webview.RelaxedWebView
 import org.readium.navigator.web.webview.WebView
 import org.readium.navigator.web.webview.WebViewScrollController
-import org.readium.navigator.web.webview.WebViewScrollable2DState
 import org.readium.navigator.web.webview.rememberWebViewState
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.AbsoluteUrl
@@ -98,11 +99,9 @@ internal fun ReflowableResource(
         val contentIsLaidOut =
             remember(webViewState.webView) { mutableStateOf(false) }
 
-        val scrollableState = remember(resourceState) { WebViewScrollable2DState(resourceState.href) }
+        val scrollableState = remember { Scrollable2DState { Offset.Zero } }
 
-        resourceState.scrollableState = scrollableState
-
-        val documentStateApi = remember(webViewState.webView,) {
+        val documentStateApi = remember(webViewState.webView) {
             DocumentStateApi(
                 onScriptsLoadedDelegate = {
                     scriptsLoaded.value = true
@@ -199,7 +198,7 @@ internal fun ReflowableResource(
                     .scrollable2D(
                         enabled = enableScroll,
                         state = scrollableState,
-                        flingBehavior = ConsumingFling2DBehavior(),
+                        flingBehavior = NullFling2DBehavior(),
                         reverseDirection = !reverseLayout,
                         orientation = scrollOrientation.value
                     )
@@ -210,7 +209,6 @@ internal fun ReflowableResource(
                 factory = { RelaxedWebView(it) },
                 client = webViewClient,
                 onCreated = { webview ->
-                    scrollableState.webView = webview
                     webview.settings.javaScriptEnabled = true
                     webview.settings.setSupportZoom(false)
                     webview.settings.builtInZoomControls = false
@@ -232,7 +230,6 @@ internal fun ReflowableResource(
                     }
                 },
                 onDispose = {
-                    scrollableState.webView = null
                     resourceState.scrollController.value = null
                 }
             )

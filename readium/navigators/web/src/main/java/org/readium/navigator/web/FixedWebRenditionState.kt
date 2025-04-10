@@ -65,6 +65,10 @@ public class FixedWebRenditionState internal constructor(
             initialSettings
         )
 
+    private val initialSpread = layoutDelegate.layout.value
+        .spreadIndexForHref(initialLocation.href)
+        ?: 0
+
     internal val hyperlinkProcessor =
         HyperlinkProcessor(publication.container)
 
@@ -92,10 +96,6 @@ public class FixedWebRenditionState internal constructor(
         WebViewClient(webViewServer)
 
     internal val pagerState: PagerState = run {
-        val initialSpread = layoutDelegate.layout.value
-            .spreadIndexForHref(initialLocation.href)
-            ?: 0
-
         PagerState(
             currentPage = initialSpread,
             pageCount = { layoutDelegate.layout.value.spreads.size }

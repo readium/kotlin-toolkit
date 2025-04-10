@@ -4,35 +4,16 @@
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.navigator.web.reflowable
+package org.readium.navigator.web.fixed
 
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.mutableStateOf
 import org.readium.navigator.web.pager.PageScrollState
 import org.readium.navigator.web.webview.WebViewScrollController
-import org.readium.r2.shared.util.Url
 
 @Stable
-internal class ReflowableResourceState(
-    val index: Int,
-    val href: Url,
-    initialProgression: Progression,
-) : PageScrollState {
-
-    var progression: Progression = initialProgression
+internal class SpreadScrollState : PageScrollState {
 
     override val scrollController: MutableState<WebViewScrollController?> = mutableStateOf(null)
-}
-
-internal sealed interface Progression {
-
-    val ratio: Double
-}
-
-internal data class RatioProgression(override val ratio: Double) : Progression
-
-internal data object EndProgression : Progression {
-
-    override val ratio: Double = 1.0
 }

@@ -22,7 +22,11 @@
 
 package org.readium.navigator.web.gestures
 
+import androidx.compose.foundation.gestures.FlingBehavior
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.ScrollScope
 import androidx.compose.runtime.Stable
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.unit.Velocity
 
 /**
@@ -56,6 +60,44 @@ internal class ConsumingFling2DBehavior : Fling2DBehavior {
     override suspend fun Scroll2DScope.performFling(
         initialVelocity: Velocity,
     ): Velocity {
+        return Velocity.Zero
+    }
+}
+
+internal class NullFling2DBehavior : Fling2DBehavior {
+
+    override suspend fun Scroll2DScope.performFling(
+        initialVelocity: Velocity,
+    ): Velocity {
         return initialVelocity
     }
 }
+
+internal fun FlingBehavior.toFling2DBehavior(orientation: Orientation) =
+    object : Fling2DBehavior {
+        override suspend fun Scroll2DScope.performFling(
+            initialVelocity: Velocity,
+        ): Velocity {
+            val scrollScope = object : ScrollScope {
+                override fun scrollBy(pixels: Float): Float =
+                    when (orientation) {
+                        Orientation.Vertical -> scrollBy(Offset(0f, pixels)).y
+                        Orientation.Horizontal -> scrollBy(Offset(pixels, 0f)).x
+                    }
+            }
+
+            val velocity =
+                when (orientation) {
+                    Orientation.Vertical -> initialVelocity.y
+                    Orientation.Horizontal -> initialVelocity.x
+                }
+
+            val remainingVelocity =
+                scrollScope.performFling(velocity)
+
+            return when (orientation) {
+                Orientation.Vertical -> Velocity(0f, remainingVelocity)
+                Orientation.Horizontal -> Velocity(remainingVelocity, 0f)
+            }
+        }
+    }
