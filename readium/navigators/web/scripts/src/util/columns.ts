@@ -1,6 +1,8 @@
 /**
- * Having an odd number of columns when displaying two columns per screen causes snapping and page
- * turning issues. To fix this, we insert a blank virtual column at the end of the resource.
+ * In paginated mode, the width of each resource must be a multiple of the viewport size
+ * for proper snapping.  This may not be automatically the case if the number of
+ * columns in the resource is not a multiple of the number of columns fitting in the viewport.
+ * To fix this, we insert a blank virtual column at the end of the resource.
  */
 export function appendVirtualColumnIfNeeded(wnd: Window) {
   const id = "readium-virtual-page"

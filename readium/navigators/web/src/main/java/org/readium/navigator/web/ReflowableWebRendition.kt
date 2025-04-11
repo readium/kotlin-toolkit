@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.remember
@@ -80,19 +81,16 @@ public fun ReflowableWebRendition(
 
         val coroutineScope = rememberCoroutineScope()
 
-        val paginatedVerticalPadding =
-            when (LocalConfiguration.current.orientation) {
-                Configuration.ORIENTATION_LANDSCAPE -> AbsolutePaddingValues(vertical = 20.dp)
-                else -> AbsolutePaddingValues(vertical = 40.dp)
-            }
-
-        val insetsPaddingValues = windowInsets.asAbsolutePaddingValues()
-
-        val padding =
+        val resourcePadding =
             if (state.layoutDelegate.settings.value.scroll) {
-                insetsPaddingValues
+                AbsolutePaddingValues()
             } else {
-                insetsPaddingValues + paginatedVerticalPadding
+                when (LocalConfiguration.current.orientation) {
+                    Configuration.ORIENTATION_LANDSCAPE ->
+                        AbsolutePaddingValues(vertical = 20.dp)
+                    else ->
+                        AbsolutePaddingValues(vertical = 40.dp)
+                }
             }
 
         val backgroundColor = (
@@ -148,7 +146,7 @@ public fun ReflowableWebRendition(
         scrollDispatcher.pagerOrientation = orientation
 
         RenditionPager(
-            modifier = Modifier,
+            modifier = Modifier.windowInsetsPadding(windowInsets),
             state = state.pagerState,
             scrollDispatcher = scrollDispatcher,
             beyondViewportPageCount = 3,
@@ -166,7 +164,7 @@ public fun ReflowableWebRendition(
                 webViewClient = state.webViewClient,
                 viewportSize = viewportSize.value,
                 backgroundColor = Color(backgroundColor),
-                padding = padding,
+                padding = resourcePadding,
                 reverseLayout = reverseLayout,
                 scroll = state.layoutDelegate.settings.value.scroll,
                 verticalText = state.layoutDelegate.settings.value.verticalText,
@@ -195,17 +193,6 @@ public fun ReflowableWebRendition(
             )
         }
     }
-}
-
-@Composable
-private fun WindowInsets.asAbsolutePaddingValues(): AbsolutePaddingValues {
-    val density = LocalDensity.current
-    val layoutDirection = LocalLayoutDirection.current
-    val top = with(density) { getTop(density).toDp() }
-    val right = with(density) { getRight(density, layoutDirection).toDp() }
-    val bottom = with(density) { getBottom(density).toDp() }
-    val left = with(density) { getLeft(density, layoutDirection).toDp() }
-    return AbsolutePaddingValues(top = top, right = right, bottom = bottom, left = left)
 }
 
 private fun LayoutDirection.toReadingProgression(): ReadingProgression =
