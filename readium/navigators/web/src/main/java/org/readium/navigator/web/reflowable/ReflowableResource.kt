@@ -11,7 +11,6 @@ package org.readium.navigator.web.reflowable
 import android.annotation.SuppressLint
 import android.view.MotionEvent
 import android.view.View
-import android.webkit.WebView
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -48,6 +47,7 @@ import org.readium.navigator.web.webapi.GesturesApi
 import org.readium.navigator.web.webview.RelaxedWebView
 import org.readium.navigator.web.webview.WebView
 import org.readium.navigator.web.webview.WebViewScrollController
+import org.readium.navigator.web.webview.invokeOnReadyToBeDrawn
 import org.readium.navigator.web.webview.rememberWebViewState
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.AbsoluteUrl
@@ -108,23 +108,14 @@ internal fun ReflowableResource(
                 },
                 onDocumentLoadedDelegate = {
                     webViewState.webView?.apply {
-                        post {
-                            postVisualStateCallback(
-                                0,
-                                object : WebView.VisualStateCallback() {
-                                    override fun onComplete(requestId: Long) {
-                                        with(this@apply) {
-                                            val scrollController = WebViewScrollController(this)
-                                            scrollController.scrollToProgression(resourceState.progression.ratio, scrollOrientation.value)
-                                            resourceState.scrollController.value = scrollController
-                                            setOnScrollChangeListener { view, scrollX, scrollY, oldScrollX, oldScrollY ->
-                                                onScrollChanged(scrollController.progression(scrollOrientation.value))
-                                            }
-                                        }
-                                        contentIsLaidOut.value = true
-                                    }
-                                }
-                            )
+                        invokeOnReadyToBeDrawn {
+                            val scrollController = WebViewScrollController(this)
+                            scrollController.scrollToProgression(resourceState.progression.ratio, scrollOrientation.value)
+                            resourceState.scrollController.value = scrollController
+                            setOnScrollChangeListener { view, scrollX, scrollY, oldScrollX, oldScrollY ->
+                                onScrollChanged(scrollController.progression(scrollOrientation.value))
+                            }
+                            contentIsLaidOut.value = true
                         }
                     }
                 },
@@ -180,7 +171,7 @@ internal fun ReflowableResource(
             )
         }
         // Changing font size invalidates the scroll position of the Webview
-        key(layout, scrollOrientation.value, userProperties) {
+        key(layout, scrollOrientation.value) {
             WebView(
                 modifier = Modifier
                     // Detect taps on padding

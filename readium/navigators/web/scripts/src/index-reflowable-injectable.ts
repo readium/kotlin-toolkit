@@ -15,6 +15,7 @@ import {
 import { DocumentBridge } from "./bridge/all-document-bridge"
 import { CssBridge } from "./bridge/reflowable-css-bridge"
 import { GesturesDetector } from "./common/gestures"
+import { appendVirtualColumnIfNeeded } from "./util/columns"
 
 declare global {
   interface Window {
@@ -48,6 +49,7 @@ window.documentState.onScriptsLoaded()
 window.addEventListener("load", (event) => {
   const observer = new ResizeObserver(() => {
     requestAnimationFrame(() => {
+      appendVirtualColumnIfNeeded(window)
       window.documentState.onDocumentResized()
     })
   })

@@ -8,7 +8,6 @@ package org.readium.navigator.web.fixed
 
 import android.annotation.SuppressLint
 import android.view.View
-import android.webkit.WebView
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.runtime.Composable
@@ -34,6 +33,7 @@ import org.readium.navigator.web.webview.WebView
 import org.readium.navigator.web.webview.WebViewScrollController
 import org.readium.navigator.web.webview.WebViewScrollable2DState
 import org.readium.navigator.web.webview.WebViewState
+import org.readium.navigator.web.webview.invokeOnReadyToBeDrawn
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.AbsoluteUrl
 
@@ -64,18 +64,9 @@ internal fun SpreadWebView(
             onScriptsLoadedDelegate = onScriptsLoaded,
             onDocumentLoadedDelegate = {
                 state.webView?.apply {
-                    post {
-                        postVisualStateCallback(
-                            0,
-                            object : WebView.VisualStateCallback() {
-                                override fun onComplete(requestId: Long) {
-                                    with(this@apply) {
-                                        val scrollController = WebViewScrollController(this)
-                                        spreadScrollState.scrollController.value = scrollController
-                                    }
-                                }
-                            }
-                        )
+                    invokeOnReadyToBeDrawn {
+                        val scrollController = WebViewScrollController(this)
+                        spreadScrollState.scrollController.value = scrollController
                     }
                 }
             },
