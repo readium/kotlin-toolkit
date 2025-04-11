@@ -58,7 +58,6 @@ internal class ReflowablePagingLayoutInfo(
             Timber.d("pager $pagerVisible webview $webViewVisible")
 
             val pageSize = pageSize
-
             val firstPage = pagerState.layoutInfo.visiblePagesInfo.first()
             val lastPage = pagerState.layoutInfo.visiblePagesInfo.last()
 
@@ -70,7 +69,11 @@ internal class ReflowablePagingLayoutInfo(
                 Timber.d("visiblePageOffsets if $this")
             } else {
                 val firstScrollController = resourceStates[firstPage.index].scrollController.value!!
-                add(lastPage.offset - pageSize)
+                val lastScrollController = resourceStates[lastPage.index].scrollController.value!!
+                // To get to the left bound, we first need to scroll the last visible page to zero.
+                add(lastPage.offset - pageSize - lastScrollController.scrollX)
+                // To get to the right bound, we first need to scroll the first visible page
+                // as far as possible.
                 add(lastPage.offset + firstScrollController.maxScrollX - firstScrollController.scrollX)
                 Timber.d("visiblePageOffsets else $this")
             }
