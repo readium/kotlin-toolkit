@@ -1,5 +1,5 @@
 /*
- * Readium CSS (v. 2.0.0-alpha.5)
+ * Readium CSS (v. 2.0.0-beta.7)
  * Developers: Jiminy Panoz 
  * Copyright (c) 2017. Readium Foundation. All rights reserved.
  * Use of this source code is governed by a BSD-style license which is detailed in the
@@ -24,14 +24,20 @@
 }
 
 :root{
-  --RS__oldStyleTf:"Iowan Old Style", sitka, "Sitka Text", palatino, "Book Antiqua", "URW Palladio L", p052, serif;
-  --RS__modernTf:athelas, constantia, charter, "Bitstream Charter", cambria, "Georgia Pro", georgia, serif;
-  --RS__sansTf:-ui-sans-serif, -apple-system, system-ui, blinkmacsystemfont, "Segoe UI Variable", "Segoe UI", inter, roboto, "Helvetica Neue", "Arial Nova", "Liberation Sans", arial, sans-serif;
-  --RS__humanistTf:seravek, calibri, "Gill Sans Nova", roboto, ubuntu, "DejaVu Sans", source-sans-pro, sans-serif;
-  --RS__monospaceTf:ui-monospace, "Andale Mono", "Cascadia Code", "Source Code Pro", menlo, consolas, "DejaVu Sans Mono", monospace;
+
+  --RS__monospaceTf:ui-monospace, 'Andale Mono', 'Cascadia Code', 'Source Code Pro', Menlo, Consolas, 'DejaVu Sans Mono', monospace;
+
+  --RS__humanistTf:Seravek, Calibri, 'Gill Sans Nova', Roboto, Ubuntu, 'DejaVu Sans', source-sans-pro, sans-serif;
+
+  --RS__sansTf:-ui-sans-serif, -apple-system, system-ui, BlinkMacSystemFont, 'Segoe UI Variable', 'Segoe UI', Inter, Roboto, 'Helvetica Neue', 'Arial Nova', 'Liberation Sans', Arial, sans-serif;
+
+  --RS__modernTf:Athelas, Constantia, Charter, 'Bitstream Charter', Cambria, 'Georgia Pro', Georgia, serif;
+
+  --RS__oldStyleTf:'Iowan Old Style', Sitka, 'Sitka Text', Palatino, 'Book Antiqua', 'URW Palladio L', P052, serif;
   --RS__baseFontFamily:var(--RS__oldStyleTf);
   --RS__lineHeightCompensation:1;
-  --RS__baseLineHeight:calc((1em + (2ex - 1ch) - ((1rem - 16px) * 0.1667)) * var(--RS__lineHeightCompensation));
+
+  --RS__baseLineHeight:calc(1.5 * var(--RS__lineHeightCompensation));
 }
 
 html{
@@ -188,10 +194,18 @@ math{
 }
 
 :root{
-  --RS__backgroundColor:#FFFFFF;
-  --RS__textColor:#121212;
-  --RS__selectionBackgroundColor:#b4d8fe;
+
   --RS__selectionTextColor:inherit;
+
+  --RS__selectionBackgroundColor:#b4d8fe;
+
+  --RS__visitedColor:#551A8B;
+
+  --RS__linkColor:#0000EE;
+
+  --RS__textColor:#121212;
+
+  --RS__backgroundColor:#FFFFFF;
 }
 
 :root{
