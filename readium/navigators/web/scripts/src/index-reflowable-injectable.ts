@@ -47,13 +47,27 @@ Window.prototype.readiumcss = new CssBridge(window.document)
 window.documentState.onScriptsLoaded()
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 window.addEventListener("load", (event) => {
+  let documentLoadedFired = false
+
   const observer = new ResizeObserver(() => {
     requestAnimationFrame(() => {
       appendVirtualColumnIfNeeded(window)
+
+      const scrollingElement = window.document.scrollingElement
+
+      if (
+        !documentLoadedFired &&
+        (scrollingElement == null ||
+          (scrollingElement.scrollHeight > 0 &&
+            scrollingElement.scrollWidth > 0))
+      ) {
+        console.log(`scrollWidth ${scrollingElement?.scrollWidth}`)
+        window.documentState.onDocumentLoaded()
+        documentLoadedFired = true
+      }
+
       window.documentState.onDocumentResized()
     })
   })
   observer.observe(document.body)
-
-  window.documentState.onDocumentLoaded()
 })

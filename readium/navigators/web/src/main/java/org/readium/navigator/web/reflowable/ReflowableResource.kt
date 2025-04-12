@@ -52,6 +52,7 @@ import org.readium.navigator.web.webview.rememberWebViewState
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Url
+import timber.log.Timber
 
 @SuppressLint("SetJavaScriptEnabled", "ClickableViewAccessibility")
 @Composable
@@ -109,17 +110,28 @@ internal fun ReflowableResource(
                 onDocumentLoadedDelegate = {
                     webViewState.webView?.apply {
                         invokeOnReadyToBeDrawn {
-                            val scrollController = WebViewScrollController(this)
-                            scrollController.scrollToProgression(resourceState.progression.ratio, scrollOrientation.value)
-                            resourceState.scrollController.value = scrollController
-                            setOnScrollChangeListener { view, scrollX, scrollY, oldScrollX, oldScrollY ->
-                                onScrollChanged(scrollController.progression(scrollOrientation.value))
+                            Timber.d("onDocumentLoadedDelegate ${resourceState.index} ${webViewState.webView?.width}")
+                            requestLayout()
+                            addOnLayoutChangeListener { view, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom ->
+                                val scrollController = WebViewScrollController(this)
+                                Timber.d("onLayoutChange ${resourceState.index} prog ${resourceState.progression.ratio} maxScrollX $maxScrollX pageSize ${pagerState.layoutInfo.pageSize}")
+
+                                scrollController.moveToProgression(
+                                    progression = resourceState.progression.ratio,
+                                    scroll = scroll,
+                                    orientation = scrollOrientation.value
+                                )
+                                resourceState.scrollController.value = scrollController
+                                setOnScrollChangeListener { view, scrollX, scrollY, oldScrollX, oldScrollY ->
+                                    onScrollChanged(scrollController.progression(scrollOrientation.value))
+                                }
+                                contentIsLaidOut.value = true
                             }
-                            contentIsLaidOut.value = true
                         }
                     }
                 },
                 onDocumentResizedDelegate = {
+                    Timber.d("onDocumentResized ${resourceState.index} ${webViewState.webView?.width}")
                     onDocumentResized.invoke()
                 }
             )
@@ -137,6 +149,12 @@ internal fun ReflowableResource(
 
         LaunchedEffect(cssApi, rsProperties, userProperties) {
             cssApi?.setProperties(userProperties, rsProperties)
+            resourceState.scrollController.value
+                ?.moveToProgression(
+                    progression = resourceState.progression.ratio,
+                    scroll = scroll,
+                    orientation = scrollOrientation.value
+                )
         }
 
         val gesturesApi = remember(onTap, onLinkActivated) {
@@ -170,8 +188,8 @@ internal fun ReflowableResource(
                 content = {}
             )
         }
-        // Changing font size invalidates the scroll position of the Webview
-        key(layout, scrollOrientation.value) {
+
+        key(layout) {
             WebView(
                 modifier = Modifier
                     // Detect taps on padding
@@ -209,16 +227,15 @@ internal fun ReflowableResource(
                     webview.isVerticalScrollBarEnabled = false
                     webview.isHorizontalScrollBarEnabled = false
                     webview.setLayerType(View.LAYER_TYPE_HARDWARE, null)
-                    if (scrollOrientation.value == Orientation.Horizontal) {
-                        // Prevents vertical scrolling towards blank space.
-                        // See https://github.com/readium/readium-css/issues/158
-                        webview.setOnTouchListener(object : View.OnTouchListener {
-                            @SuppressLint("ClickableViewAccessibility")
-                            override fun onTouch(view: View, event: MotionEvent): Boolean {
-                                return (event.action == MotionEvent.ACTION_MOVE)
-                            }
-                        })
-                    }
+                    // Prevents vertical scrolling towards blank space.
+                    // See https://github.com/readium/readium-css/issues/158
+                    webview.setOnTouchListener(object : View.OnTouchListener {
+                        @SuppressLint("ClickableViewAccessibility")
+                        override fun onTouch(view: View, event: MotionEvent): Boolean {
+                            return scrollOrientation.value == Orientation.Horizontal &&
+                                event.action == MotionEvent.ACTION_MOVE
+                        }
+                    })
                 },
                 onDispose = {
                     resourceState.scrollController.value = null

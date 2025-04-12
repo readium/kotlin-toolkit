@@ -43,4 +43,18 @@ internal class RelaxedWebView(context: Context) : WebView(context) {
 
     val horizontalScrollExtent: Int get() =
         computeHorizontalScrollExtent()
+
+    private var nextLayoutListener: (() -> Unit) = {}
+
+    fun setNextLayoutListener(block: () -> Unit) {
+        nextLayoutListener = block
+    }
+
+    @Suppress("Deprecation")
+    @Deprecated("Deprecated in Java")
+    override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
+        super.onLayout(changed, l, t, r, b)
+        nextLayoutListener.invoke()
+        nextLayoutListener = {}
+    }
 }

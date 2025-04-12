@@ -42,7 +42,6 @@ import org.readium.navigator.web.location.ReflowableWebLocation
 import org.readium.navigator.web.pager.RenditionPager
 import org.readium.navigator.web.pager.ScrollDispatcher
 import org.readium.navigator.web.pager.pagingFlingBehavior
-import org.readium.navigator.web.reflowable.ReflowablePagingLayoutInfo
 import org.readium.navigator.web.reflowable.ReflowableResource
 import org.readium.navigator.web.util.AbsolutePaddingValues
 import org.readium.navigator.web.util.WebViewServer
@@ -104,11 +103,12 @@ public fun ReflowableWebRendition(
 
         // First location update to trigger controller creation.
         // In the future, that should require access to the WebView.
-        state.updateLocation(
-            ReflowableWebLocation(
+        state.initController(
+            initialLocation = ReflowableWebLocation(
                 href = state.publication.readingOrder.items[currentItemIndexState.value].href,
                 progression = state.resourceStates[currentItemIndexState.value].progression.ratio
-            )
+            ),
+            density = LocalDensity.current
         )
 
         val orientation = when {
@@ -117,20 +117,10 @@ public fun ReflowableWebRendition(
             else -> Orientation.Horizontal
         }
 
-        val density = LocalDensity.current
-
         val flingBehavior = if (state.layoutDelegate.settings.value.scroll) {
             ScrollableDefaults.flingBehavior()
         } else {
-            val pagingLayoutInfo = remember(state) {
-                ReflowablePagingLayoutInfo(
-                    pagerState = state.pagerState,
-                    resourceStates = state.resourceStates,
-                    orientation = orientation,
-                    density = density
-                )
-            }
-            pagingFlingBehavior(pagingLayoutInfo)
+            pagingFlingBehavior(state.controller!!.navigationDelegate.pagingLayoutInfo)
         }.toFling2DBehavior(orientation)
 
         val scrollDispatcher = remember(state) {

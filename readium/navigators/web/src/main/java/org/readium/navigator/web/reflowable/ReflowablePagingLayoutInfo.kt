@@ -16,9 +16,11 @@ import timber.log.Timber
 internal class ReflowablePagingLayoutInfo(
     private val pagerState: PagerState,
     private val resourceStates: List<ReflowableResourceState>,
-    override val orientation: Orientation,
     override val density: Density,
 ) : PagingLayoutInfo {
+
+    override val orientation: Orientation =
+        Orientation.Horizontal
 
     override val pageSize: Int get() =
         pagerState.layoutInfo.pageSize
