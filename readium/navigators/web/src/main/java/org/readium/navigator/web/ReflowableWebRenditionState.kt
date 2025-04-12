@@ -31,8 +31,6 @@ import org.readium.navigator.web.location.ReflowableWebGoLocation
 import org.readium.navigator.web.location.ReflowableWebLocation
 import org.readium.navigator.web.pager.PagingLayoutInfo
 import org.readium.navigator.web.preferences.ReflowableWebSettings
-import org.readium.navigator.web.reflowable.EndProgression
-import org.readium.navigator.web.reflowable.RatioProgression
 import org.readium.navigator.web.reflowable.ReflowablePagingLayoutInfo
 import org.readium.navigator.web.reflowable.ReflowableResourceState
 import org.readium.navigator.web.reflowable.ReflowableWebPublication
@@ -72,10 +70,10 @@ public class ReflowableWebRenditionState internal constructor(
             ReflowableResourceState(
                 index = index,
                 href = item.href,
-                initialProgression = when {
-                    index < initialIndex -> EndProgression
-                    index > initialIndex -> RatioProgression(0.0)
-                    else -> RatioProgression(initialLocation.progression ?: 0.0)
+                progression = when {
+                    index < initialIndex -> 1.0
+                    index > initialIndex -> 0.0
+                    else -> initialLocation.progression ?: 0.0
                 }
             )
         }
@@ -226,7 +224,7 @@ internal class ReflowableNavigationDelegate(
 
     internal fun updateLocation(location: ReflowableWebLocation) {
         val index = checkNotNull(readingOrder.indexOfHref(location.href))
-        resourceStates[index].progression = RatioProgression(location.progression)
+        resourceStates[index].progression = location.progression
         locationMutable.value = location
     }
 

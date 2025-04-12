@@ -106,7 +106,7 @@ public fun ReflowableWebRendition(
         state.initController(
             initialLocation = ReflowableWebLocation(
                 href = state.publication.readingOrder.items[currentItemIndexState.value].href,
-                progression = state.resourceStates[currentItemIndexState.value].progression.ratio
+                progression = state.resourceStates[currentItemIndexState.value].progression
             ),
             density = LocalDensity.current
         )

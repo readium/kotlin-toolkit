@@ -114,10 +114,8 @@ internal fun ReflowableResource(
                             requestLayout()
                             addOnLayoutChangeListener { view, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom ->
                                 val scrollController = WebViewScrollController(this)
-                                Timber.d("onLayoutChange ${resourceState.index} prog ${resourceState.progression.ratio} maxScrollX $maxScrollX pageSize ${pagerState.layoutInfo.pageSize}")
-
                                 scrollController.moveToProgression(
-                                    progression = resourceState.progression.ratio,
+                                    progression = resourceState.progression,
                                     scroll = scroll,
                                     orientation = scrollOrientation.value
                                 )
@@ -151,7 +149,7 @@ internal fun ReflowableResource(
             cssApi?.setProperties(userProperties, rsProperties)
             resourceState.scrollController.value
                 ?.moveToProgression(
-                    progression = resourceState.progression.ratio,
+                    progression = resourceState.progression,
                     scroll = scroll,
                     orientation = scrollOrientation.value
                 )

@@ -7,7 +7,6 @@ import androidx.compose.ui.util.fastCoerceAtMost
 import androidx.compose.ui.util.fastRoundToInt
 import kotlin.math.ceil
 import kotlin.math.floor
-import timber.log.Timber
 
 internal class WebViewScrollController(
     private val webView: RelaxedWebView,
@@ -98,7 +97,6 @@ internal class WebViewScrollController(
         scroll: Boolean,
         orientation: Orientation,
     ) {
-        Timber.d("moveToProgression $progression")
         when (scroll) {
             true -> {
                 webView.scrollToProgression(
@@ -109,7 +107,6 @@ internal class WebViewScrollController(
             false -> {
                 webView.scrollToProgression(progression, Orientation.Horizontal)
                 val offset = webView.scrollX % webView.width
-                Timber.d("moveToProgression scrollBy $offset ${webView.scrollX} ${webView.width}")
                 webView.scrollBy(-offset, 0)
             }
         }
