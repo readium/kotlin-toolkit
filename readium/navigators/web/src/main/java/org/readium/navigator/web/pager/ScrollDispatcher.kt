@@ -35,7 +35,7 @@ internal class ScrollDispatcher(
     }
 
     private fun rawScrollBy(available: Float): Float {
-        Timber.Forest.d("scrollBy available $available")
+        Timber.d("scrollBy available $available")
         var deltaLeft = available
 
         val firstPage = pagerState.layoutInfo.visiblePagesInfo.first()
@@ -54,7 +54,7 @@ internal class ScrollDispatcher(
 
         val consumedInFirst = consumeInWebview(firstTargetPage.index, deltaLeft)
         deltaLeft -= consumedInFirst
-        Timber.Forest.d("consumed $consumedInFirst in ${firstTargetPage.index}")
+        Timber.d("consumed $consumedInFirst in ${firstTargetPage.index}")
 
         val availableForPager =
             if (firstPage.index == lastPage.index) {
@@ -81,13 +81,13 @@ internal class ScrollDispatcher(
 
         val consumedInPager = -pagerState.dispatchRawDelta(-availableForPager)
         deltaLeft -= consumedInPager
-        Timber.Forest.d("consumed $consumedInPager in pager")
+        Timber.d("consumed $consumedInPager in pager")
 
         val consumedInSecond = consumeInWebview(secondTargetPage.index, deltaLeft)
         deltaLeft -= consumedInSecond
-        Timber.Forest.d("consumed $consumedInSecond in ${secondTargetPage.index}")
+        Timber.d("consumed $consumedInSecond in ${secondTargetPage.index}")
 
-        Timber.Forest.d("scrollBy left $deltaLeft")
+        Timber.d("scrollBy left $deltaLeft")
 
         return when (deltaLeft) {
             0f -> available
@@ -104,12 +104,12 @@ internal class ScrollDispatcher(
     }
 
     fun onScroll(available: Offset): Offset {
-        Timber.Forest.d("onScroll ${available.x}")
+        Timber.d("onScroll ${available.x}")
         return -scrollBy(-available)
     }
 
     suspend fun onFling(available: Velocity): Velocity {
-        Timber.Forest.d("onFling ${available.x}")
+        Timber.d("onFling ${available.x}")
         var velocityLeft = available
         pagerState.scroll {
             with(flingBehavior) {

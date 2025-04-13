@@ -72,7 +72,7 @@ internal fun ReflowableResource(
     enableScroll: Boolean,
     onTap: (TapEvent) -> Unit,
     onLinkActivated: (Url, String) -> Unit,
-    onScrollChanged: (Double) -> Unit,
+    onProgessionChange: (Double) -> Unit,
     onDocumentResized: () -> Unit,
 ) {
     Box(
@@ -119,7 +119,7 @@ internal fun ReflowableResource(
                             )
                             resourceState.scrollController.value = scrollController
                             setOnScrollChangeListener { view, scrollX, scrollY, oldScrollX, oldScrollY ->
-                                onScrollChanged(scrollController.progression(scrollOrientation.value))
+                                onProgessionChange(scrollController.progression(scrollOrientation.value))
                             }
                             contentIsLaidOut.value = true
                         }

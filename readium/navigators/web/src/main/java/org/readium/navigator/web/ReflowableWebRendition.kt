@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 Readium Foundation. All rights reserved.
+ * Copyright 2025 Readium Foundation. All rights reserved.
  * Use of this source code is governed by the BSD-style license
  * available in the top-level LICENSE file of the project.
  */
@@ -8,7 +8,6 @@ package org.readium.navigator.web
 
 import android.annotation.SuppressLint
 import android.content.res.Configuration
-import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.ScrollableDefaults
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.WindowInsets
@@ -42,8 +41,11 @@ import org.readium.navigator.web.location.ReflowableWebLocation
 import org.readium.navigator.web.pager.RenditionPager
 import org.readium.navigator.web.pager.ScrollDispatcher
 import org.readium.navigator.web.pager.pagingFlingBehavior
+import org.readium.navigator.web.reflowable.ReflowablePagingLayoutInfo
 import org.readium.navigator.web.reflowable.ReflowableResource
+import org.readium.navigator.web.reflowable.ReflowableWebPublication
 import org.readium.navigator.web.util.AbsolutePaddingValues
+import org.readium.navigator.web.util.HyperlinkProcessor
 import org.readium.navigator.web.util.WebViewServer
 import org.readium.r2.navigator.preferences.ReadingProgression
 import org.readium.r2.shared.ExperimentalReadiumApi
@@ -67,13 +69,15 @@ public fun ReflowableWebRendition(
             ?: NullHyperlinkListener(),
 ) {
     BoxWithConstraints(
-        modifier = modifier.fillMaxSize(),
+        modifier = modifier
+            .fillMaxSize()
+            .windowInsetsPadding(windowInsets),
         propagateMinConstraints = true
     ) {
         val viewportSize = rememberUpdatedState(DpSize(maxWidth, maxHeight))
 
         val readingProgression =
-            state.layoutDelegate.settings.value.readingProgression
+            state.layoutDelegate.overflow.value.readingProgression
 
         val reverseLayout =
             LocalLayoutDirection.current.toReadingProgression() != readingProgression
@@ -81,7 +85,7 @@ public fun ReflowableWebRendition(
         val coroutineScope = rememberCoroutineScope()
 
         val resourcePadding =
-            if (state.layoutDelegate.settings.value.scroll) {
+            if (state.layoutDelegate.overflow.value.scroll) {
                 AbsolutePaddingValues()
             } else {
                 when (LocalConfiguration.current.orientation) {
@@ -97,51 +101,53 @@ public fun ReflowableWebRendition(
                 ?: state.layoutDelegate.settings.value.theme.backgroundColor
             )
 
-        val currentItemIndexState = remember { derivedStateOf { state.pagerState.currentPage } }
+        val currentPageState = remember(state) { derivedStateOf { state.pagerState.currentPage } }
 
-        val inputListenerState = rememberUpdatedState(inputListener)
-
-        // First location update to trigger controller creation.
-        // In the future, that should require access to the WebView.
-        state.initController(
-            initialLocation = ReflowableWebLocation(
-                href = state.publication.readingOrder.items[currentItemIndexState.value].href,
-                progression = state.resourceStates[currentItemIndexState.value].progression
-            ),
-            density = LocalDensity.current
-        )
-
-        val orientation = when {
-            state.layoutDelegate.settings.value.verticalText -> Orientation.Horizontal
-            state.layoutDelegate.settings.value.scroll -> Orientation.Vertical
-            else -> Orientation.Horizontal
+        if (state.controller == null) {
+            // Initialize controller. In the future, that should require access to a ready WebView.
+            state.initController(
+                location = ReflowableWebLocation(
+                    href = state.publication.readingOrder.items[currentPageState.value].href,
+                    progression = state.resourceStates[currentPageState.value].progression
+                )
+            )
         }
 
-        val flingBehavior = if (state.layoutDelegate.settings.value.scroll) {
+        val flingBehavior = if (state.layoutDelegate.overflow.value.scroll) {
             ScrollableDefaults.flingBehavior()
         } else {
-            pagingFlingBehavior(state.controller!!.navigationDelegate.pagingLayoutInfo)
-        }.toFling2DBehavior(orientation)
+            pagingFlingBehavior(
+                ReflowablePagingLayoutInfo(
+                    pagerState = state.pagerState,
+                    resourceStates = state.resourceStates,
+                    density = LocalDensity.current
+                )
+            )
+        }.toFling2DBehavior(state.layoutDelegate.orientation)
 
         val scrollDispatcher = remember(state) {
             ScrollDispatcher(
                 pagerState = state.pagerState,
                 resourceStates = state.resourceStates,
                 flingBehavior = flingBehavior,
-                pagerOrientation = orientation,
+                pagerOrientation = state.layoutDelegate.orientation,
             )
         }
 
         scrollDispatcher.flingBehavior = flingBehavior
-        scrollDispatcher.pagerOrientation = orientation
+        scrollDispatcher.pagerOrientation = state.layoutDelegate.orientation
+
+        val inputListenerState = rememberUpdatedState(inputListener)
+
+        val hyperlinkListenerState = rememberUpdatedState(hyperlinkListener)
 
         RenditionPager(
-            modifier = Modifier.windowInsetsPadding(windowInsets),
+            modifier = Modifier,
             state = state.pagerState,
             scrollDispatcher = scrollDispatcher,
             beyondViewportPageCount = 3,
             reverseLayout = reverseLayout,
-            orientation = orientation
+            orientation = state.layoutDelegate.orientation
         ) { index ->
             val readyToScroll = ((index - 2)..(index + 2)).toList()
                 .mapNotNull { state.resourceStates.getOrNull(it) }
@@ -167,12 +173,17 @@ public fun ReflowableWebRendition(
                 },
                 onLinkActivated = { url, outerHtml ->
                     coroutineScope.launch {
-                        onLinkActivated(url, outerHtml, state, hyperlinkListener)
+                        state.hyperlinkProcessor.onLinkActivated(
+                            url = url,
+                            outerHtml = outerHtml,
+                            readingOrder = state.publication.readingOrder,
+                            listener = hyperlinkListenerState.value
+                        )
                     }
                 },
-                onScrollChanged = {
-                    if (index == currentItemIndexState.value) {
-                        val itemHref = state.publication.readingOrder.items[index].href
+                onProgessionChange = {
+                    if (index == currentPageState.value) {
+                        val itemHref = state.publication.readingOrder[index].href
                         val newLocation = ReflowableWebLocation(itemHref, it)
                         state.updateLocation(newLocation)
                     }
@@ -192,15 +203,15 @@ private fun LayoutDirection.toReadingProgression(): ReadingProgression =
     }
 
 @OptIn(ExperimentalReadiumApi::class)
-private suspend fun onLinkActivated(
+private suspend fun HyperlinkProcessor.onLinkActivated(
     url: Url,
     outerHtml: String,
-    state: ReflowableWebRenditionState,
+    readingOrder: ReflowableWebPublication.ReadingOrder,
     listener: HyperlinkListener,
 ) {
-    val location = HyperlinkLocation(url.removeFragment())
-    val isReadingOrder = state.publication.readingOrder.indexOfHref(url.removeFragment()) != null
-    val context = state.computeHyperlinkContext(url, outerHtml)
+    val location = HyperlinkLocation(url.removeFragment(), url.fragment)
+    val isReadingOrder = readingOrder.indexOfHref(url.removeFragment()) != null
+    val context = computeLinkContext(url, outerHtml)
     when {
         isReadingOrder -> listener.onReadingOrderLinkActivated(location, context)
         else -> when (url) {

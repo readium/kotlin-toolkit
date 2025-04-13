@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 Readium Foundation. All rights reserved.
+ * Copyright 2025 Readium Foundation. All rights reserved.
  * Use of this source code is governed by the BSD-style license
  * available in the top-level LICENSE file of the project.
  */
@@ -29,8 +29,8 @@ import org.readium.r2.shared.util.Try
  * These components are meant to work together. Do not mix components from different
  * factory instances.
  */
-@OptIn(InternalReadiumApi::class)
 @ExperimentalReadiumApi
+@OptIn(InternalReadiumApi::class)
 public class ReflowableWebRenditionFactory private constructor(
     private val application: Application,
     private val publication: Publication,
@@ -101,14 +101,17 @@ public class ReflowableWebRenditionFactory private constructor(
         val initialLocation = initialLocation
             ?: ReflowableWebGoLocation(readingOrderItems[0].href)
 
+        val disableSelection = publication.findService(ContentProtectionService::class)
+            ?.isRestricted == true
+
         val state =
             ReflowableWebRenditionState(
                 application = application,
                 publication = renditionPublication,
-                isRestricted = publication.findService(ContentProtectionService::class)?.isRestricted == true,
                 initialSettings = initialSettings,
                 initialLocation = initialLocation,
-                fontFamilyDeclarations = emptyList()
+                fontFamilyDeclarations = emptyList(), // FIXME: pass font family declarations
+                disableSelection = disableSelection
             )
 
         return Try.success(state)

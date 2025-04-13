@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 Readium Foundation. All rights reserved.
+ * Copyright 2025 Readium Foundation. All rights reserved.
  * Use of this source code is governed by the BSD-style license
  * available in the top-level LICENSE file of the project.
  */
@@ -14,9 +14,7 @@ import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.ui.unit.Density
 import org.readium.navigator.common.HyperlinkLocation
-import org.readium.navigator.common.LinkContext
 import org.readium.navigator.common.NavigationController
 import org.readium.navigator.common.Overflow
 import org.readium.navigator.common.OverflowController
@@ -29,9 +27,7 @@ import org.readium.navigator.web.css.buildFontFamilyDeclaration
 import org.readium.navigator.web.css.update
 import org.readium.navigator.web.location.ReflowableWebGoLocation
 import org.readium.navigator.web.location.ReflowableWebLocation
-import org.readium.navigator.web.pager.PagingLayoutInfo
 import org.readium.navigator.web.preferences.ReflowableWebSettings
-import org.readium.navigator.web.reflowable.ReflowablePagingLayoutInfo
 import org.readium.navigator.web.reflowable.ReflowableResourceState
 import org.readium.navigator.web.reflowable.ReflowableWebPublication
 import org.readium.navigator.web.util.HyperlinkProcessor
@@ -47,7 +43,6 @@ import org.readium.r2.navigator.preferences.ReadingProgression
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.util.RelativeUrl
-import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.resource.Resource
 
@@ -56,14 +51,22 @@ import org.readium.r2.shared.util.resource.Resource
 public class ReflowableWebRenditionState internal constructor(
     application: Application,
     internal val publication: ReflowableWebPublication,
-    isRestricted: Boolean,
     initialSettings: ReflowableWebSettings,
-    private val initialLocation: ReflowableWebGoLocation,
+    initialLocation: ReflowableWebGoLocation,
     private val rsProperties: RsProperties = RsProperties(),
     fontFamilyDeclarations: List<FontFamilyDeclaration>,
+    disableSelection: Boolean,
 ) : RenditionState<ReflowableWebRenditionController> {
 
-    private val initialIndex = publication.readingOrder.indexOfHref(initialLocation.href) ?: 0
+    override val controller: ReflowableWebRenditionController? get() =
+        controllerState.value
+
+    private val controllerState: MutableState<ReflowableWebRenditionController?> =
+        mutableStateOf(null)
+
+    private val initialIndex = publication.readingOrder
+        .indexOfHref(initialLocation.href)
+        ?: 0
 
     internal val resourceStates: List<ReflowableResourceState> =
         publication.readingOrder.items.mapIndexed { index, item ->
@@ -77,12 +80,6 @@ public class ReflowableWebRenditionState internal constructor(
                 }
             )
         }
-
-    private val controllerState: MutableState<ReflowableWebRenditionController?> =
-        mutableStateOf(null)
-
-    override val controller: ReflowableWebRenditionController? get() =
-        controllerState.value
 
     internal val layoutDelegate: ReflowableLayoutDelegate =
         ReflowableLayoutDelegate(
@@ -124,7 +121,7 @@ public class ReflowableWebRenditionState internal constructor(
             readiumCss = readiumCss.value,
             injectableScript = RelativeUrl("readium/navigators/web/generated/reflowable-injectable-script.js")!!,
             assetsBaseHref = assetsBaseHref,
-            disableSelection = isRestricted
+            disableSelection = disableSelection
         )
     }
 
@@ -148,58 +145,59 @@ public class ReflowableWebRenditionState internal constructor(
             pageCount = { publication.readingOrder.size }
         )
 
-    internal suspend fun computeHyperlinkContext(originUrl: Url, outerHtml: String): LinkContext? =
-        hyperlinkProcessor.computeLinkContext(originUrl, outerHtml)
-
     private lateinit var navigationDelegate: ReflowableNavigationDelegate
 
-    internal fun initController(initialLocation: ReflowableWebLocation, density: Density) {
-        initControllerIfNeeded(initialLocation, density)
-        updateLocation(initialLocation)
-    }
-
-    internal fun updateLocation(location: ReflowableWebLocation) {
-        navigationDelegate.updateLocation(location)
-    }
-
-    private fun initControllerIfNeeded(location: ReflowableWebLocation, density: Density) {
-        if (controller != null) {
-            return
-        }
-
+    internal fun initController(location: ReflowableWebLocation) {
         navigationDelegate =
             ReflowableNavigationDelegate(
                 publication.readingOrder,
                 resourceStates,
                 pagerState,
-                layoutDelegate.settings,
-                location,
-                density
+                layoutDelegate.overflow,
+                location
             )
         controllerState.value =
             ReflowableWebRenditionController(
                 navigationDelegate,
                 layoutDelegate
             )
+        updateLocation(location)
+    }
+
+    internal fun updateLocation(location: ReflowableWebLocation) {
+        navigationDelegate.updateLocation(location)
     }
 }
 
 @ExperimentalReadiumApi
 @Stable
 public class ReflowableWebRenditionController internal constructor(
-    internal val navigationDelegate: ReflowableNavigationDelegate,
+    navigationDelegate: ReflowableNavigationDelegate,
     layoutDelegate: ReflowableLayoutDelegate,
 ) : NavigationController<ReflowableWebLocation, ReflowableWebGoLocation> by navigationDelegate,
     OverflowController by navigationDelegate,
     SettingsController<ReflowableWebSettings> by layoutDelegate
 
-@OptIn(ExperimentalReadiumApi::class)
+@OptIn(ExperimentalReadiumApi::class, InternalReadiumApi::class)
 internal class ReflowableLayoutDelegate(
     initialSettings: ReflowableWebSettings,
 ) : SettingsController<ReflowableWebSettings> {
 
     override val settings: MutableState<ReflowableWebSettings> =
         mutableStateOf(initialSettings)
+
+    internal val overflow: State<Overflow> = derivedStateOf {
+        with(settings.value) {
+            SimpleOverflow(
+                readingProgression = readingProgression,
+                scroll = scroll,
+                axis = if (scroll && !verticalText) Axis.VERTICAL else Axis.HORIZONTAL
+            )
+        }
+    }
+
+    internal val orientation: Orientation get() =
+        overflow.value.axis.toOrientation()
 }
 
 @OptIn(ExperimentalReadiumApi::class, InternalReadiumApi::class)
@@ -207,20 +205,12 @@ internal class ReflowableNavigationDelegate(
     private val readingOrder: ReflowableWebPublication.ReadingOrder,
     private val resourceStates: List<ReflowableResourceState>,
     private val pagerState: PagerState,
-    private val settings: State<ReflowableWebSettings>,
+    override val overflow: State<Overflow>,
     initialLocation: ReflowableWebLocation,
-    density: Density,
 ) : NavigationController<ReflowableWebLocation, ReflowableWebGoLocation>, OverflowController {
 
     private val locationMutable: MutableState<ReflowableWebLocation> =
         mutableStateOf(initialLocation)
-
-    internal val pagingLayoutInfo: PagingLayoutInfo =
-        ReflowablePagingLayoutInfo(
-            pagerState = pagerState,
-            resourceStates = resourceStates,
-            density = density
-        )
 
     internal fun updateLocation(location: ReflowableWebLocation) {
         val index = checkNotNull(readingOrder.indexOfHref(location.href))
@@ -238,24 +228,15 @@ internal class ReflowableNavigationDelegate(
     override suspend fun goTo(location: ReflowableWebGoLocation) {
         val resourceIndex = readingOrder.indexOfHref(location.href) ?: return
         pagerState.scrollToPage(resourceIndex)
-        val scrollController = resourceStates[resourceIndex].scrollController.value!!
-        location.progression?.let { scrollController.moveToProgression(it) }
+        location.progression?.let { // FIXME: goTo returns before the move has completed.
+            resourceStates[resourceIndex].progression = it
+            resourceStates[resourceIndex].scrollController.value?.moveToProgression(it)
+        }
     }
 
     override suspend fun goTo(location: ReflowableWebLocation) {
         goTo(ReflowableWebGoLocation(location.href, location.progression))
     }
-
-    override val overflow: State<Overflow> =
-        derivedStateOf {
-            with(settings.value) {
-                SimpleOverflow(
-                    readingProgression = readingProgression,
-                    scroll = scroll,
-                    axis = if (scroll && !verticalText) Axis.VERTICAL else Axis.HORIZONTAL
-                )
-            }
-        }
 
     // This information is not available when the WebView has not yet been composed or laid out.
     // We assume that the best UI behavior would be to have a possible forward button disabled
@@ -269,7 +250,7 @@ internal class ReflowableNavigationDelegate(
 
     override val canMoveBackward: Boolean
         get() = pagerState.currentPage > 0 || run {
-            val currentResourceState = resourceStates[pagerState.currentPage]
+            val currentResourceState = resourceStates[0]
             val scrollController = currentResourceState.scrollController.value ?: return false
             return scrollController.canMoveBackward()
         }
@@ -279,7 +260,7 @@ internal class ReflowableNavigationDelegate(
         val scrollController = currentResourceState.scrollController.value ?: return
         if (scrollController.canMoveForward()) {
             scrollController.moveForward()
-        } else {
+        } else if (pagerState.currentPage < readingOrder.items.size - 1) {
             pagerState.scrollToPage(pagerState.currentPage + 1)
         }
     }
@@ -289,42 +270,42 @@ internal class ReflowableNavigationDelegate(
         val scrollController = currentResourceState.scrollController.value ?: return
         if (scrollController.canMoveBackward()) {
             scrollController.moveBackward()
-        } else {
+        } else if (pagerState.currentPage > 0) {
             pagerState.scrollToPage(pagerState.currentPage - 1)
         }
     }
 
     private fun WebViewScrollController.moveForward() =
-        when (settings.value.scroll) {
+        when (overflow.value.scroll) {
             true -> moveBottom()
-            false -> when (settings.value.readingProgression) {
+            false -> when (overflow.value.readingProgression) {
                 ReadingProgression.LTR -> moveRight()
                 ReadingProgression.RTL -> moveLeft()
             }
         }
 
     private fun WebViewScrollController.moveBackward() =
-        when (settings.value.scroll) {
+        when (overflow.value.scroll) {
             true -> moveTop()
-            false -> when (settings.value.readingProgression) {
+            false -> when (overflow.value.readingProgression) {
                 ReadingProgression.LTR -> moveLeft()
                 ReadingProgression.RTL -> moveRight()
             }
         }
 
     private fun WebViewScrollController.canMoveForward(): Boolean =
-        when (settings.value.scroll) {
+        when (overflow.value.scroll) {
             true -> canMoveBottom
-            false -> when (settings.value.readingProgression) {
+            false -> when (overflow.value.readingProgression) {
                 ReadingProgression.LTR -> canMoveRight
                 ReadingProgression.RTL -> canMoveLeft
             }
         }
 
     private fun WebViewScrollController.canMoveBackward(): Boolean =
-        when (settings.value.scroll) {
+        when (overflow.value.scroll) {
             true -> canMoveTop
-            false -> when (settings.value.readingProgression) {
+            false -> when (overflow.value.readingProgression) {
                 ReadingProgression.LTR -> canMoveLeft
                 ReadingProgression.RTL -> canMoveRight
             }
@@ -332,11 +313,13 @@ internal class ReflowableNavigationDelegate(
     private fun WebViewScrollController.moveToProgression(progression: Double) {
         moveToProgression(
             progression = progression,
-            scroll = settings.value.scroll,
-            orientation = when (settings.value.verticalText) {
-                true -> Orientation.Vertical
-                false -> Orientation.Horizontal
-            }
+            scroll = overflow.value.scroll,
+            orientation = overflow.value.axis.toOrientation()
         )
     }
+}
+
+private fun Axis.toOrientation() = when (this) {
+    Axis.HORIZONTAL -> Orientation.Horizontal
+    Axis.VERTICAL -> Orientation.Vertical
 }
