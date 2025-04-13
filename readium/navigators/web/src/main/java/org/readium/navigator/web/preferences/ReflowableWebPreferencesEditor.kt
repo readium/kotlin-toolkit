@@ -11,7 +11,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import org.readium.navigator.common.PreferencesEditor
-import org.readium.navigator.web.css.Layout
+import org.readium.navigator.web.css.ReadiumCssLayout
 import org.readium.r2.navigator.extensions.format
 import org.readium.r2.navigator.preferences.Color
 import org.readium.r2.navigator.preferences.DoubleIncrement
@@ -53,7 +53,7 @@ public class ReflowableWebPreferencesEditor internal constructor(
     private data class State(
         val preferences: ReflowableWebPreferences,
         val settings: ReflowableWebSettings,
-        val layout: Layout,
+        val layout: ReadiumCssLayout,
     )
 
     private val settingsResolver: ReflowableWebSettingsResolver =
@@ -162,7 +162,7 @@ public class ReflowableWebPreferencesEditor internal constructor(
                 state.settings.hyphens
                     ?: (state.settings.textAlign == TextAlign.JUSTIFY)
             },
-            getIsEffective = { state.layout.stylesheets == Layout.Stylesheets.Default },
+            getIsEffective = { state.layout.stylesheets == ReadiumCssLayout.Stylesheets.Default },
             updateValue = { value -> updateValues { it.copy(hyphens = value) } }
         )
 
@@ -202,7 +202,7 @@ public class ReflowableWebPreferencesEditor internal constructor(
         RangePreferenceDelegate(
             getValue = { preferences.letterSpacing },
             getEffectiveValue = { state.settings.letterSpacing ?: 0.0 },
-            getIsEffective = { state.layout.stylesheets == Layout.Stylesheets.Default },
+            getIsEffective = { state.layout.stylesheets == ReadiumCssLayout.Stylesheets.Default },
             updateValue = { value -> updateValues { it.copy(letterSpacing = value) } },
             supportedRange = 0.0..1.0,
             progressionStrategy = DoubleIncrement(0.1),
@@ -218,7 +218,7 @@ public class ReflowableWebPreferencesEditor internal constructor(
         PreferenceDelegate(
             getValue = { preferences.ligatures },
             getEffectiveValue = { state.settings.ligatures == true },
-            getIsEffective = { state.layout.stylesheets == Layout.Stylesheets.Rtl },
+            getIsEffective = { state.layout.stylesheets == ReadiumCssLayout.Stylesheets.Rtl },
             updateValue = { value -> updateValues { it.copy(ligatures = value) } }
         )
 
@@ -388,7 +388,7 @@ public class ReflowableWebPreferencesEditor internal constructor(
         RangePreferenceDelegate(
             getValue = { preferences.wordSpacing },
             getEffectiveValue = { state.settings.wordSpacing ?: 0.0 },
-            getIsEffective = { state.layout.stylesheets == Layout.Stylesheets.Default },
+            getIsEffective = { state.layout.stylesheets == ReadiumCssLayout.Stylesheets.Default },
             updateValue = { value -> updateValues { it.copy(wordSpacing = value) } },
             supportedRange = 0.0..1.0,
             progressionStrategy = DoubleIncrement(0.1),
@@ -405,18 +405,18 @@ public class ReflowableWebPreferencesEditor internal constructor(
 
     private fun ReflowableWebPreferences.toState(): State {
         val settings = settingsResolver.settings(this)
-        val layout = Layout.from(settings)
+        val readiumCssLayout = ReadiumCssLayout.from(settings)
 
         return State(
             preferences = this,
             settings = settings,
-            layout = layout
+            layout = readiumCssLayout
         )
     }
 
     private fun isParagraphIndentEffective() =
-        state.layout.stylesheets in listOf(Layout.Stylesheets.Default, Layout.Stylesheets.Rtl)
+        state.layout.stylesheets in listOf(ReadiumCssLayout.Stylesheets.Default, ReadiumCssLayout.Stylesheets.Rtl)
 
     private fun isTextAlignEffective() =
-        state.layout.stylesheets in listOf(Layout.Stylesheets.Default, Layout.Stylesheets.Rtl)
+        state.layout.stylesheets in listOf(ReadiumCssLayout.Stylesheets.Default, ReadiumCssLayout.Stylesheets.Rtl)
 }

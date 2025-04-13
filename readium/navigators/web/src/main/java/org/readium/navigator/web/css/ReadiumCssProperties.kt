@@ -18,7 +18,7 @@ import org.readium.r2.shared.util.Either
  * Holds a set of Readium CSS properties applied together.
  */
 @ExperimentalReadiumApi
-public interface Properties : Cssable {
+public interface ReadiumCssProperties : Cssable {
     public fun toCssProperties(): Map<String, String?>
 
     override fun toCss(): String? {
@@ -119,7 +119,7 @@ public data class UserProperties(
     val a11yNormalize: Boolean? = null,
 
     val overrides: Map<String, String?> = emptyMap(),
-) : Properties {
+) : ReadiumCssProperties {
 
     override fun toCssProperties(): Map<String, String?> = buildMap {
         // View mode
@@ -266,7 +266,7 @@ public data class RsProperties(
     val codeFontFamily: List<String>? = null,
 
     val overrides: Map<String, String?> = emptyMap(),
-) : Properties {
+) : ReadiumCssProperties {
 
     override fun toCssProperties(): Map<String, String?> = buildMap {
         // Properties not exposed through RsProperties

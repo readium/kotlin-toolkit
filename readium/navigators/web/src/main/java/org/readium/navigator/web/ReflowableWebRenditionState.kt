@@ -21,7 +21,7 @@ import org.readium.navigator.common.OverflowController
 import org.readium.navigator.common.RenditionState
 import org.readium.navigator.common.SettingsController
 import org.readium.navigator.web.css.FontFamilyDeclaration
-import org.readium.navigator.web.css.ReadiumCss
+import org.readium.navigator.web.css.ReadiumCssInjector
 import org.readium.navigator.web.css.RsProperties
 import org.readium.navigator.web.css.buildFontFamilyDeclaration
 import org.readium.navigator.web.css.update
@@ -89,9 +89,9 @@ public class ReflowableWebRenditionState internal constructor(
     internal val hyperlinkProcessor =
         HyperlinkProcessor(publication.container)
 
-    internal val readiumCss: State<ReadiumCss> =
+    internal val readiumCssInjector: State<ReadiumCssInjector> =
         derivedStateOf {
-            ReadiumCss(
+            ReadiumCssInjector(
                 assetsBaseHref = assetsBaseHref,
                 readiumCssAssets = RelativeUrl("readium/navigators/web/generated/readium-css/")!!,
                 rsProperties = rsProperties,
@@ -118,7 +118,7 @@ public class ReflowableWebRenditionState internal constructor(
     private val htmlInjector: (Resource, MediaType) -> Resource = { resource, mediaType ->
         resource.injectHtmlReflowable(
             charset = mediaType.charset,
-            readiumCss = readiumCss.value,
+            readiumCss = readiumCssInjector.value,
             injectableScript = RelativeUrl("readium/navigators/web/generated/reflowable-injectable-script.js")!!,
             assetsBaseHref = assetsBaseHref,
             disableSelection = disableSelection

@@ -45,42 +45,7 @@ internal data class FontFaceDeclaration(
     val sources: List<FontFaceSource>,
     var fontStyle: FontStyle? = null,
     var fontWeight: Either<FontWeight, ClosedRange<Int>>? = null,
-) {
-
-    fun links(urlNormalizer: (Url) -> Url): List<String> =
-        sources
-            .filter { it.preload }
-            .map {
-                """<link rel="preload" href="${urlNormalizer(it.href)}" as="font" crossorigin="" />"""
-            }
-
-    fun toCss(urlNormalizer: (Url) -> Url): String {
-        val descriptors = buildMap {
-            set("font-family", """"$fontFamily"""")
-
-            val urls = sources.map { urlNormalizer(it.href) }
-            val src = urls.joinToString(", ") { """url("$it")""" }
-            set("src", src)
-
-            fontStyle?.let { set("font-style", it.name.lowercase()) }
-
-            fontWeight?.let {
-                when (it) {
-                    is Either.Left ->
-                        set("font-weight", it.value.value)
-                    is Either.Right ->
-                        set("font-weight", "${it.value.start} ${it.value.endInclusive}")
-                }
-            }
-        }
-
-        val descriptorList = descriptors
-            .map { entry -> "${entry.key}: ${entry.value};" }
-            .joinToString(" ")
-
-        return "@font-face { $descriptorList }"
-    }
-}
+)
 
 /**
  * Represents an individual font file.
@@ -126,7 +91,6 @@ public data class MutableFontFaceDeclaration internal constructor(
     private var fontStyle: FontStyle? = null,
     private var fontWeight: Either<FontWeight, ClosedRange<Int>>? = null,
 ) {
-
     /**
      * Add a source for the font face.
      *

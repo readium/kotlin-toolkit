@@ -27,8 +27,8 @@ import org.readium.r2.shared.util.Either
 import org.readium.r2.shared.util.RelativeUrl
 import org.readium.r2.shared.util.Url
 
-internal data class ReadiumCss(
-    val layout: Layout = Layout(language = null, Layout.Stylesheets.Default, ReadingProgression.LTR),
+internal data class ReadiumCssInjector(
+    val layout: ReadiumCssLayout = ReadiumCssLayout(language = null, ReadiumCssLayout.Stylesheets.Default, ReadingProgression.LTR),
     val rsProperties: RsProperties = RsProperties(),
     val userProperties: UserProperties = UserProperties(),
     val fontFamilyDeclarations: List<FontFamilyDeclaration> = emptyList(),
@@ -205,9 +205,9 @@ internal data class ReadiumCss(
      */
     private fun injectDir(content: StringBuilder) {
         val dir = when (layout.stylesheets.htmlDir) {
-            Layout.HtmlDir.Unspecified -> null
-            Layout.HtmlDir.Ltr -> "ltr"
-            Layout.HtmlDir.Rtl -> "rtl"
+            ReadiumCssLayout.HtmlDir.Unspecified -> null
+            ReadiumCssLayout.HtmlDir.Ltr -> "ltr"
+            ReadiumCssLayout.HtmlDir.Rtl -> "rtl"
         } ?: return
 
         // Removes any dir attributes in html/body.
@@ -271,13 +271,47 @@ internal data class ReadiumCss(
             ) + tag.length + 1
 }
 
+private fun FontFaceDeclaration.links(urlNormalizer: (Url) -> Url): List<String> =
+    sources
+        .filter { it.preload }
+        .map {
+            """<link rel="preload" href="${urlNormalizer(it.href)}" as="font" crossorigin="" />"""
+        }
+
+private fun FontFaceDeclaration.toCss(urlNormalizer: (Url) -> Url): String {
+    val descriptors = buildMap {
+        set("font-family", """"$fontFamily"""")
+
+        val urls = sources.map { urlNormalizer(it.href) }
+        val src = urls.joinToString(", ") { """url("$it")""" }
+        set("src", src)
+
+        fontStyle?.let { set("font-style", it.name.lowercase()) }
+
+        fontWeight?.let {
+            when (it) {
+                is Either.Left ->
+                    set("font-weight", it.value.value)
+                is Either.Right ->
+                    set("font-weight", "${it.value.start} ${it.value.endInclusive}")
+            }
+        }
+    }
+
+    val descriptorList = descriptors
+        .map { entry -> "${entry.key}: ${entry.value};" }
+        .joinToString(" ")
+
+    return "@font-face { $descriptorList }"
+}
+
 private val dirRegex = Regex(
     """(<(?:html|body)[^\>]*)\s+dir=[\"']\w*[\"']""",
     setOf(RegexOption.IGNORE_CASE, RegexOption.MULTILINE)
 )
 
 @OptIn(ExperimentalReadiumApi::class)
-internal fun ReadiumCss.update(settings: ReflowableWebSettings, useReadiumCssFontSize: Boolean): ReadiumCss {
+internal fun ReadiumCssInjector.update(settings: ReflowableWebSettings, useReadiumCssFontSize: Boolean): ReadiumCssInjector {
     fun resolveFontStack(fontFamily: String): List<String> = buildList {
         add(fontFamily)
 
@@ -297,7 +331,7 @@ internal fun ReadiumCss.update(settings: ReflowableWebSettings, useReadiumCssFon
 
     return with(settings) {
         copy(
-            layout = Layout.from(settings),
+            layout = ReadiumCssLayout.from(settings),
             rsProperties = rsProperties.copy(
                 pageGutter = Length.Px((rsProperties.pageGutter?.value ?: 20.0) * horizontalMargins)
             ),

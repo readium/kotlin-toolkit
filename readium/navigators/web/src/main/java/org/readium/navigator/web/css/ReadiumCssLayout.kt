@@ -18,7 +18,7 @@ import org.readium.r2.shared.util.RelativeUrl
  *
  * See https://github.com/readium/readium-css/tree/master/css/dist
  */
-internal data class Layout(
+internal data class ReadiumCssLayout(
     val language: Language? = null,
     val stylesheets: Stylesheets = Stylesheets.Default,
     val readingProgression: ReadingProgression = ReadingProgression.LTR,
@@ -54,7 +54,7 @@ internal data class Layout(
     companion object {
 
         @OptIn(ExperimentalReadiumApi::class)
-        internal fun from(settingsValues: ReflowableWebSettings): Layout {
+        internal fun from(settingsValues: ReflowableWebSettings): ReadiumCssLayout {
             val stylesheets = when {
                 settingsValues.verticalText -> Stylesheets.CjkVertical
                 settingsValues.language?.isCjk == true -> Stylesheets.CjkHorizontal
@@ -62,7 +62,7 @@ internal data class Layout(
                 else -> Stylesheets.Default
             }
 
-            return Layout(
+            return ReadiumCssLayout(
                 language = settingsValues.language,
                 readingProgression = settingsValues.readingProgression,
                 stylesheets = stylesheets

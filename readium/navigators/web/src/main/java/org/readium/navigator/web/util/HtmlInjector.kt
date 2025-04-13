@@ -7,7 +7,7 @@
 package org.readium.navigator.web.util
 
 import java.nio.charset.Charset
-import org.readium.navigator.web.css.ReadiumCss
+import org.readium.navigator.web.css.ReadiumCssInjector
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.RelativeUrl
@@ -51,7 +51,7 @@ internal fun Resource.injectHtml(
 @OptIn(ExperimentalReadiumApi::class)
 internal fun Resource.injectHtmlReflowable(
     charset: Charset?,
-    readiumCss: ReadiumCss,
+    readiumCss: ReadiumCssInjector,
     injectableScript: RelativeUrl,
     assetsBaseHref: AbsoluteUrl,
     disableSelection: Boolean,

@@ -8,7 +8,9 @@ package org.readium.navigator.web
 
 import android.annotation.SuppressLint
 import android.content.res.Configuration
+import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.ScrollableDefaults
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.displayCutout
@@ -21,9 +23,11 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
@@ -34,6 +38,7 @@ import org.readium.navigator.common.InputListener
 import org.readium.navigator.common.NullHyperlinkListener
 import org.readium.navigator.common.NullInputListener
 import org.readium.navigator.common.TapContext
+import org.readium.navigator.common.TapEvent
 import org.readium.navigator.common.defaultHyperlinkListener
 import org.readium.navigator.common.defaultInputListener
 import org.readium.navigator.web.gestures.toFling2DBehavior
@@ -69,9 +74,7 @@ public fun ReflowableWebRendition(
             ?: NullHyperlinkListener(),
 ) {
     BoxWithConstraints(
-        modifier = modifier
-            .fillMaxSize()
-            .windowInsetsPadding(windowInsets),
+        modifier = modifier.fillMaxSize(),
         propagateMinConstraints = true
     ) {
         val viewportSize = rememberUpdatedState(DpSize(maxWidth, maxHeight))
@@ -95,11 +98,6 @@ public fun ReflowableWebRendition(
                         AbsolutePaddingValues(vertical = 40.dp)
                 }
             }
-
-        val backgroundColor = (
-            state.layoutDelegate.settings.value.backgroundColor?.int
-                ?: state.layoutDelegate.settings.value.theme.backgroundColor
-            )
 
         val currentPageState = remember(state) { derivedStateOf { state.pagerState.currentPage } }
 
@@ -137,12 +135,32 @@ public fun ReflowableWebRendition(
         scrollDispatcher.flingBehavior = flingBehavior
         scrollDispatcher.pagerOrientation = state.layoutDelegate.orientation
 
+        val backgroundColor = Color(
+            state.layoutDelegate.settings.value.backgroundColor?.int
+                ?: state.layoutDelegate.settings.value.theme.backgroundColor
+        )
+
         val inputListenerState = rememberUpdatedState(inputListener)
 
         val hyperlinkListenerState = rememberUpdatedState(hyperlinkListener)
 
         RenditionPager(
-            modifier = Modifier,
+            modifier = Modifier
+                // Apply background on padding
+                .background(backgroundColor)
+                // Detect taps on padding
+                .pointerInput(Unit) {
+                    detectTapGestures(
+                        onTap = {
+                            if (it.x >= 0 && it.y >= 0) {
+                                val offset = DpOffset(x = it.x.toDp(), y = it.y.toDp())
+                                val event = TapEvent(offset)
+                                inputListenerState.value.onTap(event, TapContext(viewportSize.value))
+                            }
+                        }
+                    )
+                }
+                .windowInsetsPadding(windowInsets),
             state = state.pagerState,
             scrollDispatcher = scrollDispatcher,
             beyondViewportPageCount = 3,
@@ -158,15 +176,14 @@ public fun ReflowableWebRendition(
                 pagerState = state.pagerState,
                 publicationBaseUrl = WebViewServer.publicationBaseHref,
                 webViewClient = state.webViewClient,
-                viewportSize = viewportSize.value,
-                backgroundColor = Color(backgroundColor),
+                backgroundColor = backgroundColor,
                 padding = resourcePadding,
                 reverseLayout = reverseLayout,
                 scroll = state.layoutDelegate.settings.value.scroll,
-                verticalText = state.layoutDelegate.settings.value.verticalText,
-                rsProperties = state.readiumCss.value.rsProperties,
-                userProperties = state.readiumCss.value.userProperties,
-                layout = state.readiumCss.value.layout,
+                orientation = state.layoutDelegate.orientation,
+                rsProperties = state.readiumCssInjector.value.rsProperties,
+                userProperties = state.readiumCssInjector.value.userProperties,
+                readiumCssLayout = state.readiumCssInjector.value.layout,
                 enableScroll = readyToScroll,
                 onTap = { tapEvent ->
                     inputListenerState.value.onTap(tapEvent, TapContext(viewportSize.value))
@@ -181,7 +198,7 @@ public fun ReflowableWebRendition(
                         )
                     }
                 },
-                onProgessionChange = {
+                onProgressionChange = {
                     if (index == currentPageState.value) {
                         val itemHref = state.publication.readingOrder[index].href
                         val newLocation = ReflowableWebLocation(itemHref, it)

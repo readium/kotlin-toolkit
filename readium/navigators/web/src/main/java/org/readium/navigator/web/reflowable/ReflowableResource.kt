@@ -13,7 +13,6 @@ import android.view.MotionEvent
 import android.view.View
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.Orientation
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.pager.PagerState
@@ -26,12 +25,10 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.DpOffset
-import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.zIndex
 import org.readium.navigator.common.TapEvent
-import org.readium.navigator.web.css.Layout
+import org.readium.navigator.web.css.ReadiumCssLayout
 import org.readium.navigator.web.css.RsProperties
 import org.readium.navigator.web.css.UserProperties
 import org.readium.navigator.web.gestures.NullFling2DBehavior
@@ -51,7 +48,6 @@ import org.readium.navigator.web.webview.rememberWebViewState
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Url
-import timber.log.Timber
 
 @SuppressLint("SetJavaScriptEnabled", "ClickableViewAccessibility")
 @Composable
@@ -60,19 +56,18 @@ internal fun ReflowableResource(
     pagerState: PagerState,
     publicationBaseUrl: AbsoluteUrl,
     webViewClient: WebViewClient,
-    viewportSize: DpSize,
     backgroundColor: Color,
     padding: AbsolutePaddingValues,
     reverseLayout: Boolean,
     scroll: Boolean,
-    verticalText: Boolean,
+    orientation: Orientation,
     userProperties: UserProperties,
     rsProperties: RsProperties,
-    layout: Layout,
+    readiumCssLayout: ReadiumCssLayout,
     enableScroll: Boolean,
     onTap: (TapEvent) -> Unit,
     onLinkActivated: (Url, String) -> Unit,
-    onProgessionChange: (Double) -> Unit,
+    onProgressionChange: (Double) -> Unit,
     onDocumentResized: () -> Unit,
 ) {
     Box(
@@ -84,14 +79,8 @@ internal fun ReflowableResource(
                 url = publicationBaseUrl.resolve(resourceState.href).toString()
             )
 
-        val scrollOrientation =
-            rememberUpdatedState(
-                when {
-                    verticalText -> Orientation.Horizontal
-                    scroll -> Orientation.Vertical
-                    else -> Orientation.Horizontal
-                }
-            )
+        val orientationState =
+            rememberUpdatedState(orientation)
 
         val scriptsLoaded =
             remember(webViewState.webView) { mutableStateOf(false) }
@@ -99,7 +88,8 @@ internal fun ReflowableResource(
         val contentIsLaidOut =
             remember(webViewState.webView) { mutableStateOf(false) }
 
-        val scrollableState = remember { Scrollable2DState { Offset.Zero } }
+        val scrollableState =
+            remember { Scrollable2DState { Offset.Zero } }
 
         val documentStateApi = remember(webViewState.webView) {
             DocumentStateApi(
@@ -108,25 +98,23 @@ internal fun ReflowableResource(
                 },
                 onDocumentLoadedAndSizedDelegate = {
                     webViewState.webView?.apply {
-                        Timber.d("onDocumentLoadedDelegate ${resourceState.index} ${webViewState.webView?.width}")
                         requestLayout()
                         setNextLayoutListener {
                             val scrollController = WebViewScrollController(this)
                             scrollController.moveToProgression(
                                 progression = resourceState.progression,
                                 scroll = scroll,
-                                orientation = scrollOrientation.value
+                                orientation = orientationState.value
                             )
                             resourceState.scrollController.value = scrollController
                             setOnScrollChangeListener { view, scrollX, scrollY, oldScrollX, oldScrollY ->
-                                onProgessionChange(scrollController.progression(scrollOrientation.value))
+                                onProgressionChange(scrollController.progression(orientationState.value))
                             }
                             contentIsLaidOut.value = true
                         }
                     }
                 },
                 onDocumentResizedDelegate = {
-                    Timber.d("onDocumentResized ${resourceState.index} ${webViewState.webView?.width}")
                     onDocumentResized.invoke()
                 }
             )
@@ -178,30 +166,17 @@ internal fun ReflowableResource(
             )
         }
 
-        key(layout) {
+        key(readiumCssLayout) {
             WebView(
                 modifier = Modifier
-                    // Detect taps on padding
-                    .pointerInput(Unit) {
-                        detectTapGestures(
-                            onTap = {
-                                if (it.x >= 0 && it.y >= 0) {
-                                    val offset = DpOffset(x = it.x.toDp(), y = it.y.toDp())
-                                    val event = TapEvent(offset)
-                                    onTap(event)
-                                }
-                            }
-                        )
-                    }
                     .scrollable2D(
                         enabled = enableScroll,
                         state = scrollableState,
                         flingBehavior = NullFling2DBehavior(),
                         reverseDirection = !reverseLayout,
-                        orientation = scrollOrientation.value
+                        orientation = orientationState.value
                     )
                     .fillMaxSize()
-                    .background(backgroundColor)
                     .absolutePadding(padding),
                 state = webViewState,
                 factory = { RelaxedWebView(it) },
@@ -221,7 +196,7 @@ internal fun ReflowableResource(
                     webview.setOnTouchListener(object : View.OnTouchListener {
                         @SuppressLint("ClickableViewAccessibility")
                         override fun onTouch(view: View, event: MotionEvent): Boolean {
-                            return scrollOrientation.value == Orientation.Horizontal &&
+                            return orientationState.value == Orientation.Horizontal &&
                                 event.action == MotionEvent.ACTION_MOVE
                         }
                     })
