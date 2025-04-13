@@ -11,7 +11,7 @@ import android.webkit.WebView
 
 internal class DocumentStateApi(
     private val onScriptsLoadedDelegate: () -> Unit,
-    private val onDocumentLoadedDelegate: () -> Unit,
+    private val onDocumentLoadedAndSizedDelegate: () -> Unit,
     private val onDocumentResizedDelegate: () -> Unit,
 ) {
 
@@ -25,8 +25,8 @@ internal class DocumentStateApi(
     }
 
     @JavascriptInterface
-    fun onDocumentLoaded() {
-        onDocumentLoadedDelegate.invoke()
+    fun onDocumentLoadedAndSized() {
+        onDocumentLoadedAndSizedDelegate.invoke()
     }
 
     @JavascriptInterface

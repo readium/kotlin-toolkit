@@ -62,7 +62,7 @@ internal fun SpreadWebView(
     val documentStateApi = remember(onScriptsLoaded) {
         DocumentStateApi(
             onScriptsLoadedDelegate = onScriptsLoaded,
-            onDocumentLoadedDelegate = {
+            onDocumentLoadedAndSizedDelegate = {
                 state.webView?.apply {
                     invokeOnReadyToBeDrawn {
                         val scrollController = WebViewScrollController(this)

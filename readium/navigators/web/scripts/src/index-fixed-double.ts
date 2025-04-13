@@ -39,5 +39,5 @@ Window.prototype.doubleArea = new FixedDoubleBridge(
 window.documentState.onScriptsLoaded()
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 window.addEventListener("load", (event) => {
-  window.documentState.onDocumentLoaded()
+  window.documentState.onDocumentLoadedAndSized()
 })

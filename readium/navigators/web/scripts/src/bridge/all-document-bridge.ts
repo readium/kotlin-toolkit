@@ -1,5 +1,5 @@
 export interface DocumentBridge {
   onScriptsLoaded: () => void
-  onDocumentLoaded: () => void
+  onDocumentLoadedAndSized: () => void
   onDocumentResized: () => void
 }

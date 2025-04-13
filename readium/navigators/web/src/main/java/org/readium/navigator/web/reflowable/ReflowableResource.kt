@@ -47,7 +47,6 @@ import org.readium.navigator.web.webapi.GesturesApi
 import org.readium.navigator.web.webview.RelaxedWebView
 import org.readium.navigator.web.webview.WebView
 import org.readium.navigator.web.webview.WebViewScrollController
-import org.readium.navigator.web.webview.invokeOnReadyToBeDrawn
 import org.readium.navigator.web.webview.rememberWebViewState
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.AbsoluteUrl
@@ -107,24 +106,22 @@ internal fun ReflowableResource(
                 onScriptsLoadedDelegate = {
                     scriptsLoaded.value = true
                 },
-                onDocumentLoadedDelegate = {
+                onDocumentLoadedAndSizedDelegate = {
                     webViewState.webView?.apply {
-                        invokeOnReadyToBeDrawn {
-                            Timber.d("onDocumentLoadedDelegate ${resourceState.index} ${webViewState.webView?.width}")
-                            requestLayout()
-                            addOnLayoutChangeListener { view, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom ->
-                                val scrollController = WebViewScrollController(this)
-                                scrollController.moveToProgression(
-                                    progression = resourceState.progression,
-                                    scroll = scroll,
-                                    orientation = scrollOrientation.value
-                                )
-                                resourceState.scrollController.value = scrollController
-                                setOnScrollChangeListener { view, scrollX, scrollY, oldScrollX, oldScrollY ->
-                                    onScrollChanged(scrollController.progression(scrollOrientation.value))
-                                }
-                                contentIsLaidOut.value = true
+                        Timber.d("onDocumentLoadedDelegate ${resourceState.index} ${webViewState.webView?.width}")
+                        requestLayout()
+                        setNextLayoutListener {
+                            val scrollController = WebViewScrollController(this)
+                            scrollController.moveToProgression(
+                                progression = resourceState.progression,
+                                scroll = scroll,
+                                orientation = scrollOrientation.value
+                            )
+                            resourceState.scrollController.value = scrollController
+                            setOnScrollChangeListener { view, scrollX, scrollY, oldScrollX, oldScrollY ->
+                                onScrollChanged(scrollController.progression(scrollOrientation.value))
                             }
+                            contentIsLaidOut.value = true
                         }
                     }
                 },
@@ -147,12 +144,6 @@ internal fun ReflowableResource(
 
         LaunchedEffect(cssApi, rsProperties, userProperties) {
             cssApi?.setProperties(userProperties, rsProperties)
-            resourceState.scrollController.value
-                ?.moveToProgression(
-                    progression = resourceState.progression,
-                    scroll = scroll,
-                    orientation = scrollOrientation.value
-                )
         }
 
         val gesturesApi = remember(onTap, onLinkActivated) {

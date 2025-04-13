@@ -58,15 +58,14 @@ window.addEventListener("load", (event) => {
       if (
         !documentLoadedFired &&
         (scrollingElement == null ||
-          (scrollingElement.scrollHeight > 0 &&
-            scrollingElement.scrollWidth > 0))
+          scrollingElement.scrollHeight > 0 ||
+          scrollingElement.scrollWidth > 0)
       ) {
-        console.log(`scrollWidth ${scrollingElement?.scrollWidth}`)
-        window.documentState.onDocumentLoaded()
+        window.documentState.onDocumentLoadedAndSized()
         documentLoadedFired = true
+      } else {
+        window.documentState.onDocumentResized()
       }
-
-      window.documentState.onDocumentResized()
     })
   })
   observer.observe(document.body)
