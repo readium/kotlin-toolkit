@@ -20,7 +20,7 @@ internal class SpreadNestedScrollConnection(
     private val pagerState: PagerState,
     private val webviewState: WebViewScrollable2DState,
     private val scrollController: SpreadScrollState,
-    private var flingBehavior: Fling2DBehavior,
+    internal var flingBehavior: Fling2DBehavior,
 ) : NestedScrollConnection {
 
     var consumedHere: Boolean = false

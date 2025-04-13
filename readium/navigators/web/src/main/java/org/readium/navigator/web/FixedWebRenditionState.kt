@@ -14,7 +14,6 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableStateOf
 import org.readium.navigator.common.HyperlinkLocation
-import org.readium.navigator.common.LinkContext
 import org.readium.navigator.common.NavigationController
 import org.readium.navigator.common.Overflow
 import org.readium.navigator.common.OverflowController
@@ -38,7 +37,6 @@ import org.readium.r2.navigator.preferences.Fit
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.util.RelativeUrl
-import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.resource.Resource
 
@@ -47,7 +45,7 @@ import org.readium.r2.shared.util.resource.Resource
 public class FixedWebRenditionState internal constructor(
     application: Application,
     internal val publication: FixedWebPublication,
-    isRestricted: Boolean,
+    disableSelection: Boolean,
     initialSettings: FixedWebSettings,
     initialLocation: FixedWebGoLocation,
     internal val preloadedData: FixedWebPreloadedData,
@@ -77,7 +75,7 @@ public class FixedWebRenditionState internal constructor(
             charset = mediaType.charset,
             injectableScript = RelativeUrl("readium/navigators/web/generated/fixed-injectable-script.js")!!,
             assetsBaseHref = assetsBaseHref,
-            disableSelection = isRestricted
+            disableSelection = disableSelection
         )
     }
 
@@ -102,12 +100,9 @@ public class FixedWebRenditionState internal constructor(
         )
     }
 
-    internal suspend fun computeHyperlinkContext(originUrl: Url, outerHtml: String): LinkContext? =
-        hyperlinkProcessor.computeLinkContext(originUrl, outerHtml)
-
     private lateinit var navigationDelegate: NavigationDelegate
 
-    internal fun updateLocation(location: FixedWebLocation) {
+    internal fun initController(location: FixedWebLocation) {
         initControllerIfNeeded(location)
         navigationDelegate.updateLocation(location)
     }

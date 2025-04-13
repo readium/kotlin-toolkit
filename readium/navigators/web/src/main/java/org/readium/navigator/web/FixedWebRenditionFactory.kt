@@ -111,11 +111,14 @@ public class FixedWebRenditionFactory private constructor(
         val preloads = preloadData()
             .getOrElse { return Try.failure(it) }
 
+        val disableSelection = publication.findService(ContentProtectionService::class)
+            ?.isRestricted == true
+
         val state =
             FixedWebRenditionState(
                 application = application,
                 publication = renditionPublication,
-                isRestricted = publication.findService(ContentProtectionService::class)?.isRestricted ?: false,
+                disableSelection = disableSelection,
                 initialSettings = initialSettings,
                 initialLocation = initialLocation ?: FixedWebGoLocation(readingOrderItems[0].href),
                 preloadedData = preloads

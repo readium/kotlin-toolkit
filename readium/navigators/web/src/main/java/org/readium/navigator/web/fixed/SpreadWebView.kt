@@ -33,7 +33,6 @@ import org.readium.navigator.web.webview.WebView
 import org.readium.navigator.web.webview.WebViewScrollController
 import org.readium.navigator.web.webview.WebViewScrollable2DState
 import org.readium.navigator.web.webview.WebViewState
-import org.readium.navigator.web.webview.invokeOnReadyToBeDrawn
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.AbsoluteUrl
 
@@ -57,14 +56,25 @@ internal fun SpreadWebView(
     val flingBehavior = Scrollable2DDefaults.flingBehavior()
 
     val spreadNestedScrollConnection =
-        SpreadNestedScrollConnection(spreadIndex, pagerState, scrollableState, spreadScrollState, flingBehavior)
+        remember(spreadIndex, pagerState, scrollableState, spreadScrollState) {
+            SpreadNestedScrollConnection(
+                spreadIndex,
+                pagerState,
+                scrollableState,
+                spreadScrollState,
+                flingBehavior
+            )
+        }
+
+    spreadNestedScrollConnection.flingBehavior = flingBehavior
 
     val documentStateApi = remember(onScriptsLoaded) {
         DocumentStateApi(
             onScriptsLoadedDelegate = onScriptsLoaded,
             onDocumentLoadedAndSizedDelegate = {
                 state.webView?.apply {
-                    invokeOnReadyToBeDrawn {
+                    requestLayout()
+                    setNextLayoutListener {
                         val scrollController = WebViewScrollController(this)
                         spreadScrollState.scrollController.value = scrollController
                     }
@@ -72,6 +82,10 @@ internal fun SpreadWebView(
             },
             onDocumentResizedDelegate = {}
         )
+    }
+
+    LaunchedEffect(state.webView, documentStateApi) {
+        state.webView?.let { documentStateApi.registerOnWebView(it) }
     }
 
     val gesturesApi = remember(onTap) {
@@ -87,8 +101,7 @@ internal fun SpreadWebView(
         GesturesApi(listener)
     }
 
-    LaunchedEffect(state.webView) {
-        state.webView?.let { documentStateApi.registerOnWebView(it) }
+    LaunchedEffect(state.webView, gesturesApi) {
         state.webView?.let { gesturesApi.registerOnWebView(it) }
     }
 

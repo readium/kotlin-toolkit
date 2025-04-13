@@ -62,21 +62,21 @@ internal fun DoubleViewportSpread(
                 ?.let { FixedDoubleApi(it) }
         }
 
-        layoutApi?.let { api ->
-            LaunchedEffect(api) {
+        LaunchedEffect(layoutApi) {
+            if (layoutApi != null) {
                 snapshotFlow {
                     state.fit.value
                 }.onEach {
-                    api.setFit(state.fit.value)
+                    layoutApi.setFit(state.fit.value)
                 }.launchIn(this)
 
                 snapshotFlow {
                     state.displayArea.value
                 }.onEach {
-                    api.setDisplayArea(it)
+                    layoutApi.setDisplayArea(it)
                 }.launchIn(this)
 
-                api.loadSpread(state.spread)
+                layoutApi.loadSpread(state.spread)
             }
         }
 

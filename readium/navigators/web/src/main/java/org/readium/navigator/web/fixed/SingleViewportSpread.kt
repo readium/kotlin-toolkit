@@ -62,21 +62,21 @@ internal fun SingleViewportSpread(
                 ?.let { FixedSingleApi(it) }
         }
 
-        layoutApi?.let { api ->
-            LaunchedEffect(api) {
+        LaunchedEffect(layoutApi) {
+            if (layoutApi != null) {
                 snapshotFlow {
                     state.fit.value
                 }.onEach {
-                    api.setFit(it)
+                    layoutApi.setFit(it)
                 }.launchIn(this)
 
                 snapshotFlow {
                     state.displayArea.value
                 }.onEach {
-                    api.setDisplayArea(it)
+                    layoutApi.setDisplayArea(it)
                 }.launchIn(this)
 
-                api.loadSpread(state.spread)
+                layoutApi.loadSpread(state.spread)
             }
         }
 

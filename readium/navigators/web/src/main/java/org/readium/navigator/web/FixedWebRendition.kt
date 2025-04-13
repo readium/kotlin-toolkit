@@ -35,6 +35,7 @@ import org.readium.navigator.common.defaultInputListener
 import org.readium.navigator.web.fixed.DoubleSpreadState
 import org.readium.navigator.web.fixed.DoubleViewportSpread
 import org.readium.navigator.web.fixed.FixedPagingLayoutInfo
+import org.readium.navigator.web.fixed.FixedWebPublication
 import org.readium.navigator.web.fixed.SingleSpreadState
 import org.readium.navigator.web.fixed.SingleViewportSpread
 import org.readium.navigator.web.fixed.SpreadScrollState
@@ -47,6 +48,7 @@ import org.readium.navigator.web.pager.ScrollDispatcher
 import org.readium.navigator.web.pager.pagingFlingBehavior
 import org.readium.navigator.web.util.AbsolutePaddingValues
 import org.readium.navigator.web.util.DisplayArea
+import org.readium.navigator.web.util.HyperlinkProcessor
 import org.readium.navigator.web.util.WebViewServer
 import org.readium.r2.navigator.preferences.ReadingProgression
 import org.readium.r2.shared.ExperimentalReadiumApi
@@ -77,6 +79,7 @@ public fun FixedWebRendition(
         val viewportSize = rememberUpdatedState(DpSize(maxWidth, maxHeight))
 
         val safeDrawingPadding = windowInsets.asAbsolutePaddingValues()
+
         val displayArea = rememberUpdatedState(DisplayArea(viewportSize.value, safeDrawingPadding))
 
         val readingProgression =
@@ -85,13 +88,12 @@ public fun FixedWebRendition(
         val reverseLayout =
             LocalLayoutDirection.current.toReadingProgression() != readingProgression
 
-        // This is barely needed as location could be computed on the state side without any
-        // data from the layout pass. I keep it so for demonstration purposes of the way the
-        // reflowable navigator could fit the architecture as well.
-        val spreadIndex = state.pagerState.currentPage
-        val itemIndex = state.layoutDelegate.layout.value.pageIndexForSpread(spreadIndex)
-        val itemHref = state.publication.readingOrder[itemIndex].href
-        state.updateLocation(FixedWebLocation(itemHref))
+        if (state.controller == null) {
+            val spreadIndex = state.pagerState.currentPage
+            val itemIndex = state.layoutDelegate.layout.value.pageIndexForSpread(spreadIndex)
+            val itemHref = state.publication.readingOrder[itemIndex].href
+            state.initController(location = FixedWebLocation(itemHref))
+        }
 
         val coroutineScope = rememberCoroutineScope()
 
@@ -157,7 +159,12 @@ public fun FixedWebRendition(
                         onTap = { inputListenerState.value.onTap(it, TapContext(viewportSize.value)) },
                         onLinkActivated = { url, outerHtml ->
                             coroutineScope.launch {
-                                onLinkActivated(url, outerHtml, state, hyperlinkListenerState.value)
+                                state.hyperlinkProcessor.onLinkActivated(
+                                    url = url,
+                                    outerHtml = outerHtml,
+                                    readingOrder = state.publication.readingOrder,
+                                    listener = hyperlinkListenerState.value
+                                )
                             }
                         },
                         state = spreadState,
@@ -184,7 +191,12 @@ public fun FixedWebRendition(
                         onTap = { inputListenerState.value.onTap(it, TapContext(viewportSize.value)) },
                         onLinkActivated = { url, outerHtml ->
                             coroutineScope.launch {
-                                onLinkActivated(url, outerHtml, state, hyperlinkListenerState.value)
+                                state.hyperlinkProcessor.onLinkActivated(
+                                    url = url,
+                                    outerHtml = outerHtml,
+                                    readingOrder = state.publication.readingOrder,
+                                    listener = hyperlinkListenerState.value
+                                )
                             }
                         },
                         state = spreadState,
@@ -216,15 +228,15 @@ private fun LayoutDirection.toReadingProgression(): ReadingProgression =
     }
 
 @OptIn(ExperimentalReadiumApi::class)
-private suspend fun onLinkActivated(
+private suspend fun HyperlinkProcessor.onLinkActivated(
     url: Url,
     outerHtml: String,
-    state: FixedWebRenditionState,
+    readingOrder: FixedWebPublication.ReadingOrder,
     listener: HyperlinkListener,
 ) {
     val location = HyperlinkLocation(url.removeFragment())
-    val isReadingOrder = state.publication.readingOrder.indexOfHref(url.removeFragment()) != null
-    val context = state.computeHyperlinkContext(url, outerHtml)
+    val isReadingOrder = readingOrder.indexOfHref(url.removeFragment()) != null
+    val context = computeLinkContext(url, outerHtml)
     when {
         isReadingOrder -> listener.onReadingOrderLinkActivated(location, context)
         else -> when (url) {

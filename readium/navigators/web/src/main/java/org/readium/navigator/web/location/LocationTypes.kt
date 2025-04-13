@@ -15,10 +15,10 @@ import org.readium.r2.shared.util.Url
 public data class ReflowableWebGoLocation(
     val href: Url,
     val progression: Double? = null,
-    val cssSelector: String? = null,
-    val textBefore: String? = null,
-    val textAfter: String? = null,
-    val position: Int? = null,
+    // val cssSelector: String? = null,
+    // val textBefore: String? = null,
+    // val textAfter: String? = null,
+    // val position: Int? = null
 ) : GoLocation
 
 @ExperimentalReadiumApi
