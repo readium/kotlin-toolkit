@@ -37,12 +37,12 @@
     <string name="readium_a11y_conformance_aaa_descriptive">The publication contains a conformance statement that it meets the EPUB Accessibility and WCAG 2 Level AAA standard</string>
     <string name="readium_a11y_conformance_certifier_compact">The publication was certified by</string>
     <string name="readium_a11y_conformance_certifier_descriptive">The publication was certified by </string>
-    <string name="readium_a11y_conformance_certifier_credentials_compact">The certifier's credential is </string>
-    <string name="readium_a11y_conformance_certifier_credentials_descriptive">The certifier's credential is </string>
+    <string name="readium_a11y_conformance_certifier_credentials_compact">The certifier\'s credential is </string>
+    <string name="readium_a11y_conformance_certifier_credentials_descriptive">The certifier\'s credential is </string>
     <string name="readium_a11y_conformance_details_certification_info_compact">The publication was certified on </string>
     <string name="readium_a11y_conformance_details_certification_info_descriptive">The publication was certified on </string>
-    <string name="readium_a11y_conformance_details_certifier_report_compact">For more information refer to the certifier's report</string>
-    <string name="readium_a11y_conformance_details_certifier_report_descriptive">For more information refer to the certifier's report</string>
+    <string name="readium_a11y_conformance_details_certifier_report_compact">For more information refer to the certifier\'s report</string>
+    <string name="readium_a11y_conformance_details_certifier_report_descriptive">For more information refer to the certifier\'s report</string>
     <string name="readium_a11y_conformance_details_claim_compact">This publication claims to meet</string>
     <string name="readium_a11y_conformance_details_claim_descriptive">This publication claims to meet</string>
     <string name="readium_a11y_conformance_details_epub_accessibility_1_0_compact"> EPUB Accessibility 1.0</string>

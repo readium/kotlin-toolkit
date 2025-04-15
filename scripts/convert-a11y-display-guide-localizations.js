@@ -29,7 +29,7 @@ function convertAndroid(lang, version, keys, keyPrefix, write) {
     let output = `<?xml version="1.0" encoding="utf-8"?>\n<!-- ${disclaimer} -->\n\n<resources>\n`;
     for (const [key, value] of Object.entries(keys)) {
         const sanitizedKey = key.replace(/-/g, '_');
-        output += `    <string name="${keyPrefix}${sanitizedKey}">${value}</string>\n`;
+        output += `    <string name="${keyPrefix}${sanitizedKey}">${value.replace("'", "\\'")}</string>\n`;
     }
     output += '</resources>\n';
 
