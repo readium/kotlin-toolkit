@@ -12,6 +12,7 @@ import org.readium.r2.shared.extensions.toMap
 import org.readium.r2.shared.publication.Accessibility.AccessMode
 import org.readium.r2.shared.publication.Accessibility.Feature
 import org.readium.r2.shared.publication.Accessibility.PrimaryAccessMode
+import org.readium.r2.shared.publication.AccessibilityMetadataDisplayGuide.AdditionalInformation
 import org.readium.r2.shared.publication.AccessibilityMetadataDisplayGuide.Navigation
 import org.readium.r2.shared.publication.AccessibilityMetadataDisplayGuide.RichContent
 import org.readium.r2.shared.publication.AccessibilityMetadataDisplayGuide.StaticStatement
@@ -774,6 +775,114 @@ class AccessibilityMetadataDisplayGuideTest {
             RichContent(transcript = true),
             listOf(S.RICH_CONTENT_TRANSCRIPT)
         )
+    }
+
+    @Test
+    fun `additional information initialization`() {
+        fun test(a11y: Accessibility?, expected: AdditionalInformation) {
+            val publication = publication(accessibility = a11y)
+            val sut = AdditionalInformation(publication)
+            assertEquals(expected, sut)
+        }
+
+        // No additional information metadata
+        test(null, AdditionalInformation())
+        test(Accessibility(), AdditionalInformation())
+
+        // Individual features
+        test(Accessibility(features = setOf(Feature.PAGE_BREAK_MARKERS)), AdditionalInformation(pageBreakMarkers = true))
+        test(Accessibility(features = setOf(Feature.ARIA)), AdditionalInformation(aria = true))
+        test(Accessibility(features = setOf(Feature.AUDIO_DESCRIPTION)), AdditionalInformation(audioDescriptions = true))
+        test(Accessibility(features = setOf(Feature.BRAILLE)), AdditionalInformation(braille = true))
+        test(Accessibility(features = setOf(Feature.RUBY_ANNOTATIONS)), AdditionalInformation(rubyAnnotations = true))
+        test(Accessibility(features = setOf(Feature.FULL_RUBY_ANNOTATIONS)), AdditionalInformation(fullRubyAnnotations = true))
+        test(Accessibility(features = setOf(Feature.HIGH_CONTRAST_AUDIO)), AdditionalInformation(highAudioContrast = true))
+        test(Accessibility(features = setOf(Feature.HIGH_CONTRAST_DISPLAY)), AdditionalInformation(highDisplayContrast = true))
+        test(Accessibility(features = setOf(Feature.LARGE_PRINT)), AdditionalInformation(largePrint = true))
+        test(Accessibility(features = setOf(Feature.SIGN_LANGUAGE)), AdditionalInformation(signLanguage = true))
+        test(Accessibility(features = setOf(Feature.TACTILE_GRAPHIC)), AdditionalInformation(tactileGraphics = true))
+        test(Accessibility(features = setOf(Feature.TACTILE_OBJECT)), AdditionalInformation(tactileObjects = true))
+        test(Accessibility(features = setOf(Feature.TTS_MARKUP)), AdditionalInformation(textToSpeechHinting = true))
+
+        // All features
+        test(
+            Accessibility(features = setOf(
+                Feature.PAGE_BREAK_MARKERS, Feature.ARIA, Feature.AUDIO_DESCRIPTION, Feature.BRAILLE,
+                Feature.RUBY_ANNOTATIONS, Feature.FULL_RUBY_ANNOTATIONS, Feature.HIGH_CONTRAST_AUDIO,
+                Feature.HIGH_CONTRAST_DISPLAY, Feature.LARGE_PRINT, Feature.SIGN_LANGUAGE,
+                Feature.TACTILE_GRAPHIC, Feature.TACTILE_OBJECT, Feature.TTS_MARKUP
+            )),
+            AdditionalInformation(
+                pageBreakMarkers = true, aria = true, audioDescriptions = true, braille = true,
+                rubyAnnotations = true, fullRubyAnnotations = true, highAudioContrast = true,
+                highDisplayContrast = true, largePrint = true, signLanguage = true,
+                tactileGraphics = true, tactileObjects = true, textToSpeechHinting = true
+            )
+        )
+    }
+
+    @Test
+    fun `additional information title`() {
+        assertEquals("Additional accessibility information", AdditionalInformation().localizedTitle(context))
+    }
+
+    @Test
+    fun `additional information should be display if there are some metadata`() {
+        val additionalInfoWithMetadata = AdditionalInformation(pageBreakMarkers = true)
+        assertTrue(additionalInfoWithMetadata.shouldDisplay)
+
+        val additionalInfoWithoutMetadata = AdditionalInformation()
+        assertFalse(additionalInfoWithoutMetadata.shouldDisplay)
+    }
+
+    @Test
+    fun `additional information statements`() {
+        fun test(additionalInfo: AdditionalInformation, expected: List<AccessibilityDisplayString>) {
+            assertEquals(expected, additionalInfo.statements.map { (it as StaticStatement).string })
+        }
+
+        // Test when there are no metadata
+        test(AdditionalInformation(), emptyList())
+
+        // Test when all features are enabled
+        test(
+            AdditionalInformation(
+                pageBreakMarkers = true, aria = true, audioDescriptions = true, braille = true,
+                rubyAnnotations = true, fullRubyAnnotations = true, highAudioContrast = true,
+                highDisplayContrast = true, largePrint = true, signLanguage = true,
+                tactileGraphics = true, tactileObjects = true, textToSpeechHinting = true
+            ),
+            listOf(
+                S.ADDITIONAL_ACCESSIBILITY_INFORMATION_PAGE_BREAKS,
+                S.ADDITIONAL_ACCESSIBILITY_INFORMATION_ARIA,
+                S.ADDITIONAL_ACCESSIBILITY_INFORMATION_AUDIO_DESCRIPTIONS,
+                S.ADDITIONAL_ACCESSIBILITY_INFORMATION_BRAILLE,
+                S.ADDITIONAL_ACCESSIBILITY_INFORMATION_RUBY_ANNOTATIONS,
+                S.ADDITIONAL_ACCESSIBILITY_INFORMATION_FULL_RUBY_ANNOTATIONS,
+                S.ADDITIONAL_ACCESSIBILITY_INFORMATION_HIGH_CONTRAST_BETWEEN_FOREGROUND_AND_BACKGROUND_AUDIO,
+                S.ADDITIONAL_ACCESSIBILITY_INFORMATION_HIGH_CONTRAST_BETWEEN_TEXT_AND_BACKGROUND,
+                S.ADDITIONAL_ACCESSIBILITY_INFORMATION_LARGE_PRINT,
+                S.ADDITIONAL_ACCESSIBILITY_INFORMATION_SIGN_LANGUAGE,
+                S.ADDITIONAL_ACCESSIBILITY_INFORMATION_TACTILE_GRAPHICS,
+                S.ADDITIONAL_ACCESSIBILITY_INFORMATION_TACTILE_OBJECTS,
+                S.ADDITIONAL_ACCESSIBILITY_INFORMATION_TEXT_TO_SPEECH_HINTING
+            )
+        )
+
+        // Test individual features
+        test(AdditionalInformation(pageBreakMarkers = true), listOf(S.ADDITIONAL_ACCESSIBILITY_INFORMATION_PAGE_BREAKS))
+        test(AdditionalInformation(aria = true), listOf(S.ADDITIONAL_ACCESSIBILITY_INFORMATION_ARIA))
+        test(AdditionalInformation(audioDescriptions = true), listOf(S.ADDITIONAL_ACCESSIBILITY_INFORMATION_AUDIO_DESCRIPTIONS))
+        test(AdditionalInformation(braille = true), listOf(S.ADDITIONAL_ACCESSIBILITY_INFORMATION_BRAILLE))
+        test(AdditionalInformation(rubyAnnotations = true), listOf(S.ADDITIONAL_ACCESSIBILITY_INFORMATION_RUBY_ANNOTATIONS))
+        test(AdditionalInformation(fullRubyAnnotations = true), listOf(S.ADDITIONAL_ACCESSIBILITY_INFORMATION_FULL_RUBY_ANNOTATIONS))
+        test(AdditionalInformation(highAudioContrast = true), listOf(S.ADDITIONAL_ACCESSIBILITY_INFORMATION_HIGH_CONTRAST_BETWEEN_FOREGROUND_AND_BACKGROUND_AUDIO))
+        test(AdditionalInformation(highDisplayContrast = true), listOf(S.ADDITIONAL_ACCESSIBILITY_INFORMATION_HIGH_CONTRAST_BETWEEN_TEXT_AND_BACKGROUND))
+        test(AdditionalInformation(largePrint = true), listOf(S.ADDITIONAL_ACCESSIBILITY_INFORMATION_LARGE_PRINT))
+        test(AdditionalInformation(signLanguage = true), listOf(S.ADDITIONAL_ACCESSIBILITY_INFORMATION_SIGN_LANGUAGE))
+        test(AdditionalInformation(tactileGraphics = true), listOf(S.ADDITIONAL_ACCESSIBILITY_INFORMATION_TACTILE_GRAPHICS))
+        test(AdditionalInformation(tactileObjects = true), listOf(S.ADDITIONAL_ACCESSIBILITY_INFORMATION_TACTILE_OBJECTS))
+        test(AdditionalInformation(textToSpeechHinting = true), listOf(S.ADDITIONAL_ACCESSIBILITY_INFORMATION_TEXT_TO_SPEECH_HINTING))
     }
 
     @OptIn(InternalReadiumApi::class)

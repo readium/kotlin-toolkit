@@ -61,7 +61,7 @@ public class AccessibilityMetadataDisplayGuide(
     public val waysOfReading: WaysOfReading,
     public val navigation: Navigation,
     public val richContent: RichContent,
-//    public val additionalInformation: AdditionalInformation,
+    public val additionalInformation: AdditionalInformation,
 //    public val hazards: Hazards,
 //    public val conformance: Conformance,
 //    public val legal: Legal,
@@ -75,7 +75,7 @@ public class AccessibilityMetadataDisplayGuide(
         waysOfReading = WaysOfReading(publication),
         navigation = Navigation(publication),
         richContent = RichContent(publication),
-//        additionalInformation = AdditionalInformation(publication),
+        additionalInformation = AdditionalInformation(publication),
 //        hazards = Hazards(publication),
 //        conformance = Conformance(publication),
 //        legal = Legal(publication),
@@ -90,7 +90,7 @@ public class AccessibilityMetadataDisplayGuide(
             waysOfReading,
             navigation,
             richContent,
-//            additionalInformation,
+            additionalInformation,
 //            hazards,
 //            conformance,
 //            legal,
@@ -384,6 +384,94 @@ public class AccessibilityMetadataDisplayGuide(
                     closedCaptions = features.contains(Feature.CLOSED_CAPTIONS),
                     openCaptions = features.contains(Feature.OPEN_CAPTIONS),
                     transcript = features.contains(Feature.TRANSCRIPT)
+                )
+            }
+        }
+    }
+
+    /**
+     * This section lists additional metadata categories that can help users
+     * better understand the accessibility characteristics of digital
+     * publications. These are for metadata that do not fit into the other
+     * categories or are rarely used in trade publishing.
+     *
+     * @param pageBreakMarkers Page breaks included.
+     * @param aria ARIA roles included.
+     * @param audioDescriptions Audio descriptions.
+     * @param braille Braille.
+     * @param rubyAnnotations Some ruby annotations.
+     * @param fullRubyAnnotations Full ruby annotations
+     * @param highAudioContrast High contrast between foreground and background audio
+     * @param highDisplayContrast High contrast between foreground text and background.
+     * @param largePrint Large print.
+     * @param signLanguage Sign language.
+     * @param tactileGraphics Tactile graphics included.
+     * @param tactileObjects Tactile 3D objects.
+     * @param textToSpeechHinting Text-to-speech hinting provided.
+     */
+    public data class AdditionalInformation(
+        public val pageBreakMarkers: Boolean = false,
+        public val aria: Boolean = false,
+        public val audioDescriptions: Boolean = false,
+        public val braille: Boolean = false,
+        public val rubyAnnotations: Boolean = false,
+        public val fullRubyAnnotations: Boolean = false,
+        public val highAudioContrast: Boolean = false,
+        public val highDisplayContrast: Boolean = false,
+        public val largePrint: Boolean = false,
+        public val signLanguage: Boolean = false,
+        public val tactileGraphics: Boolean = false,
+        public val tactileObjects: Boolean = false,
+        public val textToSpeechHinting: Boolean = false
+    ) : Field {
+
+        /**
+         * Indicates whether no additional information is provided.
+         */
+        public val noMetadata: Boolean
+            get() = !pageBreakMarkers && !aria && !audioDescriptions && !braille &&
+                !rubyAnnotations && !fullRubyAnnotations && !highAudioContrast &&
+                !highDisplayContrast && !largePrint && !signLanguage &&
+                !tactileGraphics && !tactileObjects && !textToSpeechHinting
+
+        override val shouldDisplay: Boolean get() = !noMetadata
+
+        override fun localizedTitle(context: Context): String =
+            context.getString(R.string.readium_a11y_additional_accessibility_information_title)
+
+        override val statements: List<Statement> get() = buildList {
+            if (pageBreakMarkers) add(S.ADDITIONAL_ACCESSIBILITY_INFORMATION_PAGE_BREAKS)
+            if (aria) add(S.ADDITIONAL_ACCESSIBILITY_INFORMATION_ARIA)
+            if (audioDescriptions) add(S.ADDITIONAL_ACCESSIBILITY_INFORMATION_AUDIO_DESCRIPTIONS)
+            if (braille) add(S.ADDITIONAL_ACCESSIBILITY_INFORMATION_BRAILLE)
+            if (rubyAnnotations) add(S.ADDITIONAL_ACCESSIBILITY_INFORMATION_RUBY_ANNOTATIONS)
+            if (fullRubyAnnotations) add(S.ADDITIONAL_ACCESSIBILITY_INFORMATION_FULL_RUBY_ANNOTATIONS)
+            if (highAudioContrast) add(S.ADDITIONAL_ACCESSIBILITY_INFORMATION_HIGH_CONTRAST_BETWEEN_FOREGROUND_AND_BACKGROUND_AUDIO)
+            if (highDisplayContrast) add(S.ADDITIONAL_ACCESSIBILITY_INFORMATION_HIGH_CONTRAST_BETWEEN_TEXT_AND_BACKGROUND)
+            if (largePrint) add(S.ADDITIONAL_ACCESSIBILITY_INFORMATION_LARGE_PRINT)
+            if (signLanguage) add(S.ADDITIONAL_ACCESSIBILITY_INFORMATION_SIGN_LANGUAGE)
+            if (tactileGraphics) add(S.ADDITIONAL_ACCESSIBILITY_INFORMATION_TACTILE_GRAPHICS)
+            if (tactileObjects) add(S.ADDITIONAL_ACCESSIBILITY_INFORMATION_TACTILE_OBJECTS)
+            if (textToSpeechHinting) add(S.ADDITIONAL_ACCESSIBILITY_INFORMATION_TEXT_TO_SPEECH_HINTING)
+        }
+
+        public companion object {
+            public operator fun invoke(publication: Publication): AdditionalInformation {
+                val features = publication.metadata.accessibility?.features ?: emptySet()
+                return AdditionalInformation(
+                    pageBreakMarkers = features.contains(Feature.PAGE_BREAK_MARKERS),
+                    aria = features.contains(Feature.ARIA),
+                    audioDescriptions = features.contains(Feature.AUDIO_DESCRIPTION),
+                    braille = features.contains(Feature.BRAILLE),
+                    rubyAnnotations = features.contains(Feature.RUBY_ANNOTATIONS),
+                    fullRubyAnnotations = features.contains(Feature.FULL_RUBY_ANNOTATIONS),
+                    highAudioContrast = features.contains(Feature.HIGH_CONTRAST_AUDIO),
+                    highDisplayContrast = features.contains(Feature.HIGH_CONTRAST_DISPLAY),
+                    largePrint = features.contains(Feature.LARGE_PRINT),
+                    signLanguage = features.contains(Feature.SIGN_LANGUAGE),
+                    tactileGraphics = features.contains(Feature.TACTILE_GRAPHIC),
+                    tactileObjects = features.contains(Feature.TACTILE_OBJECT),
+                    textToSpeechHinting = features.contains(Feature.TTS_MARKUP)
                 )
             }
         }
