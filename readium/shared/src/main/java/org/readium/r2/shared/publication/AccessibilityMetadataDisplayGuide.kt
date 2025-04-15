@@ -60,7 +60,7 @@ import org.readium.r2.shared.publication.presentation.presentation
 public class AccessibilityMetadataDisplayGuide(
     public val waysOfReading: WaysOfReading,
     public val navigation: Navigation,
-//    public val richContent: RichContent,
+    public val richContent: RichContent,
 //    public val additionalInformation: AdditionalInformation,
 //    public val hazards: Hazards,
 //    public val conformance: Conformance,
@@ -74,7 +74,7 @@ public class AccessibilityMetadataDisplayGuide(
     public constructor(publication: Publication) : this(
         waysOfReading = WaysOfReading(publication),
         navigation = Navigation(publication),
-//        richContent = RichContent(publication),
+        richContent = RichContent(publication),
 //        additionalInformation = AdditionalInformation(publication),
 //        hazards = Hazards(publication),
 //        conformance = Conformance(publication),
@@ -89,7 +89,7 @@ public class AccessibilityMetadataDisplayGuide(
         listOf(
             waysOfReading,
             navigation,
-//            richContent,
+            richContent,
 //            additionalInformation,
 //            hazards,
 //            conformance,
@@ -311,6 +311,83 @@ public class AccessibilityMetadataDisplayGuide(
         }
     }
 
+    /**
+     * Indicates the presence of math, chemical formulas, extended descriptions
+     * for information rich images, e.g., charts, diagrams, figures, graphs, and
+     * whether these are in an accessible format or available in an alternative
+     * form, e.g., whether math and chemical formulas are navigable with
+     * assistive technologies, or whether extended descriptions are available
+     * for information-rich images. In addition, it indicates the presence of
+     * videos and if closed captions, open captions, or transcripts for
+     * prerecorded audio are available.
+     *
+     * https://w3c.github.io/publ-a11y/a11y-meta-display-guide/2.0/guidelines/#rich-content
+     *
+     * @param extendedAltTextDescriptions Information-rich images are described by extended descriptions.
+     * @param mathFormula Text descriptions of math are provided.
+     * @param mathFormulaAsMathML Math formulas in accessible format (MathML).
+     * @param mathFormulaAsLaTeX Math formulas in accessible format (LaTeX).
+     * @param chemicalFormulaAsMathML Chemical formulas in accessible format (MathML).
+     * @param chemicalFormulaAsLaTeX Chemical formulas in accessible format (LaTeX).
+     * @param closedCaptions Videos included in publications have closed captions.
+     * @param openCaptions Videos included in publications have open captions.
+     * @param transcript Transcript(s) provided.
+     */
+    public data class RichContent(
+        public val extendedAltTextDescriptions: Boolean = false,
+        public val mathFormula: Boolean = false,
+        public val mathFormulaAsMathML: Boolean = false,
+        public val mathFormulaAsLaTeX: Boolean = false,
+        public val chemicalFormulaAsMathML: Boolean = false,
+        public val chemicalFormulaAsLaTeX: Boolean = false,
+        public val closedCaptions: Boolean = false,
+        public val openCaptions: Boolean = false,
+        public val transcript: Boolean = false
+    ) : Field {
+
+        /**
+         * Indicates whether no information about rich content is available.
+         */
+        public val noMetadata: Boolean
+            get() = !extendedAltTextDescriptions && !mathFormula && !mathFormulaAsMathML &&
+                !mathFormulaAsLaTeX && !chemicalFormulaAsMathML && !chemicalFormulaAsLaTeX &&
+                !closedCaptions && !openCaptions && !transcript
+
+        override val shouldDisplay: Boolean get() = !noMetadata
+
+        override fun localizedTitle(context: Context): String =
+            context.getString(R.string.readium_a11y_rich_content_title)
+
+        override val statements: List<Statement> get() = buildList {
+            if (extendedAltTextDescriptions) add(S.RICH_CONTENT_EXTENDED)
+            if (mathFormula) add(S.RICH_CONTENT_ACCESSIBLE_MATH_DESCRIBED)
+            if (mathFormulaAsMathML) add(S.RICH_CONTENT_ACCESSIBLE_MATH_AS_MATHML)
+            if (mathFormulaAsLaTeX) add(S.RICH_CONTENT_ACCESSIBLE_MATH_AS_LATEX)
+            if (chemicalFormulaAsMathML) add(S.RICH_CONTENT_ACCESSIBLE_CHEMISTRY_AS_MATHML)
+            if (chemicalFormulaAsLaTeX) add(S.RICH_CONTENT_ACCESSIBLE_CHEMISTRY_AS_LATEX)
+            if (closedCaptions) add(S.RICH_CONTENT_CLOSED_CAPTIONS)
+            if (openCaptions) add(S.RICH_CONTENT_OPEN_CAPTIONS)
+            if (transcript) add(S.RICH_CONTENT_TRANSCRIPT)
+            if (isEmpty()) add(S.RICH_CONTENT_UNKNOWN)
+        }
+
+        public companion object {
+            public operator fun invoke(publication: Publication): RichContent {
+                val features = publication.metadata.accessibility?.features ?: emptySet()
+                return RichContent(
+                    extendedAltTextDescriptions = features.contains(Feature.LONG_DESCRIPTION),
+                    mathFormula = features.contains(Feature.DESCRIBED_MATH),
+                    mathFormulaAsMathML = features.contains(Feature.MATHML),
+                    mathFormulaAsLaTeX = features.contains(Feature.LATEX),
+                    chemicalFormulaAsMathML = features.contains(Feature.MATHML_CHEMISTRY),
+                    chemicalFormulaAsLaTeX = features.contains(Feature.LATEX_CHEMISTRY),
+                    closedCaptions = features.contains(Feature.CLOSED_CAPTIONS),
+                    openCaptions = features.contains(Feature.OPEN_CAPTIONS),
+                    transcript = features.contains(Feature.TRANSCRIPT)
+                )
+            }
+        }
+    }
 
     /**
      * Represents a single accessibility claim, such as "Appearance can be

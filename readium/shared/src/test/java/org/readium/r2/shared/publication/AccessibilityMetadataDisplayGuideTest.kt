@@ -13,6 +13,7 @@ import org.readium.r2.shared.publication.Accessibility.AccessMode
 import org.readium.r2.shared.publication.Accessibility.Feature
 import org.readium.r2.shared.publication.Accessibility.PrimaryAccessMode
 import org.readium.r2.shared.publication.AccessibilityMetadataDisplayGuide.Navigation
+import org.readium.r2.shared.publication.AccessibilityMetadataDisplayGuide.RichContent
 import org.readium.r2.shared.publication.AccessibilityMetadataDisplayGuide.StaticStatement
 import org.readium.r2.shared.publication.AccessibilityMetadataDisplayGuide.WaysOfReading
 import org.readium.r2.shared.publication.epub.EpubLayout
@@ -410,9 +411,7 @@ class AccessibilityMetadataDisplayGuideTest {
                 headings = false,
                 page = false
             ),
-            listOf(
-                S.NAVIGATION_NO_METADATA
-            )
+            listOf(S.NAVIGATION_NO_METADATA)
         )
 
         // Test when all features are enabled
@@ -433,51 +432,347 @@ class AccessibilityMetadataDisplayGuideTest {
 
         // Test individual features
         test(
-            Navigation(
-                tableOfContents = true,
-                index = false,
-                headings = false,
-                page = false
-            ),
-            listOf(
-                S.NAVIGATION_TOC
-            )
+            Navigation(tableOfContents = true),
+            listOf(S.NAVIGATION_TOC)
         )
 
         test(
-            Navigation(
-                tableOfContents = false,
-                index = true,
-                headings = false,
-                page = false
-            ),
-            listOf(
-                S.NAVIGATION_INDEX
-            )
+            Navigation(index = true),
+            listOf(S.NAVIGATION_INDEX)
         )
 
         test(
-            Navigation(
-                tableOfContents = false,
-                index = false,
-                headings = true,
-                page = false
-            ),
-            listOf(
-                S.NAVIGATION_STRUCTURAL
-            )
+            Navigation(headings = true),
+            listOf(S.NAVIGATION_STRUCTURAL)
         )
 
         test(
-            Navigation(
-                tableOfContents = false,
-                index = false,
-                headings = false,
-                page = true
+            Navigation(page = true),
+            listOf(S.NAVIGATION_PAGE_NAVIGATION)
+        )
+    }
+
+    @Test
+    fun `rich content initialization`() {
+        fun test(a11y: Accessibility?, expected: RichContent) {
+            val publication = publication(accessibility = a11y)
+            val sut = RichContent(publication)
+            assertEquals(expected, sut)
+        }
+
+        // No rich content metadata
+        test(
+            null,
+            RichContent(
+                extendedAltTextDescriptions = false,
+                mathFormula = false,
+                mathFormulaAsMathML = false,
+                mathFormulaAsLaTeX = false,
+                chemicalFormulaAsMathML = false,
+                chemicalFormulaAsLaTeX = false,
+                closedCaptions = false,
+                openCaptions = false,
+                transcript = false
+            )
+        )
+        test(
+            Accessibility(),
+            RichContent(
+                extendedAltTextDescriptions = false,
+                mathFormula = false,
+                mathFormulaAsMathML = false,
+                mathFormulaAsLaTeX = false,
+                chemicalFormulaAsMathML = false,
+                chemicalFormulaAsLaTeX = false,
+                closedCaptions = false,
+                openCaptions = false,
+                transcript = false
+            )
+        )
+
+        // Individual features
+        test(
+            Accessibility(features = setOf(Feature.LONG_DESCRIPTION)),
+            RichContent(
+                extendedAltTextDescriptions = true,
+                mathFormula = false,
+                mathFormulaAsMathML = false,
+                mathFormulaAsLaTeX = false,
+                chemicalFormulaAsMathML = false,
+                chemicalFormulaAsLaTeX = false,
+                closedCaptions = false,
+                openCaptions = false,
+                transcript = false
+            )
+        )
+        test(
+            Accessibility(features = setOf(Feature.DESCRIBED_MATH)),
+            RichContent(
+                extendedAltTextDescriptions = false,
+                mathFormula = true,
+                mathFormulaAsMathML = false,
+                mathFormulaAsLaTeX = false,
+                chemicalFormulaAsMathML = false,
+                chemicalFormulaAsLaTeX = false,
+                closedCaptions = false,
+                openCaptions = false,
+                transcript = false
+            )
+        )
+        test(
+            Accessibility(features = setOf(Feature.MATHML)),
+            RichContent(
+                extendedAltTextDescriptions = false,
+                mathFormula = false,
+                mathFormulaAsMathML = true,
+                mathFormulaAsLaTeX = false,
+                chemicalFormulaAsMathML = false,
+                chemicalFormulaAsLaTeX = false,
+                closedCaptions = false,
+                openCaptions = false,
+                transcript = false
+            )
+        )
+        test(
+            Accessibility(features = setOf(Feature.LATEX)),
+            RichContent(
+                extendedAltTextDescriptions = false,
+                mathFormula = false,
+                mathFormulaAsMathML = false,
+                mathFormulaAsLaTeX = true,
+                chemicalFormulaAsMathML = false,
+                chemicalFormulaAsLaTeX = false,
+                closedCaptions = false,
+                openCaptions = false,
+                transcript = false
+            )
+        )
+        test(
+            Accessibility(features = setOf(Feature.MATHML_CHEMISTRY)),
+            RichContent(
+                extendedAltTextDescriptions = false,
+                mathFormula = false,
+                mathFormulaAsMathML = false,
+                mathFormulaAsLaTeX = false,
+                chemicalFormulaAsMathML = true,
+                chemicalFormulaAsLaTeX = false,
+                closedCaptions = false,
+                openCaptions = false,
+                transcript = false
+            )
+        )
+        test(
+            Accessibility(features = setOf(Feature.LATEX_CHEMISTRY)),
+            RichContent(
+                extendedAltTextDescriptions = false,
+                mathFormula = false,
+                mathFormulaAsMathML = false,
+                mathFormulaAsLaTeX = false,
+                chemicalFormulaAsMathML = false,
+                chemicalFormulaAsLaTeX = true,
+                closedCaptions = false,
+                openCaptions = false,
+                transcript = false
+            )
+        )
+        test(
+            Accessibility(features = setOf(Feature.CLOSED_CAPTIONS)),
+            RichContent(
+                extendedAltTextDescriptions = false,
+                mathFormula = false,
+                mathFormulaAsMathML = false,
+                mathFormulaAsLaTeX = false,
+                chemicalFormulaAsMathML = false,
+                chemicalFormulaAsLaTeX = false,
+                closedCaptions = true,
+                openCaptions = false,
+                transcript = false
+            )
+        )
+        test(
+            Accessibility(features = setOf(Feature.OPEN_CAPTIONS)),
+            RichContent(
+                extendedAltTextDescriptions = false,
+                mathFormula = false,
+                mathFormulaAsMathML = false,
+                mathFormulaAsLaTeX = false,
+                chemicalFormulaAsMathML = false,
+                chemicalFormulaAsLaTeX = false,
+                closedCaptions = false,
+                openCaptions = true,
+                transcript = false
+            )
+        )
+        test(
+            Accessibility(features = setOf(Feature.TRANSCRIPT)),
+            RichContent(
+                extendedAltTextDescriptions = false,
+                mathFormula = false,
+                mathFormulaAsMathML = false,
+                mathFormulaAsLaTeX = false,
+                chemicalFormulaAsMathML = false,
+                chemicalFormulaAsLaTeX = false,
+                closedCaptions = false,
+                openCaptions = false,
+                transcript = true
+            )
+        )
+
+        // All features
+        test(
+            Accessibility(
+                features = setOf(
+                    Feature.LONG_DESCRIPTION, Feature.DESCRIBED_MATH, Feature.MATHML, Feature.LATEX,
+                    Feature.MATHML_CHEMISTRY, Feature.LATEX_CHEMISTRY, Feature.CLOSED_CAPTIONS,
+                    Feature.OPEN_CAPTIONS, Feature.TRANSCRIPT
+                )
+            ),
+            RichContent(
+                extendedAltTextDescriptions = true,
+                mathFormula = true,
+                mathFormulaAsMathML = true,
+                mathFormulaAsLaTeX = true,
+                chemicalFormulaAsMathML = true,
+                chemicalFormulaAsLaTeX = true,
+                closedCaptions = true,
+                openCaptions = true,
+                transcript = true
+            )
+        )
+    }
+
+    @Test
+    fun `rich content title`() {
+        assertEquals("Rich content", RichContent().localizedTitle(context))
+    }
+
+    @Test
+    fun `rich content should be displayed if there are some metadata`() {
+        val richContentWithMetadata = RichContent(
+            extendedAltTextDescriptions = true,
+            mathFormula = false,
+            mathFormulaAsMathML = false,
+            mathFormulaAsLaTeX = false,
+            chemicalFormulaAsMathML = false,
+            chemicalFormulaAsLaTeX = false,
+            closedCaptions = false,
+            openCaptions = false,
+            transcript = false
+        )
+        assertTrue(richContentWithMetadata.shouldDisplay)
+
+        val richContentWithoutMetadata = RichContent(
+            extendedAltTextDescriptions = false,
+            mathFormula = false,
+            mathFormulaAsMathML = false,
+            mathFormulaAsLaTeX = false,
+            chemicalFormulaAsMathML = false,
+            chemicalFormulaAsLaTeX = false,
+            closedCaptions = false,
+            openCaptions = false,
+            transcript = false
+        )
+        assertFalse(richContentWithoutMetadata.shouldDisplay)
+    }
+
+    @Test
+    fun `rich content statements`() {
+        fun test(
+            richContent: RichContent,
+            expected: List<AccessibilityDisplayString>
+        ) {
+            assertEquals(
+                expected,
+                richContent.statements.map { (it as StaticStatement).string }
+            )
+        }
+
+        // Test when there are no rich content.
+        test(
+            RichContent(
+                extendedAltTextDescriptions = false,
+                mathFormula = false,
+                mathFormulaAsMathML = false,
+                mathFormulaAsLaTeX = false,
+                chemicalFormulaAsMathML = false,
+                chemicalFormulaAsLaTeX = false,
+                closedCaptions = false,
+                openCaptions = false,
+                transcript = false
+            ),
+            listOf(S.RICH_CONTENT_UNKNOWN)
+        )
+
+        // Test when all features are enabled
+        test(
+            RichContent(
+                extendedAltTextDescriptions = true,
+                mathFormula = true,
+                mathFormulaAsMathML = true,
+                mathFormulaAsLaTeX = true,
+                chemicalFormulaAsMathML = true,
+                chemicalFormulaAsLaTeX = true,
+                closedCaptions = true,
+                openCaptions = true,
+                transcript = true
             ),
             listOf(
-                S.NAVIGATION_PAGE_NAVIGATION
+                S.RICH_CONTENT_EXTENDED,
+                S.RICH_CONTENT_ACCESSIBLE_MATH_DESCRIBED,
+                S.RICH_CONTENT_ACCESSIBLE_MATH_AS_MATHML,
+                S.RICH_CONTENT_ACCESSIBLE_MATH_AS_LATEX,
+                S.RICH_CONTENT_ACCESSIBLE_CHEMISTRY_AS_MATHML,
+                S.RICH_CONTENT_ACCESSIBLE_CHEMISTRY_AS_LATEX,
+                S.RICH_CONTENT_CLOSED_CAPTIONS,
+                S.RICH_CONTENT_OPEN_CAPTIONS,
+                S.RICH_CONTENT_TRANSCRIPT
             )
+        )
+
+        // Test individual features
+        test(
+            RichContent(extendedAltTextDescriptions = true),
+            listOf(S.RICH_CONTENT_EXTENDED)
+        )
+
+        test(
+            RichContent(mathFormula = true),
+            listOf(S.RICH_CONTENT_ACCESSIBLE_MATH_DESCRIBED)
+        )
+
+        test(
+            RichContent(mathFormulaAsMathML = true),
+            listOf(S.RICH_CONTENT_ACCESSIBLE_MATH_AS_MATHML)
+        )
+
+        test(
+            RichContent(mathFormulaAsLaTeX = true),
+            listOf(S.RICH_CONTENT_ACCESSIBLE_MATH_AS_LATEX)
+        )
+
+        test(
+            RichContent(chemicalFormulaAsMathML = true),
+            listOf(S.RICH_CONTENT_ACCESSIBLE_CHEMISTRY_AS_MATHML)
+        )
+
+        test(
+            RichContent(chemicalFormulaAsLaTeX = true),
+            listOf(S.RICH_CONTENT_ACCESSIBLE_CHEMISTRY_AS_LATEX)
+        )
+
+        test(
+            RichContent(closedCaptions = true),
+            listOf(S.RICH_CONTENT_CLOSED_CAPTIONS)
+        )
+
+        test(
+            RichContent(openCaptions = true),
+            listOf(S.RICH_CONTENT_OPEN_CAPTIONS)
+        )
+
+        test(
+            RichContent(transcript = true),
+            listOf(S.RICH_CONTENT_TRANSCRIPT)
         )
     }
 
