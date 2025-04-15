@@ -59,7 +59,7 @@ import org.readium.r2.shared.publication.presentation.presentation
  */
 public class AccessibilityMetadataDisplayGuide(
     public val waysOfReading: WaysOfReading,
-//    public val navigation: Navigation,
+    public val navigation: Navigation,
 //    public val richContent: RichContent,
 //    public val additionalInformation: AdditionalInformation,
 //    public val hazards: Hazards,
@@ -73,7 +73,7 @@ public class AccessibilityMetadataDisplayGuide(
      */
     public constructor(publication: Publication) : this(
         waysOfReading = WaysOfReading(publication),
-//        navigation = Navigation(publication),
+        navigation = Navigation(publication),
 //        richContent = RichContent(publication),
 //        additionalInformation = AdditionalInformation(publication),
 //        hazards = Hazards(publication),
@@ -88,7 +88,7 @@ public class AccessibilityMetadataDisplayGuide(
     public val fields: List<Field> =
         listOf(
             waysOfReading,
-//            navigation,
+            navigation,
 //            richContent,
 //            additionalInformation,
 //            hazards,
@@ -259,6 +259,58 @@ public class AccessibilityMetadataDisplayGuide(
             }
         }
     }
+
+    /**
+     * Identifies the navigation features included in the publication.
+     *
+     * https://w3c.github.io/publ-a11y/a11y-meta-display-guide/2.0/guidelines/#navigation
+     *
+     * @param tableOfContents Table of contents to all chapters of the text via links.
+     * @param index Index with links to referenced entries.
+     * @param headings Elements such as headings, tables, etc for structured navigation.
+     * @param page Page list to go to pages from the print source version.
+     */
+    public data class Navigation(
+        val tableOfContents: Boolean = false,
+        val index: Boolean = false,
+        val headings: Boolean = false,
+        val page: Boolean = false
+    ) : Field {
+
+        /**
+         * Indicates whether no information about navigation features is
+         * available.
+         */
+        public val noMetadata: Boolean
+            get() = !tableOfContents && !index && !headings && !page
+
+        override val shouldDisplay: Boolean get() = !noMetadata
+
+        override fun localizedTitle(context: Context): String =
+            context.getString(R.string.readium_a11y_navigation_title)
+
+        override val statements: List<Statement> get() = buildList {
+            if (tableOfContents) add(S.NAVIGATION_TOC)
+            if (index) add(S.NAVIGATION_INDEX)
+            if (headings) add(S.NAVIGATION_STRUCTURAL)
+            if (page) add(S.NAVIGATION_PAGE_NAVIGATION)
+            if (isEmpty()) add(S.NAVIGATION_NO_METADATA)
+        }
+
+        public companion object {
+            public operator fun invoke(publication: Publication): Navigation {
+                val features = publication.metadata.accessibility?.features ?: emptySet()
+
+                return Navigation(
+                    tableOfContents = features.contains(Feature.TABLE_OF_CONTENTS),
+                    index = features.contains(Feature.INDEX),
+                    headings = features.contains(Feature.STRUCTURAL_NAVIGATION),
+                    page = features.contains(Feature.PAGE_NAVIGATION)
+                )
+            }
+        }
+    }
+
 
     /**
      * Represents a single accessibility claim, such as "Appearance can be

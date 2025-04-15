@@ -2,6 +2,7 @@ package org.readium.r2.shared.publication
 
 import android.content.Context
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -11,6 +12,7 @@ import org.readium.r2.shared.extensions.toMap
 import org.readium.r2.shared.publication.Accessibility.AccessMode
 import org.readium.r2.shared.publication.Accessibility.Feature
 import org.readium.r2.shared.publication.Accessibility.PrimaryAccessMode
+import org.readium.r2.shared.publication.AccessibilityMetadataDisplayGuide.Navigation
 import org.readium.r2.shared.publication.AccessibilityMetadataDisplayGuide.StaticStatement
 import org.readium.r2.shared.publication.AccessibilityMetadataDisplayGuide.WaysOfReading
 import org.readium.r2.shared.publication.epub.EpubLayout
@@ -27,16 +29,25 @@ class AccessibilityMetadataDisplayGuideTest {
 
     @Test
     fun `ways of reading visual adjustments initialization`() {
-        fun test(layout: EpubLayout, a11y: Accessibility?, expected: WaysOfReading.VisualAdjustments) {
+        fun test(
+            layout: EpubLayout,
+            a11y: Accessibility?,
+            expected: WaysOfReading.VisualAdjustments
+        ) {
             val publication = publication(layout = layout, accessibility = a11y)
             val sut = WaysOfReading(publication)
             assertEquals(expected, sut.visualAdjustments)
         }
 
-        val displayTransformability = Accessibility(features = setOf(Feature.DISPLAY_TRANSFORMABILITY))
+        val displayTransformability =
+            Accessibility(features = setOf(Feature.DISPLAY_TRANSFORMABILITY))
 
         test(EpubLayout.REFLOWABLE, null, WaysOfReading.VisualAdjustments.UNKNOWN)
-        test(EpubLayout.REFLOWABLE, displayTransformability, WaysOfReading.VisualAdjustments.MODIFIABLE)
+        test(
+            EpubLayout.REFLOWABLE,
+            displayTransformability,
+            WaysOfReading.VisualAdjustments.MODIFIABLE
+        )
         test(EpubLayout.FIXED, null, WaysOfReading.VisualAdjustments.UNMODIFIABLE)
         test(EpubLayout.FIXED, displayTransformability, WaysOfReading.VisualAdjustments.MODIFIABLE)
     }
@@ -51,7 +62,10 @@ class AccessibilityMetadataDisplayGuideTest {
 
         // No metadata
         test(null, WaysOfReading.NonvisualReading.NO_METADATA)
-        test(Accessibility(accessModes = emptySet(), accessModesSufficient = emptySet()), WaysOfReading.NonvisualReading.NO_METADATA)
+        test(
+            Accessibility(accessModes = emptySet(), accessModesSufficient = emptySet()),
+            WaysOfReading.NonvisualReading.NO_METADATA
+        )
 
         // Readable conditions
         test(
@@ -72,7 +86,14 @@ class AccessibilityMetadataDisplayGuideTest {
             WaysOfReading.NonvisualReading.NOT_FULLY
         )
         test(
-            Accessibility(accessModesSufficient = setOf(setOf(PrimaryAccessMode.TEXTUAL, PrimaryAccessMode.AUDITORY))),
+            Accessibility(
+                accessModesSufficient = setOf(
+                    setOf(
+                        PrimaryAccessMode.TEXTUAL,
+                        PrimaryAccessMode.AUDITORY
+                    )
+                )
+            ),
             WaysOfReading.NonvisualReading.NOT_FULLY
         )
         test(
@@ -174,16 +195,22 @@ class AccessibilityMetadataDisplayGuideTest {
         test(
             Accessibility(
                 accessModes = setOf(AccessMode.TEXTUAL),
-                accessModesSufficient = setOf(setOf(PrimaryAccessMode.AUDITORY), setOf(
-                    PrimaryAccessMode.TEXTUAL))
+                accessModesSufficient = setOf(
+                    setOf(PrimaryAccessMode.AUDITORY), setOf(
+                        PrimaryAccessMode.TEXTUAL
+                    )
+                )
             ),
             WaysOfReading.PrerecordedAudio.AUDIO_ONLY
         )
         test(
             Accessibility(
                 accessModes = setOf(AccessMode.TEXTUAL, AccessMode.AUDITORY),
-                accessModesSufficient = setOf(setOf(PrimaryAccessMode.AUDITORY), setOf(
-                    PrimaryAccessMode.TEXTUAL))
+                accessModesSufficient = setOf(
+                    setOf(PrimaryAccessMode.AUDITORY), setOf(
+                        PrimaryAccessMode.TEXTUAL
+                    )
+                )
             ),
             WaysOfReading.PrerecordedAudio.AUDIO_ONLY
         )
@@ -291,6 +318,165 @@ class AccessibilityMetadataDisplayGuideTest {
                 S.WAYS_OF_READING_VISUAL_ADJUSTMENTS_UNKNOWN,
                 S.WAYS_OF_READING_NONVISUAL_READING_NONE,
                 S.WAYS_OF_READING_PRERECORDED_AUDIO_COMPLEMENTARY
+            )
+        )
+    }
+
+    @Test
+    fun `navigation initialization`() {
+        fun test(a11y: Accessibility?, expected: Navigation) {
+            val publication = publication(accessibility = a11y)
+            val sut = Navigation(publication)
+            assertEquals(expected, sut)
+        }
+
+        // No navigation metadata
+        test(
+            null,
+            Navigation(tableOfContents = false, index = false, headings = false, page = false)
+        )
+        test(
+            Accessibility(),
+            Navigation(tableOfContents = false, index = false, headings = false, page = false)
+        )
+
+        // Individual features
+        test(
+            Accessibility(features = setOf(Feature.TABLE_OF_CONTENTS)),
+            Navigation(tableOfContents = true, index = false, headings = false, page = false)
+        )
+        test(
+            Accessibility(features = setOf(Feature.INDEX)),
+            Navigation(tableOfContents = false, index = true, headings = false, page = false)
+        )
+        test(
+            Accessibility(features = setOf(Feature.STRUCTURAL_NAVIGATION)),
+            Navigation(tableOfContents = false, index = false, headings = true, page = false)
+        )
+        test(
+            Accessibility(features = setOf(Feature.PAGE_NAVIGATION)),
+            Navigation(tableOfContents = false, index = false, headings = false, page = true)
+        )
+
+        // All features
+        test(
+            Accessibility(
+                features = setOf(
+                    Feature.INDEX,
+                    Feature.STRUCTURAL_NAVIGATION,
+                    Feature.PAGE_NAVIGATION,
+                    Feature.TABLE_OF_CONTENTS
+                )
+            ),
+            Navigation(tableOfContents = true, index = true, headings = true, page = true)
+        )
+    }
+
+    @Test
+    fun `navigation title`() {
+        assertEquals("Navigation", Navigation().localizedTitle(context))
+    }
+
+    @Test
+    fun `navigation should be displayed if there are metadata`() {
+        val navigationWithMetadata = Navigation(
+            tableOfContents = false,
+            index = false,
+            headings = false,
+            page = false
+        )
+        assertFalse(navigationWithMetadata.shouldDisplay)
+
+        val navigationWithoutMetadata = Navigation(
+            tableOfContents = true,
+            index = false,
+            headings = false,
+            page = false
+        )
+        assertTrue(navigationWithoutMetadata.shouldDisplay)
+    }
+
+    @Test
+    fun `navigation statements`() {
+        fun test(navigation: Navigation, expected: List<AccessibilityDisplayString>) {
+            assertEquals(expected, navigation.statements.map { (it as StaticStatement).string })
+        }
+
+        // Test when no features are enabled.
+        test(
+            Navigation(
+                tableOfContents = false,
+                index = false,
+                headings = false,
+                page = false
+            ),
+            listOf(
+                S.NAVIGATION_NO_METADATA
+            )
+        )
+
+        // Test when all features are enabled
+        test(
+            Navigation(
+                tableOfContents = true,
+                index = true,
+                headings = true,
+                page = true
+            ),
+            listOf(
+                S.NAVIGATION_TOC,
+                S.NAVIGATION_INDEX,
+                S.NAVIGATION_STRUCTURAL,
+                S.NAVIGATION_PAGE_NAVIGATION
+            )
+        )
+
+        // Test individual features
+        test(
+            Navigation(
+                tableOfContents = true,
+                index = false,
+                headings = false,
+                page = false
+            ),
+            listOf(
+                S.NAVIGATION_TOC
+            )
+        )
+
+        test(
+            Navigation(
+                tableOfContents = false,
+                index = true,
+                headings = false,
+                page = false
+            ),
+            listOf(
+                S.NAVIGATION_INDEX
+            )
+        )
+
+        test(
+            Navigation(
+                tableOfContents = false,
+                index = false,
+                headings = true,
+                page = false
+            ),
+            listOf(
+                S.NAVIGATION_STRUCTURAL
+            )
+        )
+
+        test(
+            Navigation(
+                tableOfContents = false,
+                index = false,
+                headings = false,
+                page = true
+            ),
+            listOf(
+                S.NAVIGATION_PAGE_NAVIGATION
             )
         )
     }
