@@ -15,7 +15,6 @@ import org.readium.r2.shared.assertJSONEquals
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.robolectric.RobolectricTestRunner
 
-@RunWith(RobolectricTestRunner::class)
 class TdmTest {
 
     @Test
