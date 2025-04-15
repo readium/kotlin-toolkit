@@ -42,6 +42,7 @@ import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.shared.util.resource.SingleResourceContainer
 import org.readium.r2.streamer.parser.PublicationParser
 import org.readium.r2.streamer.parser.audio.AudioLocatorService
+import org.readium.r2.streamer.parser.epub.EpubPositionsService
 import timber.log.Timber
 
 /**
@@ -97,6 +98,8 @@ public class ReadiumWebPubParser(
                     pdfFactory?.let { LcpdfPositionsService.create(it) }
                 manifest.conformsTo(Publication.Profile.DIVINA) ->
                     PerResourcePositionsService.createFactory(MediaType("image/*")!!)
+                manifest.conformsTo(Publication.Profile.EPUB) ->
+                    EpubPositionsService.createFactory(EpubPositionsService.ReflowableStrategy.recommended)
                 else ->
                     WebPositionsService.createFactory(httpClient)
             }
