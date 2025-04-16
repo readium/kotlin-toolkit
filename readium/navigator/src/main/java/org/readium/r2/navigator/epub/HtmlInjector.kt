@@ -42,7 +42,6 @@ internal fun Resource.injectHtml(
         var content = bytes.toString(mediaType.charset ?: Charsets.UTF_8).trim()
         val injectables = mutableListOf<String>()
 
-        // FIX: Default to reflowable layout
         if (publication.metadata.presentation.layout == EpubLayout.FIXED) {
             injectables.add(
                 script(baseHref.resolve(Url("readium/scripts/readium-fixed.js")!!))
