@@ -661,6 +661,12 @@ public data class Accessibility(
             public val NO_FLASHING_HAZARD: Hazard = Hazard("noFlashingHazard")
 
             /**
+             * Indicates that the author cannot determine if a flashing hazard
+             * exists.
+             */
+            public val UNKNOWN_FLASHING_HAZARD: Hazard = Hazard("unknownFlashingHazard")
+
+            /**
              * Indicates that the resource contains instances of motion simulation that
              * may affect some individuals.
              *
@@ -677,6 +683,12 @@ public data class Accessibility(
             public val NO_MOTION_SIMULATION_HAZARD: Hazard = Hazard("noMotionSimulationHazard")
 
             /**
+             * Indicates that the author cannot determine if a motion simulation
+             * hazard exists.
+             */
+            public val UNKNOWN_MOTION_SIMULATION_HAZARD: Hazard = Hazard("unknownMotionSimulationHazard")
+
+            /**
              * Indicates that the resource contains auditory sounds that may affect some individuals.
              */
             public val SOUND: Hazard = Hazard("sound")
@@ -685,6 +697,12 @@ public data class Accessibility(
              * Indicates that the resource does not contain auditory hazards.
              */
             public val NO_SOUND_HAZARD: Hazard = Hazard("noSoundHazard")
+
+            /**
+             * Indicates that the author cannot determine if a sound hazard
+             * exists.
+             */
+            public val UNKNOWN_SOUND_HAZARD: Hazard = Hazard("unknownSoundHazard")
 
             /**
              * Indicates that the author is not able to determine if the resource presents any hazards.

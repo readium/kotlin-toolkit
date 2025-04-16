@@ -13,6 +13,8 @@ import org.readium.r2.shared.publication.Accessibility.AccessMode
 import org.readium.r2.shared.publication.Accessibility.Feature
 import org.readium.r2.shared.publication.Accessibility.PrimaryAccessMode
 import org.readium.r2.shared.publication.AccessibilityMetadataDisplayGuide.AdditionalInformation
+import org.readium.r2.shared.publication.AccessibilityMetadataDisplayGuide.Hazards
+import org.readium.r2.shared.publication.AccessibilityMetadataDisplayGuide.Hazards.Hazard
 import org.readium.r2.shared.publication.AccessibilityMetadataDisplayGuide.Navigation
 import org.readium.r2.shared.publication.AccessibilityMetadataDisplayGuide.RichContent
 import org.readium.r2.shared.publication.AccessibilityMetadataDisplayGuide.StaticStatement
@@ -790,28 +792,75 @@ class AccessibilityMetadataDisplayGuideTest {
         test(Accessibility(), AdditionalInformation())
 
         // Individual features
-        test(Accessibility(features = setOf(Feature.PAGE_BREAK_MARKERS)), AdditionalInformation(pageBreakMarkers = true))
+        test(
+            Accessibility(features = setOf(Feature.PAGE_BREAK_MARKERS)),
+            AdditionalInformation(pageBreakMarkers = true)
+        )
         test(Accessibility(features = setOf(Feature.ARIA)), AdditionalInformation(aria = true))
-        test(Accessibility(features = setOf(Feature.AUDIO_DESCRIPTION)), AdditionalInformation(audioDescriptions = true))
-        test(Accessibility(features = setOf(Feature.BRAILLE)), AdditionalInformation(braille = true))
-        test(Accessibility(features = setOf(Feature.RUBY_ANNOTATIONS)), AdditionalInformation(rubyAnnotations = true))
-        test(Accessibility(features = setOf(Feature.FULL_RUBY_ANNOTATIONS)), AdditionalInformation(fullRubyAnnotations = true))
-        test(Accessibility(features = setOf(Feature.HIGH_CONTRAST_AUDIO)), AdditionalInformation(highAudioContrast = true))
-        test(Accessibility(features = setOf(Feature.HIGH_CONTRAST_DISPLAY)), AdditionalInformation(highDisplayContrast = true))
-        test(Accessibility(features = setOf(Feature.LARGE_PRINT)), AdditionalInformation(largePrint = true))
-        test(Accessibility(features = setOf(Feature.SIGN_LANGUAGE)), AdditionalInformation(signLanguage = true))
-        test(Accessibility(features = setOf(Feature.TACTILE_GRAPHIC)), AdditionalInformation(tactileGraphics = true))
-        test(Accessibility(features = setOf(Feature.TACTILE_OBJECT)), AdditionalInformation(tactileObjects = true))
-        test(Accessibility(features = setOf(Feature.TTS_MARKUP)), AdditionalInformation(textToSpeechHinting = true))
+        test(
+            Accessibility(features = setOf(Feature.AUDIO_DESCRIPTION)),
+            AdditionalInformation(audioDescriptions = true)
+        )
+        test(
+            Accessibility(features = setOf(Feature.BRAILLE)),
+            AdditionalInformation(braille = true)
+        )
+        test(
+            Accessibility(features = setOf(Feature.RUBY_ANNOTATIONS)),
+            AdditionalInformation(rubyAnnotations = true)
+        )
+        test(
+            Accessibility(features = setOf(Feature.FULL_RUBY_ANNOTATIONS)),
+            AdditionalInformation(fullRubyAnnotations = true)
+        )
+        test(
+            Accessibility(features = setOf(Feature.HIGH_CONTRAST_AUDIO)),
+            AdditionalInformation(highAudioContrast = true)
+        )
+        test(
+            Accessibility(features = setOf(Feature.HIGH_CONTRAST_DISPLAY)),
+            AdditionalInformation(highDisplayContrast = true)
+        )
+        test(
+            Accessibility(features = setOf(Feature.LARGE_PRINT)),
+            AdditionalInformation(largePrint = true)
+        )
+        test(
+            Accessibility(features = setOf(Feature.SIGN_LANGUAGE)),
+            AdditionalInformation(signLanguage = true)
+        )
+        test(
+            Accessibility(features = setOf(Feature.TACTILE_GRAPHIC)),
+            AdditionalInformation(tactileGraphics = true)
+        )
+        test(
+            Accessibility(features = setOf(Feature.TACTILE_OBJECT)),
+            AdditionalInformation(tactileObjects = true)
+        )
+        test(
+            Accessibility(features = setOf(Feature.TTS_MARKUP)),
+            AdditionalInformation(textToSpeechHinting = true)
+        )
 
         // All features
         test(
-            Accessibility(features = setOf(
-                Feature.PAGE_BREAK_MARKERS, Feature.ARIA, Feature.AUDIO_DESCRIPTION, Feature.BRAILLE,
-                Feature.RUBY_ANNOTATIONS, Feature.FULL_RUBY_ANNOTATIONS, Feature.HIGH_CONTRAST_AUDIO,
-                Feature.HIGH_CONTRAST_DISPLAY, Feature.LARGE_PRINT, Feature.SIGN_LANGUAGE,
-                Feature.TACTILE_GRAPHIC, Feature.TACTILE_OBJECT, Feature.TTS_MARKUP
-            )),
+            Accessibility(
+                features = setOf(
+                    Feature.PAGE_BREAK_MARKERS,
+                    Feature.ARIA,
+                    Feature.AUDIO_DESCRIPTION,
+                    Feature.BRAILLE,
+                    Feature.RUBY_ANNOTATIONS,
+                    Feature.FULL_RUBY_ANNOTATIONS,
+                    Feature.HIGH_CONTRAST_AUDIO,
+                    Feature.HIGH_CONTRAST_DISPLAY,
+                    Feature.LARGE_PRINT,
+                    Feature.SIGN_LANGUAGE,
+                    Feature.TACTILE_GRAPHIC,
+                    Feature.TACTILE_OBJECT,
+                    Feature.TTS_MARKUP
+                )
+            ),
             AdditionalInformation(
                 pageBreakMarkers = true, aria = true, audioDescriptions = true, braille = true,
                 rubyAnnotations = true, fullRubyAnnotations = true, highAudioContrast = true,
@@ -823,7 +872,10 @@ class AccessibilityMetadataDisplayGuideTest {
 
     @Test
     fun `additional information title`() {
-        assertEquals("Additional accessibility information", AdditionalInformation().localizedTitle(context))
+        assertEquals(
+            "Additional accessibility information",
+            AdditionalInformation().localizedTitle(context)
+        )
     }
 
     @Test
@@ -837,7 +889,10 @@ class AccessibilityMetadataDisplayGuideTest {
 
     @Test
     fun `additional information statements`() {
-        fun test(additionalInfo: AdditionalInformation, expected: List<AccessibilityDisplayString>) {
+        fun test(
+            additionalInfo: AdditionalInformation,
+            expected: List<AccessibilityDisplayString>
+        ) {
             assertEquals(expected, additionalInfo.statements.map { (it as StaticStatement).string })
         }
 
@@ -870,19 +925,385 @@ class AccessibilityMetadataDisplayGuideTest {
         )
 
         // Test individual features
-        test(AdditionalInformation(pageBreakMarkers = true), listOf(S.ADDITIONAL_ACCESSIBILITY_INFORMATION_PAGE_BREAKS))
-        test(AdditionalInformation(aria = true), listOf(S.ADDITIONAL_ACCESSIBILITY_INFORMATION_ARIA))
-        test(AdditionalInformation(audioDescriptions = true), listOf(S.ADDITIONAL_ACCESSIBILITY_INFORMATION_AUDIO_DESCRIPTIONS))
-        test(AdditionalInformation(braille = true), listOf(S.ADDITIONAL_ACCESSIBILITY_INFORMATION_BRAILLE))
-        test(AdditionalInformation(rubyAnnotations = true), listOf(S.ADDITIONAL_ACCESSIBILITY_INFORMATION_RUBY_ANNOTATIONS))
-        test(AdditionalInformation(fullRubyAnnotations = true), listOf(S.ADDITIONAL_ACCESSIBILITY_INFORMATION_FULL_RUBY_ANNOTATIONS))
-        test(AdditionalInformation(highAudioContrast = true), listOf(S.ADDITIONAL_ACCESSIBILITY_INFORMATION_HIGH_CONTRAST_BETWEEN_FOREGROUND_AND_BACKGROUND_AUDIO))
-        test(AdditionalInformation(highDisplayContrast = true), listOf(S.ADDITIONAL_ACCESSIBILITY_INFORMATION_HIGH_CONTRAST_BETWEEN_TEXT_AND_BACKGROUND))
-        test(AdditionalInformation(largePrint = true), listOf(S.ADDITIONAL_ACCESSIBILITY_INFORMATION_LARGE_PRINT))
-        test(AdditionalInformation(signLanguage = true), listOf(S.ADDITIONAL_ACCESSIBILITY_INFORMATION_SIGN_LANGUAGE))
-        test(AdditionalInformation(tactileGraphics = true), listOf(S.ADDITIONAL_ACCESSIBILITY_INFORMATION_TACTILE_GRAPHICS))
-        test(AdditionalInformation(tactileObjects = true), listOf(S.ADDITIONAL_ACCESSIBILITY_INFORMATION_TACTILE_OBJECTS))
-        test(AdditionalInformation(textToSpeechHinting = true), listOf(S.ADDITIONAL_ACCESSIBILITY_INFORMATION_TEXT_TO_SPEECH_HINTING))
+        test(
+            AdditionalInformation(pageBreakMarkers = true),
+            listOf(S.ADDITIONAL_ACCESSIBILITY_INFORMATION_PAGE_BREAKS)
+        )
+        test(
+            AdditionalInformation(aria = true),
+            listOf(S.ADDITIONAL_ACCESSIBILITY_INFORMATION_ARIA)
+        )
+        test(
+            AdditionalInformation(audioDescriptions = true),
+            listOf(S.ADDITIONAL_ACCESSIBILITY_INFORMATION_AUDIO_DESCRIPTIONS)
+        )
+        test(
+            AdditionalInformation(braille = true),
+            listOf(S.ADDITIONAL_ACCESSIBILITY_INFORMATION_BRAILLE)
+        )
+        test(
+            AdditionalInformation(rubyAnnotations = true),
+            listOf(S.ADDITIONAL_ACCESSIBILITY_INFORMATION_RUBY_ANNOTATIONS)
+        )
+        test(
+            AdditionalInformation(fullRubyAnnotations = true),
+            listOf(S.ADDITIONAL_ACCESSIBILITY_INFORMATION_FULL_RUBY_ANNOTATIONS)
+        )
+        test(
+            AdditionalInformation(highAudioContrast = true),
+            listOf(S.ADDITIONAL_ACCESSIBILITY_INFORMATION_HIGH_CONTRAST_BETWEEN_FOREGROUND_AND_BACKGROUND_AUDIO)
+        )
+        test(
+            AdditionalInformation(highDisplayContrast = true),
+            listOf(S.ADDITIONAL_ACCESSIBILITY_INFORMATION_HIGH_CONTRAST_BETWEEN_TEXT_AND_BACKGROUND)
+        )
+        test(
+            AdditionalInformation(largePrint = true),
+            listOf(S.ADDITIONAL_ACCESSIBILITY_INFORMATION_LARGE_PRINT)
+        )
+        test(
+            AdditionalInformation(signLanguage = true),
+            listOf(S.ADDITIONAL_ACCESSIBILITY_INFORMATION_SIGN_LANGUAGE)
+        )
+        test(
+            AdditionalInformation(tactileGraphics = true),
+            listOf(S.ADDITIONAL_ACCESSIBILITY_INFORMATION_TACTILE_GRAPHICS)
+        )
+        test(
+            AdditionalInformation(tactileObjects = true),
+            listOf(S.ADDITIONAL_ACCESSIBILITY_INFORMATION_TACTILE_OBJECTS)
+        )
+        test(
+            AdditionalInformation(textToSpeechHinting = true),
+            listOf(S.ADDITIONAL_ACCESSIBILITY_INFORMATION_TEXT_TO_SPEECH_HINTING)
+        )
+    }
+
+    @Test
+    fun `hazards initialization`() {
+        fun test(a11y: Accessibility?, expected: Hazards) {
+            val publication = publication(accessibility = a11y)
+            val sut = Hazards(publication)
+            assertEquals(expected, sut)
+        }
+
+        // No hazards metadata
+        test(
+            null,
+            Hazards(
+                flashing = Hazard.NO_METADATA,
+                motion = Hazard.NO_METADATA,
+                sound = Hazard.NO_METADATA
+            )
+        )
+        test(
+            Accessibility(),
+            Hazards(
+                flashing = Hazard.NO_METADATA,
+                motion = Hazard.NO_METADATA,
+                sound = Hazard.NO_METADATA
+            )
+        )
+
+        // Declared no hazards
+        test(
+            Accessibility(hazards = setOf(Accessibility.Hazard.NONE)),
+            Hazards(flashing = Hazard.NO, motion = Hazard.NO, sound = Hazard.NO)
+        )
+        test(
+            Accessibility(hazards = setOf(Accessibility.Hazard.NONE, Accessibility.Hazard.FLASHING)),
+            Hazards(flashing = Hazard.YES, motion = Hazard.NO, sound = Hazard.NO)
+        )
+        test(
+            Accessibility(hazards = setOf(Accessibility.Hazard.NONE, Accessibility.Hazard.MOTION_SIMULATION)),
+            Hazards(flashing = Hazard.NO, motion = Hazard.YES, sound = Hazard.NO)
+        )
+        test(
+            Accessibility(hazards = setOf(Accessibility.Hazard.NONE, Accessibility.Hazard.UNKNOWN_SOUND_HAZARD)),
+            Hazards(
+                flashing = Hazard.NO,
+                motion = Hazard.NO,
+                sound = Hazard.UNKNOWN
+            )
+        )
+
+        // Declared unknown hazards
+        test(
+            Accessibility(hazards = setOf(Accessibility.Hazard.UNKNOWN)),
+            Hazards(
+                flashing = Hazard.UNKNOWN,
+                motion = Hazard.UNKNOWN,
+                sound = Hazard.UNKNOWN
+            )
+        )
+        test(
+            Accessibility(hazards = setOf(Accessibility.Hazard.UNKNOWN, Accessibility.Hazard.FLASHING)),
+            Hazards(
+                flashing = Hazard.YES,
+                motion = Hazard.UNKNOWN,
+                sound = Hazard.UNKNOWN
+            )
+        )
+        test(
+            Accessibility(hazards = setOf(Accessibility.Hazard.UNKNOWN, Accessibility.Hazard.MOTION_SIMULATION)),
+            Hazards(
+                flashing = Hazard.UNKNOWN,
+                motion = Hazard.YES,
+                sound = Hazard.UNKNOWN
+            )
+        )
+        test(
+            Accessibility(hazards = setOf(Accessibility.Hazard.UNKNOWN, Accessibility.Hazard.NO_SOUND_HAZARD)),
+            Hazards(
+                flashing = Hazard.UNKNOWN,
+                motion = Hazard.UNKNOWN,
+                sound = Hazard.NO
+            )
+        )
+
+        // Flashing
+        test(
+            Accessibility(hazards = setOf(Accessibility.Hazard.FLASHING)),
+            Hazards(
+                flashing = Hazard.YES,
+                motion = Hazard.NO_METADATA,
+                sound = Hazard.NO_METADATA
+            )
+        )
+        test(
+            Accessibility(hazards = setOf(Accessibility.Hazard.NO_FLASHING_HAZARD)),
+            Hazards(
+                flashing = Hazard.NO,
+                motion = Hazard.NO_METADATA,
+                sound = Hazard.NO_METADATA
+            )
+        )
+        test(
+            Accessibility(hazards = setOf(Accessibility.Hazard.UNKNOWN_FLASHING_HAZARD)),
+            Hazards(
+                flashing = Hazard.UNKNOWN,
+                motion = Hazard.NO_METADATA,
+                sound = Hazard.NO_METADATA
+            )
+        )
+
+        // Motion
+        test(
+            Accessibility(hazards = setOf(Accessibility.Hazard.MOTION_SIMULATION)),
+            Hazards(
+                flashing = Hazard.NO_METADATA,
+                motion = Hazard.YES,
+                sound = Hazard.NO_METADATA
+            )
+        )
+        test(
+            Accessibility(hazards = setOf(Accessibility.Hazard.NO_MOTION_SIMULATION_HAZARD)),
+            Hazards(
+                flashing = Hazard.NO_METADATA,
+                motion = Hazard.NO,
+                sound = Hazard.NO_METADATA
+            )
+        )
+        test(
+            Accessibility(hazards = setOf(Accessibility.Hazard.UNKNOWN_MOTION_SIMULATION_HAZARD)),
+            Hazards(
+                flashing = Hazard.NO_METADATA,
+                motion = Hazard.UNKNOWN,
+                sound = Hazard.NO_METADATA
+            )
+        )
+
+        // Sound
+        test(
+            Accessibility(hazards = setOf(Accessibility.Hazard.SOUND)),
+            Hazards(
+                flashing = Hazard.NO_METADATA,
+                motion = Hazard.NO_METADATA,
+                sound = Hazard.YES
+            )
+        )
+        test(
+            Accessibility(hazards = setOf(Accessibility.Hazard.NO_SOUND_HAZARD)),
+            Hazards(
+                flashing = Hazard.NO_METADATA,
+                motion = Hazard.NO_METADATA,
+                sound = Hazard.NO
+            )
+        )
+        test(
+            Accessibility(hazards = setOf(Accessibility.Hazard.UNKNOWN_SOUND_HAZARD)),
+            Hazards(
+                flashing = Hazard.NO_METADATA,
+                motion = Hazard.NO_METADATA,
+                sound = Hazard.UNKNOWN
+            )
+        )
+
+        // Combination of hazards
+        test(
+            Accessibility(hazards = setOf(Accessibility.Hazard.FLASHING, Accessibility.Hazard.NO_SOUND_HAZARD)),
+            Hazards(
+                flashing = Hazard.YES,
+                motion = Hazard.NO_METADATA,
+                sound = Hazard.NO
+            )
+        )
+        test(
+            Accessibility(
+                hazards = setOf(
+                    Accessibility.Hazard.UNKNOWN_FLASHING_HAZARD,
+                    Accessibility.Hazard.NO_SOUND_HAZARD,
+                    Accessibility.Hazard.MOTION_SIMULATION
+                )
+            ),
+            Hazards(
+                flashing = Hazard.UNKNOWN,
+                motion = Hazard.YES,
+                sound = Hazard.NO
+            )
+        )
+    }
+
+    @Test
+    fun `hazards title`() {
+        assertEquals("Hazards", Hazards().localizedTitle(context))
+    }
+
+    @Test
+    fun `hazards should be displayed if metadata is provided`() {
+        var hazardsWithMetadata = Hazards(
+            flashing = Hazard.YES,
+            motion = Hazard.NO_METADATA,
+            sound = Hazard.NO_METADATA
+        )
+        assertTrue(hazardsWithMetadata.shouldDisplay)
+
+        hazardsWithMetadata = Hazards(
+            flashing = Hazard.NO_METADATA,
+            motion = Hazard.UNKNOWN,
+            sound = Hazard.NO_METADATA
+        )
+        assertTrue(hazardsWithMetadata.shouldDisplay)
+
+        val hazardsWithoutMetadata = Hazards(
+            flashing = Hazard.NO_METADATA,
+            motion = Hazard.NO_METADATA,
+            sound = Hazard.NO_METADATA
+        )
+        assertFalse(hazardsWithoutMetadata.shouldDisplay)
+    }
+
+    @Test
+    fun `hazards statements`() {
+        fun test(hazards: Hazards, expected: List<AccessibilityDisplayString>) {
+            assertEquals(expected, hazards.statements.map { (it as StaticStatement).string })
+        }
+
+        // Test when no metadata is provided
+        test(
+            Hazards(
+                flashing = Hazard.NO_METADATA,
+                motion = Hazard.NO_METADATA,
+                sound = Hazard.NO_METADATA
+            ),
+            listOf(S.HAZARDS_NO_METADATA)
+        )
+
+        // Test when no hazards are present
+        test(
+            Hazards(
+                flashing = Hazard.NO,
+                motion = Hazard.NO,
+                sound = Hazard.NO
+            ),
+            listOf(S.HAZARDS_NONE)
+        )
+
+        // Test when hazards are unknown
+        test(
+            Hazards(
+                flashing = Hazard.UNKNOWN,
+                motion = Hazard.UNKNOWN,
+                sound = Hazard.UNKNOWN
+            ),
+            listOf(S.HAZARDS_UNKNOWN)
+        )
+
+        // Test individual hazards
+        test(
+            Hazards(
+                flashing = Hazard.YES,
+                motion = Hazard.NO,
+                sound = Hazard.NO
+            ),
+            listOf(
+                S.HAZARDS_FLASHING,
+//                S.HAZARDS_MOTION_NONE,
+//                S.HAZARDS_SOUND_NONE
+            )
+        )
+
+        test(
+            Hazards(
+                flashing = Hazard.NO,
+                motion = Hazard.YES,
+                sound = Hazard.NO
+            ),
+            listOf(
+                S.HAZARDS_MOTION,
+//                S.HAZARDS_FLASHING_NONE,
+//                S.HAZARDS_SOUND_NONE
+            )
+        )
+
+        test(
+            Hazards(
+                flashing = Hazard.NO,
+                motion = Hazard.NO,
+                sound = Hazard.YES
+            ),
+            listOf(
+                S.HAZARDS_SOUND,
+//                S.HAZARDS_FLASHING_NONE,
+//                S.HAZARDS_MOTION_NONE
+            )
+        )
+
+        // Test combinations of hazards
+        test(
+            Hazards(
+                flashing = Hazard.YES,
+                motion = Hazard.YES,
+                sound = Hazard.YES
+            ),
+            listOf(S.HAZARDS_FLASHING, S.HAZARDS_MOTION, S.HAZARDS_SOUND)
+        )
+
+        test(
+            Hazards(
+                flashing = Hazard.UNKNOWN,
+                motion = Hazard.YES,
+                sound = Hazard.NO
+            ),
+            listOf(
+                S.HAZARDS_MOTION,
+//                S.HAZARDS_FLASHING_UNKNOWN,
+//                S.HAZARDS_SOUND_NONE
+            )
+        )
+
+        test(
+            Hazards(
+                flashing = Hazard.YES,
+                motion = Hazard.UNKNOWN,
+                sound = Hazard.UNKNOWN
+            ),
+            listOf(
+                S.HAZARDS_FLASHING,
+//                S.HAZARDS_MOTION_UNKNOWN,
+//                S.HAZARDS_SOUND_UNKNOWN
+            )
+        )
     }
 
     @OptIn(InternalReadiumApi::class)

@@ -15,6 +15,7 @@ import org.readium.r2.shared.publication.Accessibility.AccessMode
 import org.readium.r2.shared.publication.Accessibility.PrimaryAccessMode
 import org.readium.r2.shared.publication.Accessibility.Feature
 import org.readium.r2.shared.publication.Accessibility.Hazard
+import org.readium.r2.shared.publication.AccessibilityMetadataDisplayGuide.Navigation
 import org.readium.r2.shared.publication.AccessibilityMetadataDisplayGuide.Statement
 import org.readium.r2.shared.publication.AccessibilityMetadataDisplayGuide.StaticStatement
 import org.readium.r2.shared.publication.epub.EpubLayout
@@ -62,7 +63,7 @@ public class AccessibilityMetadataDisplayGuide(
     public val navigation: Navigation,
     public val richContent: RichContent,
     public val additionalInformation: AdditionalInformation,
-//    public val hazards: Hazards,
+    public val hazards: Hazards,
 //    public val conformance: Conformance,
 //    public val legal: Legal,
 //    public val accessibilitySummary: AccessibilitySummary,
@@ -76,7 +77,7 @@ public class AccessibilityMetadataDisplayGuide(
         navigation = Navigation(publication),
         richContent = RichContent(publication),
         additionalInformation = AdditionalInformation(publication),
-//        hazards = Hazards(publication),
+        hazards = Hazards(publication),
 //        conformance = Conformance(publication),
 //        legal = Legal(publication),
 //        accessibilitySummary = AccessibilitySummary(publication),
@@ -91,7 +92,7 @@ public class AccessibilityMetadataDisplayGuide(
             navigation,
             richContent,
             additionalInformation,
-//            hazards,
+            hazards,
 //            conformance,
 //            legal,
 //            accessibilitySummary,
@@ -472,6 +473,120 @@ public class AccessibilityMetadataDisplayGuide(
                     tactileGraphics = features.contains(Feature.TACTILE_GRAPHIC),
                     tactileObjects = features.contains(Feature.TACTILE_OBJECT),
                     textToSpeechHinting = features.contains(Feature.TTS_MARKUP)
+                )
+            }
+        }
+    }
+
+    /**
+     * Identifies any potential hazards (e.g., flashing elements, sounds,
+     * and motion simulation) that could afflict physiologically sensitive
+     * users.
+     *
+     * Unlike other accessibility properties, the presence of hazards can be
+     * expressed either positively or negatively. This is because users
+     * search for content that is safe for them as well as want to know when
+     * content is potentially dangerous to them.
+     *
+     * https://w3c.github.io/publ-a11y/a11y-meta-display-guide/2.0/guidelines/#hazards
+     *
+     * @param flashing The publication contains flashing content which can
+     * cause photosensitive seizures.
+     * @param motion The publication contains motion simulations that can
+     * cause motion sickness.
+     * @param sound The publication contains sounds which can be uncomfortable.
+     */
+    public data class Hazards(
+        public val flashing: Hazard = Hazard.NO_METADATA,
+        public val motion: Hazard = Hazard.NO_METADATA,
+        public val sound: Hazard = Hazard.NO_METADATA,
+    ) : Field {
+
+        public enum class Hazard {
+            YES, NO, UNKNOWN, NO_METADATA
+        }
+
+        /**
+         * Indicates whether no information about hazards is available.
+         */
+        public val noMetadata: Boolean
+            get() = flashing == Hazard.NO_METADATA
+                && motion == Hazard.NO_METADATA
+                && sound == Hazard.NO_METADATA
+
+        /**
+         * The publication contains no hazards.
+         */
+        public val noHazards: Boolean
+            get() = flashing == Hazard.NO
+                && motion == Hazard.NO
+                && sound == Hazard.NO
+
+        /**
+         * The presence of hazards is unknown.
+         */
+        public val unknown: Boolean
+            get() = flashing == Hazard.UNKNOWN
+                && motion == Hazard.UNKNOWN
+                && sound == Hazard.UNKNOWN
+
+        override val shouldDisplay: Boolean get() = !noMetadata
+
+        override fun localizedTitle(context: Context): String =
+            context.getString(R.string.readium_a11y_hazards_title)
+
+        override val statements: List<Statement> get() = buildList {
+            when {
+                noHazards -> add(S.HAZARDS_NONE)
+                unknown -> add(S.HAZARDS_UNKNOWN)
+                noMetadata -> add(S.HAZARDS_NO_METADATA)
+                else -> {
+                    if (flashing == Hazard.YES) add(S.HAZARDS_FLASHING)
+                    if (motion == Hazard.YES) add(S.HAZARDS_MOTION)
+                    if (sound == Hazard.YES) add(S.HAZARDS_SOUND)
+
+                    // FIXME: Waiting for the strings to be available
+
+//                    if (flashing == Hazard.UNKNOWN) add(S.HAZARDS_FLASHING_UNKNOWN)
+//                    if (motion == Hazard.UNKNOWN) add(S.HAZARDS_MOTION_UNKNOWN)
+//                    if (sound == Hazard.UNKNOWN) add(S.HAZARDS_SOUND_UNKNOWN)
+//
+//                    if (flashing == Hazard.NO) add(S.HAZARDS_FLASHING_NONE)
+//                    if (motion == Hazard.NO) add(S.HAZARDS_MOTION_NONE)
+//                    if (sound == Hazard.NO) add(S.HAZARDS_SOUND_NONE)
+                }
+            }
+        }
+
+        public companion object {
+            public operator fun invoke(publication: Publication): Hazards {
+                val hazards = publication.metadata.accessibility?.hazards ?: emptySet()
+
+                val fallback = when {
+                    hazards.contains(Accessibility.Hazard.NONE) -> Hazard.NO
+                    hazards.contains(Accessibility.Hazard.UNKNOWN) -> Hazard.UNKNOWN
+                    else -> Hazard.NO_METADATA
+                }
+
+                return Hazards(
+                    flashing = when {
+                        hazards.contains(Accessibility.Hazard.FLASHING) -> Hazard.YES
+                        hazards.contains(Accessibility.Hazard.NO_FLASHING_HAZARD) -> Hazard.NO
+                        hazards.contains(Accessibility.Hazard.UNKNOWN_FLASHING_HAZARD) -> Hazard.UNKNOWN
+                        else -> fallback
+                    },
+                    motion = when {
+                        hazards.contains(Accessibility.Hazard.MOTION_SIMULATION) -> Hazard.YES
+                        hazards.contains(Accessibility.Hazard.NO_MOTION_SIMULATION_HAZARD) -> Hazard.NO
+                        hazards.contains(Accessibility.Hazard.UNKNOWN_MOTION_SIMULATION_HAZARD) -> Hazard.UNKNOWN
+                        else -> fallback
+                    },
+                    sound = when {
+                        hazards.contains(Accessibility.Hazard.SOUND) -> Hazard.YES
+                        hazards.contains(Accessibility.Hazard.NO_SOUND_HAZARD) -> Hazard.NO
+                        hazards.contains(Accessibility.Hazard.UNKNOWN_SOUND_HAZARD) -> Hazard.UNKNOWN
+                        else -> fallback
+                    }
                 )
             }
         }
