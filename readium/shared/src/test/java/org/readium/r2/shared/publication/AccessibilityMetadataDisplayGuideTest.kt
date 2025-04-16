@@ -12,7 +12,9 @@ import org.readium.r2.shared.extensions.toMap
 import org.readium.r2.shared.publication.Accessibility.AccessMode
 import org.readium.r2.shared.publication.Accessibility.Feature
 import org.readium.r2.shared.publication.Accessibility.PrimaryAccessMode
+import org.readium.r2.shared.publication.Accessibility.Profile
 import org.readium.r2.shared.publication.AccessibilityMetadataDisplayGuide.AdditionalInformation
+import org.readium.r2.shared.publication.AccessibilityMetadataDisplayGuide.Conformance
 import org.readium.r2.shared.publication.AccessibilityMetadataDisplayGuide.Hazards
 import org.readium.r2.shared.publication.AccessibilityMetadataDisplayGuide.Hazards.Hazard
 import org.readium.r2.shared.publication.AccessibilityMetadataDisplayGuide.Navigation
@@ -1304,6 +1306,77 @@ class AccessibilityMetadataDisplayGuideTest {
 //                S.HAZARDS_SOUND_UNKNOWN
             )
         )
+    }
+
+    @Test
+    fun `conformance initialization`() {
+        fun test(a11y: Accessibility?, expected: Conformance) {
+            val publication = publication(accessibility = a11y)
+            val sut = Conformance(publication)
+            assertEquals(expected, sut)
+        }
+
+        // No metadata or profile
+        test(null, Conformance(profiles = emptySet()))
+        test(Accessibility(conformsTo = emptySet()), Conformance(profiles = emptySet()))
+
+        // One profile
+        test(Accessibility(conformsTo = setOf(Profile.EPUB_A11Y_10_WCAG_20_A)), Conformance(profiles = setOf(Profile.EPUB_A11Y_10_WCAG_20_A)))
+
+        // Multiple profiles
+        test(
+            Accessibility(conformsTo = setOf(Profile.EPUB_A11Y_10_WCAG_20_A, Profile.EPUB_A11Y_11_WCAG_20_A)),
+            Conformance(profiles = setOf(Profile.EPUB_A11Y_10_WCAG_20_A, Profile.EPUB_A11Y_11_WCAG_20_A))
+        )
+    }
+
+    @Test
+    fun `conformance title`() {
+        assertEquals("Conformance", Conformance().localizedTitle(context))
+    }
+
+    @Test
+    fun `conformance should always be displayed`() {
+        assertTrue(Conformance(profiles = emptySet()).shouldDisplay)
+        assertTrue(Conformance(profiles = setOf(Profile.EPUB_A11Y_10_WCAG_20_A)).shouldDisplay)
+    }
+
+    @Test
+    fun `conformance statements`() {
+        fun test(profiles: Set<Profile>, expected: AccessibilityDisplayString) {
+            assertEquals(
+                listOf(expected),
+                Conformance(profiles = profiles).statements.map { (it as StaticStatement).string }
+            )
+        }
+
+        // Test no profile
+        test(emptySet(), expected = S.CONFORMANCE_NO)
+
+        // Test unknown profile
+        test(setOf(Profile("https://custom-profile")), expected = S.CONFORMANCE_UNKNOWN_STANDARD)
+
+        // Test level A profiles
+        test(setOf(Profile.EPUB_A11Y_10_WCAG_20_A), expected = S.CONFORMANCE_A)
+        test(setOf(Profile.EPUB_A11Y_11_WCAG_20_A), expected = S.CONFORMANCE_A)
+        test(setOf(Profile.EPUB_A11Y_11_WCAG_21_A), expected = S.CONFORMANCE_A)
+        test(setOf(Profile.EPUB_A11Y_11_WCAG_22_A), expected = S.CONFORMANCE_A)
+
+        // Test level AA profiles
+        test(setOf(Profile.EPUB_A11Y_10_WCAG_20_AA), expected = S.CONFORMANCE_AA)
+        test(setOf(Profile.EPUB_A11Y_11_WCAG_20_AA), expected = S.CONFORMANCE_AA)
+        test(setOf(Profile.EPUB_A11Y_11_WCAG_21_AA), expected = S.CONFORMANCE_AA)
+        test(setOf(Profile.EPUB_A11Y_11_WCAG_22_AA), expected = S.CONFORMANCE_AA)
+
+        // Test level AAA profiles
+        test(setOf(Profile.EPUB_A11Y_10_WCAG_20_AAA), expected = S.CONFORMANCE_AAA)
+        test(setOf(Profile.EPUB_A11Y_11_WCAG_20_AAA), expected = S.CONFORMANCE_AAA)
+        test(setOf(Profile.EPUB_A11Y_11_WCAG_21_AAA), expected = S.CONFORMANCE_AAA)
+        test(setOf(Profile.EPUB_A11Y_11_WCAG_22_AAA), expected = S.CONFORMANCE_AAA)
+
+        // Test multiple profiles
+        test(setOf(Profile.EPUB_A11Y_10_WCAG_20_A, Profile.EPUB_A11Y_10_WCAG_20_AA, Profile.EPUB_A11Y_10_WCAG_20_AAA), expected = S.CONFORMANCE_AAA)
+        test(setOf(Profile.EPUB_A11Y_10_WCAG_20_A, Profile.EPUB_A11Y_10_WCAG_20_AA), expected = S.CONFORMANCE_AA)
     }
 
     @OptIn(InternalReadiumApi::class)

@@ -64,7 +64,7 @@ public class AccessibilityMetadataDisplayGuide(
     public val richContent: RichContent,
     public val additionalInformation: AdditionalInformation,
     public val hazards: Hazards,
-//    public val conformance: Conformance,
+    public val conformance: Conformance,
 //    public val legal: Legal,
 //    public val accessibilitySummary: AccessibilitySummary,
 ) {
@@ -78,7 +78,7 @@ public class AccessibilityMetadataDisplayGuide(
         richContent = RichContent(publication),
         additionalInformation = AdditionalInformation(publication),
         hazards = Hazards(publication),
-//        conformance = Conformance(publication),
+        conformance = Conformance(publication),
 //        legal = Legal(publication),
 //        accessibilitySummary = AccessibilitySummary(publication),
     )
@@ -93,7 +93,7 @@ public class AccessibilityMetadataDisplayGuide(
             richContent,
             additionalInformation,
             hazards,
-//            conformance,
+            conformance,
 //            legal,
 //            accessibilitySummary,
         )
@@ -589,6 +589,47 @@ public class AccessibilityMetadataDisplayGuide(
                     }
                 )
             }
+        }
+    }
+
+    /**
+     * Identifies whether the digital publication claims to meet internationally
+     * recognized conformance standards for accessibility.
+     *
+     * https://w3c.github.io/publ-a11y/a11y-meta-display-guide/2.0/guidelines/#conformance-group
+     *
+     * @param profiles Accessibility conformance profiles.
+     */
+    public data class Conformance(
+        public val profiles: Set<Accessibility.Profile> = emptySet()
+    ) : Field {
+
+        /** "Conformance" should be rendered even if there is no metadata. */
+        override val shouldDisplay: Boolean get() = true
+
+        override fun localizedTitle(context: Context): String =
+            context.getString(R.string.readium_a11y_conformance_title)
+
+        override val statements: List<Statement>
+            get() = buildList {
+                if (profiles.isEmpty()) {
+                    add(S.CONFORMANCE_NO)
+                    return@buildList
+                }
+
+                add(when {
+                    profiles.contains { it.isWCAGLevelAAA } -> S.CONFORMANCE_AAA
+                    profiles.contains { it.isWCAGLevelAA } -> S.CONFORMANCE_AA
+                    profiles.contains { it.isWCAGLevelA } -> S.CONFORMANCE_A
+                    else -> S.CONFORMANCE_UNKNOWN_STANDARD
+                })
+
+                // FIXME: Waiting on W3C to offer localized strings with placeholders instead of concatenation. See https://github.com/w3c/publ-a11y/issues/688
+            }
+
+        public companion object {
+            public operator fun invoke(publication: Publication): Conformance =
+                Conformance(profiles = publication.metadata.accessibility?.conformsTo ?: emptySet())
         }
     }
 
