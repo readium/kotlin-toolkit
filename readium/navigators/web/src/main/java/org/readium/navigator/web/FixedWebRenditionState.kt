@@ -30,7 +30,7 @@ import org.readium.navigator.web.util.HyperlinkProcessor
 import org.readium.navigator.web.util.WebViewClient
 import org.readium.navigator.web.util.WebViewServer
 import org.readium.navigator.web.util.WebViewServer.Companion.assetsBaseHref
-import org.readium.navigator.web.util.injectHtml
+import org.readium.navigator.web.util.injectHtmlFixedLayout
 import org.readium.r2.navigator.SimpleOverflow
 import org.readium.r2.navigator.preferences.Axis
 import org.readium.r2.navigator.preferences.Fit
@@ -71,7 +71,7 @@ public class FixedWebRenditionState internal constructor(
         HyperlinkProcessor(publication.container)
 
     private val htmlInjector: (Resource, MediaType) -> Resource = { resource, mediaType ->
-        resource.injectHtml(
+        resource.injectHtmlFixedLayout(
             charset = mediaType.charset,
             injectableScript = RelativeUrl("readium/navigators/web/generated/fixed-injectable-script.js")!!,
             assetsBaseHref = assetsBaseHref,

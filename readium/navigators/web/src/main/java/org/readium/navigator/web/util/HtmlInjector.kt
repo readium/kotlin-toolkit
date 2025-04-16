@@ -19,11 +19,11 @@ import org.readium.r2.shared.util.resource.TransformingResource
 import timber.log.Timber
 
 /**
- * Injects scripts in the HTML [Resource] receiver.
+ * Injects scripts for fixed layout publications in the HTML [Resource] receiver.
  *
  * @param assetsBaseHref Base URL where and scripts are served.
  */
-internal fun Resource.injectHtml(
+internal fun Resource.injectHtmlFixedLayout(
     charset: Charset?,
     injectableScript: RelativeUrl,
     assetsBaseHref: AbsoluteUrl,
@@ -44,7 +44,7 @@ internal fun Resource.injectHtml(
     }
 
 /**
- * Injects scripts in the HTML [Resource] receiver.
+ * Injects scripts for reflowable publications in the HTML [Resource] receiver.
  *
  * @param assetsBaseHref Base URL where and scripts are served.
  */

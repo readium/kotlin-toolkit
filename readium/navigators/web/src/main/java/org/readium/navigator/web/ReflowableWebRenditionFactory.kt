@@ -45,7 +45,7 @@ public class ReflowableWebRenditionFactory private constructor(
             defaults: ReflowableWebDefaults = ReflowableWebDefaults(),
         ): ReflowableWebRenditionFactory? {
             if (!publication.conformsTo(Publication.Profile.EPUB) ||
-                publication.metadata.presentation.layout != EpubLayout.REFLOWABLE
+                publication.metadata.presentation.layout == EpubLayout.FIXED
             ) {
                 return null
             }
