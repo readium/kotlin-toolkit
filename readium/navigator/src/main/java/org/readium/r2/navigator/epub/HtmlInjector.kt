@@ -42,7 +42,11 @@ internal fun Resource.injectHtml(
         var content = bytes.toString(mediaType.charset ?: Charsets.UTF_8).trim()
         val injectables = mutableListOf<String>()
 
-        if (publication.metadata.presentation.layout == EpubLayout.REFLOWABLE) {
+        if (publication.metadata.presentation.layout == EpubLayout.FIXED) {
+            injectables.add(
+                script(baseHref.resolve(Url("readium/scripts/readium-fixed.js")!!))
+            )
+        } else {
             content = try {
                 css.injectHtml(content)
             } catch (e: Exception) {
@@ -53,10 +57,6 @@ internal fun Resource.injectHtml(
                 script(
                     baseHref.resolve(Url("readium/scripts/readium-reflowable.js")!!)
                 )
-            )
-        } else {
-            injectables.add(
-                script(baseHref.resolve(Url("readium/scripts/readium-fixed.js")!!))
             )
         }
 
