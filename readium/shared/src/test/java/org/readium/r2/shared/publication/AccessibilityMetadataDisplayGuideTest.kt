@@ -10,13 +10,16 @@ import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.R
 import org.readium.r2.shared.extensions.toMap
 import org.readium.r2.shared.publication.Accessibility.AccessMode
+import org.readium.r2.shared.publication.Accessibility.Exemption
 import org.readium.r2.shared.publication.Accessibility.Feature
 import org.readium.r2.shared.publication.Accessibility.PrimaryAccessMode
 import org.readium.r2.shared.publication.Accessibility.Profile
+import org.readium.r2.shared.publication.AccessibilityMetadataDisplayGuide.AccessibilitySummary
 import org.readium.r2.shared.publication.AccessibilityMetadataDisplayGuide.AdditionalInformation
 import org.readium.r2.shared.publication.AccessibilityMetadataDisplayGuide.Conformance
 import org.readium.r2.shared.publication.AccessibilityMetadataDisplayGuide.Hazards
 import org.readium.r2.shared.publication.AccessibilityMetadataDisplayGuide.Hazards.Hazard
+import org.readium.r2.shared.publication.AccessibilityMetadataDisplayGuide.Legal
 import org.readium.r2.shared.publication.AccessibilityMetadataDisplayGuide.Navigation
 import org.readium.r2.shared.publication.AccessibilityMetadataDisplayGuide.RichContent
 import org.readium.r2.shared.publication.AccessibilityMetadataDisplayGuide.StaticStatement
@@ -1377,6 +1380,95 @@ class AccessibilityMetadataDisplayGuideTest {
         // Test multiple profiles
         test(setOf(Profile.EPUB_A11Y_10_WCAG_20_A, Profile.EPUB_A11Y_10_WCAG_20_AA, Profile.EPUB_A11Y_10_WCAG_20_AAA), expected = S.CONFORMANCE_AAA)
         test(setOf(Profile.EPUB_A11Y_10_WCAG_20_A, Profile.EPUB_A11Y_10_WCAG_20_AA), expected = S.CONFORMANCE_AA)
+    }
+
+    @Test
+    fun `legal initialization`() {
+        fun test(a11y: Accessibility?, expected: Legal) {
+            val publication = publication(accessibility = a11y)
+            val sut = Legal(publication)
+            assertEquals(expected, sut)
+        }
+
+        // No metadata or exemptions
+        test(null, Legal(exemption = false))
+        test(Accessibility(exemptions = emptySet()), Legal(exemption = false))
+
+        // Exemptions
+        test(Accessibility(exemptions = setOf(Exemption.EAA_DISPROPORTIONATE_BURDEN)), Legal(exemption = true))
+        test(Accessibility(exemptions = setOf(Exemption.EAA_FUNDAMENTAL_ALTERATION)), Legal(exemption = true))
+        test(Accessibility(exemptions = setOf(Exemption.EAA_MICROENTERPRISE)), Legal(exemption = true))
+        test(Accessibility(exemptions = setOf(Exemption.EAA_MICROENTERPRISE, Exemption.EAA_FUNDAMENTAL_ALTERATION)), Legal(exemption = true))
+    }
+
+    @Test
+    fun `legal title`() {
+        assertEquals("Legal considerations", Legal().localizedTitle(context))
+    }
+
+    @Test
+    fun `legal should be displayed if there is an exemption`() {
+        assertTrue(Legal(exemption = true).shouldDisplay)
+        assertFalse(Legal(exemption = false).shouldDisplay)
+    }
+
+    @Test
+    fun `legal statements`() {
+        // Test when noMetadata is true
+        assertEquals(
+            listOf(S.LEGAL_CONSIDERATIONS_NO_METADATA),
+            Legal(exemption = false).statements.map { (it as StaticStatement).string }
+        )
+
+        // Test when exemption is claimed
+        assertEquals(
+            listOf(S.LEGAL_CONSIDERATIONS_EXEMPT),
+            Legal(exemption = true).statements.map { (it as StaticStatement).string }
+        )
+    }
+
+    @Test
+    fun `accessibility summary initialization`() {
+        fun test(a11y: Accessibility?, expected: AccessibilitySummary) {
+            val publication = publication(accessibility = a11y)
+            val sut = AccessibilitySummary(publication)
+            assertEquals(expected, sut)
+        }
+
+        test(null, AccessibilitySummary(summary = null))
+        test(Accessibility(summary = null), AccessibilitySummary(summary = null))
+        test(Accessibility(summary = "A summary"), AccessibilitySummary(summary = "A summary"))
+    }
+
+    @Test
+    fun `accessibility summary title`() {
+        assertEquals("Accessibility summary", AccessibilitySummary().localizedTitle(context))
+    }
+
+    @Test
+    fun `accessibility summary should be displayed if there is a summary`() {
+        val summaryWithContent = AccessibilitySummary(summary = "This is a summary.")
+        assertTrue(summaryWithContent.shouldDisplay)
+
+        val summaryWithoutContent = AccessibilitySummary(summary = null)
+        assertFalse(summaryWithoutContent.shouldDisplay)
+    }
+
+    @Test
+    fun `accessibility summary statements`() {
+        // Test when summary is nil
+        assertEquals(
+            listOf(S.ACCESSIBILITY_SUMMARY_NO_METADATA),
+            AccessibilitySummary(summary = null).statements.map { (it as StaticStatement).string }
+        )
+
+        // Test when summary is provided
+        val summaryText = "This publication is accessible and includes features such as text-to-speech and high contrast."
+        val fields = AccessibilitySummary(summary = summaryText).statements
+        assertEquals(1, fields.size)
+        val field = fields[0]
+        assertEquals(summaryText, field.localizedString(context, descriptive = false))
+        assertEquals(summaryText, field.localizedString(context, descriptive = true))
     }
 
     @OptIn(InternalReadiumApi::class)

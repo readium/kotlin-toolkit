@@ -12,10 +12,9 @@ import org.readium.r2.shared.R
 import org.readium.r2.shared.extensions.contains
 import org.readium.r2.shared.extensions.containsAny
 import org.readium.r2.shared.publication.Accessibility.AccessMode
-import org.readium.r2.shared.publication.Accessibility.PrimaryAccessMode
 import org.readium.r2.shared.publication.Accessibility.Feature
 import org.readium.r2.shared.publication.Accessibility.Hazard
-import org.readium.r2.shared.publication.AccessibilityMetadataDisplayGuide.Navigation
+import org.readium.r2.shared.publication.Accessibility.PrimaryAccessMode
 import org.readium.r2.shared.publication.AccessibilityMetadataDisplayGuide.Statement
 import org.readium.r2.shared.publication.AccessibilityMetadataDisplayGuide.StaticStatement
 import org.readium.r2.shared.publication.epub.EpubLayout
@@ -65,8 +64,8 @@ public class AccessibilityMetadataDisplayGuide(
     public val additionalInformation: AdditionalInformation,
     public val hazards: Hazards,
     public val conformance: Conformance,
-//    public val legal: Legal,
-//    public val accessibilitySummary: AccessibilitySummary,
+    public val legal: Legal,
+    public val accessibilitySummary: AccessibilitySummary,
 ) {
 
     /**
@@ -79,8 +78,8 @@ public class AccessibilityMetadataDisplayGuide(
         additionalInformation = AdditionalInformation(publication),
         hazards = Hazards(publication),
         conformance = Conformance(publication),
-//        legal = Legal(publication),
-//        accessibilitySummary = AccessibilitySummary(publication),
+        legal = Legal(publication),
+        accessibilitySummary = AccessibilitySummary(publication),
     )
 
     /**
@@ -94,8 +93,8 @@ public class AccessibilityMetadataDisplayGuide(
             additionalInformation,
             hazards,
             conformance,
-//            legal,
-//            accessibilitySummary,
+            legal,
+            accessibilitySummary,
         )
 
     /**
@@ -630,6 +629,77 @@ public class AccessibilityMetadataDisplayGuide(
         public companion object {
             public operator fun invoke(publication: Publication): Conformance =
                 Conformance(profiles = publication.metadata.accessibility?.conformsTo ?: emptySet())
+        }
+    }
+
+    /**
+     * In some jurisdictions publishers may be able to claim an exemption from
+     * the provision of accessible publications, including the provision of
+     * accessibility metadata. This should always be subject to clarification by
+     * legal counsel for each jurisdiction.
+     *
+     * https://w3c.github.io/publ-a11y/a11y-meta-display-guide/2.0/guidelines/#legal-considerations
+     *
+     * @param exemption This publication claims an accessibility exemption in
+     * some jurisdictions.
+     */
+    public data class Legal(
+        public val exemption: Boolean = false
+    ) : Field {
+
+        override val shouldDisplay: Boolean get() = exemption
+
+        override fun localizedTitle(context: Context): String =
+            context.getString(R.string.readium_a11y_legal_considerations_title)
+
+        override val statements: List<Statement>
+            get() = buildList {
+                if (exemption) {
+                    add(S.LEGAL_CONSIDERATIONS_EXEMPT)
+                } else {
+                    add(S.LEGAL_CONSIDERATIONS_NO_METADATA)
+                }
+            }
+
+        public companion object {
+            public operator fun invoke(publication: Publication): Legal =
+                Legal(exemption = publication.metadata.accessibility?.exemptions?.isNotEmpty() ?: false)
+        }
+    }
+
+    /**
+     * The accessibility summary was intended (in EPUB Accessibility 1.0) to
+     * describe in human-readable prose the accessibility features present in
+     * the publication as well as any shortcomings. Starting with EPUB
+     * Accessibility version 1.1 the accessibility summary became a human-
+     * readable summary of the accessibility that complements, but does not
+     * duplicate, the other discoverability metadata.
+     *
+     * https://w3c.github.io/publ-a11y/a11y-meta-display-guide/2.0/guidelines/#accessibility-summary
+     */
+    public data class AccessibilitySummary(
+        public val summary: String? = null
+    ) : Field {
+
+        override val shouldDisplay: Boolean get() = summary != null
+
+        override fun localizedTitle(context: Context): String =
+            context.getString(R.string.readium_a11y_accessibility_summary_title)
+
+        override val statements: List<Statement>
+            get() = buildList {
+                if (summary != null) {
+                    add(DynamicStatement(summary))
+                } else {
+                    add(S.ACCESSIBILITY_SUMMARY_NO_METADATA)
+                }
+            }
+
+        public companion object {
+            public operator fun invoke(publication: Publication): AccessibilitySummary =
+                AccessibilitySummary(
+                    summary = publication.metadata.accessibility?.summary
+                )
         }
     }
 
