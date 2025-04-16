@@ -30,6 +30,10 @@ All notable changes to this project will be documented in this file. Take a look
 
 * [go-toolkit#92](https://github.com/readium/go-toolkit/issues/92) The accessibility feature `printPageNumbers` is deprecated in favor of `pageNavigation`.
 
+### Fixed
+
+* Fixed support of Readium Web Publication packages conforming to the EPUB profile (contributed by [@ddfreiling](https://github.com/readium/kotlin-toolkit/pull/642)).
+
 
 ## [3.0.3]
 
