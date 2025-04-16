@@ -47,11 +47,16 @@ import timber.log.Timber
 
 /**
  * Parses any Readium Web Publication package or manifest, e.g. WebPub, Audiobook, DiViNa, LCPDF...
+ *
+ * @param epubReflowablePositionsStrategy Strategy used to calculate the number
+ * of positions in a reflowable resource of a web publication conforming to the
+ * EPUB profile.
  */
 public class ReadiumWebPubParser(
     private val context: Context? = null,
     private val httpClient: HttpClient,
     private val pdfFactory: PdfDocumentFactory<*>?,
+    private val epubReflowablePositionsStrategy: EpubPositionsService.ReflowableStrategy = EpubPositionsService.ReflowableStrategy.recommended,
 ) : PublicationParser {
 
     override suspend fun parse(
@@ -99,7 +104,7 @@ public class ReadiumWebPubParser(
                 manifest.conformsTo(Publication.Profile.DIVINA) ->
                     PerResourcePositionsService.createFactory(MediaType("image/*")!!)
                 manifest.conformsTo(Publication.Profile.EPUB) ->
-                    EpubPositionsService.createFactory(EpubPositionsService.ReflowableStrategy.recommended)
+                    EpubPositionsService.createFactory(epubReflowablePositionsStrategy)
                 else ->
                     WebPositionsService.createFactory(httpClient)
             }
