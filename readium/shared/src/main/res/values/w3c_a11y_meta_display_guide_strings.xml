@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- DO NOT EDIT. File generated automatically from v2.0.b of the en-US JSON strings. -->
+<!-- DO NOT EDIT. File generated automatically from v2.0.c of the en-US JSON strings. -->
 
 <resources>
     <string name="readium_a11y_ways_of_reading_title">Ways of reading</string>
@@ -15,16 +15,16 @@
     <string name="readium_a11y_ways_of_reading_nonvisual_reading_readable_descriptive">All content can be read as read aloud speech or dynamic braille</string>
     <string name="readium_a11y_ways_of_reading_prerecorded_audio_complementary_compact">Prerecorded audio clips</string>
     <string name="readium_a11y_ways_of_reading_prerecorded_audio_complementary_descriptive">Prerecorded audio clips are embedded in the content</string>
-    <string name="readium_a11y_ways_of_reading_prerecorded_audio_no_metadata_compact"> No information about prerecorded audio is available</string>
-    <string name="readium_a11y_ways_of_reading_prerecorded_audio_no_metadata_descriptive"> No information about prerecorded audio is available</string>
+    <string name="readium_a11y_ways_of_reading_prerecorded_audio_no_metadata_compact">No information about prerecorded audio is available</string>
+    <string name="readium_a11y_ways_of_reading_prerecorded_audio_no_metadata_descriptive">No information about prerecorded audio is available</string>
     <string name="readium_a11y_ways_of_reading_prerecorded_audio_only_compact">Prerecorded audio only</string>
-    <string name="readium_a11y_ways_of_reading_prerecorded_audio_only_descriptive"> Audiobook with no text alternative</string>
+    <string name="readium_a11y_ways_of_reading_prerecorded_audio_only_descriptive">Audiobook with no text alternative</string>
     <string name="readium_a11y_ways_of_reading_prerecorded_audio_synchronized_compact">Prerecorded audio synchronized with text</string>
     <string name="readium_a11y_ways_of_reading_prerecorded_audio_synchronized_descriptive">All the content is available as prerecorded audio synchronized with text</string>
     <string name="readium_a11y_ways_of_reading_visual_adjustments_modifiable_compact">Appearance can be modified</string>
-    <string name="readium_a11y_ways_of_reading_visual_adjustments_modifiable_descriptive"> Appearance of the text and page layout can be modified according to the capabilities of the reading system (font family and font size, spaces between paragraphs, sentences, words, and letters, as well as color of background and text)</string>
+    <string name="readium_a11y_ways_of_reading_visual_adjustments_modifiable_descriptive">Appearance of the text and page layout can be modified according to the capabilities of the reading system (font family and font size, spaces between paragraphs, sentences, words, and letters, as well as color of background and text)</string>
     <string name="readium_a11y_ways_of_reading_visual_adjustments_unknown_compact">No information about appearance modifiability is available</string>
-    <string name="readium_a11y_ways_of_reading_visual_adjustments_unknown_descriptive"> No information about appearance modifiability is available</string>
+    <string name="readium_a11y_ways_of_reading_visual_adjustments_unknown_descriptive">No information about appearance modifiability is available</string>
     <string name="readium_a11y_ways_of_reading_visual_adjustments_unmodifiable_compact">Appearance cannot be modified</string>
     <string name="readium_a11y_ways_of_reading_visual_adjustments_unmodifiable_descriptive">Text and page layout cannot be modified as the reading experience is close to a print version, but reading systems can still provide zooming options</string>
     <string name="readium_a11y_conformance_title">Conformance</string>
@@ -35,7 +35,7 @@
     <string name="readium_a11y_conformance_aa_descriptive">The publication contains a conformance statement that it meets the EPUB Accessibility and WCAG 2 Level AA standard</string>
     <string name="readium_a11y_conformance_aaa_compact">This publication exceeds accepted accessibility standards</string>
     <string name="readium_a11y_conformance_aaa_descriptive">The publication contains a conformance statement that it meets the EPUB Accessibility and WCAG 2 Level AAA standard</string>
-    <string name="readium_a11y_conformance_certifier_compact">The publication was certified by</string>
+    <string name="readium_a11y_conformance_certifier_compact">The publication was certified by </string>
     <string name="readium_a11y_conformance_certifier_descriptive">The publication was certified by </string>
     <string name="readium_a11y_conformance_certifier_credentials_compact">The certifier\'s credential is </string>
     <string name="readium_a11y_conformance_certifier_credentials_descriptive">The certifier\'s credential is </string>
@@ -87,32 +87,46 @@
     <string name="readium_a11y_rich_content_accessible_math_as_mathml_descriptive">Math formulas in accessible format (MathML)</string>
     <string name="readium_a11y_rich_content_accessible_math_described_compact">Text descriptions of math are provided</string>
     <string name="readium_a11y_rich_content_accessible_math_described_descriptive">Text descriptions of math are provided</string>
-    <string name="readium_a11y_rich_content_closed_captions_compact"> Videos have closed captions</string>
-    <string name="readium_a11y_rich_content_closed_captions_descriptive"> Videos included in publications have closed captions</string>
+    <string name="readium_a11y_rich_content_closed_captions_compact">Videos have closed captions</string>
+    <string name="readium_a11y_rich_content_closed_captions_descriptive">Videos included in publications have closed captions</string>
     <string name="readium_a11y_rich_content_extended_compact">Information-rich images are described by extended descriptions</string>
     <string name="readium_a11y_rich_content_extended_descriptive">Information-rich images are described by extended descriptions</string>
-    <string name="readium_a11y_rich_content_open_captions_compact"> Videos have open captions</string>
-    <string name="readium_a11y_rich_content_open_captions_descriptive"> Videos included in publications have open captions</string>
+    <string name="readium_a11y_rich_content_open_captions_compact">Videos have open captions</string>
+    <string name="readium_a11y_rich_content_open_captions_descriptive">Videos included in publications have open captions</string>
     <string name="readium_a11y_rich_content_transcript_compact">Transcript(s) provided</string>
     <string name="readium_a11y_rich_content_transcript_descriptive">Transcript(s) provided</string>
     <string name="readium_a11y_rich_content_unknown_compact">No information is available</string>
     <string name="readium_a11y_rich_content_unknown_descriptive">No information is available</string>
     <string name="readium_a11y_hazards_title">Hazards</string>
     <string name="readium_a11y_hazards_flashing_compact">Flashing content</string>
-    <string name="readium_a11y_hazards_flashing_descriptive">The publication contains flashing content which can cause photosensitive seizures</string>
+    <string name="readium_a11y_hazards_flashing_descriptive">The publication contains flashing content that can cause photosensitive seizures</string>
+    <string name="readium_a11y_hazards_flashing_none_compact">No flashing hazards</string>
+    <string name="readium_a11y_hazards_flashing_none_descriptive">The publication does not contain flashing content that can cause photosensitive seizures</string>
+    <string name="readium_a11y_hazards_flashing_unknown_compact">Flashing hazards not known</string>
+    <string name="readium_a11y_hazards_flashing_unknown_descriptive">The presence of flashing content that can cause photosensitive seizures could not be determined</string>
     <string name="readium_a11y_hazards_motion_compact">Motion simulation</string>
     <string name="readium_a11y_hazards_motion_descriptive">The publication contains motion simulations that can cause motion sickness</string>
+    <string name="readium_a11y_hazards_motion_none_compact">No motion simulation hazards</string>
+    <string name="readium_a11y_hazards_motion_none_descriptive">The publication does not contain motion simulations that can cause motion sickness</string>
+    <string name="readium_a11y_hazards_motion_unknown_compact">Motion simulation hazards not known</string>
+    <string name="readium_a11y_hazards_motion_unknown_descriptive">The presence of motion simulations that can cause motion sickness could not be determined</string>
     <string name="readium_a11y_hazards_no_metadata_compact">No information is available</string>
     <string name="readium_a11y_hazards_no_metadata_descriptive">No information is available</string>
     <string name="readium_a11y_hazards_none_compact">No hazards</string>
     <string name="readium_a11y_hazards_none_descriptive">The publication contains no hazards</string>
     <string name="readium_a11y_hazards_sound_compact">Sounds</string>
-    <string name="readium_a11y_hazards_sound_descriptive">The publication contains sounds which can be uncomfortable</string>
+    <string name="readium_a11y_hazards_sound_descriptive">The publication contains sounds that can cause sensitivity issues</string>
+    <string name="readium_a11y_hazards_sound_none_compact">No sound hazards</string>
+    <string name="readium_a11y_hazards_sound_none_descriptive">The publication does not contain sounds that can cause sensitivity issues</string>
+    <string name="readium_a11y_hazards_sound_unknown_compact">Sound hazards not known</string>
+    <string name="readium_a11y_hazards_sound_unknown_descriptive">The presence of sounds that can cause sensitivity issues could not be determined</string>
     <string name="readium_a11y_hazards_unknown_compact">The presence of hazards is unknown</string>
-    <string name="readium_a11y_hazards_unknown_descriptive">The presents of hazards is unknown</string>
+    <string name="readium_a11y_hazards_unknown_descriptive">The presence of hazards is unknown</string>
     <string name="readium_a11y_accessibility_summary_title">Accessibility summary</string>
     <string name="readium_a11y_accessibility_summary_no_metadata_compact">No information is available</string>
     <string name="readium_a11y_accessibility_summary_no_metadata_descriptive">No information is available</string>
+    <string name="readium_a11y_accessibility_summary_publisher_contact_compact">For more information about the accessibility of this product, please contact the publisher: </string>
+    <string name="readium_a11y_accessibility_summary_publisher_contact_descriptive">For more information about the accessibility of this product, please contact the publisher: </string>
     <string name="readium_a11y_legal_considerations_title">Legal considerations</string>
     <string name="readium_a11y_legal_considerations_exempt_compact">Claims an accessibility exemption in some jurisdictions</string>
     <string name="readium_a11y_legal_considerations_exempt_descriptive">This publication claims an accessibility exemption in some jurisdictions</string>
@@ -151,8 +165,8 @@
     <string name="readium_a11y_additional_accessibility_information_text_to_speech_hinting_descriptive">Text-to-speech hinting provided</string>
     <string name="readium_a11y_additional_accessibility_information_ultra_high_contrast_between_text_and_background_compact">Ultra high contrast between text and background</string>
     <string name="readium_a11y_additional_accessibility_information_ultra_high_contrast_between_text_and_background_descriptive">Ultra high contrast between text and background</string>
-    <string name="readium_a11y_additional_accessibility_information_visible_page_numbering_compact">Visible page numbering </string>
-    <string name="readium_a11y_additional_accessibility_information_visible_page_numbering_descriptive">Visible page numbering </string>
+    <string name="readium_a11y_additional_accessibility_information_visible_page_numbering_compact">Visible page numbering</string>
+    <string name="readium_a11y_additional_accessibility_information_visible_page_numbering_descriptive">Visible page numbering</string>
     <string name="readium_a11y_additional_accessibility_information_without_background_sounds_compact">Without background sounds</string>
     <string name="readium_a11y_additional_accessibility_information_without_background_sounds_descriptive">Without background sounds</string>
 </resources>

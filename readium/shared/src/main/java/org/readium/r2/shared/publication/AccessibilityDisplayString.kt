@@ -4,7 +4,7 @@
  *  available in the top-level LICENSE file of the project.
  */
 
-// DO NOT EDIT. File generated automatically from v2.0.b of the en-US JSON strings.
+// DO NOT EDIT. File generated automatically from v2.0.c of the en-US JSON strings.
 
 package org.readium.r2.shared.publication
 
@@ -56,12 +56,19 @@ internal val AccessibilityDisplayString.Companion.RICH_CONTENT_OPEN_CAPTIONS: Ac
 internal val AccessibilityDisplayString.Companion.RICH_CONTENT_TRANSCRIPT: AccessibilityDisplayString get() = AccessibilityDisplayString(compactId = R.string.readium_a11y_rich_content_transcript_compact, descriptiveId = R.string.readium_a11y_rich_content_transcript_descriptive)
 internal val AccessibilityDisplayString.Companion.RICH_CONTENT_UNKNOWN: AccessibilityDisplayString get() = AccessibilityDisplayString(compactId = R.string.readium_a11y_rich_content_unknown_compact, descriptiveId = R.string.readium_a11y_rich_content_unknown_descriptive)
 internal val AccessibilityDisplayString.Companion.HAZARDS_FLASHING: AccessibilityDisplayString get() = AccessibilityDisplayString(compactId = R.string.readium_a11y_hazards_flashing_compact, descriptiveId = R.string.readium_a11y_hazards_flashing_descriptive)
+internal val AccessibilityDisplayString.Companion.HAZARDS_FLASHING_NONE: AccessibilityDisplayString get() = AccessibilityDisplayString(compactId = R.string.readium_a11y_hazards_flashing_none_compact, descriptiveId = R.string.readium_a11y_hazards_flashing_none_descriptive)
+internal val AccessibilityDisplayString.Companion.HAZARDS_FLASHING_UNKNOWN: AccessibilityDisplayString get() = AccessibilityDisplayString(compactId = R.string.readium_a11y_hazards_flashing_unknown_compact, descriptiveId = R.string.readium_a11y_hazards_flashing_unknown_descriptive)
 internal val AccessibilityDisplayString.Companion.HAZARDS_MOTION: AccessibilityDisplayString get() = AccessibilityDisplayString(compactId = R.string.readium_a11y_hazards_motion_compact, descriptiveId = R.string.readium_a11y_hazards_motion_descriptive)
+internal val AccessibilityDisplayString.Companion.HAZARDS_MOTION_NONE: AccessibilityDisplayString get() = AccessibilityDisplayString(compactId = R.string.readium_a11y_hazards_motion_none_compact, descriptiveId = R.string.readium_a11y_hazards_motion_none_descriptive)
+internal val AccessibilityDisplayString.Companion.HAZARDS_MOTION_UNKNOWN: AccessibilityDisplayString get() = AccessibilityDisplayString(compactId = R.string.readium_a11y_hazards_motion_unknown_compact, descriptiveId = R.string.readium_a11y_hazards_motion_unknown_descriptive)
 internal val AccessibilityDisplayString.Companion.HAZARDS_NO_METADATA: AccessibilityDisplayString get() = AccessibilityDisplayString(compactId = R.string.readium_a11y_hazards_no_metadata_compact, descriptiveId = R.string.readium_a11y_hazards_no_metadata_descriptive)
 internal val AccessibilityDisplayString.Companion.HAZARDS_NONE: AccessibilityDisplayString get() = AccessibilityDisplayString(compactId = R.string.readium_a11y_hazards_none_compact, descriptiveId = R.string.readium_a11y_hazards_none_descriptive)
 internal val AccessibilityDisplayString.Companion.HAZARDS_SOUND: AccessibilityDisplayString get() = AccessibilityDisplayString(compactId = R.string.readium_a11y_hazards_sound_compact, descriptiveId = R.string.readium_a11y_hazards_sound_descriptive)
+internal val AccessibilityDisplayString.Companion.HAZARDS_SOUND_NONE: AccessibilityDisplayString get() = AccessibilityDisplayString(compactId = R.string.readium_a11y_hazards_sound_none_compact, descriptiveId = R.string.readium_a11y_hazards_sound_none_descriptive)
+internal val AccessibilityDisplayString.Companion.HAZARDS_SOUND_UNKNOWN: AccessibilityDisplayString get() = AccessibilityDisplayString(compactId = R.string.readium_a11y_hazards_sound_unknown_compact, descriptiveId = R.string.readium_a11y_hazards_sound_unknown_descriptive)
 internal val AccessibilityDisplayString.Companion.HAZARDS_UNKNOWN: AccessibilityDisplayString get() = AccessibilityDisplayString(compactId = R.string.readium_a11y_hazards_unknown_compact, descriptiveId = R.string.readium_a11y_hazards_unknown_descriptive)
 internal val AccessibilityDisplayString.Companion.ACCESSIBILITY_SUMMARY_NO_METADATA: AccessibilityDisplayString get() = AccessibilityDisplayString(compactId = R.string.readium_a11y_accessibility_summary_no_metadata_compact, descriptiveId = R.string.readium_a11y_accessibility_summary_no_metadata_descriptive)
+internal val AccessibilityDisplayString.Companion.ACCESSIBILITY_SUMMARY_PUBLISHER_CONTACT: AccessibilityDisplayString get() = AccessibilityDisplayString(compactId = R.string.readium_a11y_accessibility_summary_publisher_contact_compact, descriptiveId = R.string.readium_a11y_accessibility_summary_publisher_contact_descriptive)
 internal val AccessibilityDisplayString.Companion.LEGAL_CONSIDERATIONS_EXEMPT: AccessibilityDisplayString get() = AccessibilityDisplayString(compactId = R.string.readium_a11y_legal_considerations_exempt_compact, descriptiveId = R.string.readium_a11y_legal_considerations_exempt_descriptive)
 internal val AccessibilityDisplayString.Companion.LEGAL_CONSIDERATIONS_NO_METADATA: AccessibilityDisplayString get() = AccessibilityDisplayString(compactId = R.string.readium_a11y_legal_considerations_no_metadata_compact, descriptiveId = R.string.readium_a11y_legal_considerations_no_metadata_descriptive)
 internal val AccessibilityDisplayString.Companion.ADDITIONAL_ACCESSIBILITY_INFORMATION_ARIA: AccessibilityDisplayString get() = AccessibilityDisplayString(compactId = R.string.readium_a11y_additional_accessibility_information_aria_compact, descriptiveId = R.string.readium_a11y_additional_accessibility_information_aria_descriptive)

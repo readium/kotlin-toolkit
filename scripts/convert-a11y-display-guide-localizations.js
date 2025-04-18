@@ -62,13 +62,14 @@ function writeKotlinExtensions(disclaimer, keys, keyPrefix, write) {
 package org.readium.r2.shared.publication
 
 import org.readium.r2.shared.R
+
 `
     let keysList = Object.keys(keys)
         .filter((k) => k.endsWith("-compact"))
         .map((k) => removeSuffix(k, "-compact"));
     for (const key of keysList) {
         const stringKey = keyPrefix + key.replace(/-/g, '_');
-        keysOutput += `\ninternal val AccessibilityDisplayString.Companion.${convertKebabToUpperSnakeCase(key)}: AccessibilityDisplayString get() = AccessibilityDisplayString(compactId = R.string.${stringKey}_compact, descriptiveId = R.string.${stringKey}_descriptive)`;
+        keysOutput += `internal val AccessibilityDisplayString.Companion.${convertKebabToUpperSnakeCase(key)}: AccessibilityDisplayString get() = AccessibilityDisplayString(compactId = R.string.${stringKey}_compact, descriptiveId = R.string.${stringKey}_descriptive)\n`;
     }
 
     write("java/org/readium/r2/shared/publication/AccessibilityDisplayString.kt", keysOutput);
