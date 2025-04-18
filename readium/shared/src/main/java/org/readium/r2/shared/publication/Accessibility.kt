@@ -70,24 +70,24 @@ public data class Accessibility(
 
         /** Indicates whether this profile matches WCAG level A. */
         public val isWCAGLevelA: Boolean get() =
-            this == EPUB_A11Y_10_WCAG_20_A
-                || this == EPUB_A11Y_11_WCAG_20_A
-                || this == EPUB_A11Y_11_WCAG_21_A
-                || this == EPUB_A11Y_11_WCAG_22_A
+            this == EPUB_A11Y_10_WCAG_20_A ||
+                this == EPUB_A11Y_11_WCAG_20_A ||
+                this == EPUB_A11Y_11_WCAG_21_A ||
+                this == EPUB_A11Y_11_WCAG_22_A
 
         /** Indicates whether this profile matches WCAG level AA. */
         public val isWCAGLevelAA: Boolean get() =
-            this == EPUB_A11Y_10_WCAG_20_AA
-                || this == EPUB_A11Y_11_WCAG_20_AA
-                || this == EPUB_A11Y_11_WCAG_21_AA
-                || this == EPUB_A11Y_11_WCAG_22_AA
+            this == EPUB_A11Y_10_WCAG_20_AA ||
+                this == EPUB_A11Y_11_WCAG_20_AA ||
+                this == EPUB_A11Y_11_WCAG_21_AA ||
+                this == EPUB_A11Y_11_WCAG_22_AA
 
         /** Indicates whether this profile matches WCAG level AAA. */
         public val isWCAGLevelAAA: Boolean get() =
-            this == EPUB_A11Y_10_WCAG_20_AAA
-                || this == EPUB_A11Y_11_WCAG_20_AAA
-                || this == EPUB_A11Y_11_WCAG_21_AAA
-                || this == EPUB_A11Y_11_WCAG_22_AAA
+            this == EPUB_A11Y_10_WCAG_20_AAA ||
+                this == EPUB_A11Y_11_WCAG_20_AAA ||
+                this == EPUB_A11Y_11_WCAG_21_AAA ||
+                this == EPUB_A11Y_11_WCAG_22_AAA
 
         public companion object {
 

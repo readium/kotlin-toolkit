@@ -41,7 +41,7 @@ class AccessibilityMetadataDisplayGuideTest {
         fun test(
             layout: EpubLayout,
             a11y: Accessibility?,
-            expected: WaysOfReading.VisualAdjustments
+            expected: WaysOfReading.VisualAdjustments,
         ) {
             val publication = publication(layout = layout, accessibility = a11y)
             val sut = WaysOfReading(publication)
@@ -150,7 +150,8 @@ class AccessibilityMetadataDisplayGuideTest {
                     AccessMode.AUDITORY,
                     AccessMode.MATH_ON_VISUAL
                 )
-            ), WaysOfReading.NonvisualReading.UNREADABLE
+            ),
+            WaysOfReading.NonvisualReading.UNREADABLE
         )
     }
 
@@ -205,7 +206,8 @@ class AccessibilityMetadataDisplayGuideTest {
             Accessibility(
                 accessModes = setOf(AccessMode.TEXTUAL),
                 accessModesSufficient = setOf(
-                    setOf(PrimaryAccessMode.AUDITORY), setOf(
+                    setOf(PrimaryAccessMode.AUDITORY),
+                    setOf(
                         PrimaryAccessMode.TEXTUAL
                     )
                 )
@@ -216,7 +218,8 @@ class AccessibilityMetadataDisplayGuideTest {
             Accessibility(
                 accessModes = setOf(AccessMode.TEXTUAL, AccessMode.AUDITORY),
                 accessModesSufficient = setOf(
-                    setOf(PrimaryAccessMode.AUDITORY), setOf(
+                    setOf(PrimaryAccessMode.AUDITORY),
+                    setOf(
                         PrimaryAccessMode.TEXTUAL
                     )
                 )
@@ -687,7 +690,7 @@ class AccessibilityMetadataDisplayGuideTest {
     fun `rich content statements`() {
         fun test(
             richContent: RichContent,
-            expected: List<AccessibilityDisplayString>
+            expected: List<AccessibilityDisplayString>,
         ) {
             assertEquals(
                 expected,
@@ -896,7 +899,7 @@ class AccessibilityMetadataDisplayGuideTest {
     fun `additional information statements`() {
         fun test(
             additionalInfo: AdditionalInformation,
-            expected: List<AccessibilityDisplayString>
+            expected: List<AccessibilityDisplayString>,
         ) {
             assertEquals(expected, additionalInfo.statements.map { (it as StaticStatement).string })
         }
@@ -1243,8 +1246,8 @@ class AccessibilityMetadataDisplayGuideTest {
             ),
             listOf(
                 S.HAZARDS_FLASHING,
-//                S.HAZARDS_MOTION_NONE,
-//                S.HAZARDS_SOUND_NONE
+                S.HAZARDS_MOTION_NONE,
+                S.HAZARDS_SOUND_NONE
             )
         )
 
@@ -1256,8 +1259,8 @@ class AccessibilityMetadataDisplayGuideTest {
             ),
             listOf(
                 S.HAZARDS_MOTION,
-//                S.HAZARDS_FLASHING_NONE,
-//                S.HAZARDS_SOUND_NONE
+                S.HAZARDS_FLASHING_NONE,
+                S.HAZARDS_SOUND_NONE
             )
         )
 
@@ -1269,8 +1272,8 @@ class AccessibilityMetadataDisplayGuideTest {
             ),
             listOf(
                 S.HAZARDS_SOUND,
-//                S.HAZARDS_FLASHING_NONE,
-//                S.HAZARDS_MOTION_NONE
+                S.HAZARDS_FLASHING_NONE,
+                S.HAZARDS_MOTION_NONE
             )
         )
 
@@ -1292,8 +1295,8 @@ class AccessibilityMetadataDisplayGuideTest {
             ),
             listOf(
                 S.HAZARDS_MOTION,
-//                S.HAZARDS_FLASHING_UNKNOWN,
-//                S.HAZARDS_SOUND_NONE
+                S.HAZARDS_FLASHING_UNKNOWN,
+                S.HAZARDS_SOUND_NONE
             )
         )
 
@@ -1305,8 +1308,8 @@ class AccessibilityMetadataDisplayGuideTest {
             ),
             listOf(
                 S.HAZARDS_FLASHING,
-//                S.HAZARDS_MOTION_UNKNOWN,
-//                S.HAZARDS_SOUND_UNKNOWN
+                S.HAZARDS_MOTION_UNKNOWN,
+                S.HAZARDS_SOUND_UNKNOWN
             )
         )
     }
@@ -1474,7 +1477,7 @@ class AccessibilityMetadataDisplayGuideTest {
     @OptIn(InternalReadiumApi::class)
     private fun publication(
         layout: EpubLayout? = null,
-        accessibility: Accessibility?
+        accessibility: Accessibility?,
     ): Publication =
         Publication(
             manifest = Manifest(

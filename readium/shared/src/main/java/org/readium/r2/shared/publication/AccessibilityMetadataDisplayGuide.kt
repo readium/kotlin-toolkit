@@ -148,8 +148,8 @@ public class AccessibilityMetadataDisplayGuide(
         public val visualAdjustments: VisualAdjustments = VisualAdjustments.UNKNOWN,
         public val nonvisualReading: NonvisualReading = NonvisualReading.NO_METADATA,
         public val nonvisualReadingAltText: Boolean = false,
-        public val prerecordedAudio: PrerecordedAudio = PrerecordedAudio.NO_METADATA
-    ): Field {
+        public val prerecordedAudio: PrerecordedAudio = PrerecordedAudio.NO_METADATA,
+    ) : Field {
 
         /** "Ways of reading" should be rendered even if there is no metadata. */
         override val shouldDisplay: Boolean = true
@@ -160,8 +160,10 @@ public class AccessibilityMetadataDisplayGuide(
         public enum class VisualAdjustments {
             /** Appearance can be modified */
             MODIFIABLE,
+
             /** Appearance cannot be modified */
             UNMODIFIABLE,
+
             /** No information about appearance modifiability is available */
             UNKNOWN,
         }
@@ -169,10 +171,13 @@ public class AccessibilityMetadataDisplayGuide(
         public enum class NonvisualReading {
             /** Readable in read aloud or dynamic braille */
             READABLE,
+
             /** Not fully readable in read aloud or dynamic braille */
             NOT_FULLY,
+
             /** Not readable in read aloud or dynamic braille */
             UNREADABLE,
+
             /** No information about nonvisual reading is available */
             NO_METADATA,
         }
@@ -180,38 +185,47 @@ public class AccessibilityMetadataDisplayGuide(
         public enum class PrerecordedAudio {
             /** Prerecorded audio synchronized with text */
             SYNCHRONIZED,
+
             /** Prerecorded audio only */
             AUDIO_ONLY,
+
             /** Prerecorded audio clips */
             AUDIO_COMPLEMENTARY,
+
             /** No information about prerecorded audio is available */
             NO_METADATA,
         }
 
         override val statements: List<Statement> get() = buildList {
-            add(when (visualAdjustments) {
-                VisualAdjustments.MODIFIABLE -> S.WAYS_OF_READING_VISUAL_ADJUSTMENTS_MODIFIABLE
-                VisualAdjustments.UNMODIFIABLE -> S.WAYS_OF_READING_VISUAL_ADJUSTMENTS_UNMODIFIABLE
-                VisualAdjustments.UNKNOWN -> S.WAYS_OF_READING_VISUAL_ADJUSTMENTS_UNKNOWN
-            })
+            add(
+                when (visualAdjustments) {
+                    VisualAdjustments.MODIFIABLE -> S.WAYS_OF_READING_VISUAL_ADJUSTMENTS_MODIFIABLE
+                    VisualAdjustments.UNMODIFIABLE -> S.WAYS_OF_READING_VISUAL_ADJUSTMENTS_UNMODIFIABLE
+                    VisualAdjustments.UNKNOWN -> S.WAYS_OF_READING_VISUAL_ADJUSTMENTS_UNKNOWN
+                }
+            )
 
-            add(when (nonvisualReading) {
-                NonvisualReading.READABLE -> S.WAYS_OF_READING_NONVISUAL_READING_READABLE
-                NonvisualReading.NOT_FULLY -> S.WAYS_OF_READING_NONVISUAL_READING_NOT_FULLY
-                NonvisualReading.UNREADABLE -> S.WAYS_OF_READING_NONVISUAL_READING_NONE
-                NonvisualReading.NO_METADATA -> S.WAYS_OF_READING_NONVISUAL_READING_NO_METADATA
-            })
+            add(
+                when (nonvisualReading) {
+                    NonvisualReading.READABLE -> S.WAYS_OF_READING_NONVISUAL_READING_READABLE
+                    NonvisualReading.NOT_FULLY -> S.WAYS_OF_READING_NONVISUAL_READING_NOT_FULLY
+                    NonvisualReading.UNREADABLE -> S.WAYS_OF_READING_NONVISUAL_READING_NONE
+                    NonvisualReading.NO_METADATA -> S.WAYS_OF_READING_NONVISUAL_READING_NO_METADATA
+                }
+            )
 
             if (nonvisualReadingAltText) {
                 add(S.WAYS_OF_READING_NONVISUAL_READING_ALT_TEXT)
             }
 
-            add(when (prerecordedAudio) {
-                PrerecordedAudio.SYNCHRONIZED -> S.WAYS_OF_READING_PRERECORDED_AUDIO_SYNCHRONIZED
-                PrerecordedAudio.AUDIO_ONLY -> S.WAYS_OF_READING_PRERECORDED_AUDIO_ONLY
-                PrerecordedAudio.AUDIO_COMPLEMENTARY -> S.WAYS_OF_READING_PRERECORDED_AUDIO_COMPLEMENTARY
-                PrerecordedAudio.NO_METADATA -> S.WAYS_OF_READING_PRERECORDED_AUDIO_NO_METADATA
-            })
+            add(
+                when (prerecordedAudio) {
+                    PrerecordedAudio.SYNCHRONIZED -> S.WAYS_OF_READING_PRERECORDED_AUDIO_SYNCHRONIZED
+                    PrerecordedAudio.AUDIO_ONLY -> S.WAYS_OF_READING_PRERECORDED_AUDIO_ONLY
+                    PrerecordedAudio.AUDIO_COMPLEMENTARY -> S.WAYS_OF_READING_PRERECORDED_AUDIO_COMPLEMENTARY
+                    PrerecordedAudio.NO_METADATA -> S.WAYS_OF_READING_PRERECORDED_AUDIO_NO_METADATA
+                }
+            )
         }
 
         public companion object {
@@ -219,15 +233,15 @@ public class AccessibilityMetadataDisplayGuide(
                 val isFixedLayout = publication.metadata.presentation.layout == EpubLayout.FIXED
                 val a11y = publication.metadata.accessibility ?: Accessibility()
 
-                val allText = a11y.accessModes == setOf(AccessMode.TEXTUAL)
-                    || a11y.accessModesSufficient.contains(setOf(PrimaryAccessMode.TEXTUAL))
+                val allText = a11y.accessModes == setOf(AccessMode.TEXTUAL) ||
+                    a11y.accessModesSufficient.contains(setOf(PrimaryAccessMode.TEXTUAL))
 
-                val someText = a11y.accessModes.contains(AccessMode.TEXTUAL)
-                    || a11y.accessModesSufficient.contains { it.contains(PrimaryAccessMode.TEXTUAL) }
+                val someText = a11y.accessModes.contains(AccessMode.TEXTUAL) ||
+                    a11y.accessModesSufficient.contains { it.contains(PrimaryAccessMode.TEXTUAL) }
 
-                val noText = !(a11y.accessModes.isEmpty() && a11y.accessModesSufficient.isEmpty())
-                    && !a11y.accessModes.contains(AccessMode.TEXTUAL)
-                    && !a11y.accessModesSufficient.contains { it.contains(PrimaryAccessMode.TEXTUAL) }
+                val noText = !(a11y.accessModes.isEmpty() && a11y.accessModesSufficient.isEmpty()) &&
+                    !a11y.accessModes.contains(AccessMode.TEXTUAL) &&
+                    !a11y.accessModesSufficient.contains { it.contains(PrimaryAccessMode.TEXTUAL) }
 
                 val hasTextAlt = a11y.features.containsAny(
                     Feature.LONG_DESCRIPTION,
@@ -237,7 +251,7 @@ public class AccessibilityMetadataDisplayGuide(
                 )
 
                 return WaysOfReading(
-                    visualAdjustments =  when {
+                    visualAdjustments = when {
                         a11y.features.contains(Feature.DISPLAY_TRANSFORMABILITY) -> VisualAdjustments.MODIFIABLE
                         isFixedLayout -> VisualAdjustments.UNMODIFIABLE
                         else -> VisualAdjustments.UNKNOWN
@@ -274,7 +288,7 @@ public class AccessibilityMetadataDisplayGuide(
         val tableOfContents: Boolean = false,
         val index: Boolean = false,
         val headings: Boolean = false,
-        val page: Boolean = false
+        val page: Boolean = false,
     ) : Field {
 
         /**
@@ -342,7 +356,7 @@ public class AccessibilityMetadataDisplayGuide(
         public val chemicalFormulaAsLaTeX: Boolean = false,
         public val closedCaptions: Boolean = false,
         public val openCaptions: Boolean = false,
-        public val transcript: Boolean = false
+        public val transcript: Boolean = false,
     ) : Field {
 
         /**
@@ -422,7 +436,7 @@ public class AccessibilityMetadataDisplayGuide(
         public val signLanguage: Boolean = false,
         public val tactileGraphics: Boolean = false,
         public val tactileObjects: Boolean = false,
-        public val textToSpeechHinting: Boolean = false
+        public val textToSpeechHinting: Boolean = false,
     ) : Field {
 
         /**
@@ -502,32 +516,35 @@ public class AccessibilityMetadataDisplayGuide(
     ) : Field {
 
         public enum class Hazard {
-            YES, NO, UNKNOWN, NO_METADATA
+            YES,
+            NO,
+            UNKNOWN,
+            NO_METADATA,
         }
 
         /**
          * Indicates whether no information about hazards is available.
          */
         public val noMetadata: Boolean
-            get() = flashing == Hazard.NO_METADATA
-                && motion == Hazard.NO_METADATA
-                && sound == Hazard.NO_METADATA
+            get() = flashing == Hazard.NO_METADATA &&
+                motion == Hazard.NO_METADATA &&
+                sound == Hazard.NO_METADATA
 
         /**
          * The publication contains no hazards.
          */
         public val noHazards: Boolean
-            get() = flashing == Hazard.NO
-                && motion == Hazard.NO
-                && sound == Hazard.NO
+            get() = flashing == Hazard.NO &&
+                motion == Hazard.NO &&
+                sound == Hazard.NO
 
         /**
          * The presence of hazards is unknown.
          */
         public val unknown: Boolean
-            get() = flashing == Hazard.UNKNOWN
-                && motion == Hazard.UNKNOWN
-                && sound == Hazard.UNKNOWN
+            get() = flashing == Hazard.UNKNOWN &&
+                motion == Hazard.UNKNOWN &&
+                sound == Hazard.UNKNOWN
 
         override val shouldDisplay: Boolean get() = !noMetadata
 
@@ -544,15 +561,13 @@ public class AccessibilityMetadataDisplayGuide(
                     if (motion == Hazard.YES) add(S.HAZARDS_MOTION)
                     if (sound == Hazard.YES) add(S.HAZARDS_SOUND)
 
-                    // FIXME: Waiting for the strings to be available
+                    if (flashing == Hazard.UNKNOWN) add(S.HAZARDS_FLASHING_UNKNOWN)
+                    if (motion == Hazard.UNKNOWN) add(S.HAZARDS_MOTION_UNKNOWN)
+                    if (sound == Hazard.UNKNOWN) add(S.HAZARDS_SOUND_UNKNOWN)
 
-//                    if (flashing == Hazard.UNKNOWN) add(S.HAZARDS_FLASHING_UNKNOWN)
-//                    if (motion == Hazard.UNKNOWN) add(S.HAZARDS_MOTION_UNKNOWN)
-//                    if (sound == Hazard.UNKNOWN) add(S.HAZARDS_SOUND_UNKNOWN)
-//
-//                    if (flashing == Hazard.NO) add(S.HAZARDS_FLASHING_NONE)
-//                    if (motion == Hazard.NO) add(S.HAZARDS_MOTION_NONE)
-//                    if (sound == Hazard.NO) add(S.HAZARDS_SOUND_NONE)
+                    if (flashing == Hazard.NO) add(S.HAZARDS_FLASHING_NONE)
+                    if (motion == Hazard.NO) add(S.HAZARDS_MOTION_NONE)
+                    if (sound == Hazard.NO) add(S.HAZARDS_SOUND_NONE)
                 }
             }
         }
@@ -600,7 +615,7 @@ public class AccessibilityMetadataDisplayGuide(
      * @param profiles Accessibility conformance profiles.
      */
     public data class Conformance(
-        public val profiles: Set<Accessibility.Profile> = emptySet()
+        public val profiles: Set<Accessibility.Profile> = emptySet(),
     ) : Field {
 
         /** "Conformance" should be rendered even if there is no metadata. */
@@ -616,12 +631,14 @@ public class AccessibilityMetadataDisplayGuide(
                     return@buildList
                 }
 
-                add(when {
-                    profiles.contains { it.isWCAGLevelAAA } -> S.CONFORMANCE_AAA
-                    profiles.contains { it.isWCAGLevelAA } -> S.CONFORMANCE_AA
-                    profiles.contains { it.isWCAGLevelA } -> S.CONFORMANCE_A
-                    else -> S.CONFORMANCE_UNKNOWN_STANDARD
-                })
+                add(
+                    when {
+                        profiles.contains { it.isWCAGLevelAAA } -> S.CONFORMANCE_AAA
+                        profiles.contains { it.isWCAGLevelAA } -> S.CONFORMANCE_AA
+                        profiles.contains { it.isWCAGLevelA } -> S.CONFORMANCE_A
+                        else -> S.CONFORMANCE_UNKNOWN_STANDARD
+                    }
+                )
 
                 // FIXME: Waiting on W3C to offer localized strings with placeholders instead of concatenation. See https://github.com/w3c/publ-a11y/issues/688
             }
@@ -644,7 +661,7 @@ public class AccessibilityMetadataDisplayGuide(
      * some jurisdictions.
      */
     public data class Legal(
-        public val exemption: Boolean = false
+        public val exemption: Boolean = false,
     ) : Field {
 
         override val shouldDisplay: Boolean get() = exemption
@@ -678,7 +695,7 @@ public class AccessibilityMetadataDisplayGuide(
      * https://w3c.github.io/publ-a11y/a11y-meta-display-guide/2.0/guidelines/#accessibility-summary
      */
     public data class AccessibilitySummary(
-        public val summary: String? = null
+        public val summary: String? = null,
     ) : Field {
 
         override val shouldDisplay: Boolean get() = summary != null
