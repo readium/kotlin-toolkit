@@ -30,8 +30,8 @@ internal class ScrollDispatcher(
     internal var flingBehavior: Fling2DBehavior,
 ) : Scroll2DScope {
 
-    override fun scrollBy(available: Offset): Offset {
-        return -rawScrollBy(-available.mainAxisValue).mainAxisOffset
+    override fun scrollBy(pixels: Offset): Offset {
+        return -rawScrollBy(-pixels.mainAxisValue).mainAxisOffset
     }
 
     private fun rawScrollBy(available: Float): Float {

@@ -9,7 +9,7 @@ package org.readium.navigator.web.layout
 import org.readium.r2.navigator.preferences.ReadingProgression
 import org.readium.r2.shared.util.Url
 
-internal class Layout(
+internal data class Layout(
     val readingProgression: ReadingProgression,
     val spreads: List<Spread>,
 ) {
