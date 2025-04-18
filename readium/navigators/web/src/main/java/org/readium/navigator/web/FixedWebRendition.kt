@@ -14,15 +14,19 @@ import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.LayoutDirection
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import org.readium.navigator.common.HyperlinkListener
 import org.readium.navigator.common.HyperlinkLocation
@@ -88,14 +92,21 @@ public fun FixedWebRendition(
         val reverseLayout =
             LocalLayoutDirection.current.toReadingProgression() != readingProgression
 
+        val coroutineScope = rememberCoroutineScope()
+
         if (state.controller == null) {
-            val spreadIndex = state.pagerState.currentPage
-            val itemIndex = state.layoutDelegate.layout.value.pageIndexForSpread(spreadIndex)
-            val itemHref = state.publication.readingOrder[itemIndex].href
+            val itemHref = state.getCurrentHref()
             state.initController(location = FixedWebLocation(itemHref))
         }
 
-        val coroutineScope = rememberCoroutineScope()
+        LaunchedEffect(state) {
+            snapshotFlow {
+                state.pagerState.currentPage
+            }.onEach {
+                val itemHref = state.getCurrentHref()
+                state.navigationDelegate.updateLocation(location = FixedWebLocation(itemHref))
+            }.launchIn(coroutineScope)
+        }
 
         val inputListenerState = rememberUpdatedState(inputListener)
 
@@ -131,18 +142,31 @@ public fun FixedWebRendition(
 
         scrollDispatcher.flingBehavior = flingBehavior
 
+        LaunchedEffect(state.layoutDelegate.layout.value, state.controller) {
+            state.controller?.let {
+                val currentHref = it.location.value.href
+                val spreadIndex = checkNotNull(state.layoutDelegate.layout.value.spreadIndexForHref(currentHref))
+                state.pagerState.requestScrollToPage(spreadIndex)
+            }
+        }
+
         RenditionPager(
             modifier = Modifier,
             state = state.pagerState,
             scrollDispatcher = scrollDispatcher,
             orientation = Orientation.Horizontal,
             beyondViewportPageCount = 2,
-            key = { index -> state.layoutDelegate.layout.value.pageIndexForSpread(index) },
+            key = { index ->
+                val readingProgression = state.layoutDelegate.layout.value.readingProgression
+                val spread = state.layoutDelegate.layout.value.spreads[index]
+                val pages = spread.pages.map { it.index }
+                "$readingProgression $spread $pages"
+            },
             reverseLayout = reverseLayout
         ) { index ->
             when (val spread = state.layoutDelegate.layout.value.spreads[index]) {
                 is SingleViewportSpread -> {
-                    val spreadState = remember(state) {
+                    val spreadState =
                         SingleSpreadState(
                             index = index,
                             htmlData = state.preloadedData.fixedSingleContent,
@@ -152,7 +176,6 @@ public fun FixedWebRendition(
                             fit = state.layoutDelegate.fit,
                             displayArea = displayArea
                         )
-                    }
 
                     SingleViewportSpread(
                         pagerState = state.pagerState,
@@ -174,7 +197,7 @@ public fun FixedWebRendition(
                     )
                 }
                 is DoubleViewportSpread -> {
-                    val spreadState = remember(state) {
+                    val spreadState =
                         DoubleSpreadState(
                             index = index,
                             htmlData = state.preloadedData.fixedDoubleContent,
@@ -184,7 +207,6 @@ public fun FixedWebRendition(
                             fit = state.layoutDelegate.fit,
                             displayArea = displayArea
                         )
-                    }
 
                     DoubleViewportSpread(
                         pagerState = state.pagerState,
