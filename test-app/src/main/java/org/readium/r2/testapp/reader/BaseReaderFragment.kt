@@ -81,25 +81,26 @@ abstract class BaseReaderFragment : Fragment() {
                             model.activityChannel.send(
                                 ReaderViewModel.ActivityCommand.OpenOutlineRequested
                             )
-                            return true
+                        }
+                        R.id.info -> {
+                            PublicationMetadataDialogFragment()
+                                .show(childFragmentManager, "Info")
                         }
                         R.id.bookmark -> {
                             model.insertBookmark(navigator.currentLocator.value)
-                            return true
                         }
                         R.id.settings -> {
                             MainPreferencesBottomSheetDialogFragment()
                                 .show(childFragmentManager, "Settings")
-                            return true
                         }
                         R.id.drm -> {
                             model.activityChannel.send(
                                 ReaderViewModel.ActivityCommand.OpenDrmManagementRequested
                             )
-                            return true
                         }
+                        else -> return false
                     }
-                    return false
+                    return true
                 }
             },
             viewLifecycleOwner
