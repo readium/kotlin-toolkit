@@ -64,7 +64,10 @@ public class XmlParser(
                     val element = buildElement(attributes, children, lang)
                     stack.peek().first.add(element)
                 }
-                XmlPullParser.TEXT, XmlPullParser.ENTITY_REF -> {
+                XmlPullParser.CDSECT,
+                XmlPullParser.TEXT,
+                XmlPullParser.ENTITY_REF,
+                -> {
                     text += parser.text
                 }
             }

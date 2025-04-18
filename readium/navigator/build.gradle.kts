@@ -35,13 +35,9 @@ dependencies {
     implementation(libs.androidx.legacy.ui)
     implementation(libs.androidx.lifecycle.common)
     implementation(libs.androidx.recyclerview)
-    implementation(libs.androidx.media)
     implementation(libs.bundles.media3)
     implementation(libs.androidx.webkit)
 
-    implementation(libs.bundles.media2)
-    // ExoPlayer is used by the Audio Navigator.
-    api(libs.bundles.exoplayer)
     implementation(libs.timber)
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.kotlinx.serialization.json)

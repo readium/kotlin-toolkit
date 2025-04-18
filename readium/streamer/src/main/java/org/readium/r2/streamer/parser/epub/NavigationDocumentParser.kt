@@ -52,15 +52,15 @@ internal object NavigationDocumentParser {
                 DEFAULT_VOCAB.TYPE
             )
         }
-        val links = nav.getFirst("ol", Namespaces.XHTML)?.let { parseOlElement(it, filePath) }
+        val links = nav.getFirst("ol", Namespaces.XHTML)?.let { parseOlElement(it, filePath, prefixMap) }
         return if (types.isNotEmpty() && !links.isNullOrEmpty()) Pair(types, links) else null
     }
 
-    private fun parseOlElement(element: ElementNode, filePath: Url): List<Link> =
-        element.get("li", Namespaces.XHTML).mapNotNull { parseLiElement(it, filePath) }
+    private fun parseOlElement(element: ElementNode, filePath: Url, prefixMap: Map<String, String>): List<Link> =
+        element.get("li", Namespaces.XHTML).mapNotNull { parseLiElement(it, filePath, prefixMap) }
 
     @OptIn(DelicateReadiumApi::class)
-    private fun parseLiElement(element: ElementNode, filePath: Url): Link? {
+    private fun parseLiElement(element: ElementNode, filePath: Url, prefixMap: Map<String, String>): Link? {
         val first = element.getAll().firstOrNull() ?: return null // should be <a>,  <span>, or <ol>
         val title = if (first.name == "ol") {
             ""
@@ -76,7 +76,26 @@ internal object NavigationDocumentParser {
         } else {
             Url("#")!!
         }
-        val children = element.getFirst("ol", Namespaces.XHTML)?.let { parseOlElement(it, filePath) }.orEmpty()
+        val children = element.getFirst("ol", Namespaces.XHTML)?.let {
+            parseOlElement(
+                it,
+                filePath,
+                prefixMap
+            )
+        }.orEmpty()
+
+        val typeAttr = first.getAttrNs("type", Namespaces.OPS) ?: ""
+        val rels = if (typeAttr.isNotEmpty()) {
+            parseProperties(typeAttr).map {
+                resolveProperty(
+                    it,
+                    prefixMap,
+                    DEFAULT_VOCAB.TYPE
+                )
+            }.toSet()
+        } else {
+            emptySet()
+        }
 
         return if (children.isEmpty() && (href.toString() == "#" || title == "")) {
             null
@@ -84,7 +103,8 @@ internal object NavigationDocumentParser {
             Link(
                 title = title,
                 href = href,
-                children = children
+                children = children,
+                rels = rels
             )
         }
     }

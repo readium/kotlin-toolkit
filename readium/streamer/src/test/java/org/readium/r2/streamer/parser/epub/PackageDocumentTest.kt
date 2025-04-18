@@ -12,12 +12,14 @@
 package org.readium.r2.streamer.parser.epub
 
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.entry
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.publication.Href
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Manifest
+import org.readium.r2.shared.publication.PublicationCollection
 import org.readium.r2.shared.publication.ReadingProgression
 import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.publication.epub.contains
@@ -229,5 +231,40 @@ class LinkMiscTest {
     @Test(timeout = PARSE_PUB_TIMEOUT)
     fun `Fallback computing terminates even if there are crossed dependencies`() {
         parsePackageDocument("package/fallbacks-termination.opf")
+    }
+}
+
+@RunWith(RobolectricTestRunner::class)
+class GuideTest {
+    private val guidePub = parsePackageDocument("package/guide-epub2.opf")
+
+    @Test
+    fun `Guide is rightly computed`() {
+        assertThat(guidePub.subcollections).containsExactly(
+            entry(
+                "landmarks",
+                listOf(
+                    PublicationCollection(
+                        links = listOf(
+                            Link(
+                                href = Href("OEBPS/toc.html")!!,
+                                title = "Table of Contents",
+                                rels = setOf("http://idpf.org/epub/vocab/structure/#toc")
+                            ),
+                            Link(
+                                href = Href("OEBPS/toc.html#figures")!!,
+                                title = "List Of Illustrations",
+                                rels = setOf("http://idpf.org/epub/vocab/structure/#loi")
+                            ),
+                            Link(
+                                href = Href("OEBPS/beginpage.html")!!,
+                                title = "Introduction",
+                                rels = setOf("http://idpf.org/epub/vocab/structure/#bodymatter")
+                            ),
+                        )
+                    )
+                )
+            )
+        )
     }
 }

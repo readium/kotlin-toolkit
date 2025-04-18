@@ -15,8 +15,6 @@ android {
 dependencies {
     api(project(":readium:readium-shared"))
 
-    api(files("libs/nanohttpd-2.3.2.jar", "libs/nanohttpd-nanolets-2.3.2.jar"))
-
     @Suppress("GradleDependency")
     implementation(libs.timber)
     // AM NOTE: conflicting support libraries, excluding these

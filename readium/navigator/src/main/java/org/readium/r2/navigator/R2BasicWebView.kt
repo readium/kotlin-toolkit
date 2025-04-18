@@ -116,6 +116,7 @@ internal open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebV
     internal var isSelecting = false
 
     val scrollMode: Boolean get() = scrollModeFlow.value
+    var disablePageTurnsWhileScrolling: Boolean = false
 
     var callback: OnOverScrolledCallback? = null
 
@@ -213,6 +214,9 @@ internal open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebV
             }
 
             when {
+                // If the user is in scrollMode and has disabled swipe pagination, do nothing.
+                scrollMode && this@R2BasicWebView.disablePageTurnsWhileScrolling -> {}
+
                 scrollMode ->
                     goRight(jump = true)
 
@@ -244,6 +248,9 @@ internal open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebV
             }
 
             when {
+                // If the user is in scrollMode and has disabled swipe pagination, do nothing.
+                scrollMode && this@R2BasicWebView.disablePageTurnsWhileScrolling -> {}
+
                 scrollMode ->
                     goLeft(jump = true)
 
@@ -392,7 +399,6 @@ internal open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebV
     fun onDragEnd(eventJson: String): Boolean {
         val event = DragEvent.fromJSON(eventJson)?.takeIf { it.isValid }
             ?: return false
-
         return runBlocking(uiScope.coroutineContext) { listener?.onDragEnd(event) ?: false }
     }
 

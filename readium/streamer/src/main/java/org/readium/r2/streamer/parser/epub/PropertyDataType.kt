@@ -14,7 +14,8 @@ internal val PACKAGE_RESERVED_PREFIXES = mapOf(
     "marc" to Vocabularies.MARC,
     "onix" to Vocabularies.ONIX,
     "schema" to Vocabularies.SCHEMA,
-    "xsd" to Vocabularies.XSD
+    "xsd" to Vocabularies.XSD,
+    "tdm" to Vocabularies.TDM,
 )
 
 internal val CONTENT_RESERVED_PREFIXES = mapOf(

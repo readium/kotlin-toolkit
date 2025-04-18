@@ -27,9 +27,6 @@ dependencies {
     implementation(libs.androidx.core)
     implementation(libs.google.material)
     implementation(libs.timber)
-    implementation("com.mcxiaoke.koi:async:0.5.5") {
-        exclude(module = "support-v4")
-    }
     implementation("com.mcxiaoke.koi:core:0.5.5") {
         exclude(module = "support-v4")
     }
@@ -42,4 +39,7 @@ dependencies {
     // Tests
     testImplementation(libs.junit)
     testImplementation(libs.kotlin.junit)
+    testImplementation(libs.mockk)
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.robolectric)
 }

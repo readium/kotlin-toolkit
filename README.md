@@ -10,7 +10,7 @@
 
 | Readium   | Android min SDK | Android compile SDK | Kotlin compiler (✻) | Gradle (✻) |
 |-----------|-----------------|---------------------|---------------------|------------|
-| `develop` | 21              | 35                  | 2.0.21              | 8.10.2     |
+| `develop` | 21              | 35                  | 2.1.20              | 8.13       |
 | 3.0.0     | 21              | 34                  | 1.9.24              | 8.6.0      |
 | 2.3.0     | 21              | 33                  | 1.7.10              | 6.9.3      |
 
@@ -22,7 +22,7 @@ Readium modules are distributed with [Maven Central](https://search.maven.org/se
 
 ```groovy
 buildscript {
-    ext.readium_version = '3.0.1'
+    ext.readium_version = '3.0.3'
 }
 
 allprojects {
@@ -54,12 +54,6 @@ First, add the repository as a Git submodule of your app repository, then checko
 
 ```sh
 git submodule add https://github.com/readium/kotlin-toolkit.git
-```
-
-Make sure you have Jetifier enabled in your `gradle.properties` file:
-
-```properties
-android.enableJetifier=true
 ```
 
 Then, include the Readium build to your project's `settings.gradle` file. The Readium dependencies will automatically build against the local sources.
