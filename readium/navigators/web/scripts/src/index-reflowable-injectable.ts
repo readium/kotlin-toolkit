@@ -51,7 +51,10 @@ window.addEventListener("load", (event) => {
 
   const observer = new ResizeObserver(() => {
     requestAnimationFrame(() => {
-      appendVirtualColumnIfNeeded(window)
+      if (appendVirtualColumnIfNeeded(window)) {
+        // Column has been added or removed, wait for next resize callback.
+        return
+      }
 
       const scrollingElement = window.document.scrollingElement
 
