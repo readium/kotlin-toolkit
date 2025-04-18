@@ -5,6 +5,7 @@
 * [Extracting the content of a publication](content.md)
 * [Supporting PDF documents](pdf.md)
 * [Text-to-speech](tts.md)
+* [Accessibility](accessibility.md)
 * [Supporting Readium LCP](lcp.md)
 * [Navigator](navigator/navigator.md)
     * [Configuring the Navigator](navigator/preferences.md)
