@@ -103,7 +103,7 @@ internal fun ReflowableResource(
                             val scrollController = WebViewScrollController(this)
                             scrollController.moveToProgression(
                                 progression = resourceState.progression,
-                                scroll = scroll,
+                                snap = !scroll,
                                 orientation = orientationState.value
                             )
                             resourceState.scrollController.value = scrollController

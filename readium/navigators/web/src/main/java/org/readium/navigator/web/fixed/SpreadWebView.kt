@@ -8,10 +8,14 @@ package org.readium.navigator.web.fixed
 
 import android.annotation.SuppressLint
 import android.view.View
+import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -19,6 +23,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.DpOffset
+import androidx.compose.ui.zIndex
 import org.readium.navigator.common.TapEvent
 import org.readium.navigator.web.gestures.NullFling2DBehavior
 import org.readium.navigator.web.gestures.Scrollable2DDefaults
@@ -44,6 +49,7 @@ internal fun SpreadWebView(
     spreadIndex: Int,
     state: WebViewState<RelaxedWebView>,
     spreadScrollState: SpreadScrollState,
+    progression: Double,
     client: WebViewClient,
     onScriptsLoaded: () -> Unit,
     onTap: (TapEvent) -> Unit,
@@ -68,6 +74,9 @@ internal fun SpreadWebView(
 
     spreadNestedScrollConnection.flingBehavior = flingBehavior
 
+    val contentIsLaidOut =
+        remember(scrollableState.webView) { mutableStateOf(false) }
+
     val documentStateApi = remember(onScriptsLoaded) {
         DocumentStateApi(
             onScriptsLoadedDelegate = onScriptsLoaded,
@@ -76,7 +85,13 @@ internal fun SpreadWebView(
                     requestLayout()
                     setNextLayoutListener {
                         val scrollController = WebViewScrollController(this)
+                        scrollController.moveToProgression(
+                            progression = progression,
+                            snap = true,
+                            orientation = Orientation.Horizontal
+                        )
                         spreadScrollState.scrollController.value = scrollController
+                        contentIsLaidOut.value = true
                     }
                 }
             },
@@ -103,6 +118,17 @@ internal fun SpreadWebView(
 
     LaunchedEffect(state.webView, gesturesApi) {
         state.webView?.let { gesturesApi.registerOnWebView(it) }
+    }
+
+    // Hide content before initial position is settled
+    if (!contentIsLaidOut.value) {
+        Box(
+            modifier = Modifier
+                .background(backgroundColor)
+                .zIndex(1f)
+                .fillMaxSize(),
+            content = {}
+        )
     }
 
     WebView(

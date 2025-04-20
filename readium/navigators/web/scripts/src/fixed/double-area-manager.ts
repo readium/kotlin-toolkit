@@ -13,6 +13,8 @@ export class DoubleAreaManager {
 
   private readonly rightPage: PageManager
 
+  private readonly listener: AreaManager.Listener
+
   private fit: Fit = Fit.Contain
 
   private insets: Insets = { top: 0, right: 0, bottom: 0, left: 0 }
@@ -28,6 +30,8 @@ export class DoubleAreaManager {
     metaViewport: HTMLMetaElement,
     listener: AreaManager.Listener
   ) {
+    this.listener = listener
+
     window.addEventListener("message", (event) => {
       if (!event.ports[0]) {
         return
@@ -188,5 +192,7 @@ export class DoubleAreaManager {
 
     this.leftPage.show()
     this.rightPage.show()
+
+    this.listener.onLayout()
   }
 }

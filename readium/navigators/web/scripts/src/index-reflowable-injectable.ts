@@ -9,10 +9,10 @@
  */
 
 import {
-  BridgeGesturesAdapter,
+  ReflowableListenerAdapter,
   GesturesBridge,
-} from "./bridge/all-gestures-bridge"
-import { DocumentBridge } from "./bridge/all-document-bridge"
+} from "./bridge/all-listener-bridge"
+import { DocumentBridge } from "./bridge/all-listener-bridge"
 import { CssBridge } from "./bridge/reflowable-css-bridge"
 import { GesturesDetector } from "./common/gestures"
 import { appendVirtualColumnIfNeeded } from "./util/columns"
@@ -25,22 +25,9 @@ declare global {
   }
 }
 
-const bridgeListener = new BridgeGesturesAdapter(window.gestures)
+const bridgeListener = new ReflowableListenerAdapter(window.gestures)
 
-const gesturesListener = {
-  onTap: (event: MouseEvent) => {
-    const tapEvent = {
-      x: (event.clientX - visualViewport!.offsetLeft) * visualViewport!.scale,
-      y: (event.clientY - visualViewport!.offsetTop) * visualViewport!.scale,
-    }
-    bridgeListener.onTap(tapEvent)
-  },
-  onLinkActivated: (href: string, outerHtml: string) => {
-    bridgeListener.onLinkActivated(href, outerHtml)
-  },
-}
-
-new GesturesDetector(window, gesturesListener)
+new GesturesDetector(window, bridgeListener)
 
 Window.prototype.readiumcss = new CssBridge(window.document)
 

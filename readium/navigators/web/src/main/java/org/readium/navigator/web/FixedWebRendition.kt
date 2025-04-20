@@ -92,8 +92,6 @@ public fun FixedWebRendition(
         val reverseLayout =
             LocalLayoutDirection.current.toReadingProgression() != readingProgression
 
-        val coroutineScope = rememberCoroutineScope()
-
         if (state.controller == null) {
             val itemHref = state.getCurrentHref()
             state.initController(location = FixedWebLocation(itemHref))
@@ -105,8 +103,10 @@ public fun FixedWebRendition(
             }.onEach {
                 val itemHref = state.getCurrentHref()
                 state.navigationDelegate.updateLocation(location = FixedWebLocation(itemHref))
-            }.launchIn(coroutineScope)
+            }.launchIn(this)
         }
+
+        val coroutineScope = rememberCoroutineScope()
 
         val inputListenerState = rememberUpdatedState(inputListener)
 
@@ -160,10 +160,16 @@ public fun FixedWebRendition(
                 val readingProgression = state.layoutDelegate.layout.value.readingProgression
                 val spread = state.layoutDelegate.layout.value.spreads[index]
                 val pages = spread.pages.map { it.index }
-                "$readingProgression $spread $pages"
+                val fit = state.layoutDelegate.fit.value
+                "$readingProgression $spread $pages $fit"
             },
             reverseLayout = reverseLayout
         ) { index ->
+            val initialProgression = when {
+                index < state.pagerState.currentPage -> 1.0
+                else -> 0.0
+            }
+
             when (val spread = state.layoutDelegate.layout.value.spreads[index]) {
                 is SingleViewportSpread -> {
                     val spreadState =
@@ -179,6 +185,7 @@ public fun FixedWebRendition(
 
                     SingleViewportSpread(
                         pagerState = state.pagerState,
+                        progression = initialProgression,
                         onTap = { inputListenerState.value.onTap(it, TapContext(viewportSize.value)) },
                         onLinkActivated = { url, outerHtml ->
                             coroutineScope.launch {
@@ -210,6 +217,7 @@ public fun FixedWebRendition(
 
                     DoubleViewportSpread(
                         pagerState = state.pagerState,
+                        progression = initialProgression,
                         onTap = { inputListenerState.value.onTap(it, TapContext(viewportSize.value)) },
                         onLinkActivated = { url, outerHtml ->
                             coroutineScope.launch {

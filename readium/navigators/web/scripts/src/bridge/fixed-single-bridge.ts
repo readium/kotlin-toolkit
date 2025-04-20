@@ -1,7 +1,11 @@
 import { Insets, Size } from "../common/types"
 import { SingleAreaManager } from "../fixed/single-area-manager"
 import { Fit } from "../util/fit"
-import { GesturesBridge, BridgeGesturesAdapter } from "./all-gestures-bridge"
+import {
+  GesturesBridge,
+  FixedListenerAdapter,
+  DocumentBridge,
+} from "./all-listener-bridge"
 
 export class FixedSingleBridge {
   private readonly manager: SingleAreaManager
@@ -10,9 +14,14 @@ export class FixedSingleBridge {
     window: Window,
     iframe: HTMLIFrameElement,
     metaViewport: HTMLMetaElement,
-    gestures: GesturesBridge
+    gesturesBridge: GesturesBridge,
+    documentBridge: DocumentBridge
   ) {
-    const listener = new BridgeGesturesAdapter(gestures)
+    const listener = new FixedListenerAdapter(
+      window,
+      gesturesBridge,
+      documentBridge
+    )
     this.manager = new SingleAreaManager(window, iframe, metaViewport, listener)
   }
 

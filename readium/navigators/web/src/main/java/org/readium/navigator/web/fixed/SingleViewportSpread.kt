@@ -36,10 +36,11 @@ import org.readium.r2.shared.util.Url
 @Composable
 internal fun SingleViewportSpread(
     pagerState: PagerState,
+    scrollState: SpreadScrollState,
+    progression: Double,
     onTap: (TapEvent) -> Unit,
     onLinkActivated: (Url, String) -> Unit,
     state: SingleSpreadState,
-    scrollState: SpreadScrollState,
     backgroundColor: Color,
     reverseScrollDirection: Boolean,
 ) {
@@ -76,6 +77,8 @@ internal fun SingleViewportSpread(
                     layoutApi.setDisplayArea(it)
                 }.launchIn(this)
 
+                layoutApi.setFit(state.fit.value)
+                layoutApi.setDisplayArea(state.displayArea.value)
                 layoutApi.loadSpread(state.spread)
             }
         }
@@ -86,6 +89,7 @@ internal fun SingleViewportSpread(
             state = webViewState,
             spreadScrollState = scrollState,
             client = state.webViewClient,
+            progression = progression,
             onTap = onTap,
             onLinkActivated = { url, outerHtml ->
                 onLinkActivated(

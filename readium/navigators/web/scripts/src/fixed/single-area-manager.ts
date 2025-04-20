@@ -11,6 +11,8 @@ export class SingleAreaManager {
 
   private readonly page: PageManager
 
+  private readonly listener: AreaManager.Listener
+
   private fit: Fit = Fit.Contain
 
   private insets: Insets = { top: 0, right: 0, bottom: 0, left: 0 }
@@ -25,6 +27,8 @@ export class SingleAreaManager {
     metaViewport: HTMLMetaElement,
     listener: AreaManager.Listener
   ) {
+    this.listener = listener
+
     window.addEventListener("message", (event) => {
       if (event.source === iframe.contentWindow && event.ports[0]) {
         this.page.setMessagePort(event.ports[0])
@@ -135,5 +139,7 @@ export class SingleAreaManager {
     this.scale = scale
 
     this.page.show()
+
+    this.listener.onLayout()
   }
 }

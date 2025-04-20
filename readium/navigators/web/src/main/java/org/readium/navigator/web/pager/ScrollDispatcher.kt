@@ -42,6 +42,26 @@ internal class ScrollDispatcher(
 
         val lastPage = pagerState.layoutInfo.visiblePagesInfo.last()
 
+        if (firstPage == lastPage) {
+            // Set the page that will become visible to the right scroll position.
+            when {
+                available > 0 -> {
+                    val prevPage = (firstPage.index - 1).takeIf { it >= 0 }
+                    prevPage?.let {
+                        val success = scrollWebviewToEdge(prevPage, end = true)
+                        if (!success) return available
+                    }
+                }
+                else -> {
+                    val nextPage = (firstPage.index + 1).takeIf { it < resourceStates.size }
+                    nextPage?.let {
+                        val success = scrollWebviewToEdge(nextPage, end = false)
+                        if (!success) return available
+                    }
+                }
+            }
+        }
+
         val firstTargetPage = when {
             available >= 0 -> lastPage
             else -> firstPage
@@ -94,6 +114,17 @@ internal class ScrollDispatcher(
             available -> 0f
             else -> rawScrollBy(deltaLeft)
         }
+    }
+
+    private fun scrollWebviewToEdge(targetPage: Int, end: Boolean): Boolean {
+        val scrollController = resourceStates[targetPage].scrollController.value
+            ?: return false
+        scrollController.moveToProgression(
+            progression = if (end) 1.0 else 0.0,
+            snap = false,
+            orientation = pagerOrientation
+        )
+        return true
     }
 
     private fun consumeInWebview(targetPage: Int, available: Float): Float {

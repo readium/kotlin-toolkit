@@ -8,8 +8,7 @@
  *  Script loaded by the single area HTML wrapper for fixed layout resources.
  */
 
-import { GesturesBridge } from "./bridge/all-gestures-bridge"
-import { DocumentBridge } from "./bridge/all-document-bridge"
+import { DocumentBridge, GesturesBridge } from "./bridge/all-listener-bridge"
 import { FixedSingleBridge } from "./bridge/fixed-single-bridge"
 
 declare global {
@@ -30,11 +29,8 @@ window.singleArea = new FixedSingleBridge(
   window,
   iframe,
   metaViewport,
-  window.gestures
+  window.gestures,
+  window.documentState
 )
 
 window.documentState.onScriptsLoaded()
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-window.addEventListener("load", (event) => {
-  window.documentState.onDocumentLoadedAndSized()
-})

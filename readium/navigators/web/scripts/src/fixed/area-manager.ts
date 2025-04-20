@@ -4,5 +4,6 @@ export namespace AreaManager {
   export interface Listener {
     onTap(event: TapEvent): void
     onLinkActivated(href: string, outerHtml: string): void
+    onLayout(): void
   }
 }

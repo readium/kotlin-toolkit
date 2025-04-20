@@ -313,7 +313,7 @@ internal class ReflowableNavigationDelegate(
     private fun WebViewScrollController.moveToProgression(progression: Double) {
         moveToProgression(
             progression = progression,
-            scroll = overflow.value.scroll,
+            snap = !overflow.value.scroll,
             orientation = overflow.value.axis.toOrientation()
         )
     }

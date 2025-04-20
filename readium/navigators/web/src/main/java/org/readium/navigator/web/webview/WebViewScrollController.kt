@@ -94,20 +94,23 @@ internal class WebViewScrollController(
 
     fun moveToProgression(
         progression: Double,
-        scroll: Boolean,
+        snap: Boolean,
         orientation: Orientation,
     ) {
-        when (scroll) {
-            true -> {
-                webView.scrollToProgression(
-                    progression = progression,
-                    scrollOrientation = orientation
-                )
-            }
-            false -> {
-                webView.scrollToProgression(progression, Orientation.Horizontal)
-                val offset = webView.scrollX % webView.width
-                webView.scrollBy(-offset, 0)
+        webView.scrollToProgression(
+            progression = progression,
+            scrollOrientation = orientation
+        )
+        if (snap) {
+            when (orientation) {
+                Orientation.Vertical -> {
+                    val offset = webView.scrollY % webView.height
+                    webView.scrollBy(0, -offset)
+                }
+                Orientation.Horizontal -> {
+                    val offset = webView.scrollX % webView.width
+                    webView.scrollBy(-offset, 0)
+                }
             }
         }
     }

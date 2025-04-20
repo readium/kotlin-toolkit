@@ -1,6 +1,10 @@
 import { Insets, Size } from "../common/types"
 import { DoubleAreaManager } from "../fixed/double-area-manager"
-import { GesturesBridge, BridgeGesturesAdapter } from "./all-gestures-bridge"
+import {
+  GesturesBridge,
+  FixedListenerAdapter,
+  DocumentBridge,
+} from "./all-listener-bridge"
 import { Fit } from "../util/fit"
 
 export class FixedDoubleBridge {
@@ -11,9 +15,14 @@ export class FixedDoubleBridge {
     leftIframe: HTMLIFrameElement,
     rightIframe: HTMLIFrameElement,
     metaViewport: HTMLMetaElement,
-    gestures: GesturesBridge
+    gesturesBridge: GesturesBridge,
+    documentBridge: DocumentBridge
   ) {
-    const listener = new BridgeGesturesAdapter(gestures)
+    const listener = new FixedListenerAdapter(
+      window,
+      gesturesBridge,
+      documentBridge
+    )
     this.manager = new DoubleAreaManager(
       window,
       leftIframe,

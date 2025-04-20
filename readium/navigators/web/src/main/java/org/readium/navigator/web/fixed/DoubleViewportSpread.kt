@@ -37,6 +37,7 @@ import org.readium.r2.shared.util.Url
 internal fun DoubleViewportSpread(
     pagerState: PagerState,
     scrollState: SpreadScrollState,
+    progression: Double,
     onTap: (TapEvent) -> Unit,
     onLinkActivated: (Url, String) -> Unit,
     state: DoubleSpreadState,
@@ -85,6 +86,7 @@ internal fun DoubleViewportSpread(
             pagerState = pagerState,
             state = webViewState,
             spreadScrollState = scrollState,
+            progression = progression,
             client = state.webViewClient,
             onTap = onTap,
             onLinkActivated = { url, outerHtml ->
