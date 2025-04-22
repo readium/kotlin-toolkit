@@ -4,19 +4,20 @@
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.r2.shared.publication
+package org.readium.r2.shared.accessibility
 
 import android.content.Context
 import androidx.annotation.StringRes
 import org.readium.r2.shared.R
+import org.readium.r2.shared.accessibility.AccessibilityMetadataDisplayGuide.Statement
+import org.readium.r2.shared.accessibility.AccessibilityMetadataDisplayGuide.StaticStatement
 import org.readium.r2.shared.extensions.contains
 import org.readium.r2.shared.extensions.containsAny
+import org.readium.r2.shared.publication.Accessibility
 import org.readium.r2.shared.publication.Accessibility.AccessMode
 import org.readium.r2.shared.publication.Accessibility.Feature
-import org.readium.r2.shared.publication.Accessibility.Hazard
 import org.readium.r2.shared.publication.Accessibility.PrimaryAccessMode
-import org.readium.r2.shared.publication.AccessibilityMetadataDisplayGuide.Statement
-import org.readium.r2.shared.publication.AccessibilityMetadataDisplayGuide.StaticStatement
+import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.publication.presentation.presentation
 

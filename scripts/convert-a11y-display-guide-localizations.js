@@ -59,7 +59,7 @@ function writeKotlinExtensions(disclaimer, keys, keyPrefix, write) {
 
 // ${disclaimer}
 
-package org.readium.r2.shared.publication
+package org.readium.r2.shared.accessibility
 
 import org.readium.r2.shared.R
 
@@ -72,7 +72,7 @@ import org.readium.r2.shared.R
         keysOutput += `internal val AccessibilityDisplayString.Companion.${convertKebabToUpperSnakeCase(key)}: AccessibilityDisplayString get() = AccessibilityDisplayString(compactId = R.string.${stringKey}_compact, descriptiveId = R.string.${stringKey}_descriptive)\n`;
     }
 
-    write("java/org/readium/r2/shared/publication/AccessibilityDisplayString.kt", keysOutput);
+    write("java/org/readium/r2/shared/accessibility/AccessibilityDisplayString.kt", keysOutput);
 }
 
 const converters = {

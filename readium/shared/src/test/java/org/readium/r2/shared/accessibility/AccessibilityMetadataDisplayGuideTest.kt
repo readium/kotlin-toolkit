@@ -1,4 +1,10 @@
-package org.readium.r2.shared.publication
+/*
+ * Copyright 2025 Readium Foundation. All rights reserved.
+ * Use of this source code is governed by the BSD-style license
+ * available in the top-level LICENSE file of the project.
+ */
+
+package org.readium.r2.shared.accessibility
 
 import android.content.Context
 import org.junit.Assert.assertEquals
@@ -8,22 +14,26 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.R
+import org.readium.r2.shared.accessibility.AccessibilityMetadataDisplayGuide.AccessibilitySummary
+import org.readium.r2.shared.accessibility.AccessibilityMetadataDisplayGuide.AdditionalInformation
+import org.readium.r2.shared.accessibility.AccessibilityMetadataDisplayGuide.Conformance
+import org.readium.r2.shared.accessibility.AccessibilityMetadataDisplayGuide.Hazards
+import org.readium.r2.shared.accessibility.AccessibilityMetadataDisplayGuide.Hazards.Hazard
+import org.readium.r2.shared.accessibility.AccessibilityMetadataDisplayGuide.Legal
+import org.readium.r2.shared.accessibility.AccessibilityMetadataDisplayGuide.Navigation
+import org.readium.r2.shared.accessibility.AccessibilityMetadataDisplayGuide.RichContent
+import org.readium.r2.shared.accessibility.AccessibilityMetadataDisplayGuide.StaticStatement
+import org.readium.r2.shared.accessibility.AccessibilityMetadataDisplayGuide.WaysOfReading
 import org.readium.r2.shared.extensions.toMap
+import org.readium.r2.shared.publication.Accessibility
 import org.readium.r2.shared.publication.Accessibility.AccessMode
 import org.readium.r2.shared.publication.Accessibility.Exemption
 import org.readium.r2.shared.publication.Accessibility.Feature
 import org.readium.r2.shared.publication.Accessibility.PrimaryAccessMode
 import org.readium.r2.shared.publication.Accessibility.Profile
-import org.readium.r2.shared.publication.AccessibilityMetadataDisplayGuide.AccessibilitySummary
-import org.readium.r2.shared.publication.AccessibilityMetadataDisplayGuide.AdditionalInformation
-import org.readium.r2.shared.publication.AccessibilityMetadataDisplayGuide.Conformance
-import org.readium.r2.shared.publication.AccessibilityMetadataDisplayGuide.Hazards
-import org.readium.r2.shared.publication.AccessibilityMetadataDisplayGuide.Hazards.Hazard
-import org.readium.r2.shared.publication.AccessibilityMetadataDisplayGuide.Legal
-import org.readium.r2.shared.publication.AccessibilityMetadataDisplayGuide.Navigation
-import org.readium.r2.shared.publication.AccessibilityMetadataDisplayGuide.RichContent
-import org.readium.r2.shared.publication.AccessibilityMetadataDisplayGuide.StaticStatement
-import org.readium.r2.shared.publication.AccessibilityMetadataDisplayGuide.WaysOfReading
+import org.readium.r2.shared.publication.Manifest
+import org.readium.r2.shared.publication.Metadata
+import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.publication.presentation.Presentation
 import org.robolectric.RobolectricTestRunner

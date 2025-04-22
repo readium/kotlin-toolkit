@@ -30,8 +30,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.fragment.app.activityViewModels
 import java.text.SimpleDateFormat
+import org.readium.r2.shared.accessibility.AccessibilityMetadataDisplayGuide
 import org.readium.r2.shared.publication.Accessibility
-import org.readium.r2.shared.publication.AccessibilityMetadataDisplayGuide
 import org.readium.r2.shared.publication.Contributor
 import org.readium.r2.shared.publication.LocalizedString
 import org.readium.r2.shared.publication.Manifest

@@ -6,7 +6,7 @@
 
 // DO NOT EDIT. File generated automatically from v2.0.c of the en-US JSON strings.
 
-package org.readium.r2.shared.publication
+package org.readium.r2.shared.accessibility
 
 import org.readium.r2.shared.R
 
