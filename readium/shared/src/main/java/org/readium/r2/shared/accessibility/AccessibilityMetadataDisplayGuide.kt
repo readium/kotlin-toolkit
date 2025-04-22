@@ -474,7 +474,7 @@ public class AccessibilityMetadataDisplayGuide(
             public operator fun invoke(publication: Publication): AdditionalInformation {
                 val features = publication.metadata.accessibility?.features ?: emptySet()
                 return AdditionalInformation(
-                    pageBreakMarkers = features.contains(Feature.PAGE_BREAK_MARKERS),
+                    pageBreakMarkers = features.contains(Feature.PAGE_BREAK_MARKERS) || features.contains(Feature.PRINT_PAGE_NUMBERS),
                     aria = features.contains(Feature.ARIA),
                     audioDescriptions = features.contains(Feature.AUDIO_DESCRIPTION),
                     braille = features.contains(Feature.BRAILLE),

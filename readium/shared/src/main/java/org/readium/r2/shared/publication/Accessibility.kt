@@ -389,9 +389,8 @@ public data class Accessibility(
              * The work includes equivalent print page numbers. This setting is most commonly used
              * with ebooks for which there is a print equivalent.
              *
-             * Deprecated: https://github.com/readium/go-toolkit/issues/92
+             * Deprecated for publication authors: https://github.com/readium/go-toolkit/issues/92
              */
-            @Deprecated("Deprecated in favor of PAGE_NAVIGATION", ReplaceWith("PAGE_NAVIGATION"))
             public val PRINT_PAGE_NUMBERS: Feature = Feature("printPageNumbers")
 
             /**

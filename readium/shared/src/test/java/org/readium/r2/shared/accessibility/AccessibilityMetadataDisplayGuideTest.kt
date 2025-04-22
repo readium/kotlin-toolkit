@@ -814,6 +814,10 @@ class AccessibilityMetadataDisplayGuideTest {
             Accessibility(features = setOf(Feature.PAGE_BREAK_MARKERS)),
             AdditionalInformation(pageBreakMarkers = true)
         )
+        test(
+            Accessibility(features = setOf(Feature.PRINT_PAGE_NUMBERS)),
+            AdditionalInformation(pageBreakMarkers = true)
+        )
         test(Accessibility(features = setOf(Feature.ARIA)), AdditionalInformation(aria = true))
         test(
             Accessibility(features = setOf(Feature.AUDIO_DESCRIPTION)),
