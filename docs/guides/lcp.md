@@ -202,15 +202,27 @@ Simply open the License Document directly using the `PublicationOpener`. Make su
 ```kotlin
 // Instantiate the required components.
 val httpClient = DefaultHttpClient()
+
 val assetRetriever = AssetRetriever(
     contentResolver = context.contentResolver,
     httpClient = httpClient
 )
+
+val lcpService = LcpService(
+    context = context,
+    assetRetriever = assetRetriever
+) ?: error("liblcp is missing on the classpath")))
+
+val authentication = LcpDialogAuthentication()
+
 val publicationOpener = PublicationOpener(
     publicationParser = DefaultPublicationParser(
         context,
         httpClient = httpClient,
         assetRetriever = assetRetriever
+    ),
+    contentProtections = listOf(
+        lcpService.contentProtection(authentication)
     )
 )
 
