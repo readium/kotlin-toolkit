@@ -6,15 +6,18 @@
 
 package org.readium.navigator.web.pager
 
+import androidx.compose.foundation.MutatePriority
+import androidx.compose.foundation.MutatorMutex
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.util.fastCoerceAtLeast
 import androidx.compose.ui.util.fastCoerceAtMost
-import org.readium.navigator.web.gestures.Fling2DBehavior
+import kotlinx.coroutines.coroutineScope
 import org.readium.navigator.web.gestures.Scroll2DScope
+import org.readium.navigator.web.gestures.Scrollable2DState
 import org.readium.navigator.web.webview.WebViewScrollController
 import timber.log.Timber
 
@@ -23,17 +26,17 @@ internal interface PageScrollState {
     val scrollController: MutableState<WebViewScrollController?>
 }
 
-internal class ScrollDispatcher(
+internal class RenditionScrollState(
     private val pagerState: PagerState,
-    private val resourceStates: List<PageScrollState>,
+    private val pageStates: List<PageScrollState>,
     internal var pagerOrientation: Orientation,
-    internal var flingBehavior: Fling2DBehavior,
-) : Scroll2DScope {
+) : Scrollable2DState {
 
-    override fun scrollBy(pixels: Offset): Offset {
-        return -rawScrollBy(-pixels.mainAxisValue).mainAxisOffset
-    }
-
+    /*
+     * To favour natural reasoning, this function applies reverse scrolling:
+     * - a positive delta makes scrolling left
+     * - a negative delta makes scrolling right
+     */
     private fun rawScrollBy(available: Float): Float {
         Timber.d("scrollBy available $available")
         var deltaLeft = available
@@ -53,7 +56,7 @@ internal class ScrollDispatcher(
                     }
                 }
                 else -> {
-                    val nextPage = (firstPage.index + 1).takeIf { it < resourceStates.size }
+                    val nextPage = (firstPage.index + 1).takeIf { it < pageStates.size }
                     nextPage?.let {
                         val success = scrollWebviewToEdge(nextPage, end = false)
                         if (!success) return available
@@ -117,7 +120,7 @@ internal class ScrollDispatcher(
     }
 
     private fun scrollWebviewToEdge(targetPage: Int, end: Boolean): Boolean {
-        val scrollController = resourceStates[targetPage].scrollController.value
+        val scrollController = pageStates[targetPage].scrollController.value
             ?: return false
         scrollController.moveToProgression(
             progression = if (end) 1.0 else 0.0,
@@ -128,40 +131,10 @@ internal class ScrollDispatcher(
     }
 
     private fun consumeInWebview(targetPage: Int, available: Float): Float {
-        val scrollController = resourceStates[targetPage].scrollController.value
+        val scrollController = pageStates[targetPage].scrollController.value
             ?: return available // WebView is not ready, consume everything.
 
         return -scrollController.scrollBy(-available.mainAxisOffset).mainAxisValue
-    }
-
-    fun onScroll(available: Offset): Offset {
-        Timber.d("onScroll ${available.x}")
-        return -scrollBy(-available)
-    }
-
-    suspend fun onFling(available: Velocity): Velocity {
-        Timber.d("onFling ${available.x}")
-        var velocityLeft = available
-        pagerState.scroll {
-            with(flingBehavior) {
-                with(this@ScrollDispatcher) {
-                    velocityLeft = -performFling(-velocityLeft)
-                }
-            }
-        }
-
-        return Velocity(
-            x = if ((available.x - velocityLeft.x).isNaN()) {
-                available.x
-            } else {
-                available.x - velocityLeft.x
-            },
-            y = if ((available.y - velocityLeft.y).isNaN()) {
-                available.y
-            } else {
-                available.y - velocityLeft.y
-            }
-        )
     }
 
     fun onDocumentResized(index: Int) {
@@ -173,7 +146,7 @@ internal class ScrollDispatcher(
             return
         }
 
-        val scrollController = resourceStates[index].scrollController.value!!
+        val scrollController = pageStates[index].scrollController.value!!
         val scrolled = scrollController.scrollToEnd(pagerOrientation)
         if (scrolled > 0) {
             rawScrollBy(scrolled.toFloat())
@@ -190,4 +163,43 @@ internal class ScrollDispatcher(
             Orientation.Vertical -> Offset(0f, this)
             Orientation.Horizontal -> Offset(this, 0f)
         }
+
+    private val scrollScope: Scroll2DScope = object : Scroll2DScope {
+        override fun scrollBy(pixels: Offset): Offset {
+            val coercedPixels = Offset(
+                x = if (pixels.x.isNaN()) 0f else pixels.x,
+                y = if (pixels.y.isNaN()) 0f else pixels.y
+            )
+            if (coercedPixels == Offset.Zero) return Offset.Zero
+            val delta = -rawScrollBy(-coercedPixels.mainAxisValue).mainAxisOffset
+            return delta
+        }
+    }
+
+    private val scrollMutex = MutatorMutex()
+
+    private val isScrollingState = mutableStateOf(false)
+
+    override suspend fun scroll(
+        scrollPriority: MutatePriority,
+        block: suspend Scroll2DScope.() -> Unit,
+    ): Unit = coroutineScope {
+        pagerState.scroll(scrollPriority) {
+            scrollMutex.mutateWith(scrollScope, scrollPriority) {
+                isScrollingState.value = true
+                try {
+                    block()
+                } finally {
+                    isScrollingState.value = false
+                }
+            }
+        }
+    }
+
+    override fun dispatchRawDelta(delta: Offset): Offset {
+        return -rawScrollBy(-delta.mainAxisValue).mainAxisOffset
+    }
+
+    override val isScrollInProgress: Boolean
+        get() = isScrollingState.value || pagerState.isScrollInProgress
 }

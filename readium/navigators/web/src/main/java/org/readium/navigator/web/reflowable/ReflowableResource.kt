@@ -23,17 +23,14 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.DpOffset
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.zIndex
 import org.readium.navigator.common.TapEvent
 import org.readium.navigator.web.css.ReadiumCssLayout
 import org.readium.navigator.web.css.RsProperties
 import org.readium.navigator.web.css.UserProperties
-import org.readium.navigator.web.gestures.NullFling2DBehavior
-import org.readium.navigator.web.gestures.Scrollable2DState
-import org.readium.navigator.web.gestures.scrollable2D
 import org.readium.navigator.web.util.AbsolutePaddingValues
 import org.readium.navigator.web.util.WebViewClient
 import org.readium.navigator.web.util.absolutePadding
@@ -58,9 +55,9 @@ internal fun ReflowableResource(
     webViewClient: WebViewClient,
     backgroundColor: Color,
     padding: AbsolutePaddingValues,
-    reverseLayout: Boolean,
     scroll: Boolean,
     orientation: Orientation,
+    layoutDirection: LayoutDirection,
     userProperties: UserProperties,
     rsProperties: RsProperties,
     readiumCssLayout: ReadiumCssLayout,
@@ -87,9 +84,6 @@ internal fun ReflowableResource(
 
         val contentIsLaidOut =
             remember(webViewState.webView) { mutableStateOf(false) }
-
-        val scrollableState =
-            remember { Scrollable2DState { Offset.Zero } }
 
         val documentStateApi = remember(webViewState.webView) {
             DocumentStateApi(
@@ -169,13 +163,6 @@ internal fun ReflowableResource(
         key(readiumCssLayout) {
             WebView(
                 modifier = Modifier
-                    .scrollable2D(
-                        enabled = enableScroll,
-                        state = scrollableState,
-                        flingBehavior = NullFling2DBehavior(),
-                        reverseDirection = !reverseLayout,
-                        orientation = orientationState.value
-                    )
                     .fillMaxSize()
                     .absolutePadding(padding),
                 state = webViewState,

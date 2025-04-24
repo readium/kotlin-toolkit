@@ -13,20 +13,17 @@ import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.unit.Velocity
 import kotlin.math.abs
 import org.readium.navigator.web.gestures.Fling2DBehavior
-import org.readium.navigator.web.webview.WebViewScrollable2DState
+import org.readium.navigator.web.pager.PageScrollState
 
 internal class SpreadNestedScrollConnection(
-    private val spreadIndex: Int,
     private val pagerState: PagerState,
-    private val webviewState: WebViewScrollable2DState,
-    private val scrollController: SpreadScrollState,
-    internal var flingBehavior: Fling2DBehavior,
+    private val resourceStates: List<PageScrollState>,
+    private val flingBehavior: Fling2DBehavior,
 ) : NestedScrollConnection {
 
     var consumedHere: Boolean = false
 
-    override fun onPostScroll(
-        consumed: Offset,
+    override fun onPreScroll(
         available: Offset,
         source: NestedScrollSource,
     ): Offset {
@@ -34,21 +31,23 @@ internal class SpreadNestedScrollConnection(
             return Offset.Zero
         }
 
-        if (!pagerShowsOnlyThisSpread()) {
+        if (!pagerShowsOnlyOneSpread()) {
             // Let the main dispatcher scroll only horizontally.
             return Offset.Zero
         }
 
-        val scrollController = scrollController.scrollController.value
+        val scrollController = resourceStates[pagerState.currentPage].scrollController.value
             ?: return available
 
         consumedHere = true
 
-        return -scrollController.scrollBy(-available)
+        val consumed = -scrollController.scrollBy(-available)
+
+        // Let the main dispatcher consume what's left on the horizontal axis.
+        return consumed
     }
 
-    override suspend fun onPostFling(
-        consumed: Velocity,
+    override suspend fun onPreFling(
         available: Velocity,
     ): Velocity {
         var velocityLeft = available
@@ -56,8 +55,10 @@ internal class SpreadNestedScrollConnection(
         // The main dispatcher will do a fling in any case. We restrain ourselves from
         // doing one here if that of the main dispatcher will be significant to prevent
         // strange visual behaviors.
-        if (consumedHere && pagerShowsOnlyThisSpread()) {
-            webviewState.scroll {
+        if (consumedHere && pagerShowsOnlyOneSpread()) {
+            val scrollController = resourceStates[pagerState.currentPage].scrollController.value
+                ?: return available
+            scrollController.scroll {
                 velocityLeft = with(flingBehavior) { -performFling(-velocityLeft) }
             }
         }
@@ -70,13 +71,13 @@ internal class SpreadNestedScrollConnection(
         )
     }
 
-    private fun pagerShowsOnlyThisSpread(): Boolean {
+    private fun pagerShowsOnlyOneSpread(): Boolean {
         val visiblePages = pagerState.layoutInfo.visiblePagesInfo
-        val otherPages = visiblePages.filter { it.index != spreadIndex }
-        val mostlyThis = otherPages.all { abs(it.offset) > 0.95 * pagerState.layoutInfo.pageSize }
-        if (mostlyThis) {
-            pagerState.requestScrollToPage(spreadIndex)
+        val otherPages = visiblePages.filter { it.index != pagerState.currentPage }
+        val mostlyCurrent = otherPages.all { abs(it.offset) > 0.95 * pagerState.layoutInfo.pageSize }
+        if (mostlyCurrent) {
+            pagerState.requestScrollToPage(pagerState.currentPage)
         }
-        return mostlyThis
+        return mostlyCurrent
     }
 }

@@ -15,31 +15,35 @@ import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.VerticalPager
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
-import androidx.compose.ui.input.nestedscroll.NestedScrollSource
-import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.unit.Velocity
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.unit.LayoutDirection
+import org.readium.navigator.web.gestures.Fling2DBehavior
+import org.readium.navigator.web.gestures.Scrollable2DState
+import org.readium.navigator.web.gestures.scrollable2D
 
 @Composable
 internal fun RenditionPager(
     modifier: Modifier = Modifier,
     state: PagerState,
-    scrollDispatcher: ScrollDispatcher,
+    scrollState: Scrollable2DState,
+    flingBehavior: Fling2DBehavior,
     orientation: Orientation,
-    reverseLayout: Boolean,
+    layoutDirection: LayoutDirection,
+    enableScroll: Boolean = true,
     beyondViewportPageCount: Int,
     key: ((index: Int) -> Any)? = null,
     pageContent: @Composable PagerScope.(Int) -> Unit,
 ) {
-    // A nested scroll connection is the only way to get separate drag and fling events
-    // from the scrollable modifiers. So we catch all events in the "post phase" and pass them to
-    // the provided ScrollDispatcher for processing.
-    val scrollDispatcherNestedScrollConnection =
-        ScrollDispatcherNestedScrollConnection(scrollDispatcher)
-
     val modifier = modifier
-        .nestedScroll(scrollDispatcherNestedScrollConnection)
+        .scrollable2D(
+            enabled = enableScroll,
+            state = scrollState,
+            flingBehavior = flingBehavior,
+            reverseDirection = layoutDirection == LayoutDirection.Ltr ||
+                orientation == Orientation.Vertical,
+            orientation = null
+        )
 
     // Disable built-in pager behavior as it is not suitable.
     val pageNestedScrollConnection = NullNestedScrollConnection
@@ -56,7 +60,7 @@ internal fun RenditionPager(
             flingBehavior = flingBehavior,
             userScrollEnabled = userScrollEnabled,
             key = key,
-            reverseLayout = reverseLayout,
+            reverseLayout = layoutDirection != LocalLayoutDirection.current,
             pageNestedScrollConnection = pageNestedScrollConnection,
             pageContent = pageContent
         )
@@ -68,7 +72,7 @@ internal fun RenditionPager(
             flingBehavior = flingBehavior,
             userScrollEnabled = userScrollEnabled,
             key = key,
-            reverseLayout = reverseLayout,
+            reverseLayout = false,
             pageNestedScrollConnection = pageNestedScrollConnection,
             pageContent = pageContent
         )
@@ -76,28 +80,6 @@ internal fun RenditionPager(
 }
 
 private object NullNestedScrollConnection : NestedScrollConnection
-
-private class ScrollDispatcherNestedScrollConnection(
-    private val scrollDispatcher: ScrollDispatcher,
-) : NestedScrollConnection {
-
-    override fun onPostScroll(
-        consumed: Offset,
-        available: Offset,
-        source: NestedScrollSource,
-    ): Offset {
-        if (source == NestedScrollSource.UserInput) {
-            scrollDispatcher.onScroll(available)
-        }
-
-        return available
-    }
-
-    override suspend fun onPostFling(consumed: Velocity, available: Velocity): Velocity {
-        scrollDispatcher.onFling(available)
-        return available
-    }
-}
 
 private object NullTargetedFlingBehavior : TargetedFlingBehavior {
 

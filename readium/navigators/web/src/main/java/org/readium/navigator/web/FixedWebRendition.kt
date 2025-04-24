@@ -21,6 +21,7 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.DpSize
@@ -42,19 +43,21 @@ import org.readium.navigator.web.fixed.FixedPagingLayoutInfo
 import org.readium.navigator.web.fixed.FixedWebPublication
 import org.readium.navigator.web.fixed.SingleSpreadState
 import org.readium.navigator.web.fixed.SingleViewportSpread
+import org.readium.navigator.web.fixed.SpreadNestedScrollConnection
 import org.readium.navigator.web.fixed.SpreadScrollState
+import org.readium.navigator.web.gestures.Scrollable2DDefaults
 import org.readium.navigator.web.gestures.toFling2DBehavior
 import org.readium.navigator.web.layout.DoubleViewportSpread
 import org.readium.navigator.web.layout.SingleViewportSpread
 import org.readium.navigator.web.location.FixedWebLocation
 import org.readium.navigator.web.pager.RenditionPager
-import org.readium.navigator.web.pager.ScrollDispatcher
+import org.readium.navigator.web.pager.RenditionScrollState
 import org.readium.navigator.web.pager.pagingFlingBehavior
 import org.readium.navigator.web.util.AbsolutePaddingValues
 import org.readium.navigator.web.util.DisplayArea
 import org.readium.navigator.web.util.HyperlinkProcessor
 import org.readium.navigator.web.util.WebViewServer
-import org.readium.r2.navigator.preferences.ReadingProgression
+import org.readium.navigator.web.util.toLayoutDirection
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.RelativeUrl
@@ -86,11 +89,9 @@ public fun FixedWebRendition(
 
         val displayArea = rememberUpdatedState(DisplayArea(viewportSize.value, safeDrawingPadding))
 
-        val readingProgression =
-            state.layoutDelegate.settings.value.readingProgression
-
-        val reverseLayout =
-            LocalLayoutDirection.current.toReadingProgression() != readingProgression
+        val layoutDirection = state.layoutDelegate.settings.value
+            .readingProgression
+            .toLayoutDirection()
 
         if (state.controller == null) {
             val itemHref = state.getCurrentHref()
@@ -132,15 +133,12 @@ public fun FixedWebRendition(
         }.toFling2DBehavior(Orientation.Horizontal)
 
         val scrollDispatcher = remember(state, scrollStates) {
-            ScrollDispatcher(
+            RenditionScrollState(
                 pagerState = state.pagerState,
-                resourceStates = scrollStates,
-                flingBehavior = flingBehavior,
+                pageStates = scrollStates,
                 pagerOrientation = Orientation.Horizontal,
             )
         }
-
-        scrollDispatcher.flingBehavior = flingBehavior
 
         LaunchedEffect(state.layoutDelegate.layout.value, state.controller) {
             state.controller?.let {
@@ -150,12 +148,30 @@ public fun FixedWebRendition(
             }
         }
 
+        val readyToScroll = ((state.pagerState.currentPage - 2)..(state.pagerState.currentPage + 2)).toList()
+            .mapNotNull { scrollStates.getOrNull(it) }
+            .all { it.scrollController.value != null }
+
+        val spreadFlingBehavior = Scrollable2DDefaults.flingBehavior()
+
+        val spreadNestedScrollConnection =
+            remember(state.pagerState, scrollStates) {
+                SpreadNestedScrollConnection(
+                    pagerState = state.pagerState,
+                    resourceStates = scrollStates,
+                    flingBehavior = spreadFlingBehavior
+                )
+            }
+
         RenditionPager(
-            modifier = Modifier,
+            modifier = Modifier.nestedScroll(spreadNestedScrollConnection),
             state = state.pagerState,
-            scrollDispatcher = scrollDispatcher,
+            scrollState = scrollDispatcher,
+            flingBehavior = flingBehavior,
             orientation = Orientation.Horizontal,
             beyondViewportPageCount = 2,
+            layoutDirection = layoutDirection,
+            enableScroll = readyToScroll,
             key = { index ->
                 val readingProgression = state.layoutDelegate.layout.value.readingProgression
                 val spread = state.layoutDelegate.layout.value.spreads[index]
@@ -163,7 +179,6 @@ public fun FixedWebRendition(
                 val fit = state.layoutDelegate.fit.value
                 "$readingProgression $spread $pages $fit"
             },
-            reverseLayout = reverseLayout
         ) { index ->
             val initialProgression = when {
                 index < state.pagerState.currentPage -> 1.0
@@ -200,7 +215,7 @@ public fun FixedWebRendition(
                         state = spreadState,
                         scrollState = scrollStates[index],
                         backgroundColor = backgroundColor,
-                        reverseScrollDirection = !reverseLayout
+                        reverseScrollDirection = layoutDirection == LayoutDirection.Ltr
                     )
                 }
                 is DoubleViewportSpread -> {
@@ -212,7 +227,7 @@ public fun FixedWebRendition(
                             webViewClient = state.webViewClient,
                             spread = spread,
                             fit = state.layoutDelegate.fit,
-                            displayArea = displayArea
+                            displayArea = displayArea,
                         )
 
                     DoubleViewportSpread(
@@ -232,7 +247,7 @@ public fun FixedWebRendition(
                         state = spreadState,
                         scrollState = scrollStates[index],
                         backgroundColor = backgroundColor,
-                        reverseScrollDirection = !reverseLayout
+                        reverseScrollDirection = layoutDirection == LayoutDirection.Ltr
                     )
                 }
             }
@@ -250,12 +265,6 @@ private fun WindowInsets.asAbsolutePaddingValues(): AbsolutePaddingValues {
     val left = with(density) { getLeft(density, layoutDirection).toDp() }
     return AbsolutePaddingValues(top = top, right = right, bottom = bottom, left = left)
 }
-
-private fun LayoutDirection.toReadingProgression(): ReadingProgression =
-    when (this) {
-        LayoutDirection.Ltr -> ReadingProgression.LTR
-        LayoutDirection.Rtl -> ReadingProgression.RTL
-    }
 
 @OptIn(ExperimentalReadiumApi::class)
 private suspend fun HyperlinkProcessor.onLinkActivated(

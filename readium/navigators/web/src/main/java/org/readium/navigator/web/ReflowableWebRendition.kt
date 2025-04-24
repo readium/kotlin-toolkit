@@ -26,10 +26,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.DpSize
-import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import org.readium.navigator.common.HyperlinkListener
@@ -44,7 +42,7 @@ import org.readium.navigator.common.defaultInputListener
 import org.readium.navigator.web.gestures.toFling2DBehavior
 import org.readium.navigator.web.location.ReflowableWebLocation
 import org.readium.navigator.web.pager.RenditionPager
-import org.readium.navigator.web.pager.ScrollDispatcher
+import org.readium.navigator.web.pager.RenditionScrollState
 import org.readium.navigator.web.pager.pagingFlingBehavior
 import org.readium.navigator.web.reflowable.ReflowablePagingLayoutInfo
 import org.readium.navigator.web.reflowable.ReflowableResource
@@ -52,7 +50,7 @@ import org.readium.navigator.web.reflowable.ReflowableWebPublication
 import org.readium.navigator.web.util.AbsolutePaddingValues
 import org.readium.navigator.web.util.HyperlinkProcessor
 import org.readium.navigator.web.util.WebViewServer
-import org.readium.r2.navigator.preferences.ReadingProgression
+import org.readium.navigator.web.util.toLayoutDirection
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.RelativeUrl
@@ -78,12 +76,6 @@ public fun ReflowableWebRendition(
         propagateMinConstraints = true
     ) {
         val viewportSize = rememberUpdatedState(DpSize(maxWidth, maxHeight))
-
-        val readingProgression =
-            state.layoutDelegate.overflow.value.readingProgression
-
-        val reverseLayout =
-            LocalLayoutDirection.current.toReadingProgression() != readingProgression
 
         val coroutineScope = rememberCoroutineScope()
 
@@ -124,15 +116,13 @@ public fun ReflowableWebRendition(
         }.toFling2DBehavior(state.layoutDelegate.orientation)
 
         val scrollDispatcher = remember(state) {
-            ScrollDispatcher(
+            RenditionScrollState(
                 pagerState = state.pagerState,
-                resourceStates = state.resourceStates,
-                flingBehavior = flingBehavior,
+                pageStates = state.resourceStates,
                 pagerOrientation = state.layoutDelegate.orientation,
             )
         }
 
-        scrollDispatcher.flingBehavior = flingBehavior
         scrollDispatcher.pagerOrientation = state.layoutDelegate.orientation
 
         val backgroundColor = Color(
@@ -143,6 +133,13 @@ public fun ReflowableWebRendition(
         val inputListenerState = rememberUpdatedState(inputListener)
 
         val hyperlinkListenerState = rememberUpdatedState(hyperlinkListener)
+
+        val layoutDirection =
+            state.layoutDelegate.overflow.value.readingProgression.toLayoutDirection()
+
+        val readyToScroll = ((currentPageState.value - 2)..(currentPageState.value + 2)).toList()
+            .mapNotNull { state.resourceStates.getOrNull(it) }
+            .all { it.scrollController.value != null }
 
         RenditionPager(
             modifier = Modifier
@@ -162,15 +159,13 @@ public fun ReflowableWebRendition(
                 }
                 .windowInsetsPadding(windowInsets),
             state = state.pagerState,
-            scrollDispatcher = scrollDispatcher,
+            scrollState = scrollDispatcher,
+            flingBehavior = flingBehavior,
             beyondViewportPageCount = 3,
-            reverseLayout = reverseLayout,
-            orientation = state.layoutDelegate.orientation
+            layoutDirection = layoutDirection,
+            orientation = state.layoutDelegate.orientation,
+            enableScroll = readyToScroll
         ) { index ->
-            val readyToScroll = ((index - 2)..(index + 2)).toList()
-                .mapNotNull { state.resourceStates.getOrNull(it) }
-                .all { it.scrollController.value != null }
-
             ReflowableResource(
                 resourceState = state.resourceStates[index],
                 pagerState = state.pagerState,
@@ -178,7 +173,7 @@ public fun ReflowableWebRendition(
                 webViewClient = state.webViewClient,
                 backgroundColor = backgroundColor,
                 padding = resourcePadding,
-                reverseLayout = reverseLayout,
+                layoutDirection = layoutDirection,
                 scroll = state.layoutDelegate.settings.value.scroll,
                 orientation = state.layoutDelegate.orientation,
                 rsProperties = state.readiumCssInjector.value.rsProperties,
@@ -212,12 +207,6 @@ public fun ReflowableWebRendition(
         }
     }
 }
-
-private fun LayoutDirection.toReadingProgression(): ReadingProgression =
-    when (this) {
-        LayoutDirection.Ltr -> ReadingProgression.LTR
-        LayoutDirection.Rtl -> ReadingProgression.RTL
-    }
 
 @OptIn(ExperimentalReadiumApi::class)
 private suspend fun HyperlinkProcessor.onLinkActivated(

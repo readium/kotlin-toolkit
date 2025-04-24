@@ -1,3 +1,9 @@
+/*
+ * Copyright 2024 Readium Foundation. All rights reserved.
+ * Use of this source code is governed by the BSD-style license
+ * available in the top-level LICENSE file of the project.
+ */
+
 package org.readium.navigator.web.webview
 
 import androidx.compose.foundation.gestures.Orientation
@@ -7,10 +13,12 @@ import androidx.compose.ui.util.fastCoerceAtMost
 import androidx.compose.ui.util.fastRoundToInt
 import kotlin.math.ceil
 import kotlin.math.floor
+import org.readium.navigator.web.gestures.DefaultScrollable2DState
+import org.readium.navigator.web.gestures.Scrollable2DState
 
 internal class WebViewScrollController(
     private val webView: RelaxedWebView,
-) {
+) : Scrollable2DState by DefaultScrollable2DState({ webView.scrollBy(it) }) {
     val scrollX: Int
         get() = webView.scrollX
 
@@ -52,26 +60,7 @@ internal class WebViewScrollController(
     }
 
     fun scrollBy(delta: Offset): Offset {
-        val coercedX =
-            if (delta.x < 0) {
-                delta.x.fastCoerceAtLeast(-webView.scrollX.toFloat())
-            } else {
-                delta.x.fastCoerceAtMost((webView.maxScrollX - webView.scrollX).toFloat())
-            }
-
-        val coercedY =
-            if (delta.y < 0) {
-                delta.y.fastCoerceAtLeast((-webView.scrollY.toFloat()))
-            } else {
-                delta.y.fastCoerceAtMost((webView.maxScrollY - webView.scrollY).toFloat())
-            }
-
-        val roundedX = coercedX.fastRoundToInt()
-
-        val roundedY = coercedY.fastRoundToInt()
-
-        webView.scrollBy(roundedX, roundedY)
-        return Offset(coercedX, coercedY)
+        return webView.scrollBy(delta)
     }
 
     fun scrollToEnd(scrollOrientation: Orientation): Int {
@@ -118,13 +107,36 @@ internal class WebViewScrollController(
 
 private fun RelaxedWebView.scrollToProgression(progression: Double, scrollOrientation: Orientation) {
     if (scrollOrientation == Orientation.Horizontal) {
-        scrollTo(floor(progression * maxScrollX).toInt(), 0)
+        scrollTo(floor(progression * maxScrollX).toInt(), scrollY)
     } else {
-        scrollTo(0, ceil(progression * maxScrollY).toInt())
+        scrollTo(scrollX, ceil(progression * maxScrollY).toInt())
     }
 }
 
 private fun RelaxedWebView.progression(orientation: Orientation) = when (orientation) {
     Orientation.Vertical -> scrollY / maxScrollY.toDouble()
     Orientation.Horizontal -> scrollX / maxScrollX.toDouble()
+}
+
+private fun RelaxedWebView.scrollBy(delta: Offset): Offset {
+    val coercedX =
+        if (delta.x < 0) {
+            delta.x.fastCoerceAtLeast(-scrollX.toFloat())
+        } else {
+            delta.x.fastCoerceAtMost((maxScrollX - scrollX).toFloat())
+        }
+
+    val coercedY =
+        if (delta.y < 0) {
+            delta.y.fastCoerceAtLeast((-scrollY.toFloat()))
+        } else {
+            delta.y.fastCoerceAtMost((maxScrollY - scrollY).toFloat())
+        }
+
+    val roundedX = coercedX.fastRoundToInt()
+
+    val roundedY = coercedY.fastRoundToInt()
+
+    scrollBy(roundedX, roundedY)
+    return Offset(coercedX, coercedY)
 }
