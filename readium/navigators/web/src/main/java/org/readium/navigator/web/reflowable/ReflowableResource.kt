@@ -15,7 +15,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.pager.PagerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.key
@@ -28,9 +27,7 @@ import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.zIndex
 import org.readium.navigator.common.TapEvent
-import org.readium.navigator.web.css.ReadiumCssLayout
-import org.readium.navigator.web.css.RsProperties
-import org.readium.navigator.web.css.UserProperties
+import org.readium.navigator.web.css.ReadiumCssInjector
 import org.readium.navigator.web.util.AbsolutePaddingValues
 import org.readium.navigator.web.util.WebViewClient
 import org.readium.navigator.web.util.absolutePadding
@@ -50,7 +47,6 @@ import org.readium.r2.shared.util.Url
 @Composable
 internal fun ReflowableResource(
     resourceState: ReflowableResourceState,
-    pagerState: PagerState,
     publicationBaseUrl: AbsoluteUrl,
     webViewClient: WebViewClient,
     backgroundColor: Color,
@@ -58,10 +54,7 @@ internal fun ReflowableResource(
     scroll: Boolean,
     orientation: Orientation,
     layoutDirection: LayoutDirection,
-    userProperties: UserProperties,
-    rsProperties: RsProperties,
-    readiumCssLayout: ReadiumCssLayout,
-    enableScroll: Boolean,
+    readiumCssInjector: ReadiumCssInjector,
     onTap: (TapEvent) -> Unit,
     onLinkActivated: (Url, String) -> Unit,
     onProgressionChange: (Double) -> Unit,
@@ -124,8 +117,9 @@ internal fun ReflowableResource(
                 ?.let { CssApi(it) }
         }
 
-        LaunchedEffect(cssApi, rsProperties, userProperties) {
-            cssApi?.setProperties(userProperties, rsProperties)
+        LaunchedEffect(cssApi, readiumCssInjector) {
+            cssApi?.setProperties(readiumCssInjector.userProperties, readiumCssInjector.rsProperties)
+            // FIXME: resource is laid out again, so we should apply progression again
         }
 
         val gesturesApi = remember(onTap, onLinkActivated) {
@@ -160,7 +154,8 @@ internal fun ReflowableResource(
             )
         }
 
-        key(readiumCssLayout) {
+        // Recreate WebView when Readium CSS layout changes because injected stuff depends on it
+        key(readiumCssInjector.layout) {
             WebView(
                 modifier = Modifier
                     .fillMaxSize()

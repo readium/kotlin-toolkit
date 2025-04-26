@@ -32,8 +32,6 @@ import kotlinx.coroutines.launch
 import org.readium.navigator.common.HyperlinkListener
 import org.readium.navigator.common.HyperlinkLocation
 import org.readium.navigator.common.InputListener
-import org.readium.navigator.common.NullHyperlinkListener
-import org.readium.navigator.common.NullInputListener
 import org.readium.navigator.common.TapContext
 import org.readium.navigator.common.defaultHyperlinkListener
 import org.readium.navigator.common.defaultInputListener
@@ -71,13 +69,8 @@ public fun FixedWebRendition(
     modifier: Modifier = Modifier,
     windowInsets: WindowInsets = WindowInsets.displayCutout,
     backgroundColor: Color = MaterialTheme.colorScheme.background,
-    inputListener: InputListener = state.controller
-        ?.let { defaultInputListener(controller = it) }
-        ?: NullInputListener(),
-    hyperlinkListener: HyperlinkListener =
-        state.controller
-            ?.let { defaultHyperlinkListener(controller = it) }
-            ?: NullHyperlinkListener(),
+    inputListener: InputListener = defaultInputListener(state.controller),
+    hyperlinkListener: HyperlinkListener = defaultHyperlinkListener(controller = state.controller),
 ) {
     BoxWithConstraints(
         modifier = modifier.fillMaxSize(),
@@ -136,7 +129,7 @@ public fun FixedWebRendition(
             RenditionScrollState(
                 pagerState = state.pagerState,
                 pageStates = scrollStates,
-                pagerOrientation = Orientation.Horizontal,
+                overflow = state.layoutDelegate.overflow
             )
         }
 

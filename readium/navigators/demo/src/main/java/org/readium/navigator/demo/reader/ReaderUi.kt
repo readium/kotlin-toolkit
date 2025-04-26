@@ -41,7 +41,6 @@ import org.readium.navigator.common.InputListener
 import org.readium.navigator.common.Location
 import org.readium.navigator.common.LocatorAdapter
 import org.readium.navigator.common.NavigationController
-import org.readium.navigator.common.NullHyperlinkListener
 import org.readium.navigator.common.OverflowController
 import org.readium.navigator.common.PreferencesEditor
 import org.readium.navigator.common.RenditionState
@@ -141,33 +140,24 @@ fun <L : Location, N : NavigationController<L, *>> Reader(
         }
 
         val inputListener =
-            if (controllerNow == null) {
-                fallbackInputListener
-            } else {
-                (controllerNow as? OverflowController)?.let {
-                    defaultInputListener(
-                        controller = it,
-                        fallbackListener = fallbackInputListener
-                    )
-                } ?: fallbackInputListener
-            }
+            (controllerNow as? OverflowController)?.let {
+                defaultInputListener(
+                    controller = it,
+                    fallbackListener = fallbackInputListener
+                )
+            } ?: fallbackInputListener
+
+        val context = LocalContext.current
 
         val hyperlinkListener =
-            if (controllerNow == null) {
-                NullHyperlinkListener()
-            } else {
-                val context = LocalContext.current
-                val onFollowingLink = { navigationHistory.value += controllerNow.location.value }
-
-                defaultHyperlinkListener(
-                    controller = controllerNow,
-                    shouldFollowReadingOrderLink = { _, _ ->
-                        onFollowingLink()
-                        true
-                    },
-                    onExternalLinkActivated = { url, _ -> launchWebBrowser(context, url.toUri()) }
-                )
-            }
+            defaultHyperlinkListener(
+                controller = controllerNow,
+                shouldFollowReadingOrderLink = { _, _ ->
+                    navigationHistory.value += location.value
+                    true
+                },
+                onExternalLinkActivated = { url, _ -> launchWebBrowser(context, url.toUri()) }
+            )
 
         when (readerState.renditionState) {
             is FixedWebRenditionState -> {

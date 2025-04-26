@@ -7,6 +7,7 @@
 package org.readium.navigator.common
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpOffset
@@ -45,7 +46,7 @@ public data class TapContext(
 )
 
 @ExperimentalReadiumApi
-public class NullInputListener : InputListener {
+private class NullInputListener : InputListener {
     override fun onTap(event: TapEvent, context: TapContext) {
     }
 }
@@ -53,7 +54,7 @@ public class NullInputListener : InputListener {
 @ExperimentalReadiumApi
 @Composable
 public fun defaultInputListener(
-    controller: OverflowController,
+    controller: OverflowController?,
     fallbackListener: InputListener? = null,
     tapEdges: Set<DirectionalNavigationAdapter.TapEdge> = setOf(
         DirectionalNavigationAdapter.TapEdge.Horizontal
@@ -66,17 +67,23 @@ public fun defaultInputListener(
 ): InputListener {
     val coroutineScope = rememberCoroutineScope()
 
-    return DefaultInputListener(
-        coroutineScope,
-        fallbackListener,
-        controller,
-        tapEdges,
-        handleTapsWhileScrolling,
-        minimumHorizontalEdgeSize,
-        horizontalEdgeThresholdPercent,
-        minimumVerticalEdgeSize,
-        verticalEdgeThresholdPercent
-    )
+    return remember(controller) {
+        if (controller == null) {
+            NullInputListener()
+        } else {
+            DefaultInputListener(
+                coroutineScope,
+                fallbackListener,
+                controller,
+                tapEdges,
+                handleTapsWhileScrolling,
+                minimumHorizontalEdgeSize,
+                horizontalEdgeThresholdPercent,
+                minimumVerticalEdgeSize,
+                verticalEdgeThresholdPercent
+            )
+        }
+    }
 }
 
 @OptIn(ExperimentalReadiumApi::class)

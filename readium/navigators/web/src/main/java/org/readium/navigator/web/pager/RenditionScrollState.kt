@@ -4,6 +4,8 @@
  * available in the top-level LICENSE file of the project.
  */
 
+@file:OptIn(ExperimentalReadiumApi::class)
+
 package org.readium.navigator.web.pager
 
 import androidx.compose.foundation.MutatePriority
@@ -11,6 +13,7 @@ import androidx.compose.foundation.MutatorMutex
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.util.fastCoerceAtLeast
@@ -18,7 +21,10 @@ import androidx.compose.ui.util.fastCoerceAtMost
 import kotlinx.coroutines.coroutineScope
 import org.readium.navigator.web.gestures.Scroll2DScope
 import org.readium.navigator.web.gestures.Scrollable2DState
+import org.readium.navigator.web.util.toOrientation
 import org.readium.navigator.web.webview.WebViewScrollController
+import org.readium.r2.navigator.OverflowableNavigator
+import org.readium.r2.shared.ExperimentalReadiumApi
 import timber.log.Timber
 
 internal interface PageScrollState {
@@ -29,8 +35,11 @@ internal interface PageScrollState {
 internal class RenditionScrollState(
     private val pagerState: PagerState,
     private val pageStates: List<PageScrollState>,
-    internal var pagerOrientation: Orientation,
+    private val overflow: State<OverflowableNavigator.Overflow>,
 ) : Scrollable2DState {
+
+    private val pagerOrientation: Orientation get() =
+        overflow.value.axis.toOrientation()
 
     /*
      * To favour natural reasoning, this function applies reverse scrolling:

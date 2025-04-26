@@ -7,6 +7,7 @@
 package org.readium.navigator.common
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -43,7 +44,7 @@ public data class FootnoteContext(
 ) : LinkContext
 
 @ExperimentalReadiumApi
-public class NullHyperlinkListener : HyperlinkListener {
+private class NullHyperlinkListener : HyperlinkListener {
     override fun onReadingOrderLinkActivated(location: HyperlinkLocation, context: LinkContext?) {
     }
 
@@ -63,20 +64,37 @@ public class NullHyperlinkListener : HyperlinkListener {
 @ExperimentalReadiumApi
 @Composable
 public fun <L : Location> defaultHyperlinkListener(
-    controller: NavigationController<L, *>,
-    shouldFollowReadingOrderLink: (HyperlinkLocation, LinkContext?) -> Boolean = { _, _ -> true },
-    onNonLinearLinkActivated: (HyperlinkLocation, LinkContext?) -> Unit = { _, _ -> },
-    onExternalLinkActivated: (AbsoluteUrl, LinkContext?) -> Unit = { _, _ -> },
+    controller: NavigationController<L, *>?,
+    shouldFollowReadingOrderLink: (NavigationController<L, *>).(HyperlinkLocation, LinkContext?) -> Boolean = { _, _ -> true },
+    onNonLinearLinkActivated: (NavigationController<L, *>).(HyperlinkLocation, LinkContext?) -> Unit = { _, _ -> },
+    onExternalLinkActivated: (NavigationController<L, *>).(AbsoluteUrl, LinkContext?) -> Unit = { _, _ -> },
 ): HyperlinkListener {
     val coroutineScope = rememberCoroutineScope()
 
-    return DefaultHyperlinkListener(
-        coroutineScope = coroutineScope,
-        controller = controller,
-        shouldFollowReadingOrderLink = shouldFollowReadingOrderLink,
-        onNonLinearLinkActivatedDelegate = onNonLinearLinkActivated,
-        onExternalLinkActivatedDelegate = onExternalLinkActivated
-    )
+    return remember(
+        controller,
+        shouldFollowReadingOrderLink,
+        onNonLinearLinkActivated,
+        onExternalLinkActivated
+    ) {
+        if (controller == null) {
+            NullHyperlinkListener()
+        } else {
+            DefaultHyperlinkListener(
+                coroutineScope = coroutineScope,
+                controller = controller,
+                shouldFollowReadingOrderLink = { link, context ->
+                    controller.shouldFollowReadingOrderLink(link, context)
+                },
+                onNonLinearLinkActivatedDelegate = { link, context ->
+                    controller.onNonLinearLinkActivated(link, context)
+                },
+                onExternalLinkActivatedDelegate = { url, context ->
+                    controller.onExternalLinkActivated(url, context)
+                }
+            )
+        }
+    }
 }
 
 @ExperimentalReadiumApi

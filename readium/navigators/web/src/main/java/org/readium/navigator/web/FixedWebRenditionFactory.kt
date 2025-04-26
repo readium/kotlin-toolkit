@@ -28,7 +28,7 @@ import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.publication.presentation.page
 import org.readium.r2.shared.publication.presentation.presentation
-import org.readium.r2.shared.publication.services.ContentProtectionService
+import org.readium.r2.shared.publication.services.isProtected
 import org.readium.r2.shared.util.ThrowableError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.getOrElse
@@ -87,6 +87,8 @@ public class FixedWebRenditionFactory private constructor(
         initialLocation: FixedWebGoLocation? = null,
         readingOrder: List<Link> = publication.readingOrder,
     ): Try<FixedWebRenditionState, Error> {
+        // TODO: enable apps not to disable selection when publication is protected
+
         val readingOrderItems = readingOrder.map {
             ReadingOrderItem(
                 href = it.url(),
@@ -95,7 +97,7 @@ public class FixedWebRenditionFactory private constructor(
             )
         }
 
-        val otherResources = publication.resources.map {
+        val resourceItems = (publication.readingOrder - readingOrder + publication.resources).map {
             OtherItem(
                 href = it.url(),
                 mediaType = it.mediaType
@@ -104,24 +106,24 @@ public class FixedWebRenditionFactory private constructor(
 
         val renditionPublication = FixedWebPublication(
             readingOrder = ReadingOrder(readingOrderItems),
-            otherResources = otherResources,
+            otherResources = resourceItems,
             container = publication.container
         )
 
         val preloads = preloadData()
             .getOrElse { return Try.failure(it) }
 
-        val disableSelection = publication.findService(ContentProtectionService::class)
-            ?.isRestricted == true
+        val initialLocation = initialLocation
+            ?: FixedWebGoLocation(readingOrderItems[0].href)
 
         val state =
             FixedWebRenditionState(
                 application = application,
                 publication = renditionPublication,
-                disableSelection = disableSelection,
                 initialSettings = initialSettings,
-                initialLocation = initialLocation ?: FixedWebGoLocation(readingOrderItems[0].href),
-                preloadedData = preloads
+                initialLocation = initialLocation,
+                preloadedData = preloads,
+                disableSelection = publication.isProtected,
             )
 
         return Try.success(state)

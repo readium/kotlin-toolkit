@@ -31,6 +31,7 @@ import org.readium.navigator.web.util.WebViewClient
 import org.readium.navigator.web.util.WebViewServer
 import org.readium.navigator.web.util.WebViewServer.Companion.assetsBaseHref
 import org.readium.navigator.web.util.injectHtmlFixedLayout
+import org.readium.r2.navigator.OverflowableNavigator
 import org.readium.r2.navigator.SimpleOverflow
 import org.readium.r2.navigator.preferences.Axis
 import org.readium.r2.navigator.preferences.Fit
@@ -108,7 +109,7 @@ public class FixedWebRenditionState internal constructor(
             NavigationDelegate(
                 pagerState,
                 layoutDelegate.layout,
-                layoutDelegate.settings,
+                layoutDelegate.overflow,
                 location
             )
         controllerState.value =
@@ -140,7 +141,7 @@ internal data class FixedWebPreloadedData(
     val fixedDoubleContent: String,
 )
 
-@OptIn(ExperimentalReadiumApi::class)
+@OptIn(ExperimentalReadiumApi::class, InternalReadiumApi::class)
 internal class LayoutDelegate(
     readingOrder: ReadingOrder,
     initialSettings: FixedWebSettings,
@@ -151,6 +152,16 @@ internal class LayoutDelegate(
 
     override val settings: MutableState<FixedWebSettings> =
         mutableStateOf(initialSettings)
+
+    val overflow: State<OverflowableNavigator.Overflow> = derivedStateOf {
+        with(settings.value) {
+            SimpleOverflow(
+                readingProgression = readingProgression,
+                scroll = false,
+                axis = Axis.HORIZONTAL
+            )
+        }
+    }
 
     val layout: State<Layout> =
         derivedStateOf {
@@ -166,7 +177,7 @@ internal class LayoutDelegate(
 internal class NavigationDelegate(
     private val pagerState: PagerState,
     private val layout: State<Layout>,
-    private val settings: State<FixedWebSettings>,
+    override val overflow: State<Overflow>,
     initialLocation: FixedWebLocation,
 ) : NavigationController<FixedWebLocation, FixedWebGoLocation>, OverflowController {
 
@@ -192,15 +203,6 @@ internal class NavigationDelegate(
     override suspend fun goTo(location: FixedWebLocation) {
         goTo(FixedWebGoLocation(location.href))
     }
-
-    override val overflow: State<Overflow> =
-        derivedStateOf {
-            SimpleOverflow(
-                settings.value.readingProgression,
-                false,
-                Axis.HORIZONTAL
-            )
-        }
 
     override val canMoveForward: Boolean
         get() = pagerState.currentPage < layout.value.spreads.size - 1

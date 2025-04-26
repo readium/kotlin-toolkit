@@ -7,6 +7,7 @@
 package org.readium.navigator.web
 
 import android.app.Application
+import org.readium.navigator.web.css.RsProperties
 import org.readium.navigator.web.location.ReflowableWebGoLocation
 import org.readium.navigator.web.location.ReflowableWebLocatorAdapter
 import org.readium.navigator.web.preferences.ReflowableWebDefaults
@@ -20,7 +21,7 @@ import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.publication.presentation.presentation
-import org.readium.r2.shared.publication.services.ContentProtectionService
+import org.readium.r2.shared.publication.services.isProtected
 import org.readium.r2.shared.util.Try
 
 /**
@@ -78,6 +79,9 @@ public class ReflowableWebRenditionFactory private constructor(
         initialLocation: ReflowableWebGoLocation? = null,
         readingOrder: List<Link> = publication.readingOrder,
     ): Try<ReflowableWebRenditionState, Error> {
+        // TODO: support font family declarations and reading system properties
+        // TODO: enable apps not to disable selection when publication is protected
+
         val readingOrderItems = readingOrder.map {
             ReflowableWebPublication.Item(
                 href = it.url(),
@@ -85,7 +89,7 @@ public class ReflowableWebRenditionFactory private constructor(
             )
         }
 
-        val otherResources = publication.resources.map {
+        val resourceItems = (publication.readingOrder - readingOrder + publication.resources).map {
             ReflowableWebPublication.Item(
                 href = it.url(),
                 mediaType = it.mediaType
@@ -94,15 +98,12 @@ public class ReflowableWebRenditionFactory private constructor(
 
         val renditionPublication = ReflowableWebPublication(
             readingOrder = ReflowableWebPublication.ReadingOrder(readingOrderItems),
-            otherResources = otherResources,
+            otherResources = resourceItems,
             container = publication.container
         )
 
         val initialLocation = initialLocation
             ?: ReflowableWebGoLocation(readingOrderItems[0].href)
-
-        val disableSelection = publication.findService(ContentProtectionService::class)
-            ?.isRestricted == true
 
         val state =
             ReflowableWebRenditionState(
@@ -110,8 +111,9 @@ public class ReflowableWebRenditionFactory private constructor(
                 publication = renditionPublication,
                 initialSettings = initialSettings,
                 initialLocation = initialLocation,
-                fontFamilyDeclarations = emptyList(), // FIXME: pass font family declarations
-                disableSelection = disableSelection
+                rsProperties = RsProperties(),
+                fontFamilyDeclarations = emptyList(),
+                disableSelection = publication.isProtected
             )
 
         return Try.success(state)

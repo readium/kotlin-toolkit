@@ -22,10 +22,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
@@ -33,8 +35,6 @@ import kotlinx.coroutines.launch
 import org.readium.navigator.common.HyperlinkListener
 import org.readium.navigator.common.HyperlinkLocation
 import org.readium.navigator.common.InputListener
-import org.readium.navigator.common.NullHyperlinkListener
-import org.readium.navigator.common.NullInputListener
 import org.readium.navigator.common.TapContext
 import org.readium.navigator.common.TapEvent
 import org.readium.navigator.common.defaultHyperlinkListener
@@ -42,7 +42,6 @@ import org.readium.navigator.common.defaultInputListener
 import org.readium.navigator.web.gestures.toFling2DBehavior
 import org.readium.navigator.web.location.ReflowableWebLocation
 import org.readium.navigator.web.pager.RenditionPager
-import org.readium.navigator.web.pager.RenditionScrollState
 import org.readium.navigator.web.pager.pagingFlingBehavior
 import org.readium.navigator.web.reflowable.ReflowablePagingLayoutInfo
 import org.readium.navigator.web.reflowable.ReflowableResource
@@ -63,13 +62,8 @@ public fun ReflowableWebRendition(
     state: ReflowableWebRenditionState,
     modifier: Modifier = Modifier,
     windowInsets: WindowInsets = WindowInsets.displayCutout,
-    inputListener: InputListener = state.controller
-        ?.let { defaultInputListener(controller = it) }
-        ?: NullInputListener(),
-    hyperlinkListener: HyperlinkListener =
-        state.controller
-            ?.let { defaultHyperlinkListener(controller = it) }
-            ?: NullHyperlinkListener(),
+    inputListener: InputListener = defaultInputListener(state.controller),
+    hyperlinkListener: HyperlinkListener = defaultHyperlinkListener(state.controller),
 ) {
     BoxWithConstraints(
         modifier = modifier.fillMaxSize(),
@@ -91,18 +85,6 @@ public fun ReflowableWebRendition(
                 }
             }
 
-        val currentPageState = remember(state) { derivedStateOf { state.pagerState.currentPage } }
-
-        if (state.controller == null) {
-            // Initialize controller. In the future, that should require access to a ready WebView.
-            state.initController(
-                location = ReflowableWebLocation(
-                    href = state.publication.readingOrder.items[currentPageState.value].href,
-                    progression = state.resourceStates[currentPageState.value].progression
-                )
-            )
-        }
-
         val flingBehavior = if (state.layoutDelegate.overflow.value.scroll) {
             ScrollableDefaults.flingBehavior()
         } else {
@@ -114,16 +96,6 @@ public fun ReflowableWebRendition(
                 )
             )
         }.toFling2DBehavior(state.layoutDelegate.orientation)
-
-        val scrollDispatcher = remember(state) {
-            RenditionScrollState(
-                pagerState = state.pagerState,
-                pageStates = state.resourceStates,
-                pagerOrientation = state.layoutDelegate.orientation,
-            )
-        }
-
-        scrollDispatcher.pagerOrientation = state.layoutDelegate.orientation
 
         val backgroundColor = Color(
             state.layoutDelegate.settings.value.backgroundColor?.int
@@ -137,9 +109,17 @@ public fun ReflowableWebRendition(
         val layoutDirection =
             state.layoutDelegate.overflow.value.readingProgression.toLayoutDirection()
 
-        val readyToScroll = ((currentPageState.value - 2)..(currentPageState.value + 2)).toList()
-            .mapNotNull { state.resourceStates.getOrNull(it) }
-            .all { it.scrollController.value != null }
+        val currentPageState = remember(state) { derivedStateOf { state.pagerState.currentPage } }
+
+        if (state.controller == null) {
+            // Initialize controller. In the future, that should require access to a ready WebView.
+            state.initController(
+                location = ReflowableWebLocation(
+                    href = state.publication.readingOrder.items[currentPageState.value].href,
+                    progression = state.resourceStates[currentPageState.value].progression
+                )
+            )
+        }
 
         RenditionPager(
             modifier = Modifier
@@ -148,27 +128,19 @@ public fun ReflowableWebRendition(
                 // Detect taps on padding
                 .pointerInput(Unit) {
                     detectTapGestures(
-                        onTap = {
-                            if (it.x >= 0 && it.y >= 0) {
-                                val offset = DpOffset(x = it.x.toDp(), y = it.y.toDp())
-                                val event = TapEvent(offset)
-                                inputListenerState.value.onTap(event, TapContext(viewportSize.value))
-                            }
-                        }
+                        onTap = { onTapOnPadding(it, viewportSize.value, inputListenerState.value) }
                     )
                 }
                 .windowInsetsPadding(windowInsets),
             state = state.pagerState,
-            scrollState = scrollDispatcher,
+            scrollState = state.scrollState,
             flingBehavior = flingBehavior,
             beyondViewportPageCount = 3,
             layoutDirection = layoutDirection,
             orientation = state.layoutDelegate.orientation,
-            enableScroll = readyToScroll
         ) { index ->
             ReflowableResource(
                 resourceState = state.resourceStates[index],
-                pagerState = state.pagerState,
                 publicationBaseUrl = WebViewServer.publicationBaseHref,
                 webViewClient = state.webViewClient,
                 backgroundColor = backgroundColor,
@@ -176,10 +148,7 @@ public fun ReflowableWebRendition(
                 layoutDirection = layoutDirection,
                 scroll = state.layoutDelegate.settings.value.scroll,
                 orientation = state.layoutDelegate.orientation,
-                rsProperties = state.readiumCssInjector.value.rsProperties,
-                userProperties = state.readiumCssInjector.value.userProperties,
-                readiumCssLayout = state.readiumCssInjector.value.layout,
-                enableScroll = readyToScroll,
+                readiumCssInjector = state.readiumCssInjector.value,
                 onTap = { tapEvent ->
                     inputListenerState.value.onTap(tapEvent, TapContext(viewportSize.value))
                 },
@@ -201,10 +170,23 @@ public fun ReflowableWebRendition(
                     }
                 },
                 onDocumentResized = {
-                    scrollDispatcher.onDocumentResized(index)
+                    state.scrollState.onDocumentResized(index)
                 }
             )
         }
+    }
+}
+
+@OptIn(ExperimentalReadiumApi::class)
+private fun (Density).onTapOnPadding(
+    offset: Offset,
+    viewportSize: DpSize,
+    listener: InputListener,
+) {
+    if (offset.x >= 0 && offset.y >= 0) {
+        val offset = DpOffset(x = offset.x.toDp(), y = offset.y.toDp())
+        val event = TapEvent(offset)
+        listener.onTap(event, TapContext(viewportSize))
     }
 }
 
