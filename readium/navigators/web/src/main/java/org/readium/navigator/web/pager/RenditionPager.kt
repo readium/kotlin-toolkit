@@ -29,7 +29,6 @@ internal fun RenditionPager(
     scrollState: Scrollable2DState,
     flingBehavior: Fling2DBehavior,
     orientation: Orientation,
-    layoutDirection: LayoutDirection,
     enableScroll: Boolean = true,
     beyondViewportPageCount: Int,
     key: ((index: Int) -> Any)? = null,
@@ -40,9 +39,8 @@ internal fun RenditionPager(
             enabled = enableScroll,
             state = scrollState,
             flingBehavior = flingBehavior,
-            reverseDirection = layoutDirection == LayoutDirection.Ltr ||
-                orientation == Orientation.Vertical,
-            orientation = null
+            reverseDirection = orientation == Orientation.Vertical ||
+                LocalLayoutDirection.current == LayoutDirection.Ltr
         )
 
     // Disable built-in pager behavior as it is not suitable.
@@ -60,7 +58,7 @@ internal fun RenditionPager(
             flingBehavior = flingBehavior,
             userScrollEnabled = userScrollEnabled,
             key = key,
-            reverseLayout = layoutDirection != LocalLayoutDirection.current,
+            reverseLayout = false,
             pageNestedScrollConnection = pageNestedScrollConnection,
             pageContent = pageContent
         )

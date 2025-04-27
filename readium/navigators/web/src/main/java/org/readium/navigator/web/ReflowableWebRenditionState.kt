@@ -24,7 +24,7 @@ import org.readium.navigator.web.css.FontFamilyDeclaration
 import org.readium.navigator.web.css.ReadiumCssInjector
 import org.readium.navigator.web.css.RsProperties
 import org.readium.navigator.web.css.buildFontFamilyDeclaration
-import org.readium.navigator.web.css.update
+import org.readium.navigator.web.css.withSettings
 import org.readium.navigator.web.location.ReflowableWebGoLocation
 import org.readium.navigator.web.location.ReflowableWebLocation
 import org.readium.navigator.web.pager.RenditionScrollState
@@ -36,12 +36,12 @@ import org.readium.navigator.web.util.WebViewClient
 import org.readium.navigator.web.util.WebViewServer
 import org.readium.navigator.web.util.WebViewServer.Companion.assetsBaseHref
 import org.readium.navigator.web.util.injectHtmlReflowable
+import org.readium.navigator.web.util.toLayoutDirection
 import org.readium.navigator.web.util.toOrientation
 import org.readium.navigator.web.webview.WebViewScrollController
 import org.readium.r2.navigator.SimpleOverflow
 import org.readium.r2.navigator.preferences.Axis
 import org.readium.r2.navigator.preferences.FontFamily
-import org.readium.r2.navigator.preferences.ReadingProgression
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.util.RelativeUrl
@@ -123,9 +123,8 @@ public class ReflowableWebRenditionState internal constructor(
                         }
                     )
                 }
-            ).update(
+            ).withSettings(
                 settings = layoutDelegate.settings.value,
-                useReadiumCssFontSize = true
             )
         }
 
@@ -288,45 +287,34 @@ internal class ReflowableNavigationDelegate(
     }
 
     private fun WebViewScrollController.moveForward() =
-        when (overflow.value.scroll) {
-            true -> moveBottom()
-            false -> when (overflow.value.readingProgression) {
-                ReadingProgression.LTR -> moveRight()
-                ReadingProgression.RTL -> moveLeft()
-            }
-        }
+        moveForward(
+            orientation = overflow.value.axis.toOrientation(),
+            direction = overflow.value.readingProgression.toLayoutDirection()
+        )
 
     private fun WebViewScrollController.moveBackward() =
-        when (overflow.value.scroll) {
-            true -> moveTop()
-            false -> when (overflow.value.readingProgression) {
-                ReadingProgression.LTR -> moveLeft()
-                ReadingProgression.RTL -> moveRight()
-            }
-        }
+        moveBackward(
+            orientation = overflow.value.axis.toOrientation(),
+            direction = overflow.value.readingProgression.toLayoutDirection()
+        )
 
     private fun WebViewScrollController.canMoveForward(): Boolean =
-        when (overflow.value.scroll) {
-            true -> canMoveBottom
-            false -> when (overflow.value.readingProgression) {
-                ReadingProgression.LTR -> canMoveRight
-                ReadingProgression.RTL -> canMoveLeft
-            }
-        }
-
+        canMoveForward(
+            orientation = overflow.value.axis.toOrientation(),
+            direction = overflow.value.readingProgression.toLayoutDirection()
+        )
     private fun WebViewScrollController.canMoveBackward(): Boolean =
-        when (overflow.value.scroll) {
-            true -> canMoveTop
-            false -> when (overflow.value.readingProgression) {
-                ReadingProgression.LTR -> canMoveLeft
-                ReadingProgression.RTL -> canMoveRight
-            }
-        }
+        canMoveBackward(
+            orientation = overflow.value.axis.toOrientation(),
+            direction = overflow.value.readingProgression.toLayoutDirection()
+        )
+
     private fun WebViewScrollController.moveToProgression(progression: Double) {
         moveToProgression(
             progression = progression,
             snap = !overflow.value.scroll,
-            orientation = overflow.value.axis.toOrientation()
+            orientation = overflow.value.axis.toOrientation(),
+            direction = overflow.value.readingProgression.toLayoutDirection()
         )
     }
 }

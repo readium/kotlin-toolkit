@@ -19,6 +19,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.LayoutDirection
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import org.readium.navigator.common.TapEvent
@@ -38,11 +39,11 @@ internal fun DoubleViewportSpread(
     pagerState: PagerState,
     scrollState: SpreadScrollState,
     progression: Double,
+    layoutDirection: LayoutDirection,
     onTap: (TapEvent) -> Unit,
     onLinkActivated: (Url, String) -> Unit,
     state: DoubleSpreadState,
     backgroundColor: Color,
-    reverseScrollDirection: Boolean,
 ) {
     Box(
         modifier = Modifier.fillMaxSize(),
@@ -87,6 +88,7 @@ internal fun DoubleViewportSpread(
             state = webViewState,
             spreadScrollState = scrollState,
             progression = progression,
+            layoutDirection = layoutDirection,
             client = state.webViewClient,
             onTap = onTap,
             onLinkActivated = { url, outerHtml ->
@@ -97,7 +99,6 @@ internal fun DoubleViewportSpread(
             },
             backgroundColor = backgroundColor,
             onScriptsLoaded = { scriptsLoaded.value = true },
-            reverseScrollDirection = reverseScrollDirection
         )
     }
 }

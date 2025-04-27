@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -27,6 +28,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.DpSize
@@ -65,114 +67,116 @@ public fun ReflowableWebRendition(
     inputListener: InputListener = defaultInputListener(state.controller),
     hyperlinkListener: HyperlinkListener = defaultHyperlinkListener(state.controller),
 ) {
-    BoxWithConstraints(
-        modifier = modifier.fillMaxSize(),
-        propagateMinConstraints = true
-    ) {
-        val viewportSize = rememberUpdatedState(DpSize(maxWidth, maxHeight))
+    val layoutDirection =
+        state.layoutDelegate.overflow.value.readingProgression.toLayoutDirection()
 
-        val coroutineScope = rememberCoroutineScope()
+    CompositionLocalProvider(LocalLayoutDirection provides layoutDirection) {
+        BoxWithConstraints(
+            modifier = modifier.fillMaxSize(),
+            propagateMinConstraints = true
+        ) {
+            val viewportSize = rememberUpdatedState(DpSize(maxWidth, maxHeight))
 
-        val resourcePadding =
-            if (state.layoutDelegate.overflow.value.scroll) {
-                AbsolutePaddingValues()
-            } else {
-                when (LocalConfiguration.current.orientation) {
-                    Configuration.ORIENTATION_LANDSCAPE ->
-                        AbsolutePaddingValues(vertical = 20.dp)
-                    else ->
-                        AbsolutePaddingValues(vertical = 40.dp)
+            val coroutineScope = rememberCoroutineScope()
+
+            val resourcePadding =
+                if (state.layoutDelegate.overflow.value.scroll) {
+                    AbsolutePaddingValues()
+                } else {
+                    when (LocalConfiguration.current.orientation) {
+                        Configuration.ORIENTATION_LANDSCAPE ->
+                            AbsolutePaddingValues(vertical = 20.dp)
+                        else ->
+                            AbsolutePaddingValues(vertical = 40.dp)
+                    }
                 }
+
+            val flingBehavior = if (state.layoutDelegate.overflow.value.scroll) {
+                ScrollableDefaults.flingBehavior()
+            } else {
+                pagingFlingBehavior(
+                    ReflowablePagingLayoutInfo(
+                        pagerState = state.pagerState,
+                        pageStates = state.resourceStates,
+                        density = LocalDensity.current,
+                        direction = layoutDirection
+                    )
+                )
+            }.toFling2DBehavior(state.layoutDelegate.orientation)
+
+            val backgroundColor = Color(
+                state.layoutDelegate.settings.value.backgroundColor?.int
+                    ?: state.layoutDelegate.settings.value.theme.backgroundColor
+            )
+
+            val inputListenerState = rememberUpdatedState(inputListener)
+
+            val hyperlinkListenerState = rememberUpdatedState(hyperlinkListener)
+
+            val currentPageState = remember(state) { derivedStateOf { state.pagerState.currentPage } }
+
+            if (state.controller == null) {
+                // Initialize controller. In the future, that should require access to a ready WebView.
+                state.initController(
+                    location = ReflowableWebLocation(
+                        href = state.publication.readingOrder.items[currentPageState.value].href,
+                        progression = state.resourceStates[currentPageState.value].progression
+                    )
+                )
             }
 
-        val flingBehavior = if (state.layoutDelegate.overflow.value.scroll) {
-            ScrollableDefaults.flingBehavior()
-        } else {
-            pagingFlingBehavior(
-                ReflowablePagingLayoutInfo(
-                    pagerState = state.pagerState,
-                    resourceStates = state.resourceStates,
-                    density = LocalDensity.current
-                )
-            )
-        }.toFling2DBehavior(state.layoutDelegate.orientation)
-
-        val backgroundColor = Color(
-            state.layoutDelegate.settings.value.backgroundColor?.int
-                ?: state.layoutDelegate.settings.value.theme.backgroundColor
-        )
-
-        val inputListenerState = rememberUpdatedState(inputListener)
-
-        val hyperlinkListenerState = rememberUpdatedState(hyperlinkListener)
-
-        val layoutDirection =
-            state.layoutDelegate.overflow.value.readingProgression.toLayoutDirection()
-
-        val currentPageState = remember(state) { derivedStateOf { state.pagerState.currentPage } }
-
-        if (state.controller == null) {
-            // Initialize controller. In the future, that should require access to a ready WebView.
-            state.initController(
-                location = ReflowableWebLocation(
-                    href = state.publication.readingOrder.items[currentPageState.value].href,
-                    progression = state.resourceStates[currentPageState.value].progression
-                )
-            )
-        }
-
-        RenditionPager(
-            modifier = Modifier
-                // Apply background on padding
-                .background(backgroundColor)
-                // Detect taps on padding
-                .pointerInput(Unit) {
-                    detectTapGestures(
-                        onTap = { onTapOnPadding(it, viewportSize.value, inputListenerState.value) }
-                    )
-                }
-                .windowInsetsPadding(windowInsets),
-            state = state.pagerState,
-            scrollState = state.scrollState,
-            flingBehavior = flingBehavior,
-            beyondViewportPageCount = 3,
-            layoutDirection = layoutDirection,
-            orientation = state.layoutDelegate.orientation,
-        ) { index ->
-            ReflowableResource(
-                resourceState = state.resourceStates[index],
-                publicationBaseUrl = WebViewServer.publicationBaseHref,
-                webViewClient = state.webViewClient,
-                backgroundColor = backgroundColor,
-                padding = resourcePadding,
-                layoutDirection = layoutDirection,
-                scroll = state.layoutDelegate.settings.value.scroll,
-                orientation = state.layoutDelegate.orientation,
-                readiumCssInjector = state.readiumCssInjector.value,
-                onTap = { tapEvent ->
-                    inputListenerState.value.onTap(tapEvent, TapContext(viewportSize.value))
-                },
-                onLinkActivated = { url, outerHtml ->
-                    coroutineScope.launch {
-                        state.hyperlinkProcessor.onLinkActivated(
-                            url = url,
-                            outerHtml = outerHtml,
-                            readingOrder = state.publication.readingOrder,
-                            listener = hyperlinkListenerState.value
+            RenditionPager(
+                modifier = Modifier
+                    // Apply background on padding
+                    .background(backgroundColor)
+                    // Detect taps on padding
+                    .pointerInput(Unit) {
+                        detectTapGestures(
+                            onTap = { onTapOnPadding(it, viewportSize.value, inputListenerState.value) }
                         )
                     }
-                },
-                onProgressionChange = {
-                    if (index == currentPageState.value) {
-                        val itemHref = state.publication.readingOrder[index].href
-                        val newLocation = ReflowableWebLocation(itemHref, it)
-                        state.updateLocation(newLocation)
+                    .windowInsetsPadding(windowInsets),
+                state = state.pagerState,
+                scrollState = state.scrollState,
+                flingBehavior = flingBehavior,
+                beyondViewportPageCount = 3,
+                orientation = state.layoutDelegate.orientation,
+            ) { index ->
+                ReflowableResource(
+                    resourceState = state.resourceStates[index],
+                    publicationBaseUrl = WebViewServer.publicationBaseHref,
+                    webViewClient = state.webViewClient,
+                    backgroundColor = backgroundColor,
+                    padding = resourcePadding,
+                    layoutDirection = layoutDirection,
+                    scroll = state.layoutDelegate.settings.value.scroll,
+                    orientation = state.layoutDelegate.orientation,
+                    readiumCssInjector = state.readiumCssInjector.value,
+                    onTap = { tapEvent ->
+                        inputListenerState.value.onTap(tapEvent, TapContext(viewportSize.value))
+                    },
+                    onLinkActivated = { url, outerHtml ->
+                        coroutineScope.launch {
+                            state.hyperlinkProcessor.onLinkActivated(
+                                url = url,
+                                outerHtml = outerHtml,
+                                readingOrder = state.publication.readingOrder,
+                                listener = hyperlinkListenerState.value
+                            )
+                        }
+                    },
+                    onProgressionChange = {
+                        if (index == currentPageState.value) {
+                            val itemHref = state.publication.readingOrder[index].href
+                            val newLocation = ReflowableWebLocation(itemHref, it)
+                            state.updateLocation(newLocation)
+                        }
+                    },
+                    onDocumentResized = {
+                        state.scrollState.onDocumentResized(index)
                     }
-                },
-                onDocumentResized = {
-                    state.scrollState.onDocumentResized(index)
-                }
-            )
+                )
+            }
         }
     }
 }

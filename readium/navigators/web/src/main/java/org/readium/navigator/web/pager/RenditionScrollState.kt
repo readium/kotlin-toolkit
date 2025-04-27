@@ -16,11 +16,12 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.util.fastCoerceAtLeast
-import androidx.compose.ui.util.fastCoerceAtMost
+import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.util.fastCoerceIn
 import kotlinx.coroutines.coroutineScope
 import org.readium.navigator.web.gestures.Scroll2DScope
 import org.readium.navigator.web.gestures.Scrollable2DState
+import org.readium.navigator.web.util.toLayoutDirection
 import org.readium.navigator.web.util.toOrientation
 import org.readium.navigator.web.webview.WebViewScrollController
 import org.readium.r2.navigator.OverflowableNavigator
@@ -38,16 +39,23 @@ internal class RenditionScrollState(
     private val overflow: State<OverflowableNavigator.Overflow>,
 ) : Scrollable2DState {
 
-    private val pagerOrientation: Orientation get() =
+    private val orientation: Orientation get() =
         overflow.value.axis.toOrientation()
 
+    private val direction: LayoutDirection get() =
+        overflow.value.readingProgression.toLayoutDirection()
+
+    private val reverseLayout get() =
+        orientation == Orientation.Horizontal && direction == LayoutDirection.Rtl
+
     /*
-     * To favour natural reasoning, this function applies reverse scrolling:
-     * - a positive delta makes scrolling left
-     * - a negative delta makes scrolling right
+     * To ease the reasoning, this function applies reverse scrolling:
+     * - a positive delta (finger moved to the right) makes the viewport scrolling left
+     * - a negative delta (finger moved to the left) makes the viewport scrolling right
      */
-    private fun rawScrollBy(available: Float): Float {
+    private fun dispatchRawDelta(available: Float): Float {
         Timber.d("scrollBy available $available")
+        Timber.d("visiblePages ${pagerState.layoutInfo.visiblePagesInfo.map { it.index to it.offset }}")
         var deltaLeft = available
 
         val firstPage = pagerState.layoutInfo.visiblePagesInfo.first()
@@ -58,60 +66,57 @@ internal class RenditionScrollState(
             // Set the page that will become visible to the right scroll position.
             when {
                 available > 0 -> {
-                    val prevPage = (firstPage.index - 1).takeIf { it >= 0 }
+                    val prevPage = pageOnTheLeftOrTop(firstPage.index)
                     prevPage?.let {
-                        val success = scrollWebviewToEdge(prevPage, end = true)
+                        val success = scrollWebviewToEdge(prevPage, max = true)
                         if (!success) return available
                     }
                 }
                 else -> {
-                    val nextPage = (firstPage.index + 1).takeIf { it < pageStates.size }
+                    val nextPage = pageOnTheRightOrBottom(firstPage.index)
                     nextPage?.let {
-                        val success = scrollWebviewToEdge(nextPage, end = false)
+                        val success = scrollWebviewToEdge(nextPage, max = false)
                         if (!success) return available
                     }
                 }
             }
         }
 
-        val firstTargetPage = when {
+        var firstTargetPage = when {
             available >= 0 -> lastPage
             else -> firstPage
         }
 
-        val secondTargetPage = when {
+        var secondTargetPage = when {
             available >= 0 -> firstPage
             else -> lastPage
+        }
+
+        if (reverseLayout) {
+            val temp = firstTargetPage
+            firstTargetPage = secondTargetPage
+            secondTargetPage = temp
         }
 
         val consumedInFirst = consumeInWebview(firstTargetPage.index, deltaLeft)
         deltaLeft -= consumedInFirst
         Timber.d("consumed $consumedInFirst in ${firstTargetPage.index}")
 
-        val availableForPager =
-            if (firstPage.index == lastPage.index) {
-                when {
-                    deltaLeft > 0 ->
-                        deltaLeft.fastCoerceAtMost(pagerState.layoutInfo.pageSize.toFloat())
-                    deltaLeft < 0 ->
-                        deltaLeft.coerceAtLeast(-pagerState.layoutInfo.pageSize.toFloat())
-                    else ->
-                        0f
-                }
-            } else {
-                when {
-                    deltaLeft > 0 -> {
-                        deltaLeft.fastCoerceAtMost(-firstPage.offset.toFloat())
-                    }
-                    deltaLeft < 0 -> {
-                        deltaLeft.fastCoerceAtLeast(-lastPage.offset.toFloat())
-                    }
-                    else ->
-                        0f
-                }
-            }
+        val pageSize = pagerState.layoutInfo.pageSize.toFloat()
 
-        val consumedInPager = -pagerState.dispatchRawDelta(-availableForPager)
+        val availableForPager = when {
+            firstPage.index == lastPage.index ->
+                deltaLeft.fastCoerceIn(-pageSize, pageSize)
+            reverseLayout ->
+                deltaLeft.fastCoerceIn(firstPage.offset.toFloat(), lastPage.offset.toFloat())
+            else ->
+                deltaLeft.fastCoerceIn(-lastPage.offset.toFloat(), -firstPage.offset.toFloat())
+        }
+
+        val consumedInPager = pagerState.dispatchRawDelta(
+            delta = availableForPager.reverseIfNeeded(reverseLayout)
+        ).reverseIfNeeded(reverseLayout)
+
         deltaLeft -= consumedInPager
         Timber.d("consumed $consumedInPager in pager")
 
@@ -124,18 +129,19 @@ internal class RenditionScrollState(
         return when (deltaLeft) {
             0f -> available
             available -> 0f
-            else -> rawScrollBy(deltaLeft)
+            else -> dispatchRawDelta(deltaLeft)
         }
     }
 
-    private fun scrollWebviewToEdge(targetPage: Int, end: Boolean): Boolean {
+    private fun scrollWebviewToEdge(targetPage: Int, max: Boolean): Boolean {
         val scrollController = pageStates[targetPage].scrollController.value
             ?: return false
-        scrollController.moveToProgression(
-            progression = if (end) 1.0 else 0.0,
-            snap = false,
-            orientation = pagerOrientation
-        )
+        Timber.d("scrolling to edge $targetPage max = $max $orientation $direction")
+        if (max) {
+            scrollController.scrollToMax(orientation)
+        } else {
+            scrollController.scrollToMin(orientation)
+        }
         return true
     }
 
@@ -146,29 +152,49 @@ internal class RenditionScrollState(
         return -scrollController.scrollBy(-available.mainAxisOffset).mainAxisValue
     }
 
+    private fun pageOnTheLeftOrTop(index: Int): Int? =
+        if (reverseLayout) {
+            (index + 1).takeIf { it < pageStates.size }
+        } else {
+            (index - 1).takeIf { it >= 0 }
+        }
+
+    private fun pageOnTheRightOrBottom(index: Int): Int? =
+        if (reverseLayout) {
+            (index - 1).takeIf { it >= 0 }
+        } else {
+            (index + 1).takeIf { it < pageStates.size }
+        }
+
+    private fun Float.reverseIfNeeded(reverseLayout: Boolean): Float =
+        if (reverseLayout) this else -this
+
     fun onDocumentResized(index: Int) {
         val firstPage = pagerState.layoutInfo.visiblePagesInfo.first()
 
         val lastPage = pagerState.layoutInfo.visiblePagesInfo.last()
 
-        if (firstPage == lastPage || firstPage.index != index) {
+        if (firstPage == lastPage ||
+            firstPage.index != index && direction == LayoutDirection.Ltr ||
+            lastPage.index != index && direction == LayoutDirection.Rtl
+        ) {
             return
         }
 
         val scrollController = pageStates[index].scrollController.value!!
-        val scrolled = scrollController.scrollToEnd(pagerOrientation)
+        val scrolled = scrollController.scrollToMax(orientation)
         if (scrolled > 0) {
-            rawScrollBy(scrolled.toFloat())
+            dispatchRawDelta(scrolled.toFloat())
         }
     }
 
-    private val Offset.mainAxisValue: Float get() = when (pagerOrientation) {
+    private val Offset.mainAxisValue: Float get() = when (orientation) {
         Orientation.Vertical -> y
         Orientation.Horizontal -> x
     }
 
     private val Float.mainAxisOffset: Offset
-        get() = when (pagerOrientation) {
+        get() = when (orientation) {
             Orientation.Vertical -> Offset(0f, this)
             Orientation.Horizontal -> Offset(this, 0f)
         }
@@ -180,8 +206,9 @@ internal class RenditionScrollState(
                 y = if (pixels.y.isNaN()) 0f else pixels.y
             )
             if (coercedPixels == Offset.Zero) return Offset.Zero
-            val delta = -rawScrollBy(-coercedPixels.mainAxisValue).mainAxisOffset
-            return delta
+            val delta = coercedPixels.mainAxisValue.reverseIfNeeded(reverseLayout)
+            val consumed = dispatchRawDelta(delta).reverseIfNeeded(reverseLayout).mainAxisOffset
+            return consumed
         }
     }
 
@@ -206,7 +233,7 @@ internal class RenditionScrollState(
     }
 
     override fun dispatchRawDelta(delta: Offset): Offset {
-        return -rawScrollBy(-delta.mainAxisValue).mainAxisOffset
+        return dispatchRawDelta(delta.mainAxisValue).mainAxisOffset
     }
 
     override val isScrollInProgress: Boolean

@@ -21,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.DpOffset
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.zIndex
 import org.readium.navigator.common.TapEvent
 import org.readium.navigator.web.util.WebViewClient
@@ -42,13 +43,13 @@ internal fun SpreadWebView(
     spreadIndex: Int,
     state: WebViewState<RelaxedWebView>,
     spreadScrollState: SpreadScrollState,
+    layoutDirection: LayoutDirection,
     progression: Double,
     client: WebViewClient,
     onScriptsLoaded: () -> Unit,
     onTap: (TapEvent) -> Unit,
     onLinkActivated: (AbsoluteUrl, String) -> Unit,
     backgroundColor: Color,
-    reverseScrollDirection: Boolean,
 ) {
     val contentIsLaidOut =
         remember { mutableStateOf(false) }
@@ -64,7 +65,8 @@ internal fun SpreadWebView(
                         scrollController.moveToProgression(
                             progression = progression,
                             snap = true,
-                            orientation = Orientation.Horizontal
+                            orientation = Orientation.Horizontal,
+                            direction = layoutDirection
                         )
                         spreadScrollState.scrollController.value = scrollController
                         contentIsLaidOut.value = true

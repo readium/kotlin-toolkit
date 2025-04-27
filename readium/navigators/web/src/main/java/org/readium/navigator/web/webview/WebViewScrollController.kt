@@ -8,11 +8,11 @@ package org.readium.navigator.web.webview
 
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.util.fastCoerceAtLeast
 import androidx.compose.ui.util.fastCoerceAtMost
 import androidx.compose.ui.util.fastRoundToInt
-import kotlin.math.ceil
-import kotlin.math.floor
+import kotlin.math.roundToInt
 import org.readium.navigator.web.gestures.DefaultScrollable2DState
 import org.readium.navigator.web.gestures.Scrollable2DState
 
@@ -63,8 +63,24 @@ internal class WebViewScrollController(
         return webView.scrollBy(delta)
     }
 
-    fun scrollToEnd(scrollOrientation: Orientation): Int {
-        return when (scrollOrientation) {
+    fun scrollToMin(orientation: Orientation): Int {
+        return when (orientation) {
+            Orientation.Vertical -> {
+                val delta = -scrollY
+                webView.scrollBy(0, delta)
+                delta
+            }
+
+            Orientation.Horizontal -> {
+                val delta = -scrollX
+                webView.scrollBy(delta, 0)
+                delta
+            }
+        }
+    }
+
+    fun scrollToMax(orientation: Orientation): Int {
+        return when (orientation) {
             Orientation.Vertical -> {
                 val delta = webView.maxScrollY - scrollY
                 webView.scrollBy(0, delta)
@@ -78,17 +94,19 @@ internal class WebViewScrollController(
         }
     }
 
-    fun progression(scrollOrientation: Orientation) =
-        webView.progression(scrollOrientation)
+    fun progression(orientation: Orientation, direction: LayoutDirection) =
+        webView.progression(orientation, direction)
 
     fun moveToProgression(
         progression: Double,
         snap: Boolean,
         orientation: Orientation,
+        direction: LayoutDirection,
     ) {
         webView.scrollToProgression(
             progression = progression,
-            scrollOrientation = orientation
+            orientation = orientation,
+            direction = direction
         )
         if (snap) {
             when (orientation) {
@@ -103,19 +121,73 @@ internal class WebViewScrollController(
             }
         }
     }
+
+    fun moveForward(orientation: Orientation, direction: LayoutDirection) =
+        when (orientation) {
+            Orientation.Vertical -> moveBottom()
+            Orientation.Horizontal -> when (direction) {
+                LayoutDirection.Ltr -> moveRight()
+                LayoutDirection.Rtl -> moveLeft()
+            }
+        }
+
+    fun moveBackward(orientation: Orientation, direction: LayoutDirection) =
+        when (orientation) {
+            Orientation.Vertical -> moveTop()
+            Orientation.Horizontal -> when (direction) {
+                LayoutDirection.Ltr -> moveLeft()
+                LayoutDirection.Rtl -> moveRight()
+            }
+        }
+
+    fun canMoveForward(orientation: Orientation, direction: LayoutDirection): Boolean =
+        when (orientation) {
+            Orientation.Vertical -> canMoveBottom
+            Orientation.Horizontal -> when (direction) {
+                LayoutDirection.Ltr -> canMoveRight
+                LayoutDirection.Rtl -> canMoveLeft
+            }
+        }
+
+    fun canMoveBackward(orientation: Orientation, direction: LayoutDirection): Boolean =
+        when (orientation) {
+            Orientation.Vertical -> canMoveTop
+            Orientation.Horizontal -> when (direction) {
+                LayoutDirection.Ltr -> canMoveLeft
+                LayoutDirection.Rtl -> canMoveRight
+            }
+        }
 }
 
-private fun RelaxedWebView.scrollToProgression(progression: Double, scrollOrientation: Orientation) {
-    if (scrollOrientation == Orientation.Horizontal) {
-        scrollTo(floor(progression * maxScrollX).toInt(), scrollY)
-    } else {
-        scrollTo(scrollX, ceil(progression * maxScrollY).toInt())
+private fun RelaxedWebView.scrollToProgression(
+    progression: Double,
+    orientation: Orientation,
+    direction: LayoutDirection,
+) {
+    when (orientation) {
+        Orientation.Vertical -> {
+            scrollTo(scrollX, progression.roundToInt() * maxScrollY.toInt())
+        }
+        Orientation.Horizontal -> when (direction) {
+            LayoutDirection.Ltr -> {
+                scrollTo(progression.roundToInt() * maxScrollX, scrollY)
+            }
+            LayoutDirection.Rtl -> {
+                scrollTo((1 - progression).roundToInt() * maxScrollX, scrollY)
+            }
+        }
     }
 }
 
-private fun RelaxedWebView.progression(orientation: Orientation) = when (orientation) {
+private fun RelaxedWebView.progression(
+    orientation: Orientation,
+    direction: LayoutDirection,
+) = when (orientation) {
     Orientation.Vertical -> scrollY / maxScrollY.toDouble()
-    Orientation.Horizontal -> scrollX / maxScrollX.toDouble()
+    Orientation.Horizontal -> when (direction) {
+        LayoutDirection.Ltr -> scrollX / maxScrollX.toDouble()
+        LayoutDirection.Rtl -> 1 - scrollX / maxScrollX.toDouble()
+    }
 }
 
 private fun RelaxedWebView.scrollBy(delta: Offset): Offset {

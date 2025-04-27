@@ -311,7 +311,7 @@ private val dirRegex = Regex(
 )
 
 @OptIn(ExperimentalReadiumApi::class)
-internal fun ReadiumCssInjector.update(settings: ReflowableWebSettings, useReadiumCssFontSize: Boolean): ReadiumCssInjector {
+internal fun ReadiumCssInjector.withSettings(settings: ReflowableWebSettings): ReadiumCssInjector {
     fun resolveFontStack(fontFamily: String): List<String> = buildList {
         add(fontFamily)
 
@@ -352,11 +352,7 @@ internal fun ReadiumCssInjector.update(settings: ReflowableWebSettings, useReadi
                 backgroundColor = backgroundColor?.toCss(),
                 fontOverride = (fontFamily != null || textNormalization),
                 fontFamily = fontFamily?.toCss(),
-                fontSize = if (useReadiumCssFontSize) {
-                    Length.Percent(fontSize)
-                } else {
-                    null
-                },
+                fontSize = Length.Percent(fontSize),
                 textAlign = when (textAlign) {
                     TextAlign.JUSTIFY -> CssTextAlign.JUSTIFY
                     TextAlign.LEFT -> CssTextAlign.LEFT

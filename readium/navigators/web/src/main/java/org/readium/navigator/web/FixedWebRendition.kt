@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -25,7 +26,6 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.DpSize
-import androidx.compose.ui.unit.LayoutDirection
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
@@ -72,176 +72,192 @@ public fun FixedWebRendition(
     inputListener: InputListener = defaultInputListener(state.controller),
     hyperlinkListener: HyperlinkListener = defaultHyperlinkListener(controller = state.controller),
 ) {
-    BoxWithConstraints(
-        modifier = modifier.fillMaxSize(),
-        propagateMinConstraints = true
-    ) {
-        val viewportSize = rememberUpdatedState(DpSize(maxWidth, maxHeight))
+    val layoutDirection =
+        state.layoutDelegate.overflow.value.readingProgression.toLayoutDirection()
 
-        val safeDrawingPadding = windowInsets.asAbsolutePaddingValues()
+    CompositionLocalProvider(LocalLayoutDirection provides layoutDirection) {
+        BoxWithConstraints(
+            modifier = modifier.fillMaxSize(),
+            propagateMinConstraints = true
+        ) {
+            val viewportSize = rememberUpdatedState(DpSize(maxWidth, maxHeight))
 
-        val displayArea = rememberUpdatedState(DisplayArea(viewportSize.value, safeDrawingPadding))
+            val safeDrawingPadding = windowInsets.asAbsolutePaddingValues()
 
-        val layoutDirection = state.layoutDelegate.settings.value
-            .readingProgression
-            .toLayoutDirection()
+            val displayArea =
+                rememberUpdatedState(DisplayArea(viewportSize.value, safeDrawingPadding))
 
-        if (state.controller == null) {
-            val itemHref = state.getCurrentHref()
-            state.initController(location = FixedWebLocation(itemHref))
-        }
-
-        LaunchedEffect(state) {
-            snapshotFlow {
-                state.pagerState.currentPage
-            }.onEach {
+            if (state.controller == null) {
                 val itemHref = state.getCurrentHref()
-                state.navigationDelegate.updateLocation(location = FixedWebLocation(itemHref))
-            }.launchIn(this)
-        }
-
-        val coroutineScope = rememberCoroutineScope()
-
-        val inputListenerState = rememberUpdatedState(inputListener)
-
-        val hyperlinkListenerState = rememberUpdatedState(hyperlinkListener)
-
-        val density = LocalDensity.current
-
-        val scrollStates = remember(state, state.layoutDelegate.layout.value) {
-            state.layoutDelegate.layout.value.spreads
-                .map { SpreadScrollState() }
-        }
-
-        val flingBehavior = run {
-            val pagingLayoutInfo = remember(state, scrollStates) {
-                FixedPagingLayoutInfo(
-                    pagerState = state.pagerState,
-                    pageStates = scrollStates,
-                    orientation = Orientation.Horizontal,
-                    density = density
-                )
-            }
-            pagingFlingBehavior(pagingLayoutInfo)
-        }.toFling2DBehavior(Orientation.Horizontal)
-
-        val scrollDispatcher = remember(state, scrollStates) {
-            RenditionScrollState(
-                pagerState = state.pagerState,
-                pageStates = scrollStates,
-                overflow = state.layoutDelegate.overflow
-            )
-        }
-
-        LaunchedEffect(state.layoutDelegate.layout.value, state.controller) {
-            state.controller?.let {
-                val currentHref = it.location.value.href
-                val spreadIndex = checkNotNull(state.layoutDelegate.layout.value.spreadIndexForHref(currentHref))
-                state.pagerState.requestScrollToPage(spreadIndex)
-            }
-        }
-
-        val readyToScroll = ((state.pagerState.currentPage - 2)..(state.pagerState.currentPage + 2)).toList()
-            .mapNotNull { scrollStates.getOrNull(it) }
-            .all { it.scrollController.value != null }
-
-        val spreadFlingBehavior = Scrollable2DDefaults.flingBehavior()
-
-        val spreadNestedScrollConnection =
-            remember(state.pagerState, scrollStates) {
-                SpreadNestedScrollConnection(
-                    pagerState = state.pagerState,
-                    resourceStates = scrollStates,
-                    flingBehavior = spreadFlingBehavior
-                )
+                state.initController(location = FixedWebLocation(itemHref))
             }
 
-        RenditionPager(
-            modifier = Modifier.nestedScroll(spreadNestedScrollConnection),
-            state = state.pagerState,
-            scrollState = scrollDispatcher,
-            flingBehavior = flingBehavior,
-            orientation = Orientation.Horizontal,
-            beyondViewportPageCount = 2,
-            layoutDirection = layoutDirection,
-            enableScroll = readyToScroll,
-            key = { index ->
-                val readingProgression = state.layoutDelegate.layout.value.readingProgression
-                val spread = state.layoutDelegate.layout.value.spreads[index]
-                val pages = spread.pages.map { it.index }
-                val fit = state.layoutDelegate.fit.value
-                "$readingProgression $spread $pages $fit"
-            },
-        ) { index ->
-            val initialProgression = when {
-                index < state.pagerState.currentPage -> 1.0
-                else -> 0.0
+            LaunchedEffect(state) {
+                snapshotFlow {
+                    state.pagerState.currentPage
+                }.onEach {
+                    val itemHref = state.getCurrentHref()
+                    state.navigationDelegate.updateLocation(location = FixedWebLocation(itemHref))
+                }.launchIn(this)
             }
 
-            when (val spread = state.layoutDelegate.layout.value.spreads[index]) {
-                is SingleViewportSpread -> {
-                    val spreadState =
-                        SingleSpreadState(
-                            index = index,
-                            htmlData = state.preloadedData.fixedSingleContent,
-                            publicationBaseUrl = WebViewServer.publicationBaseHref,
-                            webViewClient = state.webViewClient,
-                            spread = spread,
-                            fit = state.layoutDelegate.fit,
-                            displayArea = displayArea
-                        )
+            val coroutineScope = rememberCoroutineScope()
 
-                    SingleViewportSpread(
+            val inputListenerState = rememberUpdatedState(inputListener)
+
+            val hyperlinkListenerState = rememberUpdatedState(hyperlinkListener)
+
+            val density = LocalDensity.current
+
+            val scrollStates = remember(state, state.layoutDelegate.layout.value) {
+                state.layoutDelegate.layout.value.spreads
+                    .map { SpreadScrollState() }
+            }
+
+            val flingBehavior = run {
+                val pagingLayoutInfo = remember(state, scrollStates, layoutDirection) {
+                    FixedPagingLayoutInfo(
                         pagerState = state.pagerState,
-                        progression = initialProgression,
-                        onTap = { inputListenerState.value.onTap(it, TapContext(viewportSize.value)) },
-                        onLinkActivated = { url, outerHtml ->
-                            coroutineScope.launch {
-                                state.hyperlinkProcessor.onLinkActivated(
-                                    url = url,
-                                    outerHtml = outerHtml,
-                                    readingOrder = state.publication.readingOrder,
-                                    listener = hyperlinkListenerState.value
-                                )
-                            }
-                        },
-                        state = spreadState,
-                        scrollState = scrollStates[index],
-                        backgroundColor = backgroundColor,
-                        reverseScrollDirection = layoutDirection == LayoutDirection.Ltr
+                        pageStates = scrollStates,
+                        orientation = Orientation.Horizontal,
+                        direction = layoutDirection,
+                        density = density
                     )
                 }
-                is DoubleViewportSpread -> {
-                    val spreadState =
-                        DoubleSpreadState(
-                            index = index,
-                            htmlData = state.preloadedData.fixedDoubleContent,
-                            publicationBaseUrl = WebViewServer.publicationBaseHref,
-                            webViewClient = state.webViewClient,
-                            spread = spread,
-                            fit = state.layoutDelegate.fit,
-                            displayArea = displayArea,
-                        )
+                pagingFlingBehavior(pagingLayoutInfo)
+            }.toFling2DBehavior(Orientation.Horizontal)
 
-                    DoubleViewportSpread(
-                        pagerState = state.pagerState,
-                        progression = initialProgression,
-                        onTap = { inputListenerState.value.onTap(it, TapContext(viewportSize.value)) },
-                        onLinkActivated = { url, outerHtml ->
-                            coroutineScope.launch {
-                                state.hyperlinkProcessor.onLinkActivated(
-                                    url = url,
-                                    outerHtml = outerHtml,
-                                    readingOrder = state.publication.readingOrder,
-                                    listener = hyperlinkListenerState.value
-                                )
-                            }
-                        },
-                        state = spreadState,
-                        scrollState = scrollStates[index],
-                        backgroundColor = backgroundColor,
-                        reverseScrollDirection = layoutDirection == LayoutDirection.Ltr
+            val scrollDispatcher = remember(state, scrollStates) {
+                RenditionScrollState(
+                    pagerState = state.pagerState,
+                    pageStates = scrollStates,
+                    overflow = state.layoutDelegate.overflow
+                )
+            }
+
+            LaunchedEffect(state.layoutDelegate.layout.value, state.controller) {
+                state.controller?.let {
+                    val currentHref = it.location.value.href
+                    val spreadIndex = checkNotNull(
+                        state.layoutDelegate.layout.value.spreadIndexForHref(currentHref)
                     )
+                    state.pagerState.requestScrollToPage(spreadIndex)
+                }
+            }
+
+            val readyToScroll =
+                ((state.pagerState.currentPage - 2)..(state.pagerState.currentPage + 2)).toList()
+                    .mapNotNull { scrollStates.getOrNull(it) }
+                    .all { it.scrollController.value != null }
+
+            val spreadFlingBehavior = Scrollable2DDefaults.flingBehavior()
+
+            val spreadNestedScrollConnection =
+                remember(state.pagerState, scrollStates) {
+                    SpreadNestedScrollConnection(
+                        pagerState = state.pagerState,
+                        resourceStates = scrollStates,
+                        flingBehavior = spreadFlingBehavior
+                    )
+                }
+
+            RenditionPager(
+                modifier = Modifier.nestedScroll(spreadNestedScrollConnection),
+                state = state.pagerState,
+                scrollState = scrollDispatcher,
+                flingBehavior = flingBehavior,
+                orientation = Orientation.Horizontal,
+                beyondViewportPageCount = 2,
+                enableScroll = readyToScroll,
+                key = { index ->
+                    val readingProgression = state.layoutDelegate.layout.value.readingProgression
+                    val spread = state.layoutDelegate.layout.value.spreads[index]
+                    val pages = spread.pages.map { it.index }
+                    val fit = state.layoutDelegate.fit.value
+                    "$readingProgression $spread $pages $fit"
+                },
+            ) { index ->
+                val initialProgression = when {
+                    index < state.pagerState.currentPage -> 1.0
+                    else -> 0.0
+                }
+
+                when (val spread = state.layoutDelegate.layout.value.spreads[index]) {
+                    is SingleViewportSpread -> {
+                        val spreadState =
+                            SingleSpreadState(
+                                index = index,
+                                htmlData = state.preloadedData.fixedSingleContent,
+                                publicationBaseUrl = WebViewServer.publicationBaseHref,
+                                webViewClient = state.webViewClient,
+                                spread = spread,
+                                fit = state.layoutDelegate.fit,
+                                displayArea = displayArea
+                            )
+
+                        SingleViewportSpread(
+                            pagerState = state.pagerState,
+                            progression = initialProgression,
+                            layoutDirection = layoutDirection,
+                            onTap = {
+                                inputListenerState.value.onTap(
+                                    it,
+                                    TapContext(viewportSize.value)
+                                )
+                            },
+                            onLinkActivated = { url, outerHtml ->
+                                coroutineScope.launch {
+                                    state.hyperlinkProcessor.onLinkActivated(
+                                        url = url,
+                                        outerHtml = outerHtml,
+                                        readingOrder = state.publication.readingOrder,
+                                        listener = hyperlinkListenerState.value
+                                    )
+                                }
+                            },
+                            state = spreadState,
+                            scrollState = scrollStates[index],
+                            backgroundColor = backgroundColor
+                        )
+                    }
+
+                    is DoubleViewportSpread -> {
+                        val spreadState =
+                            DoubleSpreadState(
+                                index = index,
+                                htmlData = state.preloadedData.fixedDoubleContent,
+                                publicationBaseUrl = WebViewServer.publicationBaseHref,
+                                webViewClient = state.webViewClient,
+                                spread = spread,
+                                fit = state.layoutDelegate.fit,
+                                displayArea = displayArea,
+                            )
+
+                        DoubleViewportSpread(
+                            pagerState = state.pagerState,
+                            progression = initialProgression,
+                            layoutDirection = layoutDirection,
+                            onTap = {
+                                inputListenerState.value.onTap(
+                                    it,
+                                    TapContext(viewportSize.value)
+                                )
+                            },
+                            onLinkActivated = { url, outerHtml ->
+                                coroutineScope.launch {
+                                    state.hyperlinkProcessor.onLinkActivated(
+                                        url = url,
+                                        outerHtml = outerHtml,
+                                        readingOrder = state.publication.readingOrder,
+                                        listener = hyperlinkListenerState.value
+                                    )
+                                }
+                            },
+                            state = spreadState,
+                            scrollState = scrollStates[index],
+                            backgroundColor = backgroundColor
+                        )
+                    }
                 }
             }
         }

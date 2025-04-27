@@ -72,6 +72,9 @@ internal fun ReflowableResource(
         val orientationState =
             rememberUpdatedState(orientation)
 
+        val directionState =
+            rememberUpdatedState(layoutDirection)
+
         val scriptsLoaded =
             remember(webViewState.webView) { mutableStateOf(false) }
 
@@ -91,11 +94,14 @@ internal fun ReflowableResource(
                             scrollController.moveToProgression(
                                 progression = resourceState.progression,
                                 snap = !scroll,
-                                orientation = orientationState.value
+                                orientation = orientationState.value,
+                                direction = layoutDirection
                             )
                             resourceState.scrollController.value = scrollController
                             setOnScrollChangeListener { view, scrollX, scrollY, oldScrollX, oldScrollY ->
-                                onProgressionChange(scrollController.progression(orientationState.value))
+                                onProgressionChange(
+                                    scrollController.progression(orientationState.value, directionState.value)
+                                )
                             }
                             contentIsLaidOut.value = true
                         }
