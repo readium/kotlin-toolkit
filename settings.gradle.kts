@@ -45,9 +45,9 @@ include(":readium:navigators:common")
 project(":readium:navigators:common")
     .name = "readium-navigator-common"
 
-include(":readium:navigators:web")
-project(":readium:navigators:web")
-    .name = "readium-navigator-web"
+// include(":readium:navigators:web")
+// project(":readium:navigators:web")
+//     .name = "readium-navigator-web"
 
 include(":readium:navigators:media:common")
 project(":readium:navigators:media:common")
