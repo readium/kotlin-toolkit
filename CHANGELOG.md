@@ -33,6 +33,9 @@ All notable changes to this project will be documented in this file. Take a look
 
 ### Fixed
 
+#### Navigator
+
+* Fixed a race condition causing EPUB decorations to be applied twice when opening a publication.
 * Fixed support of Readium Web Publication packages conforming to the EPUB profile (contributed by [@ddfreiling](https://github.com/readium/kotlin-toolkit/pull/642)).
 
 
