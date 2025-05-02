@@ -103,6 +103,9 @@ internal class WebViewScrollController(
         orientation: Orientation,
         direction: LayoutDirection,
     ) {
+        check(webView.height != 0)
+        check(webView.width != 0)
+
         webView.scrollToProgression(
             progression = progression,
             orientation = orientation,

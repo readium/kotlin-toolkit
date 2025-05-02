@@ -34,6 +34,7 @@ import org.readium.navigator.web.webview.WebViewScrollController
 import org.readium.navigator.web.webview.WebViewState
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.AbsoluteUrl
+import timber.log.Timber
 
 @OptIn(ExperimentalReadiumApi::class)
 @SuppressLint("SetJavaScriptEnabled")
@@ -54,14 +55,32 @@ internal fun SpreadWebView(
     val contentIsLaidOut =
         remember { mutableStateOf(false) }
 
-    val documentStateApi = remember(onScriptsLoaded) {
-        DocumentStateApi(
-            onScriptsLoadedDelegate = onScriptsLoaded,
-            onDocumentLoadedAndSizedDelegate = {
-                state.webView?.apply {
-                    requestLayout()
-                    setNextLayoutListener {
-                        val scrollController = WebViewScrollController(this)
+    LaunchedEffect(state.webView, onTap, onLinkActivated) {
+        state.webView?.let { webView ->
+            val listener = object : GesturesListener {
+                override fun onTap(offset: DpOffset) {
+                    onTap(TapEvent(offset))
+                }
+
+                override fun onLinkActivated(href: AbsoluteUrl, outerHtml: String) {
+                    onLinkActivated(href, outerHtml)
+                }
+            }
+
+            GesturesApi(webView, listener)
+        }
+    }
+
+    LaunchedEffect(state.webView, onScriptsLoaded, spreadScrollState, contentIsLaidOut) {
+        state.webView?.let { webView ->
+            DocumentStateApi(
+                webView = webView,
+                onScriptsLoadedDelegate = onScriptsLoaded,
+                onDocumentLoadedAndSizedDelegate = {
+                    Timber.d("spread $spreadIndex onDocumentLoadedAndSized")
+                    webView.requestLayout()
+                    webView.setNextLayoutListener {
+                        val scrollController = WebViewScrollController(webView)
                         scrollController.moveToProgression(
                             progression = progression,
                             snap = true,
@@ -71,31 +90,12 @@ internal fun SpreadWebView(
                         spreadScrollState.scrollController.value = scrollController
                         contentIsLaidOut.value = true
                     }
+                },
+                onDocumentResizedDelegate = {
+                    Timber.d("spread $spreadIndex onDocumentResizedAndSized")
                 }
-            },
-            onDocumentResizedDelegate = {}
-        )
-    }
-
-    LaunchedEffect(state.webView, documentStateApi) {
-        state.webView?.let { documentStateApi.registerOnWebView(it) }
-    }
-
-    val gesturesApi = remember(onTap) {
-        val listener = object : GesturesListener {
-            override fun onTap(offset: DpOffset) {
-                onTap(TapEvent(offset))
-            }
-
-            override fun onLinkActivated(href: AbsoluteUrl, outerHtml: String) {
-                onLinkActivated(href, outerHtml)
-            }
+            )
         }
-        GesturesApi(listener)
-    }
-
-    LaunchedEffect(state.webView, gesturesApi) {
-        state.webView?.let { gesturesApi.registerOnWebView(it) }
     }
 
     // Hide content before initial position is settled
@@ -129,6 +129,7 @@ internal fun SpreadWebView(
         },
         onDispose = {
             spreadScrollState.scrollController.value = null
+            Timber.d("spread disposing $spreadIndex")
         }
     )
 }

@@ -62,6 +62,8 @@ internal class RenditionScrollState(
 
         val lastPage = pagerState.layoutInfo.visiblePagesInfo.last()
 
+        // This should not be needed if all WebViews are properly initialized at suitable scroll
+        // positions and any discontinuous move through the publication adjusts those positions.
         if (firstPage == lastPage) {
             // Set the page that will become visible to the right scroll position.
             when {

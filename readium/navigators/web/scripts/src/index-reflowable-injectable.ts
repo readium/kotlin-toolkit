@@ -43,14 +43,18 @@ window.addEventListener("load", (event) => {
         return
       }
 
-      const scrollingElement = window.document.scrollingElement
+      if (!documentLoadedFired) {
+        const scrollingElement = window.document.scrollingElement
 
-      if (
-        !documentLoadedFired &&
-        (scrollingElement == null ||
-          scrollingElement.scrollHeight > 0 ||
-          scrollingElement.scrollWidth > 0)
-      ) {
+        if (
+          scrollingElement != null &&
+          scrollingElement.scrollHeight == 0 &&
+          scrollingElement.scrollWidth == 0
+        ) {
+          // Document is not sized yet
+          return
+        }
+
         window.documentState.onDocumentLoadedAndSized()
         documentLoadedFired = true
       } else {

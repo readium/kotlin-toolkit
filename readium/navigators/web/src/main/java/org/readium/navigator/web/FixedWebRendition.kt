@@ -87,17 +87,22 @@ public fun FixedWebRendition(
             val displayArea =
                 rememberUpdatedState(DisplayArea(viewportSize.value, safeDrawingPadding))
 
+            fun currentLocation(): FixedWebLocation {
+                val spreadIndex = state.pagerState.currentPage
+                val itemIndex = state.layoutDelegate.layout.value.pageIndexForSpread(spreadIndex)
+                val href = state.publication.readingOrder[itemIndex].href
+                return FixedWebLocation(href)
+            }
+
             if (state.controller == null) {
-                val itemHref = state.getCurrentHref()
-                state.initController(location = FixedWebLocation(itemHref))
+                state.initController(location = currentLocation())
             }
 
             LaunchedEffect(state) {
                 snapshotFlow {
                     state.pagerState.currentPage
                 }.onEach {
-                    val itemHref = state.getCurrentHref()
-                    state.navigationDelegate.updateLocation(location = FixedWebLocation(itemHref))
+                    state.navigationDelegate.updateLocation(currentLocation())
                 }.launchIn(this)
             }
 
@@ -145,11 +150,6 @@ public fun FixedWebRendition(
                 }
             }
 
-            val readyToScroll =
-                ((state.pagerState.currentPage - 2)..(state.pagerState.currentPage + 2)).toList()
-                    .mapNotNull { scrollStates.getOrNull(it) }
-                    .all { it.scrollController.value != null }
-
             val spreadFlingBehavior = Scrollable2DDefaults.flingBehavior()
 
             val spreadNestedScrollConnection =
@@ -168,7 +168,7 @@ public fun FixedWebRendition(
                 flingBehavior = flingBehavior,
                 orientation = Orientation.Horizontal,
                 beyondViewportPageCount = 2,
-                enableScroll = readyToScroll,
+                enableScroll = true,
                 key = { index ->
                     val readingProgression = state.layoutDelegate.layout.value.readingProgression
                     val spread = state.layoutDelegate.layout.value.spreads[index]

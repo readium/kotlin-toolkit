@@ -8,29 +8,41 @@ package org.readium.navigator.web.webapi
 
 import android.webkit.JavascriptInterface
 import android.webkit.WebView
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.launch
 
 internal class DocumentStateApi(
+    webView: WebView,
     private val onScriptsLoadedDelegate: () -> Unit,
     private val onDocumentLoadedAndSizedDelegate: () -> Unit,
     private val onDocumentResizedDelegate: () -> Unit,
 ) {
+    private val coroutineScope: CoroutineScope =
+        MainScope()
 
-    fun registerOnWebView(webView: WebView) {
+    init {
         webView.addJavascriptInterface(this, "documentState")
     }
 
     @JavascriptInterface
     fun onScriptsLoaded() {
-        onScriptsLoadedDelegate.invoke()
+        coroutineScope.launch {
+            onScriptsLoadedDelegate.invoke()
+        }
     }
 
     @JavascriptInterface
     fun onDocumentLoadedAndSized() {
-        onDocumentLoadedAndSizedDelegate.invoke()
+        coroutineScope.launch {
+            onDocumentLoadedAndSizedDelegate.invoke()
+        }
     }
 
     @JavascriptInterface
     fun onDocumentResized() {
-        onDocumentResizedDelegate.invoke()
+        coroutineScope.launch {
+            onDocumentResizedDelegate.invoke()
+        }
     }
 }

@@ -18,10 +18,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
@@ -33,6 +35,8 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import org.readium.navigator.common.HyperlinkListener
 import org.readium.navigator.common.HyperlinkLocation
@@ -115,14 +119,23 @@ public fun ReflowableWebRendition(
 
             val currentPageState = remember(state) { derivedStateOf { state.pagerState.currentPage } }
 
+            fun currentLocation() =
+                ReflowableWebLocation(
+                    href = state.publication.readingOrder.items[currentPageState.value].href,
+                    progression = state.resourceStates[currentPageState.value].progression
+                )
+
             if (state.controller == null) {
                 // Initialize controller. In the future, that should require access to a ready WebView.
-                state.initController(
-                    location = ReflowableWebLocation(
-                        href = state.publication.readingOrder.items[currentPageState.value].href,
-                        progression = state.resourceStates[currentPageState.value].progression
-                    )
-                )
+                state.initController(location = currentLocation())
+            }
+
+            LaunchedEffect(state) {
+                snapshotFlow {
+                    state.pagerState.currentPage
+                }.onEach {
+                    state.updateLocation(currentLocation())
+                }.launchIn(this)
             }
 
             RenditionPager(

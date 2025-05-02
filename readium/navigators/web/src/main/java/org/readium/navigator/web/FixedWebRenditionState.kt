@@ -38,7 +38,6 @@ import org.readium.r2.navigator.preferences.Fit
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.util.RelativeUrl
-import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.resource.Resource
 
@@ -118,12 +117,6 @@ public class FixedWebRenditionState internal constructor(
                 layoutDelegate
             )
         navigationDelegate.updateLocation(location)
-    }
-
-    internal fun getCurrentHref(): Url {
-        val spreadIndex = pagerState.currentPage
-        val itemIndex = layoutDelegate.layout.value.pageIndexForSpread(spreadIndex)
-        return publication.readingOrder[itemIndex].href
     }
 }
 

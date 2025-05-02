@@ -42,6 +42,7 @@ import org.readium.navigator.web.webview.rememberWebViewState
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Url
+import timber.log.Timber
 
 @SuppressLint("SetJavaScriptEnabled", "ClickableViewAccessibility")
 @Composable
@@ -81,16 +82,41 @@ internal fun ReflowableResource(
         val contentIsLaidOut =
             remember(webViewState.webView) { mutableStateOf(false) }
 
-        val documentStateApi = remember(webViewState.webView) {
-            DocumentStateApi(
-                onScriptsLoadedDelegate = {
-                    scriptsLoaded.value = true
-                },
-                onDocumentLoadedAndSizedDelegate = {
-                    webViewState.webView?.apply {
-                        requestLayout()
-                        setNextLayoutListener {
-                            val scrollController = WebViewScrollController(this)
+        val cssApi = remember(webViewState.webView) { mutableStateOf<CssApi?>(null) }
+
+        LaunchedEffect(webViewState.webView, onTap, onLinkActivated) {
+            webViewState.webView?.let { webView ->
+                GesturesApi(
+                    webView = webView,
+                    listener = DelegatingGesturesListener(
+                        onTapDelegate = { offset ->
+                            val shiftedOffset = DpOffset(
+                                x = offset.x + padding.left,
+                                y = offset.y + padding.top
+                            )
+                            onTap(TapEvent(shiftedOffset))
+                        },
+                        onLinkActivatedDelegate = { href, outerHtml ->
+                            onLinkActivated(publicationBaseUrl.relativize(href), outerHtml)
+                        }
+                    )
+                )
+            }
+        }
+
+        LaunchedEffect(webViewState.webView, scriptsLoaded, cssApi, resourceState, contentIsLaidOut) {
+            webViewState.webView?.let { webView ->
+                DocumentStateApi(
+                    webView = webView,
+                    onScriptsLoadedDelegate = {
+                        scriptsLoaded.value = true
+                        cssApi.value = CssApi(webView)
+                    },
+                    onDocumentLoadedAndSizedDelegate = {
+                        Timber.d("resource ${resourceState.index} onDocumentLoadedAndResized")
+                        webView.requestLayout()
+                        webView.setNextLayoutListener {
+                            val scrollController = WebViewScrollController(webView)
                             scrollController.moveToProgression(
                                 progression = resourceState.progression,
                                 snap = !scroll,
@@ -98,55 +124,29 @@ internal fun ReflowableResource(
                                 direction = layoutDirection
                             )
                             resourceState.scrollController.value = scrollController
-                            setOnScrollChangeListener { view, scrollX, scrollY, oldScrollX, oldScrollY ->
+                            Timber.d("resource ${resourceState.index} ready to scroll")
+                            webView.setOnScrollChangeListener { view, scrollX, scrollY, oldScrollX, oldScrollY ->
                                 onProgressionChange(
-                                    scrollController.progression(orientationState.value, directionState.value)
+                                    scrollController.progression(
+                                        orientationState.value,
+                                        directionState.value
+                                    )
                                 )
                             }
                             contentIsLaidOut.value = true
                         }
-                    }
-                },
-                onDocumentResizedDelegate = {
-                    onDocumentResized.invoke()
-                }
-            )
-        }
-
-        LaunchedEffect(webViewState.webView, documentStateApi) {
-            webViewState.webView?.let { documentStateApi.registerOnWebView(it) }
-        }
-
-        val cssApi = remember(webViewState.webView, scriptsLoaded.value) {
-            webViewState.webView
-                .takeIf { scriptsLoaded.value }
-                ?.let { CssApi(it) }
-        }
-
-        LaunchedEffect(cssApi, readiumCssInjector) {
-            cssApi?.setProperties(readiumCssInjector.userProperties, readiumCssInjector.rsProperties)
-            // FIXME: resource is laid out again, so we should apply progression again
-        }
-
-        val gesturesApi = remember(onTap, onLinkActivated) {
-            GesturesApi(
-                DelegatingGesturesListener(
-                    onTapDelegate = { offset ->
-                        val shiftedOffset = DpOffset(
-                            x = offset.x + padding.left,
-                            y = offset.y + padding.top
-                        )
-                        onTap(TapEvent(shiftedOffset))
                     },
-                    onLinkActivatedDelegate = { href, outerHtml ->
-                        onLinkActivated(publicationBaseUrl.relativize(href), outerHtml)
+                    onDocumentResizedDelegate = {
+                        Timber.d("resource ${resourceState.index} onDocumentResized")
+                        onDocumentResized.invoke()
                     }
                 )
-            )
+            }
         }
 
-        LaunchedEffect(webViewState.webView, gesturesApi) {
-            webViewState.webView?.let { gesturesApi.registerOnWebView(it) }
+        LaunchedEffect(cssApi.value, readiumCssInjector) {
+            cssApi.value?.setProperties(readiumCssInjector.userProperties, readiumCssInjector.rsProperties)
+            // FIXME: resource is laid out again, so we should apply progression again
         }
 
         // Hide content before initial position is settled
@@ -191,6 +191,7 @@ internal fun ReflowableResource(
                 },
                 onDispose = {
                     resourceState.scrollController.value = null
+                    Timber.d("resource ${resourceState.index} disposed")
                 }
             )
         }

@@ -66,7 +66,7 @@ internal class ReflowablePagingLayoutInfo(
 
             if (firstPage.index == lastPage.index) {
                 val index = firstPage.index
-                val scrollController = pageStates[index].scrollController.value!!
+                val scrollController = pageStates[index].scrollController.value ?: return emptyList()
                 if (direction == LayoutDirection.Ltr) {
                     add(-scrollController.scrollX % pageSize)
                     add(-scrollController.scrollX % pageSize + pageSize)
@@ -76,8 +76,8 @@ internal class ReflowablePagingLayoutInfo(
                 }
                 Timber.d("visiblePageOffsets if $this pageSize $pageSize")
             } else {
-                val firstScrollController = pageStates[firstPage.index].scrollController.value!!
-                val lastScrollController = pageStates[lastPage.index].scrollController.value!!
+                val firstScrollController = pageStates[firstPage.index].scrollController.value ?: return emptyList()
+                val lastScrollController = pageStates[lastPage.index].scrollController.value ?: return emptyList()
                 if (direction == LayoutDirection.Ltr) {
                     // To get to the left bound, we first need to scroll the last visible page to zero.
                     add(lastPage.offset - pageSize - lastScrollController.scrollX)

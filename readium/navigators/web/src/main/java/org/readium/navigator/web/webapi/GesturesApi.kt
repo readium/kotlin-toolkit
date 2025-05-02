@@ -9,6 +9,9 @@ package org.readium.navigator.web.webapi
 import android.webkit.WebView
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import org.readium.r2.shared.util.AbsoluteUrl
@@ -38,23 +41,30 @@ internal interface GesturesListener {
 }
 
 internal class GesturesApi(
+    webView: WebView,
     private val listener: GesturesListener,
 ) {
+    private val coroutineScope: CoroutineScope =
+        MainScope()
 
-    fun registerOnWebView(webView: WebView) {
+    init {
         webView.addJavascriptInterface(this, "gestures")
     }
 
     @android.webkit.JavascriptInterface
     fun onTap(eventJson: String) {
-        val tapEvent = Json.decodeFromString<JsonTapEvent>(eventJson)
-        listener.onTap(DpOffset(tapEvent.x.dp, tapEvent.y.dp))
+        coroutineScope.launch {
+            val tapEvent = Json.decodeFromString<JsonTapEvent>(eventJson)
+            listener.onTap(DpOffset(tapEvent.x.dp, tapEvent.y.dp))
+        }
     }
 
     @android.webkit.JavascriptInterface
     fun onLinkActivated(href: String, outerHtml: String) {
-        val url = AbsoluteUrl(href) ?: return
-        listener.onLinkActivated(url, outerHtml)
+        coroutineScope.launch {
+            val url = AbsoluteUrl(href) ?: return@launch
+            listener.onLinkActivated(url, outerHtml)
+        }
     }
 }
 
