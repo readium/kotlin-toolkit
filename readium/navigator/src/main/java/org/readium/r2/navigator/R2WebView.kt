@@ -28,7 +28,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.readium.r2.navigator.BuildConfig.DEBUG
-import timber.log.Timber
 
 /**
  * Created by Aferdita Muriqi on 12/2/17.
@@ -709,7 +708,6 @@ internal class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView
                 mLastMotionX = mInitialMotionX
                 mInitialMotionY = ev.y
                 mInitialOverscroll = getOverscrollMode()
-//                Timber.v("isOverscrollHorizontal: $mInitialOverscroll")
                 mActivePointerId = ev.getPointerId(0)
             }
             MotionEvent.ACTION_MOVE -> {
@@ -1066,8 +1064,6 @@ internal class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView
 
     private fun getOverscrollMode(): OverscrollMode {
         val clientWidth = getClientWidth() ?: return OverscrollMode.NONE
-//        Timber.v("scrollX = $scrollX")
-//        Timber.v("computerHorizontalScrollRange() = ${computeHorizontalScrollRange() - clientWidth}")
         val right = scrollX >= computeHorizontalScrollRange() - clientWidth
         val left = scrollX <= 0
         if (left && right) {
