@@ -4,7 +4,12 @@ All notable changes to this project will be documented in this file. Take a look
 
 **Warning:** Features marked as *experimental* may change or be removed in a future release without notice. Use with caution.
 
-<!-- ## [Unreleased] -->
+## [Unreleased]
+
+### Fixed
+
+* [#662](https://github.com/readium/kotlin-toolkit/issues/662) Fixed duplicate class when using `readium-adapter-pdfium`.
+
 
 ## [3.1.0]
 
