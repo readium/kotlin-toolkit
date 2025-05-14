@@ -9,13 +9,9 @@ plugins {
 }
 
 android {
-    namespace = "org.readium.adapter.pdfium.document"
+    namespace = "org.readium.adapter.pdfium.common"
 }
 
 dependencies {
-    api(project(":readium:readium-shared"))
-    implementation(project(":readium:adapters:pdfium:readium-adapter-pdfium-common"))
-
-    implementation(libs.timber)
-    implementation(libs.kotlinx.coroutines.android)
+    api(files("libs/pdfium-android-1.8.2.jar"))
 }
