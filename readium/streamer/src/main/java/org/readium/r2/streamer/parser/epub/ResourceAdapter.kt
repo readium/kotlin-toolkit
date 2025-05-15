@@ -162,7 +162,7 @@ internal class ResourceAdapter(
             }?.let { linkProperties["page"] = it }
             //  Spread
             when (property) {
-                Vocabularies.RENDITION + "spread-node" -> "none"
+                Vocabularies.RENDITION + "spread-none" -> "none"
                 Vocabularies.RENDITION + "spread-auto" -> "auto"
                 Vocabularies.RENDITION + "spread-landscape" -> "landscape"
                 Vocabularies.RENDITION + "spread-portrait",
