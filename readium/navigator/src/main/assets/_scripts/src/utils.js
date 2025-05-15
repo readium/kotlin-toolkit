@@ -163,33 +163,27 @@ function scrollToRect(rect) {
 }
 
 export function scrollToStart() {
-  //        Android.log("scrollToStart");
-  if (!isScrollModeEnabled()) {
-    document.scrollingElement.scrollLeft = 0;
+  if (isScrollModeEnabled() && !isVerticalWritingMode()) {
+    document.scrollingElement.scrollTop = 0;
   } else {
-    if (!isVerticalWritingMode()) {
-      document.scrollingElement.scrollTop = 0;
-      window.scrollTo(0, 0);
-    } else {
-      document.scrollingElement.scrollLeft = 0;
-    }
+    document.scrollingElement.scrollLeft = 0;
   }
 }
 
 export function scrollToEnd() {
-  //        Android.log("scrollToEnd");
-  if (!isScrollModeEnabled()) {
-    var factor = isRTL() ? -1 : 1;
-    document.scrollingElement.scrollLeft = snapOffset(
-      document.scrollingElement.scrollWidth * factor
-    );
-  } else {
-    if (!isVerticalWritingMode()) {
-      document.scrollingElement.scrollTop = document.body.scrollHeight;
-      window.scrollTo(0, document.body.scrollHeight);
+  const scrollingElement = document.scrollingElement;
+
+  if (isScrollModeEnabled()) {
+    if (isVerticalWritingMode()) {
+      scrollingElement.scrollLeft = -document.body.scrollWidth;
     } else {
-      document.scrollingElement.scrollLeft = -document.body.scrollWidth;
+      scrollingElement.scrollTop = document.body.scrollHeight;
     }
+  } else {
+    var factor = isRTL() ? -1 : 1;
+    scrollingElement.scrollLeft = snapOffset(
+      scrollingElement.scrollWidth * factor
+    );
   }
 }
 
