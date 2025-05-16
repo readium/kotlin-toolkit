@@ -166,7 +166,7 @@ export function scrollToStart() {
   if (isScrollModeEnabled() && !isVerticalWritingMode()) {
     document.scrollingElement.scrollTop = 0;
   } else {
-    document.scrollingElement.scrollLeft = 0;
+    document.scrollingElement.scrollLeft = isRTL() ? 0 : -document.body.scrollWidth;
   }
 }
 
@@ -175,7 +175,7 @@ export function scrollToEnd() {
 
   if (isScrollModeEnabled()) {
     if (isVerticalWritingMode()) {
-      scrollingElement.scrollLeft = -document.body.scrollWidth;
+      scrollingElement.scrollLeft = isRTL() ? 0 : document.body.scrollWidth;
     } else {
       scrollingElement.scrollTop = document.body.scrollHeight;
     }
