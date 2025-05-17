@@ -95,6 +95,21 @@ export function isScrollModeEnabled() {
 
 export function isRTL() {
   return document.body.dir.toLowerCase() == "rtl";
+//  const dir = document.body.dir.toLowerCase();
+//  if (dir === 'rtl' || dir === 'ltr') {
+//    return dir === 'rtl';
+//  }
+//
+//  // dir may be unspecified, so fallback to writing-mode
+//  const writingMode = getComputedStyle(document.body).writingMode;
+//  return writingMode === 'vertical-rl';
+}
+
+export function isVerticalWritingMode() {
+  const writingMode = window
+    .getComputedStyle(document.documentElement)
+    .getPropertyValue("writing-mode");
+  return writingMode.startsWith("vertical");
 }
 
 // Scroll to the given TagId in document and snap.
@@ -109,15 +124,19 @@ export function scrollToId(id) {
 
 // Position must be in the range [0 - 1], 0-100%.
 export function scrollToPosition(position) {
-  //        Android.log("scrollToPosition " + position);
   if (position < 0 || position > 1) {
-    throw "scrollToPosition() must be given a position from 0.0 to  1.0";
+    throw "scrollToPosition() must be given a position from 0.0 to 1.0";
   }
 
   let offset;
   if (isScrollModeEnabled()) {
-    offset = document.scrollingElement.scrollHeight * position;
-    document.scrollingElement.scrollTop = offset;
+      if (!isVerticalWritingMode()) {
+        offset = document.scrollingElement.scrollHeight * position;
+        document.scrollingElement.scrollTop = offset;
+      } else {
+        offset = document.scrollingElement.scrollWidth * position;
+        document.scrollingElement.scrollLeft = -offset;
+      }
     // window.scrollTo(0, offset);
   } else {
     var documentWidth = document.scrollingElement.scrollWidth;
@@ -156,25 +175,27 @@ function scrollToRect(rect) {
 }
 
 export function scrollToStart() {
-  //        Android.log("scrollToStart");
-  if (!isScrollModeEnabled()) {
-    document.scrollingElement.scrollLeft = 0;
-  } else {
+  if (isScrollModeEnabled() && !isVerticalWritingMode()) {
     document.scrollingElement.scrollTop = 0;
-    window.scrollTo(0, 0);
+  } else {
+    document.scrollingElement.scrollLeft = 0;
   }
 }
 
 export function scrollToEnd() {
-  //        Android.log("scrollToEnd");
-  if (!isScrollModeEnabled()) {
-    var factor = isRTL() ? -1 : 1;
-    document.scrollingElement.scrollLeft = snapOffset(
-      document.scrollingElement.scrollWidth * factor
-    );
+  const scrollingElement = document.scrollingElement;
+
+  if (isScrollModeEnabled()) {
+    if (!isVerticalWritingMode()) {
+      scrollingElement.scrollTop = document.body.scrollHeight;
+    } else {
+      scrollingElement.scrollLeft = -document.scrollingElement.scrollWidth;
+    }
   } else {
-    document.scrollingElement.scrollTop = document.body.scrollHeight;
-    window.scrollTo(0, document.body.scrollHeight);
+    var factor = isRTL() ? -1 : 1;
+    scrollingElement.scrollLeft = snapOffset(
+      scrollingElement.scrollWidth * factor
+    );
   }
 }
 
