@@ -55,6 +55,7 @@ internal open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebV
 
     interface Listener {
         val readingProgression: ReadingProgression
+        val verticalText: Boolean
 
         /** Called when the resource content is loaded in the web view. */
         fun onResourceLoaded(webView: R2BasicWebView, link: Link) {}
@@ -127,17 +128,40 @@ internal open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebV
     }
 
     /** Computes the current progression in the resource. */
-    val progression: Double get() =
-        if (scrollMode) {
-            val y = scrollY.toDouble()
-            val contentHeight = computeVerticalScrollRange()
+    val progression: Double get() {
+        return if (scrollMode) {
+            if (listener?.verticalText == true) {
+                val x = scrollX.toDouble()
+                val contentWidth = computeHorizontalScrollRange()
+                val viewportWidth = computeHorizontalScrollExtent()
+                val maxScrollX = (contentWidth - viewportWidth).coerceAtLeast(0)
+                // val isRtl = (listener?.readingProgression == ReadingProgression.RTL)
 
-            var progression = 0.0
-            if (contentHeight > 0) {
-                progression = (y / contentHeight).coerceIn(0.0, 1.0)
+                var progression = 0.0
+                if (maxScrollX > 0) {
+                    // Currently, scrollX for page with vertical text starts at maxScrollX
+                    progression = ((maxScrollX - x) / contentWidth).coerceIn(0.0, 1.0)
+                }
+                // if (maxScrollX > 0) {
+                //     progression = if (isRtl) {
+                //         // For RTL vertical text, we start at maxScrollX and scroll decreases
+                //         (maxScrollX - x) / contentWidth
+                //     } else {
+                //         // Normal LTR vertical text
+                //         x / contentWidth
+                //     }.coerceIn(0.0, 1.0)
+                // }
+                progression
+            } else {
+                val y = scrollY.toDouble()
+                val contentHeight = computeVerticalScrollRange()
+
+                var progression = 0.0
+                if (contentHeight > 0) {
+                    progression = (y / contentHeight).coerceIn(0.0, 1.0)
+                }
+                progression
             }
-
-            progression
         } else {
             var x = scrollX.toDouble()
             val pageWidth = computeHorizontalScrollExtent()
@@ -163,6 +187,7 @@ internal open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebV
 
             progression
         }
+    }
 
     interface OnOverScrolledCallback {
         fun onOverScrolled(scrollX: Int, scrollY: Int, clampedX: Boolean, clampedY: Boolean)

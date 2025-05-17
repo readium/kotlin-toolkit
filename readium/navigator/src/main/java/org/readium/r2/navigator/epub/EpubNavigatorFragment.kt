@@ -285,6 +285,8 @@ public class EpubNavigatorFragment internal constructor(
 
     private var state: State = State.Initializing
 
+    private var pageChangeListener: ViewPager.OnPageChangeListener? = null
+
     // Configurable
 
     override val settings: StateFlow<EpubSettings> get() = viewModel.settings
@@ -412,8 +414,7 @@ public class EpubNavigatorFragment internal constructor(
         resourcePager = binding.resourcePager
         resetResourcePager()
 
-        resourcePager.addOnPageChangeListener(object : ViewPager.SimpleOnPageChangeListener() {
-
+        pageChangeListener = object : ViewPager.SimpleOnPageChangeListener() {
             override fun onPageSelected(position: Int) {
 //                if (viewModel.layout == EpubLayout.REFLOWABLE) {
 //                    resourcePager.disableTouchEvents = true
@@ -441,7 +442,9 @@ public class EpubNavigatorFragment internal constructor(
 
                 notifyCurrentLocation()
             }
-        })
+        }
+
+        pageChangeListener?.let { resourcePager.addOnPageChangeListener(it) }
 
         // Fixed layout publications cannot intercept JS events yet.
         if (publication.metadata.presentation.layout == EpubLayout.FIXED) {
@@ -554,7 +557,9 @@ public class EpubNavigatorFragment internal constructor(
 
     private fun invalidateResourcePager() {
         val locator = currentLocator.value
+        val listener = pageChangeListener
         resetResourcePager()
+        listener?.let { resourcePager.addOnPageChangeListener(it) }
         go(locator)
     }
 
@@ -769,6 +774,9 @@ public class EpubNavigatorFragment internal constructor(
 
         override val readingProgression: ReadingProgression
             get() = viewModel.readingProgression
+
+        override val verticalText: Boolean
+            get() = viewModel.verticalText
 
         override fun onResourceLoaded(webView: R2BasicWebView, link: Link) {
             run(viewModel.onResourceLoaded(webView, link))
