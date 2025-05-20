@@ -412,37 +412,6 @@ public class EpubNavigatorFragment internal constructor(
         resourcePager = binding.resourcePager
         resetResourcePager()
 
-        resourcePager.addOnPageChangeListener(object : ViewPager.SimpleOnPageChangeListener() {
-
-            override fun onPageSelected(position: Int) {
-//                if (viewModel.layout == EpubLayout.REFLOWABLE) {
-//                    resourcePager.disableTouchEvents = true
-//                }
-                currentReflowablePageFragment?.webView?.let { webView ->
-                    if (viewModel.isScrollEnabled.value) {
-                        if (currentPagerPosition < position) {
-                            // handle swipe LEFT
-                            webView.scrollToStart()
-                        } else if (currentPagerPosition > position) {
-                            // handle swipe RIGHT
-                            webView.scrollToEnd()
-                        }
-                    } else {
-                        if (currentPagerPosition < position) {
-                            // handle swipe LEFT
-                            webView.setCurrentItem(0, false)
-                        } else if (currentPagerPosition > position) {
-                            // handle swipe RIGHT
-                            webView.setCurrentItem(webView.numPages - 1, false)
-                        }
-                    }
-                }
-                currentPagerPosition = position // Update current position
-
-                notifyCurrentLocation()
-            }
-        })
-
         // Fixed layout publications cannot intercept JS events yet.
         if (publication.metadata.presentation.layout == EpubLayout.FIXED) {
             view = KeyInterceptorView(view, inputListener)
@@ -468,10 +437,38 @@ public class EpubNavigatorFragment internal constructor(
         resourcePager.setBackgroundColor(viewModel.settings.value.effectiveBackgroundColor)
         // Let the page views handle the keyboard events.
         resourcePager.isFocusable = false
+        resourcePager.addOnPageChangeListener(PageChangeListener())
 
         parent.addView(resourcePager)
 
         resetResourcePagerAdapter()
+    }
+
+    private inner class PageChangeListener : ViewPager.SimpleOnPageChangeListener() {
+        override fun onPageSelected(position: Int) {
+            currentReflowablePageFragment?.webView?.let { webView ->
+                if (viewModel.isScrollEnabled.value) {
+                    if (currentPagerPosition < position) {
+                        // handle swipe LEFT
+                        webView.scrollToStart()
+                    } else if (currentPagerPosition > position) {
+                        // handle swipe RIGHT
+                        webView.scrollToEnd()
+                    }
+                } else {
+                    if (currentPagerPosition < position) {
+                        // handle swipe LEFT
+                        webView.setCurrentItem(0, false)
+                    } else if (currentPagerPosition > position) {
+                        // handle swipe RIGHT
+                        webView.setCurrentItem(webView.numPages - 1, false)
+                    }
+                }
+            }
+            currentPagerPosition = position // Update current position
+
+            notifyCurrentLocation()
+        }
     }
 
     private fun resetResourcePagerAdapter() {
@@ -769,6 +766,9 @@ public class EpubNavigatorFragment internal constructor(
 
         override val readingProgression: ReadingProgression
             get() = viewModel.readingProgression
+
+        override val verticalText: Boolean
+            get() = viewModel.verticalText
 
         override fun onResourceLoaded(webView: R2BasicWebView, link: Link) {
             run(viewModel.onResourceLoaded(webView, link))

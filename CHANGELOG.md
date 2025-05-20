@@ -4,7 +4,15 @@ All notable changes to this project will be documented in this file. Take a look
 
 **Warning:** Features marked as *experimental* may change or be removed in a future release without notice. Use with caution.
 
-<!-- ## [Unreleased] -->
+## [Unreleased]
+
+### Fixed
+
+#### Navigator
+
+* Fixed vertical text scrolling in EPUB for right-to-left reading progression (contributed by [@shovel-kun](https://github.com/readium/kotlin-toolkit/pull/656)).
+* Fixed notifying the current location when using vertical text scrolling in EPUB (contributed by [@shovel-kun](https://github.com/readium/kotlin-toolkit/pull/656)).
+
 
 ## [3.1.1]
 
