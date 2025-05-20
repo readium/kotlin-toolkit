@@ -95,14 +95,6 @@ export function isScrollModeEnabled() {
 
 export function isRTL() {
   return document.body.dir.toLowerCase() == "rtl";
-//  const dir = document.body.dir.toLowerCase();
-//  if (dir === 'rtl' || dir === 'ltr') {
-//    return dir === 'rtl';
-//  }
-//
-//  // dir may be unspecified, so fallback to writing-mode
-//  const writingMode = getComputedStyle(document.body).writingMode;
-//  return writingMode === 'vertical-rl';
 }
 
 export function isVerticalWritingMode() {
@@ -130,13 +122,13 @@ export function scrollToPosition(position) {
 
   let offset;
   if (isScrollModeEnabled()) {
-      if (!isVerticalWritingMode()) {
-        offset = document.scrollingElement.scrollHeight * position;
-        document.scrollingElement.scrollTop = offset;
-      } else {
-        offset = document.scrollingElement.scrollWidth * position;
-        document.scrollingElement.scrollLeft = -offset;
-      }
+    if (!isVerticalWritingMode()) {
+      offset = document.scrollingElement.scrollHeight * position;
+      document.scrollingElement.scrollTop = offset;
+    } else {
+      offset = document.scrollingElement.scrollWidth * position;
+      document.scrollingElement.scrollLeft = -offset;
+    }
     // window.scrollTo(0, offset);
   } else {
     var documentWidth = document.scrollingElement.scrollWidth;

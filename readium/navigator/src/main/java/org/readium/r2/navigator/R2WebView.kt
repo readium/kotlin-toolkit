@@ -753,8 +753,7 @@ internal class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView
                                 } else if (mInitialMotionX > x) {
                                     scrollRight(animated = true)
                                 }
-                            }
-                            else if (mInitialMotionX < x && mInitialOverscroll == OverscrollMode.LEFT) {
+                            } else if (mInitialMotionX < x && mInitialOverscroll == OverscrollMode.LEFT) {
                                 scrollLeft(animated = true)
                             } else if (mInitialMotionX > x && mInitialOverscroll == OverscrollMode.RIGHT) {
                                 scrollRight(animated = true)
@@ -1085,7 +1084,10 @@ internal class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView
             ?: 1
 
     enum class OverscrollMode {
-        NONE, LEFT, RIGHT, BOTH
+        NONE,
+        LEFT,
+        RIGHT,
+        BOTH,
     }
 
     /**
