@@ -19,8 +19,14 @@ var lastGroupId = 0;
  * Detects if the document is in vertical-rl writing mode
  */
 function isVerticalRL() {
-  const body = document.body;
-  return window.getComputedStyle(body).writingMode === "vertical-rl";
+  return getComputedStyle(document.body).writingMode === "vertical-rl";
+}
+
+/**
+ * Returns the first text node in a Range.
+ */
+function getContainingElement(node) {
+  return node.nodeType === Node.ELEMENT_NODE ? node : node.parentElement;
 }
 
 /**
@@ -180,26 +186,24 @@ export function DecorationGroup(groupId, groupName) {
     }
 
     let itemContainer = document.createElement("div");
-    itemContainer.setAttribute("id", item.id);
-    itemContainer.setAttribute("data-style", item.decoration.style);
-    itemContainer.style.setProperty("pointer-events", "none");
+    itemContainer.id = item.id;
+    itemContainer.dataset.style = item.decoration.style;
+    itemContainer.style.pointerEvents = "none";
 
     const verticalRL = isVerticalRL();
     const scrollingElement = document.scrollingElement;
-    const xOffset = scrollingElement.scrollLeft;
-    const yOffset = scrollingElement.scrollTop;
-
+    const { scrollLeft: xOffset, scrollTop: yOffset } = scrollingElement;
     const viewportWidth = verticalRL ? window.innerHeight : window.innerWidth;
     const viewportHeight = verticalRL ? window.innerWidth : window.innerHeight;
 
-    const columnCount = parseInt(
-      getComputedStyle(document.documentElement).getPropertyValue(
-        "column-count"
-      )
-    );
-    const pageSize = verticalRL
-      ? viewportHeight / (columnCount || 1)
-      : viewportWidth / (columnCount || 1);
+    const columnCount =
+      parseInt(
+        getComputedStyle(document.documentElement).getPropertyValue(
+          "column-count"
+        )
+      ) || 1;
+    const pageSize =
+      (verticalRL ? viewportHeight : viewportWidth) / columnCount;
 
     function positionElement(element, rect, boundingRect) {
       element.style.position = "absolute";
@@ -273,27 +277,28 @@ export function DecorationGroup(groupId, groupName) {
     }
 
     if (style.layout === "boxes") {
-      let doNotMergeHorizontallyAlignedRects = !verticalRL;
-      let clientRects = getClientRectsNoOverlap(
+      const doNotMergeHorizontallyAlignedRects = !verticalRL;
+      const startElement = getContainingElement(item.range.startContainer);
+      const writingMode = getComputedStyle(startElement).writingMode;
+
+      const clientRects = getClientRectsNoOverlap(
         item.range,
         doNotMergeHorizontallyAlignedRects
-      );
-
-      clientRects = clientRects.sort((r1, r2) => {
-        if (r1.top < r2.top) return -1;
-        if (r1.top > r2.top) return 1;
+      ).sort((r1, r2) => {
+        if (r1.top !== r2.top) return r1.top - r2.top;
         return verticalRL ? r2.left - r1.left : r1.left - r2.left;
       });
 
       for (let clientRect of clientRects) {
         const line = elementTemplate.cloneNode(true);
-        line.style.setProperty("pointer-events", "none");
+        line.style.pointerEvents = "none";
+        line.dataset.writingMode = writingMode;
         positionElement(line, clientRect, boundingRect);
         itemContainer.append(line);
       }
     } else if (style.layout === "bounds") {
       const bounds = elementTemplate.cloneNode(true);
-      bounds.style.setProperty("pointer-events", "none");
+      bounds.style.pointerEvents = "none";
       positionElement(bounds, boundingRect, boundingRect);
 
       itemContainer.append(bounds);
@@ -315,9 +320,9 @@ export function DecorationGroup(groupId, groupName) {
   function requireContainer() {
     if (!container) {
       container = document.createElement("div");
-      container.setAttribute("id", groupId);
-      container.setAttribute("data-group", groupName);
-      container.style.setProperty("pointer-events", "none");
+      container.id = groupId;
+      container.dataset.group = groupName;
+      container.style.pointerEvents = "none";
       document.body.append(container);
     }
     return container;
