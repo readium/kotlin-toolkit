@@ -16,6 +16,14 @@ let groups = new Map();
 var lastGroupId = 0;
 
 /**
+ * Detects if the document is in vertical-rl writing mode
+ */
+function isVerticalRL() {
+  const body = document.body;
+  return window.getComputedStyle(body).writingMode === "vertical-rl";
+}
+
+/**
  * Registers a list of additional supported Decoration Templates.
  *
  * Each template object is indexed by the style ID.
@@ -176,42 +184,77 @@ export function DecorationGroup(groupId, groupName) {
     itemContainer.setAttribute("data-style", item.decoration.style);
     itemContainer.style.setProperty("pointer-events", "none");
 
-    let viewportWidth = window.innerWidth;
-    let columnCount = parseInt(
+    const verticalRL = isVerticalRL();
+    const scrollingElement = document.scrollingElement;
+    const xOffset = scrollingElement.scrollLeft;
+    const yOffset = scrollingElement.scrollTop;
+
+    const viewportWidth = verticalRL ? window.innerHeight : window.innerWidth;
+    const viewportHeight = verticalRL ? window.innerWidth : window.innerHeight;
+
+    const columnCount = parseInt(
       getComputedStyle(document.documentElement).getPropertyValue(
         "column-count"
       )
     );
-    let pageWidth = viewportWidth / (columnCount || 1);
-    let scrollingElement = document.scrollingElement;
-    let xOffset = scrollingElement.scrollLeft;
-    let yOffset = scrollingElement.scrollTop;
+    const pageSize = verticalRL
+      ? viewportHeight / (columnCount || 1)
+      : viewportWidth / (columnCount || 1);
 
     function positionElement(element, rect, boundingRect) {
       element.style.position = "absolute";
 
-      if (style.width === "wrap") {
-        element.style.width = `${rect.width}px`;
-        element.style.height = `${rect.height}px`;
-        element.style.left = `${rect.left + xOffset}px`;
-        element.style.top = `${rect.top + yOffset}px`;
-      } else if (style.width === "viewport") {
-        element.style.width = `${viewportWidth}px`;
-        element.style.height = `${rect.height}px`;
-        let left = Math.floor(rect.left / viewportWidth) * viewportWidth;
-        element.style.left = `${left + xOffset}px`;
-        element.style.top = `${rect.top + yOffset}px`;
-      } else if (style.width === "bounds") {
-        element.style.width = `${boundingRect.width}px`;
-        element.style.height = `${rect.height}px`;
-        element.style.left = `${boundingRect.left + xOffset}px`;
-        element.style.top = `${rect.top + yOffset}px`;
-      } else if (style.width === "page") {
-        element.style.width = `${pageWidth}px`;
-        element.style.height = `${rect.height}px`;
-        let left = Math.floor(rect.left / pageWidth) * pageWidth;
-        element.style.left = `${left + xOffset}px`;
-        element.style.top = `${rect.top + yOffset}px`;
+      if (verticalRL) {
+        if (style.width === "wrap") {
+          element.style.width = `${rect.width}px`;
+          element.style.height = `${rect.height}px`;
+          element.style.right = `${
+            // We also need to offset by clientWidth for proper positioning
+            -rect.right - xOffset + scrollingElement.clientWidth
+          }px`;
+          element.style.top = `${rect.top + yOffset}px`;
+        } else if (style.width === "viewport") {
+          element.style.width = `${rect.height}px`;
+          element.style.height = `${viewportWidth}px`;
+          const top = Math.floor(rect.top / viewportWidth) * viewportWidth;
+          element.style.right = `${-rect.right - xOffset}px`;
+          element.style.top = `${top + yOffset}px`;
+        } else if (style.width === "bounds") {
+          element.style.width = `${boundingRect.height}px`;
+          element.style.height = `${viewportWidth}px`;
+          element.style.right = `${-boundingRect.right - xOffset}px`;
+          element.style.top = `${boundingRect.top + yOffset}px`;
+        } else if (style.width === "page") {
+          element.style.width = `${rect.height}px`;
+          element.style.height = `${pageSize}px`;
+          const top = Math.floor(rect.top / pageSize) * pageSize;
+          element.style.right = `${-rect.right - xOffset}px`;
+          element.style.top = `${top + yOffset}px`;
+        }
+      } else {
+        if (style.width === "wrap") {
+          element.style.width = `${rect.width}px`;
+          element.style.height = `${rect.height}px`;
+          element.style.left = `${rect.left + xOffset}px`;
+          element.style.top = `${rect.top + yOffset}px`;
+        } else if (style.width === "viewport") {
+          element.style.width = `${viewportWidth}px`;
+          element.style.height = `${rect.height}px`;
+          const left = Math.floor(rect.left / viewportWidth) * viewportWidth;
+          element.style.left = `${left + xOffset}px`;
+          element.style.top = `${rect.top + yOffset}px`;
+        } else if (style.width === "bounds") {
+          element.style.width = `${boundingRect.width}px`;
+          element.style.height = `${rect.height}px`;
+          element.style.left = `${boundingRect.left + xOffset}px`;
+          element.style.top = `${rect.top + yOffset}px`;
+        } else if (style.width === "page") {
+          element.style.width = `${pageSize}px`;
+          element.style.height = `${rect.height}px`;
+          const left = Math.floor(rect.left / pageSize) * pageSize;
+          element.style.left = `${left + xOffset}px`;
+          element.style.top = `${rect.top + yOffset}px`;
+        }
       }
     }
 
@@ -230,20 +273,16 @@ export function DecorationGroup(groupId, groupName) {
     }
 
     if (style.layout === "boxes") {
-      let doNotMergeHorizontallyAlignedRects = true;
+      let doNotMergeHorizontallyAlignedRects = !verticalRL;
       let clientRects = getClientRectsNoOverlap(
         item.range,
         doNotMergeHorizontallyAlignedRects
       );
 
       clientRects = clientRects.sort((r1, r2) => {
-        if (r1.top < r2.top) {
-          return -1;
-        } else if (r1.top > r2.top) {
-          return 1;
-        } else {
-          return 0;
-        }
+        if (r1.top < r2.top) return -1;
+        if (r1.top > r2.top) return 1;
+        return verticalRL ? r2.left - r1.left : r1.left - r2.left;
       });
 
       for (let clientRect of clientRects) {
