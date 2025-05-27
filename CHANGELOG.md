@@ -12,6 +12,7 @@ All notable changes to this project will be documented in this file. Take a look
 
 * Fixed vertical text scrolling in EPUB for right-to-left reading progression (contributed by [@shovel-kun](https://github.com/readium/kotlin-toolkit/pull/656)).
 * Fixed notifying the current location when using vertical text scrolling in EPUB (contributed by [@shovel-kun](https://github.com/readium/kotlin-toolkit/pull/656)).
+* Fixed drawing EPUB decorators with vertical text (contributed by [@shovel-kun](https://github.com/readium/kotlin-toolkit/pull/671)).
 
 
 ## [3.1.1]
