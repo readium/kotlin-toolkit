@@ -137,16 +137,15 @@ public data class HtmlDecorationTemplate(
                 element = { decoration ->
                     val tint = (decoration.style as? Style.Tinted)?.tint ?: defaultTint
                     val isActive = (decoration.style as? Style.Activable)?.isActive ?: false
-                    buildString {
+                    val css = buildString {
                         if (asHighlight || isActive) {
                             append("background-color: ${tint.toCss(alpha = alpha)} !important;")
                         }
                         if (!asHighlight || isActive) {
                             append("--underline-color: ${tint.toCss()};")
                         }
-                    }.let { css ->
-                        """<div class="$className" style="$css"/>"""
                     }
+                    """<div class="$className" style="$css"/>"""
                 },
                 stylesheet = """
             .$className {

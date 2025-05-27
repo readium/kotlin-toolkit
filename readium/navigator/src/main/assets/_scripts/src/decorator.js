@@ -23,7 +23,7 @@ function isVerticalRL() {
 }
 
 /**
- * Returns the first text node in a Range.
+ * Returns the closest element ancestor of the given node.
  */
 function getContainingElement(node) {
   return node.nodeType === Node.ELEMENT_NODE ? node : node.parentElement;
