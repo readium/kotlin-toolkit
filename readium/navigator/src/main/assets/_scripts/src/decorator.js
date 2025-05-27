@@ -16,10 +16,10 @@ let groups = new Map();
 var lastGroupId = 0;
 
 /**
- * Detects if the document is in vertical-rl writing mode
+ * Returns the document body's writing mode.
  */
-function isVerticalRL() {
-  return getComputedStyle(document.body).writingMode === "vertical-rl";
+function getDocumentWritingMode() {
+  return getComputedStyle(document.body).writingMode;
 }
 
 /**
@@ -190,11 +190,14 @@ export function DecorationGroup(groupId, groupName) {
     itemContainer.dataset.style = item.decoration.style;
     itemContainer.style.pointerEvents = "none";
 
-    const verticalRL = isVerticalRL();
     const scrollingElement = document.scrollingElement;
     const { scrollLeft: xOffset, scrollTop: yOffset } = scrollingElement;
-    const viewportWidth = verticalRL ? window.innerHeight : window.innerWidth;
-    const viewportHeight = verticalRL ? window.innerWidth : window.innerHeight;
+    const documentWritingMode = getDocumentWritingMode();
+    const isVertical =
+      documentWritingMode === "vertical-rl" ||
+      documentWritingMode === "vertical-lr";
+    const viewportWidth = isVertical ? window.innerHeight : window.innerWidth;
+    const viewportHeight = isVertical ? window.innerWidth : window.innerHeight;
 
     const columnCount =
       parseInt(
@@ -203,36 +206,61 @@ export function DecorationGroup(groupId, groupName) {
         )
       ) || 1;
     const pageSize =
-      (verticalRL ? viewportHeight : viewportWidth) / columnCount;
+      (documentWritingMode ? viewportHeight : viewportWidth) / columnCount;
 
-    function positionElement(element, rect, boundingRect) {
+    function positionElement(element, rect, boundingRect, writingMode) {
       element.style.position = "absolute";
+      const isVerticalRL = writingMode === "vertical-rl";
+      const isVerticalLR = writingMode === "vertical-lr";
 
-      if (verticalRL) {
+      if (isVerticalRL || isVerticalLR) {
         if (style.width === "wrap") {
           element.style.width = `${rect.width}px`;
           element.style.height = `${rect.height}px`;
-          element.style.right = `${
-            // We also need to offset by clientWidth for proper positioning
-            -rect.right - xOffset + scrollingElement.clientWidth
-          }px`;
+          if (isVerticalRL) {
+            element.style.right = `${
+              -rect.right - xOffset + scrollingElement.clientWidth
+            }px`;
+          } else {
+            // vertical-lr
+            element.style.left = `${rect.left + xOffset}px`;
+          }
           element.style.top = `${rect.top + yOffset}px`;
         } else if (style.width === "viewport") {
           element.style.width = `${rect.height}px`;
           element.style.height = `${viewportWidth}px`;
           const top = Math.floor(rect.top / viewportWidth) * viewportWidth;
-          element.style.right = `${-rect.right - xOffset}px`;
+          if (isVerticalRL) {
+            element.style.right = `${-rect.right - xOffset}px`;
+          } else {
+            // vertical-lr
+            element.style.left = `${rect.left + xOffset}px`;
+          }
           element.style.top = `${top + yOffset}px`;
         } else if (style.width === "bounds") {
           element.style.width = `${boundingRect.height}px`;
           element.style.height = `${viewportWidth}px`;
-          element.style.right = `${-boundingRect.right - xOffset}px`;
+          if (isVerticalRL) {
+            element.style.right = `${
+              -boundingRect.right - xOffset + scrollingElement.clientWidth
+            }px`;
+          } else {
+            // vertical-lr
+            element.style.left = `${boundingRect.left + xOffset}px`;
+          }
           element.style.top = `${boundingRect.top + yOffset}px`;
         } else if (style.width === "page") {
           element.style.width = `${rect.height}px`;
           element.style.height = `${pageSize}px`;
           const top = Math.floor(rect.top / pageSize) * pageSize;
-          element.style.right = `${-rect.right - xOffset}px`;
+          if (isVerticalRL) {
+            element.style.right = `${
+              -rect.right - xOffset + scrollingElement.clientWidth
+            }px`;
+          } else {
+            // vertical-lr
+            element.style.left = `${rect.left + xOffset}px`;
+          }
           element.style.top = `${top + yOffset}px`;
         }
       } else {
@@ -277,29 +305,38 @@ export function DecorationGroup(groupId, groupName) {
     }
 
     if (style.layout === "boxes") {
-      const doNotMergeHorizontallyAlignedRects = !verticalRL;
+      const doNotMergeHorizontallyAlignedRects =
+        !documentWritingMode.startsWith("vertical");
       const startElement = getContainingElement(item.range.startContainer);
-      const writingMode = getComputedStyle(startElement).writingMode;
+      // Decorated text may have a different writingMode from document body
+      const decoratorWritingMode = getComputedStyle(startElement).writingMode;
 
       const clientRects = getClientRectsNoOverlap(
         item.range,
         doNotMergeHorizontallyAlignedRects
       ).sort((r1, r2) => {
         if (r1.top !== r2.top) return r1.top - r2.top;
-        return verticalRL ? r2.left - r1.left : r1.left - r2.left;
+        if (decoratorWritingMode === "vertical-rl") {
+          return r2.left - r1.left;
+        } else if (decoratorWritingMode === "vertical-lr") {
+          return r1.left - r2.left;
+        } else {
+          return r1.left - r2.left;
+        }
       });
 
       for (let clientRect of clientRects) {
         const line = elementTemplate.cloneNode(true);
         line.style.pointerEvents = "none";
-        line.dataset.writingMode = writingMode;
-        positionElement(line, clientRect, boundingRect);
+        line.dataset.writingMode = decoratorWritingMode;
+        positionElement(line, clientRect, boundingRect, documentWritingMode);
         itemContainer.append(line);
       }
     } else if (style.layout === "bounds") {
       const bounds = elementTemplate.cloneNode(true);
       bounds.style.pointerEvents = "none";
-      positionElement(bounds, boundingRect, boundingRect);
+      bounds.dataset.writingMode = documentWritingMode;
+      positionElement(bounds, boundingRect, boundingRect, documentWritingMode);
 
       itemContainer.append(bounds);
     }
