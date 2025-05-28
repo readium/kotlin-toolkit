@@ -206,7 +206,7 @@ export function DecorationGroup(groupId, groupName) {
         )
       ) || 1;
     const pageSize =
-      (documentWritingMode ? viewportHeight : viewportWidth) / columnCount;
+      (isVertical ? viewportHeight : viewportWidth) / columnCount;
 
     function positionElement(element, rect, boundingRect, writingMode) {
       element.style.position = "absolute";
