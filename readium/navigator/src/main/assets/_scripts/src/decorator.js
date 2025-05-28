@@ -190,12 +190,13 @@ export function DecorationGroup(groupId, groupName) {
     itemContainer.dataset.style = item.decoration.style;
     itemContainer.style.pointerEvents = "none";
 
-    const scrollingElement = document.scrollingElement;
-    const { scrollLeft: xOffset, scrollTop: yOffset } = scrollingElement;
     const documentWritingMode = getDocumentWritingMode();
     const isVertical =
       documentWritingMode === "vertical-rl" ||
       documentWritingMode === "vertical-lr";
+
+    const scrollingElement = document.scrollingElement;
+    const { scrollLeft: xOffset, scrollTop: yOffset } = scrollingElement;
     const viewportWidth = isVertical ? window.innerHeight : window.innerWidth;
     const viewportHeight = isVertical ? window.innerWidth : window.innerHeight;
 
