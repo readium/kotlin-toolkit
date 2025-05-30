@@ -19,6 +19,7 @@ import org.readium.r2.navigator.preferences.EnumPreference
 import org.readium.r2.navigator.preferences.EnumPreferenceDelegate
 import org.readium.r2.navigator.preferences.FontFamily
 import org.readium.r2.navigator.preferences.ImageFilter
+import org.readium.r2.navigator.preferences.IntIncrement
 import org.readium.r2.navigator.preferences.Preference
 import org.readium.r2.navigator.preferences.PreferenceDelegate
 import org.readium.r2.navigator.preferences.RangePreference
@@ -93,17 +94,19 @@ public class ReflowableWebPreferencesEditor internal constructor(
         )
 
     /**
-     * Number of reflowable columns to display (one-page view or two-page spread).
+     * Number of reflowable columns to display .
      *
      * Only effective when [scroll] is off.
      */
-    public val columnCount: EnumPreference<Int> =
-        EnumPreferenceDelegate(
+    public val columnCount: RangePreference<Int> =
+        RangePreferenceDelegate(
             getValue = { preferences.columnCount },
             getEffectiveValue = { state.settings.columnCount },
             getIsEffective = { true },
-            updateValue = { value -> updateValues { it.copy(columnCount = value) } },
-            supportedValues = listOf(1, 2)
+            supportedRange = 1..Int.MAX_VALUE,
+            progressionStrategy = IntIncrement(1),
+            valueFormatter = { it.format(5) },
+            updateValue = { value -> updateValues { it.copy(columnCount = value) } }
         )
 
     /**
@@ -148,6 +151,20 @@ public class ReflowableWebPreferencesEditor internal constructor(
             valueFormatter = percentFormatter(),
             supportedRange = 0.0..2.5,
             progressionStrategy = DoubleIncrement(0.25)
+        )
+
+    /**
+     * Factor applied to horizontal margins. Default to 1.
+     */
+    public val horizontalMargins: RangePreference<Double> =
+        RangePreferenceDelegate(
+            getValue = { preferences.horizontalMargins },
+            getEffectiveValue = { state.settings.horizontalMargins },
+            getIsEffective = { true },
+            updateValue = { value -> updateValues { it.copy(horizontalMargins = value) } },
+            supportedRange = 0.0..4.0,
+            progressionStrategy = DoubleIncrement(0.3),
+            valueFormatter = { it.format(5) }
         )
 
     /**
@@ -231,20 +248,6 @@ public class ReflowableWebPreferencesEditor internal constructor(
             updateValue = { value -> updateValues { it.copy(lineHeight = value) } },
             supportedRange = 1.0..2.0,
             progressionStrategy = DoubleIncrement(0.1),
-            valueFormatter = { it.format(5) }
-        )
-
-    /**
-     * Factor applied to horizontal margins. Default to 1.
-     */
-    public val horizontalMargins: RangePreference<Double> =
-        RangePreferenceDelegate(
-            getValue = { preferences.horizontalMargins },
-            getEffectiveValue = { state.settings.horizontalMargins },
-            getIsEffective = { true },
-            updateValue = { value -> updateValues { it.copy(horizontalMargins = value) } },
-            supportedRange = 0.0..4.0,
-            progressionStrategy = DoubleIncrement(0.3),
             valueFormatter = { it.format(5) }
         )
 

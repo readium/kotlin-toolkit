@@ -45,7 +45,6 @@ import androidx.compose.ui.viewinterop.AndroidView
  * @param client Provides access to WebViewClient via subclassing
  * @param chromeClient Provides access to WebChromeClient via subclassing
  */
-@SuppressLint("UnusedBoxWithConstraintsScope")
 @Composable
 internal fun WebView(
     state: WebViewState<WebView>,

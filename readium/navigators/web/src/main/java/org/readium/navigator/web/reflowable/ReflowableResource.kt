@@ -174,8 +174,8 @@ internal fun ReflowableResource(
                     webview.settings.setSupportZoom(false)
                     webview.settings.builtInZoomControls = false
                     webview.settings.displayZoomControls = false
-                    webview.settings.loadWithOverviewMode = false
-                    webview.settings.useWideViewPort = false
+                    webview.settings.loadWithOverviewMode = true
+                    webview.settings.useWideViewPort = true
                     webview.isVerticalScrollBarEnabled = false
                     webview.isHorizontalScrollBarEnabled = false
                     webview.setLayerType(View.LAYER_TYPE_HARDWARE, null)

@@ -197,7 +197,7 @@ private fun FixedLayoutUserPreferences(
 @Composable
 private fun ReflowableUserPreferences(
     backgroundColor: Preference<Color>? = null,
-    columnCount: EnumPreference<Int>? = null,
+    columnCount: RangePreference<Int>? = null,
     fontFamily: Preference<FontFamily?>? = null,
     fontSize: RangePreference<Double>? = null,
     fontWeight: RangePreference<Double>? = null,
@@ -253,10 +253,9 @@ private fun ReflowableUserPreferences(
         }
 
         if (columnCount != null) {
-            ButtonGroupItem(
+            StepperItem(
                 title = "Columns",
-                preference = columnCount,
-                formatValue = Int::toString
+                preference = columnCount
             )
         }
 

@@ -32,29 +32,49 @@ new GesturesDetector(window, bridgeListener)
 Window.prototype.readiumcss = new CssBridge(window.document)
 
 window.documentState.onScriptsLoaded()
+
+document.addEventListener("DOMContentLoaded", () => {
+  // Setups the `viewport` meta tag to disable overview.
+  const meta = document.createElement("meta")
+  meta.setAttribute("name", "viewport")
+  meta.setAttribute(
+    "content",
+    "width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no"
+  )
+  document.head.appendChild(meta)
+})
+
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 window.addEventListener("load", (event) => {
   let documentLoadedFired = false
 
   const observer = new ResizeObserver(() => {
+    let colCountFixed = false
+
     requestAnimationFrame(() => {
-      if (appendVirtualColumnIfNeeded(window)) {
-        // Column has been added or removed, wait for next resize callback.
+      const scrollingElement = window.document.scrollingElement
+      const scrollingElementEmpty =
+        scrollingElement == null ||
+        (scrollingElement.scrollHeight == 0 &&
+          scrollingElement.scrollWidth == 0)
+
+      if (!documentLoadedFired && scrollingElementEmpty) {
+        // Document is not sized yet
         return
       }
 
-      if (!documentLoadedFired) {
-        const scrollingElement = window.document.scrollingElement
-
-        if (
-          scrollingElement != null &&
-          scrollingElement.scrollHeight == 0 &&
-          scrollingElement.scrollWidth == 0
-        ) {
-          // Document is not sized yet
+      if (!colCountFixed && !scrollingElementEmpty) {
+        const colChanged = appendVirtualColumnIfNeeded(window)
+        colCountFixed = true
+        if (colChanged) {
+          // Column number has changed, wait for next resize callback.
           return
         }
+      }
 
+      colCountFixed = false
+
+      if (!documentLoadedFired) {
         window.documentState.onDocumentLoadedAndSized()
         documentLoadedFired = true
       } else {
