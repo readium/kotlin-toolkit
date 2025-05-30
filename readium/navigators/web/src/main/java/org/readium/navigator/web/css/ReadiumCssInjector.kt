@@ -350,9 +350,10 @@ internal fun ReadiumCssInjector.withSettings(settings: ReflowableWebSettings): R
                 invertImages = imageFilter == ImageFilter.INVERT,
                 textColor = textColor?.toCss(),
                 backgroundColor = backgroundColor?.toCss(),
-                fontOverride = (fontFamily != null || textNormalization),
+                fontOverride = true, // we don't need this guard,
                 fontFamily = fontFamily?.toCss(),
                 fontSize = Length.Percent(fontSize),
+                fontWeight = fontWeight?.let { (FontWeight.NORMAL.value * it).toInt().coerceIn(1, 1000) },
                 textAlign = when (textAlign) {
                     TextAlign.JUSTIFY -> CssTextAlign.JUSTIFY
                     TextAlign.LEFT -> CssTextAlign.LEFT
@@ -369,11 +370,13 @@ internal fun ReadiumCssInjector.withSettings(settings: ReflowableWebSettings): R
                 ligatures = ligatures?.let { if (it) Ligatures.COMMON else Ligatures.NONE },
                 a11yNormalize = textNormalization,
                 overrides = mapOf(
-                    "font-weight" to
-                        if (fontWeight != null) {
-                            (FontWeight.NORMAL.value * fontWeight).toInt().coerceIn(1, 1000).toString()
-                        } else {
-                            ""
+                    "writing-mode" to // See https://github.com/readium/css/issues/180
+                        when (verticalText) {
+                            false -> "horizontal-tb"
+                            true -> when (readingProgression) {
+                                ReadingProgression.LTR -> "vertical-lr"
+                                ReadingProgression.RTL -> "vertical-rl"
+                            }
                         }
                 )
             )

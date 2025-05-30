@@ -58,27 +58,24 @@ public interface ReadiumCssProperties : Cssable {
  * remove the required flag. Requires: fontOverride
  * @param fontSize Increasing and decreasing the root font-size. It will serve as a reference
  * for the cascade. To reset, remove the required flag.
+ * @param fontWeight  Increasing and decreasing the text boldness. Requires: fontOverride
  * @param lineLength Increasing and decreasing the line length.
  * @param textAlign The alignment (text-align) the user prefers. It impacts body, li, and p
- * which are not children of blockquote and figcaption. Requires: advancedSettings
+ * which are not children of blockquote and figcaption.
  * @param lineHeight Increasing and decreasing leading (line-height). It impacts body, p, li and
  * div. Recommended values: a range from 1 to 2. Increments are left to implementers’ judgment.
- * Requires: advancedSettings
  * @param paraSpacing The vertical margins (margin-top and margin-bottom) for paragraphs.
  * Recommended values: a range from 0 to 2rem. Increments are left to implementers’
- * judgment. Requires: advancedSettings = true
+ * judgment.
  * @param paraIndent The text-indent for paragraphs. Recommended values: a range from 0 to 3rem.
  * Increments are left to implementers’ judgment. Requires: advancedSettings
  * @param wordSpacing Increasing space between words (word-spacing, related to a11y).
  * Recommended values: a range from 0 to 1rem. Increments are left to implementers’ judgment.
- * Requires: advancedSettings
  * @param letterSpacing Increasing space between letters (letter-spacing, related to a11y).
  * Recommended values: a range from 0 to 0.5rem. Increments are left to implementers’
- * judgment. Requires: advancedSettings
+ * judgment.
  * @param bodyHyphens Enabling and disabling hyphenation. It impacts body, p, li, div and dd.
- * Requires: advancedSettings
  * @param ligatures Enabling and disabling ligatures in Arabic (related to a11y).
- * Requires: advancedSettings
  * @param a11yNormalize It impacts font style, weight and variant, text decoration, super and
  * subscripts. Requires: fontOverride
  */
@@ -103,6 +100,7 @@ public data class UserProperties(
     val fontOverride: Boolean? = null,
     val fontFamily: List<String>? = null,
     val fontSize: Length? = null,
+    val fontWeight: Int? = null,
     val lineLength: Length? = null,
 
     // Advanced settings
@@ -141,6 +139,7 @@ public data class UserProperties(
         putCss("--USER__fontOverride", flag("font", fontOverride))
         putCss("--USER__fontFamily", fontFamily)
         putCss("--USER__fontSize", fontSize)
+        putCss("--USER__fontWeight", fontWeight)
         putCss("--USER__lineLength", lineLength)
         putCss("--USER__textAlign", textAlign)
         lineHeight

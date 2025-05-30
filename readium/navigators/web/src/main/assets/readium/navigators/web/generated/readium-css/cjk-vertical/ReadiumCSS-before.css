@@ -1,5 +1,5 @@
 /*
- * Readium CSS (v. 2.0.0-beta.7)
+ * Readium CSS (v. 2.0.0-beta.13)
  * Developers: Jiminy Panoz 
  * Copyright (c) 2017. Readium Foundation. All rights reserved.
  * Use of this source code is governed by a BSD-style license which is detailed in the
@@ -377,7 +377,7 @@ ruby > rt, ruby > rp{
   --RS__boxSizingTable:border-box;
 }
 
-a, h1, h2, h3, h4, h5, h6{
+a, a span, span a, h1, h2, h3, h4, h5, h6{
   word-wrap:break-word;
 }
 

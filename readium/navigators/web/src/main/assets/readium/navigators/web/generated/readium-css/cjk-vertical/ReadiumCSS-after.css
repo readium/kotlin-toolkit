@@ -1,5 +1,5 @@
 /*
- * Readium CSS (v. 2.0.0-beta.7)
+ * Readium CSS (v. 2.0.0-beta.13)
  * Developers: Jiminy Panoz 
  * Copyright (c) 2017. Readium Foundation. All rights reserved.
  * Use of this source code is governed by a BSD-style license which is detailed in the
@@ -56,9 +56,7 @@
   min-height:100vh;
   padding:0 !important;
   margin:0 !important;
-  font-size:100% !important;
-  -webkit-text-size-adjust:none;
-  text-size-adjust:none;
+  font-size:1rem !important;
   box-sizing:border-box;
 
   hanging-punctuation:last allow-end;
@@ -312,11 +310,11 @@ body{
   font-family:var(--USER__fontFamily) !important;
 }
 
-:root[style*="readium-font-on"][style*="--USER__fontFamily"] *:not(code):not(var):not(kbd):not(samp){
-  font-family:inherit !important;
+:root[style*="readium-font-on"][style*="--USER__fontFamily"] *{
+  font-family:revert !important;
 }
 
-:root[style*="--USER__fontSize"] body{
+:root:not([style*="readium-deprecatedFontSize-on"])[style*="--USER__fontSize"] body{
   zoom:var(--USER__fontSize) !important;
 }
 
@@ -325,6 +323,10 @@ body{
   :root[style*="--USER__fontSize"]{
     font-size:var(--USER__fontSize) !important;
   }
+}
+
+:root[style*="readium-deprecatedFontSize-on"][style*="--USER__fontSize"]{
+  font-size:var(--USER__fontSize) !important;
 }
 
 :root[style*="--USER__lineHeight"]{
@@ -436,59 +438,114 @@ body{
   filter:invert(100%) !important;
 }
 
-@supports not (zoom: 1){
+:root[style*="readium-normalize-on"]{
+  --USER__typeScale:1.2;
+}
 
-  :root[style*="readium-normalize-on"]{
-    --USER__typeScale:1.2;
-  }
+:root[style*="readium-normalize-on"] p,
+:root[style*="readium-normalize-on"] li,
+:root[style*="readium-normalize-on"] div,
+:root[style*="readium-normalize-on"] pre,
+:root[style*="readium-normalize-on"] dd{
+  font-size:1rem !important;
+}
 
-  :root[style*="readium-normalize-on"] p,
-  :root[style*="readium-normalize-on"] li,
-  :root[style*="readium-normalize-on"] div,
-  :root[style*="readium-normalize-on"] pre,
-  :root[style*="readium-normalize-on"] dd{
-    font-size:1rem !important;
-  }
+:root[style*="readium-normalize-on"] h1{
+  font-size:1.75rem !important;
+  font-size:calc(((1rem * var(--USER__typeScale)) * var(--USER__typeScale)) * var(--USER__typeScale)) !important;
+}
 
-  :root[style*="readium-normalize-on"] h1{
-    font-size:1.75rem !important;
-    font-size:calc(((1rem * var(--USER__typeScale)) * var(--USER__typeScale)) * var(--USER__typeScale)) !important;
-  }
+:root[style*="readium-normalize-on"] h2{
+  font-size:1.5rem !important;
+  font-size:calc((1rem * var(--USER__typeScale)) * var(--USER__typeScale)) !important;
+}
 
-  :root[style*="readium-normalize-on"] h2{
-    font-size:1.5rem !important;
-    font-size:calc((1rem * var(--USER__typeScale)) * var(--USER__typeScale)) !important;
-  }
+:root[style*="readium-normalize-on"] h3{
+  font-size:1.25rem !important;
+  font-size:calc(1rem * var(--USER__typeScale)) !important;
+}
 
-  :root[style*="readium-normalize-on"] h3{
-    font-size:1.25rem !important;
-    font-size:calc(1rem * var(--USER__typeScale)) !important;
-  }
+:root[style*="readium-normalize-on"] h4,
+:root[style*="readium-normalize-on"] h5,
+:root[style*="readium-normalize-on"] h6{
+  font-size:1rem !important;
+}
 
-  :root[style*="readium-normalize-on"] h4,
-  :root[style*="readium-normalize-on"] h5,
-  :root[style*="readium-normalize-on"] h6{
-    font-size:1rem !important;
-  }
+:root[style*="readium-normalize-on"] small{
+  font-size:smaller !important;
+}
 
-  :root[style*="readium-normalize-on"] small{
-    font-size:smaller !important;
-  }
+:root[style*="readium-normalize-on"] sub,
+:root[style*="readium-normalize-on"] sup{
+  font-size:67.5% !important;
+}
 
-  :root[style*="readium-normalize-on"] sub,
-  :root[style*="readium-normalize-on"] sup{
-    font-size:67.5% !important;
-  }
+:root[style*="readium-normalize-on"][style*="--USER__typeScale"] h1{
+  font-size:calc(((1rem * var(--USER__typeScale)) * var(--USER__typeScale)) * var(--USER__typeScale)) !important;
+}
 
-  :root[style*="readium-normalize-on"][style*="--USER__typeScale"] h1{
-    font-size:calc(((1rem * var(--USER__typeScale)) * var(--USER__typeScale)) * var(--USER__typeScale)) !important;
-  }
+:root[style*="readium-normalize-on"][style*="--USER__typeScale"] h2{
+  font-size:calc((1rem * var(--USER__typeScale)) * var(--USER__typeScale)) !important;
+}
 
-  :root[style*="readium-normalize-on"][style*="--USER__typeScale"] h2{
-    font-size:calc((1rem * var(--USER__typeScale)) * var(--USER__typeScale)) !important;
-  }
+:root[style*="readium-normalize-on"][style*="--USER__typeScale"] h3{
+  font-size:calc(1rem * var(--USER__typeScale)) !important;
+}
 
-  :root[style*="readium-normalize-on"][style*="--USER__typeScale"] h3{
-    font-size:calc(1rem * var(--USER__typeScale)) !important;
-  }
+:root[style*="readium-iPadOSPatch-on"] body{
+  -webkit-text-size-adjust:none;
+}
+
+:root[style*="readium-iPadOSPatch-on"] p, 
+:root[style*="readium-iPadOSPatch-on"] h1, 
+:root[style*="readium-iPadOSPatch-on"] h2, 
+:root[style*="readium-iPadOSPatch-on"] h3, 
+:root[style*="readium-iPadOSPatch-on"] h4, 
+:root[style*="readium-iPadOSPatch-on"] h5, 
+:root[style*="readium-iPadOSPatch-on"] h6, 
+:root[style*="readium-iPadOSPatch-on"] li, 
+:root[style*="readium-iPadOSPatch-on"] th, 
+:root[style*="readium-iPadOSPatch-on"] td, 
+:root[style*="readium-iPadOSPatch-on"] dt, 
+:root[style*="readium-iPadOSPatch-on"] dd, 
+:root[style*="readium-iPadOSPatch-on"] pre, 
+:root[style*="readium-iPadOSPatch-on"] address, 
+:root[style*="readium-iPadOSPatch-on"] details, 
+:root[style*="readium-iPadOSPatch-on"] summary,
+:root[style*="readium-iPadOSPatch-on"] figcaption,
+:root[style*="readium-iPadOSPatch-on"] div:not(:has(p, h1, h2, h3, h4, h5, h6, li, th, td, dt, dd, pre, address, aside, details, figcaption, summary)),
+:root[style*="readium-iPadOSPatch-on"] aside:not(:has(p, h1, h2, h3, h4, h5, h6, li, th, td, dt, dd, pre, address, aside, details, figcaption, summary)){
+  -webkit-text-zoom:reset;
+}
+
+:root[style*="readium-iPadOSPatch-on"] abbr, 
+:root[style*="readium-iPadOSPatch-on"] b, 
+:root[style*="readium-iPadOSPatch-on"] bdi, 
+:root[style*="readium-iPadOSPatch-on"] bdo, 
+:root[style*="readium-iPadOSPatch-on"] cite, 
+:root[style*="readium-iPadOSPatch-on"] code, 
+:root[style*="readium-iPadOSPatch-on"] dfn, 
+:root[style*="readium-iPadOSPatch-on"] em, 
+:root[style*="readium-iPadOSPatch-on"] i, 
+:root[style*="readium-iPadOSPatch-on"] kbd, 
+:root[style*="readium-iPadOSPatch-on"] mark, 
+:root[style*="readium-iPadOSPatch-on"] q, 
+:root[style*="readium-iPadOSPatch-on"] rp, 
+:root[style*="readium-iPadOSPatch-on"] rt, 
+:root[style*="readium-iPadOSPatch-on"] ruby, 
+:root[style*="readium-iPadOSPatch-on"] s, 
+:root[style*="readium-iPadOSPatch-on"] samp, 
+:root[style*="readium-iPadOSPatch-on"] small, 
+:root[style*="readium-iPadOSPatch-on"] span, 
+:root[style*="readium-iPadOSPatch-on"] strong, 
+:root[style*="readium-iPadOSPatch-on"] sub, 
+:root[style*="readium-iPadOSPatch-on"] sup, 
+:root[style*="readium-iPadOSPatch-on"] time, 
+:root[style*="readium-iPadOSPatch-on"] u, 
+:root[style*="readium-iPadOSPatch-on"] var{
+  -webkit-text-zoom:normal;
+}
+
+:root[style*="readium-iPadOSPatch-on"] p:not(:has(b, cite, em, i, q, s, small, span, strong)):first-line{
+  -webkit-text-zoom:normal;
 }

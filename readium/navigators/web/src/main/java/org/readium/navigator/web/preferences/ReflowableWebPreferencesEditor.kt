@@ -167,15 +167,13 @@ public class ReflowableWebPreferencesEditor internal constructor(
         )
 
     /**
-     * Filter applied to images in dark theme.
-     *
-     * Only effective when the [theme] is set to [Theme.DARK].
+     * Filter applied to images.
      */
     public val imageFilter: EnumPreference<ImageFilter?> =
         EnumPreferenceDelegate(
             getValue = { preferences.imageFilter },
             getEffectiveValue = { state.settings.imageFilter },
-            getIsEffective = { state.settings.theme == Theme.DARK },
+            getIsEffective = { true },
             updateValue = { value -> updateValues { it.copy(imageFilter = value) } },
             supportedValues = listOf(ImageFilter.DARKEN, ImageFilter.INVERT)
         )
