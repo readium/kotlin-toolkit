@@ -17,9 +17,8 @@ import org.readium.r2.shared.util.Either
 /**
  * Holds a set of Readium CSS properties applied together.
  */
-@ExperimentalReadiumApi
-public interface ReadiumCssProperties : Cssable {
-    public fun toCssProperties(): Map<String, String?>
+internal interface ReadiumCssProperties : Cssable {
+    fun toCssProperties(): Map<String, String?>
 
     override fun toCss(): String? {
         val props = toCssProperties()
@@ -79,8 +78,7 @@ public interface ReadiumCssProperties : Cssable {
  * @param a11yNormalize It impacts font style, weight and variant, text decoration, super and
  * subscripts. Requires: fontOverride
  */
-@ExperimentalReadiumApi
-public data class UserProperties(
+internal data class UserProperties(
     // View mode
     val view: View? = null,
 
@@ -213,8 +211,7 @@ public data class UserProperties(
  * @param codeFontFamily The typeface for code snippets.
  * The value can be another variable e.g. var(-RS__monospaceTf).
  */
-@ExperimentalReadiumApi
-public data class RsProperties(
+internal data class RsProperties(
     // Pagination
     val colWidth: Length? = null,
     val colCount: Int? = null,
