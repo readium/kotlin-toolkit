@@ -19,7 +19,9 @@ import org.readium.navigator.web.FixedWebRenditionController
 import org.readium.navigator.web.FixedWebRenditionFactory
 import org.readium.navigator.web.ReflowableWebRenditionController
 import org.readium.navigator.web.ReflowableWebRenditionFactory
+import org.readium.navigator.web.location.FixedWebGoLocation
 import org.readium.navigator.web.location.FixedWebLocation
+import org.readium.navigator.web.location.ReflowableWebGoLocation
 import org.readium.navigator.web.location.ReflowableWebLocation
 import org.readium.navigator.web.preferences.FixedWebPreferences
 import org.readium.navigator.web.preferences.ReflowableWebPreferences
@@ -54,7 +56,7 @@ class ReaderOpener(
     private val publicationOpener =
         PublicationOpener(publicationParser)
 
-    suspend fun open(url: AbsoluteUrl): Try<ReaderState<*, *>, Error> {
+    suspend fun open(url: AbsoluteUrl): Try<ReaderState<*, *, *>, Error> {
         val asset = assetRetriever.retrieve(url)
             .getOrElse { return Try.failure(it) }
 
@@ -93,7 +95,7 @@ class ReaderOpener(
         url: AbsoluteUrl,
         publication: Publication,
         initialLocator: Locator?,
-    ): Try<ReaderState<ReflowableWebLocation, ReflowableWebRenditionController>, Error> {
+    ): Try<ReaderState<ReflowableWebLocation, ReflowableWebGoLocation, ReflowableWebRenditionController>, Error> {
         val navigatorFactory = ReflowableWebRenditionFactory(application, publication)
             ?: return Try.failure(DebugError("Publication not supported"))
 
@@ -143,7 +145,7 @@ class ReaderOpener(
         url: AbsoluteUrl,
         publication: Publication,
         initialLocator: Locator?,
-    ): Try<ReaderState<FixedWebLocation, FixedWebRenditionController>, Error> {
+    ): Try<ReaderState<FixedWebLocation, FixedWebGoLocation, FixedWebRenditionController>, Error> {
         val navigatorFactory = FixedWebRenditionFactory(application, publication)
             ?: return Try.failure(DebugError("Publication not supported"))
 

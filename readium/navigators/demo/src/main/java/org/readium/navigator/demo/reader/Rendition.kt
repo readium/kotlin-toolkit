@@ -14,8 +14,6 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -28,26 +26,25 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.zIndex
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import org.readium.navigator.common.GoLocation
 import org.readium.navigator.common.InputListener
 import org.readium.navigator.common.Location
-import org.readium.navigator.common.LocatorAdapter
 import org.readium.navigator.common.NavigationController
 import org.readium.navigator.common.OverflowController
-import org.readium.navigator.common.PreferencesEditor
-import org.readium.navigator.common.RenditionState
 import org.readium.navigator.common.TapContext
 import org.readium.navigator.common.TapEvent
 import org.readium.navigator.common.defaultHyperlinkListener
 import org.readium.navigator.common.defaultInputListener
+import org.readium.navigator.demo.R
 import org.readium.navigator.demo.persistence.LocatorRepository
 import org.readium.navigator.demo.preferences.UserPreferences
 import org.readium.navigator.demo.util.launchWebBrowser
@@ -56,39 +53,25 @@ import org.readium.navigator.web.FixedWebRenditionState
 import org.readium.navigator.web.ReflowableWebRendition
 import org.readium.navigator.web.ReflowableWebRenditionState
 import org.readium.r2.shared.ExperimentalReadiumApi
-import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.toUri
-
-data class ReaderState<L : Location, N : NavigationController<L, *>>(
-    val url: AbsoluteUrl,
-    val coroutineScope: CoroutineScope,
-    val publication: Publication,
-    val renditionState: RenditionState<N>,
-    val preferencesEditor: PreferencesEditor<*, *>,
-    val locatorAdapter: LocatorAdapter<L, *>,
-    val onControllerAvailable: (N) -> Unit,
-) {
-
-    fun close() {
-        coroutineScope.cancel()
-        publication.close()
-    }
-}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun <L : Location, N : NavigationController<L, *>> Reader(
-    readerState: ReaderState<L, N>,
+fun <L : Location, G : GoLocation, N : NavigationController<L, G>> Reader(
+    readerState: ReaderState<L, G, N>,
     fullScreenState: MutableState<Boolean>,
 ) {
+    val coroutineScope = rememberCoroutineScope()
+
     val showPreferences = remember { mutableStateOf(false) }
     val preferencesSheetState = rememberModalBottomSheetState()
 
     if (showPreferences.value) {
         ModalBottomSheet(
             sheetState = preferencesSheetState,
-            onDismissRequest = { showPreferences.value = false }
+            onDismissRequest = {
+                showPreferences.value = false
+            }
         ) {
             UserPreferences(
                 editor = readerState.preferencesEditor,
@@ -97,11 +80,37 @@ fun <L : Location, N : NavigationController<L, *>> Reader(
         }
     }
 
+    val showOutline = rememberSaveable { mutableStateOf(false) }
+
+    if (showOutline.value) {
+        Outline<G>(
+            modifier = Modifier.fillMaxSize(),
+            publication = readerState.publication,
+            locatorAdapter = readerState.locatorAdapter,
+            onBackActivated = {
+                showOutline.value = false
+                fullScreenState.value = true
+            },
+            onTocItemActivated = {
+                val controllerNow = readerState.renditionState.controller
+                    ?: return@Outline
+
+                coroutineScope.launch {
+                    controllerNow.goTo(it)
+                }
+
+                fullScreenState.value = true
+                showOutline.value = false
+            }
+        )
+    }
+
     Box {
         TopBar(
-            modifier = Modifier.zIndex(1f),
+            modifier = Modifier.zIndex(10f),
             visible = !fullScreenState.value,
-            onPreferencesActivated = { showPreferences.value = !showPreferences.value }
+            onPreferencesActivated = { showPreferences.value = !showPreferences.value },
+            onOutlineActivated = { showOutline.value = !showOutline.value }
         )
 
         val navigationHistory: MutableState<List<L>> = remember { mutableStateOf(emptyList()) }
@@ -121,8 +130,6 @@ fun <L : Location, N : NavigationController<L, *>> Reader(
                     LocatorRepository.saveLocator(readerState.url, locator)
                 }.launchIn(readerState.coroutineScope)
             }
-
-            val coroutineScope = rememberCoroutineScope()
 
             BackHandler(enabled = navigationHistory.value.isNotEmpty()) {
                 val previousItem = navigationHistory.value.last()
@@ -193,6 +200,7 @@ private fun TopBar(
     modifier: Modifier,
     visible: Boolean,
     onPreferencesActivated: () -> Unit,
+    onOutlineActivated: () -> Unit,
 ) {
     AnimatedVisibility(
         modifier = modifier,
@@ -201,14 +209,22 @@ private fun TopBar(
         exit = fadeOut()
     ) {
         TopAppBar(
-            title = {},
+            title = { },
             actions = {
                 IconButton(
                     onClick = onPreferencesActivated
                 ) {
                     Icon(
-                        imageVector = Icons.Filled.Settings,
-                        contentDescription = "Preferences"
+                        painterResource(R.drawable.ic_preferences_24),
+                        contentDescription = "Preferences",
+                    )
+                }
+                IconButton(
+                    onClick = onOutlineActivated
+                ) {
+                    Icon(
+                        painterResource(R.drawable.ic_outline_24),
+                        contentDescription = "Outline"
                     )
                 }
             }
