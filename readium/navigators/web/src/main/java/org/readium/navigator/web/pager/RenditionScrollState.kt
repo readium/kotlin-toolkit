@@ -19,12 +19,12 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.util.fastCoerceIn
 import kotlinx.coroutines.coroutineScope
+import org.readium.navigator.common.Overflow
 import org.readium.navigator.web.gestures.Scroll2DScope
 import org.readium.navigator.web.gestures.Scrollable2DState
 import org.readium.navigator.web.util.toLayoutDirection
 import org.readium.navigator.web.util.toOrientation
 import org.readium.navigator.web.webview.WebViewScrollController
-import org.readium.r2.navigator.OverflowableNavigator
 import org.readium.r2.shared.ExperimentalReadiumApi
 import timber.log.Timber
 
@@ -36,7 +36,7 @@ internal interface PageScrollState {
 internal class RenditionScrollState(
     private val pagerState: PagerState,
     private val pageStates: List<PageScrollState>,
-    private val overflow: State<OverflowableNavigator.Overflow>,
+    private val overflow: State<Overflow>,
 ) : Scrollable2DState {
 
     private val orientation: Orientation get() =

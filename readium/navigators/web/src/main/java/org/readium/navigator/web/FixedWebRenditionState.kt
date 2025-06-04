@@ -19,6 +19,7 @@ import org.readium.navigator.common.Overflow
 import org.readium.navigator.common.OverflowController
 import org.readium.navigator.common.RenditionState
 import org.readium.navigator.common.SettingsController
+import org.readium.navigator.common.SimpleOverflow
 import org.readium.navigator.web.fixed.FixedWebPublication
 import org.readium.navigator.web.fixed.FixedWebPublication.ReadingOrder
 import org.readium.navigator.web.layout.Layout
@@ -31,8 +32,6 @@ import org.readium.navigator.web.util.WebViewClient
 import org.readium.navigator.web.util.WebViewServer
 import org.readium.navigator.web.util.WebViewServer.Companion.assetsBaseHref
 import org.readium.navigator.web.util.injectHtmlFixedLayout
-import org.readium.r2.navigator.OverflowableNavigator
-import org.readium.r2.navigator.SimpleOverflow
 import org.readium.r2.navigator.preferences.Axis
 import org.readium.r2.navigator.preferences.Fit
 import org.readium.r2.shared.ExperimentalReadiumApi
@@ -146,7 +145,7 @@ internal class LayoutDelegate(
     override val settings: MutableState<FixedWebSettings> =
         mutableStateOf(initialSettings)
 
-    val overflow: State<OverflowableNavigator.Overflow> = derivedStateOf {
+    val overflow: State<Overflow> = derivedStateOf {
         with(settings.value) {
             SimpleOverflow(
                 readingProgression = readingProgression,

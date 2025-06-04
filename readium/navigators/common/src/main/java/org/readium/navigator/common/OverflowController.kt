@@ -7,8 +7,10 @@
 package org.readium.navigator.common
 
 import androidx.compose.runtime.State
+import org.readium.r2.navigator.preferences.Axis
 import org.readium.r2.navigator.preferences.ReadingProgression
 import org.readium.r2.shared.ExperimentalReadiumApi
+import org.readium.r2.shared.InternalReadiumApi
 
 /**
  * A view with content that can extend beyond the viewport.
@@ -51,7 +53,30 @@ public interface OverflowController {
 }
 
 @ExperimentalReadiumApi
-public typealias Overflow = org.readium.r2.navigator.OverflowableNavigator.Overflow
+public interface Overflow {
+    /**
+     * Horizontal direction of progression across resources.
+     */
+    public val readingProgression: ReadingProgression
+
+    /**
+     * If the overflow of the content is managed through scroll instead of pagination.
+     */
+    public val scroll: Boolean
+
+    /**
+     * Main axis along which the resources are laid out.
+     */
+    public val axis: Axis
+}
+
+@InternalReadiumApi
+@OptIn(ExperimentalReadiumApi::class)
+public data class SimpleOverflow(
+    override val readingProgression: ReadingProgression,
+    override val scroll: Boolean,
+    override val axis: Axis,
+) : Overflow
 
 /**
  * Moves to the left content portion (eg. page) relative to the reading progression direction.

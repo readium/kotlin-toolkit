@@ -20,6 +20,7 @@ import org.readium.navigator.common.Overflow
 import org.readium.navigator.common.OverflowController
 import org.readium.navigator.common.RenditionState
 import org.readium.navigator.common.SettingsController
+import org.readium.navigator.common.SimpleOverflow
 import org.readium.navigator.web.css.FontFamilyDeclaration
 import org.readium.navigator.web.css.ReadiumCssInjector
 import org.readium.navigator.web.css.RsProperties
@@ -39,7 +40,6 @@ import org.readium.navigator.web.util.injectHtmlReflowable
 import org.readium.navigator.web.util.toLayoutDirection
 import org.readium.navigator.web.util.toOrientation
 import org.readium.navigator.web.webview.WebViewScrollController
-import org.readium.r2.navigator.SimpleOverflow
 import org.readium.r2.navigator.preferences.Axis
 import org.readium.r2.navigator.preferences.FontFamily
 import org.readium.r2.shared.ExperimentalReadiumApi

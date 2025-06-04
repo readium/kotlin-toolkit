@@ -6,7 +6,7 @@
 
 package org.readium.navigator.web.preferences
 
-import org.readium.r2.navigator.preferences.PreferencesFilter
+import org.readium.navigator.common.PreferencesFilter
 import org.readium.r2.shared.ExperimentalReadiumApi
 
 /**

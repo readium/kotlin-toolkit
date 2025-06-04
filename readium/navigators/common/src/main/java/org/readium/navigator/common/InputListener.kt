@@ -6,6 +6,7 @@
 
 package org.readium.navigator.common
 
+import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -18,7 +19,6 @@ import androidx.compose.ui.unit.times
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import org.readium.r2.navigator.preferences.ReadingProgression
-import org.readium.r2.navigator.util.DirectionalNavigationAdapter
 import org.readium.r2.shared.ExperimentalReadiumApi
 
 @ExperimentalReadiumApi
@@ -56,8 +56,8 @@ private class NullInputListener : InputListener {
 public fun defaultInputListener(
     controller: OverflowController?,
     fallbackListener: InputListener? = null,
-    tapEdges: Set<DirectionalNavigationAdapter.TapEdge> = setOf(
-        DirectionalNavigationAdapter.TapEdge.Horizontal
+    tapEdges: Set<Orientation> = setOf(
+        Orientation.Horizontal
     ),
     handleTapsWhileScrolling: Boolean = false,
     minimumHorizontalEdgeSize: Dp = 80.0.dp,
@@ -91,7 +91,7 @@ private class DefaultInputListener(
     private val coroutineScope: CoroutineScope,
     private val fallbackListener: InputListener?,
     private val controller: OverflowController,
-    private val tapEdges: Set<DirectionalNavigationAdapter.TapEdge>,
+    private val tapEdges: Set<Orientation>,
     private val handleTapsWhileScrolling: Boolean,
     private val minimumHorizontalEdgeSize: Dp,
     private val horizontalEdgeThresholdPercent: Double?,
@@ -110,7 +110,7 @@ private class DefaultInputListener(
             return false
         }
 
-        if (tapEdges.contains(DirectionalNavigationAdapter.TapEdge.Horizontal)) {
+        if (tapEdges.contains(Orientation.Horizontal)) {
             val width = context.viewport.width
 
             val horizontalEdgeSize = horizontalEdgeThresholdPercent
@@ -128,7 +128,7 @@ private class DefaultInputListener(
             }
         }
 
-        if (tapEdges.contains(DirectionalNavigationAdapter.TapEdge.Vertical)) {
+        if (tapEdges.contains(Orientation.Vertical)) {
             val height = context.viewport.height
 
             val verticalEdgeSize = verticalEdgeThresholdPercent

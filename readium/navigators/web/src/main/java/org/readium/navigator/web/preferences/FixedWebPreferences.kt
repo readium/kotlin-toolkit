@@ -7,7 +7,7 @@
 package org.readium.navigator.web.preferences
 
 import kotlinx.serialization.Serializable
-import org.readium.r2.navigator.preferences.Configurable
+import org.readium.navigator.common.Preferences
 import org.readium.r2.navigator.preferences.Fit
 import org.readium.r2.navigator.preferences.ReadingProgression
 import org.readium.r2.shared.ExperimentalReadiumApi
@@ -18,7 +18,7 @@ public data class FixedWebPreferences(
     val fit: Fit? = null,
     val readingProgression: ReadingProgression? = null,
     val spreads: Boolean? = null,
-) : Configurable.Preferences<FixedWebPreferences> {
+) : Preferences<FixedWebPreferences> {
 
     init {
         require(fit in listOf(null, Fit.CONTAIN, Fit.WIDTH, Fit.HEIGHT))

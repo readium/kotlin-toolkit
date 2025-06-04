@@ -7,12 +7,12 @@
 package org.readium.navigator.demo.preferences
 
 import kotlinx.coroutines.flow.MutableStateFlow
-import org.readium.r2.navigator.preferences.Configurable
+import org.readium.navigator.common.Preferences
 
 /**
  * Trivial user preferences manager. You can add persistence.
  */
-class PreferencesManager<P : Configurable.Preferences<P>>(
+class PreferencesManager<P : Preferences<P>>(
     initialPreferences: P,
 ) {
     private val preferencesMutable: MutableStateFlow<P> =

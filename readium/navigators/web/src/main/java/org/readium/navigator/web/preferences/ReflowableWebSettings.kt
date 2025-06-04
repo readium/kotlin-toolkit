@@ -6,8 +6,8 @@
 
 package org.readium.navigator.web.preferences
 
+import org.readium.navigator.common.Settings
 import org.readium.r2.navigator.preferences.Color
-import org.readium.r2.navigator.preferences.Configurable
 import org.readium.r2.navigator.preferences.FontFamily
 import org.readium.r2.navigator.preferences.ImageFilter
 import org.readium.r2.navigator.preferences.ReadingProgression
@@ -40,4 +40,4 @@ public data class ReflowableWebSettings(
     val theme: Theme,
     val verticalText: Boolean,
     val wordSpacing: Double?,
-) : Configurable.Settings
+) : Settings
