@@ -131,32 +131,48 @@ public data class HtmlDecorationTemplate(
         ): HtmlDecorationTemplate {
             val className = createUniqueClassName(if (asHighlight) "highlight" else "underline")
             val padding = Padding(left = 1, right = 1)
+
             return HtmlDecorationTemplate(
                 layout = Layout.BOXES,
                 element = { decoration ->
                     val tint = (decoration.style as? Style.Tinted)?.tint ?: defaultTint
                     val isActive = (decoration.style as? Style.Activable)?.isActive ?: false
-                    var css = ""
-                    if (asHighlight || isActive) {
-                        css += "background-color: ${tint.toCss(alpha = alpha)} !important;"
+                    val css = buildString {
+                        if (asHighlight || isActive) {
+                            append("background-color: ${tint.toCss(alpha = alpha)} !important;")
+                        }
+                        if (!asHighlight || isActive) {
+                            append("--underline-color: ${tint.toCss()};")
+                        }
                     }
-                    if (!asHighlight || isActive) {
-                        css += "border-bottom: ${lineWeight}px solid ${tint.toCss()};"
-                    }
-                    """
-                    <div class="$className" style="$css"/>"
-                    """
+                    """<div class="$className" style="$css"/>"""
                 },
                 stylesheet = """
-                    .$className {
-                        margin-left: ${-padding.left}px;
-                        padding-right: ${padding.left + padding.right}px;
-                        margin-top: ${-padding.top}px;
-                        padding-bottom: ${padding.top + padding.bottom}px;
-                        border-radius: ${cornerRadius}px;
-                        box-sizing: border-box;
-                    }
-                    """
+            .$className {
+                margin: ${-padding.top}px ${-padding.left}px 0 0;
+                padding: 0 ${padding.left + padding.right}px ${padding.top + padding.bottom}px 0;
+                border-radius: ${cornerRadius}px;
+                box-sizing: border-box;
+                border: 0 solid var(--underline-color);
+            }
+            
+            /* Horizontal (default) */
+            [data-writing-mode="horizontal-tb"].$className {
+                border-bottom-width: ${lineWeight}px;
+            }
+            
+            /* Vertical right-to-left */
+            [data-writing-mode="vertical-rl"].$className,
+            [data-writing-mode="sideways-rl"].$className {
+                border-left-width: ${lineWeight}px;
+            }
+            
+            /* Vertical left-to-right */
+            [data-writing-mode="vertical-lr"].$className,
+            [data-writing-mode="sideways-lr"].$className {
+                border-right-width: ${lineWeight}px;
+            }            
+            """
             )
         }
 

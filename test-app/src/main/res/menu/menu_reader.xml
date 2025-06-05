@@ -46,6 +46,13 @@
         app:showAsAction="always"
         tools:ignore="AlwaysShowAction"/>
 
+    <item
+        android:id="@+id/info"
+        android:icon="@drawable/ic_baseline_info_24"
+        android:title="@string/info"
+        app:showAsAction="always"
+        tools:ignore="AlwaysShowAction"/>
+
 
     <item
         android:id="@+id/toc"

@@ -17,6 +17,10 @@ dependencyResolutionManagement {
 
 rootProject.name = "Readium"
 
+include(":readium:adapters:pdfium:common")
+project(":readium:adapters:pdfium:common")
+    .name = "readium-adapter-pdfium-common"
+
 include(":readium:adapters:pdfium:document")
 project(":readium:adapters:pdfium:document")
     .name = "readium-adapter-pdfium-document"

@@ -207,6 +207,7 @@
     <string name="search_error_cancelled">The search was cancelled</string>
     <string name="search_error_other">An error occurred while searching</string>
 
-
     <string name="error_unexpected">An unexpected error occurred.</string>
+
+    <string name="info">Information</string>
 </resources>

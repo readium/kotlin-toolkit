@@ -116,6 +116,7 @@ internal class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView
     private var mLastMotionX: Float = 0.toFloat()
     private var mInitialMotionX: Float = 0.toFloat()
     private var mInitialMotionY: Float = 0.toFloat()
+    private var mInitialOverscroll: OverscrollMode = OverscrollMode.NONE
 
     /**
      * Sentinel value for no current active pointer.
@@ -707,6 +708,7 @@ internal class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView
                 mInitialMotionX = ev.x
                 mLastMotionX = mInitialMotionX
                 mInitialMotionY = ev.y
+                mInitialOverscroll = getOverscrollMode()
                 mActivePointerId = ev.getPointerId(0)
             }
             MotionEvent.ACTION_MOVE -> {
@@ -745,9 +747,15 @@ internal class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView
                     if (scrollMode) {
                         val totalDelta = (y - mInitialMotionY).toInt()
                         if (abs(totalDelta) < 200) {
-                            if (mInitialMotionX < x) {
+                            if (mInitialOverscroll == OverscrollMode.BOTH) {
+                                if (mInitialMotionX < x) {
+                                    scrollLeft(animated = true)
+                                } else if (mInitialMotionX > x) {
+                                    scrollRight(animated = true)
+                                }
+                            } else if (mInitialMotionX < x && mInitialOverscroll == OverscrollMode.LEFT) {
                                 scrollLeft(animated = true)
-                            } else if (mInitialMotionX > x) {
+                            } else if (mInitialMotionX > x && mInitialOverscroll == OverscrollMode.RIGHT) {
                                 scrollRight(animated = true)
                             }
                         }
@@ -1054,11 +1062,33 @@ internal class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView
         return false
     }
 
+    private fun getOverscrollMode(): OverscrollMode {
+        val clientWidth = getClientWidth() ?: return OverscrollMode.NONE
+        val right = scrollX >= computeHorizontalScrollRange() - clientWidth
+        val left = scrollX <= 0
+        if (left && right) {
+            return OverscrollMode.BOTH
+        } else if (left) {
+            return OverscrollMode.LEFT
+        } else if (right) {
+            return OverscrollMode.RIGHT
+        } else {
+            return OverscrollMode.NONE
+        }
+    }
+
     internal val numPages: Int get() =
         getClientWidth()
             ?.let { clientWidth -> (computeHorizontalScrollRange() / clientWidth.toDouble()).roundToInt() }
             ?.coerceAtLeast(1)
             ?: 1
+
+    enum class OverscrollMode {
+        NONE,
+        LEFT,
+        RIGHT,
+        BOTH,
+    }
 
     /**
      * Layout parameters that should be supplied for views added to a
