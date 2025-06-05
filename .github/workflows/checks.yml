@@ -74,21 +74,21 @@ jobs:
     runs-on: macos-latest
     if: ${{ !github.event.pull_request.draft }}
     env:
-      scripts: ${{ 'readium/navigators/web/scripts' }}
+      scripts: ${{ 'readium/navigators/web/internals/scripts' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
-          package_json_file: readium/navigators/web/scripts/package.json
+          package_json_file: readium/navigators/web/internals/scripts/package.json
           run_install: false
       - name: Setup cache
         uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: 'pnpm'
-          cache-dependency-path: readium/navigators/web/scripts/pnpm-lock.yaml
+          cache-dependency-path: readium/navigators/web/internals/scripts/pnpm-lock.yaml
       - name: Install dependencies
         run: pnpm --dir "$scripts" install --frozen-lockfile
       - name: Lint
@@ -98,4 +98,4 @@ jobs:
       - name: Check if bundled scripts are up-to-date
         run: |
           make scripts-new
-          git diff --exit-code --name-only readium/navigators/web/src/main/assets/*
+          git diff --exit-code --name-only readium/navigators/web/internals/src/main/assets/*
