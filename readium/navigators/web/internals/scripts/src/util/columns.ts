@@ -7,6 +7,12 @@
  * Returns if the column number has changed.
  */
 export function appendVirtualColumnIfNeeded(wnd: Window): boolean {
+  const colCountPerScreen = getColumnCountPerScreen(wnd)
+  if (!colCountPerScreen) {
+    // scroll mode
+    return false
+  }
+
   const virtualCols = wnd.document.querySelectorAll(
     "div[id^='readium-virtual-page']"
   )
@@ -19,7 +25,6 @@ export function appendVirtualColumnIfNeeded(wnd: Window): boolean {
     virtualCol.remove()
   }
 
-  const colCountPerScreen = getColumnCountPerScreen(wnd)
   const documentWidth = wnd.document.scrollingElement!.scrollWidth
   const windowWidth = wnd.visualViewport!.width
 
