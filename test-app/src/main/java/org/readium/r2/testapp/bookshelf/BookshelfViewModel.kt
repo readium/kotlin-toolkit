@@ -11,6 +11,10 @@ import android.net.Uri
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.toUrl
@@ -25,7 +29,17 @@ class BookshelfViewModel(application: Application) : AndroidViewModel(applicatio
         getApplication<org.readium.r2.testapp.Application>()
 
     val channel = EventChannel(Channel<Event>(Channel.BUFFERED), viewModelScope)
-    val books = app.bookRepository.books()
+
+    private val _uiState = MutableStateFlow(BookshelfUiState())
+    val uiState: StateFlow<BookshelfUiState> = _uiState.asStateFlow()
+
+    init {
+        viewModelScope.launch {
+            app.bookRepository.books().collect { books ->
+                _uiState.update { it.copy(books = books) }
+            }
+        }
+    }
 
     fun deletePublication(book: Book) =
         viewModelScope.launch {
@@ -71,3 +85,7 @@ class BookshelfViewModel(application: Application) : AndroidViewModel(applicatio
         ) : Event()
     }
 }
+
+data class BookshelfUiState(
+    val books: List<Book> = emptyList()
+)
