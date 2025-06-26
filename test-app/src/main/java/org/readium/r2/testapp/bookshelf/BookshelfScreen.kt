@@ -3,16 +3,12 @@ package org.readium.r2.testapp.bookshelf
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -20,10 +16,8 @@ import androidx.compose.foundation.selection.selectable
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Card
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
@@ -39,22 +33,18 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
-import coil3.compose.AsyncImage
-import coil3.request.ImageRequest
-import coil3.request.crossfade
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.testapp.MainViewModel
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.data.model.Book
 import org.readium.r2.testapp.reader.ReaderActivityContract
+import org.readium.r2.testapp.shared.views.PublicationCoverItem
 
 @Composable
 fun BookshelfScreen(
@@ -128,9 +118,10 @@ fun BookshelfScreen(
                 modifier = Modifier.padding(top = 16.dp, start = 16.dp, end = 16.dp)
             ) {
                 items(uiState.books) { book ->
-                    BookItem(
-                        book = book,
-                        onReadClick = { viewModel.openPublication(book.id!!) },
+                    PublicationCoverItem(
+                        imageUrl = book.cover,
+                        title = book.title!!,
+                        onClick = { viewModel.openPublication(book.id!!) },
                         onLongClick = { bookToDelete = book }
                     )
                 }
@@ -253,43 +244,6 @@ private fun AddUrlDialog(
             }
         }
     )
-}
-
-@OptIn(ExperimentalFoundationApi::class)
-@Composable
-private fun BookItem(
-    book: Book,
-    onReadClick: () -> Unit,
-    onLongClick: () -> Unit
-) {
-    Card(
-        modifier = Modifier
-            .width(120.dp)
-            .combinedClickable(
-                onClick = onReadClick,
-                onLongClick = onLongClick
-            )
-    ) {
-        AsyncImage(
-            model = ImageRequest.Builder(LocalContext.current)
-                .data(book.cover)
-                .crossfade(true)
-                .build(),
-            contentDescription = "Publication cover",
-            contentScale = ContentScale.Crop,
-            modifier = Modifier
-                .height(160.dp)
-                .fillMaxWidth()
-        )
-
-        Text(
-            text = book.title!!,
-            style = MaterialTheme.typography.bodyMedium,
-            maxLines = 2,
-            overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.padding(8.dp)
-        )
-    }
 }
 
 @Composable
