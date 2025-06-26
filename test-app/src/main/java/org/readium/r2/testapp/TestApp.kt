@@ -137,12 +137,7 @@ fun TestApp(mainViewModel: MainViewModel = viewModel()) {
             }
 
             composable(Screen.Publication.route) {
-                val publication = navController.previousBackStackEntry
-                    ?.savedStateHandle?.get<Publication>("publication")
-
-                if (publication != null) {
-                    PublicationScreen(catalogViewModel = catalogViewModel, mainViewModel = mainViewModel)
-                }
+                PublicationScreen(catalogViewModel = catalogViewModel, mainViewModel = mainViewModel)
             }
         }
     }
