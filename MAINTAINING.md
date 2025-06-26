@@ -27,17 +27,15 @@ You are ready to release a new version of the Kotlin toolkit? Great, follow thes
     * Add an APK to the release page **with LCP enabled**.
 6. Publish to Maven Central.
     1. Verify that the [`Publish` workflow](https://github.com/readium/kotlin-toolkit/actions/workflows/publish.yml) successfully pushed and closed the release to Maven Central.
-    2. Sign in to https://s01.oss.sonatype.org/
-    3. Verify the content of the staging repository.
-    4. Release the staging repository.
+    2. Sign in to https://central.sonatype.com/publishing/deployments
+    3. Verify the content of the components.
+    4. Publish the components
 7. Check that the new modules can be imported in an Android project from Maven Central.
 8. Merge `develop` into `main`.
 
 ### Publishing to Maven Central manually
 
 If the `Publish` workflow fails, you may need to publish to Maven Central manually.
-
-[The Sonatype issue for Readium is located here](https://issues.sonatype.org/browse/OSSRH-85964).
 
 #### With the new vanniktech's Maven publish plugin
 
@@ -46,24 +44,8 @@ If the `Publish` workflow fails, you may need to publish to Maven Central manual
     ```
     ./gradlew publishToMavenCentral --no-configuration-cache
     ```
-3. Sign in to https://s01.oss.sonatype.org/
-4. Publish manually the previously closed Staging repository
-
-### (Deprecated) With the official Maven publish plugin
-
-1. Make sure you have the secrets in `local.properties`.
-2. Run:
-    ```
-    ./gradlew clean assembleRelease
-    ./gradlew androidSourcesJar javadocJar
-    ./gradlew publishReleasePublicationToSonatypeRepository closeSonatypeStagingRepository
-    ```
-3. Sign in to https://s01.oss.sonatype.org/
-4. Publish manually the previously closed Staging repository
-
-Note that [you can't run the gradlew commands separately](https://github.com/gradle-nexus/publish-plugin#publishing-and-closing-in-different-gradle-invocations), otherwise you get this error:
-
-> No staging repository with name sonatype created
+3. Sign in to https://central.sonatype.com/publishing/deployments
+4. Publish manually the components
 
 ## Troubleshooting
 

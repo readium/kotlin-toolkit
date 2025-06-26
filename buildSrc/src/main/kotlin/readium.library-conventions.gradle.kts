@@ -89,12 +89,6 @@ mavenPublishing {
                 name.set("Quentin Gliosca")
                 email.set("quentin.gliosca@gmail.com")
             }
-
-            developer {
-                id.set("username")
-                name.set("User Name")
-                url.set("https://github.com/username/")
-            }
         }
         scm {
             url.set("https://github.com/readium/kotlin-toolkit")
@@ -103,6 +97,6 @@ mavenPublishing {
         }
     }
 
-    publishToMavenCentral(SonatypeHost.S01)
+    publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL)
     signAllPublications()
 }
