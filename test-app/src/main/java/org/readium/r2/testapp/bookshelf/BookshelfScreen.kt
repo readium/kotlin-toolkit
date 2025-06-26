@@ -45,6 +45,7 @@ import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
@@ -53,6 +54,7 @@ import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.testapp.MainViewModel
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.data.model.Book
+import org.readium.r2.testapp.reader.ReaderActivityContract
 
 @Composable
 fun BookshelfScreen(
@@ -61,6 +63,7 @@ fun BookshelfScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
 
     var showAddBookDialog by remember { mutableStateOf(false) }
     var showAddUrlDialog by remember { mutableStateOf(false) }
@@ -83,6 +86,20 @@ fun BookshelfScreen(
             title = context.getString(R.string.title_bookshelf),
             actions = {}
         )
+    }
+
+    LaunchedEffect(viewModel.channel) {
+        viewModel.channel.receive(lifecycleOwner = lifecycleOwner) { event ->
+            when (event) {
+                is BookshelfViewModel.Event.LaunchReader -> {
+                    val intent = ReaderActivityContract().createIntent(context, event.arguments)
+                    context.startActivity(intent)
+                }
+                is BookshelfViewModel.Event.OpenPublicationError -> {
+//                    event.error.toUserError().show(requireActivity())
+                }
+            }
+        }
     }
 
     Scaffold(

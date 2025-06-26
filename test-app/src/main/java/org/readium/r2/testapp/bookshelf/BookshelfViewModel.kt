@@ -10,6 +10,7 @@ import android.app.Application
 import android.net.Uri
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -25,8 +26,9 @@ import org.readium.r2.testapp.utils.EventChannel
 
 class BookshelfViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val app get() =
-        getApplication<org.readium.r2.testapp.Application>()
+    private val app
+        get() =
+            getApplication<org.readium.r2.testapp.Application>()
 
     val channel = EventChannel(Channel<Event>(Channel.BUFFERED), viewModelScope)
 
@@ -61,7 +63,7 @@ class BookshelfViewModel(application: Application) : AndroidViewModel(applicatio
     fun openPublication(
         bookId: Long,
     ) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             app.readerRepository
                 .open(bookId)
                 .onFailure {
