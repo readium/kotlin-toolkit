@@ -29,6 +29,7 @@ dependencies {
     implementation(project(":readium:navigators:web:readium-navigator-web-internals"))
 
     implementation(libs.kotlinx.serialization.json)
+    implementation(libs.kotlinx.collections.immutable)
     implementation(libs.bundles.compose)
     implementation(libs.timber)
     implementation(libs.kotlinx.coroutines.android)

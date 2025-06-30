@@ -21,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.DpOffset
+import androidx.compose.ui.unit.DpRect
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.zIndex
 import org.readium.navigator.common.TapEvent
@@ -64,6 +65,14 @@ internal fun SpreadWebView(
 
                 override fun onLinkActivated(href: AbsoluteUrl, outerHtml: String) {
                     onLinkActivated(href, outerHtml)
+                }
+
+                override fun onDecorationActivated(
+                    id: String,
+                    group: String,
+                    rect: DpRect,
+                    offset: DpOffset,
+                ) {
                 }
             }
 

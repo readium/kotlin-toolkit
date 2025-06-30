@@ -1,16 +1,27 @@
+import { DecorationActivatedEvent, DecorationManager } from "./decoration"
+
 export interface GesturesListener {
   onTap(event: MouseEvent): void
   onLinkActivated(href: string, outerHtml: string): void
+  onDecorationActivated(event: DecorationActivatedEvent): void
 }
 
 export class GesturesDetector {
   private readonly listener: GesturesListener
 
+  private readonly decorationManager?: DecorationManager
+
   private readonly window: Window
 
-  constructor(window: Window, listener: GesturesListener) {
+  constructor(
+    window: Window,
+    listener: GesturesListener,
+    decorationManager?: DecorationManager
+  ) {
     this.window = window
     this.listener = listener
+    this.decorationManager = decorationManager
+
     document.addEventListener(
       "click",
       (event) => {
@@ -46,7 +57,24 @@ export class GesturesDetector {
           nearestElement.href,
           nearestElement.outerHTML
         )
+
+        event.stopPropagation()
+        event.preventDefault()
+      } else {
+        return
       }
+    }
+
+    let decorationActivatedEvent: DecorationActivatedEvent | null
+    if (this.decorationManager) {
+      decorationActivatedEvent =
+        this.decorationManager.handleDecorationClickEvent(event)
+    } else {
+      decorationActivatedEvent = null
+    }
+
+    if (decorationActivatedEvent) {
+      this.listener.onDecorationActivated(decorationActivatedEvent)
     } else {
       this.listener.onTap(event)
     }

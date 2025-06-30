@@ -8,6 +8,7 @@ package org.readium.navigator.web.reflowable.location
 
 import org.readium.navigator.common.GoLocation
 import org.readium.navigator.common.Location
+import org.readium.navigator.common.SelectionLocation
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.Url
 
@@ -30,3 +31,11 @@ public data class ReflowableWebLocation(
     // val textAfter: String?,
     // val position: Int?
 ) : Location
+
+@ExperimentalReadiumApi
+public data class ReflowableSelectionLocation(
+    val href: Url,
+    val selectedText: String,
+    val textBefore: String,
+    val textAfter: String,
+) : SelectionLocation

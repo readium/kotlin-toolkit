@@ -14,6 +14,7 @@ import org.readium.navigator.web.reflowable.preferences.ReflowableWebDefaults
 import org.readium.navigator.web.reflowable.preferences.ReflowableWebPreferences
 import org.readium.navigator.web.reflowable.preferences.ReflowableWebPreferencesEditor
 import org.readium.navigator.web.reflowable.preferences.ReflowableWebSettings
+import org.readium.r2.navigator.html.HtmlDecorationTemplates
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.publication.Link
@@ -35,6 +36,7 @@ public class ReflowableWebRenditionFactory private constructor(
     private val application: Application,
     private val publication: Publication,
     private val defaults: ReflowableWebDefaults,
+    private val decorationTemplates: HtmlDecorationTemplates,
 ) {
 
     public companion object {
@@ -43,6 +45,7 @@ public class ReflowableWebRenditionFactory private constructor(
             application: Application,
             publication: Publication,
             defaults: ReflowableWebDefaults = ReflowableWebDefaults(),
+            decorationTemplates: HtmlDecorationTemplates = HtmlDecorationTemplates.defaultTemplates(),
         ): ReflowableWebRenditionFactory? {
             if (!publication.conformsTo(Publication.Profile.EPUB) ||
                 publication.metadata.presentation.layout == EpubLayout.FIXED
@@ -57,7 +60,8 @@ public class ReflowableWebRenditionFactory private constructor(
             return ReflowableWebRenditionFactory(
                 application,
                 publication,
-                defaults
+                defaults,
+                decorationTemplates
             )
         }
     }
@@ -112,6 +116,7 @@ public class ReflowableWebRenditionFactory private constructor(
                 initialLocation = initialLocation,
                 rsProperties = RsProperties(),
                 fontFamilyDeclarations = emptyList(),
+                decorationTemplates = decorationTemplates,
                 disableSelection = publication.isProtected
             )
 

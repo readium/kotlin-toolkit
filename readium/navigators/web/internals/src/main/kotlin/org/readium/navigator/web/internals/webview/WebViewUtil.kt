@@ -7,6 +7,10 @@
 package org.readium.navigator.web.internals.webview
 
 import android.webkit.WebView
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 internal fun WebView.invokeOnReadyToBeDrawn(callback: (WebView) -> Unit) {
     post {
@@ -20,3 +24,12 @@ internal fun WebView.invokeOnReadyToBeDrawn(callback: (WebView) -> Unit) {
         )
     }
 }
+
+public suspend fun WebView.evaluateJavaScriptSuspend(javascript: String): String =
+    withContext(Dispatchers.Main) {
+        suspendCoroutine { cont ->
+            evaluateJavascript(javascript) { result ->
+                cont.resume(result)
+            }
+        }
+    }

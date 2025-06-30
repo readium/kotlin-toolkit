@@ -8,17 +8,18 @@ package org.readium.navigator.web.internals.webapi
 
 import android.webkit.WebView
 import androidx.compose.ui.unit.DpOffset
+import androidx.compose.ui.unit.DpRect
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
-import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import org.readium.r2.shared.util.AbsoluteUrl
 
 public class DelegatingGesturesListener(
     private val onTapDelegate: (DpOffset) -> Unit,
     private val onLinkActivatedDelegate: (AbsoluteUrl, String) -> Unit,
+    private val onDecorationActivatedDelegate: (String, String, DpRect, DpOffset) -> Unit,
 ) : GesturesListener {
 
     override fun onTap(offset: DpOffset) {
@@ -31,6 +32,15 @@ public class DelegatingGesturesListener(
     ) {
         onLinkActivatedDelegate(href, outerHtml)
     }
+
+    override fun onDecorationActivated(
+        id: String,
+        group: String,
+        rect: DpRect,
+        offset: DpOffset,
+    ) {
+        onDecorationActivatedDelegate(id, group, rect, offset)
+    }
 }
 
 public interface GesturesListener {
@@ -38,6 +48,8 @@ public interface GesturesListener {
     public fun onTap(offset: DpOffset)
 
     public fun onLinkActivated(href: AbsoluteUrl, outerHtml: String)
+
+    public fun onDecorationActivated(id: String, group: String, rect: DpRect, offset: DpOffset)
 }
 
 public class GesturesApi(
@@ -54,7 +66,7 @@ public class GesturesApi(
     @android.webkit.JavascriptInterface
     public fun onTap(eventJson: String) {
         coroutineScope.launch {
-            val tapEvent = Json.decodeFromString<JsonTapEvent>(eventJson)
+            val tapEvent = Json.decodeFromString<JsonOffset>(eventJson)
             listener.onTap(DpOffset(tapEvent.x.dp, tapEvent.y.dp))
         }
     }
@@ -66,10 +78,23 @@ public class GesturesApi(
             listener.onLinkActivated(url, outerHtml)
         }
     }
-}
 
-@Serializable
-private data class JsonTapEvent(
-    val x: Float,
-    val y: Float,
-)
+    @android.webkit.JavascriptInterface
+    public fun onDecorationActivated(id: String, group: String, rect: String, offset: String) {
+        coroutineScope.launch {
+            val jsonRect = Json.decodeFromString<JsonRect>(rect)
+            val jsonOffset = Json.decodeFromString<JsonOffset>(offset)
+            listener.onDecorationActivated(
+                id = id,
+                group = group,
+                rect = DpRect(
+                    left = jsonRect.left.dp,
+                    top = jsonRect.top.dp,
+                    right = jsonRect.right.dp,
+                    bottom = jsonRect.bottom.dp
+                ),
+                offset = DpOffset(jsonOffset.x.dp, jsonOffset.y.dp)
+            )
+        }
+    }
+}

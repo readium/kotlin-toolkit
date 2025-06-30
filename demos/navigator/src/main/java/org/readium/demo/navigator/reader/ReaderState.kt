@@ -10,6 +10,7 @@ package org.readium.demo.navigator.reader
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.cancel
+import org.readium.demo.navigator.decorations.HighlightsManager
 import org.readium.navigator.common.GoLocation
 import org.readium.navigator.common.Location
 import org.readium.navigator.common.LocatorAdapter
@@ -28,6 +29,7 @@ data class ReaderState<L : Location, G : GoLocation, N : NavigationController<L,
     val preferencesEditor: PreferencesEditor<*, *>,
     val locatorAdapter: LocatorAdapter<L, G>,
     val onControllerAvailable: (N) -> Unit,
+    val highlightsManager: HighlightsManager? = null,
 ) {
 
     fun close() {

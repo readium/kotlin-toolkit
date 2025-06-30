@@ -40,4 +40,14 @@ public class ReflowableWebLocatorAdapter internal constructor(
                 // position = position,
                 // otherLocations = buildMap { cssSelector?.let { put("cssSelector", cssSelector) } }
             )
+
+    public fun ReflowableSelectionLocation.toLocator(): Locator =
+        publication.locatorFromLink(Link(href))!!
+            .copy(
+                text = Locator.Text(
+                    highlight = selectedText,
+                    before = textBefore,
+                    after = textAfter
+                )
+            )
 }

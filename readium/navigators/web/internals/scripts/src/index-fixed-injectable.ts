@@ -8,6 +8,7 @@
  * Script loaded by fixed layout resources.
  */
 
+import { DecorationActivatedEvent } from "./common/decoration"
 import { GesturesDetector, GesturesListener } from "./common/gestures"
 import { Size } from "./common/types"
 import { IframeMessageSender } from "./fixed/iframe-message"
@@ -36,6 +37,14 @@ class MessagingGesturesListener implements GesturesListener {
       kind: "linkActivated",
       href: href,
       outerHtml: outerHtml,
+    })
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  onDecorationActivated(event: DecorationActivatedEvent): void {
+    this.messageSender.send({
+      kind: "decorationActivated",
+      event: event,
     })
   }
 }

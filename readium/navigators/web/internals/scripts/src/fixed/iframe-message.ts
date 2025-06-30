@@ -1,3 +1,4 @@
+import { DecorationActivatedEvent } from "../common/decoration"
 import { Size } from "../common/types"
 
 export interface ContentSizeMessage {
@@ -17,10 +18,16 @@ export interface LinkActivatedMessage {
   outerHtml: string
 }
 
+export interface DecorationActivatedMessage {
+  kind: "decorationActivated"
+  event: DecorationActivatedEvent
+}
+
 export type IframeMessage =
   | ContentSizeMessage
   | TapMessage
   | LinkActivatedMessage
+  | DecorationActivatedMessage
 
 export class IframeMessageSender {
   private messagePort: MessagePort

@@ -34,6 +34,9 @@ devDependencies:
   '@readium/css':
     specifier: 2.0.0-beta.13
     version: 2.0.0-beta.13
+  '@types/string.prototype.matchall':
+    specifier: ^4.0.4
+    version: 4.0.4
   '@typescript-eslint/eslint-plugin':
     specifier: ^8.3.0
     version: 8.3.0(@typescript-eslint/parser@8.3.0)(eslint@8.57.0)(typescript@5.8.3)
@@ -1714,6 +1717,10 @@ packages:
 
   /@types/node@20.8.2:
     resolution: {integrity: sha512-Vvycsc9FQdwhxE3y3DzeIxuEJbWGDsnrxvMADzTDF/lcdR9/K+AQIeAghTQsHtotg/q0j3WEOYS/jQgSdWue3w==}
+
+  /@types/string.prototype.matchall@4.0.4:
+    resolution: {integrity: sha512-E0KMS5FrWafbfKTGsoTZgrPHxBVknPeBxUTNwJima3t5KLdOlY285sisQC0mkVPTNNBc4nxza5ldly/ct+ISrQ==}
+    dev: true
 
   /@typescript-eslint/eslint-plugin@8.3.0(@typescript-eslint/parser@8.3.0)(eslint@8.57.0)(typescript@5.8.3):
     resolution: {integrity: sha512-FLAIn63G5KH+adZosDYiutqkOkYEx0nvcwNNfJAf+c7Ae/H35qWwTYvPZUKFj5AS+WfHG/WJJfWnDnyNUlp8UA==}

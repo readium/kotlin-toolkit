@@ -9,9 +9,7 @@ package org.readium.navigator.web.reflowable.webapi
 import android.webkit.WebView
 import org.readium.navigator.web.reflowable.css.RsProperties
 import org.readium.navigator.web.reflowable.css.UserProperties
-import org.readium.r2.shared.ExperimentalReadiumApi
 
-@OptIn(ExperimentalReadiumApi::class)
 internal class CssApi(
     private val webView: WebView,
 ) {

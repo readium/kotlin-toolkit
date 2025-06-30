@@ -1,6 +1,7 @@
 import { Margins, Size } from "../common/types"
 import { TapEvent } from "../common/events"
 import { IframeMessage, LinkActivatedMessage } from "./iframe-message"
+import { DecorationActivatedEvent } from "../common/decoration"
 
 /** Manages a fixed layout resource embedded in an iframe. */
 export class PageManager {
@@ -73,6 +74,8 @@ export class PageManager {
         return this.listener.onTap({ x: message.x, y: message.y })
       case "linkActivated":
         return this.onLinkActivated(message)
+      case "decorationActivated":
+        return this.listener.onDecorationActivated(message.event)
     }
   }
 
@@ -103,5 +106,6 @@ export namespace PageManager {
     onIframeLoaded(): void
     onTap(event: TapEvent): void
     onLinkActivated(href: string, outerHtml: string): void
+    onDecorationActivated(event: DecorationActivatedEvent): void
   }
 }

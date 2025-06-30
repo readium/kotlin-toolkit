@@ -8,13 +8,17 @@
  * Script loaded by reflowable resources.
  */
 
+import { DecorationsBridge } from "./bridge/all-decoration-bridge"
 import {
   ReflowableListenerAdapter,
   GesturesBridge,
 } from "./bridge/all-listener-bridge"
 import { DocumentBridge } from "./bridge/all-listener-bridge"
+import { SelectionBridge } from "./bridge/all-selection-bridge"
 import { CssBridge } from "./bridge/reflowable-css-bridge"
+import { DecorationManager } from "./common/decoration"
 import { GesturesDetector } from "./common/gestures"
+import { SelectionManager } from "./common/selection"
 import { appendVirtualColumnIfNeeded } from "./util/columns"
 
 declare global {
@@ -22,14 +26,25 @@ declare global {
     documentState: DocumentBridge
     gestures: GesturesBridge
     readiumcss: CssBridge
+    decorations: DecorationsBridge
+    selection: SelectionBridge
   }
 }
 
 const bridgeListener = new ReflowableListenerAdapter(window.gestures)
 
-new GesturesDetector(window, bridgeListener)
+const decorationManager = new DecorationManager(window)
 
 Window.prototype.readiumcss = new CssBridge(window.document)
+
+Window.prototype.decorations = new DecorationsBridge(window, decorationManager)
+
+Window.prototype.selection = new SelectionBridge(
+  window,
+  new SelectionManager(window)
+)
+
+new GesturesDetector(window, bridgeListener, decorationManager)
 
 window.documentState.onScriptsLoaded()
 

@@ -21,6 +21,7 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalTextToolbar
 import androidx.core.view.WindowInsetsControllerCompat
 import org.readium.demo.navigator.reader.Reader
 import org.readium.demo.navigator.util.Fullscreenable
@@ -41,6 +42,7 @@ fun Scaffold(
         ) {
             content.invoke()
 
+            LocalTextToolbar
             SnackbarHost(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)

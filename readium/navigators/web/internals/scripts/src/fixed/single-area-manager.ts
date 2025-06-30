@@ -5,6 +5,7 @@ import { ViewportStringBuilder } from "../util/viewport"
 import { AreaManager } from "./area-manager"
 import { GesturesDetector } from "../common/gestures"
 import { TapEvent } from "../common/events"
+import { DecorationActivatedEvent } from "../common/decoration"
 
 export class SingleAreaManager {
   private readonly metaViewport: HTMLMetaElement
@@ -50,6 +51,10 @@ export class SingleAreaManager {
       onLinkActivated: (_: string) => {
         throw Error("No interactive element in the root document.")
       },
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      onDecorationActivated: (_: DecorationActivatedEvent) => {
+        throw Error("No decoration in the root document.")
+      },
     }
     new GesturesDetector(window, wrapperGesturesListener)
 
@@ -73,6 +78,8 @@ export class SingleAreaManager {
       onLinkActivated: (href: string, outerHtml: string) => {
         listener.onLinkActivated(href, outerHtml)
       },
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      onDecorationActivated: (event: DecorationActivatedEvent) => {},
     }
     this.page = new PageManager(window, iframe, pageListener)
   }

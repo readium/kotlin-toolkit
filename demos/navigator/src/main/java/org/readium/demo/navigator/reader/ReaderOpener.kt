@@ -13,6 +13,11 @@ import androidx.compose.runtime.snapshotFlow
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import org.readium.demo.navigator.decorations.DecorationStyleAnnotationMark
+import org.readium.demo.navigator.decorations.DecorationStylePageNumber
+import org.readium.demo.navigator.decorations.HighlightsManager
+import org.readium.demo.navigator.decorations.annotationMarkTemplate
+import org.readium.demo.navigator.decorations.pageNumberTemplate
 import org.readium.demo.navigator.persistence.LocatorRepository
 import org.readium.demo.navigator.preferences.PreferencesManager
 import org.readium.navigator.web.fixedlayout.FixedWebRenditionController
@@ -25,6 +30,7 @@ import org.readium.navigator.web.reflowable.ReflowableWebRenditionFactory
 import org.readium.navigator.web.reflowable.location.ReflowableWebGoLocation
 import org.readium.navigator.web.reflowable.location.ReflowableWebLocation
 import org.readium.navigator.web.reflowable.preferences.ReflowableWebPreferences
+import org.readium.r2.navigator.html.HtmlDecorationTemplates
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
@@ -96,8 +102,14 @@ class ReaderOpener(
         publication: Publication,
         initialLocator: Locator?,
     ): Try<ReaderState<ReflowableWebLocation, ReflowableWebGoLocation, ReflowableWebRenditionController>, Error> {
-        val navigatorFactory = ReflowableWebRenditionFactory(application, publication)
-            ?: return Try.failure(DebugError("Publication not supported"))
+        val navigatorFactory = ReflowableWebRenditionFactory(
+            application = application,
+            publication = publication,
+            decorationTemplates = HtmlDecorationTemplates.defaultTemplates().apply {
+                set(DecorationStyleAnnotationMark::class, annotationMarkTemplate())
+                set(DecorationStylePageNumber::class, pageNumberTemplate())
+            }
+        ) ?: return Try.failure(DebugError("Publication not supported"))
 
         val locatorAdapter = navigatorFactory.createLocatorAdapter()
 
@@ -135,7 +147,8 @@ class ReaderOpener(
             renditionState = renditionState,
             preferencesEditor = preferencesEditor,
             locatorAdapter = locatorAdapter,
-            onControllerAvailable = onControllerAvailable
+            onControllerAvailable = onControllerAvailable,
+            highlightsManager = HighlightsManager()
         )
 
         return Try.success(readerState)

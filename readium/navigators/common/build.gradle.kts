@@ -22,6 +22,7 @@ dependencies {
     api(project(":readium:readium-shared"))
     api(project(":readium:readium-navigator"))
 
+    implementation(libs.kotlinx.collections.immutable)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.bundles.compose)
     implementation(libs.timber)

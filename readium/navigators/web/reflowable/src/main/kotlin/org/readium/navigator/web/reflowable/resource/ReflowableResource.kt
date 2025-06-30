@@ -9,6 +9,7 @@
 package org.readium.navigator.web.reflowable.resource
 
 import android.annotation.SuppressLint
+import android.view.ActionMode
 import android.view.MotionEvent
 import android.view.View
 import androidx.compose.foundation.background
@@ -21,24 +22,36 @@ import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.DpOffset
+import androidx.compose.ui.unit.DpRect
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.zIndex
+import kotlinx.collections.immutable.ImmutableMap
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
+import org.readium.navigator.common.DecorationListener
 import org.readium.navigator.common.TapEvent
 import org.readium.navigator.web.internals.server.WebViewClient
 import org.readium.navigator.web.internals.util.AbsolutePaddingValues
 import org.readium.navigator.web.internals.util.absolutePadding
+import org.readium.navigator.web.internals.webapi.DecorationApi
 import org.readium.navigator.web.internals.webapi.DelegatingGesturesListener
 import org.readium.navigator.web.internals.webapi.DocumentStateApi
 import org.readium.navigator.web.internals.webapi.GesturesApi
+import org.readium.navigator.web.internals.webapi.SelectionApi
 import org.readium.navigator.web.internals.webview.RelaxedWebView
 import org.readium.navigator.web.internals.webview.WebView
 import org.readium.navigator.web.internals.webview.WebViewScrollController
 import org.readium.navigator.web.internals.webview.rememberWebViewState
 import org.readium.navigator.web.reflowable.css.ReadiumCssInjector
 import org.readium.navigator.web.reflowable.webapi.CssApi
+import org.readium.r2.navigator.Decoration
+import org.readium.r2.navigator.DecorationChange
+import org.readium.r2.navigator.changesByHref
+import org.readium.r2.navigator.html.HtmlDecorationTemplates
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Url
@@ -56,8 +69,13 @@ internal fun ReflowableResource(
     orientation: Orientation,
     layoutDirection: LayoutDirection,
     readiumCssInjector: ReadiumCssInjector,
+    decorationTemplates: HtmlDecorationTemplates,
+    decorations: ImmutableMap<String, List<Decoration>>,
+    actionModeCallback: ActionMode.Callback?,
+    onSelectionApiChanged: (SelectionApi?) -> Unit,
     onTap: (TapEvent) -> Unit,
     onLinkActivated: (Url, String) -> Unit,
+    onDecorationActivated: (DecorationListener.OnActivatedEvent) -> Unit,
     onProgressionChange: (Double) -> Unit,
     onDocumentResized: () -> Unit,
 ) {
@@ -84,6 +102,48 @@ internal fun ReflowableResource(
 
         val cssApi = remember(webViewState.webView) { mutableStateOf<CssApi?>(null) }
 
+        val decorationApi = remember(webViewState.webView) { mutableStateOf<DecorationApi?>(null) }
+
+        val selectionApi = remember(webViewState.webView) { mutableStateOf<SelectionApi?>(null) }
+
+        val decorations = remember(webViewState.webView) { mutableStateOf(decorations) }
+            .apply { value = decorations }
+
+        LaunchedEffect(decorationApi.value, decorations) {
+            decorationApi.value?.let { decorationApi ->
+                var lastDecorations = emptyMap<String, List<Decoration>>()
+                snapshotFlow { decorations.value }
+                    .onEach {
+                        for ((group, decos) in it.entries) {
+                            val lastInGroup = lastDecorations[group].orEmpty()
+                            for ((_, changes) in lastInGroup.changesByHref(decos)) {
+                                for (change in changes) {
+                                    when (change) {
+                                        is DecorationChange.Added -> {
+                                            val template = decorationTemplates[change.decoration.style::class]
+                                                ?: continue
+                                            decorationApi.addDecoration(change.decoration, template, group)
+                                        }
+                                        is DecorationChange.Moved -> {}
+                                        is DecorationChange.Removed -> {
+                                            decorationApi.removeDecoration(change.id, group)
+                                        }
+                                        is DecorationChange.Updated -> {
+                                            decorationApi.removeDecoration(change.decoration.id, group)
+                                            val template = decorationTemplates[change.decoration.style::class]
+                                                ?: continue
+                                            decorationApi.addDecoration(change.decoration, template, group)
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        lastDecorations = it
+                    }.launchIn(this)
+            }
+        }
+
         LaunchedEffect(webViewState.webView, onTap, onLinkActivated) {
             webViewState.webView?.let { webView ->
                 GesturesApi(
@@ -98,6 +158,28 @@ internal fun ReflowableResource(
                         },
                         onLinkActivatedDelegate = { href, outerHtml ->
                             onLinkActivated(publicationBaseUrl.relativize(href), outerHtml)
+                        },
+                        onDecorationActivatedDelegate = { id, group, rect, offset ->
+                            val decoration = decorations.value[group]?.firstOrNull { it.id == id }
+                                ?: return@DelegatingGesturesListener
+
+                            val shiftedOffset = DpOffset(
+                                x = offset.x + padding.left,
+                                y = offset.y + padding.top
+                            )
+                            val shiftedRect = DpRect(
+                                left = rect.left + padding.left,
+                                right = rect.right + padding.left,
+                                top = rect.top + padding.top,
+                                bottom = rect.bottom + padding.top,
+                            )
+                            val event = DecorationListener.OnActivatedEvent(
+                                decoration = decoration,
+                                group = group,
+                                rect = shiftedRect,
+                                offset = shiftedOffset
+                            )
+                            onDecorationActivated(event)
                         }
                     )
                 )
@@ -111,6 +193,16 @@ internal fun ReflowableResource(
                     onScriptsLoadedDelegate = {
                         scriptsLoaded.value = true
                         cssApi.value = CssApi(webView)
+                        decorationApi.value = DecorationApi(webView)
+                            .apply { registerTemplates(decorationTemplates) }
+                        selectionApi.value = SelectionApi(webView) { rect: DpRect ->
+                            DpRect(
+                                top = rect.top + padding.top,
+                                right = rect.right + padding.left,
+                                bottom = rect.bottom + padding.top,
+                                left = rect.left + padding.left
+                            )
+                        }
                     },
                     onDocumentLoadedAndSizedDelegate = {
                         Timber.d("resource ${resourceState.index} onDocumentLoadedAndResized")
@@ -147,6 +239,20 @@ internal fun ReflowableResource(
         LaunchedEffect(cssApi.value, readiumCssInjector) {
             cssApi.value?.setProperties(readiumCssInjector.userProperties, readiumCssInjector.rsProperties)
             // FIXME: resource is laid out again, so we should apply progression again
+        }
+
+        LaunchedEffect(decorationApi.value) {
+            decorationApi.value?.registerTemplates(decorationTemplates)
+        }
+
+        LaunchedEffect(webViewState.webView, actionModeCallback) {
+            webViewState.webView?.setCustomSelectionActionModeCallback(actionModeCallback)
+        }
+
+        LaunchedEffect(selectionApi, onSelectionApiChanged) {
+            snapshotFlow { selectionApi.value }
+                .onEach { onSelectionApiChanged(it) }
+                .launchIn(this)
         }
 
         // Hide content before initial position is settled

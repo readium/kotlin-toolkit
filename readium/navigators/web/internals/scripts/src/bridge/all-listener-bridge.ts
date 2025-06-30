@@ -1,9 +1,16 @@
+import { DecorationActivatedEvent } from "../common/decoration"
 import { GesturesListener } from "../common/gestures"
 import { AreaManager } from "../fixed/area-manager"
 
 export interface GesturesBridge {
   onTap(event: string): void
   onLinkActivated(href: string, outerHtml: string): void
+  onDecorationActivated(
+    id: string,
+    group: string,
+    rect: string,
+    offset: string
+  ): void
 }
 
 export interface TapEvent {
@@ -34,6 +41,25 @@ export class ReflowableListenerAdapter implements GesturesListener {
   }
   onLinkActivated(href: string, outerHtml: string) {
     this.gesturesBridge.onLinkActivated(href, outerHtml)
+  }
+
+  onDecorationActivated(event: DecorationActivatedEvent): void {
+    const offset = {
+      x:
+        (event.event.clientX - visualViewport!.offsetLeft) *
+        visualViewport!.scale,
+      y:
+        (event.event.clientY - visualViewport!.offsetTop) *
+        visualViewport!.scale,
+    }
+    const stringOffset = JSON.stringify(offset)
+    const stringRect = JSON.stringify(event.rect)
+    this.gesturesBridge.onDecorationActivated(
+      event.id,
+      event.group,
+      stringRect,
+      stringOffset
+    )
   }
 }
 

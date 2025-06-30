@@ -32,18 +32,27 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.zIndex
+import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import org.readium.demo.navigator.R
+import org.readium.demo.navigator.decorations.DecorationStylePageNumber
+import org.readium.demo.navigator.decorations.EditAnnotationDialog
+import org.readium.demo.navigator.decorations.EditAnnotationViewModel
+import org.readium.demo.navigator.decorations.EditHighlightPopup
+import org.readium.demo.navigator.decorations.EditHighlightViewModel
 import org.readium.demo.navigator.persistence.LocatorRepository
 import org.readium.demo.navigator.preferences.UserPreferences
 import org.readium.demo.navigator.util.launchWebBrowser
+import org.readium.navigator.common.DecorationController
+import org.readium.navigator.common.DecorationListener
 import org.readium.navigator.common.GoLocation
 import org.readium.navigator.common.InputListener
 import org.readium.navigator.common.Location
 import org.readium.navigator.common.NavigationController
 import org.readium.navigator.common.OverflowController
+import org.readium.navigator.common.SelectionController
 import org.readium.navigator.common.TapContext
 import org.readium.navigator.common.TapEvent
 import org.readium.navigator.common.defaultHyperlinkListener
@@ -52,7 +61,11 @@ import org.readium.navigator.web.fixedlayout.FixedWebRendition
 import org.readium.navigator.web.fixedlayout.FixedWebRenditionState
 import org.readium.navigator.web.reflowable.ReflowableWebRendition
 import org.readium.navigator.web.reflowable.ReflowableWebRenditionState
+import org.readium.navigator.web.reflowable.location.ReflowableWebLocatorAdapter
+import org.readium.r2.navigator.Decoration
 import org.readium.r2.shared.ExperimentalReadiumApi
+import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.publication.epub.pageList
 import org.readium.r2.shared.util.toUri
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -166,6 +179,84 @@ fun <L : Location, G : GoLocation, N : NavigationController<L, G>> Reader(
                 onExternalLinkActivated = { url, _ -> launchWebBrowser(context, url.toUri()) }
             )
 
+        if (readerState.renditionState is ReflowableWebRenditionState) {
+            val decorations = readerState.highlightsManager!!.decorations
+
+            LaunchedEffect(controllerNow) {
+                decorations
+                    .onEach {
+                        (controllerNow as? DecorationController)?.decorations["highlights"] = it
+                    }
+                    .launchIn(coroutineScope)
+            }
+
+            LaunchedEffect(controllerNow) {
+                val controller = controllerNow as? DecorationController
+                controller?.applyPageNumberDecorations(readerState.publication)
+            }
+        }
+
+        val showAnnotationDialog: MutableState<EditAnnotationViewModel?> =
+            remember { mutableStateOf(null) }
+
+        val showEditHighlightPopup: MutableState<EditHighlightViewModel?> =
+            remember { mutableStateOf(null) }
+
+        showAnnotationDialog.value?.let { viewModel ->
+            EditAnnotationDialog(
+                viewModel = viewModel,
+                onDismissRequest = { showAnnotationDialog.value = null }
+            )
+        }
+
+        showEditHighlightPopup.value?.let { viewModel ->
+            EditHighlightPopup(
+                viewModel = viewModel,
+                onDismissRequest = {
+                    showEditHighlightPopup.value = null
+                },
+                onEditNoteRequest = {
+                    showAnnotationDialog.value =
+                        EditAnnotationViewModel(viewModel.id, viewModel.highlightsManager)
+                    showEditHighlightPopup.value = null
+                }
+            )
+        }
+
+        val selectionActionMode = remember(controllerNow) {
+            (controllerNow as? SelectionController<*>)
+                ?.let {
+                    SelectionActionModeCallback(
+                        coroutineScope = coroutineScope,
+                        selectionController = it,
+                        highlightsManager = readerState.highlightsManager!!,
+                        onNoteAdded = { id ->
+                            showAnnotationDialog.value =
+                                EditAnnotationViewModel(id, readerState.highlightsManager)
+                        },
+                        reflowableWebLocatorAdapter = readerState.locatorAdapter as ReflowableWebLocatorAdapter
+                    )
+                }
+        }
+
+        val decorationsListener = remember {
+            object : DecorationListener {
+
+                override fun onDecorationActivated(event: DecorationListener.OnActivatedEvent) {
+                    if (event.group != "highlights") {
+                        return
+                    }
+
+                    showEditHighlightPopup.value =
+                        EditHighlightViewModel(
+                            id = event.decoration.id.split('-').first().toLong(),
+                            contentRect = event.rect!!,
+                            highlightsManager = readerState.highlightsManager!!
+                        )
+                }
+            }
+        }
+
         when (readerState.renditionState) {
             is FixedWebRenditionState -> {
                 FixedWebRendition(
@@ -180,7 +271,9 @@ fun <L : Location, G : GoLocation, N : NavigationController<L, G>> Reader(
                     modifier = Modifier.fillMaxSize(),
                     state = readerState.renditionState,
                     inputListener = inputListener,
-                    hyperlinkListener = hyperlinkListener
+                    hyperlinkListener = hyperlinkListener,
+                    decorationListener = decorationsListener,
+                    textSelectionActionModeCallback = selectionActionMode
                 )
             }
             /* is PdfNavigatorState<*, *> -> {
@@ -230,4 +323,28 @@ private fun TopBar(
             }
         )
     }
+}
+
+/**
+ * Will display margin labels next to page numbers in an EPUB publication with a `page-list`
+ * navigation document.
+ *
+ * See http://kb.daisy.org/publishing/docs/navigation/pagelist.html
+ */
+private fun DecorationController.applyPageNumberDecorations(
+    publication: Publication,
+) {
+    val decorations = publication.pageList
+        .mapIndexedNotNull { index, link ->
+            val label = link.title ?: return@mapIndexedNotNull null
+            val locator = publication.locatorFromLink(link) ?: return@mapIndexedNotNull null
+
+            Decoration(
+                id = "page-$index",
+                locator = locator,
+                style = DecorationStylePageNumber(label = label)
+            )
+        }
+
+    this.decorations["pageNumbers"] = decorations.toImmutableList()
 }

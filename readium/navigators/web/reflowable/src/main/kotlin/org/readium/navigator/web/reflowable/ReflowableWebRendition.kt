@@ -8,6 +8,7 @@ package org.readium.navigator.web.reflowable
 
 import android.annotation.SuppressLint
 import android.content.res.Configuration
+import android.view.ActionMode
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.ScrollableDefaults
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -35,14 +36,18 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
+import kotlin.collections.mapValues
+import kotlinx.collections.immutable.toImmutableMap
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import org.readium.navigator.common.DecorationListener
 import org.readium.navigator.common.HyperlinkListener
 import org.readium.navigator.common.HyperlinkLocation
 import org.readium.navigator.common.InputListener
 import org.readium.navigator.common.TapContext
 import org.readium.navigator.common.TapEvent
+import org.readium.navigator.common.defaultDecorationListener
 import org.readium.navigator.common.defaultHyperlinkListener
 import org.readium.navigator.common.defaultInputListener
 import org.readium.navigator.web.internals.gestures.toFling2DBehavior
@@ -69,9 +74,13 @@ public fun ReflowableWebRendition(
     windowInsets: WindowInsets = WindowInsets.displayCutout,
     inputListener: InputListener = defaultInputListener(state.controller),
     hyperlinkListener: HyperlinkListener = defaultHyperlinkListener(state.controller),
+    decorationListener: DecorationListener = defaultDecorationListener(state.controller),
+    textSelectionActionModeCallback: ActionMode.Callback? = null,
 ) {
     val layoutDirection =
         state.layoutDelegate.overflow.value.readingProgression.toLayoutDirection()
+
+    val actionModeCallback = rememberUpdatedState(textSelectionActionModeCallback)
 
     CompositionLocalProvider(LocalLayoutDirection provides layoutDirection) {
         BoxWithConstraints(
@@ -116,6 +125,8 @@ public fun ReflowableWebRendition(
 
             val hyperlinkListenerState = rememberUpdatedState(hyperlinkListener)
 
+            val decorationListenerState = rememberUpdatedState(decorationListener)
+
             val currentPageState = remember(state) { derivedStateOf { state.pagerState.currentPage } }
 
             fun currentLocation() =
@@ -154,6 +165,12 @@ public fun ReflowableWebRendition(
                 beyondViewportPageCount = 3,
                 orientation = state.layoutDelegate.orientation,
             ) { index ->
+                val href = state.publication.readingOrder.items[index].href
+
+                val decorations = state.decorationDelegate.decorations
+                    .mapValues { it.value.filter { it.locator.href == href } }
+                    .toImmutableMap()
+
                 ReflowableResource(
                     resourceState = state.resourceStates[index],
                     publicationBaseUrl = WebViewServer.publicationBaseHref,
@@ -164,6 +181,10 @@ public fun ReflowableWebRendition(
                     scroll = state.layoutDelegate.settings.value.scroll,
                     orientation = state.layoutDelegate.orientation,
                     readiumCssInjector = state.readiumCssInjector.value,
+                    decorationTemplates = state.decorationDelegate.decorationTemplates,
+                    decorations = decorations,
+                    actionModeCallback = actionModeCallback.value,
+                    onSelectionApiChanged = { state.selectionDelegate.selectionApis[index] = it },
                     onTap = { tapEvent ->
                         inputListenerState.value.onTap(tapEvent, TapContext(viewportSize.value))
                     },
@@ -176,6 +197,9 @@ public fun ReflowableWebRendition(
                                 listener = hyperlinkListenerState.value
                             )
                         }
+                    },
+                    onDecorationActivated = { event ->
+                        decorationListenerState.value.onDecorationActivated(event)
                     },
                     onProgressionChange = {
                         if (index == currentPageState.value) {

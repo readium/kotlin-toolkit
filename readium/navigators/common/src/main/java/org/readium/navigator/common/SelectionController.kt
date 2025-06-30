@@ -6,7 +6,6 @@
 
 package org.readium.navigator.common
 
-import androidx.compose.runtime.State
 import androidx.compose.ui.unit.DpRect
 import org.readium.r2.shared.ExperimentalReadiumApi
 
@@ -14,10 +13,10 @@ import org.readium.r2.shared.ExperimentalReadiumApi
  * A navigator supporting user selection.
  */
 @ExperimentalReadiumApi
-public interface Selectable<S : SelectionLocation> {
+public interface SelectionController<S : SelectionLocation> {
 
-    /** Currently selected content. */
-    public suspend fun currentSelection(): State<Selection<S>?>
+    /** Gets the currently selected content at the call time or a bit later. */
+    public suspend fun currentSelection(): Selection<S>?
 
     /** Clears the current selection. */
     public fun clearSelection()
@@ -34,7 +33,7 @@ public interface Selectable<S : SelectionLocation> {
 public data class Selection<S : SelectionLocation>(
     val text: String,
     val rect: DpRect,
-    val position: S,
+    val location: S,
 )
 
 @ExperimentalReadiumApi
