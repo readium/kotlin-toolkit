@@ -45,7 +45,7 @@ junit = "4.13.2"
 
 kotlinx-coroutines = "1.10.2"
 kotlinx-coroutines-test = "1.10.2"
-kotlinx-datetime = "0.6.2"
+kotlinx-datetime = "0.7.0"
 kotlinx-serialization-json = "1.8.1"
 
 # Make sure to align with the Kotlin version.
