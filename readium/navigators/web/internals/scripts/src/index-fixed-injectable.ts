@@ -8,7 +8,10 @@
  * Script loaded by fixed layout resources.
  */
 
-import { DecorationActivatedEvent } from "./common/decoration"
+import {
+  DecorationActivatedEvent,
+  DecorationManager,
+} from "./common/decoration"
 import { GesturesDetector, GesturesListener } from "./common/gestures"
 import { Size } from "./common/types"
 import { IframeMessageSender } from "./fixed/iframe-message"
@@ -28,8 +31,11 @@ class MessagingGesturesListener implements GesturesListener {
     this.messageSender = messageSender
   }
 
-  onTap(event: MouseEvent): void {
-    this.messageSender.send({ kind: "tap", x: event.clientX, y: event.clientY })
+  onTap(gestureEvent: MouseEvent): void {
+    const event = {
+      offset: { x: gestureEvent.clientX, y: gestureEvent.clientY },
+    }
+    this.messageSender.send({ kind: "tap", event: event })
   }
 
   onLinkActivated(href: string, outerHtml: string): void {
@@ -41,7 +47,13 @@ class MessagingGesturesListener implements GesturesListener {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  onDecorationActivated(event: DecorationActivatedEvent): void {
+  onDecorationActivated(gestureEvent: DecorationActivatedEvent): void {
+    const event = {
+      id: gestureEvent.id,
+      group: gestureEvent.group,
+      rect: gestureEvent.rect,
+      offset: { x: gestureEvent.event.clientX, y: gestureEvent.event.clientY },
+    }
     this.messageSender.send({
       kind: "decorationActivated",
       event: event,
@@ -50,7 +62,8 @@ class MessagingGesturesListener implements GesturesListener {
 }
 
 const messagingListener = new MessagingGesturesListener(messageSender)
-new GesturesDetector(window, messagingListener)
+const decorationManager = new DecorationManager(window)
+new GesturesDetector(window, messagingListener, decorationManager)
 
 function parseContentSize(document: Document): Size | undefined {
   const viewport = document.querySelector("meta[name=viewport]")

@@ -2,10 +2,10 @@ import { Insets, Size } from "../common/types"
 import { computeScale, Fit } from "../util/fit"
 import { PageManager } from "./page-manager"
 import { ViewportStringBuilder } from "../util/viewport"
-import { AreaManager } from "./area-manager"
+import { AreaManager, shiftOffset, shiftRect } from "./area-manager"
 import { GesturesDetector } from "../common/gestures"
-import { TapEvent } from "../common/events"
-import { DecorationActivatedEvent } from "../common/decoration"
+import { TapEvent, DecorationActivatedEvent } from "./events"
+import { DecorationActivatedEvent as OriginalDecorationActivated } from "../common/decoration"
 
 export class SingleAreaManager {
   private readonly metaViewport: HTMLMetaElement
@@ -38,48 +38,53 @@ export class SingleAreaManager {
 
     const wrapperGesturesListener = {
       onTap: (event: MouseEvent) => {
-        const tapEvent = {
+        const offset = {
           x:
             (event.clientX - visualViewport!.offsetLeft) *
             visualViewport!.scale,
           y:
             (event.clientY - visualViewport!.offsetTop) * visualViewport!.scale,
         }
-        listener.onTap(tapEvent)
+        listener.onTap({ offset: offset })
       },
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       onLinkActivated: (_: string) => {
         throw Error("No interactive element in the root document.")
       },
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      onDecorationActivated: (_: DecorationActivatedEvent) => {
+      onDecorationActivated: (_: OriginalDecorationActivated) => {
         throw Error("No decoration in the root document.")
       },
     }
     new GesturesDetector(window, wrapperGesturesListener)
 
     this.metaViewport = metaViewport
+
     const pageListener = {
       onIframeLoaded: () => {
         this.onIframeLoaded()
       },
       onTap: (event: TapEvent) => {
         const boundingRect = iframe.getBoundingClientRect()
-        const tapEvent = {
-          x:
-            (event.x + boundingRect.left - visualViewport!.offsetLeft) *
-            visualViewport!.scale,
-          y:
-            (event.y + boundingRect.top - visualViewport!.offsetTop) *
-            visualViewport!.scale,
-        }
-        listener.onTap(tapEvent)
+        const shiftedOffset = shiftOffset(event.offset, boundingRect)
+        listener.onTap({ offset: shiftedOffset })
       },
       onLinkActivated: (href: string, outerHtml: string) => {
         listener.onLinkActivated(href, outerHtml)
       },
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      onDecorationActivated: (event: DecorationActivatedEvent) => {},
+      onDecorationActivated: (event: DecorationActivatedEvent) => {
+        const boundingRect = iframe.getBoundingClientRect()
+        const shiftedOffset = shiftOffset(event.offset, boundingRect)
+        const shiftedRect = shiftRect(event.rect, boundingRect)
+        const shiftedEvent = {
+          id: event.id,
+          group: event.group,
+          rect: shiftedRect,
+          offset: shiftedOffset,
+        }
+        listener.onDecorationActivated(shiftedEvent)
+      },
     }
     this.page = new PageManager(window, iframe, pageListener)
   }

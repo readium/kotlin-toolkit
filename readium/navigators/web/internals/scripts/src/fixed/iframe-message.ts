@@ -1,5 +1,5 @@
-import { DecorationActivatedEvent } from "../common/decoration"
 import { Size } from "../common/types"
+import { DecorationActivatedEvent, TapEvent } from "./events"
 
 export interface ContentSizeMessage {
   kind: "contentSize"
@@ -8,8 +8,7 @@ export interface ContentSizeMessage {
 
 export interface TapMessage {
   kind: "tap"
-  x: number
-  y: number
+  event: TapEvent
 }
 
 export interface LinkActivatedMessage {
