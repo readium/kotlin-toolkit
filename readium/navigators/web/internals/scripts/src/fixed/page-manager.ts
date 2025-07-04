@@ -1,4 +1,4 @@
-import { Margins, Size } from "../common/types"
+import { Margins, Size } from "../common/geometry"
 import { DecorationActivatedEvent, TapEvent } from "./events"
 import { IframeMessage, LinkActivatedMessage } from "./iframe-message"
 

@@ -51,7 +51,7 @@ public class WebViewServer(
     }
 
     /**
-     * Serves the requests of the navigator web views.
+     * Serves the requests of the navigator web view    s.
      *
      * https://readium/publication/ serves the publication resources through its fetcher.
      * https://readium/assets/ serves the application assets.

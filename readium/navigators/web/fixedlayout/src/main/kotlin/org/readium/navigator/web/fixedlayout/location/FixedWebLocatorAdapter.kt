@@ -16,7 +16,7 @@ import org.readium.r2.shared.publication.indexOfFirstWithHref
 @ExperimentalReadiumApi
 public class FixedWebLocatorAdapter internal constructor(
     private val publication: Publication,
-) : LocatorAdapter<FixedWebLocation, FixedWebGoLocation> {
+) : LocatorAdapter<FixedWebLocation, FixedWebGoLocation, FixedWebSelectionLocation> {
 
     public override fun Locator.toGoLocation(): FixedWebGoLocation =
         FixedWebGoLocation(href)
@@ -27,4 +27,14 @@ public class FixedWebLocatorAdapter internal constructor(
         return publication.locatorFromLink(Link(href))!!
             .copyWithLocations(position = position, totalProgression = totalProgression)
     }
+
+    override fun FixedWebSelectionLocation.toLocator(): Locator =
+        publication.locatorFromLink(Link(href))!!
+            .copy(
+                text = Locator.Text(
+                    highlight = selectedText,
+                    before = textBefore,
+                    after = textAfter
+                )
+            )
 }

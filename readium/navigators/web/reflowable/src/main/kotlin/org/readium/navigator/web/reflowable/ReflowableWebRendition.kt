@@ -80,8 +80,6 @@ public fun ReflowableWebRendition(
     val layoutDirection =
         state.layoutDelegate.overflow.value.readingProgression.toLayoutDirection()
 
-    val actionModeCallback = rememberUpdatedState(textSelectionActionModeCallback)
-
     CompositionLocalProvider(LocalLayoutDirection provides layoutDirection) {
         BoxWithConstraints(
             modifier = modifier.fillMaxSize(),
@@ -183,7 +181,7 @@ public fun ReflowableWebRendition(
                     readiumCssInjector = state.readiumCssInjector.value,
                     decorationTemplates = state.decorationDelegate.decorationTemplates,
                     decorations = decorations,
-                    actionModeCallback = actionModeCallback.value,
+                    actionModeCallback = textSelectionActionModeCallback,
                     onSelectionApiChanged = { state.selectionDelegate.selectionApis[index] = it },
                     onTap = { tapEvent ->
                         inputListenerState.value.onTap(tapEvent, TapContext(viewportSize.value))

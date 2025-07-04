@@ -37,16 +37,16 @@ import org.readium.navigator.web.internals.server.WebViewServer.Companion.assets
 import org.readium.navigator.web.internals.util.HyperlinkProcessor
 import org.readium.navigator.web.internals.util.toLayoutDirection
 import org.readium.navigator.web.internals.util.toOrientation
-import org.readium.navigator.web.internals.webapi.SelectionApi
+import org.readium.navigator.web.internals.webapi.ReflowableSelectionApi
 import org.readium.navigator.web.internals.webview.WebViewScrollController
 import org.readium.navigator.web.reflowable.css.FontFamilyDeclaration
 import org.readium.navigator.web.reflowable.css.ReadiumCssInjector
 import org.readium.navigator.web.reflowable.css.RsProperties
 import org.readium.navigator.web.reflowable.css.withSettings
 import org.readium.navigator.web.reflowable.injection.injectHtmlReflowable
-import org.readium.navigator.web.reflowable.location.ReflowableSelectionLocation
 import org.readium.navigator.web.reflowable.location.ReflowableWebGoLocation
 import org.readium.navigator.web.reflowable.location.ReflowableWebLocation
+import org.readium.navigator.web.reflowable.location.ReflowableWebSelectionLocation
 import org.readium.navigator.web.reflowable.preferences.ReflowableWebSettings
 import org.readium.navigator.web.reflowable.resource.ReflowableResourceState
 import org.readium.r2.navigator.Decoration
@@ -210,7 +210,7 @@ public class ReflowableWebRenditionController internal constructor(
     OverflowController by navigationDelegate,
     SettingsController<ReflowableWebSettings> by layoutDelegate,
     DecorationController by decorationDelegate,
-    SelectionController<ReflowableSelectionLocation> by selectionDelegate
+    SelectionController<ReflowableWebSelectionLocation> by selectionDelegate
 
 @OptIn(ExperimentalReadiumApi::class, InternalReadiumApi::class)
 internal class ReflowableLayoutDelegate(
@@ -360,12 +360,12 @@ internal class ReflowableDecorationDelegate(
 internal class ReflowableSelectionDelegate(
     private val readingOrder: ReflowableWebPublication.ReadingOrder,
     private val pagerState: PagerState,
-) : SelectionController<ReflowableSelectionLocation> {
+) : SelectionController<ReflowableWebSelectionLocation> {
 
-    val selectionApis: SnapshotStateMap<Int, SelectionApi?> =
+    val selectionApis: SnapshotStateMap<Int, ReflowableSelectionApi?> =
         mutableStateMapOf()
 
-    override suspend fun currentSelection(): Selection<ReflowableSelectionLocation>? {
+    override suspend fun currentSelection(): Selection<ReflowableWebSelectionLocation>? {
         val visiblePages = pagerState.layoutInfo.visiblePagesInfo.map { it.index }
         val (index, selection) = visiblePages
             .mapNotNull { index -> selectionApis[index]?.let { index to it } }
@@ -377,7 +377,7 @@ internal class ReflowableSelectionDelegate(
         return Selection(
             selection.selectedText,
             selection.selectionRect,
-            ReflowableSelectionLocation(
+            ReflowableWebSelectionLocation(
                 href = href,
                 selectedText = selection.selectedText,
                 textBefore = selection.textBefore,
@@ -387,6 +387,8 @@ internal class ReflowableSelectionDelegate(
     }
 
     override fun clearSelection() {
-        TODO("Not yet implemented")
+        for (api in selectionApis.values) {
+            api?.clearSelection()
+        }
     }
 }

@@ -17,17 +17,18 @@ import org.readium.navigator.common.LocatorAdapter
 import org.readium.navigator.common.NavigationController
 import org.readium.navigator.common.PreferencesEditor
 import org.readium.navigator.common.RenditionState
+import org.readium.navigator.common.SelectionLocation
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.util.AbsoluteUrl
 
-data class ReaderState<L : Location, G : GoLocation, N : NavigationController<L, G>>(
+data class ReaderState<L : Location, G : GoLocation, S : SelectionLocation, N : NavigationController<L, G>>(
     val url: AbsoluteUrl,
     val coroutineScope: CoroutineScope,
     val publication: Publication,
     val renditionState: RenditionState<N>,
     val preferencesEditor: PreferencesEditor<*, *>,
-    val locatorAdapter: LocatorAdapter<L, G>,
+    val locatorAdapter: LocatorAdapter<L, G, S>,
     val onControllerAvailable: (N) -> Unit,
     val highlightsManager: HighlightsManager? = null,
 ) {

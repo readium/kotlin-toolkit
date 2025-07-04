@@ -33,7 +33,7 @@ public data class ReflowableWebLocation(
 ) : Location
 
 @ExperimentalReadiumApi
-public data class ReflowableSelectionLocation(
+public data class ReflowableWebSelectionLocation(
     val href: Url,
     val selectedText: String,
     val textBefore: String,

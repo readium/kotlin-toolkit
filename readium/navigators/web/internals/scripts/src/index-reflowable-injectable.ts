@@ -8,13 +8,13 @@
  * Script loaded by reflowable resources.
  */
 
-import { DecorationsBridge } from "./bridge/all-decoration-bridge"
+import { ReflowableDecorationsBridge } from "./bridge/all-decoration-bridge"
 import {
   ReflowableListenerAdapter,
   GesturesBridge,
 } from "./bridge/all-listener-bridge"
 import { DocumentBridge } from "./bridge/all-listener-bridge"
-import { SelectionBridge } from "./bridge/all-selection-bridge"
+import { ReflowableSelectionBridge } from "./bridge/all-selection-bridge"
 import { CssBridge } from "./bridge/reflowable-css-bridge"
 import { DecorationManager } from "./common/decoration"
 import { GesturesDetector } from "./common/gestures"
@@ -23,11 +23,13 @@ import { appendVirtualColumnIfNeeded } from "./util/columns"
 
 declare global {
   interface Window {
+    // Web APIs available for native code
+    readiumcss: CssBridge
+    decorations: ReflowableDecorationsBridge
+    selection: ReflowableSelectionBridge
+    // Native APIs available for web code
     documentState: DocumentBridge
     gestures: GesturesBridge
-    readiumcss: CssBridge
-    decorations: DecorationsBridge
-    selection: SelectionBridge
   }
 }
 
@@ -37,9 +39,12 @@ const decorationManager = new DecorationManager(window)
 
 Window.prototype.readiumcss = new CssBridge(window.document)
 
-Window.prototype.decorations = new DecorationsBridge(window, decorationManager)
+Window.prototype.decorations = new ReflowableDecorationsBridge(
+  window,
+  decorationManager
+)
 
-Window.prototype.selection = new SelectionBridge(
+Window.prototype.selection = new ReflowableSelectionBridge(
   window,
   new SelectionManager(window)
 )

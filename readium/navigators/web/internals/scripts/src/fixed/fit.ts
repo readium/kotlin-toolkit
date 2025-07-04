@@ -1,4 +1,4 @@
-import { Size } from "../common/types"
+import { Size } from "../common/geometry"
 
 export const enum Fit {
   Contain = "contain",

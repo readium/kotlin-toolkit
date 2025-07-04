@@ -53,6 +53,7 @@ import org.readium.navigator.common.Location
 import org.readium.navigator.common.NavigationController
 import org.readium.navigator.common.OverflowController
 import org.readium.navigator.common.SelectionController
+import org.readium.navigator.common.SelectionLocation
 import org.readium.navigator.common.TapContext
 import org.readium.navigator.common.TapEvent
 import org.readium.navigator.common.defaultHyperlinkListener
@@ -61,7 +62,6 @@ import org.readium.navigator.web.fixedlayout.FixedWebRendition
 import org.readium.navigator.web.fixedlayout.FixedWebRenditionState
 import org.readium.navigator.web.reflowable.ReflowableWebRendition
 import org.readium.navigator.web.reflowable.ReflowableWebRenditionState
-import org.readium.navigator.web.reflowable.location.ReflowableWebLocatorAdapter
 import org.readium.r2.navigator.Decoration
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Publication
@@ -70,8 +70,8 @@ import org.readium.r2.shared.util.toUri
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun <L : Location, G : GoLocation, N : NavigationController<L, G>> Reader(
-    readerState: ReaderState<L, G, N>,
+fun <L : Location, G : GoLocation, S : SelectionLocation, N : NavigationController<L, G>> Reader(
+    readerState: ReaderState<L, G, S, N>,
     fullScreenState: MutableState<Boolean>,
 ) {
     val coroutineScope = rememberCoroutineScope()
@@ -179,20 +179,14 @@ fun <L : Location, G : GoLocation, N : NavigationController<L, G>> Reader(
                 onExternalLinkActivated = { url, _ -> launchWebBrowser(context, url.toUri()) }
             )
 
-        if (readerState.renditionState is ReflowableWebRenditionState) {
-            val decorations = readerState.highlightsManager!!.decorations
-
-            LaunchedEffect(controllerNow) {
-                decorations
+        LaunchedEffect(controllerNow) {
+            (controllerNow as? DecorationController)?.let { decoController ->
+                readerState.highlightsManager!!.decorations
                     .onEach {
-                        (controllerNow as? DecorationController)?.decorations["highlights"] = it
-                    }
-                    .launchIn(coroutineScope)
-            }
+                        decoController.decorations["highlights"] = it
+                    }.launchIn(coroutineScope)
 
-            LaunchedEffect(controllerNow) {
-                val controller = controllerNow as? DecorationController
-                controller?.applyPageNumberDecorations(readerState.publication)
+                decoController.applyPageNumberDecorations(readerState.publication)
             }
         }
 
@@ -224,7 +218,7 @@ fun <L : Location, G : GoLocation, N : NavigationController<L, G>> Reader(
         }
 
         val selectionActionMode = remember(controllerNow) {
-            (controllerNow as? SelectionController<*>)
+            (controllerNow as? SelectionController<S>)
                 ?.let {
                     SelectionActionModeCallback(
                         coroutineScope = coroutineScope,
@@ -234,7 +228,10 @@ fun <L : Location, G : GoLocation, N : NavigationController<L, G>> Reader(
                             showAnnotationDialog.value =
                                 EditAnnotationViewModel(id, readerState.highlightsManager)
                         },
-                        reflowableWebLocatorAdapter = readerState.locatorAdapter as ReflowableWebLocatorAdapter
+                        onAnyHighlightAdded = {
+                            it.clearSelection()
+                        },
+                        locatorAdapter = readerState.locatorAdapter
                     )
                 }
         }
@@ -263,7 +260,8 @@ fun <L : Location, G : GoLocation, N : NavigationController<L, G>> Reader(
                     modifier = Modifier.fillMaxSize(),
                     state = readerState.renditionState,
                     inputListener = inputListener,
-                    hyperlinkListener = hyperlinkListener
+                    hyperlinkListener = hyperlinkListener,
+                    textSelectionActionModeCallback = selectionActionMode
                 )
             }
             is ReflowableWebRenditionState -> {

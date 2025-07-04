@@ -13,13 +13,20 @@ import {
   DecorationManager,
 } from "./common/decoration"
 import { GesturesDetector, GesturesListener } from "./common/gestures"
-import { Size } from "./common/types"
+import { SelectionManager } from "./common/selection"
+import { Size } from "./common/geometry"
+import { FixedInitializerIframeSide } from "./fixed/comm-initialization"
 import { IframeMessageSender } from "./fixed/iframe-message"
 import { parseViewportString } from "./util/viewport"
 
-const messageChannel = new MessageChannel()
-window.parent.postMessage("Init", "*", [messageChannel.port2])
-const messageSender = new IframeMessageSender(messageChannel.port1)
+const initializer = new FixedInitializerIframeSide(window)
+const messageSender = initializer.initAreaManager()
+
+const selectionManager = new SelectionManager(window)
+initializer.initSelection(selectionManager)
+
+const decorationManager = new DecorationManager(window)
+initializer.initDecorations(decorationManager)
 
 const viewportSize = parseContentSize(window.document)
 messageSender.send({ kind: "contentSize", size: viewportSize })
@@ -62,7 +69,7 @@ class MessagingGesturesListener implements GesturesListener {
 }
 
 const messagingListener = new MessagingGesturesListener(messageSender)
-const decorationManager = new DecorationManager(window)
+
 new GesturesDetector(window, messagingListener, decorationManager)
 
 function parseContentSize(document: Document): Size | undefined {

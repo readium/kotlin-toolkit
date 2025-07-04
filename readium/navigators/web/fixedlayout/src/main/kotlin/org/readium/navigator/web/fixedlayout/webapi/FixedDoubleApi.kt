@@ -32,8 +32,8 @@ internal class FixedDoubleApi(
     }
 
     fun loadSpread(spread: DoubleViewportSpread) {
-        val leftUrl = spread.leftPage?.let { WebViewServer.Companion.publicationBaseHref.resolve(it.href) }
-        val rightUrl = spread.rightPage?.let { WebViewServer.Companion.publicationBaseHref.resolve(it.href) }
+        val leftUrl = spread.leftPage?.let { WebViewServer.publicationBaseHref.resolve(it.href) }
+        val rightUrl = spread.rightPage?.let { WebViewServer.publicationBaseHref.resolve(it.href) }
         val argument = buildList {
             leftUrl?.let { add("left: `$it`") }
             rightUrl?.let { add("right: `$it`") }

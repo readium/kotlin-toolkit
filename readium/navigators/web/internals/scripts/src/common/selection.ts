@@ -4,12 +4,14 @@
 //  available in the top-level LICENSE file of the project.
 //
 
-import { domRectToRect, Rect } from "../util/rect"
+import { domRectToRect } from "../util/rect"
 import { log } from "../util/log"
 import { TextRange } from "../vendor/hypothesis/annotator/anchoring/text-range"
 
 // Polyfill for Android API 26
 import matchAll from "string.prototype.matchall"
+import { Rect } from "./geometry"
+import { rectToParentCoordinates } from "./geometry"
 matchAll.shim()
 
 export interface SelectionListener {
@@ -24,9 +26,24 @@ export interface Selection {
   selectionRect: Rect
 }
 
-export class SelectionManager {
-  //private readonly listener: SelectionListener
+export function selectionToParentCoordinates(
+  selection: Selection,
+  iframe: HTMLIFrameElement
+): Selection {
+  const boundingRect = iframe.getBoundingClientRect()
+  const shiftedRect = rectToParentCoordinates(
+    selection!.selectionRect,
+    boundingRect
+  )
+  return {
+    selectedText: selection?.selectedText,
+    selectionRect: shiftedRect,
+    textBefore: selection.textBefore,
+    textAfter: selection.textAfter,
+  }
+}
 
+export class SelectionManager {
   private readonly window: Window
 
   isSelecting = false
@@ -53,6 +70,10 @@ export class SelectionManager {
     )*/
   }
 
+  clearSelection() {
+    this.window.getSelection()?.removeAllRanges()
+  }
+
   getCurrentSelection(): Selection | null {
     const text = this.getCurrentSelectionText()
     if (!text) {
@@ -69,7 +90,7 @@ export class SelectionManager {
 
   private getSelectionRect(): Rect {
     try {
-      const selection = window.getSelection()!
+      const selection = this.window.getSelection()!
       const range = selection.getRangeAt(0)
       return domRectToRect(range.getBoundingClientRect())
     } catch (e) {
@@ -80,7 +101,7 @@ export class SelectionManager {
   }
 
   private getCurrentSelectionText() {
-    const selection = window.getSelection()!
+    const selection = this.window.getSelection()!
 
     if (selection.isCollapsed) {
       return undefined

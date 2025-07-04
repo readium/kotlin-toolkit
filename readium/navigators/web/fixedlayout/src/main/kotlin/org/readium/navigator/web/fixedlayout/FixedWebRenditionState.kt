@@ -12,24 +12,46 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.snapshots.SnapshotStateMap
+import kotlin.coroutines.coroutineContext
+import kotlin.reflect.KClass
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import org.readium.navigator.common.DecorationController
 import org.readium.navigator.common.HyperlinkLocation
 import org.readium.navigator.common.NavigationController
 import org.readium.navigator.common.Overflow
 import org.readium.navigator.common.OverflowController
 import org.readium.navigator.common.RenditionState
+import org.readium.navigator.common.Selection
+import org.readium.navigator.common.SelectionController
 import org.readium.navigator.common.SettingsController
 import org.readium.navigator.common.SimpleOverflow
 import org.readium.navigator.web.fixedlayout.injection.injectHtmlFixedLayout
+import org.readium.navigator.web.fixedlayout.layout.DoubleViewportSpread
 import org.readium.navigator.web.fixedlayout.layout.Layout
 import org.readium.navigator.web.fixedlayout.layout.LayoutResolver
+import org.readium.navigator.web.fixedlayout.layout.Page
+import org.readium.navigator.web.fixedlayout.layout.SingleViewportSpread
 import org.readium.navigator.web.fixedlayout.location.FixedWebGoLocation
 import org.readium.navigator.web.fixedlayout.location.FixedWebLocation
+import org.readium.navigator.web.fixedlayout.location.FixedWebSelectionLocation
 import org.readium.navigator.web.fixedlayout.preferences.FixedWebSettings
 import org.readium.navigator.web.internals.server.WebViewClient
 import org.readium.navigator.web.internals.server.WebViewServer
 import org.readium.navigator.web.internals.server.WebViewServer.Companion.assetsBaseHref
 import org.readium.navigator.web.internals.util.HyperlinkProcessor
+import org.readium.navigator.web.internals.webapi.FixedDoubleSelectionApi
+import org.readium.navigator.web.internals.webapi.FixedSelectionApi
+import org.readium.navigator.web.internals.webapi.FixedSingleSelectionApi
+import org.readium.navigator.web.internals.webapi.Iframe
+import org.readium.r2.navigator.Decoration
+import org.readium.r2.navigator.html.HtmlDecorationTemplates
 import org.readium.r2.navigator.preferences.Axis
 import org.readium.r2.navigator.preferences.Fit
 import org.readium.r2.shared.ExperimentalReadiumApi
@@ -46,6 +68,7 @@ public class FixedWebRenditionState internal constructor(
     disableSelection: Boolean,
     initialSettings: FixedWebSettings,
     initialLocation: FixedWebGoLocation,
+    decorationTemplates: HtmlDecorationTemplates,
     internal val preloadedData: FixedWebPreloadedData,
 ) : RenditionState<FixedWebRenditionController> {
 
@@ -98,6 +121,15 @@ public class FixedWebRenditionState internal constructor(
         )
     }
 
+    internal val selectionDelegate: FixedSelectionDelegate =
+        FixedSelectionDelegate(
+            pagerState = pagerState,
+            layout = layoutDelegate.layout
+        )
+
+    internal val decorationDelegate: FixedDecorationDelegate =
+        FixedDecorationDelegate(decorationTemplates)
+
     internal lateinit var navigationDelegate: NavigationDelegate
 
     internal fun initController(location: FixedWebLocation) {
@@ -111,7 +143,9 @@ public class FixedWebRenditionState internal constructor(
         controllerState.value =
             FixedWebRenditionController(
                 navigationDelegate,
-                layoutDelegate
+                layoutDelegate,
+                decorationDelegate,
+                selectionDelegate
             )
         navigationDelegate.updateLocation(location)
     }
@@ -122,9 +156,13 @@ public class FixedWebRenditionState internal constructor(
 public class FixedWebRenditionController internal constructor(
     private val navigationDelegate: NavigationDelegate,
     layoutDelegate: LayoutDelegate,
+    decorationDelegate: FixedDecorationDelegate,
+    selectionDelegate: FixedSelectionDelegate,
 ) : NavigationController<FixedWebLocation, FixedWebGoLocation> by navigationDelegate,
     OverflowController by navigationDelegate,
-    SettingsController<FixedWebSettings> by layoutDelegate
+    SettingsController<FixedWebSettings> by layoutDelegate,
+    SelectionController<FixedWebSelectionLocation> by selectionDelegate,
+    DecorationController by decorationDelegate
 
 internal data class FixedWebPreloadedData(
     val fixedSingleContent: String,
@@ -209,6 +247,88 @@ internal class NavigationDelegate(
     override suspend fun moveBackward() {
         if (canMoveBackward) {
             pagerState.scrollToPage(pagerState.currentPage - 1)
+        }
+    }
+}
+
+internal class FixedDecorationDelegate(
+    internal val decorationTemplates: HtmlDecorationTemplates,
+) : DecorationController {
+
+    override val decorations: MutableMap<String, ImmutableList<Decoration>> =
+        mutableStateMapOf()
+
+    override fun <T : Decoration.Style> supportsDecorationStyle(style: KClass<T>): Boolean {
+        TODO("Not yet implemented")
+    }
+}
+
+@OptIn(ExperimentalReadiumApi::class)
+internal class FixedSelectionDelegate(
+    private val pagerState: PagerState,
+    private val layout: State<Layout>,
+) : SelectionController<FixedWebSelectionLocation> {
+
+    val selectionApis: SnapshotStateMap<Int, FixedSelectionApi?> =
+        mutableStateMapOf()
+
+    override suspend fun currentSelection(): Selection<FixedWebSelectionLocation>? {
+        val visiblePages = pagerState.layoutInfo.visiblePagesInfo.map { it.index }
+        val coroutineScope = CoroutineScope(coroutineContext + SupervisorJob())
+        val (page, selection) = visiblePages
+            .mapNotNull { index -> selectionApis[index]?.let { index to it } }
+            .map { (index, api) ->
+                coroutineScope.async {
+                    api.getCurrentSelection(index, layout.value)
+                }
+            }.awaitAll()
+            .filterNotNull()
+            .firstOrNull()
+            ?: return null
+
+        return Selection(
+            selection.selectedText,
+            selection.selectionRect,
+            FixedWebSelectionLocation(
+                href = page.href,
+                selectedText = selection.selectedText,
+                textBefore = selection.textBefore,
+                textAfter = selection.textAfter
+            )
+        )
+    }
+
+    private suspend fun FixedSelectionApi.getCurrentSelection(
+        index: Int,
+        layout: Layout,
+    ): Pair<Page, org.readium.navigator.web.internals.webapi.Selection>? = when (this) {
+        is FixedDoubleSelectionApi -> {
+            val (iframe, selection) = getCurrentSelection() ?: return null
+            val spread = layout.spreads[index] as DoubleViewportSpread
+            val page = when (iframe) {
+                Iframe.Left -> spread.leftPage!!
+                Iframe.Right -> spread.rightPage!!
+            }
+            page to selection
+        }
+        is FixedSingleSelectionApi -> {
+            val selection = getCurrentSelection() ?: return null
+            val page = (layout.spreads[index] as SingleViewportSpread).page
+            page to selection
+        }
+    }
+
+    override fun clearSelection() {
+        for (api in selectionApis.values) {
+            when (api) {
+                is FixedDoubleSelectionApi -> {
+                    api.clearSelection()
+                }
+                is FixedSingleSelectionApi -> {
+                    api.clearSelection()
+                }
+                null -> {}
+            }
         }
     }
 }

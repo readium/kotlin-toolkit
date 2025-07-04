@@ -37,11 +37,11 @@ import org.readium.navigator.common.TapEvent
 import org.readium.navigator.web.internals.server.WebViewClient
 import org.readium.navigator.web.internals.util.AbsolutePaddingValues
 import org.readium.navigator.web.internals.util.absolutePadding
-import org.readium.navigator.web.internals.webapi.DecorationApi
 import org.readium.navigator.web.internals.webapi.DelegatingGesturesListener
 import org.readium.navigator.web.internals.webapi.DocumentStateApi
 import org.readium.navigator.web.internals.webapi.GesturesApi
-import org.readium.navigator.web.internals.webapi.SelectionApi
+import org.readium.navigator.web.internals.webapi.ReflowableDecorationApi
+import org.readium.navigator.web.internals.webapi.ReflowableSelectionApi
 import org.readium.navigator.web.internals.webview.RelaxedWebView
 import org.readium.navigator.web.internals.webview.WebView
 import org.readium.navigator.web.internals.webview.WebViewScrollController
@@ -72,7 +72,7 @@ internal fun ReflowableResource(
     decorationTemplates: HtmlDecorationTemplates,
     decorations: ImmutableMap<String, List<Decoration>>,
     actionModeCallback: ActionMode.Callback?,
-    onSelectionApiChanged: (SelectionApi?) -> Unit,
+    onSelectionApiChanged: (ReflowableSelectionApi?) -> Unit,
     onTap: (TapEvent) -> Unit,
     onLinkActivated: (Url, String) -> Unit,
     onDecorationActivated: (DecorationListener.OnActivatedEvent) -> Unit,
@@ -102,9 +102,9 @@ internal fun ReflowableResource(
 
         val cssApi = remember(webViewState.webView) { mutableStateOf<CssApi?>(null) }
 
-        val decorationApi = remember(webViewState.webView) { mutableStateOf<DecorationApi?>(null) }
+        val decorationApi = remember(webViewState.webView) { mutableStateOf<ReflowableDecorationApi?>(null) }
 
-        val selectionApi = remember(webViewState.webView) { mutableStateOf<SelectionApi?>(null) }
+        val selectionApi = remember(webViewState.webView) { mutableStateOf<ReflowableSelectionApi?>(null) }
 
         val decorations = remember(webViewState.webView) { mutableStateOf(decorations) }
             .apply { value = decorations }
@@ -193,9 +193,9 @@ internal fun ReflowableResource(
                     onScriptsLoadedDelegate = {
                         scriptsLoaded.value = true
                         cssApi.value = CssApi(webView)
-                        decorationApi.value = DecorationApi(webView)
+                        decorationApi.value = ReflowableDecorationApi(webView)
                             .apply { registerTemplates(decorationTemplates) }
-                        selectionApi.value = SelectionApi(webView) { rect: DpRect ->
+                        selectionApi.value = ReflowableSelectionApi(webView) { rect: DpRect ->
                             DpRect(
                                 top = rect.top + padding.top,
                                 right = rect.right + padding.left,

@@ -9,13 +9,21 @@
  */
 
 import { DocumentBridge, GesturesBridge } from "./bridge/all-listener-bridge"
-import { FixedDoubleBridge } from "./bridge/fixed-double-bridge"
+import { FixedDoubleBridge as FixedDoubleAreaBridge } from "./bridge/fixed-area-bridge"
+import { FixedDoubleSelectionBridge } from "./bridge/all-selection-bridge"
+import { FixedDoubleInitializerParentSide } from "./fixed/comm-initialization"
+import { FixedDoubleDecorationsBridge } from "./bridge/all-decoration-bridge"
 
 declare global {
   interface Window {
+    // Web APIs available for native code
+    doubleArea: FixedDoubleAreaBridge
+    doubleSelection: FixedDoubleSelectionBridge
+    doubleDecorations: FixedDoubleDecorationsBridge
+    // Native APIs available for web code
     documentState: DocumentBridge
-    doubleArea: FixedDoubleBridge
     gestures: GesturesBridge
+    doubleSelectionListener: FixedDoubleSelectionBridge.Listener
   }
 }
 
@@ -27,13 +35,30 @@ const metaViewport = document.querySelector(
   "meta[name=viewport]"
 ) as HTMLMetaElement
 
-Window.prototype.doubleArea = new FixedDoubleBridge(
+Window.prototype.doubleArea = new FixedDoubleAreaBridge(
   window,
   leftIframe,
   rightIframe,
   metaViewport,
   window.gestures,
   window.documentState
+)
+
+window.doubleSelection = new FixedDoubleSelectionBridge(
+  leftIframe,
+  rightIframe,
+  window.doubleSelectionListener
+)
+
+window.doubleDecorations = new FixedDoubleDecorationsBridge()
+
+new FixedDoubleInitializerParentSide(
+  window,
+  leftIframe,
+  rightIframe,
+  window.doubleArea,
+  window.doubleSelection,
+  window.doubleDecorations
 )
 
 window.documentState.onScriptsLoaded()

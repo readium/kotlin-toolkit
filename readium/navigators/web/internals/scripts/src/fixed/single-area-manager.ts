@@ -1,8 +1,10 @@
-import { Insets, Size } from "../common/types"
-import { computeScale, Fit } from "../util/fit"
+import { Insets, Size } from "../common/geometry"
+import { computeScale, Fit } from "./fit"
 import { PageManager } from "./page-manager"
 import { ViewportStringBuilder } from "../util/viewport"
-import { AreaManager, shiftOffset, shiftRect } from "./area-manager"
+import { AreaManager } from "./area-manager"
+import { offsetToParentCoordinates } from "../common/geometry"
+import { rectToParentCoordinates } from "../common/geometry"
 import { GesturesDetector } from "../common/gestures"
 import { TapEvent, DecorationActivatedEvent } from "./events"
 import { DecorationActivatedEvent as OriginalDecorationActivated } from "../common/decoration"
@@ -29,12 +31,6 @@ export class SingleAreaManager {
     listener: AreaManager.Listener
   ) {
     this.listener = listener
-
-    window.addEventListener("message", (event) => {
-      if (event.source === iframe.contentWindow && event.ports[0]) {
-        this.page.setMessagePort(event.ports[0])
-      }
-    })
 
     const wrapperGesturesListener = {
       onTap: (event: MouseEvent) => {
@@ -66,7 +62,10 @@ export class SingleAreaManager {
       },
       onTap: (event: TapEvent) => {
         const boundingRect = iframe.getBoundingClientRect()
-        const shiftedOffset = shiftOffset(event.offset, boundingRect)
+        const shiftedOffset = offsetToParentCoordinates(
+          event.offset,
+          boundingRect
+        )
         listener.onTap({ offset: shiftedOffset })
       },
       onLinkActivated: (href: string, outerHtml: string) => {
@@ -75,8 +74,11 @@ export class SingleAreaManager {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       onDecorationActivated: (event: DecorationActivatedEvent) => {
         const boundingRect = iframe.getBoundingClientRect()
-        const shiftedOffset = shiftOffset(event.offset, boundingRect)
-        const shiftedRect = shiftRect(event.rect, boundingRect)
+        const shiftedOffset = offsetToParentCoordinates(
+          event.offset,
+          boundingRect
+        )
+        const shiftedRect = rectToParentCoordinates(event.rect, boundingRect)
         const shiftedEvent = {
           id: event.id,
           group: event.group,
@@ -87,6 +89,10 @@ export class SingleAreaManager {
       },
     }
     this.page = new PageManager(window, iframe, pageListener)
+  }
+
+  setMessagePort(messagePort: MessagePort) {
+    this.page.setMessagePort(messagePort)
   }
 
   setViewport(viewport: Size, insets: Insets) {

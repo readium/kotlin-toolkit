@@ -24,11 +24,13 @@ import org.readium.navigator.web.fixedlayout.FixedWebRenditionController
 import org.readium.navigator.web.fixedlayout.FixedWebRenditionFactory
 import org.readium.navigator.web.fixedlayout.location.FixedWebGoLocation
 import org.readium.navigator.web.fixedlayout.location.FixedWebLocation
+import org.readium.navigator.web.fixedlayout.location.FixedWebSelectionLocation
 import org.readium.navigator.web.fixedlayout.preferences.FixedWebPreferences
 import org.readium.navigator.web.reflowable.ReflowableWebRenditionController
 import org.readium.navigator.web.reflowable.ReflowableWebRenditionFactory
 import org.readium.navigator.web.reflowable.location.ReflowableWebGoLocation
 import org.readium.navigator.web.reflowable.location.ReflowableWebLocation
+import org.readium.navigator.web.reflowable.location.ReflowableWebSelectionLocation
 import org.readium.navigator.web.reflowable.preferences.ReflowableWebPreferences
 import org.readium.r2.navigator.html.HtmlDecorationTemplates
 import org.readium.r2.shared.ExperimentalReadiumApi
@@ -62,7 +64,7 @@ class ReaderOpener(
     private val publicationOpener =
         PublicationOpener(publicationParser)
 
-    suspend fun open(url: AbsoluteUrl): Try<ReaderState<*, *, *>, Error> {
+    suspend fun open(url: AbsoluteUrl): Try<ReaderState<*, *, *, *>, Error> {
         val asset = assetRetriever.retrieve(url)
             .getOrElse { return Try.failure(it) }
 
@@ -101,7 +103,7 @@ class ReaderOpener(
         url: AbsoluteUrl,
         publication: Publication,
         initialLocator: Locator?,
-    ): Try<ReaderState<ReflowableWebLocation, ReflowableWebGoLocation, ReflowableWebRenditionController>, Error> {
+    ): Try<ReaderState<ReflowableWebLocation, ReflowableWebGoLocation, ReflowableWebSelectionLocation, ReflowableWebRenditionController>, Error> {
         val navigatorFactory = ReflowableWebRenditionFactory(
             application = application,
             publication = publication,
@@ -158,8 +160,14 @@ class ReaderOpener(
         url: AbsoluteUrl,
         publication: Publication,
         initialLocator: Locator?,
-    ): Try<ReaderState<FixedWebLocation, FixedWebGoLocation, FixedWebRenditionController>, Error> {
-        val navigatorFactory = FixedWebRenditionFactory(application, publication)
+    ): Try<ReaderState<FixedWebLocation, FixedWebGoLocation, FixedWebSelectionLocation, FixedWebRenditionController>, Error> {
+        val navigatorFactory = FixedWebRenditionFactory(
+            application = application,
+            publication = publication,
+            decorationTemplates = HtmlDecorationTemplates.defaultTemplates().apply {
+                set(DecorationStyleAnnotationMark::class, annotationMarkTemplate())
+            }
+        )
             ?: return Try.failure(DebugError("Publication not supported"))
 
         val locatorAdapter = navigatorFactory.createLocatorAdapter()
@@ -198,7 +206,8 @@ class ReaderOpener(
             renditionState = renditionState,
             preferencesEditor = preferencesEditor,
             locatorAdapter = locatorAdapter,
-            onControllerAvailable = onControllerAvailable
+            onControllerAvailable = onControllerAvailable,
+            highlightsManager = HighlightsManager()
         )
 
         return Try.success(readerState)

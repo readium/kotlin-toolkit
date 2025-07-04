@@ -4,16 +4,8 @@
 //  available in the top-level LICENSE file of the project.
 //
 
+import { Rect } from "../common/geometry"
 import { log } from "./log"
-
-export interface Rect {
-  bottom: number
-  height: number
-  left: number
-  right: number
-  top: number
-  width: number
-}
 
 /**
  * Transforms a DOMRect into the zoomed coordinate system.

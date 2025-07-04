@@ -1,7 +1,9 @@
-import { Size, Insets } from "../common/types"
-import { computeScale, Fit } from "../util/fit"
+import { Size, Insets } from "../common/geometry"
+import { computeScale, Fit } from "./fit"
 import { PageManager } from "./page-manager"
-import { AreaManager, shiftOffset, shiftRect } from "./area-manager"
+import { AreaManager } from "./area-manager"
+import { offsetToParentCoordinates } from "../common/geometry"
+import { rectToParentCoordinates } from "../common/geometry"
 import { ViewportStringBuilder } from "../util/viewport"
 import { GesturesDetector } from "../common/gestures"
 import { DecorationActivatedEvent, TapEvent } from "./events"
@@ -33,18 +35,6 @@ export class DoubleAreaManager {
   ) {
     this.listener = listener
 
-    window.addEventListener("message", (event) => {
-      if (!event.ports[0]) {
-        return
-      }
-
-      if (event.source === leftIframe.contentWindow) {
-        this.leftPage.setMessagePort(event.ports[0])
-      } else if (event.source == rightIframe.contentWindow) {
-        this.rightPage.setMessagePort(event.ports[0])
-      }
-    })
-
     const wrapperGesturesListener = {
       onTap: (event: MouseEvent) => {
         const offset = {
@@ -73,7 +63,10 @@ export class DoubleAreaManager {
       },
       onTap: (gestureEvent: TapEvent) => {
         const boundingRect = leftIframe.getBoundingClientRect()
-        const shiftedOffset = shiftOffset(gestureEvent.offset, boundingRect)
+        const shiftedOffset = offsetToParentCoordinates(
+          gestureEvent.offset,
+          boundingRect
+        )
         listener.onTap({ offset: shiftedOffset })
       },
       onLinkActivated: (href: string, outerHtml: string) => {
@@ -82,8 +75,14 @@ export class DoubleAreaManager {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       onDecorationActivated: (gestureEvent: DecorationActivatedEvent) => {
         const boundingRect = leftIframe.getBoundingClientRect()
-        const shiftedOffset = shiftOffset(gestureEvent.offset, boundingRect)
-        const shiftedRect = shiftRect(gestureEvent.rect, boundingRect)
+        const shiftedOffset = offsetToParentCoordinates(
+          gestureEvent.offset,
+          boundingRect
+        )
+        const shiftedRect = rectToParentCoordinates(
+          gestureEvent.rect,
+          boundingRect
+        )
         const shiftedEvent = {
           id: gestureEvent.id,
           group: gestureEvent.group,
@@ -100,7 +99,10 @@ export class DoubleAreaManager {
       },
       onTap: (gestureEvent: TapEvent) => {
         const boundingRect = rightIframe.getBoundingClientRect()
-        const shiftedOffset = shiftOffset(gestureEvent.offset, boundingRect)
+        const shiftedOffset = offsetToParentCoordinates(
+          gestureEvent.offset,
+          boundingRect
+        )
         listener.onTap({ offset: shiftedOffset })
       },
       onLinkActivated: (href: string, outerHtml: string) => {
@@ -108,8 +110,14 @@ export class DoubleAreaManager {
       },
       onDecorationActivated: (gestureEvent: DecorationActivatedEvent) => {
         const boundingRect = rightIframe.getBoundingClientRect()
-        const shiftedOffset = shiftOffset(gestureEvent.offset, boundingRect)
-        const shiftedRect = shiftRect(gestureEvent.rect, boundingRect)
+        const shiftedOffset = offsetToParentCoordinates(
+          gestureEvent.offset,
+          boundingRect
+        )
+        const shiftedRect = rectToParentCoordinates(
+          gestureEvent.rect,
+          boundingRect
+        )
         const shiftedEvent = {
           id: gestureEvent.id,
           group: gestureEvent.group,
@@ -122,6 +130,14 @@ export class DoubleAreaManager {
     this.leftPage = new PageManager(window, leftIframe, leftPageListener)
     this.rightPage = new PageManager(window, rightIframe, rightPageListener)
     this.metaViewport = metaViewport
+  }
+
+  setLeftMessagePort(messagePort: MessagePort) {
+    this.leftPage.setMessagePort(messagePort)
+  }
+
+  setRightMessagePort(messagePort: MessagePort) {
+    this.rightPage.setMessagePort(messagePort)
   }
 
   loadSpread(spread: { left?: string; right?: string }) {

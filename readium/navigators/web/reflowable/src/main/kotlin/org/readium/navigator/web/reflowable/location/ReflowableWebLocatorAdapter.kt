@@ -15,7 +15,7 @@ import org.readium.r2.shared.publication.Publication
 @ExperimentalReadiumApi
 public class ReflowableWebLocatorAdapter internal constructor(
     private val publication: Publication,
-) : LocatorAdapter<ReflowableWebLocation, ReflowableWebGoLocation> {
+) : LocatorAdapter<ReflowableWebLocation, ReflowableWebGoLocation, ReflowableWebSelectionLocation> {
 
     public override fun Locator.toGoLocation(): ReflowableWebGoLocation =
         ReflowableWebGoLocation(
@@ -41,7 +41,7 @@ public class ReflowableWebLocatorAdapter internal constructor(
                 // otherLocations = buildMap { cssSelector?.let { put("cssSelector", cssSelector) } }
             )
 
-    public fun ReflowableSelectionLocation.toLocator(): Locator =
+    public override fun ReflowableWebSelectionLocation.toLocator(): Locator =
         publication.locatorFromLink(Link(href))!!
             .copy(
                 text = Locator.Text(

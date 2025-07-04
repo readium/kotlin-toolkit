@@ -8,6 +8,7 @@ package org.readium.navigator.web.fixedlayout.location
 
 import org.readium.navigator.common.GoLocation
 import org.readium.navigator.common.Location
+import org.readium.navigator.common.SelectionLocation
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.Url
 
@@ -20,3 +21,11 @@ public data class FixedWebGoLocation(
 public data class FixedWebLocation(
     override val href: Url,
 ) : Location
+
+@ExperimentalReadiumApi
+public data class FixedWebSelectionLocation(
+    val href: Url,
+    val selectedText: String,
+    val textBefore: String,
+    val textAfter: String,
+) : SelectionLocation

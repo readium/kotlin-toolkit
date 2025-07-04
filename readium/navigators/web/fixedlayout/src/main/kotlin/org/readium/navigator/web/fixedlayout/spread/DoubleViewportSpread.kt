@@ -8,6 +8,7 @@
 
 package org.readium.navigator.web.fixedlayout.spread
 
+import android.view.ActionMode
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.pager.PagerState
@@ -27,8 +28,15 @@ import org.readium.navigator.web.fixedlayout.layout.DoubleViewportSpread
 import org.readium.navigator.web.fixedlayout.util.DisplayArea
 import org.readium.navigator.web.fixedlayout.webapi.FixedDoubleApi
 import org.readium.navigator.web.internals.server.WebViewClient
+import org.readium.navigator.web.internals.webapi.FixedDoubleDecorationApi
+import org.readium.navigator.web.internals.webapi.FixedDoubleSelectionApi
+import org.readium.navigator.web.internals.webapi.Iframe
 import org.readium.navigator.web.internals.webview.RelaxedWebView
 import org.readium.navigator.web.internals.webview.rememberWebViewStateWithHTMLData
+import org.readium.r2.navigator.Decoration
+import org.readium.r2.navigator.DecorationChange
+import org.readium.r2.navigator.changesByHref
+import org.readium.r2.navigator.html.HtmlDecorationTemplates
 import org.readium.r2.navigator.preferences.Fit
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.AbsoluteUrl
@@ -42,8 +50,12 @@ internal fun DoubleViewportSpread(
     layoutDirection: LayoutDirection,
     onTap: (TapEvent) -> Unit,
     onLinkActivated: (Url, String) -> Unit,
+    onSelectionApiChanged: (FixedDoubleSelectionApi?) -> Unit,
+    actionModeCallback: ActionMode.Callback?,
     state: DoubleSpreadState,
     backgroundColor: Color,
+    decorationTemplates: HtmlDecorationTemplates,
+    decorations: Map<String, List<Decoration>>,
 ) {
     Box(
         modifier = Modifier.fillMaxSize(),
@@ -64,6 +76,11 @@ internal fun DoubleViewportSpread(
                 ?.let { FixedDoubleApi(it) }
         }
 
+        LaunchedEffect(webViewState.webView) {
+            val selectionApi = webViewState.webView
+                ?.let { FixedDoubleSelectionApi(it) { it } }
+            onSelectionApiChanged(selectionApi)
+        }
         LaunchedEffect(layoutApi) {
             if (layoutApi != null) {
                 snapshotFlow {
@@ -79,6 +96,55 @@ internal fun DoubleViewportSpread(
                 }.launchIn(this)
 
                 layoutApi.loadSpread(state.spread)
+            }
+        }
+
+        LaunchedEffect(webViewState.webView, actionModeCallback) {
+            webViewState.webView?.setCustomSelectionActionModeCallback(actionModeCallback)
+        }
+
+        val decorationApi = remember(webViewState.webView) { mutableStateOf<FixedDoubleDecorationApi?>(null) }
+
+        val decorations = remember(webViewState.webView) { mutableStateOf(decorations) }
+            .apply { value = decorations }
+
+        LaunchedEffect(decorationApi.value, decorations) {
+            decorationApi.value?.let { decorationApi ->
+                var lastDecorations = emptyMap<String, List<Decoration>>()
+                snapshotFlow { decorations.value }
+                    .onEach {
+                        for ((group, decos) in it.entries) {
+                            val lastInGroup = lastDecorations[group].orEmpty()
+                            for ((href, changes) in lastInGroup.changesByHref(decos)) {
+                                val iframe = when {
+                                    href == state.spread.leftPage?.href -> Iframe.Left
+                                    href == state.spread.rightPage?.href -> Iframe.Right
+                                    else -> continue
+                                }
+                                for (change in changes) {
+                                    when (change) {
+                                        is DecorationChange.Added -> {
+                                            val template = decorationTemplates[change.decoration.style::class]
+                                                ?: continue
+                                            decorationApi.addDecoration(change.decoration, iframe, template, group)
+                                        }
+                                        is DecorationChange.Moved -> {}
+                                        is DecorationChange.Removed -> {
+                                            decorationApi.removeDecoration(change.id, group)
+                                        }
+                                        is DecorationChange.Updated -> {
+                                            decorationApi.removeDecoration(change.decoration.id, group)
+                                            val template = decorationTemplates[change.decoration.style::class]
+                                                ?: continue
+                                            decorationApi.addDecoration(change.decoration, iframe, template, group)
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        lastDecorations = it
+                    }.launchIn(this)
             }
         }
 
@@ -99,6 +165,10 @@ internal fun DoubleViewportSpread(
             },
             backgroundColor = backgroundColor,
             onScriptsLoaded = { scriptsLoaded.value = true },
+            onDocumentLoadedAndSized = {
+                decorationApi.value = FixedDoubleDecorationApi(it)
+                    .apply { registerTemplates(decorationTemplates) }
+            },
         )
     }
 }

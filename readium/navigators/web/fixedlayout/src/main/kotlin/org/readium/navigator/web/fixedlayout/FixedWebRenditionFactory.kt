@@ -18,6 +18,7 @@ import org.readium.navigator.web.fixedlayout.preferences.FixedWebSettings
 import org.readium.navigator.web.fixedlayout.webapi.FixedDoubleApi
 import org.readium.navigator.web.fixedlayout.webapi.FixedSingleApi
 import org.readium.navigator.web.internals.server.WebViewServer
+import org.readium.r2.navigator.html.HtmlDecorationTemplates
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.publication.Link
@@ -42,6 +43,7 @@ public class FixedWebRenditionFactory private constructor(
     private val application: Application,
     private val publication: Publication,
     private val defaults: FixedWebDefaults,
+    private val decorationTemplates: HtmlDecorationTemplates,
 ) {
 
     public companion object {
@@ -50,6 +52,7 @@ public class FixedWebRenditionFactory private constructor(
             application: Application,
             publication: Publication,
             defaults: FixedWebDefaults = FixedWebDefaults(),
+            decorationTemplates: HtmlDecorationTemplates = HtmlDecorationTemplates.defaultTemplates(),
         ): FixedWebRenditionFactory? {
             if (!publication.conformsTo(Publication.Profile.EPUB) ||
                 publication.metadata.presentation.layout != EpubLayout.FIXED
@@ -64,7 +67,8 @@ public class FixedWebRenditionFactory private constructor(
             return FixedWebRenditionFactory(
                 application,
                 publication,
-                defaults
+                defaults,
+                decorationTemplates
             )
         }
     }
@@ -119,6 +123,7 @@ public class FixedWebRenditionFactory private constructor(
                 publication = renditionPublication,
                 initialSettings = initialSettings,
                 initialLocation = initialLocation,
+                decorationTemplates = decorationTemplates,
                 preloadedData = preloads,
                 disableSelection = publication.isProtected,
             )

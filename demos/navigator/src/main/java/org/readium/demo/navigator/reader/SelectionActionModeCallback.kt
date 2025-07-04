@@ -17,18 +17,19 @@ import kotlinx.coroutines.launch
 import org.readium.demo.navigator.R
 import org.readium.demo.navigator.decorations.Highlight
 import org.readium.demo.navigator.decorations.HighlightsManager
+import org.readium.navigator.common.LocatorAdapter
 import org.readium.navigator.common.SelectionController
-import org.readium.navigator.web.reflowable.location.ReflowableSelectionLocation
-import org.readium.navigator.web.reflowable.location.ReflowableWebLocatorAdapter
+import org.readium.navigator.common.SelectionLocation
 import org.readium.r2.navigator.util.BaseActionModeCallback
 import org.readium.r2.shared.ExperimentalReadiumApi
 
-class SelectionActionModeCallback(
+class SelectionActionModeCallback<S : SelectionLocation>(
     private val coroutineScope: CoroutineScope,
-    private val selectionController: SelectionController<*>,
+    private val selectionController: SelectionController<S>,
     private val highlightsManager: HighlightsManager,
+    private val onAnyHighlightAdded: () -> Unit,
     private val onNoteAdded: (Long) -> Unit,
-    private val reflowableWebLocatorAdapter: ReflowableWebLocatorAdapter,
+    private val locatorAdapter: LocatorAdapter<*, *, S>,
 ) : BaseActionModeCallback() {
 
     private val defaultTint = Color.rgb(249, 239, 125)
@@ -44,8 +45,8 @@ class SelectionActionModeCallback(
     override fun onActionItemClicked(mode: ActionMode, item: MenuItem): Boolean {
         coroutineScope.launch {
             val selection = selectionController.currentSelection() ?: return@launch
-            val locator = with(reflowableWebLocatorAdapter) {
-                (selection.location as ReflowableSelectionLocation).toLocator()
+            val locator = with(locatorAdapter) {
+                selection.location.toLocator()
             }
 
             when (item.itemId) {
@@ -73,6 +74,8 @@ class SelectionActionModeCallback(
                 }
                 else -> throw IllegalStateException()
             }
+
+            onAnyHighlightAdded()
         }
         mode.finish()
         return true

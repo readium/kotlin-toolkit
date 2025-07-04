@@ -7,6 +7,7 @@
 package org.readium.navigator.web.fixedlayout
 
 import android.annotation.SuppressLint
+import android.view.ActionMode
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.WindowInsets
@@ -26,6 +27,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.DpSize
+import kotlinx.collections.immutable.toImmutableMap
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
@@ -70,6 +72,7 @@ public fun FixedWebRendition(
     backgroundColor: Color = MaterialTheme.colorScheme.background,
     inputListener: InputListener = defaultInputListener(state.controller),
     hyperlinkListener: HyperlinkListener = defaultHyperlinkListener(controller = state.controller),
+    textSelectionActionModeCallback: ActionMode.Callback? = null,
 ) {
     val layoutDirection =
         state.layoutDelegate.overflow.value.readingProgression.toLayoutDirection()
@@ -181,7 +184,13 @@ public fun FixedWebRendition(
                     else -> 0.0
                 }
 
-                when (val spread = state.layoutDelegate.layout.value.spreads[index]) {
+                val spread = state.layoutDelegate.layout.value.spreads[index]
+
+                val decorations = state.decorationDelegate.decorations
+                    .mapValues { it.value.filter { it.locator.href in spread.pages.map { it.href } } }
+                    .toImmutableMap()
+
+                when (spread) {
                     is SingleViewportSpread -> {
                         val spreadState =
                             SingleSpreadState(
@@ -191,7 +200,7 @@ public fun FixedWebRendition(
                                 webViewClient = state.webViewClient,
                                 spread = spread,
                                 fit = state.layoutDelegate.fit,
-                                displayArea = displayArea
+                                displayArea = displayArea,
                             )
 
                         SingleViewportSpread(
@@ -214,9 +223,13 @@ public fun FixedWebRendition(
                                     )
                                 }
                             },
+                            actionModeCallback = textSelectionActionModeCallback,
+                            onSelectionApiChanged = { state.selectionDelegate.selectionApis[index] = it },
                             state = spreadState,
                             scrollState = scrollStates[index],
-                            backgroundColor = backgroundColor
+                            backgroundColor = backgroundColor,
+                            decorationTemplates = state.decorationDelegate.decorationTemplates,
+                            decorations = decorations,
                         )
                     }
 
@@ -252,9 +265,13 @@ public fun FixedWebRendition(
                                     )
                                 }
                             },
+                            actionModeCallback = textSelectionActionModeCallback,
+                            onSelectionApiChanged = { state.selectionDelegate.selectionApis[index] = it },
                             state = spreadState,
                             scrollState = scrollStates[index],
-                            backgroundColor = backgroundColor
+                            backgroundColor = backgroundColor,
+                            decorationTemplates = state.decorationDelegate.decorationTemplates,
+                            decorations = decorations,
                         )
                     }
                 }

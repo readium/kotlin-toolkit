@@ -10,6 +10,8 @@ import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.DpRect
 import androidx.compose.ui.unit.dp
 import kotlinx.serialization.Serializable
+import org.readium.r2.shared.InternalReadiumApi
+import org.readium.r2.shared.util.MapCompanion
 
 /*
  * Copyright 2025 Readium Foundation. All rights reserved.
@@ -42,4 +44,20 @@ internal data class JsonRect(
             bottom = bottom.dp,
             left = left.dp
         )
+}
+
+public enum class Iframe(public val value: String) {
+    Left("left"),
+    Right("right"),
+    ;
+
+    override fun toString(): String {
+        return value
+    }
+
+    @OptIn(InternalReadiumApi::class)
+    public companion object : MapCompanion<String, Iframe>(
+        entries.toTypedArray(),
+        Iframe::value
+    )
 }

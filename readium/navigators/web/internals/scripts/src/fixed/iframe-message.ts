@@ -1,4 +1,4 @@
-import { Size } from "../common/types"
+import { Size } from "../common/geometry"
 import { DecorationActivatedEvent, TapEvent } from "./events"
 
 export interface ContentSizeMessage {

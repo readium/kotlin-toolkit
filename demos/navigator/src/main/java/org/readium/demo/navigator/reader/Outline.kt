@@ -37,7 +37,7 @@ import org.readium.r2.shared.publication.Publication
 fun <G : GoLocation> Outline(
     modifier: Modifier = Modifier,
     publication: Publication,
-    locatorAdapter: LocatorAdapter<*, G>,
+    locatorAdapter: LocatorAdapter<*, G, *>,
     onBackActivated: () -> Unit,
     onTocItemActivated: (G) -> Unit,
 ) {
@@ -87,7 +87,7 @@ private fun TopBar(
 private fun <G : GoLocation> Contents(
     modifier: Modifier = Modifier,
     publication: Publication,
-    locatorAdapter: LocatorAdapter<*, G>,
+    locatorAdapter: LocatorAdapter<*, G, *>,
     onItemActivated: (G) -> Unit,
 ) {
     val items = publication.tableOfContents
@@ -110,7 +110,7 @@ private data class TocItem<G : GoLocation>(
 
 private fun <G : GoLocation> Link.toTocItems(
     publication: Publication,
-    locatorAdapter: LocatorAdapter<*, G>,
+    locatorAdapter: LocatorAdapter<*, G, *>,
     depth: Int = 0,
 ): List<TocItem<G>> {
     val locator = publication.locatorFromLink(this@toTocItems)

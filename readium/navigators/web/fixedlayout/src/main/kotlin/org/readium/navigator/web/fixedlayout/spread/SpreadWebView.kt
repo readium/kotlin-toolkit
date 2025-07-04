@@ -8,6 +8,7 @@ package org.readium.navigator.web.fixedlayout.spread
 
 import android.annotation.SuppressLint
 import android.view.View
+import android.webkit.WebView
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.layout.Box
@@ -52,6 +53,7 @@ internal fun SpreadWebView(
     onTap: (TapEvent) -> Unit,
     onLinkActivated: (AbsoluteUrl, String) -> Unit,
     backgroundColor: Color,
+    onDocumentLoadedAndSized: (WebView) -> Unit,
 ) {
     val contentIsLaidOut =
         remember { mutableStateOf(false) }
@@ -99,9 +101,9 @@ internal fun SpreadWebView(
                         spreadScrollState.scrollController.value = scrollController
                         contentIsLaidOut.value = true
                     }
+                    onDocumentLoadedAndSized(webView)
                 },
                 onDocumentResizedDelegate = {
-                    Timber.d("spread $spreadIndex onDocumentResizedAndSized")
                 }
             )
         }

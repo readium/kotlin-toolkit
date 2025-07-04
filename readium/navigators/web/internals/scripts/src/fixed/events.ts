@@ -1,5 +1,4 @@
-import { Offset } from "../util/offset"
-import { Rect } from "../util/rect"
+import { Offset, Rect } from "../common/geometry"
 
 export interface TapEvent {
   offset: Offset

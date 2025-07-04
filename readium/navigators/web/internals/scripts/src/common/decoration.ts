@@ -1,13 +1,13 @@
 import { log } from "../util/log"
 import {
   getClientRectsNoOverlap,
-  Rect,
   dezoomDomRect,
   dezoomRect,
   rectContainsPoint,
   domRectToRect,
 } from "../util/rect"
 import { TextQuoteAnchor } from "../vendor/hypothesis/annotator/anchoring/types"
+import { Rect } from "./geometry"
 
 export interface DecorationActivatedEvent {
   id: string
@@ -118,7 +118,7 @@ export class DecorationManager {
     group.remove(id)
   }
 
-  relayoutDecorations() {
+  private relayoutDecorations() {
     console.log("relayoutDecorations")
     for (const group of this.groups.values()) {
       group.relayout()

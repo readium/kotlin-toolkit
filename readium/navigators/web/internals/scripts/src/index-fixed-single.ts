@@ -9,13 +9,21 @@
  */
 
 import { DocumentBridge, GesturesBridge } from "./bridge/all-listener-bridge"
-import { FixedSingleBridge } from "./bridge/fixed-single-bridge"
+import { FixedSingleBridge as FixedSingleAreaBridge } from "./bridge/fixed-area-bridge"
+import { FixedSingleInitializerParentSide } from "./fixed/comm-initialization"
+import { FixedSingleDecorationsBridge } from "./bridge/all-decoration-bridge"
+import { FixedSingleSelectionBridge } from "./bridge/all-selection-bridge"
 
 declare global {
   interface Window {
+    // Web APIs available for native code
+    singleArea: FixedSingleAreaBridge
+    singleSelection: FixedSingleSelectionBridge
+    singleDecorations: FixedSingleDecorationsBridge
+    // Native APIs available for web code
     documentState: DocumentBridge
-    singleArea: FixedSingleBridge
     gestures: GesturesBridge
+    singleSelectionListener: FixedSingleSelectionBridge.Listener
   }
 }
 
@@ -25,12 +33,26 @@ const metaViewport = document.querySelector(
   "meta[name=viewport]"
 ) as HTMLMetaElement
 
-window.singleArea = new FixedSingleBridge(
+window.singleArea = new FixedSingleAreaBridge(
   window,
   iframe,
   metaViewport,
   window.gestures,
   window.documentState
+)
+
+window.singleSelection = new FixedSingleSelectionBridge(
+  window.singleSelectionListener
+)
+
+window.singleDecorations = new FixedSingleDecorationsBridge()
+
+new FixedSingleInitializerParentSide(
+  window,
+  iframe,
+  window.singleArea,
+  window.singleSelection,
+  window.singleDecorations
 )
 
 window.documentState.onScriptsLoaded()
