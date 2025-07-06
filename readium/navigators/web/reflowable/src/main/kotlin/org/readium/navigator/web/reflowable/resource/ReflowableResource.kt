@@ -22,13 +22,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.DpOffset
-import androidx.compose.ui.unit.DpRect
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.zIndex
 import kotlinx.collections.immutable.ImmutableMap
@@ -39,6 +37,9 @@ import org.readium.navigator.common.TapEvent
 import org.readium.navigator.web.internals.server.WebViewClient
 import org.readium.navigator.web.internals.util.AbsolutePaddingValues
 import org.readium.navigator.web.internals.util.absolutePadding
+import org.readium.navigator.web.internals.util.getValue
+import org.readium.navigator.web.internals.util.rememberUpdatedRef
+import org.readium.navigator.web.internals.util.shift
 import org.readium.navigator.web.internals.webapi.DelegatingDocumentApiListener
 import org.readium.navigator.web.internals.webapi.DelegatingGesturesListener
 import org.readium.navigator.web.internals.webapi.DelegatingReflowableApiStateListener
@@ -92,14 +93,6 @@ internal fun ReflowableResource(
             url = publicationBaseUrl.resolve(resourceState.href).toString()
         )
 
-        val orientationRef by rememberUpdatedState(orientation)
-
-        val directionRef by rememberUpdatedState(layoutDirection)
-
-        val onSelectionApiChangedRef by rememberUpdatedState(onSelectionApiChanged)
-
-        val paddingRef by rememberUpdatedState(padding)
-
         var documentStateApi by remember(webViewState) {
             mutableStateOf<DocumentStateApi?>(null)
         }
@@ -133,23 +126,18 @@ internal fun ReflowableResource(
         val showPlaceholder =
             remember(webViewState.webView) { mutableStateOf(true) }
 
-        val rectAdapter = { rect: DpRect ->
-            DpRect(
-                top = rect.top + paddingRef.top,
-                right = rect.right + paddingRef.left,
-                bottom = rect.bottom + paddingRef.top,
-                left = rect.left + paddingRef.left
-            )
-        }
+        val paddingShift = DpOffset(padding.left, padding.top)
 
-        LaunchedEffect(webViewState.webView) {
+        val onSelectionApiChangedRef by rememberUpdatedRef(onSelectionApiChanged)
+
+        LaunchedEffect(webViewState.webView, padding) {
             webViewState.webView?.let { webView ->
                 val listener = DelegatingReflowableApiStateListener(
                     onCssApiAvailableDelegate = {
                         cssApi = CssApi(webView)
                     },
                     onSelectionApiAvailableDelegate = {
-                        selectionApi = ReflowableSelectionApi(webView, rectAdapter)
+                        selectionApi = ReflowableSelectionApi(webView) { it.shift(paddingShift) }
                         onSelectionApiChangedRef(selectionApi)
                     },
                     onDecorationApiAvailableDelegate = {
@@ -160,7 +148,14 @@ internal fun ReflowableResource(
             }
         }
 
-        LaunchedEffect(documentStateApi, webViewState.webView, resourceState, showPlaceholder) {
+        LaunchedEffect(
+            documentStateApi,
+            webViewState.webView,
+            resourceState,
+            showPlaceholder,
+            orientation,
+            layoutDirection
+        ) {
             webViewState.webView?.let { webView ->
                 documentStateApi?.let { documentStateApi ->
                     documentStateApi.listener = DelegatingDocumentApiListener(
@@ -172,7 +167,7 @@ internal fun ReflowableResource(
                                 scrollController.moveToProgression(
                                     progression = resourceState.progression,
                                     snap = !scroll,
-                                    orientation = orientationRef,
+                                    orientation = orientation,
                                     direction = layoutDirection
                                 )
                                 resourceState.scrollController.value = scrollController
@@ -180,8 +175,8 @@ internal fun ReflowableResource(
                                 webView.setOnScrollChangeListener { view, scrollX, scrollY, oldScrollX, oldScrollY ->
                                     onProgressionChange(
                                         scrollController.progression(
-                                            orientationRef,
-                                            directionRef
+                                            orientation,
+                                            layoutDirection
                                         )
                                     )
                                 }
@@ -197,14 +192,11 @@ internal fun ReflowableResource(
             }
         }
 
-        LaunchedEffect(gesturesApi, onTap, onLinkActivated) {
+        LaunchedEffect(gesturesApi, onTap, onLinkActivated, padding) {
             gesturesApi?.let { gesturesApi ->
                 gesturesApi.listener = DelegatingGesturesListener(
                     onTapDelegate = { offset ->
-                        val shiftedOffset = DpOffset(
-                            x = offset.x + padding.left,
-                            y = offset.y + padding.top
-                        )
+                        val shiftedOffset = offset + paddingShift
                         onTap(TapEvent(shiftedOffset))
                     },
                     onLinkActivatedDelegate = { href, outerHtml ->
@@ -214,21 +206,11 @@ internal fun ReflowableResource(
                         val decoration = decorations.value[group]?.firstOrNull { it.id == id }
                             ?: return@DelegatingGesturesListener
 
-                        val shiftedOffset = DpOffset(
-                            x = offset.x + padding.left,
-                            y = offset.y + padding.top
-                        )
-                        val shiftedRect = DpRect(
-                            left = rect.left + padding.left,
-                            right = rect.right + padding.left,
-                            top = rect.top + padding.top,
-                            bottom = rect.bottom + padding.top,
-                        )
                         val event = DecorationListener.OnActivatedEvent(
                             decoration = decoration,
                             group = group,
-                            rect = shiftedRect,
-                            offset = shiftedOffset
+                            rect = rect.shift(paddingShift),
+                            offset = offset + paddingShift
                         )
                         onDecorationActivated(event)
                     }
@@ -290,6 +272,8 @@ internal fun ReflowableResource(
         LaunchedEffect(webViewState.webView, actionModeCallback) {
             webViewState.webView?.setCustomSelectionActionModeCallback(actionModeCallback)
         }
+
+        val orientationRef by rememberUpdatedRef(orientation)
 
         // Recreate WebView when Readium CSS layout changes because injected stuff depends on it
         key(readiumCssInjector.layout) {

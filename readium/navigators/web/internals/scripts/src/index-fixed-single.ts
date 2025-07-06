@@ -8,7 +8,10 @@
  *  Script loaded by the single area HTML wrapper for fixed layout resources.
  */
 
-import { DocumentStateBridge, GesturesBridge } from "./bridge/all-listener-bridge"
+import {
+  DocumentStateBridge,
+  GesturesBridge,
+} from "./bridge/all-listener-bridge"
 import { FixedSingleAreaBridge as FixedSingleAreaBridge } from "./bridge/fixed-area-bridge"
 import { FixedSingleDecorationsBridge } from "./bridge/all-decoration-bridge"
 import { FixedSingleSelectionBridge } from "./bridge/all-selection-bridge"

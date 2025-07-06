@@ -23,7 +23,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -56,6 +55,7 @@ import org.readium.navigator.web.internals.pager.pagingFlingBehavior
 import org.readium.navigator.web.internals.server.WebViewServer
 import org.readium.navigator.web.internals.util.AbsolutePaddingValues
 import org.readium.navigator.web.internals.util.HyperlinkProcessor
+import org.readium.navigator.web.internals.util.rememberUpdatedRef
 import org.readium.navigator.web.internals.util.toLayoutDirection
 import org.readium.navigator.web.reflowable.location.ReflowableWebLocation
 import org.readium.navigator.web.reflowable.resource.ReflowablePagingLayoutInfo
@@ -85,7 +85,7 @@ public fun ReflowableWebRendition(
             modifier = modifier.fillMaxSize(),
             propagateMinConstraints = true
         ) {
-            val viewportSize = rememberUpdatedState(DpSize(maxWidth, maxHeight))
+            val viewportSize = rememberUpdatedRef(DpSize(maxWidth, maxHeight))
 
             val coroutineScope = rememberCoroutineScope()
 
@@ -119,12 +119,6 @@ public fun ReflowableWebRendition(
                     ?: state.layoutDelegate.settings.value.theme.backgroundColor
             )
 
-            val inputListenerState = rememberUpdatedState(inputListener)
-
-            val hyperlinkListenerState = rememberUpdatedState(hyperlinkListener)
-
-            val decorationListenerState = rememberUpdatedState(decorationListener)
-
             val currentPageState = remember(state) { derivedStateOf { state.pagerState.currentPage } }
 
             fun currentLocation() =
@@ -153,7 +147,7 @@ public fun ReflowableWebRendition(
                     // Detect taps on padding
                     .pointerInput(Unit) {
                         detectTapGestures(
-                            onTap = { onTapOnPadding(it, viewportSize.value, inputListenerState.value) }
+                            onTap = { onTapOnPadding(it, viewportSize.value, inputListener) }
                         )
                     }
                     .windowInsetsPadding(windowInsets),
@@ -184,7 +178,7 @@ public fun ReflowableWebRendition(
                     actionModeCallback = textSelectionActionModeCallback,
                     onSelectionApiChanged = { state.selectionDelegate.selectionApis[index] = it },
                     onTap = { tapEvent ->
-                        inputListenerState.value.onTap(tapEvent, TapContext(viewportSize.value))
+                        inputListener.onTap(tapEvent, TapContext(viewportSize.value))
                     },
                     onLinkActivated = { url, outerHtml ->
                         coroutineScope.launch {
@@ -192,12 +186,12 @@ public fun ReflowableWebRendition(
                                 url = url,
                                 outerHtml = outerHtml,
                                 readingOrder = state.publication.readingOrder,
-                                listener = hyperlinkListenerState.value
+                                listener = hyperlinkListener
                             )
                         }
                     },
                     onDecorationActivated = { event ->
-                        decorationListenerState.value.onDecorationActivated(event)
+                        decorationListener.onDecorationActivated(event)
                     },
                     onProgressionChange = {
                         if (index == currentPageState.value) {

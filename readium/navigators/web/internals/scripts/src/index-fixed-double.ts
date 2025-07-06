@@ -8,7 +8,10 @@
  *  Script loaded by the single area HTML wrapper for fixed layout resources.
  */
 
-import { DocumentStateBridge, GesturesBridge } from "./bridge/all-listener-bridge"
+import {
+  DocumentStateBridge,
+  GesturesBridge,
+} from "./bridge/all-listener-bridge"
 import { FixedDoubleAreaBridge as FixedDoubleAreaBridge } from "./bridge/fixed-area-bridge"
 import { FixedDoubleSelectionBridge } from "./bridge/all-selection-bridge"
 import { FixedDoubleDecorationsBridge } from "./bridge/all-decoration-bridge"
@@ -68,4 +71,3 @@ window.doubleInitialization = new FixedDoubleInitializationBridge(
 )
 
 window.fixedApiState.onInitializationApiAvailable()
-
