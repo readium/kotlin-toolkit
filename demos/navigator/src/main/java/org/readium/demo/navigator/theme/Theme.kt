@@ -4,7 +4,7 @@
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.demo.navigator.util
+package org.readium.demo.navigator.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
@@ -25,8 +25,8 @@ fun Theme(
 
     MaterialTheme(
         colorScheme = colors,
-        shapes = MaterialTheme.shapes,
         typography = MaterialTheme.typography,
+        shapes = MaterialTheme.shapes,
         content = content
     )
 }

@@ -74,6 +74,7 @@ dependencies {
     implementation(libs.kotlinx.collections.immutable)
     implementation(libs.kotlin.stdlib)
     implementation(libs.bundles.compose)
+    implementation(libs.google.material)
     implementation(libs.androidx.core)
     implementation(libs.androidx.fragment.ktx)
     implementation(libs.androidx.appcompat)

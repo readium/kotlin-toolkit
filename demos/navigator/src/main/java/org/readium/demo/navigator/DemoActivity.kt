@@ -17,7 +17,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.core.view.WindowCompat
 import androidx.fragment.app.FragmentActivity
-import org.readium.demo.navigator.util.Theme
+import org.readium.demo.navigator.theme.Theme
 import org.readium.r2.shared.util.toAbsoluteUrl
 
 class DemoActivity : FragmentActivity() {
