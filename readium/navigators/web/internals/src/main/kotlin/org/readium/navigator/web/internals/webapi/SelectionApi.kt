@@ -53,14 +53,15 @@ public sealed interface FixedSelectionApi
 
 public class FixedSingleSelectionApi(
     private val webView: WebView,
+    listener: FixedSingleSelectionListener,
     private val adjustRect: (DpRect) -> DpRect,
-) : FixedSelectionApi {
-
-    init {
-        webView.addJavascriptInterface(this, "singleSelectionListener")
-    }
+) : FixedSelectionApi, FixedSingleSelectionListener.Listener {
 
     private val requests = mutableMapOf<String, Continuation<Selection?>>()
+
+    init {
+        listener.listener = this
+    }
 
     public fun clearSelection() {
         val script = "singleSelection.clearSelection()"
@@ -77,8 +78,7 @@ public class FixedSingleSelectionApi(
             }
         }
 
-    @android.webkit.JavascriptInterface
-    public fun onSelectionAvailable(requestId: String, selection: String) {
+    override fun onSelectionAvailable(requestId: String, selection: String) {
         val cont = requests.remove(requestId) ?: return
 
         val selection = Json.decodeFromString<JsonSelection?>(selection)
@@ -92,16 +92,36 @@ public class FixedSingleSelectionApi(
     }
 }
 
-public class FixedDoubleSelectionApi(
-    private val webView: WebView,
-    private val adjustRect: (DpRect) -> DpRect,
-) : FixedSelectionApi {
+public class FixedSingleSelectionListener(
+    webView: WebView,
+    public var listener: Listener? = null,
+) {
+    public interface Listener {
 
-    init {
-        webView.addJavascriptInterface(this, "doubleSelectionListener")
+        public fun onSelectionAvailable(requestId: String, selection: String)
     }
 
+    init {
+        webView.addJavascriptInterface(this, "singleSelectionListener")
+    }
+
+    @android.webkit.JavascriptInterface
+    public fun onSelectionAvailable(requestId: String, selection: String) {
+        checkNotNull(listener).onSelectionAvailable(requestId, selection)
+    }
+}
+
+public class FixedDoubleSelectionApi(
+    private val webView: WebView,
+    listener: FixedDoubleSelectionListener,
+    private val adjustRect: (DpRect) -> DpRect,
+) : FixedSelectionApi, FixedDoubleSelectionListener.Listener {
+
     private val requests = mutableMapOf<String, Continuation<SelectionWithIframe?>>()
+
+    init {
+        listener.listener = this
+    }
 
     public fun clearSelection() {
         val script = "doubleSelection.clearSelection()"
@@ -118,8 +138,7 @@ public class FixedDoubleSelectionApi(
             }
         }
 
-    @android.webkit.JavascriptInterface
-    public fun onSelectionAvailable(requestId: String, iframe: String, selection: String) {
+    override fun onSelectionAvailable(requestId: String, iframe: String, selection: String) {
         val cont = requests.remove(requestId) ?: return
 
         val selection = Json.decodeFromString<JsonSelection?>(selection)
@@ -134,6 +153,25 @@ public class FixedDoubleSelectionApi(
         val result = adjustedSelection?.let { SelectionWithIframe(iframe, it) }
 
         cont.resume(result)
+    }
+}
+
+public class FixedDoubleSelectionListener(
+    webView: WebView,
+    public var listener: Listener? = null,
+) {
+    public interface Listener {
+
+        public fun onSelectionAvailable(requestId: String, iframe: String, selection: String)
+    }
+
+    init {
+        webView.addJavascriptInterface(this, "doubleSelectionListener")
+    }
+
+    @android.webkit.JavascriptInterface
+    public fun onSelectionAvailable(requestId: String, iframe: String, selection: String) {
+        checkNotNull(listener).onSelectionAvailable(requestId, iframe, selection)
     }
 }
 

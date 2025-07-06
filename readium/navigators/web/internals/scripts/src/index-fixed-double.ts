@@ -9,14 +9,15 @@
  */
 
 import { DocumentBridge, GesturesBridge } from "./bridge/all-listener-bridge"
-import { FixedDoubleBridge as FixedDoubleAreaBridge } from "./bridge/fixed-area-bridge"
+import { FixedDoubleAreaBridge as FixedDoubleAreaBridge } from "./bridge/fixed-area-bridge"
 import { FixedDoubleSelectionBridge } from "./bridge/all-selection-bridge"
-import { FixedDoubleInitializerParentSide } from "./fixed/comm-initialization"
 import { FixedDoubleDecorationsBridge } from "./bridge/all-decoration-bridge"
+import { FixedDoubleInitializationBridge } from "./bridge/all-initialization-bridge"
 
 declare global {
   interface Window {
     // Web APIs available for native code
+    doubleInitialization: FixedDoubleInitializationBridge
     doubleArea: FixedDoubleAreaBridge
     doubleSelection: FixedDoubleSelectionBridge
     doubleDecorations: FixedDoubleDecorationsBridge
@@ -52,8 +53,9 @@ window.doubleSelection = new FixedDoubleSelectionBridge(
 
 window.doubleDecorations = new FixedDoubleDecorationsBridge()
 
-new FixedDoubleInitializerParentSide(
+window.doubleInitialization = new FixedDoubleInitializationBridge(
   window,
+  window.apiState,
   leftIframe,
   rightIframe,
   window.doubleArea,

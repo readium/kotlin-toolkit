@@ -15,9 +15,14 @@ import timber.log.Timber
 
 public class ReflowableDecorationApi(
     private val webView: WebView,
+    decorationTemplates: HtmlDecorationTemplates,
 ) {
 
-    public fun registerTemplates(templates: HtmlDecorationTemplates) {
+    init {
+        registerTemplates(decorationTemplates)
+    }
+
+    private fun registerTemplates(templates: HtmlDecorationTemplates) {
         Timber.d("templatesJSON ${templates.toJSON()}")
         val templatesAsLiteral = templates.toJSON().toString().toJavaScriptLiteral()
         val script = "decorations.registerTemplates($templatesAsLiteral);"
@@ -45,9 +50,14 @@ public class ReflowableDecorationApi(
 
 public class FixedSingleDecorationApi(
     private val webView: WebView,
+    decorationTemplates: HtmlDecorationTemplates,
 ) {
 
-    public fun registerTemplates(templates: HtmlDecorationTemplates) {
+    init {
+        registerTemplates(decorationTemplates)
+    }
+
+    private fun registerTemplates(templates: HtmlDecorationTemplates) {
         Timber.d("templatesJSON ${templates.toJSON()}")
         val templatesAsLiteral = templates.toJSON().toString().toJavaScriptLiteral()
         val script = "singleDecorations.registerTemplates($templatesAsLiteral);"
@@ -75,9 +85,14 @@ public class FixedSingleDecorationApi(
 
 public class FixedDoubleDecorationApi(
     private val webView: WebView,
+    decorationTemplates: HtmlDecorationTemplates,
 ) {
 
-    public fun registerTemplates(templates: HtmlDecorationTemplates) {
+    init {
+        registerTemplates(decorationTemplates)
+    }
+
+    private fun registerTemplates(templates: HtmlDecorationTemplates) {
         Timber.d("templatesJSON ${templates.toJSON()}")
         val templatesAsLiteral = templates.toJSON().toString().toJavaScriptLiteral()
         val script = "doubleDecorations.registerTemplates($templatesAsLiteral);"

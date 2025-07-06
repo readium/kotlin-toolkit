@@ -8,7 +8,7 @@ import {
 import { Fit } from "../fixed/fit"
 import { SingleAreaManager } from "../fixed/single-area-manager"
 
-export class FixedSingleBridge {
+export class FixedSingleAreaBridge {
   private readonly manager: SingleAreaManager
 
   constructor(
@@ -61,7 +61,7 @@ export class FixedSingleBridge {
   }
 }
 
-export class FixedDoubleBridge {
+export class FixedDoubleAreaBridge {
   private readonly manager: DoubleAreaManager
 
   constructor(

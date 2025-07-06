@@ -15,9 +15,9 @@ import {
 import { GesturesDetector, GesturesListener } from "./common/gestures"
 import { SelectionManager } from "./common/selection"
 import { Size } from "./common/geometry"
-import { FixedInitializerIframeSide } from "./fixed/comm-initialization"
 import { IframeMessageSender } from "./fixed/iframe-message"
 import { parseViewportString } from "./util/viewport"
+import { FixedInitializerIframeSide } from "./bridge/all-initialization-bridge"
 
 const initializer = new FixedInitializerIframeSide(window)
 const messageSender = initializer.initAreaManager()

@@ -18,10 +18,12 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -83,22 +85,15 @@ internal fun ReflowableResource(
         modifier = Modifier.fillMaxSize(),
         propagateMinConstraints = true
     ) {
-        val webViewState =
-            rememberWebViewState<RelaxedWebView>(
-                url = publicationBaseUrl.resolve(resourceState.href).toString()
-            )
+        val webViewState = rememberWebViewState<RelaxedWebView>(
+            url = publicationBaseUrl.resolve(resourceState.href).toString()
+        )
 
-        val orientationState =
-            rememberUpdatedState(orientation)
+        val orientationState by rememberUpdatedState(orientation)
 
-        val directionState =
-            rememberUpdatedState(layoutDirection)
+        val directionState by rememberUpdatedState(layoutDirection)
 
-        val scriptsLoaded =
-            remember(webViewState.webView) { mutableStateOf(false) }
-
-        val contentIsLaidOut =
-            remember(webViewState.webView) { mutableStateOf(false) }
+        var scriptsLoaded by remember(webViewState.webView) { mutableStateOf(false) }
 
         val cssApi = remember(webViewState.webView) { mutableStateOf<CssApi?>(null) }
 
@@ -186,15 +181,17 @@ internal fun ReflowableResource(
             }
         }
 
-        LaunchedEffect(webViewState.webView, scriptsLoaded, cssApi, resourceState, contentIsLaidOut) {
+        val showPlaceholder =
+            remember(webViewState.webView) { mutableStateOf(true) }
+
+        LaunchedEffect(webViewState.webView, scriptsLoaded, cssApi, resourceState, showPlaceholder) {
             webViewState.webView?.let { webView ->
                 DocumentStateApi(
                     webView = webView,
                     onScriptsLoadedDelegate = {
-                        scriptsLoaded.value = true
+                        scriptsLoaded = true
                         cssApi.value = CssApi(webView)
-                        decorationApi.value = ReflowableDecorationApi(webView)
-                            .apply { registerTemplates(decorationTemplates) }
+                        decorationApi.value = ReflowableDecorationApi(webView, decorationTemplates)
                         selectionApi.value = ReflowableSelectionApi(webView) { rect: DpRect ->
                             DpRect(
                                 top = rect.top + padding.top,
@@ -212,7 +209,7 @@ internal fun ReflowableResource(
                             scrollController.moveToProgression(
                                 progression = resourceState.progression,
                                 snap = !scroll,
-                                orientation = orientationState.value,
+                                orientation = orientationState,
                                 direction = layoutDirection
                             )
                             resourceState.scrollController.value = scrollController
@@ -220,12 +217,12 @@ internal fun ReflowableResource(
                             webView.setOnScrollChangeListener { view, scrollX, scrollY, oldScrollX, oldScrollY ->
                                 onProgressionChange(
                                     scrollController.progression(
-                                        orientationState.value,
-                                        directionState.value
+                                        orientationState,
+                                        directionState
                                     )
                                 )
                             }
-                            contentIsLaidOut.value = true
+                            showPlaceholder.value = false
                         }
                     },
                     onDocumentResizedDelegate = {
@@ -241,10 +238,6 @@ internal fun ReflowableResource(
             // FIXME: resource is laid out again, so we should apply progression again
         }
 
-        LaunchedEffect(decorationApi.value) {
-            decorationApi.value?.registerTemplates(decorationTemplates)
-        }
-
         LaunchedEffect(webViewState.webView, actionModeCallback) {
             webViewState.webView?.setCustomSelectionActionModeCallback(actionModeCallback)
         }
@@ -256,7 +249,7 @@ internal fun ReflowableResource(
         }
 
         // Hide content before initial position is settled
-        if (!contentIsLaidOut.value) {
+        if (showPlaceholder.value) {
             Box(
                 modifier = Modifier
                     .background(backgroundColor)
@@ -290,7 +283,7 @@ internal fun ReflowableResource(
                     webview.setOnTouchListener(object : View.OnTouchListener {
                         @SuppressLint("ClickableViewAccessibility")
                         override fun onTouch(view: View, event: MotionEvent): Boolean {
-                            return orientationState.value == Orientation.Horizontal &&
+                            return orientationState == Orientation.Horizontal &&
                                 event.action == MotionEvent.ACTION_MOVE
                         }
                     })

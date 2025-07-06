@@ -54,7 +54,7 @@ public interface GesturesListener {
 
 public class GesturesApi(
     webView: WebView,
-    private val listener: GesturesListener,
+    public var listener: GesturesListener? = null,
 ) {
     private val coroutineScope: CoroutineScope =
         MainScope()
@@ -67,7 +67,7 @@ public class GesturesApi(
     public fun onTap(eventJson: String) {
         coroutineScope.launch {
             val tapEvent = Json.decodeFromString<JsonOffset>(eventJson)
-            listener.onTap(DpOffset(tapEvent.x.dp, tapEvent.y.dp))
+            listener?.onTap(DpOffset(tapEvent.x.dp, tapEvent.y.dp))
         }
     }
 
@@ -75,7 +75,7 @@ public class GesturesApi(
     public fun onLinkActivated(href: String, outerHtml: String) {
         coroutineScope.launch {
             val url = AbsoluteUrl(href) ?: return@launch
-            listener.onLinkActivated(url, outerHtml)
+            listener?.onLinkActivated(url, outerHtml)
         }
     }
 
@@ -84,7 +84,7 @@ public class GesturesApi(
         coroutineScope.launch {
             val jsonRect = Json.decodeFromString<JsonRect>(rect)
             val jsonOffset = Json.decodeFromString<JsonOffset>(offset)
-            listener.onDecorationActivated(
+            listener?.onDecorationActivated(
                 id = id,
                 group = group,
                 rect = DpRect(

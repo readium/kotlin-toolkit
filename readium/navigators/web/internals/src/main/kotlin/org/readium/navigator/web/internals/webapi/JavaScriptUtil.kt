@@ -6,7 +6,7 @@
 
 package org.readium.navigator.web.internals.webapi
 
-internal fun String.toJavaScriptLiteral(): String {
+public fun String.toJavaScriptLiteral(): String {
     val content = replace("\\", "\\\\").replace("'", "\\'")
     return "'$content'"
 }

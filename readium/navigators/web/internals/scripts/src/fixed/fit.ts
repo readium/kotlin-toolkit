@@ -1,18 +1,14 @@
 import { Size } from "../common/geometry"
 
-export const enum Fit {
-  Contain = "contain",
-  Width = "width",
-  Height = "height",
-}
+export type Fit = "contain" | "width" | "height"
 
 export function computeScale(fit: Fit, content: Size, container: Size): number {
   switch (fit) {
-    case Fit.Contain:
+    case "contain":
       return fitContain(content, container)
-    case Fit.Width:
+    case "width":
       return fitWidth(content, container)
-    case Fit.Height:
+    case "height":
       return fitHeight(content, container)
   }
 }

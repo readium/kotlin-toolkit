@@ -7,6 +7,7 @@
 package org.readium.navigator.web.fixedlayout.spread
 
 import android.annotation.SuppressLint
+import android.view.ActionMode
 import android.view.View
 import android.webkit.WebView
 import androidx.compose.foundation.background
@@ -16,8 +17,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
@@ -27,16 +30,15 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.zIndex
 import org.readium.navigator.common.TapEvent
 import org.readium.navigator.web.internals.server.WebViewClient
+import org.readium.navigator.web.internals.webapi.DelegatingGesturesListener
 import org.readium.navigator.web.internals.webapi.DocumentStateApi
 import org.readium.navigator.web.internals.webapi.GesturesApi
-import org.readium.navigator.web.internals.webapi.GesturesListener
 import org.readium.navigator.web.internals.webview.RelaxedWebView
 import org.readium.navigator.web.internals.webview.WebView
 import org.readium.navigator.web.internals.webview.WebViewScrollController
 import org.readium.navigator.web.internals.webview.WebViewState
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.AbsoluteUrl
-import timber.log.Timber
 
 @OptIn(ExperimentalReadiumApi::class)
 @SuppressLint("SetJavaScriptEnabled")
@@ -54,41 +56,40 @@ internal fun SpreadWebView(
     onLinkActivated: (AbsoluteUrl, String) -> Unit,
     backgroundColor: Color,
     onDocumentLoadedAndSized: (WebView) -> Unit,
+    actionModeCallback: ActionMode.Callback?,
 ) {
-    val contentIsLaidOut =
-        remember { mutableStateOf(false) }
+    var gesturesApi by remember(state.webView) { mutableStateOf<GesturesApi?>(null) }
 
-    LaunchedEffect(state.webView, onTap, onLinkActivated) {
+    LaunchedEffect(state.webView) {
         state.webView?.let { webView ->
-            val listener = object : GesturesListener {
-                override fun onTap(offset: DpOffset) {
-                    onTap(TapEvent(offset))
-                }
-
-                override fun onLinkActivated(href: AbsoluteUrl, outerHtml: String) {
-                    onLinkActivated(href, outerHtml)
-                }
-
-                override fun onDecorationActivated(
-                    id: String,
-                    group: String,
-                    rect: DpRect,
-                    offset: DpOffset,
-                ) {
-                }
-            }
-
-            GesturesApi(webView, listener)
+            gesturesApi = GesturesApi(webView)
         }
     }
 
-    LaunchedEffect(state.webView, onScriptsLoaded, spreadScrollState, contentIsLaidOut) {
+    LaunchedEffect(gesturesApi, onTap, onLinkActivated) {
+        gesturesApi?.let { gesturesApi ->
+            gesturesApi.listener = DelegatingGesturesListener(
+                onTapDelegate = { offset ->
+                    onTap(TapEvent(offset))
+                },
+                onLinkActivatedDelegate = { href: AbsoluteUrl, outerHtml: String ->
+                    onLinkActivated(href, outerHtml)
+                },
+                onDecorationActivatedDelegate = {
+                        id: String, group: String, rect: DpRect, offset: DpOffset ->
+                }
+            )
+        }
+    }
+
+    var showPlaceholder by remember { mutableStateOf(true) }
+
+    LaunchedEffect(state.webView, onScriptsLoaded, spreadScrollState, showPlaceholder) {
         state.webView?.let { webView ->
             DocumentStateApi(
                 webView = webView,
                 onScriptsLoadedDelegate = onScriptsLoaded,
                 onDocumentLoadedAndSizedDelegate = {
-                    Timber.d("spread $spreadIndex onDocumentLoadedAndSized")
                     webView.requestLayout()
                     webView.setNextLayoutListener {
                         val scrollController = WebViewScrollController(webView)
@@ -99,7 +100,7 @@ internal fun SpreadWebView(
                             direction = layoutDirection
                         )
                         spreadScrollState.scrollController.value = scrollController
-                        contentIsLaidOut.value = true
+                        showPlaceholder = false
                     }
                     onDocumentLoadedAndSized(webView)
                 },
@@ -109,8 +110,12 @@ internal fun SpreadWebView(
         }
     }
 
+    LaunchedEffect(state.webView, actionModeCallback) {
+        state.webView?.setCustomSelectionActionModeCallback(actionModeCallback)
+    }
+
     // Hide content before initial position is settled
-    if (!contentIsLaidOut.value) {
+    if (showPlaceholder) {
         Box(
             modifier = Modifier
                 .background(backgroundColor)
@@ -140,7 +145,6 @@ internal fun SpreadWebView(
         },
         onDispose = {
             spreadScrollState.scrollController.value = null
-            Timber.d("spread disposing $spreadIndex")
         }
     )
 }

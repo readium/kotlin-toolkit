@@ -15,8 +15,10 @@ import androidx.compose.foundation.pager.PagerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -27,9 +29,13 @@ import org.readium.navigator.common.TapEvent
 import org.readium.navigator.web.fixedlayout.layout.DoubleViewportSpread
 import org.readium.navigator.web.fixedlayout.util.DisplayArea
 import org.readium.navigator.web.fixedlayout.webapi.FixedDoubleApi
+import org.readium.navigator.web.fixedlayout.webapi.FixedDoubleInitializationApi
 import org.readium.navigator.web.internals.server.WebViewClient
+import org.readium.navigator.web.internals.webapi.ApiStateApi
+import org.readium.navigator.web.internals.webapi.DelegatingApiStateListener
 import org.readium.navigator.web.internals.webapi.FixedDoubleDecorationApi
 import org.readium.navigator.web.internals.webapi.FixedDoubleSelectionApi
+import org.readium.navigator.web.internals.webapi.FixedDoubleSelectionListener
 import org.readium.navigator.web.internals.webapi.Iframe
 import org.readium.navigator.web.internals.webview.RelaxedWebView
 import org.readium.navigator.web.internals.webview.rememberWebViewStateWithHTMLData
@@ -66,59 +72,87 @@ internal fun DoubleViewportSpread(
             baseUrl = state.publicationBaseUrl.toString()
         )
 
-        val scriptsLoaded = remember(webViewState.webView) {
+        var scriptsLoaded by remember(webViewState.webView) {
             mutableStateOf(false)
         }
 
-        val layoutApi = remember(webViewState.webView, scriptsLoaded.value) {
+        LaunchedEffect(scriptsLoaded, webViewState.webView) {
             webViewState.webView
-                .takeIf { scriptsLoaded.value }
-                ?.let { FixedDoubleApi(it) }
+                ?.takeIf { scriptsLoaded }
+                ?.let { webView ->
+                    FixedDoubleInitializationApi(webView)
+                        .loadSpread(state.spread)
+                }
+        }
+
+        var selectionListener by remember(webViewState.webView) {
+            mutableStateOf<FixedDoubleSelectionListener?>(null)
         }
 
         LaunchedEffect(webViewState.webView) {
-            val selectionApi = webViewState.webView
-                ?.let { FixedDoubleSelectionApi(it) { it } }
-            onSelectionApiChanged(selectionApi)
+            selectionListener = webViewState.webView?.let { FixedDoubleSelectionListener(it) }
         }
-        LaunchedEffect(layoutApi) {
-            if (layoutApi != null) {
+
+        var areaApi by remember(webViewState.webView) {
+            mutableStateOf<FixedDoubleApi?>(null)
+        }
+
+        var selectionApi by remember(webViewState.webView) {
+            mutableStateOf<FixedDoubleSelectionApi?>(null)
+        }
+
+        var decorationApi by remember(webViewState.webView) {
+            mutableStateOf<FixedDoubleDecorationApi?>(null)
+        }
+
+        LaunchedEffect(webViewState.webView) {
+            webViewState.webView?.let { webView ->
+                val listener = DelegatingApiStateListener(
+                    onAreaApiAvailableDelegate = {
+                        areaApi = FixedDoubleApi(webView)
+                    },
+                    onSelectionApiAvailableDelegate = {
+                        selectionApi = FixedDoubleSelectionApi(webView, selectionListener!!) { it }
+                        onSelectionApiChanged(selectionApi)
+                    },
+                    onDecorationApiAvailableDelegate = {
+                        decorationApi = FixedDoubleDecorationApi(webView, decorationTemplates)
+                    }
+                )
+                ApiStateApi(webView, listener)
+            }
+        }
+
+        LaunchedEffect(areaApi) {
+            areaApi?.let { areaApi ->
                 snapshotFlow {
                     state.fit.value
                 }.onEach {
-                    layoutApi.setFit(state.fit.value)
+                    areaApi.setFit(state.fit.value)
                 }.launchIn(this)
 
                 snapshotFlow {
                     state.displayArea.value
                 }.onEach {
-                    layoutApi.setDisplayArea(it)
+                    areaApi.setDisplayArea(it)
                 }.launchIn(this)
-
-                layoutApi.loadSpread(state.spread)
             }
         }
-
-        LaunchedEffect(webViewState.webView, actionModeCallback) {
-            webViewState.webView?.setCustomSelectionActionModeCallback(actionModeCallback)
-        }
-
-        val decorationApi = remember(webViewState.webView) { mutableStateOf<FixedDoubleDecorationApi?>(null) }
 
         val decorations = remember(webViewState.webView) { mutableStateOf(decorations) }
             .apply { value = decorations }
 
-        LaunchedEffect(decorationApi.value, decorations) {
-            decorationApi.value?.let { decorationApi ->
+        LaunchedEffect(decorationApi, decorations) {
+            decorationApi?.let { decorationApi ->
                 var lastDecorations = emptyMap<String, List<Decoration>>()
                 snapshotFlow { decorations.value }
                     .onEach {
                         for ((group, decos) in it.entries) {
                             val lastInGroup = lastDecorations[group].orEmpty()
                             for ((href, changes) in lastInGroup.changesByHref(decos)) {
-                                val iframe = when {
-                                    href == state.spread.leftPage?.href -> Iframe.Left
-                                    href == state.spread.rightPage?.href -> Iframe.Right
+                                val iframe = when (href) {
+                                    state.spread.leftPage?.href -> Iframe.Left
+                                    state.spread.rightPage?.href -> Iframe.Right
                                     else -> continue
                                 }
                                 for (change in changes) {
@@ -164,11 +198,10 @@ internal fun DoubleViewportSpread(
                 )
             },
             backgroundColor = backgroundColor,
-            onScriptsLoaded = { scriptsLoaded.value = true },
+            onScriptsLoaded = { scriptsLoaded = true },
             onDocumentLoadedAndSized = {
-                decorationApi.value = FixedDoubleDecorationApi(it)
-                    .apply { registerTemplates(decorationTemplates) }
             },
+            actionModeCallback = actionModeCallback
         )
     }
 }

@@ -18,7 +18,7 @@ export class DoubleAreaManager {
 
   private readonly listener: AreaManager.Listener
 
-  private fit: Fit = Fit.Contain
+  private fit: Fit = "contain"
 
   private insets: Insets = { top: 0, right: 0, bottom: 0, left: 0 }
 

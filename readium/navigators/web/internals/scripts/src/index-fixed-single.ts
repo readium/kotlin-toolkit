@@ -9,18 +9,23 @@
  */
 
 import { DocumentBridge, GesturesBridge } from "./bridge/all-listener-bridge"
-import { FixedSingleBridge as FixedSingleAreaBridge } from "./bridge/fixed-area-bridge"
-import { FixedSingleInitializerParentSide } from "./fixed/comm-initialization"
+import { FixedSingleAreaBridge as FixedSingleAreaBridge } from "./bridge/fixed-area-bridge"
 import { FixedSingleDecorationsBridge } from "./bridge/all-decoration-bridge"
 import { FixedSingleSelectionBridge } from "./bridge/all-selection-bridge"
+import {
+  FixedApiStateListener,
+  FixedSingleInitializationBridge,
+} from "./bridge/all-initialization-bridge"
 
 declare global {
   interface Window {
     // Web APIs available for native code
+    singleInitialization: FixedSingleInitializationBridge
     singleArea: FixedSingleAreaBridge
     singleSelection: FixedSingleSelectionBridge
     singleDecorations: FixedSingleDecorationsBridge
     // Native APIs available for web code
+    apiState: FixedApiStateListener
     documentState: DocumentBridge
     gestures: GesturesBridge
     singleSelectionListener: FixedSingleSelectionBridge.Listener
@@ -47,8 +52,9 @@ window.singleSelection = new FixedSingleSelectionBridge(
 
 window.singleDecorations = new FixedSingleDecorationsBridge()
 
-new FixedSingleInitializerParentSide(
+window.singleInitialization = new FixedSingleInitializationBridge(
   window,
+  window.apiState,
   iframe,
   window.singleArea,
   window.singleSelection,

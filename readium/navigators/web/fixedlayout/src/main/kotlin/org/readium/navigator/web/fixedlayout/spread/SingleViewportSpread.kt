@@ -15,8 +15,10 @@ import androidx.compose.foundation.pager.PagerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -27,9 +29,13 @@ import org.readium.navigator.common.TapEvent
 import org.readium.navigator.web.fixedlayout.layout.SingleViewportSpread
 import org.readium.navigator.web.fixedlayout.util.DisplayArea
 import org.readium.navigator.web.fixedlayout.webapi.FixedSingleApi
+import org.readium.navigator.web.fixedlayout.webapi.FixedSingleInitializationApi
 import org.readium.navigator.web.internals.server.WebViewClient
+import org.readium.navigator.web.internals.webapi.ApiStateApi
+import org.readium.navigator.web.internals.webapi.DelegatingApiStateListener
 import org.readium.navigator.web.internals.webapi.FixedSingleDecorationApi
 import org.readium.navigator.web.internals.webapi.FixedSingleSelectionApi
+import org.readium.navigator.web.internals.webapi.FixedSingleSelectionListener
 import org.readium.navigator.web.internals.webview.RelaxedWebView
 import org.readium.navigator.web.internals.webview.rememberWebViewStateWithHTMLData
 import org.readium.r2.navigator.Decoration
@@ -65,53 +71,78 @@ internal fun SingleViewportSpread(
             baseUrl = state.publicationBaseUrl.toString()
         )
 
-        val scriptsLoaded = remember(webViewState.webView) {
+        var scriptsLoaded by remember(webViewState.webView) {
             mutableStateOf(false)
         }
 
-        val layoutApi = remember(webViewState.webView, scriptsLoaded.value) {
+        LaunchedEffect(scriptsLoaded, webViewState.webView) {
             webViewState.webView
-                .takeIf { scriptsLoaded.value }
-                ?.let { FixedSingleApi(it) }
+                ?.takeIf { scriptsLoaded }
+                ?.let { webView ->
+                    FixedSingleInitializationApi(webView)
+                        .loadSpread(state.spread)
+                }
+        }
+
+        var selectionListener by remember(webViewState.webView) {
+            mutableStateOf<FixedSingleSelectionListener?>(null)
         }
 
         LaunchedEffect(webViewState.webView) {
-            val selectionApi = webViewState.webView
-                ?.let { FixedSingleSelectionApi(it) { it } }
-            onSelectionApiChanged(selectionApi)
+            selectionListener = webViewState.webView?.let { FixedSingleSelectionListener(it) }
         }
 
-        LaunchedEffect(layoutApi) {
-            if (layoutApi != null) {
+        var areaApi by remember(webViewState.webView) {
+            mutableStateOf<FixedSingleApi?>(null)
+        }
+
+        var selectionApi by remember(webViewState.webView) {
+            mutableStateOf<FixedSingleSelectionApi?>(null)
+        }
+
+        var decorationApi by remember(webViewState.webView) {
+            mutableStateOf<FixedSingleDecorationApi?>(null)
+        }
+
+        LaunchedEffect(webViewState.webView) {
+            webViewState.webView?.let { webView ->
+                val listener = DelegatingApiStateListener(
+                    onAreaApiAvailableDelegate = {
+                        areaApi = FixedSingleApi(webView)
+                    },
+                    onSelectionApiAvailableDelegate = {
+                        selectionApi = FixedSingleSelectionApi(webView, selectionListener!!) { it }
+                        onSelectionApiChanged(selectionApi)
+                    },
+                    onDecorationApiAvailableDelegate = {
+                        decorationApi = FixedSingleDecorationApi(webView, decorationTemplates)
+                    }
+                )
+                ApiStateApi(webView, listener)
+            }
+        }
+
+        LaunchedEffect(areaApi) {
+            areaApi?.let { areaApi ->
                 snapshotFlow {
                     state.fit.value
                 }.onEach {
-                    layoutApi.setFit(it)
+                    areaApi.setFit(it)
                 }.launchIn(this)
 
                 snapshotFlow {
                     state.displayArea.value
                 }.onEach {
-                    layoutApi.setDisplayArea(it)
+                    areaApi.setDisplayArea(it)
                 }.launchIn(this)
-
-                layoutApi.setFit(state.fit.value)
-                layoutApi.setDisplayArea(state.displayArea.value)
-                layoutApi.loadSpread(state.spread)
             }
         }
-
-        LaunchedEffect(webViewState.webView, actionModeCallback) {
-            webViewState.webView?.setCustomSelectionActionModeCallback(actionModeCallback)
-        }
-
-        val decorationApi = remember(webViewState.webView) { mutableStateOf<FixedSingleDecorationApi?>(null) }
 
         val decorations = remember(webViewState.webView) { mutableStateOf(decorations) }
             .apply { value = decorations }
 
-        LaunchedEffect(decorationApi.value, decorations) {
-            decorationApi.value?.let { decorationApi ->
+        LaunchedEffect(decorationApi, decorations) {
+            decorationApi?.let { decorationApi ->
                 var lastDecorations = emptyMap<String, List<Decoration>>()
                 snapshotFlow { decorations.value }
                     .onEach {
@@ -160,12 +191,11 @@ internal fun SingleViewportSpread(
                 )
             },
             backgroundColor = backgroundColor,
-            onScriptsLoaded = { scriptsLoaded.value = true },
+            onScriptsLoaded = { scriptsLoaded = true },
             onDocumentLoadedAndSized = {
-                decorationApi.value = FixedSingleDecorationApi(it)
-                    .apply { registerTemplates(decorationTemplates) }
             },
-            layoutDirection = layoutDirection
+            layoutDirection = layoutDirection,
+            actionModeCallback = actionModeCallback
         )
     }
 }
