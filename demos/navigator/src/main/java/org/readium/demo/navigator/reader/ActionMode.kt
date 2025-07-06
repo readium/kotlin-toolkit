@@ -6,6 +6,8 @@
 
 @file:OptIn(ExperimentalReadiumApi::class)
 
+@file:Suppress("ktlint:standard:filename")
+
 package org.readium.demo.navigator.reader
 
 import android.graphics.Color
@@ -23,7 +25,27 @@ import org.readium.navigator.common.SelectionLocation
 import org.readium.r2.navigator.util.BaseActionModeCallback
 import org.readium.r2.shared.ExperimentalReadiumApi
 
-class SelectionActionModeCallback<S : SelectionLocation>(
+class SelectionActionModeFactory<S : SelectionLocation>(
+    private val highlightsManager: HighlightsManager,
+    private val locatorAdapter: LocatorAdapter<*, *, S>,
+) {
+
+    fun createActionModeCallback(
+        selectionController: SelectionController<S>,
+        coroutineScope: CoroutineScope,
+        onNoteAdded: (Long) -> Unit,
+        onAnyHighlightAdded: () -> Unit,
+    ): ActionMode.Callback = SelectionActionModeCallback(
+        coroutineScope = coroutineScope,
+        selectionController = selectionController,
+        highlightsManager = highlightsManager,
+        onNoteAdded = onNoteAdded,
+        onAnyHighlightAdded = onAnyHighlightAdded,
+        locatorAdapter = locatorAdapter
+    )
+}
+
+private class SelectionActionModeCallback<S : SelectionLocation>(
     private val coroutineScope: CoroutineScope,
     private val selectionController: SelectionController<S>,
     private val highlightsManager: HighlightsManager,

@@ -17,21 +17,23 @@ import org.readium.navigator.common.LocatorAdapter
 import org.readium.navigator.common.NavigationController
 import org.readium.navigator.common.PreferencesEditor
 import org.readium.navigator.common.RenditionState
+import org.readium.navigator.common.SelectionController
 import org.readium.navigator.common.SelectionLocation
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.util.AbsoluteUrl
 
-data class ReaderState<L : Location, G : GoLocation, S : SelectionLocation, N : NavigationController<L, G>>(
+data class ReaderState<L : Location, G : GoLocation, S : SelectionLocation, C>(
     val url: AbsoluteUrl,
     val coroutineScope: CoroutineScope,
     val publication: Publication,
-    val renditionState: RenditionState<N>,
+    val renditionState: RenditionState<C>,
     val preferencesEditor: PreferencesEditor<*, *>,
     val locatorAdapter: LocatorAdapter<L, G, S>,
-    val onControllerAvailable: (N) -> Unit,
-    val highlightsManager: HighlightsManager? = null,
-) {
+    val highlightsManager: HighlightsManager,
+    val onControllerAvailable: (C) -> Unit,
+    val actionModeFactory: SelectionActionModeFactory<S>,
+) where C : NavigationController<L, G>, C : SelectionController<S> {
 
     fun close() {
         coroutineScope.cancel()

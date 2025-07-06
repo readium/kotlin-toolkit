@@ -10,6 +10,7 @@ package org.readium.demo.navigator.reader
 
 import android.app.Application
 import androidx.compose.runtime.snapshotFlow
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -20,6 +21,9 @@ import org.readium.demo.navigator.decorations.annotationMarkTemplate
 import org.readium.demo.navigator.decorations.pageNumberTemplate
 import org.readium.demo.navigator.persistence.LocatorRepository
 import org.readium.demo.navigator.preferences.PreferencesManager
+import org.readium.navigator.common.PreferencesEditor
+import org.readium.navigator.common.Settings
+import org.readium.navigator.common.SettingsController
 import org.readium.navigator.web.fixedlayout.FixedWebRenditionController
 import org.readium.navigator.web.fixedlayout.FixedWebRenditionFactory
 import org.readium.navigator.web.fixedlayout.location.FixedWebGoLocation
@@ -137,10 +141,12 @@ class ReaderOpener(
         }
 
         val onControllerAvailable: (ReflowableWebRenditionController) -> Unit = { controller ->
-            snapshotFlow { preferencesEditor.settings }
-                .onEach { controller.settings = it }
-                .launchIn(coroutineScope)
+            applySettings(coroutineScope, controller, preferencesEditor)
         }
+
+        val highlightsManager = HighlightsManager()
+
+        val actionModeFactory = SelectionActionModeFactory(highlightsManager, locatorAdapter)
 
         val readerState = ReaderState(
             url = url,
@@ -150,7 +156,8 @@ class ReaderOpener(
             preferencesEditor = preferencesEditor,
             locatorAdapter = locatorAdapter,
             onControllerAvailable = onControllerAvailable,
-            highlightsManager = HighlightsManager()
+            actionModeFactory = actionModeFactory,
+            highlightsManager = highlightsManager
         )
 
         return Try.success(readerState)
@@ -193,11 +200,13 @@ class ReaderOpener(
             return Try.failure(it)
         }
 
+        val highlightsManager = HighlightsManager()
+
         val onControllerAvailable: (FixedWebRenditionController) -> Unit = { controller ->
-            snapshotFlow { preferencesEditor.settings }
-                .onEach { controller.settings = it }
-                .launchIn(coroutineScope)
+            applySettings(coroutineScope, controller, preferencesEditor)
         }
+
+        val actionModeFactory = SelectionActionModeFactory(highlightsManager, locatorAdapter)
 
         val readerState = ReaderState(
             url = url,
@@ -207,9 +216,20 @@ class ReaderOpener(
             preferencesEditor = preferencesEditor,
             locatorAdapter = locatorAdapter,
             onControllerAvailable = onControllerAvailable,
-            highlightsManager = HighlightsManager()
+            highlightsManager = highlightsManager,
+            actionModeFactory = actionModeFactory
         )
 
         return Try.success(readerState)
+    }
+
+    private fun <S : Settings> applySettings(
+        coroutineScope: CoroutineScope,
+        settingsController: SettingsController<S>,
+        preferencesEditor: PreferencesEditor<*, S>,
+    ) {
+        snapshotFlow { preferencesEditor.settings }
+            .onEach { settingsController.settings = it }
+            .launchIn(coroutineScope)
     }
 }

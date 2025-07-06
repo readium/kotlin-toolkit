@@ -70,10 +70,10 @@ import org.readium.r2.shared.util.toUri
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun <L : Location, G : GoLocation, S : SelectionLocation, N : NavigationController<L, G>> Reader(
-    readerState: ReaderState<L, G, S, N>,
+fun <L : Location, G : GoLocation, S : SelectionLocation, C> Reader(
+    readerState: ReaderState<L, G, S, C>,
     fullScreenState: MutableState<Boolean>,
-) {
+) where C : NavigationController<L, G>, C : SelectionController<S> {
     val coroutineScope = rememberCoroutineScope()
 
     val showPreferences = remember { mutableStateOf(false) }
@@ -181,7 +181,7 @@ fun <L : Location, G : GoLocation, S : SelectionLocation, N : NavigationControll
 
         LaunchedEffect(controllerNow) {
             (controllerNow as? DecorationController)?.let { decoController ->
-                readerState.highlightsManager!!.decorations
+                readerState.highlightsManager.decorations
                     .onEach {
                         decoController.decorations["highlights"] = it
                     }.launchIn(coroutineScope)
@@ -218,22 +218,19 @@ fun <L : Location, G : GoLocation, S : SelectionLocation, N : NavigationControll
         }
 
         val selectionActionMode = remember(controllerNow) {
-            (controllerNow as? SelectionController<S>)
-                ?.let {
-                    SelectionActionModeCallback(
-                        coroutineScope = coroutineScope,
-                        selectionController = it,
-                        highlightsManager = readerState.highlightsManager!!,
-                        onNoteAdded = { id ->
-                            showAnnotationDialog.value =
-                                EditAnnotationViewModel(id, readerState.highlightsManager)
-                        },
-                        onAnyHighlightAdded = {
-                            it.clearSelection()
-                        },
-                        locatorAdapter = readerState.locatorAdapter
-                    )
-                }
+            controllerNow?.let { controller ->
+                readerState.actionModeFactory.createActionModeCallback(
+                    coroutineScope = coroutineScope,
+                    selectionController = controller,
+                    onNoteAdded = { id ->
+                        showAnnotationDialog.value =
+                            EditAnnotationViewModel(id, readerState.highlightsManager)
+                    },
+                    onAnyHighlightAdded = {
+                        controller.clearSelection()
+                    }
+                )
+            }
         }
 
         val decorationsListener = remember {
@@ -248,7 +245,7 @@ fun <L : Location, G : GoLocation, S : SelectionLocation, N : NavigationControll
                         EditHighlightViewModel(
                             id = event.decoration.id.split('-').first().toLong(),
                             contentRect = event.rect!!,
-                            highlightsManager = readerState.highlightsManager!!
+                            highlightsManager = readerState.highlightsManager
                         )
                 }
             }
