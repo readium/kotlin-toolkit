@@ -32,8 +32,8 @@ import org.readium.navigator.web.fixedlayout.util.DisplayArea
 import org.readium.navigator.web.fixedlayout.webapi.FixedDoubleApi
 import org.readium.navigator.web.fixedlayout.webapi.FixedDoubleInitializationApi
 import org.readium.navigator.web.internals.server.WebViewClient
-import org.readium.navigator.web.internals.webapi.ApiStateApi
-import org.readium.navigator.web.internals.webapi.DelegatingApiStateListener
+import org.readium.navigator.web.internals.webapi.DelegatingFixedApiStateListener
+import org.readium.navigator.web.internals.webapi.FixedApiStateApi
 import org.readium.navigator.web.internals.webapi.FixedDoubleDecorationApi
 import org.readium.navigator.web.internals.webapi.FixedDoubleSelectionApi
 import org.readium.navigator.web.internals.webapi.FixedDoubleSelectionListener
@@ -109,7 +109,10 @@ internal fun DoubleViewportSpread(
 
         LaunchedEffect(webViewState.webView) {
             webViewState.webView?.let { webView ->
-                val listener = DelegatingApiStateListener(
+                val listener = DelegatingFixedApiStateListener(
+                    onInitializationApiAvailableDelegate = {
+                        scriptsLoaded = true
+                    },
                     onAreaApiAvailableDelegate = {
                         areaApi = FixedDoubleApi(webView)
                     },
@@ -121,7 +124,7 @@ internal fun DoubleViewportSpread(
                         decorationApi = FixedDoubleDecorationApi(webView, decorationTemplates)
                     }
                 )
-                ApiStateApi(webView, listener)
+                FixedApiStateApi(webView, listener)
             }
         }
 
@@ -200,9 +203,6 @@ internal fun DoubleViewportSpread(
                 )
             },
             backgroundColor = backgroundColor,
-            onScriptsLoaded = { scriptsLoaded = true },
-            onDocumentLoadedAndSized = {
-            },
             onDecorationActivated = { id, group, rect, offset ->
                 val decoration = decorations.value[group]?.firstOrNull { it.id == id }
                     ?: return@SpreadWebView

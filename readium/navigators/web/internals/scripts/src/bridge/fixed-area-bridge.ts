@@ -3,7 +3,7 @@ import { DoubleAreaManager } from "../fixed/double-area-manager"
 import {
   GesturesBridge,
   FixedListenerAdapter,
-  DocumentBridge,
+  DocumentStateBridge,
 } from "./all-listener-bridge"
 import { Fit } from "../fixed/fit"
 import { SingleAreaManager } from "../fixed/single-area-manager"
@@ -16,7 +16,7 @@ export class FixedSingleAreaBridge {
     iframe: HTMLIFrameElement,
     metaViewport: HTMLMetaElement,
     gesturesBridge: GesturesBridge,
-    documentBridge: DocumentBridge
+    documentBridge: DocumentStateBridge
   ) {
     const listener = new FixedListenerAdapter(
       window,
@@ -70,7 +70,7 @@ export class FixedDoubleAreaBridge {
     rightIframe: HTMLIFrameElement,
     metaViewport: HTMLMetaElement,
     gesturesBridge: GesturesBridge,
-    documentBridge: DocumentBridge
+    documentBridge: DocumentStateBridge
   ) {
     const listener = new FixedListenerAdapter(
       window,

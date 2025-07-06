@@ -32,8 +32,8 @@ import org.readium.navigator.web.fixedlayout.util.DisplayArea
 import org.readium.navigator.web.fixedlayout.webapi.FixedSingleApi
 import org.readium.navigator.web.fixedlayout.webapi.FixedSingleInitializationApi
 import org.readium.navigator.web.internals.server.WebViewClient
-import org.readium.navigator.web.internals.webapi.ApiStateApi
-import org.readium.navigator.web.internals.webapi.DelegatingApiStateListener
+import org.readium.navigator.web.internals.webapi.DelegatingFixedApiStateListener
+import org.readium.navigator.web.internals.webapi.FixedApiStateApi
 import org.readium.navigator.web.internals.webapi.FixedSingleDecorationApi
 import org.readium.navigator.web.internals.webapi.FixedSingleSelectionApi
 import org.readium.navigator.web.internals.webapi.FixedSingleSelectionListener
@@ -108,7 +108,10 @@ internal fun SingleViewportSpread(
 
         LaunchedEffect(webViewState.webView) {
             webViewState.webView?.let { webView ->
-                val listener = DelegatingApiStateListener(
+                val listener = DelegatingFixedApiStateListener(
+                    onInitializationApiAvailableDelegate = {
+                        scriptsLoaded = true
+                    },
                     onAreaApiAvailableDelegate = {
                         areaApi = FixedSingleApi(webView)
                     },
@@ -120,7 +123,7 @@ internal fun SingleViewportSpread(
                         decorationApi = FixedSingleDecorationApi(webView, decorationTemplates)
                     }
                 )
-                ApiStateApi(webView, listener)
+                FixedApiStateApi(webView, listener)
             }
         }
 
@@ -193,9 +196,6 @@ internal fun SingleViewportSpread(
                 )
             },
             backgroundColor = backgroundColor,
-            onScriptsLoaded = { scriptsLoaded = true },
-            onDocumentLoadedAndSized = {
-            },
             layoutDirection = layoutDirection,
             onDecorationActivated = { id, group, rect, offset ->
                 val decoration = decorations.value[group]?.firstOrNull { it.id == id }

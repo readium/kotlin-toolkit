@@ -204,6 +204,7 @@ export class FixedDoubleInitializationBridge {
 }
 
 export interface FixedApiStateListener {
+  onInitializationApiAvailable(): void
   onAreaApiAvailable(): void
   onSelectionApiAvailable(): void
   onDecorationApiAvailable(): void

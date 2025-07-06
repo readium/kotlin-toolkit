@@ -9,60 +9,28 @@
  */
 
 import { ReflowableDecorationsBridge } from "./bridge/all-decoration-bridge"
-import {
-  ReflowableListenerAdapter,
-  GesturesBridge,
-} from "./bridge/all-listener-bridge"
-import { DocumentBridge } from "./bridge/all-listener-bridge"
+import { GesturesBridge } from "./bridge/all-listener-bridge"
+import { DocumentStateBridge } from "./bridge/all-listener-bridge"
 import { ReflowableSelectionBridge } from "./bridge/all-selection-bridge"
 import { CssBridge } from "./bridge/reflowable-css-bridge"
-import { DecorationManager } from "./common/decoration"
-import { GesturesDetector } from "./common/gestures"
-import { SelectionManager } from "./common/selection"
+import {
+  ReflowableApiStateListener,
+  ReflowableInitializationBridge as ReflowableInitializer,
+} from "./bridge/reflowable-initialization-bridge"
 import { appendVirtualColumnIfNeeded } from "./util/columns"
 
 declare global {
   interface Window {
     // Web APIs available for native code
+    reflowableApiState: ReflowableApiStateListener
     readiumcss: CssBridge
     decorations: ReflowableDecorationsBridge
     selection: ReflowableSelectionBridge
     // Native APIs available for web code
-    documentState: DocumentBridge
+    documentState: DocumentStateBridge
     gestures: GesturesBridge
   }
 }
-
-const bridgeListener = new ReflowableListenerAdapter(window.gestures)
-
-const decorationManager = new DecorationManager(window)
-
-Window.prototype.readiumcss = new CssBridge(window.document)
-
-Window.prototype.decorations = new ReflowableDecorationsBridge(
-  window,
-  decorationManager
-)
-
-Window.prototype.selection = new ReflowableSelectionBridge(
-  window,
-  new SelectionManager(window)
-)
-
-new GesturesDetector(window, bridgeListener, decorationManager)
-
-window.documentState.onScriptsLoaded()
-
-document.addEventListener("DOMContentLoaded", () => {
-  // Setups the `viewport` meta tag to disable overview.
-  const meta = document.createElement("meta")
-  meta.setAttribute("name", "viewport")
-  meta.setAttribute(
-    "content",
-    "width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no"
-  )
-  document.head.appendChild(meta)
-})
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 window.addEventListener("load", (event) => {
@@ -104,3 +72,5 @@ window.addEventListener("load", (event) => {
   })
   observer.observe(document.body)
 })
+
+new ReflowableInitializer(window, window.reflowableApiState)

@@ -12,11 +12,30 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 
-public class DocumentStateApi(
-    webView: WebView,
-    private val onScriptsLoadedDelegate: () -> Unit,
+public class DelegatingDocumentApiListener(
     private val onDocumentLoadedAndSizedDelegate: () -> Unit,
     private val onDocumentResizedDelegate: () -> Unit,
+) : DocumentStateApiListener {
+
+    override fun onDocumentLoadedAndSized() {
+        this.onDocumentLoadedAndSizedDelegate()
+    }
+
+    override fun onDocumentResized() {
+        this.onDocumentResizedDelegate()
+    }
+}
+
+public interface DocumentStateApiListener {
+
+    public fun onDocumentLoadedAndSized()
+
+    public fun onDocumentResized()
+}
+
+public class DocumentStateApi(
+    webView: WebView,
+    public var listener: DocumentStateApiListener? = null,
 ) {
     private val coroutineScope: CoroutineScope =
         MainScope()
@@ -26,23 +45,16 @@ public class DocumentStateApi(
     }
 
     @JavascriptInterface
-    public fun onScriptsLoaded() {
-        coroutineScope.launch {
-            onScriptsLoadedDelegate.invoke()
-        }
-    }
-
-    @JavascriptInterface
     public fun onDocumentLoadedAndSized() {
         coroutineScope.launch {
-            onDocumentLoadedAndSizedDelegate.invoke()
+            checkNotNull(listener).onDocumentLoadedAndSized()
         }
     }
 
     @JavascriptInterface
     public fun onDocumentResized() {
         coroutineScope.launch {
-            onDocumentResizedDelegate.invoke()
+            checkNotNull(listener).onDocumentResized()
         }
     }
 }

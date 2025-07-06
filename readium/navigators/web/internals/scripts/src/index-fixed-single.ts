@@ -8,7 +8,7 @@
  *  Script loaded by the single area HTML wrapper for fixed layout resources.
  */
 
-import { DocumentBridge, GesturesBridge } from "./bridge/all-listener-bridge"
+import { DocumentStateBridge, GesturesBridge } from "./bridge/all-listener-bridge"
 import { FixedSingleAreaBridge as FixedSingleAreaBridge } from "./bridge/fixed-area-bridge"
 import { FixedSingleDecorationsBridge } from "./bridge/all-decoration-bridge"
 import { FixedSingleSelectionBridge } from "./bridge/all-selection-bridge"
@@ -25,8 +25,8 @@ declare global {
     singleSelection: FixedSingleSelectionBridge
     singleDecorations: FixedSingleDecorationsBridge
     // Native APIs available for web code
-    apiState: FixedApiStateListener
-    documentState: DocumentBridge
+    fixedApiState: FixedApiStateListener
+    documentState: DocumentStateBridge
     gestures: GesturesBridge
     singleSelectionListener: FixedSingleSelectionBridge.Listener
   }
@@ -54,11 +54,11 @@ window.singleDecorations = new FixedSingleDecorationsBridge()
 
 window.singleInitialization = new FixedSingleInitializationBridge(
   window,
-  window.apiState,
+  window.fixedApiState,
   iframe,
   window.singleArea,
   window.singleSelection,
   window.singleDecorations
 )
 
-window.documentState.onScriptsLoaded()
+window.fixedApiState.onInitializationApiAvailable()

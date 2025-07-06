@@ -14,8 +14,7 @@ export interface GesturesBridge {
   ): void
 }
 
-export interface DocumentBridge {
-  onScriptsLoaded: () => void
+export interface DocumentStateBridge {
   onDocumentLoadedAndSized: () => void
   onDocumentResized: () => void
 }
@@ -61,7 +60,7 @@ export class ReflowableListenerAdapter implements GesturesListener {
 
 export class FixedListenerAdapter implements AreaManager.Listener {
   readonly gesturesApi: GesturesBridge
-  readonly documentApi: DocumentBridge
+  readonly documentApi: DocumentStateBridge
   readonly window: Window
   resizeObserverAdded: boolean
   documentLoadedFired: boolean
@@ -69,7 +68,7 @@ export class FixedListenerAdapter implements AreaManager.Listener {
   constructor(
     window: Window,
     gesturesApi: GesturesBridge,
-    documentApi: DocumentBridge
+    documentApi: DocumentStateBridge
   ) {
     this.window = window
     this.gesturesApi = gesturesApi

@@ -9,7 +9,6 @@ package org.readium.navigator.web.fixedlayout.spread
 import android.annotation.SuppressLint
 import android.view.ActionMode
 import android.view.View
-import android.webkit.WebView
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.layout.Box
@@ -30,6 +29,7 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.zIndex
 import org.readium.navigator.common.TapEvent
 import org.readium.navigator.web.internals.server.WebViewClient
+import org.readium.navigator.web.internals.webapi.DelegatingDocumentApiListener
 import org.readium.navigator.web.internals.webapi.DelegatingGesturesListener
 import org.readium.navigator.web.internals.webapi.DocumentStateApi
 import org.readium.navigator.web.internals.webapi.GesturesApi
@@ -51,19 +51,24 @@ internal fun SpreadWebView(
     layoutDirection: LayoutDirection,
     progression: Double,
     client: WebViewClient,
-    onScriptsLoaded: () -> Unit,
     onTap: (TapEvent) -> Unit,
     onLinkActivated: (AbsoluteUrl, String) -> Unit,
     backgroundColor: Color,
-    onDocumentLoadedAndSized: (WebView) -> Unit,
     actionModeCallback: ActionMode.Callback?,
     onDecorationActivated: (String, String, DpRect, DpOffset) -> Unit,
 ) {
-    var gesturesApi by remember(state.webView) { mutableStateOf<GesturesApi?>(null) }
+    var gesturesApi by remember(state.webView) {
+        mutableStateOf<GesturesApi?>(null)
+    }
+
+    var documentStateApi by remember(state.webView) {
+        mutableStateOf<DocumentStateApi?>(null)
+    }
 
     LaunchedEffect(state.webView) {
         state.webView?.let { webView ->
             gesturesApi = GesturesApi(webView)
+            documentStateApi = DocumentStateApi(webView)
         }
     }
 
@@ -86,29 +91,28 @@ internal fun SpreadWebView(
 
     var showPlaceholder by remember { mutableStateOf(true) }
 
-    LaunchedEffect(state.webView, onScriptsLoaded, spreadScrollState, showPlaceholder) {
+    LaunchedEffect(documentStateApi, state.webView, spreadScrollState, showPlaceholder) {
         state.webView?.let { webView ->
-            DocumentStateApi(
-                webView = webView,
-                onScriptsLoadedDelegate = onScriptsLoaded,
-                onDocumentLoadedAndSizedDelegate = {
-                    webView.requestLayout()
-                    webView.setNextLayoutListener {
-                        val scrollController = WebViewScrollController(webView)
-                        scrollController.moveToProgression(
-                            progression = progression,
-                            snap = true,
-                            orientation = Orientation.Horizontal,
-                            direction = layoutDirection
-                        )
-                        spreadScrollState.scrollController.value = scrollController
-                        showPlaceholder = false
+            documentStateApi?.let { documentStateApi ->
+                documentStateApi.listener = DelegatingDocumentApiListener(
+                    onDocumentLoadedAndSizedDelegate = {
+                        webView.requestLayout()
+                        webView.setNextLayoutListener {
+                            val scrollController = WebViewScrollController(webView)
+                            scrollController.moveToProgression(
+                                progression = progression,
+                                snap = true,
+                                orientation = Orientation.Horizontal,
+                                direction = layoutDirection
+                            )
+                            spreadScrollState.scrollController.value = scrollController
+                            showPlaceholder = false
+                        }
+                    },
+                    onDocumentResizedDelegate = {
                     }
-                    onDocumentLoadedAndSized(webView)
-                },
-                onDocumentResizedDelegate = {
-                }
-            )
+                )
+            }
         }
     }
 

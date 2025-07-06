@@ -39,9 +39,12 @@ import org.readium.navigator.common.TapEvent
 import org.readium.navigator.web.internals.server.WebViewClient
 import org.readium.navigator.web.internals.util.AbsolutePaddingValues
 import org.readium.navigator.web.internals.util.absolutePadding
+import org.readium.navigator.web.internals.webapi.DelegatingDocumentApiListener
 import org.readium.navigator.web.internals.webapi.DelegatingGesturesListener
+import org.readium.navigator.web.internals.webapi.DelegatingReflowableApiStateListener
 import org.readium.navigator.web.internals.webapi.DocumentStateApi
 import org.readium.navigator.web.internals.webapi.GesturesApi
+import org.readium.navigator.web.internals.webapi.ReflowableApiStateApi
 import org.readium.navigator.web.internals.webapi.ReflowableDecorationApi
 import org.readium.navigator.web.internals.webapi.ReflowableSelectionApi
 import org.readium.navigator.web.internals.webview.RelaxedWebView
@@ -89,23 +92,152 @@ internal fun ReflowableResource(
             url = publicationBaseUrl.resolve(resourceState.href).toString()
         )
 
-        val orientationState by rememberUpdatedState(orientation)
+        val orientationRef by rememberUpdatedState(orientation)
 
-        val directionState by rememberUpdatedState(layoutDirection)
+        val directionRef by rememberUpdatedState(layoutDirection)
 
-        var scriptsLoaded by remember(webViewState.webView) { mutableStateOf(false) }
+        val onSelectionApiChangedRef by rememberUpdatedState(onSelectionApiChanged)
 
-        val cssApi = remember(webViewState.webView) { mutableStateOf<CssApi?>(null) }
+        val paddingRef by rememberUpdatedState(padding)
 
-        val decorationApi = remember(webViewState.webView) { mutableStateOf<ReflowableDecorationApi?>(null) }
+        var documentStateApi by remember(webViewState) {
+            mutableStateOf<DocumentStateApi?>(null)
+        }
 
-        val selectionApi = remember(webViewState.webView) { mutableStateOf<ReflowableSelectionApi?>(null) }
+        var gesturesApi by remember(webViewState.webView) {
+            mutableStateOf<GesturesApi?>(null)
+        }
+
+        LaunchedEffect(webViewState.webView) {
+            webViewState.webView?.let { webView ->
+                gesturesApi = GesturesApi(webView)
+                documentStateApi = DocumentStateApi(webView)
+            }
+        }
+
+        var cssApi by remember(webViewState.webView) {
+            mutableStateOf<CssApi?>(null)
+        }
+
+        var decorationApi by remember(webViewState.webView) {
+            mutableStateOf<ReflowableDecorationApi?>(null)
+        }
+
+        var selectionApi by remember(webViewState.webView) {
+            mutableStateOf<ReflowableSelectionApi?>(null)
+        }
 
         val decorations = remember(webViewState.webView) { mutableStateOf(decorations) }
             .apply { value = decorations }
 
-        LaunchedEffect(decorationApi.value, decorations) {
-            decorationApi.value?.let { decorationApi ->
+        val showPlaceholder =
+            remember(webViewState.webView) { mutableStateOf(true) }
+
+        val rectAdapter = { rect: DpRect ->
+            DpRect(
+                top = rect.top + paddingRef.top,
+                right = rect.right + paddingRef.left,
+                bottom = rect.bottom + paddingRef.top,
+                left = rect.left + paddingRef.left
+            )
+        }
+
+        LaunchedEffect(webViewState.webView) {
+            webViewState.webView?.let { webView ->
+                val listener = DelegatingReflowableApiStateListener(
+                    onCssApiAvailableDelegate = {
+                        cssApi = CssApi(webView)
+                    },
+                    onSelectionApiAvailableDelegate = {
+                        selectionApi = ReflowableSelectionApi(webView, rectAdapter)
+                        onSelectionApiChangedRef(selectionApi)
+                    },
+                    onDecorationApiAvailableDelegate = {
+                        decorationApi = ReflowableDecorationApi(webView, decorationTemplates)
+                    }
+                )
+                ReflowableApiStateApi(webView, listener)
+            }
+        }
+
+        LaunchedEffect(documentStateApi, webViewState.webView, resourceState, showPlaceholder) {
+            webViewState.webView?.let { webView ->
+                documentStateApi?.let { documentStateApi ->
+                    documentStateApi.listener = DelegatingDocumentApiListener(
+                        onDocumentLoadedAndSizedDelegate = {
+                            Timber.d("resource ${resourceState.index} onDocumentLoadedAndResized")
+                            webView.requestLayout()
+                            webView.setNextLayoutListener {
+                                val scrollController = WebViewScrollController(webView)
+                                scrollController.moveToProgression(
+                                    progression = resourceState.progression,
+                                    snap = !scroll,
+                                    orientation = orientationRef,
+                                    direction = layoutDirection
+                                )
+                                resourceState.scrollController.value = scrollController
+                                Timber.d("resource ${resourceState.index} ready to scroll")
+                                webView.setOnScrollChangeListener { view, scrollX, scrollY, oldScrollX, oldScrollY ->
+                                    onProgressionChange(
+                                        scrollController.progression(
+                                            orientationRef,
+                                            directionRef
+                                        )
+                                    )
+                                }
+                                showPlaceholder.value = false
+                            }
+                        },
+                        onDocumentResizedDelegate = {
+                            Timber.d("resource ${resourceState.index} onDocumentResized")
+                            onDocumentResized.invoke()
+                        }
+                    )
+                }
+            }
+        }
+
+        LaunchedEffect(gesturesApi, onTap, onLinkActivated) {
+            gesturesApi?.let { gesturesApi ->
+                gesturesApi.listener = DelegatingGesturesListener(
+                    onTapDelegate = { offset ->
+                        val shiftedOffset = DpOffset(
+                            x = offset.x + padding.left,
+                            y = offset.y + padding.top
+                        )
+                        onTap(TapEvent(shiftedOffset))
+                    },
+                    onLinkActivatedDelegate = { href, outerHtml ->
+                        onLinkActivated(publicationBaseUrl.relativize(href), outerHtml)
+                    },
+                    onDecorationActivatedDelegate = { id, group, rect, offset ->
+                        val decoration = decorations.value[group]?.firstOrNull { it.id == id }
+                            ?: return@DelegatingGesturesListener
+
+                        val shiftedOffset = DpOffset(
+                            x = offset.x + padding.left,
+                            y = offset.y + padding.top
+                        )
+                        val shiftedRect = DpRect(
+                            left = rect.left + padding.left,
+                            right = rect.right + padding.left,
+                            top = rect.top + padding.top,
+                            bottom = rect.bottom + padding.top,
+                        )
+                        val event = DecorationListener.OnActivatedEvent(
+                            decoration = decoration,
+                            group = group,
+                            rect = shiftedRect,
+                            offset = shiftedOffset
+                        )
+                        onDecorationActivated(event)
+                    }
+                )
+            }
+        }
+
+        LaunchedEffect(decorationApi, decorations) {
+            decorationApi?.let { decorationApi ->
                 var lastDecorations = emptyMap<String, List<Decoration>>()
                 snapshotFlow { decorations.value }
                     .onEach {
@@ -139,113 +271,9 @@ internal fun ReflowableResource(
             }
         }
 
-        LaunchedEffect(webViewState.webView, onTap, onLinkActivated) {
-            webViewState.webView?.let { webView ->
-                GesturesApi(
-                    webView = webView,
-                    listener = DelegatingGesturesListener(
-                        onTapDelegate = { offset ->
-                            val shiftedOffset = DpOffset(
-                                x = offset.x + padding.left,
-                                y = offset.y + padding.top
-                            )
-                            onTap(TapEvent(shiftedOffset))
-                        },
-                        onLinkActivatedDelegate = { href, outerHtml ->
-                            onLinkActivated(publicationBaseUrl.relativize(href), outerHtml)
-                        },
-                        onDecorationActivatedDelegate = { id, group, rect, offset ->
-                            val decoration = decorations.value[group]?.firstOrNull { it.id == id }
-                                ?: return@DelegatingGesturesListener
-
-                            val shiftedOffset = DpOffset(
-                                x = offset.x + padding.left,
-                                y = offset.y + padding.top
-                            )
-                            val shiftedRect = DpRect(
-                                left = rect.left + padding.left,
-                                right = rect.right + padding.left,
-                                top = rect.top + padding.top,
-                                bottom = rect.bottom + padding.top,
-                            )
-                            val event = DecorationListener.OnActivatedEvent(
-                                decoration = decoration,
-                                group = group,
-                                rect = shiftedRect,
-                                offset = shiftedOffset
-                            )
-                            onDecorationActivated(event)
-                        }
-                    )
-                )
-            }
-        }
-
-        val showPlaceholder =
-            remember(webViewState.webView) { mutableStateOf(true) }
-
-        LaunchedEffect(webViewState.webView, scriptsLoaded, cssApi, resourceState, showPlaceholder) {
-            webViewState.webView?.let { webView ->
-                DocumentStateApi(
-                    webView = webView,
-                    onScriptsLoadedDelegate = {
-                        scriptsLoaded = true
-                        cssApi.value = CssApi(webView)
-                        decorationApi.value = ReflowableDecorationApi(webView, decorationTemplates)
-                        selectionApi.value = ReflowableSelectionApi(webView) { rect: DpRect ->
-                            DpRect(
-                                top = rect.top + padding.top,
-                                right = rect.right + padding.left,
-                                bottom = rect.bottom + padding.top,
-                                left = rect.left + padding.left
-                            )
-                        }
-                    },
-                    onDocumentLoadedAndSizedDelegate = {
-                        Timber.d("resource ${resourceState.index} onDocumentLoadedAndResized")
-                        webView.requestLayout()
-                        webView.setNextLayoutListener {
-                            val scrollController = WebViewScrollController(webView)
-                            scrollController.moveToProgression(
-                                progression = resourceState.progression,
-                                snap = !scroll,
-                                orientation = orientationState,
-                                direction = layoutDirection
-                            )
-                            resourceState.scrollController.value = scrollController
-                            Timber.d("resource ${resourceState.index} ready to scroll")
-                            webView.setOnScrollChangeListener { view, scrollX, scrollY, oldScrollX, oldScrollY ->
-                                onProgressionChange(
-                                    scrollController.progression(
-                                        orientationState,
-                                        directionState
-                                    )
-                                )
-                            }
-                            showPlaceholder.value = false
-                        }
-                    },
-                    onDocumentResizedDelegate = {
-                        Timber.d("resource ${resourceState.index} onDocumentResized")
-                        onDocumentResized.invoke()
-                    }
-                )
-            }
-        }
-
-        LaunchedEffect(cssApi.value, readiumCssInjector) {
-            cssApi.value?.setProperties(readiumCssInjector.userProperties, readiumCssInjector.rsProperties)
+        LaunchedEffect(cssApi, readiumCssInjector) {
+            cssApi?.setProperties(readiumCssInjector.userProperties, readiumCssInjector.rsProperties)
             // FIXME: resource is laid out again, so we should apply progression again
-        }
-
-        LaunchedEffect(webViewState.webView, actionModeCallback) {
-            webViewState.webView?.setCustomSelectionActionModeCallback(actionModeCallback)
-        }
-
-        LaunchedEffect(selectionApi, onSelectionApiChanged) {
-            snapshotFlow { selectionApi.value }
-                .onEach { onSelectionApiChanged(it) }
-                .launchIn(this)
         }
 
         // Hide content before initial position is settled
@@ -257,6 +285,10 @@ internal fun ReflowableResource(
                     .fillMaxSize(),
                 content = {}
             )
+        }
+
+        LaunchedEffect(webViewState.webView, actionModeCallback) {
+            webViewState.webView?.setCustomSelectionActionModeCallback(actionModeCallback)
         }
 
         // Recreate WebView when Readium CSS layout changes because injected stuff depends on it
@@ -283,7 +315,7 @@ internal fun ReflowableResource(
                     webview.setOnTouchListener(object : View.OnTouchListener {
                         @SuppressLint("ClickableViewAccessibility")
                         override fun onTouch(view: View, event: MotionEvent): Boolean {
-                            return orientationState == Orientation.Horizontal &&
+                            return orientationRef == Orientation.Horizontal &&
                                 event.action == MotionEvent.ACTION_MOVE
                         }
                     })

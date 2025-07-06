@@ -12,11 +12,17 @@ import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
-public class DelegatingApiStateListener(
+public class DelegatingFixedApiStateListener(
+    private val onInitializationApiAvailableDelegate: () -> Unit,
     private val onAreaApiAvailableDelegate: () -> Unit,
     private val onSelectionApiAvailableDelegate: () -> Unit,
     private val onDecorationApiAvailableDelegate: () -> Unit,
-) : ApiStateListener {
+) : FixedApiStateListener {
+
+    override fun onInitializationApiAvailable() {
+        this.onInitializationApiAvailableDelegate()
+    }
+
     override fun onAreaApiAvailable() {
         this.onAreaApiAvailableDelegate()
     }
@@ -30,7 +36,9 @@ public class DelegatingApiStateListener(
     }
 }
 
-public interface ApiStateListener {
+public interface FixedApiStateListener {
+
+    public fun onInitializationApiAvailable()
 
     public fun onAreaApiAvailable()
 
@@ -39,15 +47,22 @@ public interface ApiStateListener {
     public fun onDecorationApiAvailable()
 }
 
-public class ApiStateApi(
+public class FixedApiStateApi(
     webView: WebView,
-    private val listener: ApiStateListener,
+    private val listener: FixedApiStateListener,
 ) {
     private val coroutineScope: CoroutineScope =
         MainScope()
 
     init {
-        webView.addJavascriptInterface(this, "apiState")
+        webView.addJavascriptInterface(this, "fixedApiState")
+    }
+
+    @android.webkit.JavascriptInterface
+    public fun onInitializationApiAvailable() {
+        coroutineScope.launch {
+            listener.onInitializationApiAvailable()
+        }
     }
 
     @android.webkit.JavascriptInterface

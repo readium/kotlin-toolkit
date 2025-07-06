@@ -8,11 +8,14 @@
  *  Script loaded by the single area HTML wrapper for fixed layout resources.
  */
 
-import { DocumentBridge, GesturesBridge } from "./bridge/all-listener-bridge"
+import { DocumentStateBridge, GesturesBridge } from "./bridge/all-listener-bridge"
 import { FixedDoubleAreaBridge as FixedDoubleAreaBridge } from "./bridge/fixed-area-bridge"
 import { FixedDoubleSelectionBridge } from "./bridge/all-selection-bridge"
 import { FixedDoubleDecorationsBridge } from "./bridge/all-decoration-bridge"
-import { FixedDoubleInitializationBridge } from "./bridge/all-initialization-bridge"
+import {
+  FixedApiStateListener,
+  FixedDoubleInitializationBridge,
+} from "./bridge/all-initialization-bridge"
 
 declare global {
   interface Window {
@@ -22,7 +25,8 @@ declare global {
     doubleSelection: FixedDoubleSelectionBridge
     doubleDecorations: FixedDoubleDecorationsBridge
     // Native APIs available for web code
-    documentState: DocumentBridge
+    fixedApiState: FixedApiStateListener
+    documentState: DocumentStateBridge
     gestures: GesturesBridge
     doubleSelectionListener: FixedDoubleSelectionBridge.Listener
   }
@@ -55,7 +59,7 @@ window.doubleDecorations = new FixedDoubleDecorationsBridge()
 
 window.doubleInitialization = new FixedDoubleInitializationBridge(
   window,
-  window.apiState,
+  window.fixedApiState,
   leftIframe,
   rightIframe,
   window.doubleArea,
@@ -63,4 +67,5 @@ window.doubleInitialization = new FixedDoubleInitializationBridge(
   window.doubleDecorations
 )
 
-window.documentState.onScriptsLoaded()
+window.fixedApiState.onInitializationApiAvailable()
+
