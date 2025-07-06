@@ -6,7 +6,6 @@
 
 package org.readium.navigator.common
 
-import androidx.compose.runtime.State
 import org.readium.r2.navigator.preferences.Axis
 import org.readium.r2.navigator.preferences.ReadingProgression
 import org.readium.r2.shared.ExperimentalReadiumApi
@@ -23,7 +22,7 @@ public interface OverflowController {
     /**
      * Current presentation rendered by the navigator.
      */
-    public val overflow: State<Overflow>
+    public val overflow: Overflow
 
     /**
      * Whether one can move forward through the content or not because the content shown is
@@ -83,7 +82,7 @@ public data class SimpleOverflow(
  */
 @ExperimentalReadiumApi
 public suspend fun OverflowController.moveLeft() {
-    return when (overflow.value.readingProgression) {
+    return when (overflow.readingProgression) {
         ReadingProgression.LTR ->
             moveBackward()
 
@@ -97,7 +96,7 @@ public suspend fun OverflowController.moveLeft() {
  */
 @ExperimentalReadiumApi
 public suspend fun OverflowController.moveRight() {
-    return when (overflow.value.readingProgression) {
+    return when (overflow.readingProgression) {
         ReadingProgression.LTR ->
             moveForward()
 

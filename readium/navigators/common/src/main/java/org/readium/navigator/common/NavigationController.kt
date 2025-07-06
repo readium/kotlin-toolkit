@@ -6,14 +6,13 @@
 
 package org.readium.navigator.common
 
-import androidx.compose.runtime.State
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.Url
 
 @ExperimentalReadiumApi
 public interface NavigationController<L : Location, G : GoLocation> {
 
-    public val location: State<L>
+    public val location: L
 
     public suspend fun goTo(location: G)
 

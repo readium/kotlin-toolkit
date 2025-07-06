@@ -15,8 +15,10 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateMap
 import kotlin.reflect.KClass
 import kotlinx.collections.immutable.ImmutableList
@@ -141,7 +143,7 @@ public class ReflowableWebRenditionState internal constructor(
                     ) */
                 }
             ).withSettings(
-                settings = layoutDelegate.settings.value,
+                settings = layoutDelegate.settings,
             )
         }
 
@@ -217,11 +219,10 @@ internal class ReflowableLayoutDelegate(
     initialSettings: ReflowableWebSettings,
 ) : SettingsController<ReflowableWebSettings> {
 
-    override val settings: MutableState<ReflowableWebSettings> =
-        mutableStateOf(initialSettings)
+    override var settings by mutableStateOf(initialSettings)
 
     internal val overflow: State<Overflow> = derivedStateOf {
-        with(settings.value) {
+        with(settings) {
             SimpleOverflow(
                 readingProgression = readingProgression,
                 scroll = scroll,
@@ -239,7 +240,7 @@ internal class ReflowableNavigationDelegate(
     private val readingOrder: ReflowableWebPublication.ReadingOrder,
     private val resourceStates: List<ReflowableResourceState>,
     private val pagerState: PagerState,
-    override val overflow: State<Overflow>,
+    overflowState: State<Overflow>,
     initialLocation: ReflowableWebLocation,
 ) : NavigationController<ReflowableWebLocation, ReflowableWebGoLocation>, OverflowController {
 
@@ -252,8 +253,9 @@ internal class ReflowableNavigationDelegate(
         locationMutable.value = location
     }
 
-    override val location: State<ReflowableWebLocation> =
-        locationMutable
+    override val overflow by overflowState
+
+    override val location by locationMutable
 
     override suspend fun goTo(location: HyperlinkLocation) {
         goTo(ReflowableWebGoLocation(location.href)) // TODO: use fragment
@@ -314,33 +316,33 @@ internal class ReflowableNavigationDelegate(
 
     private fun WebViewScrollController.moveForward() =
         moveForward(
-            orientation = overflow.value.axis.toOrientation(),
-            direction = overflow.value.readingProgression.toLayoutDirection()
+            orientation = overflow.axis.toOrientation(),
+            direction = overflow.readingProgression.toLayoutDirection()
         )
 
     private fun WebViewScrollController.moveBackward() =
         moveBackward(
-            orientation = overflow.value.axis.toOrientation(),
-            direction = overflow.value.readingProgression.toLayoutDirection()
+            orientation = overflow.axis.toOrientation(),
+            direction = overflow.readingProgression.toLayoutDirection()
         )
 
     private fun WebViewScrollController.canMoveForward(): Boolean =
         canMoveForward(
-            orientation = overflow.value.axis.toOrientation(),
-            direction = overflow.value.readingProgression.toLayoutDirection()
+            orientation = overflow.axis.toOrientation(),
+            direction = overflow.readingProgression.toLayoutDirection()
         )
     private fun WebViewScrollController.canMoveBackward(): Boolean =
         canMoveBackward(
-            orientation = overflow.value.axis.toOrientation(),
-            direction = overflow.value.readingProgression.toLayoutDirection()
+            orientation = overflow.axis.toOrientation(),
+            direction = overflow.readingProgression.toLayoutDirection()
         )
 
     private fun WebViewScrollController.moveToProgression(progression: Double) {
         moveToProgression(
             progression = progression,
-            snap = !overflow.value.scroll,
-            orientation = overflow.value.axis.toOrientation(),
-            direction = overflow.value.readingProgression.toLayoutDirection()
+            snap = !overflow.scroll,
+            orientation = overflow.axis.toOrientation(),
+            direction = overflow.readingProgression.toLayoutDirection()
         )
     }
 }

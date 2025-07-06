@@ -138,7 +138,7 @@ class ReaderOpener(
 
         val onControllerAvailable: (ReflowableWebRenditionController) -> Unit = { controller ->
             snapshotFlow { preferencesEditor.settings }
-                .onEach { controller.settings.value = it }
+                .onEach { controller.settings = it }
                 .launchIn(coroutineScope)
         }
 
@@ -195,7 +195,7 @@ class ReaderOpener(
 
         val onControllerAvailable: (FixedWebRenditionController) -> Unit = { controller ->
             snapshotFlow { preferencesEditor.settings }
-                .onEach { controller.settings.value = it }
+                .onEach { controller.settings = it }
                 .launchIn(coroutineScope)
         }
 

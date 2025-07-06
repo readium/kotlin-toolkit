@@ -115,8 +115,8 @@ public fun ReflowableWebRendition(
             }.toFling2DBehavior(state.layoutDelegate.orientation)
 
             val backgroundColor = Color(
-                state.layoutDelegate.settings.value.backgroundColor?.int
-                    ?: state.layoutDelegate.settings.value.theme.backgroundColor
+                state.layoutDelegate.settings.backgroundColor?.int
+                    ?: state.layoutDelegate.settings.theme.backgroundColor
             )
 
             val currentPageState = remember(state) { derivedStateOf { state.pagerState.currentPage } }
@@ -170,7 +170,7 @@ public fun ReflowableWebRendition(
                     backgroundColor = backgroundColor,
                     padding = resourcePadding,
                     layoutDirection = layoutDirection,
-                    scroll = state.layoutDelegate.settings.value.scroll,
+                    scroll = state.layoutDelegate.settings.scroll,
                     orientation = state.layoutDelegate.orientation,
                     readiumCssInjector = state.readiumCssInjector.value,
                     decorationTemplates = state.decorationDelegate.decorationTemplates,

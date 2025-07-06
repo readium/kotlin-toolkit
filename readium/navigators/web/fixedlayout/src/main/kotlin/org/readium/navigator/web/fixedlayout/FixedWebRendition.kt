@@ -149,7 +149,7 @@ public fun FixedWebRendition(
 
             LaunchedEffect(state.layoutDelegate.layout.value, state.controller) {
                 state.controller?.let {
-                    val currentHref = it.location.value.href
+                    val currentHref = it.location.href
                     val spreadIndex = checkNotNull(
                         state.layoutDelegate.layout.value.spreadIndexForHref(currentHref)
                     )

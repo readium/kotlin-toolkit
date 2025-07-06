@@ -12,8 +12,10 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateMap
 import kotlin.coroutines.coroutineContext
 import kotlin.reflect.KClass
@@ -78,8 +80,8 @@ public class FixedWebRenditionState internal constructor(
     override val controller: FixedWebRenditionController? get() =
         controllerState.value
 
-    internal val layoutDelegate: LayoutDelegate =
-        LayoutDelegate(
+    internal val layoutDelegate: FixedLayoutDelegate =
+        FixedLayoutDelegate(
             publication.readingOrder,
             initialSettings
         )
@@ -130,11 +132,11 @@ public class FixedWebRenditionState internal constructor(
     internal val decorationDelegate: FixedDecorationDelegate =
         FixedDecorationDelegate(decorationTemplates)
 
-    internal lateinit var navigationDelegate: NavigationDelegate
+    internal lateinit var navigationDelegate: FixedNavigationDelegate
 
     internal fun initController(location: FixedWebLocation) {
         navigationDelegate =
-            NavigationDelegate(
+            FixedNavigationDelegate(
                 pagerState,
                 layoutDelegate.layout,
                 layoutDelegate.overflow,
@@ -154,8 +156,8 @@ public class FixedWebRenditionState internal constructor(
 @ExperimentalReadiumApi
 @Stable
 public class FixedWebRenditionController internal constructor(
-    private val navigationDelegate: NavigationDelegate,
-    layoutDelegate: LayoutDelegate,
+    private val navigationDelegate: FixedNavigationDelegate,
+    layoutDelegate: FixedLayoutDelegate,
     decorationDelegate: FixedDecorationDelegate,
     selectionDelegate: FixedSelectionDelegate,
 ) : NavigationController<FixedWebLocation, FixedWebGoLocation> by navigationDelegate,
@@ -170,7 +172,7 @@ internal data class FixedWebPreloadedData(
 )
 
 @OptIn(ExperimentalReadiumApi::class, InternalReadiumApi::class)
-internal class LayoutDelegate(
+internal class FixedLayoutDelegate(
     readingOrder: FixedWebPublication.ReadingOrder,
     initialSettings: FixedWebSettings,
 ) : SettingsController<FixedWebSettings> {
@@ -178,11 +180,10 @@ internal class LayoutDelegate(
     private val layoutResolver =
         LayoutResolver(readingOrder)
 
-    override val settings: MutableState<FixedWebSettings> =
-        mutableStateOf(initialSettings)
+    override var settings by mutableStateOf(initialSettings)
 
     val overflow: State<Overflow> = derivedStateOf {
-        with(settings.value) {
+        with(settings) {
             SimpleOverflow(
                 readingProgression = readingProgression,
                 scroll = false,
@@ -193,19 +194,19 @@ internal class LayoutDelegate(
 
     val layout: State<Layout> =
         derivedStateOf {
-            val spreads = layoutResolver.layout(settings.value)
-            Layout(settings.value.readingProgression, spreads)
+            val spreads = layoutResolver.layout(settings)
+            Layout(settings.readingProgression, spreads)
         }
 
     val fit: State<Fit> =
-        derivedStateOf { settings.value.fit }
+        derivedStateOf { settings.fit }
 }
 
 @OptIn(ExperimentalReadiumApi::class, InternalReadiumApi::class)
-internal class NavigationDelegate(
+internal class FixedNavigationDelegate(
     private val pagerState: PagerState,
     private val layout: State<Layout>,
-    override val overflow: State<Overflow>,
+    overflowState: State<Overflow>,
     initialLocation: FixedWebLocation,
 ) : NavigationController<FixedWebLocation, FixedWebGoLocation>, OverflowController {
 
@@ -215,9 +216,9 @@ internal class NavigationDelegate(
     internal fun updateLocation(location: FixedWebLocation) {
         locationMutable.value = location
     }
+    override val overflow by overflowState
 
-    override val location: State<FixedWebLocation> =
-        locationMutable
+    override val location by locationMutable
 
     override suspend fun goTo(location: HyperlinkLocation) {
         goTo(FixedWebGoLocation(location.href))

@@ -137,7 +137,7 @@ fun <L : Location, G : GoLocation, S : SelectionLocation, N : NavigationControll
 
             LaunchedEffect(controllerNow) {
                 snapshotFlow {
-                    controllerNow.location.value
+                    controllerNow.location
                 }.onEach {
                     val locator = with(readerState.locatorAdapter) { it.toLocator() }
                     LocatorRepository.saveLocator(readerState.url, locator)
@@ -173,7 +173,7 @@ fun <L : Location, G : GoLocation, S : SelectionLocation, N : NavigationControll
             defaultHyperlinkListener(
                 controller = controllerNow,
                 shouldFollowReadingOrderLink = { _, _ ->
-                    navigationHistory.value += location.value
+                    navigationHistory.value += location
                     true
                 },
                 onExternalLinkActivated = { url, _ -> launchWebBrowser(context, url.toUri()) }

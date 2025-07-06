@@ -106,7 +106,7 @@ private class DefaultInputListener(
     }
 
     private fun handleTap(event: TapEvent, context: TapContext): Boolean {
-        if (controller.overflow.value.scroll && !handleTapsWhileScrolling) {
+        if (controller.overflow.scroll && !handleTapsWhileScrolling) {
             return false
         }
 
@@ -150,7 +150,7 @@ private class DefaultInputListener(
     }
 
     private val OverflowController.canMoveLeft get() =
-        when (overflow.value.readingProgression) {
+        when (overflow.readingProgression) {
             ReadingProgression.LTR ->
                 canMoveBackward
 
@@ -159,7 +159,7 @@ private class DefaultInputListener(
         }
 
     private val OverflowController.canMoveRight get() =
-        when (overflow.value.readingProgression) {
+        when (overflow.readingProgression) {
             ReadingProgression.LTR ->
                 canMoveForward
 

@@ -6,14 +6,13 @@
 
 package org.readium.navigator.common
 
-import androidx.compose.runtime.MutableState
 import org.readium.r2.navigator.preferences.Configurable
 import org.readium.r2.shared.ExperimentalReadiumApi
 
 @ExperimentalReadiumApi
 public interface SettingsController<S : Settings> {
 
-    public val settings: MutableState<S>
+    public var settings: S
 }
 
 /**
