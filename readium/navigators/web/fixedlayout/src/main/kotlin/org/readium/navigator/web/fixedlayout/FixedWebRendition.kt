@@ -49,7 +49,6 @@ import org.readium.navigator.web.fixedlayout.spread.SingleSpreadState
 import org.readium.navigator.web.fixedlayout.spread.SingleViewportSpread
 import org.readium.navigator.web.fixedlayout.spread.SpreadNestedScrollConnection
 import org.readium.navigator.web.fixedlayout.spread.SpreadScrollState
-import org.readium.navigator.web.fixedlayout.util.DisplayArea
 import org.readium.navigator.web.internals.gestures.Scrollable2DDefaults
 import org.readium.navigator.web.internals.gestures.toFling2DBehavior
 import org.readium.navigator.web.internals.pager.RenditionPager
@@ -57,6 +56,7 @@ import org.readium.navigator.web.internals.pager.RenditionScrollState
 import org.readium.navigator.web.internals.pager.pagingFlingBehavior
 import org.readium.navigator.web.internals.server.WebViewServer
 import org.readium.navigator.web.internals.util.AbsolutePaddingValues
+import org.readium.navigator.web.internals.util.DisplayArea
 import org.readium.navigator.web.internals.util.HyperlinkProcessor
 import org.readium.navigator.web.internals.util.toLayoutDirection
 import org.readium.r2.shared.ExperimentalReadiumApi

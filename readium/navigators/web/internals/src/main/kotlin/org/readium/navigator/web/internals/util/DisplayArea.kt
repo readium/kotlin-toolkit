@@ -4,12 +4,11 @@
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.navigator.web.fixedlayout.util
+package org.readium.navigator.web.internals.util
 
 import androidx.compose.ui.unit.DpSize
-import org.readium.navigator.web.internals.util.AbsolutePaddingValues
 
-internal data class DisplayArea(
+public data class DisplayArea(
     val viewportSize: DpSize,
     val safeDrawingPadding: AbsolutePaddingValues,
 )

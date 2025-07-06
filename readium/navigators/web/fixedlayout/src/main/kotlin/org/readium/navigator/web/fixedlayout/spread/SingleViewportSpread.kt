@@ -28,13 +28,13 @@ import kotlinx.coroutines.flow.onEach
 import org.readium.navigator.common.DecorationListener
 import org.readium.navigator.common.TapEvent
 import org.readium.navigator.web.fixedlayout.layout.SingleViewportSpread
-import org.readium.navigator.web.fixedlayout.util.DisplayArea
-import org.readium.navigator.web.fixedlayout.webapi.FixedSingleApi
-import org.readium.navigator.web.fixedlayout.webapi.FixedSingleInitializationApi
 import org.readium.navigator.web.internals.server.WebViewClient
+import org.readium.navigator.web.internals.util.DisplayArea
 import org.readium.navigator.web.internals.webapi.DelegatingFixedApiStateListener
 import org.readium.navigator.web.internals.webapi.FixedApiStateApi
+import org.readium.navigator.web.internals.webapi.FixedSingleAreaApi
 import org.readium.navigator.web.internals.webapi.FixedSingleDecorationApi
+import org.readium.navigator.web.internals.webapi.FixedSingleInitializationApi
 import org.readium.navigator.web.internals.webapi.FixedSingleSelectionApi
 import org.readium.navigator.web.internals.webapi.FixedSingleSelectionListener
 import org.readium.navigator.web.internals.webview.RelaxedWebView
@@ -82,7 +82,7 @@ internal fun SingleViewportSpread(
                 ?.takeIf { scriptsLoaded }
                 ?.let { webView ->
                     FixedSingleInitializationApi(webView)
-                        .loadSpread(state.spread)
+                        .loadResource(state.spread.page.href)
                 }
         }
 
@@ -95,7 +95,7 @@ internal fun SingleViewportSpread(
         }
 
         var areaApi by remember(webViewState.webView) {
-            mutableStateOf<FixedSingleApi?>(null)
+            mutableStateOf<FixedSingleAreaApi?>(null)
         }
 
         var selectionApi by remember(webViewState.webView) {
@@ -113,7 +113,7 @@ internal fun SingleViewportSpread(
                         scriptsLoaded = true
                     },
                     onAreaApiAvailableDelegate = {
-                        areaApi = FixedSingleApi(webView)
+                        areaApi = FixedSingleAreaApi(webView)
                     },
                     onSelectionApiAvailableDelegate = {
                         selectionApi = FixedSingleSelectionApi(webView, selectionListener!!) { it }

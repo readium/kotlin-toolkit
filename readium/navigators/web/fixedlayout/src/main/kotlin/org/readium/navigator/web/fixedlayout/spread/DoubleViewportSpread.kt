@@ -28,13 +28,13 @@ import kotlinx.coroutines.flow.onEach
 import org.readium.navigator.common.DecorationListener
 import org.readium.navigator.common.TapEvent
 import org.readium.navigator.web.fixedlayout.layout.DoubleViewportSpread
-import org.readium.navigator.web.fixedlayout.util.DisplayArea
-import org.readium.navigator.web.fixedlayout.webapi.FixedDoubleApi
-import org.readium.navigator.web.fixedlayout.webapi.FixedDoubleInitializationApi
 import org.readium.navigator.web.internals.server.WebViewClient
+import org.readium.navigator.web.internals.util.DisplayArea
 import org.readium.navigator.web.internals.webapi.DelegatingFixedApiStateListener
 import org.readium.navigator.web.internals.webapi.FixedApiStateApi
+import org.readium.navigator.web.internals.webapi.FixedDoubleAreaApi
 import org.readium.navigator.web.internals.webapi.FixedDoubleDecorationApi
+import org.readium.navigator.web.internals.webapi.FixedDoubleInitializationApi
 import org.readium.navigator.web.internals.webapi.FixedDoubleSelectionApi
 import org.readium.navigator.web.internals.webapi.FixedDoubleSelectionListener
 import org.readium.navigator.web.internals.webapi.Iframe
@@ -83,7 +83,7 @@ internal fun DoubleViewportSpread(
                 ?.takeIf { scriptsLoaded }
                 ?.let { webView ->
                     FixedDoubleInitializationApi(webView)
-                        .loadSpread(state.spread)
+                        .loadSpread(state.spread.leftPage?.href, state.spread.rightPage?.href)
                 }
         }
 
@@ -96,7 +96,7 @@ internal fun DoubleViewportSpread(
         }
 
         var areaApi by remember(webViewState.webView) {
-            mutableStateOf<FixedDoubleApi?>(null)
+            mutableStateOf<FixedDoubleAreaApi?>(null)
         }
 
         var selectionApi by remember(webViewState.webView) {
@@ -114,7 +114,7 @@ internal fun DoubleViewportSpread(
                         scriptsLoaded = true
                     },
                     onAreaApiAvailableDelegate = {
-                        areaApi = FixedDoubleApi(webView)
+                        areaApi = FixedDoubleAreaApi(webView)
                     },
                     onSelectionApiAvailableDelegate = {
                         selectionApi = FixedDoubleSelectionApi(webView, selectionListener!!) { it }

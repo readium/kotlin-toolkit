@@ -45,6 +45,7 @@ import org.readium.navigator.web.internals.webapi.DelegatingGesturesListener
 import org.readium.navigator.web.internals.webapi.DelegatingReflowableApiStateListener
 import org.readium.navigator.web.internals.webapi.DocumentStateApi
 import org.readium.navigator.web.internals.webapi.GesturesApi
+import org.readium.navigator.web.internals.webapi.ReadiumCssApi
 import org.readium.navigator.web.internals.webapi.ReflowableApiStateApi
 import org.readium.navigator.web.internals.webapi.ReflowableDecorationApi
 import org.readium.navigator.web.internals.webapi.ReflowableSelectionApi
@@ -53,7 +54,6 @@ import org.readium.navigator.web.internals.webview.WebView
 import org.readium.navigator.web.internals.webview.WebViewScrollController
 import org.readium.navigator.web.internals.webview.rememberWebViewState
 import org.readium.navigator.web.reflowable.css.ReadiumCssInjector
-import org.readium.navigator.web.reflowable.webapi.CssApi
 import org.readium.r2.navigator.Decoration
 import org.readium.r2.navigator.DecorationChange
 import org.readium.r2.navigator.changesByHref
@@ -109,7 +109,7 @@ internal fun ReflowableResource(
         }
 
         var cssApi by remember(webViewState.webView) {
-            mutableStateOf<CssApi?>(null)
+            mutableStateOf<ReadiumCssApi?>(null)
         }
 
         var decorationApi by remember(webViewState.webView) {
@@ -134,7 +134,7 @@ internal fun ReflowableResource(
             webViewState.webView?.let { webView ->
                 val listener = DelegatingReflowableApiStateListener(
                     onCssApiAvailableDelegate = {
-                        cssApi = CssApi(webView)
+                        cssApi = ReadiumCssApi(webView)
                     },
                     onSelectionApiAvailableDelegate = {
                         selectionApi = ReflowableSelectionApi(webView) { it.shift(paddingShift) }
@@ -254,7 +254,9 @@ internal fun ReflowableResource(
         }
 
         LaunchedEffect(cssApi, readiumCssInjector) {
-            cssApi?.setProperties(readiumCssInjector.userProperties, readiumCssInjector.rsProperties)
+            val cssProperties = readiumCssInjector.userProperties.toCssProperties() +
+                readiumCssInjector.rsProperties.toCssProperties()
+            cssApi?.setProperties(cssProperties)
             // FIXME: resource is laid out again, so we should apply progression again
         }
 

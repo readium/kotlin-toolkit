@@ -15,9 +15,9 @@ import org.readium.navigator.web.fixedlayout.preferences.FixedWebDefaults
 import org.readium.navigator.web.fixedlayout.preferences.FixedWebPreferences
 import org.readium.navigator.web.fixedlayout.preferences.FixedWebPreferencesEditor
 import org.readium.navigator.web.fixedlayout.preferences.FixedWebSettings
-import org.readium.navigator.web.fixedlayout.webapi.FixedDoubleApi
-import org.readium.navigator.web.fixedlayout.webapi.FixedSingleApi
 import org.readium.navigator.web.internals.server.WebViewServer
+import org.readium.navigator.web.internals.webapi.FixedDoubleAreaApi
+import org.readium.navigator.web.internals.webapi.FixedSingleAreaApi
 import org.readium.r2.navigator.html.HtmlDecorationTemplates
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.InternalReadiumApi
@@ -135,12 +135,12 @@ public class FixedWebRenditionFactory private constructor(
         try {
             val assetsUrl = WebViewServer.assetUrl("readium/navigator/web/internals")!!
 
-            val prepaginatedSingleContent = FixedSingleApi.Companion.getPageContent(
+            val prepaginatedSingleContent = FixedSingleAreaApi.Companion.getPageContent(
                 assetManager = application.assets,
                 assetsUrl = assetsUrl
             )
 
-            val prepaginatedDoubleContent = FixedDoubleApi.Companion.getPageContent(
+            val prepaginatedDoubleContent = FixedDoubleAreaApi.Companion.getPageContent(
                 assetManager = application.assets,
                 assetsUrl = assetsUrl
             )
