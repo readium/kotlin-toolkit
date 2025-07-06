@@ -31,10 +31,12 @@ import kotlinx.collections.immutable.toImmutableMap
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import org.readium.navigator.common.DecorationListener
 import org.readium.navigator.common.HyperlinkListener
 import org.readium.navigator.common.HyperlinkLocation
 import org.readium.navigator.common.InputListener
 import org.readium.navigator.common.TapContext
+import org.readium.navigator.common.defaultDecorationListener
 import org.readium.navigator.common.defaultHyperlinkListener
 import org.readium.navigator.common.defaultInputListener
 import org.readium.navigator.web.fixedlayout.layout.DoubleViewportSpread
@@ -72,6 +74,7 @@ public fun FixedWebRendition(
     backgroundColor: Color = MaterialTheme.colorScheme.background,
     inputListener: InputListener = defaultInputListener(state.controller),
     hyperlinkListener: HyperlinkListener = defaultHyperlinkListener(controller = state.controller),
+    decorationListener: DecorationListener = defaultDecorationListener(state.controller),
     textSelectionActionModeCallback: ActionMode.Callback? = null,
 ) {
     val layoutDirection =
@@ -113,6 +116,8 @@ public fun FixedWebRendition(
             val inputListenerState = rememberUpdatedState(inputListener)
 
             val hyperlinkListenerState = rememberUpdatedState(hyperlinkListener)
+
+            val decorationListenerState = rememberUpdatedState(decorationListener)
 
             val density = LocalDensity.current
 
@@ -230,6 +235,9 @@ public fun FixedWebRendition(
                             backgroundColor = backgroundColor,
                             decorationTemplates = state.decorationDelegate.decorationTemplates,
                             decorations = decorations,
+                            onDecorationActivated = { event ->
+                                decorationListenerState.value.onDecorationActivated(event)
+                            },
                         )
                     }
 
@@ -272,6 +280,9 @@ public fun FixedWebRendition(
                             backgroundColor = backgroundColor,
                             decorationTemplates = state.decorationDelegate.decorationTemplates,
                             decorations = decorations,
+                            onDecorationActivated = { event ->
+                                decorationListenerState.value.onDecorationActivated(event)
+                            },
                         )
                     }
                 }

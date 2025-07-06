@@ -57,6 +57,7 @@ internal fun SpreadWebView(
     backgroundColor: Color,
     onDocumentLoadedAndSized: (WebView) -> Unit,
     actionModeCallback: ActionMode.Callback?,
+    onDecorationActivated: (String, String, DpRect, DpOffset) -> Unit,
 ) {
     var gesturesApi by remember(state.webView) { mutableStateOf<GesturesApi?>(null) }
 
@@ -77,6 +78,7 @@ internal fun SpreadWebView(
                 },
                 onDecorationActivatedDelegate = {
                         id: String, group: String, rect: DpRect, offset: DpOffset ->
+                    onDecorationActivated(id, group, rect, offset)
                 }
             )
         }

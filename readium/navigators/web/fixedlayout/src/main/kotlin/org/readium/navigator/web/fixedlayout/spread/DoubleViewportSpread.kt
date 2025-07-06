@@ -25,6 +25,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.LayoutDirection
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import org.readium.navigator.common.DecorationListener
 import org.readium.navigator.common.TapEvent
 import org.readium.navigator.web.fixedlayout.layout.DoubleViewportSpread
 import org.readium.navigator.web.fixedlayout.util.DisplayArea
@@ -62,6 +63,7 @@ internal fun DoubleViewportSpread(
     backgroundColor: Color,
     decorationTemplates: HtmlDecorationTemplates,
     decorations: Map<String, List<Decoration>>,
+    onDecorationActivated: (DecorationListener.OnActivatedEvent) -> Unit,
 ) {
     Box(
         modifier = Modifier.fillMaxSize(),
@@ -200,6 +202,19 @@ internal fun DoubleViewportSpread(
             backgroundColor = backgroundColor,
             onScriptsLoaded = { scriptsLoaded = true },
             onDocumentLoadedAndSized = {
+            },
+            onDecorationActivated = { id, group, rect, offset ->
+                val decoration = decorations.value[group]?.firstOrNull { it.id == id }
+                    ?: return@SpreadWebView
+
+                val event = DecorationListener.OnActivatedEvent(
+                    decoration = decoration,
+                    group = group,
+                    rect = rect,
+                    offset = offset
+                )
+
+                onDecorationActivated(event)
             },
             actionModeCallback = actionModeCallback
         )

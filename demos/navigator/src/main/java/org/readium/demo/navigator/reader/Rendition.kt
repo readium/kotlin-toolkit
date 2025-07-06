@@ -261,6 +261,7 @@ fun <L : Location, G : GoLocation, S : SelectionLocation, N : NavigationControll
                     state = readerState.renditionState,
                     inputListener = inputListener,
                     hyperlinkListener = hyperlinkListener,
+                    decorationListener = decorationsListener,
                     textSelectionActionModeCallback = selectionActionMode
                 )
             }

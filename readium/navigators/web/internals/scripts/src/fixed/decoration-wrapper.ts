@@ -59,7 +59,7 @@ export class DecorationWrapperIframeSide {
   }
 
   private removeDecoration(id: string, group: string) {
-    this.removeDecoration(id, group)
+    this.decorationManager.removeDecoration(id, group)
   }
 }
 
