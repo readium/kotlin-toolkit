@@ -7,7 +7,8 @@
 package org.readium.navigator.common
 
 import kotlin.reflect.KClass
-import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.PersistentList
+import kotlinx.collections.immutable.PersistentMap
 import org.readium.r2.navigator.Decoration
 
 public interface DecorationController {
@@ -20,7 +21,7 @@ public interface DecorationController {
      * Name each decoration group as you see fit. A good practice is to use the name of the feature
      * requiring decorations, e.g. annotation, search, tts, etc.
      */
-    public val decorations: MutableMap<String, ImmutableList<Decoration>>
+    public var decorations: PersistentMap<String, PersistentList<Decoration>>
 
     /**
      * Indicates whether the Navigator supports the given decoration [style] class.

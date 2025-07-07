@@ -7,10 +7,10 @@
 package org.readium.demo.navigator.decorations
 
 import androidx.annotation.ColorInt
-import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.PersistentMap
 import kotlinx.collections.immutable.persistentMapOf
-import kotlinx.collections.immutable.toImmutableList
+import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -33,10 +33,10 @@ class HighlightsManager {
     val highlights: StateFlow<PersistentMap<Long, Highlight>> =
         highlightsMutable.asStateFlow()
 
-    val decorations: Flow<ImmutableList<Decoration>> = highlightsMutable.map {
+    val decorations: Flow<PersistentList<Decoration>> = highlightsMutable.map {
         it.entries.flatMap { (id, highlight) ->
             highlight.toDecorations(id = id, isActive = false)
-        }.toImmutableList()
+        }.toPersistentList()
     }
 
     fun addHighlight(

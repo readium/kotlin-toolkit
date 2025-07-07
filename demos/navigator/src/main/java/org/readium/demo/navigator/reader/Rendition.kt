@@ -32,7 +32,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.zIndex
-import kotlinx.collections.immutable.toImmutableList
+import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
@@ -183,7 +183,7 @@ fun <L : Location, G : GoLocation, S : SelectionLocation, C> Reader(
             (controllerNow as? DecorationController)?.let { decoController ->
                 readerState.highlightsManager.decorations
                     .onEach {
-                        decoController.decorations["highlights"] = it
+                        decoController.decorations = decoController.decorations.put("highlights", it)
                     }.launchIn(coroutineScope)
 
                 decoController.applyPageNumberDecorations(readerState.publication)
@@ -342,5 +342,5 @@ private fun DecorationController.applyPageNumberDecorations(
             )
         }
 
-    this.decorations["pageNumbers"] = decorations.toImmutableList()
+    this.decorations = this.decorations.put("pageNumbers", decorations.toPersistentList())
 }

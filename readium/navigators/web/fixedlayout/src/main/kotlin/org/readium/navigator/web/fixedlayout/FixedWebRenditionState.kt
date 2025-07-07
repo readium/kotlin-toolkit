@@ -19,7 +19,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateMap
 import kotlin.coroutines.coroutineContext
 import kotlin.reflect.KClass
-import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.PersistentList
+import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.async
@@ -256,8 +257,7 @@ internal class FixedDecorationDelegate(
     internal val decorationTemplates: HtmlDecorationTemplates,
 ) : DecorationController {
 
-    override val decorations: MutableMap<String, ImmutableList<Decoration>> =
-        mutableStateMapOf()
+    override var decorations by mutableStateOf(persistentMapOf<String, PersistentList<Decoration>>())
 
     override fun <T : Decoration.Style> supportsDecorationStyle(style: KClass<T>): Boolean {
         TODO("Not yet implemented")

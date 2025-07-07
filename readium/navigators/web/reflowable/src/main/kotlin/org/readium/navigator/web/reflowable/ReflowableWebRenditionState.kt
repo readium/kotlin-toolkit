@@ -21,7 +21,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateMap
 import kotlin.reflect.KClass
-import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.PersistentList
+import kotlinx.collections.immutable.PersistentMap
+import kotlinx.collections.immutable.persistentMapOf
 import org.readium.navigator.common.DecorationController
 import org.readium.navigator.common.HyperlinkLocation
 import org.readium.navigator.common.NavigationController
@@ -348,11 +350,11 @@ internal class ReflowableNavigationDelegate(
 }
 
 internal class ReflowableDecorationDelegate(
-    internal val decorationTemplates: HtmlDecorationTemplates,
+    val decorationTemplates: HtmlDecorationTemplates,
 ) : DecorationController {
 
-    override val decorations: MutableMap<String, ImmutableList<Decoration>> =
-        mutableStateMapOf()
+    override var decorations: PersistentMap<String, PersistentList<Decoration>> by
+        mutableStateOf(persistentMapOf<String, PersistentList<Decoration>>())
 
     override fun <T : Decoration.Style> supportsDecorationStyle(style: KClass<T>): Boolean {
         TODO("Not yet implemented")
