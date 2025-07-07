@@ -27,19 +27,17 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
-import org.readium.navigator.common.GoLocation
-import org.readium.navigator.common.LocatorAdapter
+import org.readium.navigator.common.HyperlinkLocation
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
 
 @Composable
-fun <G : GoLocation> Outline(
+fun Outline(
     modifier: Modifier = Modifier,
     publication: Publication,
-    locatorAdapter: LocatorAdapter<*, G, *>,
     onBackActivated: () -> Unit,
-    onTocItemActivated: (G) -> Unit,
+    onTocItemActivated: (HyperlinkLocation) -> Unit,
 ) {
     Scaffold(
         modifier = Modifier
@@ -55,7 +53,6 @@ fun <G : GoLocation> Outline(
                 Contents(
                     modifier = modifier,
                     publication = publication,
-                    locatorAdapter = locatorAdapter,
                     onItemActivated = onTocItemActivated
                 )
             }
@@ -84,14 +81,13 @@ private fun TopBar(
 }
 
 @Composable
-private fun <G : GoLocation> Contents(
+private fun Contents(
     modifier: Modifier = Modifier,
     publication: Publication,
-    locatorAdapter: LocatorAdapter<*, G, *>,
-    onItemActivated: (G) -> Unit,
+    onItemActivated: (HyperlinkLocation) -> Unit,
 ) {
     val items = publication.tableOfContents
-        .flatMap { it.toTocItems(publication, locatorAdapter) }
+        .flatMap { it.toTocItems(publication) }
 
     val scrollState = rememberScrollState()
 
@@ -102,37 +98,33 @@ private fun <G : GoLocation> Contents(
     )
 }
 
-private data class TocItem<G : GoLocation>(
+private data class TocItem(
     val title: String,
-    val locator: G,
+    val location: HyperlinkLocation,
     val depth: Int,
 )
 
-private fun <G : GoLocation> Link.toTocItems(
+private fun Link.toTocItems(
     publication: Publication,
-    locatorAdapter: LocatorAdapter<*, G, *>,
     depth: Int = 0,
-): List<TocItem<G>> {
-    val locator = publication.locatorFromLink(this@toTocItems)
-        ?: return emptyList()
+): List<TocItem> {
+    val location = HyperlinkLocation(this)
 
-    val goLocation = with(locatorAdapter) { locator.toGoLocation() }
-
-    val title = locator.title ?: locator.href.filename ?: ""
+    val title = title ?: url().filename ?: ""
 
     return buildList {
-        add(TocItem(title, goLocation, depth))
+        add(TocItem(title, location, depth))
         for (child in children) {
-            addAll(child.toTocItems(publication, locatorAdapter, depth + 1))
+            addAll(child.toTocItems(publication, depth + 1))
         }
     }
 }
 
 @Composable
-private fun <G : GoLocation> Contents(
+private fun Contents(
     modifier: Modifier = Modifier,
-    items: List<TocItem<G>>,
-    onClick: (G) -> Unit,
+    items: List<TocItem>,
+    onClick: (HyperlinkLocation) -> Unit,
     depth: Int = 0,
 ) {
     Column(modifier) {
@@ -147,10 +139,10 @@ private fun <G : GoLocation> Contents(
 }
 
 @Composable
-private fun <G : GoLocation> TocItem(
+private fun TocItem(
     modifier: Modifier = Modifier,
-    item: TocItem<G>,
-    onClick: (G) -> Unit,
+    item: TocItem,
+    onClick: (HyperlinkLocation) -> Unit,
     depth: Int = 0,
 ) {
     ListItem(
@@ -160,7 +152,7 @@ private fun <G : GoLocation> TocItem(
             )
         },
         modifier = modifier
-            .clickable { onClick(item.locator) }
+            .clickable { onClick(item.location) }
             .padding(start = 24.dp * depth)
     )
 }

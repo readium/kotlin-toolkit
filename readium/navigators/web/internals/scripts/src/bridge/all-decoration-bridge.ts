@@ -102,8 +102,6 @@ export class FixedDoubleDecorationsBridge {
 }
 
 function parseTemplates(templates: string): Map<string, DecorationTemplate> {
-  console.log(`templates ${templates}`)
-
   return new Map<string, DecorationTemplate>(
     Object.entries(JSON.parse(templates))
   )
@@ -111,16 +109,15 @@ function parseTemplates(templates: string): Map<string, DecorationTemplate> {
 
 function parseDecoration(decoration: string): Decoration {
   const jsonDecoration: JsonDecoration = JSON.parse(decoration)
-  console.log(`Decoration ${jsonDecoration}`)
   const targetedText = jsonDecoration.locator.text?.highlight
   let decorationTarget: DecorationTarget
 
-  const locations = jsonDecoration.locator.locations!
+  const locations = jsonDecoration.locator.locations
   let cssSelector: string | undefined = undefined
-  if (locations.cssSelector) {
+  if (locations?.cssSelector) {
     cssSelector = locations.cssSelector
-  } else if (locations.fragments) {
-    const fragment = locations.fragments![0]
+  } else if (locations?.fragments) {
+    const fragment = locations.fragments[0]
     cssSelector = `#${fragment}`
   }
 

@@ -24,17 +24,17 @@ import org.readium.demo.navigator.preferences.PreferencesManager
 import org.readium.navigator.common.PreferencesEditor
 import org.readium.navigator.common.Settings
 import org.readium.navigator.common.SettingsController
+import org.readium.navigator.web.fixedlayout.FixedWebGoLocation
+import org.readium.navigator.web.fixedlayout.FixedWebLocation
 import org.readium.navigator.web.fixedlayout.FixedWebRenditionController
 import org.readium.navigator.web.fixedlayout.FixedWebRenditionFactory
-import org.readium.navigator.web.fixedlayout.location.FixedWebGoLocation
-import org.readium.navigator.web.fixedlayout.location.FixedWebLocation
-import org.readium.navigator.web.fixedlayout.location.FixedWebSelectionLocation
+import org.readium.navigator.web.fixedlayout.FixedWebSelectionLocation
 import org.readium.navigator.web.fixedlayout.preferences.FixedWebPreferences
+import org.readium.navigator.web.reflowable.ReflowableWebGoLocation
+import org.readium.navigator.web.reflowable.ReflowableWebLocation
 import org.readium.navigator.web.reflowable.ReflowableWebRenditionController
 import org.readium.navigator.web.reflowable.ReflowableWebRenditionFactory
-import org.readium.navigator.web.reflowable.location.ReflowableWebGoLocation
-import org.readium.navigator.web.reflowable.location.ReflowableWebLocation
-import org.readium.navigator.web.reflowable.location.ReflowableWebSelectionLocation
+import org.readium.navigator.web.reflowable.ReflowableWebSelectionLocation
 import org.readium.navigator.web.reflowable.preferences.ReflowableWebPreferences
 import org.readium.r2.navigator.html.HtmlDecorationTemplates
 import org.readium.r2.shared.ExperimentalReadiumApi
@@ -117,9 +117,7 @@ class ReaderOpener(
             }
         ) ?: return Try.failure(DebugError("Publication not supported"))
 
-        val locatorAdapter = navigatorFactory.createLocatorAdapter()
-
-        val initialLocation = with(locatorAdapter) { initialLocator?.toGoLocation() }
+        val initialLocation = initialLocator?.let { ReflowableWebGoLocation(it) }
 
         val coroutineScope = MainScope()
 
@@ -146,7 +144,7 @@ class ReaderOpener(
 
         val highlightsManager = HighlightsManager()
 
-        val actionModeFactory = SelectionActionModeFactory(highlightsManager, locatorAdapter)
+        val actionModeFactory = SelectionActionModeFactory(highlightsManager)
 
         val readerState = ReaderState(
             url = url,
@@ -154,7 +152,6 @@ class ReaderOpener(
             publication = publication,
             renditionState = renditionState,
             preferencesEditor = preferencesEditor,
-            locatorAdapter = locatorAdapter,
             onControllerAvailable = onControllerAvailable,
             actionModeFactory = actionModeFactory,
             highlightsManager = highlightsManager
@@ -177,9 +174,7 @@ class ReaderOpener(
         )
             ?: return Try.failure(DebugError("Publication not supported"))
 
-        val locatorAdapter = navigatorFactory.createLocatorAdapter()
-
-        val initialLocation = with(locatorAdapter) { initialLocator?.toGoLocation() }
+        val initialLocation = initialLocator?.let { FixedWebGoLocation(it) }
 
         val coroutineScope = MainScope()
 
@@ -206,7 +201,7 @@ class ReaderOpener(
             applySettings(coroutineScope, controller, preferencesEditor)
         }
 
-        val actionModeFactory = SelectionActionModeFactory(highlightsManager, locatorAdapter)
+        val actionModeFactory = SelectionActionModeFactory(highlightsManager)
 
         val readerState = ReaderState(
             url = url,
@@ -214,7 +209,6 @@ class ReaderOpener(
             publication = publication,
             renditionState = renditionState,
             preferencesEditor = preferencesEditor,
-            locatorAdapter = locatorAdapter,
             onControllerAvailable = onControllerAvailable,
             highlightsManager = highlightsManager,
             actionModeFactory = actionModeFactory

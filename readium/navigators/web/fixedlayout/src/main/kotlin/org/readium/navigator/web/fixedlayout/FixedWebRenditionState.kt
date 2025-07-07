@@ -35,15 +35,13 @@ import org.readium.navigator.common.Selection
 import org.readium.navigator.common.SelectionController
 import org.readium.navigator.common.SettingsController
 import org.readium.navigator.common.SimpleOverflow
+import org.readium.navigator.common.TextAnchor
 import org.readium.navigator.web.fixedlayout.injection.injectHtmlFixedLayout
 import org.readium.navigator.web.fixedlayout.layout.DoubleViewportSpread
 import org.readium.navigator.web.fixedlayout.layout.Layout
 import org.readium.navigator.web.fixedlayout.layout.LayoutResolver
 import org.readium.navigator.web.fixedlayout.layout.Page
 import org.readium.navigator.web.fixedlayout.layout.SingleViewportSpread
-import org.readium.navigator.web.fixedlayout.location.FixedWebGoLocation
-import org.readium.navigator.web.fixedlayout.location.FixedWebLocation
-import org.readium.navigator.web.fixedlayout.location.FixedWebSelectionLocation
 import org.readium.navigator.web.fixedlayout.preferences.FixedWebSettings
 import org.readium.navigator.web.internals.server.WebViewClient
 import org.readium.navigator.web.internals.server.WebViewServer
@@ -290,11 +288,14 @@ internal class FixedSelectionDelegate(
         return Selection(
             selection.selectedText,
             selection.selectionRect,
-            FixedWebSelectionLocation(
+            FixedWebSelectionLocationImpl(
                 href = page.href,
+                mediaType = page.mediaType ?: MediaType.XHTML,
                 selectedText = selection.selectedText,
-                textBefore = selection.textBefore,
-                textAfter = selection.textAfter
+                textAnchor = TextAnchor(
+                    textBefore = selection.textBefore,
+                    textAfter = selection.textAfter,
+                )
             )
         )
     }

@@ -19,19 +19,17 @@ import kotlinx.coroutines.launch
 import org.readium.demo.navigator.R
 import org.readium.demo.navigator.decorations.Highlight
 import org.readium.demo.navigator.decorations.HighlightsManager
-import org.readium.navigator.common.LocatorAdapter
 import org.readium.navigator.common.SelectionController
 import org.readium.navigator.common.SelectionLocation
 import org.readium.r2.navigator.util.BaseActionModeCallback
 import org.readium.r2.shared.ExperimentalReadiumApi
 
-class SelectionActionModeFactory<S : SelectionLocation>(
+class SelectionActionModeFactory(
     private val highlightsManager: HighlightsManager,
-    private val locatorAdapter: LocatorAdapter<*, *, S>,
 ) {
 
     fun createActionModeCallback(
-        selectionController: SelectionController<S>,
+        selectionController: SelectionController<*>,
         coroutineScope: CoroutineScope,
         onNoteAdded: (Long) -> Unit,
         onAnyHighlightAdded: () -> Unit,
@@ -40,8 +38,7 @@ class SelectionActionModeFactory<S : SelectionLocation>(
         selectionController = selectionController,
         highlightsManager = highlightsManager,
         onNoteAdded = onNoteAdded,
-        onAnyHighlightAdded = onAnyHighlightAdded,
-        locatorAdapter = locatorAdapter
+        onAnyHighlightAdded = onAnyHighlightAdded
     )
 }
 
@@ -51,7 +48,6 @@ private class SelectionActionModeCallback<S : SelectionLocation>(
     private val highlightsManager: HighlightsManager,
     private val onAnyHighlightAdded: () -> Unit,
     private val onNoteAdded: (Long) -> Unit,
-    private val locatorAdapter: LocatorAdapter<*, *, S>,
 ) : BaseActionModeCallback() {
 
     private val defaultTint = Color.rgb(249, 239, 125)
@@ -67,9 +63,7 @@ private class SelectionActionModeCallback<S : SelectionLocation>(
     override fun onActionItemClicked(mode: ActionMode, item: MenuItem): Boolean {
         coroutineScope.launch {
             val selection = selectionController.currentSelection() ?: return@launch
-            val locator = with(locatorAdapter) {
-                selection.location.toLocator()
-            }
+            val locator = selection.location.toLocator()
 
             when (item.itemId) {
                 R.id.highlight -> {

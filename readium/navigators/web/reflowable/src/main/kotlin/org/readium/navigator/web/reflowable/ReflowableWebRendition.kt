@@ -57,7 +57,6 @@ import org.readium.navigator.web.internals.util.AbsolutePaddingValues
 import org.readium.navigator.web.internals.util.HyperlinkProcessor
 import org.readium.navigator.web.internals.util.rememberUpdatedRef
 import org.readium.navigator.web.internals.util.toLayoutDirection
-import org.readium.navigator.web.reflowable.location.ReflowableWebLocation
 import org.readium.navigator.web.reflowable.resource.ReflowablePagingLayoutInfo
 import org.readium.navigator.web.reflowable.resource.ReflowableResource
 import org.readium.r2.shared.ExperimentalReadiumApi
@@ -121,11 +120,14 @@ public fun ReflowableWebRendition(
 
             val currentPageState = remember(state) { derivedStateOf { state.pagerState.currentPage } }
 
-            fun currentLocation() =
-                ReflowableWebLocation(
-                    href = state.publication.readingOrder.items[currentPageState.value].href,
+            fun currentLocation(): ReflowableWebLocationImpl {
+                val currentItem = state.publication.readingOrder.items[currentPageState.value]
+                return ReflowableWebLocationImpl(
+                    href = currentItem.href,
+                    mediaType = currentItem.mediaType,
                     progression = state.resourceStates[currentPageState.value].progression
                 )
+            }
 
             if (state.controller == null) {
                 // Initialize controller. In the future, that should require access to a ready WebView.
@@ -195,8 +197,12 @@ public fun ReflowableWebRendition(
                     },
                     onProgressionChange = {
                         if (index == currentPageState.value) {
-                            val itemHref = state.publication.readingOrder[index].href
-                            val newLocation = ReflowableWebLocation(itemHref, it)
+                            val item = state.publication.readingOrder[index]
+                            val newLocation = ReflowableWebLocationImpl(
+                                href = item.href,
+                                mediaType = item.mediaType,
+                                progression = it
+                            )
                             state.updateLocation(newLocation)
                         }
                     },

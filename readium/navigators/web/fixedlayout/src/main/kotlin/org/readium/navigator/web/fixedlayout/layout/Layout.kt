@@ -8,6 +8,7 @@ package org.readium.navigator.web.fixedlayout.layout
 
 import org.readium.r2.navigator.preferences.ReadingProgression
 import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.mediatype.MediaType
 
 internal data class Layout(
     val readingProgression: ReadingProgression,
@@ -41,6 +42,7 @@ internal data class Layout(
 internal data class Page(
     val index: Int,
     val href: Url,
+    val mediaType: MediaType?,
 )
 
 internal sealed interface Spread {

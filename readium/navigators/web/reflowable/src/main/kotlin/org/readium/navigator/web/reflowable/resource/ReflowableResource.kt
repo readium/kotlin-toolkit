@@ -33,6 +33,7 @@ import kotlinx.collections.immutable.ImmutableMap
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import org.readium.navigator.common.DecorationListener
+import org.readium.navigator.common.Progression
 import org.readium.navigator.common.TapEvent
 import org.readium.navigator.web.internals.server.WebViewClient
 import org.readium.navigator.web.internals.util.AbsolutePaddingValues
@@ -82,7 +83,7 @@ internal fun ReflowableResource(
     onTap: (TapEvent) -> Unit,
     onLinkActivated: (Url, String) -> Unit,
     onDecorationActivated: (DecorationListener.OnActivatedEvent) -> Unit,
-    onProgressionChange: (Double) -> Unit,
+    onProgressionChange: (Progression) -> Unit,
     onDocumentResized: () -> Unit,
 ) {
     Box(
@@ -165,7 +166,7 @@ internal fun ReflowableResource(
                             webView.setNextLayoutListener {
                                 val scrollController = WebViewScrollController(webView)
                                 scrollController.moveToProgression(
-                                    progression = resourceState.progression,
+                                    progression = resourceState.progression.value,
                                     snap = !scroll,
                                     orientation = orientation,
                                     direction = layoutDirection
@@ -173,12 +174,11 @@ internal fun ReflowableResource(
                                 resourceState.scrollController.value = scrollController
                                 Timber.d("resource ${resourceState.index} ready to scroll")
                                 webView.setOnScrollChangeListener { view, scrollX, scrollY, oldScrollX, oldScrollY ->
-                                    onProgressionChange(
-                                        scrollController.progression(
-                                            orientation,
-                                            layoutDirection
-                                        )
+                                    val progression = scrollController.progression(
+                                        orientation,
+                                        layoutDirection
                                     )
+                                    onProgressionChange(Progression(progression)!!)
                                 }
                                 showPlaceholder.value = false
                             }

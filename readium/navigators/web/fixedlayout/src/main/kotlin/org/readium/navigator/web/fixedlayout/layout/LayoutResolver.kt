@@ -27,7 +27,7 @@ internal class LayoutResolver(
         } else {
             readingOrder.items.mapIndexed { index, item ->
                 SingleViewportSpread(
-                    Page(index, item.href)
+                    Page(index, item.href, item.mediaType)
                 )
             }
         }
@@ -37,7 +37,7 @@ internal class LayoutResolver(
             var pending: Page? = null
 
             for ((index, item) in readingOrder.items.withIndex()) {
-                val page = Page(index, item.href)
+                val page = Page(index, item.href, item.mediaType)
 
                 when (item.page) {
                     Presentation.Page.LEFT -> {
@@ -72,7 +72,7 @@ internal class LayoutResolver(
             var pending: Page? = null
 
             for ((index, item) in readingOrder.items.withIndex()) {
-                val page = Page(index, item.href)
+                val page = Page(index, item.href, item.mediaType)
 
                 when (item.page) {
                     Presentation.Page.LEFT -> {

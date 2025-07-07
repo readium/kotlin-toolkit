@@ -9,15 +9,18 @@ package org.readium.navigator.web.reflowable.resource
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.mutableStateOf
+import org.readium.navigator.common.Progression
 import org.readium.navigator.web.internals.pager.PageScrollState
 import org.readium.navigator.web.internals.webview.WebViewScrollController
+import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.Url
 
+@OptIn(ExperimentalReadiumApi::class)
 @Stable
 internal class ReflowableResourceState(
     val index: Int,
     val href: Url,
-    var progression: Double,
+    var progression: Progression,
 ) : PageScrollState {
 
     override val scrollController: MutableState<WebViewScrollController?> = mutableStateOf(null)

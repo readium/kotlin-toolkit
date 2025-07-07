@@ -41,7 +41,6 @@ import org.readium.navigator.common.defaultHyperlinkListener
 import org.readium.navigator.common.defaultInputListener
 import org.readium.navigator.web.fixedlayout.layout.DoubleViewportSpread
 import org.readium.navigator.web.fixedlayout.layout.SingleViewportSpread
-import org.readium.navigator.web.fixedlayout.location.FixedWebLocation
 import org.readium.navigator.web.fixedlayout.spread.DoubleSpreadState
 import org.readium.navigator.web.fixedlayout.spread.DoubleViewportSpread
 import org.readium.navigator.web.fixedlayout.spread.FixedPagingLayoutInfo
@@ -96,7 +95,9 @@ public fun FixedWebRendition(
                 val spreadIndex = state.pagerState.currentPage
                 val itemIndex = state.layoutDelegate.layout.value.pageIndexForSpread(spreadIndex)
                 val href = state.publication.readingOrder[itemIndex].href
-                return FixedWebLocation(href)
+                val mediaType = state.publication.readingOrder[itemIndex].mediaType
+
+                return FixedWebLocationImpl(href, mediaType)
             }
 
             if (state.controller == null) {

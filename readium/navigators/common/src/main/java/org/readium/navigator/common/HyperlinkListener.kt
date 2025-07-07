@@ -12,6 +12,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import org.readium.r2.shared.ExperimentalReadiumApi
+import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Url
 
@@ -33,7 +34,12 @@ public interface HyperlinkListener {
 public data class HyperlinkLocation(
     public val href: Url,
     public val fragment: String? = null,
-)
+) {
+    public constructor(link: Link) : this(
+        href = link.url(),
+        fragment = link.url().fragment
+    )
+}
 
 @ExperimentalReadiumApi
 public sealed interface LinkContext

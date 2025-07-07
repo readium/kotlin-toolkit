@@ -96,10 +96,9 @@ fun <L : Location, G : GoLocation, S : SelectionLocation, C> Reader(
     val showOutline = rememberSaveable { mutableStateOf(false) }
 
     if (showOutline.value) {
-        Outline<G>(
+        Outline(
             modifier = Modifier.fillMaxSize(),
             publication = readerState.publication,
-            locatorAdapter = readerState.locatorAdapter,
             onBackActivated = {
                 showOutline.value = false
                 fullScreenState.value = true
@@ -139,8 +138,7 @@ fun <L : Location, G : GoLocation, S : SelectionLocation, C> Reader(
                 snapshotFlow {
                     controllerNow.location
                 }.onEach {
-                    val locator = with(readerState.locatorAdapter) { it.toLocator() }
-                    LocatorRepository.saveLocator(readerState.url, locator)
+                    LocatorRepository.saveLocator(readerState.url, it.toLocator())
                 }.launchIn(readerState.coroutineScope)
             }
 

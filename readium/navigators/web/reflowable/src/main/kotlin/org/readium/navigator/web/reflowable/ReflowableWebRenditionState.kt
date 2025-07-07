@@ -29,11 +29,13 @@ import org.readium.navigator.common.HyperlinkLocation
 import org.readium.navigator.common.NavigationController
 import org.readium.navigator.common.Overflow
 import org.readium.navigator.common.OverflowController
+import org.readium.navigator.common.Progression
 import org.readium.navigator.common.RenditionState
 import org.readium.navigator.common.Selection
 import org.readium.navigator.common.SelectionController
 import org.readium.navigator.common.SettingsController
 import org.readium.navigator.common.SimpleOverflow
+import org.readium.navigator.common.TextAnchor
 import org.readium.navigator.web.internals.pager.RenditionScrollState
 import org.readium.navigator.web.internals.server.WebViewClient
 import org.readium.navigator.web.internals.server.WebViewServer
@@ -48,9 +50,6 @@ import org.readium.navigator.web.reflowable.css.ReadiumCssInjector
 import org.readium.navigator.web.reflowable.css.RsProperties
 import org.readium.navigator.web.reflowable.css.withSettings
 import org.readium.navigator.web.reflowable.injection.injectHtmlReflowable
-import org.readium.navigator.web.reflowable.location.ReflowableWebGoLocation
-import org.readium.navigator.web.reflowable.location.ReflowableWebLocation
-import org.readium.navigator.web.reflowable.location.ReflowableWebSelectionLocation
 import org.readium.navigator.web.reflowable.preferences.ReflowableWebSettings
 import org.readium.navigator.web.reflowable.resource.ReflowableResourceState
 import org.readium.r2.navigator.Decoration
@@ -87,14 +86,15 @@ public class ReflowableWebRenditionState internal constructor(
 
     internal val resourceStates: List<ReflowableResourceState> =
         publication.readingOrder.items.mapIndexed { index, item ->
+            val progression = when {
+                index < initialResource -> 1.0
+                index > initialResource -> 0.0
+                else -> initialLocation.progression?.value ?: 0.0
+            }
             ReflowableResourceState(
                 index = index,
                 href = item.href,
-                progression = when {
-                    index < initialResource -> 1.0
-                    index > initialResource -> 0.0
-                    else -> initialLocation.progression ?: 0.0
-                }
+                progression = Progression(progression)!!
             )
         }
 
@@ -118,7 +118,7 @@ public class ReflowableWebRenditionState internal constructor(
 
     internal val selectionDelegate: ReflowableSelectionDelegate =
         ReflowableSelectionDelegate(
-            readingOrder = publication.readingOrder,
+            publication = publication,
             pagerState = pagerState
         )
 
@@ -339,9 +339,9 @@ internal class ReflowableNavigationDelegate(
             direction = overflow.readingProgression.toLayoutDirection()
         )
 
-    private fun WebViewScrollController.moveToProgression(progression: Double) {
+    private fun WebViewScrollController.moveToProgression(progression: Progression) {
         moveToProgression(
-            progression = progression,
+            progression = progression.value,
             snap = !overflow.scroll,
             orientation = overflow.axis.toOrientation(),
             direction = overflow.readingProgression.toLayoutDirection()
@@ -362,7 +362,7 @@ internal class ReflowableDecorationDelegate(
 }
 
 internal class ReflowableSelectionDelegate(
-    private val readingOrder: ReflowableWebPublication.ReadingOrder,
+    private val publication: ReflowableWebPublication,
     private val pagerState: PagerState,
 ) : SelectionController<ReflowableWebSelectionLocation> {
 
@@ -376,16 +376,19 @@ internal class ReflowableSelectionDelegate(
             .firstNotNullOfOrNull { (index, api) -> api.getCurrentSelection()?.let { index to it } }
             ?: return null
 
-        val href = readingOrder.items[index].href
+        val item = publication.readingOrder.items[index]
 
         return Selection(
             selection.selectedText,
             selection.selectionRect,
-            ReflowableWebSelectionLocation(
-                href = href,
+            ReflowableWebSelectionLocationImpl(
+                href = item.href,
+                mediaType = item.mediaType,
                 selectedText = selection.selectedText,
-                textBefore = selection.textBefore,
-                textAfter = selection.textAfter
+                textAnchor = TextAnchor(
+                    textBefore = selection.textBefore,
+                    textAfter = selection.textAfter
+                )
             )
         )
     }

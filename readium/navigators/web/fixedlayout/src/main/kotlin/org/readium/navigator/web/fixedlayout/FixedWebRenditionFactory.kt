@@ -9,8 +9,6 @@ package org.readium.navigator.web.fixedlayout
 import android.app.Application
 import java.io.IOException
 import org.readium.navigator.web.fixedlayout.FixedWebPublication.ReadingOrder
-import org.readium.navigator.web.fixedlayout.location.FixedWebGoLocation
-import org.readium.navigator.web.fixedlayout.location.FixedWebLocatorAdapter
 import org.readium.navigator.web.fixedlayout.preferences.FixedWebDefaults
 import org.readium.navigator.web.fixedlayout.preferences.FixedWebPreferences
 import org.readium.navigator.web.fixedlayout.preferences.FixedWebPreferencesEditor
@@ -163,7 +161,4 @@ public class FixedWebRenditionFactory private constructor(
             publication.metadata,
             defaults
         )
-
-    public fun createLocatorAdapter(): FixedWebLocatorAdapter =
-        FixedWebLocatorAdapter(publication)
 }

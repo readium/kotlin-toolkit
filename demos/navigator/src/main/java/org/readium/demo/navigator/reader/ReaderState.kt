@@ -13,7 +13,6 @@ import kotlinx.coroutines.cancel
 import org.readium.demo.navigator.decorations.HighlightsManager
 import org.readium.navigator.common.GoLocation
 import org.readium.navigator.common.Location
-import org.readium.navigator.common.LocatorAdapter
 import org.readium.navigator.common.NavigationController
 import org.readium.navigator.common.PreferencesEditor
 import org.readium.navigator.common.RenditionState
@@ -29,10 +28,9 @@ data class ReaderState<L : Location, G : GoLocation, S : SelectionLocation, C>(
     val publication: Publication,
     val renditionState: RenditionState<C>,
     val preferencesEditor: PreferencesEditor<*, *>,
-    val locatorAdapter: LocatorAdapter<L, G, S>,
     val highlightsManager: HighlightsManager,
     val onControllerAvailable: (C) -> Unit,
-    val actionModeFactory: SelectionActionModeFactory<S>,
+    val actionModeFactory: SelectionActionModeFactory,
 ) where C : NavigationController<L, G>, C : SelectionController<S> {
 
     fun close() {
