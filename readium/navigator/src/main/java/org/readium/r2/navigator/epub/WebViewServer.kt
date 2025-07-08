@@ -32,7 +32,6 @@ import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.shared.util.resource.StringResource
 import org.readium.r2.shared.util.resource.fallback
-import timber.log.Timber
 
 /**
  * Serves the publication resources and application assets in the EPUB navigator web views.
@@ -61,15 +60,12 @@ internal class WebViewServer(
      * https://readium/assets/ serves the application assets.
      */
     fun shouldInterceptRequest(request: WebResourceRequest, css: ReadiumCss): WebResourceResponse? {
-        Timber.d("shouldInterceptRequest: ${request.url}")
         if (request.url.host != "readium") {
-            Timber.d("Load external resource for ${request.url}")
             return serveExternalResource(request, css)
         }
         val path = request.url.path ?: return null
         return when {
             path.startsWith("/publication/") -> {
-                Timber.d("Load publication resource")
                 val href = Url.fromDecodedPath(path.removePrefix("/publication/"))
                     ?: return null
 
@@ -81,7 +77,6 @@ internal class WebViewServer(
             }
 
             path.startsWith("/assets/") && isServedAsset(path.removePrefix("/assets/")) -> {
-                Timber.d("Load assets resource")
                 assetsLoader.shouldInterceptRequest(request.url)
             }
 
