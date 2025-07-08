@@ -42,7 +42,7 @@ internal class WebViewServer(
     private val publication: Publication,
     servedAssets: List<String>,
     private val disableSelectionWhenProtected: Boolean,
-    private val onLoadExternalResource: (WebResourceRequest, MediaType?) -> Resource?,
+    private val loadExternalResource: (WebResourceRequest, MediaType?) -> Resource?,
     private val onResourceLoadFailed: (Url, ReadError) -> Unit,
 ) {
     companion object {
@@ -91,7 +91,14 @@ internal class WebViewServer(
         val href = Url(request.url.toString()) ?: return null
         val link = publication.linkWithHref(href) ?: Link(href = href)
         val mediaType = link.mediaType
-        var resource = onLoadExternalResource(request, mediaType) ?: errorResource()
+        var resource = loadExternalResource(request, mediaType) ?: run {
+            val urlWithoutAnchor = href.removeFragment()
+            val error = ReadError.Decoding(
+                "Resource not found at $urlWithoutAnchor."
+            )
+            onResourceLoadFailed(urlWithoutAnchor, error)
+            errorResource()
+        }
         if (mediaType?.isHtml == true) {
             resource = resource.injectHtml(
                 publication,
