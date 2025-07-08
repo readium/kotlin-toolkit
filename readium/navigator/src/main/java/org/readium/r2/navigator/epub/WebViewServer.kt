@@ -28,9 +28,11 @@ import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.data.asInputStream
 import org.readium.r2.shared.util.http.HttpHeaders
 import org.readium.r2.shared.util.http.HttpRange
+import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.shared.util.resource.StringResource
 import org.readium.r2.shared.util.resource.fallback
+import timber.log.Timber
 
 /**
  * Serves the publication resources and application assets in the EPUB navigator web views.
@@ -41,6 +43,7 @@ internal class WebViewServer(
     private val publication: Publication,
     servedAssets: List<String>,
     private val disableSelectionWhenProtected: Boolean,
+    private val onLoadExternalResource: (WebResourceRequest, MediaType?) -> Resource?,
     private val onResourceLoadFailed: (Url, ReadError) -> Unit,
 ) {
     companion object {
@@ -58,11 +61,15 @@ internal class WebViewServer(
      * https://readium/assets/ serves the application assets.
      */
     fun shouldInterceptRequest(request: WebResourceRequest, css: ReadiumCss): WebResourceResponse? {
-        if (request.url.host != "readium") return null
+        Timber.d("shouldInterceptRequest: ${request.url}")
+        if (request.url.host != "readium") {
+            Timber.d("Load external resource for ${request.url}")
+            return serveExternalResource(request, css)
+        }
         val path = request.url.path ?: return null
-
         return when {
             path.startsWith("/publication/") -> {
+                Timber.d("Load publication resource")
                 val href = Url.fromDecodedPath(path.removePrefix("/publication/"))
                     ?: return null
 
@@ -72,11 +79,43 @@ internal class WebViewServer(
                     css = css
                 )
             }
+
             path.startsWith("/assets/") && isServedAsset(path.removePrefix("/assets/")) -> {
+                Timber.d("Load assets resource")
                 assetsLoader.shouldInterceptRequest(request.url)
             }
+
             else -> null
         }
+    }
+
+    private fun serveExternalResource(
+        request: WebResourceRequest,
+        css: ReadiumCss
+    ): WebResourceResponse? {
+        val href = Url(request.url.toString()) ?: return null
+        val link = publication.linkWithHref(href) ?: Link(href = href)
+        val mediaType = link.mediaType
+        var resource = onLoadExternalResource(request, mediaType) ?: errorResource()
+        if (mediaType?.isHtml == true) {
+            resource = resource.injectHtml(
+                publication,
+                mediaType = mediaType,
+                css,
+                baseHref = assetsBaseHref,
+                disableSelectionWhenProtected = disableSelectionWhenProtected
+            )
+        }
+        return WebResourceResponse(
+            mediaType?.toString(),
+            null,
+            200,
+            "OK",
+            mutableMapOf(
+                "Accept-Ranges" to "bytes"
+            ),
+            resource.asInputStream()
+        )
     }
 
     /**
@@ -84,7 +123,11 @@ internal class WebViewServer(
      *
      * If the [Resource] is an HTML document, injects the required JavaScript and CSS files.
      */
-    private fun servePublicationResource(href: Url, range: HttpRange?, css: ReadiumCss): WebResourceResponse {
+    private fun servePublicationResource(
+        href: Url,
+        range: HttpRange?,
+        css: ReadiumCss
+    ): WebResourceResponse {
         val link = publication.linkWithHref(href)
             // Query parameters must be kept as they might be relevant for the fetcher.
             ?.copy(href = Href(href))
@@ -149,6 +192,7 @@ internal class WebViewServer(
             )
         }
     }
+
     private fun errorResource(): Resource =
         StringResource {
             withContext(Dispatchers.IO) {

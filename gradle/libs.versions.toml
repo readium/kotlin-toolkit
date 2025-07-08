@@ -1,7 +1,7 @@
 [versions]
 
 kotlin = "2.1.21"
-agp = "8.10.1"
+agp = "8.11.0"
 desugar_jdk_libs = "2.1.5"
 gradle-maven-publish-plugin = "0.32.0"
 

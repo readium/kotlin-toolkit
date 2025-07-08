@@ -23,7 +23,7 @@ public interface Properties : Cssable {
 
     override fun toCss(): String? {
         val props = toCssProperties()
-            .filterValues { it != null }
+            .filterValues { it != null && it.isNotEmpty() }
 
         if (props.isEmpty()) {
             return ""

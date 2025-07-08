@@ -390,6 +390,9 @@ internal class EpubNavigatorViewModel(
                     publication,
                     servedAssets = config.servedAssets,
                     disableSelectionWhenProtected = config.disableSelectionWhenProtected,
+                    onLoadExternalResource = { request, mediaType ->
+                        listener?.onLoadExternalResource(request, mediaType)
+                    },
                     onResourceLoadFailed = { url, error ->
                         listener?.onResourceLoadFailed(url, error)
                     }

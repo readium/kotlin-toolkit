@@ -6,11 +6,14 @@
 
 package org.readium.r2.navigator
 
+import android.webkit.WebResourceRequest
 import kotlinx.coroutines.flow.StateFlow
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.data.ReadError
+import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.shared.util.resource.Resource
 
 /**
  * Base interface for a navigator rendering a publication.
@@ -49,6 +52,11 @@ public interface Navigator {
     public fun go(link: Link, animated: Boolean = false): Boolean
 
     public interface Listener {
+
+        public fun onLoadExternalResource(
+            request: WebResourceRequest,
+            mediaType: MediaType?
+        ): Resource? = null
 
         /**
          * Called when a publication resource failed to be loaded.
