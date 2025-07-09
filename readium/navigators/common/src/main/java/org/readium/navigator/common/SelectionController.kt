@@ -9,9 +9,6 @@ package org.readium.navigator.common
 import androidx.compose.ui.unit.DpRect
 import org.readium.r2.shared.ExperimentalReadiumApi
 
-/**
- * A navigator supporting user selection.
- */
 @ExperimentalReadiumApi
 public interface SelectionController<S : SelectionLocation> {
 

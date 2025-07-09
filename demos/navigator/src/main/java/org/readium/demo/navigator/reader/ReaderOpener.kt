@@ -10,7 +10,8 @@ package org.readium.demo.navigator.reader
 
 import android.app.Application
 import androidx.compose.runtime.snapshotFlow
-import kotlinx.collections.immutable.*
+import kotlinx.collections.immutable.plus
+import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.flow.launchIn
@@ -47,9 +48,7 @@ import org.readium.navigator.web.reflowable.preferences.ReflowableWebPreferences
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.publication.epub.pageList
-import org.readium.r2.shared.publication.presentation.presentation
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.DebugError
 import org.readium.r2.shared.util.Error
@@ -76,6 +75,15 @@ class ReaderOpener(
     private val publicationOpener =
         PublicationOpener(publicationParser)
 
+    private val reflowableDecorationTemplates = WebDecorationTemplates {
+        set(DecorationStyleAnnotationMark::class, annotationMarkTemplate())
+        set(DecorationStylePageNumber::class, pageNumberTemplate())
+    }
+
+    private val fixedDecorationTemplates = WebDecorationTemplates {
+        set(DecorationStyleAnnotationMark::class, annotationMarkTemplate())
+    }
+
     suspend fun open(url: AbsoluteUrl): Try<ReaderState<*, *, *, *>, Error> {
         val asset = assetRetriever.retrieve(url)
             .getOrElse { return Try.failure(it) }
@@ -88,44 +96,32 @@ class ReaderOpener(
 
         val initialLocator = LocatorRepository.getLocator(url)
 
-        val readerState = when {
-            publication.conformsTo(Publication.Profile.EPUB) ->
-                when (publication.metadata.presentation.layout) {
-                    EpubLayout.FIXED ->
-                        createFixedWebReader(url, publication, initialLocator)
-
-                    EpubLayout.REFLOWABLE ->
-                        createReflowableWebReader(url, publication, initialLocator)
-
-                    else -> Try.failure(DebugError("Publication not supported"))
-                }
-
-            /* publication.conformsTo(Publication.Profile.PDF) ->
-                createPdfReader(url, publication, initialLocator) */
-
-            else ->
-                Try.failure(DebugError("Publication not supported"))
-        }.getOrElse { error ->
-            publication.close()
-            return Try.failure(error)
-        }
+        val readerState = (
+            createFixedWebReader(url, publication, initialLocator)
+                ?: createReflowableWebReader(url, publication, initialLocator)
+            )
+            .or { Try.failure(DebugError("Publication not supported")) }
+            .getOrElse { error ->
+                publication.close()
+                return Try.failure(error)
+            }
 
         return Try.success(readerState)
     }
+
+    private fun <S, F> Try<S, F>?.or(onNull: () -> Try<S, F>): Try<S, F> =
+        this ?: onNull()
 
     private suspend fun createReflowableWebReader(
         url: AbsoluteUrl,
         publication: Publication,
         initialLocator: Locator?,
-    ): Try<ReaderState<ReflowableWebLocation, ReflowableWebGoLocation, ReflowableWebSelectionLocation, ReflowableWebRenditionController>, Error> {
+    ): Try<ReaderState<ReflowableWebLocation, ReflowableWebGoLocation, ReflowableWebSelectionLocation, ReflowableWebRenditionController>, Error>? {
         val navigatorFactory = ReflowableWebRenditionFactory(
             application = application,
             publication = publication,
-            decorationTemplates = WebDecorationTemplates {
-                set(DecorationStyleAnnotationMark::class, annotationMarkTemplate())
-                set(DecorationStylePageNumber::class, pageNumberTemplate())
-            }
-        ) ?: return Try.failure(DebugError("Publication not supported"))
+            decorationTemplates = reflowableDecorationTemplates
+        ) ?: return null
 
         val initialLocation = initialLocator?.let { ReflowableWebGoLocation(it) }
 
@@ -176,15 +172,12 @@ class ReaderOpener(
         url: AbsoluteUrl,
         publication: Publication,
         initialLocator: Locator?,
-    ): Try<ReaderState<FixedWebLocation, FixedWebGoLocation, FixedWebSelectionLocation, FixedWebRenditionController>, Error> {
+    ): Try<ReaderState<FixedWebLocation, FixedWebGoLocation, FixedWebSelectionLocation, FixedWebRenditionController>, Error>? {
         val navigatorFactory = FixedWebRenditionFactory(
             application = application,
             publication = publication,
-            decorationTemplates = WebDecorationTemplates {
-                set(DecorationStyleAnnotationMark::class, annotationMarkTemplate())
-            }
-        )
-            ?: return Try.failure(DebugError("Publication not supported"))
+            decorationTemplates = fixedDecorationTemplates
+        ) ?: return null
 
         val initialLocation = initialLocator?.let { FixedWebGoLocation(it) }
 
