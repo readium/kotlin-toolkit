@@ -99,19 +99,13 @@ public data class ReflowableWebDecorationLocation(
     }
 }
 
-internal typealias ReflowableWebDecoration = Decoration<ReflowableWebDecorationLocation>
-
 @ExperimentalReadiumApi
-public interface ReflowableWebLocation : ExportableLocation, ProgressionLocation
-
-@ExperimentalReadiumApi
-public interface ReflowableWebSelectionLocation : ExportableLocation, SelectionLocation, TextQuoteLocation // , CssLocation
-
-internal data class ReflowableWebLocationImpl(
+@ConsistentCopyVisibility
+public data class ReflowableWebLocation internal constructor(
     override val href: Url,
-    val mediaType: MediaType?,
+    private val mediaType: MediaType?,
     override val progression: Progression,
-) : ReflowableWebLocation {
+) : ExportableLocation, ProgressionLocation {
 
     override fun toLocator(): Locator =
         Locator(
@@ -121,13 +115,15 @@ internal data class ReflowableWebLocationImpl(
         )
 }
 
-internal data class ReflowableWebSelectionLocationImpl(
+@ExperimentalReadiumApi
+@ConsistentCopyVisibility
+public data class ReflowableWebSelectionLocation internal constructor(
     override val href: Url,
-    val mediaType: MediaType?,
+    private val mediaType: MediaType?,
     val selectedText: String,
     // override val cssSelector: CssSelector?,
     override val textQuote: TextQuote,
-) : ReflowableWebSelectionLocation {
+) : ExportableLocation, SelectionLocation, TextQuoteLocation { // , CssLocation {
 
     override fun toLocator(): Locator =
         Locator(
@@ -145,3 +141,5 @@ internal data class ReflowableWebSelectionLocationImpl(
             )*/
         )
 }
+
+internal typealias ReflowableWebDecoration = Decoration<ReflowableWebDecorationLocation>

@@ -293,7 +293,7 @@ internal class FixedSelectionDelegate(
         return Selection(
             selection.selectedText,
             selection.selectionRect,
-            FixedWebSelectionLocationImpl(
+            FixedWebSelectionLocation(
                 href = page.href,
                 mediaType = page.mediaType ?: MediaType.XHTML,
                 selectedText = selection.selectedText,

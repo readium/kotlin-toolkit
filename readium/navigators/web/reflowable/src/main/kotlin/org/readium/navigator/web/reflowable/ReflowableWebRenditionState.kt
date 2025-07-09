@@ -381,7 +381,7 @@ internal class ReflowableSelectionDelegate(
         return Selection(
             selection.selectedText,
             selection.selectionRect,
-            ReflowableWebSelectionLocationImpl(
+            ReflowableWebSelectionLocation(
                 href = item.href,
                 mediaType = item.mediaType,
                 selectedText = selection.selectedText,

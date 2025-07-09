@@ -97,7 +97,7 @@ public fun FixedWebRendition(
                 val href = state.publication.readingOrder[itemIndex].href
                 val mediaType = state.publication.readingOrder[itemIndex].mediaType
 
-                return FixedWebLocationImpl(href, mediaType)
+                return FixedWebLocation(href, mediaType)
             }
 
             if (state.controller == null) {

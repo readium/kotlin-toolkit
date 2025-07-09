@@ -88,18 +88,12 @@ public data class FixedWebDecorationLocation(
     }
 }
 
-internal typealias FixedWebDecoration = Decoration<FixedWebDecorationLocation>
-
 @ExperimentalReadiumApi
-public interface FixedWebLocation : ExportableLocation
-
-@ExperimentalReadiumApi
-public interface FixedWebSelectionLocation : ExportableLocation, SelectionLocation, TextQuoteLocation // , CssLocation {
-
-internal data class FixedWebLocationImpl(
+@ConsistentCopyVisibility
+public data class FixedWebLocation internal constructor(
     override val href: Url,
-    val mediaType: MediaType?,
-) : FixedWebLocation {
+    private val mediaType: MediaType?,
+) : ExportableLocation {
 
     override fun toLocator(): Locator =
         Locator(
@@ -108,13 +102,15 @@ internal data class FixedWebLocationImpl(
         )
 }
 
-internal data class FixedWebSelectionLocationImpl(
+@ExperimentalReadiumApi
+@ConsistentCopyVisibility
+public data class FixedWebSelectionLocation internal constructor(
     override val href: Url,
-    val mediaType: MediaType?,
+    private val mediaType: MediaType?,
     val selectedText: String,
     // override val cssSelector: CssSelector?,
     override val textQuote: TextQuote,
-) : FixedWebSelectionLocation {
+) : ExportableLocation, SelectionLocation, TextQuoteLocation { // , CssLocation { { {
 
     override fun toLocator(): Locator =
         Locator(
@@ -132,3 +128,5 @@ internal data class FixedWebSelectionLocationImpl(
             ),*/
         )
 }
+
+internal typealias FixedWebDecoration = Decoration<FixedWebDecorationLocation>
