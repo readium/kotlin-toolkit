@@ -73,7 +73,7 @@ public fun FixedWebRendition(
     backgroundColor: Color = MaterialTheme.colorScheme.background,
     inputListener: InputListener = defaultInputListener(state.controller),
     hyperlinkListener: HyperlinkListener = defaultHyperlinkListener(controller = state.controller),
-    decorationListener: DecorationListener = defaultDecorationListener(state.controller),
+    decorationListener: DecorationListener<FixedWebDecorationLocation> = defaultDecorationListener(state.controller),
     textSelectionActionModeCallback: ActionMode.Callback? = null,
 ) {
     val layoutDirection =
@@ -193,7 +193,7 @@ public fun FixedWebRendition(
                 val spread = state.layoutDelegate.layout.value.spreads[index]
 
                 val decorations = state.decorationDelegate.decorations
-                    .mapValues { it.value.filter { it.locator.href in spread.pages.map { it.href } } }
+                    .mapValues { it.value.filter { it.location.href in spread.pages.map { it.href } } }
                     .toImmutableMap()
 
                 when (spread) {

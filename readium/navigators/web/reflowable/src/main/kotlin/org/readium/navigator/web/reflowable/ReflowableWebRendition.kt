@@ -73,7 +73,7 @@ public fun ReflowableWebRendition(
     windowInsets: WindowInsets = WindowInsets.displayCutout,
     inputListener: InputListener = defaultInputListener(state.controller),
     hyperlinkListener: HyperlinkListener = defaultHyperlinkListener(state.controller),
-    decorationListener: DecorationListener = defaultDecorationListener(state.controller),
+    decorationListener: DecorationListener<ReflowableWebDecorationLocation> = defaultDecorationListener(state.controller),
     textSelectionActionModeCallback: ActionMode.Callback? = null,
 ) {
     val layoutDirection =
@@ -162,7 +162,7 @@ public fun ReflowableWebRendition(
                 val href = state.publication.readingOrder.items[index].href
 
                 val decorations = state.decorationDelegate.decorations
-                    .mapValues { it.value.filter { it.locator.href == href } }
+                    .mapValues { it.value.filter { it.location.href == href } }
                     .toImmutableMap()
 
                 ReflowableResource(

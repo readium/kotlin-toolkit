@@ -4,6 +4,8 @@
  * available in the top-level LICENSE file of the project.
  */
 
+@file:OptIn(ExperimentalReadiumApi::class)
+
 package org.readium.navigator.web.fixedlayout
 
 import android.app.Application
@@ -25,6 +27,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import org.readium.navigator.common.Decoration
 import org.readium.navigator.common.DecorationController
 import org.readium.navigator.common.HyperlinkLocation
 import org.readium.navigator.common.NavigationController
@@ -35,7 +38,9 @@ import org.readium.navigator.common.Selection
 import org.readium.navigator.common.SelectionController
 import org.readium.navigator.common.SettingsController
 import org.readium.navigator.common.SimpleOverflow
-import org.readium.navigator.common.TextAnchor
+import org.readium.navigator.common.TextQuote
+import org.readium.navigator.web.common.WebDecorationTemplate
+import org.readium.navigator.web.common.WebDecorationTemplates
 import org.readium.navigator.web.fixedlayout.injection.injectHtmlFixedLayout
 import org.readium.navigator.web.fixedlayout.layout.DoubleViewportSpread
 import org.readium.navigator.web.fixedlayout.layout.Layout
@@ -47,12 +52,11 @@ import org.readium.navigator.web.internals.server.WebViewClient
 import org.readium.navigator.web.internals.server.WebViewServer
 import org.readium.navigator.web.internals.server.WebViewServer.Companion.assetsBaseHref
 import org.readium.navigator.web.internals.util.HyperlinkProcessor
+import org.readium.navigator.web.internals.webapi.Decoration as WebApiDecoration
 import org.readium.navigator.web.internals.webapi.FixedDoubleSelectionApi
 import org.readium.navigator.web.internals.webapi.FixedSelectionApi
 import org.readium.navigator.web.internals.webapi.FixedSingleSelectionApi
 import org.readium.navigator.web.internals.webapi.Iframe
-import org.readium.r2.navigator.Decoration
-import org.readium.r2.navigator.html.HtmlDecorationTemplates
 import org.readium.r2.navigator.preferences.Axis
 import org.readium.r2.navigator.preferences.Fit
 import org.readium.r2.shared.ExperimentalReadiumApi
@@ -69,7 +73,7 @@ public class FixedWebRenditionState internal constructor(
     disableSelection: Boolean,
     initialSettings: FixedWebSettings,
     initialLocation: FixedWebGoLocation,
-    decorationTemplates: HtmlDecorationTemplates,
+    decorationTemplates: WebDecorationTemplates,
     internal val preloadedData: FixedWebPreloadedData,
 ) : RenditionState<FixedWebRenditionController> {
 
@@ -163,7 +167,7 @@ public class FixedWebRenditionController internal constructor(
     OverflowController by navigationDelegate,
     SettingsController<FixedWebSettings> by layoutDelegate,
     SelectionController<FixedWebSelectionLocation> by selectionDelegate,
-    DecorationController by decorationDelegate
+    DecorationController<FixedWebDecorationLocation> by decorationDelegate
 
 internal data class FixedWebPreloadedData(
     val fixedSingleContent: String,
@@ -251,11 +255,12 @@ internal class FixedNavigationDelegate(
     }
 }
 
+@OptIn(ExperimentalReadiumApi::class)
 internal class FixedDecorationDelegate(
-    internal val decorationTemplates: HtmlDecorationTemplates,
-) : DecorationController {
+    internal val decorationTemplates: WebDecorationTemplates,
+) : DecorationController<FixedWebDecorationLocation> {
 
-    override var decorations by mutableStateOf(persistentMapOf<String, PersistentList<Decoration>>())
+    override var decorations by mutableStateOf(persistentMapOf<String, PersistentList<Decoration<FixedWebDecorationLocation>>>())
 
     override fun <T : Decoration.Style> supportsDecorationStyle(style: KClass<T>): Boolean {
         TODO("Not yet implemented")
@@ -292,7 +297,8 @@ internal class FixedSelectionDelegate(
                 href = page.href,
                 mediaType = page.mediaType ?: MediaType.XHTML,
                 selectedText = selection.selectedText,
-                textAnchor = TextAnchor(
+                textQuote = TextQuote(
+                    quotedText = selection.selectedText,
                     textBefore = selection.textBefore,
                     textAfter = selection.textAfter,
                 )
@@ -333,4 +339,17 @@ internal class FixedSelectionDelegate(
             }
         }
     }
+}
+
+internal fun FixedWebDecoration.toWebApiDecoration(
+    template: WebDecorationTemplate,
+): WebApiDecoration {
+    val element = template.element(style)
+    return WebApiDecoration(
+        id = id,
+        style = style,
+        element = element,
+        cssSelector = location.cssSelector,
+        textQuote = location.textQuote
+    )
 }

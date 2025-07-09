@@ -69,7 +69,7 @@ private class NullHyperlinkListener : HyperlinkListener {
  */
 @ExperimentalReadiumApi
 @Composable
-public fun <L : Location> defaultHyperlinkListener(
+public fun <L : ExportableLocation> defaultHyperlinkListener(
     controller: NavigationController<L, *>?,
     shouldFollowReadingOrderLink: (NavigationController<L, *>).(HyperlinkLocation, LinkContext?) -> Boolean = { _, _ -> true },
     onNonLinearLinkActivated: (NavigationController<L, *>).(HyperlinkLocation, LinkContext?) -> Unit = { _, _ -> },
@@ -104,7 +104,7 @@ public fun <L : Location> defaultHyperlinkListener(
 }
 
 @ExperimentalReadiumApi
-private class DefaultHyperlinkListener<L : Location>(
+private class DefaultHyperlinkListener<L : ExportableLocation>(
     private val coroutineScope: CoroutineScope,
     private val controller: NavigationController<L, *>,
     private val shouldFollowReadingOrderLink: (HyperlinkLocation, LinkContext?) -> Boolean,

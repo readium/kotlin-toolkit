@@ -25,9 +25,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.LayoutDirection
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import org.readium.navigator.common.DecorationChange
 import org.readium.navigator.common.DecorationListener
 import org.readium.navigator.common.TapEvent
+import org.readium.navigator.common.changesByHref
+import org.readium.navigator.web.common.WebDecorationTemplates
+import org.readium.navigator.web.fixedlayout.FixedWebDecoration
+import org.readium.navigator.web.fixedlayout.FixedWebDecorationLocation
 import org.readium.navigator.web.fixedlayout.layout.DoubleViewportSpread
+import org.readium.navigator.web.fixedlayout.toWebApiDecoration
 import org.readium.navigator.web.internals.server.WebViewClient
 import org.readium.navigator.web.internals.util.DisplayArea
 import org.readium.navigator.web.internals.webapi.DelegatingFixedApiStateListener
@@ -40,10 +46,6 @@ import org.readium.navigator.web.internals.webapi.FixedDoubleSelectionListener
 import org.readium.navigator.web.internals.webapi.Iframe
 import org.readium.navigator.web.internals.webview.RelaxedWebView
 import org.readium.navigator.web.internals.webview.rememberWebViewStateWithHTMLData
-import org.readium.r2.navigator.Decoration
-import org.readium.r2.navigator.DecorationChange
-import org.readium.r2.navigator.changesByHref
-import org.readium.r2.navigator.html.HtmlDecorationTemplates
 import org.readium.r2.navigator.preferences.Fit
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.AbsoluteUrl
@@ -61,9 +63,9 @@ internal fun DoubleViewportSpread(
     actionModeCallback: ActionMode.Callback?,
     state: DoubleSpreadState,
     backgroundColor: Color,
-    decorationTemplates: HtmlDecorationTemplates,
-    decorations: Map<String, List<Decoration>>,
-    onDecorationActivated: (DecorationListener.OnActivatedEvent) -> Unit,
+    decorationTemplates: WebDecorationTemplates,
+    decorations: Map<String, List<FixedWebDecoration>>,
+    onDecorationActivated: (DecorationListener.OnActivatedEvent<FixedWebDecorationLocation>) -> Unit,
 ) {
     Box(
         modifier = Modifier.fillMaxSize(),
@@ -149,7 +151,7 @@ internal fun DoubleViewportSpread(
 
         LaunchedEffect(decorationApi, decorations) {
             decorationApi?.let { decorationApi ->
-                var lastDecorations = emptyMap<String, List<Decoration>>()
+                var lastDecorations = emptyMap<String, List<FixedWebDecoration>>()
                 snapshotFlow { decorations.value }
                     .onEach {
                         for ((group, decos) in it.entries) {
@@ -165,7 +167,8 @@ internal fun DoubleViewportSpread(
                                         is DecorationChange.Added -> {
                                             val template = decorationTemplates[change.decoration.style::class]
                                                 ?: continue
-                                            decorationApi.addDecoration(change.decoration, iframe, template, group)
+                                            val webApiDecoration = change.decoration.toWebApiDecoration(template)
+                                            decorationApi.addDecoration(webApiDecoration, iframe, group)
                                         }
                                         is DecorationChange.Moved -> {}
                                         is DecorationChange.Removed -> {
@@ -175,7 +178,8 @@ internal fun DoubleViewportSpread(
                                             decorationApi.removeDecoration(change.decoration.id, group)
                                             val template = decorationTemplates[change.decoration.style::class]
                                                 ?: continue
-                                            decorationApi.addDecoration(change.decoration, iframe, template, group)
+                                            val webApiDecoration = change.decoration.toWebApiDecoration(template)
+                                            decorationApi.addDecoration(webApiDecoration, iframe, group)
                                         }
                                     }
                                 }
@@ -204,7 +208,7 @@ internal fun DoubleViewportSpread(
             },
             backgroundColor = backgroundColor,
             onDecorationActivated = { id, group, rect, offset ->
-                val decoration = decorations.value[group]?.firstOrNull { it.id == id }
+                val decoration = decorations.value[group]?.firstOrNull { it.id.value == id }
                     ?: return@SpreadWebView
 
                 val event = DecorationListener.OnActivatedEvent(

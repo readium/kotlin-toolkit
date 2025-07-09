@@ -10,37 +10,45 @@ package org.readium.demo.navigator.reader
 
 import android.app.Application
 import androidx.compose.runtime.snapshotFlow
+import kotlinx.collections.immutable.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import org.readium.demo.navigator.decorations.DecorationStyleAnnotationMark
 import org.readium.demo.navigator.decorations.DecorationStylePageNumber
+import org.readium.demo.navigator.decorations.FixedHighlightsManager
 import org.readium.demo.navigator.decorations.HighlightsManager
+import org.readium.demo.navigator.decorations.ReflowableHighlightsManager
 import org.readium.demo.navigator.decorations.annotationMarkTemplate
 import org.readium.demo.navigator.decorations.pageNumberTemplate
 import org.readium.demo.navigator.persistence.LocatorRepository
 import org.readium.demo.navigator.preferences.PreferencesManager
+import org.readium.navigator.common.Decoration
+import org.readium.navigator.common.DecorationController
+import org.readium.navigator.common.DecorationLocation
 import org.readium.navigator.common.PreferencesEditor
 import org.readium.navigator.common.Settings
 import org.readium.navigator.common.SettingsController
+import org.readium.navigator.web.common.WebDecorationTemplates
 import org.readium.navigator.web.fixedlayout.FixedWebGoLocation
 import org.readium.navigator.web.fixedlayout.FixedWebLocation
 import org.readium.navigator.web.fixedlayout.FixedWebRenditionController
 import org.readium.navigator.web.fixedlayout.FixedWebRenditionFactory
 import org.readium.navigator.web.fixedlayout.FixedWebSelectionLocation
 import org.readium.navigator.web.fixedlayout.preferences.FixedWebPreferences
+import org.readium.navigator.web.reflowable.ReflowableWebDecorationLocation
 import org.readium.navigator.web.reflowable.ReflowableWebGoLocation
 import org.readium.navigator.web.reflowable.ReflowableWebLocation
 import org.readium.navigator.web.reflowable.ReflowableWebRenditionController
 import org.readium.navigator.web.reflowable.ReflowableWebRenditionFactory
 import org.readium.navigator.web.reflowable.ReflowableWebSelectionLocation
 import org.readium.navigator.web.reflowable.preferences.ReflowableWebPreferences
-import org.readium.r2.navigator.html.HtmlDecorationTemplates
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.epub.EpubLayout
+import org.readium.r2.shared.publication.epub.pageList
 import org.readium.r2.shared.publication.presentation.presentation
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.DebugError
@@ -85,8 +93,10 @@ class ReaderOpener(
                 when (publication.metadata.presentation.layout) {
                     EpubLayout.FIXED ->
                         createFixedWebReader(url, publication, initialLocator)
+
                     EpubLayout.REFLOWABLE ->
                         createReflowableWebReader(url, publication, initialLocator)
+
                     else -> Try.failure(DebugError("Publication not supported"))
                 }
 
@@ -111,7 +121,7 @@ class ReaderOpener(
         val navigatorFactory = ReflowableWebRenditionFactory(
             application = application,
             publication = publication,
-            decorationTemplates = HtmlDecorationTemplates.defaultTemplates().apply {
+            decorationTemplates = WebDecorationTemplates {
                 set(DecorationStyleAnnotationMark::class, annotationMarkTemplate())
                 set(DecorationStylePageNumber::class, pageNumberTemplate())
             }
@@ -138,11 +148,13 @@ class ReaderOpener(
             return Try.failure(it)
         }
 
+        val highlightsManager = ReflowableHighlightsManager()
+
         val onControllerAvailable: (ReflowableWebRenditionController) -> Unit = { controller ->
             applySettings(coroutineScope, controller, preferencesEditor)
+            applyHighlightDecorations(coroutineScope, controller, highlightsManager)
+            applyPageListDecorations(controller, publication)
         }
-
-        val highlightsManager = HighlightsManager()
 
         val actionModeFactory = SelectionActionModeFactory(highlightsManager)
 
@@ -168,7 +180,7 @@ class ReaderOpener(
         val navigatorFactory = FixedWebRenditionFactory(
             application = application,
             publication = publication,
-            decorationTemplates = HtmlDecorationTemplates.defaultTemplates().apply {
+            decorationTemplates = WebDecorationTemplates {
                 set(DecorationStyleAnnotationMark::class, annotationMarkTemplate())
             }
         )
@@ -195,10 +207,11 @@ class ReaderOpener(
             return Try.failure(it)
         }
 
-        val highlightsManager = HighlightsManager()
+        val highlightsManager = FixedHighlightsManager()
 
         val onControllerAvailable: (FixedWebRenditionController) -> Unit = { controller ->
             applySettings(coroutineScope, controller, preferencesEditor)
+            applyHighlightDecorations(coroutineScope, controller, highlightsManager)
         }
 
         val actionModeFactory = SelectionActionModeFactory(highlightsManager)
@@ -225,5 +238,46 @@ class ReaderOpener(
         snapshotFlow { preferencesEditor.settings }
             .onEach { settingsController.settings = it }
             .launchIn(coroutineScope)
+    }
+
+    private fun <L : DecorationLocation> applyHighlightDecorations(
+        coroutineScope: CoroutineScope,
+        decorationController: DecorationController<L>,
+        highlightsManager: HighlightsManager<L>,
+    ) {
+        highlightsManager.decorations
+            .onEach {
+                decorationController.decorations += ("highlights" to it)
+            }.launchIn(coroutineScope)
+    }
+
+    /**
+     * Will display margin labels next to page numbers in an EPUB publication with a `page-list`
+     * navigation document.
+     *
+     * See http://kb.daisy.org/publishing/docs/navigation/pagelist.html
+     */
+    private fun applyPageListDecorations(
+        decorationController: DecorationController<ReflowableWebDecorationLocation>,
+        publication: Publication,
+    ) {
+        val pageDecorations = publication.pageList
+            .mapIndexedNotNull { index, link ->
+                val label = link.title ?: return@mapIndexedNotNull null
+
+                val location = publication.locatorFromLink(link)
+                    ?.let { ReflowableWebDecorationLocation(it) }
+                    ?: return@mapIndexedNotNull null
+
+                Decoration<ReflowableWebDecorationLocation>(
+                    id = Decoration.Id("page-$index"),
+                    location = location,
+                    style = DecorationStylePageNumber(label = label)
+                )
+            }.toPersistentList()
+
+        if (pageDecorations.isNotEmpty()) {
+            decorationController.decorations + ("pageNumbers" to pageDecorations)
+        }
     }
 }

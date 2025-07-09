@@ -26,6 +26,7 @@ dependencies {
     api(project(":readium:readium-shared"))
     api(project(":readium:readium-navigator"))
     api(project(":readium:navigators:readium-navigator-common"))
+    api(project(":readium:navigators:web:readium-navigator-web-common"))
     implementation(project(":readium:navigators:web:readium-navigator-web-internals"))
 
     implementation(libs.kotlinx.serialization.json)

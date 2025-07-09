@@ -32,15 +32,20 @@ import androidx.compose.ui.zIndex
 import kotlinx.collections.immutable.ImmutableMap
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import org.readium.navigator.common.DecorationChange
 import org.readium.navigator.common.DecorationListener
 import org.readium.navigator.common.Progression
 import org.readium.navigator.common.TapEvent
+import org.readium.navigator.common.changesByHref
+import org.readium.navigator.web.common.WebDecorationTemplate
+import org.readium.navigator.web.common.WebDecorationTemplates
 import org.readium.navigator.web.internals.server.WebViewClient
 import org.readium.navigator.web.internals.util.AbsolutePaddingValues
 import org.readium.navigator.web.internals.util.absolutePadding
 import org.readium.navigator.web.internals.util.getValue
 import org.readium.navigator.web.internals.util.rememberUpdatedRef
 import org.readium.navigator.web.internals.util.shift
+import org.readium.navigator.web.internals.webapi.Decoration
 import org.readium.navigator.web.internals.webapi.DelegatingDocumentApiListener
 import org.readium.navigator.web.internals.webapi.DelegatingGesturesListener
 import org.readium.navigator.web.internals.webapi.DelegatingReflowableApiStateListener
@@ -54,11 +59,9 @@ import org.readium.navigator.web.internals.webview.RelaxedWebView
 import org.readium.navigator.web.internals.webview.WebView
 import org.readium.navigator.web.internals.webview.WebViewScrollController
 import org.readium.navigator.web.internals.webview.rememberWebViewState
+import org.readium.navigator.web.reflowable.ReflowableWebDecoration
+import org.readium.navigator.web.reflowable.ReflowableWebDecorationLocation
 import org.readium.navigator.web.reflowable.css.ReadiumCssInjector
-import org.readium.r2.navigator.Decoration
-import org.readium.r2.navigator.DecorationChange
-import org.readium.r2.navigator.changesByHref
-import org.readium.r2.navigator.html.HtmlDecorationTemplates
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Url
@@ -76,13 +79,13 @@ internal fun ReflowableResource(
     orientation: Orientation,
     layoutDirection: LayoutDirection,
     readiumCssInjector: ReadiumCssInjector,
-    decorationTemplates: HtmlDecorationTemplates,
-    decorations: ImmutableMap<String, List<Decoration>>,
+    decorationTemplates: WebDecorationTemplates,
+    decorations: ImmutableMap<String, List<ReflowableWebDecoration>>,
     actionModeCallback: ActionMode.Callback?,
     onSelectionApiChanged: (ReflowableSelectionApi?) -> Unit,
     onTap: (TapEvent) -> Unit,
     onLinkActivated: (Url, String) -> Unit,
-    onDecorationActivated: (DecorationListener.OnActivatedEvent) -> Unit,
+    onDecorationActivated: (DecorationListener.OnActivatedEvent<ReflowableWebDecorationLocation>) -> Unit,
     onProgressionChange: (Progression) -> Unit,
     onDocumentResized: () -> Unit,
 ) {
@@ -203,10 +206,10 @@ internal fun ReflowableResource(
                         onLinkActivated(publicationBaseUrl.relativize(href), outerHtml)
                     },
                     onDecorationActivatedDelegate = { id, group, rect, offset ->
-                        val decoration = decorations.value[group]?.firstOrNull { it.id == id }
+                        val decoration = decorations.value[group]?.firstOrNull { it.id.value == id }
                             ?: return@DelegatingGesturesListener
 
-                        val event = DecorationListener.OnActivatedEvent(
+                        val event = DecorationListener.OnActivatedEvent<ReflowableWebDecorationLocation>(
                             decoration = decoration,
                             group = group,
                             rect = rect.shift(paddingShift),
@@ -220,7 +223,7 @@ internal fun ReflowableResource(
 
         LaunchedEffect(decorationApi, decorations) {
             decorationApi?.let { decorationApi ->
-                var lastDecorations = emptyMap<String, List<Decoration>>()
+                var lastDecorations = emptyMap<String, List<ReflowableWebDecoration>>()
                 snapshotFlow { decorations.value }
                     .onEach {
                         for ((group, decos) in it.entries) {
@@ -231,7 +234,7 @@ internal fun ReflowableResource(
                                         is DecorationChange.Added -> {
                                             val template = decorationTemplates[change.decoration.style::class]
                                                 ?: continue
-                                            decorationApi.addDecoration(change.decoration, template, group)
+                                            decorationApi.addDecoration(change.decoration.toWebApiDecoration(template), group)
                                         }
                                         is DecorationChange.Moved -> {}
                                         is DecorationChange.Removed -> {
@@ -241,7 +244,7 @@ internal fun ReflowableResource(
                                             decorationApi.removeDecoration(change.decoration.id, group)
                                             val template = decorationTemplates[change.decoration.style::class]
                                                 ?: continue
-                                            decorationApi.addDecoration(change.decoration, template, group)
+                                            decorationApi.addDecoration(change.decoration.toWebApiDecoration(template), group)
                                         }
                                     }
                                 }
@@ -313,4 +316,17 @@ internal fun ReflowableResource(
             )
         }
     }
+}
+
+private fun ReflowableWebDecoration.toWebApiDecoration(
+    template: WebDecorationTemplate,
+): Decoration {
+    val element = template.element(style)
+    return Decoration(
+        id = id,
+        style = style,
+        element = element,
+        cssSelector = location.cssSelector,
+        textQuote = location.textQuote
+    )
 }

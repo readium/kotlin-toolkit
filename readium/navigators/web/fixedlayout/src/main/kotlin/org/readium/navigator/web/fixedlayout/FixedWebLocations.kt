@@ -4,18 +4,26 @@
  * available in the top-level LICENSE file of the project.
  */
 
-@file:OptIn(ExperimentalReadiumApi::class)
+@file:OptIn(ExperimentalReadiumApi::class, InternalReadiumApi::class)
 
 package org.readium.navigator.web.fixedlayout
 
+import org.readium.navigator.common.CssLocation
+import org.readium.navigator.common.CssSelector
+import org.readium.navigator.common.Decoration
+import org.readium.navigator.common.DecorationLocation
+import org.readium.navigator.common.ExportableLocation
 import org.readium.navigator.common.GoLocation
 import org.readium.navigator.common.Location
 import org.readium.navigator.common.SelectionLocation
-import org.readium.navigator.common.TextAnchor
-import org.readium.navigator.common.TextLocation
+import org.readium.navigator.common.TextQuote
+import org.readium.navigator.common.TextQuoteLocation
 import org.readium.r2.shared.ExperimentalReadiumApi
+import org.readium.r2.shared.InternalReadiumApi
+import org.readium.r2.shared.extensions.addPrefix
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Locator.Text
+import org.readium.r2.shared.publication.html.cssSelector
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
 
@@ -34,13 +42,59 @@ public data class FixedWebGoLocation(
 }
 
 @ExperimentalReadiumApi
-public interface FixedWebLocation : Location {
+public data class FixedWebDecorationLocation(
+    override val href: Url,
+    val cssSelector: CssSelector?,
+    val textQuote: TextQuote?,
+) : DecorationLocation {
 
-    override val href: Url
+    init {
+        require(cssSelector != null || textQuote != null)
+    }
+
+    public companion object {
+        public operator fun invoke(location: Location): FixedWebDecorationLocation? {
+            val cssSelector = (location as? CssLocation)?.cssSelector
+            val textQuote = (location as? TextQuoteLocation)?.textQuote
+
+            if (cssSelector == null && textQuote == null) {
+                return null
+            }
+
+            return FixedWebDecorationLocation(location.href, cssSelector, textQuote)
+        }
+
+        public operator fun invoke(locator: Locator): FixedWebDecorationLocation? {
+            val cssSelector = (
+                locator.locations.cssSelector
+                    ?: locator.locations.fragments.firstOrNull()?.addPrefix("#")
+                )
+                ?.let { CssSelector(it) }
+
+            val textQuote = locator.text.highlight?.let {
+                TextQuote(
+                    quotedText = it,
+                    textBefore = locator.text.before.orEmpty(),
+                    textAfter = locator.text.after.orEmpty()
+                )
+            }
+
+            if (cssSelector == null && textQuote == null) {
+                return null
+            }
+
+            return FixedWebDecorationLocation(locator.href, cssSelector, textQuote)
+        }
+    }
 }
 
+internal typealias FixedWebDecoration = Decoration<FixedWebDecorationLocation>
+
 @ExperimentalReadiumApi
-public interface FixedWebSelectionLocation : SelectionLocation, TextLocation // , CssLocation {
+public interface FixedWebLocation : ExportableLocation
+
+@ExperimentalReadiumApi
+public interface FixedWebSelectionLocation : ExportableLocation, SelectionLocation, TextQuoteLocation // , CssLocation {
 
 internal data class FixedWebLocationImpl(
     override val href: Url,
@@ -59,7 +113,7 @@ internal data class FixedWebSelectionLocationImpl(
     val mediaType: MediaType?,
     val selectedText: String,
     // override val cssSelector: CssSelector?,
-    override val textAnchor: TextAnchor,
+    override val textQuote: TextQuote,
 ) : FixedWebSelectionLocation {
 
     override fun toLocator(): Locator =
@@ -67,8 +121,8 @@ internal data class FixedWebSelectionLocationImpl(
             href = href,
             mediaType = mediaType ?: MediaType.XHTML,
             text = Text(
-                before = textAnchor.textBefore,
-                after = textAnchor.textAfter,
+                before = textQuote.textBefore,
+                after = textQuote.textAfter,
                 highlight = selectedText
             ),
             /*locations = Locations(

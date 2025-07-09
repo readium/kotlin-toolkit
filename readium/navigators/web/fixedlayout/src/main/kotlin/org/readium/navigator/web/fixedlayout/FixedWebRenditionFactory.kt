@@ -8,6 +8,7 @@ package org.readium.navigator.web.fixedlayout
 
 import android.app.Application
 import java.io.IOException
+import org.readium.navigator.web.common.WebDecorationTemplates
 import org.readium.navigator.web.fixedlayout.FixedWebPublication.ReadingOrder
 import org.readium.navigator.web.fixedlayout.preferences.FixedWebDefaults
 import org.readium.navigator.web.fixedlayout.preferences.FixedWebPreferences
@@ -16,7 +17,6 @@ import org.readium.navigator.web.fixedlayout.preferences.FixedWebSettings
 import org.readium.navigator.web.internals.server.WebViewServer
 import org.readium.navigator.web.internals.webapi.FixedDoubleAreaApi
 import org.readium.navigator.web.internals.webapi.FixedSingleAreaApi
-import org.readium.r2.navigator.html.HtmlDecorationTemplates
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.publication.Link
@@ -41,7 +41,7 @@ public class FixedWebRenditionFactory private constructor(
     private val application: Application,
     private val publication: Publication,
     private val defaults: FixedWebDefaults,
-    private val decorationTemplates: HtmlDecorationTemplates,
+    private val decorationTemplates: WebDecorationTemplates,
 ) {
 
     public companion object {
@@ -50,7 +50,7 @@ public class FixedWebRenditionFactory private constructor(
             application: Application,
             publication: Publication,
             defaults: FixedWebDefaults = FixedWebDefaults(),
-            decorationTemplates: HtmlDecorationTemplates = HtmlDecorationTemplates.defaultTemplates(),
+            decorationTemplates: WebDecorationTemplates = WebDecorationTemplates.defaultTemplates(),
         ): FixedWebRenditionFactory? {
             if (!publication.conformsTo(Publication.Profile.EPUB) ||
                 publication.metadata.presentation.layout != EpubLayout.FIXED

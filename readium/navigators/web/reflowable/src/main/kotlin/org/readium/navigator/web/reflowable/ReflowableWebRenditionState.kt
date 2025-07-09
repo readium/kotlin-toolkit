@@ -24,6 +24,7 @@ import kotlin.reflect.KClass
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.PersistentMap
 import kotlinx.collections.immutable.persistentMapOf
+import org.readium.navigator.common.Decoration
 import org.readium.navigator.common.DecorationController
 import org.readium.navigator.common.HyperlinkLocation
 import org.readium.navigator.common.NavigationController
@@ -35,7 +36,8 @@ import org.readium.navigator.common.Selection
 import org.readium.navigator.common.SelectionController
 import org.readium.navigator.common.SettingsController
 import org.readium.navigator.common.SimpleOverflow
-import org.readium.navigator.common.TextAnchor
+import org.readium.navigator.common.TextQuote
+import org.readium.navigator.web.common.WebDecorationTemplates
 import org.readium.navigator.web.internals.pager.RenditionScrollState
 import org.readium.navigator.web.internals.server.WebViewClient
 import org.readium.navigator.web.internals.server.WebViewServer
@@ -52,8 +54,6 @@ import org.readium.navigator.web.reflowable.css.withSettings
 import org.readium.navigator.web.reflowable.injection.injectHtmlReflowable
 import org.readium.navigator.web.reflowable.preferences.ReflowableWebSettings
 import org.readium.navigator.web.reflowable.resource.ReflowableResourceState
-import org.readium.r2.navigator.Decoration
-import org.readium.r2.navigator.html.HtmlDecorationTemplates
 import org.readium.r2.navigator.preferences.Axis
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.InternalReadiumApi
@@ -70,7 +70,7 @@ public class ReflowableWebRenditionState internal constructor(
     initialLocation: ReflowableWebGoLocation,
     private val rsProperties: RsProperties,
     fontFamilyDeclarations: List<FontFamilyDeclaration>,
-    decorationTemplates: HtmlDecorationTemplates,
+    decorationTemplates: WebDecorationTemplates,
     disableSelection: Boolean,
 ) : RenditionState<ReflowableWebRenditionController> {
 
@@ -213,7 +213,7 @@ public class ReflowableWebRenditionController internal constructor(
 ) : NavigationController<ReflowableWebLocation, ReflowableWebGoLocation> by navigationDelegate,
     OverflowController by navigationDelegate,
     SettingsController<ReflowableWebSettings> by layoutDelegate,
-    DecorationController by decorationDelegate,
+    DecorationController<ReflowableWebDecorationLocation> by decorationDelegate,
     SelectionController<ReflowableWebSelectionLocation> by selectionDelegate
 
 @OptIn(ExperimentalReadiumApi::class, InternalReadiumApi::class)
@@ -350,11 +350,11 @@ internal class ReflowableNavigationDelegate(
 }
 
 internal class ReflowableDecorationDelegate(
-    val decorationTemplates: HtmlDecorationTemplates,
-) : DecorationController {
+    val decorationTemplates: WebDecorationTemplates,
+) : DecorationController<ReflowableWebDecorationLocation> {
 
-    override var decorations: PersistentMap<String, PersistentList<Decoration>> by
-        mutableStateOf(persistentMapOf<String, PersistentList<Decoration>>())
+    override var decorations: PersistentMap<String, PersistentList<ReflowableWebDecoration>> by
+        mutableStateOf(persistentMapOf<String, PersistentList<ReflowableWebDecoration>>())
 
     override fun <T : Decoration.Style> supportsDecorationStyle(style: KClass<T>): Boolean {
         TODO("Not yet implemented")
@@ -385,7 +385,8 @@ internal class ReflowableSelectionDelegate(
                 href = item.href,
                 mediaType = item.mediaType,
                 selectedText = selection.selectedText,
-                textAnchor = TextAnchor(
+                textQuote = TextQuote(
+                    quotedText = selection.selectedText,
                     textBefore = selection.textBefore,
                     textAfter = selection.textAfter
                 )

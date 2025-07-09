@@ -11,20 +11,24 @@ plugins {
 }
 
 android {
-    namespace = "org.readium.navigators.common"
+    namespace = "org.readium.navigators.web.common"
 
     buildFeatures {
         compose = true
+    }
+
+    defaultConfig {
+        minSdk = 23
     }
 }
 
 dependencies {
     api(project(":readium:readium-shared"))
     api(project(":readium:readium-navigator"))
+    api(project(":readium:navigators:readium-navigator-common"))
 
     api(libs.kotlinx.collections.immutable)
 
-    implementation(libs.androidx.recyclerview)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.bundles.compose)
     implementation(libs.timber)

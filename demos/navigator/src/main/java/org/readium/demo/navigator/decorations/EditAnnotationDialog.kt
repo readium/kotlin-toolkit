@@ -34,7 +34,7 @@ import androidx.compose.ui.window.DialogProperties
 
 class EditAnnotationViewModel(
     val id: Long,
-    val highlightsManager: HighlightsManager,
+    val highlightsManager: HighlightsManager<*>,
 ) {
     val originalHighlight = checkNotNull(highlightsManager.highlights.value[id])
 

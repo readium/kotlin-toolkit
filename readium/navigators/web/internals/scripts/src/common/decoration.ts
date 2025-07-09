@@ -28,24 +28,16 @@ export type DecorationLayout = "bounds" | "boxes"
 
 export interface Decoration {
   id: string
-  target: DecorationTarget
   style: string
   element: string
-}
-
-export type DecorationTarget = TextDecorationTarget | ElementDecorationTarget
-
-export interface TextDecorationTarget {
-  type: "text"
-  targetedText: string
-  textBefore?: string
-  textAfter?: string
   cssSelector?: string
+  textQuote?: TextQuote
 }
 
-export interface ElementDecorationTarget {
-  type: "element"
-  cssSelector: string
+export interface TextQuote {
+  quotedText: string
+  textBefore: string
+  textAfter: string
 }
 
 export class DecorationManager {
@@ -198,7 +190,10 @@ class DecorationGroup {
   add(decoration: Decoration) {
     const id = this.groupId + "-" + this.lastItemId++
 
-    const range = rangeFromDecorationTarget(decoration.target)
+    const range = rangeFromDecorationTarget(
+      decoration.cssSelector,
+      decoration.textQuote
+    )
     if (!range) {
       log("Can't locate DOM range for decoration", decoration)
       return
@@ -491,53 +486,35 @@ function getContainingElement(node: Node) {
  */
 
 export function rangeFromDecorationTarget(
-  target: DecorationTarget
+  cssSelector?: string,
+  textQuote?: TextQuote
 ): Range | null {
-  switch (target.type) {
-    case "text":
-      return rangeFromTextTarget(target)
-    case "element":
-      return rangeFromElementTarget(target)
-  }
-}
-
-function rangeFromTextTarget(target: TextDecorationTarget): Range {
   let root
-  if (target.cssSelector) {
+  if (cssSelector) {
     try {
-      root = document.querySelector(target.cssSelector)
+      root = document.querySelector(cssSelector)
     } catch (e) {
       log(e)
     }
   }
 
-  if (!root) {
+  if (!root && !textQuote) {
+    return null
+  } else if (!root) {
     root = document.body
   }
 
-  const anchor = new TextQuoteAnchor(root, target.targetedText, {
-    prefix: target.textBefore,
-    suffix: target.textAfter,
-  })
+  if (textQuote) {
+    const anchor = new TextQuoteAnchor(root, textQuote.quotedText, {
+      prefix: textQuote.textBefore,
+      suffix: textQuote.textAfter,
+    })
 
-  return anchor.toRange()
-}
-
-function rangeFromElementTarget(target: ElementDecorationTarget): Range | null {
-  let element
-  try {
-    element = document.querySelector(target.cssSelector)
-  } catch (e) {
-    log(e)
-    element = null
+    return anchor.toRange()
+  } else {
+    const range = document.createRange()
+    range.setStartBefore(root)
+    range.setEndAfter(root)
+    return range
   }
-
-  if (!element) {
-    return null
-  }
-
-  const range = document.createRange()
-  range.setStartBefore(element)
-  range.setEndAfter(element)
-  return range
 }

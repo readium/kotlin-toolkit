@@ -17,14 +17,24 @@ import org.readium.r2.shared.util.Url
 public interface Location {
 
     public val href: Url
+}
+
+@ExperimentalReadiumApi
+public interface ExportableLocation : Location {
 
     public fun toLocator(): Locator
 }
 
 @ExperimentalReadiumApi
-public interface TextLocation : Location {
+public interface TextAnchorLocation : Location {
 
     public val textAnchor: TextAnchor
+}
+
+@ExperimentalReadiumApi
+public interface TextQuoteLocation : Location {
+
+    public val textQuote: TextQuote
 }
 
 @ExperimentalReadiumApi

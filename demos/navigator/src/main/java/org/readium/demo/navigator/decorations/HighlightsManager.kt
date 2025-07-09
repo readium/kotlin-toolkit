@@ -4,9 +4,12 @@
  * available in the top-level LICENSE file of the project.
  */
 
+@file:OptIn(ExperimentalReadiumApi::class)
+
 package org.readium.demo.navigator.decorations
 
 import androidx.annotation.ColorInt
+import kotlin.text.isNotEmpty
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.PersistentMap
 import kotlinx.collections.immutable.persistentMapOf
@@ -17,13 +20,29 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
-import org.readium.r2.navigator.Decoration
+import org.readium.navigator.common.Decoration
+import org.readium.navigator.common.DecorationLocation
+import org.readium.navigator.web.fixedlayout.FixedWebDecorationLocation
+import org.readium.navigator.web.reflowable.ReflowableWebDecorationLocation
+import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Locator
+
+class ReflowableHighlightsManager :
+    HighlightsManager<ReflowableWebDecorationLocation>(
+        DecorationFactory::createReflowableDecorationsForHighlight
+    )
+
+class FixedHighlightsManager :
+    HighlightsManager<FixedWebDecorationLocation>(
+        DecorationFactory::createFixedDecorationsForHighlight
+    )
 
 /**
  * Trivial highlight manager. You can add persistence.
  */
-class HighlightsManager {
+sealed class HighlightsManager<L : DecorationLocation>(
+    decorationFactory: (Highlight, Long) -> List<Decoration<L>>,
+) {
 
     private val lastHighlightId: Long = -1
 
@@ -33,10 +52,8 @@ class HighlightsManager {
     val highlights: StateFlow<PersistentMap<Long, Highlight>> =
         highlightsMutable.asStateFlow()
 
-    val decorations: Flow<PersistentList<Decoration>> = highlightsMutable.map {
-        it.entries.flatMap { (id, highlight) ->
-            highlight.toDecorations(id = id, isActive = false)
-        }.toPersistentList()
+    val decorations: Flow<PersistentList<Decoration<L>>> = highlightsMutable.map {
+        it.entries.flatMap { (id, highlight) -> decorationFactory(highlight, id) }.toPersistentList()
     }
 
     fun addHighlight(
@@ -90,42 +107,87 @@ data class Highlight(
     }
 }
 
-/**
- * Creates a list of [Decoration] for the receiver [Highlight].
- */
-private fun Highlight.toDecorations(id: Long, isActive: Boolean): List<Decoration> {
-    fun createDecoration(idSuffix: String, style: Decoration.Style) = Decoration(
-        id = "$id-$idSuffix",
-        locator = locator,
-        style = style,
-        extras = mapOf(
-            // We store the highlight's ID in the extras map, for easy retrieval
-            // later. You can store arbitrary information in the map.
-            "id" to id
-        )
-    )
+object DecorationFactory {
 
-    return listOfNotNull(
-        // Decoration for the actual highlight / underline.
-        createDecoration(
-            idSuffix = "highlight",
-            style = when (style) {
-                Highlight.Style.HIGHLIGHT -> Decoration.Style.Highlight(
-                    tint = tint,
-                    isActive = isActive
-                )
-                Highlight.Style.UNDERLINE -> Decoration.Style.Underline(
-                    tint = tint,
-                    isActive = isActive
-                )
-            }
-        ),
-        // Additional page margin icon decoration, if the highlight has an associated note.
-        annotation.takeIf { it.isNotEmpty() }?.let {
+    /**
+     * Creates a list of [Decoration] usable in a reflowable rendition for the receiver [Highlight].
+     */
+    fun createReflowableDecorationsForHighlight(
+        highlight: Highlight,
+        id: Long,
+    ): List<Decoration<ReflowableWebDecorationLocation>> {
+        val location = ReflowableWebDecorationLocation(highlight.locator)
+            ?: return emptyList()
+
+        return createDecorationsForHighlight(highlight, id, location)
+    }
+
+    /**
+     * Creates a list of [Decoration] usable in a fixed layout rendition for the receiver [Highlight].
+     */
+    fun createFixedDecorationsForHighlight(
+        highlight: Highlight,
+        id: Long,
+    ): List<Decoration<FixedWebDecorationLocation>> {
+        val location = FixedWebDecorationLocation(highlight.locator)
+            ?: return emptyList()
+
+        return createDecorationsForHighlight(highlight, id, location)
+    }
+
+    private fun <L : DecorationLocation> createDecorationsForHighlight(
+        highlight: Highlight,
+        highlightId: Long,
+        location: L,
+    ): List<Decoration<L>> = buildList {
+        add(
             createDecoration(
-                idSuffix = "annotation",
-                style = DecorationStyleAnnotationMark(tint = tint)
+                highlightId = highlightId,
+                idSuffix = "highlight",
+                style = highlight.highlightStyle(isActive = false),
+                location = location
+            )
+        )
+
+        // Additional page margin icon decoration, if the highlight has an associated note.
+        highlight.annotation.takeIf { it.isNotEmpty() }?.let {
+            add(
+                createDecoration(
+                    highlightId = highlightId,
+                    idSuffix = "annotation",
+                    style = DecorationStyleAnnotationMark(tint = highlight.tint),
+                    location = location
+                )
             )
         }
-    )
+    }
+
+    private fun <L : DecorationLocation> createDecoration(
+        highlightId: Long,
+        idSuffix: String,
+        style: Decoration.Style,
+        location: L,
+    ): Decoration<L> =
+        Decoration(
+            id = Decoration.Id("$highlightId-$idSuffix"),
+            location = location,
+            style = style,
+            /*extras = mapOf(
+                // We store the highlight's ID in the extras map, for easy retrieval
+                // later. You can store arbitrary information in the map.
+                "id" to id
+            )*/
+        )
+
+    private fun Highlight.highlightStyle(isActive: Boolean): Decoration.Style =
+        when (style) {
+            Highlight.Style.HIGHLIGHT -> Decoration.Style.Highlight(
+                tint = tint,
+                isActive = isActive
+            )
+            Highlight.Style.UNDERLINE -> Decoration.Style.Underline(
+                tint = tint,
+                isActive = isActive
+            )
+        }
 }

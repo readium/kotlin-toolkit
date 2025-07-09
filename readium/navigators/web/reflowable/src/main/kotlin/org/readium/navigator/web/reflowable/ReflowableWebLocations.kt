@@ -4,21 +4,29 @@
  * available in the top-level LICENSE file of the project.
  */
 
-@file:OptIn(ExperimentalReadiumApi::class)
+@file:OptIn(ExperimentalReadiumApi::class, InternalReadiumApi::class)
 
 package org.readium.navigator.web.reflowable
 
+import org.readium.navigator.common.CssLocation
+import org.readium.navigator.common.CssSelector
+import org.readium.navigator.common.Decoration
+import org.readium.navigator.common.DecorationLocation
+import org.readium.navigator.common.ExportableLocation
 import org.readium.navigator.common.GoLocation
 import org.readium.navigator.common.Location
 import org.readium.navigator.common.Progression
 import org.readium.navigator.common.ProgressionLocation
 import org.readium.navigator.common.SelectionLocation
-import org.readium.navigator.common.TextAnchor
-import org.readium.navigator.common.TextLocation
+import org.readium.navigator.common.TextQuote
+import org.readium.navigator.common.TextQuoteLocation
 import org.readium.r2.shared.ExperimentalReadiumApi
+import org.readium.r2.shared.InternalReadiumApi
+import org.readium.r2.shared.extensions.addPrefix
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Locator.Locations
 import org.readium.r2.shared.publication.Locator.Text
+import org.readium.r2.shared.publication.html.cssSelector
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
 
@@ -44,10 +52,60 @@ public data class ReflowableWebGoLocation(
 }
 
 @ExperimentalReadiumApi
-public interface ReflowableWebLocation : ProgressionLocation
+public data class ReflowableWebDecorationLocation(
+    override val href: Url,
+    val cssSelector: CssSelector?,
+    val textQuote: TextQuote?,
+) : DecorationLocation {
+
+    init {
+        require(cssSelector != null || textQuote != null)
+    }
+
+    public companion object {
+
+        public operator fun invoke(location: Location): ReflowableWebDecorationLocation? {
+            val cssSelector = (location as? CssLocation)?.cssSelector
+            val textQuote = (location as? TextQuoteLocation)?.textQuote
+
+            if (cssSelector == null && textQuote == null) {
+                return null
+            }
+
+            return ReflowableWebDecorationLocation(location.href, cssSelector, textQuote)
+        }
+
+        public operator fun invoke(locator: Locator): ReflowableWebDecorationLocation? {
+            val cssSelector = (
+                locator.locations.cssSelector
+                    ?: locator.locations.fragments.firstOrNull()?.addPrefix("#")
+                )
+                ?.let { CssSelector(it) }
+
+            val textQuote = locator.text.highlight?.let {
+                TextQuote(
+                    quotedText = it,
+                    textBefore = locator.text.before.orEmpty(),
+                    textAfter = locator.text.after.orEmpty()
+                )
+            }
+
+            if (cssSelector == null && textQuote == null) {
+                return null
+            }
+
+            return ReflowableWebDecorationLocation(locator.href, cssSelector, textQuote)
+        }
+    }
+}
+
+internal typealias ReflowableWebDecoration = Decoration<ReflowableWebDecorationLocation>
 
 @ExperimentalReadiumApi
-public interface ReflowableWebSelectionLocation : SelectionLocation, TextLocation // , CssLocation
+public interface ReflowableWebLocation : ExportableLocation, ProgressionLocation
+
+@ExperimentalReadiumApi
+public interface ReflowableWebSelectionLocation : ExportableLocation, SelectionLocation, TextQuoteLocation // , CssLocation
 
 internal data class ReflowableWebLocationImpl(
     override val href: Url,
@@ -68,7 +126,7 @@ internal data class ReflowableWebSelectionLocationImpl(
     val mediaType: MediaType?,
     val selectedText: String,
     // override val cssSelector: CssSelector?,
-    override val textAnchor: TextAnchor,
+    override val textQuote: TextQuote,
 ) : ReflowableWebSelectionLocation {
 
     override fun toLocator(): Locator =
@@ -76,9 +134,9 @@ internal data class ReflowableWebSelectionLocationImpl(
             href = href,
             mediaType = mediaType ?: MediaType.XHTML,
             text = Text(
-                highlight = selectedText,
-                before = textAnchor.textBefore,
-                after = textAnchor.textAfter
+                highlight = textQuote.quotedText,
+                before = textQuote.textBefore,
+                after = textQuote.textAfter
             ),
             /*locations = Locations(
                 otherLocations = buildMap {

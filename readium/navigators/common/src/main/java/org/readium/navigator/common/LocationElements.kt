@@ -10,14 +10,8 @@ import org.readium.r2.shared.ExperimentalReadiumApi
 
 @ExperimentalReadiumApi
 @JvmInline
-public value class HtmlAnchor(
-    public val anchor: String,
-)
-
-@ExperimentalReadiumApi
-@JvmInline
 public value class CssSelector(
-    public val selector: String,
+    public val value: String,
 )
 
 @ExperimentalReadiumApi

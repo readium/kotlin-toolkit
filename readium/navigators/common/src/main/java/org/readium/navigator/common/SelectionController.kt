@@ -37,4 +37,4 @@ public data class Selection<S : SelectionLocation>(
 )
 
 @ExperimentalReadiumApi
-public interface SelectionLocation : Location
+public interface SelectionLocation : ExportableLocation

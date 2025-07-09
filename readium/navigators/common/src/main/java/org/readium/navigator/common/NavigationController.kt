@@ -9,7 +9,7 @@ package org.readium.navigator.common
 import org.readium.r2.shared.ExperimentalReadiumApi
 
 @ExperimentalReadiumApi
-public interface NavigationController<L : Location, G : GoLocation> {
+public interface NavigationController<L : ExportableLocation, G : GoLocation> {
 
     public val location: L
 

@@ -7,12 +7,12 @@
 package org.readium.navigator.web.reflowable
 
 import android.app.Application
+import org.readium.navigator.web.common.WebDecorationTemplates
 import org.readium.navigator.web.reflowable.css.RsProperties
 import org.readium.navigator.web.reflowable.preferences.ReflowableWebDefaults
 import org.readium.navigator.web.reflowable.preferences.ReflowableWebPreferences
 import org.readium.navigator.web.reflowable.preferences.ReflowableWebPreferencesEditor
 import org.readium.navigator.web.reflowable.preferences.ReflowableWebSettings
-import org.readium.r2.navigator.html.HtmlDecorationTemplates
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.publication.Link
@@ -34,7 +34,7 @@ public class ReflowableWebRenditionFactory private constructor(
     private val application: Application,
     private val publication: Publication,
     private val defaults: ReflowableWebDefaults,
-    private val decorationTemplates: HtmlDecorationTemplates,
+    private val decorationTemplates: WebDecorationTemplates,
 ) {
 
     public companion object {
@@ -43,7 +43,7 @@ public class ReflowableWebRenditionFactory private constructor(
             application: Application,
             publication: Publication,
             defaults: ReflowableWebDefaults = ReflowableWebDefaults(),
-            decorationTemplates: HtmlDecorationTemplates = HtmlDecorationTemplates.defaultTemplates(),
+            decorationTemplates: WebDecorationTemplates = WebDecorationTemplates.defaultTemplates(),
         ): ReflowableWebRenditionFactory? {
             if (!publication.conformsTo(Publication.Profile.EPUB) ||
                 publication.metadata.presentation.layout == EpubLayout.FIXED

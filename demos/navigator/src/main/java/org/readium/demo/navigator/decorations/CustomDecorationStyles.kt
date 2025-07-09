@@ -4,22 +4,23 @@
  * available in the top-level LICENSE file of the project.
  */
 
+@file:OptIn(ExperimentalReadiumApi::class)
+
 package org.readium.demo.navigator.decorations
 
 import android.graphics.Color
 import androidx.annotation.ColorInt
-import kotlinx.parcelize.Parcelize
-import org.readium.r2.navigator.Decoration
+import org.readium.navigator.common.Decoration
+import org.readium.navigator.web.common.WebDecorationTemplate
 import org.readium.r2.navigator.epub.EpubNavigatorFragment
-import org.readium.r2.navigator.html.HtmlDecorationTemplate
 import org.readium.r2.navigator.html.toCss
+import org.readium.r2.shared.ExperimentalReadiumApi
 
 /**
  * Decoration Style for a page margin icon.
  *
  * This is an example of a custom Decoration Style declaration.
  */
-@Parcelize
 data class DecorationStyleAnnotationMark(@ColorInt val tint: Int) : Decoration.Style
 
 /**
@@ -29,7 +30,6 @@ data class DecorationStyleAnnotationMark(@ColorInt val tint: Int) : Decoration.S
  *
  * @param label Page number label as declared in the `page-list` link object.
  */
-@Parcelize
 data class DecorationStylePageNumber(val label: String) : Decoration.Style
 
 /**
@@ -38,14 +38,14 @@ data class DecorationStylePageNumber(val label: String) : Decoration.Style
  *
  * Note that the icon is served from the app assets folder.
  */
-fun annotationMarkTemplate(@ColorInt defaultTint: Int = Color.YELLOW): HtmlDecorationTemplate {
+fun annotationMarkTemplate(@ColorInt defaultTint: Int = Color.YELLOW): WebDecorationTemplate {
     val className = "testapp-annotation-mark"
     val iconUrl = checkNotNull(EpubNavigatorFragment.assetUrl("annotation-icon.svg"))
-    return HtmlDecorationTemplate(
-        layout = HtmlDecorationTemplate.Layout.BOUNDS,
-        width = HtmlDecorationTemplate.Width.PAGE,
-        element = { decoration ->
-            val style = decoration.style as? DecorationStyleAnnotationMark
+    return WebDecorationTemplate(
+        layout = WebDecorationTemplate.Layout.BOUNDS,
+        width = WebDecorationTemplate.Width.PAGE,
+        element = {
+            val style = it as? DecorationStyleAnnotationMark
             val tint = style?.tint ?: defaultTint
             // Using `data-activable=1` prevents the whole decoration container from being
             // clickable. Only the icon will respond to activation events.
@@ -74,13 +74,13 @@ fun annotationMarkTemplate(@ColorInt defaultTint: Int = Color.YELLOW): HtmlDecor
  *
  * See http://kb.daisy.org/publishing/docs/navigation/pagelist.html
  */
-fun pageNumberTemplate(): HtmlDecorationTemplate {
+fun pageNumberTemplate(): WebDecorationTemplate {
     val className = "testapp-page-number"
-    return HtmlDecorationTemplate(
-        layout = HtmlDecorationTemplate.Layout.BOUNDS,
-        width = HtmlDecorationTemplate.Width.PAGE,
-        element = { decoration ->
-            val style = decoration.style as? DecorationStylePageNumber
+    return WebDecorationTemplate(
+        layout = WebDecorationTemplate.Layout.BOUNDS,
+        width = WebDecorationTemplate.Width.PAGE,
+        element = {
+            val style = it as? DecorationStylePageNumber
 
             // Using `var(--RS__backgroundColor)` is a trick to use the same background color as
             // the Readium theme. If we don't set it directly inline in the HTML, it might be

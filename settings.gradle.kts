@@ -49,6 +49,10 @@ include(":readium:navigators:common")
 project(":readium:navigators:common")
     .name = "readium-navigator-common"
 
+include(":readium:navigators:web:common")
+project(":readium:navigators:web:common")
+    .name = "readium-navigator-web-common"
+
 include(":readium:navigators:web:internals")
 project(":readium:navigators:web:internals")
     .name = "readium-navigator-web-internals"

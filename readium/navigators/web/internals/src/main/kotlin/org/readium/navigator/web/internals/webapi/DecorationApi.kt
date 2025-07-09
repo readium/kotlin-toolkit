@@ -4,44 +4,45 @@
  * available in the top-level LICENSE file of the project.
  */
 
+@file:OptIn(ExperimentalReadiumApi::class, InternalReadiumApi::class)
+
 package org.readium.navigator.web.internals.webapi
 
 import android.webkit.WebView
-import org.readium.r2.navigator.Decoration
-import org.readium.r2.navigator.DecorationId
-import org.readium.r2.navigator.html.HtmlDecorationTemplate
-import org.readium.r2.navigator.html.HtmlDecorationTemplates
+import kotlin.reflect.KClass
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.encodeToJsonElement
+import org.readium.navigator.common.CssSelector
+import org.readium.navigator.common.Decoration.Id
+import org.readium.navigator.common.Decoration.Style
+import org.readium.navigator.common.TextQuote
+import org.readium.navigator.web.common.WebDecorationTemplate
+import org.readium.navigator.web.common.WebDecorationTemplates
+import org.readium.r2.shared.ExperimentalReadiumApi
+import org.readium.r2.shared.InternalReadiumApi
 import timber.log.Timber
 
 public class ReflowableDecorationApi(
     private val webView: WebView,
-    decorationTemplates: HtmlDecorationTemplates,
+    decorationTemplates: WebDecorationTemplates,
 ) {
-
     init {
-        registerTemplates(decorationTemplates)
+        webView.registerTemplates("decorations", decorationTemplates)
     }
 
-    private fun registerTemplates(templates: HtmlDecorationTemplates) {
-        Timber.d("templatesJSON ${templates.toJSON()}")
-        val templatesAsLiteral = templates.toJSON().toString().toJavaScriptLiteral()
-        val script = "decorations.registerTemplates($templatesAsLiteral);"
-        webView.evaluateJavascript(script) {}
-    }
-
-    public fun addDecoration(decoration: Decoration, template: HtmlDecorationTemplate, group: String) {
-        val decorationAsLiteral = decoration.toJSON()
-            .apply { put("element", template.element(decoration)) }
-            .toString()
-            .toJavaScriptLiteral()
+    public fun addDecoration(decoration: Decoration, group: String) {
+        val decorationAsLiteral = decoration.toJsonJavaScriptLiteral()
         val groupAsLiteral = group.toJavaScriptLiteral()
         val script = "decorations.addDecoration($decorationAsLiteral, $groupAsLiteral);"
         Timber.d("Decoration $script")
         webView.evaluateJavascript(script) {}
     }
 
-    public fun removeDecoration(id: DecorationId, group: String) {
-        val idAsLiteral = id.toJavaScriptLiteral()
+    public fun removeDecoration(id: Id, group: String) {
+        val idAsLiteral = id.value.toJavaScriptLiteral()
         val groupAsLiteral = group.toJavaScriptLiteral()
         val script = "decorations.removeDecoration($idAsLiteral, $groupAsLiteral);"
         webView.evaluateJavascript(script) {}
@@ -50,33 +51,23 @@ public class ReflowableDecorationApi(
 
 public class FixedSingleDecorationApi(
     private val webView: WebView,
-    decorationTemplates: HtmlDecorationTemplates,
+    decorationTemplates: WebDecorationTemplates,
 ) {
 
     init {
-        registerTemplates(decorationTemplates)
+        webView.registerTemplates("singleDecorations", decorationTemplates)
     }
 
-    private fun registerTemplates(templates: HtmlDecorationTemplates) {
-        Timber.d("templatesJSON ${templates.toJSON()}")
-        val templatesAsLiteral = templates.toJSON().toString().toJavaScriptLiteral()
-        val script = "singleDecorations.registerTemplates($templatesAsLiteral);"
-        webView.evaluateJavascript(script) {}
-    }
-
-    public fun addDecoration(decoration: Decoration, template: HtmlDecorationTemplate, group: String) {
-        val decorationAsLiteral = decoration.toJSON()
-            .apply { put("element", template.element(decoration)) }
-            .toString()
-            .toJavaScriptLiteral()
+    public fun addDecoration(decoration: Decoration, group: String) {
+        val decorationAsLiteral = decoration.toJsonJavaScriptLiteral()
         val groupAsLiteral = group.toJavaScriptLiteral()
         val script = "singleDecorations.addDecoration($decorationAsLiteral, $groupAsLiteral);"
         Timber.d("Decoration $script")
         webView.evaluateJavascript(script) {}
     }
 
-    public fun removeDecoration(id: DecorationId, group: String) {
-        val idAsLiteral = id.toJavaScriptLiteral()
+    public fun removeDecoration(id: Id, group: String) {
+        val idAsLiteral = id.value.toJavaScriptLiteral()
         val groupAsLiteral = group.toJavaScriptLiteral()
         val script = "singleDecorations.removeDecoration($idAsLiteral, $groupAsLiteral);"
         webView.evaluateJavascript(script) {}
@@ -85,30 +76,18 @@ public class FixedSingleDecorationApi(
 
 public class FixedDoubleDecorationApi(
     private val webView: WebView,
-    decorationTemplates: HtmlDecorationTemplates,
+    decorationTemplates: WebDecorationTemplates,
 ) {
-
     init {
-        registerTemplates(decorationTemplates)
-    }
-
-    private fun registerTemplates(templates: HtmlDecorationTemplates) {
-        Timber.d("templatesJSON ${templates.toJSON()}")
-        val templatesAsLiteral = templates.toJSON().toString().toJavaScriptLiteral()
-        val script = "doubleDecorations.registerTemplates($templatesAsLiteral);"
-        webView.evaluateJavascript(script) {}
+        webView.registerTemplates("doubleDecorations", decorationTemplates)
     }
 
     public fun addDecoration(
         decoration: Decoration,
         iframe: Iframe,
-        template: HtmlDecorationTemplate,
         group: String,
     ) {
-        val decorationAsLiteral = decoration.toJSON()
-            .apply { put("element", template.element(decoration)) }
-            .toString()
-            .toJavaScriptLiteral()
+        val decorationAsLiteral = decoration.toJsonJavaScriptLiteral()
         val groupAsLiteral = group.toJavaScriptLiteral()
         val iframeAsLiteral = iframe.toString().toJavaScriptLiteral()
         val script = "doubleDecorations.addDecoration($decorationAsLiteral, $iframeAsLiteral, $groupAsLiteral);"
@@ -116,10 +95,100 @@ public class FixedDoubleDecorationApi(
         webView.evaluateJavascript(script) {}
     }
 
-    public fun removeDecoration(id: DecorationId, group: String) {
-        val idAsLiteral = id.toJavaScriptLiteral()
+    public fun removeDecoration(id: Id, group: String) {
+        val idAsLiteral = id.value.toJavaScriptLiteral()
         val groupAsLiteral = group.toJavaScriptLiteral()
         val script = "doubleDecorations.removeDecoration($idAsLiteral, $groupAsLiteral);"
         webView.evaluateJavascript(script) {}
     }
 }
+
+private fun WebView.registerTemplates(apiName: String, templates: WebDecorationTemplates) {
+    val templatesAsJsonObject = JsonObject(
+        templates.toMap().mapKeys { (klass: KClass<*>, _: WebDecorationTemplate) ->
+            klass.qualifiedName.toString()
+        }.mapValues { (_, template) ->
+            Json.encodeToJsonElement(template.toJsonTemplate())
+        }
+    )
+    val templatesAsJsLiteral = Json.encodeToString(templatesAsJsonObject).toJavaScriptLiteral()
+    val script = "$apiName.registerTemplates($templatesAsJsLiteral);"
+    evaluateJavascript(script) {}
+}
+
+private fun Decoration.toJsonJavaScriptLiteral(): String =
+    Json.encodeToString(toJsonDecoration()).toJavaScriptLiteral()
+
+public data class Decoration(
+    public val id: Id,
+    public val style: Style,
+    public val element: String,
+    val cssSelector: CssSelector?,
+    val textQuote: TextQuote?,
+) {
+    init {
+        require(cssSelector != null || textQuote != null)
+    }
+}
+
+private fun Decoration.toJsonDecoration(): JsonDecoration =
+    JsonDecoration(
+        id = id.value,
+        style = checkNotNull(style::class.qualifiedName),
+        element = element,
+        cssSelector = cssSelector?.value,
+        textQuote = textQuote?.toSerializableTextQuote()
+    )
+
+private fun TextQuote.toSerializableTextQuote() =
+    JsonTextQuote(
+        quotedText = quotedText,
+        textBefore = textBefore,
+        textAfter = textAfter
+    )
+
+@Serializable
+public sealed class DecorationTarget
+
+@Serializable
+public data class TextDecorationTarget(
+    val targetedText: String,
+    val textBefore: String,
+    val textAfter: String,
+    val cssSelector: String?,
+)
+
+@Serializable
+public data class ElementDecorationTarget(
+    val cssSelector: String,
+)
+
+@Serializable
+private data class JsonDecoration(
+    val id: String,
+    val style: String,
+    val element: String,
+    val cssSelector: String?,
+    val textQuote: JsonTextQuote?,
+)
+
+@Serializable
+private data class JsonTextQuote(
+    val quotedText: String,
+    val textBefore: String,
+    val textAfter: String,
+)
+
+@Serializable
+private data class JsonTemplate(
+    val layout: String,
+    val width: String,
+    val stylesheet: String?,
+)
+
+private fun WebDecorationTemplate.toJsonTemplate(): JsonTemplate =
+    JsonTemplate(
+        layout = layout.value,
+        width = width.value,
+        stylesheet = stylesheet
+    )
