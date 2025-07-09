@@ -23,9 +23,9 @@ import org.readium.r2.shared.util.Url
 @ExperimentalReadiumApi
 public interface HyperlinkListener {
 
-    public fun onReadingOrderLinkActivated(location: HyperlinkLocation, context: LinkContext?)
+    public fun onReadingOrderLinkActivated(url: Url, context: LinkContext?)
 
-    public fun onNonLinearLinkActivated(location: HyperlinkLocation, context: LinkContext?)
+    public fun onNonLinearLinkActivated(url: Url, context: LinkContext?)
 
     public fun onExternalLinkActivated(url: AbsoluteUrl, context: LinkContext?)
 }
@@ -51,10 +51,10 @@ public data class FootnoteContext(
 
 @ExperimentalReadiumApi
 private class NullHyperlinkListener : HyperlinkListener {
-    override fun onReadingOrderLinkActivated(location: HyperlinkLocation, context: LinkContext?) {
+    override fun onReadingOrderLinkActivated(url: Url, context: LinkContext?) {
     }
 
-    override fun onNonLinearLinkActivated(location: HyperlinkLocation, context: LinkContext?) {
+    override fun onNonLinearLinkActivated(url: Url, context: LinkContext?) {
     }
 
     override fun onExternalLinkActivated(url: AbsoluteUrl, context: LinkContext?) {
@@ -71,8 +71,8 @@ private class NullHyperlinkListener : HyperlinkListener {
 @Composable
 public fun <L : ExportableLocation> defaultHyperlinkListener(
     controller: NavigationController<L, *>?,
-    shouldFollowReadingOrderLink: (NavigationController<L, *>).(HyperlinkLocation, LinkContext?) -> Boolean = { _, _ -> true },
-    onNonLinearLinkActivated: (NavigationController<L, *>).(HyperlinkLocation, LinkContext?) -> Unit = { _, _ -> },
+    shouldFollowReadingOrderLink: (NavigationController<L, *>).(Url, LinkContext?) -> Boolean = { _, _ -> true },
+    onNonLinearLinkActivated: (NavigationController<L, *>).(Url, LinkContext?) -> Unit = { _, _ -> },
     onExternalLinkActivated: (NavigationController<L, *>).(AbsoluteUrl, LinkContext?) -> Unit = { _, _ -> },
 ): HyperlinkListener {
     val coroutineScope = rememberCoroutineScope()
@@ -107,19 +107,19 @@ public fun <L : ExportableLocation> defaultHyperlinkListener(
 private class DefaultHyperlinkListener<L : ExportableLocation>(
     private val coroutineScope: CoroutineScope,
     private val controller: NavigationController<L, *>,
-    private val shouldFollowReadingOrderLink: (HyperlinkLocation, LinkContext?) -> Boolean,
-    private val onNonLinearLinkActivatedDelegate: (HyperlinkLocation, LinkContext?) -> Unit,
+    private val shouldFollowReadingOrderLink: (Url, LinkContext?) -> Boolean,
+    private val onNonLinearLinkActivatedDelegate: (Url, LinkContext?) -> Unit,
     private val onExternalLinkActivatedDelegate: (AbsoluteUrl, LinkContext?) -> Unit,
 ) : HyperlinkListener {
 
-    override fun onReadingOrderLinkActivated(location: HyperlinkLocation, context: LinkContext?) {
-        if (shouldFollowReadingOrderLink(location, context)) {
-            coroutineScope.launch { controller.goTo(location) }
+    override fun onReadingOrderLinkActivated(url: Url, context: LinkContext?) {
+        if (shouldFollowReadingOrderLink(url, context)) {
+            coroutineScope.launch { controller.goTo(url) }
         }
     }
 
-    override fun onNonLinearLinkActivated(location: HyperlinkLocation, context: LinkContext?) {
-        onNonLinearLinkActivatedDelegate(location, context)
+    override fun onNonLinearLinkActivated(url: Url, context: LinkContext?) {
+        onNonLinearLinkActivatedDelegate(url, context)
     }
 
     override fun onExternalLinkActivated(url: AbsoluteUrl, context: LinkContext?) {

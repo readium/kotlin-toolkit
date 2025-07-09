@@ -42,26 +42,8 @@ public value class Position private constructor(
 }
 
 @ExperimentalReadiumApi
-public data class TextAnchor(
-    val textBefore: String,
-    val textAfter: String,
-)
-
-@ExperimentalReadiumApi
 public data class TextQuote(
-    val quotedText: String,
-    val textBefore: String,
-    val textAfter: String,
-) {
-    val startAnchor: TextAnchor get() =
-        TextAnchor(
-            textBefore = textBefore,
-            textAfter = quotedText + textAfter
-        )
-
-    val endAnchor: TextAnchor get() =
-        TextAnchor(
-            textBefore = textBefore + quotedText,
-            textAfter = textAfter
-        )
-}
+    val text: String,
+    val prefix: String,
+    val suffix: String,
+)

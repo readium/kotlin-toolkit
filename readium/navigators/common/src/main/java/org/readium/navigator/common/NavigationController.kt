@@ -7,6 +7,7 @@
 package org.readium.navigator.common
 
 import org.readium.r2.shared.ExperimentalReadiumApi
+import org.readium.r2.shared.util.Url
 
 @ExperimentalReadiumApi
 public interface NavigationController<L : ExportableLocation, G : GoLocation> {
@@ -17,7 +18,7 @@ public interface NavigationController<L : ExportableLocation, G : GoLocation> {
 
     public suspend fun goTo(location: L)
 
-    public suspend fun goTo(location: HyperlinkLocation)
+    public suspend fun goTo(url: Url)
 }
 
 /**

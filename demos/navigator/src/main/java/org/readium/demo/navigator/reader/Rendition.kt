@@ -65,7 +65,7 @@ import org.readium.r2.shared.util.toUri
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun <L : ExportableLocation, G : GoLocation, S : SelectionLocation, C> Reader(
+fun <L : ExportableLocation, G : GoLocation, S : SelectionLocation, C> Rendition(
     readerState: ReaderState<L, G, S, C>,
     fullScreenState: MutableState<Boolean>,
 ) where C : NavigationController<L, G>, C : SelectionController<S> {

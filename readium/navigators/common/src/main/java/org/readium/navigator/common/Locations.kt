@@ -26,12 +26,6 @@ public interface ExportableLocation : Location {
 }
 
 @ExperimentalReadiumApi
-public interface TextAnchorLocation : Location {
-
-    public val textAnchor: TextAnchor
-}
-
-@ExperimentalReadiumApi
 public interface TextQuoteLocation : Location {
 
     public val textQuote: TextQuote

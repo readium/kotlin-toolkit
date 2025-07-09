@@ -29,7 +29,6 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import org.readium.navigator.common.Decoration
 import org.readium.navigator.common.DecorationController
-import org.readium.navigator.common.HyperlinkLocation
 import org.readium.navigator.common.NavigationController
 import org.readium.navigator.common.Overflow
 import org.readium.navigator.common.OverflowController
@@ -62,6 +61,7 @@ import org.readium.r2.navigator.preferences.Fit
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.util.RelativeUrl
+import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.resource.Resource
 
@@ -223,8 +223,8 @@ internal class FixedNavigationDelegate(
 
     override val location by locationMutable
 
-    override suspend fun goTo(location: HyperlinkLocation) {
-        goTo(FixedWebGoLocation(location.href))
+    override suspend fun goTo(url: Url) {
+        goTo(FixedWebGoLocation(url))
     }
 
     override suspend fun goTo(location: FixedWebGoLocation) {
@@ -298,9 +298,9 @@ internal class FixedSelectionDelegate(
                 mediaType = page.mediaType ?: MediaType.XHTML,
                 selectedText = selection.selectedText,
                 textQuote = TextQuote(
-                    quotedText = selection.selectedText,
-                    textBefore = selection.textBefore,
-                    textAfter = selection.textAfter,
+                    text = selection.selectedText,
+                    prefix = selection.textBefore,
+                    suffix = selection.textAfter,
                 )
             )
         )

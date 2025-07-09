@@ -27,17 +27,17 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
-import org.readium.navigator.common.HyperlinkLocation
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.util.Url
 
 @Composable
 fun Outline(
     modifier: Modifier = Modifier,
     publication: Publication,
     onBackActivated: () -> Unit,
-    onTocItemActivated: (HyperlinkLocation) -> Unit,
+    onTocItemActivated: (Url) -> Unit,
 ) {
     Scaffold(
         modifier = Modifier
@@ -84,7 +84,7 @@ private fun TopBar(
 private fun Contents(
     modifier: Modifier = Modifier,
     publication: Publication,
-    onItemActivated: (HyperlinkLocation) -> Unit,
+    onItemActivated: (Url) -> Unit,
 ) {
     val items = publication.tableOfContents
         .flatMap { it.toTocItems(publication) }
@@ -100,7 +100,7 @@ private fun Contents(
 
 private data class TocItem(
     val title: String,
-    val location: HyperlinkLocation,
+    val url: Url,
     val depth: Int,
 )
 
@@ -108,12 +108,10 @@ private fun Link.toTocItems(
     publication: Publication,
     depth: Int = 0,
 ): List<TocItem> {
-    val location = HyperlinkLocation(this)
-
     val title = title ?: url().filename ?: ""
 
     return buildList {
-        add(TocItem(title, location, depth))
+        add(TocItem(title, url(), depth))
         for (child in children) {
             addAll(child.toTocItems(publication, depth + 1))
         }
@@ -124,7 +122,7 @@ private fun Link.toTocItems(
 private fun Contents(
     modifier: Modifier = Modifier,
     items: List<TocItem>,
-    onClick: (HyperlinkLocation) -> Unit,
+    onClick: (Url) -> Unit,
     depth: Int = 0,
 ) {
     Column(modifier) {
@@ -142,7 +140,7 @@ private fun Contents(
 private fun TocItem(
     modifier: Modifier = Modifier,
     item: TocItem,
-    onClick: (HyperlinkLocation) -> Unit,
+    onClick: (Url) -> Unit,
     depth: Int = 0,
 ) {
     ListItem(
@@ -152,7 +150,7 @@ private fun TocItem(
             )
         },
         modifier = modifier
-            .clickable { onClick(item.location) }
+            .clickable { onClick(item.url) }
             .padding(start = 24.dp * depth)
     )
 }

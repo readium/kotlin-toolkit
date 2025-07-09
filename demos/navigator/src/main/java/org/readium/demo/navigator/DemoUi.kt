@@ -23,7 +23,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalTextToolbar
 import androidx.core.view.WindowInsetsControllerCompat
-import org.readium.demo.navigator.reader.Reader
+import org.readium.demo.navigator.reader.Rendition
 import org.readium.demo.navigator.util.Fullscreenable
 
 @Composable
@@ -100,7 +100,7 @@ fun MainContent(
                 viewmodel.onBookClosed()
             }
 
-            Reader(
+            Rendition(
                 readerState = viewmodelState.readerState,
                 fullScreenState = fullscreenState
             )

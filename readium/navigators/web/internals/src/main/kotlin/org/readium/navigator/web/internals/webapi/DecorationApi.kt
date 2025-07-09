@@ -142,9 +142,9 @@ private fun Decoration.toJsonDecoration(): JsonDecoration =
 
 private fun TextQuote.toSerializableTextQuote() =
     JsonTextQuote(
-        quotedText = quotedText,
-        textBefore = textBefore,
-        textAfter = textAfter
+        quotedText = text,
+        textBefore = prefix,
+        textAfter = suffix
     )
 
 @Serializable

@@ -52,7 +52,6 @@ public interface DecorationLocation : Location
  * @param id An identifier for this decoration. It must be unique in the group the decoration is applied to.
  * @param location Location in the publication where the decoration will be rendered.
  * @param style Declares the look and feel of the decoration.
- * @param extras Additional context data specific to a reading app. Readium does not use it.
  */
 @ExperimentalReadiumApi
 public data class Decoration<out L : DecorationLocation>(
@@ -98,7 +97,7 @@ public data class Decoration<out L : DecorationLocation>(
 
 /** Represents an atomic change in a list of [Decoration] objects. */
 @ExperimentalReadiumApi
-public sealed class DecorationChange<L : DecorationLocation> {
+public sealed class DecorationChange<out L : DecorationLocation> {
 
     public data class Added<L : DecorationLocation>(
         val decoration: Decoration<L>,

@@ -35,14 +35,12 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
-import kotlin.collections.mapValues
 import kotlinx.collections.immutable.toImmutableMap
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import org.readium.navigator.common.DecorationListener
 import org.readium.navigator.common.HyperlinkListener
-import org.readium.navigator.common.HyperlinkLocation
 import org.readium.navigator.common.InputListener
 import org.readium.navigator.common.TapContext
 import org.readium.navigator.common.TapEvent
@@ -235,13 +233,12 @@ private suspend fun HyperlinkProcessor.onLinkActivated(
     readingOrder: ReflowableWebPublication.ReadingOrder,
     listener: HyperlinkListener,
 ) {
-    val location = HyperlinkLocation(url.removeFragment(), url.fragment)
     val isReadingOrder = readingOrder.indexOfHref(url.removeFragment()) != null
     val context = computeLinkContext(url, outerHtml)
     when {
-        isReadingOrder -> listener.onReadingOrderLinkActivated(location, context)
+        isReadingOrder -> listener.onReadingOrderLinkActivated(url, context)
         else -> when (url) {
-            is RelativeUrl -> listener.onNonLinearLinkActivated(location, context)
+            is RelativeUrl -> listener.onNonLinearLinkActivated(url, context)
             is AbsoluteUrl -> listener.onExternalLinkActivated(url, context)
         }
     }

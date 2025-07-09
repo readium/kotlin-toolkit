@@ -79,14 +79,13 @@ public data class ReflowableWebDecorationLocation(
             val cssSelector = (
                 locator.locations.cssSelector
                     ?: locator.locations.fragments.firstOrNull()?.addPrefix("#")
-                )
-                ?.let { CssSelector(it) }
+                )?.let { CssSelector(it) }
 
             val textQuote = locator.text.highlight?.let {
                 TextQuote(
-                    quotedText = it,
-                    textBefore = locator.text.before.orEmpty(),
-                    textAfter = locator.text.after.orEmpty()
+                    text = it,
+                    prefix = locator.text.before.orEmpty(),
+                    suffix = locator.text.after.orEmpty()
                 )
             }
 
@@ -130,9 +129,9 @@ public data class ReflowableWebSelectionLocation internal constructor(
             href = href,
             mediaType = mediaType ?: MediaType.XHTML,
             text = Text(
-                highlight = textQuote.quotedText,
-                before = textQuote.textBefore,
-                after = textQuote.textAfter
+                highlight = textQuote.text,
+                before = textQuote.prefix,
+                after = textQuote.suffix
             ),
             /*locations = Locations(
                 otherLocations = buildMap {

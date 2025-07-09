@@ -73,9 +73,9 @@ public data class FixedWebDecorationLocation(
 
             val textQuote = locator.text.highlight?.let {
                 TextQuote(
-                    quotedText = it,
-                    textBefore = locator.text.before.orEmpty(),
-                    textAfter = locator.text.after.orEmpty()
+                    text = it,
+                    prefix = locator.text.before.orEmpty(),
+                    suffix = locator.text.after.orEmpty()
                 )
             }
 
@@ -117,8 +117,8 @@ public data class FixedWebSelectionLocation internal constructor(
             href = href,
             mediaType = mediaType ?: MediaType.XHTML,
             text = Text(
-                before = textQuote.textBefore,
-                after = textQuote.textAfter,
+                before = textQuote.prefix,
+                after = textQuote.suffix,
                 highlight = selectedText
             ),
             /*locations = Locations(

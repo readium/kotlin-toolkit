@@ -33,7 +33,6 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import org.readium.navigator.common.DecorationListener
 import org.readium.navigator.common.HyperlinkListener
-import org.readium.navigator.common.HyperlinkLocation
 import org.readium.navigator.common.InputListener
 import org.readium.navigator.common.TapContext
 import org.readium.navigator.common.defaultDecorationListener
@@ -310,13 +309,12 @@ private suspend fun HyperlinkProcessor.onLinkActivated(
     readingOrder: FixedWebPublication.ReadingOrder,
     listener: HyperlinkListener,
 ) {
-    val location = HyperlinkLocation(url.removeFragment())
     val isReadingOrder = readingOrder.indexOfHref(url.removeFragment()) != null
     val context = computeLinkContext(url, outerHtml)
     when {
-        isReadingOrder -> listener.onReadingOrderLinkActivated(location, context)
+        isReadingOrder -> listener.onReadingOrderLinkActivated(url, context)
         else -> when (url) {
-            is RelativeUrl -> listener.onNonLinearLinkActivated(location, context)
+            is RelativeUrl -> listener.onNonLinearLinkActivated(url, context)
             is AbsoluteUrl -> listener.onExternalLinkActivated(url, context)
         }
     }

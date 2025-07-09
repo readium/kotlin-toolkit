@@ -16,10 +16,6 @@ android {
     buildFeatures {
         compose = true
     }
-
-    defaultConfig {
-        minSdk = 23
-    }
 }
 
 dependencies {
