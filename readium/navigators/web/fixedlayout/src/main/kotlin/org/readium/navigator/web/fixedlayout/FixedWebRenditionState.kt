@@ -345,11 +345,18 @@ internal fun FixedWebDecoration.toWebApiDecoration(
     template: WebDecorationTemplate,
 ): WebApiDecoration {
     val element = template.element(style)
+    val cssSelector = when (location) {
+        is FixedWebDecorationCssSelectorLocation ->
+            (location as FixedWebDecorationCssSelectorLocation).cssSelector
+        is FixedWebDecorationTextQuoteLocation ->
+            (location as FixedWebDecorationTextQuoteLocation).cssSelector
+    }
+    val textQuote = (location as? FixedWebDecorationTextQuoteLocation)?.textQuote
     return WebApiDecoration(
         id = id,
         style = style,
         element = element,
-        cssSelector = location.cssSelector,
-        textQuote = location.textQuote
+        cssSelector = cssSelector,
+        textQuote = textQuote
     )
 }

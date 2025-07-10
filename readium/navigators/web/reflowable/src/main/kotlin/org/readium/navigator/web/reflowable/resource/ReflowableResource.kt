@@ -60,7 +60,9 @@ import org.readium.navigator.web.internals.webview.WebView
 import org.readium.navigator.web.internals.webview.WebViewScrollController
 import org.readium.navigator.web.internals.webview.rememberWebViewState
 import org.readium.navigator.web.reflowable.ReflowableWebDecoration
+import org.readium.navigator.web.reflowable.ReflowableWebDecorationCssSelectorLocation
 import org.readium.navigator.web.reflowable.ReflowableWebDecorationLocation
+import org.readium.navigator.web.reflowable.ReflowableWebDecorationTextQuoteLocation
 import org.readium.navigator.web.reflowable.css.ReadiumCssInjector
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.AbsoluteUrl
@@ -322,11 +324,19 @@ private fun ReflowableWebDecoration.toWebApiDecoration(
     template: WebDecorationTemplate,
 ): Decoration {
     val element = template.element(style)
+    val cssSelector = when (location) {
+        is ReflowableWebDecorationCssSelectorLocation ->
+            (location as ReflowableWebDecorationCssSelectorLocation).cssSelector
+        is ReflowableWebDecorationTextQuoteLocation ->
+            (location as ReflowableWebDecorationTextQuoteLocation).cssSelector
+    }
+    val textQuote = (location as? ReflowableWebDecorationTextQuoteLocation)?.textQuote
+
     return Decoration(
         id = id,
         style = style,
         element = element,
-        cssSelector = location.cssSelector,
-        textQuote = location.textQuote
+        cssSelector = cssSelector,
+        textQuote = textQuote
     )
 }

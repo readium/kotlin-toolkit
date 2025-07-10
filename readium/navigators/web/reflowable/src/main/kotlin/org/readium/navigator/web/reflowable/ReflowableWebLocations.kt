@@ -52,27 +52,35 @@ public data class ReflowableWebGoLocation(
 }
 
 @ExperimentalReadiumApi
-public data class ReflowableWebDecorationLocation(
-    override val href: Url,
-    val cssSelector: CssSelector?,
-    val textQuote: TextQuote?,
-) : DecorationLocation {
-
-    init {
-        require(cssSelector != null || textQuote != null)
-    }
+public sealed interface ReflowableWebDecorationLocation : DecorationLocation {
 
     public companion object {
+
+        public operator fun invoke(
+            href: Url,
+            cssSelector: CssSelector,
+        ): ReflowableWebDecorationLocation =
+            ReflowableWebDecorationCssSelectorLocation(href, cssSelector)
+
+        public operator fun invoke(
+            href: Url,
+            textQuote: TextQuote,
+            cssSelector: CssSelector?,
+        ): ReflowableWebDecorationLocation =
+            ReflowableWebDecorationTextQuoteLocation(href, textQuote, cssSelector)
 
         public operator fun invoke(location: Location): ReflowableWebDecorationLocation? {
             val cssSelector = (location as? CssLocation)?.cssSelector
             val textQuote = (location as? TextQuoteLocation)?.textQuote
 
-            if (cssSelector == null && textQuote == null) {
-                return null
+            return when {
+                textQuote != null ->
+                    ReflowableWebDecorationTextQuoteLocation(location.href, textQuote, cssSelector)
+                cssSelector != null ->
+                    ReflowableWebDecorationCssSelectorLocation(location.href, cssSelector)
+                else ->
+                    null
             }
-
-            return ReflowableWebDecorationLocation(location.href, cssSelector, textQuote)
         }
 
         public operator fun invoke(locator: Locator): ReflowableWebDecorationLocation? {
@@ -89,14 +97,28 @@ public data class ReflowableWebDecorationLocation(
                 )
             }
 
-            if (cssSelector == null && textQuote == null) {
-                return null
+            return when {
+                textQuote != null ->
+                    ReflowableWebDecorationTextQuoteLocation(locator.href, textQuote, cssSelector)
+                cssSelector != null ->
+                    ReflowableWebDecorationCssSelectorLocation(locator.href, cssSelector)
+                else ->
+                    null
             }
-
-            return ReflowableWebDecorationLocation(locator.href, cssSelector, textQuote)
         }
     }
 }
+
+internal data class ReflowableWebDecorationCssSelectorLocation(
+    override val href: Url,
+    val cssSelector: CssSelector,
+) : ReflowableWebDecorationLocation
+
+internal data class ReflowableWebDecorationTextQuoteLocation(
+    override val href: Url,
+    val textQuote: TextQuote,
+    val cssSelector: CssSelector?,
+) : ReflowableWebDecorationLocation
 
 @ExperimentalReadiumApi
 @ConsistentCopyVisibility

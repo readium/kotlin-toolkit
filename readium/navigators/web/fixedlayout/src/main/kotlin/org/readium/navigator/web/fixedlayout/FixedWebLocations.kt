@@ -42,26 +42,21 @@ public data class FixedWebGoLocation(
 }
 
 @ExperimentalReadiumApi
-public data class FixedWebDecorationLocation(
-    override val href: Url,
-    val cssSelector: CssSelector?,
-    val textQuote: TextQuote?,
-) : DecorationLocation {
-
-    init {
-        require(cssSelector != null || textQuote != null)
-    }
+public sealed interface FixedWebDecorationLocation : DecorationLocation {
 
     public companion object {
+
         public operator fun invoke(location: Location): FixedWebDecorationLocation? {
             val cssSelector = (location as? CssLocation)?.cssSelector
             val textQuote = (location as? TextQuoteLocation)?.textQuote
 
-            if (cssSelector == null && textQuote == null) {
-                return null
+            return when {
+                textQuote != null ->
+                    FixedWebDecorationTextQuoteLocation(location.href, textQuote, cssSelector)
+                cssSelector != null ->
+                    FixedWebDecorationCssSelectorLocation(location.href, cssSelector)
+                else -> null
             }
-
-            return FixedWebDecorationLocation(location.href, cssSelector, textQuote)
         }
 
         public operator fun invoke(locator: Locator): FixedWebDecorationLocation? {
@@ -79,14 +74,27 @@ public data class FixedWebDecorationLocation(
                 )
             }
 
-            if (cssSelector == null && textQuote == null) {
-                return null
+            return when {
+                textQuote != null ->
+                    FixedWebDecorationTextQuoteLocation(locator.href, textQuote, cssSelector)
+                cssSelector != null ->
+                    FixedWebDecorationCssSelectorLocation(locator.href, cssSelector)
+                else -> null
             }
-
-            return FixedWebDecorationLocation(locator.href, cssSelector, textQuote)
         }
     }
 }
+
+internal data class FixedWebDecorationCssSelectorLocation(
+    override val href: Url,
+    val cssSelector: CssSelector,
+) : FixedWebDecorationLocation
+
+internal data class FixedWebDecorationTextQuoteLocation(
+    override val href: Url,
+    val textQuote: TextQuote,
+    val cssSelector: CssSelector?,
+) : FixedWebDecorationLocation
 
 @ExperimentalReadiumApi
 @ConsistentCopyVisibility
