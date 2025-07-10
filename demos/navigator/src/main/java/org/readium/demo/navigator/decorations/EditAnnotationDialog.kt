@@ -19,13 +19,18 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredWidth
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.foundation.text.input.rememberTextFieldState
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
@@ -41,6 +46,8 @@ class EditAnnotationViewModel(
     val targetedText = checkNotNull(originalHighlight.locator.text.highlight)
 
     val tint = originalHighlight.tint
+
+    val content = originalHighlight.annotation
 
     fun updateAnnotation(annotation: String) {
         highlightsManager.updateHighlightAnnotation(id = id, annotation = annotation)
@@ -60,6 +67,7 @@ fun EditAnnotationDialog(
             onDismissRequest()
         },
         targetedText = viewModel.targetedText,
+        initialContent = viewModel.content,
         highlightTint = Color(viewModel.tint)
     )
 }
@@ -70,6 +78,7 @@ fun EditAnnotationDialog(
     onDismissRequest: () -> Unit,
     onConfirmation: (String) -> Unit,
     targetedText: String,
+    initialContent: String,
     highlightTint: Color,
 ) {
     Dialog(
@@ -80,13 +89,14 @@ fun EditAnnotationDialog(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(600.dp)
-                .padding(16.dp),
-            shape = RoundedCornerShape(16.dp)
         ) {
+            val scrollState = rememberScrollState()
+
             Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(16.dp)
+                    .verticalScroll(scrollState)
             ) {
                 Row(
                     modifier = Modifier
@@ -95,15 +105,20 @@ fun EditAnnotationDialog(
                         .height(IntrinsicSize.Max),
                     horizontalArrangement = Arrangement.spacedBy(20.dp)
                 ) {
-                    Box(
-                        modifier = Modifier
-                            .requiredWidth(4.dp)
-                            .fillMaxHeight()
-                            .background(highlightTint)
-                    )
-                    Text(
-                        text = targetedText,
-                        modifier = Modifier
+                    OutlinedTextField(
+                        leadingIcon = {
+                            Box(
+                                modifier = Modifier
+                                    .padding(vertical = 10.dp)
+                                    .requiredWidth(4.dp)
+                                    .fillMaxHeight()
+                                    .background(highlightTint)
+
+                            )
+                        },
+                        value = targetedText.substring(0, 50.coerceAtMost(targetedText.length)),
+                        onValueChange = {},
+                        readOnly = true,
                     )
                 }
 
@@ -112,17 +127,21 @@ fun EditAnnotationDialog(
                         .fillMaxWidth()
                 )
 
-                val textFieldState = rememberTextFieldState()
+                var content by rememberSaveable { mutableStateOf(initialContent) }
 
-                BasicTextField(
-                    state = textFieldState,
-                    modifier = Modifier.weight(1f)
+                OutlinedTextField(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth(),
+                    value = content,
+                    onValueChange = { content = it }
                 )
 
                 Row(
                     modifier = Modifier
                         .height(60.dp)
                         .fillMaxWidth(),
+                    verticalAlignment = Alignment.Bottom,
                     horizontalArrangement = Arrangement.Center,
                 ) {
                     TextButton(
@@ -131,7 +150,7 @@ fun EditAnnotationDialog(
                         Text("Cancel")
                     }
                     TextButton(
-                        onClick = { onConfirmation(textFieldState.text.toString()) },
+                        onClick = { onConfirmation(content) },
                     ) {
                         Text("Save")
                     }

@@ -145,7 +145,7 @@ export class DecorationManager {
             continue
           }
           for (const element of item.clickableElements) {
-            const rect = domRectToRect(element.getBoundingClientRect(), false)
+            const rect = domRectToRect(element.getBoundingClientRect())
             if (rectContainsPoint(rect, event.clientX, event.clientY, 1)) {
               return { group, item, element }
             }
@@ -216,7 +216,6 @@ class DecorationGroup {
       return
     }
 
-    console.log(`actually remove decoration ${id}`)
     const item = this.items[index]
     this.items.splice(index, 1)
     item.clickableElements = null

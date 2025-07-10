@@ -7,16 +7,18 @@
 package org.readium.demo.navigator.decorations
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.requiredSize
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.EditNote
+import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.VerticalDivider
@@ -94,29 +96,35 @@ fun EditHighlightPopup(
         onDismissRequest = onDismissRequest,
         properties = popupProperties
     ) {
-        Row {
-            TintSelector(
-                availableColors = availableColors,
-                onColorSelected = onColorSelected
-            )
-
-            VerticalDivider()
-
-            IconButton(
-                onClick = onEditNote
-            ) {
-                Icon(
-                    imageVector = Icons.Default.EditNote,
-                    contentDescription = "Edit note"
+        Card(
+            modifier = Modifier
+                .height(IntrinsicSize.Min)
+                .width(IntrinsicSize.Min)
+        ) {
+            Row {
+                TintSelector(
+                    availableColors = availableColors,
+                    onColorSelected = onColorSelected
                 )
-            }
-            IconButton(
-                onClick = onDelete
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Delete,
-                    contentDescription = "Delete highlight"
-                )
+
+                VerticalDivider()
+
+                IconButton(
+                    onClick = onEditNote
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.EditNote,
+                        contentDescription = "Edit note"
+                    )
+                }
+                IconButton(
+                    onClick = onDelete
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Delete,
+                        contentDescription = "Delete highlight"
+                    )
+                }
             }
         }
     }
@@ -128,16 +136,17 @@ private fun TintSelector(
     availableColors: List<Color>,
     onColorSelected: (Color) -> Unit,
 ) {
-    // Note that Modifier.selectableGroup() is essential to ensure correct accessibility behavior
     Row(modifier.selectableGroup()) {
         for (color in availableColors) {
-            Box(
-                modifier = Modifier
-                    .requiredSize(48.dp)
-                    .padding(5.dp)
-                    .background(color, CircleShape)
-                    .clickable { onColorSelected(color) },
-                content = {}
+            IconButton(
+                onClick = { onColorSelected(color) },
+                content = {
+                    Box(
+                        modifier = Modifier
+                            .requiredSize(24.dp)
+                            .background(color, CircleShape),
+                    )
+                }
             )
         }
     }

@@ -4,7 +4,7 @@
 //  available in the top-level LICENSE file of the project.
 //
 
-import { domRectToRect } from "../util/rect"
+import { dezoomRect, domRectToRect } from "../util/rect"
 import { log } from "../util/log"
 import { TextRange } from "../vendor/hypothesis/annotator/anchoring/text-range"
 
@@ -92,7 +92,8 @@ export class SelectionManager {
     try {
       const selection = this.window.getSelection()!
       const range = selection.getRangeAt(0)
-      return domRectToRect(range.getBoundingClientRect())
+      const zoom = this.window.document.body.currentCSSZoom
+      return dezoomRect(domRectToRect(range.getBoundingClientRect()), zoom)
     } catch (e) {
       log(e)
       throw e

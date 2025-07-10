@@ -37,21 +37,15 @@ export function dezoomRect(rect: Rect, zoomLevel: number): Rect {
   }
 }
 
-/**
- * Converts a DOMRect into a JSON object understandable by the native side.
- */
-export function domRectToRect(
-  rect: DOMRect,
-  applyPixelRatio: boolean = true
-): Rect {
-  const pixelRatio = applyPixelRatio ? window.devicePixelRatio : 1
-  const width = rect.width * pixelRatio
-  const height = rect.height * pixelRatio
-  const left = rect.left * pixelRatio
-  const top = rect.top * pixelRatio
-  const right = left + width
-  const bottom = top + height
-  return { width, height, left, top, right, bottom }
+export function domRectToRect(rect: DOMRect): Rect {
+  return {
+    width: rect.width,
+    height: rect.height,
+    left: rect.left,
+    top: rect.top,
+    right: rect.right,
+    bottom: rect.bottom,
+  }
 }
 
 export function getClientRectsNoOverlap(

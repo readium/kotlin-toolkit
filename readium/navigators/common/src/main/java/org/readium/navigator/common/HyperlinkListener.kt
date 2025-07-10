@@ -50,7 +50,7 @@ public data class FootnoteContext(
 ) : LinkContext
 
 @ExperimentalReadiumApi
-private class NullHyperlinkListener : HyperlinkListener {
+public class NullHyperlinkListener : HyperlinkListener {
     override fun onReadingOrderLinkActivated(url: Url, context: LinkContext?) {
     }
 

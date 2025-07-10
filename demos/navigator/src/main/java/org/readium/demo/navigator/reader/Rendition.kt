@@ -152,6 +152,12 @@ fun <L : ExportableLocation, G : GoLocation, S : SelectionLocation, C> Rendition
             }
         }
 
+        val showAnnotationDialog: MutableState<EditAnnotationViewModel?> =
+            remember { mutableStateOf(null) }
+
+        val showEditHighlightPopup: MutableState<EditHighlightViewModel?> =
+            remember { mutableStateOf(null) }
+
         val inputListener =
             (controllerNow as? OverflowController)?.let {
                 defaultInputListener(
@@ -171,12 +177,6 @@ fun <L : ExportableLocation, G : GoLocation, S : SelectionLocation, C> Rendition
                 },
                 onExternalLinkActivated = { url, _ -> launchWebBrowser(context, url.toUri()) }
             )
-
-        val showAnnotationDialog: MutableState<EditAnnotationViewModel?> =
-            remember { mutableStateOf(null) }
-
-        val showEditHighlightPopup: MutableState<EditHighlightViewModel?> =
-            remember { mutableStateOf(null) }
 
         showAnnotationDialog.value?.let { viewModel ->
             EditAnnotationDialog(

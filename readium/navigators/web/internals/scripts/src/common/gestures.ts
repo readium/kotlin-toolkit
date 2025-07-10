@@ -79,8 +79,8 @@ export class GesturesDetector {
       this.listener.onTap(event)
     }
 
-    event.stopPropagation()
-    event.preventDefault()
+    // event.stopPropagation()
+    // event.preventDefault()
   }
 
   // See. https://github.com/JayPanoz/architecture/tree/touch-handling/misc/touch-handling

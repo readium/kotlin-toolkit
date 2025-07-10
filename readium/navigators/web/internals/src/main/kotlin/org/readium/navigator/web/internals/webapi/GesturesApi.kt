@@ -15,6 +15,7 @@ import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 import org.readium.r2.shared.util.AbsoluteUrl
+import timber.log.Timber
 
 public class DelegatingGesturesListener(
     private val onTapDelegate: (DpOffset) -> Unit,
@@ -84,6 +85,8 @@ public class GesturesApi(
         coroutineScope.launch {
             val jsonRect = Json.decodeFromString<JsonRect>(rect)
             val jsonOffset = Json.decodeFromString<JsonOffset>(offset)
+            Timber.d("onDecorationActivated offset ${jsonOffset.x} ${jsonOffset.y}")
+            Timber.d("onDecorationActivated rect ${jsonRect.left} ${jsonRect.top}")
             listener?.onDecorationActivated(
                 id = id,
                 group = group,

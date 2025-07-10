@@ -46,7 +46,7 @@ public data class TapContext(
 )
 
 @ExperimentalReadiumApi
-private class NullInputListener : InputListener {
+public class NullInputListener : InputListener {
     override fun onTap(event: TapEvent, context: TapContext) {
     }
 }
