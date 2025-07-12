@@ -36,6 +36,7 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import org.readium.demo.navigator.R
+import org.readium.demo.navigator.decorations.DecorationStyleAnnotationMark
 import org.readium.demo.navigator.decorations.EditAnnotationDialog
 import org.readium.demo.navigator.decorations.EditAnnotationViewModel
 import org.readium.demo.navigator.decorations.EditHighlightPopup
@@ -224,13 +225,23 @@ fun <L : ExportableLocation, G : GoLocation, S : SelectionLocation, C> Rendition
                     if (event.group != "highlights") {
                         return
                     }
-
-                    showEditHighlightPopup.value =
-                        EditHighlightViewModel(
-                            id = event.decoration.id.value.split('-').first().toLong(),
-                            contentRect = event.rect!!,
-                            highlightsManager = readerState.highlightsManager
-                        )
+                    when (event.decoration.style) {
+                        is DecorationStyleAnnotationMark -> {
+                            showAnnotationDialog.value =
+                                EditAnnotationViewModel(
+                                    id = event.decoration.id.value.split('-').first().toLong(),
+                                    highlightsManager = readerState.highlightsManager
+                                )
+                        }
+                        else -> {
+                            showEditHighlightPopup.value =
+                                EditHighlightViewModel(
+                                    id = event.decoration.id.value.split('-').first().toLong(),
+                                    contentRect = event.rect!!,
+                                    highlightsManager = readerState.highlightsManager
+                                )
+                        }
+                    }
                 }
             }
         }
