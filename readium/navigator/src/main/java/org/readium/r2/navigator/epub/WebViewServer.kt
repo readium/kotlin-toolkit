@@ -32,7 +32,6 @@ import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.shared.util.resource.StringResource
 import org.readium.r2.shared.util.resource.fallback
-import timber.log.Timber
 
 /**
  * Serves the publication resources and application assets in the EPUB navigator web views.
@@ -67,7 +66,6 @@ internal class WebViewServer(
         val path = request.url.path ?: return null
         return when {
             path.startsWith("/publication/") -> {
-                Timber.d("Load publication resource")
                 val href = Url.fromDecodedPath(path.removePrefix("/publication/"))
                     ?: return null
 
@@ -79,7 +77,6 @@ internal class WebViewServer(
             }
 
             path.startsWith("/assets/") && isServedAsset(path.removePrefix("/assets/")) -> {
-                Timber.d("Load assets resource")
                 assetsLoader.shouldInterceptRequest(request.url)
             }
 
@@ -94,7 +91,14 @@ internal class WebViewServer(
         val href = Url(request.url.toString()) ?: return null
         val link = publication.linkWithHref(href) ?: Link(href = href)
         val mediaType = link.mediaType
-        var resource = loadExternalResource(request, mediaType) ?: errorResource()
+        var resource = loadExternalResource(request, mediaType) ?: run {
+            val urlWithoutAnchor = href.removeFragment()
+            val error = ReadError.Decoding(
+                "Resource not found at $urlWithoutAnchor."
+            )
+            onResourceLoadFailed(urlWithoutAnchor, error)
+            errorResource()
+        }
         if (mediaType?.isHtml == true) {
             resource = resource.injectHtml(
                 publication,
