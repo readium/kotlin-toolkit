@@ -43,7 +43,7 @@ internal class WebViewServer(
     private val publication: Publication,
     servedAssets: List<String>,
     private val disableSelectionWhenProtected: Boolean,
-    private val onLoadExternalResource: (WebResourceRequest, MediaType?) -> Resource?,
+    private val loadExternalResource: (WebResourceRequest, MediaType?) -> Resource?,
     private val onResourceLoadFailed: (Url, ReadError) -> Unit,
 ) {
     companion object {
@@ -61,9 +61,7 @@ internal class WebViewServer(
      * https://readium/assets/ serves the application assets.
      */
     fun shouldInterceptRequest(request: WebResourceRequest, css: ReadiumCss): WebResourceResponse? {
-        Timber.d("shouldInterceptRequest: ${request.url}")
         if (request.url.host != "readium") {
-            Timber.d("Load external resource for ${request.url}")
             return serveExternalResource(request, css)
         }
         val path = request.url.path ?: return null
@@ -96,7 +94,7 @@ internal class WebViewServer(
         val href = Url(request.url.toString()) ?: return null
         val link = publication.linkWithHref(href) ?: Link(href = href)
         val mediaType = link.mediaType
-        var resource = onLoadExternalResource(request, mediaType) ?: errorResource()
+        var resource = loadExternalResource(request, mediaType) ?: errorResource()
         if (mediaType?.isHtml == true) {
             resource = resource.injectHtml(
                 publication,

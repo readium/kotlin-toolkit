@@ -69,6 +69,6 @@ public interface HyperlinkNavigator : Navigator {
          * ```
          */
         @ExperimentalReadiumApi
-        public fun onExternalLinkActivated(url: AbsoluteUrl)
+        public fun onExternalLinkActivated(url: AbsoluteUrl) {}
     }
 }
