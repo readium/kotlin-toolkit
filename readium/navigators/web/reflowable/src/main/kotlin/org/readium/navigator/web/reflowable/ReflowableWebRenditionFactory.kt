@@ -7,7 +7,6 @@
 package org.readium.navigator.web.reflowable
 
 import android.app.Application
-import org.readium.navigator.web.common.WebDecorationTemplates
 import org.readium.navigator.web.reflowable.css.RsProperties
 import org.readium.navigator.web.reflowable.preferences.ReflowableWebDefaults
 import org.readium.navigator.web.reflowable.preferences.ReflowableWebPreferences
@@ -33,8 +32,7 @@ import org.readium.r2.shared.util.Try
 public class ReflowableWebRenditionFactory private constructor(
     private val application: Application,
     private val publication: Publication,
-    private val defaults: ReflowableWebDefaults,
-    private val decorationTemplates: WebDecorationTemplates,
+    private val configuration: ReflowableWebConfiguration,
 ) {
 
     public companion object {
@@ -42,8 +40,7 @@ public class ReflowableWebRenditionFactory private constructor(
         public operator fun invoke(
             application: Application,
             publication: Publication,
-            defaults: ReflowableWebDefaults = ReflowableWebDefaults(),
-            decorationTemplates: WebDecorationTemplates = WebDecorationTemplates.defaultTemplates(),
+            configuration: ReflowableWebConfiguration = ReflowableWebConfiguration(),
         ): ReflowableWebRenditionFactory? {
             if (!publication.conformsTo(Publication.Profile.EPUB) ||
                 publication.metadata.presentation.layout == EpubLayout.FIXED
@@ -58,8 +55,7 @@ public class ReflowableWebRenditionFactory private constructor(
             return ReflowableWebRenditionFactory(
                 application,
                 publication,
-                defaults,
-                decorationTemplates
+                configuration
             )
         }
     }
@@ -113,8 +109,7 @@ public class ReflowableWebRenditionFactory private constructor(
                 initialSettings = initialSettings,
                 initialLocation = initialLocation,
                 rsProperties = RsProperties(),
-                fontFamilyDeclarations = emptyList(),
-                decorationTemplates = decorationTemplates,
+                configuration = configuration,
                 disableSelection = publication.isProtected
             )
 
@@ -123,6 +118,7 @@ public class ReflowableWebRenditionFactory private constructor(
 
     public fun createPreferencesEditor(
         initialPreferences: ReflowableWebPreferences,
+        defaults: ReflowableWebDefaults = ReflowableWebDefaults(),
     ): ReflowableWebPreferencesEditor =
         ReflowableWebPreferencesEditor(
             initialPreferences,

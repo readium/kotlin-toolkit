@@ -8,7 +8,6 @@ package org.readium.navigator.web.fixedlayout
 
 import android.app.Application
 import java.io.IOException
-import org.readium.navigator.web.common.WebDecorationTemplates
 import org.readium.navigator.web.fixedlayout.FixedWebPublication.ReadingOrder
 import org.readium.navigator.web.fixedlayout.preferences.FixedWebDefaults
 import org.readium.navigator.web.fixedlayout.preferences.FixedWebPreferences
@@ -40,8 +39,7 @@ import org.readium.r2.shared.util.getOrElse
 public class FixedWebRenditionFactory private constructor(
     private val application: Application,
     private val publication: Publication,
-    private val defaults: FixedWebDefaults,
-    private val decorationTemplates: WebDecorationTemplates,
+    private val configuration: FixedWebConfiguration,
 ) {
 
     public companion object {
@@ -49,8 +47,7 @@ public class FixedWebRenditionFactory private constructor(
         public operator fun invoke(
             application: Application,
             publication: Publication,
-            defaults: FixedWebDefaults = FixedWebDefaults(),
-            decorationTemplates: WebDecorationTemplates = WebDecorationTemplates.defaultTemplates(),
+            configuration: FixedWebConfiguration,
         ): FixedWebRenditionFactory? {
             if (!publication.conformsTo(Publication.Profile.EPUB) ||
                 publication.metadata.presentation.layout != EpubLayout.FIXED
@@ -65,8 +62,7 @@ public class FixedWebRenditionFactory private constructor(
             return FixedWebRenditionFactory(
                 application,
                 publication,
-                defaults,
-                decorationTemplates
+                configuration
             )
         }
     }
@@ -121,7 +117,7 @@ public class FixedWebRenditionFactory private constructor(
                 publication = renditionPublication,
                 initialSettings = initialSettings,
                 initialLocation = initialLocation,
-                decorationTemplates = decorationTemplates,
+                configuration = configuration,
                 preloadedData = preloads,
                 disableSelection = publication.isProtected,
             )
@@ -155,6 +151,7 @@ public class FixedWebRenditionFactory private constructor(
 
     public fun createPreferencesEditor(
         initialPreferences: FixedWebPreferences,
+        defaults: FixedWebDefaults = FixedWebDefaults(),
     ): FixedWebPreferencesEditor =
         FixedWebPreferencesEditor(
             initialPreferences,

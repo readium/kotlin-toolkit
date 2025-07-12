@@ -22,6 +22,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateMap
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.PersistentMap
+import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.persistentMapOf
 import org.readium.navigator.common.DecorationController
 import org.readium.navigator.common.NavigationController
@@ -34,6 +35,7 @@ import org.readium.navigator.common.SelectionController
 import org.readium.navigator.common.SettingsController
 import org.readium.navigator.common.SimpleOverflow
 import org.readium.navigator.common.TextQuote
+import org.readium.navigator.web.common.FontFamilyDeclaration
 import org.readium.navigator.web.common.WebDecorationTemplates
 import org.readium.navigator.web.internals.pager.RenditionScrollState
 import org.readium.navigator.web.internals.server.WebViewClient
@@ -44,7 +46,6 @@ import org.readium.navigator.web.internals.util.toLayoutDirection
 import org.readium.navigator.web.internals.util.toOrientation
 import org.readium.navigator.web.internals.webapi.ReflowableSelectionApi
 import org.readium.navigator.web.internals.webview.WebViewScrollController
-import org.readium.navigator.web.reflowable.css.FontFamilyDeclaration
 import org.readium.navigator.web.reflowable.css.ReadiumCssInjector
 import org.readium.navigator.web.reflowable.css.RsProperties
 import org.readium.navigator.web.reflowable.css.withSettings
@@ -52,6 +53,7 @@ import org.readium.navigator.web.reflowable.injection.injectHtmlReflowable
 import org.readium.navigator.web.reflowable.preferences.ReflowableWebSettings
 import org.readium.navigator.web.reflowable.resource.ReflowableResourceState
 import org.readium.r2.navigator.preferences.Axis
+import org.readium.r2.navigator.preferences.FontFamily
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.util.RelativeUrl
@@ -73,8 +75,7 @@ public class ReflowableWebRenditionState internal constructor(
     initialSettings: ReflowableWebSettings,
     initialLocation: ReflowableWebGoLocation,
     private val rsProperties: RsProperties,
-    fontFamilyDeclarations: List<FontFamilyDeclaration>,
-    decorationTemplates: WebDecorationTemplates,
+    configuration: ReflowableWebConfiguration,
     disableSelection: Boolean,
 ) : RenditionState<ReflowableWebRenditionController> {
 
@@ -126,10 +127,25 @@ public class ReflowableWebRenditionState internal constructor(
         )
 
     internal val decorationDelegate: ReflowableDecorationDelegate =
-        ReflowableDecorationDelegate(decorationTemplates)
+        ReflowableDecorationDelegate(configuration.decorationTemplates)
 
     internal val hyperlinkProcessor =
         HyperlinkProcessor(publication.container)
+
+    private val fontFamilyDeclarations: List<FontFamilyDeclaration> =
+        buildList {
+            addAll(configuration.fontFamilyDeclarations.declarations)
+            add(
+                FontFamilyDeclaration(
+                    fontFamily = FontFamily.OPEN_DYSLEXIC.name,
+                    alternates = persistentListOf()
+                ) {
+                    addFontFace {
+                        addSource("readium/fonts/OpenDyslexic-Regular.otf")
+                    }
+                }
+            )
+        }
 
     internal val readiumCssInjector: ReadiumCssInjector by
         derivedStateOf {
@@ -137,19 +153,7 @@ public class ReflowableWebRenditionState internal constructor(
                 assetsBaseHref = assetsBaseHref,
                 readiumCssAssets = RelativeUrl("readium/navigator/web/internals/generated/readium-css/")!!,
                 rsProperties = rsProperties,
-                fontFamilyDeclarations = buildList {
-                    addAll(fontFamilyDeclarations)
-                    /* add(
-                        buildFontFamilyDeclaration(
-                            fontFamily = FontFamily.OPEN_DYSLEXIC.name,
-                            alternates = emptyList()
-                        ) {
-                            addFontFace {
-                                addSource("readium/fonts/OpenDyslexic-Regular.otf")
-                            }
-                        }
-                    ) */
-                }
+                fontFamilyDeclarations = fontFamilyDeclarations
             ).withSettings(
                 settings = layoutDelegate.settings,
             )
@@ -173,7 +177,7 @@ public class ReflowableWebRenditionState internal constructor(
                 mediaTypes = publication.mediaTypes,
                 errorPage = RelativeUrl("readium/navigator/web/internals/error.xhtml")!!,
                 htmlInjector = htmlInjector,
-                servedAssets = listOf("readium/.*"),
+                servedAssets = configuration.servedAssets + listOf("readium/.*"),
                 onResourceLoadFailed = { _, _ -> } // TODO: pass errors to the app
             )
 

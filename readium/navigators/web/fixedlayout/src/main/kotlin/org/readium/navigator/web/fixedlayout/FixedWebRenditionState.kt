@@ -80,7 +80,7 @@ public class FixedWebRenditionState internal constructor(
     disableSelection: Boolean,
     initialSettings: FixedWebSettings,
     initialLocation: FixedWebGoLocation,
-    decorationTemplates: WebDecorationTemplates,
+    configuration: FixedWebConfiguration,
     internal val preloadedData: FixedWebPreloadedData,
 ) : RenditionState<FixedWebRenditionController> {
 
@@ -112,7 +112,7 @@ public class FixedWebRenditionState internal constructor(
         )
 
     internal val decorationDelegate: FixedDecorationDelegate =
-        FixedDecorationDelegate(decorationTemplates)
+        FixedDecorationDelegate(configuration.decorationTemplates)
 
     internal val hyperlinkProcessor =
         HyperlinkProcessor(publication.container)
@@ -133,7 +133,7 @@ public class FixedWebRenditionState internal constructor(
             mediaTypes = publication.mediaTypes,
             errorPage = RelativeUrl("readium/navigator/web/internals/error.xhtml")!!,
             htmlInjector = htmlInjector,
-            servedAssets = listOf("readium/.*"),
+            servedAssets = configuration.servedAssets + listOf("readium/.*"),
             onResourceLoadFailed = { _, _ -> }
         )
     }

@@ -15,14 +15,10 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import org.readium.demo.navigator.decorations.DecorationStyleAnnotationMark
-import org.readium.demo.navigator.decorations.DecorationStylePageNumber
 import org.readium.demo.navigator.decorations.FixedWebHighlightsManager
 import org.readium.demo.navigator.decorations.HighlightsManager
 import org.readium.demo.navigator.decorations.ReflowableWebHighlightsManager
-import org.readium.demo.navigator.decorations.annotationMarkTemplate
 import org.readium.demo.navigator.decorations.pageNumberDecorations
-import org.readium.demo.navigator.decorations.pageNumberTemplate
 import org.readium.demo.navigator.persistence.LocatorRepository
 import org.readium.demo.navigator.preferences.PreferencesManager
 import org.readium.navigator.common.DecorationController
@@ -30,7 +26,6 @@ import org.readium.navigator.common.DecorationLocation
 import org.readium.navigator.common.PreferencesEditor
 import org.readium.navigator.common.Settings
 import org.readium.navigator.common.SettingsController
-import org.readium.navigator.web.common.WebDecorationTemplates
 import org.readium.navigator.web.fixedlayout.FixedWebGoLocation
 import org.readium.navigator.web.fixedlayout.FixedWebLocation
 import org.readium.navigator.web.fixedlayout.FixedWebRenditionController
@@ -72,15 +67,6 @@ class ReaderOpener(
     private val publicationOpener =
         PublicationOpener(publicationParser)
 
-    private val reflowableDecorationTemplates = WebDecorationTemplates {
-        set(DecorationStyleAnnotationMark::class, annotationMarkTemplate())
-        set(DecorationStylePageNumber::class, pageNumberTemplate())
-    }
-
-    private val fixedDecorationTemplates = WebDecorationTemplates {
-        set(DecorationStyleAnnotationMark::class, annotationMarkTemplate())
-    }
-
     suspend fun open(url: AbsoluteUrl): Try<ReaderState<*, *, *, *>, Error> {
         val asset = assetRetriever.retrieve(url)
             .getOrElse { return Try.failure(it) }
@@ -117,7 +103,7 @@ class ReaderOpener(
         val navigatorFactory = ReflowableWebRenditionFactory(
             application = application,
             publication = publication,
-            decorationTemplates = reflowableDecorationTemplates
+            configuration = reflowableConfig
         ) ?: return null
 
         val initialLocation = initialLocator?.let { ReflowableWebGoLocation(it) }
@@ -176,7 +162,7 @@ class ReaderOpener(
         val navigatorFactory = FixedWebRenditionFactory(
             application = application,
             publication = publication,
-            decorationTemplates = fixedDecorationTemplates
+            configuration = fixedConfig
         ) ?: return null
 
         val initialLocation = initialLocator?.let { FixedWebGoLocation(it) }

@@ -12,6 +12,9 @@ import androidx.core.net.toUri
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
+import org.readium.navigator.web.common.FontFaceDeclaration
+import org.readium.navigator.web.common.FontFamilyDeclaration
+import org.readium.navigator.web.common.FontWeight
 import org.readium.navigator.web.reflowable.css.Color as CssColor
 import org.readium.navigator.web.reflowable.css.TextAlign as CssTextAlign
 import org.readium.navigator.web.reflowable.preferences.ReflowableWebSettings

@@ -24,6 +24,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import org.readium.demo.navigator.reader.LITERATA
 import org.readium.navigator.common.Preferences
 import org.readium.navigator.common.PreferencesEditor
 import org.readium.navigator.common.Settings
@@ -323,7 +324,7 @@ private fun ReflowableUserPreferences(
                 preference = fontFamily
                     .withSupportedValues(
                         null,
-                        // FontFamily.LITERATA,
+                        FontFamily.LITERATA,
                         FontFamily.SANS_SERIF,
                         FontFamily.IA_WRITER_DUOSPACE,
                         FontFamily.ACCESSIBLE_DFA,
