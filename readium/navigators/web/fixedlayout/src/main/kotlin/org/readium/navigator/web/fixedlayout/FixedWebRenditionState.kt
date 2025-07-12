@@ -4,7 +4,7 @@
  * available in the top-level LICENSE file of the project.
  */
 
-@file:OptIn(ExperimentalReadiumApi::class)
+@file:OptIn(ExperimentalReadiumApi::class, InternalReadiumApi::class)
 
 package org.readium.navigator.web.fixedlayout
 
@@ -21,6 +21,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateMap
 import kotlin.coroutines.coroutineContext
 import kotlinx.collections.immutable.PersistentList
+import kotlinx.collections.immutable.PersistentMap
 import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
@@ -55,6 +56,7 @@ import org.readium.navigator.web.internals.webapi.FixedDoubleSelectionApi
 import org.readium.navigator.web.internals.webapi.FixedSelectionApi
 import org.readium.navigator.web.internals.webapi.FixedSingleSelectionApi
 import org.readium.navigator.web.internals.webapi.Iframe
+import org.readium.navigator.web.internals.webapi.Selection as WebApiSelection
 import org.readium.r2.navigator.preferences.Axis
 import org.readium.r2.navigator.preferences.Fit
 import org.readium.r2.shared.ExperimentalReadiumApi
@@ -64,6 +66,12 @@ import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.resource.Resource
 
+/**
+ * State holder for the rendition of a fixed Web publication.
+ *
+ * You can interact with it mainly through its [controller] witch will be available as soon
+ * as the first composition has completed.
+ */
 @ExperimentalReadiumApi
 @Stable
 public class FixedWebRenditionState internal constructor(
@@ -79,8 +87,7 @@ public class FixedWebRenditionState internal constructor(
     private val controllerState: MutableState<FixedWebRenditionController?> =
         mutableStateOf(null)
 
-    override val controller: FixedWebRenditionController? get() =
-        controllerState.value
+    override val controller: FixedWebRenditionController? by controllerState
 
     internal val layoutDelegate: FixedLayoutDelegate =
         FixedLayoutDelegate(
@@ -92,38 +99,11 @@ public class FixedWebRenditionState internal constructor(
         .spreadIndexForHref(initialLocation.href)
         ?: 0
 
-    internal val hyperlinkProcessor =
-        HyperlinkProcessor(publication.container)
-
-    private val htmlInjector: (Resource, MediaType) -> Resource = { resource, mediaType ->
-        resource.injectHtmlFixedLayout(
-            charset = mediaType.charset,
-            injectableScript = RelativeUrl("readium/navigator/web/internals/generated/fixed-injectable-script.js")!!,
-            assetsBaseHref = assetsBaseHref,
-            disableSelection = disableSelection
-        )
-    }
-
-    private val webViewServer =
-        WebViewServer(
-            application = application,
-            container = publication.container,
-            mediaTypes = publication.mediaTypes,
-            errorPage = RelativeUrl("readium/navigator/web/internals/error.xhtml")!!,
-            htmlInjector = htmlInjector,
-            servedAssets = listOf("readium/.*"),
-            onResourceLoadFailed = { _, _ -> }
-        )
-
-    internal val webViewClient: WebViewClient =
-        WebViewClient(webViewServer)
-
-    internal val pagerState: PagerState = run {
+    internal val pagerState: PagerState =
         PagerState(
             currentPage = initialSpread,
             pageCount = { layoutDelegate.layout.value.spreads.size }
         )
-    }
 
     internal val selectionDelegate: FixedSelectionDelegate =
         FixedSelectionDelegate(
@@ -133,6 +113,33 @@ public class FixedWebRenditionState internal constructor(
 
     internal val decorationDelegate: FixedDecorationDelegate =
         FixedDecorationDelegate(decorationTemplates)
+
+    internal val hyperlinkProcessor =
+        HyperlinkProcessor(publication.container)
+
+    private val webViewServer = run {
+        val htmlInjector: (Resource, MediaType) -> Resource = { resource, mediaType ->
+            resource.injectHtmlFixedLayout(
+                charset = mediaType.charset,
+                injectableScript = RelativeUrl("readium/navigator/web/internals/generated/fixed-injectable-script.js")!!,
+                assetsBaseHref = assetsBaseHref,
+                disableSelection = disableSelection
+            )
+        }
+
+        WebViewServer(
+            application = application,
+            container = publication.container,
+            mediaTypes = publication.mediaTypes,
+            errorPage = RelativeUrl("readium/navigator/web/internals/error.xhtml")!!,
+            htmlInjector = htmlInjector,
+            servedAssets = listOf("readium/.*"),
+            onResourceLoadFailed = { _, _ -> }
+        )
+    }
+
+    internal val webViewClient: WebViewClient =
+        WebViewClient(webViewServer)
 
     internal lateinit var navigationDelegate: FixedNavigationDelegate
 
@@ -173,7 +180,6 @@ internal data class FixedWebPreloadedData(
     val fixedDoubleContent: String,
 )
 
-@OptIn(ExperimentalReadiumApi::class, InternalReadiumApi::class)
 internal class FixedLayoutDelegate(
     readingOrder: FixedWebPublication.ReadingOrder,
     initialSettings: FixedWebSettings,
@@ -182,7 +188,7 @@ internal class FixedLayoutDelegate(
     private val layoutResolver =
         LayoutResolver(readingOrder)
 
-    override var settings by mutableStateOf(initialSettings)
+    override var settings: FixedWebSettings by mutableStateOf(initialSettings)
 
     val overflow: State<Overflow> = derivedStateOf {
         with(settings) {
@@ -194,17 +200,15 @@ internal class FixedLayoutDelegate(
         }
     }
 
-    val layout: State<Layout> =
-        derivedStateOf {
-            val spreads = layoutResolver.layout(settings)
-            Layout(settings.readingProgression, spreads)
-        }
+    val layout: State<Layout> = derivedStateOf {
+        val spreads = layoutResolver.layout(settings)
+        Layout(settings.readingProgression, spreads)
+    }
 
     val fit: State<Fit> =
         derivedStateOf { settings.fit }
 }
 
-@OptIn(ExperimentalReadiumApi::class, InternalReadiumApi::class)
 internal class FixedNavigationDelegate(
     private val pagerState: PagerState,
     private val layout: State<Layout>,
@@ -218,12 +222,12 @@ internal class FixedNavigationDelegate(
     internal fun updateLocation(location: FixedWebLocation) {
         locationMutable.value = location
     }
-    override val overflow by overflowState
+    override val overflow: Overflow by overflowState
 
-    override val location by locationMutable
+    override val location: FixedWebLocation by locationMutable
 
     override suspend fun goTo(url: Url) {
-        goTo(FixedWebGoLocation(url))
+        goTo(FixedWebGoLocation(href = url.removeFragment()))
     }
 
     override suspend fun goTo(location: FixedWebGoLocation) {
@@ -254,15 +258,14 @@ internal class FixedNavigationDelegate(
     }
 }
 
-@OptIn(ExperimentalReadiumApi::class)
 internal class FixedDecorationDelegate(
     internal val decorationTemplates: WebDecorationTemplates,
 ) : DecorationController<FixedWebDecorationLocation> {
 
-    override var decorations by mutableStateOf(persistentMapOf<String, PersistentList<Decoration<FixedWebDecorationLocation>>>())
+    override var decorations: PersistentMap<String, PersistentList<FixedWebDecoration>> by
+        mutableStateOf(persistentMapOf<String, PersistentList<Decoration<FixedWebDecorationLocation>>>())
 }
 
-@OptIn(ExperimentalReadiumApi::class)
 internal class FixedSelectionDelegate(
     private val pagerState: PagerState,
     private val layout: State<Layout>,
@@ -304,7 +307,7 @@ internal class FixedSelectionDelegate(
     private suspend fun FixedSelectionApi.getCurrentSelection(
         index: Int,
         layout: Layout,
-    ): Pair<Page, org.readium.navigator.web.internals.webapi.Selection>? = when (this) {
+    ): Pair<Page, WebApiSelection>? = when (this) {
         is FixedDoubleSelectionApi -> {
             val (iframe, selection) = getCurrentSelection() ?: return null
             val spread = layout.spreads[index] as DoubleViewportSpread

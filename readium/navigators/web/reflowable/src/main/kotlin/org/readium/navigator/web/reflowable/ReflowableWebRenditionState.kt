@@ -59,6 +59,12 @@ import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.resource.Resource
 
+/**
+ * State holder for the rendition of a reflowable Web publication.
+ *
+ * You can interact with it mainly through its [controller] witch will be available as soon
+ * as the first composition has completed.
+ */
 @ExperimentalReadiumApi
 @Stable
 public class ReflowableWebRenditionState internal constructor(
@@ -72,11 +78,10 @@ public class ReflowableWebRenditionState internal constructor(
     disableSelection: Boolean,
 ) : RenditionState<ReflowableWebRenditionController> {
 
-    override val controller: ReflowableWebRenditionController? get() =
-        controllerState.value
-
     private val controllerState: MutableState<ReflowableWebRenditionController?> =
         mutableStateOf(null)
+
+    override val controller: ReflowableWebRenditionController? by controllerState
 
     private val initialResource = publication.readingOrder
         .indexOfHref(initialLocation.href)
@@ -120,10 +125,13 @@ public class ReflowableWebRenditionState internal constructor(
             pagerState = pagerState
         )
 
+    internal val decorationDelegate: ReflowableDecorationDelegate =
+        ReflowableDecorationDelegate(decorationTemplates)
+
     internal val hyperlinkProcessor =
         HyperlinkProcessor(publication.container)
 
-    internal val readiumCssInjector: State<ReadiumCssInjector> =
+    internal val readiumCssInjector: ReadiumCssInjector by
         derivedStateOf {
             ReadiumCssInjector(
                 assetsBaseHref = assetsBaseHref,
@@ -151,7 +159,7 @@ public class ReflowableWebRenditionState internal constructor(
         val htmlInjector: (Resource, MediaType) -> Resource = { resource, mediaType ->
             resource.injectHtmlReflowable(
                 charset = mediaType.charset,
-                readiumCss = readiumCssInjector.value,
+                readiumCss = readiumCssInjector,
                 injectableScript = RelativeUrl("readium/navigator/web/internals/generated/reflowable-injectable-script.js")!!,
                 assetsBaseHref = assetsBaseHref,
                 disableSelection = disableSelection
@@ -171,9 +179,6 @@ public class ReflowableWebRenditionState internal constructor(
 
         WebViewClient(webViewServer)
     }
-
-    internal val decorationDelegate: ReflowableDecorationDelegate =
-        ReflowableDecorationDelegate(decorationTemplates)
 
     private lateinit var navigationDelegate: ReflowableNavigationDelegate
 
@@ -219,7 +224,7 @@ internal class ReflowableLayoutDelegate(
     initialSettings: ReflowableWebSettings,
 ) : SettingsController<ReflowableWebSettings> {
 
-    override var settings by mutableStateOf(initialSettings)
+    override var settings: ReflowableWebSettings by mutableStateOf(initialSettings)
 
     internal val overflow: State<Overflow> = derivedStateOf {
         with(settings) {
@@ -253,12 +258,16 @@ internal class ReflowableNavigationDelegate(
         locationMutable.value = location
     }
 
-    override val overflow by overflowState
+    override val overflow: Overflow by overflowState
 
-    override val location by locationMutable
+    override val location: ReflowableWebLocation by locationMutable
 
     override suspend fun goTo(url: Url) {
-        goTo(ReflowableWebGoLocation(href = url.removeFragment())) // TODO: use fragment
+        val location = ReflowableWebGoLocation(
+            href = url.removeFragment()
+            // TODO: use fragment
+        )
+        goTo(location)
     }
 
     override suspend fun goTo(location: ReflowableWebGoLocation) {
@@ -280,7 +289,6 @@ internal class ReflowableNavigationDelegate(
     // We assume that the best UI behavior would be to have a possible forward button disabled
     // and return false when we can't tell.
     override val canMoveForward: Boolean
-        // FIXME: should we really return true when we're not ready yet to move forward?
         get() = pagerState.currentPage < readingOrder.items.size - 1 || run {
             val currentResourceState = resourceStates[pagerState.currentPage]
             val scrollController = currentResourceState.scrollController.value ?: return false
@@ -370,14 +378,14 @@ internal class ReflowableSelectionDelegate(
             .firstNotNullOfOrNull { (index, api) -> api.getCurrentSelection()?.let { index to it } }
             ?: return null
 
-        val item = publication.readingOrder.items[index]
+        val selectionItem = publication.readingOrder.items[index]
 
         return Selection(
             selection.selectedText,
             selection.selectionRect,
             ReflowableWebSelectionLocation(
-                href = item.href,
-                mediaType = item.mediaType,
+                href = selectionItem.href,
+                mediaType = selectionItem.mediaType,
                 selectedText = selection.selectedText,
                 textQuote = TextQuote(
                     text = selection.selectedText,

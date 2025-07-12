@@ -17,9 +17,9 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import org.readium.demo.navigator.decorations.DecorationStyleAnnotationMark
 import org.readium.demo.navigator.decorations.DecorationStylePageNumber
-import org.readium.demo.navigator.decorations.FixedHighlightsManager
+import org.readium.demo.navigator.decorations.FixedWebHighlightsManager
 import org.readium.demo.navigator.decorations.HighlightsManager
-import org.readium.demo.navigator.decorations.ReflowableHighlightsManager
+import org.readium.demo.navigator.decorations.ReflowableWebHighlightsManager
 import org.readium.demo.navigator.decorations.annotationMarkTemplate
 import org.readium.demo.navigator.decorations.pageNumberDecorations
 import org.readium.demo.navigator.decorations.pageNumberTemplate
@@ -141,7 +141,7 @@ class ReaderOpener(
             return Try.failure(it)
         }
 
-        val highlightsManager = ReflowableHighlightsManager()
+        val highlightsManager = ReflowableWebHighlightsManager()
 
         val onControllerAvailable: (ReflowableWebRenditionController) -> Unit = { controller ->
             applySettings(coroutineScope, controller, preferencesEditor)
@@ -200,7 +200,7 @@ class ReaderOpener(
             return Try.failure(it)
         }
 
-        val highlightsManager = FixedHighlightsManager()
+        val highlightsManager = FixedWebHighlightsManager()
 
         val onControllerAvailable: (FixedWebRenditionController) -> Unit = { controller ->
             applySettings(coroutineScope, controller, preferencesEditor)

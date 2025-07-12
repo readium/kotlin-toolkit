@@ -27,12 +27,12 @@ import org.readium.navigator.web.reflowable.ReflowableWebDecorationLocation
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Locator
 
-class ReflowableHighlightsManager :
+class ReflowableWebHighlightsManager :
     HighlightsManager<ReflowableWebDecorationLocation>(
         DecorationFactory::createReflowableDecorationsForHighlight
     )
 
-class FixedHighlightsManager :
+class FixedWebHighlightsManager :
     HighlightsManager<FixedWebDecorationLocation>(
         DecorationFactory::createFixedDecorationsForHighlight
     )

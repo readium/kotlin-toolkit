@@ -62,6 +62,11 @@ import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.RelativeUrl
 import org.readium.r2.shared.util.Url
 
+/**
+ * Composes a fixed Web publication.
+ *
+ * @param state the state object describing the publication to render
+ */
 @SuppressLint("UnusedBoxWithConstraintsScope")
 @ExperimentalReadiumApi
 @Composable

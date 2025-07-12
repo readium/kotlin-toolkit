@@ -99,7 +99,7 @@ internal fun ReflowableResource(
             url = publicationBaseUrl.resolve(resourceState.href).toString()
         )
 
-        var documentStateApi by remember(webViewState) {
+        var documentStateApi by remember(webViewState.webView) {
             mutableStateOf<DocumentStateApi?>(null)
         }
 

@@ -62,6 +62,11 @@ import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.RelativeUrl
 import org.readium.r2.shared.util.Url
 
+/**
+ * Composes a reflowable Web publication.
+ *
+ * @param state the state object describing the publication to render
+ */
 @SuppressLint("UnusedBoxWithConstraintsScope")
 @ExperimentalReadiumApi
 @Composable
@@ -172,7 +177,7 @@ public fun ReflowableWebRendition(
                     layoutDirection = layoutDirection,
                     scroll = state.layoutDelegate.settings.scroll,
                     orientation = state.layoutDelegate.orientation,
-                    readiumCssInjector = state.readiumCssInjector.value,
+                    readiumCssInjector = state.readiumCssInjector,
                     decorationTemplates = state.decorationDelegate.decorationTemplates,
                     decorations = decorations,
                     actionModeCallback = textSelectionActionModeCallback,
