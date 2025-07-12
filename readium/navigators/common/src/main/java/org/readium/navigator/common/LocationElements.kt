@@ -8,12 +8,18 @@ package org.readium.navigator.common
 
 import org.readium.r2.shared.ExperimentalReadiumApi
 
+/**
+ * A CSS selector.
+ */
 @ExperimentalReadiumApi
 @JvmInline
 public value class CssSelector(
     public val value: String,
 )
 
+/**
+ * A progression value, ranging from 0 to 1.
+ */
 @ExperimentalReadiumApi
 @JvmInline
 public value class Progression private constructor(
@@ -28,6 +34,9 @@ public value class Progression private constructor(
     }
 }
 
+/**
+ * A position in publication.
+ */
 @ExperimentalReadiumApi
 @JvmInline
 public value class Position private constructor(
@@ -41,6 +50,10 @@ public value class Position private constructor(
     }
 }
 
+/**
+ * A [TextQuote] is a short text quote allowing to target a specific range of [text]. [prefix] and
+ * [suffix] are useful to give enough context to make the location less ambiguous.
+ */
 @ExperimentalReadiumApi
 public data class TextQuote(
     val text: String,

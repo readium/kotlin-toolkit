@@ -9,7 +9,6 @@ package org.readium.navigator.common
 import androidx.annotation.ColorInt
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListUpdateCallback
-import kotlin.reflect.KClass
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.PersistentMap
 import kotlinx.coroutines.Dispatchers
@@ -17,29 +16,26 @@ import kotlinx.coroutines.withContext
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.Url
 
+/**
+ * A controller for decorations.
+ */
 @ExperimentalReadiumApi
 public interface DecorationController<L : DecorationLocation> {
 
     /**
-     * Declares the current state of the decorations for each group.
+     * Declares the current state of the decorations for each group. This property must be observable.
      *
-     * The Navigator will decide when to actually render each decoration efficiently. Your only
+     * The controller will decide when to actually render each decoration efficiently. Your only
      * responsibility is to submit the updated list of decorations when there are changes.
      * Name each decoration group as you see fit. A good practice is to use the name of the feature
      * requiring decorations, e.g. annotation, search, tts, etc.
      */
     public var decorations: PersistentMap<String, PersistentList<Decoration<L>>>
-
-    /**
-     * Indicates whether the Navigator supports the given decoration [style] class.
-     *
-     * You should check whether the Navigator supports drawing the decoration styles required by a
-     * particular feature before enabling it. For example, underlining an audiobook does not make
-     * sense, so an Audiobook Navigator would not support the `underline` decoration style.
-     */
-    public fun <T : Decoration.Style> supportsDecorationStyle(style: KClass<T>): Boolean
 }
 
+/**
+ * Marker interface for decoration location.
+ */
 @ExperimentalReadiumApi
 public interface DecorationLocation : Location
 

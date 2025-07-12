@@ -92,7 +92,9 @@ fun <L : ExportableLocation, G : GoLocation, S : SelectionLocation, C> Rendition
 
     if (showOutline.value) {
         Outline(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .zIndex(1f)
+                .fillMaxSize(),
             publication = readerState.publication,
             onBackActivated = {
                 showOutline.value = false

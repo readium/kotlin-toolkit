@@ -21,36 +21,62 @@ import kotlinx.coroutines.launch
 import org.readium.r2.navigator.preferences.ReadingProgression
 import org.readium.r2.shared.ExperimentalReadiumApi
 
+/**
+ * A listener for input events.
+ */
 @ExperimentalReadiumApi
 public interface InputListener {
     /**
-     * Called when the user tapped the content, but nothing handled the event internally (eg.
-     * by following an internal link).
+     * Called when the user tapped the content and nothing handled the event (eg.
+     * taps on links are not reported here).
      */
     public fun onTap(event: TapEvent, context: TapContext)
 }
 
 /**
- * Represents a tap event emitted by a navigator at the given [offset].
+ * Represents a tap event at the given [offset].
  *
- * All the offsets are relative to the navigator view.
+ * All the offsets are relative to the rendition view.
  */
 @ExperimentalReadiumApi
 public data class TapEvent(
     val offset: DpOffset,
 )
 
+/**
+ * Provides additional context for the tap event.
+ */
 @ExperimentalReadiumApi
 public data class TapContext(
     val viewport: DpSize,
 )
 
 @ExperimentalReadiumApi
-public class NullInputListener : InputListener {
+private class NullInputListener : InputListener {
     override fun onTap(event: TapEvent, context: TapContext) {
     }
 }
 
+/**
+ * The default [InputListener], handling directional UI events (e.g. edge taps or arrow keys) to
+ * turn the pages of a visual rendition through an [OverflowController].
+ *
+ * This takes into account the reading progression of the navigator to turn pages in the right
+ * direction.
+ *
+ * @param controller an [OverflowController] to use for navigation
+ * @param tapEdges: Indicates which viewport edges handle taps.
+ * @param handleTapsWhileScrolling: Indicates whether the page turns should be handled when the
+ *        publication is scrollable.
+ * @param minimumHorizontalEdgeSize: The minimum horizontal edge dimension triggering page turns, in
+ *        pixels.
+ * @param horizontalEdgeThresholdPercent: The percentage of the viewport dimension used to compute
+ *        the horizontal edge size. When null, minimumHorizontalEdgeSize will be used instead.
+ * @param minimumVerticalEdgeSize: The minimum vertical edge dimension triggering page turns, in
+ *        pixels.
+ * @param verticalEdgeThresholdPercent: The percentage of the viewport dimension used to compute the
+ *        vertical edge size. When null, minimumVerticalEdgeSize will be used instead.
+ */
 @ExperimentalReadiumApi
 @Composable
 public fun defaultInputListener(

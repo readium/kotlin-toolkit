@@ -18,7 +18,7 @@ import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.InternalReadiumApi
 
 /**
- * An [WebDecorationTemplate] renders a [Decoration] into a set of HTML elements and associated
+ * A [WebDecorationTemplate] renders a [Decoration] into a set of HTML elements and associated
  * stylesheet.
  *
  * @param layout Determines the number of created HTML elements and their position relative to the
@@ -26,7 +26,7 @@ import org.readium.r2.shared.InternalReadiumApi
  * @param width Indicates how the width of each created HTML element expands in the viewport.
  * @param element Closure used to generate a new HTML element for the given [Decoration]. Several
  *        elements will be created for a single decoration when using the BOXES layout.
- *        The Navigator will automatically position the created elements according to the
+ *        The controller will automatically position the created elements according to the
  *        decoration's Locator. The template is only responsible for the look and feel of the
  *        generated elements.
  *        Every child elements with a `data-activable="1"` HTML attribute will handle tap events.
@@ -176,6 +176,9 @@ public data class WebDecorationTemplate(
     }
 }
 
+/**
+ * Container for Web decoration templates.
+ */
 @ExperimentalReadiumApi
 public class WebDecorationTemplates(
     private val styles: ImmutableMap<KClass<*>, WebDecorationTemplate> = persistentMapOf(),
@@ -183,14 +186,26 @@ public class WebDecorationTemplates(
 
     @OptIn(InternalReadiumApi::class)
     @Suppress("UNCHECKED_CAST")
+    /**
+     * Returns the register template for [style] if any.
+     */
     public operator fun <S : Style> get(style: KClass<S>): WebDecorationTemplate? =
         styles[style]
 
+    /**
+     * Returns Web decoration templates as a Map.
+     */
     public fun toMap(): ImmutableMap<KClass<*>, WebDecorationTemplate> =
         styles
 
     public companion object {
 
+        /**
+         * Builds a  new [WebDecorationTemplates].
+         *
+         * @param defaultTemplates the default templates you want to add or null if you don't want any.
+         * @param builder a block to invoke to customize the template map.
+         */
         public operator fun invoke(
             defaultTemplates: WebDecorationTemplates? = defaultTemplates(),
             builder: MutableMap<KClass<*>, WebDecorationTemplate>.() -> Unit,

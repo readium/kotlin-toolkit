@@ -23,27 +23,53 @@ import org.readium.r2.shared.util.Url
 @ExperimentalReadiumApi
 public interface HyperlinkListener {
 
+    /**
+     * Called when a link to a reading order item is activated.
+     */
     public fun onReadingOrderLinkActivated(url: Url, context: LinkContext?)
 
+    /**
+     * Called when a link to a non-linear item is activated.
+     */
     public fun onNonLinearLinkActivated(url: Url, context: LinkContext?)
 
+    /**
+     * Called when a link to an external URL was activated in the navigator.
+     *
+     * If it is an HTTP URL, you should open it with a `CustomTabsIntent` or `WebView`, for
+     * example:
+     *
+     * ```kotlin
+     * override fun onExternalLinkActivated(url: AbsoluteUrl) {
+     *     if (!url.isHttp) return
+     *
+     *     val context = requireActivity()
+     *     val uri = url.toUri()
+     *
+     *     try {
+     *         CustomTabsIntent.Builder()
+     *             .build()
+     *             .launchUrl(context, uri)
+     *     } catch (e: ActivityNotFoundException) {
+     *         context.startActivity(Intent(Intent.ACTION_VIEW, uri))
+     *     }
+     * }
+     * ```
+     */
     public fun onExternalLinkActivated(url: AbsoluteUrl, context: LinkContext?)
 }
 
-@ExperimentalReadiumApi
-public data class HyperlinkLocation(
-    public val href: Url,
-    public val fragment: String? = null,
-) {
-    public constructor(link: Link) : this(
-        href = link.url(),
-        fragment = link.url().fragment
-    )
-}
-
+/**
+ * This holds additional information about a link. For instance, it will be an instance of [FootnoteContext] if the
+ * link is a reference mark.
+ */
 @ExperimentalReadiumApi
 public sealed interface LinkContext
 
+/**
+ * @param noteContent Content of the footnote. Look at the [Link.mediaType] for the format
+ * of the footnote (e.g. HTML).
+ */
 @ExperimentalReadiumApi
 public data class FootnoteContext(
     public val noteContent: String,
@@ -62,7 +88,8 @@ public class NullHyperlinkListener : HyperlinkListener {
 }
 
 /**
- * A [HyperlinkListener] following links to readingOrder items.
+ * The default [HyperlinkListener], following links to readingOrder items if
+ * [shouldFollowReadingOrderLink] returns true, which is always the case by default.
  *
  * Activations of links to external content or non-linear items are ignored by default.
  * To handle them, pass [onNonLinearLinkActivated] and [onExternalLinkActivated] delegates.

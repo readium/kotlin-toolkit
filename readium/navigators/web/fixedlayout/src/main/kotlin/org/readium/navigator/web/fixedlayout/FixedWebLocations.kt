@@ -8,8 +8,8 @@
 
 package org.readium.navigator.web.fixedlayout
 
-import org.readium.navigator.common.CssLocation
 import org.readium.navigator.common.CssSelector
+import org.readium.navigator.common.CssSelectorLocation
 import org.readium.navigator.common.Decoration
 import org.readium.navigator.common.DecorationLocation
 import org.readium.navigator.common.ExportableLocation
@@ -29,7 +29,7 @@ import org.readium.r2.shared.util.mediatype.MediaType
 
 @ExperimentalReadiumApi
 public data class FixedWebGoLocation(
-    val href: Url,
+    override val href: Url,
 ) : GoLocation {
 
     public constructor(location: Location) : this(
@@ -47,7 +47,7 @@ public sealed interface FixedWebDecorationLocation : DecorationLocation {
     public companion object {
 
         public operator fun invoke(location: Location): FixedWebDecorationLocation? {
-            val cssSelector = (location as? CssLocation)?.cssSelector
+            val cssSelector = (location as? CssSelectorLocation)?.cssSelector
             val textQuote = (location as? TextQuoteLocation)?.textQuote
 
             return when {
@@ -118,7 +118,7 @@ public data class FixedWebSelectionLocation internal constructor(
     val selectedText: String,
     // override val cssSelector: CssSelector?,
     override val textQuote: TextQuote,
-) : ExportableLocation, SelectionLocation, TextQuoteLocation { // , CssLocation { { {
+) : SelectionLocation, TextQuoteLocation { // , CssLocation { { {
 
     override fun toLocator(): Locator =
         Locator(

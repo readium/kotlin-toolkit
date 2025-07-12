@@ -10,11 +10,16 @@ package org.readium.demo.navigator.decorations
 
 import android.graphics.Color
 import androidx.annotation.ColorInt
+import kotlinx.collections.immutable.PersistentList
+import kotlinx.collections.immutable.toPersistentList
 import org.readium.navigator.common.Decoration
 import org.readium.navigator.web.common.WebDecorationTemplate
+import org.readium.navigator.web.reflowable.ReflowableWebDecorationLocation
 import org.readium.r2.navigator.epub.EpubNavigatorFragment
 import org.readium.r2.navigator.html.toCss
 import org.readium.r2.shared.ExperimentalReadiumApi
+import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.publication.epub.pageList
 
 /**
  * Decoration Style for a page margin icon.
@@ -33,13 +38,13 @@ data class DecorationStyleAnnotationMark(@ColorInt val tint: Int) : Decoration.S
 data class DecorationStylePageNumber(val label: String) : Decoration.Style
 
 /**
- * This Decorator Style will display a tinted "pen" icon in the page margin to show that a highlight
+ * This decoration template will display a tinted "pen" icon in the page margin to show that a highlight
  * has an associated note.
  *
  * Note that the icon is served from the app assets folder.
  */
 fun annotationMarkTemplate(@ColorInt defaultTint: Int = Color.YELLOW): WebDecorationTemplate {
-    val className = "testapp-annotation-mark"
+    val className = "demo-annotation-mark"
     val iconUrl = checkNotNull(EpubNavigatorFragment.assetUrl("annotation-icon.svg"))
     return WebDecorationTemplate(
         layout = WebDecorationTemplate.Layout.BOUNDS,
@@ -69,13 +74,13 @@ fun annotationMarkTemplate(@ColorInt defaultTint: Int = Color.YELLOW): WebDecora
 }
 
 /**
- * This Decoration Style is used to display the page number labels in the margins, when a book
+ * This decoration template is used to display the page number labels in the margins, when a book
  * provides a `page-list`. The label is stored in the [DecorationStylePageNumber] itself.
  *
  * See http://kb.daisy.org/publishing/docs/navigation/pagelist.html
  */
 fun pageNumberTemplate(): WebDecorationTemplate {
-    val className = "testapp-page-number"
+    val className = "demo-page-number"
     return WebDecorationTemplate(
         layout = WebDecorationTemplate.Layout.BOUNDS,
         width = WebDecorationTemplate.Width.PAGE,
@@ -102,3 +107,25 @@ fun pageNumberTemplate(): WebDecorationTemplate {
             """
     )
 }
+
+/**
+ * Decorations to display margin labels next to page numbers in an EPUB publication with a `page-list`
+ * navigation document.
+ *
+ * See http://kb.daisy.org/publishing/docs/navigation/pagelist.html
+ */
+val Publication.pageNumberDecorations: PersistentList<Decoration<ReflowableWebDecorationLocation>> get() =
+    pageList
+        .mapIndexedNotNull { index, link ->
+            val label = link.title ?: return@mapIndexedNotNull null
+
+            val location = locatorFromLink(link)
+                ?.let { ReflowableWebDecorationLocation(it) }
+                ?: return@mapIndexedNotNull null
+
+            Decoration<ReflowableWebDecorationLocation>(
+                id = Decoration.Id("page-$index"),
+                location = location,
+                style = DecorationStylePageNumber(label = label)
+            )
+        }.toPersistentList()

@@ -8,8 +8,8 @@
 
 package org.readium.navigator.web.reflowable
 
-import org.readium.navigator.common.CssLocation
 import org.readium.navigator.common.CssSelector
+import org.readium.navigator.common.CssSelectorLocation
 import org.readium.navigator.common.Decoration
 import org.readium.navigator.common.DecorationLocation
 import org.readium.navigator.common.ExportableLocation
@@ -32,7 +32,7 @@ import org.readium.r2.shared.util.mediatype.MediaType
 
 @ExperimentalReadiumApi
 public data class ReflowableWebGoLocation(
-    val href: Url,
+    override val href: Url,
     val progression: Progression? = null,
     // val cssSelector: String? = null,
     // val textBefore: String? = null,
@@ -70,7 +70,7 @@ public sealed interface ReflowableWebDecorationLocation : DecorationLocation {
             ReflowableWebDecorationTextQuoteLocation(href, textQuote, cssSelector)
 
         public operator fun invoke(location: Location): ReflowableWebDecorationLocation? {
-            val cssSelector = (location as? CssLocation)?.cssSelector
+            val cssSelector = (location as? CssSelectorLocation)?.cssSelector
             val textQuote = (location as? TextQuoteLocation)?.textQuote
 
             return when {
@@ -144,7 +144,7 @@ public data class ReflowableWebSelectionLocation internal constructor(
     val selectedText: String,
     // override val cssSelector: CssSelector?,
     override val textQuote: TextQuote,
-) : ExportableLocation, SelectionLocation, TextQuoteLocation { // , CssLocation {
+) : SelectionLocation, TextQuoteLocation { // , CssLocation {
 
     override fun toLocator(): Locator =
         Locator(

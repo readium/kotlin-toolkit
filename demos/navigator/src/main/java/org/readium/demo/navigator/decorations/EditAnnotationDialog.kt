@@ -73,7 +73,7 @@ fun EditAnnotationDialog(
 }
 
 @Composable
-fun EditAnnotationDialog(
+private fun EditAnnotationDialog(
     dialogProperties: DialogProperties,
     onDismissRequest: () -> Unit,
     onConfirmation: (String) -> Unit,

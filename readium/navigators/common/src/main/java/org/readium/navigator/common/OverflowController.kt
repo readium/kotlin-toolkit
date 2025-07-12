@@ -12,15 +12,13 @@ import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.InternalReadiumApi
 
 /**
- * A view with content that can extend beyond the viewport.
- *
- * The user typically navigates through the viewport by scrolling or tapping its edges.
+ * This controller enables navigation through the viewport of an overflowing publication.
  */
 @ExperimentalReadiumApi
 public interface OverflowController {
 
     /**
-     * Current presentation rendered by the navigator.
+     * Information about the current presentation of the rendition.
      */
     public val overflow: Overflow
 
@@ -51,6 +49,9 @@ public interface OverflowController {
     public suspend fun moveBackward()
 }
 
+/**
+ * Holds information about the presentation of a publication.
+ */
 @ExperimentalReadiumApi
 public interface Overflow {
     /**

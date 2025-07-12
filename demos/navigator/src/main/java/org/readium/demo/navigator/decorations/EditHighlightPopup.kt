@@ -82,7 +82,7 @@ fun EditHighlightPopup(
 }
 
 @Composable
-fun EditHighlightPopup(
+private fun EditHighlightPopup(
     offset: IntOffset,
     popupProperties: PopupProperties,
     availableColors: List<Color> = listOf(Color.Yellow, Color.Green, Color.Blue, Color.Red),

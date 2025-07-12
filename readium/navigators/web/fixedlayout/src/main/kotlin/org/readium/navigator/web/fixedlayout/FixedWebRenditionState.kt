@@ -20,7 +20,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateMap
 import kotlin.coroutines.coroutineContext
-import kotlin.reflect.KClass
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.coroutines.CoroutineScope
@@ -261,10 +260,6 @@ internal class FixedDecorationDelegate(
 ) : DecorationController<FixedWebDecorationLocation> {
 
     override var decorations by mutableStateOf(persistentMapOf<String, PersistentList<Decoration<FixedWebDecorationLocation>>>())
-
-    override fun <T : Decoration.Style> supportsDecorationStyle(style: KClass<T>): Boolean {
-        TODO("Not yet implemented")
-    }
 }
 
 @OptIn(ExperimentalReadiumApi::class)

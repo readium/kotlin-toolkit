@@ -11,7 +11,6 @@ package org.readium.demo.navigator.reader
 import android.app.Application
 import androidx.compose.runtime.snapshotFlow
 import kotlinx.collections.immutable.plus
-import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.flow.launchIn
@@ -22,10 +21,10 @@ import org.readium.demo.navigator.decorations.FixedHighlightsManager
 import org.readium.demo.navigator.decorations.HighlightsManager
 import org.readium.demo.navigator.decorations.ReflowableHighlightsManager
 import org.readium.demo.navigator.decorations.annotationMarkTemplate
+import org.readium.demo.navigator.decorations.pageNumberDecorations
 import org.readium.demo.navigator.decorations.pageNumberTemplate
 import org.readium.demo.navigator.persistence.LocatorRepository
 import org.readium.demo.navigator.preferences.PreferencesManager
-import org.readium.navigator.common.Decoration
 import org.readium.navigator.common.DecorationController
 import org.readium.navigator.common.DecorationLocation
 import org.readium.navigator.common.PreferencesEditor
@@ -38,7 +37,6 @@ import org.readium.navigator.web.fixedlayout.FixedWebRenditionController
 import org.readium.navigator.web.fixedlayout.FixedWebRenditionFactory
 import org.readium.navigator.web.fixedlayout.FixedWebSelectionLocation
 import org.readium.navigator.web.fixedlayout.preferences.FixedWebPreferences
-import org.readium.navigator.web.reflowable.ReflowableWebDecorationLocation
 import org.readium.navigator.web.reflowable.ReflowableWebGoLocation
 import org.readium.navigator.web.reflowable.ReflowableWebLocation
 import org.readium.navigator.web.reflowable.ReflowableWebRenditionController
@@ -48,7 +46,6 @@ import org.readium.navigator.web.reflowable.preferences.ReflowableWebPreferences
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.publication.epub.pageList
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.DebugError
 import org.readium.r2.shared.util.Error
@@ -149,7 +146,10 @@ class ReaderOpener(
         val onControllerAvailable: (ReflowableWebRenditionController) -> Unit = { controller ->
             applySettings(coroutineScope, controller, preferencesEditor)
             applyHighlightDecorations(coroutineScope, controller, highlightsManager)
-            applyPageListDecorations(controller, publication)
+
+            publication.pageNumberDecorations
+                .takeIf { it.isNotEmpty() }
+                ?.let { controller.decorations + ("pageNumbers" to it) }
         }
 
         val actionModeFactory = SelectionActionModeFactory(highlightsManager)
@@ -242,35 +242,5 @@ class ReaderOpener(
             .onEach {
                 decorationController.decorations += ("highlights" to it)
             }.launchIn(coroutineScope)
-    }
-
-    /**
-     * Will display margin labels next to page numbers in an EPUB publication with a `page-list`
-     * navigation document.
-     *
-     * See http://kb.daisy.org/publishing/docs/navigation/pagelist.html
-     */
-    private fun applyPageListDecorations(
-        decorationController: DecorationController<ReflowableWebDecorationLocation>,
-        publication: Publication,
-    ) {
-        val pageDecorations = publication.pageList
-            .mapIndexedNotNull { index, link ->
-                val label = link.title ?: return@mapIndexedNotNull null
-
-                val location = publication.locatorFromLink(link)
-                    ?.let { ReflowableWebDecorationLocation(it) }
-                    ?: return@mapIndexedNotNull null
-
-                Decoration<ReflowableWebDecorationLocation>(
-                    id = Decoration.Id("page-$index"),
-                    location = location,
-                    style = DecorationStylePageNumber(label = label)
-                )
-            }.toPersistentList()
-
-        if (pageDecorations.isNotEmpty()) {
-            decorationController.decorations + ("pageNumbers" to pageDecorations)
-        }
     }
 }

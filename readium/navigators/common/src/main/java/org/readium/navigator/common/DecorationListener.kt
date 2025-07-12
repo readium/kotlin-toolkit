@@ -11,6 +11,9 @@ import androidx.compose.ui.unit.DpRect
 import org.readium.r2.shared.ExperimentalReadiumApi
 
 @ExperimentalReadiumApi
+/**
+ * A listener for events related to decorations.
+ */
 public interface DecorationListener<in L : DecorationLocation> {
 
     /**
@@ -26,9 +29,9 @@ public interface DecorationListener<in L : DecorationLocation> {
      * @param decoration Activated decoration.
      * @param group Name of the group the decoration belongs to.
      * @param rect Frame of the bounding rect for the decoration, in the coordinate of the
-     *        navigator view. This is only useful in the context of a VisualNavigator.
+     *        rendition view. This is only useful in the context of a visual rendition.
      * @param offset Event point of the interaction, in the coordinate of the navigator view. This is
-     *        only useful in the context of a VisualNavigator.
+     *        only useful in the context of a visual rendition.
      */
     public data class OnActivatedEvent<out L : DecorationLocation>(
         val decoration: Decoration<L>,
@@ -38,11 +41,17 @@ public interface DecorationListener<in L : DecorationLocation> {
     )
 }
 
+/**
+ * The default implementation of [DecorationListener] which does nothing at the moment.
+ */
 @ExperimentalReadiumApi
 public fun <L : DecorationLocation> defaultDecorationListener(
     controller: DecorationController<L>?,
 ): DecorationListener<L> = NullDecorationListener()
 
+/**
+ * A [DecorationListener] which does nothing.
+ */
 @ExperimentalReadiumApi
 internal class NullDecorationListener<L : DecorationLocation> : DecorationListener<L> {
 

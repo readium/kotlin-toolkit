@@ -26,7 +26,6 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.zIndex
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
@@ -40,18 +39,16 @@ fun Outline(
     onTocItemActivated: (Url) -> Unit,
 ) {
     Scaffold(
-        modifier = Modifier
-            .zIndex(1f)
-            .fillMaxSize(),
+        modifier = modifier,
         topBar = { TopBar(onBackActivated) },
         content = { padding ->
             Box(
                 modifier = Modifier
-                    .padding(padding)
-                    .fillMaxSize()
+                    .padding(padding),
+                propagateMinConstraints = true
             ) {
                 Contents(
-                    modifier = modifier,
+                    modifier = Modifier.fillMaxSize(),
                     publication = publication,
                     onItemActivated = onTocItemActivated
                 )
