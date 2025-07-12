@@ -258,7 +258,7 @@ internal class ReflowableNavigationDelegate(
     override val location by locationMutable
 
     override suspend fun goTo(url: Url) {
-        goTo(ReflowableWebGoLocation(location.href)) // TODO: use fragment
+        goTo(ReflowableWebGoLocation(href = url.removeFragment())) // TODO: use fragment
     }
 
     override suspend fun goTo(location: ReflowableWebGoLocation) {
