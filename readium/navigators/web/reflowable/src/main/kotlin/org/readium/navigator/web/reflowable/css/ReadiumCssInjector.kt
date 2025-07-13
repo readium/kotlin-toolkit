@@ -335,11 +335,11 @@ internal fun ReadiumCssInjector.withSettings(settings: ReflowableWebSettings): R
         copy(
             layout = ReadiumCssLayout.from(settings),
             rsProperties = rsProperties.copy(
-                pageGutter = Length.Px((rsProperties.pageGutter?.value ?: 20.0) * horizontalMargins),
+                pageGutter = Length.Px(20.0 * minMargins),
                 textColor = textColor.toCss(),
                 backgroundColor = backgroundColor.toCss(),
-                linkColor = linkColor?.toCss(),
-                visitedColor = visitedColor?.toCss()
+                linkColor = linkColor.toCss(),
+                visitedColor = visitedColor.toCss()
             ),
             userProperties = userProperties.copy(
                 view = when (scroll) {
@@ -351,8 +351,8 @@ internal fun ReadiumCssInjector.withSettings(settings: ReflowableWebSettings): R
                 invertImages = imageFilter == ImageFilter.INVERT,
                 textColor = textColor.toCss().takeIf { overridePublisherColors },
                 backgroundColor = backgroundColor.toCss().takeIf { overridePublisherColors },
-                linkColor = linkColor?.toCss().takeIf { overridePublisherColors },
-                visitedLinkColor = visitedColor?.toCss().takeIf { overridePublisherColors },
+                linkColor = linkColor.toCss().takeIf { overridePublisherColors },
+                visitedLinkColor = visitedColor.toCss().takeIf { overridePublisherColors },
                 fontOverride = true, // we don't need this guard,
                 fontFamily = fontFamily?.toCss(),
                 fontSize = Length.Percent(fontSize),
@@ -386,3 +386,15 @@ internal fun ReadiumCssInjector.withSettings(settings: ReflowableWebSettings): R
         )
     }
 }
+
+internal fun ReadiumCssInjector.withLayout(
+    viewportLayout: PaginatedLayout,
+): ReadiumCssInjector = copy(
+    rsProperties = rsProperties.copy(
+        pageGutter = Length.Px(viewportLayout.pageGutter.value.toDouble())
+    ),
+    userProperties = userProperties.copy(
+        colCount = viewportLayout.colCount,
+        lineLength = viewportLayout.lineLength?.let { Length.Px(it.value.toDouble()) }
+    )
+)

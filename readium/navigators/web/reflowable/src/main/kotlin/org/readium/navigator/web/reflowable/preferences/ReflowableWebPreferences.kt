@@ -16,19 +16,22 @@ import org.readium.r2.shared.util.Language
 /**
  * Preferences for the Reflowable Web navigator.
  *
- * @param backgroundColor Default page background color.
+ * @param backgroundColor Page background color.
  * @param columnCount Number of reflowable columns to display.
  * @param fontFamily Default typeface for the text.
  * @param fontSize Base text font size.
  * @param fontWeight Default boldness for the text.
- * @param horizontalMargins Factor applied to horizontal margins.
  * @param hyphens Enable hyphenation.
  * @param imageFilter Filter applied to images in dark theme.
  * @param language Language of the publication content.
  * @param letterSpacing Space between letters.
  * @param ligatures Enable ligatures in Arabic.
  * @param lineHeight Leading line height.
- * @param linkColor Default link color.
+ * @param linkColor Link color.
+ * @param maximalLineLength Optional maximal line length
+ * @param minimalLineLength Optional minimal line length
+ * @param minMargins Factor applied to horizontal margins.
+ * @param optimalLineLength Optimal line length
  * @param overridePublisherColors If color preferences should be applied only as a fallback or
  *   override publisher colors.
  * @param paragraphIndent Text indentation for paragraphs.
@@ -37,12 +40,12 @@ import org.readium.r2.shared.util.Language
  * @param scroll Indicates if the overflow of resources should be handled using scrolling
  *   instead of synthetic pagination.
  * @param textAlign Page text alignment.
- * @param textColor Default page text color.
+ * @param textColor Page text color.
  * @param textNormalization Normalize text styles to increase accessibility.
  * @param verticalText Indicates whether the text should be laid out vertically. This is used
  *   for example with CJK languages. This setting is automatically derived from the language if
  *   no preference is given.
- *   @param visitedColor Default color for visited links.
+ *   @param visitedColor Color for visited links.
  * @param wordSpacing Space between words.
  */
 @Serializable
@@ -53,7 +56,6 @@ public data class ReflowableWebPreferences(
     val fontFamily: FontFamily? = null,
     val fontSize: Double? = null,
     val fontWeight: Double? = null,
-    val horizontalMargins: Double? = null,
     val hyphens: Boolean? = null,
     val imageFilter: ImageFilter? = null,
     val language: Language? = null,
@@ -61,6 +63,10 @@ public data class ReflowableWebPreferences(
     val ligatures: Boolean? = null,
     val lineHeight: Double? = null,
     val linkColor: Color? = null,
+    val maximalLineLength: Double? = null,
+    val minimalLineLength: Double? = null,
+    val minMargins: Double? = null,
+    val optimalLineLength: Double? = null,
     val overridePublisherColors: Boolean? = null,
     val paragraphIndent: Double? = null,
     val paragraphSpacing: Double? = null,
@@ -75,11 +81,14 @@ public data class ReflowableWebPreferences(
 ) : Preferences<ReflowableWebPreferences> {
 
     init {
-        require(columnCount == null || columnCount > 1)
+        require(columnCount == null || columnCount >= 1)
         require(fontSize == null || fontSize >= 0)
         require(fontWeight == null || fontWeight in 0.0..2.5)
         require(letterSpacing == null || letterSpacing >= 0)
-        require(horizontalMargins == null || horizontalMargins >= 0)
+        require(maximalLineLength == null || maximalLineLength > 0)
+        require(minimalLineLength == null || minimalLineLength >= 0)
+        require(optimalLineLength == null || optimalLineLength > 0)
+        require(minMargins == null || minMargins >= 0)
         require(paragraphSpacing == null || paragraphSpacing >= 0)
         require(wordSpacing == null || wordSpacing >= 0)
     }
@@ -92,7 +101,6 @@ public data class ReflowableWebPreferences(
             fontFamily = other.fontFamily ?: fontFamily,
             fontWeight = other.fontWeight ?: fontWeight,
             fontSize = other.fontSize ?: fontSize,
-            horizontalMargins = other.horizontalMargins ?: horizontalMargins,
             hyphens = other.hyphens ?: hyphens,
             imageFilter = other.imageFilter ?: imageFilter,
             language = other.language ?: language,
@@ -100,6 +108,10 @@ public data class ReflowableWebPreferences(
             ligatures = other.ligatures ?: ligatures,
             lineHeight = other.lineHeight ?: lineHeight,
             linkColor = other.linkColor ?: linkColor,
+            maximalLineLength = other.maximalLineLength ?: maximalLineLength,
+            minimalLineLength = other.minimalLineLength ?: minimalLineLength,
+            minMargins = other.minMargins ?: minMargins,
+            optimalLineLength = other.optimalLineLength ?: optimalLineLength,
             overridePublisherColors = other.overridePublisherColors ?: overridePublisherColors,
             paragraphIndent = other.paragraphIndent ?: paragraphIndent,
             paragraphSpacing = other.paragraphSpacing ?: paragraphSpacing,

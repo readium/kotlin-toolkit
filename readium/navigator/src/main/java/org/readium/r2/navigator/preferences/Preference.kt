@@ -88,3 +88,26 @@ public interface RangePreference<T : Comparable<T>> : Preference<T> {
      */
     public fun formatValue(value: T): String
 }
+
+/**
+ * A [Preference] whose values must be null or in a [ClosedRange] of [T].
+ */
+public interface OptionalRangePreference<T : Comparable<T>> : Preference<T?> {
+
+    public val supportedRange: ClosedRange<T>
+
+    /**
+     * Increment the preference value from its current value or a default value.
+     */
+    public fun increment()
+
+    /**
+     * Decrement the preference value from its current value or a default value.
+     */
+    public fun decrement()
+
+    /**
+     * Format [value] in a way suitable for display, including unit if relevant.
+     */
+    public fun formatValue(value: T): String
+}

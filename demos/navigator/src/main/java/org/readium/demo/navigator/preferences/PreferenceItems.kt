@@ -46,6 +46,7 @@ import org.readium.demo.navigator.util.DropdownMenuButton
 import org.readium.demo.navigator.util.ToggleButtonGroup
 import org.readium.r2.navigator.preferences.Color as ReadiumColor
 import org.readium.r2.navigator.preferences.EnumPreference
+import org.readium.r2.navigator.preferences.OptionalRangePreference
 import org.readium.r2.navigator.preferences.Preference
 import org.readium.r2.navigator.preferences.RangePreference
 import org.readium.r2.navigator.preferences.clear
@@ -124,6 +125,27 @@ fun <T : Comparable<T>> StepperItem(
         isActive = preference.isEffective,
         value = preference.value ?: preference.effectiveValue,
         formatValue = preference::formatValue,
+        onDecrement = { preference.decrement() },
+        onIncrement = { preference.increment() },
+        onClear = { preference.clear() }
+            .takeIf { preference.value != null }
+    )
+}
+
+/**
+ * Component for a [OptionalRangePreference] with decrement and increment buttons.
+ */
+@Composable
+fun <T : Comparable<T>> StepperItem(
+    title: String,
+    preference: OptionalRangePreference<T>,
+    defaultDisplayValue: T,
+) {
+    StepperItem(
+        title = title,
+        isActive = preference.isEffective,
+        value = preference.value ?: preference.effectiveValue,
+        formatValue = { preference.formatValue(it ?: defaultDisplayValue) },
         onDecrement = { preference.decrement() },
         onIncrement = { preference.increment() },
         onClear = { preference.clear() }

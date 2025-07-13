@@ -38,11 +38,11 @@ internal class ReflowableWebSettingsResolver(
 
         return ReflowableWebSettings(
             backgroundColor = preferences.backgroundColor ?: defaults.backgroundColor ?: fallbackTheme.backgroundColor!!,
-            columnCount = preferences.columnCount ?: defaults.columnCount ?: 1,
+            columnCount = preferences.columnCount ?: defaults.columnCount,
             fontFamily = preferences.fontFamily,
             fontSize = preferences.fontSize ?: defaults.fontSize ?: 1.0,
             fontWeight = preferences.fontWeight ?: defaults.fontWeight,
-            horizontalMargins = preferences.horizontalMargins ?: defaults.pageMargins ?: 1.0,
+            minMargins = preferences.minMargins ?: defaults.pageMargins ?: 1.0,
             hyphens = preferences.hyphens ?: defaults.hyphens,
             imageFilter = preferences.imageFilter ?: defaults.imageFilter,
             language = language,
@@ -50,6 +50,9 @@ internal class ReflowableWebSettingsResolver(
             ligatures = preferences.ligatures ?: defaults.ligatures,
             lineHeight = preferences.lineHeight ?: defaults.lineHeight,
             linkColor = preferences.linkColor ?: defaults.linkColor ?: fallbackTheme.linkColor!!,
+            maximalLineLength = preferences.maximalLineLength ?: defaults.maximalLineLength,
+            minimalLineLength = preferences.minimalLineLength ?: defaults.minimalLineLength,
+            optimalLineLength = preferences.optimalLineLength ?: defaults.optimalLineLength ?: 1.0,
             overridePublisherColors = preferences.overridePublisherColors ?: defaults.overridePublisherColors ?: false,
             paragraphIndent = preferences.paragraphIndent ?: defaults.paragraphIndent,
             paragraphSpacing = preferences.paragraphSpacing ?: defaults.paragraphSpacing,

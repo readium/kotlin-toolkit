@@ -36,6 +36,7 @@ import org.readium.r2.navigator.preferences.EnumPreference
 import org.readium.r2.navigator.preferences.Fit
 import org.readium.r2.navigator.preferences.FontFamily
 import org.readium.r2.navigator.preferences.ImageFilter
+import org.readium.r2.navigator.preferences.OptionalRangePreference
 import org.readium.r2.navigator.preferences.Preference
 import org.readium.r2.navigator.preferences.RangePreference
 import org.readium.r2.navigator.preferences.ReadingProgression
@@ -98,7 +99,7 @@ fun <P : Preferences<P>, S : Settings, E : PreferencesEditor<P, S>> UserPreferen
                     fontFamily = editor.fontFamily,
                     fontSize = editor.fontSize,
                     fontWeight = editor.fontWeight,
-                    horizontalMargins = editor.horizontalMargins,
+                    horizontalMargins = editor.minMargins,
                     hyphens = editor.hyphens,
                     imageFilter = editor.imageFilter,
                     language = editor.language,
@@ -106,6 +107,9 @@ fun <P : Preferences<P>, S : Settings, E : PreferencesEditor<P, S>> UserPreferen
                     ligatures = editor.ligatures,
                     lineHeight = editor.lineHeight,
                     linkColor = editor.linkColor,
+                    maximalLineLength = editor.maximalLineLength,
+                    minimalLineLength = editor.minimalLineLength,
+                    optimalLineLength = editor.optimalLineLength,
                     overridePublisherColors = editor.overridePublisherColors,
                     paragraphIndent = editor.paragraphIndent,
                     paragraphSpacing = editor.paragraphSpacing,
@@ -199,7 +203,7 @@ private fun FixedLayoutUserPreferences(
 @Composable
 private fun ReflowableUserPreferences(
     backgroundColor: Preference<Color>? = null,
-    columnCount: RangePreference<Int>? = null,
+    columnCount: Preference<Int?>? = null,
     fontFamily: Preference<FontFamily?>? = null,
     fontSize: RangePreference<Double>? = null,
     fontWeight: RangePreference<Double>? = null,
@@ -211,6 +215,9 @@ private fun ReflowableUserPreferences(
     ligatures: Preference<Boolean>? = null,
     lineHeight: RangePreference<Double>? = null,
     linkColor: Preference<Color>? = null,
+    maximalLineLength: OptionalRangePreference<Double>? = null,
+    minimalLineLength: OptionalRangePreference<Double>? = null,
+    optimalLineLength: RangePreference<Double>? = null,
     overridePublisherColors: Preference<Boolean>? = null,
     paragraphIndent: RangePreference<Double>? = null,
     paragraphSpacing: RangePreference<Double>? = null,
@@ -248,7 +255,9 @@ private fun ReflowableUserPreferences(
         Divider()
     }
 
-    if (scroll != null || columnCount != null || horizontalMargins != null) {
+    if (scroll != null || columnCount != null || horizontalMargins != null ||
+        optimalLineLength != null || minimalLineLength != null || maximalLineLength != null
+    ) {
         if (scroll != null) {
             SwitchItem(
                 title = "Scroll",
@@ -257,9 +266,12 @@ private fun ReflowableUserPreferences(
         }
 
         if (columnCount != null) {
-            StepperItem(
+            ButtonGroupItem(
                 title = "Columns",
-                preference = columnCount
+                preference = columnCount.withSupportedValues(null, 1, 2),
+                formatValue = { value: Int? ->
+                    value?.toString() ?: "Auto"
+                }
             )
         }
 
@@ -267,6 +279,29 @@ private fun ReflowableUserPreferences(
             StepperItem(
                 title = "Horizontal margins",
                 preference = horizontalMargins
+            )
+        }
+
+        if (optimalLineLength != null) {
+            StepperItem(
+                title = "Optimal line length",
+                preference = optimalLineLength
+            )
+        }
+
+        if (minimalLineLength != null) {
+            StepperItem(
+                title = "Minimal line length",
+                preference = minimalLineLength,
+                defaultDisplayValue = 1.0
+            )
+        }
+
+        if (maximalLineLength != null) {
+            StepperItem(
+                title = "Maximal line length",
+                preference = maximalLineLength,
+                defaultDisplayValue = 1.0
             )
         }
 

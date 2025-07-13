@@ -20,6 +20,8 @@ import org.readium.r2.navigator.preferences.EnumPreferenceDelegate
 import org.readium.r2.navigator.preferences.FontFamily
 import org.readium.r2.navigator.preferences.ImageFilter
 import org.readium.r2.navigator.preferences.IntIncrement
+import org.readium.r2.navigator.preferences.OptionalRangePreference
+import org.readium.r2.navigator.preferences.OptionalRangePreferenceDelegate
 import org.readium.r2.navigator.preferences.Preference
 import org.readium.r2.navigator.preferences.PreferenceDelegate
 import org.readium.r2.navigator.preferences.RangePreference
@@ -90,15 +92,16 @@ public class ReflowableWebPreferencesEditor internal constructor(
      *
      * Only effective when [scroll] is off.
      */
-    public val columnCount: RangePreference<Int> =
-        RangePreferenceDelegate(
+    public val columnCount: OptionalRangePreference<Int> =
+        OptionalRangePreferenceDelegate(
             getValue = { preferences.columnCount },
             getEffectiveValue = { state.settings.columnCount },
             getIsEffective = { true },
-            supportedRange = 1..Int.MAX_VALUE,
-            progressionStrategy = IntIncrement(1),
-            valueFormatter = { it.format(5) },
-            updateValue = { value -> updateValues { it.copy(columnCount = value) } }
+            updateValue = { value -> updateValues { it.copy(columnCount = value) } },
+            defaultValue = 1,
+            supportedRange = 1..10,
+            valueFormatter = Int::toString,
+            progressionStrategy = IntIncrement(1)
         )
 
     /**
@@ -143,20 +146,6 @@ public class ReflowableWebPreferencesEditor internal constructor(
             valueFormatter = percentFormatter(),
             supportedRange = 0.0..2.5,
             progressionStrategy = DoubleIncrement(0.25)
-        )
-
-    /**
-     * Factor applied to horizontal margins. Default to 1.
-     */
-    public val horizontalMargins: RangePreference<Double> =
-        RangePreferenceDelegate(
-            getValue = { preferences.horizontalMargins },
-            getEffectiveValue = { state.settings.horizontalMargins },
-            getIsEffective = { true },
-            updateValue = { value -> updateValues { it.copy(horizontalMargins = value) } },
-            supportedRange = 0.0..4.0,
-            progressionStrategy = DoubleIncrement(0.3),
-            valueFormatter = { it.format(5) }
         )
 
     /**
@@ -252,6 +241,70 @@ public class ReflowableWebPreferencesEditor internal constructor(
             getEffectiveValue = { state.settings.linkColor },
             getIsEffective = { true },
             updateValue = { value -> updateValues { it.copy(linkColor = value) } }
+        )
+
+    /**
+     * Factor applied to maximal line length.  Default to no maximal line length.
+     *
+     * Only effective when [scroll] is false.
+     */
+    public val maximalLineLength: OptionalRangePreference<Double> =
+        OptionalRangePreferenceDelegate(
+            getValue = { preferences.maximalLineLength },
+            getEffectiveValue = { state.settings.maximalLineLength },
+            getIsEffective = { scroll.value != true },
+            updateValue = { value -> updateValues { it.copy(maximalLineLength = value) } },
+            defaultValue = 1.0,
+            supportedRange = 0.5..2.0,
+            progressionStrategy = DoubleIncrement(0.1),
+            valueFormatter = percentFormatter()
+        )
+
+    /**
+     * Factor applied to minimal line length. Default to no minimal line length.
+     *
+     * Only effective when [scroll] is false.
+     */
+    public val minimalLineLength: OptionalRangePreference<Double> =
+        OptionalRangePreferenceDelegate(
+            getValue = { preferences.minimalLineLength },
+            getEffectiveValue = { state.settings.minimalLineLength },
+            getIsEffective = { scroll.value != true },
+            updateValue = { value -> updateValues { it.copy(minimalLineLength = value) } },
+            defaultValue = 1.0,
+            supportedRange = 0.5..2.0,
+            progressionStrategy = DoubleIncrement(0.1),
+            valueFormatter = percentFormatter()
+        )
+
+    /**
+     * Factor applied to horizontal margins. Default to 1.
+     */
+    public val minMargins: RangePreference<Double> =
+        RangePreferenceDelegate(
+            getValue = { preferences.minMargins },
+            getEffectiveValue = { state.settings.minMargins },
+            getIsEffective = { true },
+            updateValue = { value -> updateValues { it.copy(minMargins = value) } },
+            supportedRange = 0.0..4.0,
+            progressionStrategy = DoubleIncrement(0.3),
+            valueFormatter = { it.format(5) }
+        )
+
+    /**
+     * Factor applied to optimal line length. Default to 1.
+     *
+     * Only effective when [scroll] is false.
+     */
+    public val optimalLineLength: RangePreference<Double> =
+        RangePreferenceDelegate(
+            getValue = { preferences.optimalLineLength },
+            getEffectiveValue = { state.settings.optimalLineLength },
+            getIsEffective = { scroll.value != true },
+            updateValue = { value -> updateValues { it.copy(optimalLineLength = value) } },
+            supportedRange = 0.5..2.0,
+            progressionStrategy = DoubleIncrement(0.1),
+            valueFormatter = percentFormatter()
         )
 
     /**

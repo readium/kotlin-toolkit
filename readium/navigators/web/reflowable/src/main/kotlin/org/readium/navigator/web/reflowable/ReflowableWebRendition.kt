@@ -89,6 +89,10 @@ public fun ReflowableWebRendition(
         ) {
             val viewportSize = rememberUpdatedRef(DpSize(maxWidth, maxHeight))
 
+            state.layoutDelegate.viewportSize = viewportSize.value
+
+            state.layoutDelegate.fontScale = LocalDensity.current.fontScale
+
             val coroutineScope = rememberCoroutineScope()
 
             val resourcePadding =
@@ -174,7 +178,7 @@ public fun ReflowableWebRendition(
                     layoutDirection = layoutDirection,
                     scroll = state.layoutDelegate.settings.scroll,
                     orientation = state.layoutDelegate.orientation,
-                    readiumCssInjector = state.readiumCssInjector,
+                    readiumCssInjector = state.layoutDelegate.readiumCssInjector,
                     decorationTemplates = state.decorationDelegate.decorationTemplates,
                     decorations = decorations,
                     actionModeCallback = textSelectionActionModeCallback,

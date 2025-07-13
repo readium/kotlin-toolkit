@@ -18,11 +18,10 @@ import org.readium.r2.shared.util.Language
 @ExperimentalReadiumApi
 public data class ReflowableWebSettings(
     val backgroundColor: Color,
-    val columnCount: Int,
+    val columnCount: Int?,
     val fontFamily: FontFamily?,
     val fontSize: Double,
     val fontWeight: Double?,
-    val horizontalMargins: Double,
     val hyphens: Boolean?,
     val imageFilter: ImageFilter?,
     val language: Language?,
@@ -30,6 +29,10 @@ public data class ReflowableWebSettings(
     val ligatures: Boolean?,
     val lineHeight: Double?,
     val linkColor: Color,
+    val maximalLineLength: Double?,
+    val minimalLineLength: Double?,
+    val minMargins: Double,
+    val optimalLineLength: Double,
     val overridePublisherColors: Boolean,
     val paragraphIndent: Double?,
     val paragraphSpacing: Double?,
