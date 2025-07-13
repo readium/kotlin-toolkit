@@ -179,11 +179,10 @@ internal fun ReflowableResource(
                                 resourceState.scrollController.value = scrollController
                                 Timber.d("resource ${resourceState.index} ready to scroll")
                                 webView.setOnScrollChangeListener { view, scrollX, scrollY, oldScrollX, oldScrollY ->
-                                    val progression = scrollController.progression(
+                                    scrollController.progression(
                                         orientation,
                                         layoutDirection
-                                    )
-                                    onProgressionChange(Progression(progression)!!)
+                                    )?.let { onProgressionChange(Progression(it)!!) }
                                 }
                                 showPlaceholder.value = false
                             }

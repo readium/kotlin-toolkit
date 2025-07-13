@@ -94,8 +94,8 @@ public class WebViewScrollController(
         }
     }
 
-    public fun progression(orientation: Orientation, direction: LayoutDirection): Double =
-        webView.progression(orientation, direction)
+    public fun progression(orientation: Orientation, direction: LayoutDirection): Double? =
+        webView.progression(orientation, direction).takeIf { it.isFinite() }
 
     public fun moveToProgression(
         progression: Double,
