@@ -9,7 +9,6 @@ package org.readium.navigator.web.reflowable.preferences
 import org.readium.navigator.web.internals.util.isCjk
 import org.readium.navigator.web.internals.util.isRtl
 import org.readium.r2.navigator.preferences.ReadingProgression
-import org.readium.r2.navigator.preferences.Theme
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Metadata
 import org.readium.r2.shared.publication.ReadingProgression as PublicationReadingProgression
@@ -27,8 +26,6 @@ internal class ReflowableWebSettingsResolver(
         val verticalPref = preferences.verticalText
         val verticalText = resolveVerticalText(verticalPref, language, readingProgression)
 
-        val theme = preferences.theme ?: Theme.LIGHT
-
         var scroll = preferences.scroll ?: defaults.scroll ?: false
 
         // / We disable pagination with vertical text, because CSS columns don't support it properly.
@@ -37,28 +34,32 @@ internal class ReflowableWebSettingsResolver(
             scroll = true
         }
 
+        val fallbackTheme = ReflowableWebPreferences.LightTheme
+
         return ReflowableWebSettings(
-            backgroundColor = preferences.backgroundColor,
+            backgroundColor = preferences.backgroundColor ?: defaults.backgroundColor ?: fallbackTheme.backgroundColor!!,
             columnCount = preferences.columnCount ?: defaults.columnCount ?: 1,
             fontFamily = preferences.fontFamily,
             fontSize = preferences.fontSize ?: defaults.fontSize ?: 1.0,
             fontWeight = preferences.fontWeight ?: defaults.fontWeight,
+            horizontalMargins = preferences.horizontalMargins ?: defaults.pageMargins ?: 1.0,
             hyphens = preferences.hyphens ?: defaults.hyphens,
             imageFilter = preferences.imageFilter ?: defaults.imageFilter,
             language = language,
             letterSpacing = preferences.letterSpacing ?: defaults.letterSpacing,
             ligatures = preferences.ligatures ?: defaults.ligatures,
             lineHeight = preferences.lineHeight ?: defaults.lineHeight,
-            horizontalMargins = preferences.horizontalMargins ?: defaults.pageMargins ?: 1.0,
+            linkColor = preferences.linkColor ?: defaults.linkColor ?: fallbackTheme.linkColor!!,
+            overridePublisherColors = preferences.overridePublisherColors ?: defaults.overridePublisherColors ?: false,
             paragraphIndent = preferences.paragraphIndent ?: defaults.paragraphIndent,
             paragraphSpacing = preferences.paragraphSpacing ?: defaults.paragraphSpacing,
             readingProgression = readingProgression,
             scroll = scroll,
             textAlign = preferences.textAlign ?: defaults.textAlign,
-            textColor = preferences.textColor,
+            textColor = preferences.textColor ?: defaults.textColor ?: fallbackTheme.textColor!!,
             textNormalization = preferences.textNormalization ?: defaults.textNormalization ?: false,
-            theme = theme,
             verticalText = verticalText,
+            visitedColor = preferences.visitedColor ?: defaults.visitedLinkColor ?: fallbackTheme.visitedColor!!,
             wordSpacing = preferences.wordSpacing ?: defaults.wordSpacing
         )
     }

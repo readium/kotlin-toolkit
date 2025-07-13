@@ -6,6 +6,7 @@
 
 package org.readium.navigator.web.reflowable.preferences
 
+import org.readium.r2.navigator.preferences.Color
 import org.readium.r2.navigator.preferences.ImageFilter
 import org.readium.r2.navigator.preferences.ReadingProgression
 import org.readium.r2.navigator.preferences.TextAlign
@@ -21,6 +22,7 @@ import org.readium.r2.shared.util.Language
  */
 @ExperimentalReadiumApi
 public data class ReflowableWebDefaults(
+    val backgroundColor: Color? = null,
     val columnCount: Int? = null,
     val fontSize: Double? = null,
     val fontWeight: Double? = null,
@@ -30,12 +32,16 @@ public data class ReflowableWebDefaults(
     val letterSpacing: Double? = null,
     val ligatures: Boolean? = null,
     val lineHeight: Double? = null,
+    val linkColor: Color? = null,
+    val overridePublisherColors: Boolean? = null,
     val pageMargins: Double? = null,
     val paragraphIndent: Double? = null,
     val paragraphSpacing: Double? = null,
     val readingProgression: ReadingProgression? = null,
     val scroll: Boolean? = null,
     val textAlign: TextAlign? = null,
+    val textColor: Color? = null,
     val textNormalization: Boolean? = null,
+    val visitedLinkColor: Color? = null,
     val wordSpacing: Double? = null,
 )

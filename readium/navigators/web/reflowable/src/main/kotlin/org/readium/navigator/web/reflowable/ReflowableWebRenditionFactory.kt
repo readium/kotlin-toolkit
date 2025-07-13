@@ -7,7 +7,6 @@
 package org.readium.navigator.web.reflowable
 
 import android.app.Application
-import org.readium.navigator.web.reflowable.css.RsProperties
 import org.readium.navigator.web.reflowable.preferences.ReflowableWebDefaults
 import org.readium.navigator.web.reflowable.preferences.ReflowableWebPreferences
 import org.readium.navigator.web.reflowable.preferences.ReflowableWebPreferencesEditor
@@ -108,7 +107,6 @@ public class ReflowableWebRenditionFactory private constructor(
                 publication = renditionPublication,
                 initialSettings = initialSettings,
                 initialLocation = initialLocation,
-                rsProperties = RsProperties(),
                 configuration = configuration,
                 disableSelection = publication.isProtected
             )

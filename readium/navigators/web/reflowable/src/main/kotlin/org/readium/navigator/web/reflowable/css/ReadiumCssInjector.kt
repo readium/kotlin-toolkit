@@ -23,7 +23,6 @@ import org.readium.r2.navigator.preferences.FontFamily
 import org.readium.r2.navigator.preferences.ImageFilter
 import org.readium.r2.navigator.preferences.ReadingProgression
 import org.readium.r2.navigator.preferences.TextAlign
-import org.readium.r2.navigator.preferences.Theme
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Either
@@ -32,10 +31,10 @@ import org.readium.r2.shared.util.Url
 
 internal data class ReadiumCssInjector(
     val layout: ReadiumCssLayout = ReadiumCssLayout(language = null, ReadiumCssLayout.Stylesheets.Default, ReadingProgression.LTR),
-    val rsProperties: RsProperties = RsProperties(),
-    val userProperties: UserProperties = UserProperties(),
-    val fontFamilyDeclarations: List<FontFamilyDeclaration> = emptyList(),
-    val googleFonts: List<FontFamily> = emptyList(),
+    val rsProperties: RsProperties,
+    val userProperties: UserProperties,
+    val fontFamilyDeclarations: List<FontFamilyDeclaration>,
+    val googleFonts: List<FontFamily>,
     val assetsBaseHref: AbsoluteUrl,
     val readiumCssAssets: RelativeUrl,
 ) {
@@ -336,7 +335,11 @@ internal fun ReadiumCssInjector.withSettings(settings: ReflowableWebSettings): R
         copy(
             layout = ReadiumCssLayout.from(settings),
             rsProperties = rsProperties.copy(
-                pageGutter = Length.Px((rsProperties.pageGutter?.value ?: 20.0) * horizontalMargins)
+                pageGutter = Length.Px((rsProperties.pageGutter?.value ?: 20.0) * horizontalMargins),
+                textColor = textColor.toCss(),
+                backgroundColor = backgroundColor.toCss(),
+                linkColor = linkColor?.toCss(),
+                visitedColor = visitedColor?.toCss()
             ),
             userProperties = userProperties.copy(
                 view = when (scroll) {
@@ -344,15 +347,12 @@ internal fun ReadiumCssInjector.withSettings(settings: ReflowableWebSettings): R
                     true -> View.SCROLL
                 },
                 colCount = columnCount,
-                appearance = when (theme) {
-                    Theme.LIGHT -> null
-                    Theme.DARK -> Appearance.NIGHT
-                    Theme.SEPIA -> Appearance.SEPIA
-                },
                 darkenImages = imageFilter == ImageFilter.DARKEN,
                 invertImages = imageFilter == ImageFilter.INVERT,
-                textColor = textColor?.toCss(),
-                backgroundColor = backgroundColor?.toCss(),
+                textColor = textColor.toCss().takeIf { overridePublisherColors },
+                backgroundColor = backgroundColor.toCss().takeIf { overridePublisherColors },
+                linkColor = linkColor?.toCss().takeIf { overridePublisherColors },
+                visitedLinkColor = visitedColor?.toCss().takeIf { overridePublisherColors },
                 fontOverride = true, // we don't need this guard,
                 fontFamily = fontFamily?.toCss(),
                 fontSize = Length.Percent(fontSize),

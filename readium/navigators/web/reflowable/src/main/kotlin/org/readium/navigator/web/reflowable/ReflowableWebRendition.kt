@@ -116,10 +116,7 @@ public fun ReflowableWebRendition(
                 )
             }.toFling2DBehavior(state.layoutDelegate.orientation)
 
-            val backgroundColor = Color(
-                state.layoutDelegate.settings.backgroundColor?.int
-                    ?: state.layoutDelegate.settings.theme.backgroundColor
-            )
+            val backgroundColor = Color(state.layoutDelegate.settings.backgroundColor.int)
 
             val currentPageState = remember(state) { derivedStateOf { state.pagerState.currentPage } }
 

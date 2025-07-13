@@ -12,32 +12,33 @@ import org.readium.r2.navigator.preferences.FontFamily
 import org.readium.r2.navigator.preferences.ImageFilter
 import org.readium.r2.navigator.preferences.ReadingProgression
 import org.readium.r2.navigator.preferences.TextAlign
-import org.readium.r2.navigator.preferences.Theme
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.Language
 
 @ExperimentalReadiumApi
 public data class ReflowableWebSettings(
-    val backgroundColor: Color?,
+    val backgroundColor: Color,
     val columnCount: Int,
     val fontFamily: FontFamily?,
     val fontSize: Double,
     val fontWeight: Double?,
+    val horizontalMargins: Double,
     val hyphens: Boolean?,
     val imageFilter: ImageFilter?,
     val language: Language?,
     val letterSpacing: Double?,
     val ligatures: Boolean?,
     val lineHeight: Double?,
-    val horizontalMargins: Double,
+    val linkColor: Color,
+    val overridePublisherColors: Boolean,
     val paragraphIndent: Double?,
     val paragraphSpacing: Double?,
     val readingProgression: ReadingProgression,
     val scroll: Boolean,
     val textAlign: TextAlign?,
-    val textColor: Color?,
+    val textColor: Color,
     val textNormalization: Boolean,
-    val theme: Theme,
     val verticalText: Boolean,
+    val visitedColor: Color,
     val wordSpacing: Double?,
 ) : Settings

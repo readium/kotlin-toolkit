@@ -43,15 +43,14 @@ internal interface ReadiumCssProperties : Cssable {
  * @param view User view: paged or scrolled.
  * @param colCount The number of columns (column-count) the user wants displayed (one-page view
  * or two-page spread). To reset, change the value to auto.
- * @param appearance This flag applies a reading mode (sepia or night).
  * @param darkenImages This will only apply in night mode to darken images and impact img.
- * Requires: appearance = Appearance.Night
  * @param invertImages This will only apply in night mode to invert images and impact img.
- * Requires: appearance = Appearance.Night
  * @param textColor The color for textual contents. It impacts all elements but headings and pre
  * in the DOM. To reset, remove the CSS variable.
  * @param backgroundColor The background-color for the whole screen. To reset, remove the CSS
  * variable.
+ * @param linkColor The color for links.
+ * @param visitedLinkColor The color for visited links.
  * @param fontOverride This flag is required to change the font-family user setting.
  * @param fontFamily The typeface (font-family) the user wants to read with. It impacts body, p,
  * li, div, dt, dd and phrasing elements which don’t have a lang or xml:lang attribute. To reset,
@@ -87,13 +86,14 @@ internal data class UserProperties(
     val colCount: Int? = null,
 
     // Appearance
-    val appearance: Appearance? = null,
     val darkenImages: Boolean? = null,
     val invertImages: Boolean? = null,
 
     // Colors
     val textColor: Color? = null,
     val backgroundColor: Color? = null,
+    val linkColor: Color? = null,
+    val visitedLinkColor: Color? = null,
 
     // Typography
     val fontOverride: Boolean? = null,
@@ -126,13 +126,14 @@ internal data class UserProperties(
         putCss("--USER__colCount", colCount)
 
         // Appearance
-        putCss("--USER__appearance", appearance)
         putCss("--USER__darkenImages", flag("darken", darkenImages))
         putCss("--USER__invertImages", flag("invert", invertImages))
 
         // Colors
         putCss("--USER__textColor", textColor)
         putCss("--USER__backgroundColor", backgroundColor)
+        putCss("--USER__linkColor", textColor)
+        putCss("--USER__visitedColor", backgroundColor)
 
         // Typography
         putCss("--USER__fontOverride", flag("font", fontOverride))
@@ -170,6 +171,7 @@ internal data class UserProperties(
  * @param colCount The optimal number of columns (depending on the columns’ width).
  * @param colGap The gap between columns. You must account for this gap when scrolling.
  * @param pageGutter The horizontal page margins.
+ * @param disableVerticalPagination If pagination should be disabled with vertical text.
  * @param flowSpacing The default vertical margins for HTML5 flow content e.g. pre, figure,
  * blockquote, etc.
  * @param paraSpacing The default vertical margins for paragraphs.
@@ -218,6 +220,7 @@ internal data class RsProperties(
     val colCount: Int? = null,
     val colGap: Length.Absolute? = null,
     val pageGutter: Length.Px? = null,
+    val disableVerticalPagination: Boolean? = null,
 
     // Vertical rhythm
     val flowSpacing: Length? = null,
@@ -266,14 +269,12 @@ internal data class RsProperties(
 ) : ReadiumCssProperties {
 
     override fun toCssProperties(): Map<String, String?> = buildMap {
-        // Properties not exposed through RsProperties
-        putCss("--RS__disablePagination", flag("noVerticalPagination", true))
-
         // Pagination
         putCss("--RS__colWidth", colWidth)
         putCss("--RS__colCount", colCount)
         putCss("--RS__colGap", colGap)
         putCss("--RS__pageGutter", pageGutter)
+        putCss("--RS__disablePagination", flag("noVerticalPagination", disableVerticalPagination))
 
         // Vertical rhythm
         putCss("--RS__flowSpacing", flowSpacing)
@@ -335,16 +336,6 @@ public enum class View(private val css: String) : Cssable {
     ;
 
     override fun toCss(): String = css
-}
-
-/** Reading mode. */
-@ExperimentalReadiumApi
-public enum class Appearance(private val css: String?) : Cssable {
-    NIGHT("readium-night-on"),
-    SEPIA("readium-sepia-on"),
-    ;
-
-    override fun toCss(): String? = css
 }
 
 /** CSS color. */

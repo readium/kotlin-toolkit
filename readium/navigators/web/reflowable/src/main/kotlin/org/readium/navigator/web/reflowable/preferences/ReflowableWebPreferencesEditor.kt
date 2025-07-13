@@ -26,7 +26,6 @@ import org.readium.r2.navigator.preferences.RangePreference
 import org.readium.r2.navigator.preferences.RangePreferenceDelegate
 import org.readium.r2.navigator.preferences.ReadingProgression
 import org.readium.r2.navigator.preferences.TextAlign
-import org.readium.r2.navigator.preferences.Theme
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.publication.Metadata
@@ -71,24 +70,17 @@ public class ReflowableWebPreferencesEditor internal constructor(
     /**
      * Reset all preferences.
      */
-    @OptIn(ExperimentalReadiumApi::class)
     override fun clear() {
         updateValues { ReflowableWebPreferences() }
     }
 
     /**
      * Default background color.
-     *
-     * When unset, the current [theme] background color is effective.
      */
     public val backgroundColor: Preference<Color> =
         PreferenceDelegate(
             getValue = { preferences.backgroundColor },
-            getEffectiveValue = {
-                state.settings.backgroundColor ?: Color(
-                    (theme.value ?: theme.effectiveValue).backgroundColor
-                )
-            },
+            getEffectiveValue = { state.settings.backgroundColor },
             getIsEffective = { true },
             updateValue = { value -> updateValues { it.copy(backgroundColor = value) } }
         )
@@ -252,6 +244,39 @@ public class ReflowableWebPreferencesEditor internal constructor(
         )
 
     /**
+     * Link color.
+     */
+    public val linkColor: Preference<Color> =
+        PreferenceDelegate(
+            getValue = { preferences.linkColor },
+            getEffectiveValue = { state.settings.linkColor },
+            getIsEffective = { true },
+            updateValue = { value -> updateValues { it.copy(linkColor = value) } }
+        )
+
+    /**
+     * Normalize text styles to increase accessibility.
+     */
+    public val overridePublisherColors: Preference<Boolean> =
+        PreferenceDelegate(
+            getValue = { preferences.overridePublisherColors },
+            getEffectiveValue = { state.settings.overridePublisherColors },
+            getIsEffective = { true },
+            updateValue = { value -> updateValues { it.copy(overridePublisherColors = value) } }
+        )
+
+    /**
+     * Color for visited links.
+     */
+    public val visitedColor: Preference<Color> =
+        PreferenceDelegate(
+            getValue = { preferences.visitedColor },
+            getEffectiveValue = { state.settings.visitedColor },
+            getIsEffective = { true },
+            updateValue = { value -> updateValues { it.copy(visitedColor = value) } }
+        )
+
+    /**
      * Text indentation for paragraphs.
      *
      * Only effective when the layout is LTR or RTL.
@@ -330,17 +355,11 @@ public class ReflowableWebPreferencesEditor internal constructor(
 
     /**
      * Default page text color.
-     *
-     * When unset, the current [theme] text color is effective.
      */
     public val textColor: Preference<Color> =
         PreferenceDelegate(
             getValue = { preferences.textColor },
-            getEffectiveValue = {
-                state.settings.textColor ?: Color(
-                    (theme.value ?: theme.effectiveValue).contentColor
-                )
-            },
+            getEffectiveValue = { state.settings.textColor },
             getIsEffective = { true },
             updateValue = { value -> updateValues { it.copy(textColor = value) } }
         )
@@ -354,18 +373,6 @@ public class ReflowableWebPreferencesEditor internal constructor(
             getEffectiveValue = { state.settings.textNormalization },
             getIsEffective = { true },
             updateValue = { value -> updateValues { it.copy(textNormalization = value) } }
-        )
-
-    /**
-     * Reader theme (light, dark, sepia).
-     */
-    public val theme: EnumPreference<Theme> =
-        EnumPreferenceDelegate(
-            getValue = { preferences.theme },
-            getEffectiveValue = { state.settings.theme },
-            getIsEffective = { true },
-            updateValue = { value -> updateValues { it.copy(theme = value) } },
-            supportedValues = listOf(Theme.LIGHT, Theme.DARK, Theme.SEPIA)
         )
 
     /**
@@ -420,4 +427,27 @@ public class ReflowableWebPreferencesEditor internal constructor(
 
     private fun isTextAlignEffective() =
         state.layout.stylesheets in listOf(ReadiumCssLayout.Stylesheets.Default, ReadiumCssLayout.Stylesheets.Rtl)
+}
+
+@InternalReadiumApi
+public class BackedPreferenceDelegate<T>(
+    private val getEffectiveValue: (T?) -> T,
+    private val getIsEffective: () -> Boolean,
+    private val updatePreferences: (T?) -> Unit,
+    override val supportedValues: List<T>,
+) : EnumPreference<T> {
+
+    override var value: T? by mutableStateOf(null)
+        private set
+
+    override val effectiveValue: T
+        get() = getEffectiveValue(value)
+
+    override val isEffective: Boolean
+        get() = getIsEffective()
+
+    override fun set(value: T?) {
+        this.value = value
+        updatePreferences(value)
+    }
 }

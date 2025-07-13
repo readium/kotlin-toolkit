@@ -6,6 +6,7 @@
 
 package org.readium.navigator.web.reflowable.preferences
 
+import androidx.core.graphics.toColorInt
 import kotlinx.serialization.Serializable
 import org.readium.navigator.common.Preferences
 import org.readium.r2.navigator.preferences.*
@@ -20,13 +21,16 @@ import org.readium.r2.shared.util.Language
  * @param fontFamily Default typeface for the text.
  * @param fontSize Base text font size.
  * @param fontWeight Default boldness for the text.
+ * @param horizontalMargins Factor applied to horizontal margins.
  * @param hyphens Enable hyphenation.
  * @param imageFilter Filter applied to images in dark theme.
  * @param language Language of the publication content.
  * @param letterSpacing Space between letters.
  * @param ligatures Enable ligatures in Arabic.
  * @param lineHeight Leading line height.
- * @param horizontalMargins Factor applied to horizontal margins.
+ * @param linkColor Default link color.
+ * @param overridePublisherColors If color preferences should be applied only as a fallback or
+ *   override publisher colors.
  * @param paragraphIndent Text indentation for paragraphs.
  * @param paragraphSpacing Vertical margins for paragraphs.
  * @param readingProgression Direction of the reading progression across resources.
@@ -35,10 +39,10 @@ import org.readium.r2.shared.util.Language
  * @param textAlign Page text alignment.
  * @param textColor Default page text color.
  * @param textNormalization Normalize text styles to increase accessibility.
- * @param theme Reader theme.
  * @param verticalText Indicates whether the text should be laid out vertically. This is used
  *   for example with CJK languages. This setting is automatically derived from the language if
  *   no preference is given.
+ *   @param visitedColor Default color for visited links.
  * @param wordSpacing Space between words.
  */
 @Serializable
@@ -49,13 +53,15 @@ public data class ReflowableWebPreferences(
     val fontFamily: FontFamily? = null,
     val fontSize: Double? = null,
     val fontWeight: Double? = null,
+    val horizontalMargins: Double? = null,
     val hyphens: Boolean? = null,
     val imageFilter: ImageFilter? = null,
     val language: Language? = null,
     val letterSpacing: Double? = null,
     val ligatures: Boolean? = null,
     val lineHeight: Double? = null,
-    val horizontalMargins: Double? = null,
+    val linkColor: Color? = null,
+    val overridePublisherColors: Boolean? = null,
     val paragraphIndent: Double? = null,
     val paragraphSpacing: Double? = null,
     val readingProgression: ReadingProgression? = null,
@@ -63,8 +69,8 @@ public data class ReflowableWebPreferences(
     val textAlign: TextAlign? = null,
     val textColor: Color? = null,
     val textNormalization: Boolean? = null,
-    val theme: Theme? = null,
     val verticalText: Boolean? = null,
+    val visitedColor: Color? = null,
     val wordSpacing: Double? = null,
 ) : Preferences<ReflowableWebPreferences> {
 
@@ -86,13 +92,15 @@ public data class ReflowableWebPreferences(
             fontFamily = other.fontFamily ?: fontFamily,
             fontWeight = other.fontWeight ?: fontWeight,
             fontSize = other.fontSize ?: fontSize,
+            horizontalMargins = other.horizontalMargins ?: horizontalMargins,
             hyphens = other.hyphens ?: hyphens,
             imageFilter = other.imageFilter ?: imageFilter,
             language = other.language ?: language,
             letterSpacing = other.letterSpacing ?: letterSpacing,
             ligatures = other.ligatures ?: ligatures,
             lineHeight = other.lineHeight ?: lineHeight,
-            horizontalMargins = other.horizontalMargins ?: horizontalMargins,
+            linkColor = other.linkColor ?: linkColor,
+            overridePublisherColors = other.overridePublisherColors ?: overridePublisherColors,
             paragraphIndent = other.paragraphIndent ?: paragraphIndent,
             paragraphSpacing = other.paragraphSpacing ?: paragraphSpacing,
             readingProgression = other.readingProgression ?: readingProgression,
@@ -100,8 +108,38 @@ public data class ReflowableWebPreferences(
             textAlign = other.textAlign ?: textAlign,
             textColor = other.textColor ?: textColor,
             textNormalization = other.textNormalization ?: textNormalization,
-            theme = other.theme ?: theme,
             verticalText = other.verticalText ?: verticalText,
+            visitedColor = other.visitedColor ?: visitedColor,
             wordSpacing = other.wordSpacing ?: wordSpacing
         )
+
+    public companion object {
+
+        // https://github.com/readium/readium-css/blob/master/css/src/modules/ReadiumCSS-day_mode.css
+        public val LightTheme: ReflowableWebPreferences = ReflowableWebPreferences(
+            textColor = Color("#121212".toColorInt()),
+            backgroundColor = Color("#FFFFFF".toColorInt()),
+            linkColor = Color("#0000EE".toColorInt()),
+            visitedColor = Color("#551A8B".toColorInt()),
+            overridePublisherColors = false
+        )
+
+        // https://github.com/readium/readium-css/blob/master/css/src/modules/ReadiumCSS-sepia_mode.css
+        public val SepiaTheme: ReflowableWebPreferences = ReflowableWebPreferences(
+            textColor = Color("#121212".toColorInt()),
+            backgroundColor = Color("#faf4e8".toColorInt()),
+            linkColor = Color("#0000EE".toColorInt()),
+            visitedColor = Color("#551A8B".toColorInt()),
+            overridePublisherColors = true
+        )
+
+        // https://github.com/readium/readium-css/blob/master/css/src/modules/ReadiumCSS-night_mode.css
+        public val DarkTheme: ReflowableWebPreferences = ReflowableWebPreferences(
+            textColor = Color("#FEFEFE".toColorInt()),
+            backgroundColor = Color("#000000".toColorInt()),
+            linkColor = Color("#63caff".toColorInt()),
+            visitedColor = Color("#0099E5".toColorInt()),
+            overridePublisherColors = true
+        )
+    }
 }

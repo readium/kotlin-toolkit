@@ -40,7 +40,6 @@ import org.readium.r2.navigator.preferences.Preference
 import org.readium.r2.navigator.preferences.RangePreference
 import org.readium.r2.navigator.preferences.ReadingProgression
 import org.readium.r2.navigator.preferences.TextAlign as ReadiumTextAlign
-import org.readium.r2.navigator.preferences.Theme
 import org.readium.r2.navigator.preferences.withSupportedValues
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.Language
@@ -99,13 +98,15 @@ fun <P : Preferences<P>, S : Settings, E : PreferencesEditor<P, S>> UserPreferen
                     fontFamily = editor.fontFamily,
                     fontSize = editor.fontSize,
                     fontWeight = editor.fontWeight,
+                    horizontalMargins = editor.horizontalMargins,
                     hyphens = editor.hyphens,
                     imageFilter = editor.imageFilter,
                     language = editor.language,
                     letterSpacing = editor.letterSpacing,
                     ligatures = editor.ligatures,
                     lineHeight = editor.lineHeight,
-                    horizontalMargins = editor.horizontalMargins,
+                    linkColor = editor.linkColor,
+                    overridePublisherColors = editor.overridePublisherColors,
                     paragraphIndent = editor.paragraphIndent,
                     paragraphSpacing = editor.paragraphSpacing,
                     readingProgression = editor.readingProgression,
@@ -113,8 +114,8 @@ fun <P : Preferences<P>, S : Settings, E : PreferencesEditor<P, S>> UserPreferen
                     textAlign = editor.textAlign,
                     textColor = editor.textColor,
                     textNormalization = editor.textNormalization,
-                    theme = editor.theme,
                     verticalText = editor.verticalText,
+                    visitedColor = editor.visitedColor,
                     wordSpacing = editor.wordSpacing
                 )
         }
@@ -202,13 +203,15 @@ private fun ReflowableUserPreferences(
     fontFamily: Preference<FontFamily?>? = null,
     fontSize: RangePreference<Double>? = null,
     fontWeight: RangePreference<Double>? = null,
+    horizontalMargins: RangePreference<Double>? = null,
     hyphens: Preference<Boolean>? = null,
     imageFilter: EnumPreference<ImageFilter?>? = null,
     language: Preference<Language?>? = null,
     letterSpacing: RangePreference<Double>? = null,
     ligatures: Preference<Boolean>? = null,
     lineHeight: RangePreference<Double>? = null,
-    horizontalMargins: RangePreference<Double>? = null,
+    linkColor: Preference<Color>? = null,
+    overridePublisherColors: Preference<Boolean>? = null,
     paragraphIndent: RangePreference<Double>? = null,
     paragraphSpacing: RangePreference<Double>? = null,
     readingProgression: EnumPreference<ReadingProgression>? = null,
@@ -216,8 +219,8 @@ private fun ReflowableUserPreferences(
     textAlign: EnumPreference<ReadiumTextAlign?>? = null,
     textColor: Preference<Color>? = null,
     textNormalization: Preference<Boolean>? = null,
-    theme: EnumPreference<Theme>? = null,
     verticalText: Preference<Boolean>? = null,
+    visitedColor: Preference<Color>? = null,
     wordSpacing: RangePreference<Double>? = null,
 ) {
     if (language != null || readingProgression != null || verticalText != null) {
@@ -270,20 +273,9 @@ private fun ReflowableUserPreferences(
         Divider()
     }
 
-    if (theme != null || imageFilter != null || textColor != null || backgroundColor != null) {
-        if (theme != null) {
-            ButtonGroupItem(
-                title = "Theme",
-                preference = theme
-            ) { value ->
-                when (value) {
-                    Theme.LIGHT -> "Light"
-                    Theme.DARK -> "Dark"
-                    Theme.SEPIA -> "Sepia"
-                }
-            }
-        }
-
+    if (imageFilter != null || textColor != null || backgroundColor != null ||
+        linkColor != null || visitedColor != null
+    ) {
         if (imageFilter != null) {
             ButtonGroupItem(
                 title = "Image filter",
@@ -311,6 +303,27 @@ private fun ReflowableUserPreferences(
             )
         }
 
+        if (linkColor != null) {
+            ColorItem(
+                title = "Link color",
+                preference = linkColor
+            )
+        }
+
+        if (visitedColor != null) {
+            ColorItem(
+                title = "Visited color",
+                preference = visitedColor
+            )
+        }
+
+        if (overridePublisherColors != null) {
+            SwitchItem(
+                title = "Override Publisher Colors",
+                preference = overridePublisherColors
+            )
+        }
+
         Divider()
     }
 
@@ -324,8 +337,8 @@ private fun ReflowableUserPreferences(
                 preference = fontFamily
                     .withSupportedValues(
                         null,
-                        FontFamily.LITERATA,
                         FontFamily.SANS_SERIF,
+                        FontFamily.LITERATA,
                         FontFamily.IA_WRITER_DUOSPACE,
                         FontFamily.ACCESSIBLE_DFA,
                         FontFamily.OPEN_DYSLEXIC

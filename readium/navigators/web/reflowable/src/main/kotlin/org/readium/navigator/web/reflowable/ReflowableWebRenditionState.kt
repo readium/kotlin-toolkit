@@ -48,6 +48,7 @@ import org.readium.navigator.web.internals.webapi.ReflowableSelectionApi
 import org.readium.navigator.web.internals.webview.WebViewScrollController
 import org.readium.navigator.web.reflowable.css.ReadiumCssInjector
 import org.readium.navigator.web.reflowable.css.RsProperties
+import org.readium.navigator.web.reflowable.css.UserProperties
 import org.readium.navigator.web.reflowable.css.withSettings
 import org.readium.navigator.web.reflowable.injection.injectHtmlReflowable
 import org.readium.navigator.web.reflowable.preferences.ReflowableWebSettings
@@ -74,7 +75,6 @@ public class ReflowableWebRenditionState internal constructor(
     internal val publication: ReflowableWebPublication,
     initialSettings: ReflowableWebSettings,
     initialLocation: ReflowableWebGoLocation,
-    private val rsProperties: RsProperties,
     configuration: ReflowableWebConfiguration,
     disableSelection: Boolean,
 ) : RenditionState<ReflowableWebRenditionController> {
@@ -152,7 +152,9 @@ public class ReflowableWebRenditionState internal constructor(
             ReadiumCssInjector(
                 assetsBaseHref = assetsBaseHref,
                 readiumCssAssets = RelativeUrl("readium/navigator/web/internals/generated/readium-css/")!!,
-                rsProperties = rsProperties,
+                rsProperties = RsProperties(disableVerticalPagination = true),
+                userProperties = UserProperties(),
+                googleFonts = emptyList(),
                 fontFamilyDeclarations = fontFamilyDeclarations
             ).withSettings(
                 settings = layoutDelegate.settings,
