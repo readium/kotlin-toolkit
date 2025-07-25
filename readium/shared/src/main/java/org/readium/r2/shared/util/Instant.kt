@@ -1,10 +1,10 @@
-@file:OptIn(InternalReadiumApi::class)
+@file:OptIn(InternalReadiumApi::class, kotlin.time.ExperimentalTime::class)
 
 package org.readium.r2.shared.util
 
 import android.os.Parcel
 import android.os.Parcelable
-import kotlinx.datetime.Clock
+import kotlin.time.Clock
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
@@ -25,14 +25,16 @@ import kotlinx.serialization.encoding.Encoder
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.extensions.tryOrNull
 
+private typealias KotlinInstant = kotlin.time.Instant
+
 /**
  * A moment in time.
  */
 @Parcelize
-@TypeParceler<kotlinx.datetime.Instant, InstantParceler>()
+@TypeParceler<KotlinInstant, InstantParceler>()
 @Serializable(with = InstantSerializer::class)
 public class Instant private constructor(
-    private val value: kotlinx.datetime.Instant,
+    private val value: KotlinInstant,
 ) : Parcelable, Comparable<Instant> {
     public companion object {
         /**
@@ -41,20 +43,20 @@ public class Instant private constructor(
          * Returns null if it can't be parsed.
          */
         public fun parse(input: String): Instant? {
-            val instant = tryOrNull { kotlinx.datetime.Instant.parse(input) }
+            val instant = tryOrNull { KotlinInstant.parse(input) }
                 ?: tryOrNull { LocalDateTime.parse(input).toInstant(TimeZone.UTC) }
                 ?: tryOrNull { LocalDate.parse(input).atStartOfDayIn(TimeZone.UTC) }
 
             return instant?.let { Instant(it) }
         }
 
-        public fun fromKotlinInstant(value: kotlinx.datetime.Instant): Instant = Instant(value)
+        public fun fromKotlinInstant(value: KotlinInstant): Instant = Instant(value)
 
         public fun fromJavaDate(date: java.util.Date): Instant =
-            Instant(kotlinx.datetime.Instant.fromEpochMilliseconds(date.time))
+            Instant(KotlinInstant.fromEpochMilliseconds(date.time))
 
         public fun fromEpochMilliseconds(milliseconds: Long): Instant =
-            Instant(kotlinx.datetime.Instant.fromEpochMilliseconds(milliseconds))
+            Instant(KotlinInstant.fromEpochMilliseconds(milliseconds))
 
         /**
          * Returns an [Instant] representing the current moment in time.
@@ -62,7 +64,7 @@ public class Instant private constructor(
         public fun now(): Instant = Instant(Clock.System.now())
     }
 
-    public fun toKotlinInstant(): kotlinx.datetime.Instant = value
+    public fun toKotlinInstant(): KotlinInstant = value
 
     public fun toJavaDate(): java.util.Date = java.util.Date(value.toEpochMilliseconds())
 
@@ -83,12 +85,12 @@ public class Instant private constructor(
 }
 
 @InternalReadiumApi
-private object InstantParceler : Parceler<kotlinx.datetime.Instant> {
+private object InstantParceler : Parceler<KotlinInstant> {
 
-    override fun create(parcel: Parcel): kotlinx.datetime.Instant =
-        kotlinx.datetime.Instant.fromEpochMilliseconds(parcel.readLong())
+    override fun create(parcel: Parcel): KotlinInstant =
+        KotlinInstant.fromEpochMilliseconds(parcel.readLong())
 
-    override fun kotlinx.datetime.Instant.write(parcel: Parcel, flags: Int) {
+    override fun KotlinInstant.write(parcel: Parcel, flags: Int) {
         parcel.writeLong(toEpochMilliseconds())
     }
 }
