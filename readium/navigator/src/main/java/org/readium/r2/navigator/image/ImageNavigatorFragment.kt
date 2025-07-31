@@ -15,7 +15,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentFactory
-import androidx.viewpager.widget.ViewPager
+import androidx.viewpager2.widget.ViewPager2
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -106,7 +106,7 @@ public class ImageNavigatorFragment private constructor(
 
         positions = runBlocking { publication.positions() }
 
-        resourcePager.addOnPageChangeListener(object : ViewPager.SimpleOnPageChangeListener() {
+        resourcePager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
             override fun onPageSelected(position: Int) {
                 notifyCurrentLocation()
             }
@@ -114,20 +114,20 @@ public class ImageNavigatorFragment private constructor(
 
         val resources = publication.readingOrder
             .map { R2PagerAdapter.PageResource.Cbz(it) }
-        adapter = R2PagerAdapter(childFragmentManager, resources)
+        adapter = R2PagerAdapter(this, resources)
 
-        resourcePager.adapter = adapter
+        resourcePager.setAdapter(adapter)
 
         if (currentPagerPosition == 0) {
             if (requireActivity().layoutDirectionIsRTL()) {
                 // The view has RTL layout
-                resourcePager.currentItem = resources.size - 1
+                resourcePager.setCurrentItem(resources.size - 1, false)
             } else {
                 // The view has LTR layout
-                resourcePager.currentItem = currentPagerPosition
+                resourcePager.setCurrentItem(currentPagerPosition, false)
             }
         } else {
-            resourcePager.currentItem = currentPagerPosition
+            resourcePager.setCurrentItem(currentPagerPosition, false)
         }
 
         if (initialLocator != null) {
@@ -175,7 +175,7 @@ public class ImageNavigatorFragment private constructor(
 
         listener?.onJumpToLocator(locator)
         currentPagerPosition = resourceIndex
-        resourcePager.currentItem = currentPagerPosition
+        resourcePager.setCurrentItem(currentPagerPosition, false)
 
         return true
     }
@@ -187,13 +187,7 @@ public class ImageNavigatorFragment private constructor(
 
     override fun goForward(animated: Boolean): Boolean {
         val current = resourcePager.currentItem
-        if (requireActivity().layoutDirectionIsRTL()) {
-            // The view has RTL layout
-            resourcePager.currentItem = current - 1
-        } else {
-            // The view has LTR layout
-            resourcePager.currentItem = current + 1
-        }
+        resourcePager.setCurrentItem(current + 1, false)
 
         notifyCurrentLocation()
         return current != resourcePager.currentItem
@@ -201,13 +195,7 @@ public class ImageNavigatorFragment private constructor(
 
     override fun goBackward(animated: Boolean): Boolean {
         val current = resourcePager.currentItem
-        if (requireActivity().layoutDirectionIsRTL()) {
-            // The view has RTL layout
-            resourcePager.currentItem = current + 1
-        } else {
-            // The view has LTR layout
-            resourcePager.currentItem = current - 1
-        }
+        resourcePager.setCurrentItem(current - 1, false)
 
         notifyCurrentLocation()
         return current != resourcePager.currentItem

@@ -31,7 +31,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.lifecycle.withStarted
-import androidx.viewpager.widget.ViewPager
+import androidx.viewpager2.widget.ViewPager2
 import kotlin.math.ceil
 import kotlin.reflect.KClass
 import kotlinx.coroutines.Job
@@ -425,7 +425,7 @@ public class EpubNavigatorFragment internal constructor(
             "The parent view of the EPUB `resourcePager` must be a ConstraintLayout"
         }
         // We need to null out the adapter explicitly, otherwise the page fragments will leak.
-        resourcePager.adapter = null
+        resourcePager.setAdapter(null)
         parent.removeView(resourcePager)
 
         resourcePager = R2ViewPager(requireContext())
@@ -434,17 +434,96 @@ public class EpubNavigatorFragment internal constructor(
             EpubLayout.REFLOWABLE, null -> R2ViewPager.PublicationType.EPUB
             EpubLayout.FIXED -> R2ViewPager.PublicationType.FXL
         }
+
+        // Configure ViewPager orientation based on scroll settings
+        if (viewModel.layout == EpubLayout.REFLOWABLE && viewModel.settings.value.scroll) {
+            resourcePager.configureForVerticalScrolling()
+        } else {
+            resourcePager.configureForHorizontalPaging()
+        }
+
         resourcePager.setBackgroundColor(viewModel.settings.value.effectiveBackgroundColor)
         // Let the page views handle the keyboard events.
         resourcePager.isFocusable = false
-        resourcePager.addOnPageChangeListener(PageChangeListener())
+        resourcePager.registerOnPageChangeCallback(PageChangeListener())
+
+        // Set proper ConstraintLayout parameters
+        val layoutParams = ConstraintLayout.LayoutParams(
+            ConstraintLayout.LayoutParams.MATCH_CONSTRAINT,
+            ConstraintLayout.LayoutParams.MATCH_CONSTRAINT
+        ).apply {
+            topToTop = ConstraintLayout.LayoutParams.PARENT_ID
+            bottomToBottom = ConstraintLayout.LayoutParams.PARENT_ID
+            startToStart = ConstraintLayout.LayoutParams.PARENT_ID
+            endToEnd = ConstraintLayout.LayoutParams.PARENT_ID
+        }
+        resourcePager.layoutParams = layoutParams
 
         parent.addView(resourcePager)
 
         resetResourcePagerAdapter()
     }
 
-    private inner class PageChangeListener : ViewPager.SimpleOnPageChangeListener() {
+    private inner class PageChangeListener : ViewPager2.OnPageChangeCallback() {
+        private var hasPresetScrollPosition = false
+
+        override fun onPageScrollStateChanged(state: Int) {
+            when (state) {
+                ViewPager2.SCROLL_STATE_IDLE -> {
+                    // Reset flag when swipe ends
+                    hasPresetScrollPosition = false
+                }
+                else -> Unit
+            }
+        }
+
+        override fun onPageScrolled(
+            position: Int,
+            positionOffset: Float,
+            positionOffsetPixels: Int,
+        ) {
+            // Only process when swipe has started and scroll position hasn't been set yet
+            if (positionOffset > 0f && !hasPresetScrollPosition) {
+                val currentPosition = resourcePager.currentItem
+
+                // When swiping to previous page (position is less than current)
+                if (position < currentPosition) {
+                    // Find target page fragment and set to last page
+                    val targetFragment = fragmentAt(position) as? R2EpubPageFragment
+                    targetFragment?.webView?.let { webView ->
+                        if (viewModel.isScrollEnabled.value) {
+                            webView.scrollToEnd()
+                        } else if (webView.numPages > 1) {
+                            if (resourcePager.isRtl()) {
+                                webView.setCurrentItem(0, false)
+                            } else {
+                                webView.setCurrentItem(webView.numPages - 1, false)
+                            }
+                        }
+                    }
+                    hasPresetScrollPosition = true
+                }
+                // When swiping to next page (position + 1 is greater than current)
+                else if (position + 1 > currentPosition) {
+                    // Find target page fragment and set to first page
+                    val targetFragment = fragmentAt(position + 1) as? R2EpubPageFragment
+                    targetFragment?.webView?.let { webView ->
+                        if (viewModel.isScrollEnabled.value) {
+                            webView.scrollToStart()
+                        } else if (webView.numPages > 1) {
+                            if (resourcePager.isRtl()) {
+                                webView.setCurrentItem(webView.numPages - 1, false)
+                            } else {
+                                webView.setCurrentItem(0, false)
+                            }
+                        }
+                    }
+
+                    hasPresetScrollPosition = true
+                }
+            }
+        }
+
         override fun onPageSelected(position: Int) {
             currentReflowablePageFragment?.webView?.let { webView ->
                 if (viewModel.isScrollEnabled.value) {
@@ -456,16 +535,17 @@ public class EpubNavigatorFragment internal constructor(
                         webView.scrollToEnd()
                     }
                 } else {
-                    if (currentPagerPosition < position) {
-                        // handle swipe LEFT
-                        webView.setCurrentItem(0, false)
-                    } else if (currentPagerPosition > position) {
-                        // handle swipe RIGHT
-                        webView.setCurrentItem(webView.numPages - 1, false)
+                    if (!hasPresetScrollPosition) {
+                        if (currentPagerPosition < position) {
+                            webView.setCurrentItem(0, false)
+                        } else if (currentPagerPosition > position) {
+                            webView.setCurrentItem(webView.numPages - 1, false)
+                        }
                     }
                 }
             }
-            currentPagerPosition = position // Update current position
+
+            currentPagerPosition = position
 
             notifyCurrentLocation()
         }
@@ -474,23 +554,23 @@ public class EpubNavigatorFragment internal constructor(
     private fun resetResourcePagerAdapter() {
         adapter = when (publication.metadata.presentation.layout) {
             EpubLayout.REFLOWABLE, null -> {
-                R2PagerAdapter(childFragmentManager, resourcesSingle)
+                R2PagerAdapter(this, resourcesSingle)
             }
             EpubLayout.FIXED -> {
                 when (viewModel.dualPageMode) {
                     // FIXME: Properly implement DualPage.AUTO depending on the device orientation.
                     DualPage.OFF, DualPage.AUTO -> {
-                        R2PagerAdapter(childFragmentManager, resourcesSingle)
+                        R2PagerAdapter(this, resourcesSingle)
                     }
                     DualPage.ON -> {
-                        R2PagerAdapter(childFragmentManager, resourcesDouble)
+                        R2PagerAdapter(this, resourcesDouble)
                     }
                 }
             }
         }
         adapter.listener = PagerAdapterListener()
-        resourcePager.adapter = adapter
-        resourcePager.direction = overflow.value.readingProgression
+        resourcePager.setAdapter(adapter)
+        resourcePager.readingProgression = overflow.value.readingProgression
         resourcePager.layoutDirection = when (settings.value.readingProgression) {
             ReadingProgression.RTL -> LayoutDirection.RTL
             ReadingProgression.LTR -> LayoutDirection.LTR
@@ -625,11 +705,13 @@ public class EpubNavigatorFragment internal constructor(
                     else -> false
                 }
             } ?: return
+
             val (index, _) = page
 
             if (resourcePager.currentItem != index) {
-                resourcePager.currentItem = index
+                resourcePager.setCurrentItem(index, false)
             }
+
             r2PagerAdapter?.loadLocatorAt(index, locator)
         }
 
@@ -903,7 +985,7 @@ public class EpubNavigatorFragment internal constructor(
 
     private fun goToNextResource(jump: Boolean, animated: Boolean): Boolean {
         val adapter = resourcePager.adapter ?: return false
-        if (resourcePager.currentItem >= adapter.count - 1) {
+        if (resourcePager.currentItem >= adapter.itemCount - 1) {
             return false
         }
 
