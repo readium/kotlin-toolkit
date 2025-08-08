@@ -6,33 +6,26 @@
 
 package org.readium.navigator.common
 
-import androidx.compose.runtime.State
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.Url
 
+/**
+ * This controller enables to navigate through a publication and reports the current location.
+ */
 @ExperimentalReadiumApi
-public interface NavigationController<L : Location, G : GoLocation> {
+public interface NavigationController<L : ExportableLocation, G : GoLocation> {
 
-    public val location: State<L>
+    public val location: L
 
     public suspend fun goTo(location: G)
 
     public suspend fun goTo(location: L)
 
-    public suspend fun goTo(location: HyperlinkLocation)
-}
-
-/**
- *  Location of the navigator.
- */
-@ExperimentalReadiumApi
-public interface Location {
-
-    public val href: Url
+    public suspend fun goTo(url: Url)
 }
 
 /**
  * Location the navigator can go to.
  */
 @ExperimentalReadiumApi
-public interface GoLocation
+public interface GoLocation : Location

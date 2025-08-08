@@ -1,5 +1,5 @@
 SCRIPTS_PATH := readium/navigator/src/main/assets/_scripts
-SCRIPTS_NAVIGATOR_WEB_PATH := readium/navigators/web/scripts
+SCRIPTS_NAVIGATOR_WEB_PATH := readium/navigators/web/internals/scripts
 
 help:
 	@echo "Usage: make <target>\n\n\
@@ -38,7 +38,8 @@ scripts-new:
 	pnpm run format; \
 	pnpm run lint; \
 	pnpm run bundle; \
-	mv dist/* ../src/main/assets/readium/navigators/web/
+	rm -r ../src/main/assets/readium/navigator/web/internals/generated/*; \
+	mv dist/* ../src/main/assets/readium/navigator/web/internals/generated/
 
 .PHONY: scripts
 scripts: scripts-legacy scripts-new
