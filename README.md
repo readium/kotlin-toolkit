@@ -85,7 +85,7 @@ Guides are available to help you make the most of the toolkit.
 
 | Readium   | Android min SDK | Android compile SDK | Kotlin compiler (✻) | Gradle (✻) |
 |-----------|-----------------|---------------------|---------------------|------------|
-| `develop` | 21              | 35                  | 2.1.20              | 8.13       |
+| `develop` | 21              | 36                  | 2.1.21              | 8.14.1     |
 | 3.1.0     | 21              | 35                  | 2.1.20              | 8.13       |
 | 3.0.0     | 21              | 34                  | 1.9.24              | 8.6.0      |
 | 2.3.0     | 21              | 33                  | 1.7.10              | 6.9.3      |

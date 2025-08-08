@@ -10,6 +10,7 @@ package org.readium.r2.streamer.parser.readium
 
 import android.content.Context
 import org.readium.r2.shared.DelicateReadiumApi
+import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.publication.Manifest
 import org.readium.r2.shared.publication.Publication
@@ -17,8 +18,13 @@ import org.readium.r2.shared.publication.services.InMemoryCacheService
 import org.readium.r2.shared.publication.services.PerResourcePositionsService
 import org.readium.r2.shared.publication.services.WebPositionsService
 import org.readium.r2.shared.publication.services.cacheServiceFactory
+import org.readium.r2.shared.publication.services.content.DefaultContentService
+import org.readium.r2.shared.publication.services.content.contentServiceFactory
+import org.readium.r2.shared.publication.services.content.iterators.HtmlResourceContentIterator
 import org.readium.r2.shared.publication.services.locatorServiceFactory
 import org.readium.r2.shared.publication.services.positionsServiceFactory
+import org.readium.r2.shared.publication.services.search.StringSearchService
+import org.readium.r2.shared.publication.services.search.searchServiceFactory
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.DebugError
 import org.readium.r2.shared.util.Try
@@ -52,6 +58,7 @@ import timber.log.Timber
  * of positions in a reflowable resource of a web publication conforming to the
  * EPUB profile.
  */
+@OptIn(ExperimentalReadiumApi::class)
 public class ReadiumWebPubParser(
     private val context: Context? = null,
     private val httpClient: HttpClient,
@@ -114,6 +121,16 @@ public class ReadiumWebPubParser(
                     AudioLocatorService.createFactory()
                 else ->
                     null
+            }
+
+            // Add content- and search-service for WebPubs with HTML contents.
+            if (manifest.readingOrder.any { it.mediaType?.isHtml == true }) {
+                contentServiceFactory = DefaultContentService.createFactory(
+                    resourceContentIteratorFactories = listOf(
+                        HtmlResourceContentIterator.Factory()
+                    )
+                )
+                searchServiceFactory = StringSearchService.createDefaultFactory()
             }
         }
 

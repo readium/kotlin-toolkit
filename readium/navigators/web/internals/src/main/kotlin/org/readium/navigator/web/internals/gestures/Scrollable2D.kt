@@ -35,10 +35,10 @@ import androidx.compose.foundation.MutatePriority
 import androidx.compose.foundation.OverscrollEffect
 import androidx.compose.foundation.gestures.FlingBehavior
 import androidx.compose.foundation.gestures.Orientation
-import androidx.compose.foundation.gestures.ScrollableDefaults
 import androidx.compose.foundation.gestures.draggable2D
 import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.rememberOverscrollEffect
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.remember
@@ -510,8 +510,8 @@ public object Scrollable2DDefaults {
      */
     @Composable
     @ExperimentalFoundationApi
-    public fun overscrollEffect(): OverscrollEffect {
-        return ScrollableDefaults.overscrollEffect()
+    public fun overscrollEffect(): OverscrollEffect? {
+        return rememberOverscrollEffect()
     }
 
     /**
