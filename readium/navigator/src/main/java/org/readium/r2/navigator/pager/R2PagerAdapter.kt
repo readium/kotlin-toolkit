@@ -40,14 +40,6 @@ internal class R2PagerAdapter internal constructor(
         data class Cbz(val link: Link) : PageResource()
     }
 
-    private var currentFragment: Fragment? = null
-    private var previousFragment: Fragment? = null
-    private var nextFragment: Fragment? = null
-
-    fun getCurrentFragment(): Fragment? = currentFragment
-    fun getPreviousFragment(): Fragment? = previousFragment
-    fun getNextFragment(): Fragment? = nextFragment
-
     internal fun getResource(position: Int): PageResource? = resources.getOrNull(position)
 
     override fun getItem(position: Int): Fragment {
