@@ -387,13 +387,6 @@ internal class R2EpubPageFragment : Fragment() {
     }
 
     internal val paddingTop: Int get() = containerView.paddingTop
-    internal val paddingBottom: Int get() = containerView.paddingBottom
-
-    private val isCurrentResource: Boolean get() {
-        val epubNavigator = navigator ?: return false
-        val currentFragment = (epubNavigator.resourcePager.adapter as? R2PagerAdapter)?.getCurrentFragment() as? R2EpubPageFragment ?: return false
-        return tag == currentFragment.tag
-    }
 
     private fun onLoadPage() {
         if (!isLoading) return
