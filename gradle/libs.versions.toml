@@ -56,9 +56,9 @@ ksp = "2.1.21-2.0.1"
 
 ktlint = "12.1.1"
 
-# We cannot upgrade to 1.9.0 as it conflicts with liblcp.
-# See https://github.com/readium/kotlin-toolkit/issues/29
 #noinspection GradleDependency
+pdfium = "1.9.8"
+pdf-viewer = "3.2.8"
 picasso = "2.8"
 pspdfkit = "8.4.1"
 
@@ -122,6 +122,8 @@ kotlinx-datetime = { group = "org.jetbrains.kotlinx", name = "kotlinx-datetime",
 kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinx-serialization-json" }
 kotlinx-collections-immutable = { group = "org.jetbrains.kotlinx", name = "kotlinx-collections-immutable", version.ref = "kotlinx-collections-immutable" }
 
+pdfium = { group = "com.github.marain87", name = "PdfiumAndroid", version.ref = "pdfium" }
+pdfviewer = { group = "com.github.marain87", name = "AndroidPdfViewer", version.ref = "pdf-viewer" }
 picasso = { group = "com.squareup.picasso", name = "picasso", version.ref = "picasso" }
 pspdfkit = { group = "com.pspdfkit", name = "pspdfkit", version.ref ="pspdfkit" }
 
