@@ -446,25 +446,33 @@ public class EpubNavigatorFragment internal constructor(
 
     private inner class PageChangeListener : ViewPager.SimpleOnPageChangeListener() {
         override fun onPageSelected(position: Int) {
+            android.util.Log.d("EPUB_SECTION_NAV", "onPageSelected: position=$position, currentPagerPosition=$currentPagerPosition")
             currentReflowablePageFragment?.webView?.let { webView ->
-                if (viewModel.isScrollEnabled.value) {
-                    if (currentPagerPosition < position) {
-                        // handle swipe LEFT
+                android.util.Log.d("EPUB_SECTION_NAV", "WebView available: numPages=${webView.numPages}, scrollEnabled=${viewModel.isScrollEnabled.value}")
+                if (currentPagerPosition < position) {
+                    // handle swipe LEFT (次のセクション) → 先頭ページに移動
+                    android.util.Log.d("EPUB_SECTION_NAV", "Moving to NEXT section -> setting to page 0")
+                    if (viewModel.isScrollEnabled.value) {
                         webView.scrollToStart()
-                    } else if (currentPagerPosition > position) {
-                        // handle swipe RIGHT
-                        webView.scrollToEnd()
-                    }
-                } else {
-                    if (currentPagerPosition < position) {
-                        // handle swipe LEFT
+                    } else {
                         webView.setCurrentItem(0, false)
-                    } else if (currentPagerPosition > position) {
-                        // handle swipe RIGHT
-                        webView.setCurrentItem(webView.numPages - 1, false)
+                    }
+                } else if (currentPagerPosition > position) {
+                    // handle swipe RIGHT (前のセクション) → 最後のページに移動
+                    val lastPage = webView.numPages - 1
+                    android.util.Log.d("EPUB_SECTION_NAV", "Moving to PREVIOUS section -> numPages=${webView.numPages}, lastPage=$lastPage")
+                    if (webView.numPages > 1) {
+                        android.util.Log.d("EPUB_SECTION_NAV", "Setting to last page $lastPage with delay")
+                        // WebViewの準備完了を待つため、少し遅延させる
+                        webView.postDelayed({
+                            android.util.Log.d("EPUB_SECTION_NAV", "Delayed execution: Setting to last page $lastPage")
+                            webView.setCurrentItem(lastPage, false)
+                        }, 100)
+                    } else {
+                        android.util.Log.d("EPUB_SECTION_NAV", "Only 1 page, staying at page 0")
                     }
                 }
-            }
+            } ?: android.util.Log.d("EPUB_SECTION_NAV", "WebView not available")
             currentPagerPosition = position // Update current position
 
             notifyCurrentLocation()
@@ -913,19 +921,13 @@ public class EpubNavigatorFragment internal constructor(
 
         resourcePager.setCurrentItem(resourcePager.currentItem + 1, animated)
 
-        currentReflowablePageFragment?.webView?.let { webView ->
-            if (settings.value.readingProgression == ReadingProgression.RTL) {
-                webView.setCurrentItem(webView.numPages - 1, false)
-            } else {
-                webView.setCurrentItem(0, false)
-            }
-        }
-
         return true
     }
 
     private fun goToPreviousResource(jump: Boolean, animated: Boolean): Boolean {
+        android.util.Log.d("EPUB_SECTION_NAV", "goToPreviousResource called: jump=$jump, animated=$animated, currentItem=${resourcePager.currentItem}")
         if (resourcePager.currentItem <= 0) {
+            android.util.Log.d("EPUB_SECTION_NAV", "Already at first resource, cannot go back")
             return false
         }
 
@@ -933,15 +935,8 @@ public class EpubNavigatorFragment internal constructor(
             locatorToPreviousResource()?.let { listener?.onJumpToLocator(it) }
         }
 
+        android.util.Log.d("EPUB_SECTION_NAV", "Setting resource pager to item ${resourcePager.currentItem - 1}")
         resourcePager.setCurrentItem(resourcePager.currentItem - 1, animated)
-
-        currentReflowablePageFragment?.webView?.let { webView ->
-            if (settings.value.readingProgression == ReadingProgression.RTL) {
-                webView.setCurrentItem(0, false)
-            } else {
-                webView.setCurrentItem(webView.numPages - 1, false)
-            }
-        }
 
         return true
     }

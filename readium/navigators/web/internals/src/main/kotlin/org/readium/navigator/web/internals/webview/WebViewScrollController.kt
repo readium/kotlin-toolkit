@@ -43,6 +43,32 @@ public class WebViewScrollController(
     public val canMoveBottom: Boolean
         get() = webView.maxScrollY - webView.scrollY > webView.width / 2 == true
 
+    public fun moveLeft(pageExtent: Int, axisVertical: Boolean) {
+        if (!axisVertical) {
+            val x = (webView.scrollX - pageExtent).fastCoerceAtLeast(0)
+            android.util.Log.d("WebViewScrollController", "moveLeft(H) - extent=$pageExtent, scrollX=${webView.scrollX}")
+            webView.scrollTo(x, webView.scrollY)
+        } else {
+            // 左スワイプ＝前ページだが、縦軸では上方向へ移動
+            val y = (webView.scrollY - pageExtent).fastCoerceAtLeast(0)
+            android.util.Log.d("WebViewScrollController", "moveLeft(V) - extent=$pageExtent, scrollY=${webView.scrollY}")
+            webView.scrollTo(webView.scrollX, y)
+        }
+    }
+
+    public fun moveRight(pageExtent: Int, axisVertical: Boolean) {
+        if (!axisVertical) {
+            val x = webView.scrollX + pageExtent
+            android.util.Log.d("WebViewScrollController", "moveRight(H) - extent=$pageExtent, scrollX=${webView.scrollX}")
+            webView.scrollTo(x, webView.scrollY)
+        } else {
+            // 右スワイプ＝次ページだが、縦軸では下方向へ移動
+            val y = webView.scrollY + pageExtent
+            android.util.Log.d("WebViewScrollController", "moveRight(V) - extent=$pageExtent, scrollY=${webView.scrollY}")
+            webView.scrollTo(webView.scrollX, y)
+        }
+    }
+
     public fun moveLeft() {
         webView.scrollBy(-webView.width, 0)
     }
@@ -57,6 +83,17 @@ public class WebViewScrollController(
 
     public fun moveBottom() {
         webView.scrollBy(0, webView.width)
+    }
+
+    public fun scrollByAxisAware(delta: Offset, axisVertical: Boolean): Offset {
+        val (dx, dy) = if (!axisVertical) {
+            delta.x.roundToInt() to delta.y.roundToInt()
+        } else {
+            // 横スワイプ量（-x）を縦スクロール量（+y）へマッピング
+            0 to (-delta.x).roundToInt()
+        }
+        android.util.Log.d("WebViewScrollController", "scrollBy(axisAware=$axisVertical) - in=$delta, applied=($dx,$dy), scrollX=${webView.scrollX}, scrollY=${webView.scrollY}")
+        return webView.scrollBy(Offset(dx.toFloat(), dy.toFloat()))
     }
 
     public fun scrollBy(delta: Offset): Offset {

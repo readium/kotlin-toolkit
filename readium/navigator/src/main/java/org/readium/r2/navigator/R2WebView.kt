@@ -36,6 +36,18 @@ import timber.log.Timber
 
 internal class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context, attrs) {
 
+    enum class PageAxis { HORIZONTAL, VERTICAL }
+
+    // writing-mode によって決まる現在のスクロール軸
+    @Volatile
+    private var pageAxis: PageAxis = PageAxis.HORIZONTAL
+
+    // ページ寸法/レンジを軸非依存で扱うための構造体
+    data class PageMetrics(
+        val extent: Int,      // 1ページのピクセル幅（H）または高さ（V）
+        val scrollRange: Int  // 全体スクロール量（X または Y）
+    )
+
     init {
         initWebPager()
     }
@@ -302,6 +314,41 @@ internal class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView
         mScrollState = newState
     }
 
+    /** 軸依存でページ寸法を返す（従来の getClientWidth を一般化） */
+    fun getClientExtent(): PageMetrics {
+        return if (pageAxis == PageAxis.HORIZONTAL) {
+            val extent = computeHorizontalScrollExtent()
+            val range = computeHorizontalScrollRange()
+            PageMetrics(extent, range)
+        } else {
+            val extent = computeVerticalScrollExtent()
+            val range = computeVerticalScrollRange()
+            PageMetrics(extent, range)
+        }
+    }
+
+
+    /** JS から writing-mode を取得して axis を更新 */
+    fun syncWritingMode() {
+        val js = """
+            (function() {
+              const el = document.documentElement || document.body;
+              const cs = getComputedStyle(el);
+              const wm = (cs.writingMode || cs['-webkit-writing-mode'] || '').toString();
+              console.log('EPUB_SYNC_WM: detected writingMode = ' + wm);
+              // vertical-rl / vertical-lr 等をまとめて縦扱い
+              return /vertical-/.test(wm) ? 'vertical' : 'horizontal';
+            })();
+        """.trimIndent()
+        evaluateJavascript(js) { result ->
+            // JavaScriptの結果は '"vertical"' や '"horizontal"' のようにクォートされている
+            val cleanResult = result?.replace("\"", "")
+            val isVertical = cleanResult?.contains("vertical") == true
+            val newAxis = if (isVertical) PageAxis.VERTICAL else PageAxis.HORIZONTAL
+            pageAxis = newAxis
+        }
+    }
+
     /**
      * @return: Int - Returns the horizontal scrolling value to be scrolled by the webview.
      * Does not return the device width minus the padding because the value returned by [getContentWidth]
@@ -311,16 +358,16 @@ internal class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView
      * It will instead add a portion of the remaining pixels to the value returned, so that columns will not be
      * misaligned.
      */
-    private fun getClientWidth(): Int? =
-        computeHorizontalScrollExtent()
-            // The client width is used in divisions, so it's only valid when above 0.
-            .takeIf { it > 0 }
 
     internal fun updateCurrentItem() {
-        val clientWidth = getClientWidth()
-        if (!scrollMode && !mIsBeingDragged && clientWidth != null) {
-            // Sometimes scrollX is not exactly a multiple of clientWidth, so we need to round the result.
-            mCurItem = (scrollX.toDouble() / clientWidth.toDouble()).roundToInt()
+        val metrics = getClientExtent()
+        if (!scrollMode && !mIsBeingDragged && metrics.extent > 0) {
+            // Sometimes scroll position is not exactly a multiple of extent, so we need to round the result.
+            mCurItem = if (pageAxis == PageAxis.HORIZONTAL) {
+                (scrollX.toDouble() / metrics.extent.toDouble()).roundToInt()
+            } else {
+                (scrollY.toDouble() / metrics.extent.toDouble()).roundToInt()
+            }
         }
     }
 
@@ -331,6 +378,7 @@ internal class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView
      * @param smoothScroll True to smoothly scroll to the new item, false to transition immediately
      */
     fun setCurrentItem(item: Int, smoothScroll: Boolean) {
+        android.util.Log.d("EPUB_SECTION_NAV", "R2WebView.setCurrentItem called: item=$item, smoothScroll=$smoothScroll, numPages=$numPages, currentItem=$mCurItem, axis=$pageAxis")
         setCurrentItemInternal(item, smoothScroll)
     }
 
@@ -339,27 +387,62 @@ internal class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView
     }
 
     private fun setCurrentItemInternal(item: Int, smoothScroll: Boolean, velocity: Int) {
+        android.util.Log.d("EPUB_SECTION_NAV", "setCurrentItemInternal: item=$item, mFirstLayout=$mFirstLayout, mCurItem=$mCurItem")
         if (mFirstLayout) {
             // We don't have any idea how big we are yet and shouldn't have any pages either.
             // Just set things up and let the pending layout handle things.
+            android.util.Log.d("EPUB_SECTION_NAV", "First layout - setting mCurItem=$item and requesting layout")
             mCurItem = item
             requestLayout()
         } else {
+            android.util.Log.d("EPUB_SECTION_NAV", "Normal layout - setting mCurItem=$item and calling scrollToItem")
             mCurItem = item
             scrollToItem(item, smoothScroll, velocity, true)
         }
     }
 
-    private fun scrollToItem(item: Int, smoothScroll: Boolean, velocity: Int, post: Boolean) {
-        val width = getClientWidth() ?: return
-
-        val destX = (width * item)
-        if (smoothScroll) {
-            smoothScrollTo(destX, 0, velocity)
+    fun scrollToItem(page: Int, smoothScroll: Boolean, velocityX: Int) {
+        val metrics = getClientExtent()
+        android.util.Log.d("EPUB_SECTION_NAV", "scrollToItem: page=$page, axis=$pageAxis, extent=${metrics.extent}, smoothScroll=$smoothScroll")
+        if (pageAxis == PageAxis.HORIZONTAL) {
+            val destX = metrics.extent * page
+            android.util.Log.d("EPUB_SECTION_NAV", "HORIZONTAL scroll: destX=$destX, currentScrollX=$scrollX")
+            if (smoothScroll) {
+                smoothScrollTo(destX, scrollY, velocityX)
+            } else {
+                scrollTo(destX, scrollY)
+            }
         } else {
+            val destY = metrics.extent * page
+            android.util.Log.d("EPUB_SECTION_NAV", "VERTICAL scroll: destY=$destY, currentScrollY=$scrollY")
+            // 縦書き時は常にアニメーションなしで即座に切り替え
+            scrollTo(scrollX, destY)
+        }
+    }
+
+    private fun scrollToItem(item: Int, smoothScroll: Boolean, velocity: Int, post: Boolean) {
+        android.util.Log.d("EPUB_SECTION_NAV", "scrollToItem(4-arg): item=$item, smoothScroll=$smoothScroll, velocity=$velocity, post=$post")
+
+        val metrics = getClientExtent()
+        android.util.Log.d("EPUB_SECTION_NAV", "scrollToItem(4-arg): axis=$pageAxis, extent=${metrics.extent}")
+
+        if (pageAxis == PageAxis.HORIZONTAL) {
+            val destX = metrics.extent * item
+            android.util.Log.d("EPUB_SECTION_NAV", "HORIZONTAL scroll (4-arg): destX=$destX, currentScrollX=$scrollX")
+            if (smoothScroll) {
+                smoothScrollTo(destX, 0, velocity)
+            } else {
+                completeScroll(false)
+                scrollTo(destX, 0)
+                pageScrolled(destX)
+            }
+        } else {
+            val destY = metrics.extent * item
+            android.util.Log.d("EPUB_SECTION_NAV", "VERTICAL scroll (4-arg): destY=$destY, currentScrollY=$scrollY")
+            // 縦書き時は常にアニメーションなしで即座に切り替え
             completeScroll(false)
-            scrollTo(destX, 0)
-            pageScrolled(destX)
+            scrollTo(scrollX, destY)
+            pageScrolled(destY)
         }
 
         if (post) {
@@ -388,10 +471,12 @@ internal class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView
      * @param velocity the velocity associated with a fling, if applicable. (0 otherwise)
      */
     private fun smoothScrollTo(x: Int, y: Int, velocity: Int) {
-        val width = getClientWidth() ?: return
+        val metrics = getClientExtent()
+        if (metrics.extent <= 0) return
 
         var v = velocity
         val sx: Int
+        val sy: Int
         val wasScrolling = mScroller != null && !mScroller!!.isFinished
         if (wasScrolling) {
             // We're in the middle of a previously initiated scrolling. Check to see
@@ -399,12 +484,13 @@ internal class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView
             // we can get a stale value from the scroller if it hadn't yet had its first
             // computeScrollOffset call) to decide what is the current scrolling position.
             sx = if (mIsScrollStarted) mScroller!!.currX else mScroller!!.startX
+            sy = if (mIsScrollStarted) mScroller!!.currY else mScroller!!.startY
             // And abort the current scrolling.
             mScroller!!.abortAnimation()
         } else {
             sx = scrollX
+            sy = scrollY
         }
-        val sy = scrollY
         val dx = x - sx
         val dy = y - sy
         if (dx == 0 && dy == 0) {
@@ -415,17 +501,23 @@ internal class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView
 
         setScrollState(SCROLL_STATE_SETTLING)
 
-        val halfWidth = width / 2
-        val distanceRatio = min(1f, 1.0f * abs(dx) / width)
-        val distance = halfWidth + halfWidth * distanceInfluenceForSnapDuration(distanceRatio)
+        // 軸に応じた距離計算
+        val (delta, extent) = if (pageAxis == PageAxis.HORIZONTAL) {
+            abs(dx) to metrics.extent
+        } else {
+            abs(dy) to metrics.extent
+        }
+
+        val halfExtent = extent / 2
+        val distanceRatio = min(1f, 1.0f * delta / extent)
+        val distance = halfExtent + halfExtent * distanceInfluenceForSnapDuration(distanceRatio)
 
         var duration: Int
         v = abs(v)
         duration = if (v > 0) {
             4 * (1000 * abs(distance / v)).roundToInt()
         } else {
-            //            final float pageWidth = width * mAdapter.getPageWidth(mCurItem);
-            val pageDelta = abs(dx).toFloat() / (width + mPageMargin)
+            val pageDelta = delta.toFloat() / (extent + mPageMargin)
             ((pageDelta + 1) * 100).toInt()
         }
         duration = min(duration, MAX_SETTLE_DURATION)
@@ -445,6 +537,7 @@ internal class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView
         return ii
     }
 
+    /** ページ読み込み/レイアウト変化のたびに writing-mode を同期 */
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         super.onSizeChanged(w, h, oldw, oldh)
 
@@ -452,32 +545,56 @@ internal class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView
         if (w != oldw) {
             recomputeScrollPosition(w, oldw, mPageMargin, mPageMargin)
         }
+
+        // サイズ変更後にwriting-modeを同期（遅延実行）
+        postDelayed({
+            syncWritingMode()
+        }, 100)
     }
 
+
     private fun recomputeScrollPosition(width: Int, oldWidth: Int, margin: Int, oldMargin: Int) {
-        val clientWidth = getClientWidth() ?: return
+        val metrics = getClientExtent()
+        if (metrics.extent <= 0) return
 
         if (oldWidth > 0 /*&& !mItems.isEmpty()*/) {
             if (!mScroller!!.isFinished) {
-                val currentPage = (scrollX / clientWidth.toDouble()).roundToInt()
+                val currentPage = if (pageAxis == PageAxis.HORIZONTAL) {
+                    (scrollX / metrics.extent.toDouble()).roundToInt()
+                } else {
+                    (scrollY / metrics.extent.toDouble()).roundToInt()
+                }
 
-                mScroller!!.finalX = (currentPage * clientWidth)
+                if (pageAxis == PageAxis.HORIZONTAL) {
+                    mScroller!!.finalX = (currentPage * metrics.extent)
+                } else {
+                    mScroller!!.finalY = (currentPage * metrics.extent)
+                }
             } else {
-                val widthWithMargin = width - paddingLeft - paddingRight + margin
-                val oldWidthWithMargin = oldWidth - paddingLeft - paddingRight + oldMargin
-                val xpos = scrollX
-                val pageOffset = xpos.toFloat() / oldWidthWithMargin
-                val newOffsetPixels = (pageOffset * widthWithMargin).toInt()
+                val extentWithMargin = width - paddingLeft - paddingRight + margin
+                val oldExtentWithMargin = oldWidth - paddingLeft - paddingRight + oldMargin
+                val pos = if (pageAxis == PageAxis.HORIZONTAL) scrollX else scrollY
+                val pageOffset = pos.toFloat() / oldExtentWithMargin
+                val newOffsetPixels = (pageOffset * extentWithMargin).toInt()
 
-                scrollTo(newOffsetPixels, scrollY)
+                if (pageAxis == PageAxis.HORIZONTAL) {
+                    scrollTo(newOffsetPixels, scrollY)
+                } else {
+                    scrollTo(scrollX, newOffsetPixels)
+                }
             }
         } else {
             val ii = infoForPosition(mCurItem)
             val scrollOffset: Float = min(ii.offset, mLastOffset)
             val scrollPos = (scrollOffset * (width - paddingLeft - paddingRight)).toInt()
-            if (scrollPos != scrollX) {
+            val currentPos = if (pageAxis == PageAxis.HORIZONTAL) scrollX else scrollY
+            if (scrollPos != currentPos) {
                 completeScroll(false)
-                scrollTo(scrollPos, scrollY)
+                if (pageAxis == PageAxis.HORIZONTAL) {
+                    scrollTo(scrollPos, scrollY)
+                } else {
+                    scrollTo(scrollX, scrollPos)
+                }
             }
         }
     }
@@ -556,6 +673,11 @@ internal class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView
             scrollToItem(mCurItem, false, 0, false)
         }
         mFirstLayout = false
+
+        // レイアウト完了後にwriting-modeを同期（遅延実行）
+        post {
+            syncWritingMode()
+        }
     }
 
     override fun computeScroll() {
@@ -588,14 +710,15 @@ internal class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView
     }
 
     private fun pageScrolled(xpos: Int): Boolean {
-        val width = getClientWidth() ?: return false
+        val metrics = getClientExtent()
+        if (metrics.extent <= 0) return false
 
         val ii = infoForCurrentScrollPosition()
-        val widthWithMargin = width + mPageMargin
-        val marginOffset = mPageMargin.toFloat() / width
+        val extentWithMargin = metrics.extent + mPageMargin
+        val marginOffset = mPageMargin.toFloat() / metrics.extent
         val currentPage = ii!!.position
-        val pageOffset = (xpos.toFloat() / width - ii.offset) / (ii.widthFactor + marginOffset)
-        val offsetPixels = (pageOffset * widthWithMargin).toInt()
+        val pageOffset = (xpos.toFloat() / metrics.extent - ii.offset) / (ii.widthFactor + marginOffset)
+        val offsetPixels = (pageOffset * extentWithMargin).toInt()
 
         mCalledSuper = false
         onPageScrolled(currentPage, pageOffset, offsetPixels)
@@ -762,22 +885,43 @@ internal class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView
                     } else {
                         val velocity = getCurrentXVelocity() ?: 0
                         val totalDelta = (x - mInitialMotionX).toInt()
+                        // 縦書き時はキャンセル判定を緩和（方向転換を許可）
+                        val isCancelled = if (pageAxis == PageAxis.VERTICAL) {
+                            false  // 縦書き時はキャンセルしない
+                        } else {
+                            ((mInitialVelocity ?: 0) * velocity) <= 0
+                        }
                         val targetPage = determineTargetPage(
                             currentPage = mCurItem,
-                            initialVelocity = mInitialVelocity ?: 0,
-                            currentVelocity = velocity,
-                            deltaX = totalDelta
+                            deltaX = totalDelta,
+                            initialVelocityX = mInitialVelocity ?: 0,
+                            currentVelocityX = velocity,
+                            isCancelled = isCancelled
                         )
 
                         when {
                             targetPage < 0 -> {
-                                scrollLeft(animated = true)
+                                if (pageAxis == PageAxis.VERTICAL) {
+                                    // 縦書き時：上のカラム（前のページ）を求めている → 前のセクション
+                                    // RTL時はscrollRightが前のセクションに移動する
+                                    scrollRight(animated = true)
+                                } else {
+                                    // 横書き時：従来通り
+                                    scrollLeft(animated = true)
+                                }
                             }
                             targetPage >= numPages -> {
-                                scrollRight(animated = true)
+                                if (pageAxis == PageAxis.VERTICAL) {
+                                    // 縦書き時：下のカラム（次のページ）を求めている → 次のセクション
+                                    // RTL時はscrollLeftが次のセクションに移動する
+                                    scrollLeft(animated = true)
+                                } else {
+                                    // 横書き時：従来通り
+                                    scrollRight(animated = true)
+                                }
                             }
                             else -> {
-                                setCurrentItemInternal(targetPage, true, velocity)
+                                scrollToItem(targetPage, true, velocity)
                             }
                         }
                     }
@@ -815,10 +959,12 @@ internal class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView
      * This can be synthetic for a missing middle page; the 'object' field can be null.
      */
     private fun infoForCurrentScrollPosition(): ItemInfo? {
-        val width = getClientWidth() ?: return null
+        val metrics = getClientExtent()
+        if (metrics.extent <= 0) return null
 
-        val scrollOffset: Float = if (width > 0) scrollX.toFloat() / width else 0F
-        val marginOffset: Float = if (width > 0) mPageMargin.toFloat() / width else 0F
+        val currentScroll = if (pageAxis == PageAxis.HORIZONTAL) scrollX else scrollY
+        val scrollOffset: Float = currentScroll.toFloat() / metrics.extent
+        val marginOffset: Float = if (metrics.extent > 0) mPageMargin.toFloat() / metrics.extent else 0F
         var lastPos = -1
         var lastOffset = 0f
         var lastWidth = 0f
@@ -837,7 +983,7 @@ internal class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView
                 ii = mTempItem
                 ii.offset = lastOffset + lastWidth + marginOffset
                 ii.position = lastPos + 1
-                ii.widthFactor = width.toFloat()/*mAdapter.getPageWidth(ii.position)*/
+                ii.widthFactor = metrics.extent.toFloat()/*mAdapter.getPageWidth(ii.position)*/
                 i--
             }
             offset = ii.offset
@@ -859,6 +1005,30 @@ internal class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView
         }
 
         return lastItem
+    }
+
+    fun determineTargetPage(currentPage: Int, deltaX: Int, initialVelocityX: Int, currentVelocityX: Int, isCancelled: Boolean): Int {
+        var targetPage = currentPage
+        if (!isCancelled) {
+            val absDelta = kotlin.math.abs(deltaX)
+            val absVel = kotlin.math.abs(currentVelocityX)
+
+            // 縦書き時は閾値を調整（より敏感に反応させる）
+            val adjustedFlingDistance = if (pageAxis == PageAxis.VERTICAL) mFlingDistance / 2 else mFlingDistance
+            val adjustedMinVelocity = if (pageAxis == PageAxis.VERTICAL) mMinimumVelocity / 2 else mMinimumVelocity
+
+            if (absDelta > adjustedFlingDistance && absVel > adjustedMinVelocity) {
+                if (pageAxis == PageAxis.VERTICAL) {
+                    // 縦書きRTL: 右スワイプ（velocityX>0）= 下のカラム（次ページ）, 左スワイプ = 上のカラム（前ページ）
+                    targetPage = if (currentVelocityX > 0) currentPage + 1 else currentPage - 1
+                } else {
+                    // 横書き: 左スワイプ（velocityX<0）= 次ページ、右スワイプ = 前ページ（従来通り）
+                    targetPage = if (currentVelocityX < 0) currentPage + 1 else currentPage - 1
+                }
+            }
+        }
+
+        return targetPage
     }
 
     private fun determineTargetPage(
@@ -1063,9 +1233,17 @@ internal class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView
     }
 
     private fun getOverscrollMode(): OverscrollMode {
-        val clientWidth = getClientWidth() ?: return OverscrollMode.NONE
-        val right = scrollX >= computeHorizontalScrollRange() - clientWidth
-        val left = scrollX <= 0
+        val metrics = getClientExtent()
+        if (metrics.extent <= 0) return OverscrollMode.NONE
+
+        val (current, max) = if (pageAxis == PageAxis.HORIZONTAL) {
+            scrollX to (computeHorizontalScrollRange() - metrics.extent)
+        } else {
+            scrollY to (computeVerticalScrollRange() - metrics.extent)
+        }
+
+        val right = current >= max
+        val left = current <= 0
         if (left && right) {
             return OverscrollMode.BOTH
         } else if (left) {
@@ -1077,11 +1255,14 @@ internal class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView
         }
     }
 
-    internal val numPages: Int get() =
-        getClientWidth()
-            ?.let { clientWidth -> (computeHorizontalScrollRange() / clientWidth.toDouble()).roundToInt() }
-            ?.coerceAtLeast(1)
-            ?: 1
+    internal val numPages: Int get() {
+        val metrics = getClientExtent()
+        return if (metrics.extent > 0) {
+            (metrics.scrollRange.toDouble() / metrics.extent.toDouble()).roundToInt().coerceAtLeast(1)
+        } else {
+            1
+        }
+    }
 
     enum class OverscrollMode {
         NONE,

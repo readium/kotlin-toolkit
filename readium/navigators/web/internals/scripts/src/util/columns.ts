@@ -1,3 +1,9 @@
+function getWritingMode(wnd: Window): string {
+  const el = wnd.document.documentElement || wnd.document.body;
+  const wm = wnd.getComputedStyle(el).writingMode || '';
+  return /vertical-/.test(wm) ? 'vertical' : 'horizontal';
+}
+
 /**
  * In paginated mode, the width of each resource must be a multiple of the viewport size
  * for proper snapping.  This may not be automatically the case if the number of
@@ -7,6 +13,7 @@
  * Returns if the column number has changed.
  */
 export function appendVirtualColumnIfNeeded(wnd: Window): boolean {
+  const wm = getWritingMode(wnd);
   const colCountPerScreen = getColumnCountPerScreen(wnd)
   if (!colCountPerScreen) {
     // scroll mode
@@ -18,7 +25,7 @@ export function appendVirtualColumnIfNeeded(wnd: Window): boolean {
   )
   const virtualColsCount = virtualCols.length
 
-  // Remove first so that we don’t end up with an incorrect scrollWidth
+  // Remove first so that we don't end up with an incorrect scrollWidth
   // Even when removing their width we risk having an incorrect scrollWidth
   // so removing them entirely is the most robust solution
   for (const virtualCol of virtualCols) {
@@ -32,6 +39,8 @@ export function appendVirtualColumnIfNeeded(wnd: Window): boolean {
     (documentWidth / windowWidth) * colCountPerScreen
   )
   const lonelyColCount = totalColCount % colCountPerScreen
+
+  console.log(`EPUB_MULTICOLUMN: wm=${wm}, documentWidth=${documentWidth}, windowWidth=${windowWidth}, totalColCount=${totalColCount}`)
 
   const needed =
     colCountPerScreen === 1 || lonelyColCount === 0
@@ -50,6 +59,14 @@ export function appendVirtualColumnIfNeeded(wnd: Window): boolean {
   }
 
   return virtualColsCount != needed
+}
+
+export function getAxisAwareSizesTS(wnd: Window): { pageExtent: number; documentRange: number } {
+  const wm = getWritingMode(wnd);
+  const doc = wnd.document.scrollingElement || wnd.document.documentElement;
+  return (wm === 'vertical')
+    ? { pageExtent: wnd.innerHeight, documentRange: doc.scrollHeight }
+    : { pageExtent: wnd.innerWidth,  documentRange: doc.scrollWidth  };
 }
 
 function getColumnCountPerScreen(wnd: Window) {

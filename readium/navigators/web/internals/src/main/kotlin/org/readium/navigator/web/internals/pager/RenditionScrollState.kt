@@ -48,15 +48,23 @@ public class RenditionScrollState(
     private val reverseLayout get() =
         orientation == Orientation.Horizontal && direction == LayoutDirection.Rtl
 
+    // R2WebView から現在軸を参照できるように依存を注入している前提を想定
+    // 実際には適切なaxisProvider実装が必要
+    private fun isVerticalAxis(): Boolean {
+        // TODO: 実際のaxis providerの実装に応じて修正
+        return false // 仮実装
+    }
+
     /*
      * To ease the reasoning, this function applies reverse scrolling:
      * - a positive delta (finger moved to the right) makes the viewport scrolling left
      * - a negative delta (finger moved to the left) makes the viewport scrolling right
      */
     private fun dispatchRawDelta(available: Float): Float {
-        Timber.d("scrollBy available $available")
-        Timber.d("visiblePages ${pagerState.layoutInfo.visiblePagesInfo.map { it.index to it.offset }}")
-        var deltaLeft = available
+        val axisVertical = isVerticalAxis()
+        val mapped = if (!axisVertical) available else -available // 縦軸時はY軸マッピング
+        Timber.d("RenditionScrollState.dispatchRawDelta - axisVertical=$axisVertical available=$available mapped=$mapped")
+        var deltaLeft = mapped
 
         val firstPage = pagerState.layoutInfo.visiblePagesInfo.first()
 
@@ -151,7 +159,18 @@ public class RenditionScrollState(
         val scrollController = pageStates[targetPage].scrollController.value
             ?: return available // WebView is not ready, consume everything.
 
-        return -scrollController.scrollBy(-available.mainAxisOffset).mainAxisValue
+        val axisVertical = isVerticalAxis()
+        val delta = -available.mainAxisOffset
+
+        return if (axisVertical) {
+            // 縦軸時のスクロール処理
+            val consumed = scrollController.scrollBy(Offset(0f, delta.y))
+            -consumed.y
+        } else {
+            // 横軸時のスクロール処理（従来通り）
+            val consumed = scrollController.scrollBy(delta)
+            -consumed.mainAxisValue
+        }
     }
 
     private fun pageOnTheLeftOrTop(index: Int): Int? =

@@ -30,9 +30,9 @@ internal class ReflowableWebSettingsResolver(
 
         // / We disable pagination with vertical text, because CSS columns don't support it properly.
         // / See https://github.com/readium/swift-toolkit/discussions/370
-        if (verticalText) {
-            scroll = true
-        }
+//        if (verticalText) {
+//            scroll = true
+//        }
 
         val fallbackTheme = ReflowableWebPreferences.LightTheme
 
