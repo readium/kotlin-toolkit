@@ -89,5 +89,5 @@ class BookshelfViewModel(application: Application) : AndroidViewModel(applicatio
 }
 
 data class BookshelfUiState(
-    val books: List<Book> = emptyList()
+    val books: List<Book> = emptyList(),
 )

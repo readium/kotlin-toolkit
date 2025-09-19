@@ -25,7 +25,7 @@ import org.readium.r2.testapp.utils.EventChannel
 
 data class TopBarState(
     val title: String = "Readium",
-    val actions: @Composable RowScope.() -> Unit = {}
+    val actions: @Composable RowScope.() -> Unit = {},
 )
 
 class MainViewModel(

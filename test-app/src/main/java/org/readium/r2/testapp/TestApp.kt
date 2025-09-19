@@ -39,7 +39,7 @@ sealed class Screen(val route: String) {
     sealed class TopLevel(
         route: String,
         val title: String,
-        val icon: ImageVector
+        val icon: ImageVector,
     ) : Screen(route) {
         object Bookshelf : TopLevel("bookshelf", "Bookshelf", Icons.Default.Book)
         object Catalogs : TopLevel("catalogs", "Catalogs", Icons.Default.Explore)
@@ -106,7 +106,6 @@ fun TestApp(mainViewModel: MainViewModel = viewModel()) {
                     )
                 }
             }
-
         }
     ) { innerPadding ->
         NavHost(

@@ -38,9 +38,8 @@ import org.readium.r2.testapp.R
 @Composable
 fun PublicationScreen(
     mainViewModel: MainViewModel,
-    catalogViewModel: CatalogViewModel = viewModel()
+    catalogViewModel: CatalogViewModel = viewModel(),
 ) {
-
     val publication by catalogViewModel.publication.collectAsState()
 
     LaunchedEffect(Unit) {
@@ -53,13 +52,12 @@ fun PublicationScreen(
             onDownloadClick = { catalogViewModel.downloadPublication(pub) }
         )
     }
-
 }
 
 @Composable
 private fun PublicationDetailContent(
     publication: Publication,
-    onDownloadClick: () -> Unit
+    onDownloadClick: () -> Unit,
 ) {
     Column(
         modifier = Modifier
@@ -106,7 +104,6 @@ private fun PublicationDetailContent(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End)
         ) {
-
             Button(onClick = onDownloadClick) {
                 Text(stringResource(id = R.string.catalog_detail_download_button))
             }

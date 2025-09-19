@@ -30,7 +30,6 @@ import org.readium.r2.testapp.utils.compose.AppTheme
 
 @Composable
 fun AboutScreen(mainViewModel: MainViewModel) {
-
     val title = stringResource(R.string.title_about)
 
     LaunchedEffect(Unit) {

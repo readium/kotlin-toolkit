@@ -56,7 +56,7 @@ fun CatalogScreen(
     mainViewModel: MainViewModel,
     catalogViewModel: CatalogViewModel = viewModel(),
     navController: NavController,
-    onFacetClick: (facet: Facet) -> Unit
+    onFacetClick: (facet: Facet) -> Unit,
 ) {
     val state by catalogViewModel.uiState.collectAsStateWithLifecycle()
 
@@ -73,7 +73,6 @@ fun CatalogScreen(
                     FacetMenu(
                         facets = feed.facets,
                         onFacetClick = { link ->
-
                         }
                     )
                 }
@@ -158,7 +157,6 @@ fun CatalogScreen(
         }
 
         is CatalogUiState.Error -> {
-
         }
     }
 }
@@ -208,7 +206,7 @@ private fun NavigationSection(links: List<Link>, onNavigationLinkClick: (Link) -
 @Composable
 private fun PublicationGrid(
     publications: List<Publication>,
-    onPublicationClick: (Publication) -> Unit
+    onPublicationClick: (Publication) -> Unit,
 ) {
     LazyVerticalGrid(
         columns = GridCells.Adaptive(minSize = 120.dp),
@@ -233,7 +231,7 @@ private fun PublicationGrid(
 private fun GroupRow(
     group: Group,
     onPublicationClick: (Publication) -> Unit,
-    onMoreClick: () -> Unit
+    onMoreClick: () -> Unit,
 ) {
     Column(modifier = Modifier.padding(vertical = 8.dp)) {
         Row(

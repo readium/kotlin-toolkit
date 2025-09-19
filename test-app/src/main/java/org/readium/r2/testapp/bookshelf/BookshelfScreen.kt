@@ -49,7 +49,7 @@ import org.readium.r2.testapp.shared.views.PublicationCoverItem
 @Composable
 fun BookshelfScreen(
     mainViewModel: MainViewModel = viewModel(),
-    viewModel: BookshelfViewModel = viewModel()
+    viewModel: BookshelfViewModel = viewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
@@ -109,7 +109,6 @@ fun BookshelfScreen(
                     .padding(padding),
                 contentAlignment = Alignment.Center
             ) {
-
             }
         } else {
             LazyVerticalGrid(
@@ -168,7 +167,7 @@ fun BookshelfScreen(
 @Composable
 private fun AddBookDialog(
     onDismiss: () -> Unit,
-    onConfirm: (selectedIndex: Int) -> Unit
+    onConfirm: (selectedIndex: Int) -> Unit,
 ) {
     var selectedIndex by remember { mutableIntStateOf(0) }
     val options = stringArrayResource(id = R.array.documentSelectorArray)
@@ -217,7 +216,7 @@ private fun AddBookDialog(
 @Composable
 private fun AddUrlDialog(
     onDismiss: () -> Unit,
-    onConfirm: (url: String) -> Unit
+    onConfirm: (url: String) -> Unit,
 ) {
     var url by remember { mutableStateOf("") }
     AlertDialog(
@@ -250,7 +249,7 @@ private fun AddUrlDialog(
 private fun DeleteConfirmationDialog(
     bookTitle: String,
     onConfirm: () -> Unit,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,

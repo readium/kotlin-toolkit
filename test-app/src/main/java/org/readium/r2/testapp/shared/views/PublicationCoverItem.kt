@@ -25,7 +25,7 @@ fun PublicationCoverItem(
     imageUrl: String?,
     title: String,
     onClick: () -> Unit,
-    onLongClick: (() -> Unit)? = null
+    onLongClick: (() -> Unit)? = null,
 ) {
     Card(
         modifier = Modifier

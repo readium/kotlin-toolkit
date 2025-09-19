@@ -45,7 +45,7 @@ import org.readium.r2.testapp.data.model.Catalog
 fun CatalogFeedScreen(
     catalogViewModel: CatalogFeedListViewModel = viewModel(),
     mainViewModel: MainViewModel,
-    navController: NavController
+    navController: NavController,
 ) {
     val title = stringResource(R.string.title_catalogs)
 
@@ -90,7 +90,6 @@ fun CatalogFeedScreen(
                 contentDescription = stringResource(R.string.add_catalog)
             )
         }
-
     }
 
     if (showAddCatalogDialog) {
@@ -108,7 +107,7 @@ fun CatalogFeedScreen(
 private fun CatalogItem(
     catalog: Catalog,
     onDelete: (id: Long) -> Unit,
-    onClick: () -> Unit
+    onClick: () -> Unit,
 ) {
     Row(
         modifier = Modifier
@@ -140,7 +139,7 @@ private fun CatalogItem(
 @Composable
 private fun AddCatalogDialog(
     onDismiss: () -> Unit,
-    onConfirm: (String, String) -> Unit
+    onConfirm: (String, String) -> Unit,
 ) {
     var title by remember { mutableStateOf("") }
     var url by remember { mutableStateOf("") }
