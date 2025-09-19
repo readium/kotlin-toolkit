@@ -6,7 +6,9 @@
 
 package org.readium.navigator.common
 
+import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpOffset
@@ -17,46 +19,71 @@ import androidx.compose.ui.unit.times
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import org.readium.r2.navigator.preferences.ReadingProgression
-import org.readium.r2.navigator.util.DirectionalNavigationAdapter
 import org.readium.r2.shared.ExperimentalReadiumApi
 
+/**
+ * A listener for input events.
+ */
 @ExperimentalReadiumApi
 public interface InputListener {
     /**
-     * Called when the user tapped the content, but nothing handled the event internally (eg.
-     * by following an internal link).
+     * Called when the user tapped the content and nothing handled the event (eg.
+     * taps on links are not reported here).
      */
     public fun onTap(event: TapEvent, context: TapContext)
 }
 
 /**
- * Represents a tap event emitted by a navigator at the given [offset].
+ * Represents a tap event at the given [offset].
  *
- * All the offsets are relative to the navigator view.
+ * All the offsets are relative to the rendition view.
  */
 @ExperimentalReadiumApi
 public data class TapEvent(
     val offset: DpOffset,
 )
 
+/**
+ * Provides additional context for the tap event.
+ */
 @ExperimentalReadiumApi
 public data class TapContext(
     val viewport: DpSize,
 )
 
 @ExperimentalReadiumApi
-public class NullInputListener : InputListener {
+private class NullInputListener : InputListener {
     override fun onTap(event: TapEvent, context: TapContext) {
     }
 }
 
+/**
+ * The default [InputListener], handling directional UI events (e.g. edge taps or arrow keys) to
+ * turn the pages of a visual rendition through an [OverflowController].
+ *
+ * This takes into account the reading progression of the navigator to turn pages in the right
+ * direction.
+ *
+ * @param controller an [OverflowController] to use for navigation
+ * @param tapEdges: Indicates which viewport edges handle taps.
+ * @param handleTapsWhileScrolling: Indicates whether the page turns should be handled when the
+ *        publication is scrollable.
+ * @param minimumHorizontalEdgeSize: The minimum horizontal edge dimension triggering page turns, in
+ *        pixels.
+ * @param horizontalEdgeThresholdPercent: The percentage of the viewport dimension used to compute
+ *        the horizontal edge size. When null, minimumHorizontalEdgeSize will be used instead.
+ * @param minimumVerticalEdgeSize: The minimum vertical edge dimension triggering page turns, in
+ *        pixels.
+ * @param verticalEdgeThresholdPercent: The percentage of the viewport dimension used to compute the
+ *        vertical edge size. When null, minimumVerticalEdgeSize will be used instead.
+ */
 @ExperimentalReadiumApi
 @Composable
 public fun defaultInputListener(
-    controller: OverflowController,
+    controller: OverflowController?,
     fallbackListener: InputListener? = null,
-    tapEdges: Set<DirectionalNavigationAdapter.TapEdge> = setOf(
-        DirectionalNavigationAdapter.TapEdge.Horizontal
+    tapEdges: Set<Orientation> = setOf(
+        Orientation.Horizontal
     ),
     handleTapsWhileScrolling: Boolean = false,
     minimumHorizontalEdgeSize: Dp = 80.0.dp,
@@ -66,17 +93,23 @@ public fun defaultInputListener(
 ): InputListener {
     val coroutineScope = rememberCoroutineScope()
 
-    return DefaultInputListener(
-        coroutineScope,
-        fallbackListener,
-        controller,
-        tapEdges,
-        handleTapsWhileScrolling,
-        minimumHorizontalEdgeSize,
-        horizontalEdgeThresholdPercent,
-        minimumVerticalEdgeSize,
-        verticalEdgeThresholdPercent
-    )
+    return remember(controller) {
+        if (controller == null) {
+            NullInputListener()
+        } else {
+            DefaultInputListener(
+                coroutineScope,
+                fallbackListener,
+                controller,
+                tapEdges,
+                handleTapsWhileScrolling,
+                minimumHorizontalEdgeSize,
+                horizontalEdgeThresholdPercent,
+                minimumVerticalEdgeSize,
+                verticalEdgeThresholdPercent
+            )
+        }
+    }
 }
 
 @OptIn(ExperimentalReadiumApi::class)
@@ -84,7 +117,7 @@ private class DefaultInputListener(
     private val coroutineScope: CoroutineScope,
     private val fallbackListener: InputListener?,
     private val controller: OverflowController,
-    private val tapEdges: Set<DirectionalNavigationAdapter.TapEdge>,
+    private val tapEdges: Set<Orientation>,
     private val handleTapsWhileScrolling: Boolean,
     private val minimumHorizontalEdgeSize: Dp,
     private val horizontalEdgeThresholdPercent: Double?,
@@ -99,11 +132,11 @@ private class DefaultInputListener(
     }
 
     private fun handleTap(event: TapEvent, context: TapContext): Boolean {
-        if (controller.overflow.value.scroll && !handleTapsWhileScrolling) {
+        if (controller.overflow.scroll && !handleTapsWhileScrolling) {
             return false
         }
 
-        if (tapEdges.contains(DirectionalNavigationAdapter.TapEdge.Horizontal)) {
+        if (tapEdges.contains(Orientation.Horizontal)) {
             val width = context.viewport.width
 
             val horizontalEdgeSize = horizontalEdgeThresholdPercent
@@ -121,7 +154,7 @@ private class DefaultInputListener(
             }
         }
 
-        if (tapEdges.contains(DirectionalNavigationAdapter.TapEdge.Vertical)) {
+        if (tapEdges.contains(Orientation.Vertical)) {
             val height = context.viewport.height
 
             val verticalEdgeSize = verticalEdgeThresholdPercent
@@ -143,7 +176,7 @@ private class DefaultInputListener(
     }
 
     private val OverflowController.canMoveLeft get() =
-        when (overflow.value.readingProgression) {
+        when (overflow.readingProgression) {
             ReadingProgression.LTR ->
                 canMoveBackward
 
@@ -152,7 +185,7 @@ private class DefaultInputListener(
         }
 
     private val OverflowController.canMoveRight get() =
-        when (overflow.value.readingProgression) {
+        when (overflow.readingProgression) {
             ReadingProgression.LTR ->
                 canMoveForward
 

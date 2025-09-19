@@ -12,14 +12,11 @@ dependencyResolutionManagement {
         mavenCentral()
         maven(url = "https://s3.amazonaws.com/repo.commonsware.com")
         maven(url = "https://customers.pspdfkit.com/maven")
+        maven(url = "https://jitpack.io")
     }
 }
 
 rootProject.name = "Readium"
-
-include(":readium:adapters:pdfium:common")
-project(":readium:adapters:pdfium:common")
-    .name = "readium-adapter-pdfium-common"
 
 include(":readium:adapters:pdfium:document")
 project(":readium:adapters:pdfium:document")
@@ -49,9 +46,21 @@ include(":readium:navigators:common")
 project(":readium:navigators:common")
     .name = "readium-navigator-common"
 
-// include(":readium:navigators:web")
-// project(":readium:navigators:web")
-//     .name = "readium-navigator-web"
+include(":readium:navigators:web:common")
+project(":readium:navigators:web:common")
+    .name = "readium-navigator-web-common"
+
+include(":readium:navigators:web:internals")
+project(":readium:navigators:web:internals")
+    .name = "readium-navigator-web-internals"
+
+include(":readium:navigators:web:reflowable")
+project(":readium:navigators:web:reflowable")
+    .name = "readium-navigator-web-reflowable"
+
+include(":readium:navigators:web:fixedlayout")
+project(":readium:navigators:web:fixedlayout")
+    .name = "readium-navigator-web-fixedlayout"
 
 include(":readium:navigators:media:common")
 project(":readium:navigators:media:common")
@@ -82,4 +91,4 @@ project(":readium:streamer")
     .name = "readium-streamer"
 
 include("test-app")
-// include(":readium:navigators:demo")
+include(":demos:navigator")

@@ -75,3 +75,34 @@ public class RangePreferenceDelegate<T : Comparable<T>>(
         set(progressionStrategy.decrement(currentValue))
     }
 }
+
+@InternalReadiumApi
+public class OptionalRangePreferenceDelegate<T : Comparable<T>>(
+    getValue: () -> T?,
+    getEffectiveValue: () -> T?,
+    getIsEffective: () -> Boolean,
+    updateValue: (T?) -> Unit,
+    private val defaultValue: T,
+    private val valueFormatter: (T) -> String,
+    override val supportedRange: ClosedRange<T>,
+    private val progressionStrategy: ProgressionStrategy<T>,
+) : PreferenceDelegate<T?>(getValue, getEffectiveValue, getIsEffective, updateValue),
+    OptionalRangePreference<T> {
+
+    override fun set(value: T?) {
+        super.set(value?.coerceIn(supportedRange))
+    }
+
+    override fun formatValue(value: T): String =
+        valueFormatter.invoke(value)
+
+    override fun increment() {
+        val currentValue = value ?: effectiveValue
+        set(progressionStrategy.increment(currentValue ?: defaultValue))
+    }
+
+    override fun decrement() {
+        val currentValue = value ?: effectiveValue
+        set(progressionStrategy.decrement(currentValue ?: defaultValue))
+    }
+}
