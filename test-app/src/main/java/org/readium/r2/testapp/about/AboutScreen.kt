@@ -1,6 +1,5 @@
 package org.readium.r2.testapp.about
 
-import android.app.Application
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -17,13 +16,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import org.readium.r2.testapp.MainViewModel
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.utils.compose.AppTheme
@@ -135,7 +134,7 @@ private fun InfoText(text: String, contentDescription: String? = null) {
 @Preview(showBackground = true)
 @Composable
 private fun AboutScreenPreview() {
-    val viewModel = MainViewModel(LocalContext.current.applicationContext as Application)
+    val viewModel: MainViewModel = viewModel()
     AppTheme {
         AboutScreen(mainViewModel = viewModel)
     }
