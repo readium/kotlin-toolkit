@@ -98,7 +98,7 @@ Readium modules are distributed with [Maven Central](https://search.maven.org/se
 
 ```groovy
 buildscript {
-    ext.readium_version = '3.1.1'
+    ext.readium_version = '3.1.2'
 }
 
 allprojects {

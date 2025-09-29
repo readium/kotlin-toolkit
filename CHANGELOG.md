@@ -4,9 +4,13 @@ All notable changes to this project will be documented in this file. Take a look
 
 **Warning:** Features marked as *experimental* may change or be removed in a future release without notice. Use with caution.
 
-## [Unreleased]
+<!-- ## [Unreleased] -->
+
+## [3.1.2]
 
 ### Fixed
+
+* Fixed [16 KB page sizes](https://developer.android.com/guide/practices/page-sizes) support (contributed by [@gustavaa](https://github.com/readium/kotlin-toolkit/pull/710)).
 
 #### Navigator
 
@@ -980,3 +984,4 @@ progression. Now if no reading progression is set, the `effectiveReadingProgress
 [3.0.3]: https://github.com/readium/kotlin-toolkit/compare/3.0.2...3.0.3
 [3.1.0]: https://github.com/readium/kotlin-toolkit/compare/3.0.3...3.1.0
 [3.1.1]: https://github.com/readium/kotlin-toolkit/compare/3.1.0...3.1.1
+[3.1.2]: https://github.com/readium/kotlin-toolkit/compare/3.1.1...3.1.2

@@ -57,6 +57,7 @@ captures/
 # Additional IntelliJ files
 .idea/misc.xml
 .idea/deploymentTargetDropDown.xml
+.idea/copilot.*
 
 # Keystore files
 *.jks
