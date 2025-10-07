@@ -157,7 +157,8 @@ internal class TtsSessionAdapter<E : TtsEngine.Error>(
                 COMMAND_SET_SPEED_AND_PITCH,
                 COMMAND_GET_CURRENT_MEDIA_ITEM,
                 COMMAND_GET_METADATA,
-                COMMAND_GET_TEXT
+                COMMAND_GET_TEXT,
+                COMMAND_GET_TIMELINE
             ).build()
 
     override fun getApplicationLooper(): Looper {
