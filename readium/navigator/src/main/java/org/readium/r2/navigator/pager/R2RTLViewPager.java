@@ -59,9 +59,9 @@ class R2RTLViewPager extends ViewPager {
     @Override
     public void onRtlPropertiesChanged(int layoutDirection) {
         super.onRtlPropertiesChanged(layoutDirection);
-        int viewCompatLayoutDirection = layoutDirection == View.LAYOUT_DIRECTION_RTL  ? ViewCompat.LAYOUT_DIRECTION_RTL : ViewCompat.LAYOUT_DIRECTION_LTR;
+        int viewCompatLayoutDirection = layoutDirection == View.LAYOUT_DIRECTION_RTL  ? View.LAYOUT_DIRECTION_RTL : ViewCompat.LAYOUT_DIRECTION_LTR;
         if (direction == ReadingProgression.RTL) {
-            viewCompatLayoutDirection = ViewCompat.LAYOUT_DIRECTION_RTL;
+            viewCompatLayoutDirection = View.LAYOUT_DIRECTION_RTL;
         }
         if (viewCompatLayoutDirection != mLayoutDirection) {
             PagerAdapter adapter = super.getAdapter();
