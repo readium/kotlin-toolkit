@@ -153,7 +153,7 @@ open class ReaderActivity : AppCompatActivity() {
 
     private fun showOutlineFragment() {
         val outlineFragment = supportFragmentManager.findFragmentByTag(OUTLINE_FRAGMENT_TAG)
-        if(outlineFragment == null) {
+        if (outlineFragment == null) {
             supportFragmentManager.commit {
                 add(
                     R.id.activity_container,
