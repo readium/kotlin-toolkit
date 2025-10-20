@@ -50,7 +50,7 @@ kotlin {
     compilerOptions {
         freeCompilerArgs.add("-Xannotation-default-target=param-property")
         jvmTarget = JvmTarget.JVM_11
-        // allWarningsAsErrors = true
+        allWarningsAsErrors = true
     }
 }
 

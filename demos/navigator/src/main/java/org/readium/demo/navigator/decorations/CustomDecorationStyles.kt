@@ -26,7 +26,7 @@ import org.readium.r2.shared.publication.epub.pageList
  *
  * This is an example of a custom Decoration Style declaration.
  */
-data class DecorationStyleAnnotationMark(@ColorInt val tint: Int) : Decoration.Style
+data class DecorationStyleAnnotationMark(@param:ColorInt val tint: Int) : Decoration.Style
 
 /**
  * Decoration Style for a page number label.
