@@ -4,7 +4,19 @@ All notable changes to this project will be documented in this file. Take a look
 
 **Warning:** Features marked as *experimental* may change or be removed in a future release without notice. Use with caution.
 
-<!-- ## [Unreleased] -->
+## [Unreleased]
+
+### Added
+
+#### LCP
+
+* Added a constructor parameter to pass a custom device id.
+
+### Changed
+
+#### LCP
+
+* Set device id only once after generating.
 
 ## [3.1.2]
 
