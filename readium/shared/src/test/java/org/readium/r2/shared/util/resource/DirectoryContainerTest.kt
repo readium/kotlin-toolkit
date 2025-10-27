@@ -9,7 +9,6 @@
 
 package org.readium.r2.shared.util.resource
 
-import android.webkit.MimeTypeMap
 import java.nio.charset.StandardCharsets
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -26,7 +25,6 @@ import org.readium.r2.shared.util.data.Container
 import org.readium.r2.shared.util.file.DirectoryContainer
 import org.readium.r2.shared.util.toAbsoluteUrl
 import org.robolectric.RobolectricTestRunner
-import org.robolectric.Shadows
 
 @RunWith(RobolectricTestRunner::class)
 class DirectoryContainerTest {
@@ -114,11 +112,6 @@ class DirectoryContainerTest {
     fun `Computing entries works well`() {
         runBlocking {
             // FIXME: Test media types
-            Shadows.shadowOf(MimeTypeMap.getSingleton()).apply {
-                addExtensionMimeTypeMapping("txt", "text/plain")
-                addExtensionMimeTypeMapping("mp3", "audio/mpeg")
-            }
-
             val entries = sut().entries
             assertThat(entries).contains(
                 Url("subdirectory/hello.mp3")!!,

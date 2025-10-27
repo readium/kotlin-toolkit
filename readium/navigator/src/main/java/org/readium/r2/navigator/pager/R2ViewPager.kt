@@ -14,9 +14,12 @@ import android.content.Context
 import android.util.AttributeSet
 import android.view.MotionEvent
 import org.readium.r2.navigator.BuildConfig.DEBUG
+import org.readium.r2.shared.InternalReadiumApi
 import timber.log.Timber
 
-internal class R2ViewPager : R2RTLViewPager {
+// See https://youtrack.jetbrains.com/issue/KTLC-271 for visibility issue.
+@InternalReadiumApi
+public class R2ViewPager : R2RTLViewPager {
 
     internal enum class PublicationType {
         EPUB,
@@ -29,8 +32,8 @@ internal class R2ViewPager : R2RTLViewPager {
 
     internal lateinit var publicationType: PublicationType
 
-    constructor(context: Context) : super(context)
-    constructor(context: Context, attrs: AttributeSet) : super(context, attrs)
+    internal constructor(context: Context) : super(context)
+    internal constructor(context: Context, attrs: AttributeSet) : super(context, attrs)
 
     override fun setCurrentItem(item: Int) {
         super.setCurrentItem(item, false)

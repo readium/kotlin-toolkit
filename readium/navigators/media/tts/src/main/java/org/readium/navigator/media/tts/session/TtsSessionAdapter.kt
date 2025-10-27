@@ -127,7 +127,7 @@ internal class TtsSessionAdapter<E : TtsEngine.Error>(
             .onEach { playbackParameters ->
                 notifyListenersPlaybackParametersChanged(lastPlaybackParameters, playbackParameters)
                 lastPlaybackParameters = playbackParameters
-            }
+            }.launchIn(coroutineScope)
     }
 
     private var listeners: ListenerSet<Listener> =
@@ -348,11 +348,6 @@ internal class TtsSessionAdapter<E : TtsEngine.Error>(
         return previousMediaItemIndex != INDEX_UNSET
     }
 
-    @Deprecated("Deprecated in Java", ReplaceWith("TODO(\"Not yet implemented\")"))
-    override fun seekToPreviousWindow() {
-        seekToPreviousMediaItem()
-    }
-
     override fun seekToPreviousMediaItem() {
         val previousMediaItemIndex = previousMediaItemIndex
         if (previousMediaItemIndex != INDEX_UNSET) {
@@ -381,28 +376,8 @@ internal class TtsSessionAdapter<E : TtsEngine.Error>(
         }
     }
 
-    @Deprecated("Deprecated in Java", ReplaceWith("hasNextMediaItem()"))
-    override fun hasNext(): Boolean {
-        return hasNextMediaItem()
-    }
-
-    @Deprecated("Deprecated in Java", ReplaceWith("hasNextMediaItem()"))
-    override fun hasNextWindow(): Boolean {
-        return hasNextMediaItem()
-    }
-
     override fun hasNextMediaItem(): Boolean {
         return nextMediaItemIndex != INDEX_UNSET
-    }
-
-    @Deprecated("Deprecated in Java", ReplaceWith("seekToNextMediaItem()"))
-    override fun next() {
-        seekToNextMediaItem()
-    }
-
-    @Deprecated("Deprecated in Java", ReplaceWith("seekToNextMediaItem()"))
-    override fun seekToNextWindow() {
-        seekToNextMediaItem()
     }
 
     override fun seekToNextMediaItem() {

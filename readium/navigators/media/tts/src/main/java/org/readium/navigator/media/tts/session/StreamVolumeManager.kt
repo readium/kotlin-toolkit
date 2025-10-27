@@ -20,11 +20,11 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.media.AudioManager
+import android.os.Build
 import android.os.Handler
 import androidx.media3.common.C
 import androidx.media3.common.util.Assertions
 import androidx.media3.common.util.Log
-import androidx.media3.common.util.Util
 
 @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
 /** A manager that wraps [AudioManager] to control/listen audio stream volume.  */
@@ -82,7 +82,7 @@ internal class StreamVolumeManager(context: Context, eventHandler: Handler, list
      * Gets the minimum volume for the current audio stream. It can be changed if [ ][.setStreamType] is called.
      */
     val minVolume: Int
-        get() = if (Util.SDK_INT >= 28) audioManager.getStreamMinVolume(streamType) else 0
+        get() = if (Build.VERSION.SDK_INT >= 28) audioManager.getStreamMinVolume(streamType) else 0
 
     /**
      * Gets the maximum volume for the current audio stream. It can be changed if [ ][.setStreamType] is called.
@@ -138,16 +138,11 @@ internal class StreamVolumeManager(context: Context, eventHandler: Handler, list
 
     /** Sets the mute state of the current audio stream.  */
     fun setMuted(muted: Boolean) {
-        if (Util.SDK_INT >= 23) {
-            audioManager.adjustStreamVolume(
-                streamType,
-                if (muted) AudioManager.ADJUST_MUTE else AudioManager.ADJUST_UNMUTE,
-                VOLUME_FLAGS
-            )
-        } else {
-            @Suppress("Deprecation")
-            audioManager.setStreamMute(streamType, muted)
-        }
+        audioManager.adjustStreamVolume(
+            streamType,
+            if (muted) AudioManager.ADJUST_MUTE else AudioManager.ADJUST_UNMUTE,
+            VOLUME_FLAGS
+        )
         updateVolumeAndNotifyIfChanged()
     }
 
@@ -210,11 +205,7 @@ internal class StreamVolumeManager(context: Context, eventHandler: Handler, list
             audioManager: AudioManager,
             streamType: @C.StreamType Int,
         ): Boolean {
-            return if (Util.SDK_INT >= 23) {
-                audioManager.isStreamMute(streamType)
-            } else {
-                getVolumeFromManager(audioManager, streamType) == 0
-            }
+            return audioManager.isStreamMute(streamType)
         }
     }
 }
