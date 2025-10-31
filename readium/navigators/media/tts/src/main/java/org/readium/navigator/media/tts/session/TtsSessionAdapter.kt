@@ -458,11 +458,16 @@ internal class TtsSessionAdapter<E : TtsEngine.Error>(
 
     override fun getCurrentTimeline(): Timeline {
         // MediaNotificationManager requires a non-empty timeline to start foreground playing.
-        return TtsTimeline(mediaItems)
+        // Report a single-item timeline in order to show a notification, but without skip buttons.
+        return if (mediaItems.isNotEmpty()) {
+            TtsTimeline(listOf(mediaItems[currentMediaItemIndex]))
+        } else {
+            TtsTimeline(emptyList())
+        }
     }
 
     override fun getCurrentPeriodIndex(): Int {
-        return ttsPlayer.utterance.value.position.resourceIndex
+        return 0
     }
 
     @Deprecated("Deprecated in Java", ReplaceWith("currentMediaItemIndex"))
@@ -471,7 +476,8 @@ internal class TtsSessionAdapter<E : TtsEngine.Error>(
     }
 
     override fun getCurrentMediaItemIndex(): Int {
-        return ttsPlayer.utterance.value.position.resourceIndex
+        // Reporting a single-item timeline, so index is always 0.
+        return 0
     }
 
     @Deprecated("Deprecated in Java", ReplaceWith("nextMediaItemIndex"))
@@ -576,7 +582,7 @@ internal class TtsSessionAdapter<E : TtsEngine.Error>(
 
     override fun isCurrentMediaItemLive(): Boolean {
         val timeline = currentTimeline
-        return !timeline.isEmpty && timeline.getWindow(currentMediaItemIndex, window).isLive()
+        return !timeline.isEmpty && timeline.getWindow(currentMediaItemIndex, window).isLive
     }
 
     override fun getCurrentLiveOffset(): Long {
