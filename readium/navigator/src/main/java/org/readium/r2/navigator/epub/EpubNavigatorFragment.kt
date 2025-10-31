@@ -274,16 +274,16 @@ public class EpubNavigatorFragment internal constructor(
             alpha: Double = 0.3,
             experimentalPositioning: Boolean = false,
         ) {
-                val updatedDefaultTemplates =
-                    HtmlDecorationTemplates.defaultTemplates(
-                        defaultTint,
-                        lineWeight,
-                        cornerRadius,
-                        alpha,
-                        experimentalPositioning,
-                    )
-                decorationTemplates = decorationTemplates.copyWith(updatedDefaultTemplates)
-            }
+            val updatedDefaultTemplates =
+                HtmlDecorationTemplates.defaultTemplates(
+                    defaultTint,
+                    lineWeight,
+                    cornerRadius,
+                    alpha,
+                    experimentalPositioning,
+                )
+            decorationTemplates = decorationTemplates.copyWith(updatedDefaultTemplates)
+        }
 
         public companion object {
             public operator fun invoke(builder: Configuration.() -> Unit): Configuration =
