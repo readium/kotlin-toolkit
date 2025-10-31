@@ -87,6 +87,9 @@ class EpubReaderFragment : VisualReaderFragment() {
                     decorationTemplates[DecorationStyleAnnotationMark::class] = annotationMarkTemplate()
                     decorationTemplates[DecorationStylePageNumber::class] = pageNumberTemplate()
 
+                    // Update default decorations to be opaque and use experimental positioning.
+                    updateDefaultDecorations(experimentalPositioning = true, alpha = 1.0)
+
                     // Declare a custom font family for reflowable EPUBs.
                     addFontFamilyDeclaration(FontFamily.LITERATA) {
                         addFontFace {
