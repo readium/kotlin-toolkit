@@ -8,15 +8,17 @@ All notable changes to this project will be documented in this file. Take a look
 
 ### Added
 
+#### Navigator
+
+* New experimental positioning of EPUB decorations that places highlights behind text to improve legibility with opaque decorations (contributed by [@ddfreiling](https://github.com/readium/kotlin-toolkit/pull/721)).
+    * To opt-in, initialize the `EpubNavigatorFragment.Configuration` object with `decorationTemplates = HtmlDecorationTemplates.defaultTemplates(alpha = 1.0, experimentalPositioning = true)`.
+
 #### LCP
 
-* Added a constructor parameter to pass a custom device id.
+* Added an initializer parameter for providing a custom device identifier (contributed by [@dewantawsif](https://github.com/readium/kotlin-toolkit/pull/720)).
+    * You must ensure the identifier is unique and stable for the device (persist and reuse across app launches).
+    * Recommended: generate an app-scoped UUID and store it securely. Avoid hardware or advertising identifiers.
 
-### Changed
-
-#### LCP
-
-* Set device id only once after generating.
 
 ## [3.1.2]
 
