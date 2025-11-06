@@ -135,8 +135,9 @@ public interface LcpService {
          * @param deviceName Device name used when registering a license to an LSD server.
          * If not provided, the device name will be generated from the device's manufacturer and
          * model.
-         * @param deviceId Device ID used when registering a liceense to an LSD server.
-         * If not provided, the device id will be generated as a random UUID.
+         * @param deviceId Device ID used when registering a license to an LSD server.
+         * If not provided, the device ID will be generated as a random UUID and persisted for
+         * future sessions.
          */
         public operator fun invoke(
             context: Context,
