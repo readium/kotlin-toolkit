@@ -8,7 +8,6 @@
 
 package org.readium.r2.navigator.epub
 
-import android.graphics.Color
 import android.graphics.PointF
 import android.graphics.RectF
 import android.os.Bundle
@@ -21,7 +20,6 @@ import android.webkit.JavascriptInterface
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
-import androidx.annotation.ColorInt
 import androidx.collection.forEach
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.os.BundleCompat
@@ -216,17 +214,14 @@ public class EpubNavigatorFragment internal constructor(
         public constructor(
             servedAssets: List<String> = emptyList(),
             readiumCssRsProperties: RsProperties = RsProperties(),
-            decorationTemplates: HtmlDecorationTemplates? = null,
+            decorationTemplates: HtmlDecorationTemplates = HtmlDecorationTemplates.defaultTemplates(),
             disablePageTurnsWhileScrolling: Boolean = false,
             selectionActionModeCallback: ActionMode.Callback? = null,
             shouldApplyInsetsPadding: Boolean? = true,
-            experimentalDecorationPositioning: Boolean? = false,
         ) : this(
             servedAssets = servedAssets,
             readiumCssRsProperties = readiumCssRsProperties,
-            decorationTemplates = decorationTemplates ?: HtmlDecorationTemplates.defaultTemplates(
-                experimentalPositioning = experimentalDecorationPositioning == true
-            ),
+            decorationTemplates = decorationTemplates,
             disablePageTurnsWhileScrolling = disablePageTurnsWhileScrolling,
             selectionActionModeCallback = selectionActionModeCallback,
             shouldApplyInsetsPadding = shouldApplyInsetsPadding,
@@ -262,27 +257,6 @@ public class EpubNavigatorFragment internal constructor(
                 alternates = alternates.map { it.name },
                 builderAction = builderAction
             )
-        }
-
-        /**
-         * Update default decorations, to change styling and positioning.
-         */
-        public fun updateDefaultDecorations(
-            @ColorInt defaultTint: Int = Color.YELLOW,
-            lineWeight: Int = 2,
-            cornerRadius: Int = 3,
-            alpha: Double = 0.3,
-            experimentalPositioning: Boolean = false,
-        ) {
-            val updatedDefaultTemplates =
-                HtmlDecorationTemplates.defaultTemplates(
-                    defaultTint,
-                    lineWeight,
-                    cornerRadius,
-                    alpha,
-                    experimentalPositioning,
-                )
-            decorationTemplates = decorationTemplates.copyWith(updatedDefaultTemplates)
         }
 
         public companion object {

@@ -29,6 +29,7 @@ import org.readium.r2.navigator.Decoration
 import org.readium.r2.navigator.epub.*
 import org.readium.r2.navigator.epub.css.FontStyle
 import org.readium.r2.navigator.html.HtmlDecorationTemplate
+import org.readium.r2.navigator.html.HtmlDecorationTemplates
 import org.readium.r2.navigator.html.toCss
 import org.readium.r2.navigator.preferences.FontFamily
 import org.readium.r2.shared.ExperimentalReadiumApi
@@ -83,12 +84,16 @@ class EpubReaderFragment : VisualReaderFragment() {
                         "annotation-icon.svg"
                     )
 
+                    // Enable experimental decorations positioning that places highlights behind
+                    // text to improve legibility with opaque decorations.
+                    decorationTemplates = HtmlDecorationTemplates.defaultTemplates(
+                        alpha = 1.0,
+                        experimentalPositioning = true
+                    )
+
                     // Register the HTML templates for our custom decoration styles.
                     decorationTemplates[DecorationStyleAnnotationMark::class] = annotationMarkTemplate()
                     decorationTemplates[DecorationStylePageNumber::class] = pageNumberTemplate()
-
-                    // Update default decorations to be opaque and use experimental positioning.
-                    updateDefaultDecorations(experimentalPositioning = true, alpha = 1.0)
 
                     // Declare a custom font family for reflowable EPUBs.
                     addFontFamilyDeclaration(FontFamily.LITERATA) {

@@ -210,13 +210,6 @@ public class HtmlDecorationTemplates private constructor(
 
     public fun copy(): HtmlDecorationTemplates = HtmlDecorationTemplates(styles.toMutableMap())
 
-    public fun copyWith(other: HtmlDecorationTemplates): HtmlDecorationTemplates =
-        copy().apply {
-            other.styles.forEach { (key, value) ->
-                styles[key] = value
-            }
-        }
-
     public companion object {
         public operator fun invoke(build: HtmlDecorationTemplates.() -> Unit): HtmlDecorationTemplates =
             HtmlDecorationTemplates().apply(build)
