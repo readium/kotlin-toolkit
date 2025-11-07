@@ -34,6 +34,8 @@ import androidx.lifecycle.withStarted
 import androidx.viewpager.widget.ViewPager
 import kotlin.math.ceil
 import kotlin.reflect.KClass
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -472,28 +474,37 @@ public class EpubNavigatorFragment internal constructor(
     }
 
     private fun resetResourcePagerAdapter() {
-        adapter = when (publication.metadata.presentation.layout) {
-            EpubLayout.REFLOWABLE, null -> {
-                R2PagerAdapter(childFragmentManager, resourcesSingle)
-            }
-            EpubLayout.FIXED -> {
-                when (viewModel.dualPageMode) {
-                    // FIXME: Properly implement DualPage.AUTO depending on the device orientation.
-                    DualPage.OFF, DualPage.AUTO -> {
-                        R2PagerAdapter(childFragmentManager, resourcesSingle)
-                    }
-                    DualPage.ON -> {
-                        R2PagerAdapter(childFragmentManager, resourcesDouble)
+        CoroutineScope(Dispatchers.Main).launch {
+
+            adapter = when (publication.metadata.presentation.layout) {
+                EpubLayout.REFLOWABLE, null -> {
+                    R2PagerAdapter(childFragmentManager, resourcesSingle)
+                }
+
+                EpubLayout.FIXED -> {
+                    when (viewModel.dualPageMode) {
+                        DualPage.OFF, DualPage.AUTO -> {
+                            val displayMetrics = requireContext().resources.displayMetrics
+                            if (displayMetrics.widthPixels > displayMetrics.heightPixels) {
+                                R2PagerAdapter(childFragmentManager, resourcesDouble)
+                            } else {
+                                R2PagerAdapter(childFragmentManager, resourcesSingle)
+                            }
+                        }
+
+                        DualPage.ON -> {
+                            R2PagerAdapter(childFragmentManager, resourcesDouble)
+                        }
                     }
                 }
             }
-        }
-        adapter.listener = PagerAdapterListener()
-        resourcePager.adapter = adapter
-        resourcePager.direction = overflow.value.readingProgression
-        resourcePager.layoutDirection = when (settings.value.readingProgression) {
-            ReadingProgression.RTL -> LayoutDirection.RTL
-            ReadingProgression.LTR -> LayoutDirection.LTR
+            adapter.listener = PagerAdapterListener()
+            resourcePager.adapter = adapter
+            resourcePager.direction = overflow.value.readingProgression
+            resourcePager.layoutDirection = when (settings.value.readingProgression) {
+                ReadingProgression.RTL -> LayoutDirection.RTL
+                ReadingProgression.LTR -> LayoutDirection.LTR
+            }
         }
     }
 
@@ -533,6 +544,7 @@ public class EpubNavigatorFragment internal constructor(
                 }
             }
         }
+        resetResourcePagerAdapter()
     }
 
     private fun handleEvent(event: EpubNavigatorViewModel.Event) {
@@ -637,9 +649,13 @@ public class EpubNavigatorFragment internal constructor(
             setCurrent(resourcesSingle)
         } else {
             when (viewModel.dualPageMode) {
-                // FIXME: Properly implement DualPage.AUTO depending on the device orientation.
                 DualPage.OFF, DualPage.AUTO -> {
-                    setCurrent(resourcesSingle)
+                    val displayMetrics = requireContext().resources.displayMetrics
+                    if (displayMetrics.widthPixels > displayMetrics.heightPixels) {
+                        setCurrent(resourcesDouble)
+                    } else {
+                        setCurrent(resourcesSingle)
+                    }
                 }
                 DualPage.ON -> {
                     setCurrent(resourcesDouble)
