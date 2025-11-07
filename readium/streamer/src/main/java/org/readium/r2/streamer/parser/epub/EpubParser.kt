@@ -14,6 +14,7 @@ import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.encryption.Encryption
 import org.readium.r2.shared.publication.epub.EpubEncryptionParser
+import org.readium.r2.shared.publication.services.PositionsService
 import org.readium.r2.shared.publication.services.content.DefaultContentService
 import org.readium.r2.shared.publication.services.content.iterators.HtmlResourceContentIterator
 import org.readium.r2.shared.publication.services.search.StringSearchService
@@ -43,13 +44,24 @@ import org.readium.r2.streamer.parser.PublicationParser
 /**
  * Parses a Publication from an EPUB publication.
  *
- * @param reflowablePositionsStrategy Strategy used to calculate the number of positions in a
- *        reflowable resource.
+ * @constructor Creates an [EpubParser] using a custom [PositionsService] factory.
+ * @param positionsServiceFactory Factory to create the [PositionsService] that will be used
+ *  by the publication.
  */
 @OptIn(ExperimentalReadiumApi::class)
 public class EpubParser(
-    private val reflowablePositionsStrategy: EpubPositionsService.ReflowableStrategy = EpubPositionsService.ReflowableStrategy.recommended,
+    private val positionsServiceFactory: (Publication.Service.Context) -> PositionsService,
 ) : PublicationParser {
+
+    /**
+     * Creates an [EpubParser] using the default [PositionsService] factory.
+     *
+     * @param reflowablePositionsStrategy Strategy used to calculate the number of positions in a
+     *        reflowable resource.
+     */
+    public constructor(
+        reflowablePositionsStrategy: EpubPositionsService.ReflowableStrategy = EpubPositionsService.ReflowableStrategy.recommended,
+    ) : this(EpubPositionsService.createFactory(reflowablePositionsStrategy))
 
     override suspend fun parse(
         asset: Asset,
@@ -103,7 +115,7 @@ public class EpubParser(
             manifest = manifest,
             container = container,
             servicesBuilder = Publication.ServicesBuilder(
-                positions = EpubPositionsService.createFactory(reflowablePositionsStrategy),
+                positions = positionsServiceFactory,
                 search = StringSearchService.createDefaultFactory(),
                 content = DefaultContentService.createFactory(
                     resourceContentIteratorFactories = listOf(
