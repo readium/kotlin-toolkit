@@ -54,6 +54,7 @@ public interface MemoryObserver {
             object : ComponentCallbacks2 {
                 override fun onConfigurationChanged(config: Configuration) {}
 
+                @Suppress("OVERRIDE_DEPRECATION")
                 @Deprecated("Deprecated in Java")
                 override fun onLowMemory() {}
 

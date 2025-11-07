@@ -9,7 +9,7 @@ package org.readium.navigator.web.internals.util
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.DpRect
 
-public fun DpRect.shift(offset: DpOffset) = DpRect(
+public fun DpRect.shift(offset: DpOffset): DpRect = DpRect(
     left = left + offset.x,
     right = right + offset.x,
     top = top + offset.y,

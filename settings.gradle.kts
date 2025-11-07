@@ -12,14 +12,11 @@ dependencyResolutionManagement {
         mavenCentral()
         maven(url = "https://s3.amazonaws.com/repo.commonsware.com")
         maven(url = "https://customers.pspdfkit.com/maven")
+        maven(url = "https://jitpack.io")
     }
 }
 
 rootProject.name = "Readium"
-
-include(":readium:adapters:pdfium:common")
-project(":readium:adapters:pdfium:common")
-    .name = "readium-adapter-pdfium-common"
 
 include(":readium:adapters:pdfium:document")
 project(":readium:adapters:pdfium:document")

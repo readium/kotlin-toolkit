@@ -11,8 +11,11 @@ package org.readium.r2.navigator.pager
 
 import android.content.Context
 import android.util.AttributeSet
+import org.readium.r2.shared.InternalReadiumApi
 
-internal class R2ViewPager : R2RTLViewPager2 {
+// See https://youtrack.jetbrains.com/issue/KTLC-271 for visibility issue.
+@InternalReadiumApi
+public class R2ViewPager : R2RTLViewPager2 {
 
     internal enum class PublicationType {
         EPUB,
@@ -25,13 +28,13 @@ internal class R2ViewPager : R2RTLViewPager2 {
 
     internal lateinit var publicationType: PublicationType
 
-    constructor(context: Context) : super(context)
-    constructor(context: Context, attrs: AttributeSet) : super(context, attrs)
+    internal constructor(context: Context) : super(context)
+    internal constructor(context: Context, attrs: AttributeSet) : super(context, attrs)
 
     /**
      * Set adapter with automatic state restoration
      */
-    fun setAdapter(newAdapter: R2PagerAdapter?) {
+    internal fun setAdapter(newAdapter: R2PagerAdapter?) {
         // Use parent's adapter property instead of direct assignment
         super.adapter = newAdapter
 
@@ -52,13 +55,13 @@ internal class R2ViewPager : R2RTLViewPager2 {
     }
 
     // Cast adapter to R2PagerAdapter for convenience
-    val r2Adapter: R2PagerAdapter?
+    internal val r2Adapter: R2PagerAdapter?
         get() = adapter as? R2PagerAdapter
 
     /**
      * Restore pending state after configuration changes or app restoration
      */
-    fun restoreAdapterState() {
+    internal fun restoreAdapterState() {
         r2Adapter?.restoreState()
     }
 }

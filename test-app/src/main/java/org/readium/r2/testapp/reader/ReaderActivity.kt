@@ -152,15 +152,18 @@ open class ReaderActivity : AppCompatActivity() {
     }
 
     private fun showOutlineFragment() {
-        supportFragmentManager.commit {
-            add(
-                R.id.activity_container,
-                OutlineFragment::class.java,
-                Bundle(),
-                OUTLINE_FRAGMENT_TAG
-            )
-            hide(readerFragment)
-            addToBackStack(null)
+        val outlineFragment = supportFragmentManager.findFragmentByTag(OUTLINE_FRAGMENT_TAG)
+        if (outlineFragment == null) {
+            supportFragmentManager.commit {
+                add(
+                    R.id.activity_container,
+                    OutlineFragment::class.java,
+                    Bundle(),
+                    OUTLINE_FRAGMENT_TAG
+                )
+                hide(readerFragment)
+                addToBackStack(null)
+            }
         }
     }
 

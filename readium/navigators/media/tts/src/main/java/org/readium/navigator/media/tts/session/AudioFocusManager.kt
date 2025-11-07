@@ -20,6 +20,7 @@ import android.content.Context
 import android.media.AudioFocusRequest
 import android.media.AudioManager
 import android.media.AudioManager.OnAudioFocusChangeListener
+import android.os.Build
 import android.os.Handler
 import androidx.annotation.IntDef
 import androidx.annotation.RequiresApi
@@ -30,7 +31,6 @@ import androidx.media3.common.Player
 import androidx.media3.common.util.Log
 import androidx.media3.common.util.Util
 import java.util.Objects
-import org.readium.navigator.media.tts.session.AudioFocusManager.PlayerControl
 
 @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
 /** Manages requesting and responding to changes in audio focus.
@@ -186,7 +186,7 @@ internal class AudioFocusManager(
             return PLAYER_COMMAND_PLAY_WHEN_READY
         }
         val requestResult =
-            if (Util.SDK_INT >= 26) requestAudioFocusV26() else requestAudioFocusDefault()
+            if (Build.VERSION.SDK_INT >= 26) requestAudioFocusV26() else requestAudioFocusDefault()
         return if (requestResult == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
             setAudioFocusState(AUDIO_FOCUS_STATE_HAVE_FOCUS)
             PLAYER_COMMAND_PLAY_WHEN_READY
@@ -200,7 +200,7 @@ internal class AudioFocusManager(
         if (audioFocusState == AUDIO_FOCUS_STATE_NO_FOCUS) {
             return
         }
-        if (Util.SDK_INT >= 26) {
+        if (Build.VERSION.SDK_INT >= 26) {
             abandonAudioFocusV26()
         } else {
             abandonAudioFocusDefault()
@@ -407,11 +407,8 @@ internal class AudioFocusManager(
                     ->
                         AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK
                     C.USAGE_ASSISTANT ->
-                        if (Util.SDK_INT >= 19) {
-                            AUDIOFOCUS_GAIN_TRANSIENT_EXCLUSIVE
-                        } else {
-                            AUDIOFOCUS_GAIN_TRANSIENT
-                        }
+                        AUDIOFOCUS_GAIN_TRANSIENT_EXCLUSIVE
+
                     C.USAGE_ASSISTANCE_ACCESSIBILITY -> {
                         if (audioAttributes.contentType == C.AUDIO_CONTENT_TYPE_SPEECH) {
                             // Voice shouldn't be interrupted by other playback.
