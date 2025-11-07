@@ -418,7 +418,7 @@ internal class R2EpubPageFragment : Fragment() {
     }
 
     internal fun loadLocator(locator: Locator) {
-        if (!isLoaded.value) {
+        if (!isLoaded.value || view == null) {
             pendingLocator = locator
             return
         }
