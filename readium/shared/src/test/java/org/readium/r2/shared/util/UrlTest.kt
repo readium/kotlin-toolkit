@@ -333,6 +333,11 @@ class UrlTest {
     }
 
     @Test
+    fun fromDirectory() {
+        assertEquals(AbsoluteUrl(Uri.parse("file:///tmp/")), File("/tmp").toUrl(isDirectory = true))
+    }
+
+    @Test
     fun fromURI() {
         assertEquals(RelativeUrl(Uri.parse("foo/bar")), URI("foo/bar").toUrl())
         assertEquals(RelativeUrl(Uri.parse("/foo/bar")), URI("/foo/bar").toUrl())

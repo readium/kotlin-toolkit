@@ -35,7 +35,7 @@ public class DirectoryContainer(
     public companion object {
 
         public suspend operator fun invoke(root: File): Try<DirectoryContainer, FileSystemError> {
-            val rootUrl = root.toUrl()
+            val rootUrl = root.toUrl(isDirectory = true)
             val entries =
                 try {
                     withContext(Dispatchers.IO) {
