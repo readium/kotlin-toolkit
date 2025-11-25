@@ -9,6 +9,15 @@ package org.readium.navigator.common
 import org.readium.r2.shared.ExperimentalReadiumApi
 
 /**
+ * An HTML Id.
+ */
+@ExperimentalReadiumApi
+@JvmInline
+public value class HtmlId(
+    public val value: String,
+)
+
+/**
  * A CSS selector.
  */
 @ExperimentalReadiumApi

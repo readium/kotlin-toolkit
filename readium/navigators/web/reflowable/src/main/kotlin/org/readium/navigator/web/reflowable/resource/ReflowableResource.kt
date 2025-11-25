@@ -210,7 +210,7 @@ internal fun ReflowableResource(
                         val decoration = decorations.value[group]?.firstOrNull { it.id.value == id }
                             ?: return@DelegatingGesturesListener
 
-                        val event = DecorationListener.OnActivatedEvent<ReflowableWebDecorationLocation>(
+                        val event = DecorationListener.OnActivatedEvent(
                             decoration = decoration,
                             group = group,
                             rect = rect.shift(paddingShift),
@@ -302,13 +302,10 @@ internal fun ReflowableResource(
                     webview.setLayerType(View.LAYER_TYPE_HARDWARE, null)
                     // Prevents vertical scrolling towards blank space.
                     // See https://github.com/readium/readium-css/issues/158
-                    webview.setOnTouchListener(object : View.OnTouchListener {
-                        @SuppressLint("ClickableViewAccessibility")
-                        override fun onTouch(view: View, event: MotionEvent): Boolean {
-                            return orientationRef == Orientation.Horizontal &&
-                                event.action == MotionEvent.ACTION_MOVE
-                        }
-                    })
+                    webview.setOnTouchListener { view, event ->
+                        orientationRef == Orientation.Horizontal &&
+                            event.action == MotionEvent.ACTION_MOVE
+                    }
                 },
                 onDispose = {
                     resourceState.scrollController.value = null

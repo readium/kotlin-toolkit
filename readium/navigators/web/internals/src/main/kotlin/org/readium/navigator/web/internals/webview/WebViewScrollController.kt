@@ -32,16 +32,16 @@ public class WebViewScrollController(
         get() = webView.maxScrollY
 
     public val canMoveLeft: Boolean
-        get() = webView.scrollX > webView.width / 2 == true
+        get() = webView.scrollX > webView.width / 2
 
     public val canMoveRight: Boolean
-        get() = webView.maxScrollX - webView.scrollX > webView.width / 2 == true
+        get() = webView.maxScrollX - webView.scrollX > webView.width / 2
 
     public val canMoveTop: Boolean
-        get() = webView.scrollY > webView.width / 2 == true
+        get() = webView.scrollY > webView.width / 2
 
     public val canMoveBottom: Boolean
-        get() = webView.maxScrollY - webView.scrollY > webView.width / 2 == true
+        get() = webView.maxScrollY - webView.scrollY > webView.width / 2
 
     public fun moveLeft() {
         webView.scrollBy(-webView.width, 0)
@@ -169,7 +169,7 @@ private fun RelaxedWebView.scrollToProgression(
 ) {
     when (orientation) {
         Orientation.Vertical -> {
-            scrollTo(scrollX, progression.roundToInt() * maxScrollY.toInt())
+            scrollTo(scrollX, progression.roundToInt() * maxScrollY)
         }
         Orientation.Horizontal -> when (direction) {
             LayoutDirection.Ltr -> {

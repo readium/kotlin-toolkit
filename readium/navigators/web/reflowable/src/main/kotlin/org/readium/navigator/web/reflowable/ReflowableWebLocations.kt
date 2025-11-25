@@ -14,6 +14,7 @@ import org.readium.navigator.common.Decoration
 import org.readium.navigator.common.DecorationLocation
 import org.readium.navigator.common.ExportableLocation
 import org.readium.navigator.common.GoLocation
+import org.readium.navigator.common.HtmlId
 import org.readium.navigator.common.Location
 import org.readium.navigator.common.Progression
 import org.readium.navigator.common.ProgressionLocation
@@ -34,7 +35,7 @@ import org.readium.r2.shared.util.mediatype.MediaType
 public data class ReflowableWebGoLocation(
     override val href: Url,
     val progression: Progression? = null,
-    // val cssSelector: String? = null,
+    val htmlId: HtmlId? = null,
     // val textBefore: String? = null,
     // val textAfter: String? = null,
     // val position: Int? = null

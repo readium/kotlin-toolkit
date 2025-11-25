@@ -27,6 +27,7 @@ import kotlinx.collections.immutable.PersistentMap
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.persistentMapOf
 import org.readium.navigator.common.DecorationController
+import org.readium.navigator.common.HtmlId
 import org.readium.navigator.common.NavigationController
 import org.readium.navigator.common.Overflow
 import org.readium.navigator.common.OverflowController
@@ -299,8 +300,8 @@ internal class ReflowableNavigationDelegate(
 
     override suspend fun goTo(url: Url) {
         val location = ReflowableWebGoLocation(
-            href = url.removeFragment()
-            // TODO: use fragment
+            href = url.removeFragment(),
+            htmlId = url.fragment?.let { HtmlId(it) }
         )
         goTo(location)
     }
@@ -395,7 +396,7 @@ internal class ReflowableDecorationDelegate(
 ) : DecorationController<ReflowableWebDecorationLocation> {
 
     override var decorations: PersistentMap<String, PersistentList<ReflowableWebDecoration>> by
-        mutableStateOf(persistentMapOf<String, PersistentList<ReflowableWebDecoration>>())
+        mutableStateOf(persistentMapOf())
 }
 
 internal class ReflowableSelectionDelegate(

@@ -18,6 +18,7 @@ import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.publication.presentation.presentation
 import org.readium.r2.shared.publication.services.isProtected
+import org.readium.r2.shared.publication.services.isRestricted
 import org.readium.r2.shared.util.Try
 
 /**
@@ -48,6 +49,10 @@ public class ReflowableWebRenditionFactory private constructor(
             }
 
             if (publication.readingOrder.isEmpty()) {
+                return null
+            }
+
+            if (publication.isRestricted) {
                 return null
             }
 

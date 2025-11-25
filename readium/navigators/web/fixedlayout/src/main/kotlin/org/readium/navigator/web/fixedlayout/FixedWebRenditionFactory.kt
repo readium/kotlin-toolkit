@@ -24,6 +24,7 @@ import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.publication.presentation.page
 import org.readium.r2.shared.publication.presentation.presentation
 import org.readium.r2.shared.publication.services.isProtected
+import org.readium.r2.shared.publication.services.isRestricted
 import org.readium.r2.shared.util.ThrowableError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.getOrElse
@@ -56,6 +57,10 @@ public class FixedWebRenditionFactory private constructor(
             }
 
             if (publication.readingOrder.isEmpty()) {
+                return null
+            }
+
+            if (publication.isRestricted) {
                 return null
             }
 
