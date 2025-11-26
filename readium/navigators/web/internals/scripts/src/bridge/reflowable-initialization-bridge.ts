@@ -5,6 +5,7 @@ import { ReflowableDecorationsBridge } from "./all-decoration-bridge"
 import { ReflowableListenerAdapter } from "./all-listener-bridge"
 import { ReflowableSelectionBridge } from "./all-selection-bridge"
 import { CssBridge } from "./reflowable-css-bridge"
+import { ReflowableMoveBridge } from "./reflowable-move-bridge"
 
 export class ReflowableInitializationBridge {
   private readonly window: Window
@@ -20,6 +21,9 @@ export class ReflowableInitializationBridge {
   }
 
   private initApis() {
+    this.window.move = new ReflowableMoveBridge(this.window.document)
+    this.listener.onMoveApiAvailable()
+
     const bridgeListener = new ReflowableListenerAdapter(window.gestures)
 
     const decorationManager = new DecorationManager(window)
@@ -58,6 +62,7 @@ export class ReflowableInitializationBridge {
 
 export interface ReflowableApiStateListener {
   onCssApiAvailable(): void
+  onMoveApiAvailable(): void
   onSelectionApiAvailable(): void
   onDecorationApiAvailable(): void
 }

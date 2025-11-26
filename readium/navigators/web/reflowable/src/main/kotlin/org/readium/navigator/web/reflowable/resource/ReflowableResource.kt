@@ -26,8 +26,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import kotlinx.collections.immutable.ImmutableMap
 import kotlinx.coroutines.flow.launchIn
@@ -54,6 +56,7 @@ import org.readium.navigator.web.internals.webapi.GesturesApi
 import org.readium.navigator.web.internals.webapi.ReadiumCssApi
 import org.readium.navigator.web.internals.webapi.ReflowableApiStateApi
 import org.readium.navigator.web.internals.webapi.ReflowableDecorationApi
+import org.readium.navigator.web.internals.webapi.ReflowableMoveApi
 import org.readium.navigator.web.internals.webapi.ReflowableSelectionApi
 import org.readium.navigator.web.internals.webview.RelaxedWebView
 import org.readium.navigator.web.internals.webview.WebView
@@ -63,6 +66,7 @@ import org.readium.navigator.web.reflowable.ReflowableWebDecoration
 import org.readium.navigator.web.reflowable.ReflowableWebDecorationCssSelectorLocation
 import org.readium.navigator.web.reflowable.ReflowableWebDecorationLocation
 import org.readium.navigator.web.reflowable.ReflowableWebDecorationTextQuoteLocation
+import org.readium.navigator.web.reflowable.ReflowableWebGoLocation
 import org.readium.navigator.web.reflowable.css.ReadiumCssInjector
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.AbsoluteUrl
@@ -73,6 +77,7 @@ import timber.log.Timber
 @Composable
 internal fun ReflowableResource(
     resourceState: ReflowableResourceState,
+    pendingLocation: ReflowableWebGoLocation?,
     publicationBaseUrl: AbsoluteUrl,
     webViewClient: WebViewClient,
     backgroundColor: Color,
@@ -90,6 +95,7 @@ internal fun ReflowableResource(
     onDecorationActivated: (DecorationListener.OnActivatedEvent<ReflowableWebDecorationLocation>) -> Unit,
     onProgressionChange: (Progression) -> Unit,
     onDocumentResized: () -> Unit,
+    onPendingLocationConsumed: (ReflowableWebGoLocation) -> Unit,
 ) {
     Box(
         modifier = Modifier.fillMaxSize(),
@@ -126,6 +132,10 @@ internal fun ReflowableResource(
             mutableStateOf<ReflowableSelectionApi?>(null)
         }
 
+        var moveApi by remember(webViewState.webView) {
+            mutableStateOf<ReflowableMoveApi?>(null)
+        }
+
         val decorations = remember(webViewState.webView) { mutableStateOf(decorations) }
             .apply { value = decorations }
 
@@ -148,6 +158,9 @@ internal fun ReflowableResource(
                     },
                     onDecorationApiAvailableDelegate = {
                         decorationApi = ReflowableDecorationApi(webView, decorationTemplates)
+                    },
+                    onMoveApiAvailableDelegate = {
+                        moveApi = ReflowableMoveApi(webView)
                     }
                 )
                 ReflowableApiStateApi(webView, listener)
@@ -192,6 +205,29 @@ internal fun ReflowableResource(
                             onDocumentResized.invoke()
                         }
                     )
+                }
+            }
+        }
+
+        val density = LocalDensity.current
+
+        LaunchedEffect(moveApi, pendingLocation, resourceState.scrollController.value) {
+            moveApi?.let { moveApi ->
+                pendingLocation?.let {
+                    resourceState.scrollController.value?.let { scrollController ->
+                        moveApi.getOffsetForLocation(
+                            progression = pendingLocation.progression,
+                            htmlId = pendingLocation.htmlId,
+                            orientation = orientation
+                        )?.let { offset ->
+                            scrollController.moveToOffset(
+                                offset = with(density) { offset.dp.roundToPx() },
+                                snap = !scroll,
+                                orientation = orientation,
+                            )
+                        }
+                        onPendingLocationConsumed(pendingLocation)
+                    }
                 }
             }
         }

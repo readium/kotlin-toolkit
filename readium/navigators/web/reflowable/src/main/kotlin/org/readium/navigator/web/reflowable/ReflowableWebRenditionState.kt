@@ -22,10 +22,18 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
+import kotlin.coroutines.Continuation
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.PersistentMap
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.persistentMapOf
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.readium.navigator.common.DecorationController
 import org.readium.navigator.common.HtmlId
 import org.readium.navigator.common.NavigationController
@@ -178,7 +186,7 @@ public class ReflowableWebRenditionState internal constructor(
         WebViewClient(webViewServer)
     }
 
-    private lateinit var navigationDelegate: ReflowableNavigationDelegate
+    internal lateinit var navigationDelegate: ReflowableNavigationDelegate
 
     internal fun initController(location: ReflowableWebLocation) {
         navigationDelegate =
@@ -207,7 +215,7 @@ public class ReflowableWebRenditionState internal constructor(
 @ExperimentalReadiumApi
 @Stable
 public class ReflowableWebRenditionController internal constructor(
-    navigationDelegate: ReflowableNavigationDelegate,
+    internal val navigationDelegate: ReflowableNavigationDelegate,
     layoutDelegate: ReflowableLayoutDelegate,
     decorationDelegate: ReflowableDecorationDelegate,
     selectionDelegate: ReflowableSelectionDelegate,
@@ -285,13 +293,30 @@ internal class ReflowableNavigationDelegate(
     initialLocation: ReflowableWebLocation,
 ) : NavigationController<ReflowableWebLocation, ReflowableWebGoLocation>, OverflowController {
 
+    private val coroutineScope: CoroutineScope =
+        MainScope()
+
     private val locationMutable: MutableState<ReflowableWebLocation> =
         mutableStateOf(initialLocation)
+
+    internal val pendingGo: MutableState<ReflowablePendingGo?> =
+        mutableStateOf(null)
 
     internal fun updateLocation(location: ReflowableWebLocation) {
         val index = checkNotNull(readingOrder.indexOfHref(location.href))
         resourceStates[index].progression = location.progression
         locationMutable.value = location
+    }
+
+    internal fun consumePendingGo(location: ReflowableWebGoLocation) {
+        coroutineScope.launch {
+            pendingGo.value?.let { pendingGoNow ->
+                if (pendingGoNow.location == location) {
+                    pendingGo.value = null
+                    pendingGoNow.continuation.resume(Unit)
+                }
+            }
+        }
     }
 
     override val overflow: Overflow by overflowState
@@ -306,19 +331,22 @@ internal class ReflowableNavigationDelegate(
         goTo(location)
     }
 
-    override suspend fun goTo(location: ReflowableWebGoLocation) {
-        val resourceIndex = readingOrder.indexOfHref(location.href) ?: return
-        pagerState.scrollToPage(resourceIndex)
-        location.progression?.let { // FIXME: goTo returns before the move has completed.
-            resourceStates[resourceIndex].progression = it
-            // If the scrollController is not available yet, progression will be applied
-            // when it becomes available.
-            resourceStates[resourceIndex].scrollController.value?.moveToProgression(it)
-        }
-    }
-
     override suspend fun goTo(location: ReflowableWebLocation) {
         goTo(ReflowableWebGoLocation(location.href, location.progression))
+    }
+
+    override suspend fun goTo(location: ReflowableWebGoLocation) {
+        withContext(Dispatchers.Main) {
+            pendingGo.value?.continuation?.resume(Unit)
+            pendingGo.value = null
+
+            val resourceIndex = readingOrder.indexOfHref(location.href) ?: return@withContext
+            pagerState.scrollToPage(resourceIndex)
+
+            suspendCoroutine { continuation ->
+                pendingGo.value = ReflowablePendingGo(location, continuation)
+            }
+        }
     }
 
     // This information is not available when the WebView has not yet been composed or laid out.
@@ -390,6 +418,11 @@ internal class ReflowableNavigationDelegate(
         )
     }
 }
+
+internal data class ReflowablePendingGo(
+    val location: ReflowableWebGoLocation,
+    val continuation: Continuation<Unit>,
+)
 
 internal class ReflowableDecorationDelegate(
     val decorationTemplates: WebDecorationTemplates,

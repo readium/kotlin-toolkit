@@ -4,6 +4,8 @@
  * available in the top-level LICENSE file of the project.
  */
 
+@file:OptIn(ExperimentalReadiumApi::class)
+
 package org.readium.navigator.web.reflowable.resource
 
 import androidx.compose.runtime.MutableState
@@ -15,7 +17,6 @@ import org.readium.navigator.web.internals.webview.WebViewScrollController
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.Url
 
-@OptIn(ExperimentalReadiumApi::class)
 @Stable
 internal class ReflowableResourceState(
     val index: Int,

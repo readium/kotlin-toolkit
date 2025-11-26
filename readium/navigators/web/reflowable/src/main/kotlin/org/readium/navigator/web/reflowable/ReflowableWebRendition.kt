@@ -166,11 +166,16 @@ public fun ReflowableWebRendition(
                 val href = state.publication.readingOrder.items[index].href
 
                 val decorations = state.decorationDelegate.decorations
-                    .mapValues { it.value.filter { it.location.href == href } }
+                    .mapValues { groupDecorations -> groupDecorations.value.filter { it.location.href == href } }
                     .toImmutableMap()
+
+                val pendingLocation = state.navigationDelegate.pendingGo.value
+                    ?.location
+                    ?.takeIf { it.href == href }
 
                 ReflowableResource(
                     resourceState = state.resourceStates[index],
+                    pendingLocation = pendingLocation,
                     publicationBaseUrl = WebViewServer.publicationBaseHref,
                     webViewClient = state.webViewClient,
                     backgroundColor = backgroundColor,
@@ -212,6 +217,9 @@ public fun ReflowableWebRendition(
                     },
                     onDocumentResized = {
                         state.scrollState.onDocumentResized(index)
+                    },
+                    onPendingLocationConsumed = { consumedLocation ->
+                        state.navigationDelegate.consumePendingGo(consumedLocation)
                     }
                 )
             }

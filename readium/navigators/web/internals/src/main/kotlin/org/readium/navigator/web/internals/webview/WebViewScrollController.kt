@@ -112,16 +112,34 @@ public class WebViewScrollController(
             direction = direction
         )
         if (snap) {
-            when (orientation) {
-                Orientation.Vertical -> {
-                    val offset = webView.scrollY % webView.height
-                    webView.scrollBy(0, -offset)
-                }
-                Orientation.Horizontal -> {
-                    val offset = webView.scrollX % webView.width
-                    webView.scrollBy(-offset, 0)
-                }
+            snap(orientation)
+        }
+    }
+
+    public fun snap(orientation: Orientation) {
+        when (orientation) {
+            Orientation.Vertical -> {
+                val offset = webView.scrollY % webView.height
+                webView.scrollBy(0, -offset)
             }
+            Orientation.Horizontal -> {
+                val offset = webView.scrollX % webView.width
+                webView.scrollBy(-offset, 0)
+            }
+        }
+    }
+
+    public fun moveToOffset(
+        offset: Int,
+        snap: Boolean,
+        orientation: Orientation,
+    ) {
+        webView.scrollToOffset(
+            offset = offset,
+            orientation = orientation
+        )
+        if (snap) {
+            snap(orientation)
         }
     }
 
@@ -178,6 +196,20 @@ private fun RelaxedWebView.scrollToProgression(
             LayoutDirection.Rtl -> {
                 scrollTo((1 - progression).roundToInt() * maxScrollX, scrollY)
             }
+        }
+    }
+}
+
+private fun RelaxedWebView.scrollToOffset(
+    offset: Int,
+    orientation: Orientation,
+) {
+    when (orientation) {
+        Orientation.Vertical -> {
+            scrollTo(scrollX, offset)
+        }
+        Orientation.Horizontal -> {
+            scrollTo(offset, scrollY)
         }
     }
 }
