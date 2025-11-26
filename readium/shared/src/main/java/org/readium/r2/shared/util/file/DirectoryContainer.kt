@@ -41,7 +41,7 @@ public class DirectoryContainer(
                     withContext(Dispatchers.IO) {
                         root.walk()
                             .filter { it.isFile }
-                            .map { rootUrl.relativize(it.toUrl()) }
+                            .map { rootUrl.relativize(it.toUrl(isDirectory = false)) }
                             .toSet()
                     }
                 } catch (e: SecurityException) {

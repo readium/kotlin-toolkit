@@ -99,7 +99,7 @@ class Bookshelf(
         retrieverResult: Try<PublicationRetriever.Result, ImportError>,
     ) {
         retrieverResult
-            .map { addBook(it.publication.toUrl(), it.format, it.coverUrl) }
+            .map { addBook(it.publication.toUrl(isDirectory = false), it.format, it.coverUrl) }
             .onSuccess { channel.send(Event.ImportPublicationSuccess) }
             .onFailure { channel.send(Event.ImportPublicationError(it)) }
     }

@@ -369,7 +369,12 @@ public fun Url.Companion.fromLegacyHref(href: String): Url? =
 public fun Url.Companion.fromEpubHref(href: String): Url? =
     Url(href) ?: fromDecodedPath(href)
 
-public fun File.toUrl(isDirectory: Boolean = false): AbsoluteUrl {
+/**
+ * Creates a URL pointing to this [File] which must denote an absolute path.
+ *
+ * @param isDirectory If the URL must end with a trailing slash because it points to a directory.
+ */
+public fun File.toUrl(isDirectory: Boolean): AbsoluteUrl {
     require(isAbsolute)
 
     val uri = Uri.Builder().also {
