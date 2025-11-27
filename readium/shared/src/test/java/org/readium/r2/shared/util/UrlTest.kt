@@ -321,7 +321,7 @@ class UrlTest {
 
     @Test
     fun fromFile() {
-        assertEquals(AbsoluteUrl(Uri.parse("file:///tmp/test.txt")), File("/tmp/test.txt").toUrl())
+        assertEquals(AbsoluteUrl(Uri.parse("file:///tmp/test.txt")), File("/tmp/test.txt").toUrl(isDirectory = false))
     }
 
     @Test
@@ -330,6 +330,11 @@ class UrlTest {
             File("/tmp/test.txt"),
             (Url("file:///tmp/test.txt") as? AbsoluteUrl)?.toFile()
         )
+    }
+
+    @Test
+    fun fromDirectory() {
+        assertEquals(AbsoluteUrl(Uri.parse("file:///tmp/")), File("/tmp").toUrl(isDirectory = true))
     }
 
     @Test

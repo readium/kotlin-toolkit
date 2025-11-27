@@ -35,13 +35,13 @@ public class DirectoryContainer(
     public companion object {
 
         public suspend operator fun invoke(root: File): Try<DirectoryContainer, FileSystemError> {
-            val rootUrl = root.toUrl()
+            val rootUrl = root.toUrl(isDirectory = true)
             val entries =
                 try {
                     withContext(Dispatchers.IO) {
                         root.walk()
                             .filter { it.isFile }
-                            .map { rootUrl.relativize(it.toUrl()) }
+                            .map { rootUrl.relativize(it.toUrl(isDirectory = false)) }
                             .toSet()
                     }
                 } catch (e: SecurityException) {

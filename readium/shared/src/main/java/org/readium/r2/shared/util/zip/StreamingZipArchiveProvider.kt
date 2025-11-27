@@ -91,7 +91,7 @@ internal class StreamingZipArchiveProvider {
     internal suspend fun openFile(file: File): Container<Resource> = withContext(Dispatchers.IO) {
         val fileChannel = FileChannelAdapter(file, "r")
         val channel = wrapBaseChannel(fileChannel)
-        StreamingZipContainer(ZipFile(channel), file.toUrl())
+        StreamingZipContainer(ZipFile(channel), file.toUrl(isDirectory = false))
     }
 
     private fun wrapBaseChannel(channel: SeekableByteChannel): SeekableByteChannel {
