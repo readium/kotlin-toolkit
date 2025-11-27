@@ -125,11 +125,16 @@ public fun ReflowableWebRendition(
             val currentPageState = remember(state) { derivedStateOf { state.pagerState.currentPage } }
 
             fun currentLocation(): ReflowableWebLocation {
-                val currentItem = state.publication.readingOrder.items[currentPageState.value]
+                val currentIndex = currentPageState.value
+                val currentItem = state.publication.readingOrder.items[currentIndex]
+                val progression = state.resourceStates[currentPageState.value].progression
+                val position = state.publication.positionForProgression(currentIndex, progression)
                 return ReflowableWebLocation(
                     href = currentItem.href,
                     mediaType = currentItem.mediaType,
-                    progression = state.resourceStates[currentPageState.value].progression
+                    progression = progression,
+                    position = position,
+                    totalProgression = state.publication.totalProgressionForPosition(position)
                 )
             }
 
@@ -206,13 +211,7 @@ public fun ReflowableWebRendition(
                     },
                     onProgressionChange = {
                         if (index == currentPageState.value) {
-                            val item = state.publication.readingOrder[index]
-                            val newLocation = ReflowableWebLocation(
-                                href = item.href,
-                                mediaType = item.mediaType,
-                                progression = it
-                            )
-                            state.updateLocation(newLocation)
+                            state.updateLocation(currentLocation())
                         }
                     },
                     onDocumentResized = {

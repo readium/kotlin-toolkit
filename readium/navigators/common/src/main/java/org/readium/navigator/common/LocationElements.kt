@@ -53,8 +53,8 @@ public value class Position private constructor(
 ) {
     public companion object {
 
-        public operator fun invoke(value: Double): Position? =
-            value.takeIf { value >= 0 }
+        public operator fun invoke(value: Int): Position? =
+            value.takeIf { value >= 1 }
                 ?.let { Position(it) }
     }
 }

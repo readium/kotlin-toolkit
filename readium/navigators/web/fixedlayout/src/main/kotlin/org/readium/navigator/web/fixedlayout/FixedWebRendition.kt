@@ -34,6 +34,8 @@ import kotlinx.coroutines.launch
 import org.readium.navigator.common.DecorationListener
 import org.readium.navigator.common.HyperlinkListener
 import org.readium.navigator.common.InputListener
+import org.readium.navigator.common.Position
+import org.readium.navigator.common.Progression
 import org.readium.navigator.common.TapContext
 import org.readium.navigator.common.defaultDecorationListener
 import org.readium.navigator.common.defaultHyperlinkListener
@@ -100,8 +102,10 @@ public fun FixedWebRendition(
                 val itemIndex = state.layoutDelegate.layout.value.pageIndexForSpread(spreadIndex)
                 val href = state.publication.readingOrder[itemIndex].href
                 val mediaType = state.publication.readingOrder[itemIndex].mediaType
+                val position = Position(itemIndex + 1)!!
+                val totalProgression = Progression(spreadIndex / state.layoutDelegate.layout.value.spreads.size.toDouble())!!
 
-                return FixedWebLocation(href, mediaType)
+                return FixedWebLocation(href, position, totalProgression, mediaType)
             }
 
             if (state.controller == null) {
@@ -197,7 +201,7 @@ public fun FixedWebRendition(
                 val spread = state.layoutDelegate.layout.value.spreads[index]
 
                 val decorations = state.decorationDelegate.decorations
-                    .mapValues { it.value.filter { it.location.href in spread.pages.map { it.href } } }
+                    .mapValues { groupDecorations -> groupDecorations.value.filter { it.location.href in spread.pages.map { it.href } } }
                     .toImmutableMap()
 
                 when (spread) {

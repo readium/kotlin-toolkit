@@ -16,6 +16,8 @@ import org.readium.navigator.common.ExportableLocation
 import org.readium.navigator.common.GoLocation
 import org.readium.navigator.common.HtmlId
 import org.readium.navigator.common.Location
+import org.readium.navigator.common.Position
+import org.readium.navigator.common.PositionLocation
 import org.readium.navigator.common.Progression
 import org.readium.navigator.common.ProgressionLocation
 import org.readium.navigator.common.SelectionLocation
@@ -127,13 +129,19 @@ public data class ReflowableWebLocation internal constructor(
     override val href: Url,
     private val mediaType: MediaType?,
     override val progression: Progression,
-) : ExportableLocation, ProgressionLocation {
+    override val position: Position,
+    val totalProgression: Progression,
+) : ExportableLocation, ProgressionLocation, PositionLocation {
 
     override fun toLocator(): Locator =
         Locator(
             href = href,
             mediaType = mediaType ?: MediaType.XHTML,
-            locations = Locations(progression = progression.value)
+            locations = Locations(
+                progression = progression.value,
+                position = position.value,
+                totalProgression = totalProgression.value
+            )
         )
 }
 
