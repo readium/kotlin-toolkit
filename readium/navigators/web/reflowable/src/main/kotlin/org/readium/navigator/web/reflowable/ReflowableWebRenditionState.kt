@@ -303,8 +303,6 @@ internal class ReflowableNavigationDelegate(
         mutableStateOf(null)
 
     internal fun updateLocation(location: ReflowableWebLocation) {
-        val index = checkNotNull(readingOrder.indexOfHref(location.href))
-        resourceStates[index].progression = location.progression
         locationMutable.value = location
     }
 
