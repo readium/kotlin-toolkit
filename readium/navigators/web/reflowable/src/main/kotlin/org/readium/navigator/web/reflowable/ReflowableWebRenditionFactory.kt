@@ -33,7 +33,7 @@ import org.readium.r2.shared.util.Try
 public class ReflowableWebRenditionFactory private constructor(
     private val application: Application,
     private val publication: Publication,
-    private val positionsServices: PositionsService,
+    private val positionsService: PositionsService,
     private val configuration: ReflowableWebConfiguration,
 ) {
 
@@ -84,7 +84,7 @@ public class ReflowableWebRenditionFactory private constructor(
         initialSettings: ReflowableWebSettings,
         initialLocation: ReflowableWebGoLocation? = null,
         readingOrder: List<Link> = publication.readingOrder,
-        positionsService: PositionsService = positionsServices,
+        positionsService: PositionsService = this.positionsService,
     ): Try<ReflowableWebRenditionState, Error> {
         // TODO: support font family declarations and reading system properties
         // TODO: enable apps not to disable selection when publication is protected
@@ -96,7 +96,7 @@ public class ReflowableWebRenditionFactory private constructor(
             )
         }
 
-        val positionNumbers = positionsServices.positionsByReadingOrder()
+        val positionNumbers = positionsService.positionsByReadingOrder()
             .map { it.size }
 
         val resourceItems = (publication.readingOrder - readingOrder + publication.resources).map {
