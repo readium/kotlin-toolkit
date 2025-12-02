@@ -174,7 +174,7 @@ public fun ReflowableWebRendition(
                     .mapValues { groupDecorations -> groupDecorations.value.filter { it.location.href == href } }
                     .toImmutableMap()
 
-                val pendingLocation = state.navigationDelegate.pendingGo.value
+                val pendingLocation = state.goDelegate.pendingGo.value
                     ?.location
                     ?.takeIf { it.href == href }
 
@@ -217,7 +217,7 @@ public fun ReflowableWebRendition(
                         state.scrollState.onDocumentResized(index)
                     },
                     onPendingLocationConsumed = { consumedLocation ->
-                        state.navigationDelegate.consumePendingGo(consumedLocation)
+                        state.goDelegate.consumePendingGo(consumedLocation)
                     }
                 )
             }
