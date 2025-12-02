@@ -42,6 +42,7 @@ import kotlinx.coroutines.launch
 import org.readium.navigator.common.DecorationListener
 import org.readium.navigator.common.HyperlinkListener
 import org.readium.navigator.common.InputListener
+import org.readium.navigator.common.Progression
 import org.readium.navigator.common.TapContext
 import org.readium.navigator.common.TapEvent
 import org.readium.navigator.common.defaultDecorationListener
@@ -138,9 +139,11 @@ public fun ReflowableWebRendition(
                 )
             }
 
-            if (state.controller == null) {
-                // Initialize controller. In the future, that should require access to a ready WebView.
-                state.initController(location = currentLocation())
+            LaunchedEffect(state.controller, state.goDelegate.pendingGo.value) {
+                if (state.controller == null && state.goDelegate.pendingGo.value == null) {
+                    // Initialize controller. In the future, that should require access to a ready WebView.
+                    state.initController(location = currentLocation())
+                }
             }
 
             LaunchedEffect(currentPageState) {
@@ -217,7 +220,25 @@ public fun ReflowableWebRendition(
                         state.scrollState.onDocumentResized(index)
                     },
                     onPendingLocationConsumed = { consumedLocation ->
-                        state.goDelegate.consumePendingGo(consumedLocation)
+                        val currentIndex = state.publication.readingOrder.indexOfHref(consumedLocation.href)!!
+                        state.resourceStates.forEachIndexed { index, item ->
+                            val newProgression = when {
+                                index < currentIndex -> Progression(1.0)!!
+                                index > currentIndex -> Progression(0.0)!!
+                                else -> null
+                            }
+
+                            newProgression?.let { newProgression ->
+                                item.progression = newProgression
+                                item.scrollController.value?.moveToProgression(
+                                    progression = newProgression.value,
+                                    snap = !state.layoutDelegate.settings.scroll,
+                                    orientation = state.layoutDelegate.orientation,
+                                    direction = layoutDirection
+                                )
+                            }
+                        }
+                        state.goDelegate.resumeGo(consumedLocation)
                     }
                 )
             }

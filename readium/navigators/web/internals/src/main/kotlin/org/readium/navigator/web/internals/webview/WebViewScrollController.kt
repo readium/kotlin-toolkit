@@ -12,6 +12,7 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.util.fastCoerceAtLeast
 import androidx.compose.ui.util.fastCoerceAtMost
 import androidx.compose.ui.util.fastRoundToInt
+import kotlin.math.ceil
 import kotlin.math.roundToInt
 import org.readium.navigator.web.internals.gestures.DefaultScrollable2DState
 import org.readium.navigator.web.internals.gestures.Scrollable2DState
@@ -105,7 +106,6 @@ public class WebViewScrollController(
     ) {
         check(webView.height != 0)
         check(webView.width != 0)
-
         webView.scrollToProgression(
             progression = progression,
             orientation = orientation,
@@ -187,14 +187,14 @@ private fun RelaxedWebView.scrollToProgression(
 ) {
     when (orientation) {
         Orientation.Vertical -> {
-            scrollTo(scrollX, (progression * maxScrollY).roundToInt())
+            scrollTo(scrollX, ceil((progression * maxScrollY)).roundToInt())
         }
         Orientation.Horizontal -> when (direction) {
             LayoutDirection.Ltr -> {
-                scrollTo((progression * maxScrollX).roundToInt(), scrollY)
+                scrollTo(ceil(progression * maxScrollX).roundToInt(), scrollY)
             }
             LayoutDirection.Rtl -> {
-                scrollTo(((1 - progression) * maxScrollX).roundToInt(), scrollY)
+                scrollTo((ceil(1 - progression) * maxScrollX).roundToInt(), scrollY)
             }
         }
     }

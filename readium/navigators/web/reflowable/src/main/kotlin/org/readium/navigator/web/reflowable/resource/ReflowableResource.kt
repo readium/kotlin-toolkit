@@ -215,11 +215,13 @@ internal fun ReflowableResource(
             moveApi?.let { moveApi ->
                 pendingLocation?.let {
                     resourceState.scrollController.value?.let { scrollController ->
-                        moveApi.getOffsetForLocation(
+                        val offset = moveApi.getOffsetForLocation(
                             progression = pendingLocation.progression,
                             htmlId = pendingLocation.htmlId,
                             orientation = orientation
-                        )?.let { offset ->
+                        )
+
+                        offset?.let { offset ->
                             scrollController.moveToOffset(
                                 offset = with(density) { offset.dp.roundToPx() },
                                 snap = !scroll,

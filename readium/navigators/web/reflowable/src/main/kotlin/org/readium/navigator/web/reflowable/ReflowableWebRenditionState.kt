@@ -191,6 +191,7 @@ public class ReflowableWebRenditionState internal constructor(
     internal val goDelegate = GoDelegate(
         coroutineScope = coroutineScope,
         readingOrder = publication.readingOrder,
+        resourceStates = resourceStates,
         pagerState = pagerState
     )
 
@@ -232,6 +233,7 @@ public class ReflowableWebRenditionState internal constructor(
 internal class GoDelegate(
     private val coroutineScope: CoroutineScope,
     private val readingOrder: ReflowableWebPublication.ReadingOrder,
+    private val resourceStates: List<ReflowableResourceState>,
     private val pagerState: PagerState,
 ) {
 
@@ -243,13 +245,15 @@ internal class GoDelegate(
     internal val pendingGo: MutableState<PendingGo?> =
         mutableStateOf(null)
 
-    internal fun consumePendingGo(location: ReflowableWebGoLocation) {
-        coroutineScope.launch {
+    internal fun resumeGo(location: ReflowableWebGoLocation) {
+        coroutineScope.launch { // on the main thread
             pendingGo.value?.let { pendingGoNow ->
-                if (pendingGoNow.location == location) {
-                    pendingGo.value = null
-                    pendingGoNow.continuation.resume(Unit)
+                if (pendingGoNow.location != location) {
+                    return@launch
                 }
+
+                pendingGo.value = null
+                pendingGoNow.continuation.resume(Unit)
             }
         }
     }
@@ -257,7 +261,6 @@ internal class GoDelegate(
         withContext(Dispatchers.Main) {
             pendingGo.value?.continuation?.resume(Unit)
             pendingGo.value = null
-
             val resourceIndex = readingOrder.indexOfHref(location.href) ?: return@withContext
             pagerState.scrollToPage(resourceIndex)
 
