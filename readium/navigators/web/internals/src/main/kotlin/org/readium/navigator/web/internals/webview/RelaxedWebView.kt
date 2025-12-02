@@ -97,3 +97,14 @@ private class Callback2Wrapper(
         callback2?.onGetContentRect(mode, view, outRect)
             ?: super.onGetContentRect(mode, view, outRect)
 }
+
+/**
+ * Best effort to delay the execution of a block until the Webview
+ * has received data up-to-date at the moment when the call occurs or newer.
+ */
+public fun RelaxedWebView.invokeOnWebViewUpToDate(block: WebView.() -> Unit) {
+    requestLayout()
+    setNextLayoutListener {
+        invokeOnReadyToBeDrawn(block)
+    }
+}

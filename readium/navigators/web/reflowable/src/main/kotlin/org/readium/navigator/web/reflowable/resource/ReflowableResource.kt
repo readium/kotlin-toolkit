@@ -12,7 +12,6 @@ import android.annotation.SuppressLint
 import android.view.ActionMode
 import android.view.MotionEvent
 import android.view.View
-import android.webkit.WebView
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.layout.Box
@@ -62,6 +61,7 @@ import org.readium.navigator.web.internals.webapi.ReflowableSelectionApi
 import org.readium.navigator.web.internals.webview.RelaxedWebView
 import org.readium.navigator.web.internals.webview.WebView
 import org.readium.navigator.web.internals.webview.WebViewScrollController
+import org.readium.navigator.web.internals.webview.invokeOnWebViewUpToDate
 import org.readium.navigator.web.internals.webview.rememberWebViewState
 import org.readium.navigator.web.reflowable.ReflowableWebDecoration
 import org.readium.navigator.web.reflowable.ReflowableWebDecorationCssSelectorLocation
@@ -181,7 +181,7 @@ internal fun ReflowableResource(
                     documentStateApi.listener = DelegatingDocumentApiListener(
                         onDocumentLoadedAndSizedDelegate = {
                             Timber.d("resource ${resourceState.index} onDocumentLoadedAndResized")
-                            webView.postOnWebViewUpToDateCallback {
+                            webView.invokeOnWebViewUpToDate {
                                 val scrollController = WebViewScrollController(webView)
                                 scrollController.moveToProgression(
                                     progression = resourceState.progression.value,
@@ -373,23 +373,4 @@ private fun ReflowableWebDecoration.toWebApiDecoration(
         cssSelector = cssSelector,
         textQuote = textQuote
     )
-}
-
-/**
- * Best effort to delay the execution of a block until the Webview
- * has received data up-to-date at the moment when the call occurs or newer.
- */
-private fun RelaxedWebView.postOnWebViewUpToDateCallback(block: () -> Unit) {
-    requestLayout()
-    setNextLayoutListener {
-        postVisualStateCallback(
-            0,
-            object :
-                WebView.VisualStateCallback() {
-                override fun onComplete(requestId: Long) {
-                    block()
-                }
-            }
-        )
-    }
 }
