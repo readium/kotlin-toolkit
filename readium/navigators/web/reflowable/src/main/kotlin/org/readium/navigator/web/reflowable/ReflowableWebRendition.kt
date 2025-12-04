@@ -128,7 +128,7 @@ public fun ReflowableWebRendition(
             fun currentLocation(): ReflowableWebLocation {
                 val currentIndex = currentPageState.value
                 val currentItem = state.publication.readingOrder.items[currentIndex]
-                val progression = state.resourceStates[currentIndex].progression
+                val progression = state.resourceStates[currentIndex].startProgression
                 val position = state.publication.positionForProgression(currentIndex, progression)
                 return ReflowableWebLocation(
                     href = currentItem.href,
@@ -213,7 +213,7 @@ public fun ReflowableWebRendition(
                         decorationListener.onDecorationActivated(event)
                     },
                     onProgressionChange = {
-                        state.resourceStates[index].progression = it
+                        state.resourceStates[index].updateProgression(it, state.layoutDelegate.orientation, layoutDirection)
                         state.updateLocation(currentLocation())
                     },
                     onDocumentResized = {
@@ -229,7 +229,7 @@ public fun ReflowableWebRendition(
                             }
 
                             newProgression?.let { newProgression ->
-                                item.progression = newProgression
+                                item.updateProgression(newProgression, state.layoutDelegate.orientation, layoutDirection)
                                 item.scrollController.value?.moveToProgression(
                                     progression = newProgression.value,
                                     snap = !state.layoutDelegate.settings.scroll,

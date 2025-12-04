@@ -16,6 +16,7 @@ import kotlin.math.ceil
 import kotlin.math.roundToInt
 import org.readium.navigator.web.internals.gestures.DefaultScrollable2DState
 import org.readium.navigator.web.internals.gestures.Scrollable2DState
+import org.readium.r2.shared.ExperimentalReadiumApi
 
 public class WebViewScrollController(
     private val webView: RelaxedWebView,
@@ -95,8 +96,11 @@ public class WebViewScrollController(
         }
     }
 
-    public fun progression(orientation: Orientation, direction: LayoutDirection): Double? =
-        webView.progression(orientation, direction).takeIf { it.isFinite() }
+    public fun startProgression(orientation: Orientation, direction: LayoutDirection): Double? =
+        webView.startProgression(orientation, direction).takeIf { it.isFinite() }
+
+    public fun endProgression(orientation: Orientation, direction: LayoutDirection): Double? =
+        webView.endProgression(orientation, direction).takeIf { it.isFinite() }
 
     public fun moveToProgression(
         progression: Double,
@@ -185,16 +189,19 @@ private fun RelaxedWebView.scrollToProgression(
     orientation: Orientation,
     direction: LayoutDirection,
 ) {
+    val docHeight = maxScrollY + height
+    val docWidth = maxScrollX + width
+
     when (orientation) {
         Orientation.Vertical -> {
-            scrollTo(scrollX, ceil((progression * maxScrollY)).roundToInt())
+            scrollTo(scrollX, ceil((progression * docHeight)).roundToInt())
         }
         Orientation.Horizontal -> when (direction) {
             LayoutDirection.Ltr -> {
-                scrollTo(ceil(progression * maxScrollX).roundToInt(), scrollY)
+                scrollTo(ceil(progression * docWidth).roundToInt(), scrollY)
             }
             LayoutDirection.Rtl -> {
-                scrollTo((ceil(1 - progression) * maxScrollX).roundToInt(), scrollY)
+                scrollTo((ceil(1 - progression) * docWidth).roundToInt(), scrollY)
             }
         }
     }
@@ -214,14 +221,26 @@ private fun RelaxedWebView.scrollToOffset(
     }
 }
 
-private fun RelaxedWebView.progression(
+@OptIn(ExperimentalReadiumApi::class)
+private fun RelaxedWebView.startProgression(
     orientation: Orientation,
     direction: LayoutDirection,
 ) = when (orientation) {
-    Orientation.Vertical -> scrollY / maxScrollY.toDouble()
+    Orientation.Vertical -> scrollY / (maxScrollY + height).toDouble()
     Orientation.Horizontal -> when (direction) {
-        LayoutDirection.Ltr -> scrollX / maxScrollX.toDouble()
-        LayoutDirection.Rtl -> 1 - scrollX / maxScrollX.toDouble()
+        LayoutDirection.Ltr -> (scrollX / (maxScrollX + width).toDouble())
+        LayoutDirection.Rtl -> 1 - scrollX / (maxScrollX + width).toDouble()
+    }
+}
+
+private fun RelaxedWebView.endProgression(
+    orientation: Orientation,
+    direction: LayoutDirection,
+) = when (orientation) {
+    Orientation.Vertical -> (scrollY + height) / (maxScrollY + height).toDouble()
+    Orientation.Horizontal -> when (direction) {
+        LayoutDirection.Ltr -> (scrollX + width) / (maxScrollX + width).toDouble()
+        LayoutDirection.Rtl -> 1 - (scrollX + width) / (maxScrollX + width).toDouble()
     }
 }
 

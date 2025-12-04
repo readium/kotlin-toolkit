@@ -33,7 +33,11 @@ public value class CssSelector(
 @JvmInline
 public value class Progression private constructor(
     public val value: Double,
-) {
+) : Comparable<Progression> {
+
+    override fun compareTo(other: Progression): Int {
+        return value.compareTo(other.value)
+    }
 
     public companion object {
 
@@ -50,7 +54,12 @@ public value class Progression private constructor(
 @JvmInline
 public value class Position private constructor(
     public val value: Int,
-) {
+) : Comparable<Position> {
+
+    override fun compareTo(other: Position): Int {
+        return value.compareTo(other.value)
+    }
+
     public companion object {
 
         public operator fun invoke(value: Int): Position? =

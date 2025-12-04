@@ -184,15 +184,20 @@ internal fun ReflowableResource(
                             webView.invokeOnWebViewUpToDate {
                                 val scrollController = WebViewScrollController(webView)
                                 scrollController.moveToProgression(
-                                    progression = resourceState.progression.value,
+                                    progression = resourceState.startProgression.value,
                                     snap = !scroll,
                                     orientation = orientation,
                                     direction = layoutDirection
                                 )
                                 resourceState.scrollController.value = scrollController
+                                resourceState.updateProgression(
+                                    startProgression = resourceState.startProgression,
+                                    orientation = orientation,
+                                    direction = layoutDirection
+                                )
                                 Timber.d("resource ${resourceState.index} ready to scroll")
                                 webView.setOnScrollChangeListener { view, scrollX, scrollY, oldScrollX, oldScrollY ->
-                                    scrollController.progression(
+                                    scrollController.startProgression(
                                         orientation,
                                         layoutDirection
                                     )?.let { onProgressionChange(Progression(it)!!) }
@@ -202,6 +207,11 @@ internal fun ReflowableResource(
                         },
                         onDocumentResizedDelegate = {
                             Timber.d("resource ${resourceState.index} onDocumentResized")
+                            resourceState.updateProgression(
+                                startProgression = resourceState.startProgression,
+                                orientation = orientation,
+                                direction = layoutDirection
+                            )
                             onDocumentResized.invoke()
                         }
                     )

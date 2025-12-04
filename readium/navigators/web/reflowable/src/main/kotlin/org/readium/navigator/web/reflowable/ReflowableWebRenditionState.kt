@@ -66,6 +66,7 @@ import org.readium.navigator.web.reflowable.css.withSettings
 import org.readium.navigator.web.reflowable.injection.injectHtmlReflowable
 import org.readium.navigator.web.reflowable.preferences.ReflowableWebSettings
 import org.readium.navigator.web.reflowable.resource.ReflowableResourceState
+import org.readium.navigator.web.reflowable.resource.ReflowableWebViewport
 import org.readium.r2.navigator.preferences.Axis
 import org.readium.r2.navigator.preferences.FontFamily
 import org.readium.r2.shared.ExperimentalReadiumApi
@@ -113,7 +114,7 @@ public class ReflowableWebRenditionState internal constructor(
             ReflowableResourceState(
                 index = index,
                 href = item.href,
-                progression = Progression(progression)!!
+                initialProgression = Progression(progression)!!
             )
         }
 
@@ -209,7 +210,7 @@ public class ReflowableWebRenditionState internal constructor(
         navigationDelegate =
             ReflowableNavigationDelegate(
                 goDelegate,
-                publication.readingOrder,
+                publication,
                 resourceStates,
                 pagerState,
                 layoutDelegate.overflow,
@@ -282,7 +283,11 @@ public class ReflowableWebRenditionController internal constructor(
     OverflowController by navigationDelegate,
     SettingsController<ReflowableWebSettings> by layoutDelegate,
     DecorationController<ReflowableWebDecorationLocation> by decorationDelegate,
-    SelectionController<ReflowableWebSelectionLocation> by selectionDelegate
+    SelectionController<ReflowableWebSelectionLocation> by selectionDelegate {
+
+    public val viewport: ReflowableWebViewport get() =
+        navigationDelegate.viewport
+    }
 
 @OptIn(ExperimentalReadiumApi::class, InternalReadiumApi::class)
 internal class ReflowableLayoutDelegate(
@@ -346,7 +351,7 @@ internal class ReflowableLayoutDelegate(
 @OptIn(ExperimentalReadiumApi::class, InternalReadiumApi::class)
 internal class ReflowableNavigationDelegate(
     private val goDelegate: GoDelegate,
-    private val readingOrder: ReflowableWebPublication.ReadingOrder,
+    private val publication: ReflowableWebPublication,
     private val resourceStates: List<ReflowableResourceState>,
     private val pagerState: PagerState,
     overflowState: State<Overflow>,
@@ -363,6 +368,23 @@ internal class ReflowableNavigationDelegate(
     override val overflow: Overflow by overflowState
 
     override val location: ReflowableWebLocation by locationMutable
+
+    val viewport: ReflowableWebViewport get() {
+        val visibleItemsWithProgression = pagerState.layoutInfo.visiblePagesInfo.map { it.index }
+            .mapNotNull { index -> resourceStates[index].progressionRange?.let { index to it } }
+        val visibleItems = visibleItemsWithProgression.map { it.first }
+        val progressions = visibleItemsWithProgression.map { it.second }
+
+        val positionStart = publication
+            .positionForProgression(visibleItems.first(), progressions.first().start)
+        val positionEnd = publication
+            .positionForProgression(visibleItems.last(), progressions.last().endInclusive)
+        return ReflowableWebViewport(
+            readingOrder = visibleItems.first()..visibleItems.last(),
+            progressions = progressions,
+            positions = positionStart..positionEnd
+        )
+    }
 
     override suspend fun goTo(url: Url) {
         val location = ReflowableWebGoLocation(
@@ -384,7 +406,7 @@ internal class ReflowableNavigationDelegate(
     // We assume that the best UI behavior would be to have a possible forward button disabled
     // and return false when we can't tell.
     override val canMoveForward: Boolean
-        get() = pagerState.currentPage < readingOrder.items.size - 1 || run {
+        get() = pagerState.currentPage < publication.readingOrder.items.size - 1 || run {
             val currentResourceState = resourceStates[pagerState.currentPage]
             val scrollController = currentResourceState.scrollController.value ?: return false
             return scrollController.canMoveForward()
@@ -402,7 +424,7 @@ internal class ReflowableNavigationDelegate(
         val scrollController = currentResourceState.scrollController.value ?: return
         if (scrollController.canMoveForward()) {
             scrollController.moveForward()
-        } else if (pagerState.currentPage < readingOrder.items.size - 1) {
+        } else if (pagerState.currentPage < publication.readingOrder.items.size - 1) {
             pagerState.scrollToPage(pagerState.currentPage + 1)
         }
     }
