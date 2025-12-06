@@ -60,6 +60,11 @@ internal class ReflowableWebPublication(
     fun itemWithHref(href: Url): Item? =
         allItems.firstOrNull { it.href == href }
 
+    fun positionForProgression(href: Url, progression: Progression): Position {
+        val index = readingOrder.indexOfHref(href)!!
+        return positionForProgression(index, progression)
+    }
+
     fun positionForProgression(index: Int, progression: Progression): Position {
         val itemPositionNumber = readingOrder.positionNumbers[index]
         val localPosition = floor(progression.value * itemPositionNumber).toInt()

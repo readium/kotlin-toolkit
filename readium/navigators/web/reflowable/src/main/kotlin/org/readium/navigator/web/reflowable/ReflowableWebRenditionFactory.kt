@@ -86,7 +86,6 @@ public class ReflowableWebRenditionFactory private constructor(
         readingOrder: List<Link> = publication.readingOrder,
         positionsService: PositionsService = this.positionsService,
     ): Try<ReflowableWebRenditionState, Error> {
-        // TODO: support font family declarations and reading system properties
         // TODO: enable apps not to disable selection when publication is protected
 
         val readingOrderItems = readingOrder.mapIndexed { index, link ->

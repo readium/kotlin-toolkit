@@ -20,8 +20,6 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
@@ -42,7 +40,6 @@ import kotlinx.coroutines.launch
 import org.readium.navigator.common.DecorationListener
 import org.readium.navigator.common.HyperlinkListener
 import org.readium.navigator.common.InputListener
-import org.readium.navigator.common.Progression
 import org.readium.navigator.common.TapContext
 import org.readium.navigator.common.TapEvent
 import org.readium.navigator.common.defaultDecorationListener
@@ -123,34 +120,13 @@ public fun ReflowableWebRendition(
 
             val backgroundColor = Color(state.layoutDelegate.settings.backgroundColor.int)
 
-            val currentPageState = remember(state) { derivedStateOf { state.pagerState.currentPage } }
-
-            fun currentLocation(): ReflowableWebLocation {
-                val currentIndex = currentPageState.value
-                val currentItem = state.publication.readingOrder.items[currentIndex]
-                val progression = state.resourceStates[currentIndex].startProgression
-                val position = state.publication.positionForProgression(currentIndex, progression)
-                return ReflowableWebLocation(
-                    href = currentItem.href,
-                    mediaType = currentItem.mediaType,
-                    progression = progression,
-                    position = position,
-                    totalProgression = state.publication.totalProgressionForPosition(position)
-                )
-            }
-
-            LaunchedEffect(state.controller, state.goDelegate.pendingGo.value) {
-                if (state.controller == null && state.goDelegate.pendingGo.value == null) {
-                    // Initialize controller. In the future, that should require access to a ready WebView.
-                    state.initController(location = currentLocation())
-                }
-            }
+            val currentPageState = state.pagerState.currentPage
 
             LaunchedEffect(currentPageState) {
                 snapshotFlow {
-                    currentPageState.value
+                    currentPageState
                 }.onEach {
-                    state.updateLocation(currentLocation())
+                    state.updateLocation()
                 }.launchIn(this)
             }
 
@@ -177,13 +153,8 @@ public fun ReflowableWebRendition(
                     .mapValues { groupDecorations -> groupDecorations.value.filter { it.location.href == href } }
                     .toImmutableMap()
 
-                val pendingLocation = state.goDelegate.pendingGo.value
-                    ?.location
-                    ?.takeIf { it.href == href }
-
                 ReflowableResource(
                     resourceState = state.resourceStates[index],
-                    pendingLocation = pendingLocation,
                     publicationBaseUrl = WebViewServer.publicationBaseHref,
                     webViewClient = state.webViewClient,
                     backgroundColor = backgroundColor,
@@ -213,32 +184,10 @@ public fun ReflowableWebRendition(
                         decorationListener.onDecorationActivated(event)
                     },
                     onProgressionChange = {
-                        state.resourceStates[index].updateProgression(it, state.layoutDelegate.orientation, layoutDirection)
-                        state.updateLocation(currentLocation())
+                        state.updateLocation()
                     },
                     onDocumentResized = {
                         state.scrollState.onDocumentResized(index)
-                    },
-                    onPendingLocationConsumed = { consumedLocation ->
-                        val currentIndex = state.publication.readingOrder.indexOfHref(consumedLocation.href)!!
-                        state.resourceStates.forEachIndexed { index, item ->
-                            val newProgression = when {
-                                index < currentIndex -> Progression(1.0)!!
-                                index > currentIndex -> Progression(0.0)!!
-                                else -> null
-                            }
-
-                            newProgression?.let { newProgression ->
-                                item.updateProgression(newProgression, state.layoutDelegate.orientation, layoutDirection)
-                                item.scrollController.value?.moveToProgression(
-                                    progression = newProgression.value,
-                                    snap = !state.layoutDelegate.settings.scroll,
-                                    orientation = state.layoutDelegate.orientation,
-                                    direction = layoutDirection
-                                )
-                            }
-                        }
-                        state.goDelegate.resumeGo(consumedLocation)
                     }
                 )
             }

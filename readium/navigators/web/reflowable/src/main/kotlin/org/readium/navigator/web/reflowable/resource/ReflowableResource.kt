@@ -36,7 +36,6 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import org.readium.navigator.common.DecorationChange
 import org.readium.navigator.common.DecorationListener
-import org.readium.navigator.common.Progression
 import org.readium.navigator.common.TapEvent
 import org.readium.navigator.common.changesByHref
 import org.readium.navigator.web.common.WebDecorationTemplate
@@ -67,7 +66,6 @@ import org.readium.navigator.web.reflowable.ReflowableWebDecoration
 import org.readium.navigator.web.reflowable.ReflowableWebDecorationCssSelectorLocation
 import org.readium.navigator.web.reflowable.ReflowableWebDecorationLocation
 import org.readium.navigator.web.reflowable.ReflowableWebDecorationTextQuoteLocation
-import org.readium.navigator.web.reflowable.ReflowableWebGoLocation
 import org.readium.navigator.web.reflowable.css.ReadiumCssInjector
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.AbsoluteUrl
@@ -78,7 +76,6 @@ import timber.log.Timber
 @Composable
 internal fun ReflowableResource(
     resourceState: ReflowableResourceState,
-    pendingLocation: ReflowableWebGoLocation?,
     publicationBaseUrl: AbsoluteUrl,
     webViewClient: WebViewClient,
     backgroundColor: Color,
@@ -94,9 +91,8 @@ internal fun ReflowableResource(
     onTap: (TapEvent) -> Unit,
     onLinkActivated: (Url, String) -> Unit,
     onDecorationActivated: (DecorationListener.OnActivatedEvent<ReflowableWebDecorationLocation>) -> Unit,
-    onProgressionChange: (Progression) -> Unit,
+    onProgressionChange: () -> Unit,
     onDocumentResized: () -> Unit,
-    onPendingLocationConsumed: (ReflowableWebGoLocation) -> Unit,
 ) {
     Box(
         modifier = Modifier.fillMaxSize(),
@@ -183,24 +179,46 @@ internal fun ReflowableResource(
                             Timber.d("resource ${resourceState.index} onDocumentLoadedAndResized")
                             webView.invokeOnWebViewUpToDate {
                                 val scrollController = WebViewScrollController(webView)
-                                scrollController.moveToProgression(
-                                    progression = resourceState.startProgression.value,
-                                    snap = !scroll,
-                                    orientation = orientation,
-                                    direction = layoutDirection
-                                )
                                 resourceState.scrollController.value = scrollController
-                                resourceState.updateProgression(
-                                    startProgression = resourceState.startProgression,
-                                    orientation = orientation,
-                                    direction = layoutDirection
-                                )
                                 Timber.d("resource ${resourceState.index} ready to scroll")
+
+                                when (val pending = resourceState.pendingLocation) {
+                                    is ReflowableResourceLocation.HtmlId -> {
+                                        // Wait for the MoveApi
+                                    }
+                                    is ReflowableResourceLocation.Progression -> {
+                                        Timber.d("going to progression ${pending.value}")
+                                        scrollController.moveToProgression(
+                                            progression = pending.value.value,
+                                            snap = !scroll,
+                                            orientation = orientation,
+                                            direction = layoutDirection
+                                        )
+                                        resourceState.updateProgression(
+                                            orientation = orientation,
+                                            direction = layoutDirection
+                                        )
+                                        resourceState.acknowledgePendingLocation(pending)
+                                    }
+                                    null -> {
+                                        Timber.d("going to start")
+                                        scrollController.moveToProgression(
+                                            progression = resourceState.progressionRange!!.start.value,
+                                            snap = !scroll,
+                                            orientation = orientation,
+                                            direction = layoutDirection
+                                        )
+
+                                        resourceState.updateProgression(
+                                            orientation = orientation,
+                                            direction = layoutDirection
+                                        )
+                                    }
+                                }
+
                                 webView.setOnScrollChangeListener { view, scrollX, scrollY, oldScrollX, oldScrollY ->
-                                    scrollController.startProgression(
-                                        orientation,
-                                        layoutDirection
-                                    )?.let { onProgressionChange(Progression(it)!!) }
+                                    resourceState.updateProgression(orientation, layoutDirection)
+                                    onProgressionChange()
                                 }
                                 showPlaceholder.value = false
                             }
@@ -208,7 +226,6 @@ internal fun ReflowableResource(
                         onDocumentResizedDelegate = {
                             Timber.d("resource ${resourceState.index} onDocumentResized")
                             resourceState.updateProgression(
-                                startProgression = resourceState.startProgression,
                                 orientation = orientation,
                                 direction = layoutDirection
                             )
@@ -221,25 +238,45 @@ internal fun ReflowableResource(
 
         val density = LocalDensity.current
 
-        LaunchedEffect(moveApi, pendingLocation, resourceState.scrollController.value) {
+        LaunchedEffect(moveApi, resourceState.scrollController.value) {
             moveApi?.let { moveApi ->
-                pendingLocation?.let {
-                    resourceState.scrollController.value?.let { scrollController ->
-                        val offset = moveApi.getOffsetForLocation(
-                            progression = pendingLocation.progression,
-                            htmlId = pendingLocation.htmlId,
-                            orientation = orientation
-                        )
+                resourceState.scrollController.value?.let { scrollController ->
+                    snapshotFlow {
+                        resourceState.pendingLocation
+                    }.onEach { pendingLocation ->
+                        pendingLocation?.let {
+                            when (pendingLocation) {
+                                is ReflowableResourceLocation.HtmlId -> {
+                                    val offset = moveApi.getOffsetForLocation(
+                                        progression = null,
+                                        htmlId = pendingLocation.value,
+                                        orientation = orientation
+                                    )
 
-                        offset?.let { offset ->
-                            scrollController.moveToOffset(
-                                offset = with(density) { offset.dp.roundToPx() },
-                                snap = !scroll,
-                                orientation = orientation,
-                            )
+                                    offset?.let { offset ->
+                                        Timber.d("going to id ${pendingLocation.value}")
+                                        scrollController.moveToOffset(
+                                            offset = with(density) { offset.dp.roundToPx() },
+                                            snap = !scroll,
+                                            orientation = orientation,
+                                        )
+                                    }
+                                }
+
+                                is ReflowableResourceLocation.Progression -> {
+                                    Timber.d("going to progression ${pendingLocation.value}")
+                                    scrollController.moveToProgression(
+                                        progression = pendingLocation.value.value,
+                                        snap = !scroll,
+                                        orientation = orientation,
+                                        direction = layoutDirection
+                                    )
+                                }
+                            }
+                            resourceState.updateProgression(orientation, layoutDirection)
+                            resourceState.acknowledgePendingLocation(pendingLocation)
                         }
-                        onPendingLocationConsumed(pendingLocation)
-                    }
+                    }.launchIn(this)
                 }
             }
         }

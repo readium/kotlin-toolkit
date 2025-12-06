@@ -13,14 +13,16 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 internal fun WebView.invokeOnReadyToBeDrawn(callback: (WebView) -> Unit) {
-    postVisualStateCallback(
-        0,
-        object : WebView.VisualStateCallback() {
-            override fun onComplete(requestId: Long) {
-                callback(this@invokeOnReadyToBeDrawn)
+    post {
+        postVisualStateCallback(
+            0,
+            object : WebView.VisualStateCallback() {
+                override fun onComplete(requestId: Long) {
+                    callback(this@invokeOnReadyToBeDrawn)
+                }
             }
-        }
-    )
+        )
+    }
 }
 
 public suspend fun WebView.evaluateJavaScriptSuspend(javascript: String): String =

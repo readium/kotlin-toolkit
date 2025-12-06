@@ -11,48 +11,90 @@ package org.readium.navigator.web.reflowable.resource
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.unit.LayoutDirection
+import kotlin.coroutines.Continuation
+import kotlin.coroutines.resume
 import org.readium.navigator.common.Progression
 import org.readium.navigator.web.internals.pager.PageScrollState
 import org.readium.navigator.web.internals.webview.WebViewScrollController
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.Url
+import timber.log.Timber
 
 @Stable
 internal class ReflowableResourceState(
     val index: Int,
     val href: Url,
-    initialProgression: Progression,
+    initialLocation: ReflowableResourceLocation,
 ) : PageScrollState {
 
-    var startProgression: Progression = initialProgression
-        private set
+    private var pendingGoMutable by mutableStateOf<PendingGo?>(PendingGo(initialLocation))
+
     private var lastComputedProgressionRange: ClosedRange<Progression>? = null
+
+    val pendingLocation: ReflowableResourceLocation? get() =
+        pendingGoMutable?.location
 
     val progressionRange: ClosedRange<Progression>? get() =
         lastComputedProgressionRange
 
-    fun updateProgression(
-        startProgression: Progression,
-        orientation: Orientation,
-        direction: LayoutDirection,
-    ) {
-        this.startProgression = startProgression
-        updateProgressionRange(startProgression, orientation, direction)
+    fun go(location: ReflowableResourceLocation, continuation: Continuation<Unit>?) {
+        pendingGoMutable = PendingGo(location, continuation)
     }
 
-    private fun updateProgressionRange(
-        start: Progression,
+    fun acknowledgePendingLocation(location: ReflowableResourceLocation) {
+        val pendingGoNow = pendingGoMutable
+        if (location != pendingGoNow?.location) {
+            return
+        }
+        pendingGoMutable = null
+        pendingGoNow.continuation?.resume(Unit)
+    }
+
+    fun updateProgression(
         orientation: Orientation,
         direction: LayoutDirection,
     ) {
-        val end = scrollController.value?.endProgression(
+        val scrollController = scrollController.value ?: return
+
+        // Do not trust computed progressions to be between 0 and 1.
+        // Sometimes scrollX is far higher than maxScrollX.
+
+        val startProgression = scrollController.startProgression(
             orientation = orientation,
             direction = direction
         )?.let { Progression(it) }
-        end?.let { lastComputedProgressionRange = start..end }
+            ?: return
+
+        val endProgression = scrollController.endProgression(
+            orientation = orientation,
+            direction = direction
+        )?.let { Progression(it) } ?: return
+
+        Timber.d("updateProgression $startProgression $endProgression")
+
+        lastComputedProgressionRange = startProgression..endProgression
     }
 
-    override val scrollController: MutableState<WebViewScrollController?> = mutableStateOf(null)
+    override val scrollController: MutableState<WebViewScrollController?> =
+        mutableStateOf(null)
 }
+
+internal sealed interface ReflowableResourceLocation {
+
+    data class Progression(
+        val value: org.readium.navigator.common.Progression,
+    ) : ReflowableResourceLocation
+
+    data class HtmlId(
+        val value: org.readium.navigator.common.HtmlId,
+    ) : ReflowableResourceLocation
+}
+
+internal data class PendingGo(
+    val location: ReflowableResourceLocation,
+    val continuation: Continuation<Unit>? = null,
+)

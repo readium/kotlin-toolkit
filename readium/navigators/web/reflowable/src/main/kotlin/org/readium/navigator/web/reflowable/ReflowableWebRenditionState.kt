@@ -22,17 +22,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
-import kotlin.coroutines.Continuation
-import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.PersistentMap
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.persistentMapOf
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.MainScope
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.readium.navigator.common.DecorationController
 import org.readium.navigator.common.HtmlId
@@ -65,6 +60,7 @@ import org.readium.navigator.web.reflowable.css.withLayout
 import org.readium.navigator.web.reflowable.css.withSettings
 import org.readium.navigator.web.reflowable.injection.injectHtmlReflowable
 import org.readium.navigator.web.reflowable.preferences.ReflowableWebSettings
+import org.readium.navigator.web.reflowable.resource.ReflowableResourceLocation
 import org.readium.navigator.web.reflowable.resource.ReflowableResourceState
 import org.readium.navigator.web.reflowable.resource.ReflowableWebViewport
 import org.readium.r2.navigator.preferences.Axis
@@ -75,6 +71,7 @@ import org.readium.r2.shared.util.RelativeUrl
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.resource.Resource
+import timber.log.Timber
 
 /**
  * State holder for the rendition of a reflowable Web publication.
@@ -92,31 +89,31 @@ public class ReflowableWebRenditionState internal constructor(
     configuration: ReflowableWebConfiguration,
     disableSelection: Boolean,
 ) : RenditionState<ReflowableWebRenditionController> {
-
-    private val coroutineScope: CoroutineScope =
-        MainScope()
     private val controllerState: MutableState<ReflowableWebRenditionController?> =
         mutableStateOf(null)
 
     override val controller: ReflowableWebRenditionController? by controllerState
 
-    private val initialResource = publication.readingOrder
-        .indexOfHref(initialLocation.href)
-        ?: 0
+    private val initialResourceIndex =
+        publication.readingOrder.indexOfHref(initialLocation.href) ?: 0
+
+    internal val pagerState: PagerState =
+        PagerState(
+            currentPage = initialResourceIndex,
+            pageCount = { publication.readingOrder.size }
+        )
 
     internal val resourceStates: List<ReflowableResourceState> =
-        publication.readingOrder.items.mapIndexed { index, item ->
-            val progression = when {
-                index < initialResource -> 1.0
-                index > initialResource -> 0.0
-                else -> initialLocation.progression?.value ?: 0.0
+        initialLocation.toResourceLocations(initialResourceIndex, publication.readingOrder)
+            .also { Timber.d("destByResource $it") }
+            .zip(publication.readingOrder.items)
+            .mapIndexed { index, (location, item) ->
+                ReflowableResourceState(
+                    index = index,
+                    href = item.href,
+                    initialLocation = location
+                )
             }
-            ReflowableResourceState(
-                index = index,
-                href = item.href,
-                initialProgression = Progression(progression)!!
-            )
-        }
 
     private val fontFamilyDeclarations: List<FontFamilyDeclaration> =
         buildList {
@@ -137,12 +134,6 @@ public class ReflowableWebRenditionState internal constructor(
         ReflowableLayoutDelegate(
             fontFamilyDeclarations,
             initialSettings
-        )
-
-    internal val pagerState: PagerState =
-        PagerState(
-            currentPage = initialResource,
-            pageCount = { publication.readingOrder.size }
         )
 
     internal val scrollState: RenditionScrollState =
@@ -190,23 +181,65 @@ public class ReflowableWebRenditionState internal constructor(
     }
 
     internal val goDelegate = GoDelegate(
-        coroutineScope = coroutineScope,
         readingOrder = publication.readingOrder,
         resourceStates = resourceStates,
         pagerState = pagerState
     )
 
-    init {
-        if (initialLocation.progression == null && initialLocation.htmlId != null) {
-            coroutineScope.launch {
-                goDelegate.goTo(initialLocation)
-            }
+    internal lateinit var navigationDelegate: ReflowableNavigationDelegate
+
+    internal fun updateLocation() {
+        val location = computeLocation() ?: return
+        val viewport = computeViewport() ?: return
+        if (!::navigationDelegate.isInitialized) {
+            initController(location, viewport)
+        } else {
+            navigationDelegate.updateLocation(location, viewport)
         }
     }
 
-    internal lateinit var navigationDelegate: ReflowableNavigationDelegate
+    private fun computeLocation(): ReflowableWebLocation? {
+        val currentIndex = pagerState.currentPage
+        val currentItem = publication.readingOrder.items[currentIndex]
+        val progression = resourceStates[currentIndex].progressionRange?.start ?: return null
+        val position = publication.positionForProgression(currentIndex, progression)
+        return ReflowableWebLocation(
+            href = currentItem.href,
+            mediaType = currentItem.mediaType,
+            progression = progression,
+            position = position,
+            totalProgression = publication.totalProgressionForPosition(position)
+        )
+    }
 
-    internal fun initController(location: ReflowableWebLocation) {
+    private fun computeViewport(): ReflowableWebViewport? {
+        val visibleIndexedItems = pagerState.layoutInfo.visiblePagesInfo
+            .map { it.index to publication.readingOrder[it.index] }
+
+        check(visibleIndexedItems.isNotEmpty())
+
+        val progressions = visibleIndexedItems
+            .mapNotNull { (index, _) -> resourceStates[index].progressionRange }
+
+        if (progressions.size != visibleIndexedItems.size) {
+            return null
+        }
+
+        val positionStart = publication
+            .positionForProgression(visibleIndexedItems.first().first, progressions.first().start)
+
+        val positionEnd = publication
+            .positionForProgression(visibleIndexedItems.last().first, progressions.last().endInclusive)
+
+        return ReflowableWebViewport(
+            readingOrder = visibleIndexedItems.map { it.second.href },
+            progressions = visibleIndexedItems.zip(progressions)
+                .associate { (indexedItem, progression) -> indexedItem.second.href to progression },
+            positions = positionStart..positionEnd
+        )
+    }
+
+    internal fun initController(location: ReflowableWebLocation, viewport: ReflowableWebViewport) {
         navigationDelegate =
             ReflowableNavigationDelegate(
                 goDelegate,
@@ -214,7 +247,8 @@ public class ReflowableWebRenditionState internal constructor(
                 resourceStates,
                 pagerState,
                 layoutDelegate.overflow,
-                location
+                location,
+                viewport
             )
         controllerState.value =
             ReflowableWebRenditionController(
@@ -223,50 +257,29 @@ public class ReflowableWebRenditionState internal constructor(
                 decorationDelegate,
                 selectionDelegate
             )
-        updateLocation(location)
-    }
-
-    internal fun updateLocation(location: ReflowableWebLocation) {
-        navigationDelegate.updateLocation(location)
     }
 }
 
 internal class GoDelegate(
-    private val coroutineScope: CoroutineScope,
     private val readingOrder: ReflowableWebPublication.ReadingOrder,
     private val resourceStates: List<ReflowableResourceState>,
     private val pagerState: PagerState,
 ) {
-
-    data class PendingGo(
-        val location: ReflowableWebGoLocation,
-        val continuation: Continuation<Unit>,
-    )
-
-    internal val pendingGo: MutableState<PendingGo?> =
-        mutableStateOf(null)
-
-    internal fun resumeGo(location: ReflowableWebGoLocation) {
-        coroutineScope.launch { // on the main thread
-            pendingGo.value?.let { pendingGoNow ->
-                if (pendingGoNow.location != location) {
-                    return@launch
-                }
-
-                pendingGo.value = null
-                pendingGoNow.continuation.resume(Unit)
-            }
-        }
-    }
     internal suspend fun goTo(location: ReflowableWebGoLocation) {
         withContext(Dispatchers.Main) {
-            pendingGo.value?.continuation?.resume(Unit)
-            pendingGo.value = null
-            val resourceIndex = readingOrder.indexOfHref(location.href) ?: return@withContext
-            pagerState.scrollToPage(resourceIndex)
+            val destIndex = readingOrder.indexOfHref(location.href) ?: return@withContext
+            val destLocationByResource = location.toResourceLocations(destIndex, readingOrder)
+            Timber.d("destByResource $destLocationByResource")
+
+            pagerState.scrollToPage(destIndex)
 
             suspendCoroutine { continuation ->
-                pendingGo.value = PendingGo(location, continuation)
+                resourceStates.zip(destLocationByResource).forEach { (state, location) ->
+                    state.go(
+                        location = location,
+                        continuation = continuation.takeIf { state === resourceStates[destIndex] }
+                    )
+                }
             }
         }
     }
@@ -287,7 +300,7 @@ public class ReflowableWebRenditionController internal constructor(
 
     public val viewport: ReflowableWebViewport get() =
         navigationDelegate.viewport
-    }
+}
 
 @OptIn(ExperimentalReadiumApi::class, InternalReadiumApi::class)
 internal class ReflowableLayoutDelegate(
@@ -356,35 +369,25 @@ internal class ReflowableNavigationDelegate(
     private val pagerState: PagerState,
     overflowState: State<Overflow>,
     initialLocation: ReflowableWebLocation,
+    initialViewport: ReflowableWebViewport,
 ) : NavigationController<ReflowableWebLocation, ReflowableWebGoLocation>, OverflowController {
 
     private val locationMutable: MutableState<ReflowableWebLocation> =
         mutableStateOf(initialLocation)
 
-    internal fun updateLocation(location: ReflowableWebLocation) {
+    private val viewportMutable: MutableState<ReflowableWebViewport> =
+        mutableStateOf(initialViewport)
+
+    fun updateLocation(location: ReflowableWebLocation, viewport: ReflowableWebViewport) {
         locationMutable.value = location
+        viewportMutable.value = viewport
     }
 
     override val overflow: Overflow by overflowState
 
     override val location: ReflowableWebLocation by locationMutable
 
-    val viewport: ReflowableWebViewport get() {
-        val visibleItemsWithProgression = pagerState.layoutInfo.visiblePagesInfo.map { it.index }
-            .mapNotNull { index -> resourceStates[index].progressionRange?.let { index to it } }
-        val visibleItems = visibleItemsWithProgression.map { it.first }
-        val progressions = visibleItemsWithProgression.map { it.second }
-
-        val positionStart = publication
-            .positionForProgression(visibleItems.first(), progressions.first().start)
-        val positionEnd = publication
-            .positionForProgression(visibleItems.last(), progressions.last().endInclusive)
-        return ReflowableWebViewport(
-            readingOrder = visibleItems.first()..visibleItems.last(),
-            progressions = progressions,
-            positions = positionStart..positionEnd
-        )
-    }
+    val viewport: ReflowableWebViewport by viewportMutable
 
     override suspend fun goTo(url: Url) {
         val location = ReflowableWebGoLocation(
@@ -461,15 +464,6 @@ internal class ReflowableNavigationDelegate(
             orientation = overflow.axis.toOrientation(),
             direction = overflow.readingProgression.toLayoutDirection()
         )
-
-    private fun WebViewScrollController.moveToProgression(progression: Progression) {
-        moveToProgression(
-            progression = progression.value,
-            snap = !overflow.scroll,
-            orientation = overflow.axis.toOrientation(),
-            direction = overflow.readingProgression.toLayoutDirection()
-        )
-    }
 }
 
 internal class ReflowableDecorationDelegate(
@@ -516,6 +510,28 @@ internal class ReflowableSelectionDelegate(
     override fun clearSelection() {
         for (api in selectionApis.values) {
             api?.clearSelection()
+        }
+    }
+}
+
+private fun ReflowableWebGoLocation.toResourceLocations(
+    destIndex: Int,
+    readingOrder: ReflowableWebPublication.ReadingOrder,
+): List<ReflowableResourceLocation> {
+    val resourceLocation = progression
+        ?.let { ReflowableResourceLocation.Progression(it) }
+        ?: htmlId?.let { ReflowableResourceLocation.HtmlId(it) }
+        ?: ReflowableResourceLocation.Progression(Progression(0.0)!!)
+
+    return readingOrder.items.mapIndexed { index, state ->
+        when {
+            index < destIndex ->
+                ReflowableResourceLocation.Progression(Progression(1.0)!!)
+
+            index > destIndex ->
+                ReflowableResourceLocation.Progression(Progression(0.0)!!)
+
+            else -> resourceLocation
         }
     }
 }

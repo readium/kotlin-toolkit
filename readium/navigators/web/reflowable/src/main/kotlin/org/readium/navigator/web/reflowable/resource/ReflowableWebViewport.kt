@@ -3,6 +3,7 @@ package org.readium.navigator.web.reflowable.resource
 import org.readium.navigator.common.Position
 import org.readium.navigator.common.Progression
 import org.readium.r2.shared.ExperimentalReadiumApi
+import org.readium.r2.shared.util.Url
 
 /** Information about the visible portion of the publication. */
 @ExperimentalReadiumApi
@@ -11,12 +12,12 @@ public data class ReflowableWebViewport(
     /**
      * Range of visible reading order resources.
      */
-    public val readingOrder: ClosedRange<Int>,
+    public val readingOrder: List<Url>,
 
     /**
      * Range of visible scroll progressions for each visible reading order resource.
      */
-    public val progressions: List<ClosedRange<Progression>>,
+    public val progressions: Map<Url, ClosedRange<Progression>>,
 
     /**
      * Range of visible positions.
