@@ -89,6 +89,7 @@ public class ReflowableWebRenditionState internal constructor(
     configuration: ReflowableWebConfiguration,
     disableSelection: Boolean,
 ) : RenditionState<ReflowableWebRenditionController> {
+
     private val controllerState: MutableState<ReflowableWebRenditionController?> =
         mutableStateOf(null)
 
@@ -105,7 +106,6 @@ public class ReflowableWebRenditionState internal constructor(
 
     internal val resourceStates: List<ReflowableResourceState> =
         initialLocation.toResourceLocations(initialResourceIndex, publication.readingOrder)
-            .also { Timber.d("destByResource $it") }
             .zip(publication.readingOrder.items)
             .mapIndexed { index, (location, item) ->
                 ReflowableResourceState(

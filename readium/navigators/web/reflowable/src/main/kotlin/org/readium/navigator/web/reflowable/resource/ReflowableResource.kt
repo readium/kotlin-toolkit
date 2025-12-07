@@ -91,7 +91,7 @@ internal fun ReflowableResource(
     onTap: (TapEvent) -> Unit,
     onLinkActivated: (Url, String) -> Unit,
     onDecorationActivated: (DecorationListener.OnActivatedEvent<ReflowableWebDecorationLocation>) -> Unit,
-    onProgressionChange: () -> Unit,
+    onLocationChange: () -> Unit,
     onDocumentResized: () -> Unit,
 ) {
     Box(
@@ -187,23 +187,22 @@ internal fun ReflowableResource(
                                         // Wait for the MoveApi
                                     }
                                     is ReflowableResourceLocation.Progression -> {
-                                        Timber.d("going to progression ${pending.value}")
                                         scrollController.moveToProgression(
                                             progression = pending.value.value,
                                             snap = !scroll,
                                             orientation = orientation,
                                             direction = layoutDirection
                                         )
-                                        resourceState.updateProgression(
+                                        resourceState.acknowledgePendingLocation(
+                                            location = pending,
                                             orientation = orientation,
                                             direction = layoutDirection
                                         )
-                                        resourceState.acknowledgePendingLocation(pending)
+                                        onLocationChange()
                                     }
                                     null -> {
-                                        Timber.d("going to start")
                                         scrollController.moveToProgression(
-                                            progression = resourceState.progressionRange!!.start.value,
+                                            progression = resourceState.currentProgression!!.value,
                                             snap = !scroll,
                                             orientation = orientation,
                                             direction = layoutDirection
@@ -213,12 +212,13 @@ internal fun ReflowableResource(
                                             orientation = orientation,
                                             direction = layoutDirection
                                         )
+                                        onLocationChange()
                                     }
                                 }
 
                                 webView.setOnScrollChangeListener { view, scrollX, scrollY, oldScrollX, oldScrollY ->
                                     resourceState.updateProgression(orientation, layoutDirection)
-                                    onProgressionChange()
+                                    onLocationChange()
                                 }
                                 showPlaceholder.value = false
                             }
@@ -252,9 +252,7 @@ internal fun ReflowableResource(
                                         htmlId = pendingLocation.value,
                                         orientation = orientation
                                     )
-
                                     offset?.let { offset ->
-                                        Timber.d("going to id ${pendingLocation.value}")
                                         scrollController.moveToOffset(
                                             offset = with(density) { offset.dp.roundToPx() },
                                             snap = !scroll,
@@ -264,7 +262,6 @@ internal fun ReflowableResource(
                                 }
 
                                 is ReflowableResourceLocation.Progression -> {
-                                    Timber.d("going to progression ${pendingLocation.value}")
                                     scrollController.moveToProgression(
                                         progression = pendingLocation.value.value,
                                         snap = !scroll,
@@ -273,8 +270,12 @@ internal fun ReflowableResource(
                                     )
                                 }
                             }
-                            resourceState.updateProgression(orientation, layoutDirection)
-                            resourceState.acknowledgePendingLocation(pendingLocation)
+                            resourceState.acknowledgePendingLocation(
+                                location = pendingLocation,
+                                orientation = orientation,
+                                direction = layoutDirection
+                            )
+                            onLocationChange()
                         }
                     }.launchIn(this)
                 }

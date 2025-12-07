@@ -41,24 +41,39 @@ internal class ReflowableResourceState(
     val progressionRange: ClosedRange<Progression>? get() =
         lastComputedProgressionRange
 
+    /** This progression will be used on resource initialization if there is no pending go. */
+    var currentProgression: Progression? =
+        (initialLocation as? ReflowableResourceLocation.Progression)?.value ?: Progression(0.0)!!
+
     fun go(location: ReflowableResourceLocation, continuation: Continuation<Unit>?) {
         pendingGoMutable = PendingGo(location, continuation)
     }
 
-    fun acknowledgePendingLocation(location: ReflowableResourceLocation) {
+    fun acknowledgePendingLocation(
+        location: ReflowableResourceLocation,
+        orientation: Orientation,
+        direction: LayoutDirection,
+    ) {
         val pendingGoNow = pendingGoMutable
         if (location != pendingGoNow?.location) {
             return
         }
-        pendingGoMutable = null
+        pendingGoMutable = if (updateProgression(orientation, direction)) {
+            null
+        } else {
+            pendingGoNow.copy(continuation = null)
+        }
+
+        // Resume the call even in case of failed progression update because it's not
+        // clear when the progression will be updated again.
         pendingGoNow.continuation?.resume(Unit)
     }
 
     fun updateProgression(
         orientation: Orientation,
         direction: LayoutDirection,
-    ) {
-        val scrollController = scrollController.value ?: return
+    ): Boolean {
+        val scrollController = scrollController.value ?: return false
 
         // Do not trust computed progressions to be between 0 and 1.
         // Sometimes scrollX is far higher than maxScrollX.
@@ -67,16 +82,19 @@ internal class ReflowableResourceState(
             orientation = orientation,
             direction = direction
         )?.let { Progression(it) }
-            ?: return
+            ?: return false
 
         val endProgression = scrollController.endProgression(
             orientation = orientation,
             direction = direction
-        )?.let { Progression(it) } ?: return
+        )?.let { Progression(it) } ?: return false
 
         Timber.d("updateProgression $startProgression $endProgression")
 
         lastComputedProgressionRange = startProgression..endProgression
+        currentProgression = startProgression
+
+        return true
     }
 
     override val scrollController: MutableState<WebViewScrollController?> =

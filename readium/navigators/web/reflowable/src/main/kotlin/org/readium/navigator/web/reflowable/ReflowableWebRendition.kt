@@ -183,11 +183,12 @@ public fun ReflowableWebRendition(
                     onDecorationActivated = { event ->
                         decorationListener.onDecorationActivated(event)
                     },
-                    onProgressionChange = {
+                    onLocationChange = {
                         state.updateLocation()
                     },
                     onDocumentResized = {
                         state.scrollState.onDocumentResized(index)
+                        state.updateLocation()
                     }
                 )
             }
