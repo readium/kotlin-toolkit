@@ -19,6 +19,12 @@ All notable changes to this project will be documented in this file. Take a look
     * You must ensure the identifier is unique and stable for the device (persist and reuse across app launches).
     * Recommended: generate an app-scoped UUID and store it securely. Avoid hardware or advertising identifiers.
 
+### Fixed
+
+#### Shared
+
+* Fixed a typo in the accessibility metadata (`describeMath` should be `describedMath`).
+
 
 ## [3.1.2]
 
