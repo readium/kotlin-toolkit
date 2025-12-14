@@ -50,6 +50,7 @@ import org.readium.navigator.web.internals.webapi.Decoration
 import org.readium.navigator.web.internals.webapi.DelegatingDocumentApiListener
 import org.readium.navigator.web.internals.webapi.DelegatingGesturesListener
 import org.readium.navigator.web.internals.webapi.DelegatingReflowableApiStateListener
+import org.readium.navigator.web.internals.webapi.DelegatingSelectionListener
 import org.readium.navigator.web.internals.webapi.DocumentStateApi
 import org.readium.navigator.web.internals.webapi.GesturesApi
 import org.readium.navigator.web.internals.webapi.ReadiumCssApi
@@ -57,6 +58,7 @@ import org.readium.navigator.web.internals.webapi.ReflowableApiStateApi
 import org.readium.navigator.web.internals.webapi.ReflowableDecorationApi
 import org.readium.navigator.web.internals.webapi.ReflowableMoveApi
 import org.readium.navigator.web.internals.webapi.ReflowableSelectionApi
+import org.readium.navigator.web.internals.webapi.SelectionListenerApi
 import org.readium.navigator.web.internals.webview.RelaxedWebView
 import org.readium.navigator.web.internals.webview.WebView
 import org.readium.navigator.web.internals.webview.WebViewScrollController
@@ -110,10 +112,15 @@ internal fun ReflowableResource(
             mutableStateOf<GesturesApi?>(null)
         }
 
+        var selectionListenerApi by remember(webViewState.webView) {
+            mutableStateOf<SelectionListenerApi?>(null)
+        }
+
         LaunchedEffect(webViewState.webView) {
             webViewState.webView?.let { webView ->
                 gesturesApi = GesturesApi(webView)
                 documentStateApi = DocumentStateApi(webView)
+                selectionListenerApi = SelectionListenerApi(webView)
             }
         }
 
@@ -282,29 +289,42 @@ internal fun ReflowableResource(
             }
         }
 
-        LaunchedEffect(gesturesApi, onTap, onLinkActivated, padding) {
+        LaunchedEffect(gesturesApi, selectionListenerApi, onTap, onLinkActivated, padding) {
             gesturesApi?.let { gesturesApi ->
-                gesturesApi.listener = DelegatingGesturesListener(
-                    onTapDelegate = { offset ->
-                        val shiftedOffset = offset + paddingShift
-                        onTap(TapEvent(shiftedOffset))
-                    },
-                    onLinkActivatedDelegate = { href, outerHtml ->
-                        onLinkActivated(publicationBaseUrl.relativize(href), outerHtml)
-                    },
-                    onDecorationActivatedDelegate = { id, group, rect, offset ->
-                        val decoration = decorations.value[group]?.firstOrNull { it.id.value == id }
-                            ?: return@DelegatingGesturesListener
+                selectionListenerApi?.let { selectionListenerApi ->
+                    var isSelecting = false
+                    selectionListenerApi.listener = DelegatingSelectionListener(
+                        onSelectionStartDelegate = { isSelecting = true },
+                        onSelectionEndDelegate = { isSelecting = false }
+                    )
 
-                        val event = DecorationListener.OnActivatedEvent(
-                            decoration = decoration,
-                            group = group,
-                            rect = rect.shift(paddingShift),
-                            offset = offset + paddingShift
-                        )
-                        onDecorationActivated(event)
-                    }
-                )
+                    gesturesApi.listener = DelegatingGesturesListener(
+                        onTapDelegate = { offset ->
+                            // There's an on-going selection, the tap will dismiss it so we don't forward it.
+                            if (isSelecting) {
+                                return@DelegatingGesturesListener
+                            }
+
+                            val shiftedOffset = offset + paddingShift
+                            onTap(TapEvent(shiftedOffset))
+                        },
+                        onLinkActivatedDelegate = { href, outerHtml ->
+                            onLinkActivated(publicationBaseUrl.relativize(href), outerHtml)
+                        },
+                        onDecorationActivatedDelegate = { id, group, rect, offset ->
+                            val decoration = decorations.value[group]?.firstOrNull { it.id.value == id }
+                                ?: return@DelegatingGesturesListener
+
+                            val event = DecorationListener.OnActivatedEvent(
+                                decoration = decoration,
+                                group = group,
+                                rect = rect.shift(paddingShift),
+                                offset = offset + paddingShift
+                            )
+                            onDecorationActivated(event)
+                        }
+                    )
+                }
             }
         }
 
@@ -362,7 +382,9 @@ internal fun ReflowableResource(
         }
 
         LaunchedEffect(webViewState.webView, actionModeCallback) {
-            webViewState.webView?.setCustomSelectionActionModeCallback(actionModeCallback)
+            webViewState.webView?.setCustomSelectionActionModeCallback(
+                callback = actionModeCallback
+            )
         }
 
         val orientationRef by rememberUpdatedRef(orientation)

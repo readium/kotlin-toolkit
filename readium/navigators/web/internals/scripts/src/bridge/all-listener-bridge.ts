@@ -1,7 +1,13 @@
 import { DecorationActivatedEvent as OriginalDecorationActivated } from "../common/decoration"
 import { GesturesListener } from "../common/gestures"
+import { SelectionListener } from "../common/selection"
 import { AreaManager } from "../fixed/area-manager"
 import { DecorationActivatedEvent, TapEvent } from "../fixed/events"
+
+export interface SelectionListenerBridge {
+  onSelectionStart(): void
+  onSelectionEnd(): void
+}
 
 export interface GesturesBridge {
   onTap(event: string): void
@@ -19,11 +25,18 @@ export interface DocumentStateBridge {
   onDocumentResized: () => void
 }
 
-export class ReflowableListenerAdapter implements GesturesListener {
+export class ReflowableListenerAdapter
+  implements GesturesListener, SelectionListener
+{
   readonly gesturesBridge: GesturesBridge
+  readonly selectionListenerBridge: SelectionListenerBridge
 
-  constructor(gesturesBridge: GesturesBridge) {
+  constructor(
+    gesturesBridge: GesturesBridge,
+    selectionListenerBridge: SelectionListenerBridge
+  ) {
     this.gesturesBridge = gesturesBridge
+    this.selectionListenerBridge = selectionListenerBridge
   }
 
   onTap(event: MouseEvent) {
@@ -55,6 +68,14 @@ export class ReflowableListenerAdapter implements GesturesListener {
       stringRect,
       stringOffset
     )
+  }
+
+  onSelectionStart(): void {
+    this.selectionListenerBridge.onSelectionStart()
+  }
+
+  onSelectionEnd(): void {
+    this.selectionListenerBridge.onSelectionEnd()
   }
 }
 

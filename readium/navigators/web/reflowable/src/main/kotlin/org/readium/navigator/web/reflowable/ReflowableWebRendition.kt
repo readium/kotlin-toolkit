@@ -189,7 +189,7 @@ public fun ReflowableWebRendition(
                     onDocumentResized = {
                         state.scrollState.onDocumentResized(index)
                         state.updateLocation()
-                    }
+                    },
                 )
             }
         }
