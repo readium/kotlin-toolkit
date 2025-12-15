@@ -14,8 +14,11 @@ import androidx.compose.foundation.gestures.ScrollableDefaults
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -55,6 +58,7 @@ import org.readium.navigator.web.internals.util.rememberUpdatedRef
 import org.readium.navigator.web.internals.util.toLayoutDirection
 import org.readium.navigator.web.reflowable.resource.ReflowablePagingLayoutInfo
 import org.readium.navigator.web.reflowable.resource.ReflowableResource
+import org.readium.r2.navigator.preferences.Axis
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.RelativeUrl
@@ -93,17 +97,26 @@ public fun ReflowableWebRendition(
 
             val coroutineScope = rememberCoroutineScope()
 
-            val resourcePadding =
-                if (state.layoutDelegate.overflow.value.scroll) {
-                    AbsolutePaddingValues()
-                } else {
+            val resourcePadding = when (state.layoutDelegate.overflow.value.axis) {
+                Axis.HORIZONTAL ->
                     when (LocalConfiguration.current.orientation) {
                         Configuration.ORIENTATION_LANDSCAPE ->
                             AbsolutePaddingValues(vertical = 20.dp)
                         else ->
                             AbsolutePaddingValues(vertical = 40.dp)
                     }
+                Axis.VERTICAL -> {
+                    val paddingInsets = windowInsets.only(WindowInsetsSides.Vertical)
+                    val bottom = paddingInsets.asPaddingValues().calculateBottomPadding()
+                    val top = paddingInsets.asPaddingValues().calculateTopPadding()
+                    AbsolutePaddingValues(top = top, bottom = bottom)
                 }
+            }
+
+            val pagerPaddingInsets = when (state.layoutDelegate.overflow.value.axis) {
+                Axis.HORIZONTAL -> windowInsets.only(WindowInsetsSides.Vertical)
+                Axis.VERTICAL -> windowInsets.only(WindowInsetsSides.Horizontal)
+            }
 
             val flingBehavior = if (state.layoutDelegate.overflow.value.scroll) {
                 ScrollableDefaults.flingBehavior()
@@ -140,7 +153,7 @@ public fun ReflowableWebRendition(
                             onTap = { onTapOnPadding(it, viewportSize.value, inputListener) }
                         )
                     }
-                    .windowInsetsPadding(windowInsets),
+                    .windowInsetsPadding(pagerPaddingInsets),
                 state = state.pagerState,
                 scrollState = state.scrollState,
                 flingBehavior = flingBehavior,

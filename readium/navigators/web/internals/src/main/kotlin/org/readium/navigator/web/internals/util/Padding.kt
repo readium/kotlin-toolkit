@@ -12,10 +12,10 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
 public data class AbsolutePaddingValues(
-    val top: Dp,
-    val right: Dp,
-    val bottom: Dp,
-    val left: Dp,
+    val top: Dp = 0.dp,
+    val right: Dp = 0.dp,
+    val bottom: Dp = 0.dp,
+    val left: Dp = 0.dp,
 ) {
     public constructor(vertical: Dp = 0.dp, horizontal: Dp = 0.dp) :
         this(top = vertical, right = horizontal, bottom = vertical, left = horizontal)
