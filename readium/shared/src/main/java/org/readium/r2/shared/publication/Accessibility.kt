@@ -447,7 +447,7 @@ public data class Accessibility(
              * Textual descriptions of math equations are included, whether in the alt attribute
              * for image-based equations,
              */
-            public val DESCRIBED_MATH: Feature = Feature("describeMath")
+            public val DESCRIBED_MATH: Feature = Feature("describedMath")
 
             /**
              * Descriptions are provided for image-based visual content and/or complex structures

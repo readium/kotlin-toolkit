@@ -94,13 +94,15 @@ public data class HtmlDecorationTemplate(
             lineWeight: Int,
             cornerRadius: Int,
             alpha: Double,
+            experimentalPositioning: Boolean = false,
         ): HtmlDecorationTemplate =
             createTemplate(
                 asHighlight = true,
                 defaultTint = defaultTint,
                 lineWeight = lineWeight,
                 cornerRadius = cornerRadius,
-                alpha = alpha
+                alpha = alpha,
+                experimentalPositioning = experimentalPositioning,
             )
 
         /** Creates a new decoration template for the underline style. */
@@ -109,13 +111,15 @@ public data class HtmlDecorationTemplate(
             lineWeight: Int,
             cornerRadius: Int,
             alpha: Double,
+            experimentalPositioning: Boolean = false,
         ): HtmlDecorationTemplate =
             createTemplate(
                 asHighlight = false,
                 defaultTint = defaultTint,
                 lineWeight = lineWeight,
                 cornerRadius = cornerRadius,
-                alpha = alpha
+                alpha = alpha,
+                experimentalPositioning = experimentalPositioning,
             )
 
         /**
@@ -128,6 +132,7 @@ public data class HtmlDecorationTemplate(
             lineWeight: Int,
             cornerRadius: Int,
             alpha: Double,
+            experimentalPositioning: Boolean = false,
         ): HtmlDecorationTemplate {
             val className = createUniqueClassName(if (asHighlight) "highlight" else "underline")
             val padding = Padding(left = 1, right = 1)
@@ -140,6 +145,9 @@ public data class HtmlDecorationTemplate(
                     val css = buildString {
                         if (asHighlight || isActive) {
                             append("background-color: ${tint.toCss(alpha = alpha)} !important;")
+                        }
+                        if (experimentalPositioning) {
+                            append("--decoration-z-index: -1;")
                         }
                         if (!asHighlight || isActive) {
                             append("--underline-color: ${tint.toCss()};")
@@ -154,6 +162,7 @@ public data class HtmlDecorationTemplate(
                 border-radius: ${cornerRadius}px;
                 box-sizing: border-box;
                 border: 0 solid var(--underline-color);
+                z-index: var(--decoration-z-index);
             }
             
             /* Horizontal (default) */
@@ -213,6 +222,7 @@ public class HtmlDecorationTemplates private constructor(
             lineWeight: Int = 2,
             cornerRadius: Int = 3,
             alpha: Double = 0.3,
+            experimentalPositioning: Boolean = false,
         ): HtmlDecorationTemplates = HtmlDecorationTemplates {
             set(
                 Style.Highlight::class,
@@ -220,7 +230,8 @@ public class HtmlDecorationTemplates private constructor(
                     defaultTint = defaultTint,
                     lineWeight = lineWeight,
                     cornerRadius = cornerRadius,
-                    alpha = alpha
+                    alpha = alpha,
+                    experimentalPositioning = experimentalPositioning,
                 )
             )
             set(
@@ -229,7 +240,8 @@ public class HtmlDecorationTemplates private constructor(
                     defaultTint = defaultTint,
                     lineWeight = lineWeight,
                     cornerRadius = cornerRadius,
-                    alpha = alpha
+                    alpha = alpha,
+                    experimentalPositioning = experimentalPositioning,
                 )
             )
         }

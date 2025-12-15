@@ -23,7 +23,7 @@ public fun ReadingProgression.toLayoutDirection(): LayoutDirection =
         ReadingProgression.RTL -> LayoutDirection.Rtl
     }
 
-public fun Axis.toOrientation() = when (this) {
+public fun Axis.toOrientation(): Orientation = when (this) {
     Axis.HORIZONTAL -> Orientation.Horizontal
     Axis.VERTICAL -> Orientation.Vertical
 }

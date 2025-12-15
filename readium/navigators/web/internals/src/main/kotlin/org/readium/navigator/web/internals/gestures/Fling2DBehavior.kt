@@ -73,7 +73,7 @@ internal class NullFling2DBehavior : Fling2DBehavior {
     }
 }
 
-public fun FlingBehavior.toFling2DBehavior(orientation: Orientation) =
+public fun FlingBehavior.toFling2DBehavior(orientation: Orientation): Fling2DBehavior =
     object : Fling2DBehavior {
         override suspend fun Scroll2DScope.performFling(
             initialVelocity: Velocity,

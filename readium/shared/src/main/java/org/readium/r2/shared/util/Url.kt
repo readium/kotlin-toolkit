@@ -166,12 +166,16 @@ public sealed class Url : Parcelable {
      * Relativizes the given [url] against this URL.
      *
      * For example:
-     *     this = "http://example.com/foo"
+     *     this = "http://example.com/foo/"
      *     url = "http://example.com/foo/bar/baz"
      *     result = "bar/baz"
      */
-    public open fun relativize(url: Url): Url =
-        checkNotNull(toURI().relativize(url.toURI()).toUrl())
+    public open fun relativize(url: Url): Url {
+        // Unlike the regular JRE (used in unit tests), the Android implementation of URI doesn't
+        // add "/" at the end of the base if it's missing. We might need to align the behaviors
+        // at some point.
+        return checkNotNull(toURI().relativize(url.toURI()).toUrl())
+    }
 
     /**
      * Normalizes the URL using a subset of the RFC-3986 rules.
@@ -365,8 +369,23 @@ public fun Url.Companion.fromLegacyHref(href: String): Url? =
 public fun Url.Companion.fromEpubHref(href: String): Url? =
     Url(href) ?: fromDecodedPath(href)
 
-public fun File.toUrl(): AbsoluteUrl =
-    checkNotNull(AbsoluteUrl(Uri.fromFile(this)))
+/**
+ * Creates a URL pointing to this [File] which must denote an absolute path.
+ *
+ * @param isDirectory If the URL must end with a trailing slash because it points to a directory.
+ */
+public fun File.toUrl(isDirectory: Boolean): AbsoluteUrl {
+    require(isAbsolute)
+
+    val uri = Uri.Builder().also {
+        it.scheme("file")
+        it.authority("")
+        it.path(path)
+        if (isDirectory) it.appendPath("")
+    }.build()
+
+    return checkNotNull(AbsoluteUrl(uri))
+}
 
 public fun Uri.toUrl(): Url? =
     Url(this)
