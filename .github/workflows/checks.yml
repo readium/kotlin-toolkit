@@ -19,10 +19,15 @@ jobs:
         with:
           java-version: '17'
           distribution: 'adopt'
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          #Read cache in PRs, write to cache after merge to main or develop
+          cache-read-only: ${{ github.ref != 'refs/heads/main' && github.ref != 'refs/heads/develop' }}
       - name: Build
-        run: ./gradlew clean build -x test -x ktlintMainSourceSetCheck
+        run: ./gradlew build -x test -x ktlintMainSourceSetCheck --configuration-cache
       - name: Test
-        run: ./gradlew test --continue
+        run: ./gradlew test --continue --configuration-cache
 
   lint-kt:
     name: Lint Kotlin
@@ -67,8 +72,8 @@ jobs:
         run: pnpm --dir "$scripts" run checkformat
       - name: Check if bundled scripts are up-to-date
         run: |
-            make scripts-legacy
-            git diff --exit-code --name-only src/main/assets/readium/scripts/*.js
+          make scripts-legacy
+          git diff --exit-code --name-only src/main/assets/readium/scripts/*.js
   lint-new-ts:
     name: Lint TypeScript
     runs-on: macos-latest
