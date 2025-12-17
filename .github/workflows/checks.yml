@@ -11,6 +11,8 @@ jobs:
     name: Build and test
     runs-on: ubuntu-latest
     if: ${{ !github.event.pull_request.draft }}
+    env:
+      GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx3g -XX:+UseParallelGC"
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -24,10 +26,8 @@ jobs:
         with:
           #Read cache in PRs, write to cache after merge to main or develop
           cache-read-only: ${{ github.ref != 'refs/heads/main' && github.ref != 'refs/heads/develop' }}
-      - name: Build
-        run: ./gradlew build -x test -x ktlintMainSourceSetCheck --configuration-cache
-      - name: Test
-        run: ./gradlew test --continue --configuration-cache
+      - name: Build and Test
+        run: ./gradlew assembleDebug testDebugUnitTest lintDebug
 
   lint-kt:
     name: Lint Kotlin
