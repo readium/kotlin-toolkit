@@ -10,6 +10,8 @@ package org.readium.navigator.web.reflowable.css
 
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.coerceAtMost
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.times
 import kotlin.math.floor
 import kotlin.math.roundToInt
 import org.readium.navigator.web.reflowable.preferences.ReflowableWebSettings
@@ -43,7 +45,7 @@ internal class PaginatedLayoutResolver(
         val maxLineLength =
             settings.maximalLineLength?.let { baseMaxLineLength * it.toFloat() * fontScale }
 
-        return when (val colCount = settings.columnCount) {
+        val layout = when (val colCount = settings.columnCount) {
             null ->
                 layoutAuto(
                     minimalPageGutter = minPageGutter,
@@ -62,6 +64,11 @@ internal class PaginatedLayoutResolver(
                     minimalLineLength = minLineLength,
                 )
         }
+
+        // CSS zoom multiplies the px line length by
+        // the zoom factor so we need to do the reverse thing.
+        // If we don't, line length decreases with fontSize.
+        return layout.copy(lineLength = layout.lineLength?.let { (it.value / settings.fontSize).dp  })
     }
 
     private fun layoutAuto(
