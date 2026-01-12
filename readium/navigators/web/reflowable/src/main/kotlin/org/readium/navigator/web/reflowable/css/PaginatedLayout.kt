@@ -11,7 +11,6 @@ package org.readium.navigator.web.reflowable.css
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.coerceAtMost
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.times
 import kotlin.math.floor
 import kotlin.math.roundToInt
 import org.readium.navigator.web.reflowable.preferences.ReflowableWebSettings
@@ -34,10 +33,11 @@ internal class PaginatedLayoutResolver(
         settings: ReflowableWebSettings,
         systemFontScale: Float,
         viewportWidth: Dp,
+        horizontalSafeDrawing: Dp,
     ): PaginatedLayout {
         val fontScale = systemFontScale * settings.fontSize.toFloat()
         val minPageGutter =
-            baseMinMargins * settings.minMargins.toFloat()
+            (baseMinMargins * settings.minMargins.toFloat()).coerceAtLeast(horizontalSafeDrawing)
         val optimalLineLength =
             baseOptimalLineLength * settings.optimalLineLength.toFloat() * fontScale
         val minLineLength =
@@ -45,7 +45,7 @@ internal class PaginatedLayoutResolver(
         val maxLineLength =
             settings.maximalLineLength?.let { baseMaxLineLength * it.toFloat() * fontScale }
 
-        val layout = when (val colCount = settings.columnCount) {
+        var layout = when (val colCount = settings.columnCount) {
             null ->
                 layoutAuto(
                     minimalPageGutter = minPageGutter,
@@ -65,10 +65,21 @@ internal class PaginatedLayoutResolver(
                 )
         }
 
-        // CSS zoom multiplies the px line length by
+        // CSS zoom multiplies the px line value by
         // the zoom factor so we need to do the reverse thing.
         // If we don't, line length decreases with fontSize.
-        return layout.copy(lineLength = layout.lineLength?.let { (it.value / settings.fontSize).dp  })
+        layout = layout.copy(
+            lineLength = layout.lineLength?.let { (it.value / settings.fontSize).dp },
+            pageGutter = (layout.pageGutter.value / settings.fontSize).dp
+        )
+
+        // Readium CSS lineLength is a max-width property on body including pageGutter which is
+        // padding.
+        layout = layout.copy(
+            lineLength = layout.lineLength?.let { it + layout.pageGutter * 2 }
+        )
+
+        return layout
     }
 
     private fun layoutAuto(
@@ -119,7 +130,7 @@ internal class PaginatedLayoutResolver(
 
         val actualAvailableWidth = viewportWidth - minPageGutter * 2 * colCount
 
-        val minimalLineLength = minimalLineLength?.coerceAtMost(viewportWidth - minPageGutter * 2)
+        val minimalLineLength = minimalLineLength?.coerceAtMost(actualAvailableWidth)
 
         val maximalLineLength = maximalLineLength?.coerceAtLeast(minPageGutter * 2)
 
@@ -135,12 +146,10 @@ internal class PaginatedLayoutResolver(
                     maximalLineLength = maximalLineLength
                 )
             maximalLineLength != null && lineLength > maximalLineLength ->
-                layoutNColumns(
-                    colCount = colCount + 1,
-                    minimalPageGutter = minPageGutter,
-                    viewportWidth = viewportWidth,
-                    minimalLineLength = minimalLineLength,
-                    maximalLineLength = maximalLineLength,
+                PaginatedLayout(
+                    colCount = colCount,
+                    lineLength = maximalLineLength,
+                    pageGutter = minPageGutter,
                 )
             else ->
                 PaginatedLayout(

@@ -20,6 +20,7 @@ import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateMap
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import kotlin.coroutines.suspendCoroutine
@@ -311,12 +312,14 @@ internal class ReflowableLayoutDelegate(
     private val paginatedLayoutResolver =
         PaginatedLayoutResolver(
             baseMinMargins = 15.dp,
-            baseMinLineLength = 200.dp,
-            baseOptimalLineLength = 400.dp,
-            baseMaxLineLength = 600.dp
+            baseMinLineLength = 400.dp,
+            baseOptimalLineLength = 600.dp,
+            baseMaxLineLength = 800.dp
         )
 
     internal var viewportSize: DpSize? by mutableStateOf(null)
+
+    internal var horizontalSafeDrawing: Dp? by mutableStateOf(null)
 
     internal var fontScale: Float? by mutableStateOf(null)
 
@@ -343,14 +346,15 @@ internal class ReflowableLayoutDelegate(
         ).withSettings(
             settings = settings,
         ).let { injector ->
-            if (viewportSize == null || fontScale == null || settings.scroll) {
+            if (viewportSize == null || horizontalSafeDrawing == null || fontScale == null || settings.scroll) {
                 injector
             } else {
                 injector.withLayout(
                     paginatedLayoutResolver.layout(
                         settings = settings,
                         systemFontScale = fontScale!!,
-                        viewportWidth = viewportSize!!.width
+                        viewportWidth = viewportSize!!.width,
+                        horizontalSafeDrawing = horizontalSafeDrawing!!
                     )
                 )
             }

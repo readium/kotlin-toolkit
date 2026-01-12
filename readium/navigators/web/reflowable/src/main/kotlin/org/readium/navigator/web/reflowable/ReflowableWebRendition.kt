@@ -36,6 +36,7 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.max
 import kotlinx.collections.immutable.toImmutableMap
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -92,6 +93,10 @@ public fun ReflowableWebRendition(
             val viewportSize = rememberUpdatedRef(DpSize(maxWidth, maxHeight))
 
             state.layoutDelegate.viewportSize = viewportSize.value
+
+            state.layoutDelegate.horizontalSafeDrawing = windowInsets.asPaddingValues().let {
+                max(it.calculateLeftPadding(layoutDirection), it.calculateRightPadding(layoutDirection))
+            }
 
             state.layoutDelegate.fontScale = LocalDensity.current.fontScale
 
