@@ -27,6 +27,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.currentCoroutineContext
 import org.readium.navigator.common.Decoration
 import org.readium.navigator.common.DecorationController
 import org.readium.navigator.common.NavigationController
@@ -276,7 +277,7 @@ internal class FixedSelectionDelegate(
 
     override suspend fun currentSelection(): Selection<FixedWebSelectionLocation>? {
         val visiblePages = pagerState.layoutInfo.visiblePagesInfo.map { it.index }
-        val coroutineScope = CoroutineScope(coroutineContext + SupervisorJob())
+        val coroutineScope = CoroutineScope(currentCoroutineContext() + SupervisorJob())
         val (page, selection) = visiblePages
             .mapNotNull { index -> selectionApis[index]?.let { index to it } }
             .map { (index, api) ->

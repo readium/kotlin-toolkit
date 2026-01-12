@@ -112,14 +112,6 @@ public fun FixedWebRendition(
                 state.initController(location = currentLocation())
             }
 
-            LaunchedEffect(state) {
-                snapshotFlow {
-                    state.pagerState.currentPage
-                }.onEach {
-                    state.navigationDelegate.updateLocation(currentLocation())
-                }.launchIn(this)
-            }
-
             val coroutineScope = rememberCoroutineScope()
 
             val inputListenerState = rememberUpdatedState(inputListener)
@@ -295,6 +287,16 @@ public fun FixedWebRendition(
                         )
                     }
                 }
+            }
+
+            // We must recompose Pager before calling currentLocation() because after an orientation
+            // change, pagerState.currentPage won't be correct before if the layout has changed.
+            LaunchedEffect(state) {
+                snapshotFlow {
+                    state.pagerState.currentPage
+                }.onEach {
+                    state.navigationDelegate.updateLocation(currentLocation())
+                }.launchIn(this)
             }
         }
     }
