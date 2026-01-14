@@ -525,6 +525,8 @@ private fun ReflowableWebGoLocation.toResourceLocations(
     val resourceLocation = progression
         ?.let { ReflowableResourceLocation.Progression(it) }
         ?: htmlId?.let { ReflowableResourceLocation.HtmlId(it) }
+        ?: cssSelector?.let { ReflowableResourceLocation.CssSelector(it) }
+        ?: textAnchor?.let { ReflowableResourceLocation.TextAnchor(it) }
         ?: ReflowableResourceLocation.Progression(Progression(0.0)!!)
 
     return readingOrder.items.mapIndexed { index, state ->

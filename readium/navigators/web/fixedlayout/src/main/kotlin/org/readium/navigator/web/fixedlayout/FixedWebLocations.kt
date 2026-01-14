@@ -90,14 +90,14 @@ public sealed interface FixedWebDecorationLocation : DecorationLocation {
 
 internal data class FixedWebDecorationCssSelectorLocation(
     override val href: Url,
-    val cssSelector: CssSelector,
-) : FixedWebDecorationLocation
+    override val cssSelector: CssSelector,
+) : FixedWebDecorationLocation, CssSelectorLocation
 
 internal data class FixedWebDecorationTextQuoteLocation(
     override val href: Url,
-    val textQuote: TextQuote,
+    override val textQuote: TextQuote,
     val cssSelector: CssSelector?,
-) : FixedWebDecorationLocation
+) : FixedWebDecorationLocation, TextQuoteLocation
 
 @ExperimentalReadiumApi
 @ConsistentCopyVisibility

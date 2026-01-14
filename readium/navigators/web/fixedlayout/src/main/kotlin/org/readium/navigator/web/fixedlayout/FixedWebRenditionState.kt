@@ -97,7 +97,8 @@ public class FixedWebRenditionState internal constructor(
         )
 
     internal val lastMeasureLayout: State<Pair<Int, Layout>> = derivedStateOf {
-        pagerState.currentPage to Snapshot.withoutReadObservation { layoutDelegate.layout.value } }
+        pagerState.currentPage to Snapshot.withoutReadObservation { layoutDelegate.layout.value }
+    }
 
     private val initialSpread = layoutDelegate.layout.value
         .spreadIndexForHref(initialLocation.href)

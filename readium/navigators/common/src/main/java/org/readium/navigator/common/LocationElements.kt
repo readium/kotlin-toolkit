@@ -7,6 +7,7 @@
 package org.readium.navigator.common
 
 import org.readium.r2.shared.ExperimentalReadiumApi
+import org.readium.r2.shared.publication.Locator
 
 /**
  * An HTML Id.
@@ -78,3 +79,39 @@ public data class TextQuote(
     val prefix: String,
     val suffix: String,
 )
+
+@ExperimentalReadiumApi
+public fun TextQuote.toTextAnchor(end: Boolean = false): TextAnchor =
+    when (end) {
+        false -> TextAnchor(
+            textBefore = prefix,
+            textAfter = text + suffix
+        )
+        true -> TextAnchor(
+            textBefore = prefix + text,
+            textAfter = text
+        )
+    }
+
+/**
+ * A [TextAnchor] is a pair of short text snippets allowing to locate in a text.
+ */
+@ExperimentalReadiumApi
+public data class TextAnchor(
+    val textBefore: String,
+    val textAfter: String,
+)
+
+@ExperimentalReadiumApi
+public fun Locator.Text.toTextQuote(): TextQuote? =
+    highlight?.let { highlight ->
+        TextQuote(
+            text = highlight,
+            prefix = before.orEmpty(),
+            suffix = after.orEmpty()
+        )
+    }
+
+@ExperimentalReadiumApi
+public fun Locator.Text.toTextAnchor(end: Boolean = false): TextAnchor? =
+    toTextQuote()?.toTextAnchor(end)

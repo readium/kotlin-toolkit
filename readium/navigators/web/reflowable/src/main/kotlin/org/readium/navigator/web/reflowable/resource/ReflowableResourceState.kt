@@ -110,6 +110,14 @@ internal sealed interface ReflowableResourceLocation {
     data class HtmlId(
         val value: org.readium.navigator.common.HtmlId,
     ) : ReflowableResourceLocation
+
+    data class CssSelector(
+        val value: org.readium.navigator.common.CssSelector,
+    ) : ReflowableResourceLocation
+
+    data class TextAnchor(
+        val value: org.readium.navigator.common.TextAnchor,
+    ) : ReflowableResourceLocation
 }
 
 internal data class PendingGo(
