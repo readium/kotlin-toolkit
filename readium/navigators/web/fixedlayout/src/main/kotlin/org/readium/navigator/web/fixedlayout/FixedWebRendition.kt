@@ -98,12 +98,12 @@ public fun FixedWebRendition(
                 rememberUpdatedState(DisplayArea(viewportSize.value, safeDrawingPadding))
 
             fun currentLocation(): FixedWebLocation {
-                val spreadIndex = state.pagerState.currentPage
-                val itemIndex = state.layoutDelegate.layout.value.pageIndexForSpread(spreadIndex)
+                val (currentSpreadIndex, currentLayout) = state.lastMeasureLayout.value
+                val itemIndex = currentLayout.pageIndexForSpread(currentSpreadIndex)
                 val href = state.publication.readingOrder[itemIndex].href
                 val mediaType = state.publication.readingOrder[itemIndex].mediaType
                 val position = Position(itemIndex + 1)!!
-                val totalProgression = Progression(spreadIndex / state.layoutDelegate.layout.value.spreads.size.toDouble())!!
+                val totalProgression = Progression(currentSpreadIndex / currentLayout.spreads.size.toDouble())!!
 
                 return FixedWebLocation(href, position, totalProgression, mediaType)
             }
@@ -148,14 +148,12 @@ public fun FixedWebRendition(
                 )
             }
 
-            LaunchedEffect(state.layoutDelegate.layout.value, state.controller) {
-                state.controller?.let {
-                    val currentHref = it.location.href
-                    val spreadIndex = checkNotNull(
-                        state.layoutDelegate.layout.value.spreadIndexForHref(currentHref)
-                    )
-                    state.pagerState.requestScrollToPage(spreadIndex)
-                }
+            LaunchedEffect(state, state.layoutDelegate.layout.value) {
+                snapshotFlow {
+                    state.pagerState.currentPage
+                }.onEach {
+                    state.navigationDelegate.updateLocation(currentLocation())
+                }.launchIn(this)
             }
 
             val spreadFlingBehavior = Scrollable2DDefaults.flingBehavior()
@@ -177,13 +175,7 @@ public fun FixedWebRendition(
                 orientation = Orientation.Horizontal,
                 beyondViewportPageCount = 2,
                 enableScroll = true,
-                key = { index ->
-                    val readingProgression = state.layoutDelegate.layout.value.readingProgression
-                    val spread = state.layoutDelegate.layout.value.spreads[index]
-                    val pages = spread.pages.map { it.index }
-                    val fit = state.layoutDelegate.fit.value
-                    "$readingProgression $spread $pages $fit"
-                },
+                key = { index -> state.layoutDelegate.layout.value.spreads[index].pages.first().index },
             ) { index ->
                 val initialProgression = when {
                     index < state.pagerState.currentPage -> 1.0
@@ -193,8 +185,9 @@ public fun FixedWebRendition(
                 val spread = state.layoutDelegate.layout.value.spreads[index]
 
                 val decorations = state.decorationDelegate.decorations
-                    .mapValues { groupDecorations -> groupDecorations.value.filter { it.location.href in spread.pages.map { it.href } } }
-                    .toImmutableMap()
+                    .mapValues { groupDecorations ->
+                        groupDecorations.value.filter { it.location.href in spread.pages.map { it.href } }
+                    }.toImmutableMap()
 
                 when (spread) {
                     is SingleViewportSpread -> {
@@ -202,7 +195,7 @@ public fun FixedWebRendition(
                             SingleSpreadState(
                                 index = index,
                                 htmlData = state.preloadedData.fixedSingleContent,
-                                publicationBaseUrl = WebViewServer.Companion.publicationBaseHref,
+                                publicationBaseUrl = WebViewServer.publicationBaseHref,
                                 webViewClient = state.webViewClient,
                                 spread = spread,
                                 fit = state.layoutDelegate.fit,
@@ -247,7 +240,7 @@ public fun FixedWebRendition(
                             DoubleSpreadState(
                                 index = index,
                                 htmlData = state.preloadedData.fixedDoubleContent,
-                                publicationBaseUrl = WebViewServer.Companion.publicationBaseHref,
+                                publicationBaseUrl = WebViewServer.publicationBaseHref,
                                 webViewClient = state.webViewClient,
                                 spread = spread,
                                 fit = state.layoutDelegate.fit,
@@ -287,16 +280,6 @@ public fun FixedWebRendition(
                         )
                     }
                 }
-            }
-
-            // We must recompose Pager before calling currentLocation() because after an orientation
-            // change, pagerState.currentPage won't be correct before if the layout has changed.
-            LaunchedEffect(state) {
-                snapshotFlow {
-                    state.pagerState.currentPage
-                }.onEach {
-                    state.navigationDelegate.updateLocation(currentLocation())
-                }.launchIn(this)
             }
         }
     }

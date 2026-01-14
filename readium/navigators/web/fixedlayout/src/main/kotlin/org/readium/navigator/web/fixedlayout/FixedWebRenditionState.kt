@@ -18,8 +18,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.runtime.snapshots.SnapshotStateMap
-import kotlin.coroutines.coroutineContext
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.PersistentMap
 import kotlinx.collections.immutable.persistentMapOf
@@ -95,6 +95,9 @@ public class FixedWebRenditionState internal constructor(
             publication.readingOrder,
             initialSettings
         )
+
+    internal val lastMeasureLayout: State<Pair<Int, Layout>> = derivedStateOf {
+        pagerState.currentPage to Snapshot.withoutReadObservation { layoutDelegate.layout.value } }
 
     private val initialSpread = layoutDelegate.layout.value
         .spreadIndexForHref(initialLocation.href)
@@ -202,8 +205,8 @@ internal class FixedLayoutDelegate(
     }
 
     val layout: State<Layout> = derivedStateOf {
-        val spreads = layoutResolver.layout(settings)
-        Layout(settings.readingProgression, spreads)
+        val newSpreads = layoutResolver.layout(settings)
+        Layout(settings.readingProgression, newSpreads)
     }
 
     val fit: State<Fit> =
