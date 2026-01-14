@@ -19,12 +19,12 @@ export class ReflowableMoveBridge {
       )
     }
 
-    if (actualLocation.htmlId) {
-      return this.getOffsetForHtmlId(actualLocation.htmlId, vertical)
-    }
-
     if (actualLocation.cssSelector) {
       return this.getOffsetForCssSelector(actualLocation.cssSelector, vertical)
+    }
+
+    if (actualLocation.htmlId) {
+      return this.getOffsetForHtmlId(actualLocation.htmlId, vertical)
     }
 
     return null
