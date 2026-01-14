@@ -25,11 +25,12 @@ dependencies {
     api(project(":readium:navigators:web:readium-navigator-web-common"))
     implementation(project(":readium:navigators:web:readium-navigator-web-internals"))
 
-    implementation(libs.kotlinx.serialization.json)
-    implementation(libs.kotlinx.collections.immutable)
-    implementation(libs.bundles.compose)
+    api(libs.androidx.compose.foundation)
+    api(libs.kotlinx.coroutines.android)
+    api(libs.kotlinx.collections.immutable)
+    api(libs.kotlinx.serialization.json)
+
     implementation(libs.timber)
-    implementation(libs.kotlinx.coroutines.android)
     implementation(libs.androidx.webkit)
     implementation(libs.jsoup)
 }

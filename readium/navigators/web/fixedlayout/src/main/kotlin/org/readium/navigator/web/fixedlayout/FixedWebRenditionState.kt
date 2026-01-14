@@ -9,6 +9,7 @@
 package org.readium.navigator.web.fixedlayout
 
 import android.app.Application
+import androidx.compose.foundation.MutatePriority
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.Stable
@@ -28,7 +29,6 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.currentCoroutineContext
-import org.readium.navigator.common.Decoration
 import org.readium.navigator.common.DecorationController
 import org.readium.navigator.common.NavigationController
 import org.readium.navigator.common.Overflow
@@ -90,19 +90,23 @@ public class FixedWebRenditionState internal constructor(
 
     override val controller: FixedWebRenditionController? by controllerState
 
+    internal val lastMeasureInfo: State<FixedLayoutMeasureInfo> = derivedStateOf {
+        FixedLayoutMeasureInfo(
+            currentSpread = pagerState.currentPage,
+            layout = Snapshot.withoutReadObservation { layoutDelegate.layout.value }
+        )
+    }
+
     internal val layoutDelegate: FixedLayoutDelegate =
         FixedLayoutDelegate(
             publication.readingOrder,
             initialSettings
         )
 
-    internal val lastMeasureLayout: State<Pair<Int, Layout>> = derivedStateOf {
-        pagerState.currentPage to Snapshot.withoutReadObservation { layoutDelegate.layout.value }
-    }
-
-    private val initialSpread = layoutDelegate.layout.value
-        .spreadIndexForHref(initialLocation.href)
-        ?: 0
+    private val initialSpread: Int =
+        layoutDelegate.layout.value
+            .spreadIndexForHref(initialLocation.href)
+            ?: 0
 
     internal val pagerState: PagerState =
         PagerState(
@@ -113,13 +117,13 @@ public class FixedWebRenditionState internal constructor(
     internal val selectionDelegate: FixedSelectionDelegate =
         FixedSelectionDelegate(
             pagerState = pagerState,
-            layout = layoutDelegate.layout
+            lastMeasureInfo = lastMeasureInfo
         )
 
     internal val decorationDelegate: FixedDecorationDelegate =
         FixedDecorationDelegate(configuration.decorationTemplates)
 
-    internal val hyperlinkProcessor =
+    internal val hyperlinkProcessor: HyperlinkProcessor =
         HyperlinkProcessor(publication.container)
 
     private val webViewServer = run {
@@ -152,7 +156,7 @@ public class FixedWebRenditionState internal constructor(
         navigationDelegate =
             FixedNavigationDelegate(
                 pagerState,
-                layoutDelegate.layout,
+                lastMeasureInfo,
                 layoutDelegate.overflow,
                 location
             )
@@ -185,6 +189,11 @@ internal data class FixedWebPreloadedData(
     val fixedDoubleContent: String,
 )
 
+internal class FixedLayoutMeasureInfo(
+    val currentSpread: Int,
+    val layout: Layout,
+)
+
 internal class FixedLayoutDelegate(
     readingOrder: FixedWebPublication.ReadingOrder,
     initialSettings: FixedWebSettings,
@@ -210,13 +219,14 @@ internal class FixedLayoutDelegate(
         Layout(settings.readingProgression, newSpreads)
     }
 
-    val fit: State<Fit> =
-        derivedStateOf { settings.fit }
+    val fit: State<Fit> = derivedStateOf {
+        settings.fit
+    }
 }
 
 internal class FixedNavigationDelegate(
     private val pagerState: PagerState,
-    private val layout: State<Layout>,
+    private val lastMeasureInfo: State<FixedLayoutMeasureInfo>,
     overflowState: State<Overflow>,
     initialLocation: FixedWebLocation,
 ) : NavigationController<FixedWebLocation, FixedWebGoLocation>, OverflowController {
@@ -236,8 +246,12 @@ internal class FixedNavigationDelegate(
     }
 
     override suspend fun goTo(location: FixedWebGoLocation) {
-        val spreadIndex = layout.value.spreadIndexForHref(location.href) ?: return
-        pagerState.scrollToPage(spreadIndex)
+        pagerState.scroll(MutatePriority.PreventUserInput) {
+            val spreadIndex = lastMeasureInfo.value.layout.spreadIndexForHref(location.href)
+                ?: return@scroll
+
+            pagerState.requestScrollToPage(spreadIndex)
+        }
     }
 
     override suspend fun goTo(location: FixedWebLocation) {
@@ -245,20 +259,32 @@ internal class FixedNavigationDelegate(
     }
 
     override val canMoveForward: Boolean
-        get() = pagerState.currentPage < layout.value.spreads.size - 1
+        get() = lastMeasureInfo.value.currentSpread < lastMeasureInfo.value.layout.spreads.size - 1
 
     override val canMoveBackward: Boolean
-        get() = pagerState.currentPage > 0
+        get() = lastMeasureInfo.value.currentSpread > 0
 
     override suspend fun moveForward() {
-        if (canMoveForward) {
-            pagerState.scrollToPage(pagerState.currentPage + 1)
+        if (pagerState.isScrollInProgress) {
+            return
+        }
+
+        pagerState.scroll {
+            if (canMoveForward) {
+                pagerState.requestScrollToPage(pagerState.currentPage + 1)
+            }
         }
     }
 
     override suspend fun moveBackward() {
-        if (canMoveBackward) {
-            pagerState.scrollToPage(pagerState.currentPage - 1)
+        if (pagerState.isScrollInProgress) {
+            return
+        }
+
+        pagerState.scroll {
+            if (canMoveBackward) {
+                pagerState.requestScrollToPage(pagerState.currentPage - 1)
+            }
         }
     }
 }
@@ -268,12 +294,12 @@ internal class FixedDecorationDelegate(
 ) : DecorationController<FixedWebDecorationLocation> {
 
     override var decorations: PersistentMap<String, PersistentList<FixedWebDecoration>> by
-        mutableStateOf(persistentMapOf<String, PersistentList<Decoration<FixedWebDecorationLocation>>>())
+        mutableStateOf(persistentMapOf())
 }
 
 internal class FixedSelectionDelegate(
     private val pagerState: PagerState,
-    private val layout: State<Layout>,
+    private val lastMeasureInfo: State<FixedLayoutMeasureInfo>,
 ) : SelectionController<FixedWebSelectionLocation> {
 
     val selectionApis: SnapshotStateMap<Int, FixedSelectionApi?> =
@@ -286,7 +312,7 @@ internal class FixedSelectionDelegate(
             .mapNotNull { index -> selectionApis[index]?.let { index to it } }
             .map { (index, api) ->
                 coroutineScope.async {
-                    api.getCurrentSelection(index, layout.value)
+                    api.getCurrentSelection(index, lastMeasureInfo.value.layout)
                 }
             }.awaitAll()
             .filterNotNull()

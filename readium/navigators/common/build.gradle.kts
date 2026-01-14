@@ -22,11 +22,11 @@ dependencies {
     api(project(":readium:readium-shared"))
     api(project(":readium:readium-navigator"))
 
+    api(libs.androidx.compose.foundation)
+    api(libs.kotlinx.coroutines.android)
     api(libs.kotlinx.collections.immutable)
+    api(libs.kotlinx.serialization.json)
 
     implementation(libs.androidx.recyclerview)
-    implementation(libs.kotlinx.serialization.json)
-    implementation(libs.bundles.compose)
     implementation(libs.timber)
-    implementation(libs.kotlinx.coroutines.android)
 }

@@ -4,6 +4,8 @@
  * available in the top-level LICENSE file of the project.
  */
 
+@file:OptIn(ExperimentalReadiumApi::class)
+
 package org.readium.navigator.web.fixedlayout
 
 import android.annotation.SuppressLint
@@ -13,7 +15,6 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -75,10 +76,10 @@ import org.readium.r2.shared.util.Url
 public fun FixedWebRendition(
     state: FixedWebRenditionState,
     modifier: Modifier = Modifier,
+    backgroundColor: Color = Color.White,
     windowInsets: WindowInsets = WindowInsets.displayCutout,
-    backgroundColor: Color = MaterialTheme.colorScheme.background,
     inputListener: InputListener = defaultInputListener(state.controller),
-    hyperlinkListener: HyperlinkListener = defaultHyperlinkListener(controller = state.controller),
+    hyperlinkListener: HyperlinkListener = defaultHyperlinkListener(state.controller),
     decorationListener: DecorationListener<FixedWebDecorationLocation> = defaultDecorationListener(state.controller),
     textSelectionActionModeCallback: ActionMode.Callback? = null,
 ) {
@@ -97,19 +98,8 @@ public fun FixedWebRendition(
             val displayArea =
                 rememberUpdatedState(DisplayArea(viewportSize.value, safeDrawingPadding))
 
-            fun currentLocation(): FixedWebLocation {
-                val (currentSpreadIndex, currentLayout) = state.lastMeasureLayout.value
-                val itemIndex = currentLayout.pageIndexForSpread(currentSpreadIndex)
-                val href = state.publication.readingOrder[itemIndex].href
-                val mediaType = state.publication.readingOrder[itemIndex].mediaType
-                val position = Position(itemIndex + 1)!!
-                val totalProgression = Progression(currentSpreadIndex / currentLayout.spreads.size.toDouble())!!
-
-                return FixedWebLocation(href, position, totalProgression, mediaType)
-            }
-
             if (state.controller == null) {
-                state.initController(location = currentLocation())
+                state.initController(location = state.currentLocation())
             }
 
             val coroutineScope = rememberCoroutineScope()
@@ -152,7 +142,7 @@ public fun FixedWebRendition(
                 snapshotFlow {
                     state.pagerState.currentPage
                 }.onEach {
-                    state.navigationDelegate.updateLocation(currentLocation())
+                    state.navigationDelegate.updateLocation(state.currentLocation())
                 }.launchIn(this)
             }
 
@@ -285,6 +275,18 @@ public fun FixedWebRendition(
     }
 }
 
+private fun FixedWebRenditionState.currentLocation(): FixedWebLocation {
+    val lastMeasureInfoNow = lastMeasureInfo
+    val currentSpreadIndex = lastMeasureInfoNow.value.currentSpread
+    val currentLayout = lastMeasureInfoNow.value.layout
+    val itemIndex = currentLayout.pageIndexForSpread(currentSpreadIndex)
+    val href = publication.readingOrder[itemIndex].href
+    val mediaType = publication.readingOrder[itemIndex].mediaType
+    val position = Position(itemIndex + 1)!!
+    val totalProgression = Progression(currentSpreadIndex / currentLayout.spreads.size.toDouble())!!
+    return FixedWebLocation(href, position, totalProgression, mediaType)
+}
+
 @Composable
 private fun WindowInsets.asAbsolutePaddingValues(): AbsolutePaddingValues {
     val density = LocalDensity.current
@@ -296,7 +298,6 @@ private fun WindowInsets.asAbsolutePaddingValues(): AbsolutePaddingValues {
     return AbsolutePaddingValues(top = top, right = right, bottom = bottom, left = left)
 }
 
-@OptIn(ExperimentalReadiumApi::class)
 private suspend fun HyperlinkProcessor.onLinkActivated(
     url: Url,
     outerHtml: String,
