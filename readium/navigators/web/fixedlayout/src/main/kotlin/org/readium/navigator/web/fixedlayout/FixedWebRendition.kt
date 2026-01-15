@@ -83,26 +83,29 @@ public fun FixedWebRendition(
     decorationListener: DecorationListener<FixedWebDecorationLocation> = defaultDecorationListener(state.controller),
     textSelectionActionModeCallback: ActionMode.Callback? = null,
 ) {
-    val layoutDirection =
-        state.layoutDelegate.overflow.value.readingProgression.toLayoutDirection()
+    BoxWithConstraints(
+        modifier = modifier.fillMaxSize(),
+        propagateMinConstraints = true
+    ) {
+        val layoutDirection =
+            state.layoutDelegate.overflow.value.readingProgression.toLayoutDirection()
 
-    CompositionLocalProvider(LocalLayoutDirection provides layoutDirection) {
-        BoxWithConstraints(
-            modifier = modifier.fillMaxSize(),
-            propagateMinConstraints = true
-        ) {
-            val viewportSize = rememberUpdatedState(DpSize(maxWidth, maxHeight))
-
-            val safeDrawingPadding = windowInsets.asAbsolutePaddingValues()
-
-            val displayArea =
-                rememberUpdatedState(DisplayArea(viewportSize.value, safeDrawingPadding))
-
+        CompositionLocalProvider(LocalLayoutDirection provides layoutDirection) {
             if (state.controller == null) {
-                state.initController(location = state.currentLocation())
+                val currentLocation = currentLocation(state.lastMeasureInfo.value, state.publication)
+                state.initController(location = currentLocation)
             }
 
+            val density = LocalDensity.current
+
             val coroutineScope = rememberCoroutineScope()
+
+            val displayArea = rememberUpdatedState(
+                DisplayArea(
+                    viewportSize = DpSize(maxWidth, maxHeight),
+                    safeDrawingPadding = windowInsets.asAbsolutePaddingValues()
+                )
+            )
 
             val inputListenerState = rememberUpdatedState(inputListener)
 
@@ -110,11 +113,8 @@ public fun FixedWebRendition(
 
             val decorationListenerState = rememberUpdatedState(decorationListener)
 
-            val density = LocalDensity.current
-
             val scrollStates = remember(state, state.layoutDelegate.layout.value) {
-                state.layoutDelegate.layout.value.spreads
-                    .map { SpreadScrollState() }
+                state.layoutDelegate.layout.value.spreads.map { SpreadScrollState() }
             }
 
             val flingBehavior = run {
@@ -138,24 +138,24 @@ public fun FixedWebRendition(
                 )
             }
 
-            LaunchedEffect(state, state.layoutDelegate.layout.value) {
-                snapshotFlow {
-                    state.pagerState.currentPage
-                }.onEach {
-                    state.navigationDelegate.updateLocation(state.currentLocation())
-                }.launchIn(this)
-            }
-
             val spreadFlingBehavior = Scrollable2DDefaults.flingBehavior()
 
-            val spreadNestedScrollConnection =
-                remember(state.pagerState, scrollStates) {
-                    SpreadNestedScrollConnection(
-                        pagerState = state.pagerState,
-                        resourceStates = scrollStates,
-                        flingBehavior = spreadFlingBehavior
-                    )
-                }
+            val spreadNestedScrollConnection = remember(state.pagerState, scrollStates) {
+                SpreadNestedScrollConnection(
+                    pagerState = state.pagerState,
+                    resourceStates = scrollStates,
+                    flingBehavior = spreadFlingBehavior
+                )
+            }
+
+            LaunchedEffect(state.lastMeasureInfo) {
+                snapshotFlow {
+                    state.lastMeasureInfo.value
+                }.onEach {
+                    val currentLocation = currentLocation(it, state.publication)
+                    state.navigationDelegate.updateLocation(currentLocation)
+                }.launchIn(this)
+            }
 
             RenditionPager(
                 modifier = Modifier.nestedScroll(spreadNestedScrollConnection),
@@ -176,7 +176,7 @@ public fun FixedWebRendition(
 
                 val decorations = state.decorationDelegate.decorations
                     .mapValues { groupDecorations ->
-                        groupDecorations.value.filter { it.location.href in spread.pages.map { it.href } }
+                        groupDecorations.value.filter { spread.contains(it.location.href) }
                     }.toImmutableMap()
 
                 when (spread) {
@@ -199,7 +199,7 @@ public fun FixedWebRendition(
                             onTap = {
                                 inputListenerState.value.onTap(
                                     it,
-                                    TapContext(viewportSize.value)
+                                    TapContext(displayArea.value.viewportSize)
                                 )
                             },
                             onLinkActivated = { url, outerHtml ->
@@ -244,7 +244,7 @@ public fun FixedWebRendition(
                             onTap = {
                                 inputListenerState.value.onTap(
                                     it,
-                                    TapContext(viewportSize.value)
+                                    TapContext(displayArea.value.viewportSize)
                                 )
                             },
                             onLinkActivated = { url, outerHtml ->
@@ -275,10 +275,12 @@ public fun FixedWebRendition(
     }
 }
 
-private fun FixedWebRenditionState.currentLocation(): FixedWebLocation {
-    val lastMeasureInfoNow = lastMeasureInfo
-    val currentSpreadIndex = lastMeasureInfoNow.value.currentSpread
-    val currentLayout = lastMeasureInfoNow.value.layout
+private fun currentLocation(
+    lastMeasureInfo: FixedLayoutMeasureInfo,
+    publication: FixedWebPublication,
+): FixedWebLocation {
+    val currentSpreadIndex = lastMeasureInfo.currentSpread
+    val currentLayout = lastMeasureInfo.layout
     val itemIndex = currentLayout.pageIndexForSpread(currentSpreadIndex)
     val href = publication.readingOrder[itemIndex].href
     val mediaType = publication.readingOrder[itemIndex].mediaType
