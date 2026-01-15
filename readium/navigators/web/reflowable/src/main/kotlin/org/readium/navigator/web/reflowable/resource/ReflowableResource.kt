@@ -364,9 +364,11 @@ internal fun ReflowableResource(
                 var lastDecorations = emptyMap<String, List<ReflowableWebDecoration>>()
                 snapshotFlow { decorations.value }
                     .onEach {
-                        for ((group, decos) in it.entries) {
+                        val oldAndUpdatesGroups = it.keys + lastDecorations.keys
+                        for (group in oldAndUpdatesGroups) {
+                            val updatedInGroup = it[group].orEmpty()
                             val lastInGroup = lastDecorations[group].orEmpty()
-                            for ((_, changes) in lastInGroup.changesByHref(decos)) {
+                            for ((_, changes) in lastInGroup.changesByHref(updatedInGroup)) {
                                 for (change in changes) {
                                     when (change) {
                                         is DecorationChange.Added -> {
