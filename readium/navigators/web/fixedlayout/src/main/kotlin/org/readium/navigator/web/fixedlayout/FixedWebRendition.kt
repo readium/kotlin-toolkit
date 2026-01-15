@@ -92,7 +92,7 @@ public fun FixedWebRendition(
 
         CompositionLocalProvider(LocalLayoutDirection provides layoutDirection) {
             if (state.controller == null) {
-                val currentLocation = currentLocation(state.lastMeasureInfo.value, state.publication)
+                val currentLocation = currentLocation(state.lastMeasureInfoState.value, state.publication)
                 state.initController(location = currentLocation)
             }
 
@@ -148,9 +148,9 @@ public fun FixedWebRendition(
                 )
             }
 
-            LaunchedEffect(state.lastMeasureInfo) {
+            LaunchedEffect(state.lastMeasureInfoState) {
                 snapshotFlow {
-                    state.lastMeasureInfo.value
+                    state.lastMeasureInfoState.value
                 }.onEach {
                     val currentLocation = currentLocation(it, state.publication)
                     state.navigationDelegate.updateLocation(currentLocation)

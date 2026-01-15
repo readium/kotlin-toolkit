@@ -10,6 +10,7 @@ package org.readium.navigator.web.fixedlayout
 
 import android.app.Application
 import androidx.compose.foundation.MutatePriority
+import androidx.compose.foundation.pager.PagerLayoutInfo
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.Stable
@@ -90,9 +91,10 @@ public class FixedWebRenditionState internal constructor(
 
     override val controller: FixedWebRenditionController? by controllerState
 
-    internal val lastMeasureInfo: State<FixedLayoutMeasureInfo> = derivedStateOf {
+    internal val lastMeasureInfoState: State<FixedLayoutMeasureInfo> = derivedStateOf {
         FixedLayoutMeasureInfo(
             currentSpread = pagerState.currentPage,
+            pagerLayoutInfo = pagerState.layoutInfo,
             layout = Snapshot.withoutReadObservation { layoutDelegate.layout.value }
         )
     }
@@ -116,8 +118,7 @@ public class FixedWebRenditionState internal constructor(
 
     internal val selectionDelegate: FixedSelectionDelegate =
         FixedSelectionDelegate(
-            pagerState = pagerState,
-            lastMeasureInfo = lastMeasureInfo
+            lastMeasureInfoState = lastMeasureInfoState
         )
 
     internal val decorationDelegate: FixedDecorationDelegate =
@@ -156,7 +157,7 @@ public class FixedWebRenditionState internal constructor(
         navigationDelegate =
             FixedNavigationDelegate(
                 pagerState,
-                lastMeasureInfo,
+                lastMeasureInfoState,
                 layoutDelegate.overflow,
                 location
             )
@@ -191,6 +192,7 @@ internal data class FixedWebPreloadedData(
 
 internal class FixedLayoutMeasureInfo(
     val currentSpread: Int,
+    val pagerLayoutInfo: PagerLayoutInfo,
     val layout: Layout,
 )
 
@@ -298,21 +300,21 @@ internal class FixedDecorationDelegate(
 }
 
 internal class FixedSelectionDelegate(
-    private val pagerState: PagerState,
-    private val lastMeasureInfo: State<FixedLayoutMeasureInfo>,
+    private val lastMeasureInfoState: State<FixedLayoutMeasureInfo>,
 ) : SelectionController<FixedWebSelectionLocation> {
 
     val selectionApis: SnapshotStateMap<Int, FixedSelectionApi?> =
         mutableStateMapOf()
 
     override suspend fun currentSelection(): Selection<FixedWebSelectionLocation>? {
-        val visiblePages = pagerState.layoutInfo.visiblePagesInfo.map { it.index }
+        val lastMeasureInfoNow = lastMeasureInfoState.value
+        val visiblePages = lastMeasureInfoNow.pagerLayoutInfo.visiblePagesInfo.map { it.index }
         val coroutineScope = CoroutineScope(currentCoroutineContext() + SupervisorJob())
         val (page, selection) = visiblePages
             .mapNotNull { index -> selectionApis[index]?.let { index to it } }
             .map { (index, api) ->
                 coroutineScope.async {
-                    api.getCurrentSelection(index, lastMeasureInfo.value.layout)
+                    api.getCurrentSelection(index, lastMeasureInfoNow.layout)
                 }
             }.awaitAll()
             .filterNotNull()
