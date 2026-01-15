@@ -44,7 +44,7 @@ sealed class HighlightsManager<L : DecorationLocation>(
     decorationFactory: (Highlight, Long) -> List<Decoration<L>>,
 ) {
 
-    private val lastHighlightId: Long = -1
+    private var lastHighlightId: Long = -1
 
     private val highlightsMutable: MutableStateFlow<PersistentMap<Long, Highlight>> =
         MutableStateFlow(persistentMapOf())
@@ -63,6 +63,8 @@ sealed class HighlightsManager<L : DecorationLocation>(
         annotation: String = "",
     ): Long {
         val id = lastHighlightId + 1
+        lastHighlightId += 1
+
         val highlight = Highlight(
             locator = locator,
             style = style,
