@@ -11,18 +11,23 @@ jobs:
     name: Build and test
     runs-on: ubuntu-latest
     if: ${{ !github.event.pull_request.draft }}
+    env:
+      GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx3g -XX:+UseParallelGC"
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Set up JDK 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           java-version: '17'
           distribution: 'adopt'
-      - name: Build
-        run: ./gradlew clean build -x test -x ktlintMainSourceSetCheck
-      - name: Test
-        run: ./gradlew test --continue
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v5
+        with:
+          # Read cache in PRs, write to cache after merge to main or develop
+          cache-read-only: ${{ github.ref != 'refs/heads/main' && github.ref != 'refs/heads/develop' }}
+      - name: Build and Test
+        run: ./gradlew assembleDebug testDebugUnitTest lintDebug
 
   lint-kt:
     name: Lint Kotlin
@@ -30,9 +35,9 @@ jobs:
     if: ${{ !github.event.pull_request.draft }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Set up JDK 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           java-version: '17'
           distribution: 'adopt'
@@ -47,14 +52,14 @@ jobs:
       scripts: ${{ 'readium/navigator/src/main/assets/_scripts' }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
           package_json_file: readium/navigator/src/main/assets/_scripts/package.json
           run_install: false
       - name: Setup cache
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: 20
           cache: 'pnpm'
@@ -67,8 +72,8 @@ jobs:
         run: pnpm --dir "$scripts" run checkformat
       - name: Check if bundled scripts are up-to-date
         run: |
-            make scripts-legacy
-            git diff --exit-code --name-only src/main/assets/readium/scripts/*.js
+          make scripts-legacy
+          git diff --exit-code --name-only src/main/assets/readium/scripts/*.js
   lint-new-ts:
     name: Lint TypeScript
     runs-on: macos-latest
@@ -77,14 +82,14 @@ jobs:
       scripts: ${{ 'readium/navigators/web/internals/scripts' }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
           package_json_file: readium/navigators/web/internals/scripts/package.json
           run_install: false
       - name: Setup cache
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: 20
           cache: 'pnpm'
