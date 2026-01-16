@@ -9,7 +9,6 @@
 package org.readium.navigator.web.reflowable.css
 
 import androidx.annotation.ColorInt
-import java.text.NumberFormat
 import java.util.*
 import kotlin.collections.iterator
 import org.readium.r2.shared.ExperimentalReadiumApi
@@ -562,7 +561,4 @@ private fun String.toCss(): String =
  * Converts a [Double] to a string literal with the given [unit].
  */
 private fun Double.toCss(unit: String): String =
-    NumberFormat.getNumberInstance(Locale.ROOT).run {
-        maximumFractionDigits = 2
-        format(this@toCss)
-    } + unit
+    String.format(Locale.ROOT, "%e%s", this, unit)

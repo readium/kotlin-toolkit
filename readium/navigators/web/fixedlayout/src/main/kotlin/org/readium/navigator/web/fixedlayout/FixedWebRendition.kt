@@ -56,9 +56,9 @@ import org.readium.navigator.web.internals.pager.RenditionPager
 import org.readium.navigator.web.internals.pager.RenditionScrollState
 import org.readium.navigator.web.internals.pager.pagingFlingBehavior
 import org.readium.navigator.web.internals.server.WebViewServer
-import org.readium.navigator.web.internals.util.AbsolutePaddingValues
 import org.readium.navigator.web.internals.util.DisplayArea
 import org.readium.navigator.web.internals.util.HyperlinkProcessor
+import org.readium.navigator.web.internals.util.asAbsolutePaddingValues
 import org.readium.navigator.web.internals.util.toLayoutDirection
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.AbsoluteUrl
@@ -287,17 +287,6 @@ private fun currentLocation(
     val position = Position(itemIndex + 1)!!
     val totalProgression = Progression(currentSpreadIndex / currentLayout.spreads.size.toDouble())!!
     return FixedWebLocation(href, position, totalProgression, mediaType)
-}
-
-@Composable
-private fun WindowInsets.asAbsolutePaddingValues(): AbsolutePaddingValues {
-    val density = LocalDensity.current
-    val layoutDirection = LocalLayoutDirection.current
-    val top = with(density) { getTop(density).toDp() }
-    val right = with(density) { getRight(density, layoutDirection).toDp() }
-    val bottom = with(density) { getBottom(density).toDp() }
-    val left = with(density) { getLeft(density, layoutDirection).toDp() }
-    return AbsolutePaddingValues(top = top, right = right, bottom = bottom, left = left)
 }
 
 private suspend fun HyperlinkProcessor.onLinkActivated(

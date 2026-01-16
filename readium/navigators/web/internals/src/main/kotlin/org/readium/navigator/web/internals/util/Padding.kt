@@ -6,8 +6,12 @@
 
 package org.readium.navigator.web.internals.util
 
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.absolutePadding
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
@@ -35,3 +39,14 @@ public fun Modifier.absolutePadding(paddingValues: AbsolutePaddingValues): Modif
         bottom = paddingValues.bottom,
         left = paddingValues.left
     )
+
+@Composable
+public fun WindowInsets.asAbsolutePaddingValues(): AbsolutePaddingValues {
+    val density = LocalDensity.current
+    val layoutDirection = LocalLayoutDirection.current
+    val top = with(density) { getTop(density).toDp() }
+    val right = with(density) { getRight(density, layoutDirection).toDp() }
+    val bottom = with(density) { getBottom(density).toDp() }
+    val left = with(density) { getLeft(density, layoutDirection).toDp() }
+    return AbsolutePaddingValues(top = top, right = right, bottom = bottom, left = left)
+}

@@ -20,7 +20,6 @@ import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateMap
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import kotlin.coroutines.suspendCoroutine
@@ -48,12 +47,13 @@ import org.readium.navigator.web.internals.pager.RenditionScrollState
 import org.readium.navigator.web.internals.server.WebViewClient
 import org.readium.navigator.web.internals.server.WebViewServer
 import org.readium.navigator.web.internals.server.WebViewServer.Companion.assetsBaseHref
+import org.readium.navigator.web.internals.util.AbsolutePaddingValues
 import org.readium.navigator.web.internals.util.HyperlinkProcessor
 import org.readium.navigator.web.internals.util.toLayoutDirection
 import org.readium.navigator.web.internals.util.toOrientation
 import org.readium.navigator.web.internals.webapi.ReflowableSelectionApi
 import org.readium.navigator.web.internals.webview.WebViewScrollController
-import org.readium.navigator.web.reflowable.css.PaginatedLayoutResolver
+import org.readium.navigator.web.reflowable.css.LayoutResolver
 import org.readium.navigator.web.reflowable.css.ReadiumCssInjector
 import org.readium.navigator.web.reflowable.css.RsProperties
 import org.readium.navigator.web.reflowable.css.UserProperties
@@ -309,8 +309,8 @@ internal class ReflowableLayoutDelegate(
     initialSettings: ReflowableWebSettings,
 ) : SettingsController<ReflowableWebSettings> {
 
-    private val paginatedLayoutResolver =
-        PaginatedLayoutResolver(
+    private val layoutResolver =
+        LayoutResolver(
             baseMinMargins = 15.dp,
             baseMinLineLength = 400.dp,
             baseOptimalLineLength = 600.dp,
@@ -319,7 +319,7 @@ internal class ReflowableLayoutDelegate(
 
     internal var viewportSize: DpSize? by mutableStateOf(null)
 
-    internal var horizontalSafeDrawing: Dp? by mutableStateOf(null)
+    internal var safeDrawing: AbsolutePaddingValues? by mutableStateOf(null)
 
     internal var fontScale: Float? by mutableStateOf(null)
 
@@ -346,15 +346,15 @@ internal class ReflowableLayoutDelegate(
         ).withSettings(
             settings = settings,
         ).let { injector ->
-            if (viewportSize == null || horizontalSafeDrawing == null || fontScale == null || settings.scroll) {
+            if (viewportSize == null || safeDrawing == null || fontScale == null) {
                 injector
             } else {
                 injector.withLayout(
-                    paginatedLayoutResolver.layout(
+                    layoutResolver.layout(
                         settings = settings,
                         systemFontScale = fontScale!!,
-                        viewportWidth = viewportSize!!.width,
-                        horizontalSafeDrawing = horizontalSafeDrawing!!
+                        viewportSize = viewportSize!!,
+                        safeDrawing = safeDrawing!!
                     )
                 )
             }

@@ -335,7 +335,6 @@ internal fun ReadiumCssInjector.withSettings(settings: ReflowableWebSettings): R
         copy(
             layout = ReadiumCssLayout.from(settings),
             rsProperties = rsProperties.copy(
-                pageGutter = Length.Px(20.0 * minMargins),
                 textColor = textColor.toCss(),
                 backgroundColor = backgroundColor.toCss(),
                 linkColor = linkColor.toCss(),
@@ -346,7 +345,6 @@ internal fun ReadiumCssInjector.withSettings(settings: ReflowableWebSettings): R
                     false -> View.PAGED
                     true -> View.SCROLL
                 },
-                colCount = columnCount,
                 darkenImages = imageFilter == ImageFilter.DARKEN,
                 invertImages = imageFilter == ImageFilter.INVERT,
                 textColor = textColor.toCss().takeIf { overridePublisherColors },
@@ -388,13 +386,10 @@ internal fun ReadiumCssInjector.withSettings(settings: ReflowableWebSettings): R
 }
 
 internal fun ReadiumCssInjector.withLayout(
-    viewportLayout: PaginatedLayout,
+    viewportLayout: Layout,
 ): ReadiumCssInjector = copy(
-    rsProperties = rsProperties.copy(
-        pageGutter = Length.Px(viewportLayout.pageGutter.value.toDouble())
-    ),
     userProperties = userProperties.copy(
         colCount = viewportLayout.colCount,
-        lineLength = viewportLayout.lineLength?.let { Length.Px(it.value.toDouble()) }
+        lineLength = Length.Px(viewportLayout.lineLength.value.toDouble())
     )
 )

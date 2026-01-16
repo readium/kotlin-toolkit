@@ -36,7 +36,6 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.max
 import kotlinx.collections.immutable.toImmutableMap
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -55,6 +54,7 @@ import org.readium.navigator.web.internals.pager.pagingFlingBehavior
 import org.readium.navigator.web.internals.server.WebViewServer
 import org.readium.navigator.web.internals.util.AbsolutePaddingValues
 import org.readium.navigator.web.internals.util.HyperlinkProcessor
+import org.readium.navigator.web.internals.util.asAbsolutePaddingValues
 import org.readium.navigator.web.internals.util.rememberUpdatedRef
 import org.readium.navigator.web.internals.util.toLayoutDirection
 import org.readium.navigator.web.reflowable.resource.ReflowablePagingLayoutInfo
@@ -94,9 +94,7 @@ public fun ReflowableWebRendition(
 
             state.layoutDelegate.viewportSize = viewportSize.value
 
-            state.layoutDelegate.horizontalSafeDrawing = windowInsets.asPaddingValues().let {
-                max(it.calculateLeftPadding(layoutDirection), it.calculateRightPadding(layoutDirection))
-            }
+            state.layoutDelegate.safeDrawing = windowInsets.asAbsolutePaddingValues()
 
             state.layoutDelegate.fontScale = LocalDensity.current.fontScale
 
