@@ -351,7 +351,6 @@ internal fun ReadiumCssInjector.withSettings(settings: ReflowableWebSettings): R
                 backgroundColor = backgroundColor.toCss().takeIf { overridePublisherColors },
                 linkColor = linkColor.toCss().takeIf { overridePublisherColors },
                 visitedLinkColor = visitedColor.toCss().takeIf { overridePublisherColors },
-                fontOverride = true, // we don't need this guard,
                 fontFamily = fontFamily?.toCss(),
                 fontSize = Length.Percent(fontSize),
                 fontWeight = fontWeight?.let { (FontWeight.NORMAL.value * it).toInt().coerceIn(1, 1000) },
