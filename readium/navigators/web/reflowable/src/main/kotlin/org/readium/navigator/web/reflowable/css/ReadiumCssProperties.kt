@@ -277,11 +277,13 @@ internal data class RsProperties(
 ) : ReadiumCssProperties {
 
     override fun toCssProperties(): Map<String, String?> = buildMap {
+        check(pageGutter == null)
+
         // Pagination
         putCss("--RS__colWidth", colWidth)
         putCss("--RS__colCount", colCount)
         putCss("--RS__colGap", colGap)
-        putCss("--RS__pageGutter", pageGutter)
+        // putCss("--RS__pageGutter", pageGutter) // pageGutter conflicts with scrollPaddingX properties
         putCss("--RS__disablePagination", flag("noVerticalPagination", disableVerticalPagination))
 
         // Scroll padding

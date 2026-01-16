@@ -21,7 +21,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.unit.DpSize
-import androidx.compose.ui.unit.dp
 import kotlin.coroutines.suspendCoroutine
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.PersistentMap
@@ -53,13 +52,14 @@ import org.readium.navigator.web.internals.util.toLayoutDirection
 import org.readium.navigator.web.internals.util.toOrientation
 import org.readium.navigator.web.internals.webapi.ReflowableSelectionApi
 import org.readium.navigator.web.internals.webview.WebViewScrollController
-import org.readium.navigator.web.reflowable.css.LayoutResolver
 import org.readium.navigator.web.reflowable.css.ReadiumCssInjector
 import org.readium.navigator.web.reflowable.css.RsProperties
 import org.readium.navigator.web.reflowable.css.UserProperties
 import org.readium.navigator.web.reflowable.css.withLayout
 import org.readium.navigator.web.reflowable.css.withSettings
 import org.readium.navigator.web.reflowable.injection.injectHtmlReflowable
+import org.readium.navigator.web.reflowable.layout.LayoutConstants
+import org.readium.navigator.web.reflowable.layout.LayoutResolver
 import org.readium.navigator.web.reflowable.preferences.ReflowableWebSettings
 import org.readium.navigator.web.reflowable.resource.ReflowableResourceLocation
 import org.readium.navigator.web.reflowable.resource.ReflowableResourceState
@@ -311,10 +311,10 @@ internal class ReflowableLayoutDelegate(
 
     private val layoutResolver =
         LayoutResolver(
-            baseMinMargins = 15.dp,
-            baseMinLineLength = 400.dp,
-            baseOptimalLineLength = 600.dp,
-            baseMaxLineLength = 800.dp
+            baseMinMargins = LayoutConstants.baseMinMargins,
+            baseMinLineLength = LayoutConstants.baseMinLineLength,
+            baseOptimalLineLength = LayoutConstants.baseOptimalLineLength,
+            baseMaxLineLength = LayoutConstants.baseMaxLineLength
         )
 
     internal var viewportSize: DpSize? by mutableStateOf(null)
@@ -350,7 +350,10 @@ internal class ReflowableLayoutDelegate(
                 injector
             } else {
                 injector.withLayout(
-                    layoutResolver.layout(
+                    fontSize = settings.fontSize,
+                    verticalText = settings.verticalText,
+                    safeDrawing = safeDrawing!!,
+                    layout = layoutResolver.layout(
                         settings = settings,
                         systemFontScale = fontScale!!,
                         viewportSize = viewportSize!!,
@@ -527,7 +530,7 @@ private fun ReflowableWebGoLocation.toResourceLocations(
         ?: htmlId?.let { ReflowableResourceLocation.HtmlId(it) }
         ?: ReflowableResourceLocation.Progression(progression ?: Progression(0.0)!!)
 
-    return readingOrder.items.mapIndexed { index, state ->
+    return readingOrder.items.mapIndexed { index, _ ->
         when {
             index < destIndex ->
                 ReflowableResourceLocation.Progression(Progression(1.0)!!)

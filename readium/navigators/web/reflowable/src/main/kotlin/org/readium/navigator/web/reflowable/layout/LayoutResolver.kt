@@ -6,13 +6,12 @@
 
 @file:OptIn(ExperimentalReadiumApi::class)
 
-package org.readium.navigator.web.reflowable.css
+package org.readium.navigator.web.reflowable.layout
 
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.coerceAtLeast
 import androidx.compose.ui.unit.coerceAtMost
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.max
 import kotlin.math.floor
 import kotlin.math.roundToInt
@@ -46,40 +45,28 @@ internal class LayoutResolver(
         val minMargins =
             baseMinMargins * settings.minMargins.toFloat() * systemFontScale
 
-        val actualMinMargins = when (settings.verticalText) {
-            true -> {
-                minMargins.coerceAtLeast(max(safeDrawing.top, safeDrawing.bottom))
-            }
-            false -> {
-                minMargins.coerceAtLeast(max(safeDrawing.left, safeDrawing.right))
-            }
+        val minMarginsWithInsets = when (settings.verticalText) {
+            true -> minMargins.coerceAtLeast(max(safeDrawing.top, safeDrawing.bottom))
+            false -> minMargins.coerceAtLeast(max(safeDrawing.left, safeDrawing.right))
         }
 
-        var layout = when (settings.scroll) {
-            true -> scrolledLayout(
-                viewportSize = if (settings.verticalText) viewportSize.height else viewportSize.width,
-                minimalMargins = actualMinMargins,
-                maximalLineLength = maxLineLength
-            )
+        return when (settings.scroll) {
+            true ->
+                scrolledLayout(
+                    viewportSize = if (settings.verticalText) viewportSize.height else viewportSize.width,
+                    minimalMargins = minMarginsWithInsets,
+                    maximalLineLength = maxLineLength
+                )
             false ->
                 paginatedLayout(
                     viewportWidth = viewportSize.width,
                     requestedColCount = settings.columnCount,
-                    minimalMargins = actualMinMargins,
+                    minimalMargins = minMarginsWithInsets,
                     optimalLineLength = optimalLineLength,
                     maximalLineLength = maxLineLength,
                     minimalLineLength = minLineLength
                 )
         }
-
-        // CSS zoom multiplies the px line value by
-        // the zoom factor so we need to do the reverse thing.
-        // If we don't, line length decreases with fontSize.
-        layout = layout.copy(
-            lineLength = (layout.lineLength.value / settings.fontSize).dp,
-        )
-
-        return layout
     }
 
     private fun scrolledLayout(

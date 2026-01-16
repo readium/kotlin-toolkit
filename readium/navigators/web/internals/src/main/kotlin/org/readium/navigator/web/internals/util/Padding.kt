@@ -12,8 +12,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import kotlin.math.max
 
 public data class AbsolutePaddingValues(
     val top: Dp = 0.dp,
@@ -49,4 +52,38 @@ public fun WindowInsets.asAbsolutePaddingValues(): AbsolutePaddingValues {
     val bottom = with(density) { getBottom(density).toDp() }
     val left = with(density) { getLeft(density, layoutDirection).toDp() }
     return AbsolutePaddingValues(top = top, right = right, bottom = bottom, left = left)
+}
+
+public fun WindowInsets.symmetric(): WindowInsets =
+    SymmetricWindowsInsets(this)
+
+private class SymmetricWindowsInsets(
+    private val baseWindowsInsets: WindowInsets,
+) : WindowInsets {
+
+    override fun getLeft(
+        density: Density,
+        layoutDirection: LayoutDirection,
+    ): Int {
+        val left = baseWindowsInsets.getLeft(density, layoutDirection)
+        val right = baseWindowsInsets.getRight(density, layoutDirection)
+        return max(left, right)
+    }
+
+    override fun getTop(density: Density): Int {
+        val top = baseWindowsInsets.getTop(density)
+        val bottom = baseWindowsInsets.getBottom(density)
+        return max(top, bottom)
+    }
+
+    override fun getRight(
+        density: Density,
+        layoutDirection: LayoutDirection,
+    ): Int {
+        return getLeft(density, layoutDirection)
+    }
+
+    override fun getBottom(density: Density): Int {
+        return getTop(density)
+    }
 }

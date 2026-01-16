@@ -15,8 +15,10 @@ import org.jsoup.nodes.Element
 import org.readium.navigator.web.common.FontFaceDeclaration
 import org.readium.navigator.web.common.FontFamilyDeclaration
 import org.readium.navigator.web.common.FontWeight
+import org.readium.navigator.web.internals.util.AbsolutePaddingValues
 import org.readium.navigator.web.reflowable.css.Color as CssColor
 import org.readium.navigator.web.reflowable.css.TextAlign as CssTextAlign
+import org.readium.navigator.web.reflowable.layout.Layout
 import org.readium.navigator.web.reflowable.preferences.ReflowableWebSettings
 import org.readium.r2.navigator.preferences.Color
 import org.readium.r2.navigator.preferences.FontFamily
@@ -342,7 +344,7 @@ internal fun ReadiumCssInjector.withSettings(settings: ReflowableWebSettings): R
             ),
             userProperties = userProperties.copy(
                 view = when (scroll) {
-                    false -> View.PAGED
+                    false -> if (verticalText) View.SCROLL else View.PAGED
                     true -> View.SCROLL
                 },
                 darkenImages = imageFilter == ImageFilter.DARKEN,
@@ -384,11 +386,34 @@ internal fun ReadiumCssInjector.withSettings(settings: ReflowableWebSettings): R
     }
 }
 
+// CSS zoom multiplies the px line value by
+// the zoom factor so we need to do the reverse thing.
+// If we don't, line length decreases with fontSize.
 internal fun ReadiumCssInjector.withLayout(
-    viewportLayout: Layout,
-): ReadiumCssInjector = copy(
-    userProperties = userProperties.copy(
-        colCount = viewportLayout.colCount,
-        lineLength = Length.Px(viewportLayout.lineLength.value.toDouble())
-    )
-)
+    fontSize: Double,
+    verticalText: Boolean,
+    safeDrawing: AbsolutePaddingValues,
+    layout: Layout,
+): ReadiumCssInjector =
+    copy(
+        userProperties = userProperties.copy(
+            colCount = layout.colCount,
+            lineLength = Length.Px(layout.lineLength.value.toDouble() / fontSize)
+        )
+    ).run {
+        if (verticalText) {
+            copy(
+                rsProperties = rsProperties.copy(
+                    scrollPaddingLeft = Length.Px(safeDrawing.left.value.toDouble() / fontSize),
+                    scrollPaddingRight = Length.Px(safeDrawing.right.value.toDouble() / fontSize)
+                )
+            )
+        } else {
+            copy(
+                rsProperties = rsProperties.copy(
+                    scrollPaddingTop = Length.Px(safeDrawing.top.value.toDouble() / fontSize),
+                    scrollPaddingBottom = Length.Px(safeDrawing.bottom.value.toDouble() / fontSize),
+                )
+            )
+        }
+    }

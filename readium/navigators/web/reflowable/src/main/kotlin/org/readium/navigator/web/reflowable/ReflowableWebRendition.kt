@@ -4,6 +4,8 @@
  * available in the top-level LICENSE file of the project.
  */
 
+@file:OptIn(ExperimentalReadiumApi::class)
+
 package org.readium.navigator.web.reflowable
 
 import android.annotation.SuppressLint
@@ -11,31 +13,24 @@ import android.content.res.Configuration
 import android.view.ActionMode
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.ScrollableDefaults
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
-import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.only
-import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.layout.union
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
-import androidx.compose.ui.unit.Density
-import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.DpSize
-import androidx.compose.ui.unit.dp
 import kotlinx.collections.immutable.toImmutableMap
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -44,7 +39,6 @@ import org.readium.navigator.common.DecorationListener
 import org.readium.navigator.common.HyperlinkListener
 import org.readium.navigator.common.InputListener
 import org.readium.navigator.common.TapContext
-import org.readium.navigator.common.TapEvent
 import org.readium.navigator.common.defaultDecorationListener
 import org.readium.navigator.common.defaultHyperlinkListener
 import org.readium.navigator.common.defaultInputListener
@@ -56,10 +50,11 @@ import org.readium.navigator.web.internals.util.AbsolutePaddingValues
 import org.readium.navigator.web.internals.util.HyperlinkProcessor
 import org.readium.navigator.web.internals.util.asAbsolutePaddingValues
 import org.readium.navigator.web.internals.util.rememberUpdatedRef
+import org.readium.navigator.web.internals.util.symmetric
 import org.readium.navigator.web.internals.util.toLayoutDirection
+import org.readium.navigator.web.reflowable.layout.LayoutConstants
 import org.readium.navigator.web.reflowable.resource.ReflowablePagingLayoutInfo
 import org.readium.navigator.web.reflowable.resource.ReflowableResource
-import org.readium.r2.navigator.preferences.Axis
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.RelativeUrl
@@ -100,25 +95,20 @@ public fun ReflowableWebRendition(
 
             val coroutineScope = rememberCoroutineScope()
 
-            val resourcePadding = when (state.layoutDelegate.overflow.value.axis) {
-                Axis.HORIZONTAL ->
-                    when (LocalConfiguration.current.orientation) {
-                        Configuration.ORIENTATION_LANDSCAPE ->
-                            AbsolutePaddingValues(vertical = 20.dp)
-                        else ->
-                            AbsolutePaddingValues(vertical = 40.dp)
+            val resourcePadding = when (state.layoutDelegate.overflow.value.scroll) {
+                true ->
+                    AbsolutePaddingValues()
+                false -> {
+                    val margins = when (LocalConfiguration.current.orientation) {
+                        Configuration.ORIENTATION_LANDSCAPE -> LayoutConstants.pageVerticalMarginsLandscape
+                        else -> LayoutConstants.pageVerticalMarginsPortrait
                     }
-                Axis.VERTICAL -> {
-                    val paddingInsets = windowInsets.only(WindowInsetsSides.Vertical)
-                    val bottom = paddingInsets.asPaddingValues().calculateBottomPadding()
-                    val top = paddingInsets.asPaddingValues().calculateTopPadding()
-                    AbsolutePaddingValues(top = top, bottom = bottom)
+                    windowInsets
+                        .only(WindowInsetsSides.Vertical)
+                        .union(WindowInsets(top = margins, bottom = margins))
+                        .symmetric()
+                        .asAbsolutePaddingValues()
                 }
-            }
-
-            val pagerPaddingInsets = when (state.layoutDelegate.overflow.value.axis) {
-                Axis.HORIZONTAL -> windowInsets.only(WindowInsetsSides.Vertical)
-                Axis.VERTICAL -> windowInsets.only(WindowInsetsSides.Horizontal)
             }
 
             val flingBehavior = if (state.layoutDelegate.overflow.value.scroll) {
@@ -149,14 +139,7 @@ public fun ReflowableWebRendition(
             RenditionPager(
                 modifier = Modifier
                     // Apply background on padding
-                    .background(backgroundColor)
-                    // Detect taps on padding
-                    .pointerInput(Unit) {
-                        detectTapGestures(
-                            onTap = { onTapOnPadding(it, viewportSize.value, inputListener) }
-                        )
-                    }
-                    .windowInsetsPadding(pagerPaddingInsets),
+                    .background(backgroundColor),
                 state = state.pagerState,
                 scrollState = state.scrollState,
                 flingBehavior = flingBehavior,
@@ -212,20 +195,6 @@ public fun ReflowableWebRendition(
     }
 }
 
-@OptIn(ExperimentalReadiumApi::class)
-private fun (Density).onTapOnPadding(
-    offset: Offset,
-    viewportSize: DpSize,
-    listener: InputListener,
-) {
-    if (offset.x >= 0 && offset.y >= 0) {
-        val offset = DpOffset(x = offset.x.toDp(), y = offset.y.toDp())
-        val event = TapEvent(offset)
-        listener.onTap(event, TapContext(viewportSize))
-    }
-}
-
-@OptIn(ExperimentalReadiumApi::class)
 private suspend fun HyperlinkProcessor.onLinkActivated(
     url: Url,
     outerHtml: String,
