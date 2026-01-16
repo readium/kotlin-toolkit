@@ -94,7 +94,7 @@ public class FixedWebRenditionState internal constructor(
     internal val lastMeasureInfoState: State<FixedLayoutMeasureInfo> = derivedStateOf {
         FixedLayoutMeasureInfo(
             currentSpread = pagerState.currentPage,
-            pagerLayoutInfo = pagerState.layoutInfo,
+            pagerLayoutInfo = Snapshot.withoutReadObservation { pagerState.layoutInfo },
             layout = Snapshot.withoutReadObservation { layoutDelegate.layout.value }
         )
     }
