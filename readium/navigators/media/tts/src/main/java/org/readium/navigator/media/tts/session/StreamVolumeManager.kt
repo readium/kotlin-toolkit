@@ -23,8 +23,8 @@ import android.media.AudioManager
 import android.os.Build
 import android.os.Handler
 import androidx.media3.common.C
-import androidx.media3.common.util.Assertions
 import androidx.media3.common.util.Log
+import com.google.common.base.Preconditions
 
 @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
 /** A manager that wraps [AudioManager] to control/listen audio stream volume.  */
@@ -52,7 +52,7 @@ internal class StreamVolumeManager(context: Context, eventHandler: Handler, list
         applicationContext = context.applicationContext
         this.eventHandler = eventHandler
         this.listener = listener
-        audioManager = Assertions.checkStateNotNull(
+        audioManager = Preconditions.checkNotNull(
             applicationContext.getSystemService(Context.AUDIO_SERVICE) as AudioManager
         )
         streamType = C.STREAM_TYPE_DEFAULT

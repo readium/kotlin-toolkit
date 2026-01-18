@@ -16,6 +16,7 @@ android {
 kotlin {
     compilerOptions {
         // See https://github.com/readium/kotlin-toolkit/pull/525#issuecomment-2300084041
+        languageVersion = org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_2_3
         freeCompilerArgs.add("-Xconsistent-data-class-copy-visibility")
     }
 }

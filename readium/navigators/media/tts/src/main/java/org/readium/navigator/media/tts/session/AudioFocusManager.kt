@@ -231,7 +231,7 @@ internal class AudioFocusManager(
             val willPauseWhenDucked = willPauseWhenDucked()
             audioFocusRequest = builder
                 .setAudioAttributes(
-                    checkNotNull(audioAttributes).audioAttributesV21.audioAttributes
+                    checkNotNull(audioAttributes).platformAudioAttributes
                 )
                 .setWillPauseWhenDucked(willPauseWhenDucked)
                 .setOnAudioFocusChangeListener(focusListener)

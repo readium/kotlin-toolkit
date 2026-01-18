@@ -169,7 +169,7 @@ private fun RelaxedWebView.scrollToProgression(
 ) {
     when (orientation) {
         Orientation.Vertical -> {
-            scrollTo(scrollX, progression.roundToInt() * maxScrollY.toInt())
+            scrollTo(scrollX, progression.roundToInt() * maxScrollY)
         }
         Orientation.Horizontal -> when (direction) {
             LayoutDirection.Ltr -> {
