@@ -351,15 +351,17 @@ internal class TtsPlayer<
         }
     }
 
-    private suspend fun nextUtteranceAsync() = mutex.withLock {
-        if (utteranceWindow.nextUtterance == null) {
-            return
-        }
+    private suspend fun nextUtteranceAsync() {
+        mutex.withLock {
+            if (utteranceWindow.nextUtterance == null) {
+                return
+            }
 
-        playbackJob?.cancel()
-        tryLoadNextContext()
-        playbackJob?.join()
-        playIfReadyAndNotPaused()
+            playbackJob?.cancel()
+            tryLoadNextContext()
+            playbackJob?.join()
+            playIfReadyAndNotPaused()
+        }
     }
 
     fun hasPreviousUtterance() =
@@ -371,14 +373,16 @@ internal class TtsPlayer<
         }
     }
 
-    private suspend fun previousUtteranceAsync() = mutex.withLock {
-        if (utteranceWindow.previousUtterance == null) {
-            return
+    private suspend fun previousUtteranceAsync() {
+        mutex.withLock {
+            if (utteranceWindow.previousUtterance == null) {
+                return
+            }
+            playbackJob?.cancel()
+            tryLoadPreviousContext()
+            playbackJob?.join()
+            playIfReadyAndNotPaused()
         }
-        playbackJob?.cancel()
-        tryLoadPreviousContext()
-        playbackJob?.join()
-        playIfReadyAndNotPaused()
     }
 
     @Suppress("unused")
@@ -392,17 +396,19 @@ internal class TtsPlayer<
         }
     }
 
-    private suspend fun nextResourceAsync() = mutex.withLock {
-        if (!hasNextUtterance()) {
-            return
-        }
+    private suspend fun nextResourceAsync() {
+        mutex.withLock {
+            if (!hasNextUtterance()) {
+                return
+            }
 
-        playbackJob?.cancel()
-        val currentIndex = utteranceMutable.value.position.resourceIndex
-        contentIterator.seekToResource(currentIndex + 1)
-        resetContext()
-        playbackJob?.join()
-        playIfReadyAndNotPaused()
+            playbackJob?.cancel()
+            val currentIndex = utteranceMutable.value.position.resourceIndex
+            contentIterator.seekToResource(currentIndex + 1)
+            resetContext()
+            playbackJob?.join()
+            playIfReadyAndNotPaused()
+        }
     }
 
     @Suppress("MemberVisibilityCanBePrivate")
@@ -416,16 +422,18 @@ internal class TtsPlayer<
         }
     }
 
-    private suspend fun previousResourceAsync() = mutex.withLock {
-        if (!hasPreviousResource()) {
-            return
+    private suspend fun previousResourceAsync() {
+        mutex.withLock {
+            if (!hasPreviousResource()) {
+                return
+            }
+            playbackJob?.cancel()
+            val currentIndex = utteranceMutable.value.position.resourceIndex
+            contentIterator.seekToResource(currentIndex - 1)
+            resetContext()
+            playbackJob?.join()
+            playIfReadyAndNotPaused()
         }
-        playbackJob?.cancel()
-        val currentIndex = utteranceMutable.value.position.resourceIndex
-        contentIterator.seekToResource(currentIndex - 1)
-        resetContext()
-        playbackJob?.join()
-        playIfReadyAndNotPaused()
     }
 
     private fun playIfReadyAndNotPaused() {

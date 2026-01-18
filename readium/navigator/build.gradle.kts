@@ -15,9 +15,6 @@ android {
     buildFeatures {
         viewBinding = true
     }
-
-    kotlinOptions {
-    }
 }
 
 kotlin {

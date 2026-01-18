@@ -170,10 +170,10 @@ internal class R2FXLPageFragment : Fragment() {
         webView.webViewClient = object : WebViewClientCompat() {
 
             override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean =
-                (webView as? R2BasicWebView)?.shouldOverrideUrlLoading(request) ?: false
+                webView.shouldOverrideUrlLoading(request)
 
             override fun shouldInterceptRequest(view: WebView, request: WebResourceRequest): WebResourceResponse? =
-                (webView as? R2BasicWebView)?.shouldInterceptRequest(view, request)
+                webView.shouldInterceptRequest(view, request)
 
             override fun onPageFinished(view: WebView?, url: String?) {
                 super.onPageFinished(view, url)

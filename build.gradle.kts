@@ -21,6 +21,14 @@ subprojects {
     ktlint {
         android.set(true)
     }
+
+    afterEvaluate {
+        if (tasks.findByName("clean") == null) {
+            tasks.register<Delete>("clean") {
+                delete(layout.buildDirectory)
+            }
+        }
+    }
 }
 
 tasks.register("cleanDocs", Delete::class).configure {
@@ -39,4 +47,8 @@ tasks.withType<DokkaTaskPartial>().configureEach {
 
 tasks.named<org.jetbrains.dokka.gradle.DokkaMultiModuleTask>("dokkaGfmMultiModule").configure {
     outputDirectory.set(file("${projectDir.path}/docs"))
+}
+
+tasks.register<Delete>("clean") {
+    delete(layout.buildDirectory)
 }
