@@ -62,8 +62,8 @@ sealed class HighlightsManager<L : DecorationLocation>(
         @ColorInt tint: Int,
         annotation: String = "",
     ): Long {
-        val id = lastHighlightId + 1
         lastHighlightId += 1
+        val id = lastHighlightId
 
         val highlight = Highlight(
             locator = locator,

@@ -10,7 +10,6 @@ package org.readium.navigator.web.fixedlayout
 
 import android.app.Application
 import androidx.compose.foundation.MutatePriority
-import androidx.compose.foundation.pager.PagerLayoutInfo
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.Stable
@@ -25,11 +24,6 @@ import androidx.compose.runtime.snapshots.SnapshotStateMap
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.PersistentMap
 import kotlinx.collections.immutable.persistentMapOf
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.currentCoroutineContext
 import org.readium.navigator.common.DecorationController
 import org.readium.navigator.common.NavigationController
 import org.readium.navigator.common.Overflow
@@ -94,7 +88,6 @@ public class FixedWebRenditionState internal constructor(
     internal val lastMeasureInfoState: State<FixedLayoutMeasureInfo> = derivedStateOf {
         FixedLayoutMeasureInfo(
             currentSpread = pagerState.currentPage,
-            pagerLayoutInfo = Snapshot.withoutReadObservation { pagerState.layoutInfo },
             layout = Snapshot.withoutReadObservation { layoutDelegate.layout.value }
         )
     }
@@ -192,7 +185,6 @@ internal data class FixedWebPreloadedData(
 
 internal class FixedLayoutMeasureInfo(
     val currentSpread: Int,
-    val pagerLayoutInfo: PagerLayoutInfo,
     val layout: Layout,
 )
 
@@ -308,17 +300,10 @@ internal class FixedSelectionDelegate(
 
     override suspend fun currentSelection(): Selection<FixedWebSelectionLocation>? {
         val lastMeasureInfoNow = lastMeasureInfoState.value
-        val visiblePages = lastMeasureInfoNow.pagerLayoutInfo.visiblePagesInfo.map { it.index }
-        val coroutineScope = CoroutineScope(currentCoroutineContext() + SupervisorJob())
-        val (page, selection) = visiblePages
-            .mapNotNull { index -> selectionApis[index]?.let { index to it } }
-            .map { (index, api) ->
-                coroutineScope.async {
-                    api.getCurrentSelection(index, lastMeasureInfoNow.layout)
-                }
-            }.awaitAll()
-            .filterNotNull()
-            .firstOrNull()
+        val currentSpreadNow = lastMeasureInfoNow.currentSpread
+
+        val (page, selection) = selectionApis[currentSpreadNow]
+            ?.getCurrentSelection(currentSpreadNow, lastMeasureInfoNow.layout)
             ?: return null
 
         return Selection(

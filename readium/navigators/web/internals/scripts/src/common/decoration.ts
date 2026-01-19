@@ -194,6 +194,7 @@ class DecorationGroup {
       decoration.cssSelector,
       decoration.textQuote
     )
+    log(`range ${range}`)
     if (!range) {
       log("Can't locate DOM range for decoration", decoration)
       return
@@ -260,6 +261,7 @@ class DecorationGroup {
    * Layouts a single Decoration item.
    */
   private layout(item: DecorationItem) {
+    log(`layout ${item}`)
     const groupContainer = this.requireContainer()
 
     const unsafeStyle = this.styles.get(item.decoration.style)
@@ -509,7 +511,12 @@ export function rangeFromDecorationTarget(
       suffix: textQuote.textAfter,
     })
 
-    return anchor.toRange()
+    try {
+      return anchor.toRange()
+    } catch (e) {
+      log(e)
+      return null
+    }
   } else {
     const range = document.createRange()
     range.setStartBefore(root)
