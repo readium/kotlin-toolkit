@@ -1,7 +1,7 @@
 [versions]
 
 kotlin = "2.3.0"
-agp = "8.13.2"
+agp = "8.13.0"
 desugar_jdk_libs = "2.1.5"
 gradle-maven-publish-plugin = "0.32.0"
 
@@ -10,9 +10,9 @@ androidx-annotation = "1.9.1"
 androidx-appcompat = "1.7.1"
 androidx-browser = "1.9.0"
 androidx-cardview = "1.0.0"
-androidx-compose-animation = "1.10.1"
-androidx-compose-foundation = "1.10.1"
-androidx-compose-material = "1.10.1"
+androidx-compose-animation = "1.10.0"
+androidx-compose-foundation = "1.10.0"
+androidx-compose-material = "1.10.0"
 androidx-compose-material-icons = "1.7.8"
 androidx-compose-material3 = "1.4.0"
 androidx-compose-runtime = "1.10.1"
