@@ -49,7 +49,6 @@ import org.readium.navigator.web.fixedlayout.spread.FixedPagingLayoutInfo
 import org.readium.navigator.web.fixedlayout.spread.SingleSpreadState
 import org.readium.navigator.web.fixedlayout.spread.SingleViewportSpread
 import org.readium.navigator.web.fixedlayout.spread.SpreadNestedScrollConnection
-import org.readium.navigator.web.fixedlayout.spread.SpreadScrollState
 import org.readium.navigator.web.internals.gestures.Scrollable2DDefaults
 import org.readium.navigator.web.internals.gestures.toFling2DBehavior
 import org.readium.navigator.web.internals.pager.RenditionPager
@@ -113,15 +112,11 @@ public fun FixedWebRendition(
 
             val decorationListenerState = rememberUpdatedState(decorationListener)
 
-            val scrollStates = remember(state, state.layoutDelegate.layout.value) {
-                state.layoutDelegate.layout.value.spreads.map { SpreadScrollState() }
-            }
-
             val flingBehavior = run {
-                val pagingLayoutInfo = remember(state, scrollStates, layoutDirection) {
+                val pagingLayoutInfo = remember(state, state.layoutDelegate.scrollStates, layoutDirection) {
                     FixedPagingLayoutInfo(
                         pagerState = state.pagerState,
-                        pageStates = scrollStates,
+                        pageStates = state.layoutDelegate.scrollStates.value,
                         orientation = Orientation.Horizontal,
                         direction = layoutDirection,
                         density = density
@@ -130,20 +125,20 @@ public fun FixedWebRendition(
                 pagingFlingBehavior(pagingLayoutInfo)
             }.toFling2DBehavior(Orientation.Horizontal)
 
-            val scrollDispatcher = remember(state, scrollStates) {
+            val scrollDispatcher = remember(state, state.layoutDelegate.scrollStates.value) {
                 RenditionScrollState(
                     pagerState = state.pagerState,
-                    pageStates = scrollStates,
+                    pageStates = state.layoutDelegate.scrollStates.value,
                     overflow = state.layoutDelegate.overflow
                 )
             }
 
             val spreadFlingBehavior = Scrollable2DDefaults.flingBehavior()
 
-            val spreadNestedScrollConnection = remember(state.pagerState, scrollStates) {
+            val spreadNestedScrollConnection = remember(state.pagerState, state.layoutDelegate.scrollStates.value) {
                 SpreadNestedScrollConnection(
                     pagerState = state.pagerState,
-                    resourceStates = scrollStates,
+                    resourceStates = state.layoutDelegate.scrollStates.value,
                     flingBehavior = spreadFlingBehavior
                 )
             }
@@ -215,7 +210,7 @@ public fun FixedWebRendition(
                             actionModeCallback = textSelectionActionModeCallback,
                             onSelectionApiChanged = { state.selectionDelegate.selectionApis[index] = it },
                             state = spreadState,
-                            scrollState = scrollStates[index],
+                            scrollState = state.layoutDelegate.scrollStates.value[index],
                             backgroundColor = backgroundColor,
                             decorationTemplates = state.decorationDelegate.decorationTemplates,
                             decorations = decorations,
@@ -260,7 +255,7 @@ public fun FixedWebRendition(
                             actionModeCallback = textSelectionActionModeCallback,
                             onSelectionApiChanged = { state.selectionDelegate.selectionApis[index] = it },
                             state = spreadState,
-                            scrollState = scrollStates[index],
+                            scrollState = state.layoutDelegate.scrollStates.value[index],
                             backgroundColor = backgroundColor,
                             decorationTemplates = state.decorationDelegate.decorationTemplates,
                             decorations = decorations,

@@ -49,6 +49,17 @@ internal class ReflowableResourceState(
         pendingGoMutable = PendingGo(location, continuation)
     }
 
+    fun cancelPendingLocation(
+        location: ReflowableResourceLocation,
+    ) {
+        pendingGoMutable?.let { pendingGoMutable ->
+            if (pendingGoMutable.location == location) {
+                this.pendingGoMutable = null
+                pendingGoMutable.continuation?.resume(Unit)
+            }
+        }
+    }
+
     fun acknowledgePendingLocation(
         location: ReflowableResourceLocation,
         orientation: Orientation,

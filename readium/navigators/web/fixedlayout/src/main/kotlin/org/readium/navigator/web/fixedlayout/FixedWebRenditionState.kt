@@ -21,6 +21,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.runtime.snapshots.SnapshotStateMap
+import kotlin.coroutines.cancellation.CancellationException
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.PersistentMap
 import kotlinx.collections.immutable.persistentMapOf
@@ -43,6 +44,7 @@ import org.readium.navigator.web.fixedlayout.layout.LayoutResolver
 import org.readium.navigator.web.fixedlayout.layout.Page
 import org.readium.navigator.web.fixedlayout.layout.SingleViewportSpread
 import org.readium.navigator.web.fixedlayout.preferences.FixedWebSettings
+import org.readium.navigator.web.fixedlayout.spread.SpreadScrollState
 import org.readium.navigator.web.internals.server.WebViewClient
 import org.readium.navigator.web.internals.server.WebViewServer
 import org.readium.navigator.web.internals.server.WebViewServer.Companion.assetsBaseHref
@@ -213,6 +215,10 @@ internal class FixedLayoutDelegate(
         Layout(settings.readingProgression, newSpreads)
     }
 
+    val scrollStates: State<List<SpreadScrollState>> = derivedStateOf {
+        layout.value.spreads.map { SpreadScrollState() }
+    }
+
     val fit: State<Fit> = derivedStateOf {
         settings.fit
     }
@@ -240,7 +246,7 @@ internal class FixedNavigationDelegate(
     }
 
     override suspend fun goTo(location: FixedWebGoLocation) {
-        pagerState.scroll(MutatePriority.PreventUserInput) {
+        pagerState.scroll(MutatePriority.UserInput) {
             val spreadIndex = lastMeasureInfo.value.layout.spreadIndexForHref(location.href)
                 ?: return@scroll
 
@@ -260,7 +266,7 @@ internal class FixedNavigationDelegate(
 
     override suspend fun moveForward() {
         if (pagerState.isScrollInProgress) {
-            return
+            throw CancellationException()
         }
 
         pagerState.scroll {
@@ -272,7 +278,7 @@ internal class FixedNavigationDelegate(
 
     override suspend fun moveBackward() {
         if (pagerState.isScrollInProgress) {
-            return
+            throw CancellationException()
         }
 
         pagerState.scroll {
