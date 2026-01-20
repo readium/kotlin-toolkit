@@ -14,6 +14,7 @@ import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.readium.r2.shared.publication.Publication
@@ -114,12 +115,9 @@ class ImageParserTest {
     }
 
     @Test
-    fun `title is based on archive's root directory when any`() {
+    fun `title is null for archives`() {
         val builder = parser.parseBlocking(cbzAsset)
         assertNotNull(builder)
-        assertEquals(
-            "Cory Doctorow's Futuristic Tales of the Here and Now",
-            builder!!.manifest.metadata.title
-        )
+        assertNull(builder!!.manifest.metadata.title)
     }
 }
