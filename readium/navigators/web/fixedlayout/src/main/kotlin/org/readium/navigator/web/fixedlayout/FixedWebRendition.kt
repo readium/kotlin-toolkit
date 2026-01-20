@@ -49,6 +49,7 @@ import org.readium.navigator.web.fixedlayout.spread.FixedPagingLayoutInfo
 import org.readium.navigator.web.fixedlayout.spread.SingleSpreadState
 import org.readium.navigator.web.fixedlayout.spread.SingleViewportSpread
 import org.readium.navigator.web.fixedlayout.spread.SpreadNestedScrollConnection
+import org.readium.navigator.web.fixedlayout.spread.SpreadScrollState
 import org.readium.navigator.web.internals.gestures.Scrollable2DDefaults
 import org.readium.navigator.web.internals.gestures.toFling2DBehavior
 import org.readium.navigator.web.internals.pager.RenditionPager
@@ -112,11 +113,15 @@ public fun FixedWebRendition(
 
             val decorationListenerState = rememberUpdatedState(decorationListener)
 
+            val scrollStates: List<SpreadScrollState> = remember(state.layoutDelegate.layout.value) {
+                state.layoutDelegate.layout.value.spreads.map { SpreadScrollState() }
+            }
+
             val flingBehavior = run {
-                val pagingLayoutInfo = remember(state, state.layoutDelegate.scrollStates, layoutDirection) {
+                val pagingLayoutInfo = remember(state, scrollStates, layoutDirection) {
                     FixedPagingLayoutInfo(
                         pagerState = state.pagerState,
-                        pageStates = state.layoutDelegate.scrollStates.value,
+                        pageStates = scrollStates,
                         orientation = Orientation.Horizontal,
                         direction = layoutDirection,
                         density = density
@@ -125,23 +130,27 @@ public fun FixedWebRendition(
                 pagingFlingBehavior(pagingLayoutInfo)
             }.toFling2DBehavior(Orientation.Horizontal)
 
-            val scrollDispatcher = remember(state, state.layoutDelegate.scrollStates.value) {
+            val scrollDispatcher = remember(state, scrollStates) {
                 RenditionScrollState(
                     pagerState = state.pagerState,
-                    pageStates = state.layoutDelegate.scrollStates.value,
+                    pageStates = scrollStates,
                     overflow = state.layoutDelegate.overflow
                 )
             }
 
             val spreadFlingBehavior = Scrollable2DDefaults.flingBehavior()
 
-            val spreadNestedScrollConnection = remember(state.pagerState, state.layoutDelegate.scrollStates.value) {
+            val spreadNestedScrollConnection = remember(state.pagerState, scrollStates) {
                 SpreadNestedScrollConnection(
                     pagerState = state.pagerState,
-                    resourceStates = state.layoutDelegate.scrollStates.value,
+                    resourceStates = scrollStates,
                     flingBehavior = spreadFlingBehavior
                 )
             }
+
+            // This is the layout used for computing scrollStates, flingBehavior, scrollDispatcher
+            // and spreadNestedScrollConnection so it should be used in page composition.
+            state.lastCompositionLayout = state.layoutDelegate.layout.value
 
             LaunchedEffect(state.lastMeasureInfoState) {
                 snapshotFlow {
@@ -160,14 +169,19 @@ public fun FixedWebRendition(
                 orientation = Orientation.Horizontal,
                 beyondViewportPageCount = 2,
                 enableScroll = true,
-                key = { index -> state.layoutDelegate.layout.value.spreads[index].pages.first().index },
+                key = { index -> state.lastCompositionLayout.spreads[index].pages.first().index },
             ) { index ->
+
+                // Item composition is performed during the layout phase. Though state reading is
+                // tracked separately for each phase, recomposition and relayout can run
+                // concurrently after being triggered by the change of a state read in both phases..
+
                 val initialProgression = when {
                     index < state.pagerState.currentPage -> 1.0
                     else -> 0.0
                 }
 
-                val spread = state.layoutDelegate.layout.value.spreads[index]
+                val spread = state.lastCompositionLayout.spreads[index]
 
                 val decorations = state.decorationDelegate.decorations
                     .mapValues { groupDecorations ->
@@ -210,7 +224,7 @@ public fun FixedWebRendition(
                             actionModeCallback = textSelectionActionModeCallback,
                             onSelectionApiChanged = { state.selectionDelegate.selectionApis[index] = it },
                             state = spreadState,
-                            scrollState = state.layoutDelegate.scrollStates.value[index],
+                            scrollState = scrollStates[index],
                             backgroundColor = backgroundColor,
                             decorationTemplates = state.decorationDelegate.decorationTemplates,
                             decorations = decorations,
@@ -255,7 +269,7 @@ public fun FixedWebRendition(
                             actionModeCallback = textSelectionActionModeCallback,
                             onSelectionApiChanged = { state.selectionDelegate.selectionApis[index] = it },
                             state = spreadState,
-                            scrollState = state.layoutDelegate.scrollStates.value[index],
+                            scrollState = scrollStates[index],
                             backgroundColor = backgroundColor,
                             decorationTemplates = state.decorationDelegate.decorationTemplates,
                             decorations = decorations,

@@ -44,7 +44,6 @@ import org.readium.navigator.web.fixedlayout.layout.LayoutResolver
 import org.readium.navigator.web.fixedlayout.layout.Page
 import org.readium.navigator.web.fixedlayout.layout.SingleViewportSpread
 import org.readium.navigator.web.fixedlayout.preferences.FixedWebSettings
-import org.readium.navigator.web.fixedlayout.spread.SpreadScrollState
 import org.readium.navigator.web.internals.server.WebViewClient
 import org.readium.navigator.web.internals.server.WebViewServer
 import org.readium.navigator.web.internals.server.WebViewServer.Companion.assetsBaseHref
@@ -105,10 +104,13 @@ public class FixedWebRenditionState internal constructor(
             .spreadIndexForHref(initialLocation.href)
             ?: 0
 
+    internal var lastCompositionLayout: Layout =
+        layoutDelegate.layout.value
+
     internal val pagerState: PagerState =
         PagerState(
             currentPage = initialSpread,
-            pageCount = { layoutDelegate.layout.value.spreads.size }
+            pageCount = { lastCompositionLayout.spreads.size }
         )
 
     internal val selectionDelegate: FixedSelectionDelegate =
@@ -213,10 +215,6 @@ internal class FixedLayoutDelegate(
     val layout: State<Layout> = derivedStateOf {
         val newSpreads = layoutResolver.layout(settings)
         Layout(settings.readingProgression, newSpreads)
-    }
-
-    val scrollStates: State<List<SpreadScrollState>> = derivedStateOf {
-        layout.value.spreads.map { SpreadScrollState() }
     }
 
     val fit: State<Fit> = derivedStateOf {
