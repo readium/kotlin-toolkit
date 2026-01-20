@@ -25,7 +25,9 @@ subprojects {
 
 tasks.register("cleanDocs", Delete::class).configure {
     delete(
-        "${project.rootDir}/docs/api", "${project.rootDir}/docs/index.md", "${project.rootDir}/site"
+        "${project.rootDir}/docs/api",
+        "${project.rootDir}/docs/index.md",
+        "${project.rootDir}/site"
     )
 }
 
