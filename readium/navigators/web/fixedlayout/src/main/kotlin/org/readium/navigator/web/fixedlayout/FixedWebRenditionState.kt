@@ -19,7 +19,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.runtime.snapshots.SnapshotStateMap
 import kotlin.coroutines.cancellation.CancellationException
 import kotlinx.collections.immutable.PersistentList
@@ -92,13 +91,10 @@ public class FixedWebRenditionState internal constructor(
             initialSettings
         )
 
-    internal val modelLayout: State<Layout> =
-        layoutDelegate.modelLayout
-
-    internal var uiLayout: Layout by mutableStateOf(modelLayout.value)
+    internal var uiLayout: Layout by mutableStateOf(layoutDelegate.layout.value)
 
     private val initialSpread: Int =
-        modelLayout.value
+        layoutDelegate.layout.value
             .spreadIndexForHref(initialLocation.href)
             ?: 0
 
@@ -111,7 +107,7 @@ public class FixedWebRenditionState internal constructor(
     internal val lastMeasureInfoState: State<FixedLayoutMeasureInfo> = derivedStateOf {
         FixedLayoutMeasureInfo(
             currentSpread = pagerState.currentPage,
-            layout = Snapshot.withoutReadObservation { uiLayout }
+            layout = uiLayout
         )
     }
 
@@ -214,7 +210,7 @@ internal class FixedLayoutDelegate(
         }
     }
 
-    val modelLayout: State<Layout> = derivedStateOf {
+    val layout: State<Layout> = derivedStateOf {
         val newSpreads = layoutResolver.layout(settings)
         Layout(settings.readingProgression, newSpreads)
     }

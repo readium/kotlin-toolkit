@@ -113,10 +113,6 @@ public fun FixedWebRendition(
 
             val decorationListenerState = rememberUpdatedState(decorationListener)
 
-            LaunchedEffect(state.modelLayout.value) {
-                state.uiLayout = state.modelLayout.value
-            }
-
             val scrollStates: List<SpreadScrollState> = remember(state.uiLayout) {
                 state.uiLayout.spreads.map { SpreadScrollState() }
             }
@@ -150,6 +146,10 @@ public fun FixedWebRendition(
                     resourceStates = scrollStates,
                     flingBehavior = spreadFlingBehavior
                 )
+            }
+
+            LaunchedEffect(state.layoutDelegate.layout.value) {
+                state.uiLayout = state.layoutDelegate.layout.value
             }
 
             LaunchedEffect(state.lastMeasureInfoState) {
