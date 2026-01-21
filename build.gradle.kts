@@ -11,15 +11,24 @@ plugins {
 }
 
 subprojects {
-    val shouldDocument = name != "test-app" && !path.startsWith(":demos")
+    val isLibraryModule = name != "test-app" && !path.startsWith(":demos")
 
-    if (shouldDocument) {
-        apply(plugin = "org.jetbrains.dokka")
-    }
     apply(plugin = "org.jlleitschuh.gradle.ktlint")
 
     ktlint {
         android.set(true)
+    }
+
+    if (isLibraryModule) {
+        apply(plugin = "org.jetbrains.dokka")
+
+        extensions.configure<org.jetbrains.dokka.gradle.DokkaExtension> {
+            dokkaSourceSets.configureEach {
+                reportUndocumented.set(false)
+                skipEmptyPackages.set(false)
+                skipDeprecated.set(true)
+            }
+        }
     }
 }
 
@@ -29,22 +38,6 @@ tasks.register("cleanDocs", Delete::class).configure {
         "${project.rootDir}/docs/index.md",
         "${project.rootDir}/site"
     )
-}
-
-subprojects {
-    val shouldDocument = name != "test-app" && !path.startsWith(":demos")
-
-    if (shouldDocument) {
-        pluginManager.withPlugin("org.jetbrains.dokka") {
-            configure<org.jetbrains.dokka.gradle.DokkaExtension> {
-                dokkaSourceSets.configureEach {
-                    reportUndocumented.set(false)
-                    skipEmptyPackages.set(false)
-                    skipDeprecated.set(true)
-                }
-            }
-        }
-    }
 }
 
 dependencies {
