@@ -113,8 +113,12 @@ public fun FixedWebRendition(
 
             val decorationListenerState = rememberUpdatedState(decorationListener)
 
-            val scrollStates: List<SpreadScrollState> = remember(state.layoutDelegate.layout.value) {
-                state.layoutDelegate.layout.value.spreads.map { SpreadScrollState() }
+            LaunchedEffect(state.modelLayout.value) {
+                state.uiLayout = state.modelLayout.value
+            }
+
+            val scrollStates: List<SpreadScrollState> = remember(state.uiLayout) {
+                state.uiLayout.spreads.map { SpreadScrollState() }
             }
 
             val flingBehavior = run {
@@ -148,10 +152,6 @@ public fun FixedWebRendition(
                 )
             }
 
-            // This is the layout used for computing scrollStates, flingBehavior, scrollDispatcher
-            // and spreadNestedScrollConnection so it should be used in page composition.
-            state.lastCompositionLayout = state.layoutDelegate.layout.value
-
             LaunchedEffect(state.lastMeasureInfoState) {
                 snapshotFlow {
                     state.lastMeasureInfoState.value
@@ -169,19 +169,14 @@ public fun FixedWebRendition(
                 orientation = Orientation.Horizontal,
                 beyondViewportPageCount = 2,
                 enableScroll = true,
-                key = { index -> state.lastCompositionLayout.spreads[index].pages.first().index },
+                key = { index -> state.uiLayout.spreads[index].pages.first().index },
             ) { index ->
-
-                // Item composition is performed during the layout phase. Though state reading is
-                // tracked separately for each phase, recomposition and relayout can run
-                // concurrently after being triggered by the change of a state read in both phases..
-
                 val initialProgression = when {
                     index < state.pagerState.currentPage -> 1.0
                     else -> 0.0
                 }
 
-                val spread = state.lastCompositionLayout.spreads[index]
+                val spread = state.uiLayout.spreads[index]
 
                 val decorations = state.decorationDelegate.decorations
                     .mapValues { groupDecorations ->

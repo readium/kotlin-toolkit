@@ -86,32 +86,34 @@ public class FixedWebRenditionState internal constructor(
 
     override val controller: FixedWebRenditionController? by controllerState
 
-    internal val lastMeasureInfoState: State<FixedLayoutMeasureInfo> = derivedStateOf {
-        FixedLayoutMeasureInfo(
-            currentSpread = pagerState.currentPage,
-            layout = Snapshot.withoutReadObservation { layoutDelegate.layout.value }
-        )
-    }
-
     internal val layoutDelegate: FixedLayoutDelegate =
         FixedLayoutDelegate(
             publication.readingOrder,
             initialSettings
         )
 
+    internal val modelLayout: State<Layout> =
+        layoutDelegate.modelLayout
+
+    internal var uiLayout: Layout by mutableStateOf(modelLayout.value)
+
     private val initialSpread: Int =
-        layoutDelegate.layout.value
+        modelLayout.value
             .spreadIndexForHref(initialLocation.href)
             ?: 0
-
-    internal var lastCompositionLayout: Layout =
-        layoutDelegate.layout.value
 
     internal val pagerState: PagerState =
         PagerState(
             currentPage = initialSpread,
-            pageCount = { lastCompositionLayout.spreads.size }
+            pageCount = { uiLayout.spreads.size }
         )
+
+    internal val lastMeasureInfoState: State<FixedLayoutMeasureInfo> = derivedStateOf {
+        FixedLayoutMeasureInfo(
+            currentSpread = pagerState.currentPage,
+            layout = Snapshot.withoutReadObservation { uiLayout }
+        )
+    }
 
     internal val selectionDelegate: FixedSelectionDelegate =
         FixedSelectionDelegate(
@@ -212,7 +214,7 @@ internal class FixedLayoutDelegate(
         }
     }
 
-    val layout: State<Layout> = derivedStateOf {
+    val modelLayout: State<Layout> = derivedStateOf {
         val newSpreads = layoutResolver.layout(settings)
         Layout(settings.readingProgression, newSpreads)
     }
