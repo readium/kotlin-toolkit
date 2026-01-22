@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.pager.PagerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -42,6 +43,7 @@ import org.readium.navigator.common.defaultDecorationListener
 import org.readium.navigator.common.defaultHyperlinkListener
 import org.readium.navigator.common.defaultInputListener
 import org.readium.navigator.web.fixedlayout.layout.DoubleViewportSpread
+import org.readium.navigator.web.fixedlayout.layout.Layout
 import org.readium.navigator.web.fixedlayout.layout.SingleViewportSpread
 import org.readium.navigator.web.fixedlayout.spread.DoubleSpreadState
 import org.readium.navigator.web.fixedlayout.spread.DoubleViewportSpread
@@ -87,52 +89,58 @@ public fun FixedWebRendition(
         modifier = modifier.fillMaxSize(),
         propagateMinConstraints = true
     ) {
-        val layoutDirection =
+        val density = LocalDensity.current
+
+        val coroutineScope = rememberCoroutineScope()
+
+        val pagerStateNow = state.pagerState.value
+
+        val layoutNow = state.layoutDelegate.layout.value
+
+        val selectionDelegateNow = state.selectionDelegate
+
+        val layoutDirectionNow =
             state.layoutDelegate.overflow.value.readingProgression.toLayoutDirection()
 
-        CompositionLocalProvider(LocalLayoutDirection provides layoutDirection) {
+        val displayArea = rememberUpdatedState(
+            DisplayArea(
+                viewportSize = DpSize(maxWidth, maxHeight),
+                safeDrawingPadding = windowInsets.asAbsolutePaddingValues()
+            )
+        )
+
+        val inputListenerState = rememberUpdatedState(inputListener)
+
+        val hyperlinkListenerState = rememberUpdatedState(hyperlinkListener)
+
+        val decorationListenerState = rememberUpdatedState(decorationListener)
+
+        CompositionLocalProvider(LocalLayoutDirection provides layoutDirectionNow) {
             if (state.controller == null) {
-                val currentLocation = currentLocation(state.lastMeasureInfoState.value, state.publication)
+                val currentLocation = currentLocation(layoutNow, pagerStateNow, state.publication)
                 state.initController(location = currentLocation)
             }
 
-            val density = LocalDensity.current
-
-            val coroutineScope = rememberCoroutineScope()
-
-            val displayArea = rememberUpdatedState(
-                DisplayArea(
-                    viewportSize = DpSize(maxWidth, maxHeight),
-                    safeDrawingPadding = windowInsets.asAbsolutePaddingValues()
-                )
-            )
-
-            val inputListenerState = rememberUpdatedState(inputListener)
-
-            val hyperlinkListenerState = rememberUpdatedState(hyperlinkListener)
-
-            val decorationListenerState = rememberUpdatedState(decorationListener)
-
-            val scrollStates: List<SpreadScrollState> = remember(state.uiLayout) {
-                state.uiLayout.spreads.map { SpreadScrollState() }
+            val scrollStates: List<SpreadScrollState> = remember(layoutNow) {
+                layoutNow.spreads.map { SpreadScrollState() }
             }
 
             val flingBehavior = run {
-                val pagingLayoutInfo = remember(state, scrollStates, layoutDirection) {
+                val pagingLayoutInfo = remember(density, pagerStateNow, scrollStates, layoutDirectionNow) {
                     FixedPagingLayoutInfo(
-                        pagerState = state.pagerState,
+                        pagerState = pagerStateNow,
                         pageStates = scrollStates,
                         orientation = Orientation.Horizontal,
-                        direction = layoutDirection,
+                        direction = layoutDirectionNow,
                         density = density
                     )
                 }
                 pagingFlingBehavior(pagingLayoutInfo)
             }.toFling2DBehavior(Orientation.Horizontal)
 
-            val scrollDispatcher = remember(state, scrollStates) {
+            val scrollDispatcher = remember(state, pagerStateNow, scrollStates) {
                 RenditionScrollState(
-                    pagerState = state.pagerState,
+                    pagerState = pagerStateNow,
                     pageStates = scrollStates,
                     overflow = state.layoutDelegate.overflow
                 )
@@ -140,43 +148,38 @@ public fun FixedWebRendition(
 
             val spreadFlingBehavior = Scrollable2DDefaults.flingBehavior()
 
-            val spreadNestedScrollConnection = remember(state.pagerState, scrollStates) {
+            val spreadNestedScrollConnection = remember(pagerStateNow, scrollStates) {
                 SpreadNestedScrollConnection(
-                    pagerState = state.pagerState,
+                    pagerState = pagerStateNow,
                     resourceStates = scrollStates,
                     flingBehavior = spreadFlingBehavior
                 )
             }
 
-            LaunchedEffect(state.layoutDelegate.layout.value) {
-                state.uiLayout = state.layoutDelegate.layout.value
-            }
-
-            LaunchedEffect(state.lastMeasureInfoState) {
+            LaunchedEffect(pagerStateNow, layoutNow) {
                 snapshotFlow {
-                    state.lastMeasureInfoState.value
+                    pagerStateNow.currentPage
                 }.onEach {
-                    val currentLocation = currentLocation(it, state.publication)
+                    val currentLocation = currentLocation(layoutNow, pagerStateNow, state.publication)
                     state.navigationDelegate.updateLocation(currentLocation)
                 }.launchIn(this)
             }
 
             RenditionPager(
                 modifier = Modifier.nestedScroll(spreadNestedScrollConnection),
-                state = state.pagerState,
+                state = pagerStateNow,
                 scrollState = scrollDispatcher,
                 flingBehavior = flingBehavior,
                 orientation = Orientation.Horizontal,
                 beyondViewportPageCount = 2,
-                enableScroll = true,
-                key = { index -> state.uiLayout.spreads[index].pages.first().index },
+                enableScroll = true
             ) { index ->
                 val initialProgression = when {
-                    index < state.pagerState.currentPage -> 1.0
+                    index < pagerStateNow.currentPage -> 1.0
                     else -> 0.0
                 }
 
-                val spread = state.uiLayout.spreads[index]
+                val spread = layoutNow.spreads[index]
 
                 val decorations = state.decorationDelegate.decorations
                     .mapValues { groupDecorations ->
@@ -197,9 +200,9 @@ public fun FixedWebRendition(
                             )
 
                         SingleViewportSpread(
-                            pagerState = state.pagerState,
+                            pagerState = pagerStateNow,
                             progression = initialProgression,
-                            layoutDirection = layoutDirection,
+                            layoutDirection = layoutDirectionNow,
                             onTap = {
                                 inputListenerState.value.onTap(
                                     it,
@@ -217,7 +220,7 @@ public fun FixedWebRendition(
                                 }
                             },
                             actionModeCallback = textSelectionActionModeCallback,
-                            onSelectionApiChanged = { state.selectionDelegate.selectionApis[index] = it },
+                            onSelectionApiChanged = { selectionDelegateNow.selectionApis[index] = it },
                             state = spreadState,
                             scrollState = scrollStates[index],
                             backgroundColor = backgroundColor,
@@ -242,9 +245,9 @@ public fun FixedWebRendition(
                             )
 
                         DoubleViewportSpread(
-                            pagerState = state.pagerState,
+                            pagerState = pagerStateNow,
                             progression = initialProgression,
-                            layoutDirection = layoutDirection,
+                            layoutDirection = layoutDirectionNow,
                             onTap = {
                                 inputListenerState.value.onTap(
                                     it,
@@ -262,7 +265,7 @@ public fun FixedWebRendition(
                                 }
                             },
                             actionModeCallback = textSelectionActionModeCallback,
-                            onSelectionApiChanged = { state.selectionDelegate.selectionApis[index] = it },
+                            onSelectionApiChanged = { selectionDelegateNow.selectionApis[index] = it },
                             state = spreadState,
                             scrollState = scrollStates[index],
                             backgroundColor = backgroundColor,
@@ -280,16 +283,16 @@ public fun FixedWebRendition(
 }
 
 private fun currentLocation(
-    lastMeasureInfo: FixedLayoutMeasureInfo,
+    layout: Layout,
+    pagerState: PagerState,
     publication: FixedWebPublication,
 ): FixedWebLocation {
-    val currentSpreadIndex = lastMeasureInfo.currentSpread
-    val currentLayout = lastMeasureInfo.layout
-    val itemIndex = currentLayout.pageIndexForSpread(currentSpreadIndex)
+    val currentSpreadIndex = pagerState.currentPage
+    val itemIndex = layout.pageIndexForSpread(currentSpreadIndex)
     val href = publication.readingOrder[itemIndex].href
     val mediaType = publication.readingOrder[itemIndex].mediaType
     val position = Position(itemIndex + 1)!!
-    val totalProgression = Progression(currentSpreadIndex / currentLayout.spreads.size.toDouble())!!
+    val totalProgression = Progression(currentSpreadIndex / layout.spreads.size.toDouble())!!
     return FixedWebLocation(href, position, totalProgression, mediaType)
 }
 

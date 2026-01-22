@@ -19,6 +19,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.runtime.snapshots.SnapshotStateMap
 import kotlin.coroutines.cancellation.CancellationException
 import kotlinx.collections.immutable.PersistentList
@@ -47,6 +48,9 @@ import org.readium.navigator.web.internals.server.WebViewClient
 import org.readium.navigator.web.internals.server.WebViewServer
 import org.readium.navigator.web.internals.server.WebViewServer.Companion.assetsBaseHref
 import org.readium.navigator.web.internals.util.HyperlinkProcessor
+import org.readium.navigator.web.internals.util.MutableRef
+import org.readium.navigator.web.internals.util.getValue
+import org.readium.navigator.web.internals.util.setValue
 import org.readium.navigator.web.internals.webapi.Decoration as WebApiDecoration
 import org.readium.navigator.web.internals.webapi.FixedDoubleSelectionApi
 import org.readium.navigator.web.internals.webapi.FixedSelectionApi
@@ -91,30 +95,44 @@ public class FixedWebRenditionState internal constructor(
             initialSettings
         )
 
-    internal var uiLayout: Layout by mutableStateOf(layoutDelegate.layout.value)
+    /*
+     * We need to get a fresh pagerState when the layout changes because of pagerState.pageCount.
+     * Let's assume we don't.
+     * After a state change affecting both (a layout change), pager items can be laid out again
+     * at the same time as the pager parent is recomposed. In that case, it's using stale values
+     * from previous composition. So when we get currentPage, we have no idea if it's referring to
+     * the old layout or the up to date one.
+     */
+    internal val pagerState: State<PagerState> = run {
+        var holder by MutableRef<Pair<Layout, PagerState>?>(null)
 
-    private val initialSpread: Int =
-        layoutDelegate.layout.value
-            .spreadIndexForHref(initialLocation.href)
-            ?: 0
-
-    internal val pagerState: PagerState =
-        PagerState(
-            currentPage = initialSpread,
-            pageCount = { uiLayout.spreads.size }
-        )
-
-    internal val lastMeasureInfoState: State<FixedLayoutMeasureInfo> = derivedStateOf {
-        FixedLayoutMeasureInfo(
-            currentSpread = pagerState.currentPage,
-            layout = uiLayout
-        )
+        derivedStateOf {
+            val oldLayoutAndPagerState = holder
+            val newLayout = layoutDelegate.layout.value
+            val newCurrentSpread = if (oldLayoutAndPagerState == null) {
+                newLayout.spreadIndexForHref(initialLocation.href) ?: 0
+            } else {
+                val oldCurrentSpread = Snapshot.withoutReadObservation { oldLayoutAndPagerState.second.currentPage }
+                val currentPages = oldLayoutAndPagerState.first.spreads[oldCurrentSpread].pages
+                val currentHref = currentPages.first().href
+                newLayout.spreadIndexForHref(currentHref)!!
+            }
+            val newPagerState = PagerState(
+                currentPage = newCurrentSpread,
+                pageCount = { newLayout.spreads.size }
+            )
+            holder = newLayout to newPagerState
+            newPagerState
+        }
     }
 
-    internal val selectionDelegate: FixedSelectionDelegate =
-        FixedSelectionDelegate(
-            lastMeasureInfoState = lastMeasureInfoState
-        )
+    internal val selectionDelegate: FixedSelectionDelegate by
+        derivedStateOf {
+            FixedSelectionDelegate(
+                pagerState.value,
+                layoutDelegate.layout.value
+            )
+        }
 
     internal val decorationDelegate: FixedDecorationDelegate =
         FixedDecorationDelegate(configuration.decorationTemplates)
@@ -152,7 +170,7 @@ public class FixedWebRenditionState internal constructor(
         navigationDelegate =
             FixedNavigationDelegate(
                 pagerState,
-                lastMeasureInfoState,
+                layoutDelegate.layout,
                 layoutDelegate.overflow,
                 location
             )
@@ -183,11 +201,6 @@ public class FixedWebRenditionController internal constructor(
 internal data class FixedWebPreloadedData(
     val fixedSingleContent: String,
     val fixedDoubleContent: String,
-)
-
-internal class FixedLayoutMeasureInfo(
-    val currentSpread: Int,
-    val layout: Layout,
 )
 
 internal class FixedLayoutDelegate(
@@ -221,8 +234,8 @@ internal class FixedLayoutDelegate(
 }
 
 internal class FixedNavigationDelegate(
-    private val pagerState: PagerState,
-    private val lastMeasureInfo: State<FixedLayoutMeasureInfo>,
+    private val pagerState: State<PagerState>,
+    private val layout: State<Layout>,
     overflowState: State<Overflow>,
     initialLocation: FixedWebLocation,
 ) : NavigationController<FixedWebLocation, FixedWebGoLocation>, OverflowController {
@@ -242,11 +255,13 @@ internal class FixedNavigationDelegate(
     }
 
     override suspend fun goTo(location: FixedWebGoLocation) {
-        pagerState.scroll(MutatePriority.UserInput) {
-            val spreadIndex = lastMeasureInfo.value.layout.spreadIndexForHref(location.href)
+        val pagerStateNow = pagerState.value
+
+        pagerStateNow.scroll(MutatePriority.UserInput) {
+            val spreadIndex = layout.value.spreadIndexForHref(location.href)
                 ?: return@scroll
 
-            pagerState.requestScrollToPage(spreadIndex)
+            pagerStateNow.requestScrollToPage(spreadIndex)
         }
     }
 
@@ -255,31 +270,35 @@ internal class FixedNavigationDelegate(
     }
 
     override val canMoveForward: Boolean
-        get() = lastMeasureInfo.value.currentSpread < lastMeasureInfo.value.layout.spreads.size - 1
+        get() = pagerState.value.currentPage < layout.value.spreads.size - 1
 
     override val canMoveBackward: Boolean
-        get() = lastMeasureInfo.value.currentSpread > 0
+        get() = pagerState.value.currentPage > 0
 
     override suspend fun moveForward() {
-        if (pagerState.isScrollInProgress) {
+        val pagerStateNow = pagerState.value
+
+        if (pagerStateNow.isScrollInProgress) {
             throw CancellationException()
         }
 
-        pagerState.scroll {
+        pagerStateNow.scroll {
             if (canMoveForward) {
-                pagerState.requestScrollToPage(pagerState.currentPage + 1)
+                pagerStateNow.requestScrollToPage(pagerStateNow.currentPage + 1)
             }
         }
     }
 
     override suspend fun moveBackward() {
-        if (pagerState.isScrollInProgress) {
+        val pagerStateNow = pagerState.value
+
+        if (pagerStateNow.isScrollInProgress) {
             throw CancellationException()
         }
 
-        pagerState.scroll {
+        pagerStateNow.scroll {
             if (canMoveBackward) {
-                pagerState.requestScrollToPage(pagerState.currentPage - 1)
+                pagerStateNow.requestScrollToPage(pagerStateNow.currentPage - 1)
             }
         }
     }
@@ -294,18 +313,19 @@ internal class FixedDecorationDelegate(
 }
 
 internal class FixedSelectionDelegate(
-    private val lastMeasureInfoState: State<FixedLayoutMeasureInfo>,
+    private val pagerState: PagerState,
+    private val layout: Layout,
 ) : SelectionController<FixedWebSelectionLocation> {
 
     val selectionApis: SnapshotStateMap<Int, FixedSelectionApi?> =
         mutableStateMapOf()
 
     override suspend fun currentSelection(): Selection<FixedWebSelectionLocation>? {
-        val lastMeasureInfoNow = lastMeasureInfoState.value
-        val currentSpreadNow = lastMeasureInfoNow.currentSpread
+        val currentSpreadNow = pagerState.currentPage
 
+        // FIXME: resume coroutines when we get a new instance. Maybe in Resource composable.
         val (page, selection) = selectionApis[currentSpreadNow]
-            ?.getCurrentSelection(currentSpreadNow, lastMeasureInfoNow.layout)
+            ?.getCurrentSelection(currentSpreadNow, layout)
             ?: return null
 
         return Selection(
