@@ -4,8 +4,6 @@
  * available in the top-level LICENSE file of the project.
  */
 
-import org.jetbrains.dokka.gradle.DokkaTaskPartial
-
 plugins {
     alias(libs.plugins.dokka)
     alias(libs.plugins.ktlint)
@@ -13,9 +11,8 @@ plugins {
 }
 
 subprojects {
-    if (name != "test-app") {
-        apply(plugin = "org.jetbrains.dokka")
-    }
+    val isLibraryModule = name != "test-app" && !path.startsWith(":demos")
+
     apply(plugin = "org.jlleitschuh.gradle.ktlint")
 
     ktlint {
@@ -29,24 +26,32 @@ subprojects {
             }
         }
     }
-}
 
-tasks.register("cleanDocs", Delete::class).configure {
-    delete("${project.rootDir}/docs/readium", "${project.rootDir}/docs/index.md", "${project.rootDir}/site")
-}
+    if (isLibraryModule) {
+        apply(plugin = "org.jetbrains.dokka")
 
-tasks.withType<DokkaTaskPartial>().configureEach {
-    dokkaSourceSets {
-        configureEach {
-            reportUndocumented.set(false)
-            skipEmptyPackages.set(false)
-            skipDeprecated.set(true)
+        extensions.configure<org.jetbrains.dokka.gradle.DokkaExtension> {
+            dokkaSourceSets.configureEach {
+                reportUndocumented.set(false)
+                skipEmptyPackages.set(false)
+                skipDeprecated.set(true)
+            }
         }
     }
 }
 
-tasks.named<org.jetbrains.dokka.gradle.DokkaMultiModuleTask>("dokkaGfmMultiModule").configure {
-    outputDirectory.set(file("${projectDir.path}/docs"))
+tasks.register("cleanDocs", Delete::class).configure {
+    delete(
+        "${project.rootDir}/docs/api",
+        "${project.rootDir}/docs/index.md",
+        "${project.rootDir}/site"
+    )
+}
+
+dependencies {
+    subprojects.filter { it.name != "test-app" && !it.path.startsWith(":demos") }.forEach {
+        dokka(project(it.path))
+    }
 }
 
 tasks.register<Delete>("clean") {
