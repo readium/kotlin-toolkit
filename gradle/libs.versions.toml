@@ -33,7 +33,7 @@ androidx-webkit = "1.14.0"
 
 assertj = "3.27.6"
 
-dokka = "1.9.20"
+dokka = "2.1.0"
 
 google-material = "1.13.0"
 

@@ -10,7 +10,7 @@ repo_name: kotlin-toolkit
 repo_url: https://github.com/readium/kotlin-toolkit
 
 # Copyright (shown at the footer)
-copyright: 'Copyright &copy; 2023 Readium Foundation'
+copyright: 'Copyright &copy; 2026 Readium Foundation'
 
 # Material theme
 theme:
@@ -19,6 +19,9 @@ theme:
   social:
     - type: 'github'
       link: 'https://github.com/readium/kotlin-toolkit'
+  features:
+    - navigation.tabs
+    - navigation.path
 
 # Extensions
 markdown_extensions:
@@ -44,9 +47,10 @@ markdown_extensions:
 nav:
   - Home: index.md
   - Migration Guide: migration-guide.md
+  - API Reference: api/index.html
   - User Guides:
-      - Navigator preferences: guides/navigator-preferences.md
-      - EPUB font families: guides/epub-fonts.md
+      - Navigator preferences: guides/navigator/preferences.md
+      - EPUB font families: guides/navigator/epub-fonts.md
       - PDF support: guides/pdf.md
       - Text-to-speech: guides/tts.md
       - Extracting the content of a publication: guides/content.md
@@ -57,4 +61,3 @@ extra_css:
 extra:
   version:
     provider: mike
-
