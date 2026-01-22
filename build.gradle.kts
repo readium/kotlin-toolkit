@@ -53,7 +53,3 @@ dependencies {
         dokka(project(it.path))
     }
 }
-
-tasks.register<Delete>("clean") {
-    delete(layout.buildDirectory)
-}
