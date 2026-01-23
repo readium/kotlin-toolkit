@@ -52,9 +52,9 @@ export class GesturesDetector {
 
         event.stopPropagation()
         event.preventDefault()
-      } else {
-        return
       }
+
+      return
     }
 
     let decorationActivatedEvent: DecorationActivatedEvent | null
