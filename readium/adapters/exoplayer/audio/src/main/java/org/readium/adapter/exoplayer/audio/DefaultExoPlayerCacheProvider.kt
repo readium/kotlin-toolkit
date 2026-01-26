@@ -1,3 +1,5 @@
+@file:kotlin.OptIn(InternalReadiumApi::class)
+
 package org.readium.adapter.exoplayer.audio
 
 import androidx.annotation.OptIn
@@ -7,6 +9,7 @@ import androidx.media3.datasource.cache.Cache
 import androidx.media3.datasource.cache.CacheDataSink
 import androidx.media3.datasource.cache.CacheDataSource
 import org.readium.r2.shared.DelicateReadiumApi
+import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.toUrl

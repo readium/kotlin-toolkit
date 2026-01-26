@@ -37,7 +37,7 @@ fun parsePackageDocument(path: String): Manifest {
         ?.let { ManifestAdapter(it) }
         ?.adapt()
     checkNotNull(pub)
-    return pub
+    return pub.manifest
 }
 
 const val PARSE_PUB_TIMEOUT = 1000L // milliseconds

@@ -14,6 +14,7 @@ import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.encryption.Encryption
 import org.readium.r2.shared.publication.epub.EpubEncryptionParser
+import org.readium.r2.shared.publication.epub.MediaOverlaysService
 import org.readium.r2.shared.publication.services.content.DefaultContentService
 import org.readium.r2.shared.publication.services.content.iterators.HtmlResourceContentIterator
 import org.readium.r2.shared.publication.services.search.StringSearchService
@@ -86,12 +87,14 @@ public class EpubParser(
 
         val encryptionData = parseEncryptionData(asset.container)
 
-        val manifest = ManifestAdapter(
+        val (manifest, mediaOverlays) = ManifestAdapter(
             packageDocument = packageDocument,
             navigationData = parseNavigationData(packageDocument, asset.container),
             encryptionData = encryptionData,
             displayOptions = parseDisplayOptions(asset.container)
         ).adapt()
+
+        val smils = mediaOverlays.map { it.url() }
 
         var container = asset.container
         manifest.metadata.identifier?.let { id ->
@@ -110,7 +113,11 @@ public class EpubParser(
                         HtmlResourceContentIterator.Factory()
                     )
                 )
-            )
+            ).also {
+                if (smils.isNotEmpty()) {
+                    it[MediaOverlaysService::class] = SmilBasedMediaOverlaysService.createFactory(smils)
+                }
+            }
         )
 
         return Try.success(builder)

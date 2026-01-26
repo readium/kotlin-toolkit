@@ -9,16 +9,10 @@
 package org.readium.demo.navigator.reader
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -30,12 +24,10 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.zIndex
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
-import org.readium.demo.navigator.R
 import org.readium.demo.navigator.decorations.DecorationStyleAnnotationMark
 import org.readium.demo.navigator.decorations.EditAnnotationDialog
 import org.readium.demo.navigator.decorations.EditAnnotationViewModel
@@ -66,8 +58,8 @@ import org.readium.r2.shared.util.toUri
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun <L : ExportableLocation, G : GoLocation, S : SelectionLocation, C> Rendition(
-    readerState: ReaderState<L, G, S, C>,
+fun <L : ExportableLocation, G : GoLocation, S : SelectionLocation, C> VisualRendition(
+    readerState: VisualReaderState<L, G, S, C>,
     fullScreenState: MutableState<Boolean>,
 ) where C : NavigationController<L, G>, C : SelectionController<S> {
     val coroutineScope = rememberCoroutineScope()
@@ -116,7 +108,7 @@ fun <L : ExportableLocation, G : GoLocation, S : SelectionLocation, C> Rendition
     }
 
     Box {
-        TopBar(
+        RenditionTopBar(
             modifier = Modifier.zIndex(10f),
             visible = !fullScreenState.value,
             onPreferencesActivated = { showPreferences.value = !showPreferences.value },
@@ -268,43 +260,5 @@ fun <L : ExportableLocation, G : GoLocation, S : SelectionLocation, C> Rendition
                 )
             }
         }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun TopBar(
-    modifier: Modifier,
-    visible: Boolean,
-    onPreferencesActivated: () -> Unit,
-    onOutlineActivated: () -> Unit,
-) {
-    AnimatedVisibility(
-        modifier = modifier,
-        visible = visible,
-        enter = fadeIn(),
-        exit = fadeOut()
-    ) {
-        TopAppBar(
-            title = { },
-            actions = {
-                IconButton(
-                    onClick = onPreferencesActivated
-                ) {
-                    Icon(
-                        painterResource(R.drawable.ic_preferences_24),
-                        contentDescription = "Preferences",
-                    )
-                }
-                IconButton(
-                    onClick = onOutlineActivated
-                ) {
-                    Icon(
-                        painterResource(R.drawable.ic_outline_24),
-                        contentDescription = "Outline"
-                    )
-                }
-            }
-        )
     }
 }

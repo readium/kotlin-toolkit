@@ -38,6 +38,15 @@ public interface TextQuoteLocation : Location {
 }
 
 /**
+ * A [Location] including a [TextAnchor].
+ */
+@ExperimentalReadiumApi
+public interface TextAnchorLocation : Location {
+
+    public val textAnchor: TextAnchor
+}
+
+/**
  * A [Location] including a [CssSelector].
  */
 @ExperimentalReadiumApi
@@ -62,4 +71,10 @@ public interface ProgressionLocation : Location {
 public interface PositionLocation : Location {
 
     public val position: Position
+}
+
+@ExperimentalReadiumApi
+public interface TimeOffsetLocation : Location {
+
+    public val timeOffset: TimeOffset
 }

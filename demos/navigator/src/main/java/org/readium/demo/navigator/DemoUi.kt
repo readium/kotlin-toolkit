@@ -21,9 +21,12 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalTextToolbar
 import androidx.core.view.WindowInsetsControllerCompat
-import org.readium.demo.navigator.reader.Rendition
+import org.readium.demo.navigator.reader.ReadAloudReaderState
+import org.readium.demo.navigator.reader.ReadAloudRendition
+import org.readium.demo.navigator.reader.SelectNavigatorMenu
+import org.readium.demo.navigator.reader.VisualReaderState
+import org.readium.demo.navigator.reader.VisualRendition
 import org.readium.demo.navigator.util.Fullscreenable
 
 @Composable
@@ -42,7 +45,6 @@ fun Scaffold(
         ) {
             content.invoke()
 
-            LocalTextToolbar
             SnackbarHost(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
@@ -67,7 +69,11 @@ fun MainContent(
             DemoViewModel.State.BookSelection -> true
             is DemoViewModel.State.Error -> false
             DemoViewModel.State.Loading -> true
-            is DemoViewModel.State.Reader -> true
+            is DemoViewModel.State.Reader -> when (viewmodelState.readerState) {
+                is VisualReaderState<*, *, *, *> -> true
+                is ReadAloudReaderState -> false
+            }
+            is DemoViewModel.State.NavigatorSelection -> true
         }
     }
 
@@ -77,6 +83,10 @@ fun MainContent(
             LaunchedEffect(viewmodelState) {
                 launchBookSelection.invoke()
             }
+        }
+
+        is DemoViewModel.State.NavigatorSelection -> {
+            SelectNavigatorMenu(viewmodelState.viewModel)
         }
 
         is DemoViewModel.State.Error -> {
@@ -100,10 +110,19 @@ fun MainContent(
                 viewmodel.onBookClosed()
             }
 
-            Rendition(
-                readerState = viewmodelState.readerState,
-                fullScreenState = fullscreenState
-            )
+            when (viewmodelState.readerState) {
+                is ReadAloudReaderState -> {
+                    ReadAloudRendition(
+                        readerState = viewmodelState.readerState
+                    )
+                }
+                is VisualReaderState<*, *, *, *> -> {
+                    VisualRendition(
+                        readerState = viewmodelState.readerState,
+                        fullScreenState = fullscreenState
+                    )
+                }
+            }
         }
     }
 }

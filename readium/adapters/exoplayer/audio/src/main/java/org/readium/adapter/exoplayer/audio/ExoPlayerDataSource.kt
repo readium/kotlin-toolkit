@@ -14,6 +14,7 @@ import androidx.media3.datasource.DataSource
 import androidx.media3.datasource.DataSpec
 import androidx.media3.datasource.TransferListener
 import kotlinx.coroutines.runBlocking
+import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.util.DebugError
 import org.readium.r2.shared.util.data.ReadError
@@ -28,11 +29,12 @@ import timber.log.Timber
  * An ExoPlayer's [DataSource] which retrieves resources from a [Publication].
  */
 @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
-internal class ExoPlayerDataSource internal constructor(
+@InternalReadiumApi
+public class ExoPlayerDataSource internal constructor(
     private val publication: Publication,
 ) : BaseDataSource(/* isNetwork = */ true) {
 
-    class Factory(
+    public class Factory(
         private val publication: Publication,
         private val transferListener: TransferListener? = null,
     ) : DataSource.Factory {

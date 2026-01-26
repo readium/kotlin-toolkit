@@ -24,10 +24,15 @@ internal class ManifestAdapter(
     private val encryptionData: Map<Url, Encryption> = emptyMap(),
     private val displayOptions: Map<String, String> = emptyMap(),
 ) {
+
+    data class Result(
+        val manifest: Manifest,
+        val mediaOverlays: List<Link>,
+    )
     private val epubVersion = packageDocument.epubVersion
     private val spine = packageDocument.spine
 
-    fun adapt(): Manifest {
+    fun adapt(): Result {
         // Compute metadata
         val metadata = MetadataAdapter(
             epubVersion,
@@ -37,7 +42,7 @@ internal class ManifestAdapter(
         ).adapt(packageDocument.metadata)
 
         // Compute links
-        val (readingOrder, resources) = ResourceAdapter(
+        val (readingOrder, resources, mediaOverlays) = ResourceAdapter(
             packageDocument.spine,
             packageDocument.manifest,
             encryptionData,
@@ -70,7 +75,7 @@ internal class ManifestAdapter(
         }
 
         // Build Publication object
-        return Manifest(
+        val manifest = Manifest(
             metadata = metadata.metadata,
             links = emptyList(),
             readingOrder = readingOrder,
@@ -78,5 +83,7 @@ internal class ManifestAdapter(
             tableOfContents = toc,
             subcollections = subcollections.toMap()
         )
+
+        return Result(manifest = manifest, mediaOverlays = mediaOverlays)
     }
 }

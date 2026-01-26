@@ -72,7 +72,8 @@ dependencies {
     implementation(project(":readium:readium-navigator"))
     implementation(project(":readium:navigators:web:readium-navigator-web-reflowable"))
     implementation(project(":readium:navigators:web:readium-navigator-web-fixedlayout"))
-    implementation(project(":readium:adapters:pdfium"))
+    implementation(project(":readium:navigators:media:readium-navigator-media-readaloud"))
+    implementation(project(":readium:adapters:exoplayer:readium-adapter-exoplayer-readaloud"))
 
     coreLibraryDesugaring(libs.desugar.jdk.libs)
 

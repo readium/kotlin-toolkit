@@ -6,6 +6,7 @@
 
 package org.readium.navigator.common
 
+import kotlin.time.Duration
 import org.readium.r2.shared.ExperimentalReadiumApi
 
 /**
@@ -59,4 +60,16 @@ public data class TextQuote(
     val text: String,
     val prefix: String,
     val suffix: String,
+)
+
+@ExperimentalReadiumApi
+public data class TextAnchor(
+    val prefix: String,
+    val suffix: String,
+)
+
+@JvmInline
+@ExperimentalReadiumApi
+public value class TimeOffset(
+    public val value: Duration,
 )

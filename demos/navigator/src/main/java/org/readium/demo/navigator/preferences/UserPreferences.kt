@@ -28,6 +28,7 @@ import org.readium.demo.navigator.reader.LITERATA
 import org.readium.navigator.common.Preferences
 import org.readium.navigator.common.PreferencesEditor
 import org.readium.navigator.common.Settings
+import org.readium.navigator.media.readaloud.SystemTtsEngine
 import org.readium.navigator.web.fixedlayout.preferences.FixedWebPreferencesEditor
 import org.readium.navigator.web.reflowable.preferences.ReflowableWebPreferencesEditor
 import org.readium.r2.navigator.preferences.Axis
@@ -122,6 +123,16 @@ fun <P : Preferences<P>, S : Settings, E : PreferencesEditor<P, S>> UserPreferen
                     visitedColor = editor.visitedColor,
                     wordSpacing = editor.wordSpacing
                 )
+
+            is ReadAloudPreferencesEditor -> {
+                MediaUserPreferences(
+                    language = editor.language,
+                    voice = editor.voice,
+                    speed = editor.speed,
+                    pitch = editor.pitch,
+                    readContinuously = editor.readContinuously
+                )
+            }
         }
     }
 }
@@ -481,6 +492,51 @@ private fun ReflowableUserPreferences(
             SwitchItem(
                 title = "Ligatures",
                 preference = ligatures
+            )
+        }
+    }
+}
+
+@Composable
+private fun MediaUserPreferences(
+    language: Preference<Language?>? = null,
+    voice: EnumPreference<SystemTtsEngine.Voice?>? = null,
+    speed: RangePreference<Double>? = null,
+    pitch: RangePreference<Double>? = null,
+    readContinuously: Preference<Boolean>? = null,
+) {
+    Column {
+        if (speed != null) {
+            StepperItem(
+                title = "Speed",
+                preference = speed,
+            )
+        }
+
+        if (pitch != null) {
+            StepperItem(
+                title = "Pitch",
+                preference = pitch,
+            )
+        }
+        if (language != null) {
+            LanguageItem(
+                preference = language
+            )
+        }
+
+        if (voice != null) {
+            MenuItem(
+                title = "Voice",
+                preference = voice,
+                formatValue = { it?.name ?: "Default" },
+            )
+        }
+
+        if (readContinuously != null) {
+            SwitchItem(
+                title = "Read Continuously",
+                preference = readContinuously
             )
         }
     }

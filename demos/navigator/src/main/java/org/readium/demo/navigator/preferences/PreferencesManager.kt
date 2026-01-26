@@ -9,6 +9,8 @@
 package org.readium.demo.navigator.preferences
 
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import org.readium.navigator.common.Preferences
 import org.readium.r2.shared.ExperimentalReadiumApi
 
@@ -20,6 +22,9 @@ class PreferencesManager<P : Preferences<P>>(
 ) {
     private val preferencesMutable: MutableStateFlow<P> =
         MutableStateFlow(initialPreferences)
+
+    val preferences: StateFlow<P> =
+        preferencesMutable.asStateFlow()
 
     fun setPreferences(preferences: P) {
         preferencesMutable.value = preferences

@@ -27,6 +27,7 @@ internal class ResourceAdapter(
     data class Links(
         val readingOrder: List<Link>,
         val resources: List<Link>,
+        val mediaOverlays: List<Link>,
     )
 
     @Suppress("Unchecked_cast")
@@ -47,9 +48,11 @@ internal class ResourceAdapter(
             }
         }
         val readingOrderAllIds = computeIdsWithFallbacks(readingOrderIds)
-        val resourceItems = manifest.filterNot { it.id in readingOrderAllIds }
+        val smilIds = manifest.mapNotNull { it.mediaOverlay }
+        val smils = smilIds.mapNotNull { id -> itemById[id]?.let { item -> computeLink(item) } }
+        val resourceItems = manifest.filterNot { it.id in readingOrderAllIds || it.id in smilIds }
         val resources = resourceItems.map { computeLink(it) }
-        return Links(readingOrder, resources)
+        return Links(readingOrder, resources, smils)
     }
 
     /** Recursively find the ids contained in fallback chains of items with [ids]. */

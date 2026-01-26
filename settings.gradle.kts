@@ -74,9 +74,17 @@ include(":readium:navigators:media:tts")
 project(":readium:navigators:media:tts")
     .name = "readium-navigator-media-tts"
 
+include(":readium:navigators:media:readaloud")
+project(":readium:navigators:media:readaloud")
+    .name = "readium-navigator-media-readaloud"
+
 include(":readium:adapters:exoplayer:audio")
 project(":readium:adapters:exoplayer:audio")
     .name = "readium-adapter-exoplayer-audio"
+
+include(":readium:adapters:exoplayer:readaloud")
+project(":readium:adapters:exoplayer:readaloud")
+    .name = "readium-adapter-exoplayer-readaloud"
 
 include(":readium:opds")
 project(":readium:opds")
