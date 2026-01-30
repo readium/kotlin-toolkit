@@ -949,7 +949,7 @@ internal class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView
         } else if (currentFocused != null) {
             var isChild = false
             run {
-                var parent = currentFocused!!.parent
+                var parent = currentFocused.parent
                 while (parent is ViewGroup) {
                     if (parent === this) {
                         isChild = true

@@ -652,6 +652,12 @@ internal class TtsSessionAdapter<E : TtsEngine.Error>(
         return 1.0f
     }
 
+    override fun mute() {
+    }
+
+    override fun unmute() {
+    }
+
     override fun clearVideoSurface() {
     }
 
