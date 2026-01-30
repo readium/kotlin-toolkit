@@ -54,6 +54,10 @@ kotlin {
     }
 }
 
+tasks.withType<Test>().configureEach {
+    failOnNoDiscoveredTests = false
+}
+
 dependencies {
     //noinspection UseTomlInstead
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")
