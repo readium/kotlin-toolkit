@@ -10,6 +10,7 @@ package org.readium.navigator.web.reflowable
 
 import android.app.Application
 import androidx.compose.foundation.MutatePriority
+import androidx.compose.foundation.MutatorMutex
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.runtime.MutableState
@@ -22,13 +23,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.unit.DpSize
-import kotlin.coroutines.cancellation.CancellationException
 import kotlin.coroutines.suspendCoroutine
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.PersistentMap
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
 import org.readium.navigator.common.DecorationController
 import org.readium.navigator.common.HtmlId
@@ -183,12 +184,6 @@ public class ReflowableWebRenditionState internal constructor(
         WebViewClient(webViewServer)
     }
 
-    internal val goDelegate = GoDelegate(
-        readingOrder = publication.readingOrder,
-        resourceStates = resourceStates,
-        pagerState = pagerState
-    )
-
     internal lateinit var navigationDelegate: ReflowableNavigationDelegate
 
     internal fun updateLocation() {
@@ -245,7 +240,6 @@ public class ReflowableWebRenditionState internal constructor(
     internal fun initController(location: ReflowableWebLocation, viewport: ReflowableWebViewport) {
         navigationDelegate =
             ReflowableNavigationDelegate(
-                goDelegate,
                 publication,
                 resourceStates,
                 pagerState,
@@ -260,39 +254,6 @@ public class ReflowableWebRenditionState internal constructor(
                 decorationDelegate,
                 selectionDelegate
             )
-    }
-}
-
-internal class GoDelegate(
-    private val readingOrder: ReflowableWebPublication.ReadingOrder,
-    private val resourceStates: List<ReflowableResourceState>,
-    private val pagerState: PagerState,
-) {
-    internal suspend fun goTo(location: ReflowableWebGoLocation) {
-        withContext(Dispatchers.Main) {
-            pagerState.scroll(MutatePriority.UserInput) {
-                val destIndex = readingOrder.indexOfHref(location.href) ?: return@scroll
-                val destLocationByResource = location.toResourceLocations(destIndex, readingOrder)
-                Timber.d("destByResource $destLocationByResource")
-
-                try {
-                    pagerState.requestScrollToPage(destIndex)
-
-                    suspendCoroutine { continuation ->
-                        resourceStates.zip(destLocationByResource).forEach { (state, location) ->
-                            state.go(
-                                location = location,
-                                continuation = continuation.takeIf { state === resourceStates[destIndex] }
-                            )
-                        }
-                    }
-                } finally {
-                    resourceStates.zip(destLocationByResource).forEach { (state, location) ->
-                        state.cancelPendingLocation(location)
-                    }
-                }
-            }
-        }
     }
 }
 
@@ -380,7 +341,6 @@ internal class ReflowableLayoutDelegate(
 
 @OptIn(ExperimentalReadiumApi::class, InternalReadiumApi::class)
 internal class ReflowableNavigationDelegate(
-    private val goDelegate: GoDelegate,
     private val publication: ReflowableWebPublication,
     private val resourceStates: List<ReflowableResourceState>,
     private val pagerState: PagerState,
@@ -388,6 +348,9 @@ internal class ReflowableNavigationDelegate(
     initialLocation: ReflowableWebLocation,
     initialViewport: ReflowableWebViewport,
 ) : NavigationController<ReflowableWebLocation, ReflowableWebGoLocation>, OverflowController {
+
+    private val navigatorMutex: MutatorMutex =
+        MutatorMutex()
 
     private val locationMutable: MutableState<ReflowableWebLocation> =
         mutableStateOf(initialLocation)
@@ -415,7 +378,37 @@ internal class ReflowableNavigationDelegate(
     }
 
     override suspend fun goTo(location: ReflowableWebGoLocation) {
-        goDelegate.goTo(location)
+        coroutineScope {
+            navigatorMutex.mutateWith(
+                receiver = this,
+                priority = MutatePriority.UserInput
+            ) {
+                withContext(Dispatchers.Main) {
+                    val destIndex = publication.readingOrder.indexOfHref(location.href) ?: return@withContext
+                    val destLocationByResource = location.toResourceLocations(destIndex, publication.readingOrder)
+                    Timber.d("destByResource $destLocationByResource")
+
+                    try {
+                        pagerState.scrollToPage(destIndex)
+
+                        suspendCoroutine { continuation ->
+                            resourceStates.zip(destLocationByResource)
+                                .forEach { (state, location) ->
+                                    state.go(
+                                        location = location,
+                                        continuation = continuation.takeIf { state === resourceStates[destIndex] }
+                                    )
+                                }
+                        }
+                    } finally {
+                        resourceStates.zip(destLocationByResource)
+                            .forEach { (state, location) ->
+                                state.cancelPendingLocation(location)
+                            }
+                    }
+                }
+            }
+        }
     }
 
     override suspend fun goTo(location: ReflowableWebLocation) {
@@ -440,33 +433,31 @@ internal class ReflowableNavigationDelegate(
         }
 
     override suspend fun moveForward() {
-        if (pagerState.isScrollInProgress) {
-            throw CancellationException()
-        }
-
-        pagerState.scroll {
-            val currentResourceState = resourceStates[pagerState.currentPage]
-            val scrollController = currentResourceState.scrollController.value ?: return@scroll
-            if (scrollController.canMoveForward()) {
-                scrollController.moveForward()
-            } else if (pagerState.currentPage < publication.readingOrder.items.size - 1) {
-                pagerState.requestScrollToPage(pagerState.currentPage + 1)
+        coroutineScope {
+            navigatorMutex.tryMutate {
+                val currentResourceState = resourceStates[pagerState.currentPage]
+                val scrollController =
+                    currentResourceState.scrollController.value ?: return@tryMutate
+                if (scrollController.canMoveForward()) {
+                    scrollController.moveForward()
+                } else if (pagerState.currentPage < publication.readingOrder.items.size - 1) {
+                    pagerState.scrollToPage(pagerState.currentPage + 1)
+                }
             }
         }
     }
 
     override suspend fun moveBackward() {
-        if (pagerState.isScrollInProgress) {
-            throw CancellationException()
-        }
-
-        pagerState.scroll {
-            val currentResourceState = resourceStates[pagerState.currentPage]
-            val scrollController = currentResourceState.scrollController.value ?: return@scroll
-            if (scrollController.canMoveBackward()) {
-                scrollController.moveBackward()
-            } else if (pagerState.currentPage > 0) {
-                pagerState.requestScrollToPage(pagerState.currentPage - 1)
+        coroutineScope {
+            navigatorMutex.tryMutate {
+                val currentResourceState = resourceStates[pagerState.currentPage]
+                val scrollController =
+                    currentResourceState.scrollController.value ?: return@tryMutate
+                if (scrollController.canMoveBackward()) {
+                    scrollController.moveBackward()
+                } else if (pagerState.currentPage > 0) {
+                    pagerState.scrollToPage(pagerState.currentPage - 1)
+                }
             }
         }
     }

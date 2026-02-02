@@ -10,6 +10,7 @@ package org.readium.navigator.web.fixedlayout
 
 import android.app.Application
 import androidx.compose.foundation.MutatePriority
+import androidx.compose.foundation.MutatorMutex
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.Stable
@@ -21,10 +22,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.runtime.snapshots.SnapshotStateMap
-import kotlin.coroutines.cancellation.CancellationException
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.PersistentMap
 import kotlinx.collections.immutable.persistentMapOf
+import kotlinx.coroutines.coroutineScope
 import org.readium.navigator.common.DecorationController
 import org.readium.navigator.common.NavigationController
 import org.readium.navigator.common.Overflow
@@ -240,6 +241,9 @@ internal class FixedNavigationDelegate(
     initialLocation: FixedWebLocation,
 ) : NavigationController<FixedWebLocation, FixedWebGoLocation>, OverflowController {
 
+    private val navigationMutex: MutatorMutex =
+        MutatorMutex()
+
     private val locationMutable: MutableState<FixedWebLocation> =
         mutableStateOf(initialLocation)
 
@@ -255,13 +259,18 @@ internal class FixedNavigationDelegate(
     }
 
     override suspend fun goTo(location: FixedWebGoLocation) {
-        val pagerStateNow = pagerState.value
+        coroutineScope {
+            navigationMutex.mutateWith(
+                receiver = this,
+                priority = MutatePriority.UserInput
+            ) {
+                val pagerStateNow = pagerState.value
 
-        pagerStateNow.scroll(MutatePriority.UserInput) {
-            val spreadIndex = layout.value.spreadIndexForHref(location.href)
-                ?: return@scroll
+                val spreadIndex = layout.value.spreadIndexForHref(location.href)
+                    ?: return@mutateWith
 
-            pagerStateNow.requestScrollToPage(spreadIndex)
+                pagerStateNow.scrollToPage(spreadIndex)
+            }
         }
     }
 
@@ -276,29 +285,25 @@ internal class FixedNavigationDelegate(
         get() = pagerState.value.currentPage > 0
 
     override suspend fun moveForward() {
-        val pagerStateNow = pagerState.value
+        coroutineScope {
+            navigationMutex.tryMutate {
+                val pagerStateNow = pagerState.value
 
-        if (pagerStateNow.isScrollInProgress) {
-            throw CancellationException()
-        }
-
-        pagerStateNow.scroll {
-            if (canMoveForward) {
-                pagerStateNow.requestScrollToPage(pagerStateNow.currentPage + 1)
+                if (canMoveForward) {
+                    pagerStateNow.scrollToPage(pagerStateNow.currentPage + 1)
+                }
             }
         }
     }
 
     override suspend fun moveBackward() {
-        val pagerStateNow = pagerState.value
+        coroutineScope {
+            navigationMutex.tryMutate {
+                val pagerStateNow = pagerState.value
 
-        if (pagerStateNow.isScrollInProgress) {
-            throw CancellationException()
-        }
-
-        pagerStateNow.scroll {
-            if (canMoveBackward) {
-                pagerStateNow.requestScrollToPage(pagerStateNow.currentPage - 1)
+                if (canMoveBackward) {
+                    pagerStateNow.scrollToPage(pagerStateNow.currentPage - 1)
+                }
             }
         }
     }
