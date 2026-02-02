@@ -58,8 +58,19 @@ internal class WebViewServer(
      * https://readium/assets/ serves the application assets.
      */
     fun shouldInterceptRequest(request: WebResourceRequest, css: ReadiumCss): WebResourceResponse? {
-        if (request.url.host != "readium") return null
         val path = request.url.path ?: return null
+
+        if (request.url.host != "readium") {
+            val resourcePath = path.trimStart('/')
+
+            return publication.resources.find { it.href.resolve().path == resourcePath }?.let {
+                servePublicationResource(
+                    href = it.href.resolve(),
+                    range = HttpHeaders(request.requestHeaders).range,
+                    css = css
+                )
+            }
+        }
 
         return when {
             path.startsWith("/publication/") -> {
@@ -122,6 +133,7 @@ internal class WebViewServer(
             "Accept-Ranges" to "bytes"
         )
 
+        val stream = resource.asInputStream()
         if (range == null) {
             return WebResourceResponse(
                 link.mediaType?.toString(),
@@ -129,10 +141,9 @@ internal class WebViewServer(
                 200,
                 "OK",
                 headers,
-                resource.asInputStream()
+                stream
             )
         } else { // Byte range request
-            val stream = resource.asInputStream()
             val length = stream.available()
             val longRange = range.toLongRange(length.toLong())
             headers["Content-Range"] = "bytes ${longRange.first}-${longRange.last}/$length"
