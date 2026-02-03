@@ -400,7 +400,7 @@ internal class ReflowableNavigationDelegate(
                                     )
                                 }
                         }
-                    } finally {
+                    } catch (_: Exception) {
                         resourceStates.zip(destLocationByResource)
                             .forEach { (state, location) ->
                                 state.cancelPendingLocation(location)
