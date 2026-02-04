@@ -42,7 +42,10 @@ markdown_extensions:
   - pymdownx.superfences
 
 hooks:
-  - hooks.py
+  - docs/scripts/hooks.py
+
+exclude_docs: |
+  scripts/
 
 validation:
   links:
