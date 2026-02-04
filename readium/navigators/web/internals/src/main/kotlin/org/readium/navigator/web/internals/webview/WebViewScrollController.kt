@@ -17,7 +17,6 @@ import kotlin.math.roundToInt
 import org.readium.navigator.web.internals.gestures.DefaultScrollable2DState
 import org.readium.navigator.web.internals.gestures.Scrollable2DState
 import org.readium.r2.shared.ExperimentalReadiumApi
-import timber.log.Timber
 
 public class WebViewScrollController(
     private val webView: RelaxedWebView,
@@ -240,7 +239,6 @@ private fun RelaxedWebView.endProgression(
     orientation: Orientation,
     direction: LayoutDirection,
 ): Double {
-    Timber.d("endProgression $scrollX $width $maxScrollX")
     return when (orientation) {
         Orientation.Vertical -> (scrollY + height) / (maxScrollY + height).toDouble()
         Orientation.Horizontal -> when (direction) {

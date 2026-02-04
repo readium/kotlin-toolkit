@@ -75,7 +75,6 @@ import org.readium.r2.shared.util.RelativeUrl
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.resource.Resource
-import timber.log.Timber
 
 /**
  * State holder for the rendition of a reflowable Web publication.
@@ -386,7 +385,6 @@ internal class ReflowableNavigationDelegate(
                 withContext(Dispatchers.Main) {
                     val destIndex = publication.readingOrder.indexOfHref(location.href) ?: return@withContext
                     val destLocationByResource = location.toResourceLocations(destIndex, publication.readingOrder)
-                    Timber.d("destByResource $destLocationByResource")
 
                     try {
                         pagerState.scrollToPage(destIndex)
@@ -400,7 +398,7 @@ internal class ReflowableNavigationDelegate(
                                     )
                                 }
                         }
-                    } catch (_: Exception) {
+                    } catch (_: Exception) { // Mainly on cancellation.
                         resourceStates.zip(destLocationByResource)
                             .forEach { (state, location) ->
                                 state.cancelPendingLocation(location)

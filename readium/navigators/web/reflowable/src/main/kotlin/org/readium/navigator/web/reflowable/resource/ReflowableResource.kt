@@ -256,49 +256,6 @@ internal fun ReflowableResource(
                     }.onEach { pendingLocation ->
                         pendingLocation?.let {
                             when (pendingLocation) {
-                                is ReflowableResourceLocation.CssSelector -> {
-                                    val offset = moveApi.getOffsetForLocation(
-                                        progression = null,
-                                        cssSelector = pendingLocation.value,
-                                        orientation = orientation
-                                    )
-                                    offset?.let { offset ->
-                                        scrollController.moveToOffset(
-                                            offset = with(density) { offset.dp.roundToPx() },
-                                            snap = !scroll,
-                                            orientation = orientation,
-                                        )
-                                    }
-                                }
-                                is ReflowableResourceLocation.TextAnchor -> {
-                                    val offset = moveApi.getOffsetForLocation(
-                                        progression = null,
-                                        textAnchor = pendingLocation.value,
-                                        orientation = orientation
-                                    )
-                                    offset?.let { offset ->
-                                        scrollController.moveToOffset(
-                                            offset = with(density) { offset.dp.roundToPx() },
-                                            snap = !scroll,
-                                            orientation = orientation,
-                                        )
-                                    }
-                                }
-                                is ReflowableResourceLocation.HtmlId -> {
-                                    val offset = moveApi.getOffsetForLocation(
-                                        progression = null,
-                                        htmlId = pendingLocation.value,
-                                        orientation = orientation
-                                    )
-                                    offset?.let { offset ->
-                                        scrollController.moveToOffset(
-                                            offset = with(density) { offset.dp.roundToPx() },
-                                            snap = !scroll,
-                                            orientation = orientation,
-                                        )
-                                    }
-                                }
-
                                 is ReflowableResourceLocation.Progression -> {
                                     scrollController.moveToProgression(
                                         progression = pendingLocation.value.value,
@@ -306,6 +263,38 @@ internal fun ReflowableResource(
                                         orientation = orientation,
                                         direction = layoutDirection
                                     )
+                                }
+                                else -> {
+                                    val offset = when (pendingLocation) {
+                                        is ReflowableResourceLocation.CssSelector -> {
+                                            moveApi.getOffsetForLocation(
+                                                progression = null,
+                                                cssSelector = pendingLocation.value,
+                                                orientation = orientation
+                                            )
+                                        }
+                                        is ReflowableResourceLocation.TextAnchor -> {
+                                            moveApi.getOffsetForLocation(
+                                                progression = null,
+                                                textAnchor = pendingLocation.value,
+                                                orientation = orientation
+                                            )
+                                        }
+                                        is ReflowableResourceLocation.HtmlId -> {
+                                            moveApi.getOffsetForLocation(
+                                                progression = null,
+                                                htmlId = pendingLocation.value,
+                                                orientation = orientation
+                                            )
+                                        }
+                                    }
+                                    offset?.let { offset ->
+                                        scrollController.moveToOffset(
+                                            offset = with(density) { offset.dp.roundToPx() },
+                                            snap = !scroll,
+                                            orientation = orientation,
+                                        )
+                                    }
                                 }
                             }
                             resourceState.acknowledgePendingLocation(

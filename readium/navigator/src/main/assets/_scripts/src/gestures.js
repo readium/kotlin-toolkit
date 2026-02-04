@@ -13,12 +13,6 @@ window.addEventListener("DOMContentLoaded", function () {
 });
 
 function onClick(event) {
-  console.log(
-    `selectionType ${window.getSelection().type} isCollapsed ${
-      window.getSelection().isCollapsed
-    }`
-  );
-
   if (!window.getSelection().isCollapsed) {
     // There's an on-going selection, the tap will dismiss it so we don't forward it.
     return;

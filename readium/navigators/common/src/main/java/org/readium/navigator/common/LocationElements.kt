@@ -80,6 +80,9 @@ public data class TextQuote(
     val suffix: String,
 )
 
+/**
+ * Returns a [TextAnchor] to the beginning or the end of the text quote.
+ */
 @ExperimentalReadiumApi
 public fun TextQuote.toTextAnchor(end: Boolean = false): TextAnchor =
     when (end) {
@@ -89,7 +92,7 @@ public fun TextQuote.toTextAnchor(end: Boolean = false): TextAnchor =
         )
         true -> TextAnchor(
             textBefore = prefix + text,
-            textAfter = text
+            textAfter = suffix
         )
     }
 
