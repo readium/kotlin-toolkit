@@ -20,7 +20,7 @@ The modules now target Android SDK 34. If your app also targets it, you will nee
 
 #### Core library desugaring
 
-If you target Android devices running below API 26, you now must enable [core library desugaring](https://developer.android.com/studio/write/java8-support#library-desugaring) in your application module.
+[Core library desugaring](https://developer.android.com/studio/write/java8-support#library-desugaring) must be enabled in your application module.
 
 ### `Publication`
 
