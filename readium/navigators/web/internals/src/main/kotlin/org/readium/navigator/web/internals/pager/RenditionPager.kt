@@ -16,6 +16,7 @@ import androidx.compose.foundation.pager.VerticalPager
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.LayoutDirection
 import org.readium.navigator.web.internals.gestures.Fling2DBehavior
@@ -41,6 +42,11 @@ public fun RenditionPager(
             flingBehavior = flingBehavior,
             reverseDirection = orientation == Orientation.Vertical ||
                 LocalLayoutDirection.current == LayoutDirection.Ltr
+        )
+        .nestedScroll(
+            // Consume everything passed by children into the standard nested scroll chain
+            // before the pager gets it in the prescroll phase because we bypass it.
+            connection = ConsumingNestedScrollConnection
         )
 
     // Disable built-in pager behavior as it is not suitable.
