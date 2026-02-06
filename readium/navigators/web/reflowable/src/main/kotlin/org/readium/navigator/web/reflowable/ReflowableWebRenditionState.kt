@@ -398,11 +398,12 @@ internal class ReflowableNavigationDelegate(
                                     )
                                 }
                         }
-                    } catch (_: Exception) { // Mainly on cancellation.
+                    } catch (e: Exception) { // Mainly for CancellationException
                         resourceStates.zip(destLocationByResource)
                             .forEach { (state, location) ->
                                 state.cancelPendingLocation(location)
                             }
+                        throw e
                     }
                 }
             }
