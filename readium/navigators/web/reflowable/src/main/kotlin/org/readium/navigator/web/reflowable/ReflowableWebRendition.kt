@@ -77,8 +77,17 @@ public fun ReflowableWebRendition(
     decorationListener: DecorationListener<ReflowableWebDecorationLocation> = defaultDecorationListener(state.controller),
     textSelectionActionModeCallback: ActionMode.Callback? = null,
 ) {
+    val overflowNow = state.layoutDelegate.overflow.value
+
     val layoutDirection =
-        state.layoutDelegate.overflow.value.readingProgression.toLayoutDirection()
+        overflowNow.readingProgression.toLayoutDirection()
+
+    val layoutOrientation =
+        overflowNow.orientation
+
+    val settingsNow = state.layoutDelegate.settings
+
+    val injectorNow = state.layoutDelegate.readiumCssInjector
 
     CompositionLocalProvider(LocalLayoutDirection provides layoutDirection) {
         BoxWithConstraints(
@@ -95,7 +104,7 @@ public fun ReflowableWebRendition(
 
             val coroutineScope = rememberCoroutineScope()
 
-            val resourcePadding = when (state.layoutDelegate.overflow.value.scroll) {
+            val resourcePadding = when (overflowNow.scroll) {
                 true ->
                     AbsolutePaddingValues()
                 false -> {
@@ -111,7 +120,7 @@ public fun ReflowableWebRendition(
                 }
             }
 
-            val flingBehavior = if (state.layoutDelegate.overflow.value.scroll) {
+            val flingBehavior = if (overflowNow.scroll) {
                 ScrollableDefaults.flingBehavior()
             } else {
                 pagingFlingBehavior(
@@ -122,9 +131,9 @@ public fun ReflowableWebRendition(
                         direction = layoutDirection
                     )
                 )
-            }.toFling2DBehavior(state.layoutDelegate.orientation)
+            }.toFling2DBehavior(layoutOrientation)
 
-            val backgroundColor = Color(state.layoutDelegate.settings.backgroundColor.int)
+            val backgroundColor = Color(settingsNow.backgroundColor.int)
 
             val currentPageState = state.pagerState.currentPage
 
@@ -138,13 +147,12 @@ public fun ReflowableWebRendition(
 
             RenditionPager(
                 modifier = Modifier
-                    // Apply background on padding
-                    .background(backgroundColor),
+                    .background(backgroundColor), // Apply background on padding
                 state = state.pagerState,
                 scrollState = state.scrollState,
                 flingBehavior = flingBehavior,
                 beyondViewportPageCount = 3,
-                orientation = state.layoutDelegate.orientation,
+                orientation = layoutOrientation,
             ) { index ->
                 val href = state.publication.readingOrder.items[index].href
 
@@ -159,9 +167,9 @@ public fun ReflowableWebRendition(
                     backgroundColor = backgroundColor,
                     padding = resourcePadding,
                     layoutDirection = layoutDirection,
-                    scroll = state.layoutDelegate.settings.scroll,
-                    orientation = state.layoutDelegate.orientation,
-                    readiumCssInjector = state.layoutDelegate.readiumCssInjector,
+                    scroll = overflowNow.scroll,
+                    orientation = layoutOrientation,
+                    readiumCssInjector = injectorNow,
                     decorationTemplates = state.decorationDelegate.decorationTemplates,
                     decorations = decorations,
                     actionModeCallback = textSelectionActionModeCallback,

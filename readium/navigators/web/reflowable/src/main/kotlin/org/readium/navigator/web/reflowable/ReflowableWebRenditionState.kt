@@ -340,10 +340,10 @@ internal class ReflowableLayoutDelegate(
             }
         }
     }
-
-    internal val orientation: Orientation get() =
-        overflow.value.axis.toOrientation()
 }
+
+internal val Overflow.orientation: Orientation get() =
+    axis.toOrientation()
 
 @OptIn(ExperimentalReadiumApi::class, InternalReadiumApi::class)
 internal class ReflowableNavigationDelegate(
