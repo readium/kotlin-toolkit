@@ -112,6 +112,14 @@ internal class TtsSessionAdapter<E : TtsEngine.Error>(
     private var deviceInfo: DeviceInfo =
         createDeviceInfo(streamVolumeManager)
 
+    private var listeners: ListenerSet<Listener> =
+        ListenerSet(
+            applicationLooper,
+            Clock.DEFAULT
+        ) { listener: Listener, flags: FlagSet ->
+            listener.onEvents(this, Events(flags))
+        }
+
     init {
         ttsPlayer.playback
             .onEach { playback ->
@@ -129,14 +137,6 @@ internal class TtsSessionAdapter<E : TtsEngine.Error>(
                 lastPlaybackParameters = playbackParameters
             }.launchIn(coroutineScope)
     }
-
-    private var listeners: ListenerSet<Listener> =
-        ListenerSet(
-            applicationLooper,
-            Clock.DEFAULT
-        ) { listener: Listener, flags: FlagSet ->
-            listener.onEvents(this, Events(flags))
-        }
 
     private val permanentAvailableCommands =
         Commands.Builder()
