@@ -80,7 +80,7 @@ import org.readium.r2.shared.util.resource.Resource
  * State holder for the rendition of a reflowable Web publication.
  *
  * You can interact with it mainly through its [controller] witch will be available as soon
- * as the first composition has completed.
+ * as the first layout has completed.
  */
 @ExperimentalReadiumApi
 @Stable
@@ -98,18 +98,24 @@ public class ReflowableWebRenditionState internal constructor(
 
     override val controller: ReflowableWebRenditionController? by controllerState
 
-    private val initialResourceIndex =
-        publication.readingOrder.indexOfHref(initialLocation.href) ?: 0
+    private val indexedInitialLocation: IndexedGoLocation = initialLocation
+        .let { location ->
+            publication.readingOrder.indexOfHref(location.href)
+                ?.let { IndexedGoLocation(it, location) }
+                ?: IndexedGoLocation(0, ReflowableWebGoLocation(href = publication.readingOrder[0].href))
+        }
 
     internal val pagerState: PagerState =
         PagerState(
-            currentPage = initialResourceIndex,
+            currentPage = indexedInitialLocation.index,
             pageCount = { publication.readingOrder.size }
         )
 
     internal val resourceStates: List<ReflowableResourceState> =
-        initialLocation.toResourceLocations(initialResourceIndex, publication.readingOrder)
-            .zip(publication.readingOrder.items)
+        publication.getResourceLocations(
+            destinationIndex = indexedInitialLocation.index,
+            destinationLocation = indexedInitialLocation.location.toResourceLocation()
+        ).zip(publication.readingOrder.items)
             .mapIndexed { index, (location, item) ->
                 ReflowableResourceState(
                     index = index,
@@ -210,29 +216,30 @@ public class ReflowableWebRenditionState internal constructor(
     }
 
     private fun computeViewport(): ReflowableWebViewport? {
-        val visibleIndexedItems = pagerState.layoutInfo.visiblePagesInfo
+        val indexedVisibleItems = pagerState.layoutInfo.visiblePagesInfo
             .map { it.index to publication.readingOrder[it.index] }
 
-        check(visibleIndexedItems.isNotEmpty())
+        check(indexedVisibleItems.isNotEmpty())
 
-        val progressions = visibleIndexedItems
+        val progressions = indexedVisibleItems
             .mapNotNull { (index, _) -> resourceStates[index].progressionRange }
 
-        if (progressions.size != visibleIndexedItems.size) {
+        // Have all visible items already set a progressionRange?
+        if (progressions.size != indexedVisibleItems.size) {
             return null
         }
 
-        val positionStart = publication
-            .positionForProgression(visibleIndexedItems.first().first, progressions.first().start)
+        val startPosition = publication
+            .positionForProgression(indexedVisibleItems.first().first, progressions.first().start)
 
-        val positionEnd = publication
-            .positionForProgression(visibleIndexedItems.last().first, progressions.last().endInclusive)
+        val endPosition = publication
+            .positionForProgression(indexedVisibleItems.last().first, progressions.last().endInclusive)
 
         return ReflowableWebViewport(
-            readingOrder = visibleIndexedItems.map { it.second.href },
-            progressions = visibleIndexedItems.zip(progressions)
+            readingOrder = indexedVisibleItems.map { it.second.href },
+            progressions = indexedVisibleItems.zip(progressions)
                 .associate { (indexedItem, progression) -> indexedItem.second.href to progression },
-            positions = positionStart..positionEnd
+            positions = startPosition..endPosition
         )
     }
 
@@ -376,6 +383,10 @@ internal class ReflowableNavigationDelegate(
         goTo(location)
     }
 
+    override suspend fun goTo(location: ReflowableWebLocation) {
+        goTo(ReflowableWebGoLocation(location.href, location.progression))
+    }
+
     override suspend fun goTo(location: ReflowableWebGoLocation) {
         coroutineScope {
             navigatorMutex.mutateWith(
@@ -383,14 +394,17 @@ internal class ReflowableNavigationDelegate(
                 priority = MutatePriority.UserInput
             ) {
                 withContext(Dispatchers.Main) {
-                    val destIndex = publication.readingOrder.indexOfHref(location.href) ?: return@withContext
-                    val destLocationByResource = location.toResourceLocations(destIndex, publication.readingOrder)
+                    val destIndex = publication.readingOrder.indexOfHref(location.href)
+                        ?: return@withContext
+
+                    val destLocation = location.toResourceLocation()
+                    val resourceLocations = publication.getResourceLocations(destIndex, destLocation)
 
                     try {
                         pagerState.scrollToPage(destIndex)
 
                         suspendCoroutine { continuation ->
-                            resourceStates.zip(destLocationByResource)
+                            resourceStates.zip(resourceLocations)
                                 .forEach { (state, location) ->
                                     state.go(
                                         location = location,
@@ -399,7 +413,7 @@ internal class ReflowableNavigationDelegate(
                                 }
                         }
                     } catch (e: Exception) { // Mainly for CancellationException
-                        resourceStates.zip(destLocationByResource)
+                        resourceStates.zip(resourceLocations)
                             .forEach { (state, location) ->
                                 state.cancelPendingLocation(location)
                             }
@@ -410,13 +424,10 @@ internal class ReflowableNavigationDelegate(
         }
     }
 
-    override suspend fun goTo(location: ReflowableWebLocation) {
-        goTo(ReflowableWebGoLocation(location.href, location.progression))
-    }
-
     // This information is not available when the WebView has not yet been composed or laid out.
     // We assume that the best UI behavior would be to have a possible forward button disabled
     // and return false when we can't tell.
+    // FIXME: should probably be observable.
     override val canMoveForward: Boolean
         get() = pagerState.currentPage < publication.readingOrder.items.size - 1 || run {
             val currentResourceState = resourceStates[pagerState.currentPage]
@@ -533,24 +544,29 @@ internal class ReflowableSelectionDelegate(
     }
 }
 
-private fun ReflowableWebGoLocation.toResourceLocations(
-    destIndex: Int,
-    readingOrder: ReflowableWebPublication.ReadingOrder,
-): List<ReflowableResourceLocation> {
-    val resourceLocation = textAnchor?.let { ReflowableResourceLocation.TextAnchor(it) }
+private data class IndexedGoLocation(
+    val index: Int,
+    val location: ReflowableWebGoLocation,
+)
+
+private fun ReflowableWebGoLocation.toResourceLocation() =
+    textAnchor?.let { ReflowableResourceLocation.TextAnchor(it) }
         ?: cssSelector?.let { ReflowableResourceLocation.CssSelector(it) }
         ?: htmlId?.let { ReflowableResourceLocation.HtmlId(it) }
         ?: ReflowableResourceLocation.Progression(progression ?: Progression(0.0)!!)
 
+private fun ReflowableWebPublication.getResourceLocations(
+    destinationIndex: Int,
+    destinationLocation: ReflowableResourceLocation,
+): List<ReflowableResourceLocation> {
     return readingOrder.items.mapIndexed { index, _ ->
         when {
-            index < destIndex ->
+            index < destinationIndex ->
                 ReflowableResourceLocation.Progression(Progression(1.0)!!)
-
-            index > destIndex ->
+            index > destinationIndex ->
                 ReflowableResourceLocation.Progression(Progression(0.0)!!)
-
-            else -> resourceLocation
+            else ->
+                destinationLocation
         }
     }
 }
