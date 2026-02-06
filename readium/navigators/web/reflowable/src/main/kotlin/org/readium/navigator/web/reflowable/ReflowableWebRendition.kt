@@ -11,7 +11,6 @@ package org.readium.navigator.web.reflowable
 import android.annotation.SuppressLint
 import android.content.res.Configuration
 import android.view.ActionMode
-import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.ScrollableDefaults
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.WindowInsets
@@ -135,19 +134,15 @@ public fun ReflowableWebRendition(
 
             val backgroundColor = Color(settingsNow.backgroundColor.int)
 
-            val currentPageState = state.pagerState.currentPage
-
-            LaunchedEffect(currentPageState) {
+            LaunchedEffect(state.pagerState) {
                 snapshotFlow {
-                    currentPageState
+                    state.pagerState.currentPage
                 }.onEach {
                     state.updateLocation()
                 }.launchIn(this)
             }
 
             RenditionPager(
-                modifier = Modifier
-                    .background(backgroundColor), // Apply background on padding
                 state = state.pagerState,
                 scrollState = state.scrollState,
                 flingBehavior = flingBehavior,

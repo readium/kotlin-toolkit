@@ -416,6 +416,7 @@ internal fun ReflowableResource(
             WebView(
                 modifier = Modifier
                     .fillMaxSize()
+                    .background(backgroundColor)
                     .absolutePadding(padding),
                 state = webViewState,
                 factory = { RelaxedWebView(it) },
