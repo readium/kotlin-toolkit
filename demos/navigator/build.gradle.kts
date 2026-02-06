@@ -79,6 +79,7 @@ dependencies {
     implementation(libs.timber)
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.kotlinx.collections.immutable)
+    implementation(libs.kotlinx.serialization.json)
     implementation(libs.kotlin.stdlib)
     implementation(libs.bundles.compose)
     implementation(libs.google.material)
