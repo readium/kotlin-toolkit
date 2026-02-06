@@ -18,8 +18,6 @@ function onClick(event) {
     return;
   }
 
-  console.log("Reporting tap");
-
   var pixelRatio = window.devicePixelRatio;
   let clickEvent = {
     defaultPrevented: event.defaultPrevented,
