@@ -23,13 +23,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.unit.DpSize
-import kotlin.coroutines.suspendCoroutine
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.PersistentMap
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 import org.readium.navigator.common.DecorationController
 import org.readium.navigator.common.HtmlId
@@ -400,10 +400,20 @@ internal class ReflowableNavigationDelegate(
                     val destLocation = location.toResourceLocation()
                     val resourceLocations = publication.getResourceLocations(destIndex, destLocation)
 
+                    fun cleanUp() {
+                        resourceStates.zip(resourceLocations)
+                            .forEach { (state, location) ->
+                                state.cancelPendingLocation(location)
+                            }
+                    }
+
                     try {
                         pagerState.scrollToPage(destIndex)
 
-                        suspendCoroutine { continuation ->
+                        suspendCancellableCoroutine { continuation ->
+                            continuation.invokeOnCancellation {
+                                cleanUp()
+                            }
                             resourceStates.zip(resourceLocations)
                                 .forEach { (state, location) ->
                                     state.go(
@@ -413,10 +423,7 @@ internal class ReflowableNavigationDelegate(
                                 }
                         }
                     } catch (e: Exception) { // Mainly for CancellationException
-                        resourceStates.zip(resourceLocations)
-                            .forEach { (state, location) ->
-                                state.cancelPendingLocation(location)
-                            }
+                        cleanUp()
                         throw e
                     }
                 }

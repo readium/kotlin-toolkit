@@ -35,15 +35,20 @@ export class ReflowableMoveBridge {
     textAfter: string,
     vertical: boolean
   ): number | null {
-    const root = document.body
+    const root = this.document.body
 
     const anchor = new TextQuoteAnchor(root, "", {
       prefix: textBefore,
       suffix: textAfter,
     })
-    const range = anchor.toRange()
 
-    return this.getOffsetForRect(range.getBoundingClientRect(), vertical)
+    try {
+      const range = anchor.toRange()
+      return this.getOffsetForRect(range.getBoundingClientRect(), vertical)
+    } catch (e) {
+      log(e)
+      return null
+    }
   }
 
   private getOffsetForCssSelector(
@@ -52,7 +57,7 @@ export class ReflowableMoveBridge {
   ): number | null {
     let element
     try {
-      element = document.querySelector(cssSelector)
+      element = this.document.querySelector(cssSelector)
     } catch (e) {
       log(e)
     }
