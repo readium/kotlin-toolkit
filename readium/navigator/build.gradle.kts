@@ -37,6 +37,7 @@ dependencies {
     implementation(libs.androidx.legacy.ui)
     implementation(libs.androidx.lifecycle.common)
     implementation(libs.androidx.recyclerview)
+    implementation(libs.androidx.viewpager2)
     implementation(libs.bundles.media3)
     implementation(libs.androidx.webkit)
 

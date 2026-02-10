@@ -10,12 +10,8 @@
 package org.readium.r2.navigator.pager
 
 import android.os.Bundle
-import android.os.Parcelable
-import android.view.ViewGroup
 import androidx.collection.LongSparseArray
-import androidx.collection.forEach
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentManager
 import org.readium.r2.navigator.extensions.let
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
@@ -23,9 +19,9 @@ import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Url
 
 internal class R2PagerAdapter internal constructor(
-    val fm: FragmentManager,
+    fragment: Fragment,
     private val resources: List<PageResource>,
-) : R2FragmentPagerAdapter(fm) {
+) : R2FragmentPagerAdapter(fragment) {
 
     internal interface Listener {
         fun onCreatePageFragment(fragment: Fragment) {}
@@ -44,37 +40,14 @@ internal class R2PagerAdapter internal constructor(
         data class Cbz(val link: Link) : PageResource()
     }
 
-    private var currentFragment: Fragment? = null
-    private var previousFragment: Fragment? = null
-    private var nextFragment: Fragment? = null
-
-    fun getCurrentFragment(): Fragment? {
-        return currentFragment
-    }
-
-    fun getPreviousFragment(): Fragment? {
-        return previousFragment
-    }
-
-    fun getNextFragment(): Fragment? {
-        return nextFragment
-    }
-
-    override fun setPrimaryItem(container: ViewGroup, position: Int, `object`: Any) {
-        if (getCurrentFragment() !== `object`) {
-            currentFragment = `object` as Fragment
-            nextFragment = mFragments.get(getItemId(position + 1))
-            previousFragment = mFragments.get(getItemId(position - 1))
-        }
-        super.setPrimaryItem(container, position, `object`)
-    }
-
-    internal fun getResource(position: Int): PageResource? =
-        resources.getOrNull(position)
+    internal fun getResource(position: Int): PageResource? = resources.getOrNull(position)
 
     override fun getItem(position: Int): Fragment {
         val locator = popPendingLocatorAt(getItemId(position))
-        val fragment = when (val resource = resources[position]) {
+
+        val resource = resources[position]
+
+        val fragment = when (resource) {
             is PageResource.EpubReflowable -> {
                 R2EpubPageFragment.newInstance(
                     resource.url,
@@ -90,41 +63,45 @@ internal class R2PagerAdapter internal constructor(
                 )
             }
             is PageResource.Cbz -> {
-                fm.fragmentFactory
+                mFragmentManager.fragmentFactory
                     .instantiate(
                         ClassLoader.getSystemClassLoader(),
                         R2CbzPageFragment::class.java.name
-                    )
-                    .also {
-                        it.arguments = Bundle().apply {
+                    ).apply {
+                        arguments = Bundle().apply {
                             putParcelable("link", resource.link)
                         }
                     }
             }
         }
+
         listener?.onCreatePageFragment(fragment)
         return fragment
     }
 
-    override fun getCount(): Int {
-        return resources.size
-    }
-
-    override fun restoreState(state: Parcelable?, loader: ClassLoader?) {
-        super.restoreState(state, loader)
-
-        pendingLocators.forEach { i, locator ->
-            (mFragments.get(i) as? R2EpubPageFragment)?.loadLocator(locator)
-        }
-        pendingLocators.clear()
-    }
+    override fun getItemCount(): Int = resources.size
 
     private val pendingLocators = LongSparseArray<Locator>()
 
-    /**
-     * Loads the given [Locator] in the page fragment at the given position. If not loaded, it
-     * will be used when the fragment will be created.
-     */
+    override fun onRecyclerViewAttached() {
+        super.onRecyclerViewAttached()
+        // Restore pending locators to fragments that are now available
+        restorePendingLocators()
+    }
+
+    private fun restorePendingLocators() {
+        // Process all pending locators and apply them to existing fragments
+        for (i in 0 until pendingLocators.size()) {
+            val id = pendingLocators.keyAt(i)
+            val locator = pendingLocators.valueAt(i)
+            val fragment = mFragments.get(id)
+            if (fragment != null) {
+                (fragment as? R2EpubPageFragment)?.loadLocator(locator)
+            }
+        }
+        // Don't clear here as fragments might not be ready yet
+    }
+
     internal fun loadLocatorAt(position: Int, locator: Locator) {
         val id = getItemId(position)
         val fragment = mFragments.get(id)
@@ -132,10 +109,29 @@ internal class R2PagerAdapter internal constructor(
             pendingLocators.put(id, locator)
         } else {
             (fragment as? R2EpubPageFragment)?.loadLocator(locator)
+            // Remove from pending since it's been applied
+            pendingLocators.remove(id)
         }
     }
 
+    /**
+     * Force restoration of pending locators - useful after configuration changes
+     */
+    internal fun restoreState() {
+        restorePendingLocators()
+        // Clear pending locators that have been successfully applied
+        val toRemove = mutableListOf<Long>()
+        for (i in 0 until pendingLocators.size()) {
+            val id = pendingLocators.keyAt(i)
+            val fragment = mFragments[id]
+            if (fragment != null) {
+                toRemove.add(id)
+            }
+        }
+        toRemove.forEach { pendingLocators.remove(it) }
+    }
+
     private fun popPendingLocatorAt(id: Long): Locator? =
-        pendingLocators.get(id)
+        pendingLocators[id]
             .also { pendingLocators.remove(id) }
 }

@@ -723,7 +723,7 @@ internal class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView
                     val x = ev.safeGetX(pointerIndex)
                     val xDiff = abs(x - mLastMotionX)
 
-                    if (xDiff > mTouchSlop) {
+                    if (!scrollMode && xDiff > mTouchSlop) {
                         if (DEBUG) Timber.v("Starting drag!")
                         mIsBeingDragged = true
                         mLastMotionX = if (x - mInitialMotionX > 0) {

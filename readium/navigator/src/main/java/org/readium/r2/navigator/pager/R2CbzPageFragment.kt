@@ -88,7 +88,13 @@ internal class R2CbzPageFragment(
 
     private fun updatePadding() {
         viewLifecycleOwner.lifecycleScope.launch {
-            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
+            // Due to the migration from ViewPager to ViewPager2,
+            // adjacent pages now transition to the RESUMED state at onPageSelected,
+            // unlike the previous behavior.
+            // Therefore, changing the lifecycle state from RESUMED to STARTED
+            // allows padding to be pre-applied to the left and right pages,
+            // ensuring consistent UI behavior during page transitions.
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 val window = activity?.window ?: return@repeatOnLifecycle
                 var top = 0
                 var bottom = 0

@@ -348,7 +348,13 @@ internal class R2EpubPageFragment : Fragment() {
         if (view == null) return
 
         viewLifecycleOwner.lifecycleScope.launch {
-            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
+            // Due to the migration from ViewPager to ViewPager2,
+            // adjacent pages now transition to the RESUMED state at onPageSelected,
+            // unlike the previous behavior.
+            // Therefore, changing the lifecycle state from RESUMED to STARTED
+            // allows padding to be pre-applied to the left and right pages,
+            // ensuring consistent UI behavior during page transitions.
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 val window = activity?.window ?: return@repeatOnLifecycle
                 var top = 0
                 var bottom = 0
@@ -381,13 +387,6 @@ internal class R2EpubPageFragment : Fragment() {
     }
 
     internal val paddingTop: Int get() = containerView.paddingTop
-    internal val paddingBottom: Int get() = containerView.paddingBottom
-
-    private val isCurrentResource: Boolean get() {
-        val epubNavigator = navigator ?: return false
-        val currentFragment = (epubNavigator.resourcePager.adapter as? R2PagerAdapter)?.getCurrentFragment() as? R2EpubPageFragment ?: return false
-        return tag == currentFragment.tag
-    }
 
     private fun onLoadPage() {
         if (!isLoading) return
@@ -419,7 +418,7 @@ internal class R2EpubPageFragment : Fragment() {
     }
 
     internal fun loadLocator(locator: Locator) {
-        if (!isLoaded.value) {
+        if (!isLoaded.value || view == null) {
             pendingLocator = locator
             return
         }
@@ -509,6 +508,7 @@ internal class R2EpubPageFragment : Fragment() {
 /**
  * Same as setOnClickListener, but will also report the tap point in the view.
  */
+@SuppressLint("ClickableViewAccessibility")
 private fun View.setOnClickListenerWithPoint(action: (View, PointF) -> Unit) {
     var point = PointF()
 
