@@ -68,10 +68,12 @@ internal class ReflowableWebPublication(
     fun positionForProgression(index: Int, progression: Progression): Position {
         val itemPositionNumber = readingOrder.positionNumbers[index]
         val localPosition = floor(progression.value * itemPositionNumber).toInt()
+            // If progression == 1.0, don't go for the next resource.
+            .coerceAtMost(itemPositionNumber - 1)
         return Position(startPositions[index] + localPosition)!!
     }
 
     fun totalProgressionForPosition(position: Position): Progression {
-        return Progression(position.value / totalPositionCount.toDouble())!!
+        return Progression((position.value - 1) / totalPositionCount.toDouble())!!
     }
 }

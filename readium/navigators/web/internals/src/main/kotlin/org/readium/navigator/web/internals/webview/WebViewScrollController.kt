@@ -203,7 +203,7 @@ private fun RelaxedWebView.scrollToProgression(
                 scrollTo(ceil(progression * docWidth).roundToInt(), scrollY)
             }
             LayoutDirection.Rtl -> {
-                scrollTo((ceil(1 - progression) * docWidth).roundToInt(), scrollY)
+                scrollTo((ceil((1 - progression) * docWidth)).roundToInt(), scrollY)
             }
         }
     }
