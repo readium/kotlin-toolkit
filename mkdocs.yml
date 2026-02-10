@@ -41,6 +41,17 @@ markdown_extensions:
   - pymdownx.smartsymbols
   - pymdownx.superfences
 
+hooks:
+  - docs/scripts/hooks.py
+
+exclude_docs: |
+  scripts/
+
+validation:
+  links:
+    unrecognized_links: warn
+    absolute_links: warn
+
 # Dev server binding
 #dev_addr: 127.0.0.1:3001
 
@@ -49,11 +60,17 @@ nav:
   - Migration Guide: migration-guide.md
   - API Reference: api/index.html
   - User Guides:
+      - Getting started: guides/getting-started.md
+      - Extracting the content of a publication: guides/content.md
+      - Opening a publication: guides/open-publication.md
+      - Navigator: guides/navigator/navigator.md
+      - Media navigator: guides/navigator/media-navigator.md
       - Navigator preferences: guides/navigator/preferences.md
       - EPUB font families: guides/navigator/epub-fonts.md
       - PDF support: guides/pdf.md
       - Text-to-speech: guides/tts.md
-      - Extracting the content of a publication: guides/content.md
+      - Accessibility: guides/accessibility.md
+      - LCP: guide/lcp.md
 
 extra_css:
   - readium_colors.css

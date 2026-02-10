@@ -120,7 +120,7 @@ dependencies {
 }
 ```
 
-:warning: If you target Android devices running below API 26, you must enable [core library desugaring](https://developer.android.com/studio/write/java8-support#library-desugaring) in your application module.
+:warning: You must enable [core library desugaring](https://developer.android.com/studio/write/java8-support#library-desugaring) in your application module.
 
 #### Using a local Git clone
 
