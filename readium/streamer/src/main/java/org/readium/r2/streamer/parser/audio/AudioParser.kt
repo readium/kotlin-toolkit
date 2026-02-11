@@ -7,7 +7,6 @@
 package org.readium.r2.streamer.parser.audio
 
 import org.readium.r2.shared.publication.Link
-import org.readium.r2.shared.publication.LocalizedString
 import org.readium.r2.shared.publication.Manifest
 import org.readium.r2.shared.publication.Metadata
 import org.readium.r2.shared.publication.Publication
@@ -26,7 +25,6 @@ import org.readium.r2.shared.util.getEquivalent
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.resource.Resource
-import org.readium.r2.streamer.extensions.guessTitle
 import org.readium.r2.streamer.extensions.isHiddenOrThumbs
 import org.readium.r2.streamer.extensions.sniffContainerEntries
 import org.readium.r2.streamer.extensions.toContainer
@@ -64,7 +62,7 @@ public class AudioParser(
         val readingOrderWithFormat =
             listOfNotNull(container.first() to asset.format)
 
-        return finalizeParsing(container, readingOrderWithFormat, null)
+        return finalizeParsing(container, readingOrderWithFormat)
     }
 
     private suspend fun parseContainerAsset(
@@ -94,18 +92,12 @@ public class AudioParser(
             )
         }
 
-        val title = asset
-            .container
-            .entries
-            .guessTitle()
-
-        return finalizeParsing(asset.container, readingOrderWithFormat, title)
+        return finalizeParsing(asset.container, readingOrderWithFormat)
     }
 
     private fun finalizeParsing(
         container: Container<Resource>,
         readingOrderWithFormat: List<Pair<Url, Format>>,
-        title: String?,
     ): Try<Publication.Builder, PublicationParser.ParseError> {
         val readingOrder = readingOrderWithFormat.map { (url, format) ->
             Link(href = url, mediaType = format.mediaType)
@@ -113,8 +105,7 @@ public class AudioParser(
 
         val manifest = Manifest(
             metadata = Metadata(
-                conformsTo = setOf(Publication.Profile.AUDIOBOOK),
-                localizedTitle = title?.let { LocalizedString(it) }
+                conformsTo = setOf(Publication.Profile.AUDIOBOOK)
             ),
             readingOrder = readingOrder
         )

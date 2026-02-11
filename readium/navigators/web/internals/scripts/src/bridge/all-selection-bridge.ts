@@ -25,18 +25,35 @@ export class ReflowableSelectionBridge {
 }
 
 export class FixedSingleSelectionBridge {
+  private readonly iframe: HTMLIFrameElement
+
   private readonly wrapper: SelectionWrapperParentSide
 
   private readonly listener: FixedSingleSelectionBridge.Listener
 
-  constructor(listener: FixedSingleSelectionBridge.Listener) {
+  constructor(
+    iframe: HTMLIFrameElement,
+    listener: FixedSingleSelectionBridge.Listener
+  ) {
+    this.iframe = iframe
     this.listener = listener
     const wrapperListener = {
       onSelectionAvailable: (
         requestId: string,
         selection: Selection | null
       ) => {
-        const selectionAsJson = JSON.stringify(selection)
+        let adjustedSelection
+
+        if (selection) {
+          adjustedSelection = selectionToParentCoordinates(
+            selection,
+            this.iframe
+          )
+        } else {
+          adjustedSelection = selection
+        }
+
+        const selectionAsJson = JSON.stringify(adjustedSelection)
         this.listener.onSelectionAvailable(requestId, selectionAsJson)
       },
     }

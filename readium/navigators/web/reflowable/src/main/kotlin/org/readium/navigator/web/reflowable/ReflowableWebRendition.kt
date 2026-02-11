@@ -4,37 +4,32 @@
  * available in the top-level LICENSE file of the project.
  */
 
+@file:OptIn(ExperimentalReadiumApi::class)
+
 package org.readium.navigator.web.reflowable
 
 import android.annotation.SuppressLint
 import android.content.res.Configuration
 import android.view.ActionMode
-import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.ScrollableDefaults
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.union
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
-import androidx.compose.ui.unit.Density
-import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.DpSize
-import androidx.compose.ui.unit.dp
 import kotlinx.collections.immutable.toImmutableMap
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -43,7 +38,6 @@ import org.readium.navigator.common.DecorationListener
 import org.readium.navigator.common.HyperlinkListener
 import org.readium.navigator.common.InputListener
 import org.readium.navigator.common.TapContext
-import org.readium.navigator.common.TapEvent
 import org.readium.navigator.common.defaultDecorationListener
 import org.readium.navigator.common.defaultHyperlinkListener
 import org.readium.navigator.common.defaultInputListener
@@ -53,8 +47,11 @@ import org.readium.navigator.web.internals.pager.pagingFlingBehavior
 import org.readium.navigator.web.internals.server.WebViewServer
 import org.readium.navigator.web.internals.util.AbsolutePaddingValues
 import org.readium.navigator.web.internals.util.HyperlinkProcessor
+import org.readium.navigator.web.internals.util.asAbsolutePaddingValues
 import org.readium.navigator.web.internals.util.rememberUpdatedRef
+import org.readium.navigator.web.internals.util.symmetric
 import org.readium.navigator.web.internals.util.toLayoutDirection
+import org.readium.navigator.web.reflowable.layout.LayoutConstants
 import org.readium.navigator.web.reflowable.resource.ReflowablePagingLayoutInfo
 import org.readium.navigator.web.reflowable.resource.ReflowableResource
 import org.readium.r2.shared.ExperimentalReadiumApi
@@ -79,8 +76,17 @@ public fun ReflowableWebRendition(
     decorationListener: DecorationListener<ReflowableWebDecorationLocation> = defaultDecorationListener(state.controller),
     textSelectionActionModeCallback: ActionMode.Callback? = null,
 ) {
+    val overflowNow = state.layoutDelegate.overflow.value
+
     val layoutDirection =
-        state.layoutDelegate.overflow.value.readingProgression.toLayoutDirection()
+        overflowNow.readingProgression.toLayoutDirection()
+
+    val layoutOrientation =
+        overflowNow.orientation
+
+    val settingsNow = state.layoutDelegate.settings
+
+    val injectorNow = state.layoutDelegate.readiumCssInjector
 
     CompositionLocalProvider(LocalLayoutDirection provides layoutDirection) {
         BoxWithConstraints(
@@ -91,23 +97,29 @@ public fun ReflowableWebRendition(
 
             state.layoutDelegate.viewportSize = viewportSize.value
 
+            state.layoutDelegate.safeDrawing = windowInsets.asAbsolutePaddingValues()
+
             state.layoutDelegate.fontScale = LocalDensity.current.fontScale
 
             val coroutineScope = rememberCoroutineScope()
 
-            val resourcePadding =
-                if (state.layoutDelegate.overflow.value.scroll) {
+            val resourcePadding = when (overflowNow.scroll) {
+                true ->
                     AbsolutePaddingValues()
-                } else {
-                    when (LocalConfiguration.current.orientation) {
-                        Configuration.ORIENTATION_LANDSCAPE ->
-                            AbsolutePaddingValues(vertical = 20.dp)
-                        else ->
-                            AbsolutePaddingValues(vertical = 40.dp)
+                false -> {
+                    val margins = when (LocalConfiguration.current.orientation) {
+                        Configuration.ORIENTATION_LANDSCAPE -> LayoutConstants.pageVerticalMarginsLandscape
+                        else -> LayoutConstants.pageVerticalMarginsPortrait
                     }
+                    windowInsets
+                        .only(WindowInsetsSides.Vertical)
+                        .union(WindowInsets(top = margins, bottom = margins))
+                        .symmetric()
+                        .asAbsolutePaddingValues()
                 }
+            }
 
-            val flingBehavior = if (state.layoutDelegate.overflow.value.scroll) {
+            val flingBehavior = if (overflowNow.scroll) {
                 ScrollableDefaults.flingBehavior()
             } else {
                 pagingFlingBehavior(
@@ -118,55 +130,29 @@ public fun ReflowableWebRendition(
                         direction = layoutDirection
                     )
                 )
-            }.toFling2DBehavior(state.layoutDelegate.orientation)
+            }.toFling2DBehavior(layoutOrientation)
 
-            val backgroundColor = Color(state.layoutDelegate.settings.backgroundColor.int)
+            val backgroundColor = Color(settingsNow.backgroundColor.int)
 
-            val currentPageState = remember(state) { derivedStateOf { state.pagerState.currentPage } }
-
-            fun currentLocation(): ReflowableWebLocation {
-                val currentItem = state.publication.readingOrder.items[currentPageState.value]
-                return ReflowableWebLocation(
-                    href = currentItem.href,
-                    mediaType = currentItem.mediaType,
-                    progression = state.resourceStates[currentPageState.value].progression
-                )
-            }
-
-            if (state.controller == null) {
-                // Initialize controller. In the future, that should require access to a ready WebView.
-                state.initController(location = currentLocation())
-            }
-
-            LaunchedEffect(state) {
+            LaunchedEffect(state.pagerState) {
                 snapshotFlow {
                     state.pagerState.currentPage
                 }.onEach {
-                    state.updateLocation(currentLocation())
+                    state.updateLocation()
                 }.launchIn(this)
             }
 
             RenditionPager(
-                modifier = Modifier
-                    // Apply background on padding
-                    .background(backgroundColor)
-                    // Detect taps on padding
-                    .pointerInput(Unit) {
-                        detectTapGestures(
-                            onTap = { onTapOnPadding(it, viewportSize.value, inputListener) }
-                        )
-                    }
-                    .windowInsetsPadding(windowInsets),
                 state = state.pagerState,
                 scrollState = state.scrollState,
                 flingBehavior = flingBehavior,
                 beyondViewportPageCount = 3,
-                orientation = state.layoutDelegate.orientation,
+                orientation = layoutOrientation,
             ) { index ->
                 val href = state.publication.readingOrder.items[index].href
 
                 val decorations = state.decorationDelegate.decorations
-                    .mapValues { it.value.filter { it.location.href == href } }
+                    .mapValues { groupDecorations -> groupDecorations.value.filter { it.location.href == href } }
                     .toImmutableMap()
 
                 ReflowableResource(
@@ -176,9 +162,9 @@ public fun ReflowableWebRendition(
                     backgroundColor = backgroundColor,
                     padding = resourcePadding,
                     layoutDirection = layoutDirection,
-                    scroll = state.layoutDelegate.settings.scroll,
-                    orientation = state.layoutDelegate.orientation,
-                    readiumCssInjector = state.layoutDelegate.readiumCssInjector,
+                    scroll = overflowNow.scroll,
+                    orientation = layoutOrientation,
+                    readiumCssInjector = injectorNow,
                     decorationTemplates = state.decorationDelegate.decorationTemplates,
                     decorations = decorations,
                     actionModeCallback = textSelectionActionModeCallback,
@@ -199,40 +185,19 @@ public fun ReflowableWebRendition(
                     onDecorationActivated = { event ->
                         decorationListener.onDecorationActivated(event)
                     },
-                    onProgressionChange = {
-                        if (index == currentPageState.value) {
-                            val item = state.publication.readingOrder[index]
-                            val newLocation = ReflowableWebLocation(
-                                href = item.href,
-                                mediaType = item.mediaType,
-                                progression = it
-                            )
-                            state.updateLocation(newLocation)
-                        }
+                    onLocationChange = {
+                        state.updateLocation()
                     },
                     onDocumentResized = {
                         state.scrollState.onDocumentResized(index)
-                    }
+                        state.updateLocation()
+                    },
                 )
             }
         }
     }
 }
 
-@OptIn(ExperimentalReadiumApi::class)
-private fun (Density).onTapOnPadding(
-    offset: Offset,
-    viewportSize: DpSize,
-    listener: InputListener,
-) {
-    if (offset.x >= 0 && offset.y >= 0) {
-        val offset = DpOffset(x = offset.x.toDp(), y = offset.y.toDp())
-        val event = TapEvent(offset)
-        listener.onTap(event, TapContext(viewportSize))
-    }
-}
-
-@OptIn(ExperimentalReadiumApi::class)
 private suspend fun HyperlinkProcessor.onLinkActivated(
     url: Url,
     outerHtml: String,

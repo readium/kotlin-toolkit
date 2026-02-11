@@ -154,9 +154,13 @@ internal fun DoubleViewportSpread(
                 var lastDecorations = emptyMap<String, List<FixedWebDecoration>>()
                 snapshotFlow { decorations.value }
                     .onEach {
-                        for ((group, decos) in it.entries) {
-                            val lastInGroup = lastDecorations[group].orEmpty()
-                            for ((href, changes) in lastInGroup.changesByHref(decos)) {
+                        val oldAndUpdatedGroups = it.keys + lastDecorations.keys
+                        for (group in oldAndUpdatedGroups) {
+                            val updatedDecos = it[group].orEmpty()
+                            val changesByHref = lastDecorations[group].orEmpty()
+                                .changesByHref(updatedDecos)
+
+                            for ((href, changes) in changesByHref) {
                                 val iframe = when (href) {
                                     state.spread.leftPage?.href -> Iframe.Left
                                     state.spread.rightPage?.href -> Iframe.Right

@@ -8,10 +8,11 @@
 
 package org.readium.navigator.web.common
 
-import kotlinx.collections.immutable.*
 import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
-import kotlinx.serialization.Serializable
+import kotlinx.collections.immutable.plus
+import kotlinx.collections.immutable.toImmutableList
 import org.readium.r2.navigator.preferences.FontFamily
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.Either
@@ -213,30 +214,4 @@ public enum class FontWeight(public val value: Int) {
     BOLD(700),
     EXTRA_BOLD(800),
     BLACK(900),
-}
-
-/**
- * Typeface for a publication's text.
- *
- * For a list of vetted font families, see https://readium.org/readium-css/docs/CSS10-libre_fonts.
- */
-@ExperimentalReadiumApi
-@JvmInline
-@Serializable
-public value class FontFamily(public val name: String) {
-
-    public companion object {
-        // Generic font families
-        // See https://www.w3.org/TR/css-fonts-4/#generic-font-families
-        public val SERIF: FontFamily = FontFamily("serif")
-        public val SANS_SERIF: FontFamily = FontFamily("sans-serif")
-        public val CURSIVE: FontFamily = FontFamily("cursive")
-        public val FANTASY: FontFamily = FontFamily("fantasy")
-        public val MONOSPACE: FontFamily = FontFamily("monospace")
-
-        // Accessibility fonts embedded with Readium
-        public val ACCESSIBLE_DFA: FontFamily = FontFamily("AccessibleDfA")
-        public val IA_WRITER_DUOSPACE: FontFamily = FontFamily("IA Writer Duospace")
-        public val OPEN_DYSLEXIC: FontFamily = FontFamily("OpenDyslexic")
-    }
 }

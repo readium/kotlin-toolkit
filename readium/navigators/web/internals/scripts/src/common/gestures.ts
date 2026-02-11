@@ -36,14 +36,6 @@ export class GesturesDetector {
       return
     }
 
-    const selection = this.window.getSelection()
-    if (selection && selection.type == "Range") {
-      // There's an on-going selection, the tap will dismiss it so we don't forward it.
-      // selection.type might be None (collapsed) or Caret with a collapsed range
-      // when there is not true selection.
-      return
-    }
-
     let nearestElement: Element | null
     if (event.target instanceof HTMLElement) {
       nearestElement = this.nearestInteractiveElement(event.target)
@@ -60,9 +52,9 @@ export class GesturesDetector {
 
         event.stopPropagation()
         event.preventDefault()
-      } else {
-        return
       }
+
+      return
     }
 
     let decorationActivatedEvent: DecorationActivatedEvent | null

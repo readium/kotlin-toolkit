@@ -13,10 +13,8 @@ import android.webkit.WebChromeClient
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.FrameLayout
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
@@ -25,7 +23,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
 
@@ -118,25 +115,16 @@ public fun <T : WebView> WebView(
             height
         )
 
-        LazyRow(
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically,
-            userScrollEnabled = false,
-            modifier = Modifier.fillMaxSize()
-        ) {
-            item {
-                WebView(
-                    state,
-                    factory,
-                    layoutParams,
-                    Modifier.fillParentMaxSize(),
-                    onCreated,
-                    onDispose,
-                    client,
-                    chromeClient,
-                )
-            }
-        }
+        WebView(
+            state,
+            factory,
+            layoutParams,
+            Modifier.fillMaxSize(),
+            onCreated,
+            onDispose,
+            client,
+            chromeClient,
+        )
     }
 }
 

@@ -12,9 +12,11 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.util.fastCoerceAtLeast
 import androidx.compose.ui.util.fastCoerceAtMost
 import androidx.compose.ui.util.fastRoundToInt
+import kotlin.math.ceil
 import kotlin.math.roundToInt
 import org.readium.navigator.web.internals.gestures.DefaultScrollable2DState
 import org.readium.navigator.web.internals.gestures.Scrollable2DState
+import org.readium.r2.shared.ExperimentalReadiumApi
 
 public class WebViewScrollController(
     private val webView: RelaxedWebView,
@@ -32,16 +34,16 @@ public class WebViewScrollController(
         get() = webView.maxScrollY
 
     public val canMoveLeft: Boolean
-        get() = webView.scrollX > webView.width / 2 == true
+        get() = webView.scrollX > webView.width / 2
 
     public val canMoveRight: Boolean
-        get() = webView.maxScrollX - webView.scrollX > webView.width / 2 == true
+        get() = webView.maxScrollX - webView.scrollX > webView.width / 2
 
     public val canMoveTop: Boolean
-        get() = webView.scrollY > webView.width / 2 == true
+        get() = webView.scrollY > webView.height / 2
 
     public val canMoveBottom: Boolean
-        get() = webView.maxScrollY - webView.scrollY > webView.width / 2 == true
+        get() = webView.maxScrollY - webView.scrollY > webView.height / 2
 
     public fun moveLeft() {
         webView.scrollBy(-webView.width, 0)
@@ -52,11 +54,11 @@ public class WebViewScrollController(
     }
 
     public fun moveTop() {
-        webView.scrollBy(0, -webView.width)
+        webView.scrollBy(0, -webView.height)
     }
 
     public fun moveBottom() {
-        webView.scrollBy(0, webView.width)
+        webView.scrollBy(0, webView.height)
     }
 
     public fun scrollBy(delta: Offset): Offset {
@@ -94,8 +96,11 @@ public class WebViewScrollController(
         }
     }
 
-    public fun progression(orientation: Orientation, direction: LayoutDirection): Double? =
-        webView.progression(orientation, direction).takeIf { it.isFinite() }
+    public fun startProgression(orientation: Orientation, direction: LayoutDirection): Double? =
+        webView.startProgression(orientation, direction).takeIf { it.isFinite() }
+
+    public fun endProgression(orientation: Orientation, direction: LayoutDirection): Double? =
+        webView.endProgression(orientation, direction).takeIf { it.isFinite() }
 
     public fun moveToProgression(
         progression: Double,
@@ -111,17 +116,36 @@ public class WebViewScrollController(
             orientation = orientation,
             direction = direction
         )
+
         if (snap) {
-            when (orientation) {
-                Orientation.Vertical -> {
-                    val offset = webView.scrollY % webView.height
-                    webView.scrollBy(0, -offset)
-                }
-                Orientation.Horizontal -> {
-                    val offset = webView.scrollX % webView.width
-                    webView.scrollBy(-offset, 0)
-                }
+            snap(orientation)
+        }
+    }
+
+    public fun snap(orientation: Orientation) {
+        when (orientation) {
+            Orientation.Vertical -> {
+                val offset = webView.scrollY % webView.height
+                webView.scrollBy(0, -offset)
             }
+            Orientation.Horizontal -> {
+                val offset = webView.scrollX % webView.width
+                webView.scrollBy(-offset, 0)
+            }
+        }
+    }
+
+    public fun moveToOffset(
+        offset: Int,
+        snap: Boolean,
+        orientation: Orientation,
+    ) {
+        webView.scrollToOffset(
+            offset = offset,
+            orientation = orientation
+        )
+        if (snap) {
+            snap(orientation)
         }
     }
 
@@ -167,29 +191,60 @@ private fun RelaxedWebView.scrollToProgression(
     orientation: Orientation,
     direction: LayoutDirection,
 ) {
+    val docHeight = maxScrollY + height
+    val docWidth = maxScrollX + width
+
     when (orientation) {
         Orientation.Vertical -> {
-            scrollTo(scrollX, progression.roundToInt() * maxScrollY.toInt())
+            scrollTo(scrollX, ceil((progression * docHeight)).roundToInt())
         }
         Orientation.Horizontal -> when (direction) {
             LayoutDirection.Ltr -> {
-                scrollTo(progression.roundToInt() * maxScrollX, scrollY)
+                scrollTo(ceil(progression * docWidth).roundToInt(), scrollY)
             }
             LayoutDirection.Rtl -> {
-                scrollTo((1 - progression).roundToInt() * maxScrollX, scrollY)
+                scrollTo((ceil((1 - progression) * docWidth)).roundToInt(), scrollY)
             }
         }
     }
 }
 
-private fun RelaxedWebView.progression(
+private fun RelaxedWebView.scrollToOffset(
+    offset: Int,
+    orientation: Orientation,
+) {
+    when (orientation) {
+        Orientation.Vertical -> {
+            scrollTo(scrollX, offset)
+        }
+        Orientation.Horizontal -> {
+            scrollTo(offset, scrollY)
+        }
+    }
+}
+
+@OptIn(ExperimentalReadiumApi::class)
+private fun RelaxedWebView.startProgression(
     orientation: Orientation,
     direction: LayoutDirection,
 ) = when (orientation) {
-    Orientation.Vertical -> scrollY / maxScrollY.toDouble()
+    Orientation.Vertical -> scrollY / (maxScrollY + height).toDouble()
     Orientation.Horizontal -> when (direction) {
-        LayoutDirection.Ltr -> scrollX / maxScrollX.toDouble()
-        LayoutDirection.Rtl -> 1 - scrollX / maxScrollX.toDouble()
+        LayoutDirection.Ltr -> scrollX / (maxScrollX + width).toDouble()
+        LayoutDirection.Rtl -> 1 - scrollX / (maxScrollX + width).toDouble()
+    }
+}
+
+private fun RelaxedWebView.endProgression(
+    orientation: Orientation,
+    direction: LayoutDirection,
+): Double {
+    return when (orientation) {
+        Orientation.Vertical -> (scrollY + height) / (maxScrollY + height).toDouble()
+        Orientation.Horizontal -> when (direction) {
+            LayoutDirection.Ltr -> (scrollX + width) / (maxScrollX + width).toDouble()
+            LayoutDirection.Rtl -> 1 - (scrollX + width) / (maxScrollX + width).toDouble()
+        }
     }
 }
 

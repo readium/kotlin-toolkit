@@ -1,10 +1,11 @@
 import { DecorationManager } from "../common/decoration"
 import { GesturesDetector } from "../common/gestures"
-import { SelectionManager } from "../common/selection"
+import { SelectionManager, SelectionReporter } from "../common/selection"
 import { ReflowableDecorationsBridge } from "./all-decoration-bridge"
 import { ReflowableListenerAdapter } from "./all-listener-bridge"
 import { ReflowableSelectionBridge } from "./all-selection-bridge"
 import { CssBridge } from "./reflowable-css-bridge"
+import { ReflowableMoveBridge } from "./reflowable-move-bridge"
 
 export class ReflowableInitializationBridge {
   private readonly window: Window
@@ -20,7 +21,13 @@ export class ReflowableInitializationBridge {
   }
 
   private initApis() {
-    const bridgeListener = new ReflowableListenerAdapter(window.gestures)
+    this.window.move = new ReflowableMoveBridge(this.window.document)
+    this.listener.onMoveApiAvailable()
+
+    const bridgeListener = new ReflowableListenerAdapter(
+      window.gestures,
+      window.selectionListener
+    )
 
     const decorationManager = new DecorationManager(window)
 
@@ -40,6 +47,8 @@ export class ReflowableInitializationBridge {
     this.listener.onDecorationApiAvailable()
 
     new GesturesDetector(window, bridgeListener, decorationManager)
+
+    new SelectionReporter(window, bridgeListener)
   }
 
   // Setups the `viewport` meta tag to disable overview.
@@ -58,6 +67,7 @@ export class ReflowableInitializationBridge {
 
 export interface ReflowableApiStateListener {
   onCssApiAvailable(): void
+  onMoveApiAvailable(): void
   onSelectionApiAvailable(): void
   onDecorationApiAvailable(): void
 }

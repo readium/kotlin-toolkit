@@ -20,7 +20,7 @@ The modules now target Android SDK 34. If your app also targets it, you will nee
 
 #### Core library desugaring
 
-If you target Android devices running below API 26, you now must enable [core library desugaring](https://developer.android.com/studio/write/java8-support#library-desugaring) in your application module.
+[Core library desugaring](https://developer.android.com/studio/write/java8-support#library-desugaring) must be enabled in your application module.
 
 ### `Publication`
 
@@ -445,17 +445,17 @@ override fun onTap(point: PointF): Boolean {
 
 ### Upgrading to the new Preferences API
 
-The 2.3.0 release introduces a brand new user preferences API for configuring the EPUB and PDF Navigators. This new API is easier and safer to use. To learn how to integrate it in your app, [please refer to the user guide](guides/navigator-preferences.md).
+The 2.3.0 release introduces a brand new user preferences API for configuring the EPUB and PDF Navigators. This new API is easier and safer to use. To learn how to integrate it in your app, [please refer to the user guide](guides/navigator/preferences.md).
 
 If you integrated the EPUB navigator from a previous version, follow these steps to migrate:
 
-1. Get familiar with [the concepts of this new API](guides/navigator-preferences.md#overview).
+1. Get familiar with [the concepts of this new API](guides/navigator/preferences.md#overview).
 2. Remove the local HTTP server from your app, [as explained in the previous section](#removing-the-http-server).
 3. Remove the whole [`UserSettings.kt`](https://github.com/readium/kotlin-toolkit/blob/f132e541a1d2c290a83974fb017efb352e0f825f/test-app/src/main/java/org/readium/r2/testapp/epub/UserSettings.kt) file from your app, if you copied it from the Test App.
-4. Adapt your user settings interface to the new API using preferences editors. The [Test App](https://github.com/readium/kotlin-toolkit/tree/develop/test-app/src/main/java/org/readium/r2/testapp/reader/preferences) and the [user guide](guides/navigator-preferences.md#build-a-user-settings-interface) contain examples using Jetpack Compose.
-5. [Handle the persistence of the user preferences](guides/navigator-preferences.md#save-and-restore-the-user-preferences). The settings are not stored in the `SharedPreferences` with name `org.readium.r2.settings` anymore. Instead, you are responsible for persisting and restoring the user preferences as you see fit (e.g. as a JSON file).
+4. Adapt your user settings interface to the new API using preferences editors. The [Test App](https://github.com/readium/kotlin-toolkit/tree/develop/test-app/src/main/java/org/readium/r2/testapp/reader/preferences) and the [user guide](guides/navigator/preferences.md#build-a-user-settings-interface) contain examples using Jetpack Compose.
+5. [Handle the persistence of the user preferences](guides/navigator/preferences.md#save-and-restore-the-user-preferences). The settings are not stored in the `SharedPreferences` with name `org.readium.r2.settings` anymore. Instead, you are responsible for persisting and restoring the user preferences as you see fit (e.g. as a JSON file).
     * If you want to migrate the legacy `SharedPreferences` settings, you can use the helper `EpubPreferences.fromLegacyEpubSettings()` which will create a new `EpubPreferences` object after translating the existing user settings.
-6. Make sure you [restore the stored user preferences](guides/navigator-preferences.md#setting-the-initial-navigator-preferences-and-app-defaults) when initializing the EPUB navigator.
+6. Make sure you [restore the stored user preferences](guides/navigator/preferences.md#setting-the-initial-navigator-preferences-and-app-defaults) when initializing the EPUB navigator.
 
 Please refer to the following table for the correspondence between legacy settings and new ones.
 

@@ -15,6 +15,9 @@ import org.readium.navigator.common.DecorationLocation
 import org.readium.navigator.common.ExportableLocation
 import org.readium.navigator.common.GoLocation
 import org.readium.navigator.common.Location
+import org.readium.navigator.common.Position
+import org.readium.navigator.common.PositionLocation
+import org.readium.navigator.common.Progression
 import org.readium.navigator.common.SelectionLocation
 import org.readium.navigator.common.TextQuote
 import org.readium.navigator.common.TextQuoteLocation
@@ -87,26 +90,32 @@ public sealed interface FixedWebDecorationLocation : DecorationLocation {
 
 internal data class FixedWebDecorationCssSelectorLocation(
     override val href: Url,
-    val cssSelector: CssSelector,
-) : FixedWebDecorationLocation
+    override val cssSelector: CssSelector,
+) : FixedWebDecorationLocation, CssSelectorLocation
 
 internal data class FixedWebDecorationTextQuoteLocation(
     override val href: Url,
-    val textQuote: TextQuote,
+    override val textQuote: TextQuote,
     val cssSelector: CssSelector?,
-) : FixedWebDecorationLocation
+) : FixedWebDecorationLocation, TextQuoteLocation
 
 @ExperimentalReadiumApi
 @ConsistentCopyVisibility
 public data class FixedWebLocation internal constructor(
     override val href: Url,
+    override val position: Position,
+    val totalProgression: Progression,
     private val mediaType: MediaType?,
-) : ExportableLocation {
+) : ExportableLocation, PositionLocation {
 
     override fun toLocator(): Locator =
         Locator(
             href = href,
-            mediaType = mediaType ?: MediaType.XHTML
+            mediaType = mediaType ?: MediaType.XHTML,
+            locations = Locator.Locations(
+                position = position.value,
+                totalProgression = totalProgression.value
+            )
         )
 }
 

@@ -23,10 +23,7 @@ dependencies {
     api(project(":readium:readium-navigator"))
     api(project(":readium:navigators:readium-navigator-common"))
 
-    api(libs.kotlinx.collections.immutable)
+    api(libs.androidx.compose.foundation)
 
-    implementation(libs.kotlinx.serialization.json)
-    implementation(libs.bundles.compose)
     implementation(libs.timber)
-    implementation(libs.kotlinx.coroutines.android)
 }

@@ -154,29 +154,33 @@ internal fun SingleViewportSpread(
                 var lastDecorations = emptyMap<String, List<Decoration<FixedWebDecorationLocation>>>()
                 snapshotFlow { decorations.value }
                     .onEach {
-                        for ((group, decos) in it.entries) {
-                            val lastInGroup = lastDecorations[group].orEmpty()
-                            for ((_, changes) in lastInGroup.changesByHref(decos)) {
-                                for (change in changes) {
-                                    when (change) {
-                                        is DecorationChange.Added -> {
-                                            val template = decorationTemplates[change.decoration.style::class]
-                                                ?: continue
+                        val oldAndUpdatedGroups = it.keys + lastDecorations.keys
+                        for (group in oldAndUpdatedGroups) {
+                            val updatedDecos = it[group].orEmpty()
+                            val changes = lastDecorations[group].orEmpty()
+                                .changesByHref(updatedDecos)
+                                .values
+                                .flatten()
 
-                                            val webApiDecoration = change.decoration.toWebApiDecoration(template)
-                                            decorationApi.addDecoration(webApiDecoration, group)
-                                        }
-                                        is DecorationChange.Moved -> {}
-                                        is DecorationChange.Removed -> {
-                                            decorationApi.removeDecoration(change.id, group)
-                                        }
-                                        is DecorationChange.Updated -> {
-                                            decorationApi.removeDecoration(change.decoration.id, group)
-                                            val template = decorationTemplates[change.decoration.style::class]
-                                                ?: continue
-                                            val webApiDecoration = change.decoration.toWebApiDecoration(template)
-                                            decorationApi.addDecoration(webApiDecoration, group)
-                                        }
+                            for (change in changes) {
+                                when (change) {
+                                    is DecorationChange.Added -> {
+                                        val template = decorationTemplates[change.decoration.style::class]
+                                            ?: continue
+
+                                        val webApiDecoration = change.decoration.toWebApiDecoration(template)
+                                        decorationApi.addDecoration(webApiDecoration, group)
+                                    }
+                                    is DecorationChange.Moved -> {}
+                                    is DecorationChange.Removed -> {
+                                        decorationApi.removeDecoration(change.id, group)
+                                    }
+                                    is DecorationChange.Updated -> {
+                                        decorationApi.removeDecoration(change.decoration.id, group)
+                                        val template = decorationTemplates[change.decoration.style::class]
+                                            ?: continue
+                                        val webApiDecoration = change.decoration.toWebApiDecoration(template)
+                                        decorationApi.addDecoration(webApiDecoration, group)
                                     }
                                 }
                             }
@@ -207,7 +211,7 @@ internal fun SingleViewportSpread(
                 val decoration = decorations.value[group]?.firstOrNull { it.id.value == id }
                     ?: return@SpreadWebView
 
-                val event = DecorationListener.OnActivatedEvent<FixedWebDecorationLocation>(
+                val event = DecorationListener.OnActivatedEvent(
                     decoration = decoration,
                     group = group,
                     rect = rect,

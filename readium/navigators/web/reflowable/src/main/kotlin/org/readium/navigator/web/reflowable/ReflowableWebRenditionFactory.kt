@@ -17,7 +17,9 @@ import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.publication.presentation.presentation
+import org.readium.r2.shared.publication.services.PositionsService
 import org.readium.r2.shared.publication.services.isProtected
+import org.readium.r2.shared.publication.services.isRestricted
 import org.readium.r2.shared.util.Try
 
 /**
@@ -31,6 +33,7 @@ import org.readium.r2.shared.util.Try
 public class ReflowableWebRenditionFactory private constructor(
     private val application: Application,
     private val publication: Publication,
+    private val positionsService: PositionsService,
     private val configuration: ReflowableWebConfiguration,
 ) {
 
@@ -51,9 +54,17 @@ public class ReflowableWebRenditionFactory private constructor(
                 return null
             }
 
+            if (publication.isRestricted) {
+                return null
+            }
+
+            val positionsService = publication.findService(PositionsService::class)
+                ?: return null
+
             return ReflowableWebRenditionFactory(
                 application,
                 publication,
+                positionsService,
                 configuration
             )
         }
@@ -69,21 +80,23 @@ public class ReflowableWebRenditionFactory private constructor(
         ) : Error("Could not create a rendition state.", cause)
     }
 
-    @Suppress("RedundantSuspendModifier")
     public suspend fun createRenditionState(
         initialSettings: ReflowableWebSettings,
         initialLocation: ReflowableWebGoLocation? = null,
         readingOrder: List<Link> = publication.readingOrder,
+        positionsService: PositionsService = this.positionsService,
     ): Try<ReflowableWebRenditionState, Error> {
-        // TODO: support font family declarations and reading system properties
         // TODO: enable apps not to disable selection when publication is protected
 
-        val readingOrderItems = readingOrder.map {
+        val readingOrderItems = readingOrder.mapIndexed { index, link ->
             ReflowableWebPublication.Item(
-                href = it.url(),
-                mediaType = it.mediaType
+                href = link.url(),
+                mediaType = link.mediaType,
             )
         }
+
+        val positionNumbers = positionsService.positionsByReadingOrder()
+            .map { it.size }
 
         val resourceItems = (publication.readingOrder - readingOrder + publication.resources).map {
             ReflowableWebPublication.Item(
@@ -93,7 +106,7 @@ public class ReflowableWebRenditionFactory private constructor(
         }
 
         val renditionPublication = ReflowableWebPublication(
-            readingOrder = ReflowableWebPublication.ReadingOrder(readingOrderItems),
+            readingOrder = ReflowableWebPublication.ReadingOrder(readingOrderItems, positionNumbers),
             otherResources = resourceItems,
             container = publication.container
         )

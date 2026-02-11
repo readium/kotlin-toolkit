@@ -9,7 +9,6 @@
 package org.readium.navigator.web.reflowable.css
 
 import androidx.annotation.ColorInt
-import java.text.NumberFormat
 import java.util.*
 import kotlin.collections.iterator
 import org.readium.r2.shared.ExperimentalReadiumApi
@@ -51,7 +50,6 @@ internal interface ReadiumCssProperties : Cssable {
  * variable.
  * @param linkColor The color for links.
  * @param visitedLinkColor The color for visited links.
- * @param fontOverride This flag is required to change the font-family user setting.
  * @param fontFamily The typeface (font-family) the user wants to read with. It impacts body, p,
  * li, div, dt, dd and phrasing elements which don’t have a lang or xml:lang attribute. To reset,
  * remove the required flag. Requires: fontOverride
@@ -172,6 +170,10 @@ internal data class UserProperties(
  * @param colGap The gap between columns. You must account for this gap when scrolling.
  * @param pageGutter The horizontal page margins.
  * @param disableVerticalPagination If pagination should be disabled with vertical text.
+ * @param scrollPaddingTop Padding amount to insert at the top of resources in scroll mode.
+ * @param scrollPaddingBottom Padding amount to insert at the bottom of resources in scroll mode.
+ * @param scrollPaddingLeft Padding amount to insert at the left of resources in scroll mode.
+ * @param scrollPaddingRight Padding amount to insert at the right of resources in scroll mode.
  * @param flowSpacing The default vertical margins for HTML5 flow content e.g. pre, figure,
  * blockquote, etc.
  * @param paraSpacing The default vertical margins for paragraphs.
@@ -222,6 +224,12 @@ internal data class RsProperties(
     val pageGutter: Length.Px? = null,
     val disableVerticalPagination: Boolean? = null,
 
+    // Scroll padding
+    val scrollPaddingTop: Length? = null,
+    val scrollPaddingBottom: Length? = null,
+    val scrollPaddingLeft: Length? = null,
+    val scrollPaddingRight: Length? = null,
+
     // Vertical rhythm
     val flowSpacing: Length? = null,
     val paraSpacing: Length? = null,
@@ -269,12 +277,20 @@ internal data class RsProperties(
 ) : ReadiumCssProperties {
 
     override fun toCssProperties(): Map<String, String?> = buildMap {
+        check(pageGutter == null)
+
         // Pagination
         putCss("--RS__colWidth", colWidth)
         putCss("--RS__colCount", colCount)
         putCss("--RS__colGap", colGap)
-        putCss("--RS__pageGutter", pageGutter)
+        // putCss("--RS__pageGutter", pageGutter) // pageGutter conflicts with scrollPaddingX properties
         putCss("--RS__disablePagination", flag("noVerticalPagination", disableVerticalPagination))
+
+        // Scroll padding
+        putCss("--RS__scrollPaddingTop", scrollPaddingTop)
+        putCss("--RS__scrollPaddingBottom", scrollPaddingBottom)
+        putCss("--RS__scrollPaddingLeft", scrollPaddingLeft)
+        putCss("--RS__scrollPaddingRight", scrollPaddingRight)
 
         // Vertical rhythm
         putCss("--RS__flowSpacing", flowSpacing)
@@ -562,7 +578,4 @@ private fun String.toCss(): String =
  * Converts a [Double] to a string literal with the given [unit].
  */
 private fun Double.toCss(unit: String): String =
-    NumberFormat.getNumberInstance(Locale.ROOT).run {
-        maximumFractionDigits = 2
-        format(this@toCss)
-    } + unit
+    String.format(Locale.ROOT, "%e%s", this, unit)

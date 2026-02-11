@@ -63,3 +63,9 @@ public interface PositionLocation : Location {
 
     public val position: Position
 }
+
+@ExperimentalReadiumApi
+public interface TextAnchorLocation : Location {
+
+    public val textAnchor: TextAnchor
+}

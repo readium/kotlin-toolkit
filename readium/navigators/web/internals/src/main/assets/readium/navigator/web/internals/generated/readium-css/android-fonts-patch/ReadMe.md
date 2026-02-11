@@ -2,7 +2,7 @@
 
 This patch is intended to fix a Fixed-Layout issue on Android, and only on this platform. **It doesn’t apply to reflowable EPUBs or any other platform.**
 
-See https://github.com/readium/readium-css/issues/149
+See https://github.com/readium/css/issues/149
 
 ## What it does
 

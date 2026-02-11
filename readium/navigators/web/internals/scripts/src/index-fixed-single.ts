@@ -50,6 +50,7 @@ window.singleArea = new FixedSingleAreaBridge(
 )
 
 window.singleSelection = new FixedSingleSelectionBridge(
+  iframe,
   window.singleSelectionListener
 )
 

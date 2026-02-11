@@ -39,7 +39,7 @@ android {
     buildTypes {
         getByName("release") {
             isMinifyEnabled = false
-            proguardFiles(getDefaultProguardFile("proguard-android.txt"))
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"))
         }
     }
 }
@@ -52,6 +52,10 @@ kotlin {
         jvmTarget = JvmTarget.JVM_11
         allWarningsAsErrors = true
     }
+}
+
+tasks.withType<Test>().configureEach {
+    failOnNoDiscoveredTests = false
 }
 
 dependencies {

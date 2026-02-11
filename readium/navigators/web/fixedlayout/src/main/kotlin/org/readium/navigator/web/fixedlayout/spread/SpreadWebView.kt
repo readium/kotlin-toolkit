@@ -120,6 +120,8 @@ internal fun SpreadWebView(
         state.webView?.setCustomSelectionActionModeCallback(actionModeCallback)
     }
 
+    state.webView?.setBackgroundColor(backgroundColor.toArgb())
+
     // Hide content before initial position is settled
     if (showPlaceholder) {
         Box(

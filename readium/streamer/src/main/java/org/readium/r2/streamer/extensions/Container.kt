@@ -9,7 +9,6 @@
 
 package org.readium.r2.streamer.extensions
 
-import java.io.File
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.appendToFilename
@@ -21,25 +20,6 @@ import org.readium.r2.shared.util.format.Format
 import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.shared.util.resource.SingleResourceContainer
 import org.readium.r2.shared.util.use
-
-internal fun Iterable<Url>.guessTitle(): String? {
-    val firstEntry = firstOrNull() ?: return null
-    val commonFirstComponent = pathCommonFirstComponent() ?: return null
-
-    if (commonFirstComponent.name == firstEntry.path) {
-        return null
-    }
-
-    return commonFirstComponent.name
-}
-
-/** Returns a [File] to the directory containing all paths, if there is such a directory. */
-internal fun Iterable<Url>.pathCommonFirstComponent(): File? =
-    mapNotNull { it.path?.substringBefore("/") }
-        .distinct()
-        .takeIf { it.size == 1 }
-        ?.firstOrNull()
-        ?.let { File(it) }
 
 internal fun ResourceAsset.toContainer(): Container<Resource> {
     // Historically, the reading order of a standalone file contained a single link with the
