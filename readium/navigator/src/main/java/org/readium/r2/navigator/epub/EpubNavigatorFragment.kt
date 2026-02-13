@@ -115,7 +115,7 @@ public class EpubNavigatorFragment internal constructor(
     private val initialPreferences: EpubPreferences,
     internal val listener: Listener?,
     internal val paginationListener: PaginationListener?,
-    epubLayout: Layout,
+    layout: Layout,
     private val defaults: EpubDefaults,
     configuration: Configuration,
 ) : NavigatorFragment(publication),
@@ -310,7 +310,7 @@ public class EpubNavigatorFragment internal constructor(
             config = this.config,
             initialPreferences = initialPreferences,
             listener = listener,
-            layout = epubLayout,
+            layout = layout,
             defaults = defaults
         )
     }
@@ -1122,7 +1122,7 @@ public class EpubNavigatorFragment internal constructor(
                 initialPreferences = EpubPreferences(),
                 listener = null,
                 paginationListener = null,
-                epubLayout = Layout.REFLOWABLE,
+                layout = Layout.REFLOWABLE,
                 defaults = EpubDefaults(),
                 configuration = Configuration()
             )

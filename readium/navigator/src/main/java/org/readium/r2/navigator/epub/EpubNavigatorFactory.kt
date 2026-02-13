@@ -68,7 +68,7 @@ public class EpubNavigatorFactory(
             initialPreferences = initialPreferences,
             listener = listener,
             paginationListener = paginationListener,
-            epubLayout = layout,
+            layout = layout,
             defaults = this.configuration.defaults,
             configuration = configuration
         )
