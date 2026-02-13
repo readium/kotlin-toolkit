@@ -29,6 +29,8 @@ import org.readium.r2.shared.util.logging.log
 /**
  * https://readium.org/webpub-manifest/schema/metadata.schema.json
  *
+ * @param layout Hint about the nature of the layout for the publication.
+ * See https://readium.org/webpub-manifest/contexts/default/#layout-and-reading-progression
  * @param tdm Publications can indicate whether they allow third parties to use their content for
  * text and data mining purposes using the [TDM Rep protocol](https://www.w3.org/community/tdmrep/),
  * as defined in a [W3C Community Group Report](https://www.w3.org/community/reports/tdmrep/CG-FINAL-tdmrep-20240510/).
@@ -66,6 +68,7 @@ public data class Metadata(
     val numberOfPages: Int? = null,
     val belongsTo: Map<String, List<Collection>> = emptyMap(),
     val tdm: Tdm? = null,
+    val layout: Layout? = null,
     val otherMetadata: @WriteWith<JSONParceler> Map<String, Any> = mapOf(),
 ) : JSONable, Parcelable {
 
@@ -102,6 +105,7 @@ public data class Metadata(
         belongsToCollections: List<Collection> = emptyList(),
         belongsToSeries: List<Collection> = emptyList(),
         tdm: Tdm? = null,
+        layout: Layout? = null,
         otherMetadata: Map<String, Any> = mapOf(),
     ) : this(
         identifier = identifier,
@@ -144,6 +148,7 @@ public data class Metadata(
             }
             .toMap(),
         tdm = tdm,
+        layout = layout,
         otherMetadata = otherMetadata
     )
 
@@ -205,6 +210,7 @@ public data class Metadata(
         put("numberOfPages", numberOfPages)
         putIfNotEmpty("belongsTo", belongsTo)
         putIfNotEmpty("tdm", tdm)
+        put("layout", layout?.value)
     }
 
     /**
@@ -306,6 +312,8 @@ public data class Metadata(
             val numberOfPages = json.optPositiveInt("numberOfPages", remove = true)
 
             val tdm = Tdm.fromJSON(json.remove("tdm"), warnings)
+
+            val layout = Layout(json.remove("layout") as? String)
             val belongsToJson = (
                 json.remove("belongsTo") as? JSONObject
                     ?: json.remove("belongs_to") as? JSONObject
@@ -354,6 +362,7 @@ public data class Metadata(
                 numberOfPages = numberOfPages,
                 belongsTo = belongsTo.toMap(),
                 tdm = tdm,
+                layout = layout,
                 otherMetadata = json.toMap()
             )
         }

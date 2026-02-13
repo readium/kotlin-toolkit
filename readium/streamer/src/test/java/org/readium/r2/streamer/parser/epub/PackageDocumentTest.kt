@@ -19,12 +19,11 @@ import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.publication.Href
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Manifest
+import org.readium.r2.shared.publication.Page
 import org.readium.r2.shared.publication.PublicationCollection
 import org.readium.r2.shared.publication.ReadingProgression
-import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.publication.epub.contains
-import org.readium.r2.shared.publication.epub.layout
-import org.readium.r2.shared.publication.presentation.*
+import org.readium.r2.shared.publication.page
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.xml.XmlParser
@@ -101,43 +100,13 @@ class LinkPropertyTest {
     }
 
     @Test
-    fun `presentation properties are parsed`() {
+    fun `page properties are parsed`() {
         with(propertiesPub) {
-            assertThat(readingOrder[0].properties.layout).isEqualTo(EpubLayout.FIXED)
-            assertThat(readingOrder[0].properties.overflow).isEqualTo(Presentation.Overflow.AUTO)
-            assertThat(readingOrder[0].properties.orientation).isEqualTo(
-                Presentation.Orientation.AUTO
-            )
-            assertThat(readingOrder[0].properties.page).isEqualTo(Presentation.Page.RIGHT)
-            assertThat(readingOrder[0].properties.spread).isNull()
+            assertThat(readingOrder[0].properties.page).isEqualTo(Page.RIGHT)
+            assertThat(readingOrder[1].properties.page).isEqualTo(Page.LEFT)
 
-            assertThat(readingOrder[1].properties.layout).isEqualTo(EpubLayout.REFLOWABLE)
-            assertThat(readingOrder[1].properties.overflow).isEqualTo(
-                Presentation.Overflow.PAGINATED
-            )
-            assertThat(readingOrder[1].properties.orientation).isEqualTo(
-                Presentation.Orientation.LANDSCAPE
-            )
-            assertThat(readingOrder[1].properties.page).isEqualTo(Presentation.Page.LEFT)
-            assertThat(readingOrder[0].properties.spread).isNull()
-
-            assertThat(readingOrder[2].properties.layout).isNull()
-            assertThat(readingOrder[2].properties.overflow).isEqualTo(
-                Presentation.Overflow.SCROLLED
-            )
-            assertThat(readingOrder[2].properties.orientation).isEqualTo(
-                Presentation.Orientation.PORTRAIT
-            )
-            assertThat(readingOrder[2].properties.page).isEqualTo(Presentation.Page.CENTER)
-            assertThat(readingOrder[2].properties.spread).isNull()
-
-            assertThat(readingOrder[3].properties.layout).isNull()
-            assertThat(readingOrder[3].properties.overflow).isEqualTo(
-                Presentation.Overflow.SCROLLED
-            )
-            assertThat(readingOrder[3].properties.orientation).isNull()
+            assertThat(readingOrder[2].properties.page).isEqualTo(Page.CENTER)
             assertThat(readingOrder[3].properties.page).isNull()
-            assertThat(readingOrder[3].properties.spread).isEqualTo(Presentation.Spread.AUTO)
         }
     }
 }

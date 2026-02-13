@@ -8,9 +8,8 @@ package org.readium.r2.navigator.epub
 
 import org.readium.r2.navigator.epub.css.ReadiumCss
 import org.readium.r2.shared.ExperimentalReadiumApi
+import org.readium.r2.shared.publication.Layout
 import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.publication.epub.EpubLayout
-import org.readium.r2.shared.publication.presentation.presentation
 import org.readium.r2.shared.publication.services.isProtected
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Try
@@ -42,7 +41,7 @@ internal fun Resource.injectHtml(
         var content = bytes.toString(mediaType.charset ?: Charsets.UTF_8).trim()
         val injectables = mutableListOf<String>()
 
-        if (publication.metadata.presentation.layout == EpubLayout.FIXED) {
+        if (publication.metadata.layout == Layout.FIXED) {
             injectables.add(
                 script(baseHref.resolve(Url("readium/scripts/readium-fixed.js")!!))
             )

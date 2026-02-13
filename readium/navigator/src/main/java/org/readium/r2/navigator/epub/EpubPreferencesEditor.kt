@@ -8,13 +8,13 @@
 
 package org.readium.r2.navigator.epub
 
-import org.readium.r2.navigator.epub.css.Layout
+import org.readium.r2.navigator.epub.css.Layout as ReadiumCssLayout
 import org.readium.r2.navigator.extensions.format
 import org.readium.r2.navigator.preferences.*
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.InternalReadiumApi
+import org.readium.r2.shared.publication.Layout
 import org.readium.r2.shared.publication.Metadata
-import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.util.Language
 
 /**
@@ -28,14 +28,14 @@ import org.readium.r2.shared.util.Language
 public class EpubPreferencesEditor internal constructor(
     initialPreferences: EpubPreferences,
     publicationMetadata: Metadata,
-    public val layout: EpubLayout,
+    public val layout: Layout,
     defaults: EpubDefaults,
 ) : PreferencesEditor<EpubPreferences> {
 
     private data class State(
         val preferences: EpubPreferences,
         val settings: EpubSettings,
-        val layout: Layout,
+        val layout: ReadiumCssLayout,
     )
 
     private val settingsResolver: EpubSettingsResolver =
@@ -87,7 +87,7 @@ public class EpubPreferencesEditor internal constructor(
         EnumPreferenceDelegate(
             getValue = { preferences.columnCount },
             getEffectiveValue = { state.settings.columnCount },
-            getIsEffective = { layout == EpubLayout.REFLOWABLE && !state.settings.scroll },
+            getIsEffective = { layout == Layout.REFLOWABLE && !state.settings.scroll },
             updateValue = { value -> updateValues { it.copy(columnCount = value) } },
             supportedValues = listOf(ColumnCount.AUTO, ColumnCount.ONE, ColumnCount.TWO)
         )
@@ -101,7 +101,7 @@ public class EpubPreferencesEditor internal constructor(
         PreferenceDelegate(
             getValue = { preferences.fontFamily },
             getEffectiveValue = { state.settings.fontFamily },
-            getIsEffective = { layout == EpubLayout.REFLOWABLE },
+            getIsEffective = { layout == Layout.REFLOWABLE },
             updateValue = { value -> updateValues { it.copy(fontFamily = value) } }
         )
 
@@ -116,7 +116,7 @@ public class EpubPreferencesEditor internal constructor(
         RangePreferenceDelegate(
             getValue = { preferences.fontSize },
             getEffectiveValue = { state.settings.fontSize },
-            getIsEffective = { layout == EpubLayout.REFLOWABLE },
+            getIsEffective = { layout == Layout.REFLOWABLE },
             updateValue = { value -> updateValues { it.copy(fontSize = value) } },
             supportedRange = 0.1..5.0,
             progressionStrategy = DoubleIncrement(0.1),
@@ -135,7 +135,7 @@ public class EpubPreferencesEditor internal constructor(
         RangePreferenceDelegate(
             getValue = { preferences.fontWeight },
             getEffectiveValue = { state.settings.fontWeight ?: 1.0 },
-            getIsEffective = { layout == EpubLayout.REFLOWABLE && preferences.fontWeight != null },
+            getIsEffective = { layout == Layout.REFLOWABLE && preferences.fontWeight != null },
             updateValue = { value -> updateValues { it.copy(fontWeight = value) } },
             valueFormatter = percentFormatter(),
             supportedRange = 0.0..2.5,
@@ -236,7 +236,7 @@ public class EpubPreferencesEditor internal constructor(
         RangePreferenceDelegate(
             getValue = { preferences.lineHeight },
             getEffectiveValue = { state.settings.lineHeight ?: 1.2 },
-            getIsEffective = { layout == EpubLayout.REFLOWABLE && !state.settings.publisherStyles && preferences.lineHeight != null },
+            getIsEffective = { layout == Layout.REFLOWABLE && !state.settings.publisherStyles && preferences.lineHeight != null },
             updateValue = { value -> updateValues { it.copy(lineHeight = value) } },
             supportedRange = 1.0..2.0,
             progressionStrategy = DoubleIncrement(0.1),
@@ -253,7 +253,7 @@ public class EpubPreferencesEditor internal constructor(
         RangePreferenceDelegate(
             getValue = { preferences.pageMargins },
             getEffectiveValue = { state.settings.pageMargins },
-            getIsEffective = { layout == EpubLayout.REFLOWABLE },
+            getIsEffective = { layout == Layout.REFLOWABLE },
             updateValue = { value -> updateValues { it.copy(pageMargins = value) } },
             supportedRange = 0.0..4.0,
             progressionStrategy = DoubleIncrement(0.3),
@@ -290,7 +290,7 @@ public class EpubPreferencesEditor internal constructor(
         RangePreferenceDelegate(
             getValue = { preferences.paragraphSpacing },
             getEffectiveValue = { state.settings.paragraphSpacing ?: 0.0 },
-            getIsEffective = { layout == EpubLayout.REFLOWABLE && !state.settings.publisherStyles && preferences.paragraphSpacing != null },
+            getIsEffective = { layout == Layout.REFLOWABLE && !state.settings.publisherStyles && preferences.paragraphSpacing != null },
             updateValue = { value -> updateValues { it.copy(paragraphSpacing = value) } },
             supportedRange = 0.0..2.0,
             progressionStrategy = DoubleIncrement(0.1),
@@ -307,7 +307,7 @@ public class EpubPreferencesEditor internal constructor(
         PreferenceDelegate(
             getValue = { preferences.publisherStyles },
             getEffectiveValue = { state.settings.publisherStyles },
-            getIsEffective = { layout == EpubLayout.REFLOWABLE },
+            getIsEffective = { layout == Layout.REFLOWABLE },
             updateValue = { value -> updateValues { it.copy(publisherStyles = value) } }
         )
 
@@ -335,7 +335,7 @@ public class EpubPreferencesEditor internal constructor(
         PreferenceDelegate(
             getValue = { preferences.scroll },
             getEffectiveValue = { state.settings.scroll },
-            getIsEffective = { layout == EpubLayout.REFLOWABLE && !state.settings.verticalText },
+            getIsEffective = { layout == Layout.REFLOWABLE && !state.settings.verticalText },
             updateValue = { value -> updateValues { it.copy(scroll = value) } }
         )
 
@@ -349,7 +349,7 @@ public class EpubPreferencesEditor internal constructor(
         EnumPreferenceDelegate(
             getValue = { preferences.spread },
             getEffectiveValue = { state.settings.spread },
-            getIsEffective = { layout == EpubLayout.FIXED },
+            getIsEffective = { layout == Layout.FIXED },
             updateValue = { value -> updateValues { it.copy(spread = value) } },
             supportedValues = listOf(Spread.NEVER, Spread.ALWAYS)
         )
@@ -390,7 +390,7 @@ public class EpubPreferencesEditor internal constructor(
                     (theme.value ?: theme.effectiveValue).contentColor
                 )
             },
-            getIsEffective = { layout == EpubLayout.REFLOWABLE && preferences.textColor != null },
+            getIsEffective = { layout == Layout.REFLOWABLE && preferences.textColor != null },
             updateValue = { value -> updateValues { it.copy(textColor = value) } }
         )
 
@@ -403,7 +403,7 @@ public class EpubPreferencesEditor internal constructor(
         PreferenceDelegate(
             getValue = { preferences.textNormalization },
             getEffectiveValue = { state.settings.textNormalization },
-            getIsEffective = { layout == EpubLayout.REFLOWABLE },
+            getIsEffective = { layout == Layout.REFLOWABLE },
             updateValue = { value -> updateValues { it.copy(textNormalization = value) } }
         )
 
@@ -416,7 +416,7 @@ public class EpubPreferencesEditor internal constructor(
         EnumPreferenceDelegate(
             getValue = { preferences.theme },
             getEffectiveValue = { state.settings.theme },
-            getIsEffective = { layout == EpubLayout.REFLOWABLE },
+            getIsEffective = { layout == Layout.REFLOWABLE },
             updateValue = { value -> updateValues { it.copy(theme = value) } },
             supportedValues = listOf(Theme.LIGHT, Theme.DARK, Theme.SEPIA)
         )
@@ -433,7 +433,7 @@ public class EpubPreferencesEditor internal constructor(
         RangePreferenceDelegate(
             getValue = { preferences.typeScale },
             getEffectiveValue = { state.settings.typeScale ?: 1.2 },
-            getIsEffective = { layout == EpubLayout.REFLOWABLE && !state.settings.publisherStyles && preferences.typeScale != null },
+            getIsEffective = { layout == Layout.REFLOWABLE && !state.settings.publisherStyles && preferences.typeScale != null },
             updateValue = { value -> updateValues { it.copy(typeScale = value) } },
             valueFormatter = { it.format(5) },
             supportedRange = 1.0..2.0,
@@ -450,7 +450,7 @@ public class EpubPreferencesEditor internal constructor(
         PreferenceDelegate(
             getValue = { preferences.verticalText },
             getEffectiveValue = { state.settings.verticalText },
-            getIsEffective = { layout == EpubLayout.REFLOWABLE },
+            getIsEffective = { layout == Layout.REFLOWABLE },
             updateValue = { value -> updateValues { it.copy(verticalText = value) } }
         )
 
@@ -482,7 +482,7 @@ public class EpubPreferencesEditor internal constructor(
 
     private fun EpubPreferences.toState(): State {
         val settings = settingsResolver.settings(this)
-        val layout = Layout.from(settings)
+        val layout = ReadiumCssLayout.from(settings)
 
         return State(
             preferences = this,
@@ -491,33 +491,33 @@ public class EpubPreferencesEditor internal constructor(
         )
     }
 
-    private fun isHyphensEffective() = layout == EpubLayout.REFLOWABLE &&
-        state.layout.stylesheets == Layout.Stylesheets.Default &&
+    private fun isHyphensEffective() = layout == Layout.REFLOWABLE &&
+        state.layout.stylesheets == ReadiumCssLayout.Stylesheets.Default &&
         !state.settings.publisherStyles &&
         (preferences.hyphens != null || state.settings.textAlign == TextAlign.JUSTIFY)
 
-    private fun isLetterSpacingEffective() = layout == EpubLayout.REFLOWABLE &&
-        state.layout.stylesheets == Layout.Stylesheets.Default &&
+    private fun isLetterSpacingEffective() = layout == Layout.REFLOWABLE &&
+        state.layout.stylesheets == ReadiumCssLayout.Stylesheets.Default &&
         !state.settings.publisherStyles &&
         preferences.letterSpacing != null
 
-    private fun isLigaturesEffective() = layout == EpubLayout.REFLOWABLE &&
-        state.layout.stylesheets == Layout.Stylesheets.Rtl &&
+    private fun isLigaturesEffective() = layout == Layout.REFLOWABLE &&
+        state.layout.stylesheets == ReadiumCssLayout.Stylesheets.Rtl &&
         !state.settings.publisherStyles &&
         preferences.ligatures != null
 
-    private fun isParagraphIndentEffective() = layout == EpubLayout.REFLOWABLE &&
-        state.layout.stylesheets in listOf(Layout.Stylesheets.Default, Layout.Stylesheets.Rtl) &&
+    private fun isParagraphIndentEffective() = layout == Layout.REFLOWABLE &&
+        state.layout.stylesheets in listOf(ReadiumCssLayout.Stylesheets.Default, ReadiumCssLayout.Stylesheets.Rtl) &&
         !state.settings.publisherStyles &&
         preferences.paragraphIndent != null
 
-    private fun isTextAlignEffective() = layout == EpubLayout.REFLOWABLE &&
-        state.layout.stylesheets in listOf(Layout.Stylesheets.Default, Layout.Stylesheets.Rtl) &&
+    private fun isTextAlignEffective() = layout == Layout.REFLOWABLE &&
+        state.layout.stylesheets in listOf(ReadiumCssLayout.Stylesheets.Default, ReadiumCssLayout.Stylesheets.Rtl) &&
         !state.settings.publisherStyles &&
         preferences.textAlign != null
 
-    private fun isWordSpacingEffective(): Boolean = layout == EpubLayout.REFLOWABLE &&
-        state.layout.stylesheets == Layout.Stylesheets.Default &&
+    private fun isWordSpacingEffective(): Boolean = layout == Layout.REFLOWABLE &&
+        state.layout.stylesheets == ReadiumCssLayout.Stylesheets.Default &&
         !state.settings.publisherStyles &&
         preferences.wordSpacing != null
 }

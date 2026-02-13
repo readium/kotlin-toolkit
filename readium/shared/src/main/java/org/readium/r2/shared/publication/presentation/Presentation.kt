@@ -6,7 +6,9 @@
  * Use of this source code is governed by a BSD-style license which is detailed in the
  * LICENSE file present in the project repository where this source code is maintained.
  */
+
 @file:OptIn(InternalReadiumApi::class)
+@file:Suppress("DEPRECATION")
 
 package org.readium.r2.shared.publication.presentation
 
@@ -45,6 +47,7 @@ import org.readium.r2.shared.util.MapCompanion
  * @param layout Hints how the layout of the resource should be presented (EPUB extension).
  */
 @Parcelize
+@Deprecated("This was removed from RWPM. You can still use the EPUB extensibility to access the original value.")
 public data class Presentation(
     val clipped: Boolean? = null,
     val continuous: Boolean? = null,
@@ -181,26 +184,6 @@ public data class Presentation(
              */
             public val DEFAULT: Overflow = AUTO
         }
-    }
-
-    /**
-     * Indicates how the linked resource should be displayed in a reading environment that displays
-     * synthetic spreads.
-     */
-    @Parcelize
-    @Serializable
-    public enum class Page(public val value: String) : Parcelable {
-        @SerialName("left")
-        LEFT("left"),
-
-        @SerialName("right")
-        RIGHT("right"),
-
-        @SerialName("center")
-        CENTER("center"),
-        ;
-
-        public companion object : MapCompanion<String, Page>(entries.toTypedArray(), Page::value)
     }
 
     /**

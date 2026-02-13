@@ -13,11 +13,10 @@ import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.readium.r2.shared.publication.Layout
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Properties
-import org.readium.r2.shared.publication.epub.EpubLayout
-import org.readium.r2.shared.publication.presentation.Presentation
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
@@ -112,8 +111,8 @@ class EpubPositionsServiceTest {
     fun `{type} fallbacks on text-html`() {
         val service = createService(
             readingOrder = listOf(
-                ReadingOrderItem(Url("chap1")!!, length = 1, layout = EpubLayout.REFLOWABLE),
-                ReadingOrderItem(Url("chap2")!!, length = 1, layout = EpubLayout.FIXED)
+                ReadingOrderItem(Url("chap1")!!, length = 1, layout = Layout.REFLOWABLE),
+                ReadingOrderItem(Url("chap2")!!, length = 1, layout = Layout.FIXED)
             )
         )
 
@@ -145,7 +144,7 @@ class EpubPositionsServiceTest {
     @Test
     fun `One position per fixed-layout resources`() {
         val service = createService(
-            layout = EpubLayout.FIXED,
+            layout = Layout.FIXED,
             readingOrder = listOf(
                 ReadingOrderItem(Url("res")!!, length = 10000),
                 ReadingOrderItem(Url("chap1")!!, length = 20000, MediaType.XML),
@@ -196,7 +195,7 @@ class EpubPositionsServiceTest {
     @Test
     fun `Split reflowable resources by the provided number of bytes`() {
         val service = createService(
-            layout = EpubLayout.REFLOWABLE,
+            layout = Layout.REFLOWABLE,
             readingOrder = listOf(
                 ReadingOrderItem(Url("chap1")!!, length = 0),
                 ReadingOrderItem(Url("chap2")!!, length = 49, MediaType.XML),
@@ -328,66 +327,9 @@ class EpubPositionsServiceTest {
     }
 
     @Test
-    fun `Positions from publication with mixed layouts`() {
-        val service = createService(
-            layout = EpubLayout.FIXED,
-            readingOrder = listOf(
-                ReadingOrderItem(Url("chap1")!!, length = 20000),
-                ReadingOrderItem(Url("chap2")!!, length = 60, layout = EpubLayout.REFLOWABLE),
-                ReadingOrderItem(Url("chap3")!!, length = 20000, layout = EpubLayout.FIXED)
-            ),
-            reflowableStrategy = EpubPositionsService.ReflowableStrategy.ArchiveEntryLength(
-                pageLength = 50
-            )
-        )
-
-        assertEquals(
-            listOf(
-                Locator(
-                    href = Url("chap1")!!,
-                    mediaType = MediaType.XHTML,
-                    locations = Locator.Locations(
-                        progression = 0.0,
-                        position = 1,
-                        totalProgression = 0.0
-                    )
-                ),
-                Locator(
-                    href = Url("chap2")!!,
-                    mediaType = MediaType.XHTML,
-                    locations = Locator.Locations(
-                        progression = 0.0,
-                        position = 2,
-                        totalProgression = 1.0 / 4.0
-                    )
-                ),
-                Locator(
-                    href = Url("chap2")!!,
-                    mediaType = MediaType.XHTML,
-                    locations = Locator.Locations(
-                        progression = 0.5,
-                        position = 3,
-                        totalProgression = 2.0 / 4.0
-                    )
-                ),
-                Locator(
-                    href = Url("chap3")!!,
-                    mediaType = MediaType.XHTML,
-                    locations = Locator.Locations(
-                        progression = 0.0,
-                        position = 4,
-                        totalProgression = 3.0 / 4.0
-                    )
-                )
-            ),
-            runBlocking { service.positions() }
-        )
-    }
-
-    @Test
     fun `Use the {ArchiveEntryLength} reflowable strategy`() {
         val service = createService(
-            layout = EpubLayout.REFLOWABLE,
+            layout = Layout.REFLOWABLE,
             readingOrder = listOf(
                 ReadingOrderItem(Url("chap1")!!, length = 60, archiveEntryLength = 20L),
                 ReadingOrderItem(Url("chap2")!!, length = 60)
@@ -438,7 +380,7 @@ class EpubPositionsServiceTest {
     @Test
     fun `Use the {OriginalLength} reflowable strategy`() {
         val service = createService(
-            layout = EpubLayout.REFLOWABLE,
+            layout = Layout.REFLOWABLE,
             readingOrder = listOf(
                 ReadingOrderItem(Url("chap1")!!, length = 60, originalLength = 20L),
                 ReadingOrderItem(Url("chap2")!!, length = 60)
@@ -483,7 +425,7 @@ class EpubPositionsServiceTest {
     }
 
     private fun createService(
-        layout: EpubLayout? = null,
+        layout: Layout? = null,
         readingOrder: List<ReadingOrderItem>,
         reflowableStrategy: EpubPositionsService.ReflowableStrategy = EpubPositionsService.ReflowableStrategy.ArchiveEntryLength(
             pageLength = 50
@@ -518,7 +460,7 @@ class EpubPositionsServiceTest {
 
             override fun close() {}
         },
-        presentation = Presentation(layout = layout),
+        layout = layout,
         reflowableStrategy = reflowableStrategy
     )
 
@@ -529,7 +471,7 @@ class EpubPositionsServiceTest {
         val title: String? = null,
         val archiveEntryLength: Long? = null,
         val originalLength: Long? = null,
-        val layout: EpubLayout? = null,
+        val layout: Layout? = null,
     ) {
         val link: Link = Link(
             href = href,

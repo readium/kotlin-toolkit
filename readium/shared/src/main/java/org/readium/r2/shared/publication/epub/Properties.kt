@@ -27,5 +27,7 @@ public val Properties.contains: Set<String>
 /**
  * Hints how the layout of the resource should be presented.
  */
+@Suppress("DEPRECATION")
+@Deprecated("This was removed from RWPM. You can still use the EPUB extensibility to access the original values.")
 public val Properties.layout: EpubLayout?
     get() = EpubLayout(this["layout"] as? String)

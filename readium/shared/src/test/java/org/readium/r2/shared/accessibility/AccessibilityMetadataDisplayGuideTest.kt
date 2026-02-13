@@ -24,18 +24,16 @@ import org.readium.r2.shared.accessibility.AccessibilityMetadataDisplayGuide.Nav
 import org.readium.r2.shared.accessibility.AccessibilityMetadataDisplayGuide.RichContent
 import org.readium.r2.shared.accessibility.AccessibilityMetadataDisplayGuide.StaticStatement
 import org.readium.r2.shared.accessibility.AccessibilityMetadataDisplayGuide.WaysOfReading
-import org.readium.r2.shared.extensions.toMap
 import org.readium.r2.shared.publication.Accessibility
 import org.readium.r2.shared.publication.Accessibility.AccessMode
 import org.readium.r2.shared.publication.Accessibility.Exemption
 import org.readium.r2.shared.publication.Accessibility.Feature
 import org.readium.r2.shared.publication.Accessibility.PrimaryAccessMode
 import org.readium.r2.shared.publication.Accessibility.Profile
+import org.readium.r2.shared.publication.Layout
 import org.readium.r2.shared.publication.Manifest
 import org.readium.r2.shared.publication.Metadata
 import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.publication.epub.EpubLayout
-import org.readium.r2.shared.publication.presentation.Presentation
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
 
@@ -49,7 +47,7 @@ class AccessibilityMetadataDisplayGuideTest {
     @Test
     fun `ways of reading visual adjustments initialization`() {
         fun test(
-            layout: EpubLayout,
+            layout: Layout,
             a11y: Accessibility?,
             expected: WaysOfReading.VisualAdjustments,
         ) {
@@ -61,14 +59,14 @@ class AccessibilityMetadataDisplayGuideTest {
         val displayTransformability =
             Accessibility(features = setOf(Feature.DISPLAY_TRANSFORMABILITY))
 
-        test(EpubLayout.REFLOWABLE, null, WaysOfReading.VisualAdjustments.UNKNOWN)
+        test(Layout.REFLOWABLE, null, WaysOfReading.VisualAdjustments.UNKNOWN)
         test(
-            EpubLayout.REFLOWABLE,
+            Layout.REFLOWABLE,
             displayTransformability,
             WaysOfReading.VisualAdjustments.MODIFIABLE
         )
-        test(EpubLayout.FIXED, null, WaysOfReading.VisualAdjustments.UNMODIFIABLE)
-        test(EpubLayout.FIXED, displayTransformability, WaysOfReading.VisualAdjustments.MODIFIABLE)
+        test(Layout.FIXED, null, WaysOfReading.VisualAdjustments.UNMODIFIABLE)
+        test(Layout.FIXED, displayTransformability, WaysOfReading.VisualAdjustments.MODIFIABLE)
     }
 
     @Test
@@ -1490,18 +1488,14 @@ class AccessibilityMetadataDisplayGuideTest {
 
     @OptIn(InternalReadiumApi::class)
     private fun publication(
-        layout: EpubLayout? = null,
+        layout: Layout? = null,
         accessibility: Accessibility?,
     ): Publication =
         Publication(
             manifest = Manifest(
                 metadata = Metadata(
+                    layout = layout,
                     accessibility = accessibility,
-                    otherMetadata = mapOf(
-                        "presentation" to Presentation(
-                            layout = layout
-                        ).toJSON().toMap()
-                    )
                 )
             )
         )
