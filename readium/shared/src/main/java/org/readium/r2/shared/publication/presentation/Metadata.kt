@@ -16,7 +16,7 @@ import org.readium.r2.shared.publication.Metadata
 
 // Presentation extensions for [Metadata]
 
-@Deprecated("This was removed from RWPM. You can still use the EPUB extensibility to access the original values.")
+@Deprecated("This was removed from RWPM. You can still use the EPUB extensibility to access the original values.", level = DeprecationLevel.ERROR)
 public val Metadata.presentation: Presentation
     get() = Presentation.fromJSON(
         (this["presentation"] as? Map<*, *>)
