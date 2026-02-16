@@ -68,7 +68,7 @@ public data class Locator(
         val otherLocations: @WriteWith<JSONParceler> Map<String, Any> = emptyMap(),
     ) : JSONable, Parcelable {
 
-        override fun toJSON(): JSONObject = JSONObject(otherLocations).apply {
+        override fun toJSON(): JSONObject = JSONObject(HashMap(otherLocations)).apply {
             putIfNotEmpty("fragments", fragments)
             put("progression", progression)
             put("position", position)
@@ -285,7 +285,7 @@ public data class LocatorCollection(
          */
         val title: String? get() = localizedTitle?.string
 
-        override fun toJSON(): JSONObject = JSONObject(otherMetadata).apply {
+        override fun toJSON(): JSONObject = JSONObject(HashMap(otherMetadata)).apply {
             putIfNotEmpty("title", localizedTitle)
             putOpt("numberOfItems", numberOfItems)
         }
