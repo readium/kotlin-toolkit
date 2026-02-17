@@ -68,7 +68,9 @@ public data class Locator(
         val otherLocations: @WriteWith<JSONParceler> Map<String, Any> = emptyMap(),
     ) : JSONable, Parcelable {
 
-        override fun toJSON(): JSONObject = JSONObject(HashMap(otherLocations)).apply {
+        // Some versions of org.json's JSONObject(Map) store the reference directly
+        // without copying, so the map must be mutable.
+        override fun toJSON(): JSONObject = JSONObject(otherLocations.toMutableMap()).apply {
             putIfNotEmpty("fragments", fragments)
             put("progression", progression)
             put("position", position)
@@ -285,7 +287,7 @@ public data class LocatorCollection(
          */
         val title: String? get() = localizedTitle?.string
 
-        override fun toJSON(): JSONObject = JSONObject(HashMap(otherMetadata)).apply {
+        override fun toJSON(): JSONObject = JSONObject(otherMetadata.toMutableMap()).apply {
             putIfNotEmpty("title", localizedTitle)
             putOpt("numberOfItems", numberOfItems)
         }
