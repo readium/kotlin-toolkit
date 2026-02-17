@@ -69,7 +69,8 @@ public data class Locator(
     ) : JSONable, Parcelable {
 
         // Some versions of org.json's JSONObject(Map) store the reference directly
-        // without copying, so the map must be mutable.
+        // without copying, so the map must be mutable. And even on other versions,
+        // R8 optimizations can make things go like this.
         override fun toJSON(): JSONObject = JSONObject(otherLocations.toMutableMap()).apply {
             putIfNotEmpty("fragments", fragments)
             put("progression", progression)
