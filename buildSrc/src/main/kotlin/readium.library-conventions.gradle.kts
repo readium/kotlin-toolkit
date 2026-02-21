@@ -1,11 +1,9 @@
 import com.vanniktech.maven.publish.SonatypeHost
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     // FIXME: For now, we cannot use the versions catalog in precompiled scripts: https://github.com/gradle/gradle/issues/15383
     id("com.android.library")
     id("com.vanniktech.maven.publish")
-    id("org.jetbrains.kotlin.android")
     kotlin("plugin.parcelize")
 }
 
@@ -49,7 +47,7 @@ kotlin {
     
     compilerOptions {
         freeCompilerArgs.add("-Xannotation-default-target=param-property")
-        jvmTarget = JvmTarget.JVM_11
+        languageVersion = org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_2_3
         allWarningsAsErrors = true
     }
 }

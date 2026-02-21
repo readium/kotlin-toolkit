@@ -1,31 +1,31 @@
 [versions]
 
-kotlin = "2.3.0"
-agp = "8.13.2"
+kotlin = "2.3.10"
+agp = "9.0.0"
 desugar_jdk_libs = "2.1.5"
 gradle-maven-publish-plugin = "0.32.0"
 
-androidx-activity = "1.12.3"
+androidx-activity = "1.12.4"
 androidx-annotation = "1.9.1"
 androidx-appcompat = "1.7.1"
 androidx-browser = "1.9.0"
 androidx-cardview = "1.0.0"
-androidx-compose-animation = "1.10.0"
-androidx-compose-foundation = "1.10.0"
-androidx-compose-material = "1.10.0"
+androidx-compose-animation = "1.10.3"
+androidx-compose-foundation = "1.10.3"
+androidx-compose-material = "1.10.3"
 androidx-compose-material-icons = "1.7.8"
 androidx-compose-material3 = "1.4.0"
-androidx-compose-runtime = "1.10.0"
-androidx-compose-ui = "1.10.0"
+androidx-compose-runtime = "1.10.3"
+androidx-compose-ui = "1.10.3"
 androidx-constraintlayout = "2.2.1"
 androidx-core = "1.17.0"
 androidx-datastore = "1.2.0"
 androidx-fragment-ktx = "1.8.9"
 androidx-legacy = "1.0.0"
 androidx-lifecycle = "2.10.0"
-androidx-media3 = "1.9.1"
+androidx-media3 = "1.9.2"
 androidx-navigation = "2.9.7"
-androidx-paging = "3.4.0"
+androidx-paging = "3.4.1"
 androidx-recyclerview = "1.4.0"
 androidx-room = "2.8.4"
 androidx-viewpager2 = "1.1.0"
@@ -140,6 +140,8 @@ dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 ktlint = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlint" }
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+android-multiplatform-library = { id = "com.android.kotlin.multiplatform.library", version.ref = "agp" }
+kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 
 [bundles]
 
