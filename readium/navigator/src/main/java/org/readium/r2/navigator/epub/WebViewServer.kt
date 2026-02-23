@@ -31,6 +31,7 @@ import org.readium.r2.shared.util.http.HttpRange
 import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.shared.util.resource.StringResource
 import org.readium.r2.shared.util.resource.fallback
+import org.readium.r2.shared.util.toUrl
 
 /**
  * Serves the publication resources and application assets in the EPUB navigator web views.
@@ -44,8 +45,11 @@ internal class WebViewServer(
     private val onResourceLoadFailed: (Url, ReadError) -> Unit,
 ) {
     companion object {
-        val publicationBaseHref = AbsoluteUrl("https://readium/publication/")!!
-        val assetsBaseHref = AbsoluteUrl("https://readium/assets/")!!
+        const val READIUM_PACKAGED_HOSTNAME = "readium_package"
+        const val ASSETS_HOSTNAME = "readium_assets"
+
+        val publicationBaseHref = AbsoluteUrl("https://$READIUM_PACKAGED_HOSTNAME/")!!
+        val assetsBaseHref = AbsoluteUrl("https://$ASSETS_HOSTNAME/")!!
 
         fun assetUrl(path: String): Url? =
             Url.fromDecodedPath(path)?.let { assetsBaseHref.resolve(it) }
@@ -59,23 +63,32 @@ internal class WebViewServer(
      */
     fun shouldInterceptRequest(request: WebResourceRequest, css: ReadiumCss): WebResourceResponse? {
         val path = request.url.path ?: return null
+        val host = request.url.host ?: return null
+        val requestUrl = request.url.toUrl() ?: return null
 
-        if (request.url.host != "readium") {
-            val resourcePath = path.trimStart('/')
+        return when (host) {
+            READIUM_PACKAGED_HOSTNAME -> {
+                val href = Url.fromDecodedPath(path.removePrefix("/"))
+                    ?: return null
 
-            return publication.resources.find { it.href.resolve().path == resourcePath }?.let {
-                servePublicationResource(
-                    href = it.href.resolve(),
+                return servePublicationResource(
+                    href = href,
                     range = HttpHeaders(request.requestHeaders).range,
                     css = css
                 )
             }
-        }
 
-        return when {
-            path.startsWith("/publication/") -> {
-                val href = Url.fromDecodedPath(path.removePrefix("/publication/"))
-                    ?: return null
+            ASSETS_HOSTNAME if isServedAsset(path.removePrefix("/")) -> {
+                assetsLoader.shouldInterceptRequest(request.url)
+            }
+
+            else -> {
+                val href =
+                    publication.baseUrl?.let {
+                        publication.linkWithHref(it.relativize(requestUrl))
+                            ?: publication.linkWithHref(it.resolve(requestUrl))
+                    }?.href?.resolve()
+                        ?: return null
 
                 servePublicationResource(
                     href = href,
@@ -83,10 +96,6 @@ internal class WebViewServer(
                     css = css
                 )
             }
-            path.startsWith("/assets/") && isServedAsset(path.removePrefix("/assets/")) -> {
-                assetsLoader.shouldInterceptRequest(request.url)
-            }
-            else -> null
         }
     }
 
@@ -95,7 +104,11 @@ internal class WebViewServer(
      *
      * If the [Resource] is an HTML document, injects the required JavaScript and CSS files.
      */
-    private fun servePublicationResource(href: Url, range: HttpRange?, css: ReadiumCss): WebResourceResponse {
+    private fun servePublicationResource(
+        href: Url,
+        range: HttpRange?,
+        css: ReadiumCss
+    ): WebResourceResponse {
         val link = publication.linkWithHref(href)
             // Query parameters must be kept as they might be relevant for the fetcher.
             ?.copy(href = Href(href))
@@ -160,6 +173,7 @@ internal class WebViewServer(
             )
         }
     }
+
     private fun errorResource(): Resource =
         StringResource {
             withContext(Dispatchers.IO) {
@@ -180,7 +194,7 @@ internal class WebViewServer(
 
     private val assetsLoader =
         WebViewAssetLoader.Builder()
-            .setDomain("readium")
-            .addPathHandler("/assets/", WebViewAssetLoader.AssetsPathHandler(application))
+            .setDomain(assetsBaseHref.host!!)
+            .addPathHandler("/", WebViewAssetLoader.AssetsPathHandler(application))
             .build()
 }

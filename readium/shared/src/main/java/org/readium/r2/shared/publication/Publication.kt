@@ -27,6 +27,8 @@ import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.data.Container
 import org.readium.r2.shared.util.data.EmptyContainer
 import org.readium.r2.shared.util.resource.Resource
+import org.readium.r2.shared.util.toUri
+import org.readium.r2.shared.util.toUrl
 
 internal typealias ServiceFactory = (Publication.Service.Context) -> Publication.Service?
 

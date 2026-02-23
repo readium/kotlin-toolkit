@@ -311,6 +311,11 @@ public class AbsoluteUrl private constructor(override val uri: Uri) : Url() {
         scheme.isContent
 
     /**
+     * Hostname of the URL.
+     */
+    public val host: String? get() = uri.host
+
+    /**
      * Converts the URL to a [File], if it's a file URL.
      */
     public fun toFile(): File? =
