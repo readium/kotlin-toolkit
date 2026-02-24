@@ -190,6 +190,9 @@ internal class WebViewServer(
         return MediaType.invoke(mimetype)
     }
 
+    /**
+     * Get link in publication from a [Url] and replace href to preserve request query parameters.
+     */
     private fun publicationLinkFromHref(href: Url): Link? {
         return publication.linkWithHref(href)
             // Query parameters must be kept as they might be relevant for the fetcher.
