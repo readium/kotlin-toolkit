@@ -181,7 +181,7 @@ internal class WebViewServer(
     }
 
     /**
-     * Resolve the [MediaType] from a [Url].
+     * Resolve the [MediaType] from an [Url].
      */
     private fun mediaTypeFromUrl(href: Url): MediaType? {
         val ext = MimeTypeMap.getFileExtensionFromUrl(href.normalize().toString()) ?: return null
@@ -219,7 +219,7 @@ internal class WebViewServer(
 
     private val assetsLoader =
         WebViewAssetLoader.Builder()
-            .setDomain(assetsBaseHref.host!!)
+            .setDomain(ASSETS_HOSTNAME)
             .addPathHandler("/", WebViewAssetLoader.AssetsPathHandler(application))
             .build()
 }
