@@ -10,6 +10,7 @@ package org.readium.r2.navigator.epub
 
 import android.app.Application
 import android.os.PatternMatcher
+import android.webkit.MimeTypeMap
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import androidx.webkit.WebViewAssetLoader
@@ -28,6 +29,7 @@ import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.data.asInputStream
 import org.readium.r2.shared.util.http.HttpHeaders
 import org.readium.r2.shared.util.http.HttpRange
+import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.shared.util.resource.StringResource
 import org.readium.r2.shared.util.resource.fallback
@@ -45,10 +47,10 @@ internal class WebViewServer(
     private val onResourceLoadFailed: (Url, ReadError) -> Unit,
 ) {
     companion object {
-        const val READIUM_PACKAGED_HOSTNAME = "readium_package"
+        const val READIUM_PACKAGE_HOSTNAME = "readium_package"
         const val ASSETS_HOSTNAME = "readium_assets"
 
-        val publicationBaseHref = AbsoluteUrl("https://$READIUM_PACKAGED_HOSTNAME/")!!
+        val publicationBaseHref = AbsoluteUrl("https://$READIUM_PACKAGE_HOSTNAME/")!!
         val assetsBaseHref = AbsoluteUrl("https://$ASSETS_HOSTNAME/")!!
 
         fun assetUrl(path: String): Url? =
@@ -58,20 +60,21 @@ internal class WebViewServer(
     /**
      * Serves the requests of the navigator web views.
      *
-     * https://readium/publication/ serves the publication resources through its fetcher.
-     * https://readium/assets/ serves the application assets.
+     * https://readium_package/ serves the publication resources through its fetcher.
+     * https://readium_assets/ serves the application assets.
      */
     fun shouldInterceptRequest(request: WebResourceRequest, css: ReadiumCss): WebResourceResponse? {
         val path = request.url.path ?: return null
-        val host = request.url.host ?: return null
+        val hostname = request.url.host ?: return null
         val requestUrl = request.url.toUrl() ?: return null
 
-        return when (host) {
-            READIUM_PACKAGED_HOSTNAME -> {
+        return when (hostname) {
+            READIUM_PACKAGE_HOSTNAME -> {
+                // Request is for a packaged resource.
                 val href = Url.fromDecodedPath(path.removePrefix("/"))
                     ?: return null
 
-                return servePublicationResource(
+                servePublicationResource(
                     href = href,
                     range = HttpHeaders(request.requestHeaders).range,
                     css = css
@@ -79,19 +82,24 @@ internal class WebViewServer(
             }
 
             ASSETS_HOSTNAME if isServedAsset(path.removePrefix("/")) -> {
+                // Request is for a known asset.
                 assetsLoader.shouldInterceptRequest(request.url)
             }
 
+            ASSETS_HOSTNAME -> return null // Request is for an unknown asset.
+
             else -> {
-                val href =
-                    publication.baseUrl?.let {
-                        publication.linkWithHref(it.relativize(requestUrl))
-                            ?: publication.linkWithHref(it.resolve(requestUrl))
-                    }?.href?.resolve()
-                        ?: return null
+                // Request is for streaming a resource, if the baseUrl an AbsoluteUrl and hostname
+                // is not ASSETS_HOSTNAME or READIUM_PACKAGE_HOSTNAME
+                val baseUrl = publication.baseUrl as? AbsoluteUrl ?: return null
+
+                // Look up the link in the publication to make sure we have the right resource.
+                val link = publicationLinkFromHref(baseUrl.resolve(requestUrl))
+                    ?: publicationLinkFromHref(baseUrl.relativize(requestUrl))
+                    ?: return null // Link not found in publication, we can't serve this resource.
 
                 servePublicationResource(
-                    href = href,
+                    href = link.href.resolve(),
                     range = HttpHeaders(request.requestHeaders).range,
                     css = css
                 )
@@ -109,14 +117,12 @@ internal class WebViewServer(
         range: HttpRange?,
         css: ReadiumCss
     ): WebResourceResponse {
-        val link = publication.linkWithHref(href)
-            // Query parameters must be kept as they might be relevant for the fetcher.
-            ?.copy(href = Href(href))
-            ?: Link(href = href)
+        val link = publicationLinkFromHref(href)
+        // Link not found, create a Link from the href and guess the MediaType
+            ?: Link(href = href, mediaType = mediaTypeFromUrl(href))
 
         // Drop anchor because it is meant to be interpreted by the client.
         val urlWithoutAnchor = href.removeFragment()
-
         var resource = publication
             .get(urlWithoutAnchor)
             ?.fallback {
@@ -172,6 +178,22 @@ internal class WebViewServer(
                 stream
             )
         }
+    }
+
+    /**
+     * Resolve the [MediaType] from a [Url].
+     */
+    private fun mediaTypeFromUrl(href: Url): MediaType? {
+        val ext = MimeTypeMap.getFileExtensionFromUrl(href.normalize().toString()) ?: return null
+        val mimetype = MimeTypeMap.getSingleton().getMimeTypeFromExtension(ext) ?: return null
+
+        return MediaType.invoke(mimetype)
+    }
+
+    private fun publicationLinkFromHref(href: Url): Link? {
+        return publication.linkWithHref(href)
+            // Query parameters must be kept as they might be relevant for the fetcher.
+            ?.copy(href = Href(href))
     }
 
     private fun errorResource(): Resource =
