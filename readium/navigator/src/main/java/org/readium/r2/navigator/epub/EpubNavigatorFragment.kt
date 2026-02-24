@@ -84,11 +84,10 @@ import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.publication.Href
+import org.readium.r2.shared.publication.Layout
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.publication.epub.EpubLayout
-import org.readium.r2.shared.publication.presentation.presentation
 import org.readium.r2.shared.publication.services.positionsByReadingOrder
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Url
@@ -116,7 +115,7 @@ public class EpubNavigatorFragment internal constructor(
     private val initialPreferences: EpubPreferences,
     internal val listener: Listener?,
     internal val paginationListener: PaginationListener?,
-    epubLayout: EpubLayout,
+    layout: Layout,
     private val defaults: EpubDefaults,
     configuration: Configuration,
 ) : NavigatorFragment(publication),
@@ -311,7 +310,7 @@ public class EpubNavigatorFragment internal constructor(
             config = this.config,
             initialPreferences = initialPreferences,
             listener = listener,
-            layout = epubLayout,
+            layout = layout,
             defaults = defaults
         )
     }
@@ -351,7 +350,7 @@ public class EpubNavigatorFragment internal constructor(
         positions = positionsByReadingOrder.flatten()
 
         when (viewModel.layout) {
-            EpubLayout.REFLOWABLE -> {
+            Layout.REFLOWABLE, Layout.SCROLLED -> {
                 resourcesSingle = readingOrder.mapIndexed { index, link ->
                     PageResource.EpubReflowable(
                         link = link,
@@ -361,7 +360,7 @@ public class EpubNavigatorFragment internal constructor(
                 }
             }
 
-            EpubLayout.FIXED -> {
+            Layout.FIXED -> {
                 val resourcesSingle = mutableListOf<PageResource>()
                 val resourcesDouble = mutableListOf<PageResource>()
 
@@ -413,7 +412,7 @@ public class EpubNavigatorFragment internal constructor(
         resetResourcePager()
 
         // Fixed layout publications cannot intercept JS events yet.
-        if (publication.metadata.presentation.layout == EpubLayout.FIXED) {
+        if (publication.metadata.layout == Layout.FIXED) {
             view = KeyInterceptorView(view, inputListener)
         }
 
@@ -430,9 +429,9 @@ public class EpubNavigatorFragment internal constructor(
 
         resourcePager = R2ViewPager(requireContext())
         resourcePager.id = R.id.resourcePager
-        resourcePager.publicationType = when (publication.metadata.presentation.layout) {
-            EpubLayout.REFLOWABLE, null -> R2ViewPager.PublicationType.EPUB
-            EpubLayout.FIXED -> R2ViewPager.PublicationType.FXL
+        resourcePager.publicationType = when (publication.metadata.layout) {
+            Layout.REFLOWABLE, Layout.SCROLLED, null -> R2ViewPager.PublicationType.EPUB
+            Layout.FIXED -> R2ViewPager.PublicationType.FXL
         }
         resourcePager.setBackgroundColor(viewModel.settings.value.effectiveBackgroundColor)
         // Let the page views handle the keyboard events.
@@ -472,11 +471,11 @@ public class EpubNavigatorFragment internal constructor(
     }
 
     private fun resetResourcePagerAdapter() {
-        adapter = when (publication.metadata.presentation.layout) {
-            EpubLayout.REFLOWABLE, null -> {
+        adapter = when (publication.metadata.layout) {
+            Layout.REFLOWABLE, Layout.SCROLLED, null -> {
                 R2PagerAdapter(childFragmentManager, resourcesSingle)
             }
-            EpubLayout.FIXED -> {
+            Layout.FIXED -> {
                 when (viewModel.dualPageMode) {
                     // FIXME: Properly implement DualPage.AUTO depending on the device orientation.
                     DualPage.OFF, DualPage.AUTO -> {
@@ -560,7 +559,7 @@ public class EpubNavigatorFragment internal constructor(
             resourcePager.setBackgroundColor(new.effectiveBackgroundColor)
         }
 
-        if (viewModel.layout == EpubLayout.REFLOWABLE) {
+        if (viewModel.layout == Layout.REFLOWABLE) {
             if (previous.fontSize != new.fontSize) {
                 r2PagerAdapter?.setFontSize(new.fontSize)
             }
@@ -577,7 +576,7 @@ public class EpubNavigatorFragment internal constructor(
 
     private inner class PagerAdapterListener : R2PagerAdapter.Listener {
         override fun onCreatePageFragment(fragment: Fragment) {
-            if (viewModel.layout == EpubLayout.REFLOWABLE) {
+            if (viewModel.layout == Layout.REFLOWABLE) {
                 if (!config.useReadiumCssFontSize) {
                     (fragment as? R2EpubPageFragment)?.setFontSize(settings.value.fontSize)
                 }
@@ -633,7 +632,7 @@ public class EpubNavigatorFragment internal constructor(
             r2PagerAdapter?.loadLocatorAt(index, locator)
         }
 
-        if (publication.metadata.presentation.layout != EpubLayout.FIXED) {
+        if (publication.metadata.layout != Layout.FIXED) {
             setCurrent(resourcesSingle)
         } else {
             when (viewModel.dualPageMode) {
@@ -868,7 +867,7 @@ public class EpubNavigatorFragment internal constructor(
     }
 
     override fun goForward(animated: Boolean): Boolean {
-        if (publication.metadata.presentation.layout == EpubLayout.FIXED) {
+        if (publication.metadata.layout == Layout.FIXED) {
             return goToNextResource(jump = false, animated = animated)
         }
 
@@ -885,7 +884,7 @@ public class EpubNavigatorFragment internal constructor(
     }
 
     override fun goBackward(animated: Boolean): Boolean {
-        if (publication.metadata.presentation.layout == EpubLayout.FIXED) {
+        if (publication.metadata.layout == Layout.FIXED) {
             return goToPreviousResource(jump = false, animated = animated)
         }
 
@@ -1003,10 +1002,10 @@ public class EpubNavigatorFragment internal constructor(
         if (!::resourcePager.isInitialized) return null
 
         return when (viewModel.layout) {
-            EpubLayout.FIXED ->
+            Layout.FIXED ->
                 currentLocator.value
 
-            EpubLayout.REFLOWABLE -> {
+            Layout.REFLOWABLE, Layout.SCROLLED -> {
                 val resource = readingOrder[resourcePager.currentItem]
                 currentReflowablePageFragment?.webView?.findFirstVisibleLocator()
                     ?.copy(
@@ -1123,7 +1122,7 @@ public class EpubNavigatorFragment internal constructor(
                 initialPreferences = EpubPreferences(),
                 listener = null,
                 paginationListener = null,
-                epubLayout = EpubLayout.REFLOWABLE,
+                layout = Layout.REFLOWABLE,
                 defaults = EpubDefaults(),
                 configuration = Configuration()
             )

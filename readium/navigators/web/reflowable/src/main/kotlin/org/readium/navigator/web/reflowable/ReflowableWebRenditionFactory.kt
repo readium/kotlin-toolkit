@@ -13,10 +13,9 @@ import org.readium.navigator.web.reflowable.preferences.ReflowableWebPreferences
 import org.readium.navigator.web.reflowable.preferences.ReflowableWebSettings
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.InternalReadiumApi
+import org.readium.r2.shared.publication.Layout
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.publication.epub.EpubLayout
-import org.readium.r2.shared.publication.presentation.presentation
 import org.readium.r2.shared.publication.services.PositionsService
 import org.readium.r2.shared.publication.services.isProtected
 import org.readium.r2.shared.publication.services.isRestricted
@@ -45,7 +44,7 @@ public class ReflowableWebRenditionFactory private constructor(
             configuration: ReflowableWebConfiguration = ReflowableWebConfiguration(),
         ): ReflowableWebRenditionFactory? {
             if (!publication.conformsTo(Publication.Profile.EPUB) ||
-                publication.metadata.presentation.layout == EpubLayout.FIXED
+                publication.metadata.layout != null && publication.metadata.layout != Layout.REFLOWABLE
             ) {
                 return null
             }
@@ -88,7 +87,7 @@ public class ReflowableWebRenditionFactory private constructor(
     ): Try<ReflowableWebRenditionState, Error> {
         // TODO: enable apps not to disable selection when publication is protected
 
-        val readingOrderItems = readingOrder.mapIndexed { index, link ->
+        val readingOrderItems = readingOrder.map { link ->
             ReflowableWebPublication.Item(
                 href = link.url(),
                 mediaType = link.mediaType,

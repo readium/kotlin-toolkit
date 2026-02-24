@@ -31,9 +31,9 @@ import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.extensions.mapStateIn
 import org.readium.r2.shared.publication.Href
+import org.readium.r2.shared.publication.Layout
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.RelativeUrl
 import org.readium.r2.shared.util.Url
@@ -50,7 +50,7 @@ internal class EpubNavigatorViewModel(
     val publication: Publication,
     val config: EpubNavigatorFragment.Configuration,
     initialPreferences: EpubPreferences,
-    val layout: EpubLayout,
+    val layout: Layout,
     val listener: EpubNavigatorFragment.Listener?,
     private val defaults: EpubDefaults,
     private val server: WebViewServer,
@@ -91,7 +91,7 @@ internal class EpubNavigatorViewModel(
         .mapStateIn(viewModelScope) { settings ->
             SimpleOverflow(
                 readingProgression = settings.readingProgression,
-                scroll = if (layout == EpubLayout.REFLOWABLE) {
+                scroll = if (layout == Layout.REFLOWABLE) {
                     settings.scroll
                 } else {
                     false
@@ -264,12 +264,12 @@ internal class EpubNavigatorViewModel(
      */
     val dualPageMode: DualPage get() =
         when (layout) {
-            EpubLayout.FIXED -> when (settings.value.spread) {
+            Layout.FIXED -> when (settings.value.spread) {
                 Spread.AUTO -> DualPage.AUTO
                 Spread.ALWAYS -> DualPage.ON
                 Spread.NEVER -> DualPage.OFF
             }
-            EpubLayout.REFLOWABLE -> when (settings.value.columnCount) {
+            else -> when (settings.value.columnCount) {
                 ColumnCount.ONE -> DualPage.OFF
                 ColumnCount.TWO -> DualPage.ON
                 ColumnCount.AUTO -> DualPage.AUTO
@@ -281,7 +281,7 @@ internal class EpubNavigatorViewModel(
      */
     val isScrollEnabled: StateFlow<Boolean> get() =
         settings.mapStateIn(viewModelScope) {
-            if (layout == EpubLayout.REFLOWABLE) it.scroll else false
+            if (layout == Layout.REFLOWABLE) it.scroll else false
         }
 
     // Selection
@@ -371,7 +371,7 @@ internal class EpubNavigatorViewModel(
         fun createFactory(
             application: Application,
             publication: Publication,
-            layout: EpubLayout,
+            layout: Layout,
             listener: EpubNavigatorFragment.Listener?,
             defaults: EpubDefaults,
             config: EpubNavigatorFragment.Configuration,

@@ -16,10 +16,8 @@ import org.junit.Assert.assertNotNull
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.readium.r2.shared.publication.*
+import org.readium.r2.shared.publication.Layout
 import org.readium.r2.shared.publication.Link as SharedLink
-import org.readium.r2.shared.publication.epub.EpubLayout
-import org.readium.r2.shared.publication.presentation.Presentation
-import org.readium.r2.shared.publication.presentation.presentation
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Instant
 import org.readium.r2.shared.util.mediatype.MediaType
@@ -327,14 +325,10 @@ class MetadataMiscTest {
     }
 
     @Test
-    fun `Rendition properties are parsed`() {
-        val presentation =
-            parsePackageDocument("package/presentation-metadata.opf").metadata.presentation
-        assertThat(presentation.continuous).isEqualTo(false)
-        assertThat(presentation.overflow).isEqualTo(Presentation.Overflow.SCROLLED)
-        assertThat(presentation.spread).isEqualTo(Presentation.Spread.BOTH)
-        assertThat(presentation.orientation).isEqualTo(Presentation.Orientation.LANDSCAPE)
-        assertThat(presentation.layout).isEqualTo(EpubLayout.FIXED)
+    fun `Layout property is parsed`() {
+        val layout =
+            parsePackageDocument("package/presentation-metadata.opf").metadata.layout
+        assertThat(layout).isEqualTo(Layout.FIXED)
     }
 
     @Test
@@ -382,7 +376,6 @@ class MetadataMiscTest {
         )
         assertThat(otherMetadata).containsOnlyKeys(
             Vocabularies.DCTERMS + "source",
-            "presentation",
             "http://my.url/#property0"
         )
     }

@@ -7,14 +7,11 @@
 package org.readium.r2.streamer.parser.epub
 
 import kotlin.math.ceil
+import org.readium.r2.shared.publication.Layout
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.encryption.encryption
-import org.readium.r2.shared.publication.epub.EpubLayout
-import org.readium.r2.shared.publication.epub.layoutOf
-import org.readium.r2.shared.publication.presentation.Presentation
-import org.readium.r2.shared.publication.presentation.presentation
 import org.readium.r2.shared.publication.services.PositionsService
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.archive.archive
@@ -26,7 +23,7 @@ import org.readium.r2.shared.util.use
 /**
  * Positions Service for an EPUB from its [readingOrder] and [container].
  *
- * The [presentation] is used to apply different calculation strategy if the resource has a
+ * The [layout] is used to apply different calculation strategy if the resource has a
  * reflowable or fixed layout.
  *
  * https://github.com/readium/architecture/blob/master/models/locators/best-practices/format.md#epub
@@ -34,7 +31,7 @@ import org.readium.r2.shared.util.use
  */
 public class EpubPositionsService(
     private val readingOrder: List<Link>,
-    private val presentation: Presentation,
+    private val layout: Layout?,
     private val container: Container<Resource>,
     private val reflowableStrategy: ReflowableStrategy,
 ) : PositionsService {
@@ -49,7 +46,7 @@ public class EpubPositionsService(
             { context ->
                 EpubPositionsService(
                     readingOrder = context.manifest.readingOrder,
-                    presentation = context.manifest.metadata.presentation,
+                    layout = context.manifest.metadata.layout,
                     container = context.container,
                     reflowableStrategy = reflowableStrategy
                 )
@@ -118,10 +115,10 @@ public class EpubPositionsService(
         var lastPositionOfPreviousResource = 0
         var positions = readingOrder.map { link ->
             val positions =
-                if (presentation.layoutOf(link) == EpubLayout.FIXED) {
+                if (layout == Layout.FIXED) {
                     createFixed(link, lastPositionOfPreviousResource)
                 } else {
-                    container.get(link.url())
+                    container[link.url()]
                         ?.use { createReflowable(link, lastPositionOfPreviousResource, it) }
                         ?: emptyList()
                 }

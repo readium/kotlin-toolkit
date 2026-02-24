@@ -25,7 +25,7 @@ import org.readium.r2.navigator.epub.EpubPreferencesEditor
 import org.readium.r2.navigator.preferences.*
 import org.readium.r2.navigator.preferences.TextAlign as ReadiumTextAlign
 import org.readium.r2.shared.ExperimentalReadiumApi
-import org.readium.r2.shared.publication.epub.EpubLayout
+import org.readium.r2.shared.publication.Layout
 import org.readium.r2.shared.util.Language
 import org.readium.r2.testapp.LITERATA
 import org.readium.r2.testapp.R
@@ -101,7 +101,7 @@ private fun <P : Configurable.Preferences<P>, E : PreferencesEditor<P>> UserPref
 
             is EpubPreferencesEditor ->
                 when (editor.layout) {
-                    EpubLayout.REFLOWABLE ->
+                    Layout.REFLOWABLE, Layout.SCROLLED ->
                         ReflowableUserPreferences(
                             commit = commit,
                             backgroundColor = editor.backgroundColor,
@@ -129,7 +129,7 @@ private fun <P : Configurable.Preferences<P>, E : PreferencesEditor<P>> UserPref
                             verticalText = editor.verticalText,
                             wordSpacing = editor.wordSpacing
                         )
-                    EpubLayout.FIXED ->
+                    Layout.FIXED ->
                         FixedLayoutUserPreferences(
                             commit = commit,
                             backgroundColor = editor.backgroundColor,
@@ -646,8 +646,8 @@ val <P : Configurable.Preferences<P>> PreferencesEditor<P>.presets: List<Preset>
     when (this) {
         is EpubPreferencesEditor ->
             when (layout) {
-                EpubLayout.FIXED -> emptyList()
-                EpubLayout.REFLOWABLE -> listOf(
+                Layout.FIXED -> emptyList()
+                Layout.REFLOWABLE, Layout.SCROLLED -> listOf(
                     Preset("Increase legibility") {
                         wordSpacing.set(0.6)
                         fontSize.set(1.4)

@@ -11,11 +11,10 @@ package org.readium.r2.navigator.epub
 import androidx.fragment.app.FragmentFactory
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.InternalReadiumApi
+import org.readium.r2.shared.publication.Layout
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.publication.epub.EpubLayout
-import org.readium.r2.shared.publication.presentation.presentation
 
 /**
  * Factory of the EPUB navigator and related components.
@@ -38,8 +37,8 @@ public class EpubNavigatorFactory(
         val defaults: EpubDefaults = EpubDefaults(),
     )
 
-    private val layout: EpubLayout =
-        publication.metadata.presentation.layout ?: EpubLayout.REFLOWABLE
+    private val layout: Layout =
+        publication.metadata.layout ?: Layout.REFLOWABLE
 
     /**
      * Creates a factory for [EpubNavigatorFragment].
@@ -69,7 +68,7 @@ public class EpubNavigatorFactory(
             initialPreferences = initialPreferences,
             listener = listener,
             paginationListener = paginationListener,
-            epubLayout = layout,
+            layout = layout,
             defaults = this.configuration.defaults,
             configuration = configuration
         )

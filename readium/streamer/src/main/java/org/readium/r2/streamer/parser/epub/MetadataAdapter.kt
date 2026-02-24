@@ -9,10 +9,8 @@
 package org.readium.r2.streamer.parser.epub
 
 import org.readium.r2.shared.InternalReadiumApi
-import org.readium.r2.shared.extensions.toMap
 import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.publication.Collection
-import org.readium.r2.shared.publication.presentation.Presentation
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Instant
 
@@ -86,8 +84,8 @@ internal class MetadataAdapter(
         val accessibility: Accessibility? = globalItemsHolder
             .adapt(AccessibilityAdapter()::adapt)
 
-        val presentation: Presentation = globalItemsHolder
-            .adapt(PresentationAdapter(epubVersion, displayOptions)::adapt)
+        val layout: Layout = globalItemsHolder
+            .adapt(LayoutAdapter(epubVersion, displayOptions)::adapt)
 
         val tdm: Tdm? = globalItemsHolder
             .adapt(TdmAdapter()::adapt)
@@ -95,11 +93,8 @@ internal class MetadataAdapter(
         val links: List<Link> = globalItemsHolder
             .adapt(LinksAdapter()::adapt)
 
-        val remainingMetadata: Map<String, Any> = OtherMetadataAdapter()
+        val otherMetadata: Map<String, Any> = OtherMetadataAdapter()
             .adapt(globalItemsHolder.remainingItems)
-
-        val otherMetadata: Map<String, Any> =
-            remainingMetadata + Pair("presentation", presentation.toJSON().toMap())
 
         val metadata = Metadata(
             identifier = identifier,
@@ -118,8 +113,8 @@ internal class MetadataAdapter(
             belongsToCollections = belongsToCollections,
             belongsToSeries = belongsToSeries,
             tdm = tdm,
+            layout = layout,
             otherMetadata = otherMetadata,
-
             authors = contributors("aut"),
             translators = contributors("trl"),
             editors = contributors("edt"),
@@ -286,7 +281,7 @@ private class SubjectAdapter {
     private fun splitSubject(subject: Subject): List<Subject> {
         val lang = subject.localizedName.translations.keys.first()
         val names = subject.localizedName.translations.values.first().string.split(",", ";")
-            .map(kotlin.String::trim).filter(kotlin.String::isNotEmpty)
+            .map(String::trim).filter(String::isNotEmpty)
         return names.map {
             val newName = LocalizedString.fromStrings(mapOf(lang to it))
             Subject(localizedName = newName)
@@ -399,7 +394,7 @@ private class CollectionAdapter {
 private class OtherMetadataAdapter {
 
     fun adapt(items: List<MetadataItem>): Map<String, Any> =
-        items.filterIsInstance(MetadataItem.Meta::class.java)
+        items.filterIsInstance<MetadataItem.Meta>()
             .groupBy(MetadataItem.Meta::property)
             .mapValues { entry ->
                 val values = entry.value.map { it.toMap() }
@@ -414,10 +409,10 @@ private class OtherMetadataAdapter {
             value
         } else {
             val mappedMetaChildren = children
-                .filterIsInstance(MetadataItem.Meta::class.java)
+                .filterIsInstance<MetadataItem.Meta>()
                 .associate { Pair(it.property, it.toMap()) }
             val mappedLinkChildren = children
-                .filterIsInstance(MetadataItem.Link::class.java)
+                .filterIsInstance<MetadataItem.Link>()
                 .flatMap { link -> link.rels.map { rel -> Pair(rel, link.url()) } }
                 .toMap()
             mappedMetaChildren + mappedLinkChildren + Pair("@value", value)
