@@ -96,14 +96,11 @@ internal class WebViewServer(
             }
 
             else -> {
-                // Request is for streaming a resource, if the baseUrl an AbsoluteUrl and hostname
-                // is not ASSETS_HOSTNAME or READIUM_PACKAGE_HOSTNAME
-                val baseUrl = publication.baseUrl as? AbsoluteUrl ?: return null
-
-                // Look up the link in the publication to make sure we have the right resource.
-                val link = publicationLinkFromHref(baseUrl.resolve(requestUrl))
-                    ?: publicationLinkFromHref(baseUrl.relativize(requestUrl))
-                    ?: return null // Link not found in publication, we can't serve this resource.
+                val link = publication.baseUrl?.let { baseUrl ->
+                    // Look up the link in the publication to make sure we have the right resource.
+                    publicationLinkFromHref(baseUrl.resolve(requestUrl))
+                        ?: publicationLinkFromHref(baseUrl.relativize(requestUrl))
+                } ?: Link(href = requestUrl)
 
                 servePublicationResource(
                     href = link.href.resolve(),
