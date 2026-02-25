@@ -67,6 +67,7 @@ internal class WebViewServer(
         val path = request.url.path ?: return null
         val hostname = request.url.host ?: return null
         val requestUrl = request.url.toUrl() ?: return null
+        val range = HttpHeaders(request.requestHeaders).range
 
         return when (hostname) {
             READIUM_PACKAGE_HOSTNAME -> {
@@ -76,7 +77,7 @@ internal class WebViewServer(
 
                 servePublicationResource(
                     href = href,
-                    range = HttpHeaders(request.requestHeaders).range,
+                    range = range,
                     css = css
                 )
             }
@@ -100,7 +101,7 @@ internal class WebViewServer(
 
                 servePublicationResource(
                     href = link.href.resolve(),
-                    range = HttpHeaders(request.requestHeaders).range,
+                    range = range,
                     css = css
                 )
             }
