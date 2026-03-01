@@ -17,6 +17,8 @@ import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.extensions.readFully
@@ -41,6 +43,8 @@ internal class FileZipContainer(
     private val archive: ZipFile,
     file: File,
 ) : Container<Resource> {
+
+    private val mutex = Mutex()
 
     private inner class Entry(private val url: Url, private val entry: ZipEntry) :
         Resource {
@@ -76,20 +80,30 @@ internal class FileZipContainer(
             }
 
         override suspend fun read(range: LongRange?): Try<ByteArray, ReadError> =
-            try {
-                withContext(Dispatchers.IO) {
-                    val bytes =
-                        if (range == null) {
-                            readFully()
-                        } else {
-                            readRange(range)
-                        }
-                    Try.success(bytes)
+            mutex.withLock {
+                try {
+                    withContext(Dispatchers.IO) {
+                        val bytes =
+                            if (range == null) {
+                                readFully()
+                            } else {
+                                readRange(range)
+                            }
+                        Try.success(bytes)
+                    }
+                } catch (e: ZipException) {
+                    Try.failure(ReadError.Decoding(e))
+                } catch (e: IOException) {
+                    Try.failure(ReadError.Access(FileSystemError.IO(e)))
+                } catch (e: IllegalStateException) {
+                    Try.failure(
+                        ReadError.Access(
+                            FileSystemError.IO(
+                                IOException("Zip file closed.", e)
+                            )
+                        )
+                    )
                 }
-            } catch (e: ZipException) {
-                Try.failure(ReadError.Decoding(e))
-            } catch (e: IOException) {
-                Try.failure(ReadError.Access(FileSystemError.IO(e)))
             }
 
         private suspend fun readFully(): ByteArray =
@@ -156,9 +170,11 @@ internal class FileZipContainer(
     @OptIn(DelicateCoroutinesApi::class)
     override fun close() {
         GlobalScope.launch {
-            tryOrLog {
-                withContext(Dispatchers.IO) {
-                    archive.close()
+            mutex.withLock {
+                tryOrLog {
+                    withContext(Dispatchers.IO) {
+                        archive.close()
+                    }
                 }
             }
         }
