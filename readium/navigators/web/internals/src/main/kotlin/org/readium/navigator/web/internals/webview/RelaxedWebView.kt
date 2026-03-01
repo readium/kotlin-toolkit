@@ -66,8 +66,9 @@ public class RelaxedWebView(context: Context) : WebView(context) {
     @Deprecated("Deprecated in Java")
     override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
         super.onLayout(changed, l, t, r, b)
-        nextLayoutListener.invoke()
+        val listener = nextLayoutListener
         nextLayoutListener = {}
+        listener.invoke()
     }
 
     private var hasActionMode: Boolean = false
@@ -140,8 +141,12 @@ private class CallbackDecorator(
  * has received data up-to-date at the moment when the call occurs or newer.
  */
 public fun RelaxedWebView.invokeOnWebViewUpToDate(block: WebView.() -> Unit) {
-    requestLayout()
-    setNextLayoutListener {
+    if (verticalScrollExtent > 0 && horizontalScrollExtent > 0) {
         invokeOnReadyToBeDrawn(block)
+    } else {
+        requestLayout()
+        setNextLayoutListener {
+            invokeOnWebViewUpToDate(block)
+        }
     }
 }

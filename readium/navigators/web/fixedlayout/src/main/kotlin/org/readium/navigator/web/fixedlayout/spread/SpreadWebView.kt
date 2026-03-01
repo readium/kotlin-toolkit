@@ -37,6 +37,7 @@ import org.readium.navigator.web.internals.webview.RelaxedWebView
 import org.readium.navigator.web.internals.webview.WebView
 import org.readium.navigator.web.internals.webview.WebViewScrollController
 import org.readium.navigator.web.internals.webview.WebViewState
+import org.readium.navigator.web.internals.webview.invokeOnWebViewUpToDate
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.AbsoluteUrl
 
@@ -96,8 +97,7 @@ internal fun SpreadWebView(
             documentStateApi?.let { documentStateApi ->
                 documentStateApi.listener = DelegatingDocumentApiListener(
                     onDocumentLoadedAndSizedDelegate = {
-                        webView.requestLayout()
-                        webView.setNextLayoutListener {
+                        webView.invokeOnWebViewUpToDate {
                             val scrollController = WebViewScrollController(webView)
                             scrollController.moveToProgression(
                                 progression = progression,
