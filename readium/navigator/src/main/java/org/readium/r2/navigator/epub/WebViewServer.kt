@@ -150,17 +150,20 @@ internal class WebViewServer(
             errorResource()
         }
 
-        link.mediaType
-            ?.takeIf { it.isHtml }
-            ?.let {
-                resource = resource.injectHtml(
-                    publication,
-                    mediaType = it,
-                    css,
-                    baseHref = assetsBaseHref,
-                    disableSelectionWhenProtected = disableSelectionWhenProtected
-                )
-            }
+        // Only inject html when the profile is EPUB
+        if (publication.conformsTo(Publication.Profile.EPUB)) {
+            link.mediaType
+                ?.takeIf { it.isHtml }
+                ?.let {
+                    resource = resource.injectHtml(
+                        publication,
+                        mediaType = it,
+                        css,
+                        baseHref = assetsBaseHref,
+                        disableSelectionWhenProtected = disableSelectionWhenProtected
+                    )
+                }
+        }
 
         return serveResource(resource, range, link.mediaType)
     }
