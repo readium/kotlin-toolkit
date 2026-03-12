@@ -67,16 +67,17 @@ internal class WebViewServer(
         val path = request.url.path ?: return null
         val hostname = request.url.host ?: return null
         val requestUrl = request.url.toUrl() ?: return null
+        val range = HttpHeaders(request.requestHeaders).range
 
         return when (hostname) {
             READIUM_PACKAGE_HOSTNAME -> {
                 // Request is for a packaged resource.
                 val href = Url.fromDecodedPath(path.removePrefix("/"))
-                    ?: return null
+                    ?: return serveErrorResponse()
 
                 servePublicationResource(
                     href = href,
-                    range = HttpHeaders(request.requestHeaders).range,
+                    range = range,
                     css = css
                 )
             }
@@ -86,21 +87,34 @@ internal class WebViewServer(
                 assetsLoader.shouldInterceptRequest(request.url)
             }
 
-            ASSETS_HOSTNAME -> return null // Request is for an unknown asset.
+            ASSETS_HOSTNAME -> {
+                val error = ReadError.Decoding(
+                    "Attempted to load an unknown asset from $requestUrl"
+                )
+                onResourceLoadFailed(requestUrl, error)
+                serveErrorResponse() // Request is for an unknown asset.
+            }
 
             else -> {
                 // Request is for streaming a resource, if the baseUrl an AbsoluteUrl and hostname
                 // is not ASSETS_HOSTNAME or READIUM_PACKAGE_HOSTNAME
-                val baseUrl = publication.baseUrl as? AbsoluteUrl ?: return null
+                val baseUrl = publication.baseUrl as? AbsoluteUrl ?: run {
+                    val error = ReadError.Decoding(
+                        "baseUrl is not an AbsoluteUrl, cannot load remote resource from $requestUrl"
+                    )
+                    onResourceLoadFailed(requestUrl, error)
+                    return serveErrorResponse()
+                }
 
-                // Look up the link in the publication to make sure we have the right resource.
-                val link = publicationLinkFromHref(baseUrl.resolve(requestUrl))
-                    ?: publicationLinkFromHref(baseUrl.relativize(requestUrl))
-                    ?: return null // Link not found in publication, we can't serve this resource.
+                val href =
+                    // Look up the link in the publication to make sure we have the right resource.
+                    publicationLinkFromHref(baseUrl.resolve(requestUrl))?.href?.resolve()
+                        ?: publicationLinkFromHref(baseUrl.relativize(requestUrl))?.href?.resolve()
+                        ?: requestUrl
 
                 servePublicationResource(
-                    href = link.href.resolve(),
-                    range = HttpHeaders(request.requestHeaders).range,
+                    href = href,
+                    range = range,
                     css = css
                 )
             }
@@ -148,6 +162,14 @@ internal class WebViewServer(
                 )
             }
 
+        return serveResource(resource, range, link.mediaType)
+    }
+
+    private fun serveResource(
+        resource: Resource,
+        range: HttpRange?,
+        mediaType: MediaType?,
+    ): WebResourceResponse {
         val headers = mutableMapOf(
             "Accept-Ranges" to "bytes"
         )
@@ -155,7 +177,7 @@ internal class WebViewServer(
         val stream = resource.asInputStream()
         if (range == null) {
             return WebResourceResponse(
-                link.mediaType?.toString(),
+                mediaType?.toString(),
                 null,
                 200,
                 "OK",
@@ -170,7 +192,7 @@ internal class WebViewServer(
             // headers["Content-Length"] = (longRange.last - longRange.first + 1).toString()
             // Weirdly, the WebView will call itself stream.skip to skip to the requested range.
             return WebResourceResponse(
-                link.mediaType?.toString(),
+                mediaType?.toString(),
                 null,
                 206,
                 "Partial Content",
@@ -210,6 +232,10 @@ internal class WebViewServer(
                 )
             }
         }
+
+    private fun serveErrorResponse(): WebResourceResponse {
+        return serveResource(errorResource(), null, MediaType.XHTML)
+    }
 
     private fun isServedAsset(path: String): Boolean =
         servedAssetPatterns.any { it.match(path) }
