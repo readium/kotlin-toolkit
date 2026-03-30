@@ -96,21 +96,14 @@ internal class WebViewServer(
             }
 
             else -> {
-                // Request is for streaming a resource, if the baseUrl an AbsoluteUrl and hostname
-                // is not ASSETS_HOSTNAME or READIUM_PACKAGE_HOSTNAME
-                val baseUrl = publication.baseUrl as? AbsoluteUrl ?: run {
-                    val error = ReadError.Decoding(
-                        "baseUrl is not an AbsoluteUrl, cannot load remote resource from $requestUrl"
-                    )
-                    onResourceLoadFailed(requestUrl, error)
-                    return serveErrorResponse()
-                }
-
                 val href =
-                    // Look up the link in the publication to make sure we have the right resource.
-                    publicationLinkFromHref(baseUrl.resolve(requestUrl))?.href?.resolve()
-                        ?: publicationLinkFromHref(baseUrl.relativize(requestUrl))?.href?.resolve()
-                        ?: requestUrl
+                    (publication.baseUrl as? AbsoluteUrl)?.let { baseUrl ->
+                        // For absolute baseUrls, we need to check if requestUrl matches a
+                        // relative link.
+                        publicationLinkFromHref(
+                            baseUrl.relativize(requestUrl)
+                        )?.href?.resolve()
+                    } ?: requestUrl
 
                 servePublicationResource(
                     href = href,
