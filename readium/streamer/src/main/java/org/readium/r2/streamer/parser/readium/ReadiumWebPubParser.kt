@@ -138,21 +138,7 @@ public class ReadiumWebPubParser(
             }
         }
 
-        val httpResources =
-            manifest.resources.map { it.href.resolve() }.filter { it is AbsoluteUrl && it.isHttp }
-                .toSet()
-
-        val buildContainer = if (httpResources.isEmpty()) container else
-            CompositeContainer(
-                container,
-                HttpContainer(
-                    null,
-                    httpResources,
-                    httpClient
-                )
-            )
-
-        val publicationBuilder = Publication.Builder(manifest, buildContainer, servicesBuilder)
+        val publicationBuilder = Publication.Builder(manifest, container, servicesBuilder)
         return Try.success(publicationBuilder)
     }
 
