@@ -68,7 +68,7 @@ public class DefaultPublicationParser(
     additionalParsers: List<PublicationParser> = emptyList(),
 ) : PublicationParser by CompositePublicationParser(
     additionalParsers + listOfNotNull(
-        EpubParser(),
+        EpubParser(httpClient),
         pdfFactory?.let { PdfParser(context, it) },
         ReadiumWebPubParser(context, httpClient, pdfFactory),
         ImageParser(assetRetriever),

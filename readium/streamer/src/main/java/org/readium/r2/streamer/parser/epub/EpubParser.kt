@@ -17,11 +17,13 @@ import org.readium.r2.shared.publication.epub.EpubEncryptionParser
 import org.readium.r2.shared.publication.services.content.DefaultContentService
 import org.readium.r2.shared.publication.services.content.iterators.HtmlResourceContentIterator
 import org.readium.r2.shared.publication.services.search.StringSearchService
+import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.DebugError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.asset.Asset
 import org.readium.r2.shared.util.asset.ContainerAsset
+import org.readium.r2.shared.util.data.CompositeContainer
 import org.readium.r2.shared.util.data.Container
 import org.readium.r2.shared.util.data.DecodeError
 import org.readium.r2.shared.util.data.ReadError
@@ -32,6 +34,8 @@ import org.readium.r2.shared.util.data.readDecodeOrNull
 import org.readium.r2.shared.util.format.Specification
 import org.readium.r2.shared.util.fromEpubHref
 import org.readium.r2.shared.util.getOrElse
+import org.readium.r2.shared.util.http.HttpClient
+import org.readium.r2.shared.util.http.HttpContainer
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.resource.Resource
@@ -48,6 +52,7 @@ import org.readium.r2.streamer.parser.PublicationParser
  */
 @OptIn(ExperimentalReadiumApi::class)
 public class EpubParser(
+    private val httpClient: HttpClient,
     private val reflowablePositionsStrategy: EpubPositionsService.ReflowableStrategy = EpubPositionsService.ReflowableStrategy.recommended,
 ) : PublicationParser {
 
@@ -93,7 +98,19 @@ public class EpubParser(
             displayOptions = parseDisplayOptions(asset.container)
         ).adapt()
 
-        var container = asset.container
+        val httpResources =
+            manifest.resources.map { it.href.resolve() }.filter { it is AbsoluteUrl && it.isHttp }
+                .toSet()
+
+        var container = if (httpResources.isEmpty()) asset.container else
+            CompositeContainer(
+                asset.container,
+                HttpContainer(
+                    null,
+                    httpResources,
+                    httpClient
+                )
+            )
         manifest.metadata.identifier?.let { id ->
             val deobfuscator = EpubDeobfuscator(id, encryptionData)
             container = TransformingContainer(container, deobfuscator::transform)
