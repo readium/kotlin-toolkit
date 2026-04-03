@@ -14,7 +14,6 @@ import org.readium.r2.shared.DelicateReadiumApi
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.services.positions
-import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Url
 
 // These extensions will be removed in the next release, with `PositionsService`.
@@ -32,7 +31,7 @@ internal val Publication.positionsByResource: Map<Url, List<Locator>>
  */
 @DelicateReadiumApi
 public fun Publication.normalizeLocator(locator: Locator): Locator {
-    val self = (baseUrl as? AbsoluteUrl)
+    val self = baseUrl
 
     return if (self == null) { // Packaged publication
         locator.copy(

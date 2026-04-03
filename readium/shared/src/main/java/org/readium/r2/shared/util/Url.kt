@@ -124,12 +124,25 @@ public sealed class Url : Parcelable {
     /**
      * Returns a copy of this URL after dropping its query.
      */
-    public fun removeQuery(): Url =
+    public open fun removeQuery(): Url =
         if (uri.query == null) {
             this
         } else {
             checkNotNull(invoke(uri.buildUpon().clearQuery().build()))
         }
+
+    /**
+     * Returns a copy of this URL after adding the given decoded fragment..
+     */
+    @InternalReadiumApi
+    public fun addFragment(fragment: String): Url =
+        checkNotNull(
+            invoke(
+                this.uri.buildUpon()
+                    .fragment(fragment)
+                    .build()
+            )
+        )
 
     /**
      * Returns the decoded fragment present in this URL, if any.
@@ -140,7 +153,7 @@ public sealed class Url : Parcelable {
     /**
      * Returns a copy of this URL after dropping its fragment.
      */
-    public fun removeFragment(): Url =
+    public open fun removeFragment(): Url =
         if (fragment == null) {
             this
         } else {
@@ -285,6 +298,12 @@ public class AbsoluteUrl private constructor(override val uri: Uri) : Url() {
 
     public override fun normalize(): AbsoluteUrl =
         super.normalize() as AbsoluteUrl
+
+    public override fun removeFragment(): AbsoluteUrl =
+        super.removeFragment() as AbsoluteUrl
+
+    public override fun removeQuery(): AbsoluteUrl =
+        super.removeQuery() as AbsoluteUrl
 
     /**
      * Identifies the type of URL.

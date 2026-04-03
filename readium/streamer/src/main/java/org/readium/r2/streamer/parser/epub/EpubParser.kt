@@ -17,7 +17,6 @@ import org.readium.r2.shared.publication.epub.EpubEncryptionParser
 import org.readium.r2.shared.publication.services.content.DefaultContentService
 import org.readium.r2.shared.publication.services.content.iterators.HtmlResourceContentIterator
 import org.readium.r2.shared.publication.services.search.StringSearchService
-import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.DebugError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
@@ -34,6 +33,7 @@ import org.readium.r2.shared.util.data.readDecodeOrNull
 import org.readium.r2.shared.util.format.Specification
 import org.readium.r2.shared.util.fromEpubHref
 import org.readium.r2.shared.util.getOrElse
+import org.readium.r2.shared.util.http.DefaultHttpClient
 import org.readium.r2.shared.util.http.HttpClient
 import org.readium.r2.shared.util.http.HttpContainer
 import org.readium.r2.shared.util.logging.WarningLogger
@@ -47,12 +47,13 @@ import org.readium.r2.streamer.parser.PublicationParser
 /**
  * Parses a Publication from an EPUB publication.
  *
+ * @param httpClient Http client to use to fetch resources outside the asset.
  * @param reflowablePositionsStrategy Strategy used to calculate the number of positions in a
  *        reflowable resource.
  */
 @OptIn(ExperimentalReadiumApi::class)
 public class EpubParser(
-    private val httpClient: HttpClient,
+    private val httpClient: HttpClient = DefaultHttpClient(),
     private val reflowablePositionsStrategy: EpubPositionsService.ReflowableStrategy = EpubPositionsService.ReflowableStrategy.recommended,
 ) : PublicationParser {
 
@@ -98,19 +99,23 @@ public class EpubParser(
             displayOptions = parseDisplayOptions(asset.container)
         ).adapt()
 
-        val httpResources =
-            manifest.resources.map { it.href.resolve() }.filter { it is AbsoluteUrl && it.isHttp }
-                .toSet()
+        var container = asset.container
 
-        var container = if (httpResources.isEmpty()) asset.container else
-            CompositeContainer(
+        val resourceHrefs = manifest.resources.map { it.href.resolve() }
+
+        val resourcesOutsideAsset = resourceHrefs.toSet() - container.entries
+
+        if (resourcesOutsideAsset.isNotEmpty()) {
+            container = CompositeContainer(
                 asset.container,
                 HttpContainer(
                     null,
-                    httpResources,
+                    resourcesOutsideAsset,
                     httpClient
                 )
             )
+        }
+
         manifest.metadata.identifier?.let { id ->
             val deobfuscator = EpubDeobfuscator(id, encryptionData)
             container = TransformingContainer(container, deobfuscator::transform)

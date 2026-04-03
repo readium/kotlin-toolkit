@@ -108,13 +108,10 @@ public class ReadiumWebPubParser(
                     Specification.Lcp
                 ) ->
                     pdfFactory?.let { LcpdfPositionsService.create(it) }
-
                 manifest.conformsTo(Publication.Profile.DIVINA) ->
                     PerResourcePositionsService.createFactory(MediaType("image/*")!!)
-
                 manifest.conformsTo(Publication.Profile.EPUB) ->
                     EpubPositionsService.createFactory(epubReflowablePositionsStrategy)
-
                 else ->
                     WebPositionsService.createFactory(httpClient)
             }
@@ -122,7 +119,6 @@ public class ReadiumWebPubParser(
             locatorServiceFactory = when {
                 manifest.conformsTo(Publication.Profile.AUDIOBOOK) ->
                     AudioLocatorService.createFactory()
-
                 else ->
                     null
             }
@@ -157,7 +153,6 @@ public class ReadiumWebPubParser(
                     null
                 }
             }
-
             manifest.conformsTo(Publication.Profile.AUDIOBOOK) -> {
                 if (manifest.readingOrder.isEmpty()) {
                     PublicationParser.ParseError.Reading(
@@ -169,7 +164,6 @@ public class ReadiumWebPubParser(
                     null
                 }
             }
-
             else -> {
                 null
             }
