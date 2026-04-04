@@ -123,7 +123,8 @@ internal class WebViewServer(
             }
             else -> { // Request is for a publication resource
                 servePublicationResourceWithUrl(
-                    url = requestUrl,
+                    // Drop anchor because it is meant to be interpreted by the client.
+                    url = requestUrl.removeFragment(),
                     range = range,
                     css = css
                 )
@@ -149,8 +150,7 @@ internal class WebViewServer(
         val href = link?.url() ?: url // Just in case some resource is not in the manifest
 
         return servePublicationResourceWithHref(
-            // Drop anchor because it is meant to be interpreted by the client.
-            href = href.removeFragment(),
+            href = href,
             mediaType = mediaType,
             range = range,
             css = css
