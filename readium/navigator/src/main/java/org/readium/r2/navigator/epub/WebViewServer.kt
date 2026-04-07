@@ -87,8 +87,8 @@ internal class WebViewServer(
             }
         } ?: return null
 
-        val hrefWithFragment = link.url().let { url ->
-            url.fragment?.let { url.addFragment(it) } ?: url
+        val hrefWithFragment = link.url().let { linkUrl ->
+            url.fragment?.let { linkUrl.addFragment(it) } ?: linkUrl
         }
 
         // Fragment must be kept as it might be relevant to the caller.
