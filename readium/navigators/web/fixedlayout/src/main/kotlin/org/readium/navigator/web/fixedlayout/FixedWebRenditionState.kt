@@ -155,6 +155,7 @@ public class FixedWebRenditionState internal constructor(
             application = application,
             container = publication.container,
             mediaTypes = publication.mediaTypes,
+            baseUrl = publication.baseUrl,
             errorPage = RelativeUrl("readium/navigator/web/internals/error.xhtml")!!,
             htmlInjector = htmlInjector,
             servedAssets = configuration.servedAssets + listOf("readium/.*"),

@@ -185,8 +185,8 @@ internal class WebViewServer(
                         publication,
                         mediaType = it,
                         css,
-                        assetsBaseHref = assetsBaseHref,
-                        disableSelectionWhenProtected = disableSelectionWhenProtected
+                        assetsBaseHref,
+                        disableSelectionWhenProtected
                     )
                 }
         }

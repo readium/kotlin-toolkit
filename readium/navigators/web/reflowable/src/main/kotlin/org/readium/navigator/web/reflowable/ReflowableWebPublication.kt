@@ -12,6 +12,7 @@ import kotlin.math.floor
 import org.readium.navigator.common.Position
 import org.readium.navigator.common.Progression
 import org.readium.r2.shared.ExperimentalReadiumApi
+import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.data.Container
 import org.readium.r2.shared.util.mediatype.MediaType
@@ -19,6 +20,7 @@ import org.readium.r2.shared.util.resource.Resource
 
 internal class ReflowableWebPublication(
     val readingOrder: ReadingOrder,
+    val baseUrl: AbsoluteUrl?,
     @Suppress("unused") val otherResources: List<Item>,
     val container: Container<Resource>,
 ) {
