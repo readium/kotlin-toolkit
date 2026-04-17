@@ -62,6 +62,7 @@ import org.readium.r2.navigator.preferences.Axis
 import org.readium.r2.navigator.preferences.Fit
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.InternalReadiumApi
+import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.RelativeUrl
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
@@ -162,6 +163,12 @@ public class FixedWebRenditionState internal constructor(
             onResourceLoadFailed = { _, _ -> }
         )
     }
+
+    internal fun servedUrlToHref(url: AbsoluteUrl) =
+        webViewServer.servedUrlToHref(url)
+
+    internal fun hrefToServedUrl(href: Url) =
+        webViewServer.hrefToServedUrl(href)
 
     internal val webViewClient: WebViewClient =
         WebViewClient(webViewServer)

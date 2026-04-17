@@ -48,7 +48,7 @@ public class WebViewServer(
         public const val PACKAGE_HOSTNAME: String = "readium_package"
         public const val ASSETS_HOSTNAME: String = "readium_assets"
 
-        public val publicationBaseHref: AbsoluteUrl = AbsoluteUrl("https://$PACKAGE_HOSTNAME/")!!
+        public val packageBaseHref: AbsoluteUrl = AbsoluteUrl("https://$PACKAGE_HOSTNAME/")!!
         public val assetsBaseHref: AbsoluteUrl = AbsoluteUrl("https://$ASSETS_HOSTNAME/")!!
 
         public fun assetUrl(path: String): AbsoluteUrl? =
@@ -56,9 +56,44 @@ public class WebViewServer(
     }
 
     /**
+     * Gets the url the given [href] is being served at.
+     */
+    public fun hrefToServedUrl(href: Url): AbsoluteUrl =
+        when (href) {
+            is AbsoluteUrl ->
+                href
+            is RelativeUrl ->
+                (baseUrl ?: packageBaseHref).resolve(href)
+        }
+
+    /**
+     * Gets the resource of the resource targeted by [url].
+     */
+    public fun servedUrlToHref(url: AbsoluteUrl): Url? {
+        val href = when (url.host) {
+            PACKAGE_HOSTNAME -> {
+                urlFromContainer(packageBaseHref.relativize(url))
+            }
+
+            else -> {
+                urlFromContainer(url)
+                    ?: baseUrl?.relativize(url)?.let { relativeUrl ->
+                        urlFromContainer(relativeUrl)
+                    }
+            }
+        } ?: return null
+
+        val hrefWithFragment = url.fragment?.let { href.addFragment(it) } ?: href
+
+        // Fragment must be kept as it might be relevant to the caller.
+        // For the rest of the url, we return precisely the version in the manifest.
+        return hrefWithFragment
+    }
+
+    /**
      * Serves the requests of the navigator web views.
      *
-     * https://readium_package/ serves the publication resources through its container.
+     * https://readium_package/ serves the packaged resources.
      * https://readium_assets/ serves the application assets.
      */
     public fun shouldInterceptRequest(request: WebResourceRequest): WebResourceResponse? {
@@ -82,9 +117,9 @@ public class WebViewServer(
             }
 
             else -> { // Request is for a publication resource
-                servePublicationResourceWithUrl(
+                servePublicationResourceWithHref(
                     // Drop anchor because it is meant to be interpreted by the client.
-                    href = servedUrlToLink(requestUrl),
+                    href = servedUrlToHref(requestUrl) ?: requestUrl.removeFragment(),
                     range = range,
                 )
             }
@@ -96,7 +131,7 @@ public class WebViewServer(
      *
      * If the [Resource] is an HTML document, injects the required JavaScript and CSS files.
      */
-    private fun servePublicationResourceWithUrl(
+    private fun servePublicationResourceWithHref(
         href: Url,
         range: HttpRange?,
     ): WebResourceResponse {
@@ -112,32 +147,13 @@ public class WebViewServer(
     private fun urlFromContainer(url: Url): Url? {
         return container.entries.firstOrNull { entry ->
             entry.isEquivalent(
+                url.removeFragment()
+            )
+        } ?: container.entries.firstOrNull { entry ->
+            entry.isEquivalent(
                 url.removeFragment().removeQuery()
             )
         }
-    }
-
-    /**
-     * Gets a link to the resource targeted by [url].
-     */
-    public fun servedUrlToLink(url: AbsoluteUrl): Url {
-        val href = when (url.host) {
-            PACKAGE_HOSTNAME -> {
-                urlFromContainer(publicationBaseHref.relativize(url))
-            }
-
-            else -> {
-                urlFromContainer(url) ?: baseUrl?.relativize(url)?.let { relativeUrl ->
-                    urlFromContainer(relativeUrl)
-                }
-            }
-        } ?: return url
-
-        val hrefWithFragment = url.fragment?.let { href.addFragment(it) } ?: href
-
-        // Fragment must be kept as it might be relevant to the caller.
-        // For the rest of the url, we return precisely the version in the manifest.
-        return hrefWithFragment
     }
 
     private fun servePublicationResourceWithHref(

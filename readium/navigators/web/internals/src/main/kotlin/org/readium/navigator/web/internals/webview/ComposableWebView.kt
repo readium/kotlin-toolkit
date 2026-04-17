@@ -227,7 +227,7 @@ public class WebViewState<T : WebView>(webContent: WebContent) {
 
     // An internal DisposableEffect or AndroidView onDestroy is called
     // after the state saver and so can't be used.
-    public var webView: T? by mutableStateOf<T?>(null)
+    public var webView: T? by mutableStateOf(null)
 }
 
 /**
