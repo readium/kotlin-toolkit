@@ -38,7 +38,7 @@ import kotlin.math.roundToInt
 class EditHighlightViewModel(
     val id: Long,
     val contentRect: DpRect,
-    val highlightsManager: HighlightsManager<*>,
+    val highlightsManager: HighlightsManager<*, *>,
 ) {
     fun updateTint(tint: Int) {
         highlightsManager.updateHighlightStyle(id = id, tint = tint)
