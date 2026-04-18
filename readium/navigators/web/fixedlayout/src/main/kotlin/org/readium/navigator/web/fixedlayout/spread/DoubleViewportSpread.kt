@@ -84,7 +84,7 @@ internal fun DoubleViewportSpread(
                 ?.takeIf { scriptsLoaded }
                 ?.let { webView ->
                     FixedDoubleInitializationApi(webView)
-                        .loadSpread(state.spread.leftPage?.href, state.spread.rightPage?.href)
+                        .loadSpread(state.leftServedUrl, state.rightServedUrl)
                 }
         }
 

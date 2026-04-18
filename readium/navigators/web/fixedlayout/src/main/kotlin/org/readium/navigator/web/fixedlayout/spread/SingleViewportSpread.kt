@@ -85,7 +85,7 @@ internal fun SingleViewportSpread(
                 ?.takeIf { scriptsLoaded }
                 ?.let { webView ->
                     FixedSingleInitializationApi(webView)
-                        .loadResource(state.spread.page.href)
+                        .loadResource(state.servedUrl)
                 }
         }
 
