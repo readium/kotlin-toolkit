@@ -122,7 +122,8 @@ class ReaderOpener(
 
         val renditionState = navigatorFactory.createRenditionState(
             initialSettings = preferencesEditor.settings,
-            initialLocation = initialLocation
+            initialLocation = initialLocation,
+            baseUrl = url,
         ).getOrElse {
             return Try.failure(it)
         }

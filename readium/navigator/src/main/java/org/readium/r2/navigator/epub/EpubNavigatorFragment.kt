@@ -861,7 +861,7 @@ public class EpubNavigatorFragment internal constructor(
         override fun shouldInterceptRequest(webView: WebView, request: WebResourceRequest): WebResourceResponse? =
             viewModel.shouldInterceptRequest(request)
 
-        override fun resourceAtUrl(url: Url): Resource? =
+        override fun resourceAtUrl(url: AbsoluteUrl): Resource? =
             viewModel.internalLinkFromUrl(url)
                 ?.let { publication.get(it) }
     }

@@ -92,7 +92,7 @@ internal open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebV
         fun onFootnoteLinkActivated(url: AbsoluteUrl, context: HyperlinkNavigator.FootnoteContext)
 
         @InternalReadiumApi
-        fun resourceAtUrl(url: Url): Resource? = null
+        fun resourceAtUrl(url: AbsoluteUrl): Resource? = null
 
         /**
          * Requests to load the next resource in the reading order.

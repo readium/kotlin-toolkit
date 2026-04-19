@@ -29,6 +29,7 @@ import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.shared.util.resource.StringResource
 import org.readium.r2.shared.util.resource.fallback
+import org.readium.r2.shared.util.toAbsoluteUrl
 
 /**
  * Serves the publication resources and application assets in the EPUB navigator web views.
@@ -37,46 +38,91 @@ public class WebViewServer(
     private val application: Application,
     private val container: Container<Resource>,
     private val mediaTypes: Map<Url, MediaType>,
+    private val baseUrl: AbsoluteUrl? = null,
     private val errorPage: RelativeUrl,
     private val htmlInjector: (Resource, MediaType) -> Resource,
     servedAssets: List<String>,
     private val onResourceLoadFailed: (Url, ReadError) -> Unit,
 ) {
     public companion object {
-        public val publicationBaseHref: AbsoluteUrl = AbsoluteUrl("https://readium/publication/")!!
-        public val assetsBaseHref: AbsoluteUrl = AbsoluteUrl("https://readium/assets/")!!
+        public const val PACKAGE_HOSTNAME: String = "readium_package"
+        public const val ASSETS_HOSTNAME: String = "readium_assets"
+
+        public val packageBaseHref: AbsoluteUrl = AbsoluteUrl("https://$PACKAGE_HOSTNAME/")!!
+        public val assetsBaseHref: AbsoluteUrl = AbsoluteUrl("https://$ASSETS_HOSTNAME/")!!
 
         public fun assetUrl(path: String): AbsoluteUrl? =
             Url.fromDecodedPath(path)?.let { assetsBaseHref.resolve(it) }
     }
 
     /**
-     * Serves the requests of the navigator web view    s.
+     * Gets the url the given [href] is being served at.
+     */
+    public fun hrefToServedUrl(href: Url): AbsoluteUrl =
+        when (href) {
+            is AbsoluteUrl ->
+                href
+            is RelativeUrl ->
+                (baseUrl ?: packageBaseHref).resolve(href)
+        }
+
+    /**
+     * Gets the resource of the resource targeted by [url].
+     */
+    public fun servedUrlToHref(url: AbsoluteUrl): Url? {
+        val href = when (url.host) {
+            PACKAGE_HOSTNAME -> {
+                urlFromContainer(packageBaseHref.relativize(url))
+            }
+
+            else -> {
+                urlFromContainer(url)
+                    ?: baseUrl?.relativize(url)?.let { relativeUrl ->
+                        urlFromContainer(relativeUrl)
+                    }
+            }
+        } ?: return null
+
+        val hrefWithFragment = url.fragment?.let { href.addFragment(it) } ?: href
+
+        // Fragment must be kept as it might be relevant to the caller.
+        // For the rest of the url, we return precisely the version in the manifest.
+        return hrefWithFragment
+    }
+
+    /**
+     * Serves the requests of the navigator web views.
      *
-     * https://readium/publication/ serves the publication resources through its fetcher.
-     * https://readium/assets/ serves the application assets.
+     * https://readium_package/ serves the packaged resources.
+     * https://readium_assets/ serves the application assets.
      */
     public fun shouldInterceptRequest(request: WebResourceRequest): WebResourceResponse? {
-        if (request.url.host != "readium") return null
         val path = request.url.path ?: return null
+        val hostname = request.url.host ?: return null
+        val requestUrl = request.url.toAbsoluteUrl() ?: return null
+        val range = HttpHeaders(request.requestHeaders).range
 
-        return when {
-            path.startsWith("/publication/") -> {
-                val href = Url.fromDecodedPath(path.removePrefix("/publication/"))
+        return when (hostname) {
+            ASSETS_HOSTNAME -> {
+                if (isServedAsset(path.removePrefix("/"))) {
+                    // Request is for a known asset.
+                    assetsLoader.shouldInterceptRequest(request.url)
+                } else {
+                    val error = ReadError.Decoding(
+                        "Attempted to load an unknown asset from $requestUrl"
+                    )
+                    onResourceLoadFailed(requestUrl, error)
+                    serveErrorResponse() // Request is for an unknown asset.
+                }
+            }
+
+            else -> { // Request is for a publication resource
+                servePublicationResourceWithHref(
                     // Drop anchor because it is meant to be interpreted by the client.
-                    // Query parameters must be kept as they might be relevant for the container.
-                    ?.removeFragment()
-                    ?: return null
-
-                servePublicationResource(
-                    href = href,
-                    range = HttpHeaders(request.requestHeaders).range
+                    href = servedUrlToHref(requestUrl) ?: requestUrl.removeFragment(),
+                    range = range,
                 )
             }
-            path.startsWith("/assets/") && isServedAsset(path.removePrefix("/assets/")) -> {
-                assetsLoader.shouldInterceptRequest(request.url)
-            }
-            else -> null
         }
     }
 
@@ -85,7 +131,36 @@ public class WebViewServer(
      *
      * If the [Resource] is an HTML document, injects the required JavaScript and CSS files.
      */
-    private fun servePublicationResource(href: Url, range: HttpRange?): WebResourceResponse {
+    private fun servePublicationResourceWithHref(
+        href: Url,
+        range: HttpRange?,
+    ): WebResourceResponse {
+        val mediaType = mediaTypes[href]
+
+        return servePublicationResourceWithHref(
+            href = href,
+            mediaType = mediaType,
+            range = range,
+        )
+    }
+
+    private fun urlFromContainer(url: Url): Url? {
+        return container.entries.firstOrNull { entry ->
+            entry.isEquivalent(
+                url.removeFragment()
+            )
+        } ?: container.entries.firstOrNull { entry ->
+            entry.isEquivalent(
+                url.removeFragment().removeQuery()
+            )
+        }
+    }
+
+    private fun servePublicationResourceWithHref(
+        href: Url,
+        mediaType: MediaType?,
+        range: HttpRange?,
+    ): WebResourceResponse {
         var resource = container[href]
             ?.fallback {
                 onResourceLoadFailed(href, it)
@@ -95,10 +170,8 @@ public class WebViewServer(
                 "Resource not found at $href in publication."
             )
             onResourceLoadFailed(href, error)
-            errorResource()
+            return serveErrorResponse()
         }
-
-        val mediaType = mediaTypes[href]
 
         mediaType
             ?.takeIf { it.isHtml }
@@ -106,10 +179,19 @@ public class WebViewServer(
                 resource = htmlInjector(resource, it)
             }
 
+        return serveResource(resource, range, mediaType)
+    }
+
+    private fun serveResource(
+        resource: Resource,
+        range: HttpRange?,
+        mediaType: MediaType?,
+    ): WebResourceResponse {
         val headers = mutableMapOf(
             "Accept-Ranges" to "bytes"
         )
 
+        val stream = resource.asInputStream()
         if (range == null) {
             return WebResourceResponse(
                 mediaType?.toString(),
@@ -117,10 +199,9 @@ public class WebViewServer(
                 200,
                 "OK",
                 headers,
-                resource.asInputStream()
+                stream
             )
         } else { // Byte range request
-            val stream = resource.asInputStream()
             val length = stream.available()
             val longRange = range.toLongRange(length.toLong())
             headers["Content-Range"] = "bytes ${longRange.first}-${longRange.last}/$length"
@@ -137,6 +218,7 @@ public class WebViewServer(
             )
         }
     }
+
     private fun errorResource(): Resource =
         StringResource {
             withContext(Dispatchers.IO) {
@@ -149,6 +231,10 @@ public class WebViewServer(
             }
         }
 
+    private fun serveErrorResponse(): WebResourceResponse {
+        return serveResource(errorResource(), null, MediaType.XHTML)
+    }
+
     private fun isServedAsset(path: String): Boolean =
         servedAssetPatterns.any { it.match(path) }
 
@@ -157,7 +243,7 @@ public class WebViewServer(
 
     private val assetsLoader =
         WebViewAssetLoader.Builder()
-            .setDomain("readium")
-            .addPathHandler("/assets/", WebViewAssetLoader.AssetsPathHandler(application))
+            .setDomain(ASSETS_HOSTNAME)
+            .addPathHandler("/", WebViewAssetLoader.AssetsPathHandler(application))
             .build()
 }

@@ -57,7 +57,6 @@ import org.readium.navigator.web.internals.gestures.toFling2DBehavior
 import org.readium.navigator.web.internals.pager.RenditionPager
 import org.readium.navigator.web.internals.pager.RenditionScrollState
 import org.readium.navigator.web.internals.pager.pagingFlingBehavior
-import org.readium.navigator.web.internals.server.WebViewServer
 import org.readium.navigator.web.internals.util.DisplayArea
 import org.readium.navigator.web.internals.util.HyperlinkProcessor
 import org.readium.navigator.web.internals.util.asAbsolutePaddingValues
@@ -192,7 +191,7 @@ public fun FixedWebRendition(
                             SingleSpreadState(
                                 index = index,
                                 htmlData = state.preloadedData.fixedSingleContent,
-                                publicationBaseUrl = WebViewServer.publicationBaseHref,
+                                servedUrl = state.hrefToServedUrl(spread.page.href),
                                 webViewClient = state.webViewClient,
                                 spread = spread,
                                 fit = state.layoutDelegate.fit,
@@ -212,7 +211,7 @@ public fun FixedWebRendition(
                             onLinkActivated = { url, outerHtml ->
                                 coroutineScope.launch {
                                     state.hyperlinkProcessor.onLinkActivated(
-                                        url = url,
+                                        url = state.servedUrlToHref(url) ?: url,
                                         outerHtml = outerHtml,
                                         readingOrder = state.publication.readingOrder,
                                         listener = hyperlinkListenerState.value
@@ -237,7 +236,8 @@ public fun FixedWebRendition(
                             DoubleSpreadState(
                                 index = index,
                                 htmlData = state.preloadedData.fixedDoubleContent,
-                                publicationBaseUrl = WebViewServer.publicationBaseHref,
+                                leftServedUrl = spread.leftPage?.href?.let { state.hrefToServedUrl(it) },
+                                rightServedUrl = spread.rightPage?.href?.let { state.hrefToServedUrl(it) },
                                 webViewClient = state.webViewClient,
                                 spread = spread,
                                 fit = state.layoutDelegate.fit,

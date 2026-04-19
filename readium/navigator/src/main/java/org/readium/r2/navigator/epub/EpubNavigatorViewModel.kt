@@ -30,12 +30,10 @@ import org.readium.r2.shared.DelicateReadiumApi
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.extensions.mapStateIn
-import org.readium.r2.shared.publication.Href
 import org.readium.r2.shared.publication.Layout
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.util.AbsoluteUrl
-import org.readium.r2.shared.util.RelativeUrl
 import org.readium.r2.shared.util.Url
 
 internal enum class DualPage {
@@ -180,17 +178,11 @@ internal class EpubNavigatorViewModel(
             add(RunScriptCommand(script, scope = scope))
         }
 
-    // Serving resources
-
-    val baseUrl: AbsoluteUrl =
-        (publication.baseUrl as? AbsoluteUrl)
-            ?: WebViewServer.publicationBaseHref
-
     /**
      * Generates the URL to the given publication link.
      */
     fun urlTo(link: Link): AbsoluteUrl =
-        baseUrl.resolve(link.url())
+        server.linkToServedUrl(link)
 
     /**
      * Intercepts and handles web view navigation to [url].
@@ -212,14 +204,8 @@ internal class EpubNavigatorViewModel(
     /**
      * Gets the publication [Link] targeted by the given [url].
      */
-    fun internalLinkFromUrl(url: Url): Link? {
-        val href = (baseUrl.relativize(url) as? RelativeUrl)
-            ?: return null
-
-        return publication.linkWithHref(href)
-            // Query parameters must be kept as they might be relevant for the container.
-            ?.copy(href = Href(href))
-    }
+    fun internalLinkFromUrl(url: AbsoluteUrl): Link? =
+        server.servedUrlToLink(url)
 
     fun shouldInterceptRequest(request: WebResourceRequest): WebResourceResponse? =
         server.shouldInterceptRequest(request, css.value)
