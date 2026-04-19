@@ -51,7 +51,7 @@ kotlinx-collections-immutable = "0.4.0"
 
 ksp = "2.3.4"
 
-ktlint = "12.1.1"
+ktlint = "14.2.0"
 
 #noinspection GradleDependency
 pdfium = "1.9.8"
