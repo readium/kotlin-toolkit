@@ -58,7 +58,7 @@ internal fun SingleViewportSpread(
     progression: Double,
     layoutDirection: LayoutDirection,
     onTap: (TapEvent) -> Unit,
-    onLinkActivated: (Url, String) -> Unit,
+    onLinkActivated: (AbsoluteUrl, String) -> Unit,
     onSelectionApiChanged: (FixedSingleSelectionApi?) -> Unit,
     actionModeCallback: ActionMode.Callback?,
     state: SingleSpreadState,
@@ -73,7 +73,7 @@ internal fun SingleViewportSpread(
     ) {
         val webViewState = rememberWebViewStateWithHTMLData<RelaxedWebView>(
             data = state.htmlData,
-            baseUrl = state.publicationBaseUrl.toString()
+            baseUrl = null
         )
 
         var scriptsLoaded by remember(webViewState.webView) {
@@ -85,7 +85,7 @@ internal fun SingleViewportSpread(
                 ?.takeIf { scriptsLoaded }
                 ?.let { webView ->
                     FixedSingleInitializationApi(webView)
-                        .loadResource(state.spread.page.href)
+                        .loadResource(state.servedUrl)
                 }
         }
 
@@ -199,12 +199,7 @@ internal fun SingleViewportSpread(
             client = state.webViewClient,
             progression = progression,
             onTap = onTap,
-            onLinkActivated = { url, outerHtml ->
-                onLinkActivated(
-                    state.publicationBaseUrl.relativize(url),
-                    outerHtml
-                )
-            },
+            onLinkActivated = onLinkActivated,
             backgroundColor = backgroundColor,
             layoutDirection = layoutDirection,
             onDecorationActivated = { id, group, rect, offset ->
@@ -227,12 +222,9 @@ internal fun SingleViewportSpread(
 internal class SingleSpreadState(
     val index: Int,
     val htmlData: String,
-    val publicationBaseUrl: AbsoluteUrl,
+    val servedUrl: Url,
     val webViewClient: WebViewClient,
     val spread: SingleViewportSpread,
     val fit: State<Fit>,
     val displayArea: State<DisplayArea>,
-) {
-    val url: AbsoluteUrl =
-        publicationBaseUrl.resolve(spread.page.href)
-}
+)

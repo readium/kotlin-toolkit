@@ -106,7 +106,8 @@ public class FixedWebRenditionFactory private constructor(
         val renditionPublication = FixedWebPublication(
             readingOrder = ReadingOrder(readingOrderItems),
             otherResources = resourceItems,
-            container = publication.container
+            container = publication.container,
+            baseUrl = publication.baseUrl,
         )
 
         val preloads = preloadData()

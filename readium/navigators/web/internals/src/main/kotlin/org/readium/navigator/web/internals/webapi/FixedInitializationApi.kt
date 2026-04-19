@@ -14,7 +14,7 @@ public class FixedSingleInitializationApi(
     private val webView: WebView,
 ) {
     public fun loadResource(href: Url) {
-        val resourceUrl = WebViewServer.publicationBaseHref.resolve(href)
+        val resourceUrl = WebViewServer.packageBaseHref.resolve(href)
         val urlAsJsLiteral = resourceUrl.toString().toJavaScriptLiteral()
         val script = "singleInitialization.loadResource($urlAsJsLiteral);"
         webView.evaluateJavascript(script) {}
@@ -25,8 +25,8 @@ public class FixedDoubleInitializationApi(
     private val webView: WebView,
 ) {
     public fun loadSpread(leftHref: Url?, rightHref: Url?) {
-        val leftUrl = leftHref?.let { WebViewServer.publicationBaseHref.resolve(it) }
-        val rightUrl = rightHref?.let { WebViewServer.publicationBaseHref.resolve(it) }
+        val leftUrl = leftHref?.let { WebViewServer.packageBaseHref.resolve(it) }
+        val rightUrl = rightHref?.let { WebViewServer.packageBaseHref.resolve(it) }
         val argument = buildList {
             leftUrl?.let { add("left: ${it.toString().toJavaScriptLiteral()}") }
             rightUrl?.let { add("right: ${it.toString().toJavaScriptLiteral()}") }

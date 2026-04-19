@@ -71,14 +71,13 @@ import org.readium.navigator.web.reflowable.ReflowableWebDecorationTextQuoteLoca
 import org.readium.navigator.web.reflowable.css.ReadiumCssInjector
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.AbsoluteUrl
-import org.readium.r2.shared.util.Url
 import timber.log.Timber
 
 @SuppressLint("SetJavaScriptEnabled", "ClickableViewAccessibility")
 @Composable
 internal fun ReflowableResource(
     resourceState: ReflowableResourceState,
-    publicationBaseUrl: AbsoluteUrl,
+    servedUrl: AbsoluteUrl,
     webViewClient: WebViewClient,
     backgroundColor: Color,
     padding: AbsolutePaddingValues,
@@ -91,7 +90,7 @@ internal fun ReflowableResource(
     actionModeCallback: ActionMode.Callback?,
     onSelectionApiChanged: (ReflowableSelectionApi?) -> Unit,
     onTap: (TapEvent) -> Unit,
-    onLinkActivated: (Url, String) -> Unit,
+    onLinkActivated: (AbsoluteUrl, String) -> Unit,
     onDecorationActivated: (DecorationListener.OnActivatedEvent<ReflowableWebDecorationLocation>) -> Unit,
     onLocationChange: () -> Unit,
     onDocumentResized: () -> Unit,
@@ -101,7 +100,7 @@ internal fun ReflowableResource(
         propagateMinConstraints = true
     ) {
         val webViewState = rememberWebViewState<RelaxedWebView>(
-            url = publicationBaseUrl.resolve(resourceState.href).toString()
+            url = servedUrl.toString()
         )
 
         var documentStateApi by remember(webViewState.webView) {
@@ -328,9 +327,7 @@ internal fun ReflowableResource(
                             val shiftedOffset = offset + paddingShift
                             onTap(TapEvent(shiftedOffset))
                         },
-                        onLinkActivatedDelegate = { href, outerHtml ->
-                            onLinkActivated(publicationBaseUrl.relativize(href), outerHtml)
-                        },
+                        onLinkActivatedDelegate = onLinkActivated,
                         onDecorationActivatedDelegate = { id, group, rect, offset ->
                             val decoration = decorations.value[group]?.firstOrNull { it.id.value == id }
                                 ?: return@DelegatingGesturesListener

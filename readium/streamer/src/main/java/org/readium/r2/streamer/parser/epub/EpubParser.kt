@@ -22,6 +22,7 @@ import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.asset.Asset
 import org.readium.r2.shared.util.asset.ContainerAsset
+import org.readium.r2.shared.util.data.CompositeContainer
 import org.readium.r2.shared.util.data.Container
 import org.readium.r2.shared.util.data.DecodeError
 import org.readium.r2.shared.util.data.ReadError
@@ -32,6 +33,9 @@ import org.readium.r2.shared.util.data.readDecodeOrNull
 import org.readium.r2.shared.util.format.Specification
 import org.readium.r2.shared.util.fromEpubHref
 import org.readium.r2.shared.util.getOrElse
+import org.readium.r2.shared.util.http.DefaultHttpClient
+import org.readium.r2.shared.util.http.HttpClient
+import org.readium.r2.shared.util.http.HttpContainer
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.resource.Resource
@@ -43,11 +47,13 @@ import org.readium.r2.streamer.parser.PublicationParser
 /**
  * Parses a Publication from an EPUB publication.
  *
+ * @param httpClient Http client to use to fetch resources outside the asset.
  * @param reflowablePositionsStrategy Strategy used to calculate the number of positions in a
  *        reflowable resource.
  */
 @OptIn(ExperimentalReadiumApi::class)
 public class EpubParser(
+    private val httpClient: HttpClient = DefaultHttpClient(),
     private val reflowablePositionsStrategy: EpubPositionsService.ReflowableStrategy = EpubPositionsService.ReflowableStrategy.recommended,
 ) : PublicationParser {
 
@@ -94,6 +100,22 @@ public class EpubParser(
         ).adapt()
 
         var container = asset.container
+
+        val resourceHrefs = manifest.resources.map { it.href.resolve() }
+
+        val resourcesOutsideAsset = resourceHrefs.toSet() - container.entries
+
+        if (resourcesOutsideAsset.isNotEmpty()) {
+            container = CompositeContainer(
+                asset.container,
+                HttpContainer(
+                    null,
+                    resourcesOutsideAsset,
+                    httpClient
+                )
+            )
+        }
+
         manifest.metadata.identifier?.let { id ->
             val deobfuscator = EpubDeobfuscator(id, encryptionData)
             container = TransformingContainer(container, deobfuscator::transform)

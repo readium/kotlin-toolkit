@@ -49,7 +49,6 @@ import org.readium.navigator.web.internals.webview.rememberWebViewStateWithHTMLD
 import org.readium.r2.navigator.preferences.Fit
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.AbsoluteUrl
-import org.readium.r2.shared.util.Url
 
 @Composable
 internal fun DoubleViewportSpread(
@@ -58,7 +57,7 @@ internal fun DoubleViewportSpread(
     progression: Double,
     layoutDirection: LayoutDirection,
     onTap: (TapEvent) -> Unit,
-    onLinkActivated: (Url, String) -> Unit,
+    onLinkActivated: (AbsoluteUrl, String) -> Unit,
     onSelectionApiChanged: (FixedDoubleSelectionApi?) -> Unit,
     actionModeCallback: ActionMode.Callback?,
     state: DoubleSpreadState,
@@ -73,7 +72,7 @@ internal fun DoubleViewportSpread(
     ) {
         val webViewState = rememberWebViewStateWithHTMLData<RelaxedWebView>(
             data = state.htmlData,
-            baseUrl = state.publicationBaseUrl.toString()
+            baseUrl = null
         )
 
         var scriptsLoaded by remember(webViewState.webView) {
@@ -85,7 +84,7 @@ internal fun DoubleViewportSpread(
                 ?.takeIf { scriptsLoaded }
                 ?.let { webView ->
                     FixedDoubleInitializationApi(webView)
-                        .loadSpread(state.spread.leftPage?.href, state.spread.rightPage?.href)
+                        .loadSpread(state.leftServedUrl, state.rightServedUrl)
                 }
         }
 
@@ -204,12 +203,7 @@ internal fun DoubleViewportSpread(
             layoutDirection = layoutDirection,
             client = state.webViewClient,
             onTap = onTap,
-            onLinkActivated = { url, outerHtml ->
-                onLinkActivated(
-                    state.publicationBaseUrl.relativize(url),
-                    outerHtml
-                )
-            },
+            onLinkActivated = onLinkActivated,
             backgroundColor = backgroundColor,
             onDecorationActivated = { id, group, rect, offset ->
                 val decoration = decorations.value[group]?.firstOrNull { it.id.value == id }
@@ -232,15 +226,10 @@ internal fun DoubleViewportSpread(
 internal class DoubleSpreadState(
     val index: Int,
     val htmlData: String,
-    val publicationBaseUrl: AbsoluteUrl,
+    val leftServedUrl: AbsoluteUrl?,
+    val rightServedUrl: AbsoluteUrl?,
     val webViewClient: WebViewClient,
     val spread: DoubleViewportSpread,
     val fit: State<Fit>,
     val displayArea: State<DisplayArea>,
-) {
-    val left: AbsoluteUrl? =
-        spread.leftPage?.let { publicationBaseUrl.resolve(it.href) }
-
-    val right: AbsoluteUrl? =
-        spread.rightPage?.let { publicationBaseUrl.resolve(it.href) }
-}
+)

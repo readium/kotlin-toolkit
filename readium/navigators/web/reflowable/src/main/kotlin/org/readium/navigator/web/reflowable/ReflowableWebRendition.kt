@@ -44,7 +44,6 @@ import org.readium.navigator.common.defaultInputListener
 import org.readium.navigator.web.internals.gestures.toFling2DBehavior
 import org.readium.navigator.web.internals.pager.RenditionPager
 import org.readium.navigator.web.internals.pager.pagingFlingBehavior
-import org.readium.navigator.web.internals.server.WebViewServer
 import org.readium.navigator.web.internals.util.AbsolutePaddingValues
 import org.readium.navigator.web.internals.util.HyperlinkProcessor
 import org.readium.navigator.web.internals.util.asAbsolutePaddingValues
@@ -157,7 +156,7 @@ public fun ReflowableWebRendition(
 
                 ReflowableResource(
                     resourceState = state.resourceStates[index],
-                    publicationBaseUrl = WebViewServer.publicationBaseHref,
+                    servedUrl = state.hrefToServedUrl(href),
                     webViewClient = state.webViewClient,
                     backgroundColor = backgroundColor,
                     padding = resourcePadding,
@@ -175,7 +174,7 @@ public fun ReflowableWebRendition(
                     onLinkActivated = { url, outerHtml ->
                         coroutineScope.launch {
                             state.hyperlinkProcessor.onLinkActivated(
-                                url = url,
+                                url = state.servedUrlToHref(url) ?: url,
                                 outerHtml = outerHtml,
                                 readingOrder = state.publication.readingOrder,
                                 listener = hyperlinkListener
