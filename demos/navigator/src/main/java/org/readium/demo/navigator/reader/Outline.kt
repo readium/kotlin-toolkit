@@ -50,13 +50,17 @@ fun Outline(
 ) {
     Scaffold(
         modifier = modifier,
-        topBar = { TopBar(onBackActivated) },
+        topBar = {
+            TopBar(
+                onBackActivated = onBackActivated
+            )
+        },
         content = { padding ->
-            var selectedTab by remember { mutableIntStateOf(0) }
-
             Column(
                 modifier = Modifier.padding(padding)
             ) {
+                var selectedTab by remember { mutableIntStateOf(0) }
+
                 PrimaryTabRow(
                     selectedTabIndex = selectedTab,
                     tabs = {
@@ -180,7 +184,9 @@ private fun Contents(
     onClick: (Url) -> Unit,
     depth: Int = 0,
 ) {
-    Column(modifier) {
+    Column(
+        modifier = modifier
+    ) {
         for (item in items) {
             TocItem(
                 item = item,
