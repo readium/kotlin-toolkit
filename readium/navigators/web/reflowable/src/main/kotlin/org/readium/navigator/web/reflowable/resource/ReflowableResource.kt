@@ -208,6 +208,7 @@ internal fun ReflowableResource(
                                             direction = layoutDirection
                                         )
                                         onLocationChange()
+                                        showPlaceholder.value = false
                                     }
                                     null -> {
                                         scrollController.moveToProgression(
@@ -222,6 +223,7 @@ internal fun ReflowableResource(
                                             direction = layoutDirection
                                         )
                                         onLocationChange()
+                                        showPlaceholder.value = false
                                     }
                                 }
 
@@ -229,7 +231,6 @@ internal fun ReflowableResource(
                                     resourceState.updateProgression(orientation, layoutDirection)
                                     onLocationChange()
                                 }
-                                showPlaceholder.value = false
                             }
                         },
                         onDocumentResizedDelegate = {
@@ -254,6 +255,8 @@ internal fun ReflowableResource(
                         resourceState.pendingLocation
                     }.onEach { pendingLocation ->
                         pendingLocation?.let {
+                            showPlaceholder.value = true
+
                             when (pendingLocation) {
                                 is ReflowableResourceLocation.Progression -> {
                                     scrollController.moveToProgression(
@@ -302,6 +305,7 @@ internal fun ReflowableResource(
                                 direction = layoutDirection
                             )
                             onLocationChange()
+                            showPlaceholder.value = false
                         }
                     }.launchIn(this)
                 }
