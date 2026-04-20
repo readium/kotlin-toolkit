@@ -39,7 +39,7 @@ export class ReflowableMoveBridge {
 
     const textAfterStart = Math.min(1, textAfter.length)
 
-    const textBeforeEnd = Math.max(0, textAfter.length - 1)
+    const textBeforeEnd = Math.max(0, textBefore.length - 1)
 
     const anchor = new TextQuoteAnchor(
       root,

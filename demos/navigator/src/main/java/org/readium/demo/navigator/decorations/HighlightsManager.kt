@@ -17,6 +17,7 @@ import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.flow.update
 import org.readium.navigator.common.Decoration
 import org.readium.navigator.common.DecorationLocation
@@ -54,7 +55,13 @@ sealed class HighlightsManager<D : DecorationLocation, G : GoLocation>(
         MutableStateFlow(persistentMapOf())
 
     val highlights: Flow<List<Highlight>> =
-        highlightsMutable.map { it.values.toList() }
+        highlightsMutable
+            .map { map ->
+                map.entries
+                    .sortedBy { it.key }
+                    .map { it.value }
+                    .toList()
+            }
 
     val decorations: Flow<PersistentList<Decoration<D>>> = highlightsMutable.map {
         it.entries.flatMap { (id, highlight) -> decorationFactory(highlight, id) }.toPersistentList()
