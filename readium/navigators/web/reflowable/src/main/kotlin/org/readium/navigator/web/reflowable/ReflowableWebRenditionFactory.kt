@@ -97,7 +97,7 @@ public class ReflowableWebRenditionFactory private constructor(
         val positionNumbers = positionsService.positionsByReadingOrder()
             .map { it.size }
 
-        val resourceItems = (publication.readingOrder - readingOrder + publication.resources).map {
+        val resourceItems = (publication.readingOrder + publication.resources - readingOrder.toSet()).map {
             ReflowableWebPublication.Item(
                 href = it.url(),
                 mediaType = it.mediaType
