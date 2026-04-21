@@ -19,7 +19,6 @@ import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.services.PositionsService
 import org.readium.r2.shared.publication.services.isProtected
 import org.readium.r2.shared.publication.services.isRestricted
-import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Try
 
 /**
@@ -84,8 +83,7 @@ public class ReflowableWebRenditionFactory private constructor(
         initialSettings: ReflowableWebSettings,
         initialLocation: ReflowableWebGoLocation? = null,
         readingOrder: List<Link> = publication.readingOrder,
-        positionsService: PositionsService = this.positionsService,
-        baseUrl: AbsoluteUrl,
+        positionsService: PositionsService = this.positionsService
     ): Try<ReflowableWebRenditionState, Error> {
         // TODO: enable apps not to disable selection when publication is protected
 
