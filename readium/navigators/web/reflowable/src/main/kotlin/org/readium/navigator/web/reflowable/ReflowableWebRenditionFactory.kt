@@ -83,7 +83,7 @@ public class ReflowableWebRenditionFactory private constructor(
         initialSettings: ReflowableWebSettings,
         initialLocation: ReflowableWebGoLocation? = null,
         readingOrder: List<Link> = publication.readingOrder,
-        positionsService: PositionsService = this.positionsService
+        positionsService: PositionsService = this.positionsService,
     ): Try<ReflowableWebRenditionState, Error> {
         // TODO: enable apps not to disable selection when publication is protected
 
