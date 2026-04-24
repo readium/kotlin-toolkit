@@ -1,5 +1,3 @@
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-
 /*
  * Copyright 2021 Readium Foundation. All rights reserved.
  * Use of this source code is governed by the BSD-style license
@@ -8,7 +6,6 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     id("com.android.application")
-    kotlin("android")
     kotlin("plugin.parcelize")
     alias(libs.plugins.ksp)
     alias(libs.plugins.compose.compiler)
@@ -45,7 +42,7 @@ android {
     buildTypes {
         getByName("release") {
             isMinifyEnabled = false
-            proguardFiles(getDefaultProguardFile("proguard-android.txt"))
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"))
         }
     }
     packaging {
@@ -54,9 +51,9 @@ android {
 
     sourceSets {
         getByName("main") {
-            java.srcDirs("src/main/java")
-            res.srcDirs("src/main/res")
-            assets.srcDirs("src/main/assets")
+            java.directories.add("src/main/java")
+            res.directories.add("src/main/res")
+            assets.directories.add("src/main/assets")
         }
     }
     namespace = "org.readium.r2.testapp"
@@ -64,7 +61,7 @@ android {
 
 kotlin {
     compilerOptions {
-        jvmTarget = JvmTarget.JVM_11
+        languageVersion = org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_2_3
         freeCompilerArgs.add("-Xannotation-default-target=param-property")
     }
 }
@@ -92,6 +89,7 @@ dependencies {
     implementation(libs.androidx.cardview)
 
     implementation(libs.bundles.compose)
+    // Enable this if you need the Compose Layout Inspector
 //    debugImplementation(libs.androidx.compose.ui)
 
     implementation(libs.androidx.constraintlayout)

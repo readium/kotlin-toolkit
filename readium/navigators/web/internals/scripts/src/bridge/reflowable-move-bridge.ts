@@ -37,10 +37,19 @@ export class ReflowableMoveBridge {
   ): number | null {
     const root = this.document.body
 
-    const anchor = new TextQuoteAnchor(root, "", {
-      prefix: textBefore,
-      suffix: textAfter,
-    })
+    const textAfterStart = Math.min(1, textAfter.length)
+
+    const textBeforeEnd = Math.max(0, textBefore.length - 1)
+
+    const anchor = new TextQuoteAnchor(
+      root,
+      textBefore.substring(textBeforeEnd) +
+        textAfter.substring(0, textAfterStart),
+      {
+        prefix: textBefore.substring(0, textBeforeEnd),
+        suffix: textAfter.substring(textAfterStart),
+      }
+    )
 
     try {
       const range = anchor.toRange()

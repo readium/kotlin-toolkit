@@ -23,6 +23,8 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -91,12 +93,16 @@ fun <L : ExportableLocation, G : GoLocation, S : SelectionLocation, C> Rendition
 
     val showOutline = rememberSaveable { mutableStateOf(false) }
 
+    val highlights by readerState.highlightsManager.highlights
+        .collectAsState(emptyList())
+
     if (showOutline.value) {
         Outline(
             modifier = Modifier
                 .zIndex(1f)
                 .fillMaxSize(),
             publication = readerState.publication,
+            highlights = highlights,
             onBackActivated = {
                 showOutline.value = false
                 fullScreenState.value = true
@@ -107,6 +113,19 @@ fun <L : ExportableLocation, G : GoLocation, S : SelectionLocation, C> Rendition
 
                 coroutineScope.launch {
                     controllerNow.goTo(it)
+                }
+
+                fullScreenState.value = true
+                showOutline.value = false
+            },
+            onHighlightActivated = {
+                val controllerNow = readerState.renditionState.controller
+                    ?: return@Outline
+
+                coroutineScope.launch {
+                    val location = readerState.highlightsManager.getLocation(it)
+                        ?: return@launch
+                    controllerNow.goTo(location)
                 }
 
                 fullScreenState.value = true

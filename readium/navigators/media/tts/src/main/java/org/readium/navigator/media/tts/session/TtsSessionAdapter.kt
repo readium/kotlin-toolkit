@@ -85,7 +85,7 @@ internal class TtsSessionAdapter<E : TtsEngine.Error>(
     )
 
     init {
-        val streamType = audioAttributes.streamType
+        val streamType = audioAttributes.volumeControlStream
         streamVolumeManager.setStreamType(streamType)
     }
 

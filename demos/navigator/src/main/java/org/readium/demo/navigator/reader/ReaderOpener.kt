@@ -122,8 +122,7 @@ class ReaderOpener(
 
         val renditionState = navigatorFactory.createRenditionState(
             initialSettings = preferencesEditor.settings,
-            initialLocation = initialLocation,
-            baseUrl = url,
+            initialLocation = initialLocation
         ).getOrElse {
             return Try.failure(it)
         }
@@ -223,7 +222,7 @@ class ReaderOpener(
     private fun <L : DecorationLocation> applyHighlightDecorations(
         coroutineScope: CoroutineScope,
         decorationController: DecorationController<L>,
-        highlightsManager: HighlightsManager<L>,
+        highlightsManager: HighlightsManager<L, *>,
     ) {
         highlightsManager.decorations
             .onEach {

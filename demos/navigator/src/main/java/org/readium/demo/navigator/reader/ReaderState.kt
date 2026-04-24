@@ -28,7 +28,7 @@ data class ReaderState<L : ExportableLocation, G : GoLocation, S : SelectionLoca
     val publication: Publication,
     val renditionState: RenditionState<C>,
     val preferencesEditor: PreferencesEditor<*, *>,
-    val highlightsManager: HighlightsManager<*>,
+    val highlightsManager: HighlightsManager<*, G>,
     val onControllerAvailable: (C) -> Unit,
     val actionModeFactory: SelectionActionModeFactory,
 ) where C : NavigationController<L, G>, C : SelectionController<S> {

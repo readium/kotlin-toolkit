@@ -1,3 +1,6 @@
+plugins {
+    id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
+}
 /*
  * Copyright 2021 Readium Foundation. All rights reserved.
  * Use of this source code is governed by the BSD-style license
