@@ -54,7 +54,7 @@ class HtmlResourceContentIteratorTest {
         TextElement(
             locator = locator(
                 progression = 0.0,
-                selector = "html > body > section > div.center",
+                selector = "#pgepubid00498 > div.center",
                 before = null,
                 highlight = "171"
             ),
@@ -63,7 +63,7 @@ class HtmlResourceContentIteratorTest {
                 Segment(
                     locator = locator(
                         progression = 0.0,
-                        selector = "html > body > section > div.center",
+                        selector = "#pgepubid00498 > div.center",
                         before = null,
                         highlight = "171"
                     ),
@@ -75,7 +75,7 @@ class HtmlResourceContentIteratorTest {
         TextElement(
             locator = locator(
                 progression = 0.2,
-                selector = "html > body > section > h3",
+                selector = "#pgepubid00498 > h3",
                 before = "171",
                 highlight = "INTRODUCTORY"
             ),
@@ -84,7 +84,7 @@ class HtmlResourceContentIteratorTest {
                 Segment(
                     locator = locator(
                         progression = 0.2,
-                        selector = "html > body > section > h3",
+                        selector = "#pgepubid00498 > h3",
                         before = "171",
                         highlight = "INTRODUCTORY"
                     ),
@@ -96,7 +96,7 @@ class HtmlResourceContentIteratorTest {
         TextElement(
             locator = locator(
                 progression = 0.4,
-                selector = "html > body > section > p:nth-child(3)",
+                selector = "#pgepubid00498 > p:nth-child(3)",
                 before = "171INTRODUCTORY",
                 highlight = "The difficulties of classification are very apparent here, and once more it must be noted that illustrative and practical purposes rather than logical ones are served by the arrangement adopted. The modern fanciful story is here placed next to the real folk story instead of after all the groups of folk products. The Hebrew stories at the beginning belong quite as well, perhaps even better, in Section V, while the stories at the end of Section VI shade off into the more modern types of short tales."
             ),
@@ -105,7 +105,7 @@ class HtmlResourceContentIteratorTest {
                 Segment(
                     locator = locator(
                         progression = 0.4,
-                        selector = "html > body > section > p:nth-child(3)",
+                        selector = "#pgepubid00498 > p:nth-child(3)",
                         before = "171INTRODUCTORY",
                         highlight = "The difficulties of classification are very apparent here, and once more it must be noted that illustrative and practical purposes rather than logical ones are served by the arrangement adopted. The modern fanciful story is here placed next to the real folk story instead of after all the groups of folk products. The Hebrew stories at the beginning belong quite as well, perhaps even better, in Section V, while the stories at the end of Section VI shade off into the more modern types of short tales."
                     ),
@@ -117,7 +117,7 @@ class HtmlResourceContentIteratorTest {
         TextElement(
             locator = locator(
                 progression = 0.6,
-                selector = "html > body > section > p:nth-child(4)",
+                selector = "#pgepubid00498 > p:nth-child(4)",
                 before = "ade off into the more modern types of short tales.",
                 highlight = "The child's natural literature. The world has lost certain secrets as the price of an advancing civilization."
             ),
@@ -126,7 +126,7 @@ class HtmlResourceContentIteratorTest {
                 Segment(
                     locator = locator(
                         progression = 0.6,
-                        selector = "html > body > section > p:nth-child(4)",
+                        selector = "#pgepubid00498 > p:nth-child(4)",
                         before = "ade off into the more modern types of short tales.",
                         highlight = "The child's natural literature. The world has lost certain secrets as the price of an advancing civilization."
                     ),
@@ -138,7 +138,7 @@ class HtmlResourceContentIteratorTest {
         TextElement(
             locator = locator(
                 progression = 0.8,
-                selector = "html > body > section > p:nth-child(5)",
+                selector = "#pgepubid00498 > p:nth-child(5)",
                 before = "secrets as the price of an advancing civilization.",
                 highlight = "Without discussing the limits of the culture-epoch theory of human development as a complete guide in education, it is clear that the young child passes through a period when his mind looks out upon the world in a manner analogous to that of the folk as expressed in their literature."
             ),
@@ -147,7 +147,7 @@ class HtmlResourceContentIteratorTest {
                 Segment(
                     locator = locator(
                         progression = 0.8,
-                        selector = "html > body > section > p:nth-child(5)",
+                        selector = "#pgepubid00498 > p:nth-child(5)",
                         before = "secrets as the price of an advancing civilization.",
                         highlight = "Without discussing the limits of the culture-epoch theory of human development as a complete guide in education, it is clear that the young child passes through a period when his mind looks out upon the world in a manner analogous to that of the folk as expressed in their literature."
                     ),
@@ -410,7 +410,7 @@ class HtmlResourceContentIteratorTest {
             <?xml version="1.0" encoding="UTF-8"?>
             <html xmlns="http://www.w3.org/1999/xhtml">
             <body>
-                <audio src="audio.mp3" />
+                <audio src="audio.mp3"></audio>
                 <audio>
                     <source src="audio.mp3" type="audio/mpeg" />
                     <source src="audio.ogg" type="audio/ogg" />
@@ -454,7 +454,7 @@ class HtmlResourceContentIteratorTest {
             <?xml version="1.0" encoding="UTF-8"?>
             <html xmlns="http://www.w3.org/1999/xhtml">
             <body>
-                <video src="video.mp4" />
+                <video src="video.mp4"></video>
                 <video>
                     <source src="video.mp4" type="video/mp4" />
                     <source src="video.m4v" type="video/x-m4v" />
@@ -561,7 +561,7 @@ class HtmlResourceContentIteratorTest {
                 TextElement(
                     locator = locator(
                         progression = 2 / 3.0,
-                        selector = "html > body > ol.decimal > li > aside",
+                        selector = "#c06-li-0001 > aside",
                         before = "e just described is very much a waterfall process.\n                        \n                        ",
                         highlight = "Trailing text"
                     ),
@@ -570,7 +570,7 @@ class HtmlResourceContentIteratorTest {
                         Segment(
                             locator = locator(
                                 progression = 2 / 3.0,
-                                selector = "html > body > ol.decimal > li > aside",
+                                selector = "#c06-li-0001 > aside",
                                 before = "e just described is very much a waterfall process.\n                        ",
                                 highlight = "Trailing text"
                             ),

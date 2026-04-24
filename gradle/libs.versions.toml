@@ -43,9 +43,7 @@ dokka = "2.2.0"
 google-material = "1.13.0"
 
 joda-time = "2.14.1"
-#Do not upgrade without fixing unit tests in HtmlResourceContentIteratorTest and regression testing
-#See https://github.com/jhy/jsoup/pull/2283
-jsoup = "1.18.1"
+jsoup = "1.22.2"
 junit = "4.13.2"
 
 kotlinx-coroutines = "1.10.2"
