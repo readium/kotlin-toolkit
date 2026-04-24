@@ -12,7 +12,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -233,7 +232,6 @@ private fun <T> StepperItem(
                     Icon(
                         painter = painterResource(id = R.drawable.remove),
                         contentDescription = "Less",
-                        modifier = Modifier.size(size = 32.dp),
                         tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
@@ -251,7 +249,6 @@ private fun <T> StepperItem(
                     Icon(
                         painter = painterResource(id = R.drawable.add),
                         contentDescription = "More",
-                        modifier = Modifier.size(size = 32.dp),
                         tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
@@ -370,7 +367,6 @@ private fun ColorItem(
                 Icon(
                     painter = painterResource(id = R.drawable.palette),
                     contentDescription = "Change color",
-                    modifier = Modifier.size(size = 32.dp),
                     tint = if (color.luminance() > 0.5) Color.Black else Color.White
                 )
             }
@@ -452,7 +448,6 @@ private fun Item(
                     Icon(
                         painter = painterResource(id = R.drawable.backspace),
                         contentDescription = "Clear",
-                        modifier = Modifier.size(size = 32.dp),
                         tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }

@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.requiredSize
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.CircleShape
@@ -116,7 +115,6 @@ private fun EditHighlightPopup(
                     Icon(
                         painter = painterResource(id = R.drawable.edit_note),
                         contentDescription = "Edit note",
-                        modifier = Modifier.size(size = 32.dp),
                         tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
@@ -126,7 +124,6 @@ private fun EditHighlightPopup(
                     Icon(
                         painter = painterResource(id = R.drawable.delete),
                         contentDescription = "Delete highlight",
-                        modifier = Modifier.size(size = 32.dp),
                         tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
