@@ -20,6 +20,7 @@ private fun Activity.isSystemUiVisible(): Boolean {
 }
 
 // Using ViewCompat and WindowInsetsCompat does not work properly in all versions of Android
+
 /** Enable fullscreen or immersive mode. */
 @Suppress("DEPRECATION")
 fun Activity.hideSystemUi() {
@@ -34,6 +35,7 @@ fun Activity.hideSystemUi() {
 }
 
 // Using ViewCompat and WindowInsetsCompat does not work properly in all versions of Android
+
 /** Disable fullscreen or immersive mode. */
 @Suppress("DEPRECATION")
 fun Activity.showSystemUi() {
