@@ -215,8 +215,7 @@ public object Opds2Sniffer : FormatSniffer {
             recoverDecode = { null }
         )
             ?.let { rwpm ->
-                if (rwpm.linkWithRel("self")?.mediaType?.matches("application/opds+json") == true
-                ) {
+                if (rwpm.linkWithRel("self")?.mediaType?.matches("application/opds+json") == true) {
                     return Try.success(opds2CatalogFormat)
                 }
 
