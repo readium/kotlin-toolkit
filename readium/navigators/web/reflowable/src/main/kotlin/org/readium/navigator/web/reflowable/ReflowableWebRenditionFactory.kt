@@ -44,7 +44,7 @@ public class ReflowableWebRenditionFactory private constructor(
             configuration: ReflowableWebConfiguration = ReflowableWebConfiguration(),
         ): ReflowableWebRenditionFactory? {
             if (!publication.conformsTo(Publication.Profile.EPUB) ||
-                publication.metadata.layout != null && publication.metadata.layout != Layout.REFLOWABLE
+                (publication.metadata.layout != null && publication.metadata.layout != Layout.REFLOWABLE)
             ) {
                 return null
             }

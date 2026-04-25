@@ -542,7 +542,7 @@ private fun StringBuilder.appendNormalisedWhitespace(
     while (i < len) {
         c = string.codePointAt(i)
         if (isWhitespace(c)) {
-            if (stripLeading && !reachedNonWhite || lastWasWhite) {
+            if ((stripLeading && !reachedNonWhite) || lastWasWhite) {
                 i += Character.charCount(c)
                 continue
             }

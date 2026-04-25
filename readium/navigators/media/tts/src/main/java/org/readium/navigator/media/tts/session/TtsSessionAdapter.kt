@@ -320,7 +320,7 @@ internal class TtsSessionAdapter<E : TtsEngine.Error>(
 
     override fun seekTo(mediaItemIndex: Int, positionMs: Long) {
         val timeline: Timeline = currentTimeline
-        if (mediaItemIndex < 0 || !timeline.isEmpty && mediaItemIndex >= timeline.windowCount) {
+        if (mediaItemIndex < 0 || (!timeline.isEmpty && mediaItemIndex >= timeline.windowCount)) {
             throw IllegalSeekPositionException(timeline, mediaItemIndex, positionMs)
         }
 

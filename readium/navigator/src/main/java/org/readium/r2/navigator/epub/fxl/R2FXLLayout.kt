@@ -618,7 +618,7 @@ internal class R2FXLLayout : FrameLayout {
         }
 
         override fun run() {
-            if (mCancelled || !doScale() && !doTranslate()) {
+            if (mCancelled || (!doScale() && !doTranslate())) {
                 return
             }
 

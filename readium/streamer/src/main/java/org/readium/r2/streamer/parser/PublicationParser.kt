@@ -95,7 +95,7 @@ public class CompositePublicationParser(
             val result = parser.parse(asset, warnings)
             if (
                 result is Try.Success ||
-                result is Try.Failure && result.value !is PublicationParser.ParseError.FormatNotSupported
+                (result is Try.Failure && result.value !is PublicationParser.ParseError.FormatNotSupported)
             ) {
                 return result
             }

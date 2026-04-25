@@ -23,4 +23,3 @@ ktlint_standard_function-expression-body = disabled
 ktlint_standard_function-signature = disabled
 ktlint_standard_parameter-list-wrapping = disabled
 ktlint_standard_blank-line-between-when-conditions = disabled
-ktlint_standard_mixed-condition-operators = disabled
