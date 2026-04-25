@@ -173,7 +173,7 @@ internal class AudioFocusManager(
 
     // Internal methods.
     @VisibleForTesting
-    fun /* package */getFocusListener(): OnAudioFocusChangeListener {
+    fun getFocusListener(): OnAudioFocusChangeListener {
         return focusListener
     }
 

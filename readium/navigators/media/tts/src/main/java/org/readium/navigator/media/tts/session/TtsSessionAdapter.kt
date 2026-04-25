@@ -372,7 +372,7 @@ internal class TtsSessionAdapter<E : TtsEngine.Error>(
         } else if (hasPreviousMediaItem && currentPosition <= maxSeekToPreviousPosition) {
             seekToPreviousMediaItem()
         } else {
-            seekTo( /* positionMs= */0)
+            seekTo(positionMs = 0)
         }
     }
 

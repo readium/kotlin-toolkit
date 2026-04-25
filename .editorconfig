@@ -28,6 +28,5 @@ ktlint_standard_type-argument-comment = disabled
 ktlint_standard_value-parameter-comment = disabled
 ktlint_standard_blank-line-between-when-conditions = disabled
 ktlint_standard_mixed-condition-operators = disabled
-ktlint_standard_comment-wrapping = disabled
 ktlint_standard_spacing-between-declarations-with-comments = disabled
 ktlint_standard_paren-spacing = disabled

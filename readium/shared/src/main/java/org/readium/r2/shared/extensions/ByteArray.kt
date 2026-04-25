@@ -25,7 +25,7 @@ import timber.log.Timber
  * @param nowrap If true then support GZIP compatible compression, see the documentation of [Inflater]
  */
 @InternalReadiumApi
-public fun ByteArray.inflate(nowrap: Boolean = false, bufferSize: Int = 32 * 1024 /* 32 KB */): Try<ByteArray, DataFormatException> =
+public fun ByteArray.inflate(nowrap: Boolean = false, bufferSize: Int = 32 * 1024): Try<ByteArray, DataFormatException> =
     try {
         ByteArrayOutputStream().use { output ->
             val inflater = Inflater(nowrap)
