@@ -143,8 +143,9 @@ internal suspend fun Resource.readByChunks(
 
         if (blocks.size > 1 && shuffle) {
             // Forbid the true order
-            while (blocks.map(Pair<Int, LongRange>::first) == (0 until blockNb).toList())
+            while (blocks.map(Pair<Int, LongRange>::first) == (0 until blockNb).toList()) {
                 blocks.shuffle()
+            }
         }
 
         Timber.d("blocks $blocks")
