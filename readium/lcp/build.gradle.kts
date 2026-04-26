@@ -30,10 +30,6 @@ dependencies {
     implementation(libs.androidx.core)
     implementation(libs.google.material)
     implementation(libs.timber)
-    implementation("com.mcxiaoke.koi:core:0.5.5") {
-        exclude(module = "support-v4")
-    }
-    implementation(libs.joda.time)
     implementation(libs.androidx.browser)
 
     implementation(libs.bundles.room)

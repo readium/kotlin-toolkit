@@ -9,9 +9,9 @@
 
 package org.readium.r2.lcp.service
 
-import com.mcxiaoke.koi.HASH
 import org.readium.r2.lcp.LcpAuthenticating
 import org.readium.r2.lcp.license.model.LicenseDocument
+import org.readium.r2.lcp.util.sha256Hex
 
 internal class PassphrasesService(private val repository: PassphrasesRepository) {
 
@@ -51,7 +51,7 @@ internal class PassphrasesService(private val repository: PassphrasesRepository)
             allowUserInteraction
         )
             ?: return null
-        val hashedPassphrase = HASH.sha256(clearPassphrase)
+        val hashedPassphrase = clearPassphrase.sha256Hex()
         val passphrases = mutableListOf(hashedPassphrase)
         // Note: The C++ LCP lib crashes if we provide a passphrase that is not a valid
         // SHA-256 hash. So we check this beforehand.
@@ -80,7 +80,7 @@ internal class PassphrasesService(private val repository: PassphrasesRepository)
         provider: String,
         userId: String?,
     ) {
-        val hashedPassphrase = if (hashed) passphrase else HASH.sha256(passphrase)
+        val hashedPassphrase = if (hashed) passphrase else passphrase.sha256Hex()
         this.repository.addPassphrase(hashedPassphrase, licenseId, provider, userId)
     }
 
