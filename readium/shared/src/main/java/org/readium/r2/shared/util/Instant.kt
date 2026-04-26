@@ -10,9 +10,11 @@ import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.atStartOfDayIn
+import kotlinx.datetime.daysUntil
 import kotlinx.datetime.format
 import kotlinx.datetime.format.DateTimeComponents
 import kotlinx.datetime.toInstant
+import kotlinx.datetime.toLocalDateTime
 import kotlinx.parcelize.Parceler
 import kotlinx.parcelize.Parcelize
 import kotlinx.parcelize.TypeParceler
@@ -70,6 +72,22 @@ public class Instant private constructor(
     public fun toJavaDate(): java.util.Date = java.util.Date(value.toEpochMilliseconds())
 
     public fun toEpochMilliseconds(): Long = value.toEpochMilliseconds()
+
+    /**
+     * Converts instant to a [LocalDateTime] in the given [TimeZone].
+     *
+     * If no [TimeZone] is provided, the system default is used.
+     */
+    public fun toLocalDateTime(timeZone: TimeZone = TimeZone.currentSystemDefault()): LocalDateTime =
+        value.toLocalDateTime(timeZone)
+
+    /**
+     * Returns the number of whole days between instants in the given [TimeZone].
+     *
+     * If no [TimeZone] is provided, the system default is used.
+     */
+    public fun daysUntil(other: Instant, timeZone: TimeZone = TimeZone.currentSystemDefault()): Int =
+        toLocalDateTime(timeZone).date.daysUntil(other.toLocalDateTime(timeZone).date)
 
     public operator fun plus(duration: Duration): Instant =
         Instant(value.plus(duration))

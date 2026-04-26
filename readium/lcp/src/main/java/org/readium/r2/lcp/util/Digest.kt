@@ -41,6 +41,5 @@ internal fun ByteArray.sha256(): ByteArray {
 /**
  * Returns the SHA-256 sum of the string encoded as a lowercase hex string.
  */
-@OptIn(ExperimentalStdlibApi::class)
 internal fun String.sha256Hex(): String =
     toByteArray().sha256().toHexString()

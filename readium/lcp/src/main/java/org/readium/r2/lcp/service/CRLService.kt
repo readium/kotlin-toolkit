@@ -79,6 +79,6 @@ internal class CRLService(val network: NetworkService, val context: Context) {
     }
 
     private fun daysSince(date: Instant): Int {
-        return (Instant.now() - date).inWholeDays.toInt()
+        return date.daysUntil(other = Instant.now())
     }
 }
