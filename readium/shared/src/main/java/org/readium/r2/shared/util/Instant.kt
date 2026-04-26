@@ -5,6 +5,7 @@ package org.readium.r2.shared.util
 import android.os.Parcel
 import android.os.Parcelable
 import kotlin.time.Clock
+import kotlin.time.Duration
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
@@ -69,6 +70,15 @@ public class Instant private constructor(
     public fun toJavaDate(): java.util.Date = java.util.Date(value.toEpochMilliseconds())
 
     public fun toEpochMilliseconds(): Long = value.toEpochMilliseconds()
+
+    public operator fun plus(duration: Duration): Instant =
+        Instant(value.plus(duration))
+
+    public operator fun minus(duration: Duration): Instant =
+        Instant(value.minus(duration))
+
+    public operator fun minus(other: Instant): Duration =
+        value.minus(other.value)
 
     /**
      * Returns the ISO-8601 representation of the instant.

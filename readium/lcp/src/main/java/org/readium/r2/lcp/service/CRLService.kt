@@ -14,17 +14,13 @@ import android.content.SharedPreferences
 import android.os.Build
 import androidx.core.content.edit
 import java.util.Base64
-import kotlin.time.Clock
-import kotlin.time.Duration.Companion.milliseconds
-import kotlin.time.ExperimentalTime
-import kotlin.time.Instant
 import org.readium.r2.lcp.BuildConfig.DEBUG
 import org.readium.r2.lcp.LcpError
 import org.readium.r2.lcp.LcpException
+import org.readium.r2.shared.util.Instant
 import org.readium.r2.shared.util.getOrElse
 import timber.log.Timber
 
-@OptIn(ExperimentalTime::class)
 internal class CRLService(val network: NetworkService, val context: Context) {
 
     private val preferences: SharedPreferences = context.getSharedPreferences(
@@ -78,12 +74,11 @@ internal class CRLService(val network: NetworkService, val context: Context) {
 
     private fun saveLocal(crl: String): String {
         preferences.edit { putString(CRL_KEY, crl) }
-        preferences.edit { putString(DATE_KEY, Clock.System.now().toString()) }
+        preferences.edit { putString(DATE_KEY, Instant.now().toString()) }
         return crl
     }
 
     private fun daysSince(date: Instant): Int {
-        val diffMs = Clock.System.now().toEpochMilliseconds() - date.toEpochMilliseconds()
-        return diffMs.milliseconds.inWholeDays.toInt()
+        return (Instant.now() - date).inWholeDays.toInt()
     }
 }

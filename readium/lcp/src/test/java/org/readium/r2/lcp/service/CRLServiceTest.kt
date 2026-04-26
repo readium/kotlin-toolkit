@@ -5,11 +5,11 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
 import kotlin.test.assertEquals
-import kotlin.time.Clock
 import kotlin.time.Duration.Companion.days
 import kotlinx.coroutines.test.runTest
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.readium.r2.shared.util.Instant
 import org.readium.r2.shared.util.Try
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
@@ -25,7 +25,7 @@ class CRLServiceTest {
             Context.MODE_PRIVATE
         )
 
-        val activeDate = (Clock.System.now() - 2.days).toString()
+        val activeDate = (Instant.now() - 2.days).toString()
         preferences.edit().putString(CRLService.CRL_KEY, "local_crl").apply()
         preferences.edit().putString(CRLService.DATE_KEY, activeDate).apply()
 
@@ -56,7 +56,7 @@ class CRLServiceTest {
             Context.MODE_PRIVATE
         )
 
-        val expiredDate = (Clock.System.now() - 8.days).toString()
+        val expiredDate = (Instant.now() - 8.days).toString()
         preferences.edit().putString(CRLService.CRL_KEY, "old_crl").apply()
         preferences.edit().putString(CRLService.DATE_KEY, expiredDate).apply()
 
