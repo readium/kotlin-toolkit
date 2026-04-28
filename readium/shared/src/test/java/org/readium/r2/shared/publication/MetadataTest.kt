@@ -12,8 +12,8 @@ import org.junit.Assert.assertNull
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.readium.r2.shared.assertJSONEquals
+import org.readium.r2.shared.extensions.toInstant
 import org.readium.r2.shared.util.AbsoluteUrl
-import org.readium.r2.shared.util.Instant
 import org.readium.r2.shared.util.Language
 import org.robolectric.RobolectricTestRunner
 
@@ -52,8 +52,8 @@ class MetadataTest {
                     features = setOf(Accessibility.Feature.ARIA),
                     hazards = setOf(Accessibility.Hazard.FLASHING)
                 ),
-                modified = Instant.parse("2001-01-01T12:36:27.000Z"),
-                published = Instant.parse("2001-01-02T12:36:27.000Z"),
+                modified = ("2001-01-01T12:36:27.000Z").toInstant(),
+                published = ("2001-01-02T12:36:27.000Z").toInstant(),
 
                 languages = listOf("en", "fr"),
                 localizedSortAs = LocalizedString("sort key"),
@@ -288,8 +288,8 @@ class MetadataTest {
                         "fr" to "Sous-titre"
                     )
                 ),
-                modified = Instant.parse("2001-01-01T12:36:27.000Z"),
-                published = Instant.parse("2001-01-02T12:36:27.000Z"),
+                modified = ("2001-01-01T12:36:27.000Z").toInstant(),
+                published = ("2001-01-02T12:36:27.000Z").toInstant(),
                 accessibility = Accessibility(
                     conformsTo = setOf(Accessibility.Profile.EPUB_A11Y_10_WCAG_20_A),
                     accessModes = setOf(Accessibility.AccessMode.TEXTUAL),

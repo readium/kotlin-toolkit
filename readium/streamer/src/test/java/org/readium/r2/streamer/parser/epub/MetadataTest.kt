@@ -10,16 +10,24 @@
 package org.readium.r2.streamer.parser.epub
 
 import kotlin.test.assertEquals
+import kotlin.time.Instant
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.entry
 import org.junit.Assert.assertNotNull
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.readium.r2.shared.publication.*
+import org.readium.r2.shared.publication.Accessibility
+import org.readium.r2.shared.publication.Collection
+import org.readium.r2.shared.publication.Contributor
+import org.readium.r2.shared.publication.Href
 import org.readium.r2.shared.publication.Layout
 import org.readium.r2.shared.publication.Link as SharedLink
+import org.readium.r2.shared.publication.LocalizedString
+import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.publication.Subject
+import org.readium.r2.shared.publication.Tdm
+import org.readium.r2.shared.publication.firstWithRel
 import org.readium.r2.shared.util.AbsoluteUrl
-import org.readium.r2.shared.util.Instant
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.robolectric.RobolectricTestRunner
 

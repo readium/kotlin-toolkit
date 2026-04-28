@@ -9,6 +9,7 @@
 package org.readium.r2.shared.publication
 
 import android.os.Parcelable
+import kotlin.time.Instant
 import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
 import kotlinx.parcelize.WriteWith
@@ -20,8 +21,8 @@ import org.readium.r2.shared.extensions.optPositiveDouble
 import org.readium.r2.shared.extensions.optPositiveInt
 import org.readium.r2.shared.extensions.optStringsFromArrayOrSingle
 import org.readium.r2.shared.extensions.putIfNotEmpty
+import org.readium.r2.shared.extensions.toInstant
 import org.readium.r2.shared.extensions.toMap
-import org.readium.r2.shared.util.Instant
 import org.readium.r2.shared.util.Language
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.logging.log
@@ -243,8 +244,8 @@ public data class Metadata(
                 .map { Publication.Profile(it) }
                 .toSet()
             val localizedSubtitle = LocalizedString.fromJSON(json.remove("subtitle"), warnings)
-            val modified = (json.remove("modified") as? String)?.let { Instant.parse(it) }
-            val published = (json.remove("published") as? String)?.let { Instant.parse(it) }
+            val modified = (json.remove("modified") as? String)?.toInstant()
+            val published = (json.remove("published") as? String)?.toInstant()
             val accessibility = Accessibility.fromJSON(json.remove("accessibility"))
             val languages = json.optStringsFromArrayOrSingle("language", remove = true)
             val localizedSortAs = LocalizedString.fromJSON(json.remove("sortAs"), warnings)

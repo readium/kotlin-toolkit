@@ -9,8 +9,8 @@
 
 package org.readium.r2.shared.opds
 
+import kotlin.time.Instant
 import org.readium.r2.shared.InternalReadiumApi
-import org.readium.r2.shared.util.Instant
 
 public data class OpdsMetadata(
     val title: String,

@@ -9,10 +9,20 @@
 package org.readium.r2.streamer.parser.epub
 
 import org.readium.r2.shared.InternalReadiumApi
-import org.readium.r2.shared.publication.*
+import org.readium.r2.shared.extensions.toInstant
+import org.readium.r2.shared.publication.Accessibility
 import org.readium.r2.shared.publication.Collection
+import org.readium.r2.shared.publication.Contributor
+import org.readium.r2.shared.publication.Layout
+import org.readium.r2.shared.publication.Link
+import org.readium.r2.shared.publication.LocalizedString
+import org.readium.r2.shared.publication.Metadata
+import org.readium.r2.shared.publication.Properties
+import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.publication.ReadingProgression
+import org.readium.r2.shared.publication.Subject
+import org.readium.r2.shared.publication.Tdm
 import org.readium.r2.shared.util.AbsoluteUrl
-import org.readium.r2.shared.util.Instant
 
 internal class MetadataAdapter(
     private val epubVersion: Double,
@@ -55,12 +65,12 @@ internal class MetadataAdapter(
         val published = globalItemsHolder
             .adapt { it.takeFirstWithProperty(Vocabularies.DCTERMS + "date") }
             ?.value
-            ?.let { Instant.parse(it) }
+            ?.toInstant()
 
         val modified = globalItemsHolder
             .adapt { it.takeFirstWithProperty(Vocabularies.DCTERMS + "modified") }
             ?.value
-            ?.let { Instant.parse(it) }
+            ?.toInstant()
 
         val description = globalItemsHolder
             .adapt { it.takeFirstWithProperty(Vocabularies.DCTERMS + "description") }
