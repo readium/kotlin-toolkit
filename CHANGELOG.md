@@ -29,6 +29,8 @@ All notable changes to this project will be documented in this file. Take a look
 
 * The Presentation Hints properties are deprecated from the Readium Web Publication Manifest models. [See the official documentation](https://readium.org/webpub-manifest/profiles/epub.html#appendix-b---deprecated-properties).
 * The `Instant` utility class is deprecated in favor of `kotlin.time.Instant`. Use `Clock.System.now()` to get the current time and `String.toInstant()` for parsing.
+    * **Note**: `kotlin.time.Instant` does not implement `Parcelable`. If you were passing `Instant` via Intents or Bundles, you must now pass `Long` primitives using `toEpochMilliseconds()` and reconstruct the instant.
+    * **Note**: `kotlin.time.Instant` lacks the custom permissive fallback parsing of the previous `@Serializable` implementation. If your JSON includes `LocalDate` or `LocalDateTime` representations without a timezone offset, you must handle this manually before parsing.
 
 ### Fixed
 
