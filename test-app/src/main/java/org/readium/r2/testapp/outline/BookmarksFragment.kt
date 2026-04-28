@@ -21,11 +21,11 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import java.text.DateFormat
+import java.util.Date
 import kotlin.math.roundToInt
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
-import org.joda.time.DateTime
-import org.joda.time.format.DateTimeFormat
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.util.Url
 import org.readium.r2.testapp.R
@@ -137,7 +137,9 @@ class BookmarkAdapter(
                 binding.bookmarkProgression.text = formattedProgression
             }
 
-            val formattedDate = DateTime(bookmark.creation).toString(DateTimeFormat.shortDateTime())
+            val formattedDate = bookmark.creation?.let {
+                DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(Date(it))
+            }
             binding.bookmarkTimestamp.text = formattedDate
 
             binding.overflow.setOnClickListener {

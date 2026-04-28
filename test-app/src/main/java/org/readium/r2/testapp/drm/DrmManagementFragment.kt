@@ -15,10 +15,9 @@ import androidx.fragment.app.setFragmentResult
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import java.util.*
+import java.text.DateFormat
+import java.util.Date
 import kotlinx.coroutines.launch
-import org.joda.time.DateTime
-import org.joda.time.format.DateTimeFormat
 import org.readium.r2.lcp.MaterialRenewListener
 import org.readium.r2.lcp.lcpLicense
 import org.readium.r2.testapp.R
@@ -131,4 +130,5 @@ class DrmManagementFragment : Fragment() {
 }
 
 private fun Date?.toFormattedString() =
-    DateTime(this).toString(DateTimeFormat.shortDateTime()).orEmpty()
+    this?.let { DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(it) }
+        .orEmpty()

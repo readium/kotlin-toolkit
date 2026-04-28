@@ -42,7 +42,6 @@ dokka = "2.2.0"
 
 google-material = "1.13.0"
 
-joda-time = "2.14.1"
 jsoup = "1.22.2"
 junit = "4.13.2"
 
@@ -109,7 +108,6 @@ assertj = { group = "org.assertj", name = "assertj-core", version.ref = "assertj
 desugar_jdk_libs = { module = "com.android.tools:desugar_jdk_libs", version.ref = "desugar_jdk_libs" }
 google-material = { group = "com.google.android.material", name = "material", version.ref = "google-material" }
 
-joda-time = { group = "joda-time", name = "joda-time", version.ref = "joda-time" }
 jsoup = { group = "org.jsoup", name = "jsoup", version.ref = "jsoup" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 

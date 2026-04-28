@@ -106,7 +106,6 @@ dependencies {
     implementation(libs.google.material)
     implementation(libs.timber)
     implementation(libs.picasso)
-    implementation(libs.joda.time)
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.jsoup)
 
