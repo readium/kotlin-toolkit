@@ -31,6 +31,7 @@ dependencies {
     implementation(libs.google.material)
     implementation(libs.timber)
     implementation(libs.androidx.browser)
+    implementation(libs.kotlinx.datetime)
 
     implementation(libs.bundles.room)
     ksp(libs.androidx.room.compiler)
