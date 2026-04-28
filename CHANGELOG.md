@@ -28,6 +28,7 @@ All notable changes to this project will be documented in this file. Take a look
 #### Shared
 
 * The Presentation Hints properties are deprecated from the Readium Web Publication Manifest models. [See the official documentation](https://readium.org/webpub-manifest/profiles/epub.html#appendix-b---deprecated-properties).
+* The `Instant` utility class is deprecated in favor of `kotlin.time.Instant`. Use `Clock.System.now()` to get the current time and `String.toInstant()` for parsing.
 
 ### Fixed
 
