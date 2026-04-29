@@ -1,3 +1,5 @@
+@file:OptIn(InternalReadiumApi::class)
+
 package org.readium.r2.opds
 
 import org.junit.Assert.assertEquals
@@ -5,6 +7,7 @@ import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.extensions.toInstant
 import org.readium.r2.shared.opds.Facet
 import org.readium.r2.shared.opds.Feed

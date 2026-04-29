@@ -36,7 +36,7 @@ private typealias KotlinInstant = kotlin.time.Instant
     replaceWith = ReplaceWith("Instant", imports = ["kotlin.time.Instant"])
 )
 @Parcelize
-@TypeParceler<KotlinInstant, InstantParceler>()
+@TypeParceler<KotlinInstant, KotlinInstantParceler>()
 @Serializable(with = InstantSerializer::class)
 public class Instant private constructor(
     private val value: KotlinInstant,
@@ -48,11 +48,7 @@ public class Instant private constructor(
          * Returns null if it can't be parsed.
          */
         @Deprecated(
-            message = "Use the String.toInstant() extension function instead.",
-            replaceWith = ReplaceWith(
-                "input.toInstant()",
-                "org.readium.r2.shared.extensions.toInstant"
-            )
+            message = "Migrate to kotlin.time.Instant and use kotlin.time.Instant.parse() for strings with a UTC offset, or kotlinx.datetime for date-only and offset-less strings."
         )
         public fun parse(input: String): Instant? {
             val instant = tryOrNull { KotlinInstant.parse(input) }
@@ -131,7 +127,7 @@ public class Instant private constructor(
 }
 
 @InternalReadiumApi
-private object InstantParceler : Parceler<KotlinInstant> {
+private object KotlinInstantParceler : Parceler<KotlinInstant> {
 
     override fun create(parcel: Parcel): KotlinInstant =
         KotlinInstant.fromEpochMilliseconds(parcel.readLong())
@@ -157,5 +153,28 @@ public object InstantSerializer : KSerializer<Instant> {
 
     override fun serialize(encoder: Encoder, value: Instant) {
         encoder.encodeString(value.toString())
+    }
+}
+
+@InternalReadiumApi
+public object InstantParceler : Parceler<kotlin.time.Instant> {
+
+    override fun create(parcel: Parcel): kotlin.time.Instant =
+        kotlin.time.Instant.fromEpochMilliseconds(parcel.readLong())
+
+    override fun kotlin.time.Instant.write(parcel: Parcel, flags: Int) {
+        parcel.writeLong(toEpochMilliseconds())
+    }
+}
+
+@InternalReadiumApi
+public object NullableInstantParceler : Parceler<kotlin.time.Instant?> {
+
+    override fun create(parcel: Parcel): kotlin.time.Instant? =
+        parcel.readLong().takeIf { it != Long.MIN_VALUE }
+            ?.let { kotlin.time.Instant.fromEpochMilliseconds(it) }
+
+    override fun kotlin.time.Instant?.write(parcel: Parcel, flags: Int) {
+        parcel.writeLong(this?.toEpochMilliseconds() ?: Long.MIN_VALUE)
     }
 }

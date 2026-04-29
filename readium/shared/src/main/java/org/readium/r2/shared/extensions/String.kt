@@ -45,6 +45,7 @@ public fun String.addSuffix(suffix: CharSequence): String {
 }
 
 @OptIn(InternalReadiumApi::class)
+@InternalReadiumApi
 public fun String.toInstant(): kotlin.time.Instant? =
     tryOrNull { kotlin.time.Instant.parse(this) }
         ?: tryOrNull { LocalDateTime.parse(this).toInstant(TimeZone.UTC) }
