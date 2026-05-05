@@ -27,7 +27,6 @@ class LocatorExtensionsTest {
         assertEquals(1.5.seconds, Locator.Locations(fragments = listOf("t=1.5")).time)
         assertEquals(1800.seconds, Locator.Locations(fragments = listOf("t=1800")).time)
         assertEquals(20.seconds, Locator.Locations(fragments = listOf("t=20")).time)
-
     }
 
     @Test
@@ -49,7 +48,6 @@ class LocatorExtensionsTest {
 
         assertEquals(1, Locator.Locations(fragments = listOf("page=1")).page)
         assertEquals(10, Locator.Locations(fragments = listOf("page=10")).page)
-
     }
 
     @Test
