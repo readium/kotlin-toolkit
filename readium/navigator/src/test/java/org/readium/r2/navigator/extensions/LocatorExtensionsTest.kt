@@ -14,6 +14,9 @@ class LocatorExtensionsTest {
     @OptIn(InternalReadiumApi::class)
     @Test fun `get time from fragment`() {
         assertNull(Locator.Locations(fragments = listOf("t=asd")).time)
+        assertNull(Locator.Locations(fragments = listOf("t=NaN")).time)
+        assertNull(Locator.Locations(fragments = listOf("t=Infinity")).time)
+        assertNull(Locator.Locations(fragments = listOf("t=-1.0")).time)
 
         assertEquals(0.0.seconds, Locator.Locations(fragments = listOf("#t=0.0")).time)
         assertEquals(0.0.seconds, Locator.Locations(fragments = listOf("t=0.0")).time)
@@ -39,6 +42,7 @@ class LocatorExtensionsTest {
     @Test fun `page from fragment`() {
         assertNull(Locator.Locations(fragments = listOf("t=0.0")).page)
         assertNull(Locator.Locations(fragments = listOf("chapter1")).page)
+        assertNull(Locator.Locations(fragments = listOf("page=NaN")).page)
 
         assertEquals(1, Locator.Locations(fragments = listOf("page=1")).page)
         assertEquals(10, Locator.Locations(fragments = listOf("page=10")).page)
