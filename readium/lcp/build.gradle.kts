@@ -11,6 +11,9 @@ plugins {
 
 android {
     namespace = "org.readium.r2.lcp"
+    defaultConfig {
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
 }
 
 kotlin {
@@ -45,4 +48,9 @@ dependencies {
     testImplementation(libs.mockk)
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.robolectric)
+
+    // Instrumented Tests (requires LCP being enabled)
+    androidTestImplementation(libs.androidx.runner)
+    androidTestImplementation(libs.androidx.junit.ktx)
+    androidTestImplementation(libs.kotlinx.coroutines.test)
 }

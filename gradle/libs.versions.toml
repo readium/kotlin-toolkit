@@ -45,6 +45,8 @@ google-material = "1.13.0"
 joda-time = "2.14.1"
 jsoup = "1.22.2"
 junit = "4.13.2"
+junit-ktx = "1.3.0"
+runner = "1.7.0"
 
 kotlinx-coroutines = "1.10.2"
 kotlinx-coroutines-test = "1.10.2"
@@ -130,6 +132,8 @@ pspdfkit = { group = "com.pspdfkit", name = "pspdfkit", version.ref = "pspdfkit"
 
 robolectric = { group = "org.robolectric", name = "robolectric", version.ref = "robolectric" }
 mockk = { group = "io.mockk", name = "mockk", version.ref = "mockk" }
+androidx-junit-ktx = { group = "androidx.test.ext", name = "junit-ktx", version.ref = "junit-ktx" }
+androidx-runner = { group = "androidx.test", name = "runner", version.ref = "runner" }
 
 timber = { group = "com.jakewharton.timber", name = "timber", version.ref = "timber" }
 
