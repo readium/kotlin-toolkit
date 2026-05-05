@@ -6,10 +6,10 @@
 
 package org.readium.r2.shared.util.http
 
-@JvmInline
 /**
  * Status code of an HTTP response.
  */
+@JvmInline
 public value class HttpStatus(
     public val code: Int,
 ) : Comparable<HttpStatus> {

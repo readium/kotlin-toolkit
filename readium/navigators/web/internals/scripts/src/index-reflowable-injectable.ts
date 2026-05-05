@@ -9,10 +9,14 @@
  */
 
 import { ReflowableDecorationsBridge } from "./bridge/all-decoration-bridge"
-import { GesturesBridge } from "./bridge/all-listener-bridge"
+import {
+  GesturesBridge,
+  SelectionListenerBridge,
+} from "./bridge/all-listener-bridge"
 import { DocumentStateBridge } from "./bridge/all-listener-bridge"
 import { ReflowableSelectionBridge } from "./bridge/all-selection-bridge"
 import { CssBridge } from "./bridge/reflowable-css-bridge"
+import { ReflowableMoveBridge } from "./bridge/reflowable-move-bridge"
 import {
   ReflowableApiStateListener,
   ReflowableInitializationBridge as ReflowableInitializer,
@@ -26,9 +30,11 @@ declare global {
     readiumcss: CssBridge
     decorations: ReflowableDecorationsBridge
     selection: ReflowableSelectionBridge
+    move: ReflowableMoveBridge
     // Native APIs available for web code
     documentState: DocumentStateBridge
     gestures: GesturesBridge
+    selectionListener: SelectionListenerBridge
   }
 }
 

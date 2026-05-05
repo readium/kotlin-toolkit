@@ -1,6 +1,5 @@
 plugins {
     id("com.android.application")
-    kotlin("android")
     kotlin("plugin.parcelize")
     alias(libs.plugins.ksp)
     alias(libs.plugins.compose.compiler)
@@ -10,7 +9,7 @@ android {
     compileSdk = (property("android.compileSdk") as String).toInt()
 
     defaultConfig {
-        minSdk = 23
+        minSdk = (property("android.minSdk") as String).toInt()
         targetSdk = (property("android.targetSdk") as String).toInt()
 
         applicationId = "org.readium.navigator.demo"
@@ -22,14 +21,11 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
         isCoreLibraryDesugaringEnabled = true
     }
-    kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_1_8.toString()
-        freeCompilerArgs = freeCompilerArgs + "-opt-in=kotlin.RequiresOptIn"
-    }
+
     buildFeatures {
         viewBinding = true
         compose = true
@@ -51,12 +47,20 @@ android {
 
     sourceSets {
         getByName("main") {
-            java.srcDirs("src/main/java")
-            res.srcDirs("src/main/res")
-            assets.srcDirs("src/main/assets")
+            java.directories.add("src/main/java")
+            res.directories.add("src/main/res")
+            assets.directories.add("src/main/assets")
         }
     }
     namespace = "org.readium.demo.navigator"
+}
+
+kotlin {
+
+    compilerOptions {
+        languageVersion = org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_2_3
+        freeCompilerArgs.add("-opt-in=kotlin.RequiresOptIn")
+    }
 }
 
 dependencies {
@@ -72,6 +76,7 @@ dependencies {
     implementation(libs.timber)
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.kotlinx.collections.immutable)
+    implementation(libs.kotlinx.serialization.json)
     implementation(libs.kotlin.stdlib)
     implementation(libs.bundles.compose)
     implementation(libs.google.material)

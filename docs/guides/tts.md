@@ -33,11 +33,11 @@ val navigator = factory.createNavigator()
 navigator.play()
 ```
 
-`TtsNavigator` implements `MediaNavigator`, so you can use all the APIs available for media-based playback. Check out the [dedicated user guide](media-navigator.md) to learn how to control `TtsNavigator` and observe playback notifications.
+`TtsNavigator` implements `MediaNavigator`, so you can use all the APIs available for media-based playback. Check out the [dedicated user guide](navigator/media-navigator.md) to learn how to control `TtsNavigator` and observe playback notifications.
 
 ## Configuring the Android TTS navigator
 
-The `AndroidTtsNavigator` implements [`Configurable`](navigator-preferences.md) and provides various settings to customize the text-to-speech experience.
+The `AndroidTtsNavigator` implements [`Configurable`](navigator/preferences.md) and provides various settings to customize the text-to-speech experience.
 
 ```kotlin
 navigator.submitPreferences(AndroidTtsPreferences(

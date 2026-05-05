@@ -6,7 +6,6 @@
 
 plugins {
     id("com.android.application")
-    kotlin("android")
     kotlin("plugin.parcelize")
     alias(libs.plugins.ksp)
     alias(libs.plugins.compose.compiler)
@@ -30,14 +29,11 @@ android {
         ndk.abiFilters.add("x86_64")
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
         isCoreLibraryDesugaringEnabled = true
     }
-    kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_1_8.toString()
-        freeCompilerArgs = freeCompilerArgs + "-opt-in=kotlin.RequiresOptIn"
-    }
+
     buildFeatures {
         viewBinding = true
         compose = true
@@ -46,7 +42,7 @@ android {
     buildTypes {
         getByName("release") {
             isMinifyEnabled = false
-            proguardFiles(getDefaultProguardFile("proguard-android.txt"))
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"))
         }
     }
     packaging {
@@ -55,12 +51,19 @@ android {
 
     sourceSets {
         getByName("main") {
-            java.srcDirs("src/main/java")
-            res.srcDirs("src/main/res")
-            assets.srcDirs("src/main/assets")
+            java.directories.add("src/main/java")
+            res.directories.add("src/main/res")
+            assets.directories.add("src/main/assets")
         }
     }
     namespace = "org.readium.r2.testapp"
+}
+
+kotlin {
+    compilerOptions {
+        languageVersion = org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_2_3
+        freeCompilerArgs.add("-Xannotation-default-target=param-property")
+    }
 }
 
 dependencies {
@@ -86,6 +89,7 @@ dependencies {
     implementation(libs.androidx.cardview)
 
     implementation(libs.bundles.compose)
+    // Enable this if you need the Compose Layout Inspector
 //    debugImplementation(libs.androidx.compose.ui)
 
     implementation(libs.androidx.constraintlayout)

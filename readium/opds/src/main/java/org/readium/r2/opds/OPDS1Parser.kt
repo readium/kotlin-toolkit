@@ -101,11 +101,11 @@ public class OPDS1Parser {
 
             val totalResults = root.getFirst("TotalResults", Namespaces.Search)?.text
             totalResults?.let {
-                feed.metadata.numberOfItems = totalResults.toString().toInt()
+                feed.metadata.numberOfItems = totalResults.toInt()
             }
             val itemsPerPage = root.getFirst("ItemsPerPage", Namespaces.Search)?.text
             itemsPerPage?.let {
-                feed.metadata.itemsPerPage = itemsPerPage.toString().toInt()
+                feed.metadata.itemsPerPage = itemsPerPage.toInt()
             }
 
             // Parse entries

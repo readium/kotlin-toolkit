@@ -14,12 +14,18 @@ import org.readium.navigator.common.Decoration
 import org.readium.navigator.common.DecorationLocation
 import org.readium.navigator.common.ExportableLocation
 import org.readium.navigator.common.GoLocation
+import org.readium.navigator.common.HtmlId
 import org.readium.navigator.common.Location
+import org.readium.navigator.common.Position
+import org.readium.navigator.common.PositionLocation
 import org.readium.navigator.common.Progression
 import org.readium.navigator.common.ProgressionLocation
 import org.readium.navigator.common.SelectionLocation
+import org.readium.navigator.common.TextAnchor
+import org.readium.navigator.common.TextAnchorLocation
 import org.readium.navigator.common.TextQuote
 import org.readium.navigator.common.TextQuoteLocation
+import org.readium.navigator.common.toTextAnchor
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.extensions.addPrefix
@@ -34,20 +40,24 @@ import org.readium.r2.shared.util.mediatype.MediaType
 public data class ReflowableWebGoLocation(
     override val href: Url,
     val progression: Progression? = null,
-    // val cssSelector: String? = null,
-    // val textBefore: String? = null,
-    // val textAfter: String? = null,
-    // val position: Int? = null
+    val htmlId: HtmlId? = null,
+    val cssSelector: CssSelector? = null,
+    val textAnchor: TextAnchor? = null,
 ) : GoLocation {
 
     public constructor(location: Location) : this(
         href = location.href,
-        progression = (location as? ProgressionLocation)?.progression
+        progression = (location as? ProgressionLocation)?.progression,
+        cssSelector = (location as? CssSelectorLocation)?.cssSelector,
+        textAnchor = (location as? TextAnchorLocation)?.textAnchor
+            ?: (location as? TextQuoteLocation)?.textQuote?.toTextAnchor()
     )
 
     public constructor(locator: Locator) : this(
         href = locator.href,
-        progression = locator.locations.progression?.let { Progression(it) }
+        progression = locator.locations.progression?.let { Progression(it) },
+        cssSelector = locator.locations.cssSelector?.let { CssSelector(it) },
+        textAnchor = locator.text.toTextAnchor()
     )
 }
 
@@ -111,14 +121,14 @@ public sealed interface ReflowableWebDecorationLocation : DecorationLocation {
 
 internal data class ReflowableWebDecorationCssSelectorLocation(
     override val href: Url,
-    val cssSelector: CssSelector,
-) : ReflowableWebDecorationLocation
+    override val cssSelector: CssSelector,
+) : ReflowableWebDecorationLocation, CssSelectorLocation
 
 internal data class ReflowableWebDecorationTextQuoteLocation(
     override val href: Url,
-    val textQuote: TextQuote,
+    override val textQuote: TextQuote,
     val cssSelector: CssSelector?,
-) : ReflowableWebDecorationLocation
+) : ReflowableWebDecorationLocation, TextQuoteLocation
 
 @ExperimentalReadiumApi
 @ConsistentCopyVisibility
@@ -126,13 +136,19 @@ public data class ReflowableWebLocation internal constructor(
     override val href: Url,
     private val mediaType: MediaType?,
     override val progression: Progression,
-) : ExportableLocation, ProgressionLocation {
+    override val position: Position,
+    val totalProgression: Progression,
+) : ExportableLocation, ProgressionLocation, PositionLocation {
 
     override fun toLocator(): Locator =
         Locator(
             href = href,
             mediaType = mediaType ?: MediaType.XHTML,
-            locations = Locations(progression = progression.value)
+            locations = Locations(
+                progression = progression.value,
+                position = position.value,
+                totalProgression = totalProgression.value
+            )
         )
 }
 

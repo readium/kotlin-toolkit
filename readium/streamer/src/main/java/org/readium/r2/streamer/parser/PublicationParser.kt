@@ -68,7 +68,7 @@ public class DefaultPublicationParser(
     additionalParsers: List<PublicationParser> = emptyList(),
 ) : PublicationParser by CompositePublicationParser(
     additionalParsers + listOfNotNull(
-        EpubParser(),
+        EpubParser(httpClient),
         pdfFactory?.let { PdfParser(context, it) },
         ReadiumWebPubParser(context, httpClient, pdfFactory),
         ImageParser(assetRetriever),
@@ -95,7 +95,7 @@ public class CompositePublicationParser(
             val result = parser.parse(asset, warnings)
             if (
                 result is Try.Success ||
-                result is Try.Failure && result.value !is PublicationParser.ParseError.FormatNotSupported
+                (result is Try.Failure && result.value !is PublicationParser.ParseError.FormatNotSupported)
             ) {
                 return result
             }

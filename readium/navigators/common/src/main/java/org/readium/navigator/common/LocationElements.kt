@@ -7,6 +7,16 @@
 package org.readium.navigator.common
 
 import org.readium.r2.shared.ExperimentalReadiumApi
+import org.readium.r2.shared.publication.Locator
+
+/**
+ * An HTML Id.
+ */
+@ExperimentalReadiumApi
+@JvmInline
+public value class HtmlId(
+    public val value: String,
+)
 
 /**
  * A CSS selector.
@@ -24,7 +34,11 @@ public value class CssSelector(
 @JvmInline
 public value class Progression private constructor(
     public val value: Double,
-) {
+) : Comparable<Progression> {
+
+    override fun compareTo(other: Progression): Int {
+        return value.compareTo(other.value)
+    }
 
     public companion object {
 
@@ -41,11 +55,16 @@ public value class Progression private constructor(
 @JvmInline
 public value class Position private constructor(
     public val value: Int,
-) {
+) : Comparable<Position> {
+
+    override fun compareTo(other: Position): Int {
+        return value.compareTo(other.value)
+    }
+
     public companion object {
 
-        public operator fun invoke(value: Double): Position? =
-            value.takeIf { value >= 0 }
+        public operator fun invoke(value: Int): Position? =
+            value.takeIf { value >= 1 }
                 ?.let { Position(it) }
     }
 }
@@ -60,3 +79,42 @@ public data class TextQuote(
     val prefix: String,
     val suffix: String,
 )
+
+/**
+ * Returns a [TextAnchor] to the beginning or the end of the text quote.
+ */
+@ExperimentalReadiumApi
+public fun TextQuote.toTextAnchor(end: Boolean = false): TextAnchor =
+    when (end) {
+        false -> TextAnchor(
+            textBefore = prefix,
+            textAfter = text + suffix
+        )
+        true -> TextAnchor(
+            textBefore = prefix + text,
+            textAfter = suffix
+        )
+    }
+
+/**
+ * A [TextAnchor] is a pair of short text snippets allowing to locate in a text.
+ */
+@ExperimentalReadiumApi
+public data class TextAnchor(
+    val textBefore: String,
+    val textAfter: String,
+)
+
+@ExperimentalReadiumApi
+public fun Locator.Text.toTextQuote(): TextQuote? =
+    highlight?.let { highlight ->
+        TextQuote(
+            text = highlight,
+            prefix = before.orEmpty(),
+            suffix = after.orEmpty()
+        )
+    }
+
+@ExperimentalReadiumApi
+public fun Locator.Text.toTextAnchor(end: Boolean = false): TextAnchor? =
+    toTextQuote()?.toTextAnchor(end)

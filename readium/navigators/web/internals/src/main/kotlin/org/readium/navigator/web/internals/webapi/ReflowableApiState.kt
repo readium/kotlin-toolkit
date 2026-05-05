@@ -16,6 +16,7 @@ public class DelegatingReflowableApiStateListener(
     private val onCssApiAvailableDelegate: () -> Unit,
     private val onSelectionApiAvailableDelegate: () -> Unit,
     private val onDecorationApiAvailableDelegate: () -> Unit,
+    private val onMoveApiAvailableDelegate: () -> Unit,
 ) : ReflowableApiStateListener {
 
     override fun onCssApiAvailable() {
@@ -29,6 +30,10 @@ public class DelegatingReflowableApiStateListener(
     override fun onDecorationApiAvailable() {
         this.onDecorationApiAvailableDelegate()
     }
+
+    override fun onMoveApiAvailable() {
+        this.onMoveApiAvailableDelegate()
+    }
 }
 
 public interface ReflowableApiStateListener {
@@ -38,6 +43,8 @@ public interface ReflowableApiStateListener {
     public fun onSelectionApiAvailable()
 
     public fun onDecorationApiAvailable()
+
+    public fun onMoveApiAvailable()
 }
 
 public class ReflowableApiStateApi(
@@ -70,6 +77,13 @@ public class ReflowableApiStateApi(
     public fun onDecorationApiAvailable() {
         coroutineScope.launch {
             listener.onDecorationApiAvailable()
+        }
+    }
+
+    @android.webkit.JavascriptInterface
+    public fun onMoveApiAvailable() {
+        coroutineScope.launch {
+            listener.onMoveApiAvailable()
         }
     }
 }

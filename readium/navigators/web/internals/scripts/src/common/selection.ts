@@ -19,6 +19,28 @@ export interface SelectionListener {
   onSelectionEnd(): void
 }
 
+export class SelectionReporter {
+  private isSelecting = false
+
+  constructor(window: Window, listener: SelectionListener) {
+    document.addEventListener(
+      "selectionchange",
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      (event) => {
+        const collapsed = window.getSelection()?.isCollapsed
+        if (collapsed && this.isSelecting) {
+          this.isSelecting = false
+          listener.onSelectionEnd()
+        } else if (!collapsed && !this.isSelecting) {
+          this.isSelecting = true
+          listener.onSelectionStart()
+        }
+      },
+      false
+    )
+  }
+}
+
 export interface Selection {
   selectedText: string
   textBefore: string

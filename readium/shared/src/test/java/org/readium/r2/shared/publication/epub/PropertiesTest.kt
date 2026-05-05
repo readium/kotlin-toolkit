@@ -10,7 +10,6 @@
 package org.readium.r2.shared.publication.epub
 
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNull
 import org.junit.Test
 import org.readium.r2.shared.publication.Properties
 
@@ -39,16 +38,5 @@ class PropertiesTest {
             setOf("mathml"),
             Properties(otherProperties = mapOf("contains" to listOf("mathml", "mathml"))).contains
         )
-    }
-
-    @Test fun `get Properties {layout} when available`() {
-        assertEquals(
-            EpubLayout.FIXED,
-            Properties(otherProperties = mapOf("layout" to "fixed")).layout
-        )
-    }
-
-    @Test fun `get Properties {layout} when missing`() {
-        assertNull(Properties().layout)
     }
 }

@@ -85,7 +85,7 @@ internal class TtsSessionAdapter<E : TtsEngine.Error>(
     )
 
     init {
-        val streamType = audioAttributes.streamType
+        val streamType = audioAttributes.volumeControlStream
         streamVolumeManager.setStreamType(streamType)
     }
 
@@ -112,6 +112,14 @@ internal class TtsSessionAdapter<E : TtsEngine.Error>(
     private var deviceInfo: DeviceInfo =
         createDeviceInfo(streamVolumeManager)
 
+    private var listeners: ListenerSet<Listener> =
+        ListenerSet(
+            applicationLooper,
+            Clock.DEFAULT
+        ) { listener: Listener, flags: FlagSet ->
+            listener.onEvents(this, Events(flags))
+        }
+
     init {
         ttsPlayer.playback
             .onEach { playback ->
@@ -127,16 +135,8 @@ internal class TtsSessionAdapter<E : TtsEngine.Error>(
             .onEach { playbackParameters ->
                 notifyListenersPlaybackParametersChanged(lastPlaybackParameters, playbackParameters)
                 lastPlaybackParameters = playbackParameters
-            }
+            }.launchIn(coroutineScope)
     }
-
-    private var listeners: ListenerSet<Listener> =
-        ListenerSet(
-            applicationLooper,
-            Clock.DEFAULT
-        ) { listener: Listener, flags: FlagSet ->
-            listener.onEvents(this, Events(flags))
-        }
 
     private val permanentAvailableCommands =
         Commands.Builder()
@@ -157,7 +157,8 @@ internal class TtsSessionAdapter<E : TtsEngine.Error>(
                 COMMAND_SET_SPEED_AND_PITCH,
                 COMMAND_GET_CURRENT_MEDIA_ITEM,
                 COMMAND_GET_METADATA,
-                COMMAND_GET_TEXT
+                COMMAND_GET_TEXT,
+                COMMAND_GET_TIMELINE
             ).build()
 
     override fun getApplicationLooper(): Looper {
@@ -319,8 +320,7 @@ internal class TtsSessionAdapter<E : TtsEngine.Error>(
 
     override fun seekTo(mediaItemIndex: Int, positionMs: Long) {
         val timeline: Timeline = currentTimeline
-        if (mediaItemIndex < 0 || !timeline.isEmpty && mediaItemIndex >= timeline.windowCount
-        ) {
+        if (mediaItemIndex < 0 || (!timeline.isEmpty && mediaItemIndex >= timeline.windowCount)) {
             throw IllegalSeekPositionException(timeline, mediaItemIndex, positionMs)
         }
 
@@ -347,11 +347,6 @@ internal class TtsSessionAdapter<E : TtsEngine.Error>(
         return previousMediaItemIndex != INDEX_UNSET
     }
 
-    @Deprecated("Deprecated in Java", ReplaceWith("TODO(\"Not yet implemented\")"))
-    override fun seekToPreviousWindow() {
-        seekToPreviousMediaItem()
-    }
-
     override fun seekToPreviousMediaItem() {
         val previousMediaItemIndex = previousMediaItemIndex
         if (previousMediaItemIndex != INDEX_UNSET) {
@@ -376,32 +371,12 @@ internal class TtsSessionAdapter<E : TtsEngine.Error>(
         } else if (hasPreviousMediaItem && currentPosition <= maxSeekToPreviousPosition) {
             seekToPreviousMediaItem()
         } else {
-            seekTo( /* positionMs= */0)
+            seekTo(positionMs = 0)
         }
-    }
-
-    @Deprecated("Deprecated in Java", ReplaceWith("hasNextMediaItem()"))
-    override fun hasNext(): Boolean {
-        return hasNextMediaItem()
-    }
-
-    @Deprecated("Deprecated in Java", ReplaceWith("hasNextMediaItem()"))
-    override fun hasNextWindow(): Boolean {
-        return hasNextMediaItem()
     }
 
     override fun hasNextMediaItem(): Boolean {
         return nextMediaItemIndex != INDEX_UNSET
-    }
-
-    @Deprecated("Deprecated in Java", ReplaceWith("seekToNextMediaItem()"))
-    override fun next() {
-        seekToNextMediaItem()
-    }
-
-    @Deprecated("Deprecated in Java", ReplaceWith("seekToNextMediaItem()"))
-    override fun seekToNextWindow() {
-        seekToNextMediaItem()
     }
 
     override fun seekToNextMediaItem() {
@@ -482,11 +457,16 @@ internal class TtsSessionAdapter<E : TtsEngine.Error>(
 
     override fun getCurrentTimeline(): Timeline {
         // MediaNotificationManager requires a non-empty timeline to start foreground playing.
-        return TtsTimeline(mediaItems)
+        // Report a single-item timeline in order to show a notification, but without skip buttons.
+        return if (mediaItems.isNotEmpty()) {
+            TtsTimeline(listOf(mediaItems[currentMediaItemIndex]))
+        } else {
+            TtsTimeline(emptyList())
+        }
     }
 
     override fun getCurrentPeriodIndex(): Int {
-        return ttsPlayer.utterance.value.position.resourceIndex
+        return 0
     }
 
     @Deprecated("Deprecated in Java", ReplaceWith("currentMediaItemIndex"))
@@ -495,7 +475,8 @@ internal class TtsSessionAdapter<E : TtsEngine.Error>(
     }
 
     override fun getCurrentMediaItemIndex(): Int {
-        return ttsPlayer.utterance.value.position.resourceIndex
+        // Reporting a single-item timeline, so index is always 0.
+        return 0
     }
 
     @Deprecated("Deprecated in Java", ReplaceWith("nextMediaItemIndex"))
@@ -600,7 +581,7 @@ internal class TtsSessionAdapter<E : TtsEngine.Error>(
 
     override fun isCurrentMediaItemLive(): Boolean {
         val timeline = currentTimeline
-        return !timeline.isEmpty && timeline.getWindow(currentMediaItemIndex, window).isLive()
+        return !timeline.isEmpty && timeline.getWindow(currentMediaItemIndex, window).isLive
     }
 
     override fun getCurrentLiveOffset(): Long {
@@ -668,6 +649,12 @@ internal class TtsSessionAdapter<E : TtsEngine.Error>(
 
     override fun getVolume(): Float {
         return 1.0f
+    }
+
+    override fun mute() {
+    }
+
+    override fun unmute() {
     }
 
     override fun clearVideoSurface() {

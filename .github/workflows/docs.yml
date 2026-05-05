@@ -13,22 +13,22 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Fetch tags
         run: git fetch --prune --unshallow
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
-          python-version: 3.11.6
+          python-version: 3.13
 
       - name: Install Python dependencies
         run: |
           python -m pip install --upgrade pip
           pip install mkdocs mkdocs-material mike
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with:
           java-version: 17
           distribution: 'adopt'
@@ -37,10 +37,15 @@ jobs:
         run: echo "READIUM_VERSION=`git describe --tag --match [0-9]* --abbrev=0`" >> $GITHUB_ENV
 
       - name: Run Dokka
-        run: ./gradlew :dokkaGfmMultiModule
+        run: ./gradlew :dokkaGeneratePublicationHtml
 
       - name: Copy README.md into docs to replace Dokka index.md
-        run: cp README.md index.md
+        run: cp README.md docs/index.md
+
+      - name: Copy Dokka output to docs/api
+        run: |
+          mkdir -p docs/api
+          cp -r build/dokka/html/* docs/api/
 
       - name: Run MkDocs
         run: |

@@ -25,7 +25,7 @@ import org.readium.r2.navigator.util.BaseActionModeCallback
 import org.readium.r2.shared.ExperimentalReadiumApi
 
 class SelectionActionModeFactory(
-    private val highlightsManager: HighlightsManager<*>,
+    private val highlightsManager: HighlightsManager<*, *>,
 ) {
 
     fun createActionModeCallback(
@@ -45,7 +45,7 @@ class SelectionActionModeFactory(
 private class SelectionActionModeCallback<S : SelectionLocation>(
     private val coroutineScope: CoroutineScope,
     private val selectionController: SelectionController<S>,
-    private val highlightsManager: HighlightsManager<*>,
+    private val highlightsManager: HighlightsManager<*, *>,
     private val onAnyHighlightAdded: () -> Unit,
     private val onNoteAdded: (Long) -> Unit,
 ) : BaseActionModeCallback() {

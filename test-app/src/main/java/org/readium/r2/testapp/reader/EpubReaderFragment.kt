@@ -29,6 +29,7 @@ import org.readium.r2.navigator.Decoration
 import org.readium.r2.navigator.epub.*
 import org.readium.r2.navigator.epub.css.FontStyle
 import org.readium.r2.navigator.html.HtmlDecorationTemplate
+import org.readium.r2.navigator.html.HtmlDecorationTemplates
 import org.readium.r2.navigator.html.toCss
 import org.readium.r2.navigator.preferences.FontFamily
 import org.readium.r2.shared.ExperimentalReadiumApi
@@ -81,6 +82,13 @@ class EpubReaderFragment : VisualReaderFragment() {
                         "fonts/.*",
                         // Icon for the annotation side mark, see [annotationMarkTemplate].
                         "annotation-icon.svg"
+                    )
+
+                    // Enable experimental decorations positioning that places highlights behind
+                    // text to improve legibility with opaque decorations.
+                    decorationTemplates = HtmlDecorationTemplates.defaultTemplates(
+                        alpha = 1.0,
+                        experimentalPositioning = true
                     )
 
                     // Register the HTML templates for our custom decoration styles.

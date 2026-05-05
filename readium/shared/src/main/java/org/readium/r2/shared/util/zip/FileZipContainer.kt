@@ -137,7 +137,7 @@ internal class FileZipContainer(
         }
     }
 
-    override val sourceUrl: AbsoluteUrl = file.toUrl()
+    override val sourceUrl: AbsoluteUrl = file.toUrl(isDirectory = false)
 
     override val entries: Set<Url> =
         tryOrLog { archive.entries().toList() }

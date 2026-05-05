@@ -33,7 +33,7 @@ import java.util.zip.ZipException;
 
 /**
  * ZipExtraField related methods
- * @NotThreadSafe because the HashMap is not synch.
+ * @NotThreadSafe because the HashMap is not sync.
  */
 // CheckStyle:HideUtilityClassConstructorCheck OFF (bc)
 public class ExtraFieldUtils {

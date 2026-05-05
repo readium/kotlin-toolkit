@@ -10,31 +10,34 @@
 package org.readium.r2.lcp.service
 
 import android.content.Context
-import android.content.SharedPreferences
 import android.os.Build
-import java.io.Serializable
+import androidx.core.content.edit
 import java.util.UUID
 import org.readium.r2.lcp.license.model.LicenseDocument
 import org.readium.r2.lcp.license.model.components.Link
 
 internal class DeviceService(
     deviceName: String?,
+    deviceId: String?,
     private val repository: DeviceRepository,
     private val network: NetworkService,
     val context: Context,
-) : Serializable {
+) {
 
-    private val preferences: SharedPreferences = context.getSharedPreferences(
-        "org.readium.r2.settings",
-        Context.MODE_PRIVATE
-    )
+    val id: String = deviceId ?: generatedId
 
-    val id: String
-        get() {
-            val deviceId = preferences.getString("lcp_device_id", UUID.randomUUID().toString())!!
-            preferences.edit().putString("lcp_device_id", deviceId).apply()
-            return deviceId
-        }
+    private val generatedId: String get() {
+        val key = "lcp_device_id"
+
+        val preferences = context.getSharedPreferences("org.readium.r2.settings", Context.MODE_PRIVATE)
+
+        preferences.getString(key, null)
+            ?.let { return it }
+
+        val id = UUID.randomUUID().toString()
+        preferences.edit { putString(key, id) }
+        return id
+    }
 
     val name: String =
         deviceName ?: "${Build.MANUFACTURER} ${Build.MODEL}"

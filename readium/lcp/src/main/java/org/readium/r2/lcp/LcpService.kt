@@ -135,11 +135,15 @@ public interface LcpService {
          * @param deviceName Device name used when registering a license to an LSD server.
          * If not provided, the device name will be generated from the device's manufacturer and
          * model.
+         * @param deviceId Device ID used when registering a license to an LSD server.
+         * If not provided, the device ID will be generated as a random UUID and persisted for
+         * future sessions.
          */
         public operator fun invoke(
             context: Context,
             assetRetriever: AssetRetriever,
             deviceName: String? = null,
+            deviceId: String? = null,
         ): LcpService? {
             if (!LcpClient.isAvailable()) {
                 return null
@@ -152,6 +156,7 @@ public interface LcpService {
             val network = NetworkService()
             val device = DeviceService(
                 deviceName = deviceName,
+                deviceId = deviceId,
                 repository = deviceRepository,
                 network = network,
                 context = context

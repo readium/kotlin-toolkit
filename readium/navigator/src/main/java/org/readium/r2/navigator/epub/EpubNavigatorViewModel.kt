@@ -30,12 +30,10 @@ import org.readium.r2.shared.DelicateReadiumApi
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.extensions.mapStateIn
-import org.readium.r2.shared.publication.Href
+import org.readium.r2.shared.publication.Layout
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.util.AbsoluteUrl
-import org.readium.r2.shared.util.RelativeUrl
 import org.readium.r2.shared.util.Url
 
 internal enum class DualPage {
@@ -50,7 +48,7 @@ internal class EpubNavigatorViewModel(
     val publication: Publication,
     val config: EpubNavigatorFragment.Configuration,
     initialPreferences: EpubPreferences,
-    val layout: EpubLayout,
+    val layout: Layout,
     val listener: EpubNavigatorFragment.Listener?,
     private val defaults: EpubDefaults,
     private val server: WebViewServer,
@@ -91,7 +89,7 @@ internal class EpubNavigatorViewModel(
         .mapStateIn(viewModelScope) { settings ->
             SimpleOverflow(
                 readingProgression = settings.readingProgression,
-                scroll = if (layout == EpubLayout.REFLOWABLE) {
+                scroll = if (layout == Layout.REFLOWABLE) {
                     settings.scroll
                 } else {
                     false
@@ -180,17 +178,11 @@ internal class EpubNavigatorViewModel(
             add(RunScriptCommand(script, scope = scope))
         }
 
-    // Serving resources
-
-    val baseUrl: AbsoluteUrl =
-        (publication.baseUrl as? AbsoluteUrl)
-            ?: WebViewServer.publicationBaseHref
-
     /**
      * Generates the URL to the given publication link.
      */
     fun urlTo(link: Link): AbsoluteUrl =
-        baseUrl.resolve(link.url())
+        server.linkToServedUrl(link)
 
     /**
      * Intercepts and handles web view navigation to [url].
@@ -212,14 +204,8 @@ internal class EpubNavigatorViewModel(
     /**
      * Gets the publication [Link] targeted by the given [url].
      */
-    fun internalLinkFromUrl(url: Url): Link? {
-        val href = (baseUrl.relativize(url) as? RelativeUrl)
-            ?: return null
-
-        return publication.linkWithHref(href)
-            // Query parameters must be kept as they might be relevant for the container.
-            ?.copy(href = Href(href))
-    }
+    fun internalLinkFromUrl(url: AbsoluteUrl): Link? =
+        server.servedUrlToLink(url)
 
     fun shouldInterceptRequest(request: WebResourceRequest): WebResourceResponse? =
         server.shouldInterceptRequest(request, css.value)
@@ -264,12 +250,12 @@ internal class EpubNavigatorViewModel(
      */
     val dualPageMode: DualPage get() =
         when (layout) {
-            EpubLayout.FIXED -> when (settings.value.spread) {
+            Layout.FIXED -> when (settings.value.spread) {
                 Spread.AUTO -> DualPage.AUTO
                 Spread.ALWAYS -> DualPage.ON
                 Spread.NEVER -> DualPage.OFF
             }
-            EpubLayout.REFLOWABLE -> when (settings.value.columnCount) {
+            else -> when (settings.value.columnCount) {
                 ColumnCount.ONE -> DualPage.OFF
                 ColumnCount.TWO -> DualPage.ON
                 ColumnCount.AUTO -> DualPage.AUTO
@@ -281,7 +267,7 @@ internal class EpubNavigatorViewModel(
      */
     val isScrollEnabled: StateFlow<Boolean> get() =
         settings.mapStateIn(viewModelScope) {
-            if (layout == EpubLayout.REFLOWABLE) it.scroll else false
+            if (layout == Layout.REFLOWABLE) it.scroll else false
         }
 
     // Selection
@@ -371,7 +357,7 @@ internal class EpubNavigatorViewModel(
         fun createFactory(
             application: Application,
             publication: Publication,
-            layout: EpubLayout,
+            layout: Layout,
             listener: EpubNavigatorFragment.Listener?,
             defaults: EpubDefaults,
             config: EpubNavigatorFragment.Configuration,

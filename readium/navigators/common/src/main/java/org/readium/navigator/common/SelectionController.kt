@@ -9,10 +9,10 @@ package org.readium.navigator.common
 import androidx.compose.ui.unit.DpRect
 import org.readium.r2.shared.ExperimentalReadiumApi
 
-@ExperimentalReadiumApi
 /**
  * A controller for selection.
  */
+@ExperimentalReadiumApi
 public interface SelectionController<S : SelectionLocation> {
 
     /** Gets the currently selected content at the call time or a bit later. */

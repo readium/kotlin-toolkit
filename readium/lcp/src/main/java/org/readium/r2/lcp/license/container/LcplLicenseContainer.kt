@@ -31,7 +31,7 @@ internal class LcplLicenseContainer(private val licenseFile: File) : WritableLic
         try {
             licenseFile.writeBytes(license.toByteArray())
         } catch (e: Exception) {
-            throw LcpException(LcpError.Container.WriteFailed(licenseFile.toUrl()))
+            throw LcpException(LcpError.Container.WriteFailed(licenseFile.toUrl(isDirectory = false)))
         }
     }
 }

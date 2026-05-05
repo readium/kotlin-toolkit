@@ -3,13 +3,13 @@
 
    A stylesheet aligning Android generic serif and sans-serif fonts on other platforms
 
-   Repo: https://github.com/readium/readium-css */
+   Repo: https://github.com/readium/css */
 
 /* Android resolves sans-serif to Roboto, and serif to Droid Serif 
    This created issues for FXL EPUBs relying on Times (New Roman),
    Helvetica or Arial while not embedding the font files in the package.
 
-   See https://github.com/readium/readium-css/issues/149
+   See https://github.com/readium/css/issues/149
 
    Unfortunately it is no possible to target generic family using @font-face,
    we have to target specific font-family names e.g. Times, Arial, etc.

@@ -9,6 +9,7 @@ package org.readium.navigator.web.internals.webview
 import android.content.Context
 import android.graphics.Rect
 import android.view.ActionMode
+import android.view.Menu
 import android.view.View
 import android.webkit.WebView
 
@@ -55,7 +56,9 @@ public class RelaxedWebView(context: Context) : WebView(context) {
 
     private var actionModeCallback: ActionMode.Callback? = null
 
-    public fun setCustomSelectionActionModeCallback(callback: ActionMode.Callback?) {
+    public fun setCustomSelectionActionModeCallback(
+        callback: ActionMode.Callback?,
+    ) {
         actionModeCallback = callback
     }
 
@@ -67,23 +70,40 @@ public class RelaxedWebView(context: Context) : WebView(context) {
         nextLayoutListener = {}
     }
 
-    override fun startActionMode(callback: ActionMode.Callback?): ActionMode? {
-        val customCallback = actionModeCallback
-            ?: return super.startActionMode(callback)
+    private var hasActionMode: Boolean = false
 
-        val parent = parent ?: return null
-        return parent.startActionModeForChild(this, customCallback)
+    override fun onOverScrolled(scrollX: Int, scrollY: Int, clampedX: Boolean, clampedY: Boolean) {
+        // Workaround addressing a bug in the Android WebView where the viewport is scrolled while
+        // dragging the text selection handles.
+        // See https://github.com/readium/kotlin-toolkit/issues/325
+        if (hasActionMode) {
+            return
+        }
+
+        super.onOverScrolled(scrollX, scrollY, clampedX, clampedY)
     }
 
-    override fun startActionMode(callback: ActionMode.Callback?, type: Int): ActionMode? {
-        val customCallback = actionModeCallback
-            ?: return super.startActionMode(callback, type)
+    override fun startActionMode(callback: ActionMode.Callback): ActionMode? {
+        return startActionMode(callback, ActionMode.TYPE_PRIMARY)
+    }
 
-        val parent = parent ?: return null
+    override fun startActionMode(callback: ActionMode.Callback, type: Int): ActionMode? {
+        val decoratedCallback = CallbackDecorator(
+            callback = actionModeCallback ?: callback,
+            onCreateActionModeCallback = { hasActionMode = true },
+            onDestroyActionModeCallback = { hasActionMode = false }
+        )
+
         val wrapper = Callback2Wrapper(
-            customCallback,
+            decoratedCallback,
             callback2 = callback as? ActionMode.Callback2
         )
+
+        if (actionModeCallback == null) {
+            return super.startActionMode(wrapper, type)
+        }
+
+        val parent = parent ?: return null
         return parent.startActionModeForChild(this, wrapper, type)
     }
 }
@@ -96,4 +116,32 @@ private class Callback2Wrapper(
     override fun onGetContentRect(mode: ActionMode, view: View, outRect: Rect) =
         callback2?.onGetContentRect(mode, view, outRect)
             ?: super.onGetContentRect(mode, view, outRect)
+}
+
+private class CallbackDecorator(
+    private val callback: ActionMode.Callback,
+    private val onCreateActionModeCallback: () -> Unit,
+    private val onDestroyActionModeCallback: () -> Unit,
+) : ActionMode.Callback by callback {
+
+    override fun onCreateActionMode(mode: ActionMode?, menu: Menu?): Boolean {
+        onCreateActionModeCallback()
+        return callback.onCreateActionMode(mode, menu)
+    }
+
+    override fun onDestroyActionMode(mode: ActionMode?) {
+        callback.onDestroyActionMode(mode)
+        onDestroyActionModeCallback()
+    }
+}
+
+/**
+ * Best effort to delay the execution of a block until the Webview
+ * has received data up-to-date at the moment when the call occurs or newer.
+ */
+public fun RelaxedWebView.invokeOnWebViewUpToDate(block: WebView.() -> Unit) {
+    requestLayout()
+    setNextLayoutListener {
+        invokeOnReadyToBeDrawn(block)
+    }
 }

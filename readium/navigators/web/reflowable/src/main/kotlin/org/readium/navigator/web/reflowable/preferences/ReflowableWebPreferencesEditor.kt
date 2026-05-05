@@ -466,7 +466,7 @@ public class ReflowableWebPreferencesEditor internal constructor(
 
     private fun ReflowableWebPreferences.toState(): State {
         val settings = settingsResolver.settings(this)
-        val readiumCssLayout = ReadiumCssLayout.Companion.from(settings)
+        val readiumCssLayout = ReadiumCssLayout.from(settings)
 
         return State(
             preferences = this,

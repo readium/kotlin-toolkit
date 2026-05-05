@@ -297,12 +297,12 @@ private class Scrollable2DNode(
     private var scrollByOffsetAction: (suspend (Offset) -> Offset)? = null
 
     init {
-        /**
+        /*
          * Nested scrolling
          */
         delegate(nestedScrollModifierNode(nestedScrollConnection, nestedScrollDispatcher))
 
-        /**
+        /*
          * Focus scrolling
          */
         delegate(FocusTargetModifierNode())

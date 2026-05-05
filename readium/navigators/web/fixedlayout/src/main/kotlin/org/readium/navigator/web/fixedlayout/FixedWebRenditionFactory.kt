@@ -18,12 +18,12 @@ import org.readium.navigator.web.internals.webapi.FixedDoubleAreaApi
 import org.readium.navigator.web.internals.webapi.FixedSingleAreaApi
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.InternalReadiumApi
+import org.readium.r2.shared.publication.Layout
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.publication.epub.EpubLayout
-import org.readium.r2.shared.publication.presentation.page
-import org.readium.r2.shared.publication.presentation.presentation
+import org.readium.r2.shared.publication.page
 import org.readium.r2.shared.publication.services.isProtected
+import org.readium.r2.shared.publication.services.isRestricted
 import org.readium.r2.shared.util.ThrowableError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.getOrElse
@@ -50,12 +50,16 @@ public class FixedWebRenditionFactory private constructor(
             configuration: FixedWebConfiguration,
         ): FixedWebRenditionFactory? {
             if (!publication.conformsTo(Publication.Profile.EPUB) ||
-                publication.metadata.presentation.layout != EpubLayout.FIXED
+                publication.metadata.layout != Layout.FIXED
             ) {
                 return null
             }
 
             if (publication.readingOrder.isEmpty()) {
+                return null
+            }
+
+            if (publication.isRestricted) {
                 return null
             }
 
@@ -102,7 +106,8 @@ public class FixedWebRenditionFactory private constructor(
         val renditionPublication = FixedWebPublication(
             readingOrder = ReadingOrder(readingOrderItems),
             otherResources = resourceItems,
-            container = publication.container
+            container = publication.container,
+            baseUrl = publication.baseUrl,
         )
 
         val preloads = preloadData()
@@ -129,12 +134,12 @@ public class FixedWebRenditionFactory private constructor(
         try {
             val assetsUrl = WebViewServer.assetUrl("readium/navigator/web/internals")!!
 
-            val prepaginatedSingleContent = FixedSingleAreaApi.Companion.getPageContent(
+            val prepaginatedSingleContent = FixedSingleAreaApi.getPageContent(
                 assetManager = application.assets,
                 assetsUrl = assetsUrl
             )
 
-            val prepaginatedDoubleContent = FixedDoubleAreaApi.Companion.getPageContent(
+            val prepaginatedDoubleContent = FixedDoubleAreaApi.getPageContent(
                 assetManager = application.assets,
                 assetsUrl = assetsUrl
             )

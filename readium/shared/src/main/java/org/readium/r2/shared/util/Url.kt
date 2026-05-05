@@ -124,12 +124,25 @@ public sealed class Url : Parcelable {
     /**
      * Returns a copy of this URL after dropping its query.
      */
-    public fun removeQuery(): Url =
+    public open fun removeQuery(): Url =
         if (uri.query == null) {
             this
         } else {
             checkNotNull(invoke(uri.buildUpon().clearQuery().build()))
         }
+
+    /**
+     * Returns a copy of this URL after adding the given decoded fragment..
+     */
+    @InternalReadiumApi
+    public fun addFragment(fragment: String): Url =
+        checkNotNull(
+            invoke(
+                this.uri.buildUpon()
+                    .fragment(fragment)
+                    .build()
+            )
+        )
 
     /**
      * Returns the decoded fragment present in this URL, if any.
@@ -140,7 +153,7 @@ public sealed class Url : Parcelable {
     /**
      * Returns a copy of this URL after dropping its fragment.
      */
-    public fun removeFragment(): Url =
+    public open fun removeFragment(): Url =
         if (fragment == null) {
             this
         } else {
@@ -166,12 +179,16 @@ public sealed class Url : Parcelable {
      * Relativizes the given [url] against this URL.
      *
      * For example:
-     *     this = "http://example.com/foo"
+     *     this = "http://example.com/foo/"
      *     url = "http://example.com/foo/bar/baz"
      *     result = "bar/baz"
      */
-    public open fun relativize(url: Url): Url =
-        checkNotNull(toURI().relativize(url.toURI()).toUrl())
+    public open fun relativize(url: Url): Url {
+        // Unlike the regular JRE (used in unit tests), the Android implementation of URI doesn't
+        // add "/" at the end of the base if it's missing. We might need to align the behaviors
+        // at some point.
+        return checkNotNull(toURI().relativize(url.toURI()).toUrl())
+    }
 
     /**
      * Normalizes the URL using a subset of the RFC-3986 rules.
@@ -282,6 +299,12 @@ public class AbsoluteUrl private constructor(override val uri: Uri) : Url() {
     public override fun normalize(): AbsoluteUrl =
         super.normalize() as AbsoluteUrl
 
+    public override fun removeFragment(): AbsoluteUrl =
+        super.removeFragment() as AbsoluteUrl
+
+    public override fun removeQuery(): AbsoluteUrl =
+        super.removeQuery() as AbsoluteUrl
+
     /**
      * Identifies the type of URL.
      */
@@ -305,6 +328,11 @@ public class AbsoluteUrl private constructor(override val uri: Uri) : Url() {
      */
     public val isContent: Boolean get() =
         scheme.isContent
+
+    /**
+     * Hostname of the URL.
+     */
+    public val host: String? get() = uri.host
 
     /**
      * Converts the URL to a [File], if it's a file URL.
@@ -365,8 +393,23 @@ public fun Url.Companion.fromLegacyHref(href: String): Url? =
 public fun Url.Companion.fromEpubHref(href: String): Url? =
     Url(href) ?: fromDecodedPath(href)
 
-public fun File.toUrl(): AbsoluteUrl =
-    checkNotNull(AbsoluteUrl(Uri.fromFile(this)))
+/**
+ * Creates a URL pointing to this [File] which must denote an absolute path.
+ *
+ * @param isDirectory If the URL must end with a trailing slash because it points to a directory.
+ */
+public fun File.toUrl(isDirectory: Boolean): AbsoluteUrl {
+    require(isAbsolute)
+
+    val uri = Uri.Builder().also {
+        it.scheme("file")
+        it.authority("")
+        it.path(path)
+        if (isDirectory) it.appendPath("")
+    }.build()
+
+    return checkNotNull(AbsoluteUrl(uri))
+}
 
 public fun Uri.toUrl(): Url? =
     Url(this)

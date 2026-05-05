@@ -4,7 +4,37 @@ All notable changes to this project will be documented in this file. Take a look
 
 **Warning:** Features marked as *experimental* may change or be removed in a future release without notice. Use with caution.
 
-<!-- ## [Unreleased] -->
+## [Unreleased]
+
+### Added
+
+#### Navigator
+
+* New experimental positioning of EPUB decorations that places highlights behind text to improve legibility with opaque decorations (contributed by [@ddfreiling](https://github.com/readium/kotlin-toolkit/pull/721)).
+    * To opt-in, initialize the `EpubNavigatorFragment.Configuration` object with `decorationTemplates = HtmlDecorationTemplates.defaultTemplates(alpha = 1.0, experimentalPositioning = true)`.
+
+#### LCP
+
+* Added an initializer parameter for providing a custom device identifier (contributed by [@dewantawsif](https://github.com/readium/kotlin-toolkit/pull/720)).
+    * You must ensure the identifier is unique and stable for the device (persist and reuse across app launches).
+    * Recommended: generate an app-scoped UUID and store it securely. Avoid hardware or advertising identifiers.
+
+### Deprecated
+
+#### Streamer
+
+* Removed title inference based on folder names within image and audio archives. Use the archive's filename instead.
+
+#### Shared
+
+* The Presentation Hints properties are deprecated from the Readium Web Publication Manifest models. [See the official documentation](https://readium.org/webpub-manifest/profiles/epub.html#appendix-b---deprecated-properties).
+
+### Fixed
+
+#### Shared
+
+* Fixed a typo in the accessibility metadata (`describeMath` should be `describedMath`).
+
 
 ## [3.1.2]
 

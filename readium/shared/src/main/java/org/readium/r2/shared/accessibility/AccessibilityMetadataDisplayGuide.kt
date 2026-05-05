@@ -17,9 +17,8 @@ import org.readium.r2.shared.publication.Accessibility
 import org.readium.r2.shared.publication.Accessibility.AccessMode
 import org.readium.r2.shared.publication.Accessibility.Feature
 import org.readium.r2.shared.publication.Accessibility.PrimaryAccessMode
+import org.readium.r2.shared.publication.Layout
 import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.publication.epub.EpubLayout
-import org.readium.r2.shared.publication.presentation.presentation
 
 /**
  * When presenting accessibility metadata provided by the publisher, it is
@@ -231,7 +230,7 @@ public class AccessibilityMetadataDisplayGuide(
 
         public companion object {
             public operator fun invoke(publication: Publication): WaysOfReading {
-                val isFixedLayout = publication.metadata.presentation.layout == EpubLayout.FIXED
+                val isFixedLayout = publication.metadata.layout == Layout.FIXED
                 val a11y = publication.metadata.accessibility ?: Accessibility()
 
                 val allText = a11y.accessModes == setOf(AccessMode.TEXTUAL) ||

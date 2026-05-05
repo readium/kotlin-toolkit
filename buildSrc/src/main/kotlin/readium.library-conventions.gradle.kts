@@ -4,7 +4,6 @@ plugins {
     // FIXME: For now, we cannot use the versions catalog in precompiled scripts: https://github.com/gradle/gradle/issues/15383
     id("com.android.library")
     id("com.vanniktech.maven.publish")
-    id("org.jetbrains.kotlin.android")
     kotlin("plugin.parcelize")
 }
 
@@ -21,14 +20,9 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
         isCoreLibraryDesugaringEnabled = true
-    }
-
-    kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_1_8.toString()
-        allWarningsAsErrors = true
     }
 
     testOptions {
@@ -43,17 +37,28 @@ android {
     buildTypes {
         getByName("release") {
             isMinifyEnabled = false
-            proguardFiles(getDefaultProguardFile("proguard-android.txt"))
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"))
         }
     }
 }
 
 kotlin {
     explicitApi()
+    
+    compilerOptions {
+        freeCompilerArgs.add("-Xannotation-default-target=param-property")
+        languageVersion = org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_2_3
+        allWarningsAsErrors = true
+    }
+}
+
+tasks.withType<Test>().configureEach {
+    failOnNoDiscoveredTests = false
 }
 
 dependencies {
-    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
+    //noinspection UseTomlInstead
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")
 }
 
 mavenPublishing {

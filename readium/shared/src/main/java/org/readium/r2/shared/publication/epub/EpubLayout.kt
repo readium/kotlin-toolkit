@@ -8,6 +8,7 @@
  */
 
 @file:OptIn(InternalReadiumApi::class)
+@file:Suppress("DEPRECATION")
 
 package org.readium.r2.shared.publication.epub
 
@@ -20,6 +21,7 @@ import org.readium.r2.shared.util.MapCompanion
  * Hints how the layout of the resource should be presented.
  * https://readium.org/webpub-manifest/schema/extensions/epub/metadata.schema.json
  */
+@Deprecated("This was removed from RWPM. You can still use the EPUB extensibility to access the original values.", replaceWith = ReplaceWith("Layout"))
 @Parcelize
 public enum class EpubLayout(public val value: String) : Parcelable {
     FIXED("fixed"),

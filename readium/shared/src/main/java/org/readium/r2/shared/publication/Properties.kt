@@ -34,7 +34,7 @@ public data class Properties(
     /**
      * Serializes a [Properties] to its RWPM JSON representation.
      */
-    override fun toJSON(): JSONObject = JSONObject(otherProperties)
+    override fun toJSON(): JSONObject = JSONObject(otherProperties.toMutableMap())
 
     /**
      * Makes a copy of this [Properties] after merging in the given additional other [properties].

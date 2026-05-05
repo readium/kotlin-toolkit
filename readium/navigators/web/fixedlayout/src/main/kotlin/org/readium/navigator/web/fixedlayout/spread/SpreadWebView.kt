@@ -81,8 +81,7 @@ internal fun SpreadWebView(
                 onLinkActivatedDelegate = { href: AbsoluteUrl, outerHtml: String ->
                     onLinkActivated(href, outerHtml)
                 },
-                onDecorationActivatedDelegate = {
-                        id: String, group: String, rect: DpRect, offset: DpOffset ->
+                onDecorationActivatedDelegate = { id: String, group: String, rect: DpRect, offset: DpOffset ->
                     onDecorationActivated(id, group, rect, offset)
                 }
             )
@@ -119,6 +118,8 @@ internal fun SpreadWebView(
     LaunchedEffect(state.webView, actionModeCallback) {
         state.webView?.setCustomSelectionActionModeCallback(actionModeCallback)
     }
+
+    state.webView?.setBackgroundColor(backgroundColor.toArgb())
 
     // Hide content before initial position is settled
     if (showPlaceholder) {

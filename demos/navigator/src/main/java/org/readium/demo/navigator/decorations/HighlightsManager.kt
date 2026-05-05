@@ -16,45 +16,64 @@ import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.flow.update
 import org.readium.navigator.common.Decoration
 import org.readium.navigator.common.DecorationLocation
+import org.readium.navigator.common.GoLocation
 import org.readium.navigator.web.fixedlayout.FixedWebDecorationLocation
+import org.readium.navigator.web.fixedlayout.FixedWebGoLocation
 import org.readium.navigator.web.reflowable.ReflowableWebDecorationLocation
+import org.readium.navigator.web.reflowable.ReflowableWebGoLocation
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Locator
 
 class ReflowableWebHighlightsManager :
-    HighlightsManager<ReflowableWebDecorationLocation>(
-        DecorationFactory::createReflowableDecorationsForHighlight
+    HighlightsManager<ReflowableWebDecorationLocation, ReflowableWebGoLocation>(
+        DecorationFactory::createReflowableDecorationsForHighlight,
+        { ReflowableWebGoLocation(it.locator) }
     )
 
 class FixedWebHighlightsManager :
-    HighlightsManager<FixedWebDecorationLocation>(
-        DecorationFactory::createFixedDecorationsForHighlight
+    HighlightsManager<FixedWebDecorationLocation, FixedWebGoLocation>(
+        DecorationFactory::createFixedDecorationsForHighlight,
+        { FixedWebGoLocation(it.locator) }
     )
 
 /**
  * Trivial highlight manager. You can add persistence.
  */
-sealed class HighlightsManager<L : DecorationLocation>(
-    decorationFactory: (Highlight, Long) -> List<Decoration<L>>,
+sealed class HighlightsManager<D : DecorationLocation, G : GoLocation>(
+    decorationFactory: (Highlight, Long) -> List<Decoration<D>>,
+    private val locationFactory: (Highlight) -> G?,
 ) {
 
-    private val lastHighlightId: Long = -1
+    private var lastHighlightId: Long = -1
 
     private val highlightsMutable: MutableStateFlow<PersistentMap<Long, Highlight>> =
         MutableStateFlow(persistentMapOf())
 
-    val highlights: StateFlow<PersistentMap<Long, Highlight>> =
-        highlightsMutable.asStateFlow()
+    val highlights: Flow<List<Highlight>> =
+        highlightsMutable
+            .map { map ->
+                map.entries
+                    .sortedBy { it.key }
+                    .map { it.value }
+                    .toList()
+            }
 
-    val decorations: Flow<PersistentList<Decoration<L>>> = highlightsMutable.map {
+    val decorations: Flow<PersistentList<Decoration<D>>> = highlightsMutable.map {
         it.entries.flatMap { (id, highlight) -> decorationFactory(highlight, id) }.toPersistentList()
     }
+
+    fun getHighlight(
+        id: Long,
+    ): Highlight? =
+        highlightsMutable.value[id]
+
+    fun getLocation(highlight: Highlight): G? =
+        locationFactory(highlight)
 
     fun addHighlight(
         locator: Locator,
@@ -62,7 +81,9 @@ sealed class HighlightsManager<L : DecorationLocation>(
         @ColorInt tint: Int,
         annotation: String = "",
     ): Long {
-        val id = lastHighlightId + 1
+        lastHighlightId += 1
+        val id = lastHighlightId
+
         val highlight = Highlight(
             locator = locator,
             style = style,

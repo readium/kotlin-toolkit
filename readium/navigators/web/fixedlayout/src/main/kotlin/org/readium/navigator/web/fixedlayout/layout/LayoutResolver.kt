@@ -12,7 +12,7 @@ import org.readium.navigator.web.fixedlayout.FixedWebPublication
 import org.readium.navigator.web.fixedlayout.preferences.FixedWebSettings
 import org.readium.r2.navigator.preferences.ReadingProgression
 import org.readium.r2.shared.ExperimentalReadiumApi
-import org.readium.r2.shared.publication.presentation.Presentation
+import org.readium.r2.shared.publication.Page as PageHint
 
 internal class LayoutResolver(
     private val readingOrder: FixedWebPublication.ReadingOrder,
@@ -40,15 +40,15 @@ internal class LayoutResolver(
                 val page = Page(index, item.href, item.mediaType)
 
                 when (item.page) {
-                    Presentation.Page.LEFT -> {
+                    PageHint.LEFT -> {
                         pending?.let { add(LeftOnlySpread(it)) }
                         pending = page
                     }
-                    Presentation.Page.RIGHT -> {
+                    PageHint.RIGHT -> {
                         add(DoubleViewportSpread(pending, page))
                         pending = null
                     }
-                    Presentation.Page.CENTER -> {
+                    PageHint.CENTER -> {
                         pending?.let { add(LeftOnlySpread(it)) }
                         pending = null
                         add(SingleViewportSpread(page))
@@ -75,15 +75,15 @@ internal class LayoutResolver(
                 val page = Page(index, item.href, item.mediaType)
 
                 when (item.page) {
-                    Presentation.Page.LEFT -> {
+                    PageHint.LEFT -> {
                         add(DoubleViewportSpread(page, pending))
                         pending = null
                     }
-                    Presentation.Page.RIGHT -> {
+                    PageHint.RIGHT -> {
                         pending?.let { add(RightOnlySpread(it)) }
                         pending = page
                     }
-                    Presentation.Page.CENTER -> {
+                    PageHint.CENTER -> {
                         pending?.let { add(RightOnlySpread(it)) }
                         pending = null
                         add(SingleViewportSpread(page))

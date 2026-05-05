@@ -48,7 +48,6 @@ import org.readium.r2.shared.util.Language
 /**
  * Stateful user settings component.
  */
-
 @Composable
 fun <P : Preferences<P>, S : Settings, E : PreferencesEditor<P, S>> UserPreferences(
     editor: E,

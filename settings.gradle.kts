@@ -1,3 +1,6 @@
+plugins {
+    id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
+}
 /*
  * Copyright 2021 Readium Foundation. All rights reserved.
  * Use of this source code is governed by the BSD-style license
@@ -46,21 +49,21 @@ include(":readium:navigators:common")
 project(":readium:navigators:common")
     .name = "readium-navigator-common"
 
-// include(":readium:navigators:web:common")
-// project(":readium:navigators:web:common")
-//     .name = "readium-navigator-web-common"
-//
-// include(":readium:navigators:web:internals")
-// project(":readium:navigators:web:internals")
-//     .name = "readium-navigator-web-internals"
-//
-// include(":readium:navigators:web:reflowable")
-// project(":readium:navigators:web:reflowable")
-//     .name = "readium-navigator-web-reflowable"
-//
-// include(":readium:navigators:web:fixedlayout")
-// project(":readium:navigators:web:fixedlayout")
-//     .name = "readium-navigator-web-fixedlayout"
+include(":readium:navigators:web:common")
+project(":readium:navigators:web:common")
+    .name = "readium-navigator-web-common"
+
+include(":readium:navigators:web:internals")
+project(":readium:navigators:web:internals")
+    .name = "readium-navigator-web-internals"
+
+include(":readium:navigators:web:reflowable")
+project(":readium:navigators:web:reflowable")
+    .name = "readium-navigator-web-reflowable"
+
+include(":readium:navigators:web:fixedlayout")
+project(":readium:navigators:web:fixedlayout")
+    .name = "readium-navigator-web-fixedlayout"
 
 include(":readium:navigators:media:common")
 project(":readium:navigators:media:common")
@@ -91,4 +94,4 @@ project(":readium:streamer")
     .name = "readium-streamer"
 
 include("test-app")
-// include(":demos:navigator")
+include(":demos:navigator")
