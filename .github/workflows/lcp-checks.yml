@@ -41,5 +41,13 @@ jobs:
           api-level: 30
           target: google_apis
           arch: x86_64
-          profile: Pixel_9_Pro
+          profile: pixel_7_pro
           script: ./gradlew :readium:readium-lcp:connectedAndroidTest
+      - name: Upload Test Reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: instrumented-test-reports
+          path: |
+            **/build/reports/androidTests/connected/**
+            **/build/test-results/connected/**          
