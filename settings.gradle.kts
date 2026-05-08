@@ -16,6 +16,25 @@ dependencyResolutionManagement {
         maven(url = "https://s3.amazonaws.com/repo.commonsware.com")
         maven(url = "https://customers.pspdfkit.com/maven")
         maven(url = "https://jitpack.io")
+
+        val localProperties = java.util.Properties()
+        val localPropertiesFile = File(rootDir, "local.properties")
+        if (localPropertiesFile.exists()) {
+            localPropertiesFile.inputStream().use { localProperties.load(it) }
+        }
+
+        val lcpRepoUrl: String? = System.getenv("LCP_REPOSITORY_URL") ?: localProperties.getProperty("lcp.repository.url")
+        val lcpRepoPattern: String? = System.getenv("LCP_REPOSITORY_PATTERN") ?: localProperties.getProperty("lcp.repository.pattern")
+
+        if (lcpRepoUrl != null && lcpRepoPattern != null) {
+            ivy {
+                url = uri(lcpRepoUrl)
+                patternLayout {
+                    artifact(lcpRepoPattern)
+                }
+                metadataSources { artifact() }
+            }
+        }
     }
 }
 

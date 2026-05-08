@@ -1,3 +1,6 @@
+import java.io.File
+import java.util.Properties
+
 /*
  * Copyright 2018 Readium Foundation. All rights reserved.
  * Use of this source code is governed by the BSD-style license
@@ -28,6 +31,16 @@ dependencies {
     implementation(libs.kotlinx.coroutines.android)
 
     api(project(":readium:readium-shared"))
+
+    val lcpDep: String? = System.getenv("LCP_DEPENDENCY") ?: run {
+        val localProperties = Properties()
+        val localPropertiesFile = File(project.rootDir, "local.properties")
+        if (localPropertiesFile.exists()) {
+            localPropertiesFile.inputStream().use { localProperties.load(it) }
+        }
+        localProperties.getProperty("lcp.dependency")
+    }
+    lcpDep?.let { implementation(it) }
 
     implementation(libs.androidx.constraintlayout)
     implementation(libs.androidx.core)
