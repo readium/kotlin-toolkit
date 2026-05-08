@@ -29,6 +29,7 @@ import org.readium.r2.shared.publication.Layout
 import org.readium.r2.shared.util.Language
 import org.readium.r2.testapp.LITERATA
 import org.readium.r2.testapp.R
+import org.readium.r2.testapp.ROBOTO_MONO
 import org.readium.r2.testapp.reader.ReaderViewModel
 import org.readium.r2.testapp.reader.tts.TtsPreferencesEditor
 import org.readium.r2.testapp.shared.views.*
@@ -461,6 +462,7 @@ private fun ReflowableUserPreferences(
                     .withSupportedValues(
                         null,
                         FontFamily.LITERATA,
+                        FontFamily.ROBOTO_MONO,
                         FontFamily.SANS_SERIF,
                         FontFamily.IA_WRITER_DUOSPACE,
                         FontFamily.ACCESSIBLE_DFA,
