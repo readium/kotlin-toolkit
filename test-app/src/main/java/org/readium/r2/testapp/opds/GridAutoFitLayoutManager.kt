@@ -70,7 +70,7 @@ class GridAutoFitLayoutManager : GridLayoutManager {
             mWidth = width
         }
 
-        if (mColumnWidthChanged && mColumnWidth > 0 && width > 0 && height > 0 || mWidthChanged) {
+        if ((mColumnWidthChanged && mColumnWidth > 0 && width > 0 && height > 0) || mWidthChanged) {
             val totalSpace: Int = if (orientation == LinearLayoutManager.VERTICAL) {
                 width - paddingRight - paddingLeft
             } else {

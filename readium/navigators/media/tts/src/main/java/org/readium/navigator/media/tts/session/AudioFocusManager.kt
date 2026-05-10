@@ -32,13 +32,13 @@ import androidx.media3.common.util.Log
 import androidx.media3.common.util.Util
 import java.util.Objects
 
-@androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
 /** Manages requesting and responding to changes in audio focus.
  *
  * @param context The current context.
  * @param eventHandler A [Handler] to for the thread on which the player is used.
  * @param playerControl A [PlayerControl] to handle commands from this instance.
  */
+@androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
 internal class AudioFocusManager(
     context: Context,
     eventHandler: Handler,
@@ -173,7 +173,7 @@ internal class AudioFocusManager(
 
     // Internal methods.
     @VisibleForTesting
-    fun /* package */getFocusListener(): OnAudioFocusChangeListener {
+    fun getFocusListener(): OnAudioFocusChangeListener {
         return focusListener
     }
 

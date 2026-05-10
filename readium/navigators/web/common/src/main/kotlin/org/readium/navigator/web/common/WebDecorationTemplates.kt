@@ -184,11 +184,11 @@ public class WebDecorationTemplates(
     private val styles: ImmutableMap<KClass<*>, WebDecorationTemplate> = persistentMapOf(),
 ) {
 
-    @OptIn(InternalReadiumApi::class)
-    @Suppress("UNCHECKED_CAST")
     /**
      * Returns the register template for [style] if any.
      */
+    @OptIn(InternalReadiumApi::class)
+    @Suppress("UNCHECKED_CAST")
     public operator fun <S : Style> get(style: KClass<S>): WebDecorationTemplate? =
         styles[style]
 

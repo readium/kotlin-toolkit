@@ -13,13 +13,14 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.WindowInsetsCompat
 
 // Using ViewCompat and WindowInsetsCompat does not work properly in all versions of Android
-@Suppress("DEPRECATION")
 /** Returns `true` if fullscreen or immersive mode is not set. */
+@Suppress("DEPRECATION")
 private fun Activity.isSystemUiVisible(): Boolean {
     return this.window.decorView.systemUiVisibility and View.SYSTEM_UI_FLAG_FULLSCREEN == 0
 }
 
 // Using ViewCompat and WindowInsetsCompat does not work properly in all versions of Android
+
 /** Enable fullscreen or immersive mode. */
 @Suppress("DEPRECATION")
 fun Activity.hideSystemUi() {
@@ -34,6 +35,7 @@ fun Activity.hideSystemUi() {
 }
 
 // Using ViewCompat and WindowInsetsCompat does not work properly in all versions of Android
+
 /** Disable fullscreen or immersive mode. */
 @Suppress("DEPRECATION")
 fun Activity.showSystemUi() {

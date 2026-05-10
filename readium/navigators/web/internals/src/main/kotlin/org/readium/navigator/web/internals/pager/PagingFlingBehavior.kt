@@ -344,8 +344,8 @@ private fun PagingLayoutInfo.isLtrDragging() = dragGestureDelta() > 0
 private fun PagingLayoutInfo.isScrollingForward(): Boolean {
     val reverseScrollDirection = reverseLayout
     return (
-        isLtrDragging() && reverseScrollDirection ||
-            !isLtrDragging() && !reverseScrollDirection
+        (isLtrDragging() && reverseScrollDirection) ||
+            (!isLtrDragging() && !reverseScrollDirection)
         )
 }
 

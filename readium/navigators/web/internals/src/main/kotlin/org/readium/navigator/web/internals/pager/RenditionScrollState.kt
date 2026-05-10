@@ -177,8 +177,8 @@ public class RenditionScrollState(
         val lastPage = pagerState.layoutInfo.visiblePagesInfo.last()
 
         if (firstPage == lastPage ||
-            firstPage.index != index && direction == LayoutDirection.Ltr ||
-            lastPage.index != index && direction == LayoutDirection.Rtl
+            (firstPage.index != index && direction == LayoutDirection.Ltr) ||
+            (lastPage.index != index && direction == LayoutDirection.Rtl)
         ) {
             return
         }

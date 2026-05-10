@@ -630,10 +630,6 @@ private fun PresetsMenuButton(
 /**
  * A preset is a named group of settings applied together.
  */
-
-/**
- * A preset is a named group of settings applied together.
- */
 class Preset(
     val title: String,
     val apply: () -> Unit,

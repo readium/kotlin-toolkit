@@ -30,7 +30,10 @@ import timber.log.Timber
 @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
 internal class ExoPlayerDataSource internal constructor(
     private val publication: Publication,
-) : BaseDataSource(/* isNetwork = */ true) {
+) : BaseDataSource(
+    /* isNetwork */
+    true
+) {
 
     class Factory(
         private val publication: Publication,

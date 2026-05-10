@@ -26,8 +26,8 @@ import androidx.media3.common.C
 import androidx.media3.common.util.Log
 import com.google.common.base.Preconditions
 
-@androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
 /** A manager that wraps [AudioManager] to control/listen audio stream volume.  */
+@androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
 internal class StreamVolumeManager(context: Context, eventHandler: Handler, listener: Listener) {
     /** A listener for changes in the manager.  */
     interface Listener {
@@ -47,7 +47,7 @@ internal class StreamVolumeManager(context: Context, eventHandler: Handler, list
     private var volume: Int
     private var muted: Boolean
 
-    /** Creates a manager.  */
+    /* Creates a manager.  */
     init {
         applicationContext = context.applicationContext
         this.eventHandler = eventHandler

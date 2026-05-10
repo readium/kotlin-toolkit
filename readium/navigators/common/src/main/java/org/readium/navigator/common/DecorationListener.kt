@@ -10,10 +10,10 @@ import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.DpRect
 import org.readium.r2.shared.ExperimentalReadiumApi
 
-@ExperimentalReadiumApi
 /**
  * A listener for events related to decorations.
  */
+@ExperimentalReadiumApi
 public interface DecorationListener<in L : DecorationLocation> {
 
     /**
