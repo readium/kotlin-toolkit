@@ -1,10 +1,12 @@
 #!/usr/bin/env bash
 # =============================================================================
-# release-github.sh [--dry-run] [--skip-git-checks]
+# release-github.sh [--dry-run]
 # =============================================================================
 # Create a draft GitHub release pre-filled with formatted release notes drawn
-# from CHANGELOG.md. The version is taken from the tag pointing at HEAD.
+# from CHANGELOG.md.
 #
+# The version is determined automatically from the tag pointing to the last
+# commit (HEAD). Run release-tag.sh first to create that tag.
 # --dry-run - Skip the actual GitHub release creation.
 # =============================================================================
 
@@ -18,11 +20,10 @@ parse_flags "$@"
 command -v gh &>/dev/null || error "'gh' CLI not found — install from https://cli.github.com"
 command -v python3 &>/dev/null || error "'python3' not found"
 
-# Resolve version from the tag pointing at HEAD
+# Derive VERSION from the tag pointing to HEAD
 VERSION="$(git -C "$REPO_ROOT" describe --tags --exact-match HEAD 2>/dev/null)" || \
-    error "HEAD has no exact tag. Run scripts/release-tag.sh first."
+    error "No tag found on HEAD."
 check_semver "$VERSION"
-info "Creating GitHub release for tag $VERSION"
 
 # Changelog content
 info "Extracting changelog section for $VERSION"
@@ -38,7 +39,7 @@ while IFS= read -r line; do
     # Match the first uncommented level-2 heading.
     if [[ "$line" =~ ^##[[:space:]]+(.+)$ ]]; then
         HEADING_TEXT="${BASH_REMATCH[1]}"
-        # Strip spaces and dots to build the anchor (e.g. "3.0.0" → "300").
+        # Strip spaces and dots to build the anchor (e.g. "3.9.0" → "390").
         MG_ANCHOR="$(echo "$HEADING_TEXT" | tr -d ' .')"
         break
     fi
@@ -75,8 +76,8 @@ else
     RELEASE_URL="$(gh release create "$VERSION" \
         --title "$VERSION" \
         --notes-file "$TMPFILE" \
-        --generate-notes \
         --draft)"
     info "Draft release created: $RELEASE_URL"
     open "$RELEASE_URL"
 fi
+

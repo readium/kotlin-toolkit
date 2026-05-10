@@ -16,7 +16,7 @@ set -euo pipefail
 
 parse_flags "$@"
 
-VERSION="${POSITIONAL_ARGS[0]:-}"
+VERSION="$(positional_args "$@")"
 [[ -n "$VERSION" ]] || error "Usage: $(basename "$0") [--dry-run] [--skip-git-checks] VERSION"
 check_semver "$VERSION"
 
