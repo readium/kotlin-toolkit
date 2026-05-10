@@ -416,11 +416,11 @@ private fun Item(
 ) {
     ListItem(
         modifier =
-            if (onClick != null) {
-                Modifier.clickable(onClick = onClick)
-            } else {
-                Modifier
-            },
+        if (onClick != null) {
+            Modifier.clickable(onClick = onClick)
+        } else {
+            Modifier
+        },
         headlineContent = {
             val alpha = if (isActive) 1.0f else 0.5f
             Text(title, modifier = Modifier.alpha(alpha))

@@ -430,11 +430,11 @@ private fun Item(
 ) {
     ListItem(
         modifier =
-            if (onClick != null) {
-                Modifier.clickable(onClick = onClick)
-            } else {
-                Modifier
-            },
+        if (onClick != null) {
+            Modifier.clickable(onClick = onClick)
+        } else {
+            Modifier
+        },
         headlineContent = {
             Group(enabled = isActive) {
                 Text(title)
