@@ -10,7 +10,7 @@ All notable changes to this project will be documented in this file. Take a look
 
 #### Navigator
 
-* EPUB page turns can now be animated by passing `animated = true` to `go()` APIs, or `animatedTransition = true` to the `DirectionalNavigationAdapter` (contributed by [@marcprux](https://github.com/readium/kotlin-toolkit/pull/767)).
+* Add animated page turns for EPUB paginated mode, by passing `animated = true` to `go()` APIs, or `animatedTransition = true` to the `DirectionalNavigationAdapter` (contributed by [@marcprux](https://github.com/readium/kotlin-toolkit/pull/767)).
 * New experimental positioning of EPUB decorations that places highlights behind text to improve legibility with opaque decorations (contributed by [@ddfreiling](https://github.com/readium/kotlin-toolkit/pull/721)).
     * To opt-in, initialize the `EpubNavigatorFragment.Configuration` object with `decorationTemplates = HtmlDecorationTemplates.defaultTemplates(alpha = 1.0, experimentalPositioning = true)`.
 
