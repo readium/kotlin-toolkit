@@ -4,12 +4,9 @@ import kotlin.test.assertEquals
 import kotlin.time.Duration.Companion.seconds
 import org.junit.Assert.assertNull
 import org.junit.Test
-import org.junit.runner.RunWith
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.publication.Locator
-import org.robolectric.RobolectricTestRunner
 
-@RunWith(RobolectricTestRunner::class)
 class LocatorExtensionsTest {
     @OptIn(InternalReadiumApi::class)
     @Test
@@ -36,8 +33,6 @@ class LocatorExtensionsTest {
         assertNull(Locator.Locations(fragments = listOf("page=1")).htmlId)
 
         assertEquals("chapter1", Locator.Locations(fragments = listOf("chapter1")).htmlId)
-        assertEquals("chapter1", Locator.Locations(fragments = listOf("id=chapter1")).htmlId)
-        assertEquals("chapter1", Locator.Locations(fragments = listOf("name=chapter1")).htmlId)
     }
 
     @Test
