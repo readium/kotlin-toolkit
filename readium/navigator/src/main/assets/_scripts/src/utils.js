@@ -241,8 +241,9 @@ function animateScrollTo(startX, endX, duration) {
       progress < 0.5
         ? 2 * progress * progress
         : -1 + (4 - 2 * progress) * progress;
-    document.scrollingElement.scrollLeft =
-      Math.round(startX + (endX - startX) * eased);
+    document.scrollingElement.scrollLeft = Math.round(
+      startX + (endX - startX) * eased
+    );
     if (progress < 1) {
       requestAnimationFrame(step);
     }
