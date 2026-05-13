@@ -16,6 +16,10 @@ All notable changes to this project will be documented in this file. Take a look
 * New experimental positioning of EPUB decorations that places highlights behind text to improve legibility with opaque decorations (contributed by [@ddfreiling](https://github.com/readium/kotlin-toolkit/pull/721)).
     * To opt-in, initialize the `EpubNavigatorFragment.Configuration` object with `decorationTemplates = HtmlDecorationTemplates.defaultTemplates(alpha = 1.0, experimentalPositioning = true)`.
 
+#### Streamer
+
+* Added `httpClient` parameter to the `EpubParser` constructor to support fetching EPUB remote resources from `Publication` objects (contributed by [@m-abs](https://github.com/readium/kotlin-toolkit/pull/749)).
+
 #### LCP
 
 * Added an initializer parameter for providing a custom device identifier (contributed by [@dewantawsif](https://github.com/readium/kotlin-toolkit/pull/720)).
@@ -27,7 +31,6 @@ All notable changes to this project will be documented in this file. Take a look
 #### Streamer
 
 * Removed title inference based on folder names within image and audio archives. Use the archive's filename instead.
-* Added `httpClient` parameter to the `EpubParser` constructor to support fetching EPUB remote resources from `Publication` objects (contributed by [@m-abs](https://github.com/readium/kotlin-toolkit/pull/749)).
 
 #### Shared
 
