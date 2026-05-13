@@ -222,7 +222,7 @@ class ReaderOpener(
     private fun <L : DecorationLocation> applyHighlightDecorations(
         coroutineScope: CoroutineScope,
         decorationController: DecorationController<L>,
-        highlightsManager: HighlightsManager<L>,
+        highlightsManager: HighlightsManager<L, *>,
     ) {
         highlightsManager.decorations
             .onEach {

@@ -370,7 +370,8 @@ abstract class VisualReaderFragment : BaseReaderFragment() {
     private var mode: ActionMode? = null
 
     // Available tint colors for highlight and underline annotations.
-    private val highlightTints = mapOf</*@IdRes*/ Int, /*@ColorInt*/ Int>(
+    // Map of View IDs (@IdRes) to their corresponding color values (@ColorInt).
+    private val highlightTints = mapOf(
         R.id.red to Color.rgb(247, 124, 124),
         R.id.green to Color.rgb(173, 247, 123),
         R.id.blue to Color.rgb(124, 198, 247),

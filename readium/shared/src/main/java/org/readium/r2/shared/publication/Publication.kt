@@ -22,6 +22,7 @@ import org.readium.r2.shared.publication.services.PositionsService
 import org.readium.r2.shared.publication.services.ResourceCoverService
 import org.readium.r2.shared.publication.services.content.ContentService
 import org.readium.r2.shared.publication.services.search.SearchService
+import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Closeable
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.data.Container
@@ -86,10 +87,11 @@ public class Publication(
      * The URL from which the publication resources are relative to, computed from the [Link] with
      * `self` relation.
      */
-    public val baseUrl: Url?
+    public val baseUrl: AbsoluteUrl?
         get() = links.firstWithRel("self")?.href
             ?.takeUnless { it.isTemplated }
             ?.resolve()
+            ?.let { it as? AbsoluteUrl }
 
     /**
      * Returns the URL to the resource represented by the given [locator], relative to the
@@ -159,9 +161,11 @@ public class Publication(
     /**
      * Returns the resource targeted by the given [href].
      */
-    public fun get(href: Url): Resource? =
-        // Try first the original href and falls back to href without query and fragment.
-        container[href] ?: container[href.removeQuery().removeFragment()]
+    public fun get(href: Url): Resource? {
+        val hrefWithoutFragment = href.removeFragment()
+        // Try first the original href and falls back to href without query.
+        return container[hrefWithoutFragment] ?: container[hrefWithoutFragment.removeQuery()]
+    }
 
     /**
      * Closes any opened resource associated with the [Publication], including services.

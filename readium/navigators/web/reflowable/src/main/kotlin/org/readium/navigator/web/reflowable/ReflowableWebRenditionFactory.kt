@@ -44,7 +44,7 @@ public class ReflowableWebRenditionFactory private constructor(
             configuration: ReflowableWebConfiguration = ReflowableWebConfiguration(),
         ): ReflowableWebRenditionFactory? {
             if (!publication.conformsTo(Publication.Profile.EPUB) ||
-                publication.metadata.layout != null && publication.metadata.layout != Layout.REFLOWABLE
+                (publication.metadata.layout != null && publication.metadata.layout != Layout.REFLOWABLE)
             ) {
                 return null
             }
@@ -97,7 +97,7 @@ public class ReflowableWebRenditionFactory private constructor(
         val positionNumbers = positionsService.positionsByReadingOrder()
             .map { it.size }
 
-        val resourceItems = (publication.readingOrder - readingOrder + publication.resources).map {
+        val resourceItems = (publication.readingOrder + publication.resources - readingOrder.toSet()).map {
             ReflowableWebPublication.Item(
                 href = it.url(),
                 mediaType = it.mediaType
@@ -107,7 +107,8 @@ public class ReflowableWebRenditionFactory private constructor(
         val renditionPublication = ReflowableWebPublication(
             readingOrder = ReflowableWebPublication.ReadingOrder(readingOrderItems, positionNumbers),
             otherResources = resourceItems,
-            container = publication.container
+            container = publication.container,
+            baseUrl = publication.baseUrl,
         )
 
         val initialLocation = initialLocation

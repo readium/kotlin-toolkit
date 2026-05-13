@@ -24,6 +24,7 @@ All notable changes to this project will be documented in this file. Take a look
 #### Streamer
 
 * Removed title inference based on folder names within image and audio archives. Use the archive's filename instead.
+* Added `httpClient` parameter to the `EpubParser` constructor to support fetching EPUB remote resources from `Publication` objects (contributed by [@m-abs](https://github.com/readium/kotlin-toolkit/pull/749)).
 
 #### Shared
 
@@ -34,6 +35,15 @@ All notable changes to this project will be documented in this file. Take a look
 #### Shared
 
 * Fixed a typo in the accessibility metadata (`describeMath` should be `describedMath`).
+
+#### Navigator
+
+* [#782](https://github.com/readium/kotlin-toolkit/issues/782) `Locator.Locations.time` now supports decimal time fragment values (e.g. `t=1.5`) (contributed by [@m-abs](https://github.com/readium/kotlin-toolkit/pull/783)).
+
+
+#### Navigator
+
+* Fixed support for resources with absolute hrefs (contributed by [@m-abs](https://github.com/readium/kotlin-toolkit/pull/749)).
 
 
 ## [3.1.2]

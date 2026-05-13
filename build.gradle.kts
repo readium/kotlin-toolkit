@@ -17,6 +17,7 @@ subprojects {
 
     ktlint {
         android.set(true)
+        version = "1.8.0"
     }
 
     afterEvaluate {

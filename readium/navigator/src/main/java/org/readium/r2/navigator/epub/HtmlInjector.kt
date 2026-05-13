@@ -23,14 +23,14 @@ import timber.log.Timber
 /**
  * Injects the Readium CSS files and scripts in the HTML [Resource] receiver.
  *
- * @param baseHref Base URL where the Readium CSS and scripts are served.
+ * @param assetsBaseHref Base URL where the Readium CSS and scripts are served.
  */
 @OptIn(ExperimentalReadiumApi::class)
 internal fun Resource.injectHtml(
     publication: Publication,
     mediaType: MediaType,
     css: ReadiumCss,
-    baseHref: AbsoluteUrl,
+    assetsBaseHref: AbsoluteUrl,
     disableSelectionWhenProtected: Boolean,
 ): Resource =
     TransformingResource(this) { bytes ->
@@ -43,7 +43,7 @@ internal fun Resource.injectHtml(
 
         if (publication.metadata.layout == Layout.FIXED) {
             injectables.add(
-                script(baseHref.resolve(Url("readium/scripts/readium-fixed.js")!!))
+                script(assetsBaseHref.resolve(Url("readium/scripts/readium-fixed.js")!!))
             )
         } else {
             content = try {
@@ -54,7 +54,7 @@ internal fun Resource.injectHtml(
 
             injectables.add(
                 script(
-                    baseHref.resolve(Url("readium/scripts/readium-reflowable.js")!!)
+                    assetsBaseHref.resolve(Url("readium/scripts/readium-reflowable.js")!!)
                 )
             )
         }

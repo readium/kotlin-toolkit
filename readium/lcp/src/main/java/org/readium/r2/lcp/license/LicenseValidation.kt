@@ -411,7 +411,7 @@ internal class LicenseValidation(
         // We only check the Status Document's status if the License itself is expired, to get a proper status error message.
         // But in the case where the Status Document takes precedence (eg. after a failed License update),
         // then we also check the status validity.
-        if (isLicenseExpired || statusDocumentTakesPrecedence && !isStatusValid) {
+        if (isLicenseExpired || (statusDocumentTakesPrecedence && !isStatusValid)) {
             error = if (status != null) {
                 val date = status.statusUpdated
                 when (status.status) {

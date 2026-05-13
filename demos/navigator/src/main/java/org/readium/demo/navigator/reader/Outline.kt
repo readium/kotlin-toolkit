@@ -8,10 +8,11 @@
 package org.readium.demo.navigator.reader
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -20,12 +21,19 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
+import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import org.readium.demo.navigator.decorations.Highlight
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
@@ -35,23 +43,55 @@ import org.readium.r2.shared.util.Url
 fun Outline(
     modifier: Modifier = Modifier,
     publication: Publication,
+    highlights: List<Highlight>,
     onBackActivated: () -> Unit,
     onTocItemActivated: (Url) -> Unit,
+    onHighlightActivated: (Highlight) -> Unit,
 ) {
     Scaffold(
         modifier = modifier,
-        topBar = { TopBar(onBackActivated) },
+        topBar = {
+            TopBar(
+                onBackActivated = onBackActivated
+            )
+        },
         content = { padding ->
-            Box(
-                modifier = Modifier
-                    .padding(padding),
-                propagateMinConstraints = true
+            Column(
+                modifier = Modifier.padding(padding)
             ) {
-                Contents(
-                    modifier = Modifier.fillMaxSize(),
-                    publication = publication,
-                    onItemActivated = onTocItemActivated
+                var selectedTab by remember { mutableIntStateOf(0) }
+
+                PrimaryTabRow(
+                    selectedTabIndex = selectedTab,
+                    tabs = {
+                        Tab(
+                            selected = selectedTab == 0,
+                            onClick = { selectedTab = 0 },
+                            text = { Text("Contents") }
+                        )
+
+                        Tab(
+                            selected = selectedTab == 1,
+                            onClick = { selectedTab = 1 },
+                            text = { Text("Highlights") }
+                        )
+                    }
                 )
+
+                when (selectedTab) {
+                    0 ->
+                        Contents(
+                            modifier = Modifier.fillMaxWidth(),
+                            publication = publication,
+                            onItemActivated = onTocItemActivated
+                        )
+                    else ->
+                        Highlights(
+                            modifier = Modifier.fillMaxWidth(),
+                            highlights = highlights,
+                            onItemActivated = onHighlightActivated
+                        )
+                }
             }
         }
     )
@@ -63,7 +103,7 @@ private fun TopBar(
     onBackActivated: () -> Unit,
 ) {
     TopAppBar(
-        title = { Text("Contents") },
+        title = { Text("Outline") },
         navigationIcon = {
             IconButton(
                 onClick = onBackActivated
@@ -75,6 +115,28 @@ private fun TopBar(
             }
         }
     )
+}
+
+@Composable
+private fun Highlights(
+    modifier: Modifier = Modifier,
+    highlights: List<Highlight>,
+    onItemActivated: (Highlight) -> Unit,
+) {
+    LazyColumn(
+        modifier = modifier,
+    ) {
+        itemsIndexed(highlights) { index, highlight ->
+            ListItem(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { onItemActivated(highlight) },
+                headlineContent = {
+                    Text("Highlight $index")
+                }
+            )
+        }
+    }
 }
 
 @Composable
@@ -122,7 +184,9 @@ private fun Contents(
     onClick: (Url) -> Unit,
     depth: Int = 0,
 ) {
-    Column(modifier) {
+    Column(
+        modifier = modifier
+    ) {
         for (item in items) {
             TocItem(
                 item = item,

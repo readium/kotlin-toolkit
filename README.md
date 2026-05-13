@@ -12,49 +12,49 @@
 
 ### Formats
 
-| Format | Status |
-|---|:---:|
-| EPUB 2 | ✅ |
-| EPUB 3 | ✅ |
-| Readium Web Publication | 🚧 |
-| PDF | ✅ |
-| Readium Audiobook | ✅ |
-| Zipped Audiobook | ✅ |
-| Standalone audio files (MP3, AAC, etc.) | ✅ |
-| Readium Divina | 🚧 |
-| CBZ (Comic Book ZIP) | 🚧 |
-| CBR (Comic Book RAR) | ❓ |
-| [DAISY](https://daisy.org/activities/standards/daisy/) | 👀 |
+| Format                                                 | Status |
+|--------------------------------------------------------|:------:|
+| EPUB 2                                                 |   ✅    |
+| EPUB 3                                                 |   ✅    |
+| Readium Web Publication                                |   🚧   |
+| PDF                                                    |   ✅    |
+| Readium Audiobook                                      |   ✅    |
+| Zipped Audiobook                                       |   ✅    |
+| Standalone audio files (MP3, AAC, etc.)                |   ✅    |
+| Readium Divina                                         |   🚧   |
+| CBZ (Comic Book ZIP)                                   |   🚧   |
+| CBR (Comic Book RAR)                                   |   ❓    |
+| [DAISY](https://daisy.org/activities/standards/daisy/) |   👀   |
 
 ### Features
 
 A number of features are implemented only for some publication formats.
 
-| Feature | EPUB (reflow) | EPUB (FXL) | PDF |
-|---|:---:|:---:|:---:|
-| Pagination | ✅ | ✅ | ✅ |
-| Scrolling | ✅ | 👀 | ✅ |
-| Right-to-left (RTL) | ✅ | ✅ |  ✅ |
-| Search in textual content | ✅ | ✅ | 👀 |
-| Highlighting (Decoration API) | ✅ | ✅ | 👀 |
-| Text-to-speech (TTS) | ✅ | ✅ | 👀 |
-| Media overlays | 📆 | 📆 | |
+| Feature                       | EPUB (reflow) | EPUB (FXL) | PDF |
+|-------------------------------|:-------------:|:----------:|:---:|
+| Pagination                    |       ✅       |     ✅      |  ✅  |
+| Scrolling                     |       ✅       |     👀     |  ✅  |
+| Right-to-left (RTL)           |       ✅       |     ✅      |  ✅  |
+| Search in textual content     |       ✅       |     ✅      | 👀  |
+| Highlighting (Decoration API) |       ✅       |     ✅      | 👀  |
+| Text-to-speech (TTS)          |       ✅       |     ✅      | 👀  |
+| Media overlays                |      📆       |     📆     |     |
 
 ### OPDS Support
 
-| Feature | Status |
-|---|:---:|
-| [OPDS Catalog 1.2](https://specs.opds.io/opds-1.2) | ✅ | 
-| [OPDS Catalog 2.0](https://drafts.opds.io/opds-2.0) | ✅ | 
-| [Authentication for OPDS](https://drafts.opds.io/authentication-for-opds-1.0.html) | 📆 |
-| [Readium LCP Automatic Key Retrieval](https://readium.org/lcp-specs/notes/lcp-key-retrieval.html) | 📆 |
+| Feature                                                                                           | Status |
+|---------------------------------------------------------------------------------------------------|:------:|
+| [OPDS Catalog 1.2](https://specs.opds.io/opds-1.2)                                                |   ✅    | 
+| [OPDS Catalog 2.0](https://drafts.opds.io/opds-2.0)                                               |   ✅    | 
+| [Authentication for OPDS](https://drafts.opds.io/authentication-for-opds-1.0.html)                |   📆   |
+| [Readium LCP Automatic Key Retrieval](https://readium.org/lcp-specs/notes/lcp-key-retrieval.html) |   📆   |
 
 ### DRM Support
 
-| Feature | Status |
-|---|:---:|
-| [Readium LCP](https://www.edrlab.org/projects/readium-lcp/) | ✅ |
-| [Adobe ACS](https://www.adobe.com/fr/solutions/ebook/content-server.html) | ❓ |
+| Feature                                                                   | Status |
+|---------------------------------------------------------------------------|:------:|
+| [Readium LCP](https://www.edrlab.org/projects/readium-lcp/)               |   ✅    |
+| [Adobe ACS](https://www.adobe.com/fr/solutions/ebook/content-server.html) |   ❓    |
 
 ## User Guides
 
@@ -85,7 +85,7 @@ Guides are available to help you make the most of the toolkit.
 
 | Readium   | Android min SDK | Android compile SDK | Kotlin compiler (✻) | Gradle (✻) |
 |-----------|-----------------|---------------------|---------------------|------------|
-| `develop` | 21              | 36                  | 2.1.21              | 8.14.1     |
+| `develop` | 21              | 36                  | 2.3.20              | 9.1.0      |
 | 3.1.0     | 21              | 35                  | 2.1.20              | 8.13       |
 | 3.0.0     | 21              | 34                  | 1.9.24              | 8.6.0      |
 | 2.3.0     | 21              | 33                  | 1.7.10              | 6.9.3      |

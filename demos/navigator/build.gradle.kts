@@ -1,8 +1,5 @@
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-
 plugins {
     id("com.android.application")
-    kotlin("android")
     kotlin("plugin.parcelize")
     alias(libs.plugins.ksp)
     alias(libs.plugins.compose.compiler)
@@ -50,9 +47,9 @@ android {
 
     sourceSets {
         getByName("main") {
-            java.srcDirs("src/main/java")
-            res.srcDirs("src/main/res")
-            assets.srcDirs("src/main/assets")
+            java.directories.add("src/main/java")
+            res.directories.add("src/main/res")
+            assets.directories.add("src/main/assets")
         }
     }
     namespace = "org.readium.demo.navigator"
@@ -61,7 +58,7 @@ android {
 kotlin {
 
     compilerOptions {
-        jvmTarget = JvmTarget.JVM_11
+        languageVersion = org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_2_3
         freeCompilerArgs.add("-opt-in=kotlin.RequiresOptIn")
     }
 }

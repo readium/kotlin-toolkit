@@ -457,7 +457,7 @@ internal class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView
     private fun recomputeScrollPosition(width: Int, oldWidth: Int, margin: Int, oldMargin: Int) {
         val clientWidth = getClientWidth() ?: return
 
-        if (oldWidth > 0 /*&& !mItems.isEmpty()*/) {
+        if (oldWidth > 0) {
             if (!mScroller!!.isFinished) {
                 val currentPage = (scrollX / clientWidth.toDouble()).roundToInt()
 
@@ -826,7 +826,7 @@ internal class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView
 
         var lastItem: ItemInfo? = null
         var i = 0
-        while (i < numPages/*mItems.size()*/) {
+        while (i < numPages) {
             //            ItemInfo ii = mItems.get(i);
             var ii = ItemInfo()
             //            ii.position = i;
@@ -844,7 +844,7 @@ internal class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView
 
             val rightBound = offset + ii.widthFactor + marginOffset
             if (first || scrollOffset >= offset) {
-                if (scrollOffset < rightBound || i == numPages/*mItems.size()*/ - 1) {
+                if (scrollOffset < rightBound || i == numPages - 1) {
                     return ii
                 }
             } else {

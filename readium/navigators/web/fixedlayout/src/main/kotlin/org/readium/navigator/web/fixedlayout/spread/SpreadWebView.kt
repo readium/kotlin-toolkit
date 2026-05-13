@@ -81,8 +81,7 @@ internal fun SpreadWebView(
                 onLinkActivatedDelegate = { href: AbsoluteUrl, outerHtml: String ->
                     onLinkActivated(href, outerHtml)
                 },
-                onDecorationActivatedDelegate = {
-                        id: String, group: String, rect: DpRect, offset: DpOffset ->
+                onDecorationActivatedDelegate = { id: String, group: String, rect: DpRect, offset: DpOffset ->
                     onDecorationActivated(id, group, rect, offset)
                 }
             )

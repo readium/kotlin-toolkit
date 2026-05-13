@@ -71,6 +71,7 @@ import org.readium.r2.navigator.preferences.Axis
 import org.readium.r2.navigator.preferences.FontFamily
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.InternalReadiumApi
+import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.RelativeUrl
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
@@ -164,7 +165,7 @@ public class ReflowableWebRenditionState internal constructor(
     internal val hyperlinkProcessor =
         HyperlinkProcessor(publication.container)
 
-    internal val webViewClient: WebViewClient = run {
+    private val webViewServer: WebViewServer = run {
         val htmlInjector: (Resource, MediaType) -> Resource = { resource, mediaType ->
             resource.injectHtmlReflowable(
                 charset = mediaType.charset,
@@ -175,19 +176,26 @@ public class ReflowableWebRenditionState internal constructor(
             )
         }
 
-        val webViewServer =
-            WebViewServer(
-                application = application,
-                container = publication.container,
-                mediaTypes = publication.mediaTypes,
-                errorPage = RelativeUrl("readium/navigator/web/internals/error.xhtml")!!,
-                htmlInjector = htmlInjector,
-                servedAssets = configuration.servedAssets + listOf("readium/.*"),
-                onResourceLoadFailed = { _, _ -> } // TODO: pass errors to the app
-            )
-
-        WebViewClient(webViewServer)
+        WebViewServer(
+            application = application,
+            container = publication.container,
+            mediaTypes = publication.mediaTypes,
+            baseUrl = publication.baseUrl,
+            errorPage = RelativeUrl("readium/navigator/web/internals/error.xhtml")!!,
+            htmlInjector = htmlInjector,
+            servedAssets = configuration.servedAssets + listOf("readium/.*"),
+            onResourceLoadFailed = { _, _ -> } // TODO: pass errors to the app
+        )
     }
+
+    internal val webViewClient: WebViewClient =
+        WebViewClient(webViewServer)
+
+    internal fun servedUrlToHref(url: AbsoluteUrl) =
+        webViewServer.servedUrlToHref(url)
+
+    internal fun hrefToServedUrl(href: Url) =
+        webViewServer.hrefToServedUrl(href)
 
     internal lateinit var navigationDelegate: ReflowableNavigationDelegate
 
@@ -566,7 +574,7 @@ private fun ReflowableWebPublication.getResourceLocations(
     destinationIndex: Int,
     destinationLocation: ReflowableResourceLocation,
 ): List<ReflowableResourceLocation> {
-    return readingOrder.items.mapIndexed { index, _ ->
+    return List(readingOrder.items.size) { index ->
         when {
             index < destinationIndex ->
                 ReflowableResourceLocation.Progression(Progression(1.0)!!)
