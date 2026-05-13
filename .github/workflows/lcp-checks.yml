@@ -26,15 +26,17 @@ jobs:
         with:
           java-version: '17'
           distribution: 'adopt'
+          cache: 'gradle'
+
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v5
-        with:
-          cache-read-only: ${{ github.ref != 'refs/heads/main' && github.ref != 'refs/heads/develop' }}
+        uses: gradle/actions/setup-gradle@v3 # Streamlined caching
+
       - name: Enable KVM group permissions
         run: |
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
+
       - name: Run Instrumented Tests
         uses: reactivecircus/android-emulator-runner@v2
         with:
@@ -42,12 +44,17 @@ jobs:
           target: google_apis
           arch: x86_64
           profile: pixel_7_pro
-          script: ./gradlew :readium:readium-lcp:connectedAndroidTest
+          disable-animations: true
+          force-avd-creation: false
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
+          script: ./gradlew :readium:readium-lcp:connectedAndroidTest --no-daemon --stacktrace
+
       - name: Upload Test Reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: instrumented-test-reports
+          name: instrumented-test-reports-${{ github.run_id }}
           path: |
             **/build/reports/androidTests/connected/**
-            **/build/test-results/connected/**          
+            **/build/test-results/connected/**
+          retention-days: 5
