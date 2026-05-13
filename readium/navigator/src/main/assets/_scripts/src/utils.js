@@ -194,7 +194,7 @@ export function scrollToEnd() {
 // Returns false if the page is already at the left-most scroll offset.
 export function scrollLeft(animated) {
   var documentWidth = document.scrollingElement.scrollWidth;
-  var offset = window.scrollX - pageWidth;
+  var offset = currentScrollBase() - pageWidth;
   var minOffset = isRTL() ? -(documentWidth - pageWidth) : 0;
   return scrollToOffset(Math.max(offset, minOffset), animated);
 }
@@ -202,7 +202,7 @@ export function scrollLeft(animated) {
 // Returns false if the page is already at the right-most scroll offset.
 export function scrollRight(animated) {
   var documentWidth = document.scrollingElement.scrollWidth;
-  var offset = window.scrollX + pageWidth;
+  var offset = currentScrollBase() + pageWidth;
   var maxOffset = isRTL() ? 0 : documentWidth - pageWidth;
   return scrollToOffset(Math.min(offset, maxOffset), animated);
 }
@@ -215,22 +215,44 @@ function scrollToOffset(offset, animated) {
     throw "Called scrollToOffset() with scroll mode enabled. This can only be used in paginated mode.";
   }
 
-  var currentOffset = window.scrollX;
+  var currentOffset = currentScrollBase();
   var targetOffset = snapOffset(offset);
   var diff = Math.abs(currentOffset - offset) / pageWidth;
   var moved = diff > 0.01;
 
   if (animated && moved) {
-    animateScrollTo(currentOffset, targetOffset, 300);
+    animateScrollTo(targetOffset, 300);
   } else {
+    cancelScrollAnimation();
     document.scrollingElement.scrollLeft = targetOffset;
   }
 
   return moved;
 }
 
-// Animates a horizontal scroll from startX to endX over the given duration (ms).
-function animateScrollTo(startX, endX, duration) {
+var _animFrameId = null;
+var _animTargetX = null;
+
+// Returns the intended scroll destination if an animation is running, otherwise
+// the live scroll position. Used so rapid page turns stack from the previous
+// target rather than from a mid-animation position.
+function currentScrollBase() {
+  return _animTargetX !== null ? _animTargetX : window.scrollX;
+}
+
+function cancelScrollAnimation() {
+  if (_animFrameId !== null) {
+    cancelAnimationFrame(_animFrameId);
+    _animFrameId = null;
+  }
+  _animTargetX = null;
+}
+
+// Animates a horizontal scroll to endX over the given duration (ms).
+function animateScrollTo(endX, duration) {
+  cancelScrollAnimation();
+  var startX = document.scrollingElement.scrollLeft;
+  _animTargetX = endX;
   var startTime = performance.now();
 
   function step(now) {
@@ -245,11 +267,14 @@ function animateScrollTo(startX, endX, duration) {
       startX + (endX - startX) * eased
     );
     if (progress < 1) {
-      requestAnimationFrame(step);
+      _animFrameId = requestAnimationFrame(step);
+    } else {
+      _animFrameId = null;
+      _animTargetX = null;
     }
   }
 
-  requestAnimationFrame(step);
+  _animFrameId = requestAnimationFrame(step);
 }
 
 // Snap the offset to the screen width (page width).
