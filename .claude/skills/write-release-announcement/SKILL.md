@@ -76,8 +76,8 @@ The reference examples in `references/example-3.7.0.md` and `references/example-
 - Choose the right format based on release complexity:
   - **Many distinct themes** → use the 3.7.0 style: GitHub release link as header, sections with bullet points, end with blog URL.
   - **Fewer themes or a focused release** → use the 3.8.0 style: short prose intro, any extra note, then just the blog URL.
-- The blog URL pattern is: `https://blog.readium.org/release-note-swift-toolkit-version-{VERSION_DASHES}/` where `3.9.0` becomes `3-9-0`.
-- The GitHub release URL pattern is: `https://github.com/readium/swift-toolkit/releases/tag/{VERSION}`
+- The blog URL pattern is: `https://blog.readium.org/release-note-kotlin-toolkit-version-{VERSION_DASHES}/` where `3.9.0` becomes `3-9-0`.
+- The GitHub release URL pattern is: `https://github.com/readium/kotlin-toolkit/releases/tag/{VERSION}`
 - End with just the bare blog URL on its own line (no markdown link — Discord auto-embeds it).
 - If there are breaking changes, include a brief warning so developers don't miss them.
 
