@@ -65,10 +65,3 @@ internal val Locator.Locations.page: Int? get() =
 @InternalReadiumApi
 public val Locator.Locations.time: Duration? get() =
     fragmentParameters["t"]?.toDoubleOrNull()?.takeIf { it.isFinite() && it >= 0.0 }?.seconds
-
-/**
- * Computes the time position from the resource duration.
- */
-internal fun Locator.Locations.timeWithDuration(duration: Duration?): Duration? =
-    let(duration, progression) { d, p -> (p * d.inWholeSeconds).seconds }
-        ?: time
