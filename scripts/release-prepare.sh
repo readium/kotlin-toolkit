@@ -35,9 +35,6 @@ if [[ $SKIP_GIT_CHECKS -eq 0 ]]; then
     REMOTE_SHA="$(git -C "$REPO_ROOT" rev-parse origin/develop)"
     [[ "$LOCAL_SHA" == "$REMOTE_SHA" ]] || \
         error "Local 'develop' is not in sync with 'origin/develop'. Pull or push first."
-
-    [[ -z "$(git -C "$REPO_ROOT" status --porcelain)" ]] || \
-        error "Working tree is not clean. Commit or stash changes first."
 fi
 
 # Old version
@@ -46,8 +43,9 @@ check_semver "$OLD_VERSION"
 info "Preparing release $OLD_VERSION → $VERSION"
 
 # Branch
-info "Creating branch '$VERSION'"
-git -C "$REPO_ROOT" checkout -b "$VERSION"
+BRANCH="release-$VERSION"
+info "Creating branch '$BRANCH'"
+git -C "$REPO_ROOT" checkout -b "$BRANCH"
 
 # gradle.properties
 GRADLE_PROPS="$REPO_ROOT/gradle.properties"
@@ -88,12 +86,12 @@ else
 fi
 
 # Push + PR
-info "Pushing branch '$VERSION'"
+info "Pushing branch '$BRANCH'"
 if [[ $DRY_RUN -eq 1 ]]; then
-    dry_skip "git push -u origin $VERSION"
+    dry_skip "git push -u origin $BRANCH"
     dry_skip "gh pr create --base develop --title \"$VERSION\" --body \"\""
 else
-    git -C "$REPO_ROOT" push -u origin "$VERSION"
+    git -C "$REPO_ROOT" push -u origin "$BRANCH"
     PR_URL="$(gh pr create --base develop --title "$VERSION" --body "" | tail -1)"
     open "$PR_URL"
 fi
