@@ -4,7 +4,9 @@ All notable changes to this project will be documented in this file. Take a look
 
 **Warning:** Features marked as *experimental* may change or be removed in a future release without notice. Use with caution.
 
-## [Unreleased]
+<!-- ## [Unreleased] -->
+
+## [3.2.0] - 2026-05-13
 
 ### Added
 
@@ -39,12 +41,8 @@ All notable changes to this project will be documented in this file. Take a look
 
 #### Navigator
 
-* [#782](https://github.com/readium/kotlin-toolkit/issues/782) `Locator.Locations.time` now supports decimal time fragment values (e.g. `t=1.5`) (contributed by [@m-abs](https://github.com/readium/kotlin-toolkit/pull/783)).
-
-
-#### Navigator
-
 * Fixed support for resources with absolute hrefs (contributed by [@m-abs](https://github.com/readium/kotlin-toolkit/pull/749)).
+* [#782](https://github.com/readium/kotlin-toolkit/issues/782) `Locator.Locations.time` now supports decimal time fragment values (e.g. `t=1.5`) (contributed by [@m-abs](https://github.com/readium/kotlin-toolkit/pull/783)).
 
 
 ## [3.1.2]
@@ -1026,3 +1024,4 @@ progression. Now if no reading progression is set, the `effectiveReadingProgress
 [3.1.0]: https://github.com/readium/kotlin-toolkit/compare/3.0.3...3.1.0
 [3.1.1]: https://github.com/readium/kotlin-toolkit/compare/3.1.0...3.1.1
 [3.1.2]: https://github.com/readium/kotlin-toolkit/compare/3.1.1...3.1.2
+[3.2.0]: https://github.com/readium/kotlin-toolkit/compare/3.1.2...3.2.0
