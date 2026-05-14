@@ -11,8 +11,6 @@ plugins {
 }
 
 subprojects {
-    val isLibraryModule = name != "test-app" && !path.startsWith(":demos")
-
     apply(plugin = "org.jlleitschuh.gradle.ktlint")
 
     ktlint {
@@ -27,17 +25,13 @@ subprojects {
             }
         }
     }
+}
 
-    if (isLibraryModule) {
-        apply(plugin = "org.jetbrains.dokka")
-
-        extensions.configure<org.jetbrains.dokka.gradle.DokkaExtension> {
-            dokkaSourceSets.configureEach {
-                reportUndocumented.set(false)
-                skipEmptyPackages.set(false)
-                skipDeprecated.set(true)
-            }
-        }
+dokka {
+    dokkaSourceSets.configureEach {
+        reportUndocumented.set(false)
+        skipEmptyPackages.set(false)
+        skipDeprecated.set(true)
     }
 }
 
@@ -50,7 +44,8 @@ tasks.register("cleanDocs", Delete::class).configure {
 }
 
 dependencies {
-    subprojects.filter { it.name != "test-app" && !it.path.startsWith(":demos") }.forEach {
-        dokka(project(it.path))
-    }
+    subprojects
+        .filter { it.name != "test-app" && !it.path.startsWith(":demos") }
+        .filter { it.buildFile.exists() }
+        .forEach { dokka(project(it.path)) }
 }

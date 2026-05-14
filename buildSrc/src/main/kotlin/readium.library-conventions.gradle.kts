@@ -105,3 +105,5 @@ mavenPublishing {
     publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL)
     signAllPublications()
 }
+
+apply(plugin = "org.jetbrains.dokka")
