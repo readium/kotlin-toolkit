@@ -13,7 +13,7 @@ You are ready to release a new version of the Kotlin toolkit? Great, follow thes
     ```
     This script does the following:
 
-    1. Creates a branch with the same name as the future tag, from `develop`.
+    1. Creates a `release-VERSION` branch from `develop`.
     2. Bumps the version in `gradle.properties` and `test-app/build.gradle.kts`.
     3. Bumps the version in `README.md` and checks the "Minimum Requirements" section.
     4. Closes the version in `CHANGELOG.md`, [for example](https://github.com/readium/kotlin-toolkit/commit/011e0d74adc66ec2073f746d815310b838af4fbf).

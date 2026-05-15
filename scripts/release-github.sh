@@ -75,6 +75,7 @@ if [[ $DRY_RUN -eq 1 ]]; then
 else
     RELEASE_URL="$(gh release create "$VERSION" --title "$VERSION" --notes-file "$TMPFILE" --generate-notes --draft)"
     info "Draft release created: $RELEASE_URL"
-    open "$RELEASE_URL"
+
+    open_url "$RELEASE_URL"
 fi
 

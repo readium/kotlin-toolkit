@@ -20,6 +20,25 @@ check_semver() {
 # Print a "Dry-run: skipped" message for an operation that was not executed.
 dry_skip() { echo "Dry-run: skipped \"$*\""; }
 
+# In-place sed that works on both BSD (macOS) and GNU (Linux) sed.
+# Usage: sed_inplace EXPRESSION FILE
+sed_inplace() {
+    if sed --version 2>/dev/null | grep -q GNU; then
+        sed -i "$1" "$2"
+    else
+        sed -i '' "$1" "$2"
+    fi
+}
+
+# Open a URL in the system browser.
+open_url() {
+    if command -v open &>/dev/null; then
+        open "$1"
+    elif command -v xdg-open &>/dev/null; then
+        xdg-open "$1"
+    fi
+}
+
 # Globals set by parse_flags; read by each script after calling it.
 DRY_RUN=0 # 1 when --dry-run is passed
 SKIP_GIT_CHECKS=0 # 1 when --skip-git-checks is passed

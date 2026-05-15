@@ -7,7 +7,7 @@
 #
 # VERSION - The new version to release (e.g. 3.0.1)
 # --dry-run - Skip `git push` and `gh pr create`
-# --skip-git-checks - Skip branch and clean working tree checks
+# --skip-git-checks - Skip `develop` branch checks
 # =============================================================================
 
 set -euo pipefail
@@ -50,12 +50,12 @@ git -C "$REPO_ROOT" checkout -b "$BRANCH"
 # gradle.properties
 GRADLE_PROPS="$REPO_ROOT/gradle.properties"
 info "Bumping version in gradle.properties"
-sed -i '' "s/^pom\.version=.*/pom.version=$VERSION/" "$GRADLE_PROPS"
+sed_inplace "s/^pom\.version=.*/pom.version=$VERSION/" "$GRADLE_PROPS"
 
 # test-app/build.gradle.kts
 BUILD_GRADLE="$REPO_ROOT/test-app/build.gradle.kts"
 info "Bumping version in test-app/build.gradle.kts"
-sed -i '' "s/versionName = \"$OLD_VERSION\"/versionName = \"$VERSION\"/" "$BUILD_GRADLE"
+sed_inplace "s/versionName = \"$OLD_VERSION\"/versionName = \"$VERSION\"/" "$BUILD_GRADLE"
 
 # README.md
 info "Bumping version in README.md"
@@ -93,5 +93,6 @@ if [[ $DRY_RUN -eq 1 ]]; then
 else
     git -C "$REPO_ROOT" push -u origin "$BRANCH"
     PR_URL="$(gh pr create --base develop --title "$VERSION" --body "" | tail -1)"
-    open "$PR_URL"
+    info "PR created: $PR_URL"
+    open_url "$PR_URL"
 fi
