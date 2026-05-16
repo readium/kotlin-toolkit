@@ -5,6 +5,7 @@ plugins {
     id("com.android.library")
     id("com.vanniktech.maven.publish")
     kotlin("plugin.parcelize")
+    id("org.jetbrains.dokka")
 }
 
 group = property("pom.groupId") as String
@@ -105,5 +106,3 @@ mavenPublishing {
     publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL)
     signAllPublications()
 }
-
-apply(plugin = "org.jetbrains.dokka")

@@ -5,9 +5,9 @@
  */
 
 plugins {
-    alias(libs.plugins.dokka)
     alias(libs.plugins.ktlint)
     alias(libs.plugins.compose.compiler) apply false
+    id("org.jetbrains.dokka")
 }
 
 subprojects {
@@ -27,20 +27,20 @@ subprojects {
     }
 }
 
-dokka {
-    dokkaSourceSets.configureEach {
-        reportUndocumented.set(false)
-        skipEmptyPackages.set(false)
-        skipDeprecated.set(true)
-    }
-}
-
 tasks.register("cleanDocs", Delete::class).configure {
     delete(
         "${project.rootDir}/docs/api",
         "${project.rootDir}/docs/index.md",
         "${project.rootDir}/site"
     )
+}
+
+dokka {
+    dokkaSourceSets.configureEach {
+        reportUndocumented.set(false)
+        skipEmptyPackages.set(false)
+        skipDeprecated.set(true)
+    }
 }
 
 dependencies {
