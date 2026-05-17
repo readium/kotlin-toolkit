@@ -231,8 +231,7 @@ private fun <T> StepperItem(
                 content = {
                     Icon(
                         painter = painterResource(id = R.drawable.remove),
-                        contentDescription = "Less",
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        contentDescription = "Less"
                     )
                 }
             )
@@ -248,8 +247,7 @@ private fun <T> StepperItem(
                 content = {
                     Icon(
                         painter = painterResource(id = R.drawable.add),
-                        contentDescription = "More",
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        contentDescription = "More"
                     )
                 }
             )
@@ -447,8 +445,7 @@ private fun Item(
                 IconButton(onClick = onClear ?: {}, enabled = onClear != null) {
                     Icon(
                         painter = painterResource(id = R.drawable.backspace),
-                        contentDescription = "Clear",
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        contentDescription = "Clear"
                     )
                 }
             }

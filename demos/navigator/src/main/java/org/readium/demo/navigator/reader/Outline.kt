@@ -111,8 +111,7 @@ private fun TopBar(
             ) {
                 Icon(
                     painter = painterResource(id = R.drawable.arrow_back),
-                    contentDescription = "Back",
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    contentDescription = "Back"
                 )
             }
         }

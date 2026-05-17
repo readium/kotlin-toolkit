@@ -72,7 +72,6 @@ fun TtsControls(
                 Icon(
                     painter = painterResource(id = R.drawable.skip_previous),
                     contentDescription = stringResource(R.string.tts_previous),
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
 
@@ -102,14 +101,12 @@ fun TtsControls(
                     painter = painterResource(id = R.drawable.stop),
                     contentDescription = stringResource(R.string.tts_stop),
                     modifier = Modifier.then(largeButtonModifier),
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
             IconButton(onClick = onNext) {
                 Icon(
                     painter = painterResource(id = R.drawable.skip_next),
                     contentDescription = stringResource(R.string.tts_next),
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
 
@@ -119,7 +116,6 @@ fun TtsControls(
                 Icon(
                     painter = painterResource(id = R.drawable.settings),
                     contentDescription = stringResource(R.string.tts_settings),
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }

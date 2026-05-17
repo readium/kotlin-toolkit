@@ -114,8 +114,7 @@ private fun EditHighlightPopup(
                 ) {
                     Icon(
                         painter = painterResource(id = R.drawable.edit_note),
-                        contentDescription = "Edit note",
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        contentDescription = "Edit note"
                     )
                 }
                 IconButton(
@@ -123,8 +122,7 @@ private fun EditHighlightPopup(
                 ) {
                     Icon(
                         painter = painterResource(id = R.drawable.delete),
-                        contentDescription = "Delete highlight",
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        contentDescription = "Delete highlight"
                     )
                 }
             }
