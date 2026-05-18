@@ -44,6 +44,11 @@ info "Preparing release $OLD_VERSION → $VERSION"
 
 # Branch
 BRANCH="release-$VERSION"
+if git -C "$REPO_ROOT" show-ref --verify --quiet "refs/heads/$BRANCH"; then
+    read -r -p "Branch '$BRANCH' already exists. Delete and recreate it? [y/N] " CONFIRM
+    [[ "$CONFIRM" =~ ^[Yy]$ ]] || error "Aborted."
+    git -C "$REPO_ROOT" branch -D "$BRANCH"
+fi
 info "Creating branch '$BRANCH'"
 git -C "$REPO_ROOT" checkout -b "$BRANCH"
 
