@@ -15,18 +15,17 @@ import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.EditNote
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.DpRect
 import androidx.compose.ui.unit.IntOffset
@@ -34,6 +33,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
 import kotlin.math.roundToInt
+import org.readium.demo.navigator.R
 
 class EditHighlightViewModel(
     val id: Long,
@@ -113,7 +113,7 @@ private fun EditHighlightPopup(
                     onClick = onEditNote
                 ) {
                     Icon(
-                        imageVector = Icons.Default.EditNote,
+                        painter = painterResource(id = R.drawable.edit_note),
                         contentDescription = "Edit note"
                     )
                 }
@@ -121,7 +121,7 @@ private fun EditHighlightPopup(
                     onClick = onDelete
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Delete,
+                        painter = painterResource(id = R.drawable.delete),
                         contentDescription = "Delete highlight"
                     )
                 }
