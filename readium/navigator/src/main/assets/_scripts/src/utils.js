@@ -192,34 +192,89 @@ export function scrollToEnd() {
 }
 
 // Returns false if the page is already at the left-most scroll offset.
-export function scrollLeft() {
+export function scrollLeft(animated) {
   var documentWidth = document.scrollingElement.scrollWidth;
-  var offset = window.scrollX - pageWidth;
+  var offset = currentScrollBase() - pageWidth;
   var minOffset = isRTL() ? -(documentWidth - pageWidth) : 0;
-  return scrollToOffset(Math.max(offset, minOffset));
+  return scrollToOffset(Math.max(offset, minOffset), animated);
 }
 
 // Returns false if the page is already at the right-most scroll offset.
-export function scrollRight() {
+export function scrollRight(animated) {
   var documentWidth = document.scrollingElement.scrollWidth;
-  var offset = window.scrollX + pageWidth;
+  var offset = currentScrollBase() + pageWidth;
   var maxOffset = isRTL() ? 0 : documentWidth - pageWidth;
-  return scrollToOffset(Math.min(offset, maxOffset));
+  return scrollToOffset(Math.min(offset, maxOffset), animated);
 }
 
-// Scrolls to the given left offset.
+// Scrolls to the given left offset, optionally with animation.
 // Returns false if the page scroll position is already close enough to the given offset.
-function scrollToOffset(offset) {
+function scrollToOffset(offset, animated) {
   //        Android.log("scrollToOffset " + offset);
   if (isScrollModeEnabled()) {
     throw "Called scrollToOffset() with scroll mode enabled. This can only be used in paginated mode.";
   }
 
-  var currentOffset = window.scrollX;
-  document.scrollingElement.scrollLeft = snapOffset(offset);
-  // In some case the scrollX cannot reach the position respecting to innerWidth
+  var currentOffset = currentScrollBase();
+  var targetOffset = snapOffset(offset);
   var diff = Math.abs(currentOffset - offset) / pageWidth;
-  return diff > 0.01;
+  var moved = diff > 0.01;
+
+  if (animated && moved) {
+    animateScrollTo(targetOffset, 300);
+  } else {
+    cancelScrollAnimation();
+    document.scrollingElement.scrollLeft = targetOffset;
+  }
+
+  return moved;
+}
+
+var _animFrameId = null;
+var _animTargetX = null;
+
+// Returns the intended scroll destination if an animation is running, otherwise
+// the live scroll position. Used so rapid page turns stack from the previous
+// target rather than from a mid-animation position.
+function currentScrollBase() {
+  return _animTargetX !== null ? _animTargetX : window.scrollX;
+}
+
+function cancelScrollAnimation() {
+  if (_animFrameId !== null) {
+    cancelAnimationFrame(_animFrameId);
+    _animFrameId = null;
+  }
+  _animTargetX = null;
+}
+
+// Animates a horizontal scroll to endX over the given duration (ms).
+function animateScrollTo(endX, duration) {
+  cancelScrollAnimation();
+  var startX = document.scrollingElement.scrollLeft;
+  _animTargetX = endX;
+  var startTime = performance.now();
+
+  function step(now) {
+    var elapsed = now - startTime;
+    var progress = Math.min(elapsed / duration, 1);
+    // Ease-in-out quad
+    var eased =
+      progress < 0.5
+        ? 2 * progress * progress
+        : -1 + (4 - 2 * progress) * progress;
+    document.scrollingElement.scrollLeft = Math.round(
+      startX + (endX - startX) * eased
+    );
+    if (progress < 1) {
+      _animFrameId = requestAnimationFrame(step);
+    } else {
+      _animFrameId = null;
+      _animTargetX = null;
+    }
+  }
+
+  _animFrameId = requestAnimationFrame(step);
 }
 
 // Snap the offset to the screen width (page width).
