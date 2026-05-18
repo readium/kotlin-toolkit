@@ -13,25 +13,41 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.Backspace
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Palette
-import androidx.compose.material.icons.filled.Remove
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.ListItem
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Switch
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
-import java.util.*
-import org.readium.r2.navigator.preferences.*
+import java.util.Locale
 import org.readium.r2.navigator.preferences.Color as ReadiumColor
+import org.readium.r2.navigator.preferences.EnumPreference
+import org.readium.r2.navigator.preferences.Preference
+import org.readium.r2.navigator.preferences.RangePreference
+import org.readium.r2.navigator.preferences.clear
+import org.readium.r2.navigator.preferences.toggle
+import org.readium.r2.navigator.preferences.withSupportedValues
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.Language
+import org.readium.r2.testapp.R
 import org.readium.r2.testapp.utils.compose.ColorPicker
 import org.readium.r2.testapp.utils.compose.DropdownMenuButton
 import org.readium.r2.testapp.utils.compose.ToggleButtonGroup
@@ -213,7 +229,10 @@ private fun <T> StepperItem(
             IconButton(
                 onClick = onDecrement,
                 content = {
-                    Icon(Icons.Default.Remove, contentDescription = "Less")
+                    Icon(
+                        painter = painterResource(id = R.drawable.remove),
+                        contentDescription = "Less"
+                    )
                 }
             )
 
@@ -226,7 +245,10 @@ private fun <T> StepperItem(
             IconButton(
                 onClick = onIncrement,
                 content = {
-                    Icon(Icons.Default.Add, contentDescription = "More")
+                    Icon(
+                        painter = painterResource(id = R.drawable.add),
+                        contentDescription = "More"
+                    )
                 }
             )
         }
@@ -341,7 +363,7 @@ private fun ColorItem(
         ) {
             if (noValueSelected) {
                 Icon(
-                    imageVector = Icons.Default.Palette,
+                    painter = painterResource(id = R.drawable.palette),
                     contentDescription = "Change color",
                     tint = if (color.luminance() > 0.5) Color.Black else Color.White
                 )
@@ -422,7 +444,7 @@ private fun Item(
 
                 IconButton(onClick = onClear ?: {}, enabled = onClear != null) {
                     Icon(
-                        Icons.AutoMirrored.Filled.Backspace,
+                        painter = painterResource(id = R.drawable.backspace),
                         contentDescription = "Clear"
                     )
                 }

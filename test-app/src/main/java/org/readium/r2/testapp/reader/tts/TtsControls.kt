@@ -10,15 +10,15 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import org.readium.r2.testapp.R
@@ -70,8 +70,8 @@ fun TtsControls(
 
             IconButton(onClick = onPrevious) {
                 Icon(
-                    imageVector = Icons.Default.SkipPrevious,
-                    contentDescription = stringResource(R.string.tts_previous)
+                    painter = painterResource(id = R.drawable.skip_previous),
+                    contentDescription = stringResource(R.string.tts_previous),
                 )
             }
 
@@ -79,10 +79,10 @@ fun TtsControls(
                 onClick = onPlayPause
             ) {
                 Icon(
-                    imageVector = if (playing) {
-                        Icons.Default.Pause
+                    painter = if (playing) {
+                        painterResource(id = R.drawable.pause)
                     } else {
-                        Icons.Default.PlayArrow
+                        painterResource(id = R.drawable.play_arrow)
                     },
                     contentDescription = stringResource(
                         if (playing) {
@@ -98,15 +98,15 @@ fun TtsControls(
                 onClick = onStop
             ) {
                 Icon(
-                    imageVector = Icons.Default.Stop,
+                    painter = painterResource(id = R.drawable.stop),
                     contentDescription = stringResource(R.string.tts_stop),
-                    modifier = Modifier.then(largeButtonModifier)
+                    modifier = Modifier.then(largeButtonModifier),
                 )
             }
             IconButton(onClick = onNext) {
                 Icon(
-                    imageVector = Icons.Default.SkipNext,
-                    contentDescription = stringResource(R.string.tts_next)
+                    painter = painterResource(id = R.drawable.skip_next),
+                    contentDescription = stringResource(R.string.tts_next),
                 )
             }
 
@@ -114,8 +114,8 @@ fun TtsControls(
 
             IconButton(onClick = onPreferences) {
                 Icon(
-                    imageVector = Icons.Default.Settings,
-                    contentDescription = stringResource(R.string.tts_settings)
+                    painter = painterResource(id = R.drawable.settings),
+                    contentDescription = stringResource(R.string.tts_settings),
                 )
             }
         }
