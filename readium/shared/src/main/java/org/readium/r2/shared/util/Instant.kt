@@ -36,7 +36,7 @@ private typealias KotlinInstant = kotlin.time.Instant
     replaceWith = ReplaceWith("Instant", imports = ["kotlin.time.Instant"])
 )
 @Parcelize
-@TypeParceler<KotlinInstant, KotlinInstantParceler>()
+@TypeParceler<KotlinInstant, InstantParceler>()
 @Serializable(with = InstantSerializer::class)
 public class Instant private constructor(
     private val value: KotlinInstant,
@@ -126,17 +126,6 @@ public class Instant private constructor(
     override fun compareTo(other: Instant): Int = value.compareTo(other.value)
 }
 
-@InternalReadiumApi
-private object KotlinInstantParceler : Parceler<KotlinInstant> {
-
-    override fun create(parcel: Parcel): KotlinInstant =
-        KotlinInstant.fromEpochMilliseconds(parcel.readLong())
-
-    override fun KotlinInstant.write(parcel: Parcel, flags: Int) {
-        parcel.writeLong(toEpochMilliseconds())
-    }
-}
-
 /**
  * A serializer for [Instant] that uses the ISO-8601 representation.
  *
@@ -157,24 +146,12 @@ public object InstantSerializer : KSerializer<Instant> {
 }
 
 @InternalReadiumApi
-public object InstantParceler : Parceler<kotlin.time.Instant> {
+public object InstantParceler : Parceler<KotlinInstant> {
 
     override fun create(parcel: Parcel): kotlin.time.Instant =
         kotlin.time.Instant.fromEpochMilliseconds(parcel.readLong())
 
     override fun kotlin.time.Instant.write(parcel: Parcel, flags: Int) {
         parcel.writeLong(toEpochMilliseconds())
-    }
-}
-
-@InternalReadiumApi
-public object NullableInstantParceler : Parceler<kotlin.time.Instant?> {
-
-    override fun create(parcel: Parcel): kotlin.time.Instant? =
-        parcel.readLong().takeIf { it != Long.MIN_VALUE }
-            ?.let { kotlin.time.Instant.fromEpochMilliseconds(it) }
-
-    override fun kotlin.time.Instant?.write(parcel: Parcel, flags: Int) {
-        parcel.writeLong(this?.toEpochMilliseconds() ?: Long.MIN_VALUE)
     }
 }

@@ -12,6 +12,7 @@ import android.os.Parcelable
 import kotlin.time.Instant
 import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
+import kotlinx.parcelize.TypeParceler
 import kotlinx.parcelize.WriteWith
 import org.json.JSONObject
 import org.readium.r2.shared.InternalReadiumApi
@@ -23,8 +24,8 @@ import org.readium.r2.shared.extensions.optStringsFromArrayOrSingle
 import org.readium.r2.shared.extensions.putIfNotEmpty
 import org.readium.r2.shared.extensions.toInstant
 import org.readium.r2.shared.extensions.toMap
+import org.readium.r2.shared.util.InstantParceler
 import org.readium.r2.shared.util.Language
-import org.readium.r2.shared.util.NullableInstantParceler
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.logging.log
 
@@ -39,6 +40,7 @@ import org.readium.r2.shared.util.logging.log
  * @param otherMetadata Additional metadata for extensions, as a JSON dictionary.
  */
 @Parcelize
+@TypeParceler<Instant, InstantParceler>
 public data class Metadata(
     val identifier: String? = null, // URI
     val type: String? = null, // URI (@type)
@@ -46,8 +48,8 @@ public data class Metadata(
     val localizedTitle: LocalizedString? = null,
     val localizedSubtitle: LocalizedString? = null,
     val localizedSortAs: LocalizedString? = null,
-    val modified: @WriteWith<NullableInstantParceler> Instant? = null,
-    val published: @WriteWith<NullableInstantParceler> Instant? = null,
+    val modified: Instant? = null,
+    val published: Instant? = null,
     val accessibility: Accessibility? = null,
     val languages: List<String> = emptyList(), // BCP 47 tag
     val subjects: List<Subject> = emptyList(),

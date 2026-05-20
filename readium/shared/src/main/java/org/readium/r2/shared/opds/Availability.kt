@@ -14,14 +14,14 @@ package org.readium.r2.shared.opds
 import android.os.Parcelable
 import kotlin.time.Instant
 import kotlinx.parcelize.Parcelize
-import kotlinx.parcelize.WriteWith
+import kotlinx.parcelize.TypeParceler
 import org.json.JSONObject
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.JSONable
 import org.readium.r2.shared.extensions.optNullableString
 import org.readium.r2.shared.extensions.toInstant
+import org.readium.r2.shared.util.InstantParceler
 import org.readium.r2.shared.util.MapCompanion
-import org.readium.r2.shared.util.NullableInstantParceler
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.logging.log
 
@@ -34,10 +34,11 @@ import org.readium.r2.shared.util.logging.log
  * @param until Timestamp for the next state change.
  */
 @Parcelize
+@TypeParceler<Instant, InstantParceler>
 public data class Availability(
     val state: State,
-    val since: @WriteWith<NullableInstantParceler> Instant? = null,
-    val until: @WriteWith<NullableInstantParceler> Instant? = null,
+    val since: Instant? = null,
+    val until: Instant? = null,
 ) : JSONable, Parcelable {
 
     public enum class State(public val value: String) {
