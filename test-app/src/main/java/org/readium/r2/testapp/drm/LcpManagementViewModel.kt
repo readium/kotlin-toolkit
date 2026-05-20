@@ -51,16 +51,16 @@ class LcpManagementViewModel(
         get() = lcpLicense.license.provider
 
     override val issued: Date
-        get() = lcpLicense.license.issued.toJavaDate()
+        get() = Date(lcpLicense.license.issued.toEpochMilliseconds())
 
     override val updated: Date
-        get() = lcpLicense.license.updated.toJavaDate()
+        get() = Date(lcpLicense.license.updated.toEpochMilliseconds())
 
     override val start: Date?
-        get() = lcpLicense.license.rights.start?.toJavaDate()
+        get() = lcpLicense.license.rights.start?.let { Date(it.toEpochMilliseconds()) }
 
     override val end: Date?
-        get() = lcpLicense.license.rights.end?.toJavaDate()
+        get() = lcpLicense.license.rights.end?.let { Date(it.toEpochMilliseconds()) }
 
     override val copiesLeft: String =
         lcpLicense.charactersToCopyLeft.value
@@ -77,7 +77,7 @@ class LcpManagementViewModel(
 
     override suspend fun renewLoan(fragment: Fragment): Try<Date?, LcpDrmError> {
         return lcpLicense.renewLoan(renewListener)
-            .map { it?.toJavaDate() }
+            .map { it?.let { Date(it.toEpochMilliseconds()) } }
             .mapFailure { LcpDrmError(it) }
     }
 

@@ -6,12 +6,12 @@
 
 package org.readium.r2.lcp
 
+import kotlin.time.Instant
 import kotlinx.coroutines.flow.StateFlow
 import org.readium.r2.lcp.license.model.LicenseDocument
 import org.readium.r2.lcp.license.model.StatusDocument
 import org.readium.r2.shared.publication.services.ContentProtectionService
 import org.readium.r2.shared.util.Closeable
-import org.readium.r2.shared.util.Instant
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 

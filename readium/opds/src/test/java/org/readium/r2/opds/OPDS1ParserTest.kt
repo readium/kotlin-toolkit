@@ -1,15 +1,27 @@
+@file:OptIn(InternalReadiumApi::class)
+
 package org.readium.r2.opds
 
-import org.junit.Assert.*
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.readium.r2.shared.InternalReadiumApi
+import org.readium.r2.shared.extensions.toInstant
 import org.readium.r2.shared.opds.Facet
 import org.readium.r2.shared.opds.Feed
 import org.readium.r2.shared.opds.OpdsMetadata
 import org.readium.r2.shared.opds.ParseData
-import org.readium.r2.shared.publication.*
+import org.readium.r2.shared.publication.Contributor
+import org.readium.r2.shared.publication.Href
+import org.readium.r2.shared.publication.Link
+import org.readium.r2.shared.publication.LocalizedString
+import org.readium.r2.shared.publication.Manifest
+import org.readium.r2.shared.publication.Metadata
 import org.readium.r2.shared.publication.Properties
-import org.readium.r2.shared.util.Instant
+import org.readium.r2.shared.publication.PublicationCollection
+import org.readium.r2.shared.publication.Subject
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.robolectric.RobolectricTestRunner
@@ -29,7 +41,7 @@ class OPDS1ParserTest {
                     href = Url("https://example.com")!!,
                     metadata = OpdsMetadata(
                         title = "OPDS Catalog Root Example",
-                        modified = Instant.parse("2010-01-10T10:03:10Z")
+                        modified = ("2010-01-10T10:03:10Z").toInstant()
                     ),
                     links = mutableListOf(
                         Link(
@@ -94,7 +106,7 @@ class OPDS1ParserTest {
         assertEquals(
             OpdsMetadata(
                 title = "Unpopular Publications",
-                modified = Instant.parse("2010-01-10T10:01:11Z")
+                modified = ("2010-01-10T10:01:11Z").toInstant()
             ),
             feed.metadata
         )
@@ -160,7 +172,7 @@ class OPDS1ParserTest {
                 metadata = Metadata(
                     identifier = "urn:uuid:6409a00b-7bf2-405e-826c-3fdff0fd0734",
                     localizedTitle = LocalizedString("Bob, Son of Bob"),
-                    modified = Instant.parse("2010-01-10T10:01:11Z"),
+                    modified = ("2010-01-10T10:01:11Z").toInstant(),
                     published = null,
                     languages = listOf("en"),
                     subjects = listOf(
@@ -229,7 +241,7 @@ class OPDS1ParserTest {
                 metadata = Metadata(
                     identifier = "urn:uuid:7b595b0c-e15c-4755-bf9a-b7019f5c1dab",
                     localizedTitle = LocalizedString("Modern Online Philately"),
-                    modified = Instant.parse("2010-01-10T10:01:10Z"),
+                    modified = ("2010-01-10T10:01:10Z").toInstant(),
                     languages = listOf("en"),
                     authors = listOf(
                         Contributor(
@@ -295,7 +307,7 @@ class OPDS1ParserTest {
                 metadata = Metadata(
                     identifier = "urn:uuid:6409a00b-7bf2-405e-826c-3fdff0fd0734",
                     localizedTitle = LocalizedString("Bob, Son of Bob"),
-                    modified = Instant.parse("2010-01-10T10:01:11Z"),
+                    modified = ("2010-01-10T10:01:11Z").toInstant(),
                     languages = listOf("en"),
                     subjects = listOf(
                         Subject(

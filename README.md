@@ -83,12 +83,14 @@ Guides are available to help you make the most of the toolkit.
 
 ### Minimum Requirements
 
-| Readium   | Android min SDK | Android compile SDK | Kotlin compiler (✻) | Gradle (✻) |
-|-----------|-----------------|---------------------|---------------------|------------|
-| `develop` | 21              | 36                  | 2.3.20              | 9.1.0      |
-| 3.1.0     | 21              | 35                  | 2.1.20              | 8.13       |
-| 3.0.0     | 21              | 34                  | 1.9.24              | 8.6.0      |
-| 2.3.0     | 21              | 33                  | 1.7.10              | 6.9.3      |
+| Readium | Android min SDK | Android compile SDK | Kotlin compiler (✻) | Gradle (✻) |
+|---------|-----------------|---------------------|---------------------|------------|
+| `develop` | 23 | 36 | 2.3.20 | 9.1.0 |
+| 3.2.0 | 23 | 36 | 2.3.20 | 9.1.0 |
+| 3.1.2 | 23 | 36 | 2.1.21 | 8.14.1 |
+| 3.1.0 | 21 | 35 | 2.1.20 | 8.13 |
+| 3.0.0 | 21 | 34 | 1.9.24 | 8.6.0 |
+| 2.3.0 | 21 | 33 | 1.7.10 | 6.9.3 |
 
 ✻ Only required if you integrate Readium as a submodule instead of using Maven Central.
 
@@ -98,7 +100,7 @@ Readium modules are distributed with [Maven Central](https://search.maven.org/se
 
 ```groovy
 buildscript {
-    ext.readium_version = '3.1.2'
+    ext.readium_version = '3.2.0'
 }
 
 allprojects {

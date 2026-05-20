@@ -121,7 +121,7 @@
             android:background="@android:color/transparent"
             android:contentDescription="@string/play_or_pause"
             android:scaleType="fitCenter"
-            android:src="@drawable/ic_baseline_pause_24" />
+            android:src="@drawable/pause" />
 
         <ImageButton
             android:id="@+id/skipForward"

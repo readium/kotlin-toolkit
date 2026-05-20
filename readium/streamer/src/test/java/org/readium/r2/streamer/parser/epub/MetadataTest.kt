@@ -7,6 +7,8 @@
  * LICENSE file present in the project repository where this source code is maintained.
  */
 
+@file:OptIn(InternalReadiumApi::class)
+
 package org.readium.r2.streamer.parser.epub
 
 import kotlin.test.assertEquals
@@ -15,11 +17,20 @@ import org.assertj.core.api.Assertions.entry
 import org.junit.Assert.assertNotNull
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.readium.r2.shared.publication.*
+import org.readium.r2.shared.InternalReadiumApi
+import org.readium.r2.shared.extensions.toInstant
+import org.readium.r2.shared.publication.Accessibility
+import org.readium.r2.shared.publication.Collection
+import org.readium.r2.shared.publication.Contributor
+import org.readium.r2.shared.publication.Href
 import org.readium.r2.shared.publication.Layout
 import org.readium.r2.shared.publication.Link as SharedLink
+import org.readium.r2.shared.publication.LocalizedString
+import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.publication.Subject
+import org.readium.r2.shared.publication.Tdm
+import org.readium.r2.shared.publication.firstWithRel
 import org.readium.r2.shared.util.AbsoluteUrl
-import org.readium.r2.shared.util.Instant
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.robolectric.RobolectricTestRunner
 
@@ -294,14 +305,14 @@ class DateTest {
 
     @Test
     fun `Publication date is rightly parsed`() {
-        val expected = Instant.parse("1865-07-04T00:00:00Z")
+        val expected = ("1865-07-04T00:00:00Z").toInstant()
         assertThat(epub2Metadata.published).isEqualTo(expected)
         assertThat(epub3Metadata.published).isEqualTo(expected)
     }
 
     @Test
     fun `Modification date is rightly parsed`() {
-        val expected = Instant.parse("2012-04-02T12:47:00Z")
+        val expected = ("2012-04-02T12:47:00Z").toInstant()
         assertThat(epub2Metadata.modified).isEqualTo(expected)
         assertThat(epub3Metadata.modified).isEqualTo(expected)
     }

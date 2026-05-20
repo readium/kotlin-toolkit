@@ -11,16 +11,17 @@
 
 package org.readium.r2.lcp.license.model.components.lsd
 
+import kotlin.time.Instant
 import org.json.JSONObject
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.extensions.optNullableString
-import org.readium.r2.shared.util.Instant
+import org.readium.r2.shared.extensions.toInstant
 
 public data class Event(val json: JSONObject) {
     val type: String = json.optNullableString("type") ?: ""
     val name: String = json.optNullableString("name") ?: ""
     val id: String = json.optNullableString("id") ?: ""
-    val date: Instant? = json.optNullableString("timestamp")?.let { Instant.parse(it) }
+    val date: Instant? = json.optNullableString("timestamp")?.toInstant()
 
     public enum class EventType(public val value: String) {
         Register("register"),

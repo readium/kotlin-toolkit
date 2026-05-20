@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package org.readium.r2.shared.util
 
 import kotlin.test.assertEquals

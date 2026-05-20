@@ -12,12 +12,15 @@
 package org.readium.r2.shared.opds
 
 import android.os.Parcelable
+import kotlin.time.Instant
 import kotlinx.parcelize.Parcelize
+import kotlinx.parcelize.TypeParceler
 import org.json.JSONObject
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.JSONable
 import org.readium.r2.shared.extensions.optNullableString
-import org.readium.r2.shared.util.Instant
+import org.readium.r2.shared.extensions.toInstant
+import org.readium.r2.shared.util.InstantParceler
 import org.readium.r2.shared.util.MapCompanion
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.logging.log
@@ -31,6 +34,7 @@ import org.readium.r2.shared.util.logging.log
  * @param until Timestamp for the next state change.
  */
 @Parcelize
+@TypeParceler<Instant, InstantParceler>
 public data class Availability(
     val state: State,
     val since: Instant? = null,
@@ -71,8 +75,8 @@ public data class Availability(
 
             return Availability(
                 state = state,
-                since = json?.optNullableString("since")?.let { Instant.parse(it) },
-                until = json?.optNullableString("until")?.let { Instant.parse(it) }
+                since = json?.optNullableString("since")?.toInstant(),
+                until = json?.optNullableString("until")?.toInstant()
             )
         }
     }

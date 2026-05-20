@@ -9,6 +9,7 @@
 
 package org.readium.r2.lcp.license
 
+import kotlin.time.Clock
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.runBlocking
 import org.readium.r2.lcp.BuildConfig.DEBUG
@@ -23,7 +24,6 @@ import org.readium.r2.lcp.service.DeviceService
 import org.readium.r2.lcp.service.LcpClient
 import org.readium.r2.lcp.service.NetworkService
 import org.readium.r2.lcp.service.PassphrasesService
-import org.readium.r2.shared.util.Instant
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.mediatype.MediaType
 import timber.log.Timber
@@ -398,7 +398,7 @@ internal class LicenseValidation(
         statusDocumentTakesPrecedence: Boolean,
     ) {
         var error: LcpError.LicenseStatus? = null
-        val now = Instant.now()
+        val now = Clock.System.now()
         val start = license.rights.start ?: now
         val end = license.rights.end ?: now
         val isLicenseExpired = (start > now || now > end)

@@ -11,11 +11,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.Backspace
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Palette
-import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenuItem
@@ -36,11 +31,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import java.util.Locale
-import kotlin.collections.plus
+import org.readium.demo.navigator.R
 import org.readium.demo.navigator.util.ColorPicker
 import org.readium.demo.navigator.util.DropdownMenuButton
 import org.readium.demo.navigator.util.ToggleButtonGroup
@@ -174,7 +170,10 @@ private fun <T> StepperItem(
             IconButton(
                 onClick = onDecrement,
                 content = {
-                    Icon(Icons.Default.Remove, contentDescription = "Less")
+                    Icon(
+                        painter = painterResource(id = R.drawable.remove),
+                        contentDescription = "Less"
+                    )
                 }
             )
 
@@ -187,7 +186,10 @@ private fun <T> StepperItem(
             IconButton(
                 onClick = onIncrement,
                 content = {
-                    Icon(Icons.Default.Add, contentDescription = "More")
+                    Icon(
+                        painter = painterResource(id = R.drawable.add),
+                        contentDescription = "More"
+                    )
                 }
             )
         }
@@ -289,7 +291,7 @@ private fun ColorItem(
         ) {
             if (noValueSelected) {
                 Icon(
-                    imageVector = Icons.Default.Palette,
+                    painter = painterResource(id = R.drawable.palette),
                     contentDescription = "Change color",
                     tint = if (color.luminance() > 0.5) Color.Black else Color.White
                 )
@@ -427,8 +429,9 @@ private fun Item(
 
                 IconButton(onClick = onClear ?: {}, enabled = onClear != null) {
                     Icon(
-                        Icons.AutoMirrored.Filled.Backspace,
-                        contentDescription = "Clear"
+                        painter = painterResource(id = R.drawable.backspace),
+                        contentDescription = "Clear",
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
