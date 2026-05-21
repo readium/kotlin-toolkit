@@ -40,6 +40,7 @@ import org.readium.r2.lcp.util.sha256
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.publication.protection.ContentProtection
+import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.ErrorException
 import org.readium.r2.shared.util.FileExtension
 import org.readium.r2.shared.util.Try
@@ -51,6 +52,9 @@ import org.readium.r2.shared.util.format.FormatHints
 import org.readium.r2.shared.util.format.FormatSpecification
 import org.readium.r2.shared.util.format.Specification
 import org.readium.r2.shared.util.getOrElse
+import org.readium.r2.shared.util.http.HttpClient
+import org.readium.r2.shared.util.http.HttpRequest
+import org.readium.r2.shared.util.http.download
 import org.readium.r2.shared.util.mediatype.MediaType
 import timber.log.Timber
 
@@ -58,7 +62,7 @@ internal class LicensesService(
     private val licenses: LicensesRepository,
     private val crl: CRLService,
     private val device: DeviceService,
-    private val network: NetworkService,
+    private val httpClient: HttpClient,
     private val passphrases: PassphrasesService,
     private val context: Context,
     private val assetRetriever: AssetRetriever,
@@ -152,16 +156,20 @@ internal class LicensesService(
         onProgress: (Double) -> Unit,
     ): LcpService.AcquiredPublication {
         val link = license.link(LicenseDocument.Rel.Publication)!!
-        val url = link.url()
+        val url = link.url() as? AbsoluteUrl
+            ?: throw LcpException(LcpError.Parsing.Url(link.rels.firstOrNull() ?: ""))
 
         Timber.i("LCP destination $destination")
 
-        val serverMediaType = network.download(
-            url,
+        val response = httpClient.download(
+            HttpRequest(url),
             destination,
-            mediaType = link.mediaType,
             onProgress = onProgress
-        )
+        ).getOrElse {
+            throw LcpException(LcpError.Network(Exception(it.message)))
+        }
+
+        val serverMediaType = response.response.mediaType
 
         val hashIsCorrect = license.publicationLink.hash
             ?.let { destination.checkSha256(it) }
@@ -313,7 +321,7 @@ internal class LicensesService(
             authentication = authentication,
             crl = this.crl,
             device = this.device,
-            network = this.network,
+            httpClient = this.httpClient,
             passphrases = this.passphrases,
             context = this.context,
             allowUserInteraction = allowUserInteraction,
@@ -354,7 +362,7 @@ internal class LicensesService(
                                 validation = validation,
                                 licenses = this@LicensesService.licenses,
                                 device = this@LicensesService.device,
-                                network = this@LicensesService.network
+                                httpClient = this@LicensesService.httpClient
                             )
                         )
                     }

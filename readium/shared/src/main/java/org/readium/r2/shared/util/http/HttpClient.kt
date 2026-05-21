@@ -6,10 +6,15 @@
 
 package org.readium.r2.shared.util.http
 
+import java.io.File
+import java.io.FileOutputStream
 import java.io.IOException
 import java.io.InputStream
 import java.nio.charset.Charset
+import kotlin.math.round
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import org.readium.r2.shared.ExperimentalReadiumApi
@@ -144,4 +149,72 @@ public suspend fun HttpClient.head(request: HttpRequest): HttpTry<HttpResponse> 
                 }
                 .response()
         }
+}
+
+/**
+ * Downloads the resource from the given [request] to the [destination] file.
+ *
+ * @param request The [HttpRequest] detailing the resource to be downloaded.
+ * @param destination The [File] where the downloaded resource should be saved.
+ * @param onProgress A closure called regularly with the download progress, from 0.0 to 1.0.
+ */
+public suspend fun HttpClient.download(
+    request: HttpRequest,
+    destination: File,
+    onProgress: (Double) -> Unit = {},
+): HttpTry<HttpFetchResponse> =
+    stream(request)
+        .flatMap { response ->
+            try {
+                withContext(Dispatchers.IO) {
+                    coroutineContext.ensureActive()
+
+                    var readLength = 0L
+                    val expectedLength = response.response.contentLength?.toDouble()
+
+                    var lastProgress = 0.0
+
+                    response.body.use { input ->
+                        FileOutputStream(destination).use { output ->
+                            val buf = ByteArray(2048)
+                            var n: Int
+                            while (-1 != input.read(buf).also { n = it }) {
+                                coroutineContext.ensureActive()
+                                output.write(buf, 0, n)
+                                readLength += n
+
+                                if (expectedLength != null && expectedLength > 0) {
+                                    val progress = (readLength / expectedLength)
+                                        .coerceIn(0.0, 1.0).roundToDecimals(2)
+                                    if (lastProgress < progress) {
+                                        withContext(Dispatchers.Main) {
+                                            onProgress(progress)
+                                        }
+                                    }
+                                    lastProgress = progress
+                                }
+                            }
+                        }
+                    }
+                }
+                Try.success(
+                    HttpFetchResponse(response.response, ByteArray(0))
+                )
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: IOException) {
+                Try.failure(
+                    HttpError.IO(e)
+                )
+            } catch (e: Exception) {
+                Try.failure(
+                    HttpError.IO(IOException(e))
+                )
+            }
+        }
+
+private fun Double.roundToDecimals(decimals: Int): Double {
+    var multiplier = 1.0
+    repeat(decimals) { multiplier *= 10 }
+    return round(this * multiplier) / multiplier
 }
