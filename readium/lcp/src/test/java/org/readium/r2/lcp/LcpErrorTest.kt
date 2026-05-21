@@ -8,8 +8,8 @@ package org.readium.r2.lcp
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.time.Instant
 import org.junit.runner.RunWith
-import org.readium.r2.shared.util.Instant
 import org.readium.r2.shared.util.Url
 import org.robolectric.RobolectricTestRunner
 
@@ -74,7 +74,7 @@ class LcpErrorTest {
 
     @Test
     fun `LicenseStatus Cancelled message is correct`() {
-        val date = Instant.parse("2023-01-01T12:00:00Z")!!
+        val date = Instant.parse("2023-01-01T12:00:00Z")
         assertEquals(
             "This license was cancelled on 2023-01-01T12:00:00Z",
             LcpError.LicenseStatus.Cancelled(date).message
@@ -83,7 +83,7 @@ class LcpErrorTest {
 
     @Test
     fun `LicenseStatus Returned message is correct`() {
-        val date = Instant.parse("2023-01-02T12:00:00Z")!!
+        val date = Instant.parse("2023-01-02T12:00:00Z")
         assertEquals(
             "This license has been returned on 2023-01-02T12:00:00Z",
             LcpError.LicenseStatus.Returned(date).message
@@ -92,7 +92,7 @@ class LcpErrorTest {
 
     @Test
     fun `LicenseStatus NotStarted message is correct`() {
-        val date = Instant.parse("2023-01-03T12:00:00Z")!!
+        val date = Instant.parse("2023-01-03T12:00:00Z")
         assertEquals(
             "This license starts on 2023-01-03T12:00:00Z",
             LcpError.LicenseStatus.NotStarted(date).message
@@ -101,7 +101,7 @@ class LcpErrorTest {
 
     @Test
     fun `LicenseStatus Expired message is correct`() {
-        val date = Instant.parse("2023-01-04T12:00:00Z")!!
+        val date = Instant.parse("2023-01-04T12:00:00Z")
         assertEquals(
             "This license expired on 2023-01-04T12:00:00Z",
             LcpError.LicenseStatus.Expired(date).message
@@ -110,7 +110,7 @@ class LcpErrorTest {
 
     @Test
     fun `LicenseStatus Revoked message is correct`() {
-        val date = Instant.parse("2023-01-05T12:00:00Z")!!
+        val date = Instant.parse("2023-01-05T12:00:00Z")
         assertEquals(
             "This license was revoked by its provider on 2023-01-05T12:00:00Z. It was registered by 3 device(s).",
             LcpError.LicenseStatus.Revoked(date, 3).message

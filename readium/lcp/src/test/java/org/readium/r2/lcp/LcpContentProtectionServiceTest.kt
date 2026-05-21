@@ -6,6 +6,7 @@
 
 package org.readium.r2.lcp
 
+import kotlin.time.Instant
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import org.json.JSONObject
@@ -23,7 +24,6 @@ import org.readium.r2.shared.publication.Metadata
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.protection.ContentProtection
 import org.readium.r2.shared.publication.services.ContentProtectionService
-import org.readium.r2.shared.util.Instant
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.data.EmptyContainer
 import org.robolectric.RobolectricTestRunner
