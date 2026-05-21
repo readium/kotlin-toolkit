@@ -58,7 +58,8 @@ internal class CRLService(val httpClient: HttpClient, val context: Context) {
 
     private suspend fun fetch(): String {
         val url = "http://crl.edrlab.telesec.de/rl/EDRLab_CA.crl"
-        val data = httpClient.fetch(HttpRequest(AbsoluteUrl(url)!!))
+        val absoluteUrl = AbsoluteUrl(url) ?: throw LcpException(LcpError.CrlFetching)
+        val data = httpClient.fetch(HttpRequest(absoluteUrl))
             .map { it.body }
             .getOrElse { throw LcpException(LcpError.CrlFetching) }
 
