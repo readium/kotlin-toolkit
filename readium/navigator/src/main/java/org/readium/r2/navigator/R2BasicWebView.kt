@@ -239,7 +239,7 @@ internal open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebV
                     goRight(jump = false)
 
                 else ->
-                    runJavaScript("readium.scrollRight();") { success ->
+                    runJavaScript("readium.scrollRight($animated);") { success ->
                         if (!success.toBoolean()) {
                             goRight(jump = false)
                         }
@@ -273,7 +273,7 @@ internal open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebV
                     goLeft(jump = false)
 
                 else ->
-                    runJavaScript("readium.scrollLeft();") { success ->
+                    runJavaScript("readium.scrollLeft($animated);") { success ->
                         if (!success.toBoolean()) {
                             goLeft(jump = false)
                         }

@@ -19,7 +19,7 @@ android {
 
         applicationId = "org.readium.r2reader"
 
-        versionName = "3.1.2"
+        versionName = "3.2.0"
         versionCode = 1
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -106,7 +106,6 @@ dependencies {
     implementation(libs.google.material)
     implementation(libs.timber)
     implementation(libs.picasso)
-    implementation(libs.joda.time)
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.jsoup)
 

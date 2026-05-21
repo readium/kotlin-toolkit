@@ -19,10 +19,10 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import java.text.DateFormat
+import java.util.Date
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import org.joda.time.DateTime
-import org.joda.time.format.DateTimeFormat
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.data.model.Highlight
@@ -118,9 +118,9 @@ class HighlightAdapter(
             binding.highlightText.text = highlight.locator.text.highlight
             binding.annotation.text = highlight.annotation
 
-            val formattedDate = DateTime(highlight.creation).toString(
-                DateTimeFormat.shortDateTime()
-            )
+            val formattedDate = highlight.creation?.let {
+                DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(Date(it))
+            }
             binding.highlightTimeStamp.text = formattedDate
 
             binding.highlightOverflow.setOnClickListener {

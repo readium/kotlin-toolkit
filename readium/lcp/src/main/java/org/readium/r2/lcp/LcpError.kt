@@ -7,12 +7,12 @@
 package org.readium.r2.lcp
 
 import java.net.SocketTimeoutException
+import kotlin.time.Instant
 import kotlinx.coroutines.CancellationException
 import org.readium.r2.lcp.service.NetworkException
 import org.readium.r2.shared.util.DebugError
 import org.readium.r2.shared.util.Error
 import org.readium.r2.shared.util.ErrorException
-import org.readium.r2.shared.util.Instant
 import org.readium.r2.shared.util.ThrowableError
 import org.readium.r2.shared.util.Url
 

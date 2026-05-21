@@ -12,6 +12,7 @@
 package org.readium.r2.lcp.license.model
 
 import java.nio.charset.Charset
+import kotlin.time.Instant
 import org.json.JSONObject
 import org.readium.r2.lcp.LcpError
 import org.readium.r2.lcp.LcpException
@@ -24,8 +25,8 @@ import org.readium.r2.lcp.license.model.components.lcp.User
 import org.readium.r2.lcp.service.URLParameters
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.extensions.optNullableString
+import org.readium.r2.shared.extensions.toInstant
 import org.readium.r2.shared.util.AbsoluteUrl
-import org.readium.r2.shared.util.Instant
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
@@ -67,12 +68,12 @@ public class LicenseDocument internal constructor(public val json: JSONObject) {
 
     public val issued: Instant =
         json.optNullableString("issued")
-            ?.let { Instant.parse(it) }
+            ?.toInstant()
             ?: throw LcpException(LcpError.Parsing.LicenseDocument)
 
     public val updated: Instant =
         json.optNullableString("updated")
-            ?.let { Instant.parse(it) }
+            ?.toInstant()
             ?: issued
 
     public val encryption: Encryption =

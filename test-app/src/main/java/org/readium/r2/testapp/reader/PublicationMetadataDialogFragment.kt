@@ -30,6 +30,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.fragment.app.activityViewModels
 import java.text.SimpleDateFormat
+import kotlin.time.Clock
 import org.readium.r2.shared.accessibility.AccessibilityMetadataDisplayGuide
 import org.readium.r2.shared.publication.Accessibility
 import org.readium.r2.shared.publication.Contributor
@@ -37,7 +38,6 @@ import org.readium.r2.shared.publication.LocalizedString
 import org.readium.r2.shared.publication.Manifest
 import org.readium.r2.shared.publication.Metadata
 import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.util.Instant
 import org.readium.r2.testapp.utils.compose.ComposeBottomSheetDialogFragment
 
 class PublicationMetadataDialogFragment : ComposeBottomSheetDialogFragment(
@@ -108,7 +108,11 @@ private fun PublicationMetadata(metadata: Metadata, modifier: Modifier = Modifie
         )
 
         metadata.published?.let { published ->
-            MetadataRow("Publication date", SimpleDateFormat.getDateInstance().format(published.toJavaDate()))
+            MetadataRow(
+                "Publication date",
+                SimpleDateFormat.getDateInstance()
+                    .format(java.util.Date(published.toEpochMilliseconds()))
+            )
         }
     }
 }
@@ -244,7 +248,7 @@ fun PreviewPublicationMetadata() {
                     publishers = listOf(
                         Contributor(name = "Macmillan")
                     ),
-                    published = Instant.now(),
+                    published = Clock.System.now(),
                     accessibility = Accessibility(
                         conformsTo = setOf(Accessibility.Profile.EPUB_A11Y_10_WCAG_20_AA),
                         accessModes = setOf(Accessibility.AccessMode.TEXTUAL),

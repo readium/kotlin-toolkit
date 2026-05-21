@@ -4,14 +4,21 @@ All notable changes to this project will be documented in this file. Take a look
 
 **Warning:** Features marked as *experimental* may change or be removed in a future release without notice. Use with caution.
 
-## [Unreleased]
+<!-- ## [Unreleased] -->
+
+## [3.2.0] - 2026-05-13
 
 ### Added
 
 #### Navigator
 
+* Add animated page turns for EPUB paginated mode, by passing `animated = true` to `go()` APIs, or `animatedTransition = true` to the `DirectionalNavigationAdapter` (contributed by [@marcprux](https://github.com/readium/kotlin-toolkit/pull/767)).
 * New experimental positioning of EPUB decorations that places highlights behind text to improve legibility with opaque decorations (contributed by [@ddfreiling](https://github.com/readium/kotlin-toolkit/pull/721)).
     * To opt-in, initialize the `EpubNavigatorFragment.Configuration` object with `decorationTemplates = HtmlDecorationTemplates.defaultTemplates(alpha = 1.0, experimentalPositioning = true)`.
+
+#### Streamer
+
+* Added `httpClient` parameter to the `EpubParser` constructor to support fetching EPUB remote resources from `Publication` objects (contributed by [@m-abs](https://github.com/readium/kotlin-toolkit/pull/749)).
 
 #### LCP
 
@@ -24,11 +31,13 @@ All notable changes to this project will be documented in this file. Take a look
 #### Streamer
 
 * Removed title inference based on folder names within image and audio archives. Use the archive's filename instead.
-* Added `httpClient` parameter to the `EpubParser` constructor to support fetching EPUB remote resources from `Publication` objects (contributed by [@m-abs](https://github.com/readium/kotlin-toolkit/pull/749)).
 
 #### Shared
 
 * The Presentation Hints properties are deprecated from the Readium Web Publication Manifest models. [See the official documentation](https://readium.org/webpub-manifest/profiles/epub.html#appendix-b---deprecated-properties).
+* The `Instant` utility class is deprecated in favor of `kotlin.time.Instant`. Use `Clock.System.now()` to get the current time.
+    * **Note**: `kotlin.time.Instant` does not implement `Parcelable`. If you were passing `Instant` via Intents or Bundles, you must now pass `Long` primitives using `toEpochMilliseconds()` and reconstruct the instant with `kotlin.time.Instant.fromEpochMilliseconds()`.
+    * **Note**: `kotlin.time.Instant.parse()` only accepts ISO-8601 strings with a UTC offset. If you were relying on `Instant.parse()` to handle date-only strings (e.g. `"2020-12-09"`) or strings without a timezone offset (e.g. `"2020-12-09T09:16:56"`), you must handle these formats manually before parsing.
 
 ### Fixed
 
@@ -36,10 +45,10 @@ All notable changes to this project will be documented in this file. Take a look
 
 * Fixed a typo in the accessibility metadata (`describeMath` should be `describedMath`).
 
-
 #### Navigator
 
 * Fixed support for resources with absolute hrefs (contributed by [@m-abs](https://github.com/readium/kotlin-toolkit/pull/749)).
+* [#782](https://github.com/readium/kotlin-toolkit/issues/782) `Locator.Locations.time` now supports decimal time fragment values (e.g. `t=1.5`) (contributed by [@m-abs](https://github.com/readium/kotlin-toolkit/pull/783)).
 
 
 ## [3.1.2]
@@ -1021,3 +1030,4 @@ progression. Now if no reading progression is set, the `effectiveReadingProgress
 [3.1.0]: https://github.com/readium/kotlin-toolkit/compare/3.0.3...3.1.0
 [3.1.1]: https://github.com/readium/kotlin-toolkit/compare/3.1.0...3.1.1
 [3.1.2]: https://github.com/readium/kotlin-toolkit/compare/3.1.1...3.1.2
+[3.2.0]: https://github.com/readium/kotlin-toolkit/compare/3.1.2...3.2.0

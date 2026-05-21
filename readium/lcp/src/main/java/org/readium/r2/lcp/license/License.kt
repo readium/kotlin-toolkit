@@ -12,6 +12,7 @@
 package org.readium.r2.lcp.license
 
 import java.net.HttpURLConnection
+import kotlin.time.Instant
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -34,7 +35,6 @@ import org.readium.r2.lcp.service.NetworkService
 import org.readium.r2.shared.DelicateReadiumApi
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.extensions.tryOrNull
-import org.readium.r2.shared.util.Instant
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.getOrThrow

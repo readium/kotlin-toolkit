@@ -1,4 +1,5 @@
 @file:OptIn(InternalReadiumApi::class, kotlin.time.ExperimentalTime::class)
+@file:Suppress("DEPRECATION")
 
 package org.readium.r2.shared.util
 
@@ -30,6 +31,10 @@ private typealias KotlinInstant = kotlin.time.Instant
 /**
  * A moment in time.
  */
+@Deprecated(
+    message = "Use kotlin.time.Instant instead",
+    replaceWith = ReplaceWith("Instant", imports = ["kotlin.time.Instant"])
+)
 @Parcelize
 @TypeParceler<KotlinInstant, InstantParceler>()
 @Serializable(with = InstantSerializer::class)
@@ -42,6 +47,9 @@ public class Instant private constructor(
          *
          * Returns null if it can't be parsed.
          */
+        @Deprecated(
+            message = "Migrate to kotlin.time.Instant and use kotlin.time.Instant.parse() for strings with a UTC offset, or kotlinx.datetime for date-only and offset-less strings."
+        )
         public fun parse(input: String): Instant? {
             val instant = tryOrNull { KotlinInstant.parse(input) }
                 ?: tryOrNull { LocalDateTime.parse(input).toInstant(TimeZone.UTC) }
@@ -50,24 +58,58 @@ public class Instant private constructor(
             return instant?.let { Instant(it) }
         }
 
+        @Deprecated(
+            message = "Use kotlin.time.Instant directly instead of wrapping/unwrapping"
+        )
         public fun fromKotlinInstant(value: KotlinInstant): Instant = Instant(value)
 
+        @Deprecated(
+            message = "Use Instant.fromEpochMilliseconds(date.time)",
+            replaceWith = ReplaceWith(
+                "kotlin.time.Instant.fromEpochMilliseconds(date.time)",
+                "kotlin.time.Instant"
+            )
+        )
         public fun fromJavaDate(date: java.util.Date): Instant =
             Instant(KotlinInstant.fromEpochMilliseconds(date.time))
 
+        @Deprecated(
+            message = "Use Instant.fromEpochMilliseconds()",
+            replaceWith = ReplaceWith(
+                "kotlin.time.Instant.fromEpochMilliseconds(milliseconds)",
+                "kotlin.time.Instant"
+            )
+        )
         public fun fromEpochMilliseconds(milliseconds: Long): Instant =
             Instant(KotlinInstant.fromEpochMilliseconds(milliseconds))
 
         /**
          * Returns an [Instant] representing the current moment in time.
          */
+        @Deprecated(
+            message = "Use Clock.System.now()",
+            replaceWith = ReplaceWith("Clock.System.now()", "kotlin.time.Clock")
+        )
         public fun now(): Instant = Instant(Clock.System.now())
     }
 
+    @Deprecated(
+        message = "Use kotlin.time.Instant directly instead of wrapping/unwrapping"
+    )
     public fun toKotlinInstant(): KotlinInstant = value
 
+    @Deprecated(
+        message = "Convert using epoch milliseconds",
+        replaceWith = ReplaceWith(
+            "java.util.Date(this.toEpochMilliseconds())",
+            "java.util.Date"
+        )
+    )
     public fun toJavaDate(): java.util.Date = java.util.Date(value.toEpochMilliseconds())
 
+    @Deprecated(
+        message = "Migrate to kotlin.time.Instant and call toEpochMilliseconds() on that directly"
+    )
     public fun toEpochMilliseconds(): Long = value.toEpochMilliseconds()
 
     /**
@@ -82,17 +124,6 @@ public class Instant private constructor(
     override fun hashCode(): Int = value.hashCode()
 
     override fun compareTo(other: Instant): Int = value.compareTo(other.value)
-}
-
-@InternalReadiumApi
-private object InstantParceler : Parceler<KotlinInstant> {
-
-    override fun create(parcel: Parcel): KotlinInstant =
-        KotlinInstant.fromEpochMilliseconds(parcel.readLong())
-
-    override fun KotlinInstant.write(parcel: Parcel, flags: Int) {
-        parcel.writeLong(toEpochMilliseconds())
-    }
 }
 
 /**
@@ -111,5 +142,16 @@ public object InstantSerializer : KSerializer<Instant> {
 
     override fun serialize(encoder: Encoder, value: Instant) {
         encoder.encodeString(value.toString())
+    }
+}
+
+@InternalReadiumApi
+public object InstantParceler : Parceler<KotlinInstant> {
+
+    override fun create(parcel: Parcel): kotlin.time.Instant =
+        kotlin.time.Instant.fromEpochMilliseconds(parcel.readLong())
+
+    override fun kotlin.time.Instant.write(parcel: Parcel, flags: Int) {
+        parcel.writeLong(toEpochMilliseconds())
     }
 }

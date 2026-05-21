@@ -8,8 +8,8 @@ package org.readium.r2.testapp.data
 
 import androidx.annotation.ColorInt
 import java.io.File
+import kotlin.time.Clock
 import kotlinx.coroutines.flow.Flow
-import org.joda.time.DateTime
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.indexOfFirstWithHref
@@ -34,7 +34,7 @@ class BookRepository(
     suspend fun insertBookmark(bookId: Long, publication: Publication, locator: Locator): Long {
         val resource = publication.readingOrder.indexOfFirstWithHref(locator.href)!!
         val bookmark = Bookmark(
-            creation = DateTime().toDate().time,
+            creation = Clock.System.now().toEpochMilliseconds(),
             bookId = bookId,
             resourceIndex = resource.toLong(),
             resourceHref = locator.href.toString(),
@@ -84,7 +84,7 @@ class BookRepository(
         cover: File,
     ): Long {
         val book = Book(
-            creation = DateTime().toDate().time,
+            creation = Clock.System.now().toEpochMilliseconds(),
             title = publication.metadata.title ?: url.filename,
             author = publication.metadata.authorName,
             href = url.toString(),

@@ -12,17 +12,18 @@ package org.readium.r2.lcp.service
 import android.content.Context
 import android.content.SharedPreferences
 import android.os.Build
-import java.util.*
-import kotlin.time.ExperimentalTime
-import org.joda.time.DateTime
-import org.joda.time.Days
+import androidx.core.content.edit
+import java.util.Base64
+import kotlin.time.Clock
+import kotlin.time.Instant
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.daysUntil
 import org.readium.r2.lcp.BuildConfig.DEBUG
 import org.readium.r2.lcp.LcpError
 import org.readium.r2.lcp.LcpException
 import org.readium.r2.shared.util.getOrElse
 import timber.log.Timber
 
-@OptIn(ExperimentalTime::class)
 internal class CRLService(val network: NetworkService, val context: Context) {
 
     private val preferences: SharedPreferences = context.getSharedPreferences(
@@ -31,9 +32,9 @@ internal class CRLService(val network: NetworkService, val context: Context) {
     )
 
     companion object {
-        const val expiration = 7
-        const val crlKey = "org.readium.r2-lcp-swift.CRL"
-        const val dateKey = "org.readium.r2-lcp-swift.CRLDate"
+        const val EXPIRATION = 7
+        const val CRL_KEY = "org.readium.r2-lcp-swift.CRL"
+        const val DATE_KEY = "org.readium.r2-lcp-swift.CRLDate"
     }
 
     suspend fun retrieve(): String {
@@ -68,19 +69,19 @@ internal class CRLService(val network: NetworkService, val context: Context) {
 
     // Returns (CRL, expired)
     private fun readLocal(): Pair<String?, Boolean> {
-        val crl = preferences.getString(crlKey, null)
-        val date = preferences.getString(dateKey, null)?.let { DateTime(it) }
-        val expired = date?.let { daysSince(date) >= expiration } ?: true
+        val crl = preferences.getString(CRL_KEY, null)
+        val date = preferences.getString(DATE_KEY, null)?.let { Instant.parse(input = it) }
+        val expired = date?.let { daysSince(date) >= EXPIRATION } ?: true
         return Pair(crl, expired)
     }
 
     private fun saveLocal(crl: String): String {
-        preferences.edit().putString(crlKey, crl).apply()
-        preferences.edit().putString(dateKey, DateTime().toString()).apply()
+        preferences.edit { putString(CRL_KEY, crl) }
+        preferences.edit { putString(DATE_KEY, Clock.System.now().toString()) }
         return crl
     }
 
-    private fun daysSince(date: DateTime): Int {
-        return Days.daysBetween(date, DateTime.now()).days
+    private fun daysSince(date: Instant): Int {
+        return date.daysUntil(other = Clock.System.now(), timeZone = TimeZone.currentSystemDefault())
     }
 }

@@ -29,3 +29,17 @@ internal fun File.sha256(): ByteArray? =
         }
         return md.digest()
     }
+
+/**
+ * Returns the SHA-256 sum of the byte array.
+ */
+internal fun ByteArray.sha256(): ByteArray {
+    val md = MessageDigest.getInstance("SHA-256")
+    return md.digest(this)
+}
+
+/**
+ * Returns the SHA-256 sum of the string encoded as a lowercase hex string.
+ */
+internal fun String.sha256Hex(): String =
+    toByteArray().sha256().toHexString()
