@@ -6,6 +6,7 @@
 
 package org.readium.r2.lcp.license.model
 
+import kotlin.time.Instant
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
@@ -16,7 +17,6 @@ import org.junit.runner.RunWith
 import org.readium.r2.lcp.LcpError
 import org.readium.r2.lcp.LcpException
 import org.readium.r2.lcp.license.model.components.lsd.Event
-import org.readium.r2.shared.util.Instant
 import org.readium.r2.shared.util.Url
 import org.robolectric.RobolectricTestRunner
 
