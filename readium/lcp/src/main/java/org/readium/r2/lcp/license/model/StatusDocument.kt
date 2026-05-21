@@ -12,6 +12,7 @@
 package org.readium.r2.lcp.license.model
 
 import java.nio.charset.Charset
+import kotlin.time.Instant
 import org.json.JSONObject
 import org.readium.r2.lcp.LcpError
 import org.readium.r2.lcp.LcpException
@@ -23,7 +24,7 @@ import org.readium.r2.lcp.service.URLParameters
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.extensions.mapNotNull
 import org.readium.r2.shared.extensions.optNullableString
-import org.readium.r2.shared.util.Instant
+import org.readium.r2.shared.extensions.toInstant
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
 
@@ -81,10 +82,10 @@ public class StatusDocument(public val data: ByteArray) {
         )
 
         val updated = json.optJSONObject("updated") ?: JSONObject()
-        licenseUpdated = updated.optNullableString("license")?.let { Instant.parse(it) } ?: throw LcpException(
+        licenseUpdated = updated.optNullableString("license")?.toInstant() ?: throw LcpException(
             LcpError.Parsing.StatusDocument
         )
-        statusUpdated = updated.optNullableString("status")?.let { Instant.parse(it) } ?: throw LcpException(
+        statusUpdated = updated.optNullableString("status")?.toInstant() ?: throw LcpException(
             LcpError.Parsing.StatusDocument
         )
 

@@ -11,6 +11,11 @@ package org.readium.r2.shared.extensions
 
 import android.net.Uri
 import java.security.MessageDigest
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.atStartOfDayIn
+import kotlinx.datetime.toInstant
 import org.json.JSONException
 import org.json.JSONObject
 import org.readium.r2.shared.InternalReadiumApi
@@ -38,6 +43,13 @@ public fun String.addSuffix(suffix: CharSequence): String {
     }
     return this + suffix
 }
+
+@OptIn(InternalReadiumApi::class)
+@InternalReadiumApi
+public fun String.toInstant(): kotlin.time.Instant? =
+    tryOrNull { kotlin.time.Instant.parse(this) }
+        ?: tryOrNull { LocalDateTime.parse(this).toInstant(TimeZone.UTC) }
+        ?: tryOrNull { LocalDate.parse(this).atStartOfDayIn(TimeZone.UTC) }
 
 internal enum class HashAlgorithm(val key: String) {
     MD5("MD5"),

@@ -11,12 +11,17 @@ import androidx.activity.result.ActivityResultCaller
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.browser.customtabs.CustomTabsIntent
 import androidx.fragment.app.FragmentManager
-import com.google.android.material.datepicker.*
+import com.google.android.material.datepicker.CalendarConstraints
+import com.google.android.material.datepicker.CompositeDateValidator
+import com.google.android.material.datepicker.DateValidatorPointBackward
+import com.google.android.material.datepicker.DateValidatorPointForward
+import com.google.android.material.datepicker.MaterialDatePicker
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
+import kotlin.time.Clock
+import kotlin.time.Instant
 import kotlinx.coroutines.suspendCancellableCoroutine
-import org.readium.r2.shared.util.Instant
 import org.readium.r2.shared.util.Url
 
 /**
@@ -38,7 +43,7 @@ public class MaterialRenewListener(
 ) : LcpLicense.RenewListener {
 
     override suspend fun preferredEndDate(maximumDate: Instant?): Instant? = suspendCancellableCoroutine { cont ->
-        val start = (license.license.rights.end ?: Instant.now()).toEpochMilliseconds()
+        val start = (license.license.rights.end ?: Clock.System.now()).toEpochMilliseconds()
         val end = maximumDate?.toEpochMilliseconds()
 
         MaterialDatePicker.Builder.datePicker()
