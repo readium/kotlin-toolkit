@@ -86,6 +86,18 @@ public class PdfiumPreferencesEditor internal constructor(
         )
 
     /**
+     * Indicates whether the pages should scroll continuously. When `false`, page flings snap to
+     * page boundaries (paginated feel).
+     */
+    public val scroll: Preference<Boolean> =
+        PreferenceDelegate(
+            getValue = { preferences.scroll },
+            getEffectiveValue = { state.settings.scroll },
+            getIsEffective = { true },
+            updateValue = { value -> updateValues { it.copy(scroll = value) } }
+        )
+
+    /**
      * Indicates the axis along which pages should be laid out in scroll mode.
      */
     public val scrollAxis: EnumPreference<Axis> =

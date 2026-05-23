@@ -62,6 +62,7 @@ public class PdfiumDocumentFragment internal constructor(
             fit = Fit.WIDTH,
             pageSpacing = 0.0,
             readingProgression = ReadingProgression.LTR,
+            scroll = true,
             scrollAxis = Axis.VERTICAL
         ),
         listener = null
@@ -123,6 +124,8 @@ public class PdfiumDocumentFragment internal constructor(
                 }
                 .swipeHorizontal(settings.scrollAxis == Axis.HORIZONTAL)
                 .spacing(settings.pageSpacing.roundToInt())
+                .pageSnap(!settings.scroll)
+                .pageFling(!settings.scroll)
                 // Customization of [PDFView] is done before setting the listeners,
                 // to avoid overriding them in reading apps, which would break the
                 // navigator.

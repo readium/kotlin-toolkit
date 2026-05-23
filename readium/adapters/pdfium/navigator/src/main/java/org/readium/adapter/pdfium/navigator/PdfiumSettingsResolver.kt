@@ -42,10 +42,16 @@ internal class PdfiumSettingsResolver(
                 ?: defaults.pageSpacing
                 ?: 16.0
 
+        val scroll: Boolean =
+            preferences.scroll
+                ?: defaults.scroll
+                ?: true
+
         return PdfiumSettings(
             fit = fit,
             pageSpacing = pageSpacing,
             readingProgression = readingProgression,
+            scroll = scroll,
             scrollAxis = scrollAxis
         )
     }

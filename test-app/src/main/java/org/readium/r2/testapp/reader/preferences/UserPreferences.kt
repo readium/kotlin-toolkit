@@ -94,6 +94,7 @@ private fun <P : Configurable.Preferences<P>, E : PreferencesEditor<P>> UserPref
                 FixedLayoutUserPreferences(
                     commit = commit,
                     readingProgression = editor.readingProgression,
+                    scroll = editor.scroll,
                     scrollAxis = editor.scrollAxis,
                     fit = editor.fit,
                     pageSpacing = editor.pageSpacing
