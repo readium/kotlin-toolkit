@@ -189,7 +189,7 @@ internal class License private constructor(
             }
 
             val url = link.url(parameters = parameters) as? AbsoluteUrl
-                ?: throw LcpException(LcpError.Parsing.Url(link.rels.firstOrNull() ?: ""))
+                ?: throw LcpException(LcpError.Parsing.Url(link.rels.first()))
 
             return httpClient.fetch(HttpRequest(url, method = HttpRequest.Method.PUT))
                 .map { it.body }

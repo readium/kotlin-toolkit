@@ -122,7 +122,7 @@ public class HttpFetchResponse(
 /**
  * Performs a HEAD request to retrieve only the response headers.
  *
- * This helpers falls back on a GET request with 0-length byte range if the server doesn't support
+ * This helper falls back on a GET request with 0-length byte range if the server doesn't support
  * HEAD requests.
  */
 @ExperimentalReadiumApi
@@ -162,8 +162,8 @@ public suspend fun HttpClient.download(
     request: HttpRequest,
     destination: File,
     onProgress: (Double) -> Unit = {},
-): HttpTry<HttpFetchResponse> =
-    stream(request)
+): Try<HttpResponse, HttpDownloadError> =
+    stream(request).mapFailure { HttpDownloadError.Http(error = it) }
         .flatMap { response ->
             try {
                 withContext(Dispatchers.IO) {
@@ -176,7 +176,7 @@ public suspend fun HttpClient.download(
 
                     response.body.use { input ->
                         FileOutputStream(destination).use { output ->
-                            val buf = ByteArray(2048)
+                            val buf = ByteArray(size = 2048)
                             var n: Int
                             while (-1 != input.read(buf).also { n = it }) {
                                 coroutineContext.ensureActive()
@@ -184,8 +184,8 @@ public suspend fun HttpClient.download(
                                 readLength += n
 
                                 if (expectedLength != null && expectedLength > 0) {
-                                    val progress = (readLength / expectedLength)
-                                        .coerceIn(0.0, 1.0).roundToDecimals(2)
+                                    val progress = (readLength / expectedLength).coerceIn(0.0, 1.0)
+                                        .roundToDecimals(decimals = 2)
                                     if (lastProgress < progress) {
                                         withContext(Dispatchers.Main) {
                                             onProgress(progress)
@@ -197,18 +197,16 @@ public suspend fun HttpClient.download(
                         }
                     }
                 }
-                Try.success(
-                    HttpFetchResponse(response.response, ByteArray(0))
-                )
+                Try.success(success = response.response)
             } catch (e: CancellationException) {
                 throw e
             } catch (e: IOException) {
                 Try.failure(
-                    HttpError.IO(e)
+                    failure = HttpDownloadError.Filesystem(exception = e)
                 )
             } catch (e: Exception) {
                 Try.failure(
-                    HttpError.IO(IOException(e))
+                    failure = HttpDownloadError.Filesystem(exception = e)
                 )
             }
         }

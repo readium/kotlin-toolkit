@@ -74,3 +74,24 @@ public sealed class HttpError(
         }
     }
 }
+
+/**
+ * Represents an error occurring during an HTTP download activity.
+ */
+public sealed class HttpDownloadError(
+    public override val message: String,
+    public override val cause: Error? = null,
+) : Error {
+
+    /** An HTTP error occurred during the download. */
+    public class Http(error: HttpError) : HttpDownloadError(message = error.message, cause = error)
+
+    /** A filesystem error occurred while saving the downloaded resource. */
+    public class Filesystem(cause: Error) : HttpDownloadError(
+        message = "A filesystem error occurred while saving the downloaded resource.",
+        cause = cause
+    ) {
+
+        public constructor(exception: Exception) : this(cause = ThrowableError(throwable = exception))
+    }
+}

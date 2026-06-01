@@ -53,6 +53,7 @@ import org.readium.r2.shared.util.format.FormatSpecification
 import org.readium.r2.shared.util.format.Specification
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.http.HttpClient
+import org.readium.r2.shared.util.http.HttpDownloadError
 import org.readium.r2.shared.util.http.HttpRequest
 import org.readium.r2.shared.util.http.download
 import org.readium.r2.shared.util.mediatype.MediaType
@@ -157,7 +158,7 @@ internal class LicensesService(
     ): LcpService.AcquiredPublication {
         val link = license.link(LicenseDocument.Rel.Publication)!!
         val url = link.url() as? AbsoluteUrl
-            ?: throw LcpException(LcpError.Parsing.Url(link.rels.firstOrNull() ?: ""))
+            ?: throw LcpException(LcpError.Parsing.Url(link.rels.first()))
 
         Timber.i("LCP destination $destination")
 
@@ -165,11 +166,15 @@ internal class LicensesService(
             HttpRequest(url),
             destination,
             onProgress = onProgress
-        ).getOrElse {
-            throw LcpException(LcpError.Network(Exception(it.message)))
+        ).getOrElse { error ->
+            when (error) {
+                is HttpDownloadError.Http -> throw LcpException(LcpError.Network(cause = error.cause))
+
+                is HttpDownloadError.Filesystem -> throw LcpException(LcpError.Unknown(cause = error))
+            }
         }
 
-        val serverMediaType = response.response.mediaType
+        val serverMediaType = response.mediaType
 
         val hashIsCorrect = license.publicationLink.hash
             ?.let { destination.checkSha256(it) }
