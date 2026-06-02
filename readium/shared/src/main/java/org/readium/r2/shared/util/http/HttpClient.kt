@@ -20,6 +20,7 @@ import org.json.JSONObject
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.ThrowableError
 import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.file.FileSystemError
 import org.readium.r2.shared.util.flatMap
 import org.readium.r2.shared.util.tryRecover
 
@@ -174,40 +175,84 @@ public suspend fun HttpClient.download(
 
                     var lastProgress = 0.0
 
-                    response.body.use { input ->
-                        FileOutputStream(destination).use { output ->
-                            val buf = ByteArray(size = 2048)
-                            var n: Int
-                            while (-1 != input.read(buf).also { n = it }) {
-                                coroutineContext.ensureActive()
-                                output.write(buf, 0, n)
-                                readLength += n
+                    try {
+                        FileOutputStream(destination).use { out ->
+                            val inputResult = try {
+                                response.body.use { input ->
+                                    val buf = ByteArray(size = 2048)
+                                    while (true) {
+                                        coroutineContext.ensureActive()
+                                        val n = try {
+                                            input.read(buf)
+                                        } catch (e: Exception) {
+                                            if (e is CancellationException) throw e
+                                            return@withContext Try.failure(
+                                                HttpDownloadError.Http(
+                                                    error = HttpError.IO(
+                                                        exception = e
+                                                    )
+                                                )
+                                            )
+                                        }
 
-                                if (expectedLength != null && expectedLength > 0) {
-                                    val progress = (readLength / expectedLength).coerceIn(0.0, 1.0)
-                                        .roundToDecimals(decimals = 2)
-                                    if (lastProgress < progress) {
-                                        withContext(Dispatchers.Main) {
-                                            onProgress(progress)
+                                        if (n == -1) break
+
+                                        coroutineContext.ensureActive()
+                                        out.write(buf, 0, n)
+
+                                        readLength += n
+
+                                        if (expectedLength != null && expectedLength > 0) {
+                                            val progress =
+                                                (readLength / expectedLength).coerceIn(0.0, 1.0)
+                                                    .roundToDecimals(decimals = 2)
+                                            if (lastProgress < progress) {
+                                                withContext(Dispatchers.Main) {
+                                                    onProgress(progress)
+                                                }
+                                            }
+                                            lastProgress = progress
                                         }
                                     }
-                                    lastProgress = progress
                                 }
+                                Try.success(success = Unit)
+                            } catch (e: Exception) {
+                                if (e is CancellationException) throw e
+                                Try.failure(
+                                    failure = HttpDownloadError.Http(
+                                        error = HttpError.IO(
+                                            exception = e
+                                        )
+                                    )
+                                )
+                            }
+
+                            if (inputResult.isFailure) {
+                                return@withContext inputResult.map { response.response }
                             }
                         }
+                        Try.success(success = response.response)
+                    } catch (e: SecurityException) {
+                        Try.failure(
+                            failure = HttpDownloadError.Filesystem(
+                                error = FileSystemError.Forbidden(
+                                    exception = e
+                                )
+                            )
+                        )
+                    } catch (e: Exception) {
+                        if (e is CancellationException) throw e
+                        Try.failure(
+                            failure = HttpDownloadError.Filesystem(
+                                error = FileSystemError.IO(
+                                    exception = e
+                                )
+                            )
+                        )
                     }
                 }
-                Try.success(success = response.response)
             } catch (e: CancellationException) {
                 throw e
-            } catch (e: IOException) {
-                Try.failure(
-                    failure = HttpDownloadError.Filesystem(exception = e)
-                )
-            } catch (e: Exception) {
-                Try.failure(
-                    failure = HttpDownloadError.Filesystem(exception = e)
-                )
             }
         }
 
