@@ -14,6 +14,7 @@ import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.util.Error
 import org.readium.r2.shared.util.ThrowableError
 import org.readium.r2.shared.util.data.AccessError
+import org.readium.r2.shared.util.file.FileSystemError
 import org.readium.r2.shared.util.mediatype.MediaType
 
 /**
@@ -87,11 +88,8 @@ public sealed class HttpDownloadError(
     public class Http(error: HttpError) : HttpDownloadError(message = error.message, cause = error)
 
     /** A filesystem error occurred while saving the downloaded resource. */
-    public class Filesystem(cause: Error) : HttpDownloadError(
-        message = "A filesystem error occurred while saving the downloaded resource.",
-        cause = cause
-    ) {
-
-        public constructor(exception: Exception) : this(cause = ThrowableError(throwable = exception))
-    }
+    public class Filesystem(public val error: FileSystemError) : HttpDownloadError(
+        message = error.message,
+        cause = error
+    )
 }
