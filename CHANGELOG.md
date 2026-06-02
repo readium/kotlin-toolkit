@@ -4,7 +4,17 @@ All notable changes to this project will be documented in this file. Take a look
 
 **Warning:** Features marked as *experimental* may change or be removed in a future release without notice. Use with caution.
 
-## [Unreleased]
+<!-- ## [Unreleased] -->
+
+## [3.3.0] - 2026-06-02
+
+### Deprecated
+
+#### Shared
+
+* The `Instant` utility class is deprecated in favor of `kotlin.time.Instant`. Use `Clock.System.now()` to get the current time.
+    * **Note**: `kotlin.time.Instant` does not implement `Parcelable`. If you were passing `Instant` via Intents or Bundles, you must now pass `Long` primitives using `toEpochMilliseconds()` and reconstruct the instant with `kotlin.time.Instant.fromEpochMilliseconds()`.
+    * **Note**: `kotlin.time.Instant.parse()` only accepts ISO-8601 strings with a UTC offset. If you were relying on `Instant.parse()` to handle date-only strings (e.g. `"2020-12-09"`) or strings without a timezone offset (e.g. `"2020-12-09T09:16:56"`), you must handle these formats manually before parsing.
 
 ### Fixed
 
@@ -42,9 +52,6 @@ All notable changes to this project will be documented in this file. Take a look
 #### Shared
 
 * The Presentation Hints properties are deprecated from the Readium Web Publication Manifest models. [See the official documentation](https://readium.org/webpub-manifest/profiles/epub.html#appendix-b---deprecated-properties).
-* The `Instant` utility class is deprecated in favor of `kotlin.time.Instant`. Use `Clock.System.now()` to get the current time.
-    * **Note**: `kotlin.time.Instant` does not implement `Parcelable`. If you were passing `Instant` via Intents or Bundles, you must now pass `Long` primitives using `toEpochMilliseconds()` and reconstruct the instant with `kotlin.time.Instant.fromEpochMilliseconds()`.
-    * **Note**: `kotlin.time.Instant.parse()` only accepts ISO-8601 strings with a UTC offset. If you were relying on `Instant.parse()` to handle date-only strings (e.g. `"2020-12-09"`) or strings without a timezone offset (e.g. `"2020-12-09T09:16:56"`), you must handle these formats manually before parsing.
 
 ### Fixed
 
@@ -1038,3 +1045,4 @@ progression. Now if no reading progression is set, the `effectiveReadingProgress
 [3.1.1]: https://github.com/readium/kotlin-toolkit/compare/3.1.0...3.1.1
 [3.1.2]: https://github.com/readium/kotlin-toolkit/compare/3.1.1...3.1.2
 [3.2.0]: https://github.com/readium/kotlin-toolkit/compare/3.1.2...3.2.0
+[3.3.0]: https://github.com/readium/kotlin-toolkit/compare/3.2.0...3.3.0
