@@ -85,11 +85,12 @@ public sealed class HttpDownloadError(
 ) : Error {
 
     /** An HTTP error occurred during the download. */
-    public class Http(error: HttpError) : HttpDownloadError(message = error.message, cause = error)
+    public class Http(
+        public override val cause: HttpError,
+    ) : HttpDownloadError("An HTTP error occurred during the download. ", cause)
 
     /** A filesystem error occurred while saving the downloaded resource. */
-    public class Filesystem(public val error: FileSystemError) : HttpDownloadError(
-        message = error.message,
-        cause = error
-    )
+    public class Filesystem(
+        public override val cause: FileSystemError,
+    ) : HttpDownloadError("A filesystem error occurred while saving the downloaded resource.", cause)
 }

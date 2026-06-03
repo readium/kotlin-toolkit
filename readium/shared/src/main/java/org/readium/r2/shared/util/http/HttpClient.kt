@@ -4,20 +4,24 @@
  * available in the top-level LICENSE file of the project.
  */
 
+@file:OptIn(InternalReadiumApi::class)
+
 package org.readium.r2.shared.util.http
 
 import java.io.File
+import java.io.FileNotFoundException
 import java.io.FileOutputStream
 import java.io.IOException
 import java.io.InputStream
 import java.nio.charset.Charset
-import kotlin.math.round
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import org.readium.r2.shared.ExperimentalReadiumApi
+import org.readium.r2.shared.InternalReadiumApi
+import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.util.ThrowableError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.file.FileSystemError
@@ -164,100 +168,84 @@ public suspend fun HttpClient.download(
     destination: File,
     onProgress: (Double) -> Unit = {},
 ): Try<HttpResponse, HttpDownloadError> =
-    stream(request).mapFailure { HttpDownloadError.Http(error = it) }
+    stream(request)
+        .mapFailure {
+            HttpDownloadError.Http(cause = it)
+        }
         .flatMap { response ->
-            try {
-                withContext(Dispatchers.IO) {
-                    coroutineContext.ensureActive()
+            val expectedLength = response.response.contentLength
+                ?.toDouble()
+                ?.takeIf { it > 0 }
 
-                    var readLength = 0L
-                    val expectedLength = response.response.contentLength?.toDouble()
-
-                    var lastProgress = 0.0
-
-                    try {
-                        FileOutputStream(destination).use { out ->
-                            val inputResult = try {
-                                response.body.use { input ->
-                                    val buf = ByteArray(size = 2048)
-                                    while (true) {
-                                        coroutineContext.ensureActive()
-                                        val n = try {
-                                            input.read(buf)
-                                        } catch (e: Exception) {
-                                            if (e is CancellationException) throw e
-                                            return@withContext Try.failure(
-                                                HttpDownloadError.Http(
-                                                    error = HttpError.IO(
-                                                        exception = e
-                                                    )
-                                                )
-                                            )
-                                        }
-
-                                        if (n == -1) break
-
-                                        coroutineContext.ensureActive()
-                                        out.write(buf, 0, n)
-
-                                        readLength += n
-
-                                        if (expectedLength != null && expectedLength > 0) {
-                                            val progress =
-                                                (readLength / expectedLength).coerceIn(0.0, 1.0)
-                                                    .roundToDecimals(decimals = 2)
-                                            if (lastProgress < progress) {
-                                                withContext(Dispatchers.Main) {
-                                                    onProgress(progress)
-                                                }
-                                            }
-                                            lastProgress = progress
-                                        }
-                                    }
-                                }
-                                Try.success(success = Unit)
-                            } catch (e: Exception) {
-                                if (e is CancellationException) throw e
-                                Try.failure(
-                                    failure = HttpDownloadError.Http(
-                                        error = HttpError.IO(
-                                            exception = e
-                                        )
-                                    )
-                                )
-                            }
-
-                            if (inputResult.isFailure) {
-                                return@withContext inputResult.map { response.response }
-                            }
+            response.body.use {
+                it.copy(
+                    destination = destination,
+                    onProgress = { readLength ->
+                        if (expectedLength != null) {
+                            val progress = (readLength / expectedLength).coerceIn(0.0, 1.0)
+                            onProgress(progress)
                         }
-                        Try.success(success = response.response)
-                    } catch (e: SecurityException) {
-                        Try.failure(
-                            failure = HttpDownloadError.Filesystem(
-                                error = FileSystemError.Forbidden(
-                                    exception = e
-                                )
-                            )
-                        )
-                    } catch (e: Exception) {
-                        if (e is CancellationException) throw e
-                        Try.failure(
-                            failure = HttpDownloadError.Filesystem(
-                                error = FileSystemError.IO(
-                                    exception = e
-                                )
-                            )
-                        )
                     }
+                ).map {
+                    response.response
                 }
-            } catch (e: CancellationException) {
-                throw e
             }
         }
 
-private fun Double.roundToDecimals(decimals: Int): Double {
-    var multiplier = 1.0
-    repeat(decimals) { multiplier *= 10 }
-    return round(this * multiplier) / multiplier
-}
+private suspend fun InputStream.copy(
+    destination: File,
+    onProgress: (Long) -> Unit = {},
+): Try<Unit, HttpDownloadError> =
+    withContext(Dispatchers.IO) {
+        try {
+            FileOutputStream(destination).use { out ->
+                val buf = ByteArray(size = DEFAULT_BUFFER_SIZE)
+                var readMore = true
+                var totalRead = 0L
+
+                while (readMore) {
+                    currentCoroutineContext().ensureActive()
+                    val justRead = try {
+                        read(buf)
+                    } catch (e: IOException) {
+                        tryOrLog {
+                            destination.delete()
+                        }
+                        return@withContext Try.failure(
+                            HttpDownloadError.Http(HttpError.IO(e))
+                        )
+                    }
+
+                    if (justRead != -1) {
+                        totalRead += justRead
+
+                        coroutineContext.ensureActive()
+                        out.write(buf, 0, justRead)
+                    }
+
+                    withContext(Dispatchers.Main) {
+                        onProgress(totalRead)
+                    }
+
+                    readMore = justRead != -1
+                }
+            }
+        } catch (e: SecurityException) {
+            Try.failure(
+                HttpDownloadError.Filesystem(FileSystemError.Forbidden(e))
+            )
+        } catch (e: FileNotFoundException) {
+            Try.failure(
+                HttpDownloadError.Filesystem(FileSystemError.FileNotFound(e))
+            )
+        } catch (e: IOException) {
+            tryOrLog {
+                destination.delete()
+            }
+            Try.failure(
+                HttpDownloadError.Filesystem(FileSystemError.IO(e))
+            )
+        }
+
+        Try.success(Unit)
+    }
