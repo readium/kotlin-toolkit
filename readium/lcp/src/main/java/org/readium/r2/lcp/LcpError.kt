@@ -242,7 +242,6 @@ public sealed class LcpError(
         internal fun wrap(e: Exception): LcpError = when (e) {
             is LcpException -> e.error
             is SocketTimeoutException -> Network(e)
-            is java.io.IOException -> Network(e)
             is CancellationException -> throw e
             else -> Unknown(e)
         }
