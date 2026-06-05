@@ -108,8 +108,14 @@ public class WebViewScrollController(
         orientation: Orientation,
         direction: LayoutDirection,
     ) {
-        check(webView.height != 0)
-        check(webView.width != 0)
+        if (webView.height == 0 || webView.width == 0) {
+            // Two possible reasons:
+            // - Either the WebView has resized itself to 0 since the JS callback. In that case,
+            // a new callback will be fired and everythings's fine.
+            // - Or invokeOnWebViewUpToDate is not good enough and the native code has not been informed
+            // yet about the resizing when moveToProgression is called.
+            return
+        }
 
         webView.scrollToProgression(
             progression = progression,

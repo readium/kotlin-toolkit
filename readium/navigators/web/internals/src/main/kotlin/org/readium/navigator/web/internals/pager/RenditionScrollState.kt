@@ -183,7 +183,9 @@ public class RenditionScrollState(
             return
         }
 
-        val scrollController = pageStates[index].scrollController.value!!
+        val scrollController = pageStates[index].scrollController.value
+            ?: return // WebView has been disposed
+
         val scrolled = scrollController.scrollToMax(orientation)
         if (scrolled > 0) {
             dispatchRawDelta(scrolled.toFloat())
