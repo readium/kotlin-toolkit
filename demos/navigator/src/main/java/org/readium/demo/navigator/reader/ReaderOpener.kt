@@ -23,9 +23,10 @@ import org.readium.demo.navigator.persistence.LocatorRepository
 import org.readium.demo.navigator.preferences.PreferencesManager
 import org.readium.navigator.common.DecorationController
 import org.readium.navigator.common.DecorationLocation
+import org.readium.navigator.common.Preferences
+import org.readium.navigator.common.PreferencesController
 import org.readium.navigator.common.PreferencesEditor
 import org.readium.navigator.common.Settings
-import org.readium.navigator.common.SettingsController
 import org.readium.navigator.web.fixedlayout.FixedWebGoLocation
 import org.readium.navigator.web.fixedlayout.FixedWebLocation
 import org.readium.navigator.web.fixedlayout.FixedWebRenditionController
@@ -67,7 +68,7 @@ class ReaderOpener(
     private val publicationOpener =
         PublicationOpener(publicationParser)
 
-    suspend fun open(url: AbsoluteUrl): Try<ReaderState<*, *, *, *>, Error> {
+    suspend fun open(url: AbsoluteUrl): Try<ReaderState<*, *, *, *, *>, Error> {
         val asset = assetRetriever.retrieve(url)
             .getOrElse { return Try.failure(it) }
 
@@ -99,7 +100,7 @@ class ReaderOpener(
         url: AbsoluteUrl,
         publication: Publication,
         initialLocator: Locator?,
-    ): Try<ReaderState<ReflowableWebLocation, ReflowableWebGoLocation, ReflowableWebSelectionLocation, ReflowableWebRenditionController>, Error>? {
+    ): Try<ReaderState<ReflowableWebLocation, ReflowableWebGoLocation, ReflowableWebSelectionLocation, ReflowableWebPreferences, ReflowableWebRenditionController>, Error>? {
         val navigatorFactory = ReflowableWebRenditionFactory(
             application = application,
             publication = publication,
@@ -121,7 +122,7 @@ class ReaderOpener(
             .launchIn(coroutineScope)
 
         val renditionState = navigatorFactory.createRenditionState(
-            initialSettings = preferencesEditor.settings,
+            initialPreferences = preferencesEditor.preferences,
             initialLocation = initialLocation
         ).getOrElse {
             return Try.failure(it)
@@ -130,7 +131,7 @@ class ReaderOpener(
         val highlightsManager = ReflowableWebHighlightsManager()
 
         val onControllerAvailable: (ReflowableWebRenditionController) -> Unit = { controller ->
-            applySettings(coroutineScope, controller, preferencesEditor)
+            applyPreferences(coroutineScope, controller, preferencesEditor)
             applyHighlightDecorations(coroutineScope, controller, highlightsManager)
 
             publication.pageNumberDecorations
@@ -158,7 +159,7 @@ class ReaderOpener(
         url: AbsoluteUrl,
         publication: Publication,
         initialLocator: Locator?,
-    ): Try<ReaderState<FixedWebLocation, FixedWebGoLocation, FixedWebSelectionLocation, FixedWebRenditionController>, Error>? {
+    ): Try<ReaderState<FixedWebLocation, FixedWebGoLocation, FixedWebSelectionLocation, FixedWebPreferences, FixedWebRenditionController>, Error>? {
         val navigatorFactory = FixedWebRenditionFactory(
             application = application,
             publication = publication,
@@ -180,7 +181,7 @@ class ReaderOpener(
             .launchIn(coroutineScope)
 
         val renditionState = navigatorFactory.createRenditionState(
-            initialSettings = preferencesEditor.settings,
+            initialPreferences = preferencesEditor.preferences,
             initialLocation = initialLocation
         ).getOrElse {
             return Try.failure(it)
@@ -189,7 +190,7 @@ class ReaderOpener(
         val highlightsManager = FixedWebHighlightsManager()
 
         val onControllerAvailable: (FixedWebRenditionController) -> Unit = { controller ->
-            applySettings(coroutineScope, controller, preferencesEditor)
+            applyPreferences(coroutineScope, controller, preferencesEditor)
             applyHighlightDecorations(coroutineScope, controller, highlightsManager)
         }
 
@@ -209,13 +210,13 @@ class ReaderOpener(
         return Try.success(readerState)
     }
 
-    private fun <S : Settings> applySettings(
+    private fun <P : Preferences<P>, S : Settings> applyPreferences(
         coroutineScope: CoroutineScope,
-        settingsController: SettingsController<S>,
-        preferencesEditor: PreferencesEditor<*, S>,
+        preferencesController: PreferencesController<P, S>,
+        preferencesEditor: PreferencesEditor<P, S>,
     ) {
-        snapshotFlow { preferencesEditor.settings }
-            .onEach { settingsController.settings = it }
+        snapshotFlow { preferencesEditor.preferences }
+            .onEach { preferencesController.preferences = it }
             .launchIn(coroutineScope)
     }
 

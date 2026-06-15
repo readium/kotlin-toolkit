@@ -11,6 +11,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import org.readium.navigator.common.PreferencesEditor
+import org.readium.navigator.web.reflowable.ReflowableWebPublication
 import org.readium.navigator.web.reflowable.css.ReadiumCssLayout
 import org.readium.r2.navigator.extensions.format
 import org.readium.r2.navigator.preferences.Color
@@ -30,7 +31,6 @@ import org.readium.r2.navigator.preferences.ReadingProgression
 import org.readium.r2.navigator.preferences.TextAlign
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.InternalReadiumApi
-import org.readium.r2.shared.publication.Metadata
 import org.readium.r2.shared.util.Language
 
 /**
@@ -48,7 +48,7 @@ import org.readium.r2.shared.util.Language
 @Stable
 public class ReflowableWebPreferencesEditor internal constructor(
     initialPreferences: ReflowableWebPreferences,
-    publicationMetadata: Metadata,
+    publicationMetadata: ReflowableWebPublication.Metadata,
     defaults: ReflowableWebDefaults,
 ) : PreferencesEditor<ReflowableWebPreferences, ReflowableWebSettings> {
 

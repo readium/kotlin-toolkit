@@ -13,6 +13,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import org.readium.navigator.common.PreferencesEditor
+import org.readium.navigator.web.fixedlayout.FixedWebPublication
 import org.readium.r2.navigator.preferences.EnumPreference
 import org.readium.r2.navigator.preferences.EnumPreferenceDelegate
 import org.readium.r2.navigator.preferences.Fit
@@ -37,7 +38,7 @@ import org.readium.r2.shared.publication.Metadata
 @Stable
 public class FixedWebPreferencesEditor internal constructor(
     initialPreferences: FixedWebPreferences,
-    publicationMetadata: Metadata,
+    publicationMetadata: FixedWebPublication.Metadata,
     defaults: FixedWebDefaults,
 ) : PreferencesEditor<FixedWebPreferences, FixedWebSettings> {
 

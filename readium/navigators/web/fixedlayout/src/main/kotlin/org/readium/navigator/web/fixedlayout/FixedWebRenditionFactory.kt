@@ -12,7 +12,6 @@ import org.readium.navigator.web.fixedlayout.FixedWebPublication.ReadingOrder
 import org.readium.navigator.web.fixedlayout.preferences.FixedWebDefaults
 import org.readium.navigator.web.fixedlayout.preferences.FixedWebPreferences
 import org.readium.navigator.web.fixedlayout.preferences.FixedWebPreferencesEditor
-import org.readium.navigator.web.fixedlayout.preferences.FixedWebSettings
 import org.readium.navigator.web.internals.server.WebViewServer
 import org.readium.navigator.web.internals.webapi.FixedDoubleAreaApi
 import org.readium.navigator.web.internals.webapi.FixedSingleAreaApi
@@ -82,7 +81,7 @@ public class FixedWebRenditionFactory private constructor(
     }
 
     public suspend fun createRenditionState(
-        initialSettings: FixedWebSettings,
+        initialPreferences: FixedWebPreferences,
         initialLocation: FixedWebGoLocation? = null,
         readingOrder: List<Link> = publication.readingOrder,
     ): Try<FixedWebRenditionState, Error> {
@@ -103,8 +102,14 @@ public class FixedWebRenditionFactory private constructor(
             )
         }
 
+        val metadata = FixedWebPublication.Metadata(
+            readingProgression = publication.metadata.readingProgression,
+            language = publication.metadata.language
+        )
+
         val renditionPublication = FixedWebPublication(
             readingOrder = ReadingOrder(readingOrderItems),
+            metadata = metadata,
             otherResources = resourceItems,
             container = publication.container,
             baseUrl = publication.baseUrl,
@@ -120,7 +125,7 @@ public class FixedWebRenditionFactory private constructor(
             FixedWebRenditionState(
                 application = application,
                 publication = renditionPublication,
-                initialSettings = initialSettings,
+                initialPreferences = initialPreferences,
                 initialLocation = initialLocation,
                 configuration = configuration,
                 preloadedData = preloads,
@@ -157,10 +162,16 @@ public class FixedWebRenditionFactory private constructor(
     public fun createPreferencesEditor(
         initialPreferences: FixedWebPreferences,
         defaults: FixedWebDefaults = FixedWebDefaults(),
-    ): FixedWebPreferencesEditor =
-        FixedWebPreferencesEditor(
+    ): FixedWebPreferencesEditor {
+        val metadata = FixedWebPublication.Metadata(
+            readingProgression = publication.metadata.readingProgression,
+            language = publication.metadata.language
+        )
+
+        return FixedWebPreferencesEditor(
             initialPreferences,
-            publication.metadata,
+            metadata,
             defaults
         )
+    }
 }

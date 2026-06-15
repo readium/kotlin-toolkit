@@ -80,7 +80,7 @@ public class ReflowableWebRenditionFactory private constructor(
     }
 
     public suspend fun createRenditionState(
-        initialSettings: ReflowableWebSettings,
+        initialPreferences: ReflowableWebPreferences,
         initialLocation: ReflowableWebGoLocation? = null,
         readingOrder: List<Link> = publication.readingOrder,
         positionsService: PositionsService = this.positionsService,
@@ -104,8 +104,14 @@ public class ReflowableWebRenditionFactory private constructor(
             )
         }
 
+        val metadata = ReflowableWebPublication.Metadata(
+            readingProgression = publication.metadata.readingProgression,
+            language = publication.metadata.language
+        )
+
         val renditionPublication = ReflowableWebPublication(
             readingOrder = ReflowableWebPublication.ReadingOrder(readingOrderItems, positionNumbers),
+            metadata = metadata,
             otherResources = resourceItems,
             container = publication.container,
             baseUrl = publication.baseUrl,
@@ -118,7 +124,7 @@ public class ReflowableWebRenditionFactory private constructor(
             ReflowableWebRenditionState(
                 application = application,
                 publication = renditionPublication,
-                initialSettings = initialSettings,
+                initialPreferences = initialPreferences,
                 initialLocation = initialLocation,
                 configuration = configuration,
                 disableSelection = publication.isProtected
@@ -130,10 +136,16 @@ public class ReflowableWebRenditionFactory private constructor(
     public fun createPreferencesEditor(
         initialPreferences: ReflowableWebPreferences,
         defaults: ReflowableWebDefaults = ReflowableWebDefaults(),
-    ): ReflowableWebPreferencesEditor =
-        ReflowableWebPreferencesEditor(
+    ): ReflowableWebPreferencesEditor {
+        val metadata = ReflowableWebPublication.Metadata(
+            readingProgression = publication.metadata.readingProgression,
+            language = publication.metadata.language
+        )
+
+        return ReflowableWebPreferencesEditor(
             initialPreferences,
-            publication.metadata,
+            metadata,
             defaults
         )
+    }
 }
