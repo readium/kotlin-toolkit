@@ -1,8 +1,8 @@
 [versions]
 
 # Keep compatibility with https://kotlinlang.org/docs/multiplatform/multiplatform-compatibility-guide.html#version-compatibility
-kotlin = "2.3.20"
-agp = "9.0.0"
+kotlin = "2.4.0"
+agp = "9.2.1"
 
 desugar_jdk_libs = "2.1.5"
 gradle-maven-publish-plugin = "0.32.0"
@@ -14,43 +14,44 @@ androidx-browser = "1.10.0"
 androidx-cardview = "1.0.0"
 
 # Keep compatibility with https://kotlinlang.org/docs/multiplatform/compose-compatibility-and-versioning.html#jetpack-compose-artifacts-used
-androidx-compose-animation = "1.10.5"
-androidx-compose-foundation = "1.10.5"
-androidx-compose-material = "1.10.5"
-androidx-compose-runtime = "1.10.5"
-androidx-compose-ui = "1.10.5"
+androidx-compose-animation = "1.11.2"
+androidx-compose-foundation = "1.11.2"
+androidx-compose-material = "1.11.2"
+androidx-compose-runtime = "1.11.2"
+androidx-compose-ui = "1.11.2"
 
 androidx-compose-material3 = "1.4.0"
 androidx-constraintlayout = "2.2.1"
-androidx-core = "1.18.0"
+androidx-core = "1.19.0"
 androidx-datastore = "1.2.1"
 androidx-fragment-ktx = "1.8.9"
 androidx-legacy = "1.0.0"
 androidx-lifecycle = "2.10.0"
-androidx-media3 = "1.10.0"
-androidx-navigation = "2.9.7"
-androidx-paging = "3.4.2"
+androidx-media3 = "1.10.1"
+androidx-navigation = "2.9.8"
+androidx-paging = "3.5.0"
 androidx-recyclerview = "1.4.0"
 androidx-room = "2.8.4"
 androidx-viewpager2 = "1.1.0"
+# Do not update until minSdk is 24
 androidx-webkit = "1.15.0"
 
 assertj = "3.27.7"
 
 dokka = "2.2.0"
 
-google-material = "1.13.0"
+google-material = "1.14.0"
 
 jsoup = "1.22.2"
 junit = "4.13.2"
 
-kotlinx-coroutines = "1.10.2"
-kotlinx-coroutines-test = "1.10.2"
-kotlinx-datetime = "0.7.1"
-kotlinx-serialization-json = "1.10.0"
-kotlinx-collections-immutable = "0.4.0"
+kotlinx-coroutines = "1.11.0"
+kotlinx-coroutines-test = "1.11.0"
+kotlinx-datetime = "0.8.0"
+kotlinx-serialization-json = "1.11.0"
+kotlinx-collections-immutable = "0.5.0"
 
-ksp = "2.3.4"
+ksp = "2.3.9"
 
 ktlint = "14.2.0"
 
@@ -62,7 +63,7 @@ picasso = "2.8"
 pspdfkit = "8.4.1"
 
 robolectric = "4.16.1"
-mockk = "1.14.9"
+mockk = "1.14.11"
 
 timber = "5.0.1"
 
