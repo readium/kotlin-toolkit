@@ -20,7 +20,6 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowInsets
-import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.LinearLayout
@@ -45,6 +44,8 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -518,13 +519,12 @@ abstract class VisualReaderFragment : BaseReaderFragment() {
                 .create()
 
             fun dismiss() {
+                alert.window?.let { window ->
+                    WindowCompat.getInsetsController(window, note).hide(WindowInsetsCompat.Type.ime())
+                }
+
                 alert.dismiss()
                 mode?.finish()
-                (activity.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager)
-                    .hideSoftInputFromWindow(
-                        note.applicationWindowToken,
-                        InputMethodManager.HIDE_NOT_ALWAYS
-                    )
             }
 
             with(view) {
