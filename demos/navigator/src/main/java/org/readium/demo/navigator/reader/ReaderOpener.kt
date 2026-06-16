@@ -115,18 +115,18 @@ class ReaderOpener(
 
         val preferencesManager = PreferencesManager(initialPreferences)
 
+        val renditionState = navigatorFactory.createRenditionState(
+            initialPreferences = initialPreferences,
+            initialLocation = initialLocation
+        ).getOrElse {
+            return Try.failure(it)
+        }
+
         val preferencesEditor = navigatorFactory.createPreferencesEditor(initialPreferences)
 
         snapshotFlow { preferencesEditor.preferences }
             .onEach { preferencesManager.setPreferences(it) }
             .launchIn(coroutineScope)
-
-        val renditionState = navigatorFactory.createRenditionState(
-            initialPreferences = preferencesEditor.preferences,
-            initialLocation = initialLocation
-        ).getOrElse {
-            return Try.failure(it)
-        }
 
         val highlightsManager = ReflowableWebHighlightsManager()
 
@@ -174,18 +174,18 @@ class ReaderOpener(
 
         val preferencesManager = PreferencesManager(initialPreferences)
 
+        val renditionState = navigatorFactory.createRenditionState(
+            initialPreferences = initialPreferences,
+            initialLocation = initialLocation
+        ).getOrElse {
+            return Try.failure(it)
+        }
+
         val preferencesEditor = navigatorFactory.createPreferencesEditor(initialPreferences)
 
         snapshotFlow { preferencesEditor.preferences }
             .onEach { preferencesManager.setPreferences(it) }
             .launchIn(coroutineScope)
-
-        val renditionState = navigatorFactory.createRenditionState(
-            initialPreferences = preferencesEditor.preferences,
-            initialLocation = initialLocation
-        ).getOrElse {
-            return Try.failure(it)
-        }
 
         val highlightsManager = FixedWebHighlightsManager()
 

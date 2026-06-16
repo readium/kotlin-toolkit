@@ -21,6 +21,8 @@ import org.readium.r2.navigator.preferences.EnumPreferenceDelegate
 import org.readium.r2.navigator.preferences.FontFamily
 import org.readium.r2.navigator.preferences.ImageFilter
 import org.readium.r2.navigator.preferences.IntIncrement
+import org.readium.r2.navigator.preferences.OptionalBooleanPreference
+import org.readium.r2.navigator.preferences.OptionalBooleanPreferenceDelegate
 import org.readium.r2.navigator.preferences.OptionalRangePreference
 import org.readium.r2.navigator.preferences.OptionalRangePreferenceDelegate
 import org.readium.r2.navigator.preferences.Preference
@@ -137,15 +139,16 @@ public class ReflowableWebPreferencesEditor internal constructor(
      * If you want to change the boldness of all text, including headers, you can use this with
      * [textNormalization].
      */
-    public val fontWeight: RangePreference<Double> =
-        RangePreferenceDelegate(
+    public val fontWeight: OptionalRangePreference<Double> =
+        OptionalRangePreferenceDelegate(
             getValue = { preferences.fontWeight },
-            getEffectiveValue = { state.settings.fontWeight ?: 1.0 },
-            getIsEffective = { true },
+            getEffectiveValue = { state.settings.fontWeight },
+            getIsEffective = { state.settings.fontWeight != null },
             updateValue = { value -> updateValues { it.copy(fontWeight = value) } },
             valueFormatter = percentFormatter(),
             supportedRange = 0.0..2.5,
-            progressionStrategy = DoubleIncrement(0.25)
+            progressionStrategy = DoubleIncrement(0.25),
+            defaultValue = 1.0
         )
 
     /**
@@ -153,15 +156,16 @@ public class ReflowableWebPreferencesEditor internal constructor(
      *
      * Only effective when the layout is LTR.
      */
-    public val hyphens: Preference<Boolean> =
-        PreferenceDelegate(
+    public val hyphens: OptionalBooleanPreference =
+        OptionalBooleanPreferenceDelegate(
             getValue = { preferences.hyphens },
-            getEffectiveValue = {
-                state.settings.hyphens
-                    ?: (state.settings.textAlign == TextAlign.JUSTIFY)
+            getEffectiveValue = { state.settings.hyphens },
+            getIsEffective = {
+                state.settings.hyphens != null &&
+                    state.layout.stylesheets == ReadiumCssLayout.Stylesheets.Default
             },
-            getIsEffective = { state.layout.stylesheets == ReadiumCssLayout.Stylesheets.Default },
-            updateValue = { value -> updateValues { it.copy(hyphens = value) } }
+            updateValue = { value -> updateValues { it.copy(hyphens = value) } },
+            defaultValue = false
         )
 
     /**
@@ -194,15 +198,19 @@ public class ReflowableWebPreferencesEditor internal constructor(
      *
      * Only effective when the layout is LTR.
      */
-    public val letterSpacing: RangePreference<Double> =
-        RangePreferenceDelegate(
+    public val letterSpacing: OptionalRangePreference<Double> =
+        OptionalRangePreferenceDelegate(
             getValue = { preferences.letterSpacing },
-            getEffectiveValue = { state.settings.letterSpacing ?: 0.0 },
-            getIsEffective = { state.layout.stylesheets == ReadiumCssLayout.Stylesheets.Default },
+            getEffectiveValue = { state.settings.letterSpacing },
+            getIsEffective = {
+                state.settings.letterSpacing != null &&
+                    state.layout.stylesheets == ReadiumCssLayout.Stylesheets.Default
+            },
             updateValue = { value -> updateValues { it.copy(letterSpacing = value) } },
             supportedRange = 0.0..1.0,
             progressionStrategy = DoubleIncrement(0.1),
-            valueFormatter = percentFormatter()
+            valueFormatter = percentFormatter(),
+            defaultValue = 0.0
         )
 
     /**
@@ -210,26 +218,31 @@ public class ReflowableWebPreferencesEditor internal constructor(
      *
      * Only effective when the layout is RTL.
      */
-    public val ligatures: Preference<Boolean> =
-        PreferenceDelegate(
+    public val ligatures: OptionalBooleanPreference =
+        OptionalBooleanPreferenceDelegate(
             getValue = { preferences.ligatures },
-            getEffectiveValue = { state.settings.ligatures == true },
-            getIsEffective = { state.layout.stylesheets == ReadiumCssLayout.Stylesheets.Rtl },
-            updateValue = { value -> updateValues { it.copy(ligatures = value) } }
+            getEffectiveValue = { state.settings.ligatures },
+            getIsEffective = {
+                state.settings.ligatures != null &&
+                    state.layout.stylesheets == ReadiumCssLayout.Stylesheets.Rtl
+            },
+            updateValue = { value -> updateValues { it.copy(ligatures = value) } },
+            defaultValue = false
         )
 
     /**
      * Leading line height.
      */
-    public val lineHeight: RangePreference<Double> =
-        RangePreferenceDelegate(
+    public val lineHeight: OptionalRangePreference<Double> =
+        OptionalRangePreferenceDelegate(
             getValue = { preferences.lineHeight },
-            getEffectiveValue = { state.settings.lineHeight ?: 1.2 },
-            getIsEffective = { true },
+            getEffectiveValue = { state.settings.lineHeight },
+            getIsEffective = { state.settings.lineHeight != null },
             updateValue = { value -> updateValues { it.copy(lineHeight = value) } },
             supportedRange = 1.0..2.0,
             progressionStrategy = DoubleIncrement(0.1),
-            valueFormatter = { it.format(5) }
+            valueFormatter = { it.format(5) },
+            defaultValue = 1.2
         )
 
     /**
@@ -252,7 +265,7 @@ public class ReflowableWebPreferencesEditor internal constructor(
         OptionalRangePreferenceDelegate(
             getValue = { preferences.maximalLineLength },
             getEffectiveValue = { state.settings.maximalLineLength },
-            getIsEffective = { scroll.value != true },
+            getIsEffective = { state.settings.maximalLineLength != null && scroll.value != true },
             updateValue = { value -> updateValues { it.copy(maximalLineLength = value) } },
             defaultValue = 1.0,
             supportedRange = 0.5..2.0,
@@ -269,7 +282,7 @@ public class ReflowableWebPreferencesEditor internal constructor(
         OptionalRangePreferenceDelegate(
             getValue = { preferences.minimalLineLength },
             getEffectiveValue = { state.settings.minimalLineLength },
-            getIsEffective = { scroll.value != true },
+            getIsEffective = { state.settings.minimalLineLength != null && scroll.value != true },
             updateValue = { value -> updateValues { it.copy(minimalLineLength = value) } },
             defaultValue = 1.0,
             supportedRange = 0.5..2.0,
@@ -334,29 +347,31 @@ public class ReflowableWebPreferencesEditor internal constructor(
      *
      * Only effective when the layout is LTR or RTL.
      */
-    public val paragraphIndent: RangePreference<Double> =
-        RangePreferenceDelegate(
+    public val paragraphIndent: OptionalRangePreference<Double> =
+        OptionalRangePreferenceDelegate(
             getValue = { preferences.paragraphIndent },
-            getEffectiveValue = { state.settings.paragraphIndent ?: 0.0 },
+            getEffectiveValue = { state.settings.paragraphIndent },
             getIsEffective = ::isParagraphIndentEffective,
             updateValue = { value -> updateValues { it.copy(paragraphIndent = value) } },
             supportedRange = 0.0..3.0,
             progressionStrategy = DoubleIncrement(0.2),
-            valueFormatter = percentFormatter()
+            valueFormatter = percentFormatter(),
+            defaultValue = 0.0
         )
 
     /**
      * Vertical margins for paragraphs.
      */
-    public val paragraphSpacing: RangePreference<Double> =
-        RangePreferenceDelegate(
+    public val paragraphSpacing: OptionalRangePreference<Double> =
+        OptionalRangePreferenceDelegate(
             getValue = { preferences.paragraphSpacing },
-            getEffectiveValue = { state.settings.paragraphSpacing ?: 0.0 },
-            getIsEffective = { true },
+            getEffectiveValue = { state.settings.paragraphSpacing },
+            getIsEffective = { state.settings.paragraphSpacing != null },
             updateValue = { value -> updateValues { it.copy(paragraphSpacing = value) } },
             supportedRange = 0.0..2.0,
             progressionStrategy = DoubleIncrement(0.1),
-            valueFormatter = percentFormatter()
+            valueFormatter = percentFormatter(),
+            defaultValue = 0.0
         )
 
     /**
@@ -445,15 +460,16 @@ public class ReflowableWebPreferencesEditor internal constructor(
      *
      * Only effective when the layout is LTR.
      */
-    public val wordSpacing: RangePreference<Double> =
-        RangePreferenceDelegate(
+    public val wordSpacing: OptionalRangePreference<Double> =
+        OptionalRangePreferenceDelegate(
             getValue = { preferences.wordSpacing },
-            getEffectiveValue = { state.settings.wordSpacing ?: 0.0 },
-            getIsEffective = { state.layout.stylesheets == ReadiumCssLayout.Stylesheets.Default },
+            getEffectiveValue = { state.settings.wordSpacing },
+            getIsEffective = { state.settings.wordSpacing != null && state.layout.stylesheets == ReadiumCssLayout.Stylesheets.Default },
             updateValue = { value -> updateValues { it.copy(wordSpacing = value) } },
             supportedRange = 0.0..1.0,
             progressionStrategy = DoubleIncrement(0.1),
-            valueFormatter = percentFormatter()
+            valueFormatter = percentFormatter(),
+            defaultValue = 0.0
         )
 
     private fun percentFormatter(): (Double) -> String =
@@ -476,10 +492,12 @@ public class ReflowableWebPreferencesEditor internal constructor(
     }
 
     private fun isParagraphIndentEffective() =
-        state.layout.stylesheets in listOf(ReadiumCssLayout.Stylesheets.Default, ReadiumCssLayout.Stylesheets.Rtl)
+        state.settings.paragraphIndent != null &&
+            state.layout.stylesheets in listOf(ReadiumCssLayout.Stylesheets.Default, ReadiumCssLayout.Stylesheets.Rtl)
 
     private fun isTextAlignEffective() =
-        state.layout.stylesheets in listOf(ReadiumCssLayout.Stylesheets.Default, ReadiumCssLayout.Stylesheets.Rtl)
+        state.settings.textAlign != null &&
+            state.layout.stylesheets in listOf(ReadiumCssLayout.Stylesheets.Default, ReadiumCssLayout.Stylesheets.Rtl)
 }
 
 @InternalReadiumApi

@@ -31,6 +31,29 @@ public open class PreferenceDelegate<T>(
 }
 
 @InternalReadiumApi
+public class OptionalBooleanPreferenceDelegate(
+    private val getValue: () -> Boolean?,
+    private val getEffectiveValue: () -> Boolean?,
+    private val getIsEffective: () -> Boolean,
+    private val updateValue: (Boolean?) -> Unit,
+    public override val defaultValue: Boolean,
+) : OptionalBooleanPreference {
+
+    override val value: Boolean?
+        get() = getValue()
+
+    override val effectiveValue: Boolean?
+        get() = getEffectiveValue()
+
+    override val isEffective: Boolean
+        get() = getIsEffective()
+
+    public override fun set(value: Boolean?) {
+        updateValue(value)
+    }
+}
+
+@InternalReadiumApi
 public class EnumPreferenceDelegate<T>(
     getValue: () -> T?,
     getEffectiveValue: () -> T,
@@ -82,7 +105,7 @@ public class OptionalRangePreferenceDelegate<T : Comparable<T>>(
     getEffectiveValue: () -> T?,
     getIsEffective: () -> Boolean,
     updateValue: (T?) -> Unit,
-    private val defaultValue: T,
+    public override val defaultValue: T,
     private val valueFormatter: (T) -> String,
     override val supportedRange: ClosedRange<T>,
     private val progressionStrategy: ProgressionStrategy<T>,

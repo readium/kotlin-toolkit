@@ -50,6 +50,19 @@ public fun Preference<Boolean>.toggle() {
     set(!(value ?: effectiveValue))
 }
 
+public interface OptionalBooleanPreference : Preference<Boolean?> {
+
+    public val defaultValue: Boolean
+}
+
+/**
+ * Toggle the preference value. A default value is taken as the initial one if
+ * the preference is currently unset.
+ */
+public fun OptionalBooleanPreference.toggle() {
+    set(!(value ?: effectiveValue ?: defaultValue))
+}
+
 /**
  * Returns a new preference with its boolean value flipped.
  */
@@ -93,6 +106,8 @@ public interface RangePreference<T : Comparable<T>> : Preference<T> {
  * A [Preference] whose values must be null or in a [ClosedRange] of [T].
  */
 public interface OptionalRangePreference<T : Comparable<T>> : Preference<T?> {
+
+    public val defaultValue: T
 
     public val supportedRange: ClosedRange<T>
 

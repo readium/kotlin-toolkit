@@ -36,6 +36,7 @@ import org.readium.r2.navigator.preferences.EnumPreference
 import org.readium.r2.navigator.preferences.Fit
 import org.readium.r2.navigator.preferences.FontFamily
 import org.readium.r2.navigator.preferences.ImageFilter
+import org.readium.r2.navigator.preferences.OptionalBooleanPreference
 import org.readium.r2.navigator.preferences.OptionalRangePreference
 import org.readium.r2.navigator.preferences.Preference
 import org.readium.r2.navigator.preferences.RangePreference
@@ -205,21 +206,21 @@ private fun ReflowableUserPreferences(
     columnCount: Preference<Int?>? = null,
     fontFamily: Preference<FontFamily?>? = null,
     fontSize: RangePreference<Double>? = null,
-    fontWeight: RangePreference<Double>? = null,
+    fontWeight: OptionalRangePreference<Double>? = null,
     horizontalMargins: RangePreference<Double>? = null,
-    hyphens: Preference<Boolean>? = null,
+    hyphens: OptionalBooleanPreference? = null,
     imageFilter: EnumPreference<ImageFilter?>? = null,
     language: Preference<Language?>? = null,
-    letterSpacing: RangePreference<Double>? = null,
-    ligatures: Preference<Boolean>? = null,
-    lineHeight: RangePreference<Double>? = null,
+    letterSpacing: OptionalRangePreference<Double>? = null,
+    ligatures: OptionalBooleanPreference? = null,
+    lineHeight: OptionalRangePreference<Double>? = null,
     linkColor: Preference<Color>? = null,
     maximalLineLength: OptionalRangePreference<Double>? = null,
     minimalLineLength: OptionalRangePreference<Double>? = null,
     optimalLineLength: RangePreference<Double>? = null,
     overridePublisherColors: Preference<Boolean>? = null,
-    paragraphIndent: RangePreference<Double>? = null,
-    paragraphSpacing: RangePreference<Double>? = null,
+    paragraphIndent: OptionalRangePreference<Double>? = null,
+    paragraphSpacing: OptionalRangePreference<Double>? = null,
     readingProgression: EnumPreference<ReadingProgression>? = null,
     scroll: Preference<Boolean>? = null,
     textAlign: EnumPreference<ReadiumTextAlign?>? = null,
@@ -227,7 +228,7 @@ private fun ReflowableUserPreferences(
     textNormalization: Preference<Boolean>? = null,
     verticalText: Preference<Boolean>? = null,
     visitedColor: Preference<Color>? = null,
-    wordSpacing: RangePreference<Double>? = null,
+    wordSpacing: OptionalRangePreference<Double>? = null,
 ) {
     if (language != null || readingProgression != null || verticalText != null) {
         if (language != null) {
@@ -292,7 +293,6 @@ private fun ReflowableUserPreferences(
             StepperItem(
                 title = "Minimal line length",
                 preference = minimalLineLength,
-                defaultDisplayValue = 1.0
             )
         }
 
@@ -300,7 +300,6 @@ private fun ReflowableUserPreferences(
             StepperItem(
                 title = "Maximal line length",
                 preference = maximalLineLength,
-                defaultDisplayValue = 1.0
             )
         }
 
@@ -396,7 +395,7 @@ private fun ReflowableUserPreferences(
         if (fontWeight != null) {
             StepperItem(
                 title = "Font weight",
-                preference = fontWeight
+                preference = fontWeight,
             )
         }
 
