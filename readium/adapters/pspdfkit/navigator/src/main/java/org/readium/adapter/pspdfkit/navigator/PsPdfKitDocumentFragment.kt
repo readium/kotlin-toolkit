@@ -233,8 +233,8 @@ public class PsPdfKitDocumentFragment internal constructor(
         return config.build()
     }
 
-    private val _pageIndex = MutableStateFlow(initialPageIndex)
-    override val pageIndex: StateFlow<Int> = _pageIndex.asStateFlow()
+    override val pageIndex: StateFlow<Int>
+        field = MutableStateFlow(initialPageIndex)
 
     override fun goToPageIndex(index: Int, animated: Boolean): Boolean {
         val fragment = pdfFragment ?: return false
@@ -263,7 +263,7 @@ public class PsPdfKitDocumentFragment internal constructor(
 
     private inner class PsPdfKitListener : DocumentListener, OnPreparePopupToolbarListener {
         override fun onPageChanged(document: PdfDocument, pageIndex: Int) {
-            _pageIndex.value = pageIndex
+            this@PsPdfKitDocumentFragment.pageIndex.value = pageIndex
         }
 
         override fun onDocumentClick(): Boolean {
