@@ -450,7 +450,6 @@ private fun Item(
                     Icon(
                         painter = painterResource(id = R.drawable.backspace),
                         contentDescription = "Clear",
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
