@@ -9,9 +9,7 @@ package org.readium.navigator.web.fixedlayout
 import android.app.Application
 import java.io.IOException
 import org.readium.navigator.web.fixedlayout.FixedWebPublication.ReadingOrder
-import org.readium.navigator.web.fixedlayout.preferences.FixedWebDefaults
 import org.readium.navigator.web.fixedlayout.preferences.FixedWebPreferences
-import org.readium.navigator.web.fixedlayout.preferences.FixedWebPreferencesEditor
 import org.readium.navigator.web.internals.server.WebViewServer
 import org.readium.navigator.web.internals.webapi.FixedDoubleAreaApi
 import org.readium.navigator.web.internals.webapi.FixedSingleAreaApi
@@ -158,20 +156,4 @@ public class FixedWebRenditionFactory private constructor(
         } catch (e: IOException) {
             Try.failure(Error.Initialization(ThrowableError(e)))
         }
-
-    public fun createPreferencesEditor(
-        initialPreferences: FixedWebPreferences,
-        defaults: FixedWebDefaults = FixedWebDefaults(),
-    ): FixedWebPreferencesEditor {
-        val metadata = FixedWebPublication.Metadata(
-            readingProgression = publication.metadata.readingProgression,
-            language = publication.metadata.language
-        )
-
-        return FixedWebPreferencesEditor(
-            initialPreferences,
-            metadata,
-            defaults
-        )
-    }
 }

@@ -7,10 +7,7 @@
 package org.readium.navigator.web.reflowable
 
 import android.app.Application
-import org.readium.navigator.web.reflowable.preferences.ReflowableWebDefaults
 import org.readium.navigator.web.reflowable.preferences.ReflowableWebPreferences
-import org.readium.navigator.web.reflowable.preferences.ReflowableWebPreferencesEditor
-import org.readium.navigator.web.reflowable.preferences.ReflowableWebSettings
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.publication.Layout
@@ -131,21 +128,5 @@ public class ReflowableWebRenditionFactory private constructor(
             )
 
         return Try.success(state)
-    }
-
-    public fun createPreferencesEditor(
-        initialPreferences: ReflowableWebPreferences,
-        defaults: ReflowableWebDefaults = ReflowableWebDefaults(),
-    ): ReflowableWebPreferencesEditor {
-        val metadata = ReflowableWebPublication.Metadata(
-            readingProgression = publication.metadata.readingProgression,
-            language = publication.metadata.language
-        )
-
-        return ReflowableWebPreferencesEditor(
-            initialPreferences,
-            metadata,
-            defaults
-        )
     }
 }

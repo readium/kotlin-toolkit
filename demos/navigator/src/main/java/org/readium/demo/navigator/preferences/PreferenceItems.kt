@@ -42,8 +42,6 @@ import org.readium.demo.navigator.util.DropdownMenuButton
 import org.readium.demo.navigator.util.ToggleButtonGroup
 import org.readium.r2.navigator.preferences.Color as ReadiumColor
 import org.readium.r2.navigator.preferences.EnumPreference
-import org.readium.r2.navigator.preferences.OptionalBooleanPreference
-import org.readium.r2.navigator.preferences.OptionalRangePreference
 import org.readium.r2.navigator.preferences.Preference
 import org.readium.r2.navigator.preferences.RangePreference
 import org.readium.r2.navigator.preferences.clear

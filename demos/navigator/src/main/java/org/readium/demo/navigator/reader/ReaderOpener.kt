@@ -9,7 +9,6 @@
 package org.readium.demo.navigator.reader
 
 import android.app.Application
-import androidx.compose.runtime.snapshotFlow
 import kotlinx.collections.immutable.plus
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.MainScope
@@ -20,25 +19,24 @@ import org.readium.demo.navigator.decorations.HighlightsManager
 import org.readium.demo.navigator.decorations.ReflowableWebHighlightsManager
 import org.readium.demo.navigator.decorations.pageNumberDecorations
 import org.readium.demo.navigator.persistence.LocatorRepository
-import org.readium.demo.navigator.preferences.PreferencesManager
+import org.readium.demo.navigator.preferences.FixedPreferencesViewModel
+import org.readium.demo.navigator.preferences.ReflowablePreferencesViewModel
 import org.readium.navigator.common.DecorationController
 import org.readium.navigator.common.DecorationLocation
-import org.readium.navigator.common.Preferences
-import org.readium.navigator.common.PreferencesController
-import org.readium.navigator.common.PreferencesEditor
-import org.readium.navigator.common.Settings
 import org.readium.navigator.web.fixedlayout.FixedWebGoLocation
 import org.readium.navigator.web.fixedlayout.FixedWebLocation
 import org.readium.navigator.web.fixedlayout.FixedWebRenditionController
 import org.readium.navigator.web.fixedlayout.FixedWebRenditionFactory
 import org.readium.navigator.web.fixedlayout.FixedWebSelectionLocation
 import org.readium.navigator.web.fixedlayout.preferences.FixedWebPreferences
+import org.readium.navigator.web.fixedlayout.preferences.FixedWebSettings
 import org.readium.navigator.web.reflowable.ReflowableWebGoLocation
 import org.readium.navigator.web.reflowable.ReflowableWebLocation
 import org.readium.navigator.web.reflowable.ReflowableWebRenditionController
 import org.readium.navigator.web.reflowable.ReflowableWebRenditionFactory
 import org.readium.navigator.web.reflowable.ReflowableWebSelectionLocation
 import org.readium.navigator.web.reflowable.preferences.ReflowableWebPreferences
+import org.readium.navigator.web.reflowable.preferences.ReflowableWebSettings
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
@@ -68,7 +66,7 @@ class ReaderOpener(
     private val publicationOpener =
         PublicationOpener(publicationParser)
 
-    suspend fun open(url: AbsoluteUrl): Try<ReaderState<*, *, *, *, *>, Error> {
+    suspend fun open(url: AbsoluteUrl): Try<ReaderState<*, *, *, *, *, *>, Error> {
         val asset = assetRetriever.retrieve(url)
             .getOrElse { return Try.failure(it) }
 
@@ -100,7 +98,7 @@ class ReaderOpener(
         url: AbsoluteUrl,
         publication: Publication,
         initialLocator: Locator?,
-    ): Try<ReaderState<ReflowableWebLocation, ReflowableWebGoLocation, ReflowableWebSelectionLocation, ReflowableWebPreferences, ReflowableWebRenditionController>, Error>? {
+    ): Try<ReaderState<ReflowableWebLocation, ReflowableWebGoLocation, ReflowableWebSelectionLocation, ReflowableWebPreferences, ReflowableWebSettings, ReflowableWebRenditionController>, Error>? {
         val navigatorFactory = ReflowableWebRenditionFactory(
             application = application,
             publication = publication,
@@ -113,8 +111,6 @@ class ReaderOpener(
 
         val initialPreferences = ReflowableWebPreferences()
 
-        val preferencesManager = PreferencesManager(initialPreferences)
-
         val renditionState = navigatorFactory.createRenditionState(
             initialPreferences = initialPreferences,
             initialLocation = initialLocation
@@ -122,16 +118,9 @@ class ReaderOpener(
             return Try.failure(it)
         }
 
-        val preferencesEditor = navigatorFactory.createPreferencesEditor(initialPreferences)
-
-        snapshotFlow { preferencesEditor.preferences }
-            .onEach { preferencesManager.setPreferences(it) }
-            .launchIn(coroutineScope)
-
         val highlightsManager = ReflowableWebHighlightsManager()
 
         val onControllerAvailable: (ReflowableWebRenditionController) -> Unit = { controller ->
-            applyPreferences(coroutineScope, controller, preferencesEditor)
             applyHighlightDecorations(coroutineScope, controller, highlightsManager)
 
             publication.pageNumberDecorations
@@ -146,8 +135,8 @@ class ReaderOpener(
             coroutineScope = coroutineScope,
             publication = publication,
             renditionState = renditionState,
-            preferencesEditor = preferencesEditor,
             onControllerAvailable = onControllerAvailable,
+            createPreferencesViewModel = { ReflowablePreferencesViewModel(it) },
             actionModeFactory = actionModeFactory,
             highlightsManager = highlightsManager
         )
@@ -159,7 +148,7 @@ class ReaderOpener(
         url: AbsoluteUrl,
         publication: Publication,
         initialLocator: Locator?,
-    ): Try<ReaderState<FixedWebLocation, FixedWebGoLocation, FixedWebSelectionLocation, FixedWebPreferences, FixedWebRenditionController>, Error>? {
+    ): Try<ReaderState<FixedWebLocation, FixedWebGoLocation, FixedWebSelectionLocation, FixedWebPreferences, FixedWebSettings, FixedWebRenditionController>, Error>? {
         val navigatorFactory = FixedWebRenditionFactory(
             application = application,
             publication = publication,
@@ -172,8 +161,6 @@ class ReaderOpener(
 
         val initialPreferences = FixedWebPreferences()
 
-        val preferencesManager = PreferencesManager(initialPreferences)
-
         val renditionState = navigatorFactory.createRenditionState(
             initialPreferences = initialPreferences,
             initialLocation = initialLocation
@@ -181,16 +168,9 @@ class ReaderOpener(
             return Try.failure(it)
         }
 
-        val preferencesEditor = navigatorFactory.createPreferencesEditor(initialPreferences)
-
-        snapshotFlow { preferencesEditor.preferences }
-            .onEach { preferencesManager.setPreferences(it) }
-            .launchIn(coroutineScope)
-
         val highlightsManager = FixedWebHighlightsManager()
 
         val onControllerAvailable: (FixedWebRenditionController) -> Unit = { controller ->
-            applyPreferences(coroutineScope, controller, preferencesEditor)
             applyHighlightDecorations(coroutineScope, controller, highlightsManager)
         }
 
@@ -201,23 +181,13 @@ class ReaderOpener(
             coroutineScope = coroutineScope,
             publication = publication,
             renditionState = renditionState,
-            preferencesEditor = preferencesEditor,
             onControllerAvailable = onControllerAvailable,
+            createPreferencesViewModel = { FixedPreferencesViewModel(it) },
             highlightsManager = highlightsManager,
             actionModeFactory = actionModeFactory
         )
 
         return Try.success(readerState)
-    }
-
-    private fun <P : Preferences<P>, S : Settings> applyPreferences(
-        coroutineScope: CoroutineScope,
-        preferencesController: PreferencesController<P, S>,
-        preferencesEditor: PreferencesEditor<P, S>,
-    ) {
-        snapshotFlow { preferencesEditor.preferences }
-            .onEach { preferencesController.preferences = it }
-            .launchIn(coroutineScope)
     }
 
     private fun <L : DecorationLocation> applyHighlightDecorations(

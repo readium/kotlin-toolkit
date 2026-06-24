@@ -57,6 +57,7 @@ import org.readium.navigator.common.Preferences
 import org.readium.navigator.common.PreferencesController
 import org.readium.navigator.common.SelectionController
 import org.readium.navigator.common.SelectionLocation
+import org.readium.navigator.common.Settings
 import org.readium.navigator.common.TapContext
 import org.readium.navigator.common.TapEvent
 import org.readium.navigator.common.defaultHyperlinkListener
@@ -70,26 +71,30 @@ import org.readium.r2.shared.util.toUri
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun <L : ExportableLocation, G : GoLocation, S : SelectionLocation, P : Preferences<P>, C> Rendition(
-    readerState: ReaderState<L, G, S, P, C>,
+fun <L : ExportableLocation, G : GoLocation, S : SelectionLocation, P : Preferences<P>, Se : Settings, C> Rendition(
+    readerState: ReaderState<L, G, S, P, Se, C>,
     fullScreenState: MutableState<Boolean>,
-) where C : NavigationController<L, G>, C : SelectionController<S>, C : PreferencesController<P, *> {
+) where C : NavigationController<L, G>, C : SelectionController<S>, C : PreferencesController<P, Se> {
     val coroutineScope = rememberCoroutineScope()
 
     val showPreferences = remember { mutableStateOf(false) }
     val preferencesSheetState = rememberModalBottomSheetState()
 
     if (showPreferences.value) {
-        ModalBottomSheet(
-            sheetState = preferencesSheetState,
-            onDismissRequest = {
-                showPreferences.value = false
+        readerState.renditionState.controller?.let { controllerNow ->
+            val preferencesViewModel = readerState.createPreferencesViewModel(controllerNow)
+
+            ModalBottomSheet(
+                sheetState = preferencesSheetState,
+                onDismissRequest = {
+                    showPreferences.value = false
+                }
+            ) {
+                UserPreferences(
+                    viewModel = preferencesViewModel,
+                    title = "Preferences"
+                )
             }
-        ) {
-            UserPreferences(
-                editor = readerState.preferencesEditor,
-                title = "Preferences"
-            )
         }
     }
 
