@@ -1,31 +1,24 @@
 /*
- * Module: r2-lcp-kotlin
- * Developers: Aferdita Muriqi
- *
- * Copyright (c) 2019. Readium Foundation. All rights reserved.
- * Use of this source code is governed by a BSD-style license which is detailed in the
- * LICENSE file present in the project repository where this source code is maintained.
+ * Copyright 2026 Readium Foundation. All rights reserved.
+ * Use of this source code is governed by a BSD-style license
+ * available in the top-level LICENSE file of the project.
  */
 
 @file:OptIn(InternalReadiumApi::class)
 
 package org.readium.r2.lcp.license.model.components
 
-import org.json.JSONArray
-import org.json.JSONObject
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.builtins.ListSerializer
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 import org.readium.r2.shared.InternalReadiumApi
-import org.readium.r2.shared.extensions.mapNotNull
-import org.readium.r2.shared.extensions.tryOrNull
 import org.readium.r2.shared.util.mediatype.MediaType
 
-public data class Links(val json: JSONArray) {
-
-    val links: List<Link> = json
-        .mapNotNull { item ->
-            (item as? JSONObject)?.let { obj ->
-                tryOrNull { Link(obj) }
-            }
-        }
+@Serializable(with = LinksSerializer::class)
+public data class Links(val links: List<Link>) {
 
     public fun firstWithRel(rel: String, type: MediaType? = null): Link? =
         links.firstOrNull { it.matches(rel, type) }
@@ -40,4 +33,17 @@ public data class Links(val json: JSONArray) {
         this.rels.contains(rel) && (mediaType?.matches(this.mediaType) ?: true)
 
     public operator fun get(rel: String): List<Link> = allWithRel(rel)
+}
+
+public object LinksSerializer : KSerializer<Links> {
+    private val delegateSerializer = ListSerializer(Link.serializer())
+    override val descriptor: SerialDescriptor = delegateSerializer.descriptor
+
+    override fun deserialize(decoder: Decoder): Links {
+        return Links(decoder.decodeSerializableValue(delegateSerializer))
+    }
+
+    override fun serialize(encoder: Encoder, value: Links) {
+        encoder.encodeSerializableValue(delegateSerializer, value.links)
+    }
 }
