@@ -413,7 +413,6 @@ internal fun ReflowableResource(
         val orientationRef by rememberUpdatedRef(orientation)
 
         // Recreate WebView when Readium CSS layout changes because injected stuff depends on it
-        @OptIn(InternalReadiumApi::class)
         key(readiumCssInjector.layout) {
             WebView(
                 modifier = Modifier
