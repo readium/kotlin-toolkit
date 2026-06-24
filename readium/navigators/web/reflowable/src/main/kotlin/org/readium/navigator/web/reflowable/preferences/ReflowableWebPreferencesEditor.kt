@@ -143,7 +143,7 @@ public class ReflowableWebPreferencesEditor internal constructor(
         OptionalRangePreferenceDelegate(
             getValue = { preferences.fontWeight },
             getEffectiveValue = { state.settings.fontWeight },
-            getIsEffective = { state.settings.fontWeight != null },
+            getIsEffective = { true },
             updateValue = { value -> updateValues { it.copy(fontWeight = value) } },
             valueFormatter = percentFormatter(),
             supportedRange = 0.0..2.5,
@@ -160,10 +160,7 @@ public class ReflowableWebPreferencesEditor internal constructor(
         OptionalBooleanPreferenceDelegate(
             getValue = { preferences.hyphens },
             getEffectiveValue = { state.settings.hyphens },
-            getIsEffective = {
-                state.settings.hyphens != null &&
-                    state.layout.stylesheets == ReadiumCssLayout.Stylesheets.Default
-            },
+            getIsEffective = { state.layout.stylesheets == ReadiumCssLayout.Stylesheets.Default },
             updateValue = { value -> updateValues { it.copy(hyphens = value) } },
             defaultValue = false
         )
@@ -202,10 +199,7 @@ public class ReflowableWebPreferencesEditor internal constructor(
         OptionalRangePreferenceDelegate(
             getValue = { preferences.letterSpacing },
             getEffectiveValue = { state.settings.letterSpacing },
-            getIsEffective = {
-                state.settings.letterSpacing != null &&
-                    state.layout.stylesheets == ReadiumCssLayout.Stylesheets.Default
-            },
+            getIsEffective = { state.layout.stylesheets == ReadiumCssLayout.Stylesheets.Default },
             updateValue = { value -> updateValues { it.copy(letterSpacing = value) } },
             supportedRange = 0.0..1.0,
             progressionStrategy = DoubleIncrement(0.1),
@@ -222,10 +216,7 @@ public class ReflowableWebPreferencesEditor internal constructor(
         OptionalBooleanPreferenceDelegate(
             getValue = { preferences.ligatures },
             getEffectiveValue = { state.settings.ligatures },
-            getIsEffective = {
-                state.settings.ligatures != null &&
-                    state.layout.stylesheets == ReadiumCssLayout.Stylesheets.Rtl
-            },
+            getIsEffective = ::isLigaturesEffective,
             updateValue = { value -> updateValues { it.copy(ligatures = value) } },
             defaultValue = false
         )
@@ -237,7 +228,7 @@ public class ReflowableWebPreferencesEditor internal constructor(
         OptionalRangePreferenceDelegate(
             getValue = { preferences.lineHeight },
             getEffectiveValue = { state.settings.lineHeight },
-            getIsEffective = { state.settings.lineHeight != null },
+            getIsEffective = { true },
             updateValue = { value -> updateValues { it.copy(lineHeight = value) } },
             supportedRange = 1.0..2.0,
             progressionStrategy = DoubleIncrement(0.1),
@@ -265,7 +256,7 @@ public class ReflowableWebPreferencesEditor internal constructor(
         OptionalRangePreferenceDelegate(
             getValue = { preferences.maximalLineLength },
             getEffectiveValue = { state.settings.maximalLineLength },
-            getIsEffective = { state.settings.maximalLineLength != null && scroll.value != true },
+            getIsEffective = { scroll.value != true },
             updateValue = { value -> updateValues { it.copy(maximalLineLength = value) } },
             defaultValue = 1.0,
             supportedRange = 0.5..2.0,
@@ -282,7 +273,7 @@ public class ReflowableWebPreferencesEditor internal constructor(
         OptionalRangePreferenceDelegate(
             getValue = { preferences.minimalLineLength },
             getEffectiveValue = { state.settings.minimalLineLength },
-            getIsEffective = { state.settings.minimalLineLength != null && scroll.value != true },
+            getIsEffective = { scroll.value != true },
             updateValue = { value -> updateValues { it.copy(minimalLineLength = value) } },
             defaultValue = 1.0,
             supportedRange = 0.5..2.0,
@@ -366,7 +357,7 @@ public class ReflowableWebPreferencesEditor internal constructor(
         OptionalRangePreferenceDelegate(
             getValue = { preferences.paragraphSpacing },
             getEffectiveValue = { state.settings.paragraphSpacing },
-            getIsEffective = { state.settings.paragraphSpacing != null },
+            getIsEffective = { true },
             updateValue = { value -> updateValues { it.copy(paragraphSpacing = value) } },
             supportedRange = 0.0..2.0,
             progressionStrategy = DoubleIncrement(0.1),
@@ -464,7 +455,7 @@ public class ReflowableWebPreferencesEditor internal constructor(
         OptionalRangePreferenceDelegate(
             getValue = { preferences.wordSpacing },
             getEffectiveValue = { state.settings.wordSpacing },
-            getIsEffective = { state.settings.wordSpacing != null && state.layout.stylesheets == ReadiumCssLayout.Stylesheets.Default },
+            getIsEffective = { state.layout.stylesheets == ReadiumCssLayout.Stylesheets.Default },
             updateValue = { value -> updateValues { it.copy(wordSpacing = value) } },
             supportedRange = 0.0..1.0,
             progressionStrategy = DoubleIncrement(0.1),
@@ -491,13 +482,14 @@ public class ReflowableWebPreferencesEditor internal constructor(
         )
     }
 
+    private fun isLigaturesEffective() =
+        state.layout.stylesheets in listOf(ReadiumCssLayout.Stylesheets.Default, ReadiumCssLayout.Stylesheets.Rtl)
+
     private fun isParagraphIndentEffective() =
-        state.settings.paragraphIndent != null &&
-            state.layout.stylesheets in listOf(ReadiumCssLayout.Stylesheets.Default, ReadiumCssLayout.Stylesheets.Rtl)
+        state.layout.stylesheets in listOf(ReadiumCssLayout.Stylesheets.Default, ReadiumCssLayout.Stylesheets.Rtl)
 
     private fun isTextAlignEffective() =
-        state.settings.textAlign != null &&
-            state.layout.stylesheets in listOf(ReadiumCssLayout.Stylesheets.Default, ReadiumCssLayout.Stylesheets.Rtl)
+        state.layout.stylesheets in listOf(ReadiumCssLayout.Stylesheets.Default, ReadiumCssLayout.Stylesheets.Rtl)
 }
 
 @InternalReadiumApi
