@@ -78,14 +78,15 @@ fun <L : ExportableLocation, G : GoLocation, S : SelectionLocation, P : Preferen
     val coroutineScope = rememberCoroutineScope()
 
     val showPreferences = remember { mutableStateOf(false) }
-    val preferencesSheetState = rememberModalBottomSheetState()
 
     if (showPreferences.value) {
         readerState.renditionState.controller?.let { controllerNow ->
-            val preferencesViewModel = readerState.createPreferencesViewModel(controllerNow)
+            val preferencesViewModel = remember(controllerNow) {
+                readerState.createPreferencesViewModel(controllerNow)
+            }
 
             ModalBottomSheet(
-                sheetState = preferencesSheetState,
+                sheetState = rememberModalBottomSheetState(),
                 onDismissRequest = {
                     showPreferences.value = false
                 }

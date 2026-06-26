@@ -98,7 +98,7 @@ public class FixedWebRenditionState internal constructor(
         FixedLayoutDelegate(
             publication = publication,
             initialPreferences = initialPreferences,
-            defaults = FixedWebDefaults()
+            defaults = configuration.defaults
         )
 
     /*
@@ -234,8 +234,9 @@ internal class FixedLayoutDelegate(
 
     override var preferences: FixedWebPreferences by mutableStateOf(initialPreferences)
 
-    override val settings: FixedWebSettings
-        get() = settingsResolver.settings(preferences)
+    override val settings: FixedWebSettings by derivedStateOf {
+        settingsResolver.settings(preferences)
+    }
 
     val overflow: State<Overflow> = derivedStateOf {
         with(settings) {

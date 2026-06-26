@@ -148,7 +148,7 @@ public class ReflowableWebRenditionState internal constructor(
             fontFamilyDeclarations = fontFamilyDeclarations,
             publication = publication,
             initialPreferences = initialPreferences,
-            defaults = ReflowableWebDefaults()
+            defaults = configuration.defaults
         )
 
     internal val scrollState: RenditionScrollState =
@@ -323,8 +323,9 @@ internal class ReflowableLayoutDelegate(
 
     override var preferences: ReflowableWebPreferences by mutableStateOf(initialPreferences)
 
-    override val settings: ReflowableWebSettings
-        get() = settingsResolver.settings(preferences)
+    override val settings: ReflowableWebSettings by derivedStateOf {
+        settingsResolver.settings(preferences)
+    }
 
     internal val overflow: State<Overflow> = derivedStateOf {
         with(settings) {

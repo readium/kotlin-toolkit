@@ -9,10 +9,16 @@ package org.readium.navigator.web.fixedlayout
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import org.readium.navigator.web.common.WebDecorationTemplates
+import org.readium.navigator.web.fixedlayout.preferences.FixedWebDefaults
 import org.readium.r2.shared.ExperimentalReadiumApi
 
 @ExperimentalReadiumApi
 public data class FixedWebConfiguration(
+    /**
+     * Fallbacks for some preferences
+     */
+    val defaults: FixedWebDefaults = FixedWebDefaults(),
+
     /**
      * Patterns for asset paths which will be available to EPUB resources under
      * https://readium/assets/.
