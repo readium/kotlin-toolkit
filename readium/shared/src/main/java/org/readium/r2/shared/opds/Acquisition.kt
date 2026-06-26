@@ -27,7 +27,7 @@ import org.readium.r2.shared.util.mediatype.MediaType
 /**
  * OPDS Acquisition Object.
  *
- * https://drafts.opds.io/schema/acquisition-object.schema.json
+ * https://specs.opds.io/schema/acquisition-object.schema.json
  */
 @Parcelize
 public data class Acquisition(

@@ -21,7 +21,7 @@ import org.readium.r2.shared.extensions.optPositiveInt
 /**
  * Library-specific features when a specific book is unavailable but provides a hold list.
  *
- * https://drafts.opds.io/schema/properties.schema.json
+ * https://specs.opds.io/schema/properties.schema.json
  */
 @Parcelize
 public data class Holds(
