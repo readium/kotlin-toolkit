@@ -19,7 +19,7 @@ import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Properties
 
 // OPDS extensions for link [Properties].
-// https://drafts.opds.io/schema/properties.schema.json
+// https://specs.opds.io/schema/properties.schema.json
 
 /**
  * Provides a hint about the expected number of items returned.
@@ -75,7 +75,7 @@ public val Properties.availability: Availability?
  * Indicates that the linked resource supports authentication with the associated Authentication
  * Document.
  *
- * See https://drafts.opds.io/authentication-for-opds-1.0.html
+ * See https://specs.opds.io/authentication-for-opds-1.0.html
  */
 public val Properties.authenticate: Link?
     get() = (this["authenticate"] as? Map<*, *>)
