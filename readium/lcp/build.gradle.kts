@@ -7,6 +7,7 @@
 plugins {
     id("readium.library-conventions")
     alias(libs.plugins.ksp)
+    alias(libs.plugins.androidx.room3)
 }
 
 android {
@@ -21,6 +22,10 @@ kotlin {
     }
 }
 
+room3 {
+    schemaDirectory("$projectDir/schemas")
+}
+
 dependencies {
     implementation(libs.kotlinx.coroutines.android)
 
@@ -33,8 +38,8 @@ dependencies {
     implementation(libs.androidx.browser)
     implementation(libs.kotlinx.datetime)
 
-    implementation(libs.bundles.room)
-    ksp(libs.androidx.room.compiler)
+    implementation(libs.androidx.room3)
+    ksp(libs.androidx.room3.compiler)
 
     // Tests
     testImplementation(libs.junit)

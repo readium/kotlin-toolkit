@@ -7,7 +7,12 @@
 package org.readium.r2.testapp.data.model
 
 import androidx.annotation.ColorInt
-import androidx.room.*
+import androidx.room3.ColumnInfo
+import androidx.room3.ColumnTypeConverter
+import androidx.room3.Entity
+import androidx.room3.ForeignKey
+import androidx.room3.Index
+import androidx.room3.PrimaryKey
 import org.json.JSONObject
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.util.Url
@@ -129,25 +134,25 @@ data class Highlight(
 }
 
 class HighlightConverters {
-    @TypeConverter
+    @ColumnTypeConverter
     fun styleFromString(value: String?): Highlight.Style = Highlight.Style.getOrDefault(value)
 
-    @TypeConverter
+    @ColumnTypeConverter
     fun styleToString(style: Highlight.Style): String = style.value
 
-    @TypeConverter
+    @ColumnTypeConverter
     fun textFromString(value: String?): Locator.Text = Locator.Text.fromJSON(
         value?.let { JSONObject(it) }
     )
 
-    @TypeConverter
+    @ColumnTypeConverter
     fun textToString(text: Locator.Text): String = text.toJSON().toString()
 
-    @TypeConverter
+    @ColumnTypeConverter
     fun locationsFromString(value: String?): Locator.Locations = Locator.Locations.fromJSON(
         value?.let { JSONObject(it) }
     )
 
-    @TypeConverter
+    @ColumnTypeConverter
     fun locationsToString(text: Locator.Locations): String = text.toJSON().toString()
 }
