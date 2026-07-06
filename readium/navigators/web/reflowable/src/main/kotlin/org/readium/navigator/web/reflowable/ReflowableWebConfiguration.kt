@@ -10,10 +10,16 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import org.readium.navigator.web.common.FontFamilyDeclarations
 import org.readium.navigator.web.common.WebDecorationTemplates
+import org.readium.navigator.web.reflowable.preferences.ReflowableWebDefaults
 import org.readium.r2.shared.ExperimentalReadiumApi
 
 @ExperimentalReadiumApi
 public data class ReflowableWebConfiguration(
+    /**
+     * Fallbacks for some preferences
+     */
+    val defaults: ReflowableWebDefaults = ReflowableWebDefaults(),
+
     /**
      * Patterns for asset paths which will be available to EPUB resources under
      * https://readium/assets/.

@@ -24,7 +24,7 @@ import org.readium.r2.shared.util.logging.log
 /**
  * The price of a publication in an OPDS link.
  *
- * https://drafts.opds.io/schema/properties.schema.json
+ * https://specs.opds.io/schema/properties.schema.json
  *
  * @param currency Currency for the price, eg. EUR.
  * @param value Price value, should only be used for display purposes, because of precision issues

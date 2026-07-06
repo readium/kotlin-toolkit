@@ -36,7 +36,7 @@ class DemoViewModel(
         ) : State
 
         data class Reader(
-            val readerState: ReaderState<*, *, *, *>,
+            val readerState: ReaderState<*, *, *, *, *, *>,
         ) : State
     }
 
