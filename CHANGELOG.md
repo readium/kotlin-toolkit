@@ -10,7 +10,7 @@ All notable changes to this project will be documented in this file. Take a look
 
 #### Navigator
 
-* Added a `scroll` preference to the PDF navigator (PDFium adapter) to match the Swift toolkit. When set to `false`, page flings snap to page boundaries for a paginated feel. Defaults to `true` (current continuous-scroll behavior).
+* Added a `scroll` preference to the PDF navigator (PDFium adapter). When set to `false`, page flings snap to page boundaries for a paginated feel. Defaults to `true` (current continuous-scroll behavior).
 
 ## [3.2.0] - 2026-05-13
 

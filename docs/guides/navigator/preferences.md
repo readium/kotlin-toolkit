@@ -468,5 +468,10 @@ Some preferences are available only in scroll or paginated mode (`scroll = false
 
 ### PDF (PDFium)
 
-The PDFium adapter exposes a `scroll` preference for parity with the Swift toolkit. When set to `false`, page flings snap to page boundaries (paginated feel). Defaults to `true` (continuous scrolling).
+#### Scroll vs paginated
 
+The PDFium adapter exposes a `scroll` preference to switch between scroll and paginated behavior. Defaults to `true` (continuous scrolling).
+
+| Preference | Scroll             | Paginated          |
+|------------|--------------------|--------------------|
+| `scroll`   | :white_check_mark: (`true`) | :white_check_mark: (`false`) |
