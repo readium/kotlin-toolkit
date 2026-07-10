@@ -21,7 +21,7 @@ import org.readium.r2.shared.extensions.optPositiveInt
 /**
  * Library-specific feature that contains information about the copies that a library has acquired.
  *
- * https://drafts.opds.io/schema/properties.schema.json
+ * https://specs.opds.io/schema/properties.schema.json
  */
 @Parcelize
 public data class Copies(

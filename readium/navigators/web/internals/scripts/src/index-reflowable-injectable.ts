@@ -49,8 +49,8 @@ window.addEventListener("load", (event) => {
       const scrollingElement = window.document.scrollingElement
       const scrollingElementEmpty =
         scrollingElement == null ||
-        (scrollingElement.scrollHeight == 0 &&
-          scrollingElement.scrollWidth == 0)
+        scrollingElement.scrollHeight == 0 ||
+        scrollingElement.scrollWidth == 0
 
       if (!documentLoadedFired && scrollingElementEmpty) {
         // Document is not sized yet

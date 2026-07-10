@@ -15,12 +15,16 @@ import androidx.core.content.edit
 import java.util.UUID
 import org.readium.r2.lcp.license.model.LicenseDocument
 import org.readium.r2.lcp.license.model.components.Link
+import org.readium.r2.shared.util.AbsoluteUrl
+import org.readium.r2.shared.util.http.HttpClient
+import org.readium.r2.shared.util.http.HttpRequest
+import org.readium.r2.shared.util.http.fetch
 
 internal class DeviceService(
     deviceName: String?,
     deviceId: String?,
     private val repository: DeviceRepository,
-    private val network: NetworkService,
+    private val httpClient: HttpClient,
     val context: Context,
 ) {
 
@@ -50,8 +54,9 @@ internal class DeviceService(
             return null
         }
 
-        val url = link.url(parameters = asQueryParameters).toString()
-        val data = network.fetch(url, NetworkService.Method.POST, asQueryParameters)
+        val url = link.url(parameters = asQueryParameters) as? AbsoluteUrl ?: return null
+        val data = httpClient.fetch(HttpRequest(url, method = HttpRequest.Method.POST))
+            .map { it.body }
             .getOrNull() ?: return null
 
         repository.registerDevice(license)

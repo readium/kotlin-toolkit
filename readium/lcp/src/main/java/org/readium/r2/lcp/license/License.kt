@@ -31,13 +31,16 @@ import org.readium.r2.lcp.license.model.components.Link
 import org.readium.r2.lcp.service.DeviceService
 import org.readium.r2.lcp.service.LcpClient
 import org.readium.r2.lcp.service.LicensesRepository
-import org.readium.r2.lcp.service.NetworkService
 import org.readium.r2.shared.DelicateReadiumApi
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.extensions.tryOrNull
+import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.getOrElse
-import org.readium.r2.shared.util.getOrThrow
+import org.readium.r2.shared.util.http.HttpClient
+import org.readium.r2.shared.util.http.HttpError
+import org.readium.r2.shared.util.http.HttpRequest
+import org.readium.r2.shared.util.http.fetch
 import org.readium.r2.shared.util.mediatype.MediaType
 import timber.log.Timber
 
@@ -47,7 +50,7 @@ internal class License private constructor(
     private val validation: LicenseValidation,
     private val licenses: LicensesRepository,
     private val device: DeviceService,
-    private val network: NetworkService,
+    private val httpClient: HttpClient,
     private val printsLeft: StateFlow<Int?>,
     private val copiesLeft: StateFlow<Int?>,
 ) : LcpLicense {
@@ -59,7 +62,7 @@ internal class License private constructor(
             validation: LicenseValidation,
             licenses: LicensesRepository,
             device: DeviceService,
-            network: NetworkService,
+            httpClient: HttpClient,
         ): License {
             val coroutineScope = MainScope()
 
@@ -77,7 +80,7 @@ internal class License private constructor(
                 validation = validation,
                 licenses = licenses,
                 device = device,
-                network = network,
+                httpClient = httpClient,
                 printsLeft = printsLeft,
                 copiesLeft = copiesLeft
             )
@@ -185,11 +188,14 @@ internal class License private constructor(
                 parameters["end"] = endDate.toString()
             }
 
-            val url = link.url(parameters = parameters)
+            val url = link.url(parameters = parameters) as? AbsoluteUrl
+                ?: throw LcpException(LcpError.Parsing.Url(link.rels.first()))
 
-            return network.fetch(url.toString(), NetworkService.Method.PUT)
+            return httpClient.fetch(HttpRequest(url, method = HttpRequest.Method.PUT))
+                .map { it.body }
                 .getOrElse { error ->
-                    when (error.status) {
+                    val status = (error as? HttpError.ErrorResponse)?.status?.code
+                    when (status) {
                         HttpURLConnection.HTTP_BAD_REQUEST ->
                             throw LcpException(LcpError.Renew.RenewFailed)
                         HttpURLConnection.HTTP_FORBIDDEN ->
@@ -213,13 +219,16 @@ internal class License private constructor(
                 license.url(
                     LicenseDocument.Rel.Status,
                     preferredType = MediaType.LCP_STATUS_DOCUMENT
-                )
+                ) as? AbsoluteUrl
             } ?: throw LcpException(LcpError.LicenseInteractionNotAvailable)
 
-            return network.fetch(
-                statusURL.toString(),
-                headers = mapOf("Accept" to MediaType.LCP_STATUS_DOCUMENT.toString())
-            ).getOrThrow()
+            return httpClient.fetch(
+                HttpRequest(
+                    statusURL,
+                    headers = mapOf("Accept" to listOf(MediaType.LCP_STATUS_DOCUMENT.toString()))
+                )
+            ).map { it.body }
+                .getOrElse { throw LcpException(LcpError.Network(Exception(it.message))) }
         }
 
         try {
@@ -250,24 +259,25 @@ internal class License private constructor(
     @OptIn(DelicateReadiumApi::class)
     override suspend fun returnPublication(): Try<Unit, LcpError> {
         try {
-            val status = this.documents.status
             val url = try {
                 status?.url(
                     StatusDocument.Rel.Return,
                     preferredType = null,
                     parameters = device.asQueryParameters
-                )
+                ) as? AbsoluteUrl
             } catch (e: Throwable) {
+                Timber.e(e)
                 null
             }
             if (status == null || url == null) {
                 throw LcpException(LcpError.LicenseInteractionNotAvailable)
             }
 
-            network.fetch(url.toString(), method = NetworkService.Method.PUT)
-                .onSuccess { validateStatusDocument(it) }
+            httpClient.fetch(HttpRequest(url, method = HttpRequest.Method.PUT))
+                .onSuccess { validateStatusDocument(it.body) }
                 .onFailure { error ->
-                    when (error.status) {
+                    val status = (error as? HttpError.ErrorResponse)?.status?.code
+                    when (status) {
                         HttpURLConnection.HTTP_BAD_REQUEST -> throw LcpException(
                             LcpError.Return.ReturnFailed
                         )

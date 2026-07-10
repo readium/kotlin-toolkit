@@ -12,6 +12,23 @@ All notable changes to this project will be documented in this file. Take a look
 
 * Added a `scroll` preference to the PDF navigator (PDFium adapter). When set to `false`, page flings snap to page boundaries for a paginated feel. Defaults to `true` (current continuous-scroll behavior).
 
+## [3.3.0] - 2026-06-02
+
+### Deprecated
+
+#### Shared
+
+* The `Instant` utility class is deprecated in favor of `kotlin.time.Instant`. Use `Clock.System.now()` to get the current time.
+    * **Note**: `kotlin.time.Instant` does not implement `Parcelable`. If you were passing `Instant` via Intents or Bundles, you must now pass `Long` primitives using `toEpochMilliseconds()` and reconstruct the instant with `kotlin.time.Instant.fromEpochMilliseconds()`.
+    * **Note**: `kotlin.time.Instant.parse()` only accepts ISO-8601 strings with a UTC offset. If you were relying on `Instant.parse()` to handle date-only strings (e.g. `"2020-12-09"`) or strings without a timezone offset (e.g. `"2020-12-09T09:16:56"`), you must handle these formats manually before parsing.
+
+### Fixed
+
+#### Navigator
+
+* Fixed loading of EPUB assets, such as fonts, referenced from publication resources. They were previously blocked by cross-origin (CORS) restrictions.
+
+
 ## [3.2.0] - 2026-05-13
 
 ### Added
@@ -41,9 +58,6 @@ All notable changes to this project will be documented in this file. Take a look
 #### Shared
 
 * The Presentation Hints properties are deprecated from the Readium Web Publication Manifest models. [See the official documentation](https://readium.org/webpub-manifest/profiles/epub.html#appendix-b---deprecated-properties).
-* The `Instant` utility class is deprecated in favor of `kotlin.time.Instant`. Use `Clock.System.now()` to get the current time.
-    * **Note**: `kotlin.time.Instant` does not implement `Parcelable`. If you were passing `Instant` via Intents or Bundles, you must now pass `Long` primitives using `toEpochMilliseconds()` and reconstruct the instant with `kotlin.time.Instant.fromEpochMilliseconds()`.
-    * **Note**: `kotlin.time.Instant.parse()` only accepts ISO-8601 strings with a UTC offset. If you were relying on `Instant.parse()` to handle date-only strings (e.g. `"2020-12-09"`) or strings without a timezone offset (e.g. `"2020-12-09T09:16:56"`), you must handle these formats manually before parsing.
 
 ### Fixed
 
@@ -1037,3 +1051,4 @@ progression. Now if no reading progression is set, the `effectiveReadingProgress
 [3.1.1]: https://github.com/readium/kotlin-toolkit/compare/3.1.0...3.1.1
 [3.1.2]: https://github.com/readium/kotlin-toolkit/compare/3.1.1...3.1.2
 [3.2.0]: https://github.com/readium/kotlin-toolkit/compare/3.1.2...3.2.0
+[3.3.0]: https://github.com/readium/kotlin-toolkit/compare/3.2.0...3.3.0
