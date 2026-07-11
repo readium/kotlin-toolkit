@@ -164,21 +164,14 @@ public class PdfiumDocumentFragment internal constructor(
         return validRange.contains(pageIndex)
     }
 
-    private fun convertPageIndexToView(page: Int): Int {
-        var index = (page - 1).coerceAtLeast(0)
-        if (isPagesOrderReversed) {
-            index = (pageCount - 1) - index
-        }
-        return index
-    }
+    // Both indices are 0-based: `pageIndex` is the navigator-facing index into
+    // publication.positions(), while `viewPageIndex` is the PDFView page index. They
+    // differ only when the page order is reversed for right-to-left reading progressions.
+    private fun convertPageIndexToView(pageIndex: Int): Int =
+        if (isPagesOrderReversed) (pageCount - 1) - pageIndex else pageIndex
 
-    private fun convertPageIndexFromView(index: Int): Int {
-        var page = index + 1
-        if (isPagesOrderReversed) {
-            page = (pageCount + 1) - page
-        }
-        return page
-    }
+    private fun convertPageIndexFromView(viewPageIndex: Int): Int =
+        if (isPagesOrderReversed) (pageCount - 1) - viewPageIndex else viewPageIndex
 
     /**
      * Indicates whether the order of the [PDFView] pages is reversed to take into account
