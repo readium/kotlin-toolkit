@@ -123,10 +123,14 @@ class UrlTest {
         // kept, while the space in the path is encoded.
         testEpub("audio/my file.mp3#t=0.5,10.2", "audio/my%20file.mp3#t=0.5,10.2")
 
-        // Degradation: a raw space in the fragment is invalid for Java's URI parser, so reassembly
-        // fails and we fall back to the path-only encoding. The malformed fragment is dropped rather
-        // than smuggled into the path.
-        testEpub("chapter one.xhtml#foo bar", "chapter%20one.xhtml")
+        // A raw space in the fragment or query is invalid for Java's URI parser, so reassembly fails
+        // and we fall back to encoding the invalid characters of the query/fragment, following the
+        // same policy as the path.
+        testEpub("chapter one.xhtml#foo bar", "chapter%20one.xhtml#foo%20bar")
+        testEpub("chapter one.xhtml?foo bar", "chapter%20one.xhtml?foo%20bar")
+        testEpub("chapter one.xhtml?a b#c d", "chapter%20one.xhtml?a%20b#c%20d")
+        // The query structure (`&` and `=`) is preserved while invalid characters are encoded.
+        testEpub("my file.xhtml?a=b c&d=e", "my%20file.xhtml?a=b%20c&d=e")
 
         // Returns null for an empty HREF.
         assertNull(Url.fromEpubHref(""))

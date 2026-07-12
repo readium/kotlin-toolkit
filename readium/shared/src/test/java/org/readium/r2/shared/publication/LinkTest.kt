@@ -348,4 +348,11 @@ class LinkTest {
         val links = listOf(Link(href = Url("l2")!!), Link(href = Url("l2?query=1")!!))
         assertEquals(1, links.indexOfFirstWithHref(Url("l2?query=1")!!))
     }
+
+    @Test
+    fun `Removing only the fragment takes precedence over removing the query too`() {
+        val links = listOf(Link(href = Url("l2")!!), Link(href = Url("l2?query=1")!!))
+        // The link keeping the query is preferred over the one without it.
+        assertEquals(1, links.indexOfFirstWithHref(Url("l2?query=1#fragment")!!))
+    }
 }

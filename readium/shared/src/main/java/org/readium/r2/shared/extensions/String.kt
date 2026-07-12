@@ -86,6 +86,16 @@ internal fun String.percentEncodedQuery(): String =
     Uri.encode(this, "$+,/?:=@")
 
 /**
+ * Percent-encodes the invalid characters of a full URL query or fragment.
+ *
+ * Contrary to [percentEncodedQuery], which encodes an individual query key or value, this preserves
+ * the structural characters of a full query or fragment (such as `&`, `;` and `=`), only encoding
+ * the genuinely invalid ones (e.g. spaces).
+ */
+internal fun String.percentEncodedQueryOrFragment(): String =
+    Uri.encode(this, "$&+,/:;=?@")
+
+/**
  * Returns whether the String receiver contains only printable ASCII characters.
  */
 internal fun String.isPrintableAscii(): Boolean =
