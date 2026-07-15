@@ -389,11 +389,6 @@ public fun Url.Companion.fromLegacyHref(href: String): Url? =
  *
  * As a workaround, we assume the HREFs are valid percent-encoded URLs, and fallback to decoded paths
  * if we can't parse the URL.
- *
- * When falling back to a decoded path, the path, query and fragment are encoded independently, so
- * that their `?`/`#` separators stay intact (a plain path encoding would turn them into `%3F`/`%23`).
- * Each component follows the same policy: if it already forms a valid percent-encoded URL, it is
- * kept verbatim to avoid double-encoding; otherwise its invalid characters are encoded.
  */
 @InternalReadiumApi
 public fun Url.Companion.fromEpubHref(href: String): Url? {

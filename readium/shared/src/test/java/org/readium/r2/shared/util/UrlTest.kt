@@ -131,6 +131,11 @@ class UrlTest {
         testEpub("chapter one.xhtml?a b#c d", "chapter%20one.xhtml?a%20b#c%20d")
         // The query structure (`&` and `=`) is preserved while invalid characters are encoded.
         testEpub("my file.xhtml?a=b c&d=e", "my%20file.xhtml?a=b%20c&d=e")
+        // A partially-encoded query or fragment keeps its existing percent escapes instead of
+        // double-encoding them (`%20` must stay `%20`, not become `%2520`) when a raw space forces
+        // the fallback encoding.
+        testEpub("my file.xhtml#foo%20bar baz", "my%20file.xhtml#foo%20bar%20baz")
+        testEpub("my file.xhtml?a=b%20c&d=e f", "my%20file.xhtml?a=b%20c&d=e%20f")
 
         // Returns null for an empty HREF.
         assertNull(Url.fromEpubHref(""))
