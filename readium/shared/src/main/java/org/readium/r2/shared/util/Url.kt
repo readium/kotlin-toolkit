@@ -19,6 +19,7 @@ import org.readium.r2.shared.DelicateReadiumApi
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.extensions.isPrintableAscii
 import org.readium.r2.shared.extensions.percentEncodedPath
+import org.readium.r2.shared.extensions.percentEncodedQueryOrFragment
 import org.readium.r2.shared.extensions.tryOrNull
 
 /**
@@ -390,8 +391,44 @@ public fun Url.Companion.fromLegacyHref(href: String): Url? =
  * if we can't parse the URL.
  */
 @InternalReadiumApi
-public fun Url.Companion.fromEpubHref(href: String): Url? =
-    Url(href) ?: fromDecodedPath(href)
+public fun Url.Companion.fromEpubHref(href: String): Url? {
+    // A well-formed HREF is already a valid percent-encoded URL.
+    Url(href)?.let { return it }
+
+    // Otherwise the HREF is not a valid URL (e.g. a decoded path containing spaces). Split off the
+    // query and fragment, so each component can be encoded independently. The path ends at the first
+    // `?` or `#`: since the query always precedes the fragment in a URL, a `?` occurring inside a
+    // fragment is left in the suffix rather than mistaken for a query separator.
+    val splitIndex = href.indexOfFirst { it == '?' || it == '#' }
+    val pathPart = if (splitIndex < 0) href else href.substring(0, splitIndex)
+    val suffix = if (splitIndex < 0) "" else href.substring(splitIndex)
+
+    val pathUrl = fromDecodedPath(pathPart) ?: return null
+
+    // Reattach the query and fragment. First try them verbatim, so an already-encoded suffix is not
+    // double-encoded. If that fails to parse (e.g. a raw space inside the query/fragment), encode
+    // their invalid characters while preserving the `?`/`#` separators and query structure.
+    Url(pathUrl.toString() + suffix)?.let { return it }
+    return Url(pathUrl.toString() + encodeEpubHrefSuffix(suffix)) ?: pathUrl
+}
+
+/**
+ * Percent-encodes the invalid characters of an EPUB HREF [suffix] (`?query#fragment`), keeping the
+ * `?`/`#` separators and the query/fragment structural characters (e.g. `&`, `=`) intact.
+ */
+private fun encodeEpubHrefSuffix(suffix: String): String {
+    val fragmentIndex = suffix.indexOf('#')
+    val query = if (fragmentIndex < 0) suffix else suffix.substring(0, fragmentIndex)
+    val fragment = if (fragmentIndex < 0) "" else suffix.substring(fragmentIndex)
+
+    // Encodes a single component while keeping its leading `?`/`#` separator intact.
+    fun encodeComponent(component: String, separator: Char): String =
+        component.takeIf { it.startsWith(separator) }
+            ?.let { separator + it.drop(1).percentEncodedQueryOrFragment() }
+            ?: component
+
+    return encodeComponent(query, '?') + encodeComponent(fragment, '#')
+}
 
 /**
  * Creates a URL pointing to this [File] which must denote an absolute path.
