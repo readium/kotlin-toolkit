@@ -485,6 +485,20 @@ internal open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebV
     @android.webkit.JavascriptInterface
     fun getViewportWidth(): Int = width
 
+    /**
+     * Called from the JS code when the content layout changed (e.g. after applying new reading
+     * preferences), as the current progression might be different even if the scroll offset did
+     * not change.
+     *
+     * See https://github.com/readium/kotlin-toolkit/issues/761
+     */
+    @android.webkit.JavascriptInterface
+    fun onContentSizeChanged() {
+        uiScope.launch {
+            listener?.onProgressionChanged()
+        }
+    }
+
     @android.webkit.JavascriptInterface
     fun logError(message: String, filename: String, line: Int) {
         Timber.e("JavaScript error: $filename:$line $message")
