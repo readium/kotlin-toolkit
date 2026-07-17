@@ -4,7 +4,18 @@ All notable changes to this project will be documented in this file. Take a look
 
 **Warning:** Features marked as *experimental* may change or be removed in a future release without notice. Use with caution.
 
-<!-- ## [Unreleased] -->
+## [Unreleased]
+
+### Fixed
+
+#### Navigator
+
+* Fixed the Pdfium navigator reporting page positions off by one: `currentLocator` was
+  one page ahead of the visible page, the first page was never reported, and the last
+  page never updated `currentLocator` ([#812](https://github.com/readium/kotlin-toolkit/pull/812)).
+    * **You must migrate persisted `Locator` objects created by the Pdfium navigator**
+      (bookmarks, reading progression) — stored positions were one page too high. Take a
+      look at [the migration guide](docs/migration-guide.md).
 
 ## [3.3.0] - 2026-06-02
 
