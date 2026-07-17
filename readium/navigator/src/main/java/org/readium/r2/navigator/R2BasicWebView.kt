@@ -530,6 +530,13 @@ internal open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebV
         runJavaScript("readium.removeProperty(\"$key\");")
     }
 
+    /**
+     * Pauses all the media elements (e.g. `<audio>` or `<video>`) in the resource.
+     */
+    internal fun pauseAllMedia() {
+        runJavaScript("readium.pauseAllMedia();")
+    }
+
     fun getCurrentSelectionInfo(callback: (String) -> Unit) {
         runJavaScript("getCurrentSelectionInfo();", callback)
     }

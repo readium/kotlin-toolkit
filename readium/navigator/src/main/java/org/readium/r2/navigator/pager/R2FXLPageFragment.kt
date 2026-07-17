@@ -142,6 +142,18 @@ internal class R2FXLPageFragment : Fragment() {
         super.onDestroyView()
     }
 
+    /**
+     * Called when the fragment is not the currently visible page anymore, for example after
+     * turning the page. Pauses any HTML media element (e.g. `<audio>` or `<video>`) still playing.
+     *
+     * See https://github.com/readium/kotlin-toolkit/issues/145
+     */
+    internal fun onPageBecameInvisible() {
+        for (webView in webViews) {
+            webView.pauseAllMedia()
+        }
+    }
+
     @SuppressLint("SetJavaScriptEnabled")
     private fun setupWebView(webView: R2BasicWebView, link: Link?, resourceUrl: Url?) {
         webViews.add(webView)

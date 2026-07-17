@@ -62,6 +62,15 @@ internal class R2PagerAdapter internal constructor(
 
     override fun setPrimaryItem(container: ViewGroup, position: Int, `object`: Any) {
         if (getCurrentFragment() !== `object`) {
+            // Notifies the previously visible page that it will be hidden, for
+            // example to pause any playing media.
+            // See https://github.com/readium/kotlin-toolkit/issues/145
+            when (val hiddenFragment = currentFragment) {
+                is R2EpubPageFragment -> hiddenFragment.onPageBecameInvisible()
+                is R2FXLPageFragment -> hiddenFragment.onPageBecameInvisible()
+                else -> {}
+            }
+
             currentFragment = `object` as Fragment
             nextFragment = mFragments.get(getItemId(position + 1))
             previousFragment = mFragments.get(getItemId(position - 1))
