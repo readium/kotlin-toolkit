@@ -93,6 +93,15 @@ export function isScrollModeEnabled() {
   );
 }
 
+// Pauses all the media elements (e.g. audio or video) in the document, for
+// example when the page is not visible anymore after turning the page.
+// See https://github.com/readium/kotlin-toolkit/issues/145
+export function pauseAllMedia() {
+  document.querySelectorAll("audio, video").forEach((media) => {
+    media.pause();
+  });
+}
+
 export function isRTL() {
   return document.body.dir.toLowerCase() == "rtl";
 }

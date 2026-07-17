@@ -9,6 +9,7 @@
 import "./gestures";
 import "./keyboard";
 import {
+  pauseAllMedia,
   removeProperty,
   scrollLeft,
   scrollRight,
@@ -37,6 +38,7 @@ window.readium = {
   setCSSProperties: setCSSProperties,
   setProperty: setProperty,
   removeProperty: removeProperty,
+  pauseAllMedia: pauseAllMedia,
 
   // selection
   getCurrentSelection: getCurrentSelection,

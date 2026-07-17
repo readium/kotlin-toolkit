@@ -474,6 +474,16 @@ internal class R2EpubPageFragment : Fragment() {
         }
     }
 
+    /**
+     * Called when the fragment is not the currently visible page anymore, for example after
+     * turning the page. Pauses any HTML media element (e.g. `<audio>` or `<video>`) still playing.
+     *
+     * See https://github.com/readium/kotlin-toolkit/issues/145
+     */
+    internal fun onPageBecameInvisible() {
+        webView?.pauseAllMedia()
+    }
+
     fun runJavaScript(script: String, callback: ((String) -> Unit)? = null) {
         whenPageFinished {
             requireNotNull(webView).runJavaScript(script, callback)
