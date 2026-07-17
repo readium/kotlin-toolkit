@@ -12,6 +12,10 @@ All notable changes to this project will be documented in this file. Take a look
 
 * EPUB HREFs that are not percent-encoded but carry a fragment or query (e.g. `chapter one.xhtml#section`, with a space in the filename) now keep their `#fragment`/`?query` instead of encoding the separators into the path. This fixes table of contents and Media Overlays links failing to resolve and navigate in poorly-authored EPUBs.
 
+#### Navigator
+
+* [#771](https://github.com/readium/kotlin-toolkit/issues/771) Calling `go()` on the `AudioNavigator` with a locator containing only a `progression` (no time fragment) now seeks proportionally to the resource duration, instead of restarting the audio file from the beginning.
+
 
 ## [3.3.0] - 2026-06-02
 
