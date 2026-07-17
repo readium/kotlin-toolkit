@@ -2,9 +2,9 @@
 
 package org.readium.r2.shared.publication
 
-import org.readium.r2.shared.util.Parcelable
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.util.MapCompanion
+import org.readium.r2.shared.util.Parcelable
 import org.readium.r2.shared.util.Parcelize
 
 /**

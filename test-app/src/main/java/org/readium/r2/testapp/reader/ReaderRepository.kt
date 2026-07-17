@@ -11,7 +11,6 @@ package org.readium.r2.testapp.reader
 import android.app.Application
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences as JetpackPreferences
-import org.readium.r2.shared.util.json.toJsonObjectOrNull
 import org.readium.adapter.exoplayer.audio.ExoPlayerEngineProvider
 import org.readium.adapter.pdfium.navigator.PdfiumEngineProvider
 import org.readium.navigator.media.audio.AudioNavigatorFactory
@@ -27,6 +26,7 @@ import org.readium.r2.shared.publication.services.protectionError
 import org.readium.r2.shared.util.DebugError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.getOrElse
+import org.readium.r2.shared.util.json.toJsonObjectOrNull
 import org.readium.r2.testapp.Readium
 import org.readium.r2.testapp.data.BookRepository
 import org.readium.r2.testapp.domain.PublicationError

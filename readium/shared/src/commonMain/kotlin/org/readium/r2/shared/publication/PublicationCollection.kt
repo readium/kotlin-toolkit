@@ -11,7 +11,6 @@
 
 package org.readium.r2.shared.publication
 
-import org.readium.r2.shared.util.Parcelable
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
@@ -19,12 +18,13 @@ import kotlinx.serialization.json.JsonObjectBuilder
 import kotlinx.serialization.json.buildJsonObject
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.JSONable
+import org.readium.r2.shared.util.Parcelable
 import org.readium.r2.shared.util.Parcelize
 import org.readium.r2.shared.util.WriteWith
 import org.readium.r2.shared.util.json.JsonMapParceler
 import org.readium.r2.shared.util.json.putIfNotEmpty
-import org.readium.r2.shared.util.json.toMap
 import org.readium.r2.shared.util.json.toJsonObject
+import org.readium.r2.shared.util.json.toMap
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.logging.log
 

@@ -32,7 +32,7 @@ class AssetSnifferTest {
 
     private val fixtures = ClasspathFixtures("util/asset")
 
-    private val sniffer = AssetSniffer()
+    private val sniffer = AssetSniffer(DefaultFormatSniffer(), DefaultArchiveOpener())
 
     private suspend fun AssetSniffer.sniffHints(formatHints: FormatHints): Try<Format, AssetSniffer.SniffError> =
         sniff(hints = formatHints, source = Either.Right(EmptyContainer()))

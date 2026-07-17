@@ -12,9 +12,9 @@
 
 package org.readium.r2.shared.publication.epub
 
-import org.readium.r2.shared.util.Parcelable
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.util.MapCompanion
+import org.readium.r2.shared.util.Parcelable
 import org.readium.r2.shared.util.Parcelize
 
 /**

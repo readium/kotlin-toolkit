@@ -11,9 +11,9 @@ package org.readium.r2.testapp.data.model
 import androidx.annotation.ColorInt
 import androidx.room.*
 import org.readium.r2.shared.InternalReadiumApi
-import org.readium.r2.shared.util.json.toJsonObjectOrNull
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.json.toJsonObjectOrNull
 import org.readium.r2.shared.util.mediatype.MediaType
 
 /**

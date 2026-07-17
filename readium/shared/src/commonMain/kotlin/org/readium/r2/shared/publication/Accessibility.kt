@@ -8,7 +8,6 @@
 
 package org.readium.r2.shared.publication
 
-import org.readium.r2.shared.util.Parcelable
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonArray
@@ -18,11 +17,6 @@ import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.JSONable
-import org.readium.r2.shared.util.json.optNullableString
-import org.readium.r2.shared.util.json.optStringsFromArrayOrSingle
-import org.readium.r2.shared.util.json.putIfNotEmpty
-import org.readium.r2.shared.util.json.putIfNotNull
-import org.readium.r2.shared.util.json.stringOrNull
 import org.readium.r2.shared.publication.Accessibility.AccessMode.Companion.toJSONArray
 import org.readium.r2.shared.publication.Accessibility.Exemption.Companion.toJSONArray
 import org.readium.r2.shared.publication.Accessibility.Feature.Companion.toJSONArray
@@ -30,7 +24,13 @@ import org.readium.r2.shared.publication.Accessibility.Hazard.Companion.toJSONAr
 import org.readium.r2.shared.publication.Accessibility.PrimaryAccessMode.Companion.toJSONArray
 import org.readium.r2.shared.publication.Accessibility.Profile.Companion.toJSONArray
 import org.readium.r2.shared.util.MapCompanion
+import org.readium.r2.shared.util.Parcelable
 import org.readium.r2.shared.util.Parcelize
+import org.readium.r2.shared.util.json.optNullableString
+import org.readium.r2.shared.util.json.optStringsFromArrayOrSingle
+import org.readium.r2.shared.util.json.putIfNotEmpty
+import org.readium.r2.shared.util.json.putIfNotNull
+import org.readium.r2.shared.util.json.stringOrNull
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.logging.log
 
@@ -824,9 +824,10 @@ public data class Accessibility(
                     when (element) {
                         is JsonArray -> PrimaryAccessMode.fromJSONArray(element).toSet()
                             .takeUnless(Set<PrimaryAccessMode>::isEmpty)
-                        else -> element.stringOrNull
-                            ?.let { setOfNotNull(PrimaryAccessMode(it)) }
-                            ?.takeUnless(Set<PrimaryAccessMode>::isEmpty)
+                        else ->
+                            element.stringOrNull
+                                ?.let { setOfNotNull(PrimaryAccessMode(it)) }
+                                ?.takeUnless(Set<PrimaryAccessMode>::isEmpty)
                     }
                 }.orEmpty()
 

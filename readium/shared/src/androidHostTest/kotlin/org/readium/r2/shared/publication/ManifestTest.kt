@@ -11,11 +11,11 @@
 
 package org.readium.r2.shared.publication
 
-import org.readium.r2.shared.InternalReadiumApi
 import kotlin.test.assertEquals
 import org.junit.Assert
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.assertJSONEquals
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.json.toJsonObjectOrNull

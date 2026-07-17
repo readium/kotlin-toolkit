@@ -19,6 +19,7 @@ import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.PublicationServicesHolder
 import org.readium.r2.shared.publication.ServiceFactory
 import org.readium.r2.shared.util.MemoryObserver
+import org.readium.r2.shared.util.asComponentCallbacks2
 import org.readium.r2.shared.util.cache.Cache
 import org.readium.r2.shared.util.cache.InMemoryCache
 

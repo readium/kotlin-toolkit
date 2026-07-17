@@ -13,7 +13,6 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
-import org.readium.r2.shared.util.json.toJsonObjectOrNull
 import org.readium.r2.opds.OPDS1Parser
 import org.readium.r2.opds.OPDS2Parser
 import org.readium.r2.shared.opds.ParseData
@@ -23,6 +22,7 @@ import org.readium.r2.shared.util.Error
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.http.HttpRequest
 import org.readium.r2.shared.util.http.fetchWithDecoder
+import org.readium.r2.shared.util.json.toJsonObjectOrNull
 import org.readium.r2.testapp.data.CatalogRepository
 import org.readium.r2.testapp.data.db.AppDatabase
 import org.readium.r2.testapp.data.model.Catalog

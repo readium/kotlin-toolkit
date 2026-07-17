@@ -11,12 +11,12 @@
 
 package org.readium.r2.shared.publication.encryption
 
-import org.readium.r2.shared.util.Parcelable
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.JSONable
+import org.readium.r2.shared.util.Parcelable
 import org.readium.r2.shared.util.Parcelize
 import org.readium.r2.shared.util.json.optNullableLong
 import org.readium.r2.shared.util.json.optNullableString

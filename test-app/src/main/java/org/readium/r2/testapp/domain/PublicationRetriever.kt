@@ -18,6 +18,8 @@ import org.readium.r2.shared.util.DebugError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.asset.AssetRetriever
 import org.readium.r2.shared.util.asset.ResourceAsset
+import org.readium.r2.shared.util.asset.retrieve
+import org.readium.r2.shared.util.asset.sniffFormat
 import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.file.FileSystemError
 import org.readium.r2.shared.util.format.Format

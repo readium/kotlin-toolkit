@@ -140,4 +140,3 @@ public object InstantSerializer : KSerializer<Instant> {
         encoder.encodeString(value.toString())
     }
 }
-

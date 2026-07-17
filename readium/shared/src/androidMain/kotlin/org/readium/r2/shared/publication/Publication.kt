@@ -6,7 +6,7 @@
 
 @file:OptIn(InternalReadiumApi::class)
 
-// TODO(kmp): move to commonMain — blocked by: util/data Container & Resource (phase 04) and publication services (phase 07)
+// TODO(kmp): move to commonMain — blocked by: publication services (phase 07)
 
 package org.readium.r2.shared.publication
 

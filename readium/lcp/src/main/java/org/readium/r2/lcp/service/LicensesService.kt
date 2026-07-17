@@ -47,6 +47,7 @@ import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.asset.Asset
 import org.readium.r2.shared.util.asset.AssetRetriever
 import org.readium.r2.shared.util.asset.ContainerAsset
+import org.readium.r2.shared.util.asset.sniffFormat
 import org.readium.r2.shared.util.format.Format
 import org.readium.r2.shared.util.format.FormatHints
 import org.readium.r2.shared.util.format.FormatSpecification

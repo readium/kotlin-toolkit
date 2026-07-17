@@ -20,9 +20,9 @@ import org.readium.r2.shared.DelicateReadiumApi
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.JSONable
 import org.readium.r2.shared.toJSON
+import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.json.optStringsFromArrayOrSingle
 import org.readium.r2.shared.util.json.putIfNotEmpty
-import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.logging.ConsoleWarningLogger
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.logging.log

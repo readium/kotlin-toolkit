@@ -11,7 +11,6 @@
 
 package org.readium.r2.shared.opds
 
-import org.readium.r2.shared.util.Parcelable
 import kotlin.time.Instant
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
@@ -21,6 +20,7 @@ import org.readium.r2.shared.JSONable
 import org.readium.r2.shared.extensions.toInstant
 import org.readium.r2.shared.util.InstantParceler
 import org.readium.r2.shared.util.MapCompanion
+import org.readium.r2.shared.util.Parcelable
 import org.readium.r2.shared.util.Parcelize
 import org.readium.r2.shared.util.TypeParceler
 import org.readium.r2.shared.util.json.optNullableString

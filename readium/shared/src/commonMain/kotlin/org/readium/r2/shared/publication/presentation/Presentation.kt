@@ -12,7 +12,6 @@
 
 package org.readium.r2.shared.publication.presentation
 
-import org.readium.r2.shared.util.Parcelable
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonObject
@@ -20,12 +19,13 @@ import kotlinx.serialization.json.buildJsonObject
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.JSONable
 import org.readium.r2.shared.publication.Properties
+import org.readium.r2.shared.publication.epub.EpubLayout
+import org.readium.r2.shared.util.MapCompanion
+import org.readium.r2.shared.util.Parcelable
+import org.readium.r2.shared.util.Parcelize
 import org.readium.r2.shared.util.json.optNullableBoolean
 import org.readium.r2.shared.util.json.optString
 import org.readium.r2.shared.util.json.putIfNotNull
-import org.readium.r2.shared.publication.epub.EpubLayout
-import org.readium.r2.shared.util.MapCompanion
-import org.readium.r2.shared.util.Parcelize
 
 /**
  * The Presentation Hints extension defines a number of hints for User Agents about the way content

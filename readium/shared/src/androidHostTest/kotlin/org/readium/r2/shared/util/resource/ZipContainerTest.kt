@@ -18,6 +18,7 @@ import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.readium.r2.shared.Fixtures
 import org.readium.r2.shared.util.FileExtension
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.checkSuccess
@@ -40,8 +41,7 @@ class ZipContainerTest(val sut: suspend () -> Container<Resource>) {
         @ParameterizedRobolectricTestRunner.Parameters
         @JvmStatic
         fun archives(): List<suspend () -> Container<Resource>> {
-            val epubZip = ZipContainerTest::class.java.getResource("epub.epub")
-            assertNotNull(epubZip)
+            val epubZip = Fixtures("resource").path("epub.epub").toFile()
             val format = Format(
                 specification = FormatSpecification(Specification.Zip, Specification.Epub),
                 mediaType = MediaType.EPUB,
@@ -51,14 +51,14 @@ class ZipContainerTest(val sut: suspend () -> Container<Resource>) {
             val zipArchive = suspend {
                 assertNotNull(
                     FileZipArchiveProvider()
-                        .open(format, File(epubZip.path))
+                        .open(format, epubZip)
                         .getOrNull()
                 )
             }
 
             val apacheZipArchive = suspend {
                 StreamingZipArchiveProvider()
-                    .openFile(File(epubZip.path))
+                    .openFile(epubZip)
             }
 
             val epubExploded = ZipContainerTest::class.java.getResource("epub")

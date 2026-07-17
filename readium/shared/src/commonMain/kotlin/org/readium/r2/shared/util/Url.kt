@@ -591,3 +591,26 @@ public fun <T> Map<Url, T>.getEquivalent(key: Url): T? =
         keys.firstOrNull { it.normalize() == url }
             ?.let { get(it) }
     }
+
+/**
+ * Creates a `file://` [AbsoluteUrl] from a percent-decoded absolute file system [path].
+ *
+ * Returns null if [path] is not absolute.
+ *
+ * @param isDirectory If the URL must end with a trailing slash because it points to a directory.
+ */
+public fun AbsoluteUrl.Companion.fromFilePath(
+    path: String,
+    isDirectory: Boolean = false,
+): AbsoluteUrl? {
+    if (!path.startsWith('/')) return null
+
+    val uri = Uri.Builder().also {
+        it.scheme("file")
+        it.authority("")
+        it.path(path)
+        if (isDirectory) it.appendPath("")
+    }.build()
+
+    return AbsoluteUrl(uri)
+}

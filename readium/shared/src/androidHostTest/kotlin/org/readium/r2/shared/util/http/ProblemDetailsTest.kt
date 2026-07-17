@@ -2,11 +2,11 @@
 
 package org.readium.r2.shared.util.http
 
-import org.readium.r2.shared.InternalReadiumApi
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.util.json.toJsonObjectOrNull
 import org.robolectric.RobolectricTestRunner
 

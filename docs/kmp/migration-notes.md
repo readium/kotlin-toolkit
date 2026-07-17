@@ -103,3 +103,58 @@ Moved with unchanged package names: `JSONable`, `util/logging/WarningLogger.kt`,
 Deferred to later phases (still `androidMain`, marked `// TODO(kmp)`): `Publication` (needs `Container`/`Resource` from phase 04 and services from phase 07), and therefore `Metadata`, `Manifest`, `presentation/Metadata`, `opds/Feed`, `opds/Group` which reference `Publication`.
 
 Their test suites moved to `commonTest` (kotlin-test) and now also run on the iOS simulator. Test names lost characters not allowed in Kotlin/Native identifiers (`{}`, `[]`, …).
+
+## Phase 04 — I/O core onto Okio
+
+The I/O core (`util/data`, `util/file`, `util/resource`, `util/asset`, `util/cache`, `util/archive`, `util/format/Sniffing.kt`) moved to `commonMain`, backed internally by Okio (`FileSystem` + `FileHandle` for positional reads). Readium's `Readable`/`Resource`/`Container` abstractions remain the public API; Okio types are not exposed.
+
+### File references are now `file://` URLs
+
+`AbsoluteUrl` (file scheme) is the canonical cross-platform file reference; `java.io.File` entry points remain as Android-only conveniences.
+
+- `FileResource(file: File)` — **was a constructor**, now an `androidMain` factory function with the same call syntax (`util/file/FileAndroid.kt`). The class constructor is now `FileResource(url: AbsoluteUrl)` and requires a `file://` URL.
+- `DirectoryContainer(root: File)` — the companion factory is now `DirectoryContainer(root: AbsoluteUrl)` in `commonMain`; a suspend `DirectoryContainer(root: File)` function keeps the Android call syntax. The public constructor changed from `DirectoryContainer(root: File, entries: Set<Url>)` to `DirectoryContainer(root: AbsoluteUrl, entries: Set<Url>)`.
+- New common API: `AbsoluteUrl.fromFilePath(path: String, isDirectory: Boolean = false): AbsoluteUrl?` creates a `file://` URL from a percent-decoded absolute path (this is what KMP consumers use instead of `File.toUrl`).
+- `FileResource` error mapping no longer distinguishes `SecurityException` (previously `FileSystemError.Forbidden`): Okio surfaces access errors as `IOException` → `FileSystemError.IO`.
+- `DirectoryContainer` error mapping changed deliberately: a missing (or unlistable) root directory now fails with `FileSystemError.FileNotFound` instead of succeeding with an empty container (`File.walk` used to swallow the error); other listing I/O failures map to `FileSystemError.IO`. The `SecurityException` → `FileSystemError.Forbidden` mapping is gone (JVM-only type; Okio surfaces access errors as `IOException`). Cancellation and unexpected exceptions now propagate instead of being wrapped.
+
+### `AssetRetriever` Android conveniences became extensions (`util/asset/AssetRetrieverAndroid.kt`)
+
+Call syntax is unchanged, but Android callers may need new imports:
+
+- `AssetRetriever(contentResolver, httpClient)` — **was a constructor**, now an `androidMain` factory function. No import change (imported together with the class name).
+- `retrieve(file: File, formatHints)` / `retrieve(file: File, mediaType)` — **were members**, now extensions; add `import org.readium.r2.shared.util.asset.retrieve`.
+- `sniffFormat(file: File, hints)` — **was a member**, now an extension; add `import org.readium.r2.shared.util.asset.sniffFormat`.
+- The primary common constructor `AssetRetriever(resourceFactory, archiveOpener, formatSniffer)` is unchanged. `DefaultResourceFactory`, `DefaultArchiveOpener` and `DefaultFormatSniffer` stay `androidMain` until the sniffers and ZIP stack move (phases 05–07).
+
+### `ReadException` extends `okio.IOException`
+
+`ReadException` now subclasses `okio.IOException`, which on Android/JVM **is** `java.io.IOException` (typealias) — no change for Android consumers; on iOS it is Okio's own `IOException` class.
+
+### `OutOfMemoryError` expect/actual
+
+`ReadError.OutOfMemory` / `DecodeError.OutOfMemory` reference `org.readium.r2.shared.OutOfMemoryError`, an expect class actual-typealiased to `java.lang.OutOfMemoryError` on Android (binary/source compatible) and `kotlin.OutOfMemoryError` on iOS.
+
+### Decoding
+
+- `ByteArray.decodeString()` (UTF-8) and `decodeJson()` are `commonMain`. The charset-parametrized overload `decodeString(charset: Charset)` is `androidMain` (no default value anymore — calling `decodeString()` resolves to the common UTF-8 version, same behavior).
+- `decodeXml()` (needs `XmlParser`, phase 06), `decodeRwpm()` (needs `Manifest`, phase 07) and `decodeBitmap()` (needs the KMP image type, phase 07) stay `androidMain` in `util/data/DecodingAndroid.kt`.
+- `Readable.asInputStream()` and the other `Readable` ↔ `java.io.InputStream` adapters stay `androidMain` permanently; common code uses `Readable` directly.
+
+### `FormatHints.charset` became an Android extension
+
+`FormatHints.charset: Charset?` — **was a member** of `FormatHints`, now an `androidMain` extension (`util/format/SniffingAndroid.kt`); add `import org.readium.r2.shared.util.format.charset` if you used it.
+
+### `MemoryObserver` Android helpers became extensions (`util/MemoryObserverAndroid.kt`)
+
+`MemoryObserver` (interface + `Level`, both `@InternalReadiumApi`) is `commonMain`. `Level.fromLevel(Int)` and `MemoryObserver.asComponentCallbacks2(...)` — **were companion members**, now `androidMain` companion extensions; call syntax unchanged, add imports `org.readium.r2.shared.util.fromLevel` / `org.readium.r2.shared.util.asComponentCallbacks2`.
+
+### `toString()` of in-memory resources no longer reads content
+
+`InMemoryResource.toString()` and `StringResource.toString()` used `runBlocking` to read their content; `runBlocking` is banned from common code, so they now print the byte count (when already loaded) or a placeholder. `AssetSniffer` (internal) lost its default constructor arguments (`DefaultFormatSniffer()`/`DefaultArchiveOpener()` are Android-only).
+
+### Relocations to `commonMain` (no API change unless noted)
+
+Moved with unchanged package names: `util/data` (`Reading`, `Container`, `Buffering`, `Caching`, `Decoding` minus the Android-only parts above), `util/file` (`FileResource`, `DirectoryContainer`, `FileResourceFactory`, `FileSystemError`), `util/resource` (all 12 files except `content/ResourceContentExtractor.kt`, which waits for Ksoup in phase 07), `util/asset` (`Asset`, `AssetRetriever`, `AssetSniffer`; `Defaults.kt` stays `androidMain`), `util/cache/Cache.kt`, `util/archive` (`ArchiveOpener`, `ArchiveProperties`), `util/format/Sniffing.kt` (`FormatHints`, `FormatSniffer` & co; `Sniffers.kt` implementations stay `androidMain` until phases 06–07), `util/MemoryObserver.kt`. `DEFAULT_BUFFER_SIZE` used in `buffered()` signatures is now Readium's own `@InternalReadiumApi` constant in `util/data` (same value, 8 KiB, as `kotlin.io.DEFAULT_BUFFER_SIZE`).
+
+Their test suites (`DirectoryContainerTest`, `BufferingResourceTest`, resource `PropertiesTest`) moved to `commonTest` (kotlin-test + `Fixtures`) and also run on the iOS simulator. `ZipContainerTest`, `ReadableInputStreamAdapterTest`, `AssetSnifferTest` and `DefaultSniffersTest` stay in `androidHostTest` until their subjects move (phases 05–07).

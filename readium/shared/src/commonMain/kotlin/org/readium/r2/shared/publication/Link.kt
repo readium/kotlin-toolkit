@@ -11,14 +11,15 @@
 
 package org.readium.r2.shared.publication
 
-import org.readium.r2.shared.util.Parcelable
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.JSONable
+import org.readium.r2.shared.util.Parcelable
 import org.readium.r2.shared.util.Parcelize
+import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.json.optBoolean
 import org.readium.r2.shared.util.json.optJsonArray
 import org.readium.r2.shared.util.json.optJsonObject
@@ -29,7 +30,6 @@ import org.readium.r2.shared.util.json.optStringsFromArrayOrSingle
 import org.readium.r2.shared.util.json.parseObjects
 import org.readium.r2.shared.util.json.putIfNotEmpty
 import org.readium.r2.shared.util.json.putIfNotNull
-import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.logging.log
 import org.readium.r2.shared.util.mediatype.MediaType

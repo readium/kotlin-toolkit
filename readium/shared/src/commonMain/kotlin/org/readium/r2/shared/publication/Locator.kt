@@ -11,7 +11,6 @@
 
 package org.readium.r2.shared.publication
 
-import org.readium.r2.shared.util.Parcelable
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
@@ -20,7 +19,11 @@ import org.readium.r2.shared.DelicateReadiumApi
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.JSONable
 import org.readium.r2.shared.toJSON
+import org.readium.r2.shared.util.Parcelable
 import org.readium.r2.shared.util.Parcelize
+import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.WriteWith
+import org.readium.r2.shared.util.fromLegacyHref
 import org.readium.r2.shared.util.json.JsonMapParceler
 import org.readium.r2.shared.util.json.optJsonArray
 import org.readium.r2.shared.util.json.optJsonObject
@@ -34,9 +37,6 @@ import org.readium.r2.shared.util.json.putAll
 import org.readium.r2.shared.util.json.putIfNotEmpty
 import org.readium.r2.shared.util.json.putIfNotNull
 import org.readium.r2.shared.util.json.toMap
-import org.readium.r2.shared.util.Url
-import org.readium.r2.shared.util.WriteWith
-import org.readium.r2.shared.util.fromLegacyHref
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.logging.log
 import org.readium.r2.shared.util.mediatype.MediaType

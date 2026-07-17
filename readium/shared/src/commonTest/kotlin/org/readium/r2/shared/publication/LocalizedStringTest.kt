@@ -11,13 +11,13 @@
 
 package org.readium.r2.shared.publication
 
-import org.readium.r2.shared.util.defaultLanguageTag
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 import kotlinx.serialization.json.JsonPrimitive
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.assertJSONEquals
+import org.readium.r2.shared.util.defaultLanguageTag
 import org.readium.r2.shared.util.json.toJsonArrayOrNull
 import org.readium.r2.shared.util.json.toJsonObjectOrNull
 

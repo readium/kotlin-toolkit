@@ -28,15 +28,7 @@ public fun AbsoluteUrl.toFile(): File? =
  */
 public fun File.toUrl(isDirectory: Boolean): AbsoluteUrl {
     require(isAbsolute)
-
-    val uri = KmpUri.Builder().also {
-        it.scheme("file")
-        it.authority("")
-        it.path(path)
-        if (isDirectory) it.appendPath("")
-    }.build()
-
-    return checkNotNull(AbsoluteUrl(uri))
+    return checkNotNull(AbsoluteUrl.fromFilePath(path, isDirectory))
 }
 
 public fun Uri.toUrl(): Url? =

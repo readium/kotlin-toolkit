@@ -25,9 +25,9 @@ import kotlinx.serialization.json.put
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.JSONable
 import org.readium.r2.shared.publication.Locator
+import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.json.JsonMapParceler
 import org.readium.r2.shared.util.json.putIfNotNull
-import org.readium.r2.shared.util.Url
 
 /**
  * A navigator able to render arbitrary decorations over a publication.
