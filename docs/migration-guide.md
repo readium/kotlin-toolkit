@@ -27,17 +27,23 @@ publication's position list:
 ​```kotlin
 /**
  * Corrects a PDF [locator] persisted by the Pdfium navigator before this version.
- * Stored positions were one page too high; re-resolving from `positions()` also
- * corrects `totalProgression`.
+ *
+ * The navigator reported page indices one too high, so a stored `position` is
+ * `actual page + 1`. Re-resolving the corrected page from `positions()` also fixes
+ * `totalProgression`.
  */
 suspend fun migratePdfiumLocator(publication: Publication, locator: Locator): Locator {
     val position = locator.locations.position ?: return locator
-    // positions() is 0-based; a stored position N was created from page index N - 2.
+    // Two different -1s are stacked here, and only the first is the bug fix:
+    //   -1 to undo the off-by-one in the stored position;
+    //   -1 more to convert the (by-design) 1-based `position` into an index into the
+    //      0-based `positions()` list, whose element k carries `position == k + 1`.
+    // (`getOrNull(position - 1)` would be a no-op: it returns the element whose
+    // `position` equals the stored value.)
     return publication.positions().getOrNull(position - 2)
         ?: locator // Position 1 (only ever the initial value, i.e. page 1) or out of
                    // range: correct as-is, keep unchanged.
-}
-​```
+}```
 
 Apply the migration once per stored locator, and only to locators created by the Pdfium
 navigator. Locators your app computed itself from `publication.positions()` are
