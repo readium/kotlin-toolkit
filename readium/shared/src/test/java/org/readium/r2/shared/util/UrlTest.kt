@@ -85,6 +85,63 @@ class UrlTest {
     }
 
     @Test
+    fun createFromEpubHref() {
+        fun testEpub(href: String, expected: String) {
+            val url = Url.fromEpubHref(href)
+            assertNotNull(url)
+            assertEquals(expected, url.toString())
+        }
+
+        // Valid percent-encoded HREFs are used as-is.
+        testEpub("dir/chapter.xhtml", "dir/chapter.xhtml")
+        testEpub("dir/chapter.xhtml#frag", "dir/chapter.xhtml#frag")
+        testEpub("dir/chapter.xhtml?q=1#frag", "dir/chapter.xhtml?q=1#frag")
+        // Already-encoded characters are not re-encoded.
+        testEpub("dir/chapter%20one.xhtml#frag", "dir/chapter%20one.xhtml#frag")
+
+        // Decoded paths without separators are percent-encoded.
+        testEpub("dir/chapter one.xhtml", "dir/chapter%20one.xhtml")
+        testEpub("/dir/chapter one.xhtml", "/dir/chapter%20one.xhtml")
+
+        // When the path is not percent-encoded, only the path is encoded while the `?query` and
+        // `#fragment` — and their separators — are preserved verbatim.
+        testEpub(
+            "../content/Harry Potter 1.xhtml#fragment-01",
+            "../content/Harry%20Potter%201.xhtml#fragment-01"
+        )
+        testEpub("/dir/my file.xhtml#frag", "/dir/my%20file.xhtml#frag")
+        testEpub("dir/my file.xhtml?q=1", "dir/my%20file.xhtml?q=1")
+        testEpub("dir/my file.xhtml?q=1#frag", "dir/my%20file.xhtml?q=1#frag")
+
+        // An already-encoded fragment is not double-encoded.
+        testEpub("hello world#properly%20encoded", "hello%20world#properly%20encoded")
+
+        // A question mark inside the fragment is kept in the fragment.
+        testEpub("dir/a b.xhtml#f?x", "dir/a%20b.xhtml#f?x")
+
+        // Media Overlays clip URL (from the SMIL parser): the comma is valid in a fragment and is
+        // kept, while the space in the path is encoded.
+        testEpub("audio/my file.mp3#t=0.5,10.2", "audio/my%20file.mp3#t=0.5,10.2")
+
+        // A raw space in the fragment or query is invalid for Java's URI parser, so reassembly fails
+        // and we fall back to encoding the invalid characters of the query/fragment, following the
+        // same policy as the path.
+        testEpub("chapter one.xhtml#foo bar", "chapter%20one.xhtml#foo%20bar")
+        testEpub("chapter one.xhtml?foo bar", "chapter%20one.xhtml?foo%20bar")
+        testEpub("chapter one.xhtml?a b#c d", "chapter%20one.xhtml?a%20b#c%20d")
+        // The query structure (`&` and `=`) is preserved while invalid characters are encoded.
+        testEpub("my file.xhtml?a=b c&d=e", "my%20file.xhtml?a=b%20c&d=e")
+        // A partially-encoded query or fragment keeps its existing percent escapes instead of
+        // double-encoding them (`%20` must stay `%20`, not become `%2520`) when a raw space forces
+        // the fallback encoding.
+        testEpub("my file.xhtml#foo%20bar baz", "my%20file.xhtml#foo%20bar%20baz")
+        testEpub("my file.xhtml?a=b%20c&d=e f", "my%20file.xhtml?a=b%20c&d=e%20f")
+
+        // Returns null for an empty HREF.
+        assertNull(Url.fromEpubHref(""))
+    }
+
+    @Test
     fun createFromFragmentOnly() {
         assertEquals(RelativeUrl(Uri.parse("#fragment")), Url("#fragment"))
     }
