@@ -82,6 +82,7 @@ import org.readium.r2.navigator.util.createFragmentFactory
 import org.readium.r2.shared.DelicateReadiumApi
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.InternalReadiumApi
+import org.readium.r2.shared.extensions.optNullableString
 import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.publication.Href
 import org.readium.r2.shared.publication.Layout
@@ -713,8 +714,21 @@ public class EpubNavigatorFragment internal constructor(
         val rect = json.optRectF("rect")
             ?.run { adjustedToViewport() }
 
+        val locator = currentLocator.value
+        val cssSelector = json.optNullableString("cssSelector")
+        val locations = locator.locations.copy(
+            otherLocations = buildMap {
+                putAll(locator.locations.otherLocations)
+                // The inherited `cssSelector` (if any) does not describe the
+                // selection, so it is replaced or removed.
+                remove("cssSelector")
+                cssSelector?.let { put("cssSelector", it) }
+            }
+        )
+
         return Selection(
-            locator = currentLocator.value.copy(
+            locator = locator.copy(
+                locations = locations,
                 text = Locator.Text.fromJSON(json.optJSONObject("text"))
             ),
             rect = rect

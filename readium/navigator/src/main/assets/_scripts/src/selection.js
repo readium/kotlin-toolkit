@@ -7,6 +7,7 @@
 import { log as logNative, logError, snapCurrentOffset } from "./utils";
 import { toNativeRect } from "./rect";
 import { TextRange } from "./vendor/hypothesis/anchoring/text-range";
+import { getCssSelector } from "css-selector-generator";
 
 // Polyfill for Android API 26
 import matchAll from "string.prototype.matchall";
@@ -42,7 +43,30 @@ export function getCurrentSelection() {
     return null;
   }
   const rect = getSelectionRect();
-  return { text, rect };
+  const cssSelector = getSelectionCssSelector();
+  return { text, rect, cssSelector };
+}
+
+// Returns the CSS selector of the element containing the current selection.
+function getSelectionCssSelector() {
+  try {
+    const selection = window.getSelection();
+    if (!selection || selection.rangeCount === 0) {
+      return null;
+    }
+    const range = selection.getRangeAt(0);
+    let container = range.commonAncestorContainer;
+    if (container.nodeType !== Node.ELEMENT_NODE) {
+      container = container.parentElement;
+    }
+    if (!container) {
+      return null;
+    }
+    return getCssSelector(container);
+  } catch (e) {
+    logError(e);
+    return null;
+  }
 }
 
 function getSelectionRect() {
