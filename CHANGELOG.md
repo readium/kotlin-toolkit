@@ -12,6 +12,10 @@ All notable changes to this project will be documented in this file. Take a look
 
 * EPUB HREFs that are not percent-encoded but carry a fragment or query (e.g. `chapter one.xhtml#section`, with a space in the filename) now keep their `#fragment`/`?query` instead of encoding the separators into the path. This fixes table of contents and Media Overlays links failing to resolve and navigate in poorly-authored EPUBs.
 
+#### LCP
+
+* [#796](https://github.com/readium/kotlin-toolkit/issues/796) Fixed a crash (`UnsatisfiedLinkError`) when the `liblcp` native library cannot be loaded, for example on some rooted devices. `LcpService()` now returns `null` in this case too, and logs the cause with Timber.
+
 
 ## [3.3.0] - 2026-06-02
 
