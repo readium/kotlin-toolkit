@@ -53,8 +53,11 @@ import org.readium.navigator.common.GoLocation
 import org.readium.navigator.common.InputListener
 import org.readium.navigator.common.NavigationController
 import org.readium.navigator.common.OverflowController
+import org.readium.navigator.common.Preferences
+import org.readium.navigator.common.PreferencesController
 import org.readium.navigator.common.SelectionController
 import org.readium.navigator.common.SelectionLocation
+import org.readium.navigator.common.Settings
 import org.readium.navigator.common.TapContext
 import org.readium.navigator.common.TapEvent
 import org.readium.navigator.common.defaultHyperlinkListener
@@ -68,26 +71,31 @@ import org.readium.r2.shared.util.toUri
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun <L : ExportableLocation, G : GoLocation, S : SelectionLocation, C> Rendition(
-    readerState: ReaderState<L, G, S, C>,
+fun <L : ExportableLocation, G : GoLocation, S : SelectionLocation, P : Preferences<P>, Se : Settings, C> Rendition(
+    readerState: ReaderState<L, G, S, P, Se, C>,
     fullScreenState: MutableState<Boolean>,
-) where C : NavigationController<L, G>, C : SelectionController<S> {
+) where C : NavigationController<L, G>, C : SelectionController<S>, C : PreferencesController<P, Se> {
     val coroutineScope = rememberCoroutineScope()
 
     val showPreferences = remember { mutableStateOf(false) }
-    val preferencesSheetState = rememberModalBottomSheetState()
 
     if (showPreferences.value) {
-        ModalBottomSheet(
-            sheetState = preferencesSheetState,
-            onDismissRequest = {
-                showPreferences.value = false
+        readerState.renditionState.controller?.let { controllerNow ->
+            val preferencesViewModel = remember(controllerNow) {
+                readerState.createPreferencesViewModel(controllerNow)
             }
-        ) {
-            UserPreferences(
-                editor = readerState.preferencesEditor,
-                title = "Preferences"
-            )
+
+            ModalBottomSheet(
+                sheetState = rememberModalBottomSheetState(),
+                onDismissRequest = {
+                    showPreferences.value = false
+                }
+            ) {
+                UserPreferences(
+                    viewModel = preferencesViewModel,
+                    title = "Preferences"
+                )
+            }
         }
     }
 

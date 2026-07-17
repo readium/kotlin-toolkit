@@ -38,7 +38,8 @@ class Readium(context: Context) {
      */
     val lcpService = LcpService(
         context,
-        assetRetriever
+        assetRetriever,
+        httpClient = httpClient
     )?.let { Try.success(it) }
         ?: Try.failure(LcpError.Unknown(DebugError("liblcp is missing on the classpath")))
 

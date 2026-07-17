@@ -113,6 +113,7 @@ internal class WebViewServer(
                 if (isServedAsset(path.removePrefix("/"))) {
                     // Request is for a known asset.
                     assetsLoader.shouldInterceptRequest(request.url)
+                        ?.apply { allowCors() }
                 } else {
                     val error = ReadError.Decoding(
                         "Attempted to load an unknown asset from $requestUrl"
@@ -252,6 +253,15 @@ internal class WebViewServer(
                 )
             }
         }
+
+    /**
+     * Allow the response to be consumed by publication documents served
+     * from any origin, including the package domain.
+     */
+    private fun WebResourceResponse.allowCors() {
+        responseHeaders = responseHeaders ?: mutableMapOf()
+        responseHeaders["Access-Control-Allow-Origin"] = "*"
+    }
 
     private fun serveErrorResponse(): WebResourceResponse {
         return serveResource(errorResource(), null, MediaType.XHTML)

@@ -22,9 +22,12 @@ import org.readium.r2.lcp.license.model.components.Link
 import org.readium.r2.lcp.service.CRLService
 import org.readium.r2.lcp.service.DeviceService
 import org.readium.r2.lcp.service.LcpClient
-import org.readium.r2.lcp.service.NetworkService
 import org.readium.r2.lcp.service.PassphrasesService
+import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.getOrElse
+import org.readium.r2.shared.util.http.HttpClient
+import org.readium.r2.shared.util.http.HttpRequest
+import org.readium.r2.shared.util.http.fetch
 import org.readium.r2.shared.util.mediatype.MediaType
 import timber.log.Timber
 
@@ -118,7 +121,7 @@ internal class LicenseValidation(
     val ignoreInternetErrors: Boolean,
     val crl: CRLService,
     val device: DeviceService,
-    val network: NetworkService,
+    val httpClient: HttpClient,
     val passphrases: PassphrasesService,
     val context: android.content.Context,
     val onLicenseValidated: (LicenseDocument) -> Unit,
@@ -362,14 +365,18 @@ internal class LicenseValidation(
         val url = license.url(
             LicenseDocument.Rel.Status,
             preferredType = MediaType.LCP_STATUS_DOCUMENT
-        ).toString()
+        ) as? AbsoluteUrl
+            ?: throw LcpException(LcpError.Parsing.Url(LicenseDocument.Rel.Status.value))
         // Short timeout to avoid blocking the License, when the LSD is optional.
         val timeout = 5.seconds.takeIf { ignoreInternetErrors }
-        val data = network.fetch(
-            url,
-            timeout = timeout,
-            headers = mapOf("Accept" to MediaType.LCP_STATUS_DOCUMENT.toString())
+        val data = httpClient.fetch(
+            HttpRequest(
+                url = url,
+                connectTimeout = timeout,
+                headers = mapOf("Accept" to listOf(MediaType.LCP_STATUS_DOCUMENT.toString()))
+            )
         )
+            .map { it.body }
             .getOrElse { throw LcpException(LcpError.Network(it)) }
 
         raise(Event.retrievedStatusData(data))
@@ -384,9 +391,11 @@ internal class LicenseValidation(
         val url = status.url(
             StatusDocument.Rel.License,
             preferredType = MediaType.LCP_LICENSE_DOCUMENT
-        ).toString()
+        ) as? AbsoluteUrl
+            ?: throw LcpException(LcpError.Parsing.Url(StatusDocument.Rel.License.value))
         // Short timeout to avoid blocking the License, since it can be updated next time.
-        val data = network.fetch(url, timeout = 5.seconds)
+        val data = httpClient.fetch(HttpRequest(url, connectTimeout = 5.seconds))
+            .map { it.body }
             .getOrElse { throw LcpException(LcpError.Network(it)) }
 
         raise(Event.retrievedLicenseData(data))

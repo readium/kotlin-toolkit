@@ -7,10 +7,7 @@
 package org.readium.navigator.web.reflowable
 
 import android.app.Application
-import org.readium.navigator.web.reflowable.preferences.ReflowableWebDefaults
 import org.readium.navigator.web.reflowable.preferences.ReflowableWebPreferences
-import org.readium.navigator.web.reflowable.preferences.ReflowableWebPreferencesEditor
-import org.readium.navigator.web.reflowable.preferences.ReflowableWebSettings
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.publication.Layout
@@ -80,7 +77,7 @@ public class ReflowableWebRenditionFactory private constructor(
     }
 
     public suspend fun createRenditionState(
-        initialSettings: ReflowableWebSettings,
+        initialPreferences: ReflowableWebPreferences,
         initialLocation: ReflowableWebGoLocation? = null,
         readingOrder: List<Link> = publication.readingOrder,
         positionsService: PositionsService = this.positionsService,
@@ -104,8 +101,14 @@ public class ReflowableWebRenditionFactory private constructor(
             )
         }
 
+        val metadata = ReflowableWebPublication.Metadata(
+            readingProgression = publication.metadata.readingProgression,
+            language = publication.metadata.language
+        )
+
         val renditionPublication = ReflowableWebPublication(
             readingOrder = ReflowableWebPublication.ReadingOrder(readingOrderItems, positionNumbers),
+            metadata = metadata,
             otherResources = resourceItems,
             container = publication.container,
             baseUrl = publication.baseUrl,
@@ -118,7 +121,7 @@ public class ReflowableWebRenditionFactory private constructor(
             ReflowableWebRenditionState(
                 application = application,
                 publication = renditionPublication,
-                initialSettings = initialSettings,
+                initialPreferences = initialPreferences,
                 initialLocation = initialLocation,
                 configuration = configuration,
                 disableSelection = publication.isProtected
@@ -126,14 +129,4 @@ public class ReflowableWebRenditionFactory private constructor(
 
         return Try.success(state)
     }
-
-    public fun createPreferencesEditor(
-        initialPreferences: ReflowableWebPreferences,
-        defaults: ReflowableWebDefaults = ReflowableWebDefaults(),
-    ): ReflowableWebPreferencesEditor =
-        ReflowableWebPreferencesEditor(
-            initialPreferences,
-            publication.metadata,
-            defaults
-        )
 }

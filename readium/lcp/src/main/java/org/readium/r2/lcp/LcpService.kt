@@ -20,7 +20,6 @@ import org.readium.r2.lcp.service.DeviceService
 import org.readium.r2.lcp.service.LcpClient
 import org.readium.r2.lcp.service.LicensesRepository
 import org.readium.r2.lcp.service.LicensesService
-import org.readium.r2.lcp.service.NetworkService
 import org.readium.r2.lcp.service.PassphrasesRepository
 import org.readium.r2.lcp.service.PassphrasesService
 import org.readium.r2.shared.publication.protection.ContentProtection
@@ -29,6 +28,8 @@ import org.readium.r2.shared.util.asset.Asset
 import org.readium.r2.shared.util.asset.AssetRetriever
 import org.readium.r2.shared.util.asset.ContainerAsset
 import org.readium.r2.shared.util.format.Format
+import org.readium.r2.shared.util.http.DefaultHttpClient
+import org.readium.r2.shared.util.http.HttpClient
 
 /**
  * Service used to acquire and open publications protected with LCP.
@@ -144,6 +145,7 @@ public interface LcpService {
             assetRetriever: AssetRetriever,
             deviceName: String? = null,
             deviceId: String? = null,
+            httpClient: HttpClient = DefaultHttpClient(),
         ): LcpService? {
             if (!LcpClient.isAvailable()) {
                 return null
@@ -153,21 +155,20 @@ public interface LcpService {
             val deviceRepository = DeviceRepository(db)
             val passphraseRepository = PassphrasesRepository(db)
             val licenseRepository = LicensesRepository(db)
-            val network = NetworkService()
             val device = DeviceService(
                 deviceName = deviceName,
                 deviceId = deviceId,
                 repository = deviceRepository,
-                network = network,
+                httpClient = httpClient,
                 context = context
             )
-            val crl = CRLService(network = network, context = context)
+            val crl = CRLService(httpClient = httpClient, context = context)
             val passphrases = PassphrasesService(repository = passphraseRepository)
             return LicensesService(
                 licenses = licenseRepository,
                 crl = crl,
                 device = device,
-                network = network,
+                httpClient = httpClient,
                 passphrases = passphrases,
                 context = context,
                 assetRetriever = assetRetriever

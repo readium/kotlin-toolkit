@@ -10,6 +10,7 @@ import android.webkit.WebView
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 
 internal fun WebView.invokeOnReadyToBeDrawn(callback: (WebView) -> Unit) {
@@ -27,7 +28,7 @@ internal fun WebView.invokeOnReadyToBeDrawn(callback: (WebView) -> Unit) {
 
 public suspend fun WebView.evaluateJavaScriptSuspend(javascript: String): String =
     withContext(Dispatchers.Main) {
-        suspendCoroutine { cont ->
+        suspendCancellableCoroutine { cont ->
             evaluateJavascript(javascript) { result ->
                 cont.resume(result)
             }

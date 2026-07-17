@@ -30,10 +30,10 @@ import org.readium.navigator.common.DecorationController
 import org.readium.navigator.common.NavigationController
 import org.readium.navigator.common.Overflow
 import org.readium.navigator.common.OverflowController
+import org.readium.navigator.common.PreferencesController
 import org.readium.navigator.common.RenditionState
 import org.readium.navigator.common.Selection
 import org.readium.navigator.common.SelectionController
-import org.readium.navigator.common.SettingsController
 import org.readium.navigator.common.SimpleOverflow
 import org.readium.navigator.common.TextQuote
 import org.readium.navigator.web.common.WebDecorationTemplate
@@ -44,7 +44,10 @@ import org.readium.navigator.web.fixedlayout.layout.Layout
 import org.readium.navigator.web.fixedlayout.layout.LayoutResolver
 import org.readium.navigator.web.fixedlayout.layout.Page
 import org.readium.navigator.web.fixedlayout.layout.SingleViewportSpread
+import org.readium.navigator.web.fixedlayout.preferences.FixedWebDefaults
+import org.readium.navigator.web.fixedlayout.preferences.FixedWebPreferences
 import org.readium.navigator.web.fixedlayout.preferences.FixedWebSettings
+import org.readium.navigator.web.fixedlayout.preferences.FixedWebSettingsResolver
 import org.readium.navigator.web.internals.server.WebViewClient
 import org.readium.navigator.web.internals.server.WebViewServer
 import org.readium.navigator.web.internals.server.WebViewServer.Companion.assetsBaseHref
@@ -80,7 +83,7 @@ public class FixedWebRenditionState internal constructor(
     application: Application,
     internal val publication: FixedWebPublication,
     disableSelection: Boolean,
-    initialSettings: FixedWebSettings,
+    initialPreferences: FixedWebPreferences,
     initialLocation: FixedWebGoLocation,
     configuration: FixedWebConfiguration,
     internal val preloadedData: FixedWebPreloadedData,
@@ -93,8 +96,9 @@ public class FixedWebRenditionState internal constructor(
 
     internal val layoutDelegate: FixedLayoutDelegate =
         FixedLayoutDelegate(
-            publication.readingOrder,
-            initialSettings
+            publication = publication,
+            initialPreferences = initialPreferences,
+            defaults = configuration.defaults
         )
 
     /*
@@ -198,12 +202,12 @@ public class FixedWebRenditionState internal constructor(
 @Stable
 public class FixedWebRenditionController internal constructor(
     private val navigationDelegate: FixedNavigationDelegate,
-    layoutDelegate: FixedLayoutDelegate,
+    private val layoutDelegate: FixedLayoutDelegate,
     decorationDelegate: FixedDecorationDelegate,
     selectionDelegate: FixedSelectionDelegate,
 ) : NavigationController<FixedWebLocation, FixedWebGoLocation> by navigationDelegate,
     OverflowController by navigationDelegate,
-    SettingsController<FixedWebSettings> by layoutDelegate,
+    PreferencesController<FixedWebPreferences, FixedWebSettings> by layoutDelegate,
     SelectionController<FixedWebSelectionLocation> by selectionDelegate,
     DecorationController<FixedWebDecorationLocation> by decorationDelegate
 
@@ -212,15 +216,27 @@ internal data class FixedWebPreloadedData(
     val fixedDoubleContent: String,
 )
 
+@OptIn(ExperimentalReadiumApi::class)
 internal class FixedLayoutDelegate(
-    readingOrder: FixedWebPublication.ReadingOrder,
-    initialSettings: FixedWebSettings,
-) : SettingsController<FixedWebSettings> {
+    publication: FixedWebPublication,
+    initialPreferences: FixedWebPreferences,
+    defaults: FixedWebDefaults,
+) : PreferencesController<FixedWebPreferences, FixedWebSettings> {
 
     private val layoutResolver =
-        LayoutResolver(readingOrder)
+        LayoutResolver(publication.readingOrder)
 
-    override var settings: FixedWebSettings by mutableStateOf(initialSettings)
+    private val settingsResolver =
+        FixedWebSettingsResolver(
+            metadata = publication.metadata,
+            defaults = defaults
+        )
+
+    override var preferences: FixedWebPreferences by mutableStateOf(initialPreferences)
+
+    override val settings: FixedWebSettings by derivedStateOf {
+        settingsResolver.settings(preferences)
+    }
 
     val overflow: State<Overflow> = derivedStateOf {
         with(settings) {

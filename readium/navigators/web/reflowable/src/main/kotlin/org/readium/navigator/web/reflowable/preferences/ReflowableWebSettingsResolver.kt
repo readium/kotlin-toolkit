@@ -8,15 +8,15 @@ package org.readium.navigator.web.reflowable.preferences
 
 import org.readium.navigator.web.internals.util.isCjk
 import org.readium.navigator.web.internals.util.isRtl
+import org.readium.navigator.web.reflowable.ReflowableWebPublication
 import org.readium.r2.navigator.preferences.ReadingProgression
 import org.readium.r2.shared.ExperimentalReadiumApi
-import org.readium.r2.shared.publication.Metadata
 import org.readium.r2.shared.publication.ReadingProgression as PublicationReadingProgression
 import org.readium.r2.shared.util.Language
 
 @ExperimentalReadiumApi
 internal class ReflowableWebSettingsResolver(
-    private val metadata: Metadata,
+    private val metadata: ReflowableWebPublication.Metadata,
     private val defaults: ReflowableWebDefaults,
 ) {
 
@@ -68,7 +68,7 @@ internal class ReflowableWebSettingsResolver(
     }
 
     private fun resolveReadingProgression(
-        metadata: Metadata,
+        metadata: ReflowableWebPublication.Metadata,
         preferences: ReflowableWebPreferences,
     ): Pair<Language?, ReadingProgression> {
         val rpPref = preferences.readingProgression

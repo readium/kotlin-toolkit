@@ -14,6 +14,7 @@ import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.util.Error
 import org.readium.r2.shared.util.ThrowableError
 import org.readium.r2.shared.util.data.AccessError
+import org.readium.r2.shared.util.file.FileSystemError
 import org.readium.r2.shared.util.mediatype.MediaType
 
 /**
@@ -73,4 +74,23 @@ public sealed class HttpError(
             tryOrLog { ProblemDetails.fromJSON(JSONObject(String(body))) }
         }
     }
+}
+
+/**
+ * Represents an error occurring during an HTTP download activity.
+ */
+public sealed class HttpDownloadError(
+    public override val message: String,
+    public override val cause: Error? = null,
+) : Error {
+
+    /** An HTTP error occurred during the download. */
+    public class Http(
+        public override val cause: HttpError,
+    ) : HttpDownloadError("An HTTP error occurred during the download. ", cause)
+
+    /** A filesystem error occurred while saving the downloaded resource. */
+    public class Filesystem(
+        public override val cause: FileSystemError,
+    ) : HttpDownloadError("A filesystem error occurred while saving the downloaded resource.", cause)
 }

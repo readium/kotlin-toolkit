@@ -37,6 +37,7 @@ class NcxParserTest {
     private val ncxTitles = parseNavigationDocument("ncx/ncx-titles.ncx")
     private val ncxChildren = parseNavigationDocument("ncx/ncx-children.ncx")
     private val ncxEmpty = parseNavigationDocument("ncx/ncx-empty.ncx")
+    private val ncxUnencoded = parseNavigationDocument("ncx/ncx-unencoded.ncx")
 
     @Test
     fun `Newlines are trimmed from title`() {
@@ -116,6 +117,24 @@ class NcxParserTest {
         Assertions.assertThat(ncxComplex["page-list"]).containsExactly(
             Link(title = "1", href = Href("OEBPS/xhtml/chapter1.xhtml#page1")!!),
             Link(title = "2", href = Href("OEBPS/xhtml/chapter1.xhtml#page2")!!)
+        )
+    }
+
+    @Test
+    fun `src values that are not percent-encoded keep their fragment and query`() {
+        Assertions.assertThat(ncxUnencoded["toc"]).containsExactly(
+            Link(
+                title = "Chapter 1",
+                href = Href("OEBPS/content/chapter%20one%201.xhtml#fragment-01")!!
+            ),
+            Link(
+                title = "Chapter 2",
+                href = Href("OEBPS/content/chapter%20two%202.xhtml?title=intro#fragment-02")!!
+            ),
+            Link(
+                title = "Chapter 1, again",
+                href = Href("content/chapter%20one%201.xhtml#fragment-03")!!
+            )
         )
     }
 }
