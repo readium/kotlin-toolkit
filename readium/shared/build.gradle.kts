@@ -17,8 +17,10 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             implementation(libs.kotlinx.coroutines.core)
+            implementation(libs.kotlinx.datetime)
             implementation(libs.kotlinx.serialization.json)
             implementation(libs.okio)
+            implementation(libs.uri.kmp)
         }
 
         androidMain.dependencies {
@@ -26,7 +28,6 @@ kotlin {
             implementation(libs.androidx.annotation)
             implementation(libs.kotlin.reflect)
             implementation(libs.kotlinx.coroutines.android)
-            implementation(libs.kotlinx.datetime)
             implementation(libs.jsoup)
         }
 

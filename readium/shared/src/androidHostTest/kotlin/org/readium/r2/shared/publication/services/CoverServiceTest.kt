@@ -24,6 +24,7 @@ import org.readium.r2.shared.util.file.FileResource
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.resource.SingleResourceContainer
 import org.readium.r2.shared.util.toAbsoluteUrl
+import org.readium.r2.shared.util.toFile
 import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)

@@ -9,9 +9,7 @@
 
 package org.readium.r2.shared.util.mediatype
 
-import android.os.Parcelable
-import java.nio.charset.Charset
-import java.util.Locale
+import org.readium.r2.shared.util.Parcelable
 import org.readium.r2.shared.util.Parcelize
 
 /**
@@ -48,12 +46,6 @@ public class MediaType private constructor(
         val parts = subtype.split("+")
         return if (parts.size > 1) "+${parts.last()}" else null
     }
-
-    /**
-     * Encoding as declared in the `charset` parameter, if there's any.
-     */
-    public val charset: Charset? get() =
-        parameters["charset"]?.let { Charset.forName(it) }
 
     /** The string representation of this media type. */
     override fun toString(): String {
@@ -209,15 +201,15 @@ public class MediaType private constructor(
             }
 
             // > Both top-level type and subtype names are case-insensitive.
-            val type = types[0].lowercase(Locale.ROOT)
-            val subtype = types[1].lowercase(Locale.ROOT)
+            val type = types[0].lowercase()
+            val subtype = types[1].lowercase()
 
             // > Parameter names are case-insensitive and no meaning is attached to the order in which
             // > they appear.
             val parameters = components.drop(1)
                 .map { it.split("=") }
                 .filter { it.size == 2 }
-                .associate { Pair(it[0].lowercase(Locale.ROOT), it[1]) }
+                .associate { Pair(it[0].lowercase(), it[1]) }
                 .toMutableMap()
 
             // For now, we only support case-insensitive `charset`.
@@ -231,14 +223,7 @@ public class MediaType private constructor(
             // > letters.
             // > https://www.iana.org/assignments/character-sets/character-sets.xhtml
             parameters["charset"]?.let {
-                parameters["charset"] =
-                    (
-                        try {
-                            Charset.forName(it).name()
-                        } catch (e: Exception) {
-                            it
-                        }
-                        ).uppercase(Locale.ROOT)
+                parameters["charset"] = (canonicalCharsetName(it) ?: it).uppercase()
             }
 
             return MediaType(

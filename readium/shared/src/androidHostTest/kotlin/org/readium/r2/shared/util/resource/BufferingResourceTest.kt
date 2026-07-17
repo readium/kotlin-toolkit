@@ -9,6 +9,7 @@ import org.junit.runner.RunWith
 import org.readium.r2.shared.ClasspathFixtures
 import org.readium.r2.shared.util.checkSuccess
 import org.readium.r2.shared.util.file.FileResource
+import org.readium.r2.shared.util.toFile
 import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)

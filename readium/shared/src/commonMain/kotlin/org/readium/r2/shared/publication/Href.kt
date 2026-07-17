@@ -6,8 +6,8 @@
 
 package org.readium.r2.shared.publication
 
-import android.os.Parcelable
 import org.readium.r2.shared.util.IgnoredOnParcel
+import org.readium.r2.shared.util.Parcelable
 import org.readium.r2.shared.util.Parcelize
 import org.readium.r2.shared.util.URITemplate
 import org.readium.r2.shared.util.Url as SharedUrl
@@ -83,7 +83,7 @@ public class Href private constructor(private val href: Url) : Parcelable {
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
-        if (javaClass != other?.javaClass) return false
+        if (other == null || this::class != other::class) return false
 
         other as Href
 

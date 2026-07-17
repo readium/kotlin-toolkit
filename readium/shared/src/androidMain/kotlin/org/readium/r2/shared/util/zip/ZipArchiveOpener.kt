@@ -17,6 +17,7 @@ import org.readium.r2.shared.util.format.FormatSpecification
 import org.readium.r2.shared.util.format.Specification
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.resource.Resource
+import org.readium.r2.shared.util.toFile
 
 public class ZipArchiveOpener : ArchiveOpener {
 

@@ -4,9 +4,9 @@
  * available in the top-level LICENSE file of the project.
  */
 
-// TODO(kmp): move to commonMain — blocked by: MediaType, Url
 package org.readium.r2.shared.util.format
 
+import kotlin.jvm.JvmInline
 import org.readium.r2.shared.util.FileExtension
 import org.readium.r2.shared.util.mediatype.MediaType
 

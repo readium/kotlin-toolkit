@@ -8,12 +8,8 @@
 
 package org.readium.r2.shared.util
 
-import android.net.Uri
-import android.net.UrlQuerySanitizer
-import android.os.Parcelable
-import java.io.File
-import java.net.URI
-import java.net.URL
+import com.eygraber.uri.Uri
+import kotlin.jvm.JvmInline
 import org.readium.r2.shared.DelicateReadiumApi
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.extensions.isPrintableAscii
@@ -111,13 +107,20 @@ public sealed class Url : Parcelable {
     @InternalReadiumApi
     public val query: Query get() =
         Query(
-            UrlQuerySanitizer(removeFragment().toString()).parameterList
-                .map { p ->
+            uri.encodedQuery
+                ?.split('&')
+                ?.filter { it.isNotEmpty() }
+                ?.map { parameter ->
+                    val name = parameter.substringBefore('=')
+                    val value = parameter
+                        .substringAfter('=', missingDelimiterValue = "")
+
                     QueryParameter(
-                        name = p.mParameter,
-                        value = p.mValue.takeUnless { it.isBlank() }
+                        name = Uri.decode(name),
+                        value = Uri.decode(value).takeUnless { it.isBlank() }
                     )
                 }
+                ?: emptyList()
         )
 
     /**
@@ -171,7 +174,7 @@ public sealed class Url : Parcelable {
     public open fun resolve(url: Url): Url =
         when (url) {
             is AbsoluteUrl -> url
-            is RelativeUrl -> checkNotNull(toURI().resolve(url.toURI()).toUrl())
+            is RelativeUrl -> checkNotNull(invoke(uri.resolve(url.uri)))
         }
 
     /**
@@ -182,12 +185,10 @@ public sealed class Url : Parcelable {
      *     url = "http://example.com/foo/bar/baz"
      *     result = "bar/baz"
      */
-    public open fun relativize(url: Url): Url {
-        // Unlike the regular JRE (used in unit tests), the Android implementation of URI doesn't
-        // add "/" at the end of the base if it's missing. We might need to align the behaviors
-        // at some point.
-        return checkNotNull(toURI().relativize(url.toURI()).toUrl())
-    }
+    public open fun relativize(url: Url): Url =
+        uri.relativize(url.uri)
+            ?.let { checkNotNull(invoke(it)) }
+            ?: url
 
     /**
      * Normalizes the URL using a subset of the RFC-3986 rules.
@@ -198,8 +199,12 @@ public sealed class Url : Parcelable {
         uri.buildUpon()
             .apply {
                 path?.let {
-                    var normalizedPath = File(it).normalize().path
+                    var normalizedPath = it.normalizePathSegments()
                     if (it.endsWith("/")) {
+                        // FIXME: A path reduced to "/" gets a second separator appended (e.g.
+                        //  `http://example.com/` becomes `http://example.com//`). This quirk is
+                        //  inherited from the historical `java.io.File.normalize()` implementation
+                        //  and preserved by the characterization tests for now.
                         normalizedPath += "/"
                     }
                     path(normalizedPath)
@@ -210,7 +215,7 @@ public sealed class Url : Parcelable {
                 }
             }
             .build()
-            .toUrl()!!
+            .let { checkNotNull(invoke(it)) }
 
     override fun toString(): String =
         uri.toString()
@@ -223,7 +228,7 @@ public sealed class Url : Parcelable {
      */
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
-        if (javaClass != other?.javaClass) return false
+        if (other == null || this::class != other::class) return false
 
         other as Url
 
@@ -272,7 +277,10 @@ public sealed class Url : Parcelable {
  * Represents an absolute Uniform Resource Locator.
  */
 @Parcelize
-public class AbsoluteUrl private constructor(override val uri: Uri) : Url() {
+public class AbsoluteUrl private constructor(private val url: String) : Url() {
+
+    @IgnoredOnParcel
+    override val uri: Uri = Uri.parse(url)
 
     public companion object {
 
@@ -288,7 +296,7 @@ public class AbsoluteUrl private constructor(override val uri: Uri) : Url() {
             tryOrNull {
                 require(uri.isAbsolute)
                 require(uri.isHierarchical)
-                AbsoluteUrl(uri)
+                AbsoluteUrl(uri.toString())
             }
     }
 
@@ -307,8 +315,8 @@ public class AbsoluteUrl private constructor(override val uri: Uri) : Url() {
     /**
      * Identifies the type of URL.
      */
-    public val scheme: Scheme
-        get() = Scheme(uri.scheme!!)
+    public val scheme: Url.Scheme
+        get() = Url.Scheme(uri.scheme!!)
 
     /**
      * Indicates whether this URL points to a HTTP resource.
@@ -332,19 +340,16 @@ public class AbsoluteUrl private constructor(override val uri: Uri) : Url() {
      * Hostname of the URL.
      */
     public val host: String? get() = uri.host
-
-    /**
-     * Converts the URL to a [File], if it's a file URL.
-     */
-    public fun toFile(): File? =
-        if (isFile) File(path!!) else null
 }
 
 /**
  * Represents a relative Uniform Resource Locator.
  */
 @Parcelize
-public class RelativeUrl private constructor(override val uri: Uri) : Url() {
+public class RelativeUrl private constructor(private val url: String) : Url() {
+
+    @IgnoredOnParcel
+    override val uri: Uri = Uri.parse(url)
 
     public companion object {
 
@@ -359,7 +364,7 @@ public class RelativeUrl private constructor(override val uri: Uri) : Url() {
         internal operator fun invoke(uri: Uri): RelativeUrl? =
             tryOrNull {
                 require(uri.isRelative)
-                RelativeUrl(uri)
+                RelativeUrl(uri.toString())
             }
     }
 
@@ -393,70 +398,166 @@ public fun Url.Companion.fromEpubHref(href: String): Url? =
     Url(href) ?: fromDecodedPath(href)
 
 /**
- * Creates a URL pointing to this [File] which must denote an absolute path.
+ * Resolves [reference] against this base URI, using the RFC 3986 §5.2 algorithm, adjusted to
+ * preserve the relativity of paths like `java.net.URI` does (e.g. resolving `../quz/baz` against
+ * `foo/bar` yields `quz/baz` instead of `/quz/baz`).
  *
- * @param isDirectory If the URL must end with a trailing slash because it points to a directory.
+ * [reference] must be a relative URI.
  */
-public fun File.toUrl(isDirectory: Boolean): AbsoluteUrl {
-    require(isAbsolute)
+private fun Uri.resolve(reference: Uri): Uri {
+    val builder = Uri.Builder()
+    scheme?.let { builder.scheme(it) }
 
-    val uri = Uri.Builder().also {
-        it.scheme("file")
-        it.authority("")
-        it.path(path)
-        if (isDirectory) it.appendPath("")
-    }.build()
-
-    return checkNotNull(AbsoluteUrl(uri))
-}
-
-public fun Uri.toUrl(): Url? =
-    Url(this)
-
-public fun Uri.toAbsoluteUrl(): AbsoluteUrl? =
-    AbsoluteUrl(this)
-
-public fun Uri.toRelativeUrl(): RelativeUrl? =
-    RelativeUrl(this)
-
-public fun Url.toUri(): Uri =
-    uri
-
-internal fun Url.toURI(): URI =
-    URI(toString())
-
-public fun URL.toUrl(): Url? =
-    Url(toUri())
-
-public fun URL.toAbsoluteUrl(): AbsoluteUrl? =
-    AbsoluteUrl(toUri())
-
-public fun URL.toRelativeUrl(): RelativeUrl? =
-    RelativeUrl(toUri())
-
-private fun URL.toUri(): Uri =
-    Uri.parse(toString()).addFileAuthority()
-
-public fun URI.toUrl(): Url? =
-    Url(Uri.parse(toString()).addFileAuthority())
-
-/**
- * [URL] and [URI] can return a file URL without the empty authority, which is invalid.
- *
- * This method adds the empty authority if needed, for example:
- * `file:/path/to/file` becomes `file:///path/to/file`
- */
-private fun Uri.addFileAuthority(): Uri =
-    if (scheme?.lowercase() != "file" || authority != null) {
-        this
-    } else {
-        buildUpon().authority("").build()
+    when {
+        reference.encodedAuthority != null -> {
+            builder.encodedAuthority(reference.encodedAuthority)
+            builder.encodedPath(reference.encodedPath?.removeDotSegments())
+            builder.encodedQuery(reference.encodedQuery)
+        }
+        reference.encodedPath.isNullOrEmpty() -> {
+            builder.encodedAuthority(encodedAuthority)
+            builder.encodedPath(encodedPath)
+            builder.encodedQuery(reference.encodedQuery ?: encodedQuery)
+        }
+        else -> {
+            builder.encodedAuthority(encodedAuthority)
+            val referencePath = checkNotNull(reference.encodedPath)
+            val mergedPath =
+                if (referencePath.startsWith("/")) {
+                    referencePath
+                } else {
+                    mergePathWith(referencePath)
+                }
+            builder.encodedPath(mergedPath.removeDotSegments())
+            builder.encodedQuery(reference.encodedQuery)
+        }
     }
 
-private fun String.isValidUrl(): Boolean =
-    // Uri.parse doesn't really validate the URL, it could contain invalid characters, so we use
-    // URI. However, URI allows some non-ASCII characters.
-    isNotBlank() && isPrintableAscii() && tryOrNull { URI(this) } != null
+    builder.encodedFragment(reference.encodedFragment)
+    return builder.build()
+}
+
+/**
+ * Merges the path of a relative reference with the receiver's path, per RFC 3986 §5.2.3.
+ */
+private fun Uri.mergePathWith(referencePath: String): String {
+    val basePath = encodedPath.orEmpty()
+    if (encodedAuthority != null && basePath.isEmpty()) {
+        return "/$referencePath"
+    }
+    val lastSlashIndex = basePath.lastIndexOf('/')
+    return if (lastSlashIndex == -1) {
+        referencePath
+    } else {
+        basePath.substring(0, lastSlashIndex + 1) + referencePath
+    }
+}
+
+/**
+ * Relativizes [child] against this base URI, mimicking `java.net.URI.relativize()`.
+ *
+ * Returns null when [child] cannot be relativized against the receiver.
+ */
+private fun Uri.relativize(child: Uri): Uri? {
+    if (isOpaque || child.isOpaque) return null
+    if (scheme?.lowercase() != child.scheme?.lowercase()) return null
+    if (encodedAuthority != child.encodedAuthority) return null
+
+    var basePath = encodedPath.orEmpty().removeDotSegments()
+    val childPath = child.encodedPath.orEmpty().removeDotSegments()
+    if (basePath != childPath) {
+        if (!basePath.endsWith("/")) {
+            basePath += "/"
+        }
+        if (!childPath.startsWith(basePath)) {
+            return null
+        }
+    }
+
+    return Uri.Builder()
+        .encodedPath(childPath.substring(basePath.length.coerceAtMost(childPath.length)))
+        .encodedQuery(child.encodedQuery)
+        .encodedFragment(child.encodedFragment)
+        .build()
+}
+
+/**
+ * Collapses the `.` and `..` segments of a path, mirroring the behavior of
+ * `java.io.File.normalize()`:
+ * - duplicate separators are collapsed,
+ * - leading `..` segments which cannot be resolved are retained,
+ * - no trailing separator is produced.
+ */
+internal fun String.normalizePathSegments(): String {
+    val segments = mutableListOf<String>()
+    for (segment in split('/')) {
+        when (segment) {
+            "", "." -> {}
+            ".." ->
+                if (segments.isNotEmpty() && segments.last() != "..") {
+                    segments.removeAt(segments.lastIndex)
+                } else {
+                    segments.add("..")
+                }
+            else -> segments.add(segment)
+        }
+    }
+    return (if (startsWith("/")) "/" else "") + segments.joinToString("/")
+}
+
+/**
+ * Removes the `.` and `..` segments of a path, mimicking `java.net.URI.normalize()`: like
+ * [normalizePathSegments], but a trailing `.` or `..` segment which consumed a real segment
+ * produces a trailing separator.
+ *
+ * For example:
+ * - `a/b/..` becomes `a/` (the trailing `..` consumed `b`, so the separator is kept),
+ * - `a/b/../` stays `a/`,
+ * - `a/./b` becomes `a/b` (the `.` is not trailing),
+ * - `..` stays `..` (nothing was consumed: the result still ends with a literal `..`,
+ *   detected by the `result.substringAfterLast('/') != ".."` check below).
+ */
+private fun String.removeDotSegments(): String {
+    var result = normalizePathSegments()
+
+    // Last segment of the original path, ignoring any trailing separator.
+    val lastSegment = trimEnd('/').substringAfterLast('/')
+    val endsWithSlash = endsWith("/") ||
+        ((lastSegment == "." || lastSegment == "..") && result.substringAfterLast('/') != "..")
+
+    if (endsWithSlash && result.isNotEmpty() && !result.endsWith("/")) {
+        result += "/"
+    }
+    return result
+}
+
+private fun String.isValidUrl(): Boolean {
+    // We approximate the validation performed by `java.net.URI`: only characters from the
+    // RFC 3986 sets (plus `%` and `#`) are accepted, and percent escapes must be well-formed.
+    // In particular, whitespace and non-ASCII characters are rejected.
+    if (isBlank() || !isPrintableAscii()) return false
+
+    for ((index, char) in withIndex()) {
+        val isValidChar =
+            char in 'a'..'z' || char in 'A'..'Z' || char in '0'..'9' ||
+                char in "-._~:/?#[]@!$&'()*+,;=%"
+        if (!isValidChar) return false
+
+        if (char == '%' &&
+            (
+                index + 2 >= length ||
+                    !this[index + 1].isHexDigit() ||
+                    !this[index + 2].isHexDigit()
+                )
+        ) {
+            return false
+        }
+    }
+    return true
+}
+
+private fun Char.isHexDigit(): Boolean =
+    this in '0'..'9' || this in 'a'..'f' || this in 'A'..'F'
 
 @JvmInline
 public value class FileExtension(

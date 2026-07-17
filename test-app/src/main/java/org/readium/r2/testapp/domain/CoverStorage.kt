@@ -15,6 +15,7 @@ import org.readium.r2.shared.util.http.HttpClient
 import org.readium.r2.shared.util.http.HttpError
 import org.readium.r2.shared.util.http.HttpRequest
 import org.readium.r2.shared.util.http.fetchWithDecoder
+import org.readium.r2.shared.util.toFile
 import org.readium.r2.testapp.utils.tryOrLog
 
 class CoverStorage(

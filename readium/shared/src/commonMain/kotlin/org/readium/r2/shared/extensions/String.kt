@@ -9,15 +9,13 @@
 
 package org.readium.r2.shared.extensions
 
-import android.net.Uri
+import com.eygraber.uri.Uri
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.atStartOfDayIn
 import kotlinx.datetime.toInstant
 import okio.ByteString.Companion.encodeUtf8
-import org.json.JSONException
-import org.json.JSONObject
 import org.readium.r2.shared.InternalReadiumApi
 
 /**
@@ -65,13 +63,6 @@ internal fun String.hash(algorithm: HashAlgorithm): String =
             }
         }
         .hex()
-
-internal fun String.toJsonOrNull(): JSONObject? =
-    try {
-        JSONObject(this)
-    } catch (e: JSONException) {
-        null
-    }
 
 /**
  * Percent-encodes an URL path section.

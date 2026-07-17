@@ -6,17 +6,14 @@
 
 package org.readium.r2.shared.publication
 
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertNotEquals
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
-import org.junit.Assert.assertNotEquals
-import org.junit.Assert.assertNull
-import org.junit.Test
-import org.junit.runner.RunWith
 import org.readium.r2.shared.util.Url
-import org.robolectric.RobolectricTestRunner
 
-@RunWith(RobolectricTestRunner::class)
 class HrefTest {
 
     private val base = Url("http://readium/publication/")!!

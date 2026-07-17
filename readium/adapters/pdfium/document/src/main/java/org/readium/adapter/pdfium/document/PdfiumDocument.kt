@@ -28,6 +28,7 @@ import org.readium.r2.shared.util.flatMap
 import org.readium.r2.shared.util.pdf.PdfDocument
 import org.readium.r2.shared.util.pdf.PdfDocumentFactory
 import org.readium.r2.shared.util.resource.Resource
+import org.readium.r2.shared.util.toFile
 import org.readium.r2.shared.util.use
 import timber.log.Timber
 

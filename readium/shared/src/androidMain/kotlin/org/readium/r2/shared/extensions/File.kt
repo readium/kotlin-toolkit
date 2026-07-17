@@ -7,6 +7,8 @@
  * LICENSE file present in the project repository where this source code is maintained.
  */
 
+// Deliberately Android-only: these helpers operate on the JVM type `java.io.File`, for Android
+// callers.
 package org.readium.r2.shared.extensions
 
 import java.io.File

@@ -20,6 +20,7 @@ import org.readium.r2.shared.util.asset.AssetRetriever
 import org.readium.r2.shared.util.file.FileSystemError
 import org.readium.r2.shared.util.format.Format
 import org.readium.r2.shared.util.getOrElse
+import org.readium.r2.shared.util.toFile
 import org.readium.r2.shared.util.toUrl
 import org.readium.r2.streamer.PublicationOpener
 import org.readium.r2.testapp.data.BookRepository

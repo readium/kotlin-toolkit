@@ -1,7 +1,11 @@
 package org.readium.r2.shared.util.mediatype
 
-import kotlin.test.*
-import org.junit.Test
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertNotEquals
+import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 class MediaTypeTest {
 
@@ -92,14 +96,7 @@ class MediaTypeTest {
     }
 
     @Test
-    fun `get charset`() {
-        assertNull(MediaType("text/html")?.charset)
-        assertEquals(Charsets.UTF_8, MediaType("text/html;charset=utf-8")?.charset)
-        assertEquals(Charsets.UTF_16, MediaType("text/html;charset=utf-16")?.charset)
-    }
-
-    @Test
-    fun `type, subtype and parameter names are lowercased`() {
+    fun `type subtype and parameter names are lowercased`() {
         val mediaType = MediaType("APPLICATION/ATOM+XML;PROFILE=OPDS-CATALOG")
         assertEquals("application", mediaType?.type)
         assertEquals("atom+xml", mediaType?.subtype)
@@ -151,7 +148,7 @@ class MediaTypeTest {
     }
 
     @Test
-    fun `equality ignores case of type, subtype and parameter names`() {
+    fun `equality ignores case of type subtype and parameter names`() {
         assertEquals(
             MediaType("application/atom+xml;profile=opds-catalog")!!,
             MediaType("APPLICATION/ATOM+XML;PROFILE=opds-catalog")!!

@@ -6,6 +6,9 @@
 
 @file:OptIn(InternalReadiumApi::class)
 
+// TODO(kmp): move to commonMain — blocked by: util/data Decoding (phase 04), org.json (phase 03),
+// XmlParser (phase 06) and the publication models (phase 07)
+
 package org.readium.r2.shared.util.format
 
 import java.util.Locale

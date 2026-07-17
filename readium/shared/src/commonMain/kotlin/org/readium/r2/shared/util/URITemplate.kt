@@ -7,7 +7,6 @@
  * LICENSE file present in the project repository where this source code is maintained.
  */
 
-// TODO(kmp): move to commonMain — blocked by: extensions/String.kt (android.net.Uri percent-encoding)
 package org.readium.r2.shared.util
 
 import org.readium.r2.shared.extensions.percentEncodedQuery

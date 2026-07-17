@@ -2,23 +2,16 @@
 
 package org.readium.r2.shared.util
 
-import android.net.Uri
-import java.io.File
-import java.net.URI
-import java.net.URL
+import kotlin.test.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertIs
 import kotlin.test.assertNotNull
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNull
-import org.junit.Test
-import org.junit.runner.RunWith
+import kotlin.test.assertNull
 import org.readium.r2.shared.DelicateReadiumApi
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.util.Url.Query
 import org.readium.r2.shared.util.Url.QueryParameter
-import org.robolectric.RobolectricTestRunner
 
-@RunWith(RobolectricTestRunner::class)
 class UrlTest {
 
     @Test
@@ -39,9 +32,9 @@ class UrlTest {
 
     @Test
     fun createFromRelativePath() {
-        assertEquals(RelativeUrl(Uri.parse("/foo/bar")), Url("/foo/bar"))
-        assertEquals(RelativeUrl(Uri.parse("foo/bar")), Url("foo/bar"))
-        assertEquals(RelativeUrl(Uri.parse("../bar")), Url("../bar"))
+        assertEquals(RelativeUrl("/foo/bar")!!, Url("/foo/bar"))
+        assertEquals(RelativeUrl("foo/bar")!!, Url("foo/bar"))
+        assertEquals(RelativeUrl("../bar")!!, Url("../bar"))
 
         // Special characters valid in a path.
         assertEquals("$&+,/=@", RelativeUrl("$&+,/=@")?.path)
@@ -86,21 +79,21 @@ class UrlTest {
 
     @Test
     fun createFromFragmentOnly() {
-        assertEquals(RelativeUrl(Uri.parse("#fragment")), Url("#fragment"))
+        assertEquals(RelativeUrl("#fragment")!!, Url("#fragment"))
     }
 
     @Test
     fun createFromQueryOnly() {
-        assertEquals(RelativeUrl(Uri.parse("?query=param")), Url("?query=param"))
+        assertEquals(RelativeUrl("?query=param")!!, Url("?query=param"))
     }
 
     @Test
     fun createFromAbsoluteUrl() {
         assertEquals(
-            AbsoluteUrl(Uri.parse("http://example.com/foo")),
+            AbsoluteUrl("http://example.com/foo")!!,
             Url("http://example.com/foo")
         )
-        assertEquals(AbsoluteUrl(Uri.parse("file:///foo/bar")), Url("file:///foo/bar"))
+        assertEquals(AbsoluteUrl("file:///foo/bar")!!, Url("file:///foo/bar"))
     }
 
     @Test
@@ -192,6 +185,16 @@ class UrlTest {
     }
 
     @Test
+    fun queryParametersAreOnlySeparatedByAmpersands() {
+        // Unlike `android.net.UrlQuerySanitizer`, `;` is not treated as a parameter separator,
+        // consistently with the WHATWG URL specification.
+        assertEquals(
+            Query(listOf(QueryParameter(name = "query", value = "param;fruit=banana"))),
+            Url("http://domain.com/path?query=param;fruit=banana")!!.query
+        )
+    }
+
+    @Test
     fun getScheme() {
         assertEquals(Url.Scheme("content"), (Url("content:///foo/bar") as? AbsoluteUrl)?.scheme)
         assertEquals(Url.Scheme("content"), (Url("CONTENT:///foo/bar") as? AbsoluteUrl)?.scheme)
@@ -270,6 +273,32 @@ class UrlTest {
     }
 
     @Test
+    fun resolveQueryOnlyReference() {
+        // Unlike `java.net.URI`, a query-only reference keeps the whole base path, per
+        // RFC 3986 §5.2.2 and consistently with the WHATWG URL specification.
+        // `java.net.URI` would resolve against the parent directory instead
+        // ("http://example.com/foo/?query=param").
+        assertEquals(
+            Url("http://example.com/foo/bar?query=param")!!,
+            Url("http://example.com/foo/bar")!!.resolve(Url("?query=param")!!)
+        )
+        assertEquals(
+            Url("foo/bar?query=param")!!,
+            Url("foo/bar")!!.resolve(Url("?query=param")!!)
+        )
+    }
+
+    @Test
+    fun resolveRemovesDotSegmentsOfAbsolutePathReference() {
+        // Unlike `java.net.URI`, the dot segments of an absolute-path reference are removed, per
+        // RFC 3986 §5.2.2 and consistently with the WHATWG URL specification.
+        // `java.net.URI` would keep them literally ("http://example.com/quz/../baz").
+        val base = Url("http://example.com/foo/bar")!!
+        assertEquals(Url("http://example.com/baz")!!, base.resolve(Url("/quz/../baz")!!))
+        assertEquals(Url("http://example.com/quz/")!!, base.resolve(Url("/quz/baz/..")!!))
+    }
+
+    @Test
     fun relativizeHttpUrl() {
         var base = Url("http://example.com/foo")!!
         assertEquals(Url("quz/baz")!!, base.relativize(Url("http://example.com/foo/quz/baz")!!))
@@ -320,58 +349,6 @@ class UrlTest {
     }
 
     @Test
-    fun fromFile() {
-        assertEquals(AbsoluteUrl(Uri.parse("file:///tmp/test.txt")), File("/tmp/test.txt").toUrl(isDirectory = false))
-    }
-
-    @Test
-    fun toFile() {
-        assertEquals(
-            File("/tmp/test.txt"),
-            (Url("file:///tmp/test.txt") as? AbsoluteUrl)?.toFile()
-        )
-    }
-
-    @Test
-    fun fromDirectory() {
-        assertEquals(AbsoluteUrl(Uri.parse("file:///tmp/")), File("/tmp").toUrl(isDirectory = true))
-    }
-
-    @Test
-    fun fromURI() {
-        assertEquals(RelativeUrl(Uri.parse("foo/bar")), URI("foo/bar").toUrl())
-        assertEquals(RelativeUrl(Uri.parse("/foo/bar")), URI("/foo/bar").toUrl())
-        assertEquals(
-            AbsoluteUrl(Uri.parse("http://example.com/foo/bar")),
-            URI("http://example.com/foo/bar").toUrl()
-        )
-        assertEquals(
-            AbsoluteUrl(Uri.parse("file:///tmp/test.txt")),
-            URI("file:///tmp/test.txt").toUrl()
-        )
-        assertEquals(
-            AbsoluteUrl(Uri.parse("file:///tmp/test.txt")),
-            URI("file:/tmp/test.txt").toUrl()
-        )
-    }
-
-    @Test
-    fun fromURL() {
-        assertEquals(
-            AbsoluteUrl(Uri.parse("http://example.com/foo/bar")),
-            URL("http://example.com/foo/bar").toUrl()
-        )
-        assertEquals(
-            AbsoluteUrl(Uri.parse("file:///tmp/test.txt")),
-            URL("file:///tmp/test.txt").toUrl()
-        )
-        assertEquals(
-            AbsoluteUrl(Uri.parse("file:///tmp/test.txt")),
-            URL("file:/tmp/test.txt").toUrl()
-        )
-    }
-
-    @Test
     fun getFirstParameterNamedX() {
         val params = Query(
             listOf(
@@ -401,8 +378,8 @@ class UrlTest {
 
         assertEquals(params.allNamed("query"), listOf("param", "other"))
         assertEquals(params.allNamed("fruit"), listOf("banana"))
-        assertEquals(params.allNamed("empty"), emptyList<String>())
-        assertEquals(params.allNamed("not-found"), emptyList<String>())
+        assertEquals(params.allNamed("empty"), emptyList())
+        assertEquals(params.allNamed("not-found"), emptyList())
     }
 
     @Test
@@ -452,5 +429,48 @@ class UrlTest {
             "http://user:password@example.com:443/foo?b=b&a=a#fragment",
             Url("http://user:password@example.com:443/foo?b=b&a=a#fragment")!!.normalize().toString()
         )
+    }
+
+    /**
+     * Characterization tests capturing the behavior of the historical implementation based on
+     * `java.io.File.normalize()`, before it was reimplemented in pure Kotlin.
+     */
+    @Test
+    fun normalizePathCharacterization() {
+        fun test(expected: String, url: String) {
+            assertEquals(expected, Url(url)!!.normalize().toString())
+        }
+
+        // `.` and `..` collapsing.
+        test("foo/baz", "foo/./bar/../baz")
+        test("http://example.com/foo/baz", "http://example.com/foo/./bar/../baz")
+        test("foo", "./foo")
+        test("foo", "foo/.")
+        test("foo/", "foo/./")
+
+        // Leading `..` segments are retained.
+        test("../../foo", "../../foo")
+        test("../baz", "foo/./bar/../../../baz")
+        test("..", "foo/../..")
+        test("../", "foo/../../")
+        test("http://example.com/../foo", "http://example.com/../foo")
+
+        // Trailing `..` collapses the parent directory.
+        test("foo", "foo/bar/..")
+        test("foo/", "foo/bar/../")
+
+        // Duplicate separators are collapsed.
+        test("foo/bar", "foo//bar")
+        test("foo/bar/", "foo//bar//")
+        test("http://example.com/foo/bar", "http://example.com//foo//bar")
+
+        // Path reduced to nothing.
+        test("", ".")
+        test("", "foo/..")
+        test("/", "foo/../")
+
+        // Root paths.
+        test("http://example.com", "http://example.com")
+        test("http://example.com//", "http://example.com/")
     }
 }

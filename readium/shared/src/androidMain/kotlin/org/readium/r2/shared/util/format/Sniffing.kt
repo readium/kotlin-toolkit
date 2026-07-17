@@ -4,6 +4,7 @@
  * available in the top-level LICENSE file of the project.
  */
 
+// TODO(kmp): move to commonMain — blocked by: util/data (Readable, Container — phase 04)
 package org.readium.r2.shared.util.format
 
 import java.nio.charset.Charset
@@ -13,6 +14,7 @@ import org.readium.r2.shared.util.data.Container
 import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.data.Readable
 import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.shared.util.mediatype.charset
 
 /**
  * Bundle of media type and file extension hints for the [FormatHintsSniffer].

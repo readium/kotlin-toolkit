@@ -22,6 +22,7 @@ import org.readium.r2.shared.util.data.Container
 import org.readium.r2.shared.util.format.FormatSpecification
 import org.readium.r2.shared.util.format.Specification
 import org.readium.r2.shared.util.resource.Resource
+import org.readium.r2.shared.util.toFile
 
 private val LICENSE_IN_EPUB = Url("META-INF/license.lcpl")!!
 private val LICENSE_IN_RPF = Url("license.lcpl")!!
