@@ -4,7 +4,14 @@ All notable changes to this project will be documented in this file. Take a look
 
 **Warning:** Features marked as *experimental* may change or be removed in a future release without notice. Use with caution.
 
-<!-- ## [Unreleased] -->
+## [Unreleased]
+
+### Fixed
+
+#### Shared
+
+* EPUB HREFs that are not percent-encoded but carry a fragment or query (e.g. `chapter one.xhtml#section`, with a space in the filename) now keep their `#fragment`/`?query` instead of encoding the separators into the path. This fixes table of contents and Media Overlays links failing to resolve and navigate in poorly-authored EPUBs.
+
 
 ## [3.3.0] - 2026-06-02
 

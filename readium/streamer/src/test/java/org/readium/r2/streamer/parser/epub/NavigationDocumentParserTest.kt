@@ -41,6 +41,7 @@ class NavigationDocumentParserTest {
     private val navSection = parseNavigationDocument("navigation/nav-section.xhtml")
     private val navChildren = parseNavigationDocument("navigation/nav-children.xhtml")
     private val navEmpty = parseNavigationDocument("navigation/nav-empty.xhtml")
+    private val navUnencoded = parseNavigationDocument("navigation/nav-unencoded.xhtml")
 
     @Test
     fun `nav can be a non-direct descendant of body`() {
@@ -145,6 +146,24 @@ class NavigationDocumentParserTest {
         assertThat(navComplex["page-list"]).containsExactly(
             Link(title = "1", href = Href("OEBPS/xhtml/chapter1.xhtml#page1")!!),
             Link(title = "2", href = Href("OEBPS/xhtml/chapter1.xhtml#page2")!!)
+        )
+    }
+
+    @Test
+    fun `hrefs that are not percent-encoded keep their fragment and query`() {
+        assertThat(navUnencoded["toc"]).containsExactly(
+            Link(
+                title = "Chapter 1",
+                href = Href("OEBPS/xhtml/chapter%20one%201.xhtml#fragment-01")!!
+            ),
+            Link(
+                title = "Chapter 2",
+                href = Href("OEBPS/xhtml/chapter%20two%202.xhtml?title=intro#fragment-02")!!
+            ),
+            Link(
+                title = "Chapter 1, again",
+                href = Href("OEBPS/content/chapter%20one%201.xhtml#fragment-03")!!
+            )
         )
     }
 }

@@ -64,7 +64,7 @@ public data class Manifest(
      * Searches through (in order) [readingOrder], [resources] and [links] recursively following
      * alternate and children links.
      *
-     * If there's no match, tries again after removing any query parameter and anchor from the
+     * If there's no match, tries again after removing the fragment, then the query too, from the
      * given [href].
      */
     @OptIn(DelicateReadiumApi::class)
@@ -89,6 +89,7 @@ public data class Manifest(
 
         val normalizedHref = href.normalize()
         return find(normalizedHref)
+            ?: find(normalizedHref.removeFragment())
             ?: find(normalizedHref.removeFragment().removeQuery())
     }
 
