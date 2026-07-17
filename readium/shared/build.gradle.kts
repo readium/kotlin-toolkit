@@ -5,30 +5,38 @@
  */
 
 plugins {
-    id("readium.library-conventions")
+    id("readium.multiplatform-conventions")
     alias(libs.plugins.kotlin.serialization)
 }
 
-android {
-    namespace = "org.readium.r2.shared"
-}
+kotlin {
+    androidLibrary {
+        namespace = "org.readium.r2.shared"
+    }
 
-dependencies {
-    implementation(libs.androidx.annotation)
-    implementation(libs.timber)
-    implementation(libs.kotlin.reflect)
-    implementation(libs.kotlinx.coroutines.android)
-    implementation(libs.kotlinx.datetime)
-    implementation(libs.kotlinx.serialization.json)
-    implementation(libs.jsoup)
+    sourceSets {
+        androidMain.dependencies {
+            api(project(":readium:readium-shared-zip-legacy"))
+            implementation(libs.androidx.annotation)
+            implementation(libs.timber)
+            implementation(libs.kotlin.reflect)
+            implementation(libs.kotlinx.coroutines.android)
+            implementation(libs.kotlinx.datetime)
+            implementation(libs.kotlinx.serialization.json)
+            implementation(libs.jsoup)
+        }
 
-    // Tests
-    testImplementation(libs.junit)
+        commonTest.dependencies {
+            implementation(kotlin("test"))
+            implementation(libs.okio)
+        }
 
-    testImplementation(libs.assertj)
-    testImplementation(libs.kotlin.junit)
-    testImplementation(libs.kotlinx.coroutines.test)
-    testImplementation(libs.robolectric)
-
-    androidTestImplementation(libs.kotlin.junit)
+        getByName("androidHostTest").dependencies {
+            implementation(libs.junit)
+            implementation(libs.assertj)
+            implementation(libs.kotlin.junit)
+            implementation(libs.kotlinx.coroutines.test)
+            implementation(libs.robolectric)
+        }
+    }
 }
