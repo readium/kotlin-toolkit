@@ -8,6 +8,10 @@ All notable changes to this project will be documented in this file. Take a look
 
 ### Fixed
 
+#### Navigator
+
+* [#761](https://github.com/readium/kotlin-toolkit/issues/761) The EPUB navigator now emits a new `currentLocator` after the content is relaid out (e.g. when changing the font size), ensuring the reading position saved by the application matches the actual visible position.
+
 #### Shared
 
 * EPUB HREFs that are not percent-encoded but carry a fragment or query (e.g. `chapter one.xhtml#section`, with a space in the filename) now keep their `#fragment`/`?query` instead of encoding the separators into the path. This fixes table of contents and Media Overlays links failing to resolve and navigate in poorly-authored EPUBs.

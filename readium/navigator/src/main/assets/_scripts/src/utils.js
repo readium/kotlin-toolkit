@@ -22,6 +22,11 @@ window.addEventListener(
       requestAnimationFrame(() => {
         onViewportWidthChanged();
         snapCurrentOffset();
+        // The content layout changed (e.g. after applying new reading
+        // preferences), so the current progression might be different even if
+        // the scroll offset did not change.
+        // See https://github.com/readium/kotlin-toolkit/issues/761
+        Android.onContentSizeChanged();
       });
     });
     observer.observe(document.body);
