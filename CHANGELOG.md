@@ -12,6 +12,10 @@ All notable changes to this project will be documented in this file. Take a look
 
 * EPUB HREFs that are not percent-encoded but carry a fragment or query (e.g. `chapter one.xhtml#section`, with a space in the filename) now keep their `#fragment`/`?query` instead of encoding the separators into the path. This fixes table of contents and Media Overlays links failing to resolve and navigate in poorly-authored EPUBs.
 
+#### LCP
+
+* [#204](https://github.com/readium/kotlin-toolkit/issues/204) The `readium-lcp` module now ships consumer Proguard rules keeping the `liblcp` SDK classes, which are accessed through reflection. Apps enabling minification no longer need to declare these rules themselves.
+
 
 ## [3.3.0] - 2026-06-02
 
