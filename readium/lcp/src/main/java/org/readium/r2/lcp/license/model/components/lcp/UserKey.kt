@@ -9,32 +9,35 @@
 
 package org.readium.r2.lcp.license.model.components.lcp
 
-import org.json.JSONObject
+import kotlinx.serialization.json.JsonObject
 import org.readium.r2.lcp.LcpError
 import org.readium.r2.lcp.LcpException
+import org.readium.r2.shared.InternalReadiumApi
+import org.readium.r2.shared.util.json.optString
 
-public data class UserKey(val json: JSONObject) {
+@OptIn(InternalReadiumApi::class)
+public data class UserKey(val json: JsonObject) {
     val textHint: String
     val algorithm: String
     val keyCheck: String
 
     init {
-        textHint = if (json.has("text_hint")) {
-            json.getString("text_hint")
+        textHint = if ("text_hint" in json) {
+            json.optString("text_hint")
         } else {
             throw LcpException(
                 LcpError.Parsing.Encryption
             )
         }
-        algorithm = if (json.has("algorithm")) {
-            json.getString("algorithm")
+        algorithm = if ("algorithm" in json) {
+            json.optString("algorithm")
         } else {
             throw LcpException(
                 LcpError.Parsing.Encryption
             )
         }
-        keyCheck = if (json.has("key_check")) {
-            json.getString("key_check")
+        keyCheck = if ("key_check" in json) {
+            json.optString("key_check")
         } else {
             throw LcpException(
                 LcpError.Parsing.Encryption

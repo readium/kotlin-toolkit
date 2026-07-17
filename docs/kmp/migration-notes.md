@@ -39,3 +39,67 @@ Still in `org.readium.r2.shared.util`, but now Android-only extension functions.
   - The canonicalization of the `charset` parameter goes through an expect/actual helper: on Android it still uses `java.nio.charset.Charset.forName()`; on iOS a fixed table of common IANA names and aliases is used, so exotic aliases may stay un-canonicalized (uppercased as-is) there.
 - `org.readium.r2.shared.util.format.Format` (with `FormatSpecification` and `Specification`) moved to `commonMain`, unchanged.
 - The sniffing infrastructure (`Sniffing.kt`, `Sniffers.kt`) stays in `androidMain` for now; it moves to `commonMain` in later phases together with `util/data`, JSON and XML.
+
+## Phase 03 — JSON: org.json → kotlinx.serialization JsonElement
+
+### The `JSONable` contract now uses kotlinx.serialization types
+
+- `org.readium.r2.shared.JSONable.toJSON()` now returns `kotlinx.serialization.json.JsonObject` instead of `org.json.JSONObject`, and `List<JSONable>.toJSON()` returns `JsonArray`. This is a repo-wide, non-bridgeable break: every `toJSON()`/`fromJSON()` surface in `readium-shared`, `readium-opds`, `readium-lcp`, `readium-navigator` and the test app was flipped in the same change.
+- All `fromJSON(...)` companion parsers now take `kotlinx.serialization.json.JsonObject?`/`JsonArray?`/`JsonElement?` instead of `org.json.JSONObject?`/`JSONArray?`/`Any?`. Parsers that used to accept `Any?` (e.g. `Contributor.fromJSON`, `Subject.fromJSON`, `LocalizedString.fromJSON`, `PublicationCollection.fromJSON`, `Accessibility.fromJSON`, `Tdm.fromJSON`) now accept `JsonElement?`; pass a `JsonPrimitive` where you used to pass a `String`.
+- `grep "org.json" readium/shared/src` returns nothing: org.json is gone from the toolkit.
+
+### JSON helper mapping (old `extensions/JSON.kt` → new `util/json/Json.kt`, commonMain)
+
+The `org.json` helper extensions (`@InternalReadiumApi`) were ported to `org.readium.r2.shared.util.json` with equivalents operating on `Map<String, JsonElement>` (which both `JsonObject` and the `MutableMap` copies used by parsers implement):
+
+| Old (`org.readium.r2.shared.extensions`, on `JSONObject`) | New (`org.readium.r2.shared.util.json`) |
+|---|---|
+| `optString` / `optBoolean` / `optInt` / `optLong` / `optDouble` | same names, on `Map<String, JsonElement>` |
+| `optNullableString/Boolean/Int/Long/Double` | same names |
+| `optPositiveInt` / `optPositiveDouble` | same names |
+| `optStringsFromArrayOrSingle` | same name |
+| `optJSONObject` / `optJSONArray` (org.json members) | `optJsonObject` / `optJsonArray` |
+| `remove = true` variants | overloads on `MutableMap<String, JsonElement>`; call `json.toMutableMap()` first |
+| `toMap()` / `toList()` | `JsonObject.toMap()` / `JsonArray.toList()` |
+| `putIfNotEmpty(name, …)` (mutation on `JSONObject`) | `putIfNotEmpty(name, …)` on `kotlinx.serialization.json.JsonObjectBuilder` (use `buildJsonObject { … }`) |
+| `put(name, nullableValue)` (org.json dropped nulls) | `putIfNotNull(name, value)` on `JsonObjectBuilder` |
+| `JSONObject(map)` | `putAll(map)` on `JsonObjectBuilder`, or `wrapJson(value)` |
+| `mapNotNull`, `filterIsInstance`, `parseObjects` | stdlib `mapNotNull`/`filterIsInstance` on `JsonArray` (it is a `List<JsonElement>`); `parseObjects` kept |
+| `String.toJsonOrNull()` (internal) | `String.toJsonObjectOrNull()` (+ `toJsonArrayOrNull`, `toJsonElementOrNull`) |
+
+Parsing behavior notes:
+
+- Parsing goes through a lenient `Json` configuration (`LenientJson`: `isLenient`, `allowTrailingComma`, `allowComments`). Unlike org.json, single-quoted strings are **not** supported, and trailing garbage after the top-level value is rejected. Unquoted literals are accepted and coerced back to strings by the string accessors (unless they are booleans or numbers), like org.json.
+- `toMap()`/`toList()` unwrap numbers to `Int` when they fit, then `Long`, then `Double` (org.json used `Int`/`Long`/`Double` depending on the accessor). Null values are skipped.
+- `putAll`/`Map.toJsonObject()` keep empty nested objects and arrays (like the legacy `JSONObject(Map)` conversion), while `putIfNotEmpty` drops them (like the legacy `wrapJSON`).
+- In the RWPM serializers backed by an extension map (`Metadata.otherMetadata`, `Locator.Locations.otherLocations`, `LocatorCollection.Metadata.otherMetadata`), the keys handled by the serializer always shadow — or remove, when the corresponding property is null — a value with the same key in the extension map, like with org.json's `put(name, null)`.
+
+### `WarningLogger` / `JsonWarning` moved to commonMain
+
+- `JsonWarning.modelClass` is now a `kotlin.reflect.KClass<*>` (was `java.lang.Class<*>`), and `JsonWarning.json` a `kotlinx.serialization.json.JsonObject?`. The `WarningLogger.log(modelClass, reason, json, severity)` helper takes a `KClass<*>`: call it with `Foo::class` instead of `Foo::class.java`.
+
+### Parcelers
+
+- `org.readium.r2.shared.extensions.JSONParceler` was replaced with `org.readium.r2.shared.util.json.JsonMapParceler`, a common expect/actual `Parceler<Map<String, Any>>` backed by kotlinx serialization on Android and a no-op on iOS.
+- `org.readium.r2.shared.util.InstantParceler` is now a common expect/actual object (moved out of `util/Instant.kt`).
+- `org.readium.r2.shared.util.Parceler`, `TypeParceler` and `WriteWith` are now common expect declarations (actual typealiases to kotlinx.parcelize on Android; no-op declarations on iOS).
+
+### HTTP helpers
+
+- `HttpClient.fetchJSONObject()` now returns `HttpTry<kotlinx.serialization.json.JsonObject>`.
+- `ByteArray.decodeJson()` returns `Try<JsonObject, DecodeError>`; `JSONObject.decodeRwpm()` is now `JsonObject.decodeRwpm()`.
+- `HttpError.ErrorResponse.problemDetails` parses with kotlinx; `ProblemDetails.fromJSON` takes a `JsonObject`.
+- `Manifest.toString()` no longer escapes forward slashes (org.json serialized `/` as `\/`).
+
+### LCP models
+
+- `LicenseDocument.json`, `StatusDocument.json`, and the `json` properties of the LCP components (`Link`s, `Rights`, `User`, `Signature`, `Encryption`, `ContentKey`, `UserKey`, `Event`, `PotentialRights`) are now `kotlinx.serialization.json.JsonObject`/`JsonArray`. `Rights.extensions` and `User.extensions` are `JsonObject`.
+- Garbage-in edge case: a JSON `null` value for a required string field (e.g. `"algorithm": null`) used to be coerced by Android's org.json `getString` to the literal string `"null"`; it now yields an empty string `""`. Both are invalid inputs; no behavioral guarantee is attached to either.
+
+### Relocations to `commonMain` (no API change unless noted)
+
+Moved with unchanged package names: `JSONable`, `util/logging/WarningLogger.kt`, and in `publication/`: `ReadingProgression` (uppercase keys still accepted, now via invariant lowercasing), `LocalizedString` (default-locale fallback now uses a multiplatform `defaultLanguageTag()`), `Layout`, `Page`, `epub/EpubLayout`, `epub/Properties`, `encryption/Encryption`, `encryption/Properties`, `presentation/Presentation`, `presentation/Properties`, `Accessibility`, `Tdm`, `Properties`, `Link`, `Contributor`, `Subject`, `Collection`, `PublicationCollection`, `Locator` (+ `LocatorCollection`), `html/DomRange`, `html/Locator`; in `opds/`: `Acquisition`, `Availability`, `Copies`, `Holds`, `Price`, `Facet`, and `publication/opds/Properties`.
+
+Deferred to later phases (still `androidMain`, marked `// TODO(kmp)`): `Publication` (needs `Container`/`Resource` from phase 04 and services from phase 07), and therefore `Metadata`, `Manifest`, `presentation/Metadata`, `opds/Feed`, `opds/Group` which reference `Publication`.
+
+Their test suites moved to `commonTest` (kotlin-test) and now also run on the iOS simulator. Test names lost characters not allowed in Kotlin/Native identifiers (`{}`, `[]`, …).

@@ -8,12 +8,15 @@
 
 package org.readium.r2.shared.util.archive
 
-import org.json.JSONObject
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.JSONable
-import org.readium.r2.shared.extensions.optNullableBoolean
-import org.readium.r2.shared.extensions.optNullableLong
-import org.readium.r2.shared.extensions.toMap
+import org.readium.r2.shared.util.json.optNullableBoolean
+import org.readium.r2.shared.util.json.optNullableLong
+import org.readium.r2.shared.util.json.toMap
+import org.readium.r2.shared.util.json.toJsonObject
 import org.readium.r2.shared.util.resource.Resource
 
 /**
@@ -29,13 +32,13 @@ public data class ArchiveProperties(
     val isEntryCompressed: Boolean,
 ) : JSONable {
 
-    override fun toJSON(): JSONObject = JSONObject().apply {
+    override fun toJSON(): JsonObject = buildJsonObject {
         put("entryLength", entryLength)
         put("isEntryCompressed", isEntryCompressed)
     }
 
     public companion object {
-        public fun fromJSON(json: JSONObject?): ArchiveProperties? {
+        public fun fromJSON(json: JsonObject?): ArchiveProperties? {
             json ?: return null
 
             val entryLength = json.optNullableLong("entryLength")
@@ -55,11 +58,11 @@ private const val ARCHIVE_KEY = "https://readium.org/webpub-manifest/properties#
 
 public val Resource.Properties.archive: ArchiveProperties?
     get() = (this[ARCHIVE_KEY] as? Map<*, *>)
-        ?.let { ArchiveProperties.fromJSON(JSONObject(it)) }
+        ?.let { ArchiveProperties.fromJSON(it.toJsonObject()) }
 
 public var Resource.Properties.Builder.archive: ArchiveProperties?
     get() = (this[ARCHIVE_KEY] as? Map<*, *>)
-        ?.let { ArchiveProperties.fromJSON(JSONObject(it)) }
+        ?.let { ArchiveProperties.fromJSON(it.toJsonObject()) }
     set(value) {
         if (value == null) {
             remove(ARCHIVE_KEY)

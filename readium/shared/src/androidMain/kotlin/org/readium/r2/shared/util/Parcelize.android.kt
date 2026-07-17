@@ -19,11 +19,8 @@ public actual typealias Parcelable = android.os.Parcelable
 
 public actual typealias IgnoredOnParcel = kotlinx.parcelize.IgnoredOnParcel
 
-// Android-only aliases for the remaining kotlinx.parcelize APIs used by shared. The files using
-// them are still in androidMain; they will grow common equivalents when those files move.
+public actual typealias Parceler<T> = kotlinx.parcelize.Parceler<T>
 
-public typealias Parceler<T> = kotlinx.parcelize.Parceler<T>
+public actual typealias TypeParceler<T, P> = kotlinx.parcelize.TypeParceler<T, P>
 
-public typealias TypeParceler<T, P> = kotlinx.parcelize.TypeParceler<T, P>
-
-public typealias WriteWith<P> = kotlinx.parcelize.WriteWith<P>
+public actual typealias WriteWith<P> = kotlinx.parcelize.WriteWith<P>

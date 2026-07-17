@@ -3,7 +3,6 @@
 
 package org.readium.r2.shared.util
 
-import android.os.Parcel
 import android.os.Parcelable
 import kotlin.time.Clock
 import kotlinx.datetime.LocalDate
@@ -142,13 +141,3 @@ public object InstantSerializer : KSerializer<Instant> {
     }
 }
 
-@InternalReadiumApi
-public object InstantParceler : Parceler<KotlinInstant> {
-
-    override fun create(parcel: Parcel): kotlin.time.Instant =
-        kotlin.time.Instant.fromEpochMilliseconds(parcel.readLong())
-
-    override fun kotlin.time.Instant.write(parcel: Parcel, flags: Int) {
-        parcel.writeLong(toEpochMilliseconds())
-    }
-}

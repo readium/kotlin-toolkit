@@ -7,15 +7,18 @@
  * LICENSE file present in the project repository where this source code is maintained.
  */
 
+@file:OptIn(InternalReadiumApi::class)
+
 package org.readium.r2.shared.publication
 
+import org.readium.r2.shared.InternalReadiumApi
 import kotlin.test.assertEquals
-import org.json.JSONObject
 import org.junit.Assert
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.readium.r2.shared.assertJSONEquals
 import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.json.toJsonObjectOrNull
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.robolectric.RobolectricTestRunner
 
@@ -31,13 +34,11 @@ class ManifestTest {
                 readingOrder = emptyList()
             ),
             Manifest.fromJSON(
-                JSONObject(
-                    """{
+                """{
                 "metadata": {"title": "Title"},
                 "links": [],
                 "readingOrder": []
-            }"""
-                )
+            }""".toJsonObjectOrNull()!!
             )
         )
     }
@@ -64,8 +65,7 @@ class ManifestTest {
                 )
             ),
             Manifest.fromJSON(
-                JSONObject(
-                    """{
+                """{
                 "@context": "https://readium.org/webpub-manifest/context.jsonld",
                 "metadata": {"title": "Title"},
                 "links": [
@@ -86,8 +86,7 @@ class ManifestTest {
                         {"href": "sublink"}
                     ]
                 }
-            }"""
-                )
+            }""".toJsonObjectOrNull()!!
             )
         )
     }
@@ -104,8 +103,7 @@ class ManifestTest {
                 )
             ),
             Manifest.fromJSON(
-                JSONObject(
-                    """{
+                """{
                 "@context": ["context1", "context2"],
                 "metadata": {"title": "Title"},
                 "links": [
@@ -114,8 +112,7 @@ class ManifestTest {
                 "readingOrder": [
                     {"href": "chap1.html", "type": "text/html"}
                 ]
-            }"""
-                )
+            }""".toJsonObjectOrNull()!!
             )
         )
     }
@@ -124,16 +121,14 @@ class ManifestTest {
     fun `parse JSON requires {metadata}`() {
         Assert.assertNull(
             Manifest.fromJSON(
-                JSONObject(
-                    """{
+                """{
                 "links": [
                     {"href": "manifest.json", "rel": "self"}
                 ],
                 "readingOrder": [
                     {"href": "chap1.html", "type": "text/html"}
                 ]
-        }"""
-                )
+        }""".toJsonObjectOrNull()!!
             )
         )
     }
@@ -150,8 +145,7 @@ class ManifestTest {
                 )
             ),
             Manifest.fromJSON(
-                JSONObject(
-                    """{
+                """{
                 "metadata": {"title": "Title"},
                 "links": [
                     {"href": "manifest.json", "rel": "self"}
@@ -159,8 +153,7 @@ class ManifestTest {
                 "spine": [
                     {"href": "chap1.html", "type": "text/html"}
                 ]
-            }"""
-                )
+            }""".toJsonObjectOrNull()!!
             )
         )
     }
@@ -176,8 +169,7 @@ class ManifestTest {
                 )
             ),
             Manifest.fromJSON(
-                JSONObject(
-                    """{
+                """{
                 "metadata": {"title": "Title"},
                 "links": [
                     {"href": "manifest.json", "rel": "self"}
@@ -186,8 +178,7 @@ class ManifestTest {
                     {"href": "chap1.html", "type": "text/html"},
                     {"href": "chap2.html"}
                 ]
-            }"""
-                )
+            }""".toJsonObjectOrNull()!!
             )
         )
     }
@@ -204,8 +195,7 @@ class ManifestTest {
                 resources = listOf(Link(href = Href("withtype")!!, mediaType = MediaType.HTML))
             ),
             Manifest.fromJSON(
-                JSONObject(
-                    """{
+                """{
                 "metadata": {"title": "Title"},
                 "links": [
                     {"href": "manifest.json", "rel": "self"}
@@ -217,8 +207,7 @@ class ManifestTest {
                     {"href": "withtype", "type": "text/html"},
                     {"href": "withouttype"}
                 ]
-            }"""
-                )
+            }""".toJsonObjectOrNull()!!
             )
         )
     }
@@ -226,13 +215,11 @@ class ManifestTest {
     @Test
     fun `get minimal JSON`() {
         assertJSONEquals(
-            JSONObject(
-                """{
+            """{
                 "metadata": {"title": {"und": "Title"}, "readingProgression": "auto"},
                 "links": [],
                 "readingOrder": []
-            }"""
-            ),
+            }""".toJsonObjectOrNull()!!,
             Manifest(
                 metadata = Metadata(localizedTitle = LocalizedString("Title")),
                 links = emptyList(),
@@ -244,8 +231,7 @@ class ManifestTest {
     @Test
     fun `get full JSON`() {
         assertJSONEquals(
-            JSONObject(
-                """{
+            """{
                 "@context": ["https://readium.org/webpub-manifest/context.jsonld"],
                 "metadata": {"title": {"und": "Title"}, "readingProgression": "auto"},
                 "links": [
@@ -267,8 +253,7 @@ class ManifestTest {
                         {"href": "sublink", "templated": false}
                     ]
                 }
-            }"""
-            ),
+            }""".toJsonObjectOrNull()!!,
             Manifest(
                 context = listOf("https://readium.org/webpub-manifest/context.jsonld"),
                 metadata = Metadata(localizedTitle = LocalizedString("Title")),

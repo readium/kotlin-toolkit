@@ -4,7 +4,7 @@
  * available in the top-level LICENSE file of the project.
  */
 
-// TODO(kmp): move to commonMain — blocked by: Manifest, Link
+// TODO(kmp): move to commonMain — blocked by: Manifest (phase 07)
 package org.readium.r2.shared.publication
 
 import org.readium.r2.shared.ExperimentalReadiumApi

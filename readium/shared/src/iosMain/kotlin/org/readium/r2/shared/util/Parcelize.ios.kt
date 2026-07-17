@@ -15,3 +15,13 @@ public actual interface Parcelable
 @Target(AnnotationTarget.PROPERTY)
 @Retention(AnnotationRetention.SOURCE)
 public actual annotation class IgnoredOnParcel
+
+public actual interface Parceler<T>
+
+@Target(AnnotationTarget.CLASS, AnnotationTarget.PROPERTY)
+@Retention(AnnotationRetention.SOURCE)
+public actual annotation class TypeParceler<T, P : Parceler<in T>>
+
+@Target(AnnotationTarget.TYPE)
+@Retention(AnnotationRetention.SOURCE)
+public actual annotation class WriteWith<P : Parceler<*>>

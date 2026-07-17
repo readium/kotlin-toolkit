@@ -13,7 +13,7 @@ package org.readium.r2.lcp.license.model
 
 import java.nio.charset.Charset
 import kotlin.time.Instant
-import org.json.JSONObject
+import kotlinx.serialization.json.JsonObject
 import org.readium.r2.lcp.LcpError
 import org.readium.r2.lcp.LcpException
 import org.readium.r2.lcp.license.model.components.Link
@@ -22,10 +22,12 @@ import org.readium.r2.lcp.license.model.components.lsd.Event
 import org.readium.r2.lcp.license.model.components.lsd.PotentialRights
 import org.readium.r2.lcp.service.URLParameters
 import org.readium.r2.shared.InternalReadiumApi
-import org.readium.r2.shared.extensions.mapNotNull
-import org.readium.r2.shared.extensions.optNullableString
 import org.readium.r2.shared.extensions.toInstant
 import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.json.optJsonArray
+import org.readium.r2.shared.util.json.optJsonObject
+import org.readium.r2.shared.util.json.optNullableString
+import org.readium.r2.shared.util.json.toJsonObjectOrNull
 import org.readium.r2.shared.util.mediatype.MediaType
 
 public class StatusDocument(public val data: ByteArray) {
@@ -38,7 +40,7 @@ public class StatusDocument(public val data: ByteArray) {
     public val potentialRights: PotentialRights?
     public val events: List<Event>
 
-    public val json: JSONObject
+    public val json: JsonObject
 
     public enum class Status(public val value: String) {
         Ready("ready"),
@@ -67,11 +69,8 @@ public class StatusDocument(public val data: ByteArray) {
     }
 
     init {
-        try {
-            json = JSONObject(data.toString(Charset.defaultCharset()))
-        } catch (e: Exception) {
-            throw LcpException(LcpError.Parsing.MalformedJSON)
-        }
+        json = data.toString(Charset.defaultCharset()).toJsonObjectOrNull()
+            ?: throw LcpException(LcpError.Parsing.MalformedJSON)
 
         id = json.optNullableString("id") ?: throw LcpException(LcpError.Parsing.StatusDocument)
         status = json.optNullableString("status")?.let { Status(it) } ?: throw LcpException(
@@ -81,7 +80,7 @@ public class StatusDocument(public val data: ByteArray) {
             LcpError.Parsing.StatusDocument
         )
 
-        val updated = json.optJSONObject("updated") ?: JSONObject()
+        val updated = json.optJsonObject("updated") ?: JsonObject(emptyMap())
         licenseUpdated = updated.optNullableString("license")?.toInstant() ?: throw LcpException(
             LcpError.Parsing.StatusDocument
         )
@@ -89,15 +88,15 @@ public class StatusDocument(public val data: ByteArray) {
             LcpError.Parsing.StatusDocument
         )
 
-        links = json.optJSONArray("links")?.let { Links(it) } ?: throw LcpException(
+        links = json.optJsonArray("links")?.let { Links(it) } ?: throw LcpException(
             LcpError.Parsing.StatusDocument
         )
 
-        potentialRights = json.optJSONObject("potential_rights")?.let { PotentialRights(it) }
+        potentialRights = json.optJsonObject("potential_rights")?.let { PotentialRights(it) }
 
-        events = json.optJSONArray("events")
+        events = json.optJsonArray("events")
             ?.mapNotNull { ev ->
-                (ev as? JSONObject)?.let { Event(it) }
+                (ev as? JsonObject)?.let { Event(it) }
             }
             ?: emptyList()
     }

@@ -9,7 +9,7 @@
 package org.readium.r2.streamer.parser.epub
 
 import org.readium.r2.shared.InternalReadiumApi
-import org.readium.r2.shared.extensions.toMap
+import org.readium.r2.shared.util.json.toMap
 import org.readium.r2.shared.publication.Href
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Properties

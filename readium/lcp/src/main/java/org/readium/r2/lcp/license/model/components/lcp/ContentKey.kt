@@ -9,24 +9,27 @@
 
 package org.readium.r2.lcp.license.model.components.lcp
 
-import org.json.JSONObject
+import kotlinx.serialization.json.JsonObject
 import org.readium.r2.lcp.LcpError
 import org.readium.r2.lcp.LcpException
+import org.readium.r2.shared.InternalReadiumApi
+import org.readium.r2.shared.util.json.optString
 
-public data class ContentKey(val json: JSONObject) {
+@OptIn(InternalReadiumApi::class)
+public data class ContentKey(val json: JsonObject) {
     val algorithm: String
     val encryptedValue: String
 
     init {
-        algorithm = if (json.has("algorithm")) {
-            json.getString("algorithm")
+        algorithm = if ("algorithm" in json) {
+            json.optString("algorithm")
         } else {
             throw LcpException(
                 LcpError.Parsing.Encryption
             )
         }
-        encryptedValue = if (json.has("encrypted_value")) {
-            json.getString("encrypted_value")
+        encryptedValue = if ("encrypted_value" in json) {
+            json.optString("encrypted_value")
         } else {
             throw LcpException(
                 LcpError.Parsing.Encryption

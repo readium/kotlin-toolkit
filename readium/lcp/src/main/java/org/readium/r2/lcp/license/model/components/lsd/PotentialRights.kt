@@ -12,11 +12,11 @@
 package org.readium.r2.lcp.license.model.components.lsd
 
 import kotlin.time.Instant
-import org.json.JSONObject
+import kotlinx.serialization.json.JsonObject
 import org.readium.r2.shared.InternalReadiumApi
-import org.readium.r2.shared.extensions.optNullableString
 import org.readium.r2.shared.extensions.toInstant
+import org.readium.r2.shared.util.json.optNullableString
 
-public data class PotentialRights(val json: JSONObject) {
+public data class PotentialRights(val json: JsonObject) {
     val end: Instant? = json.optNullableString("end")?.toInstant()
 }

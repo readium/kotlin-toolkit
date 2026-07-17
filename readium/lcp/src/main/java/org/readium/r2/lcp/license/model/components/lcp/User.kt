@@ -10,31 +10,30 @@
 
 package org.readium.r2.lcp.license.model.components.lcp
 
-import org.json.JSONObject
+import kotlinx.serialization.json.JsonObject
+import org.readium.r2.shared.InternalReadiumApi
+import org.readium.r2.shared.util.json.optJsonArray
+import org.readium.r2.shared.util.json.optString
+import org.readium.r2.shared.util.json.stringOrNull
 
-public data class User(val json: JSONObject) {
+@OptIn(InternalReadiumApi::class)
+public data class User(val json: JsonObject) {
     val id: String?
     val email: String?
     val name: String?
-    var extensions: JSONObject
+    var extensions: JsonObject
     var encrypted: MutableList<String> = mutableListOf<String>()
 
     init {
-        id = if (json.has("id")) json.getString("id") else null
-        email = if (json.has("email")) json.getString("email") else null
-        name = if (json.has("name")) json.getString("name") else null
+        id = if ("id" in json) json.optString("id") else null
+        email = if ("email" in json) json.optString("email") else null
+        name = if ("name" in json) json.optString("name") else null
 
-        if (json.has("encrypted")) {
-            val encryptedArray = json.getJSONArray("encrypted")
-            for (i in 0 until encryptedArray.length()) {
-                encrypted.add(encryptedArray.getString(i))
+        json.optJsonArray("encrypted")?.let { encryptedArray ->
+            for (element in encryptedArray) {
+                element.stringOrNull?.let { encrypted.add(it) }
             }
         }
-
-//        json.remove("id")
-//        json.remove("email")
-//        json.remove("name")
-//        json.remove("encrypted")
 
         extensions = json
     }

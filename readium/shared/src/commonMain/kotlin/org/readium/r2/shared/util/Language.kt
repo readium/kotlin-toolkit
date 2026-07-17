@@ -71,3 +71,8 @@ public class Language(code: String) {
  * by the platform locale APIs, or null if there is none.
  */
 internal expect fun localeRegionOf(bcp47Tag: String): String?
+
+/**
+ * Returns the BCP-47 language tag of the current platform locale (e.g. `en-US`).
+ */
+internal expect fun defaultLanguageTag(): String

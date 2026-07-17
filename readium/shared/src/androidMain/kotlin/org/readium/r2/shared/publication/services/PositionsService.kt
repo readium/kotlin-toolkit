@@ -9,10 +9,8 @@
 
 package org.readium.r2.shared.publication.services
 
-import org.json.JSONObject
+import kotlinx.serialization.json.JsonObject
 import org.readium.r2.shared.InternalReadiumApi
-import org.readium.r2.shared.extensions.mapNotNull
-import org.readium.r2.shared.extensions.toJsonOrNull
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Manifest
@@ -25,6 +23,8 @@ import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.http.HttpClient
 import org.readium.r2.shared.util.http.HttpRequest
 import org.readium.r2.shared.util.http.fetchString
+import org.readium.r2.shared.util.json.optJsonArray
+import org.readium.r2.shared.util.json.toJsonObjectOrNull
 import org.readium.r2.shared.util.mediatype.MediaType
 
 private val positionsMediaType =
@@ -143,9 +143,9 @@ public class WebPositionsService(
 
         return httpClient.fetchString(HttpRequest(positionsUrl))
             .getOrNull()
-            ?.toJsonOrNull()
-            ?.optJSONArray("positions")
-            ?.mapNotNull { Locator.fromJSON(it as? JSONObject) }
+            ?.toJsonObjectOrNull()
+            ?.optJsonArray("positions")
+            ?.mapNotNull { Locator.fromJSON(it as? JsonObject) }
             .orEmpty()
     }
 

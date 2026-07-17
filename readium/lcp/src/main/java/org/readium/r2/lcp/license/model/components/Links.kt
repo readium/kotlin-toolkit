@@ -11,18 +11,17 @@
 
 package org.readium.r2.lcp.license.model.components
 
-import org.json.JSONArray
-import org.json.JSONObject
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonObject
 import org.readium.r2.shared.InternalReadiumApi
-import org.readium.r2.shared.extensions.mapNotNull
 import org.readium.r2.shared.extensions.tryOrNull
 import org.readium.r2.shared.util.mediatype.MediaType
 
-public data class Links(val json: JSONArray) {
+public data class Links(val json: JsonArray) {
 
     val links: List<Link> = json
         .mapNotNull { item ->
-            (item as? JSONObject)?.let { obj ->
+            (item as? JsonObject)?.let { obj ->
                 tryOrNull { Link(obj) }
             }
         }

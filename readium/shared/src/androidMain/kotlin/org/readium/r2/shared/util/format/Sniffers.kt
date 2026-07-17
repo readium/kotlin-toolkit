@@ -6,13 +6,12 @@
 
 @file:OptIn(InternalReadiumApi::class)
 
-// TODO(kmp): move to commonMain — blocked by: util/data Decoding (phase 04), org.json (phase 03),
+// TODO(kmp): move to commonMain — blocked by: util/data Decoding (phase 04),
 // XmlParser (phase 06) and the publication models (phase 07)
 
 package org.readium.r2.shared.util.format
 
 import java.util.Locale
-import org.json.JSONObject
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.extensions.tryOrNull
 import org.readium.r2.shared.publication.Link
@@ -32,6 +31,7 @@ import org.readium.r2.shared.util.data.decodeString
 import org.readium.r2.shared.util.data.decodeXml
 import org.readium.r2.shared.util.data.readDecodeOrElse
 import org.readium.r2.shared.util.getOrElse
+import org.readium.r2.shared.util.json.toJsonObjectOrNull
 import org.readium.r2.shared.util.mediatype.MediaType
 
 /** Sniffs an HTML or XHTML document. */
@@ -624,7 +624,7 @@ public object RpfSniffer : FormatSniffer {
             container[RelativeUrl("manifest.json")!!]
                 ?.read()
                 ?.getOrElse { return Try.failure(it) }
-                ?.let { tryOrNull { Manifest.fromJSON(JSONObject(String(it))) } }
+                ?.let { tryOrNull { Manifest.fromJSON(String(it).toJsonObjectOrNull()) } }
                 ?: return Try.success(format)
 
         val isLcpProtected = RelativeUrl("license.lcpl")!! in container ||
@@ -1270,7 +1270,7 @@ private suspend fun Readable.containsJsonKeys(
         recoverRead = { return Try.failure(it) },
         recoverDecode = { return Try.success(false) }
     )
-    return Try.success(json.keys().asSequence().toSet().containsAll(keys.toList()))
+    return Try.success(json.keys.containsAll(keys.toList()))
 }
 
 private fun Format.addSpecifications(

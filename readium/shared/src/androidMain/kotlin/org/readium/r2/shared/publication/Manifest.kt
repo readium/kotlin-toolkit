@@ -9,16 +9,19 @@
 
 @file:OptIn(InternalReadiumApi::class)
 
+// TODO(kmp): move to commonMain — blocked by: Publication.Profile (Publication.kt, phase 07)
+
 package org.readium.r2.shared.publication
 
-import org.json.JSONArray
-import org.json.JSONObject
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.buildJsonObject
 import org.readium.r2.shared.DelicateReadiumApi
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.JSONable
-import org.readium.r2.shared.extensions.optStringsFromArrayOrSingle
-import org.readium.r2.shared.extensions.putIfNotEmpty
 import org.readium.r2.shared.toJSON
+import org.readium.r2.shared.util.json.optStringsFromArrayOrSingle
+import org.readium.r2.shared.util.json.putIfNotEmpty
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.logging.ConsoleWarningLogger
 import org.readium.r2.shared.util.logging.WarningLogger
@@ -133,7 +136,7 @@ public data class Manifest(
     /**
      * Serializes a [Publication] to its RWPM JSON representation.
      */
-    override fun toJSON(): JSONObject = JSONObject().apply {
+    override fun toJSON(): JsonObject = buildJsonObject {
         putIfNotEmpty("@context", context)
         put("metadata", metadata.toJSON())
         put("links", links.toJSON())
@@ -146,7 +149,7 @@ public data class Manifest(
     /**
      * Returns the RWPM JSON representation for this manifest, as a string.
      */
-    override fun toString(): String = toJSON().toString().replace("\\/", "/")
+    override fun toString(): String = toJSON().toString()
 
     public companion object {
 
@@ -158,29 +161,32 @@ public data class Manifest(
          * https://readium.org/webpub-manifest/schema/publication.schema.json
          */
         public fun fromJSON(
-            json: JSONObject?,
+            json: JsonObject?,
             warnings: WarningLogger? = ConsoleWarningLogger(),
         ): Manifest? {
             json ?: return null
 
+            @Suppress("NAME_SHADOWING")
+            val json = json.toMutableMap()
+
             val context = json.optStringsFromArrayOrSingle("@context", remove = true)
 
             val metadata = Metadata.fromJSON(
-                json.remove("metadata") as? JSONObject,
+                json.remove("metadata") as? JsonObject,
                 warnings
             )
             if (metadata == null) {
-                warnings?.log(Manifest::class.java, "[metadata] is required", json)
+                warnings?.log(Manifest::class, "[metadata] is required", JsonObject(json))
                 return null
             }
 
             val links = Link.fromJSONArray(
-                json.remove("links") as? JSONArray,
+                json.remove("links") as? JsonArray,
                 warnings
             )
 
             // [readingOrder] used to be [spine], so we parse [spine] as a fallback.
-            val readingOrderJSON = (json.remove("readingOrder") ?: json.remove("spine")) as? JSONArray
+            val readingOrderJSON = (json.remove("readingOrder") ?: json.remove("spine")) as? JsonArray
             val readingOrder = Link.fromJSONArray(
                 readingOrderJSON,
                 warnings
@@ -188,19 +194,19 @@ public data class Manifest(
                 .filter { it.mediaType != null }
 
             val resources = Link.fromJSONArray(
-                json.remove("resources") as? JSONArray,
+                json.remove("resources") as? JsonArray,
                 warnings
             )
                 .filter { it.mediaType != null }
 
             val tableOfContents = Link.fromJSONArray(
-                json.remove("toc") as? JSONArray,
+                json.remove("toc") as? JsonArray,
                 warnings
             )
 
             // Parses subcollections from the remaining JSON properties.
             val subcollections = PublicationCollection.collectionsFromJSON(
-                json,
+                JsonObject(json),
                 warnings
             )
 

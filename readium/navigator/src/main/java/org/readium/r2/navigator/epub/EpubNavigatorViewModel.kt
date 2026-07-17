@@ -19,7 +19,8 @@ import kotlin.reflect.KClass
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import org.json.JSONObject
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
 import org.readium.r2.navigator.*
 import org.readium.r2.navigator.epub.css.ReadiumCss
 import org.readium.r2.navigator.epub.extensions.javascriptForGroup
@@ -132,7 +133,7 @@ internal class EpubNavigatorViewModel(
                     _events.send(
                         Event.RunScript(
                             RunScriptCommand(
-                                script = "readium.setCSSProperties(${JSONObject(properties.toMap())});",
+                                script = "readium.setCSSProperties(${properties.toJsonString()});",
                                 scope = RunScriptCommand.Scope.LoadedResources
                             )
                         )
@@ -156,7 +157,7 @@ internal class EpubNavigatorViewModel(
 
             add(
                 RunScriptCommand(
-                    script = "readium.setCSSProperties(${JSONObject(properties.toMap())});",
+                    script = "readium.setCSSProperties(${properties.toJsonString()});",
                     scope = scope
                 )
             )
@@ -384,3 +385,10 @@ internal class EpubNavigatorViewModel(
         }
     }
 }
+
+private fun Map<String, String?>.toJsonString(): String =
+    buildJsonObject {
+        for ((key, value) in this@toJsonString) {
+            put(key, value)
+        }
+    }.toString()

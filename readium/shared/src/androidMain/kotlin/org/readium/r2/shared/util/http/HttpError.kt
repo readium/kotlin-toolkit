@@ -8,13 +8,13 @@
 
 package org.readium.r2.shared.util.http
 
-import org.json.JSONObject
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.util.Error
 import org.readium.r2.shared.util.ThrowableError
 import org.readium.r2.shared.util.data.AccessError
 import org.readium.r2.shared.util.file.FileSystemError
+import org.readium.r2.shared.util.json.toJsonObjectOrNull
 import org.readium.r2.shared.util.mediatype.MediaType
 
 /**
@@ -71,7 +71,9 @@ public sealed class HttpError(
                 return@lazy null
             }
 
-            tryOrLog { ProblemDetails.fromJSON(JSONObject(String(body))) }
+            tryOrLog {
+                String(body).toJsonObjectOrNull()?.let { ProblemDetails.fromJSON(it) }
+            }
         }
     }
 }

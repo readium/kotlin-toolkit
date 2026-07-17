@@ -12,26 +12,7 @@ package org.readium.r2.shared
 import java.io.File
 import java.net.URL
 import kotlinx.coroutines.runBlocking
-import org.json.JSONArray
-import org.json.JSONObject
-import org.junit.Assert.assertEquals
-import org.readium.r2.shared.extensions.toListTest
-import org.readium.r2.shared.extensions.toMapTest
 import org.readium.r2.shared.util.resource.Resource
-
-/**
- * Asserts that two [JSONObject] are equal.
- */
-fun assertJSONEquals(expected: JSONObject, actual: JSONObject) {
-    assertEquals(expected.toMapTest(), actual.toMapTest())
-}
-
-/**
- * Asserts that two [JSONArray] are equal.
- */
-fun assertJSONEquals(expected: JSONArray, actual: JSONArray) {
-    assertEquals(expected.toListTest(), actual.toListTest())
-}
 
 class ClasspathFixtures(val path: String? = null) {
 

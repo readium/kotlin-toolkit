@@ -4,6 +4,8 @@
  * available in the top-level LICENSE file of the project.
  */
 
+@file:OptIn(org.readium.r2.shared.InternalReadiumApi::class)
+
 package org.readium.r2.testapp.catalogs
 
 import android.app.Application
@@ -11,7 +13,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
-import org.json.JSONObject
+import org.readium.r2.shared.util.json.toJsonObjectOrNull
 import org.readium.r2.opds.OPDS1Parser
 import org.readium.r2.opds.OPDS2Parser
 import org.readium.r2.shared.opds.ParseData
@@ -72,14 +74,8 @@ class CatalogFeedListViewModel(application: Application) : AndroidViewModel(appl
         }
     }
 
-    private fun isJson(byteArray: ByteArray): Boolean {
-        return try {
-            JSONObject(String(byteArray))
-            true
-        } catch (e: Exception) {
-            false
-        }
-    }
+    private fun isJson(byteArray: ByteArray): Boolean =
+        String(byteArray).toJsonObjectOrNull() != null
 
     sealed class Event {
 

@@ -4,13 +4,16 @@
  * available in the top-level LICENSE file of the project.
  */
 
+@file:OptIn(org.readium.r2.shared.InternalReadiumApi::class)
+
 package org.readium.r2.testapp.data.model
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.PrimaryKey
-import org.json.JSONObject
+import org.readium.r2.shared.InternalReadiumApi
+import org.readium.r2.shared.util.json.toJsonObjectOrNull
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
@@ -51,8 +54,8 @@ data class Bookmark(
             href = Url(resourceHref)!!,
             mediaType = MediaType(resourceType) ?: MediaType.BINARY,
             title = resourceTitle,
-            locations = Locator.Locations.fromJSON(JSONObject(location)),
-            text = Locator.Text.fromJSON(JSONObject(locatorText))
+            locations = Locator.Locations.fromJSON(location.toJsonObjectOrNull()),
+            text = Locator.Text.fromJSON(locatorText.toJsonObjectOrNull())
         )
 
     companion object {

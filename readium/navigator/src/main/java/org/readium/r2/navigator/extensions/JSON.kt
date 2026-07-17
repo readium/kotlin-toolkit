@@ -7,13 +7,17 @@
 package org.readium.r2.navigator.extensions
 
 import android.graphics.RectF
-import org.json.JSONObject
+import kotlinx.serialization.json.JsonObject
+import org.readium.r2.shared.InternalReadiumApi
+import org.readium.r2.shared.util.json.optDouble
+import org.readium.r2.shared.util.json.optJsonObject
 
 /**
  * Parses a [RectF] from its JSON representation.
  */
-internal fun JSONObject.optRectF(name: String): RectF? =
-    optJSONObject(name)?.let { json ->
+@OptIn(InternalReadiumApi::class)
+internal fun JsonObject.optRectF(name: String): RectF? =
+    optJsonObject(name)?.let { json ->
         val left = json.optDouble("left").toFloat()
         val top = json.optDouble("top").toFloat()
         val right = json.optDouble("right").toFloat()

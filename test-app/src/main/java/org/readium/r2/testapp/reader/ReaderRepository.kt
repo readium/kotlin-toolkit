@@ -4,12 +4,14 @@
  * available in the top-level LICENSE file of the project.
  */
 
+@file:OptIn(org.readium.r2.shared.InternalReadiumApi::class)
+
 package org.readium.r2.testapp.reader
 
 import android.app.Application
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences as JetpackPreferences
-import org.json.JSONObject
+import org.readium.r2.shared.util.json.toJsonObjectOrNull
 import org.readium.adapter.exoplayer.audio.ExoPlayerEngineProvider
 import org.readium.adapter.pdfium.navigator.PdfiumEngineProvider
 import org.readium.navigator.media.audio.AudioNavigatorFactory
@@ -108,7 +110,7 @@ class ReaderRepository(
         }
 
         val initialLocator = book.progression
-            ?.let { Locator.fromJSON(JSONObject(it)) }
+            ?.toJsonObjectOrNull()?.let { Locator.fromJSON(it) }
 
         val readerInitData = when {
             publication.conformsTo(Publication.Profile.AUDIOBOOK) ->

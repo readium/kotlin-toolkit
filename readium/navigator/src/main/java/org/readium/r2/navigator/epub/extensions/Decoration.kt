@@ -6,7 +6,8 @@
 
 package org.readium.r2.navigator.epub.extensions
 
-import org.json.JSONObject
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
 import org.readium.r2.navigator.Decoration
 import org.readium.r2.navigator.DecorationChange
 import org.readium.r2.navigator.html.HtmlDecorationTemplates
@@ -37,14 +38,14 @@ internal fun List<DecorationChange>.javascriptForGroup(
  * Generates the JavaScript used to apply the receiver [DecorationChange] in a web view.
  */
 internal fun DecorationChange.javascript(templates: HtmlDecorationTemplates): String? {
-    fun toJSON(decoration: Decoration): JSONObject? {
+    fun toJSON(decoration: Decoration): JsonObject? {
         val template = templates[decoration.style::class] ?: run {
             Timber.e("Decoration style not registered: ${decoration.style::class}")
             return null
         }
-        return decoration.toJSON().apply {
-            put("element", template.element(decoration))
-        }
+        return JsonObject(
+            decoration.toJSON() + ("element" to JsonPrimitive(template.element(decoration)))
+        )
     }
 
     return when (this) {

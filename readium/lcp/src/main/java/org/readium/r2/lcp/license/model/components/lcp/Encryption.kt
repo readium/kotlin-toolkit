@@ -9,36 +9,36 @@
 
 package org.readium.r2.lcp.license.model.components.lcp
 
-import org.json.JSONObject
+import kotlinx.serialization.json.JsonObject
 import org.readium.r2.lcp.LcpError
 import org.readium.r2.lcp.LcpException
+import org.readium.r2.shared.InternalReadiumApi
+import org.readium.r2.shared.util.json.optJsonObject
+import org.readium.r2.shared.util.json.optString
 
-public data class Encryption(val json: JSONObject) {
+@OptIn(InternalReadiumApi::class)
+public data class Encryption(val json: JsonObject) {
     val profile: String
     val contentKey: ContentKey
     val userKey: UserKey
 
     init {
-        profile = if (json.has("profile")) {
-            json.getString("profile")
+        profile = if ("profile" in json) {
+            json.optString("profile")
         } else {
             throw LcpException(
                 LcpError.Parsing.Encryption
             )
         }
-        contentKey = if (json.has("content_key")) {
-            ContentKey(json.getJSONObject("content_key"))
-        } else {
-            throw LcpException(
+        contentKey = json.optJsonObject("content_key")
+            ?.let { ContentKey(it) }
+            ?: throw LcpException(
                 LcpError.Parsing.Encryption
             )
-        }
-        userKey = if (json.has("user_key")) {
-            UserKey(json.getJSONObject("user_key"))
-        } else {
-            throw LcpException(
+        userKey = json.optJsonObject("user_key")
+            ?.let { UserKey(it) }
+            ?: throw LcpException(
                 LcpError.Parsing.Encryption
             )
-        }
     }
 }

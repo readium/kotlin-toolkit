@@ -11,10 +11,14 @@ import android.os.Parcelable
 import androidx.annotation.ColorInt
 import kotlin.reflect.KClass
 import kotlinx.parcelize.Parcelize
-import org.json.JSONObject
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
 import org.readium.r2.navigator.Decoration
 import org.readium.r2.navigator.Decoration.Style
+import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.JSONable
+import org.readium.r2.shared.util.json.putIfNotNull
 
 /**
  * An [HtmlDecorationTemplate] renders a [Decoration] into a set of HTML elements and associated
@@ -80,10 +84,11 @@ public data class HtmlDecorationTemplate(
         val bottom: Int = 0,
     )
 
-    override fun toJSON(): JSONObject = JSONObject().apply {
+    @OptIn(InternalReadiumApi::class)
+    override fun toJSON(): JsonObject = buildJsonObject {
         put("layout", layout.value)
         put("width", width.value)
-        putOpt("stylesheet", stylesheet)
+        putIfNotNull("stylesheet", stylesheet)
     }
 
     public companion object {
@@ -202,7 +207,7 @@ public class HtmlDecorationTemplates private constructor(
         styles[style] = template
     }
 
-    override fun toJSON(): JSONObject = JSONObject(
+    override fun toJSON(): JsonObject = JsonObject(
         styles.entries.associate {
             it.key.qualifiedName!! to it.value.toJSON()
         }

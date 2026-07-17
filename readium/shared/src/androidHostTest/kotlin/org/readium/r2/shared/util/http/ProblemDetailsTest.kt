@@ -1,10 +1,13 @@
+@file:OptIn(InternalReadiumApi::class)
+
 package org.readium.r2.shared.util.http
 
-import org.json.JSONObject
+import org.readium.r2.shared.InternalReadiumApi
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.readium.r2.shared.util.json.toJsonObjectOrNull
 import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
@@ -12,11 +15,9 @@ class ProblemDetailsTest {
 
     @Test
     fun `parse minimal JSON`() {
-        val json = JSONObject(
-            """
+        val json = """
             {"title": "You do not have enough credit."}
-        """
-        )
+        """.toJsonObjectOrNull()!!
 
         assertEquals(
             ProblemDetails(title = "You do not have enough credit."),
@@ -26,8 +27,7 @@ class ProblemDetailsTest {
 
     @Test
     fun `parse full JSON`() {
-        val json = JSONObject(
-            """{
+        val json = """{
             "type": "https://example.net/validation-error",
             "title": "Your request parameters didn't validate.",
             "status": 400,
@@ -41,8 +41,7 @@ class ProblemDetailsTest {
                     "reason": "must be 'green', 'red' or 'blue'"
                 }
             ]
-        }"""
-        )
+        }""".toJsonObjectOrNull()!!
 
         assertEquals(
             ProblemDetails(
@@ -56,11 +55,9 @@ class ProblemDetailsTest {
 
     @Test
     fun `parse without a title`() {
-        val json = JSONObject(
-            """
+        val json = """
             {"type": "https://example.net/validation-error"}
-        """
-        )
+        """.toJsonObjectOrNull()!!
 
         assertNull(ProblemDetails.fromJSON(json))
     }

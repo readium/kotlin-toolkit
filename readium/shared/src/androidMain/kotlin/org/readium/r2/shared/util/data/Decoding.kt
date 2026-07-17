@@ -14,7 +14,7 @@ import java.io.ByteArrayInputStream
 import java.nio.charset.Charset
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.json.JSONObject
+import kotlinx.serialization.json.JsonObject
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.publication.Manifest
 import org.readium.r2.shared.util.DebugError
@@ -23,6 +23,7 @@ import org.readium.r2.shared.util.ThrowableError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.flatMap
 import org.readium.r2.shared.util.getOrElse
+import org.readium.r2.shared.util.json.LenientJson
 import org.readium.r2.shared.util.tryRecover
 import org.readium.r2.shared.util.xml.ElementNode
 import org.readium.r2.shared.util.xml.XmlParser
@@ -90,10 +91,10 @@ public suspend fun ByteArray.decodeXml(): Try<ElementNode, DecodeError> =
 /**
  * Content parsed from JSON.
  */
-public suspend fun ByteArray.decodeJson(): Try<JSONObject, DecodeError> =
+public suspend fun ByteArray.decodeJson(): Try<JsonObject, DecodeError> =
     decodeString().flatMap { string ->
         decode(
-            { JSONObject(string) },
+            { LenientJson.parseToJsonElement(string) as JsonObject },
             { DebugError("Content is not valid JSON.", ThrowableError(it)) }
         )
     }
@@ -107,7 +108,7 @@ public suspend fun ByteArray.decodeRwpm(): Try<Manifest, DecodeError> =
 /**
  * Readium Web Publication Manifest parsed from JSON.
  */
-public suspend fun JSONObject.decodeRwpm(): Try<Manifest, DecodeError> =
+public suspend fun JsonObject.decodeRwpm(): Try<Manifest, DecodeError> =
     decode(
         {
             Manifest.fromJSON(this)

@@ -1,6 +1,8 @@
+@file:OptIn(org.readium.r2.shared.InternalReadiumApi::class)
+
 package org.readium.r2.shared.util.resource
 
-import org.json.JSONObject
+import kotlinx.serialization.json.JsonObject
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
@@ -8,6 +10,7 @@ import org.junit.runner.RunWith
 import org.readium.r2.shared.assertJSONEquals
 import org.readium.r2.shared.util.archive.ArchiveProperties
 import org.readium.r2.shared.util.archive.archive
+import org.readium.r2.shared.util.json.wrapJson
 import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
@@ -72,12 +75,12 @@ class PropertiesTest {
     @Test
     fun `get archive JSON`() {
         assertJSONEquals(
-            JSONObject(
+            wrapJson(
                 mapOf(
                     "entryLength" to 8273L,
                     "isEntryCompressed" to true
                 )
-            ),
+            ) as JsonObject,
             ArchiveProperties(entryLength = 8273, isEntryCompressed = true).toJSON()
         )
     }

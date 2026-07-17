@@ -27,7 +27,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import org.json.JSONObject
+import kotlinx.serialization.json.JsonObject
 import org.jsoup.Jsoup
 import org.jsoup.safety.Safelist
 import org.readium.r2.navigator.extensions.optRectF
@@ -37,7 +37,6 @@ import org.readium.r2.navigator.input.KeyEvent
 import org.readium.r2.navigator.preferences.ReadingProgression
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.InternalReadiumApi
-import org.readium.r2.shared.extensions.optNullableString
 import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.extensions.tryOrNull
 import org.readium.r2.shared.publication.Link
@@ -46,6 +45,12 @@ import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.data.decodeString
 import org.readium.r2.shared.util.flatMap
+import org.readium.r2.shared.util.json.optBoolean
+import org.readium.r2.shared.util.json.optDouble
+import org.readium.r2.shared.util.json.optJsonObject
+import org.readium.r2.shared.util.json.optNullableString
+import org.readium.r2.shared.util.json.optString
+import org.readium.r2.shared.util.json.toJsonObjectOrNull
 import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.shared.util.use
 import timber.log.Timber
@@ -313,11 +318,11 @@ internal open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebV
      */
     @android.webkit.JavascriptInterface
     fun onDecorationActivated(eventJson: String): Boolean {
-        val obj = tryOrLog { JSONObject(eventJson) }
+        val obj = eventJson.toJsonObjectOrNull()
         val id = obj?.optNullableString("id")
         val group = obj?.optNullableString("group")
         val rect = obj?.optRectF("rect")
-        val click = TapEvent.fromJSONObject(obj?.optJSONObject("click"))
+        val click = TapEvent.fromJSONObject(obj?.optJsonObject("click"))
         if (id == null || group == null || rect == null || click == null) {
             Timber.e("Invalid JSON for onDecorationActivated: $eventJson")
             return false
@@ -334,7 +339,7 @@ internal open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebV
         val interactiveElement: String?,
     ) {
         companion object {
-            fun fromJSONObject(obj: JSONObject?): TapEvent? {
+            fun fromJSONObject(obj: JsonObject?): TapEvent? {
                 obj ?: return null
 
                 val x = obj.optDouble("x").toFloat()
@@ -349,7 +354,7 @@ internal open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebV
             }
 
             fun fromJSON(json: String): TapEvent? =
-                fromJSONObject(tryOrNull { JSONObject(json) })
+                fromJSONObject(json.toJsonObjectOrNull())
         }
     }
 
@@ -419,7 +424,7 @@ internal open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebV
 
     @android.webkit.JavascriptInterface
     fun onKey(eventJson: String): Boolean {
-        val jsonObject = JSONObject(eventJson)
+        val jsonObject = eventJson.toJsonObjectOrNull() ?: return false
         val event = KeyEvent(
             type = when (jsonObject.optString("type")) {
                 "down" -> KeyEvent.Type.Down
@@ -456,7 +461,7 @@ internal open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebV
             !defaultPrevented && (interactiveElement == null)
 
         companion object {
-            fun fromJSONObject(obj: JSONObject?): DragEvent? {
+            fun fromJSONObject(obj: JsonObject?): DragEvent? {
                 obj ?: return null
 
                 return DragEvent(
@@ -478,7 +483,7 @@ internal open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebV
             }
 
             fun fromJSON(json: String): DragEvent? =
-                fromJSONObject(tryOrNull { JSONObject(json) })
+                fromJSONObject(json.toJsonObjectOrNull())
         }
     }
 
@@ -540,7 +545,7 @@ internal open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebV
 
     internal suspend fun findFirstVisibleLocator(): Locator? =
         runJavaScriptSuspend("readium.findFirstVisibleLocator();")
-            .let { tryOrNull { JSONObject(it) } }
+            .toJsonObjectOrNull()
             ?.let { Locator.fromJSON(it) }
 
     fun createHighlight(locator: String?, color: String?, callback: (String) -> Unit) {
@@ -648,7 +653,7 @@ internal open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebV
     }
 }
 
-private fun inputModifiers(json: JSONObject): Set<InputModifier> =
+private fun inputModifiers(json: JsonObject): Set<InputModifier> =
     buildSet {
         if (json.optBoolean("alt")) {
             add(InputModifier.Alt)

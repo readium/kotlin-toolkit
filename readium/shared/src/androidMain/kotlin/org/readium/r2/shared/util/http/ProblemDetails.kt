@@ -9,11 +9,11 @@
 package org.readium.r2.shared.util.http
 
 import android.os.Parcelable
-import org.json.JSONObject
+import kotlinx.serialization.json.JsonObject
 import org.readium.r2.shared.InternalReadiumApi
-import org.readium.r2.shared.extensions.optNullableInt
-import org.readium.r2.shared.extensions.optNullableString
 import org.readium.r2.shared.util.Parcelize
+import org.readium.r2.shared.util.json.optNullableInt
+import org.readium.r2.shared.util.json.optNullableString
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.logging.log
 
@@ -46,10 +46,10 @@ public data class ProblemDetails(
         /**
          * Creates a [ProblemDetails] from its JSON representation.
          */
-        public fun fromJSON(json: JSONObject, warnings: WarningLogger? = null): ProblemDetails? {
+        public fun fromJSON(json: JsonObject, warnings: WarningLogger? = null): ProblemDetails? {
             val title = json.optNullableString("title")
             if (title == null) {
-                warnings?.log(ProblemDetails::class.java, "[title] is required", json)
+                warnings?.log(ProblemDetails::class, "[title] is required", json)
                 return null
             }
 

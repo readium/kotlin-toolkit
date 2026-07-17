@@ -18,7 +18,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.withContext
-import org.json.JSONObject
+import kotlinx.serialization.json.JsonObject
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.extensions.tryOrLog
@@ -26,6 +26,7 @@ import org.readium.r2.shared.util.ThrowableError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.file.FileSystemError
 import org.readium.r2.shared.util.flatMap
+import org.readium.r2.shared.util.json.LenientJson
 import org.readium.r2.shared.util.tryRecover
 
 public typealias HttpTry<SuccessT> = Try<SuccessT, HttpError>
@@ -109,11 +110,11 @@ public suspend fun HttpClient.fetchString(request: HttpRequest, charset: Charset
     }
 
 /**
- * Fetches the resource from the given [request] as a [JSONObject].
+ * Fetches the resource from the given [request] as a [JsonObject].
  */
-public suspend fun HttpClient.fetchJSONObject(request: HttpRequest): HttpTry<JSONObject> =
+public suspend fun HttpClient.fetchJSONObject(request: HttpRequest): HttpTry<JsonObject> =
     fetchWithDecoder(request) { response ->
-        JSONObject(String(response.body))
+        LenientJson.parseToJsonElement(String(response.body)) as JsonObject
     }
 
 /**

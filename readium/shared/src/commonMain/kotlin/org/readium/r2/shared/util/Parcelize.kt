@@ -26,3 +26,25 @@ public expect interface Parcelable
 @Target(AnnotationTarget.PROPERTY)
 @Retention(AnnotationRetention.SOURCE)
 public expect annotation class IgnoredOnParcel()
+
+/**
+ * Multiplatform stand-in for `kotlinx.parcelize.Parceler`.
+ *
+ * On Android it is the real `Parceler` interface used by the Parcelize compiler plugin; on other
+ * platforms it is an empty marker interface.
+ */
+public expect interface Parceler<T>
+
+/**
+ * Multiplatform stand-in for `kotlinx.parcelize.TypeParceler`.
+ */
+@Target(AnnotationTarget.CLASS, AnnotationTarget.PROPERTY)
+@Retention(AnnotationRetention.SOURCE)
+public expect annotation class TypeParceler<T, P : Parceler<in T>>()
+
+/**
+ * Multiplatform stand-in for `kotlinx.parcelize.WriteWith`.
+ */
+@Target(AnnotationTarget.TYPE)
+@Retention(AnnotationRetention.SOURCE)
+public expect annotation class WriteWith<P : Parceler<*>>()

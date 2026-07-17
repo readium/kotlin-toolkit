@@ -11,22 +11,22 @@ package org.readium.r2.opds
 
 import java.io.File
 import java.net.URL
-import org.json.JSONArray
-import org.json.JSONObject
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonObject
 import org.junit.Assert
 
 /**
- * Asserts that two [JSONObject] are equal.
+ * Asserts that two [JsonObject] are equal.
  */
-fun assertJSONEquals(expected: JSONObject, actual: JSONObject) {
-    Assert.assertEquals(expected.toString(), actual.toString())
+fun assertJSONEquals(expected: JsonObject, actual: JsonObject) {
+    Assert.assertEquals(expected, actual)
 }
 
 /**
- * Asserts that two [JSONArray] are equal.
+ * Asserts that two [JsonArray] are equal.
  */
-fun assertJSONEquals(expected: JSONArray, actual: JSONArray) {
-    Assert.assertEquals(expected.toString(), actual.toString())
+fun assertJSONEquals(expected: JsonArray, actual: JsonArray) {
+    Assert.assertEquals(expected, actual)
 }
 
 class Fixtures(val path: String? = null) {

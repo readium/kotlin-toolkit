@@ -14,8 +14,6 @@ package org.readium.r2.opds
 import org.readium.r2.shared.DelicateReadiumApi
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.extensions.toInstant
-import org.readium.r2.shared.extensions.toList
-import org.readium.r2.shared.extensions.toMap
 import org.readium.r2.shared.opds.Acquisition
 import org.readium.r2.shared.opds.Facet
 import org.readium.r2.shared.opds.Feed
@@ -41,6 +39,8 @@ import org.readium.r2.shared.util.http.DefaultHttpClient
 import org.readium.r2.shared.util.http.HttpClient
 import org.readium.r2.shared.util.http.HttpRequest
 import org.readium.r2.shared.util.http.fetchWithDecoder
+import org.readium.r2.shared.util.json.toList
+import org.readium.r2.shared.util.json.toMap
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.xml.ElementNode
 import org.readium.r2.shared.util.xml.XmlParser

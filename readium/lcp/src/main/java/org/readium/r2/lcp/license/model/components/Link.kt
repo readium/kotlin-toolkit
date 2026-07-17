@@ -12,15 +12,16 @@
 
 package org.readium.r2.lcp.license.model.components
 
-import org.json.JSONObject
+import kotlinx.serialization.json.JsonObject
 import org.readium.r2.lcp.LcpError
 import org.readium.r2.lcp.LcpException
 import org.readium.r2.shared.InternalReadiumApi
-import org.readium.r2.shared.extensions.optNullableInt
-import org.readium.r2.shared.extensions.optNullableString
-import org.readium.r2.shared.extensions.optStringsFromArrayOrSingle
 import org.readium.r2.shared.publication.Href
 import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.json.optBoolean
+import org.readium.r2.shared.util.json.optNullableInt
+import org.readium.r2.shared.util.json.optNullableString
+import org.readium.r2.shared.util.json.optStringsFromArrayOrSingle
 import org.readium.r2.shared.util.mediatype.MediaType
 
 public data class Link(
@@ -35,7 +36,7 @@ public data class Link(
 
     public companion object {
         public operator fun invoke(
-            json: JSONObject,
+            json: JsonObject,
         ): Link {
             val href = json.optNullableString("href")
                 ?.let {

@@ -6,26 +6,34 @@
 
 @file:OptIn(InternalReadiumApi::class)
 
+// TODO(kmp): move to commonMain — blocked by: Publication.Profile (Publication.kt, phase 07)
+
 package org.readium.r2.shared.publication
 
 import android.os.Parcelable
 import kotlin.time.Instant
-import org.json.JSONObject
+import kotlinx.serialization.json.JsonNull
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.JSONable
-import org.readium.r2.shared.extensions.JSONParceler
-import org.readium.r2.shared.extensions.optPositiveDouble
-import org.readium.r2.shared.extensions.optPositiveInt
-import org.readium.r2.shared.extensions.optStringsFromArrayOrSingle
-import org.readium.r2.shared.extensions.putIfNotEmpty
 import org.readium.r2.shared.extensions.toInstant
-import org.readium.r2.shared.extensions.toMap
 import org.readium.r2.shared.util.IgnoredOnParcel
 import org.readium.r2.shared.util.InstantParceler
 import org.readium.r2.shared.util.Language
 import org.readium.r2.shared.util.Parcelize
 import org.readium.r2.shared.util.TypeParceler
 import org.readium.r2.shared.util.WriteWith
+import org.readium.r2.shared.util.json.JsonMapParceler
+import org.readium.r2.shared.util.json.optPositiveDouble
+import org.readium.r2.shared.util.json.optPositiveInt
+import org.readium.r2.shared.util.json.optStringsFromArrayOrSingle
+import org.readium.r2.shared.util.json.putAll
+import org.readium.r2.shared.util.json.putIfNotEmpty
+import org.readium.r2.shared.util.json.putIfNotNull
+import org.readium.r2.shared.util.json.stringOrNull
+import org.readium.r2.shared.util.json.toMap
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.logging.log
 
@@ -73,7 +81,7 @@ public data class Metadata(
     val belongsTo: Map<String, List<Collection>> = emptyMap(),
     val tdm: Tdm? = null,
     val layout: Layout? = null,
-    val otherMetadata: @WriteWith<JSONParceler> Map<String, Any> = mapOf(),
+    val otherMetadata: @WriteWith<JsonMapParceler> Map<String, Any> = mapOf(),
 ) : JSONable, Parcelable {
 
     public constructor(
@@ -183,15 +191,18 @@ public data class Metadata(
     /**
      * Serializes a [Metadata] to its RWPM JSON representation.
      */
-    override fun toJSON(): JSONObject = JSONObject(otherMetadata.toMutableMap()).apply {
-        put("identifier", identifier)
-        put("@type", type)
+    override fun toJSON(): JsonObject = buildJsonObject {
+        // Like with the legacy org.json serialization, the RWPM keys handled by this serializer
+        // always shadow (or remove) a value with the same key in [otherMetadata].
+        putAll(otherMetadata.filterKeys { it !in rwpmKeys })
+        putIfNotNull("identifier", identifier)
+        putIfNotNull("@type", type)
         putIfNotEmpty("conformsTo", conformsTo.map { it.uri })
         putIfNotEmpty("title", localizedTitle)
         putIfNotEmpty("subtitle", localizedSubtitle)
-        put("modified", modified?.toString())
-        put("published", published?.toString())
-        put("accessibility", accessibility?.toJSON())
+        putIfNotNull("modified", modified?.toString())
+        putIfNotNull("published", published?.toString())
+        accessibility?.let { put("accessibility", it.toJSON()) }
         putIfNotEmpty("language", languages)
         putIfNotEmpty("sortAs", localizedSortAs)
         putIfNotEmpty("subject", subjects)
@@ -209,12 +220,12 @@ public data class Metadata(
         putIfNotEmpty("publisher", publishers)
         putIfNotEmpty("imprint", imprints)
         put("readingProgression", readingProgression?.value ?: "auto")
-        put("description", description)
-        put("duration", duration)
-        put("numberOfPages", numberOfPages)
+        putIfNotNull("description", description)
+        putIfNotNull("duration", duration)
+        putIfNotNull("numberOfPages", numberOfPages)
         putIfNotEmpty("belongsTo", belongsTo)
         putIfNotEmpty("tdm", tdm)
-        put("layout", layout?.value)
+        putIfNotNull("layout", layout?.value)
     }
 
     /**
@@ -225,30 +236,42 @@ public data class Metadata(
 
     public companion object {
 
+        /** RWPM keys handled by [toJSON], which always shadow [otherMetadata] values. */
+        private val rwpmKeys: Set<String> = setOf(
+            "identifier", "@type", "conformsTo", "title", "subtitle", "modified", "published",
+            "accessibility", "language", "sortAs", "subject", "author", "translator", "editor",
+            "artist", "illustrator", "letterer", "penciler", "colorist", "inker", "narrator",
+            "contributor", "publisher", "imprint", "readingProgression", "description", "duration",
+            "numberOfPages", "belongsTo", "tdm", "layout"
+        )
+
         /**
          * Parses a [Metadata] from its RWPM JSON representation.
          *
          * If the metadata can't be parsed, a warning will be logged with [warnings].
          */
         public fun fromJSON(
-            json: JSONObject?,
+            json: JsonObject?,
             warnings: WarningLogger? = null,
         ): Metadata? {
             json ?: return null
+
+            @Suppress("NAME_SHADOWING")
+            val json = json.toMutableMap()
             val localizedTitle = LocalizedString.fromJSON(json.remove("title"), warnings)
             if (localizedTitle == null) {
-                warnings?.log(Metadata::class.java, "[title] is required", json)
+                warnings?.log(Metadata::class, "[title] is required", JsonObject(json))
                 return null
             }
 
-            val identifier = json.remove("identifier") as? String
-            val type = json.remove("@type") as? String
+            val identifier = json.remove("identifier").stringOrNull
+            val type = json.remove("@type").stringOrNull
             val conformsTo = json.optStringsFromArrayOrSingle("conformsTo", remove = true)
                 .map { Publication.Profile(it) }
                 .toSet()
             val localizedSubtitle = LocalizedString.fromJSON(json.remove("subtitle"), warnings)
-            val modified = (json.remove("modified") as? String)?.toInstant()
-            val published = (json.remove("published") as? String)?.toInstant()
+            val modified = json.remove("modified").stringOrNull?.toInstant()
+            val published = json.remove("published").stringOrNull?.toInstant()
             val accessibility = Accessibility.fromJSON(json.remove("accessibility"))
             val languages = json.optStringsFromArrayOrSingle("language", remove = true)
             val localizedSortAs = LocalizedString.fromJSON(json.remove("sortAs"), warnings)
@@ -309,25 +332,24 @@ public data class Metadata(
                 warnings
             )
             val readingProgression = ReadingProgression(
-                json.remove("readingProgression") as? String
+                json.remove("readingProgression").stringOrNull
             )
-            val description = json.remove("description") as? String
+            val description = json.remove("description").stringOrNull
             val duration = json.optPositiveDouble("duration", remove = true)
             val numberOfPages = json.optPositiveInt("numberOfPages", remove = true)
 
             val tdm = Tdm.fromJSON(json.remove("tdm"), warnings)
 
-            val layout = Layout(json.remove("layout") as? String)
+            val layout = Layout(json.remove("layout").stringOrNull)
             val belongsToJson = (
-                json.remove("belongsTo") as? JSONObject
-                    ?: json.remove("belongs_to") as? JSONObject
-                    ?: JSONObject()
+                json.remove("belongsTo") as? JsonObject
+                    ?: json.remove("belongs_to") as? JsonObject
+                    ?: JsonObject(emptyMap())
                 )
 
             val belongsTo = mutableMapOf<String, List<Collection>>()
-            for (key in belongsToJson.keys()) {
-                if (!belongsToJson.isNull(key)) {
-                    val value = belongsToJson.get(key)
+            for ((key, value) in belongsToJson) {
+                if (value !is JsonNull) {
                     belongsTo[key] = Collection.fromJSONArray(
                         value,
                         warnings
@@ -367,7 +389,7 @@ public data class Metadata(
                 belongsTo = belongsTo.toMap(),
                 tdm = tdm,
                 layout = layout,
-                otherMetadata = json.toMap()
+                otherMetadata = JsonObject(json).toMap()
             )
         }
     }

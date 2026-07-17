@@ -42,7 +42,6 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import org.json.JSONObject
 import org.readium.r2.navigator.DecorableNavigator
 import org.readium.r2.navigator.Decoration
 import org.readium.r2.navigator.DecorationId
@@ -91,6 +90,8 @@ import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.services.positionsByReadingOrder
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.json.optJsonObject
+import org.readium.r2.shared.util.json.toJsonObjectOrNull
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.shared.util.toAbsoluteUrl
@@ -707,7 +708,7 @@ public class EpubNavigatorFragment internal constructor(
         val json =
             fragment.runJavaScriptSuspend("readium.getCurrentSelection();")
                 .takeIf { it != "null" }
-                ?.let { tryOrLog { JSONObject(it) } }
+                ?.toJsonObjectOrNull()
                 ?: return null
 
         val rect = json.optRectF("rect")
@@ -715,7 +716,7 @@ public class EpubNavigatorFragment internal constructor(
 
         return Selection(
             locator = currentLocator.value.copy(
-                text = Locator.Text.fromJSON(json.optJSONObject("text"))
+                text = Locator.Text.fromJSON(json.optJsonObject("text"))
             ),
             rect = rect
         )

@@ -13,7 +13,7 @@ package org.readium.r2.lcp.license.model
 
 import java.nio.charset.Charset
 import kotlin.time.Instant
-import org.json.JSONObject
+import kotlinx.serialization.json.JsonObject
 import org.readium.r2.lcp.LcpError
 import org.readium.r2.lcp.LcpException
 import org.readium.r2.lcp.license.model.components.Link
@@ -24,18 +24,21 @@ import org.readium.r2.lcp.license.model.components.lcp.Signature
 import org.readium.r2.lcp.license.model.components.lcp.User
 import org.readium.r2.lcp.service.URLParameters
 import org.readium.r2.shared.InternalReadiumApi
-import org.readium.r2.shared.extensions.optNullableString
 import org.readium.r2.shared.extensions.toInstant
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.json.optJsonArray
+import org.readium.r2.shared.util.json.optJsonObject
+import org.readium.r2.shared.util.json.optNullableString
+import org.readium.r2.shared.util.json.toJsonObjectOrNull
 import org.readium.r2.shared.util.mediatype.MediaType
 
-public class LicenseDocument internal constructor(public val json: JSONObject) {
+public class LicenseDocument internal constructor(public val json: JsonObject) {
 
     public companion object {
 
-        public fun fromJSON(json: JSONObject): Try<LicenseDocument, LcpError.Parsing> {
+        public fun fromJSON(json: JsonObject): Try<LicenseDocument, LcpError.Parsing> {
             val document = try {
                 LicenseDocument(json)
             } catch (e: Exception) {
@@ -48,11 +51,8 @@ public class LicenseDocument internal constructor(public val json: JSONObject) {
         }
 
         public fun fromBytes(data: ByteArray): Try<LicenseDocument, LcpError.Parsing> {
-            val json = try {
-                JSONObject(data.decodeToString())
-            } catch (e: Exception) {
-                return Try.failure(LcpError.Parsing.MalformedJSON)
-            }
+            val json = data.decodeToString().toJsonObjectOrNull()
+                ?: return Try.failure(LcpError.Parsing.MalformedJSON)
 
             return fromJSON(json)
         }
@@ -77,23 +77,23 @@ public class LicenseDocument internal constructor(public val json: JSONObject) {
             ?: issued
 
     public val encryption: Encryption =
-        json.optJSONObject("encryption")
+        json.optJsonObject("encryption")
             ?.let { Encryption(it) }
             ?: throw LcpException(LcpError.Parsing.LicenseDocument)
 
     public val links: Links =
-        json.optJSONArray("links")
+        json.optJsonArray("links")
             ?.let { Links(it) }
             ?: throw LcpException(LcpError.Parsing.LicenseDocument)
 
     public val user: User =
-        User(json.optJSONObject("user") ?: JSONObject())
+        User(json.optJsonObject("user") ?: JsonObject(emptyMap()))
 
     public val rights: Rights =
-        Rights(json.optJSONObject("rights") ?: JSONObject())
+        Rights(json.optJsonObject("rights") ?: JsonObject(emptyMap()))
 
     public val signature: Signature =
-        json.optJSONObject("signature")
+        json.optJsonObject("signature")
             ?.let { Signature(it) }
             ?: throw LcpException(LcpError.Parsing.LicenseDocument)
 
@@ -111,11 +111,8 @@ public class LicenseDocument internal constructor(public val json: JSONObject) {
     }
 
     internal constructor(data: ByteArray) : this(
-        try {
-            JSONObject(data.decodeToString())
-        } catch (e: Exception) {
-            throw LcpException(LcpError.Parsing.MalformedJSON)
-        }
+        data.decodeToString().toJsonObjectOrNull()
+            ?: throw LcpException(LcpError.Parsing.MalformedJSON)
     )
 
     public enum class Rel(public val value: String) {

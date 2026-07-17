@@ -19,11 +19,14 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.parcelize.Parcelize
 import kotlinx.parcelize.WriteWith
-import org.json.JSONObject
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.JSONable
-import org.readium.r2.shared.extensions.JSONParceler
 import org.readium.r2.shared.publication.Locator
+import org.readium.r2.shared.util.json.JsonMapParceler
+import org.readium.r2.shared.util.json.putIfNotNull
 import org.readium.r2.shared.util.Url
 
 /**
@@ -104,7 +107,7 @@ public data class Decoration(
     val id: DecorationId,
     val locator: Locator,
     val style: Style,
-    val extras: @WriteWith<JSONParceler> Map<String, Any> = mapOf(),
+    val extras: @WriteWith<JsonMapParceler> Map<String, Any> = mapOf(),
 ) : JSONable, Parcelable {
 
     /**
@@ -138,10 +141,10 @@ public data class Decoration(
         }
     }
 
-    override fun toJSON(): JSONObject = JSONObject().apply {
+    override fun toJSON(): JsonObject = buildJsonObject {
         put("id", id)
         put("locator", locator.toJSON())
-        putOpt("style", style::class.qualifiedName)
+        putIfNotNull("style", style::class.qualifiedName)
     }
 }
 

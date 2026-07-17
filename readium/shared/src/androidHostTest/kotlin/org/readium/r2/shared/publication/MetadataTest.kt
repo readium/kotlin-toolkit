@@ -8,7 +8,6 @@
 
 package org.readium.r2.shared.publication
 
-import org.json.JSONObject
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
@@ -18,6 +17,7 @@ import org.readium.r2.shared.assertJSONEquals
 import org.readium.r2.shared.extensions.toInstant
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Language
+import org.readium.r2.shared.util.json.toJsonObjectOrNull
 import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
@@ -26,7 +26,7 @@ class MetadataTest {
     @Test fun `parse minimal JSON`() {
         assertEquals(
             Metadata(localizedTitle = LocalizedString("Title")),
-            Metadata.fromJSON(JSONObject("{'title': 'Title'}"))
+            Metadata.fromJSON("{\"title\": \"Title\"}".toJsonObjectOrNull()!!)
         )
     }
 
@@ -97,8 +97,7 @@ class MetadataTest {
                 )
             ),
             Metadata.fromJSON(
-                JSONObject(
-                    """{
+                """{
                 "identifier": "1234",
                 "@type": "epub",
                 "conformsTo": [
@@ -148,8 +147,7 @@ class MetadataTest {
                 },
                 "other-metadata1": "value",
                 "other-metadata2": [42]
-            }"""
-                )
+            }""".toJsonObjectOrNull()!!
             )
         )
     }
@@ -165,12 +163,10 @@ class MetadataTest {
                 localizedTitle = LocalizedString("Title")
             ),
             Metadata.fromJSON(
-                JSONObject(
-                    """{
+                """{
                 "title": "Title",
                 "conformsTo": "https://readium.org/webpub-manifest/profiles/divina"
-            }"""
-                )
+            }""".toJsonObjectOrNull()!!
             )
         )
     }
@@ -182,12 +178,10 @@ class MetadataTest {
                 languages = listOf("fr")
             ),
             Metadata.fromJSON(
-                JSONObject(
-                    """{
+                """{
                 "title": "Title",
                 "language": "fr"
-            }"""
-                )
+            }""".toJsonObjectOrNull()!!
             )
         )
     }
@@ -195,33 +189,30 @@ class MetadataTest {
     @Test fun `parse JSON {duration} requires positive`() {
         assertEquals(
             Metadata(localizedTitle = LocalizedString("t")),
-            Metadata.fromJSON(JSONObject("{'title': 't', 'duration': -20}"))
+            Metadata.fromJSON("{\"title\": \"t\", \"duration\": -20}".toJsonObjectOrNull()!!)
         )
     }
 
     @Test fun `parse JSON {numberOfPages} requires positive`() {
         assertEquals(
             Metadata(localizedTitle = LocalizedString("t")),
-            Metadata.fromJSON(JSONObject("{'title': 't', 'numberOfPages': -20}"))
+            Metadata.fromJSON("{\"title\": \"t\", \"numberOfPages\": -20}".toJsonObjectOrNull()!!)
         )
     }
 
     @Test fun `get minimal JSON`() {
         assertJSONEquals(
-            JSONObject(
-                """{
+            """{
                 "title": {"und": "Title"},
                 "readingProgression": "auto"
-            }"""
-            ),
+            }""".toJsonObjectOrNull()!!,
             Metadata(localizedTitle = LocalizedString("Title")).toJSON()
         )
     }
 
     @Test fun `get full JSON`() {
         assertJSONEquals(
-            JSONObject(
-                """{
+            """{
                 "identifier": "1234",
                 "@type": "epub",
                 "conformsTo": [
@@ -273,8 +264,7 @@ class MetadataTest {
                 },
                 "other-metadata1": "value",
                 "other-metadata2": [42]
-            }"""
-            ),
+            }""".toJsonObjectOrNull()!!,
             Metadata(
                 identifier = "1234",
                 type = "epub",
