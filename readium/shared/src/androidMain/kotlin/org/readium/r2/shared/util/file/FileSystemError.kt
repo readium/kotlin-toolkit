@@ -4,6 +4,7 @@
  * available in the top-level LICENSE file of the project.
  */
 
+// TODO(kmp): move to commonMain — blocked by: data/Reading.kt
 package org.readium.r2.shared.util.file
 
 import org.readium.r2.shared.util.Error

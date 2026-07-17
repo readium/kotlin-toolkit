@@ -6,6 +6,8 @@
 
 package org.readium.r2.shared.util.units
 
+import kotlin.jvm.JvmInline
+
 @JvmInline
 public value class Hz(public val value: Double)
 

@@ -4,6 +4,7 @@
  * available in the top-level LICENSE file of the project.
  */
 
+// TODO(kmp): move to commonMain — blocked by: Href, Url
 package org.readium.r2.shared.publication
 
 import org.readium.r2.shared.ExperimentalReadiumApi

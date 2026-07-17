@@ -7,6 +7,7 @@
  * LICENSE file present in the project repository where this source code is maintained.
  */
 
+// TODO(kmp): move to commonMain — blocked by: Link, Publication
 package org.readium.r2.shared.opds
 
 import org.readium.r2.shared.InternalReadiumApi

@@ -10,10 +10,6 @@ package org.readium.r2.shared.publication
 
 import android.os.Parcelable
 import kotlin.time.Instant
-import kotlinx.parcelize.IgnoredOnParcel
-import kotlinx.parcelize.Parcelize
-import kotlinx.parcelize.TypeParceler
-import kotlinx.parcelize.WriteWith
 import org.json.JSONObject
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.JSONable
@@ -24,8 +20,12 @@ import org.readium.r2.shared.extensions.optStringsFromArrayOrSingle
 import org.readium.r2.shared.extensions.putIfNotEmpty
 import org.readium.r2.shared.extensions.toInstant
 import org.readium.r2.shared.extensions.toMap
+import org.readium.r2.shared.util.IgnoredOnParcel
 import org.readium.r2.shared.util.InstantParceler
 import org.readium.r2.shared.util.Language
+import org.readium.r2.shared.util.Parcelize
+import org.readium.r2.shared.util.TypeParceler
+import org.readium.r2.shared.util.WriteWith
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.logging.log
 

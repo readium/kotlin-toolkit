@@ -14,7 +14,6 @@ import android.os.Parcelable
 import java.io.File
 import java.net.URI
 import java.net.URL
-import kotlinx.parcelize.Parcelize
 import org.readium.r2.shared.DelicateReadiumApi
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.extensions.isPrintableAscii

@@ -10,10 +10,12 @@
 package org.readium.r2.shared.extensions
 
 import java.io.File
-import java.io.FileInputStream
-import java.security.MessageDigest
+import okio.HashingSource
+import okio.blackholeSink
+import okio.buffer
+import okio.source
 import org.readium.r2.shared.InternalReadiumApi
-import timber.log.Timber
+import org.readium.r2.shared.util.logging.ReadiumLog
 
 /**
  * Computes the MD5 hash of the file.
@@ -23,25 +25,12 @@ import timber.log.Timber
 @InternalReadiumApi
 public fun File.md5(): String? =
     try {
-        val md = MessageDigest.getInstance("MD5")
-        // https://stackoverflow.com/questions/10143731/android-optimal-buffer-size
-        val bufferSize = 32000
-        val buffer = ByteArray(bufferSize)
-        FileInputStream(this).use {
-            var bytes: Int
-            do {
-                bytes = it.read(buffer, 0, bufferSize)
-                if (bytes > 0) {
-                    md.update(buffer, 0, bytes)
-                }
-            } while (bytes > 0)
+        HashingSource.md5(source()).use { hashingSource ->
+            hashingSource.buffer().readAll(blackholeSink())
+            hashingSource.hash.hex()
         }
-
-        md.digest()
-            // ByteArray to hex string
-            .fold("") { str, it -> str + "%02x".format(it) }
     } catch (e: Exception) {
-        Timber.e(e)
+        ReadiumLog.e(e)
         null
     }
 

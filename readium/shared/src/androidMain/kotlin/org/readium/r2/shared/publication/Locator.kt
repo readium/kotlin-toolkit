@@ -12,8 +12,6 @@
 package org.readium.r2.shared.publication
 
 import android.os.Parcelable
-import kotlinx.parcelize.Parcelize
-import kotlinx.parcelize.WriteWith
 import org.json.JSONArray
 import org.json.JSONObject
 import org.readium.r2.shared.DelicateReadiumApi
@@ -21,7 +19,9 @@ import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.JSONable
 import org.readium.r2.shared.extensions.*
 import org.readium.r2.shared.toJSON
+import org.readium.r2.shared.util.Parcelize
 import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.WriteWith
 import org.readium.r2.shared.util.fromLegacyHref
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.logging.log

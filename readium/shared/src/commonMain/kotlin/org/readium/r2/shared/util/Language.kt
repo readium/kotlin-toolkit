@@ -6,7 +6,6 @@
 
 package org.readium.r2.shared.util
 
-import java.util.*
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.descriptors.PrimitiveKind
@@ -24,20 +23,15 @@ import kotlinx.serialization.encoding.Encoder
 public class Language(code: String) {
 
     /**
-     * Creates a [Language] from a Java [Locale].
-     */
-    public constructor(locale: Locale) : this(code = locale.toLanguageTag())
-
-    /**
      * BCP-47 language code.
      */
     public val code: String = code.replace("_", "-")
 
-    public val locale: Locale by lazy { Locale.forLanguageTag(code) }
-
     /** Indicates whether this language is a regional variant. */
     public val isRegional: Boolean by lazy {
-        locale.country.isNotEmpty()
+        // `this.code` on purpose: a bare `code` would resolve to the raw constructor parameter,
+        // bypassing the underscore normalization.
+        !localeRegionOf(this.code).isNullOrEmpty()
     }
 
     /** Returns this [Language] after stripping the region. */
@@ -49,8 +43,8 @@ public class Language(code: String) {
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-        if (code != (other as Language).code) return false
+        if (other !is Language) return false
+        if (code != other.code) return false
         return true
     }
 
@@ -71,3 +65,9 @@ public class Language(code: String) {
             Language(decoder.decodeString())
     }
 }
+
+/**
+ * Returns the region subtag (e.g. `US` in `en-US`) of the given BCP-47 language tag, as determined
+ * by the platform locale APIs, or null if there is none.
+ */
+internal expect fun localeRegionOf(bcp47Tag: String): String?

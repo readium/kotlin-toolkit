@@ -4,6 +4,7 @@
  * available in the top-level LICENSE file of the project.
  */
 
+// TODO(kmp): move to commonMain — blocked by: vendored zip legacy (phase 05), ArchiveOpener
 package org.readium.r2.shared.util.zip
 
 import org.readium.r2.shared.util.FileExtension

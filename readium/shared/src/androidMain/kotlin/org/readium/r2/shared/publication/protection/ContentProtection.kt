@@ -7,6 +7,7 @@
  * LICENSE file present in the project repository where this source code is maintained.
  */
 
+// TODO(kmp): move to commonMain — blocked by: Publication, Asset, Container
 package org.readium.r2.shared.publication.protection
 
 import org.readium.r2.shared.publication.Publication

@@ -11,7 +11,6 @@ package org.readium.r2.shared.util.logging
 
 import org.json.JSONObject
 import org.readium.r2.shared.util.logging.Warning.SeverityLevel.*
-import timber.log.Timber
 
 /**
  * Interface to be implemented by third-party apps if they want to observe warnings raised, for
@@ -48,8 +47,8 @@ public class ConsoleWarningLogger : WarningLogger {
     override fun log(warning: Warning) {
         val message = "[${warning.tag}] ${warning.message}"
         when (warning.severity) {
-            MINOR, MODERATE -> Timber.w(message)
-            MAJOR -> Timber.e(message)
+            MINOR, MODERATE -> ReadiumLog.w(message)
+            MAJOR -> ReadiumLog.e(message)
         }
     }
 }

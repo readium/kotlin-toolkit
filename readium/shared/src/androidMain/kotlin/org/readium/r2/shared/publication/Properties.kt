@@ -12,13 +12,13 @@
 package org.readium.r2.shared.publication
 
 import android.os.Parcelable
-import kotlinx.parcelize.Parcelize
-import kotlinx.parcelize.WriteWith
 import org.json.JSONObject
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.JSONable
 import org.readium.r2.shared.extensions.JSONParceler
 import org.readium.r2.shared.extensions.toMap
+import org.readium.r2.shared.util.Parcelize
+import org.readium.r2.shared.util.WriteWith
 
 /**
  * Properties associated to the linked resource.

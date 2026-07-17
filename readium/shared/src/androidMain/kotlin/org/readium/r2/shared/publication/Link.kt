@@ -12,7 +12,6 @@
 package org.readium.r2.shared.publication
 
 import android.os.Parcelable
-import kotlinx.parcelize.Parcelize
 import org.json.JSONArray
 import org.json.JSONObject
 import org.readium.r2.shared.InternalReadiumApi
@@ -23,6 +22,7 @@ import org.readium.r2.shared.extensions.optPositiveInt
 import org.readium.r2.shared.extensions.optStringsFromArrayOrSingle
 import org.readium.r2.shared.extensions.parseObjects
 import org.readium.r2.shared.extensions.putIfNotEmpty
+import org.readium.r2.shared.util.Parcelize
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.logging.log

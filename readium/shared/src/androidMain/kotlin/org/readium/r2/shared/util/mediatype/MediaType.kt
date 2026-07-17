@@ -12,7 +12,7 @@ package org.readium.r2.shared.util.mediatype
 import android.os.Parcelable
 import java.nio.charset.Charset
 import java.util.Locale
-import kotlinx.parcelize.Parcelize
+import org.readium.r2.shared.util.Parcelize
 
 /**
  * Represents a document format, identified by a unique RFC 6838 media type.

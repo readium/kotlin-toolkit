@@ -9,11 +9,11 @@
 package org.readium.r2.shared.publication
 
 import android.os.Parcelable
-import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.util.MapCompanion
+import org.readium.r2.shared.util.Parcelize
 
 /**
  * Indicates how the linked resource should be displayed in a reading environment that displays

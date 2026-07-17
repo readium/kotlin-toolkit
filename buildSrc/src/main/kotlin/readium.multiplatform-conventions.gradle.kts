@@ -36,6 +36,11 @@ kotlin {
             compileTaskProvider.configure {
                 compilerOptions {
                     jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_11)
+                    // Make the Parcelize plugin process the Readium-owned annotation.
+                    freeCompilerArgs.addAll(
+                        "-P",
+                        "plugin:org.jetbrains.kotlin.parcelize:additionalAnnotation=org.readium.r2.shared.util.Parcelize"
+                    )
                 }
             }
         }
@@ -44,11 +49,10 @@ kotlin {
     iosArm64()
     iosSimulatorArm64()
 
-    // TODO(phase-01): add the Parcelize `additionalAnnotation` compiler-plugin option
-    // for the Readium-owned expect annotation once it exists.
-
     compilerOptions {
         freeCompilerArgs.add("-Xannotation-default-target=param-property")
+        // The KMP migration relies on expect/actual classes (Parcelize, Language locale shims…).
+        freeCompilerArgs.add("-Xexpect-actual-classes")
         languageVersion = org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_2_3
         allWarningsAsErrors = true
     }

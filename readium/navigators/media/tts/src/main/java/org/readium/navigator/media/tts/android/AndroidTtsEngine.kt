@@ -27,6 +27,7 @@ import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.extensions.tryOrNull
 import org.readium.r2.shared.util.Language
+import org.readium.r2.shared.util.locale
 
 /*
  * On some Android implementations (i.e. on Oppo A9 2020 running Android 11),

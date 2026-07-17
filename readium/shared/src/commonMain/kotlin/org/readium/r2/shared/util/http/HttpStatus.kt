@@ -6,6 +6,8 @@
 
 package org.readium.r2.shared.util.http
 
+import kotlin.jvm.JvmInline
+
 /**
  * Status code of an HTTP response.
  */

@@ -6,6 +6,8 @@
 
 @file:OptIn(InternalReadiumApi::class)
 
+// TODO(kmp): move to commonMain — blocked by: MediaType, Url, HttpRequest
+
 package org.readium.r2.shared.util.http
 
 import org.readium.r2.shared.InternalReadiumApi

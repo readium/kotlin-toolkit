@@ -7,13 +7,13 @@
 package org.readium.r2.shared.publication.services.search
 
 import android.os.Parcelable
-import kotlinx.parcelize.Parcelize
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.LocatorCollection
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.ServiceFactory
 import org.readium.r2.shared.util.Closeable
 import org.readium.r2.shared.util.Error
+import org.readium.r2.shared.util.Parcelize
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.data.ReadError
 

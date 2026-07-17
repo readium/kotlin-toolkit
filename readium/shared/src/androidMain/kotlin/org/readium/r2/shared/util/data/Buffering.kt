@@ -6,6 +6,8 @@
 
 @file:OptIn(InternalReadiumApi::class)
 
+// TODO(kmp): move to commonMain — blocked by: data/Reading.kt (Readable)
+
 package org.readium.r2.shared.util.data
 
 import org.readium.r2.shared.InternalReadiumApi

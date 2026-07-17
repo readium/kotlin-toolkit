@@ -12,11 +12,11 @@
 package org.readium.r2.shared.opds
 
 import android.os.Parcelable
-import kotlinx.parcelize.Parcelize
 import org.json.JSONObject
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.JSONable
 import org.readium.r2.shared.extensions.optPositiveInt
+import org.readium.r2.shared.util.Parcelize
 
 /**
  * Library-specific feature that contains information about the copies that a library has acquired.

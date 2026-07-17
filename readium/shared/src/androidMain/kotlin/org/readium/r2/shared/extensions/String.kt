@@ -10,12 +10,12 @@
 package org.readium.r2.shared.extensions
 
 import android.net.Uri
-import java.security.MessageDigest
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.atStartOfDayIn
 import kotlinx.datetime.toInstant
+import okio.ByteString.Companion.encodeUtf8
 import org.json.JSONException
 import org.json.JSONObject
 import org.readium.r2.shared.InternalReadiumApi
@@ -51,16 +51,20 @@ public fun String.toInstant(): kotlin.time.Instant? =
         ?: tryOrNull { LocalDateTime.parse(this).toInstant(TimeZone.UTC) }
         ?: tryOrNull { LocalDate.parse(this).atStartOfDayIn(TimeZone.UTC) }
 
-internal enum class HashAlgorithm(val key: String) {
-    MD5("MD5"),
-    SHA256("SHA-256"),
+internal enum class HashAlgorithm {
+    MD5,
+    SHA256,
 }
 
 internal fun String.hash(algorithm: HashAlgorithm): String =
-    MessageDigest
-        .getInstance(algorithm.key)
-        .digest(this.toByteArray())
-        .fold("") { str, it -> str + "%02x".format(it) }
+    encodeUtf8()
+        .let {
+            when (algorithm) {
+                HashAlgorithm.MD5 -> it.md5()
+                HashAlgorithm.SHA256 -> it.sha256()
+            }
+        }
+        .hex()
 
 internal fun String.toJsonOrNull(): JSONObject? =
     try {

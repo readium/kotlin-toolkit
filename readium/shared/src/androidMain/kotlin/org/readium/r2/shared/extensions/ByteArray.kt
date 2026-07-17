@@ -12,12 +12,12 @@
 package org.readium.r2.shared.extensions
 
 import java.io.ByteArrayOutputStream
-import java.security.MessageDigest
 import java.util.zip.DataFormatException
 import java.util.zip.Inflater
+import okio.ByteString.Companion.toByteString
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.util.Try
-import timber.log.Timber
+import org.readium.r2.shared.util.logging.ReadiumLog
 
 /**
  * Inflates a ZIP-compressed [ByteArray].
@@ -47,12 +47,9 @@ public fun ByteArray.inflate(nowrap: Boolean = false, bufferSize: Int = 32 * 102
 @InternalReadiumApi
 public fun ByteArray.md5(): String? =
     try {
-        MessageDigest
-            .getInstance("MD5")
-            .digest(this)
-            .fold("") { str, it -> str + "%02x".format(it) }
+        toByteString().md5().hex()
     } catch (e: Exception) {
-        Timber.e(e)
+        ReadiumLog.e(e)
         null
     }
 

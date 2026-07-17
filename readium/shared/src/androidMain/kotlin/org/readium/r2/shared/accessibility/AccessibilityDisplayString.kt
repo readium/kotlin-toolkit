@@ -6,6 +6,7 @@
 
 // DO NOT EDIT. File generated automatically from v2.0.c of the en-US JSON strings.
 
+// TODO(kmp): move to commonMain — blocked by: Android R.string resources
 package org.readium.r2.shared.accessibility
 
 import org.readium.r2.shared.R

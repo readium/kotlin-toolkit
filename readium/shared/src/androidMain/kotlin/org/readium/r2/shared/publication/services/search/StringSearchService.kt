@@ -26,10 +26,10 @@ import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.data.Container
 import org.readium.r2.shared.util.getOrElse
+import org.readium.r2.shared.util.logging.ReadiumLog
 import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.shared.util.resource.content.DefaultResourceContentExtractorFactory
 import org.readium.r2.shared.util.resource.content.ResourceContentExtractor
-import timber.log.Timber
 
 /**
  * Base implementation of [SearchService] iterating through the content of Publication's
@@ -118,7 +118,7 @@ public class StringSearchService(
                         ?.getOrElse { return Try.failure(SearchError.Reading(it)) }
 
                 if (text == null) {
-                    Timber.w("Cannot extract text from resource: ${link.href}")
+                    ReadiumLog.w("Cannot extract text from resource: ${link.href}")
                     return next()
                 }
 

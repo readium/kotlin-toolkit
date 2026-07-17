@@ -41,11 +41,11 @@ import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.data.decodeString
 import org.readium.r2.shared.util.flatMap
 import org.readium.r2.shared.util.getOrElse
+import org.readium.r2.shared.util.logging.ReadiumLog
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.shared.util.toDebugDescription
 import org.readium.r2.shared.util.use
-import timber.log.Timber
 
 /**
  * Iterates an HTML [resource], starting from the given [locator].
@@ -165,7 +165,7 @@ public class HtmlResourceContentIterator internal constructor(
                     .flatMap { it.decodeString() }
                     .getOrElse {
                         val error = DebugError("Failed to read HTML resource", it.cause)
-                        Timber.w(error.toDebugDescription())
+                        ReadiumLog.w(error.toDebugDescription())
                         return@withContext ParsedElements()
                     }
 

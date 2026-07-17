@@ -6,6 +6,8 @@
 
 package org.readium.r2.shared.util
 
+import kotlin.reflect.KClass
+
 /**
  * Describes an error.
  */
@@ -54,7 +56,7 @@ public fun Error.toDebugDescription(): String =
     if (this is ThrowableError<*>) {
         throwable.toDebugDescription()
     } else {
-        var desc = "${javaClass.nameWithEnclosingClasses()}: $message"
+        var desc = "${this::class.nameWithEnclosingClasses()}: $message"
         cause?.let { cause ->
             desc += "\n${cause.toDebugDescription()}"
         }
@@ -62,20 +64,27 @@ public fun Error.toDebugDescription(): String =
     }
 
 private fun Throwable.toDebugDescription(): String {
-    var desc = "${javaClass.nameWithEnclosingClasses()}: "
+    var desc = "${this::class.nameWithEnclosingClasses()}: "
 
     desc += message ?: ""
-    desc += "\n" + stackTrace.take(2).joinToString("\n").prependIndent("  ")
+    // Formats the first two stack frames like the JVM `StackTraceElement.toString()` used to,
+    // e.g. `  org.readium.r2.shared.Foo.bar(Foo.kt:12)`.
+    desc += "\n" + stackTraceToString()
+        .lines().drop(1).take(2)
+        .joinToString("\n") { "  " + it.trim().removePrefix("at ") }
     cause?.let { cause ->
         desc += "\n${cause.toDebugDescription()}"
     }
     return desc
 }
 
-private fun Class<*>.nameWithEnclosingClasses(): String {
-    var name = simpleName
-    enclosingClass?.let {
-        name = "${it.nameWithEnclosingClasses()}.$name"
-    }
-    return name
-}
+private fun KClass<*>.nameWithEnclosingClasses(): String =
+    qualifiedName
+        // Drops the package segments (by convention, the ones starting with a lowercase letter)
+        // to keep only the class name with its enclosing classes, e.g. `Locator.Locations`.
+        ?.split(".")
+        ?.dropWhile { it.firstOrNull()?.isLowerCase() == true }
+        ?.joinToString(".")
+        ?.takeUnless { it.isEmpty() }
+        ?: simpleName
+        ?: "Unknown"

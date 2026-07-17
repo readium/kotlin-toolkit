@@ -4,6 +4,7 @@
  * available in the top-level LICENSE file of the project.
  */
 
+// TODO(kmp): move to commonMain — blocked by: Url
 package org.readium.r2.shared.util.data
 
 import kotlin.io.use

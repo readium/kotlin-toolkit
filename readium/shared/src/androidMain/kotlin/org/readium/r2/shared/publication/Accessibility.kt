@@ -9,7 +9,6 @@
 package org.readium.r2.shared.publication
 
 import android.os.Parcelable
-import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import org.json.JSONArray
@@ -24,6 +23,7 @@ import org.readium.r2.shared.publication.Accessibility.Hazard.Companion.toJSONAr
 import org.readium.r2.shared.publication.Accessibility.PrimaryAccessMode.Companion.toJSONArray
 import org.readium.r2.shared.publication.Accessibility.Profile.Companion.toJSONArray
 import org.readium.r2.shared.util.MapCompanion
+import org.readium.r2.shared.util.Parcelize
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.logging.log
 

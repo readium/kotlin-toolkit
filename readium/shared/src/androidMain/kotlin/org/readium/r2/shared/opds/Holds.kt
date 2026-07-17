@@ -12,11 +12,11 @@
 package org.readium.r2.shared.opds
 
 import android.os.Parcelable
-import kotlinx.parcelize.Parcelize
 import org.json.JSONObject
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.JSONable
 import org.readium.r2.shared.extensions.optPositiveInt
+import org.readium.r2.shared.util.Parcelize
 
 /**
  * Library-specific features when a specific book is unavailable but provides a hold list.

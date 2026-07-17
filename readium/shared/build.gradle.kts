@@ -15,20 +15,23 @@ kotlin {
     }
 
     sourceSets {
+        commonMain.dependencies {
+            implementation(libs.kotlinx.coroutines.core)
+            implementation(libs.kotlinx.serialization.json)
+            implementation(libs.okio)
+        }
+
         androidMain.dependencies {
             api(project(":readium:readium-shared-zip-legacy"))
             implementation(libs.androidx.annotation)
-            implementation(libs.timber)
             implementation(libs.kotlin.reflect)
             implementation(libs.kotlinx.coroutines.android)
             implementation(libs.kotlinx.datetime)
-            implementation(libs.kotlinx.serialization.json)
             implementation(libs.jsoup)
         }
 
         commonTest.dependencies {
             implementation(kotlin("test"))
-            implementation(libs.okio)
         }
 
         getByName("androidHostTest").dependencies {

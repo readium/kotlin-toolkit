@@ -12,12 +12,12 @@
 package org.readium.r2.shared.extensions
 
 import android.os.Parcel
-import kotlinx.parcelize.Parceler
 import org.json.JSONArray
 import org.json.JSONObject
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.JSONable
-import timber.log.Timber
+import org.readium.r2.shared.util.Parceler
+import org.readium.r2.shared.util.logging.ReadiumLog
 
 /**
  * Unwraps recursively the [JSONObject] to a [Map<String, Any>].
@@ -358,7 +358,7 @@ public object JSONParceler : Parceler<Map<String, Any>> {
                 JSONObject(it).toMap()
             } ?: emptyMap()
         } catch (e: Exception) {
-            Timber.e(e, "Failed to read a JSON map from a Parcel")
+            ReadiumLog.e(e, "Failed to read a JSON map from a Parcel")
             emptyMap()
         }
 
@@ -366,7 +366,7 @@ public object JSONParceler : Parceler<Map<String, Any>> {
         try {
             parcel.writeString(JSONObject(this).toString())
         } catch (e: Exception) {
-            Timber.e(e, "Failed to write a JSON map into a Parcel")
+            ReadiumLog.e(e, "Failed to write a JSON map into a Parcel")
         }
     }
 }

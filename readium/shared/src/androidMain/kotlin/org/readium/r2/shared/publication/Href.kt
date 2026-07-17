@@ -7,11 +7,11 @@
 package org.readium.r2.shared.publication
 
 import android.os.Parcelable
-import kotlinx.parcelize.IgnoredOnParcel
-import kotlinx.parcelize.Parcelize
+import org.readium.r2.shared.util.IgnoredOnParcel
+import org.readium.r2.shared.util.Parcelize
 import org.readium.r2.shared.util.URITemplate
 import org.readium.r2.shared.util.Url as SharedUrl
-import timber.log.Timber
+import org.readium.r2.shared.util.logging.ReadiumLog
 
 /**
  * An hypertext reference points to a resource in a [Publication].
@@ -74,7 +74,7 @@ public class Href private constructor(private val href: Url) : Parcelable {
         when (href) {
             is StaticUrl -> Href(StaticUrl(baseUrl.resolve(href.url)))
             is TemplatedUrl -> {
-                Timber.w("Cannot safely resolve a URI template to a base URL before expanding it")
+                ReadiumLog.w("Cannot safely resolve a URI template to a base URL before expanding it")
                 this
             }
         }

@@ -2,14 +2,14 @@
 
 package org.readium.r2.shared.extensions
 
+import kotlin.test.Test
 import kotlin.test.assertEquals
-import org.junit.Test
 import org.readium.r2.shared.InternalReadiumApi
 
 class LongRangeTest {
 
     @Test
-    fun `coerceIn is correct`() {
+    fun coerceInIsCorrect() {
         assertEquals((25L..30), (25L..30).coerceIn(22L..32))
         assertEquals((27L..28), (25L..30).coerceIn(27L..28))
         assertEquals((27L..30), (25L..30).coerceIn(27L..32))

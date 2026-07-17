@@ -10,7 +10,6 @@ package org.readium.r2.shared.publication
 
 import android.os.Parcelable
 import kotlin.reflect.KClass
-import kotlinx.parcelize.Parcelize
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.publication.services.CacheService
@@ -24,6 +23,7 @@ import org.readium.r2.shared.publication.services.content.ContentService
 import org.readium.r2.shared.publication.services.search.SearchService
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Closeable
+import org.readium.r2.shared.util.Parcelize
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.data.Container
 import org.readium.r2.shared.util.data.EmptyContainer

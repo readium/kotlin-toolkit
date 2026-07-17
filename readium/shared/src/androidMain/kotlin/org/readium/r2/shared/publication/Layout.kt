@@ -3,9 +3,9 @@
 package org.readium.r2.shared.publication
 
 import android.os.Parcelable
-import kotlinx.parcelize.Parcelize
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.util.MapCompanion
+import org.readium.r2.shared.util.Parcelize
 
 /**
  * Hint about the nature of the layout for the publication.

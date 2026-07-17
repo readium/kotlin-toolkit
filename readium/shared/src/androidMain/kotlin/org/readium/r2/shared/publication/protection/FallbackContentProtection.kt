@@ -4,6 +4,7 @@
  * available in the top-level LICENSE file of the project.
  */
 
+// TODO(kmp): move to commonMain — blocked by: Publication, Asset, Format
 package org.readium.r2.shared.publication.protection
 
 import org.readium.r2.shared.publication.Publication

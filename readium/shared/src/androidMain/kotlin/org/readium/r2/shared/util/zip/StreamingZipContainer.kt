@@ -6,6 +6,8 @@
 
 @file:OptIn(InternalReadiumApi::class)
 
+// TODO(kmp): move to commonMain — blocked by: vendored zip legacy (phase 05), Container
+
 package org.readium.r2.shared.util.zip
 
 import kotlinx.coroutines.DelicateCoroutinesApi

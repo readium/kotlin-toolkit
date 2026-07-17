@@ -9,6 +9,8 @@
 
 @file:Suppress("DEPRECATION")
 
+// TODO(kmp): move to commonMain — blocked by: publication/Properties.kt (org.json)
+
 package org.readium.r2.shared.publication.presentation
 
 import org.readium.r2.shared.publication.Properties

@@ -4,6 +4,7 @@
  * available in the top-level LICENSE file of the project.
  */
 
+// TODO(kmp): move to commonMain — blocked by: Url, Resource, Container
 package org.readium.r2.shared.util.http
 
 import org.readium.r2.shared.DelicateReadiumApi

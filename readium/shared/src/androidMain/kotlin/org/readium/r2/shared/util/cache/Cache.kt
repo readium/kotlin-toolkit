@@ -6,6 +6,8 @@
 
 @file:OptIn(InternalReadiumApi::class)
 
+// TODO(kmp): move to commonMain — blocked by: MemoryObserver (android.content.ComponentCallbacks2)
+
 package org.readium.r2.shared.util.cache
 
 import kotlinx.coroutines.DelicateCoroutinesApi

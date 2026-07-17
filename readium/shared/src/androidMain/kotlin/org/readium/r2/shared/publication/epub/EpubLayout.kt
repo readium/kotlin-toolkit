@@ -13,9 +13,9 @@
 package org.readium.r2.shared.publication.epub
 
 import android.os.Parcelable
-import kotlinx.parcelize.Parcelize
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.util.MapCompanion
+import org.readium.r2.shared.util.Parcelize
 
 /**
  * Hints how the layout of the resource should be presented.

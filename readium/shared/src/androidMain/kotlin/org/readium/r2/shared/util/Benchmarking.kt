@@ -4,10 +4,11 @@
  * available in the top-level LICENSE file of the project.
  */
 
+// TODO(kmp): move to commonMain — blocked by: JVM String.format
 package org.readium.r2.shared.util
 
 import kotlin.time.measureTime
-import timber.log.Timber
+import org.readium.r2.shared.util.logging.ReadiumLog
 
 internal inline fun <T> benchmark(title: String, enabled: Boolean = true, closure: () -> T): T {
     if (!enabled) {
@@ -18,6 +19,6 @@ internal inline fun <T> benchmark(title: String, enabled: Boolean = true, closur
     val duration = measureTime {
         result = closure()
     }
-    Timber.d("""Benchmark "$title" took %.4f seconds """.format(duration.inWholeSeconds))
+    ReadiumLog.d("""Benchmark "$title" took %.4f seconds """.format(duration.inWholeSeconds))
     return result
 }

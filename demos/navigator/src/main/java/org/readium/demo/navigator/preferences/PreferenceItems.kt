@@ -48,6 +48,7 @@ import org.readium.r2.navigator.preferences.clear
 import org.readium.r2.navigator.preferences.toggle
 import org.readium.r2.navigator.preferences.withSupportedValues
 import org.readium.r2.shared.util.Language
+import org.readium.r2.shared.util.locale
 
 /**
  * Component for an [EnumPreference] displayed as a group of mutually exclusive buttons.

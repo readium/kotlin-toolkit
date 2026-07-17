@@ -7,10 +7,11 @@
  * LICENSE file present in the project repository where this source code is maintained.
  */
 
+// TODO(kmp): move to commonMain — blocked by: findInstance() relies on java.lang.Class
 package org.readium.r2.shared.extensions
 
 import org.readium.r2.shared.InternalReadiumApi
-import timber.log.Timber
+import org.readium.r2.shared.util.logging.ReadiumLog
 
 /**
  * Returns the result of the given [closure], or null if an [Exception] was raised.
@@ -39,7 +40,7 @@ public inline fun <T> tryOrLog(closure: () -> T): T? =
     try {
         closure()
     } catch (e: Exception) {
-        Timber.e(e)
+        ReadiumLog.e(e)
         null
     }
 

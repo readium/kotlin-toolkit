@@ -9,6 +9,8 @@
 
 @file:Suppress("DEPRECATION")
 
+// TODO(kmp): move to commonMain — blocked by: presentation.Presentation, Link
+
 package org.readium.r2.shared.publication.epub
 
 import org.readium.r2.shared.publication.Link

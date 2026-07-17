@@ -6,6 +6,8 @@
 
 @file:OptIn(InternalReadiumApi::class)
 
+// TODO(kmp): move to commonMain — blocked by: Publication.Service, extensions/Exception.kt
+
 package org.readium.r2.shared.publication
 
 import kotlin.reflect.KClass
