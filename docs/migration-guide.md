@@ -2,7 +2,46 @@
 
 All migration steps necessary in reading apps to upgrade to major versions of the Kotlin Readium toolkit will be documented in this file.
 
-<!-- ## Unreleased -->
+## Unreleased
+
+### Pdfium navigator: page positions were off by one (bookmarks, reading progression)
+
+:warning: This requires a data migration in your application if you persisted `Locator`
+objects created by the Pdfium navigator (`readium-adapter-pdfium`).
+
+In previous versions, the Pdfium navigator reported page positions off by one:
+`currentLocator` carried a `locations.position` one page too high (visible page 1 was
+reported as position 2, and so on), and `locations.totalProgression` was shifted
+accordingly. The first page was never reported, and the last page never updated
+`currentLocator`.
+
+The error canceled itself out when a stored locator was restored with the same Pdfium
+navigator — saving added one and restoring subtracted one — which is why it could go
+unnoticed. Now that the navigator is fixed, locators persisted with earlier versions
+will restore one page too far, whether with the Pdfium navigator or any other PDF
+engine.
+
+To migrate a stored `Locator` for a PDF publication, re-resolve it from the
+publication's position list:
+
+​```kotlin
+/**
+ * Corrects a PDF [locator] persisted by the Pdfium navigator before this version.
+ * Stored positions were one page too high; re-resolving from `positions()` also
+ * corrects `totalProgression`.
+ */
+suspend fun migratePdfiumLocator(publication: Publication, locator: Locator): Locator {
+    val position = locator.locations.position ?: return locator
+    // positions() is 0-based; a stored position N was created from page index N - 2.
+    return publication.positions().getOrNull(position - 2)
+        ?: locator // Position 1 (only ever the initial value, i.e. page 1) or out of
+                   // range: correct as-is, keep unchanged.
+}
+​```
+
+Apply the migration once per stored locator, and only to locators created by the Pdfium
+navigator. Locators your app computed itself from `publication.positions()` are
+unaffected.
 
 ## 3.0.0
 
