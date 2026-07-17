@@ -24,7 +24,7 @@ engine.
 To migrate a stored `Locator` for a PDF publication, re-resolve it from the
 publication's position list:
 
-​```kotlin
+```kotlin
 /**
  * Corrects a PDF [locator] persisted by the Pdfium navigator before this version.
  *
@@ -43,7 +43,8 @@ suspend fun migratePdfiumLocator(publication: Publication, locator: Locator): Lo
     return publication.positions().getOrNull(position - 2)
         ?: locator // Position 1 (only ever the initial value, i.e. page 1) or out of
                    // range: correct as-is, keep unchanged.
-}```
+}
+```
 
 Apply the migration once per stored locator, and only to locators created by the Pdfium
 navigator. Locators your app computed itself from `publication.positions()` are
