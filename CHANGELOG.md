@@ -6,6 +6,12 @@ All notable changes to this project will be documented in this file. Take a look
 
 ## [Unreleased]
 
+### Added
+
+#### Navigator
+
+* The `Locator` returned by `SelectableNavigator.currentSelection()` in the EPUB navigator now contains the `cssSelector` of the element containing the selection in its `locations` ([#704](https://github.com/readium/kotlin-toolkit/issues/704)).
+
 ### Fixed
 
 #### Shared
