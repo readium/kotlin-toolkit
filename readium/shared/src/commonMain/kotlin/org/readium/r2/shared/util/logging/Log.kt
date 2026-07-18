@@ -6,6 +6,8 @@
 
 package org.readium.r2.shared.util.logging
 
+import org.readium.r2.shared.InternalReadiumApi
+
 /**
  * Severity of a log message.
  */
@@ -39,38 +41,38 @@ public object ReadiumLog {
 
     private const val TAG: String = "Readium"
 
-    @PublishedApi
-    internal fun v(message: String, throwable: Throwable? = null) {
+    @InternalReadiumApi
+    public fun v(message: String, throwable: Throwable? = null) {
         log(Severity.Verbose, message, throwable)
     }
 
-    @PublishedApi
-    internal fun d(message: String, throwable: Throwable? = null) {
+    @InternalReadiumApi
+    public fun d(message: String, throwable: Throwable? = null) {
         log(Severity.Debug, message, throwable)
     }
 
-    @PublishedApi
-    internal fun i(message: String, throwable: Throwable? = null) {
+    @InternalReadiumApi
+    public fun i(message: String, throwable: Throwable? = null) {
         log(Severity.Info, message, throwable)
     }
 
-    @PublishedApi
-    internal fun w(message: String, throwable: Throwable? = null) {
+    @InternalReadiumApi
+    public fun w(message: String, throwable: Throwable? = null) {
         log(Severity.Warning, message, throwable)
     }
 
-    @PublishedApi
-    internal fun w(throwable: Throwable, message: String? = null) {
+    @InternalReadiumApi
+    public fun w(throwable: Throwable, message: String? = null) {
         log(Severity.Warning, message ?: throwable.toString(), throwable)
     }
 
-    @PublishedApi
-    internal fun e(message: String, throwable: Throwable? = null) {
+    @InternalReadiumApi
+    public fun e(message: String, throwable: Throwable? = null) {
         log(Severity.Error, message, throwable)
     }
 
-    @PublishedApi
-    internal fun e(throwable: Throwable, message: String? = null) {
+    @InternalReadiumApi
+    public fun e(throwable: Throwable, message: String? = null) {
         log(Severity.Error, message ?: throwable.toString(), throwable)
     }
 

@@ -306,3 +306,30 @@ The remaining publication models and services moved from `androidMain` to `commo
 - `Field.localizedTitle(context)` and `Statement.localizedString(context, descriptive)` are now **androidMain extension functions** in the same package instead of interface members — the call syntax is unchanged, but Android callers must import `org.readium.r2.shared.accessibility.localizedTitle` / `localizedString`. They still resolve the W3C guide translations bundled as Android resources.
 - iOS gets `Field.localizedTitle()` and `Statement.localizedString(descriptive)` extensions backed by a generated lookup table of the en-US strings (v2.0.c of the W3C JSON strings), bundled in the binary.
 - `AccessibilityMetadataDisplayGuide.Statement` is now a **sealed** interface (its implementations were already internal).
+
+## Phase 08 — Streamer & OPDS conversion
+
+`readium-streamer` and `readium-opds` are now Kotlin Multiplatform modules (`androidTarget`, `iosArm64`, `iosSimulatorArm64`), published as KMP artifacts like `readium-shared`. Almost all of their code lives in `commonMain`; the API breaks are limited to the streamer entry points that used to take an Android `Context`.
+
+### Streamer parsers: `Context` replaced by an optional cache-service factory
+
+The `Context` parameter of the parsers was only used to build an `InMemoryCacheService` (which registers Android memory-pressure callbacks). The parser cores are now common and take an optional `cacheServiceFactory` instead; `androidMain` factory *functions* preserve the exact pre-KMP call syntax:
+
+- `DefaultPublicationParser(context, httpClient, assetRetriever, pdfFactory, additionalParsers)` (androidMain function) still works unchanged and wires `InMemoryCacheService` as before. The common class is `DefaultPublicationParser(httpClient, assetRetriever, pdfFactory, additionalParsers, cacheServiceFactory)`.
+- `PdfParser(context, pdfFactory)` (androidMain function) still works unchanged. The common class is `PdfParser(pdfFactory, cacheServiceFactory)`.
+- `ReadiumWebPubParser(context, httpClient, pdfFactory, epubReflowablePositionsStrategy)` (androidMain function) still works unchanged. The common class is `ReadiumWebPubParser(httpClient, pdfFactory, epubReflowablePositionsStrategy, cacheServiceFactory)` — the `context: Context? = null` first parameter is gone from the common constructor.
+- `cacheServiceFactory` defaults to a **platform default**: on Android, an `InMemoryCacheService` *without* memory-pressure callbacks — exactly the pre-KMP behavior of `ReadiumWebPubParser(context = null, …)`. So an Android caller using the common constructors (e.g. `ReadiumWebPubParser(httpClient = …, pdfFactory = …)`) keeps getting a cache service, it just doesn't release its content on memory pressure; use the `Context`-taking androidMain entry points to get the trim callbacks. On iOS, the default is **no cache service**: opened PDF documents are not cached between publication services unless the caller provides a factory. `InMemoryCacheService` itself stays in `androidMain` (it needs a `Context` for memory-pressure callbacks).
+
+`PublicationOpener`, `PublicationParser`, `CompositePublicationParser`, the EPUB/audio/image parser stack and the positions services are common with unchanged APIs. `extensions/File.kt` (`File.firstComponent`, internal) stays in `androidMain`.
+
+### Logging: streamer no longer depends on Timber
+
+The three `Timber` call sites in `readium-streamer` (`PdfPositionsService`, `LcpdfPositionsService`, `ReadiumWebPubParser`) now log through the `ReadiumLog` facade, and the module no longer depends on Timber nor on `com.mcxiaoke.koi` (SHA-1 and hex decoding are done with Okio/pure Kotlin). To make this possible, `ReadiumLog.v/d/i/w/e` in `readium-shared` changed from `internal` to `public` annotated `@InternalReadiumApi` — they are meant for Readium modules only.
+
+### OPDS
+
+`OPDS1Parser` and `OPDS2Parser` moved to `commonMain` unchanged (they had no platform dependencies left after phases 03/06). `readium-opds` no longer declares a Timber dependency (it never used it).
+
+### Tests
+
+The streamer and OPDS test suites (Robolectric-free since the shared migration) run in `commonTest` on both the Android host and the iOS simulator, using per-module `Fixtures` helpers. A new end-to-end `EpubParserTest` opens a fixture EPUB (zip container → package document → `Publication`) on every test platform, fulfilling the phase-08 acceptance criterion. Only `FileTest` (java.io.File) remains Android-only.

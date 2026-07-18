@@ -19,6 +19,11 @@ import okio.Path.Companion.toPath
  * the `READIUM_FIXTURES_DIR` environment variable. Never use `ClassLoader.getResource` in
  * `commonTest`.
  *
+ * Note: this helper is intentionally duplicated in each KMP module's commonTest
+ * (readium-shared, readium-streamer, readium-opds) because Kotlin test source sets are not
+ * published, and a dedicated test-fixtures module is not worth the extra build complexity for
+ * ~40 lines. If you change the mechanism here, update the sibling copies.
+ *
  * ```kotlin
  * val fixtures = Fixtures("format")
  * val bytes = fixtures.read("audiobook.json")

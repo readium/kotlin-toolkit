@@ -88,17 +88,19 @@ Applied to each module in order: shared (phase 00), streamer and opds (phase 08)
 > Task names validated by the phase-00 spike (2026-07-07) on a real conversion of `readium-shared`. Authoritative.
 
 ```sh
-# Android side of shared (KMP task name; there is no compileDebugKotlinAndroid)
-./gradlew :readium:readium-shared:compileAndroidMain
-# iOS side of shared
-./gradlew :readium:readium-shared:compileKotlinIosSimulatorArm64
+# Android side of the KMP modules (KMP task name; there is no compileDebugKotlinAndroid)
+./gradlew :readium:readium-shared:compileAndroidMain :readium:readium-streamer:compileAndroidMain :readium:readium-opds:compileAndroidMain
+# iOS side of the KMP modules
+./gradlew :readium:readium-shared:compileKotlinIosSimulatorArm64 :readium:readium-streamer:compileKotlinIosSimulatorArm64 :readium:readium-opds:compileKotlinIosSimulatorArm64
 # Tests, both platforms (androidHostTest is the KMP name for unit tests, incl. Robolectric)
 ./gradlew :readium:readium-shared:testAndroidHostTest :readium:readium-shared:iosSimulatorArm64Test
+./gradlew :readium:readium-streamer:testAndroidHostTest :readium:readium-streamer:iosSimulatorArm64Test
+./gradlew :readium:readium-opds:testAndroidHostTest :readium:readium-opds:iosSimulatorArm64Test
 # Whole repo, Android side only (navigator, lcp, adapters, test-app…)
 ./gradlew compileDebugSources
 ```
 
-`compileDebugSources` never touches iOS. The iOS-side commands are per-module and this list **grows as modules convert**: phase 08 adds the `:readium:readium-streamer:` and `:readium:readium-opds:` equivalents. This section always holds the authoritative list.
+`compileDebugSources` never touches iOS. The iOS-side commands are per-module and this list **grows as modules convert**: it covers `readium-shared` (phase 00) plus `readium-streamer` and `readium-opds` (phase 08). This section always holds the authoritative list.
 
 ## Publishing
 

@@ -5,8 +5,11 @@
  */
 
 // TODO(kmp): move to commonMain — blocked by: Publication, Locator
+@file:OptIn(InternalReadiumApi::class)
+
 package org.readium.r2.shared.publication.services
 
+import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.util.logging.ReadiumLog
 

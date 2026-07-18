@@ -5,20 +5,34 @@
  */
 
 plugins {
-    id("readium.library-conventions")
+    id("readium.multiplatform-conventions")
 }
 
-android {
-    namespace = "org.readium.r2.opds"
-}
+kotlin {
+    androidLibrary {
+        namespace = "org.readium.r2.opds"
+    }
 
-dependencies {
-    api(project(":readium:readium-shared"))
+    sourceSets {
+        commonMain.dependencies {
+            api(project(":readium:readium-shared"))
+            implementation(libs.kotlinx.coroutines.core)
+        }
 
-    implementation(libs.timber)
-    implementation(libs.kotlinx.coroutines.android)
+        androidMain.dependencies {
+            implementation(libs.kotlinx.coroutines.android)
+        }
 
-    // Tests
-    testImplementation(libs.junit)
-    testImplementation(libs.robolectric)
+        commonTest.dependencies {
+            implementation(kotlin("test"))
+            implementation(libs.kotlinx.coroutines.test)
+            implementation(libs.kotlinx.serialization.json)
+            implementation(libs.okio)
+        }
+
+        getByName("androidHostTest").dependencies {
+            implementation(libs.junit)
+            implementation(libs.kotlin.junit)
+        }
+    }
 }

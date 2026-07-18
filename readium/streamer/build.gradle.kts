@@ -5,27 +5,33 @@
  */
 
 plugins {
-    id("readium.library-conventions")
+    id("readium.multiplatform-conventions")
 }
 
-android {
-    namespace = "org.readium.r2.streamer"
-}
-
-dependencies {
-    api(project(":readium:readium-shared"))
-
-    @Suppress("GradleDependency")
-    implementation(libs.timber)
-    // AM NOTE: conflicting support libraries, excluding these
-    implementation("com.mcxiaoke.koi:core:0.5.5") {
-        exclude(module = "support-v4")
+kotlin {
+    androidLibrary {
+        namespace = "org.readium.r2.streamer"
     }
-    implementation(libs.kotlinx.coroutines.android)
 
-    // Tests
-    testImplementation(libs.junit)
-    testImplementation(libs.kotlin.junit)
-    testImplementation(libs.assertj)
-    testImplementation(libs.robolectric)
+    sourceSets {
+        commonMain.dependencies {
+            api(project(":readium:readium-shared"))
+            implementation(libs.kotlinx.coroutines.core)
+            implementation(libs.okio)
+        }
+
+        androidMain.dependencies {
+            implementation(libs.kotlinx.coroutines.android)
+        }
+
+        commonTest.dependencies {
+            implementation(kotlin("test"))
+            implementation(libs.kotlinx.coroutines.test)
+        }
+
+        getByName("androidHostTest").dependencies {
+            implementation(libs.junit)
+            implementation(libs.kotlin.junit)
+        }
+    }
 }

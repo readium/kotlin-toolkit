@@ -5,9 +5,12 @@
  */
 
 // TODO(kmp): move to commonMain — blocked by: JVM String.format
+@file:OptIn(InternalReadiumApi::class)
+
 package org.readium.r2.shared.util
 
 import kotlin.time.measureTime
+import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.util.logging.ReadiumLog
 
 internal inline fun <T> benchmark(title: String, enabled: Boolean = true, closure: () -> T): T {
