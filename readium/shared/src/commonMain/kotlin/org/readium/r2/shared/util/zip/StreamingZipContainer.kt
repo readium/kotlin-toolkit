@@ -6,20 +6,18 @@
 
 @file:OptIn(InternalReadiumApi::class)
 
-// TODO(kmp): move to commonMain — blocked by: vendored zip legacy (phase 05), Container
-
 package org.readium.r2.shared.util.zip
 
 import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.InternalReadiumApi
+import org.readium.r2.shared.extensions.coerceFirstNonNegative
 import org.readium.r2.shared.extensions.findInstance
-import org.readium.r2.shared.extensions.readFully
+import org.readium.r2.shared.extensions.requireLengthFitInt
 import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.DebugError
@@ -33,11 +31,14 @@ import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.data.ReadException
 import org.readium.r2.shared.util.data.ReadTry
 import org.readium.r2.shared.util.getOrElse
-import org.readium.r2.shared.util.io.CountingInputStream
+import org.readium.r2.shared.util.io.IoDispatcher
 import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.shared.util.resource.filename
-import org.readium.r2.shared.util.zip.legacycompress.archivers.zip.ZipArchiveEntry
-import org.readium.r2.shared.util.zip.legacycompress.archivers.zip.ZipFile
+import org.readium.r2.shared.util.use
+import org.readium.r2.shared.util.zip.compress.archivers.zip.ZipArchiveEntry
+import org.readium.r2.shared.util.zip.compress.archivers.zip.ZipFile
+import org.readium.r2.shared.util.zip.compress.utils.CountingInputStream
+import org.readium.r2.shared.util.zip.compress.utils.IOUtils
 
 internal class StreamingZipContainer(
     private val zipFile: ZipFile,
@@ -85,7 +86,7 @@ internal class StreamingZipContainer(
                 }
 
         override suspend fun read(range: LongRange?): ReadTry<ByteArray> =
-            withContext(Dispatchers.IO) {
+            withContext(IoDispatcher) {
                 mutex.withLock {
                     try {
                         val bytes =
@@ -96,7 +97,7 @@ internal class StreamingZipContainer(
                             }
                         Try.success(bytes)
                     } catch (exception: Exception) {
-                        exception.findInstance(ReadException::class.java)
+                        exception.findInstance<ReadException>()
                             ?.let { Try.failure(it.error) }
                             ?: Try.failure(ReadError.Decoding(exception))
                     }
@@ -104,8 +105,8 @@ internal class StreamingZipContainer(
             }
 
         private suspend fun readFully(): ByteArray =
-            zipFile.getInputStream(entry).use {
-                it.readFully()
+            checkNotNull(zipFile.getInputStream(entry)).use {
+                IOUtils.toByteArray(it)
             }
 
         private suspend fun readRange(range: LongRange): ByteArray =
@@ -142,32 +143,30 @@ internal class StreamingZipContainer(
          * to prevent downloading of data until [fromIndex].
          *
          */
-        private fun stream(fromIndex: Long): CountingInputStream {
+        private suspend fun stream(fromIndex: Long): CountingInputStream {
             if (entry.method == ZipArchiveEntry.STORED && fromIndex < entry.size) {
-                return CountingInputStream(zipFile.getRawInputStream(entry, fromIndex), fromIndex)
+                return CountingInputStream(
+                    checkNotNull(zipFile.getRawInputStream(entry, fromIndex)),
+                    initialBytesRead = fromIndex
+                )
             }
 
             // Reuse the current stream if it didn't exceed the requested index.
             stream
-                ?.takeIf { it.count <= fromIndex }
+                ?.takeIf { it.bytesRead <= fromIndex }
                 ?.let { return it }
 
             stream?.close()
 
-            return CountingInputStream(zipFile.getInputStream(entry))
+            return CountingInputStream(checkNotNull(zipFile.getInputStream(entry)))
                 .also { stream = it }
         }
 
         private var stream: CountingInputStream? = null
 
-        @OptIn(DelicateCoroutinesApi::class)
         override fun close() {
-            GlobalScope.launch {
-                withContext(Dispatchers.IO) {
-                    tryOrLog {
-                        stream?.close()
-                    }
-                }
+            tryOrLog {
+                stream?.close()
             }
         }
     }
@@ -176,7 +175,7 @@ internal class StreamingZipContainer(
         Mutex()
 
     override val entries: Set<Url> =
-        zipFile.entries.toList()
+        zipFile.entries
             .filterNot { it.isDirectory }
             .mapNotNull { entry -> Url.fromDecodedPath(entry.name) }
             .toSet()
@@ -189,10 +188,60 @@ internal class StreamingZipContainer(
 
     @OptIn(DelicateCoroutinesApi::class)
     override fun close() {
-        GlobalScope.launch {
-            withContext(Dispatchers.IO) {
-                tryOrLog { zipFile.close() }
+        GlobalScope.launch(IoDispatcher) {
+            tryOrLog { zipFile.close() }
+        }
+    }
+}
+
+/**
+ * Reads the given [range] of bytes from the stream, assuming the stream was not read past the
+ * start of the range yet.
+ *
+ * Replicates the `readRange` helper of the androidMain `util/io/CountingInputStream` on the
+ * suspending zip stream.
+ */
+private suspend fun CountingInputStream.readRange(range: LongRange): ByteArray {
+    @Suppress("NAME_SHADOWING")
+    val range = range
+        .coerceFirstNonNegative()
+        .requireLengthFitInt()
+
+    require(range.first >= bytesRead)
+
+    if (range.isEmpty()) {
+        return ByteArray(0)
+    }
+
+    val toSkip = range.first - bytesRead
+    var skipped: Long = 0
+
+    while (skipped != toSkip) {
+        val progress = skip(toSkip - skipped)
+        skipped += progress
+        if (progress == 0L) {
+            // Guard against spinning forever when skip() stops making progress: fall back to
+            // reading (and discarding) one byte, or bail out at the end of the stream.
+            if (read() == -1) {
+                // End reached, range.first was greater or equal to content length
+                return ByteArray(0)
+            } else {
+                skipped += 1
             }
         }
     }
+
+    val length = (range.last - range.first + 1).toInt()
+    val buffer = ByteArray(length)
+    var read = 0
+
+    while (read < length) {
+        val count = read(buffer, read, length - read)
+        if (count == -1) {
+            break
+        }
+        read += count
+    }
+
+    return if (read == length) buffer else buffer.copyOf(read)
 }

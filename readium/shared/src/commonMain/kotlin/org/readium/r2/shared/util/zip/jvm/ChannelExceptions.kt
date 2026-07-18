@@ -5,7 +5,8 @@
  */
 
 // Translated from the vendored `java.nio.channels` mirror previously located in
-// `:readium:readium-shared-zip-legacy` (same package, Java), itself derived from AOSP.
+// the vendored Java channel shims (same package, deleted at the end of phase 05), themselves
+// derived from AOSP.
 //
 // The original hierarchy also had `AsynchronousCloseException`, `ClosedByInterruptException` and
 // `NonReadableChannelException`; they are referenced nowhere in the zip stack (channels are

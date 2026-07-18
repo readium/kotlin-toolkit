@@ -8,10 +8,9 @@
 
 package org.readium.r2.shared.util.zip
 
-import java.io.File
-import java.io.IOException
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import okio.IOException
+import okio.Path.Companion.toPath
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.extensions.findInstance
 import org.readium.r2.shared.util.AbsoluteUrl
@@ -21,13 +20,13 @@ import org.readium.r2.shared.util.data.Container
 import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.data.ReadException
 import org.readium.r2.shared.util.data.Readable
+import org.readium.r2.shared.util.file.fileSystem
 import org.readium.r2.shared.util.format.Format
 import org.readium.r2.shared.util.format.Specification
+import org.readium.r2.shared.util.io.IoDispatcher
 import org.readium.r2.shared.util.resource.Resource
-import org.readium.r2.shared.util.toUrl
-import org.readium.r2.shared.util.zip.legacycompress.archivers.zip.ZipFile
-import org.readium.r2.shared.util.zip.legacyjvm.FileChannelAdapter
-import org.readium.r2.shared.util.zip.legacyjvm.SeekableByteChannel
+import org.readium.r2.shared.util.zip.compress.archivers.zip.ZipFile
+import org.readium.r2.shared.util.zip.jvm.SeekableByteChannel
 
 /**
  * An [ArchiveOpener] able to open a ZIP archive served through a stream (e.g. HTTP server,
@@ -40,7 +39,7 @@ internal class StreamingZipArchiveProvider {
             val container = openBlob(source, ::ReadException, null)
             Try.success(container)
         } catch (exception: Exception) {
-            exception.findInstance(ReadException::class.java)
+            exception.findInstance<ReadException>()
                 ?.let { Try.failure(ArchiveOpener.SniffOpenError.Reading(it.error)) }
                 ?: Try.failure(ArchiveOpener.SniffOpenError.NotRecognized)
         }
@@ -64,7 +63,7 @@ internal class StreamingZipArchiveProvider {
             )
             Try.success(container)
         } catch (exception: Exception) {
-            val error = exception.findInstance(ReadException::class.java)
+            val error = exception.findInstance<ReadException>()
                 ?.let { ArchiveOpener.OpenError.Reading(it.error) }
                 ?: ArchiveOpener.OpenError.Reading(ReadError.Decoding(exception))
 
@@ -76,8 +75,8 @@ internal class StreamingZipArchiveProvider {
         readable: Readable,
         wrapError: (ReadError) -> IOException,
         sourceUrl: AbsoluteUrl?,
-    ): Container<Resource> = withContext(Dispatchers.IO) {
-        val datasourceChannel = LegacyReadableChannelAdapter(readable, wrapError)
+    ): Container<Resource> = withContext(IoDispatcher) {
+        val datasourceChannel = ReadableChannelAdapter(readable, wrapError)
         val channel = wrapBaseChannel(datasourceChannel)
         val zipFile = ZipFile(channel, true)
         val sourceScheme = (readable as? Resource)?.sourceUrl?.scheme
@@ -89,21 +88,29 @@ internal class StreamingZipArchiveProvider {
         StreamingZipContainer(zipFile, sourceUrl, cacheEntryMaxSize)
     }
 
-    internal suspend fun openFile(file: File): Container<Resource> = withContext(Dispatchers.IO) {
-        val fileChannel = FileChannelAdapter(file, "r")
-        val channel = wrapBaseChannel(fileChannel)
-        StreamingZipContainer(ZipFile(channel), file.toUrl(isDirectory = false))
+    internal suspend fun openFile(file: AbsoluteUrl): Container<Resource> = withContext(IoDispatcher) {
+        val path = checkNotNull(file.path) { "Expected a file URL, got: $file" }.toPath()
+        val fileChannel = FileChannelAdapter(fileSystem.openReadOnly(path))
+        try {
+            val channel = wrapBaseChannel(fileChannel)
+            StreamingZipContainer(ZipFile(channel, true), file)
+        } catch (e: Throwable) {
+            // We own the file handle: close it on any failure to initialize the container, or
+            // every failed open/sniff would leak a file descriptor.
+            fileChannel.close()
+            throw e
+        }
     }
 
-    private fun wrapBaseChannel(channel: SeekableByteChannel): SeekableByteChannel {
+    private suspend fun wrapBaseChannel(channel: SeekableByteChannel): SeekableByteChannel {
         val size = channel.size()
         return if (size < CACHE_ALL_MAX_SIZE) {
-            LegacyCachingReadableChannel(channel, 0)
+            CachingReadableChannel(channel, 0)
         } else {
             val cacheStart = size - CACHED_TAIL_SIZE
-            val cachingChannel = LegacyCachingReadableChannel(channel, cacheStart)
+            val cachingChannel = CachingReadableChannel(channel, cacheStart)
             cachingChannel.cache()
-            LegacyBufferedReadableChannel(cachingChannel, DEFAULT_BUFFER_SIZE)
+            BufferedReadableChannel(cachingChannel, DEFAULT_BUFFER_SIZE)
         }
     }
 
@@ -112,5 +119,7 @@ internal class StreamingZipArchiveProvider {
         private const val CACHE_ALL_MAX_SIZE = 5242880
 
         private const val CACHED_TAIL_SIZE = 65557
+
+        private const val DEFAULT_BUFFER_SIZE = 8192
     }
 }

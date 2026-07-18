@@ -31,6 +31,21 @@ public inline fun <T> tryOr(default: T, closure: () -> T): T =
     }
 
 /**
+ * Finds the first cause instance of the given type.
+ */
+@InternalReadiumApi
+public inline fun <reified T : Throwable> Throwable.findInstance(): T? {
+    var current: Throwable? = this
+    while (current != null) {
+        if (current is T) {
+            return current
+        }
+        current = current.cause
+    }
+    return null
+}
+
+/**
  * Returns the result of the given [closure], or null if an [Exception] was raised.
  * The [Exception] will be logged.
  */

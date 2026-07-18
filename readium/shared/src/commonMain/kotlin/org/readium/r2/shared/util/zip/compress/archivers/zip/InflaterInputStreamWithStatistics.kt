@@ -122,6 +122,8 @@ internal open class InflaterInputStreamWithStatistics(
     }
 
     private companion object {
-        private const val DEFAULT_BUFFER_SIZE = 512
+        // The Java original used 512; raised to 8 KB (Readium) to match the buffered channel
+        // chunk size and halve the number of suspending fill round-trips per chunk.
+        private const val DEFAULT_BUFFER_SIZE = 8192
     }
 }

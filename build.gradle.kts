@@ -46,8 +46,6 @@ dokka {
 dependencies {
     subprojects
         .filter { it.name != "test-app" && !it.path.startsWith(":demos") }
-        // Temporary subproject which does not apply the Dokka plugin.
-        .filter { it.name != "readium-shared-zip-legacy" }
         .filter { it.buildFile.exists() }
         .forEach { dokka(project(it.path)) }
 }

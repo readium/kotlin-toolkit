@@ -5,7 +5,8 @@
  */
 
 // Translated from the vendored `java.nio.channels` mirror previously located in
-// `:readium:readium-shared-zip-legacy` (same package, Java), itself derived from AOSP.
+// the vendored Java channel shims (same package, deleted at the end of phase 05), themselves
+// derived from AOSP.
 
 package org.readium.r2.shared.util.zip.jvm
 

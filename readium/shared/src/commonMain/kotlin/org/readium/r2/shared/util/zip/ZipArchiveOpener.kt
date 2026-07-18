@@ -4,7 +4,6 @@
  * available in the top-level LICENSE file of the project.
  */
 
-// TODO(kmp): move to commonMain — blocked by: vendored zip legacy (phase 05), ArchiveOpener
 package org.readium.r2.shared.util.zip
 
 import org.readium.r2.shared.util.FileExtension
@@ -17,7 +16,6 @@ import org.readium.r2.shared.util.format.FormatSpecification
 import org.readium.r2.shared.util.format.Specification
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.resource.Resource
-import org.readium.r2.shared.util.toFile
 
 public class ZipArchiveOpener : ArchiveOpener {
 
@@ -29,7 +27,7 @@ public class ZipArchiveOpener : ArchiveOpener {
         format: Format,
         source: Readable,
     ): Try<ContainerAsset, ArchiveOpener.OpenError> {
-        val container = (source as? Resource)?.sourceUrl?.toFile()
+        val container = (source as? Resource)?.sourceUrl?.takeIf { it.isFile }
             ?.let { fileZipArchiveProvider.open(format, it) }
             ?: streamingZipArchiveProvider.open(format, source)
 
@@ -39,7 +37,7 @@ public class ZipArchiveOpener : ArchiveOpener {
     override suspend fun sniffOpen(
         source: Readable,
     ): Try<ContainerAsset, ArchiveOpener.SniffOpenError> {
-        val container = (source as? Resource)?.sourceUrl?.toFile()
+        val container = (source as? Resource)?.sourceUrl?.takeIf { it.isFile }
             ?.let { fileZipArchiveProvider.sniffOpen(it) }
             ?: streamingZipArchiveProvider.sniffOpen(source)
 

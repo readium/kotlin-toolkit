@@ -55,13 +55,14 @@ internal class FileChannelAdapter(
         }
 
         return withContext(IoDispatcher) {
-            val temp = ByteArray(sizeToRead)
-            val read = fileHandle.read(position, temp, 0, sizeToRead)
+            // Reads directly into the array backing the buffer ([ZipBuffer.arrayOffset] is
+            // always 0), avoiding a temporary allocation and copy on the hot read path.
+            val read = fileHandle.read(position, buffer.array(), buffer.position(), sizeToRead)
             if (read == -1) {
                 return@withContext -1
             }
 
-            buffer.put(temp, 0, read)
+            buffer.position(buffer.position() + read)
             position += read
             read
         }

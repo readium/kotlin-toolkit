@@ -61,9 +61,10 @@ internal class CachingReadableChannel(
     private suspend fun readFromTail(tail: ZipBuffer, buffer: ZipBuffer, start: Long): Int {
         tail.position(start.toInt())
         val sizeToRead = buffer.remaining().coerceAtMost(tail.remaining())
-        val temp = ByteArray(sizeToRead)
-        tail.get(temp)
-        buffer.put(temp)
+        // Copies directly from the array backing the tail, avoiding a temporary allocation and
+        // copy on the hot read path.
+        buffer.put(tail.array(), tail.position(), sizeToRead)
+        tail.position(tail.position() + sizeToRead)
         innerChannel.position(innerChannel.position() + sizeToRead)
         return sizeToRead
     }

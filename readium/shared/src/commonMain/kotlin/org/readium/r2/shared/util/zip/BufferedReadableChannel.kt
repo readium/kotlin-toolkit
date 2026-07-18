@@ -46,9 +46,10 @@ internal class BufferedReadableChannel(
         val sizeToRead = buffer.remaining()
         val sizeToReadFromBuffer = sizeToRead.coerceAtMost(dataBuffer.remaining())
 
-        val temp = ByteArray(sizeToReadFromBuffer)
-        dataBuffer.get(temp, 0, sizeToReadFromBuffer)
-        buffer.put(temp)
+        // Copies directly between the backing arrays, avoiding a temporary allocation and copy
+        // on the hot read path.
+        buffer.put(dataBuffer.array(), dataBuffer.position(), sizeToReadFromBuffer)
+        dataBuffer.position(dataBuffer.position() + sizeToReadFromBuffer)
 
         if (sizeToReadFromBuffer == sizeToRead) {
             return sizeToReadFromBuffer

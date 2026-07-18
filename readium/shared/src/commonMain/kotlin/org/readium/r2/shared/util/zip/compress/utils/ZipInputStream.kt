@@ -78,13 +78,17 @@ internal abstract class ZipInputStream : Closeable {
  * Stream that tracks the number of bytes read.
  *
  * Ported from `util/zip/compress/utils/CountingInputStream.java`, adapted to [ZipInputStream].
+ *
+ * [initialBytesRead] (Readium-added) offsets the initial [bytesRead], for streams opened past the
+ * start of their source (see `StreamingZipContainer`).
  */
 internal open class CountingInputStream(
     private val input: ZipInputStream,
+    initialBytesRead: Long = 0,
 ) : ZipInputStream() {
 
     /** The current number of bytes read from this stream. */
-    var bytesRead: Long = 0
+    var bytesRead: Long = initialBytesRead
         private set
 
     protected fun count(read: Long) {

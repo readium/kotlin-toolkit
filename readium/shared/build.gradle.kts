@@ -24,7 +24,6 @@ kotlin {
         }
 
         androidMain.dependencies {
-            api(project(":readium:readium-shared-zip-legacy"))
             implementation(libs.androidx.annotation)
             implementation(libs.kotlin.reflect)
             implementation(libs.kotlinx.coroutines.android)

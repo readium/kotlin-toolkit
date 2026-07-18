@@ -89,10 +89,6 @@ include(":readium:shared")
 project(":readium:shared")
     .name = "readium-shared"
 
-include(":readium:shared-zip-legacy")
-project(":readium:shared-zip-legacy")
-    .name = "readium-shared-zip-legacy"
-
 include(":readium:streamer")
 project(":readium:streamer")
     .name = "readium-streamer"
