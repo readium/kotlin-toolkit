@@ -14,51 +14,16 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.readium.r2.lcp.LcpError
+import org.readium.r2.lcp.fakes.validLicenseJsonStr
 import org.readium.r2.shared.util.Url
 import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
 class LicenseDocumentTest {
 
-    private val validJsonStr = """
-        {
-          "provider": "ProviderName",
-          "id": "doc_id_123",
-          "issued": "2020-01-01T12:00:00Z",
-          "updated": "2020-01-02T12:00:00Z",
-          "encryption": {
-            "profile": "http://readium.org/lcp/basic",
-            "content_key": {
-              "algorithm": "aes-256-cbc",
-              "encrypted_value": "xxxx"
-            },
-            "user_key": {
-              "text_hint": "Enter your password",
-              "algorithm": "sha-256",
-              "key_check": "yyyy"
-            }
-          },
-          "links": [
-            {
-              "href": "http://example.com/hint",
-              "rel": "hint"
-            },
-            {
-              "href": "http://example.com/publication.epub",
-              "rel": "publication"
-            }
-          ],
-          "signature": {
-            "algorithm": "sha-256",
-            "certificate": "cert_content",
-            "value": "sig_val"
-          }
-        }
-    """.trimIndent()
-
     @Test
     fun `parse valid JSON LicenseDocument`() {
-        val result = LicenseDocument.fromBytes(data = validJsonStr.toByteArray())
+        val result = LicenseDocument.fromBytes(data = validLicenseJsonStr.toByteArray())
 
         assertTrue(result.isSuccess)
         val doc = result.getOrNull()!!
@@ -84,7 +49,7 @@ class LicenseDocumentTest {
 
     @Test
     fun `parsing fails when provider is missing`() {
-        val json = validJsonStr.replace(""""provider": "ProviderName",""", "")
+        val json = validLicenseJsonStr.replace(""""provider": "ProviderName",""", "")
         val result = LicenseDocument.fromBytes(data = json.toByteArray())
 
         assertTrue(result.isFailure)
@@ -93,7 +58,7 @@ class LicenseDocumentTest {
 
     @Test
     fun `parsing fails when id is missing`() {
-        val json = validJsonStr.replace(""""id": "doc_id_123",""", "")
+        val json = validLicenseJsonStr.replace(""""id": "doc_id_123",""", "")
         val result = LicenseDocument.fromBytes(data = json.toByteArray())
 
         assertTrue(result.isFailure)
@@ -102,7 +67,7 @@ class LicenseDocumentTest {
 
     @Test
     fun `parsing fails when issued date is missing`() {
-        val json = validJsonStr.replace(""""issued": "2020-01-01T12:00:00Z",""", "")
+        val json = validLicenseJsonStr.replace(""""issued": "2020-01-01T12:00:00Z",""", "")
         val result = LicenseDocument.fromBytes(data = json.toByteArray())
 
         assertTrue(result.isFailure)
@@ -111,7 +76,7 @@ class LicenseDocumentTest {
 
     @Test
     fun `parsing fails when hint link is missing`() {
-        val json = JSONObject(validJsonStr)
+        val json = JSONObject(validLicenseJsonStr)
         json.getJSONArray("links").remove(0)
 
         val result = LicenseDocument.fromJSON(json = json)
@@ -122,7 +87,7 @@ class LicenseDocumentTest {
 
     @Test
     fun `parsing fails when publication link is missing`() {
-        val json = JSONObject(validJsonStr)
+        val json = JSONObject(validLicenseJsonStr)
         json.getJSONArray("links").remove(1)
 
         val result = LicenseDocument.fromJSON(json = json)
@@ -133,7 +98,7 @@ class LicenseDocumentTest {
 
     @Test
     fun `toByteArray returns valid JSON`() {
-        val result = LicenseDocument.fromBytes(data = validJsonStr.toByteArray())
+        val result = LicenseDocument.fromBytes(data = validLicenseJsonStr.toByteArray())
         assertTrue(result.isSuccess)
         val doc = result.getOrNull()!!
 
@@ -146,7 +111,7 @@ class LicenseDocumentTest {
 
     @Test
     fun `url retrieves and resolves parameter correctly`() {
-        val json = JSONObject(validJsonStr)
+        val json = JSONObject(validLicenseJsonStr)
         val hintLink = json.getJSONArray("links").getJSONObject(0)
         hintLink.put("href", "http://example.com/hint{?user}")
         hintLink.put("templated", true)

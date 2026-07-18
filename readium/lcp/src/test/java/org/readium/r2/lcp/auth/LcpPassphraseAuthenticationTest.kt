@@ -7,70 +7,18 @@
 package org.readium.r2.lcp.auth
 
 import kotlinx.coroutines.test.runTest
-import org.json.JSONObject
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.readium.r2.lcp.LcpAuthenticating
+import org.readium.r2.lcp.auth.fakes.FakeFallbackAuth
+import org.readium.r2.lcp.fakes.validLicenseJson
 import org.readium.r2.lcp.license.model.LicenseDocument
 import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
 class LcpPassphraseAuthenticationTest {
-
-    private class FakeFallbackAuth(val returnedPassphrase: String?) : LcpAuthenticating {
-        var called = false
-        var lastReason: LcpAuthenticating.AuthenticationReason? = null
-
-        override suspend fun retrievePassphrase(
-            license: LcpAuthenticating.AuthenticatedLicense,
-            reason: LcpAuthenticating.AuthenticationReason,
-            allowUserInteraction: Boolean,
-        ): String? {
-            called = true
-            lastReason = reason
-            return returnedPassphrase
-        }
-    }
-
-    private val validLicenseJson = JSONObject(
-        """
-        {
-          "provider": "ProviderName",
-          "id": "doc_id_123",
-          "issued": "2020-01-01T12:00:00Z",
-          "updated": "2020-01-02T12:00:00Z",
-          "encryption": {
-            "profile": "http://readium.org/lcp/basic",
-            "content_key": {
-              "algorithm": "aes-256-cbc",
-              "encrypted_value": "xxxx"
-            },
-            "user_key": {
-              "text_hint": "Enter your password",
-              "algorithm": "sha-256",
-              "key_check": "yyyy"
-            }
-          },
-          "links": [
-            {
-              "href": "http://example.com/hint",
-              "rel": "hint"
-            },
-            {
-              "href": "http://example.com/publication.epub",
-              "rel": "publication"
-            }
-          ],
-          "signature": {
-            "algorithm": "sha-256",
-            "certificate": "cert_content",
-            "value": "sig_val"
-          }
-        }
-        """.trimIndent()
-    )
 
     private val fakeLicense = LcpAuthenticating.AuthenticatedLicense(
         document = LicenseDocument.fromJSON(json = validLicenseJson).getOrNull()!!
