@@ -34,7 +34,7 @@ public data class Rights(
     val extensions: JsonObject = JsonObject(emptyMap()),
 )
 
-public object RightsSerializer : KSerializer<Rights> {
+internal object RightsSerializer : KSerializer<Rights> {
     override val descriptor: SerialDescriptor = JsonObject.serializer().descriptor
 
     override fun deserialize(decoder: Decoder): Rights {

@@ -30,7 +30,7 @@ public data class User(
     val extensions: JsonObject = JsonObject(emptyMap()),
 )
 
-public object UserSerializer : KSerializer<User> {
+internal object UserSerializer : KSerializer<User> {
     override val descriptor: SerialDescriptor = JsonObject.serializer().descriptor
 
     override fun deserialize(decoder: Decoder): User {

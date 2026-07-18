@@ -143,7 +143,7 @@ public class LicenseDocument internal constructor(
         json.toByteArray(Charset.defaultCharset())
 }
 
-public object LicenseDocumentSerializer : KSerializer<LicenseDocument> {
+internal object LicenseDocumentSerializer : KSerializer<LicenseDocument> {
     override val descriptor: SerialDescriptor = JsonObject.serializer().descriptor
 
     override fun deserialize(decoder: Decoder): LicenseDocument {

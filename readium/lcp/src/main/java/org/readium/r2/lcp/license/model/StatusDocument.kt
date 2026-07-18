@@ -122,7 +122,7 @@ public class StatusDocument(
         get() = "Status(${status.value})"
 }
 
-public object StatusDocumentSerializer : KSerializer<StatusDocument> {
+internal object StatusDocumentSerializer : KSerializer<StatusDocument> {
     override val descriptor: SerialDescriptor = JsonObject.serializer().descriptor
 
     override fun deserialize(decoder: Decoder): StatusDocument {
