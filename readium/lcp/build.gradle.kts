@@ -1,4 +1,3 @@
-import java.io.File
 import java.util.Properties
 
 /*
@@ -40,7 +39,11 @@ dependencies {
         }
         localProperties.getProperty("lcp.dependency")
     }
-    lcpDep?.let { implementation(it) }
+    lcpDep?.let {
+        compileOnly(it)
+        testImplementation(it)
+        androidTestImplementation(it)
+    }
 
     implementation(libs.androidx.constraintlayout)
     implementation(libs.androidx.core)
