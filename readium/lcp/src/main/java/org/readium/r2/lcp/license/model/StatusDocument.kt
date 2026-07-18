@@ -122,6 +122,9 @@ public class StatusDocument(
     @Deprecated("Use jsonString instead")
     public val json: JSONObject get() = JSONObject(jsonString)
 
+    @Deprecated("No longer available")
+    public val data: ByteArray get() = jsonString.toByteArray()
+
     public val description: String
         get() = "Status(${status.value})"
 }

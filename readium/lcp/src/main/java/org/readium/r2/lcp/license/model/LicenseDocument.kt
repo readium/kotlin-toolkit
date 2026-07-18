@@ -54,6 +54,11 @@ public class LicenseDocument internal constructor(
 ) {
 
     public companion object {
+        @Deprecated("Use fromBytes instead")
+        public fun fromJSON(json: JSONObject): Try<LicenseDocument, LcpError.Parsing> {
+            return fromBytes(json.toString().toByteArray())
+        }
+
         public fun fromBytes(data: ByteArray): Try<LicenseDocument, LcpError.Parsing> {
             return try {
                 Try.success(LicenseDocument(data))
@@ -112,6 +117,11 @@ public class LicenseDocument internal constructor(
         ;
 
         public companion object {
+            @Deprecated("Use fromBytes instead")
+            public fun fromJSON(json: JSONObject): Try<LicenseDocument, LcpError.Parsing> {
+                return fromBytes(json.toString().toByteArray())
+            }
+
             public operator fun invoke(value: String): Rel? = entries.firstOrNull { it.value == value }
         }
     }
