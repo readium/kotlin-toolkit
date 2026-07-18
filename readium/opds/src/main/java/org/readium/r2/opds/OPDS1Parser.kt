@@ -84,7 +84,7 @@ public class OPDS1Parser {
         }
 
         public fun parse(xmlData: ByteArray, url: Url): ParseData {
-            val root = XmlParser().parse(xmlData.inputStream())
+            val root = XmlParser().parse(xmlData)
             return if (root.name == "feed") {
                 ParseData(parseFeed(root, url), null, 1)
             } else {
@@ -232,7 +232,7 @@ public class OPDS1Parser {
                 ?: return Try.success(null)
 
             return client.fetchWithDecoder(HttpRequest(unwrappedURL)) {
-                val document = XmlParser().parse(it.body.inputStream())
+                val document = XmlParser().parse(it.body)
 
                 val urls = document.get("Url", Namespaces.Search)
 

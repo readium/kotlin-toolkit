@@ -6,8 +6,7 @@
 
 @file:OptIn(InternalReadiumApi::class)
 
-// TODO(kmp): move to commonMain — blocked by: XmlParser (phase 06) and the publication
-// models (phase 07)
+// TODO(kmp): move to commonMain — blocked by: the publication models (phase 07)
 
 package org.readium.r2.shared.util.format
 

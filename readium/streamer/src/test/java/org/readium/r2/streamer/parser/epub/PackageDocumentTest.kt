@@ -27,6 +27,7 @@ import org.readium.r2.shared.publication.page
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.xml.XmlParser
+import org.readium.r2.shared.util.xml.parse
 import org.robolectric.RobolectricTestRunner
 
 fun parsePackageDocument(path: String): Manifest {

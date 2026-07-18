@@ -20,6 +20,7 @@ import org.readium.r2.shared.publication.Href
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.xml.XmlParser
+import org.readium.r2.shared.util.xml.parse
 import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)

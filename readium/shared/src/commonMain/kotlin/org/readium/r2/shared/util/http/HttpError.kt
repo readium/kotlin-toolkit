@@ -72,7 +72,7 @@ public sealed class HttpError(
             }
 
             tryOrLog {
-                String(body).toJsonObjectOrNull()?.let { ProblemDetails.fromJSON(it) }
+                body.decodeToString().toJsonObjectOrNull()?.let { ProblemDetails.fromJSON(it) }
             }
         }
     }

@@ -2,19 +2,16 @@
 
 package org.readium.r2.shared.util.http
 
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNull
-import org.junit.Test
-import org.junit.runner.RunWith
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertNull
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.util.json.toJsonObjectOrNull
-import org.robolectric.RobolectricTestRunner
 
-@RunWith(RobolectricTestRunner::class)
 class ProblemDetailsTest {
 
     @Test
-    fun `parse minimal JSON`() {
+    fun parseMinimalJson() {
         val json = """
             {"title": "You do not have enough credit."}
         """.toJsonObjectOrNull()!!
@@ -26,7 +23,7 @@ class ProblemDetailsTest {
     }
 
     @Test
-    fun `parse full JSON`() {
+    fun parseFullJson() {
         val json = """{
             "type": "https://example.net/validation-error",
             "title": "Your request parameters didn't validate.",
@@ -54,7 +51,7 @@ class ProblemDetailsTest {
     }
 
     @Test
-    fun `parse without a title`() {
+    fun parseWithoutATitle() {
         val json = """
             {"type": "https://example.net/validation-error"}
         """.toJsonObjectOrNull()!!

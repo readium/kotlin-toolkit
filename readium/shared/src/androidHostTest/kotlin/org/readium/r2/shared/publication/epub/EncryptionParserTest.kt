@@ -19,6 +19,7 @@ import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.publication.encryption.Encryption
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.xml.XmlParser
+import org.readium.r2.shared.util.xml.parse
 import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)

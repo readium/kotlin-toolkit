@@ -6,14 +6,9 @@
 
 package org.readium.r2.shared.util.http
 
-import android.net.Uri
-import android.os.Bundle
-import java.io.Serializable
-import java.net.URLEncoder
 import kotlin.time.Duration
 import org.readium.r2.shared.extensions.toMutable
 import org.readium.r2.shared.util.AbsoluteUrl
-import org.readium.r2.shared.util.toUri
 
 /**
  * Holds the information about an HTTP request performed by an [HttpClient].
@@ -22,7 +17,7 @@ import org.readium.r2.shared.util.toUri
  * @param method HTTP method to use for the request.
  * @param headers Additional HTTP headers to use.
  * @param body Content put in the body of the HTTP request.
- * @param extras Bundle of additional information, which might be used by a specific implementation
+ * @param extras Map of additional information, which might be used by a specific implementation
  *        of HTTPClient.
  * @param connectTimeout Timeout used when establishing a connection to the resource. A null timeout
  *        is interpreted as the default value, while a timeout of zero as an infinite timeout.
@@ -36,14 +31,14 @@ public class HttpRequest(
     public val method: Method = Method.GET,
     public val headers: Map<String, List<String>> = mapOf(),
     public val body: Body? = null,
-    public val extras: Bundle = Bundle(),
+    public val extras: Map<String, String> = mapOf(),
     public val connectTimeout: Duration? = null,
     public val readTimeout: Duration? = null,
     public val allowUserInteraction: Boolean = false,
-) : Serializable {
+) {
 
     /** Supported HTTP methods. */
-    public enum class Method : Serializable {
+    public enum class Method {
         DELETE,
         GET,
         HEAD,
@@ -53,9 +48,13 @@ public class HttpRequest(
     }
 
     /** Supported body values. */
-    public sealed class Body : Serializable {
+    public sealed class Body {
         public class Bytes(public val bytes: ByteArray) : Body()
-        public class File(public val file: java.io.File) : Body()
+
+        /**
+         * Body streamed from the file at the given `file://` [url].
+         */
+        public class File(public val url: AbsoluteUrl) : Body()
     }
 
     public fun buildUpon(): Builder = Builder(
@@ -63,7 +62,7 @@ public class HttpRequest(
         method = method,
         headers = headers.toMutable(),
         body = body,
-        extras = extras,
+        extras = extras.toMutableMap(),
         connectTimeout = connectTimeout,
         readTimeout = readTimeout,
         allowUserInteraction = allowUserInteraction
@@ -82,17 +81,19 @@ public class HttpRequest(
         public var method: Method = Method.GET,
         public var headers: MutableMap<String, MutableList<String>> = mutableMapOf(),
         public var body: Body? = null,
-        public var extras: Bundle = Bundle(),
+        public var extras: MutableMap<String, String> = mutableMapOf(),
         public var connectTimeout: Duration? = null,
         public var readTimeout: Duration? = null,
         public var allowUserInteraction: Boolean = false,
     ) {
 
-        private var uriBuilder: Uri.Builder = url.toUri().buildUpon()
+        private val uriBuilder = url.uri.buildUpon()
+        private var uriModified: Boolean = false
 
         public fun appendQueryParameter(key: String, value: String?): Builder {
             if (value != null) {
                 uriBuilder.appendQueryParameter(key, value)
+                uriModified = true
             }
             return this
         }
@@ -151,24 +152,48 @@ public class HttpRequest(
             body = Body.Bytes(
                 form
                     .map { (key, value) ->
-                        "$key=${URLEncoder.encode(value ?: "", "UTF-8")}"
+                        "$key=${(value ?: "").formUrlEncoded()}"
                     }
                     .joinToString("&")
-                    .toByteArray()
+                    .encodeToByteArray()
             )
 
             return this
         }
 
         public fun build(): HttpRequest = HttpRequest(
-            url = url,
+            url = if (uriModified) AbsoluteUrl(uriBuilder.build()) ?: url else url,
             method = method,
             headers = headers.toMap(),
             body = body,
-            extras = extras,
+            extras = extras.toMap(),
             connectTimeout = connectTimeout,
             readTimeout = readTimeout,
             allowUserInteraction = allowUserInteraction
         )
+    }
+}
+
+/**
+ * Percent-encodes the receiver as an `application/x-www-form-urlencoded` value, mimicking
+ * `java.net.URLEncoder`.
+ */
+private fun String.formUrlEncoded(): String {
+    val hexDigits = "0123456789ABCDEF"
+    return buildString {
+        for (byte in this@formUrlEncoded.encodeToByteArray()) {
+            val char = (byte.toInt() and 0xFF).toChar()
+            when {
+                char in 'a'..'z' || char in 'A'..'Z' || char in '0'..'9' || char in "-._*" ->
+                    append(char)
+                char == ' ' ->
+                    append('+')
+                else -> {
+                    append('%')
+                    append(hexDigits[(byte.toInt() shr 4) and 0x0F])
+                    append(hexDigits[byte.toInt() and 0x0F])
+                }
+            }
+        }
     }
 }

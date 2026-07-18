@@ -10,7 +10,6 @@ package org.readium.r2.shared.util.data
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import java.io.ByteArrayInputStream
 import java.nio.charset.Charset
 import kotlinx.serialization.json.JsonObject
 import org.readium.r2.shared.InternalReadiumApi
@@ -19,8 +18,6 @@ import org.readium.r2.shared.util.DebugError
 import org.readium.r2.shared.util.ThrowableError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.flatMap
-import org.readium.r2.shared.util.xml.ElementNode
-import org.readium.r2.shared.util.xml.XmlParser
 
 /**
  * Content as plain text, decoded with the given [charset].
@@ -31,15 +28,6 @@ public suspend fun ByteArray.decodeString(
     decode(
         { String(it, charset = charset) },
         { DebugError("Content is not a valid $charset string.", ThrowableError(it)) }
-    )
-
-// TODO(kmp phase-06): move to commonMain once XmlParser is backed by xmlutil.
-
-/** Content as an XML document. */
-public suspend fun ByteArray.decodeXml(): Try<ElementNode, DecodeError> =
-    decode(
-        { XmlParser().parse(ByteArrayInputStream(it)) },
-        { DebugError("Content is not a valid XML document.", ThrowableError(it)) }
     )
 
 // TODO(kmp phase-07): move to commonMain once Manifest is in commonMain.

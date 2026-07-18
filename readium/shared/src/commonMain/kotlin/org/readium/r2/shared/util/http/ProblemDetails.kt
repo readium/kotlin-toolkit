@@ -8,9 +8,9 @@
 
 package org.readium.r2.shared.util.http
 
-import android.os.Parcelable
 import kotlinx.serialization.json.JsonObject
 import org.readium.r2.shared.InternalReadiumApi
+import org.readium.r2.shared.util.Parcelable
 import org.readium.r2.shared.util.Parcelize
 import org.readium.r2.shared.util.json.optNullableInt
 import org.readium.r2.shared.util.json.optNullableString

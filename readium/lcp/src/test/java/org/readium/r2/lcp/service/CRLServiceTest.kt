@@ -7,7 +7,6 @@
 package org.readium.r2.lcp.service
 
 import android.content.Context
-import java.io.ByteArrayInputStream
 import kotlin.test.assertEquals
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.days
@@ -21,6 +20,7 @@ import org.readium.r2.shared.util.http.HttpRequest
 import org.readium.r2.shared.util.http.HttpResponse
 import org.readium.r2.shared.util.http.HttpStatus
 import org.readium.r2.shared.util.http.HttpStreamResponse
+import org.readium.r2.shared.util.resource.InMemoryResource
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
 
@@ -42,7 +42,7 @@ class CRLServiceTest {
                         headers = emptyMap(),
                         mediaType = null
                     ),
-                    ByteArrayInputStream(ByteArray(0))
+                    InMemoryResource(ByteArray(0))
                 )
             )
         }

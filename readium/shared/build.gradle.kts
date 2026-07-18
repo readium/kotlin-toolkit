@@ -19,8 +19,10 @@ kotlin {
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.kotlinx.datetime)
             api(libs.kotlinx.serialization.json)
+            implementation(libs.ktor.client.core)
             implementation(libs.okio)
             implementation(libs.uri.kmp)
+            implementation(libs.xmlutil.core)
         }
 
         androidMain.dependencies {
@@ -28,11 +30,17 @@ kotlin {
             implementation(libs.kotlin.reflect)
             implementation(libs.kotlinx.coroutines.android)
             implementation(libs.jsoup)
+            implementation(libs.ktor.client.okhttp)
+        }
+
+        iosMain.dependencies {
+            implementation(libs.ktor.client.darwin)
         }
 
         commonTest.dependencies {
             implementation(kotlin("test"))
             implementation(libs.kotlinx.coroutines.test)
+            implementation(libs.ktor.client.mock)
         }
 
         getByName("androidHostTest").dependencies {

@@ -8,24 +8,25 @@
 
 package org.readium.r2.shared.util.http
 
-import java.io.File
-import java.io.FileNotFoundException
-import java.io.FileOutputStream
-import java.io.IOException
-import java.io.InputStream
-import java.nio.charset.Charset
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
-import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.JsonObject
+import okio.FileNotFoundException
+import okio.IOException
+import okio.Path.Companion.toPath
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.extensions.tryOrLog
+import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.ThrowableError
 import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.data.DEFAULT_BUFFER_SIZE
+import org.readium.r2.shared.util.data.ReadError
+import org.readium.r2.shared.util.data.Readable
 import org.readium.r2.shared.util.file.FileSystemError
+import org.readium.r2.shared.util.file.fileSystem
 import org.readium.r2.shared.util.flatMap
+import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.json.LenientJson
 import org.readium.r2.shared.util.tryRecover
 
@@ -52,12 +53,22 @@ public interface HttpClient {
 /**
  * HTTP response with streamable content.
  *
+ * The [body] supports only forward reads: you can request any range starting at or after the
+ * current position, but not going backward.
+ *
  * You MUST close the [body] to terminate the HTTP connection when you're done.
  */
 public class HttpStreamResponse(
     public val response: HttpResponse,
-    public val body: InputStream,
+    public val body: Readable,
 )
+
+/**
+ * Converts a [ReadError] occurring while reading a response body to an [HttpError].
+ */
+internal fun ReadError.toHttpError(): HttpError =
+    (this as? ReadError.Access)?.cause as? HttpError
+        ?: HttpError.IO(this)
 
 /**
  * Fetches the resource from the given [request].
@@ -66,16 +77,11 @@ public suspend fun HttpClient.fetch(request: HttpRequest): HttpTry<HttpFetchResp
     stream(request)
         .flatMap { response ->
             try {
-                val body = withContext(Dispatchers.IO) {
-                    response.body.use { it.readBytes() }
-                }
-                Try.success(
-                    HttpFetchResponse(response.response, body)
-                )
-            } catch (e: IOException) {
-                Try.failure(
-                    HttpError.IO(e)
-                )
+                response.body.read()
+                    .mapFailure { it.toHttpError() }
+                    .map { HttpFetchResponse(response.response, it) }
+            } finally {
+                response.body.close()
             }
         }
 
@@ -102,11 +108,11 @@ public suspend fun <T> HttpClient.fetchWithDecoder(
         }
 
 /**
- * Fetches the resource from the given [request] as a [String].
+ * Fetches the resource from the given [request] as a UTF-8 [String].
  */
-public suspend fun HttpClient.fetchString(request: HttpRequest, charset: Charset = Charsets.UTF_8): HttpTry<String> =
+public suspend fun HttpClient.fetchString(request: HttpRequest): HttpTry<String> =
     fetchWithDecoder(request) { response ->
-        String(response.body, charset)
+        response.body.decodeToString()
     }
 
 /**
@@ -114,7 +120,7 @@ public suspend fun HttpClient.fetchString(request: HttpRequest, charset: Charset
  */
 public suspend fun HttpClient.fetchJSONObject(request: HttpRequest): HttpTry<JsonObject> =
     fetchWithDecoder(request) { response ->
-        LenientJson.parseToJsonElement(String(response.body)) as JsonObject
+        LenientJson.parseToJsonElement(response.body.decodeToString()) as JsonObject
     }
 
 /**
@@ -158,15 +164,15 @@ public suspend fun HttpClient.head(request: HttpRequest): HttpTry<HttpResponse> 
 }
 
 /**
- * Downloads the resource from the given [request] to the [destination] file.
+ * Downloads the resource from the given [request] to the file at the [destination] URL.
  *
  * @param request The [HttpRequest] detailing the resource to be downloaded.
- * @param destination The [File] where the downloaded resource should be saved.
+ * @param destination `file://` URL where the downloaded resource should be saved.
  * @param onProgress A closure called regularly with the download progress, from 0.0 to 1.0.
  */
 public suspend fun HttpClient.download(
     request: HttpRequest,
-    destination: File,
+    destination: AbsoluteUrl,
     onProgress: (Double) -> Unit = {},
 ): Try<HttpResponse, HttpDownloadError> =
     stream(request)
@@ -178,8 +184,8 @@ public suspend fun HttpClient.download(
                 ?.toDouble()
                 ?.takeIf { it > 0 }
 
-            response.body.use {
-                it.copy(
+            try {
+                response.body.copyToFile(
                     destination = destination,
                     onProgress = { readLength ->
                         if (expectedLength != null) {
@@ -190,63 +196,58 @@ public suspend fun HttpClient.download(
                 ).map {
                     response.response
                 }
+            } finally {
+                response.body.close()
             }
         }
 
-private suspend fun InputStream.copy(
-    destination: File,
-    onProgress: (Long) -> Unit = {},
-): Try<Unit, HttpDownloadError> =
-    withContext(Dispatchers.IO) {
-        try {
-            FileOutputStream(destination).use { out ->
-                val buf = ByteArray(size = DEFAULT_BUFFER_SIZE)
-                var readMore = true
-                var totalRead = 0L
+private suspend fun Readable.copyToFile(
+    destination: AbsoluteUrl,
+    onProgress: (Long) -> Unit,
+): Try<Unit, HttpDownloadError> {
+    val path = destination.path?.toPath()
+        ?: return Try.failure(
+            HttpDownloadError.Filesystem(
+                FileSystemError.IO(
+                    ThrowableError(IllegalArgumentException("Invalid destination file URL: $destination"))
+                )
+            )
+        )
 
-                while (readMore) {
-                    currentCoroutineContext().ensureActive()
-                    val justRead = try {
-                        read(buf)
-                    } catch (e: IOException) {
-                        tryOrLog {
-                            destination.delete()
-                        }
-                        return@withContext Try.failure(
-                            HttpDownloadError.Http(HttpError.IO(e))
+    var position = 0L
+
+    try {
+        fileSystem.write(path) {
+            while (true) {
+                currentCoroutineContext().ensureActive()
+
+                val chunk = read(position until position + DEFAULT_BUFFER_SIZE)
+                    .getOrElse { error ->
+                        tryOrLog { fileSystem.delete(path) }
+                        return Try.failure(
+                            HttpDownloadError.Http(error.toHttpError())
                         )
                     }
 
-                    if (justRead != -1) {
-                        totalRead += justRead
-
-                        coroutineContext.ensureActive()
-                        out.write(buf, 0, justRead)
-                    }
-
-                    withContext(Dispatchers.Main) {
-                        onProgress(totalRead)
-                    }
-
-                    readMore = justRead != -1
+                if (chunk.isEmpty()) {
+                    break
                 }
-            }
-        } catch (e: SecurityException) {
-            Try.failure(
-                HttpDownloadError.Filesystem(FileSystemError.Forbidden(e))
-            )
-        } catch (e: FileNotFoundException) {
-            Try.failure(
-                HttpDownloadError.Filesystem(FileSystemError.FileNotFound(e))
-            )
-        } catch (e: IOException) {
-            tryOrLog {
-                destination.delete()
-            }
-            Try.failure(
-                HttpDownloadError.Filesystem(FileSystemError.IO(e))
-            )
-        }
 
-        Try.success(Unit)
+                position += chunk.size
+                write(chunk)
+                onProgress(position)
+            }
+        }
+    } catch (e: FileNotFoundException) {
+        return Try.failure(
+            HttpDownloadError.Filesystem(FileSystemError.FileNotFound(e))
+        )
+    } catch (e: IOException) {
+        tryOrLog { fileSystem.delete(path) }
+        return Try.failure(
+            HttpDownloadError.Filesystem(FileSystemError.IO(e))
+        )
     }
+
+    return Try.success(Unit)
+}

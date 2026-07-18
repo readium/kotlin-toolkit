@@ -71,7 +71,7 @@ mockk = "1.14.9"
 timber = "5.0.1"
 uri-kmp = "0.0.21"
 
-xmlutil = "1.0.1"
+xmlutil = "0.91.3" # 1.0.x klibs are built with Kotlin 2.4 and cannot be consumed by Kotlin 2.3.
 
 
 [libraries]
@@ -131,6 +131,7 @@ ksoup = { group = "com.fleeksoft.ksoup", name = "ksoup", version.ref = "ksoup" }
 
 ktor-client-core = { group = "io.ktor", name = "ktor-client-core", version.ref = "ktor" }
 ktor-client-darwin = { group = "io.ktor", name = "ktor-client-darwin", version.ref = "ktor" }
+ktor-client-mock = { group = "io.ktor", name = "ktor-client-mock", version.ref = "ktor" }
 ktor-client-okhttp = { group = "io.ktor", name = "ktor-client-okhttp", version.ref = "ktor" }
 
 okio = { group = "com.squareup.okio", name = "okio", version.ref = "okio" }

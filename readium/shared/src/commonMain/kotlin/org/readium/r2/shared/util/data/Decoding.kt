@@ -21,6 +21,8 @@ import org.readium.r2.shared.util.flatMap
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.json.LenientJson
 import org.readium.r2.shared.util.tryRecover
+import org.readium.r2.shared.util.xml.ElementNode
+import org.readium.r2.shared.util.xml.XmlParser
 
 /**
  * Errors produced when trying to decode content.
@@ -71,6 +73,13 @@ public suspend fun ByteArray.decodeString(): Try<String, DecodeError> =
     decode(
         { it.decodeToString() },
         { DebugError("Content is not a valid UTF-8 string.", ThrowableError(it)) }
+    )
+
+/** Content as an XML document. */
+public suspend fun ByteArray.decodeXml(): Try<ElementNode, DecodeError> =
+    decode(
+        { XmlParser().parse(it) },
+        { DebugError("Content is not a valid XML document.", ThrowableError(it)) }
     )
 
 /**

@@ -36,15 +36,19 @@ private class ReadableInputStreamAdapter(
 
     private var isClosed = false
 
-    private val end: Long by lazy {
+    /**
+     * End position (exclusive) of the readable content, or null when the length is unknown —
+     * for example an HTTP response streamed with chunked transfer encoding.
+     */
+    private val end: Long? by lazy {
         val resourceLength =
             runBlocking { readable.length() }
-                .recover()
+                .getOrNull()
 
-        if (range == null) {
-            resourceLength
-        } else {
-            kotlin.math.min(resourceLength, range.last + 1)
+        when {
+            range == null -> resourceLength
+            resourceLength == null -> range.last + 1
+            else -> kotlin.math.min(resourceLength, range.last + 1)
         }
     }
 
@@ -56,30 +60,38 @@ private class ReadableInputStreamAdapter(
      */
     private var mark: Long = range?.start ?: 0
 
+    /** Number of bytes left until [end], or null when the length is unknown. */
+    private fun remaining(): Long? =
+        end?.let { (it - position).coerceAtLeast(0) }
+
     override fun available(): Int {
         checkNotClosed()
-        return (end - position).toInt()
+        // When the length is unknown, we cannot tell how many bytes are left, so we return 0 as
+        // permitted by the InputStream contract.
+        return (remaining() ?: 0).coerceAtMost(Int.MAX_VALUE.toLong()).toInt()
     }
 
     override fun skip(n: Long): Long = synchronized(this) {
         checkNotClosed()
 
-        val newPosition = (position + n).coerceAtMost(end)
-        val skipped = newPosition - position
-        position = newPosition
+        val skipped = remaining()?.let { kotlin.math.min(n, it) } ?: n
+        position += skipped
         skipped
     }
 
     override fun read(): Int = synchronized(this) {
         checkNotClosed()
 
-        if (available() <= 0) {
+        if (remaining()?.let { it <= 0 } == true) {
             return -1
         }
 
         val bytes = runBlocking {
             readable.read(position until (position + 1))
                 .recover()
+        }
+        if (bytes.isEmpty()) {
+            return -1
         }
         position += 1
         return bytes.first().toUByte().toInt()
@@ -88,14 +100,22 @@ private class ReadableInputStreamAdapter(
     override fun read(b: ByteArray, off: Int, len: Int): Int = synchronized(this) {
         checkNotClosed()
 
-        if (available() <= 0) {
+        if (len == 0) {
+            return 0
+        }
+
+        val remaining = remaining()
+        if (remaining != null && remaining <= 0) {
             return -1
         }
 
-        val bytesToRead = len.coerceAtMost(available())
+        val bytesToRead = remaining?.let { len.toLong().coerceAtMost(it) } ?: len.toLong()
         val bytes = runBlocking {
             readable.read(position until (position + bytesToRead))
                 .recover()
+        }
+        if (bytes.isEmpty()) {
+            return -1
         }
         check(bytes.size <= bytesToRead)
         bytes.copyInto(

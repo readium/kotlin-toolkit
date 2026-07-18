@@ -4,7 +4,7 @@
  * available in the top-level LICENSE file of the project.
  */
 
-// TODO(kmp): move to commonMain — blocked by: XmlParser, Encryption, Url
+// TODO(kmp): move to commonMain — blocked by: ContentProtection (phase 07)
 package org.readium.r2.shared.publication.epub
 
 import org.readium.r2.shared.InternalReadiumApi

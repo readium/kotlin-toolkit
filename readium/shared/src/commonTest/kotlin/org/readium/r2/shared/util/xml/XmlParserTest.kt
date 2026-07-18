@@ -11,14 +11,13 @@
 
 package org.readium.r2.shared.util.xml
 
-import java.io.ByteArrayInputStream
-import javax.xml.XMLConstants
+import kotlin.test.Test
 import kotlin.test.assertEquals
-import org.junit.Test
-import org.junit.runner.RunWith
+import kotlin.test.assertFailsWith
+import org.readium.r2.shared.Fixtures
 import org.readium.r2.shared.InternalReadiumApi
-import org.robolectric.RobolectricTestRunner
-import org.xmlpull.v1.XmlPullParserException
+
+private const val XML_NS_URI = "http://www.w3.org/XML/1998/namespace"
 
 val metadatav3 = """
     <package xmlns="http://www.idpf.org/2007/opf" version="3.0" xml:lang="en" unique-identifier="pub-id">
@@ -38,16 +37,14 @@ val metadatav2 = """
             <dc:creator opf:role="aut">Guy de Maupassant</dc:creator>
             <dc:identifier id="pub-id">urn:uuid:8A768A9F-5559-3BAA-84E4-D39A4D249D51</dc:identifier>
         </metadata>
-    </package>    
+    </package>
 """
 
 private fun parseXmlString(string: String, namespaceAware: Boolean = true): ElementNode {
     val parser = XmlParser(namespaceAware)
-    val stream = ByteArrayInputStream(string.toByteArray(Charsets.UTF_8))
-    return parser.parse(stream)
+    return parser.parse(string)
 }
 
-@RunWith(RobolectricTestRunner::class)
 class XmlParserTest {
     @Test
     fun testNotNamespaceAwareV3() {
@@ -129,7 +126,7 @@ class XmlParserTest {
             "fr",
             mapOf(
                 "" to mapOf("refines" to "#title", "property" to "alternate-script"),
-                XMLConstants.XML_NS_URI to mapOf("lang" to "fr")
+                XML_NS_URI to mapOf("lang" to "fr")
             ),
             listOf(TextNode("Moby Dick"))
         )
@@ -200,18 +197,22 @@ class XmlParserTest {
         assertEquals(expectedMetadata.children, metadata.children.filterIsInstance<ElementNode>())
     }
 
-    @Test(expected = XmlPullParserException::class)
-    fun `An input with multiple roots raises an exception`() {
-        parseXmlString(metadatav2 + metadatav3)
-    }
-
-    @Test(expected = XmlPullParserException::class)
-    fun `An input with no root raises an exception`() {
-        parseXmlString("   \n    \n")
+    @Test
+    fun anInputWithMultipleRootsRaisesAnException() {
+        assertFailsWith<XmlParserException> {
+            parseXmlString(metadatav2 + metadatav3)
+        }
     }
 
     @Test
-    fun `CDATA parsed rightly`() {
+    fun anInputWithNoRootRaisesAnException() {
+        assertFailsWith<XmlParserException> {
+            parseXmlString("   \n    \n")
+        }
+    }
+
+    @Test
+    fun cdataParsedRightly() {
         val doc = parseXmlString(
             """
             <text>
@@ -224,14 +225,79 @@ class XmlParserTest {
 
         assertEquals("pre text \"Some text like <, >, & are safe here\" post text", cdata.text.trim())
     }
+
+    @Test
+    fun predefinedEntitiesAreDecoded() {
+        val doc = parseXmlString("<t>&amp; &lt; &gt; &apos; &quot;</t>")
+        assertEquals("& < > ' \"", doc.text)
+    }
+
+    @Test
+    fun characterReferencesAreDecoded() {
+        val doc = parseXmlString("<t>caf&#233; caf&#xE9;</t>")
+        assertEquals("café café", doc.text)
+    }
+
+    @Test
+    fun mixedContentIsPreservedInOrder() {
+        val doc = parseXmlString("<p>before <em>emphasis</em> after</p>")
+        assertEquals(
+            listOf(
+                TextNode("before "),
+                ElementNode("em", "", "", mapOf(), listOf(TextNode("emphasis"))),
+                TextNode(" after")
+            ),
+            doc.children
+        )
+        assertEquals("before emphasis after", doc.collectText())
+    }
 }
 
-@RunWith(RobolectricTestRunner::class)
+class XmlParserEncodingTest {
+
+    private val fixtures = Fixtures("xml")
+
+    private fun parseFixture(name: String): ElementNode =
+        XmlParser().parse(fixtures.read(name).toByteArray())
+
+    @Test
+    fun parseUtf8() {
+        val doc = parseFixture("utf8.xml")
+        assertEquals("note", doc.name)
+        assertEquals("Café — déjà vu", doc.text)
+    }
+
+    @Test
+    fun parseUtf8WithBom() {
+        assertEquals("Café — déjà vu", parseFixture("utf8-bom.xml").text)
+    }
+
+    @Test
+    fun parseUtf16BeWithBom() {
+        assertEquals("Café — déjà vu", parseFixture("utf16be-bom.xml").text)
+    }
+
+    @Test
+    fun parseUtf16LeWithBom() {
+        assertEquals("Café — déjà vu", parseFixture("utf16le-bom.xml").text)
+    }
+
+    @Test
+    fun parseUtf16BeWithoutBom() {
+        assertEquals("Café — déjà vu", parseFixture("utf16be-nobom.xml").text)
+    }
+
+    @Test
+    fun parseLatin1() {
+        assertEquals("Café - déjà vu", parseFixture("latin1.xml").text)
+    }
+}
+
 class ElementNodeTest {
     @Test
     fun testCollectText() {
         val doc = parseXmlString(
-            """    
+            """
             <html>
                 <body>
                     <p>Premier paragraphe</p>
@@ -244,7 +310,7 @@ class ElementNodeTest {
                     </article>
                 </body>
             </html>
-            
+
         """
         )
         val text = doc.collectText().replace("\\s+".toRegex(), " ").trim()
@@ -254,7 +320,7 @@ class ElementNodeTest {
     @Test
     fun testCollect() {
         val doc = parseXmlString(
-            """    
+            """
             <html>
                 <body>
                     <section>
@@ -268,7 +334,7 @@ class ElementNodeTest {
                     <nav></nav>
                 </body>
             </html>
-            
+
         """
         )
         val navNode = ElementNode("nav", "")

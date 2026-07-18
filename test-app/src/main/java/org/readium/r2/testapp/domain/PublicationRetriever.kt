@@ -21,6 +21,7 @@ import org.readium.r2.shared.util.asset.ResourceAsset
 import org.readium.r2.shared.util.asset.retrieve
 import org.readium.r2.shared.util.asset.sniffFormat
 import org.readium.r2.shared.util.data.ReadError
+import org.readium.r2.shared.util.data.asInputStream
 import org.readium.r2.shared.util.file.FileSystemError
 import org.readium.r2.shared.util.format.Format
 import org.readium.r2.shared.util.format.FormatHints
@@ -123,7 +124,7 @@ class PublicationRetriever(
             is Try.Failure ->
                 return Try.failure(ImportError.Download(result.value))
             is Try.Success -> {
-                result.value.body
+                result.value.body.asInputStream()
                     .copyToNewFile(tempDir)
                     .getOrElse { return Try.failure(ImportError.FileSystem(it)) }
             }
@@ -304,7 +305,7 @@ private class OpdsPublicationRetriever(
             is Try.Failure ->
                 return Try.failure(ImportError.Download(result.value))
             is Try.Success -> {
-                result.value.body
+                result.value.body.asInputStream()
                     .copyToNewFile(tempDir)
                     .getOrElse { return Try.failure(ImportError.FileSystem(it)) }
             }

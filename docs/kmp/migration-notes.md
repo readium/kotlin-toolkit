@@ -217,3 +217,47 @@ The temporary `java-library` subproject that hosted the vendored Java zip stack 
 ### Tests
 
 `ZipContainerTest` moved to commonTest (file, streaming and exploded-directory containers over the `resource/epub.epub` and `resource/epub` fixtures — the exploded EPUB moved from androidHostTest resources to `commonTest/fixtures/resource/epub`). A new commonTest `StreamingZipContainerTest` locks in the zip-over-HTTP contract of ADR 0002 against an in-memory ranged-read fake: opening a > 5 MB archive fetches exactly one 65 557-byte tail read, entry reads stay bounded (no full download), and < 5 MB archives are cached with a single full read. The 05b differential suite was extended to the containers, run green one last time, and deleted with the legacy project.
+
+## Phase 06 — XML & HTTP
+
+### `XmlParser` is common and backed by xmlutil
+
+`org.readium.r2.shared.util.xml` (`XmlParser`, `ElementNode`, `TextNode`, `Attribute`, `AttributeMap`) moved to `commonMain`. The tokenizer is now [xmlutil](https://github.com/pdvrieze/xmlutil)'s generic `XmlReader` (pinned to 0.91.3: the 1.0.x klibs are built with Kotlin 2.4 and cannot be consumed by Kotlin 2.3) instead of `XmlPullParser`. API changes:
+
+- `XmlParser.parse(InputStream)` — **was the only input**, now Android-only extension in `androidMain` (`util/xml/XmlParserAndroid.kt`); add `import org.readium.r2.shared.util.xml.parse`. The common entry points are `parse(String)`, `parse(ByteArray)` and `suspend parse(Readable)`.
+- Parse failures throw `org.readium.r2.shared.util.xml.XmlParserException` instead of `org.xmlpull.v1.XmlPullParserException` (and `parse(Readable)` throws `ReadException` for read errors). No caller in the toolkit caught the old type.
+- `parse(ByteArray)` detects the encoding from the BOM or the XML declaration and supports UTF-8 (default and fallback), UTF-16 (BE/LE, with or without BOM) and ISO-8859-1/US-ASCII. `XmlPullParser` supported any charset of the JVM; other declared encodings now fall back to a lenient UTF-8 decoding.
+- Predefined entities (`&amp;` …) and character references are decoded as before. Undeclared entities (e.g. `&nbsp;` in an XHTML document parsed without its DTD) already made the Android parser throw; xmlutil behaves the same. DOCTYPE declarations are still skipped without processing.
+- `ByteArray.decodeXml()` moved from `androidMain` to `commonMain` (same package `util.data`, no API change).
+
+### The HTTP stack is common and `DefaultHttpClient` runs on Ktor
+
+`org.readium.r2.shared.util.http` moved to `commonMain` in its entirety (`HttpClient`, `HttpRequest`, `HttpResponse`, `HttpError`, `HttpStatus`, `HttpHeaders`, `ProblemDetails`, `DefaultHttpClient`, `HttpResource`, `HttpContainer`, `HttpResourceFactory`). `DefaultHttpClient` is now implemented with the [Ktor client](https://ktor.io) — OkHttp engine on Android, Darwin (NSURLSession) engine on iOS — instead of `HttpURLConnection`.
+
+Public API changes:
+
+- `HttpStreamResponse.body` is now a Readium `Readable` instead of a `java.io.InputStream`. It supports **forward reads only** (any range starting at or after the current position; a backward range fails with `ReadError.UnsupportedOperation`), and you must still `close()` it to terminate the connection. Android callers needing an `InputStream` can wrap it with the existing `Readable.asInputStream()` adapter (`util/data`).
+- `HttpRequest.extras` is now a `Map<String, String>` instead of an `android.os.Bundle` (it was the last runtime `Bundle` usage flagged by the phase-01 parcelization audit). `HttpRequest`, `HttpRequest.Method` and `HttpRequest.Body` no longer implement `java.io.Serializable`.
+- `HttpRequest.Body.File` now takes a `file://` `AbsoluteUrl` instead of a `java.io.File` (no known consumer; the body is streamed by the client through Okio).
+- `HttpRequest.Builder.appendQueryParameter(s)` now actually appends the parameters to the built request URL. Before the migration the parameters were collected into an `android.net.Uri.Builder` that `build()` never read — appending was silently a no-op. No caller in the toolkit relied on it.
+- `HttpClient.fetchString` lost its `charset` parameter and always decodes as UTF-8 (no caller used another charset).
+- `HttpClient.download(request, destination)` takes a `file://` `AbsoluteUrl` destination in common code; an `androidMain` extension keeps the `java.io.File` call syntax. `onProgress` is no longer dispatched on the main thread — hop to your UI thread yourself if needed (per the KMP concurrency ground rules, the toolkit makes no thread-affinity assumptions).
+- `DefaultHttpClient.Callback` is unchanged, including `onFollowUnsafeRedirect` semantics: redirections to the same scheme are followed automatically (up to 5), while cross-scheme redirections (e.g. HTTP → HTTPS) require explicit confirmation.
+- `DefaultHttpClient` now implements Readium's `Closeable`. It holds a network engine and a coroutine scope for the in-flight requests; call `close()` on short-lived instances to release them and cancel any response body still being streamed. A closed client fails new requests with an `HttpError` (long-lived app-wide instances can ignore this, like before).
+- `HttpRequest.allowUserInteraction` is kept but now ignored by `DefaultHttpClient` (it mapped to `HttpURLConnection.allowUserInteraction`, which has no Ktor equivalent).
+
+Behavioral notes:
+
+- Redirections are now handled entirely by Readium (Ktor's `followRedirects` is off), with the following rules:
+  - Only 301, 302, 303, 307 and 308 trigger a redirection. The other 3xx statuses (e.g. 304 Not Modified) are returned as regular responses — the old client failed on them with `MalformedResponse` because they carry no `Location`.
+  - The original request headers are preserved across redirections (like `HttpURLConnection` re-sent them), so a `Range` request redirected to a CDN stays a range request. When the redirection changes the scheme or the host, the credential-bearing headers (`Authorization`, `Proxy-Authorization`, `Cookie`) are dropped, like OkHttp does.
+  - Cookies set by the redirecting response are forwarded only to the **same host**, as cookie pairs (attributes such as `Path` or `HttpOnly` are stripped) merged into a single `Cookie` header.
+  - A 303 See Other redirection of a POST/PUT/PATCH/DELETE is followed with a GET request without body, per RFC 9110. Divergence from `HttpURLConnection`: the JDK also converted 301/302 POSTs to GET, whereas Readium keeps the method and body for those (the unsafe cross-scheme path always did).
+  - At most 5 redirections are followed; the count is stored in `HttpRequest.extras["redirectCount"]`.
+- A failed HEAD request is still retried as GET to fetch the error body (used e.g. for OPDS Authentication Documents).
+- Error mapping: timeouts map to `HttpError.Timeout` (Ktor timeout exceptions plus `java.net.SocketTimeoutException` on Android, `NSURLErrorTimedOut` on iOS); unreachable hosts to `HttpError.Unreachable` (`UnknownHostException`/`NoRouteToHostException`/`ConnectException` on Android, DNS/connect `NSURLError*` codes on iOS, `UnresolvedAddressException` in common); TLS failures to `HttpError.SslHandshake` (`SSLHandshakeException` on Android, certificate `NSURLError*` codes on iOS); anything else to `HttpError.IO`.
+- `DefaultHttpClient` no longer logs request headers at Info level: requests are logged at Debug severity with `Authorization`, `Proxy-Authorization`, `Cookie` and `Set-Cookie` values masked (fixes the credential-leak concern recorded in phase 01).
+- `HttpResource` keeps its skip-forward stream caching (`maxSkipBytes` = 8 KiB) and open-ended range requests on top of the new `Readable` body, so zip-over-HTTP and progressive download streaming behave as before. Its `close()` now closes the cached response body (it used to be a no-op). Two pre-KMP limitations are deliberately kept: 206 responses are trusted without validating the `Content-Range` offset, and concurrent `read()` calls are not synchronized.
+- `Readable.asInputStream()` (androidMain) no longer throws when the underlying `Readable` cannot report its length (e.g. an HTTP response without `Content-Length`, streamed with chunked transfer encoding): `available()` returns 0 and reads stream until exhaustion.
+
+Tests: `ProblemDetailsTest` moved to `commonTest`; new commonTest suites `DefaultHttpClientTest` (against Ktor's `MockEngine`: redirects, error bodies, HEAD fallback, range pass-through, user-agent, callback retry, exception mapping) and `HttpRequestTest` run on both Android and the iOS simulator.
