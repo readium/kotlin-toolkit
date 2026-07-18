@@ -1,4 +1,10 @@
-package org.readium.l2.lcp
+/*
+ * Copyright 2026 Readium Foundation. All rights reserved.
+ * Use of this source code is governed by the BSD-style license
+ * available in the top-level LICENSE file of the project.
+ */
+
+package org.readium.r2.lcp
 
 import android.content.Context
 import androidx.room.Room
@@ -19,7 +25,6 @@ import org.readium.r2.lcp.service.DeviceRepository
 import org.readium.r2.lcp.service.DeviceService
 import org.readium.r2.lcp.service.LicensesRepository
 import org.readium.r2.lcp.service.LicensesService
-import org.readium.r2.lcp.service.NetworkService
 import org.readium.r2.lcp.service.PassphrasesRepository
 import org.readium.r2.lcp.service.PassphrasesService
 import org.readium.r2.shared.util.FileExtension
@@ -35,17 +40,17 @@ import org.readium.r2.shared.util.resource.InMemoryResource
 @RunWith(AndroidJUnit4::class)
 class LcpValidationTest {
 
-    private val context: Context = InstrumentationRegistry.getInstrumentation().targetContext
+    private val targetContext: Context = InstrumentationRegistry.getInstrumentation().targetContext
+    private val testContext: Context = InstrumentationRegistry.getInstrumentation().context
 
     private lateinit var database: LcpDatabase
     private lateinit var lcpService: LicensesService
     private lateinit var assetRetriever: AssetRetriever
-    private lateinit var network: NetworkService
 
     @Before
     fun setup() {
         database = Room.inMemoryDatabaseBuilder(
-            context,
+            targetContext,
             LcpDatabase::class.java
         ).allowMainThreadQueries().build()
 
@@ -54,30 +59,30 @@ class LcpValidationTest {
         val passphraseRepository = PassphrasesRepository(lcpDao = db)
         val licenseRepository = LicensesRepository(lcpDao = db)
 
-        network = NetworkService()
+        val httpClient = DefaultHttpClient()
 
         val device = DeviceService(
             deviceName = "Test Device",
             deviceId = "test-id",
             repository = deviceRepository,
-            network = network,
-            context = context
+            httpClient = httpClient,
+            context = targetContext
         )
-        val crl = CRLService(network = network, context = context)
+        val crl = CRLService(httpClient = httpClient, context = targetContext)
         val passphrases = PassphrasesService(repository = passphraseRepository)
 
         assetRetriever = AssetRetriever(
-            contentResolver = context.contentResolver,
-            httpClient = DefaultHttpClient()
+            contentResolver = targetContext.contentResolver,
+            httpClient = httpClient
         )
 
         lcpService = LicensesService(
             licenses = licenseRepository,
             crl = crl,
             device = device,
-            network = network,
+            httpClient = httpClient,
             passphrases = passphrases,
-            context = context,
+            context = targetContext,
             assetRetriever = assetRetriever
         )
     }
@@ -85,7 +90,7 @@ class LcpValidationTest {
     @Test
     fun testSuccessfulValidationFlow() = runTest {
         val licenseJson =
-            context.assets.open("active-lcpl.unknown").bufferedReader().use { it.readText() }
+            testContext.assets.open("active-lcpl-unknown.lcpl").bufferedReader().use { it.readText() }
 
         val licenseObj = JSONObject(licenseJson)
         val licenseId = licenseObj.getString("id")
