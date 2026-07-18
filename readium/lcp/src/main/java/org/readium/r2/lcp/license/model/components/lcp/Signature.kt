@@ -8,6 +8,7 @@ package org.readium.r2.lcp.license.model.components.lcp
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import org.json.JSONObject
 
 @Serializable
 public data class Signature(
@@ -17,4 +18,7 @@ public data class Signature(
     val certificate: String,
     @SerialName("value")
     val value: String,
-)
+) {
+    @Deprecated("Use kotlinx.serialization to serialize the object")
+    val json: JSONObject get() = JSONObject()
+}

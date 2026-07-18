@@ -8,6 +8,7 @@ package org.readium.r2.lcp.license.model.components.lcp
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import org.json.JSONObject
 
 @Serializable
 public data class ContentKey(
@@ -15,4 +16,7 @@ public data class ContentKey(
     val algorithm: String,
     @SerialName("encrypted_value")
     val encryptedValue: String,
-)
+) {
+    @Deprecated("Use kotlinx.serialization to serialize the object")
+    val json: JSONObject get() = JSONObject()
+}

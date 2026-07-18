@@ -20,6 +20,7 @@ import kotlinx.serialization.json.JsonEncoder
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonPrimitive
+import org.json.JSONObject
 import org.readium.r2.lcp.LcpError
 import org.readium.r2.lcp.LcpException
 import org.readium.r2.lcp.license.model.components.Link
@@ -42,7 +43,7 @@ public class StatusDocument(
     public val links: Links,
     public val potentialRights: PotentialRights?,
     public val events: List<Event>,
-    public val json: String,
+    public val jsonString: String,
 ) {
     public enum class Status(public val value: String) {
         Ready("ready"),
@@ -79,7 +80,7 @@ public class StatusDocument(
         links = other.links,
         potentialRights = other.potentialRights,
         events = other.events,
-        json = other.json
+        jsonString = other.jsonString
     )
 
     public constructor(data: ByteArray) : this(
@@ -117,6 +118,9 @@ public class StatusDocument(
 
     public fun events(type: String): List<Event> =
         events.filter { it.type == type }
+
+    @Deprecated("Use jsonString instead")
+    public val json: JSONObject get() = JSONObject(jsonString)
 
     public val description: String
         get() = "Status(${status.value})"
@@ -170,13 +174,13 @@ internal object StatusDocumentSerializer : KSerializer<StatusDocument> {
             links = links,
             potentialRights = potentialRights,
             events = events,
-            json = rawJson
+            jsonString = rawJson
         )
     }
 
     override fun serialize(encoder: Encoder, value: StatusDocument) {
         val output = encoder as JsonEncoder
-        val jsonObject = LcpJson.parseToJsonElement(value.json) as JsonObject
+        val jsonObject = LcpJson.parseToJsonElement(value.jsonString) as JsonObject
         output.encodeJsonElement(jsonObject)
     }
 }

@@ -21,6 +21,7 @@ import kotlinx.serialization.json.JsonEncoder
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonPrimitive
+import org.json.JSONObject
 import org.readium.r2.lcp.LcpError
 import org.readium.r2.lcp.LcpException
 import org.readium.r2.lcp.license.model.components.Link
@@ -49,7 +50,7 @@ public class LicenseDocument internal constructor(
     public val user: User,
     public val rights: Rights,
     public val signature: Signature,
-    public val json: String,
+    public val jsonString: String,
 ) {
 
     public companion object {
@@ -88,7 +89,7 @@ public class LicenseDocument internal constructor(
         user = other.user,
         rights = other.rights,
         signature = other.signature,
-        json = other.json
+        jsonString = other.jsonString
     )
 
     internal constructor(data: ByteArray) : this(
@@ -136,11 +137,14 @@ public class LicenseDocument internal constructor(
         return link.url(parameters = parameters)
     }
 
+    @Deprecated("Use jsonString instead", ReplaceWith("this.jsonString"))
+    public val json: JSONObject get() = JSONObject(jsonString)
+
     public val description: String
         get() = "License($id)"
 
     public fun toByteArray(): ByteArray =
-        json.toByteArray(Charset.defaultCharset())
+        jsonString.toByteArray(Charset.defaultCharset())
 }
 
 internal object LicenseDocumentSerializer : KSerializer<LicenseDocument> {
@@ -189,13 +193,13 @@ internal object LicenseDocumentSerializer : KSerializer<LicenseDocument> {
             user = user,
             rights = rights,
             signature = signature,
-            json = rawJson
+            jsonString = rawJson
         )
     }
 
     override fun serialize(encoder: Encoder, value: LicenseDocument) {
         val output = encoder as JsonEncoder
-        val jsonObject = LcpJson.parseToJsonElement(value.json) as JsonObject
+        val jsonObject = LcpJson.parseToJsonElement(value.jsonString) as JsonObject
         output.encodeJsonElement(jsonObject)
     }
 }

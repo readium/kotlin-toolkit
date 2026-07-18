@@ -141,7 +141,7 @@ internal class LicensesService(
 
         return try {
             val licenseDocument = LicenseDocument(lcpl)
-            Timber.d("license ${licenseDocument.json}")
+            Timber.d("license ${licenseDocument.jsonString}")
             fetchPublication(licenseDocument, destination, onProgress).let { Try.success(it) }
         } catch (e: CancellationException) {
             throw e
@@ -320,7 +320,7 @@ internal class LicensesService(
         completion: (License) -> Unit,
     ) {
         var initialData = container.read()
-        Timber.d("license ${LicenseDocument(data = initialData).json}")
+        Timber.d("license ${LicenseDocument(data = initialData).jsonString}")
 
         val validation = LicenseValidation(
             authentication = authentication,
@@ -344,10 +344,10 @@ internal class LicensesService(
                     (container as? WritableLicenseContainer)
                         ?.let { container.write(licenseDocument) }
 
-                    Timber.d("licenseDocument ${licenseDocument.json}")
+                    Timber.d("licenseDocument ${licenseDocument.jsonString}")
 
                     initialData = container.read()
-                    Timber.d("license ${LicenseDocument(data = initialData).json}")
+                    Timber.d("license ${LicenseDocument(data = initialData).jsonString}")
                     Timber.d("Wrote updated License Document in container")
                 } catch (error: Error) {
                     Timber.d("Failed to write updated License Document in container: $error")

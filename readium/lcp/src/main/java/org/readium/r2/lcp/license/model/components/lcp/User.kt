@@ -20,6 +20,7 @@ import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonPrimitive
+import org.json.JSONObject
 
 @Serializable(with = UserSerializer::class)
 public data class User(
@@ -28,7 +29,10 @@ public data class User(
     val name: String? = null,
     val encrypted: List<String> = emptyList(),
     val extensions: JsonObject = JsonObject(emptyMap()),
-)
+) {
+    @Deprecated("Use kotlinx.serialization to serialize the object")
+    val json: JSONObject get() = JSONObject()
+}
 
 internal object UserSerializer : KSerializer<User> {
     override val descriptor: SerialDescriptor = JsonObject.serializer().descriptor
