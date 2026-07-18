@@ -1,4 +1,4 @@
-package org.readium.r2.shared.util.zip.jvm;
+package org.readium.r2.shared.util.zip.legacyjvm;
 
 /**
  * An {@code AsynchronousCloseException} is thrown when the underlying channel

@@ -27,7 +27,7 @@ import static org.readium.r2.shared.util.zip.compress.archivers.zip.ZipLong.putL
 
 import org.readium.r2.shared.util.zip.compress.archivers.ArchiveEntry;
 import org.readium.r2.shared.util.zip.compress.archivers.ArchiveOutputStream;
-import org.readium.r2.shared.util.zip.jvm.SeekableByteChannel;
+import org.readium.r2.shared.util.zip.legacyjvm.SeekableByteChannel;
 import org.readium.r2.shared.util.zip.compress.utils.ByteUtils;
 
 import java.io.ByteArrayOutputStream;

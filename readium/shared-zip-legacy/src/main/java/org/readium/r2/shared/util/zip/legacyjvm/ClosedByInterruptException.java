@@ -1,4 +1,4 @@
-package org.readium.r2.shared.util.zip.jvm;
+package org.readium.r2.shared.util.zip.legacyjvm;
 
 /**
  * A {@code ClosedByInterruptException} is thrown when a thread is interrupted

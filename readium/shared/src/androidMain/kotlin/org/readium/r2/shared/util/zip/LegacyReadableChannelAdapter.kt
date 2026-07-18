@@ -17,11 +17,17 @@ import kotlinx.coroutines.withContext
 import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.data.Readable
 import org.readium.r2.shared.util.getOrThrow
-import org.readium.r2.shared.util.zip.jvm.ClosedChannelException
-import org.readium.r2.shared.util.zip.jvm.NonWritableChannelException
-import org.readium.r2.shared.util.zip.jvm.SeekableByteChannel
+import org.readium.r2.shared.util.zip.legacyjvm.ClosedChannelException
+import org.readium.r2.shared.util.zip.legacyjvm.NonWritableChannelException
+import org.readium.r2.shared.util.zip.legacyjvm.SeekableByteChannel
 
-internal class ReadableChannelAdapter(
+/**
+ * Legacy copy of [ReadableChannelAdapter] working with the blocking channels of
+ * `:readium:readium-shared-zip-legacy`, kept while the vendored Java zip stack is still in use.
+ *
+ * Deleted with the legacy project at the end of phase 05c of the KMP migration.
+ */
+internal class LegacyReadableChannelAdapter(
     private val readable: Readable,
     private val wrapError: (ReadError) -> IOException,
 ) : SeekableByteChannel {

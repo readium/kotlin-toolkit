@@ -1,4 +1,4 @@
-package org.readium.r2.shared.util.zip.jvm;
+package org.readium.r2.shared.util.zip.legacyjvm;
 
 import java.io.Closeable;
 import java.io.IOException;

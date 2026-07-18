@@ -23,7 +23,7 @@
  */
 package org.readium.r2.shared.util.zip.compress.archivers.zip;
 
-import org.readium.r2.shared.util.zip.jvm.SeekableByteChannel;
+import org.readium.r2.shared.util.zip.legacyjvm.SeekableByteChannel;
 import org.readium.r2.shared.util.zip.compress.parallel.ScatterGatherBackingStore;
 
 import java.io.Closeable;

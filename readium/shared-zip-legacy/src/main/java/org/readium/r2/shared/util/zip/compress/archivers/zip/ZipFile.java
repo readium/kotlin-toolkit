@@ -25,7 +25,7 @@
 package org.readium.r2.shared.util.zip.compress.archivers.zip;
 
 import org.readium.r2.shared.util.zip.compress.archivers.EntryStreamOffsets;
-import org.readium.r2.shared.util.zip.jvm.SeekableByteChannel;
+import org.readium.r2.shared.util.zip.legacyjvm.SeekableByteChannel;
 import org.readium.r2.shared.util.zip.compress.utils.BoundedArchiveInputStream;
 import org.readium.r2.shared.util.zip.compress.utils.BoundedSeekableByteChannelInputStream;
 import org.readium.r2.shared.util.zip.compress.utils.CountingInputStream;

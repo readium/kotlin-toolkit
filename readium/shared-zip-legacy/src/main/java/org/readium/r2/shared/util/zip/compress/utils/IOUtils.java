@@ -18,7 +18,7 @@
  */
 package org.readium.r2.shared.util.zip.compress.utils;
 
-import org.readium.r2.shared.util.zip.jvm.ReadableByteChannel;
+import org.readium.r2.shared.util.zip.legacyjvm.ReadableByteChannel;
 
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;

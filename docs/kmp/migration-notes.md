@@ -158,3 +158,13 @@ Call syntax is unchanged, but Android callers may need new imports:
 Moved with unchanged package names: `util/data` (`Reading`, `Container`, `Buffering`, `Caching`, `Decoding` minus the Android-only parts above), `util/file` (`FileResource`, `DirectoryContainer`, `FileResourceFactory`, `FileSystemError`), `util/resource` (all 12 files except `content/ResourceContentExtractor.kt`, which waits for Ksoup in phase 07), `util/asset` (`Asset`, `AssetRetriever`, `AssetSniffer`; `Defaults.kt` stays `androidMain`), `util/cache/Cache.kt`, `util/archive` (`ArchiveOpener`, `ArchiveProperties`), `util/format/Sniffing.kt` (`FormatHints`, `FormatSniffer` & co; `Sniffers.kt` implementations stay `androidMain` until phases 06–07), `util/MemoryObserver.kt`. `DEFAULT_BUFFER_SIZE` used in `buffered()` signatures is now Readium's own `@InternalReadiumApi` constant in `util/data` (same value, 8 KiB, as `kotlin.io.DEFAULT_BUFFER_SIZE`).
 
 Their test suites (`DirectoryContainerTest`, `BufferingResourceTest`, resource `PropertiesTest`) moved to `commonTest` (kotlin-test + `Fixtures`) and also run on the iOS simulator. `ZipContainerTest`, `ReadableInputStreamAdapterTest`, `AssetSnifferTest` and `DefaultSniffersTest` stay in `androidHostTest` until their subjects move (phases 05–07).
+
+## Phase 05a — Zip channel abstractions
+
+### Vendored `java.nio` channel mirror renamed (temporary)
+
+The classes of the vendored channel package `org.readium.r2.shared.util.zip.jvm` and the class `org.readium.r2.shared.util.zip.FileChannelAdapter` — public on Android only because they live in the temporary `:readium:readium-shared-zip-legacy` `java-library` — moved to `org.readium.r2.shared.util.zip.legacyjvm`. They were never meant as public API; the whole legacy project (and package) is deleted at the end of phase 05c, so do not depend on them.
+
+### New common channel layer (internal, no public API change)
+
+`org.readium.r2.shared.util.zip.jvm` is now a Kotlin `commonMain` package containing **internal** suspend-first translations of the channel interfaces (`Channel`, `ReadableByteChannel`, `WritableByteChannel`, `ByteChannel`, `SeekableByteChannel`), their exceptions (based on `okio.IOException`), and `ZipBuffer`, a minimal replacement for `java.nio.ByteBuffer`. The adapters `ReadableChannelAdapter`, `CachingReadableChannel`, `BufferedReadableChannel` (all internal) moved to `commonMain` on these interfaces, and a new internal `FileChannelAdapter` adapts an `okio.FileHandle`. The Android zip containers still run on the legacy blocking stack (via internal `Legacy*` copies of the adapters) until phase 05c swaps them.

@@ -1,4 +1,4 @@
-package org.readium.r2.shared.util.zip.jvm;
+package org.readium.r2.shared.util.zip.legacyjvm;
 
 /**
  * A {@code NonWritableChannelException} is thrown when attempting to write to a

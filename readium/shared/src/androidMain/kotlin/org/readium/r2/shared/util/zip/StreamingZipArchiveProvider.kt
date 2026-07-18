@@ -26,7 +26,8 @@ import org.readium.r2.shared.util.format.Specification
 import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.shared.util.toUrl
 import org.readium.r2.shared.util.zip.compress.archivers.zip.ZipFile
-import org.readium.r2.shared.util.zip.jvm.SeekableByteChannel
+import org.readium.r2.shared.util.zip.legacyjvm.FileChannelAdapter
+import org.readium.r2.shared.util.zip.legacyjvm.SeekableByteChannel
 
 /**
  * An [ArchiveOpener] able to open a ZIP archive served through a stream (e.g. HTTP server,
@@ -76,7 +77,7 @@ internal class StreamingZipArchiveProvider {
         wrapError: (ReadError) -> IOException,
         sourceUrl: AbsoluteUrl?,
     ): Container<Resource> = withContext(Dispatchers.IO) {
-        val datasourceChannel = ReadableChannelAdapter(readable, wrapError)
+        val datasourceChannel = LegacyReadableChannelAdapter(readable, wrapError)
         val channel = wrapBaseChannel(datasourceChannel)
         val zipFile = ZipFile(channel, true)
         val sourceScheme = (readable as? Resource)?.sourceUrl?.scheme
@@ -97,12 +98,12 @@ internal class StreamingZipArchiveProvider {
     private fun wrapBaseChannel(channel: SeekableByteChannel): SeekableByteChannel {
         val size = channel.size()
         return if (size < CACHE_ALL_MAX_SIZE) {
-            CachingReadableChannel(channel, 0)
+            LegacyCachingReadableChannel(channel, 0)
         } else {
             val cacheStart = size - CACHED_TAIL_SIZE
-            val cachingChannel = CachingReadableChannel(channel, cacheStart)
+            val cachingChannel = LegacyCachingReadableChannel(channel, cacheStart)
             cachingChannel.cache()
-            BufferedReadableChannel(cachingChannel, DEFAULT_BUFFER_SIZE)
+            LegacyBufferedReadableChannel(cachingChannel, DEFAULT_BUFFER_SIZE)
         }
     }
 

@@ -32,7 +32,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
-import org.readium.r2.shared.util.zip.jvm.SeekableByteChannel;
+import org.readium.r2.shared.util.zip.legacyjvm.SeekableByteChannel;
 import org.readium.r2.shared.util.zip.compress.utils.MultiReadOnlySeekableByteChannel;
 
 /**

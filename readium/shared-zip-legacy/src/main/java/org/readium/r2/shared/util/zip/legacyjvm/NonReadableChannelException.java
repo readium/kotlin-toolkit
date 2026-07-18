@@ -1,4 +1,4 @@
-package org.readium.r2.shared.util.zip.jvm;
+package org.readium.r2.shared.util.zip.legacyjvm;
 
 /**
  * A {@code NonReadableChannelException} is thrown when attempting to read from

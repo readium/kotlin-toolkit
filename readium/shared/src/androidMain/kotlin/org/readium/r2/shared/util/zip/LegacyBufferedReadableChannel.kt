@@ -7,10 +7,16 @@
 package org.readium.r2.shared.util.zip
 
 import java.nio.ByteBuffer
-import org.readium.r2.shared.util.zip.jvm.NonWritableChannelException
-import org.readium.r2.shared.util.zip.jvm.SeekableByteChannel
+import org.readium.r2.shared.util.zip.legacyjvm.NonWritableChannelException
+import org.readium.r2.shared.util.zip.legacyjvm.SeekableByteChannel
 
-internal class BufferedReadableChannel(
+/**
+ * Legacy copy of [BufferedReadableChannel] working with the blocking channels of
+ * `:readium:readium-shared-zip-legacy`, kept while the vendored Java zip stack is still in use.
+ *
+ * Deleted with the legacy project at the end of phase 05c of the KMP migration.
+ */
+internal class LegacyBufferedReadableChannel(
     private val innerChannel: SeekableByteChannel,
     bufferSize: Int,
 ) : SeekableByteChannel {
@@ -69,7 +75,7 @@ internal class BufferedReadableChannel(
         }
     }
 
-    override fun position(newPosition: Long): BufferedReadableChannel {
+    override fun position(newPosition: Long): LegacyBufferedReadableChannel {
         synchronized(lock) {
             val innerPosition = innerChannel.position()
             if (newPosition in innerPosition - dataBuffer.limit() until innerPosition) {
@@ -89,7 +95,7 @@ internal class BufferedReadableChannel(
         }
     }
 
-    override fun truncate(size: Long): BufferedReadableChannel {
+    override fun truncate(size: Long): LegacyBufferedReadableChannel {
         throw NonWritableChannelException()
     }
 }

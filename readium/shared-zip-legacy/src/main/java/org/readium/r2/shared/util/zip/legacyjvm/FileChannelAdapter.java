@@ -4,9 +4,7 @@
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.r2.shared.util.zip;
-
-import org.readium.r2.shared.util.zip.jvm.SeekableByteChannel;
+package org.readium.r2.shared.util.zip.legacyjvm;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -19,7 +17,7 @@ public class FileChannelAdapter implements SeekableByteChannel {
 
     private final FileChannel channel;
 
-    FileChannelAdapter(final File file, final String mode) throws FileNotFoundException {
+    public FileChannelAdapter(final File file, final String mode) throws FileNotFoundException {
         channel = new RandomAccessFile(file, mode).getChannel();
     }
 
