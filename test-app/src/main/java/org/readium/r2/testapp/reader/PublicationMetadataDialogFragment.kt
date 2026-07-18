@@ -32,6 +32,8 @@ import androidx.fragment.app.activityViewModels
 import java.text.SimpleDateFormat
 import kotlin.time.Clock
 import org.readium.r2.shared.accessibility.AccessibilityMetadataDisplayGuide
+import org.readium.r2.shared.accessibility.localizedString
+import org.readium.r2.shared.accessibility.localizedTitle
 import org.readium.r2.shared.publication.Accessibility
 import org.readium.r2.shared.publication.Contributor
 import org.readium.r2.shared.publication.LocalizedString

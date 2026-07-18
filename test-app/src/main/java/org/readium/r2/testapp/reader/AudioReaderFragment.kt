@@ -32,7 +32,7 @@ import org.readium.navigator.media.common.TimeBasedMediaNavigator
 import org.readium.r2.navigator.preferences.Configurable
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Locator
-import org.readium.r2.shared.publication.services.cover
+import org.readium.r2.shared.publication.services.coverAsBitmap
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.databinding.FragmentAudiobookBinding
 import org.readium.r2.testapp.domain.toUserError
@@ -82,7 +82,7 @@ class AudioReaderFragment : BaseReaderFragment(), SeekBar.OnSeekBarChangeListene
         binding.publicationTitle.text = model.publication.metadata.title
 
         viewLifecycleOwner.lifecycleScope.launch {
-            publication.cover()?.let {
+            publication.coverAsBitmap()?.let {
                 binding.coverView.setImageBitmap(it)
             }
         }

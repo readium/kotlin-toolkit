@@ -131,6 +131,16 @@ Current coordinates: `org.readium.kotlin-toolkit:<artifactId>:<version>` (see `g
 - **Already present — audit, don't re-add**: kotlinx-serialization-json 1.10.0 and kotlinx-datetime 0.7.1 are in `gradle/libs.versions.toml`; shared already applies the serialization plugin and depends on both. Dates are largely kotlinx.datetime already (~4 residual `java.util.Date` usages).
 - Vendored zip stack: `readium/shared/src/main/java/org/readium/r2/shared/util/zip/` — **64 Java files in total**: `compress/` (Commons Compress subset, 53 files) plus `jvm/` channel shims and `FileChannelAdapter.java` (11 files). They are fully self-contained (imports: JDK + each other only). The KMP Android target compiles no Java, so phase 00 parks them in a temporary `java-library` subproject `:readium:readium-shared-zip-legacy`, deleted at the end of phase 05.
 
+## `readium-shared`: deliberately androidMain (final list, phase 07)
+
+Everything else in `readium-shared` lives in `commonMain`. The files below stay in `androidMain` permanently, because they are Android-bound by nature:
+
+- **ContentResolver / content-scheme assets**: `util/content/` (`ContentResource`, `ContentResourceFactory`, `ContentResolverError`), `util/asset/AssetRetrieverAndroid.kt`, `util/asset/Defaults.kt`, `extensions/ContentResolver.kt`.
+- **`java.io` / `InputStream` adapters**: `util/data/InputStream.kt`, `util/io/CountingInputStream.kt`, `extensions/InputStream.kt`, `extensions/File.kt`, `extensions/URL.kt`, `extensions/ByteArrayAndroid.kt`, `util/file/FileAndroid.kt`, `util/xml/XmlParserAndroid.kt` (`XmlParser.parse(InputStream)`), `util/data/DecodingAndroid.kt` (`decodeString(java Charset)`).
+- **expect/actual Android actuals**: Parcelize (`util/Parcelize.android.kt`, `InstantParceler`, `JsonMapParceler`), Logcat logger (`util/logging/Log.android.kt`), ICU (`util/tokenizer/TextTokenizer.android.kt`, `publication/services/search/StringSearchServiceAndroid.kt`), Bitmap image type (`util/Image.android.kt`, `extensions/Bitmap.kt`, the bitmap half of `DecodingAndroid.kt`), `Language.android.kt`, `CharsetName.android.kt`, `MediaTypeAndroid.kt` (java Charset accessors), `UrlAndroid.kt` (`android.net.Uri`/`java.io.File`/`java.net` conversions), `Http.android.kt`, `IoDispatcher.android.kt`, `OutOfMemoryError.android.kt`, `SniffingAndroid.kt`, `Inflater.android.kt`, R-string accessibility localization (`accessibility/AccessibilityDisplayString.android.kt`, `AccessibilityMetadataDisplayGuideAndroid.kt`).
+- **Android-flavored conveniences over common APIs**: `publication/services/CoverServiceAndroid.kt` (`coverAsBitmap()`), `publication/services/InMemoryCacheService.kt` (needs a `Context`), `util/MemoryObserverAndroid.kt` (`ComponentCallbacks2`), `extensions/ExceptionAndroid.kt`.
+- **Deprecated JVM compatibility shims**: `util/Instant.kt` (java.util.Date conversions), `util/Lazy.kt` (kotlin.reflect.jvm), `util/Benchmarking.kt` (JVM `String.format`), `KmpMigrationBridge.kt` (the marker annotation declaration).
+
 ## Phase-00 spike findings (2026-07-07, binding)
 
 A throwaway-worktree spike converted `readium-shared` for real and reached: whole repo compiling, 569 Robolectric tests passing, iOS klib compiling, one commonTest test running on the iOS simulator. Binding constraints discovered:

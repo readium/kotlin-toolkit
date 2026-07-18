@@ -261,3 +261,48 @@ Behavioral notes:
 - `Readable.asInputStream()` (androidMain) no longer throws when the underlying `Readable` cannot report its length (e.g. an HTTP response without `Content-Length`, streamed with chunked transfer encoding): `available()` returns 0 and reads stream until exhaustion.
 
 Tests: `ProblemDetailsTest` moved to `commonTest`; new commonTest suites `DefaultHttpClientTest` (against Ktor's `MockEngine`: redirects, error bodies, HEAD fallback, range pass-through, user-agent, callback retry, exception mapping) and `HttpRequestTest` run on both Android and the iOS simulator.
+
+## Phase 07 — Publication services & remaining models
+
+### Multiplatform image type: `ReadiumImage`
+
+`org.readium.r2.shared.util.ReadiumImage` (commonMain expect) is the new multiplatform image type: it wraps an `android.graphics.Bitmap` on Android (accessor: `readiumImage.bitmap`) and a `UIKit.UIImage` on iOS (accessor: `readiumImage.uiImage`), and exposes `width`/`height` in pixels. `org.readium.r2.shared.util.ImageSize(width, height)` replaces `android.util.Size` in the affected APIs.
+
+- `CoverService.cover()` and `Publication.cover()` now return `ReadiumImage?` instead of `Bitmap?`; `coverFitting(maxSize:)` takes an `ImageSize` and returns `ReadiumImage?`. Android conveniences preserving the old call syntax: `Publication.coverAsBitmap()` and `Publication.coverFittingAsBitmap(android.util.Size)` (androidMain).
+- `InMemoryCoverService.createFactory` takes a `ReadiumImage?` instead of a `Bitmap?`.
+- `ByteArray.decodeBitmap(): Try<Bitmap, DecodeError>` (androidMain) is replaced by the common `ByteArray.decodeImage(maxSize: ImageSize? = null): Try<ReadiumImage, DecodeError>`. When `maxSize` is given, the image is decoded downscaled to fit it (subsampled `BitmapFactory` decode on Android, ImageIO thumbnailing on iOS) — `CoverService.coverFitting` uses this instead of decoding the cover at full size and scaling it down afterwards.
+- EXIF orientation parity gap: on iOS, `decodeImage` applies the EXIF orientation of rotated JPEGs (both `UIImage(data:)` and the ImageIO thumbnail path honor it, and `ReadiumImage.width`/`height` report the oriented, visual dimensions). On Android, `BitmapFactory` ignores EXIF orientation, like the pre-KMP `decodeBitmap` did — a 90°-rotated photo decodes with swapped dimensions and no rotation. Fixing Android would require an `androidx.exifinterface` dependency and a rotation pass; left as-is to preserve the existing Android behavior. Publication covers are virtually never EXIF-rotated, so the impact is theoretical.
+- `PdfDocument.cover(context: Context): Bitmap?` is now `cover(): ReadiumImage?` — implementations needing an Android `Context` (like the PSPDFKit adapter) must capture it at construction. `PsPdfKitDocument`'s constructor takes the `Context` as its first parameter.
+
+### HTML parsing uses Ksoup instead of Jsoup in `readium-shared`
+
+`HtmlResourceContentIterator` (content service) and `HtmlResourceContentExtractor` (search indexing) now parse HTML with [Ksoup](https://github.com/fleeksoft/ksoup) (`com.fleeksoft.ksoup`), a multiplatform port of Jsoup with the same parsing behavior and selector API. `readium-shared` no longer depends on `org.jsoup`; the Android-only navigator modules keep their own Jsoup dependency. No API change: the swap is internal (the existing content-iterator test suite passes unchanged).
+
+### Text tokenizer: `DefaultTextContentTokenizer` is expect/actual
+
+`org.readium.r2.shared.util.tokenizer` (`TextTokenizer`, `TextUnit`, `DefaultTextContentTokenizer`) moved to `commonMain`. `DefaultTextContentTokenizer` is now an expect/actual class: the Android actual keeps the previous behavior (ICU `BreakIterator` on API 24+, `java.text.BreakIterator` below), the iOS actual uses `CFStringTokenizer` (word-boundary and sentence units). `IcuTextTokenizer` and `NaiveTextTokenizer` remain Android-only, in `androidMain`. Word/sentence tokenization of plain English text is asserted identical across platforms in commonTest; language-specific edge cases may differ slightly between ICU and CFStringTokenizer.
+
+### Search: `StringSearchService` is common, ICU stays as the Android algorithm
+
+`publication/services/search` moved to `commonMain` in its entirety. API changes:
+
+- `StringSearchService.Algorithm.findRanges` takes a `language: Language?` instead of a `locale: java.util.Locale`.
+- `StringSearchService.IcuAlgorithm` became the top-level `IcuAlgorithm` (androidMain, same package). The new common `DefaultSearchAlgorithm` expect/actual class is the default used by `StringSearchService.createDefaultFactory()`: on Android it delegates to `IcuAlgorithm` (or `NaiveAlgorithm` below API 24), on iOS it runs an `NSString.rangeOfString(options:range:locale:)` loop with case/diacritic-insensitive options. Whole-word search (`Options.wholeWord`) is supported only by the Android ICU algorithm; the exact match and case-insensitive behaviors are asserted in commonTest on both platforms, locale-collation edge cases may differ.
+
+### Publication, Manifest, Metadata and all core services are common
+
+The remaining publication models and services moved from `androidMain` to `commonMain` (same packages): `Publication`, `PublicationServicesHolder`, `Manifest`, `Metadata`, `presentation/Metadata`, `epub/Presentation`, `epub/Publication`, `opds/Publication`, `EpubEncryptionParser`, `HrefNormalizer`, `ManifestTransformer`, `MediaOverlays`, `MediaOverlayNode`, `opds/Feed`, `opds/Group`, `protection/ContentProtection`, `protection/FallbackContentProtection`, the services (`CoverService`, `PositionsService`, `LocatorService`, `ContentService`, `ContentProtectionService`, `CacheService`, `SearchService`), the content iterators (`Content`, `ContentTokenizer`, `PublicationContentIterator`, `HtmlResourceContentIterator`), `ResourceContentExtractor`, `PdfDocument`/`PdfDocumentFactory`, the format `Sniffers` and `ByteArray.decodeRwpm()`/`JsonObject.decodeRwpm()`. Behavior is unchanged; the API breaks are:
+
+- `Publication.Profile`, `Metadata` and `SearchService.Options` now implement the Readium multiplatform `Parcelable` stand-in (`org.readium.r2.shared.util.Parcelable`) instead of `android.os.Parcelable` directly — on Android this is a typealias, so Android consumers are unaffected.
+- `MediaOverlays` and `MediaOverlayNode` no longer implement `java.io.Serializable`.
+- `Content.Attributes`: `QuoteElement`'s `referenceUrl` is a Readium `Url?` instead of `java.net.URL?`.
+- `InMemoryCacheService` (which requires an Android `Context`) stays in `androidMain`; the `CacheService` interface is common.
+- The deprecated `org.readium.r2.shared.util.Instant` compatibility wrapper stays in `androidMain` (it exposes `java.util.Date` conversions); use `kotlin.time.Instant` in common code.
+
+### Accessibility display guide is common; string localization is platform-specific
+
+`accessibility/AccessibilityMetadataDisplayGuide` and `AccessibilityDisplayString` moved to `commonMain`. Because resolving Android string resources requires a `Context`, the localization entry points became platform extensions (decision recorded per the phase-07 note):
+
+- `Field.localizedTitle(context)` and `Statement.localizedString(context, descriptive)` are now **androidMain extension functions** in the same package instead of interface members — the call syntax is unchanged, but Android callers must import `org.readium.r2.shared.accessibility.localizedTitle` / `localizedString`. They still resolve the W3C guide translations bundled as Android resources.
+- iOS gets `Field.localizedTitle()` and `Statement.localizedString(descriptive)` extensions backed by a generated lookup table of the en-US strings (v2.0.c of the W3C JSON strings), bundled in the binary.
+- `AccessibilityMetadataDisplayGuide.Statement` is now a **sealed** interface (its implementations were already internal).

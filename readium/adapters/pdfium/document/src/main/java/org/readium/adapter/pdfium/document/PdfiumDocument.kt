@@ -21,6 +21,7 @@ import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.extensions.md5
 import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.extensions.tryOrNull
+import org.readium.r2.shared.util.ReadiumImage
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.data.ReadTry
@@ -41,14 +42,14 @@ public class PdfiumDocument(
 
     private val metadata: _PdfiumDocument.Meta by lazy { core.getDocumentMeta(document) }
 
-    override suspend fun cover(context: Context): Bitmap? = withContext(Dispatchers.IO) {
+    override suspend fun cover(): ReadiumImage? = withContext(Dispatchers.IO) {
         try {
             core.openPage(document, 0)
             val width = core.getPageWidth(document, 0)
             val height = core.getPageHeight(document, 0)
             val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
             core.renderPageBitmap(document, bitmap, 0, 0, 0, width, height, false)
-            bitmap
+            ReadiumImage(bitmap)
         } catch (e: Exception) {
             Timber.e(e)
             null

@@ -8,16 +8,15 @@
 
 package org.readium.r2.shared.util.data
 
-import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import java.nio.charset.Charset
-import kotlinx.serialization.json.JsonObject
 import org.readium.r2.shared.InternalReadiumApi
-import org.readium.r2.shared.publication.Manifest
 import org.readium.r2.shared.util.DebugError
+import org.readium.r2.shared.util.ImageSize
+import org.readium.r2.shared.util.ReadiumImage
 import org.readium.r2.shared.util.ThrowableError
 import org.readium.r2.shared.util.Try
-import org.readium.r2.shared.util.flatMap
+import org.readium.r2.shared.util.scaledToFit
 
 /**
  * Content as plain text, decoded with the given [charset].
@@ -30,38 +29,29 @@ public suspend fun ByteArray.decodeString(
         { DebugError("Content is not a valid $charset string.", ThrowableError(it)) }
     )
 
-// TODO(kmp phase-07): move to commonMain once Manifest is in commonMain.
+internal actual fun decodeImageBlocking(bytes: ByteArray, maxSize: ImageSize?): ReadiumImage? {
+    if (maxSize == null) {
+        return BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+            ?.let { ReadiumImage(it) }
+    }
 
-/**
- * Readium Web Publication Manifest parsed from the content.
- */
-public suspend fun ByteArray.decodeRwpm(): Try<Manifest, DecodeError> =
-    decodeJson().flatMap { it.decodeRwpm() }
+    // Read the image bounds without decoding it, to compute the subsampling factor.
+    val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+    BitmapFactory.decodeByteArray(bytes, 0, bytes.size, bounds)
+    if (bounds.outWidth <= 0 || bounds.outHeight <= 0) {
+        return null
+    }
 
-// TODO(kmp phase-07): move to commonMain once Manifest is in commonMain.
+    // Largest power of 2 keeping both dimensions equal or larger than the requested size.
+    var sampleSize = 1
+    while (
+        bounds.outWidth / (sampleSize * 2) >= maxSize.width &&
+        bounds.outHeight / (sampleSize * 2) >= maxSize.height
+    ) {
+        sampleSize *= 2
+    }
 
-/**
- * Readium Web Publication Manifest parsed from JSON.
- */
-public suspend fun JsonObject.decodeRwpm(): Try<Manifest, DecodeError> =
-    decode(
-        {
-            Manifest.fromJSON(this)
-                ?: throw Exception("Manifest.fromJSON returned null")
-        },
-        { DebugError("Content is not a valid RWPM.") }
-    )
-
-// TODO(kmp phase-07): the KMP image type will provide a common `decodeBitmap`.
-
-/**
- * Reads the full content as a [Bitmap].
- */
-public suspend fun ByteArray.decodeBitmap(): Try<Bitmap, DecodeError> =
-    decode(
-        {
-            BitmapFactory.decodeByteArray(this, 0, size)
-                ?: throw Exception("BitmapFactory returned null.")
-        },
-        { DebugError("Could not decode content as a bitmap.") }
-    )
+    val options = BitmapFactory.Options().apply { inSampleSize = sampleSize }
+    return BitmapFactory.decodeByteArray(bytes, 0, bytes.size, options)
+        ?.let { ReadiumImage(it).scaledToFit(maxSize) }
+}

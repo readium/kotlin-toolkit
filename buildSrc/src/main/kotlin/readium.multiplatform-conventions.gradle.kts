@@ -29,6 +29,9 @@ kotlin {
         withHostTestBuilder {
         }.configure {
             isIncludeAndroidResources = true // Robolectric
+            // commonTest suites run on the plain host JVM: stub android.util.Log & co. instead
+            // of throwing "not mocked".
+            isReturnDefaultValues = true
         }
 
         // Downstream modules are JVM 11; the default here is 21 and breaks inlining.

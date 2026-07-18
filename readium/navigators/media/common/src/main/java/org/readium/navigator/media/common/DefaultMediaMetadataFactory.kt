@@ -10,7 +10,6 @@ package org.readium.navigator.media.common
 
 import android.graphics.Bitmap
 import android.net.Uri
-import android.util.Size
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.MediaMetadata.PICTURE_TYPE_FRONT_COVER
 import java.io.ByteArrayOutputStream
@@ -19,6 +18,7 @@ import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.extensions.tryOrNull
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.services.coverFitting
+import org.readium.r2.shared.util.ImageSize
 
 /**
  * Builds media metadata using the given title, author and cover,
@@ -46,7 +46,8 @@ internal class DefaultMediaMetadataFactory(
         tryOrNull {
             val byteStream = ByteArrayOutputStream(4096)
             // byte array will go cross processes and should be kept small
-            publication.coverFitting(Size(400, 400))
+            publication.coverFitting(ImageSize(400, 400))
+                ?.bitmap
                 ?.compress(Bitmap.CompressFormat.PNG, 80, byteStream)
                 ?.let { byteStream.toByteArray() }
         }

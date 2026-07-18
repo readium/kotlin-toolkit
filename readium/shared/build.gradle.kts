@@ -19,6 +19,7 @@ kotlin {
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.kotlinx.datetime)
             api(libs.kotlinx.serialization.json)
+            implementation(libs.ksoup)
             implementation(libs.ktor.client.core)
             implementation(libs.okio)
             implementation(libs.uri.kmp)
@@ -29,7 +30,6 @@ kotlin {
             implementation(libs.androidx.annotation)
             implementation(libs.kotlin.reflect)
             implementation(libs.kotlinx.coroutines.android)
-            implementation(libs.jsoup)
             implementation(libs.ktor.client.okhttp)
         }
 

@@ -20,7 +20,12 @@ function fail(message) {
 }
 
 /**
- * Converter for Android strings.xml files.
+ * Converter for the KMP `readium-shared` module.
+ *
+ * The output folder must be the `src` directory of the module (e.g. `readium/shared/src`): the
+ * Android string resources are written to `androidMain/res`, and the generated Kotlin sources are
+ * split between `commonMain` (keys), `androidMain` (R.string resolution) and `iosMain` (bundled
+ * en-US strings).
  */
 function convertAndroid(lang, version, keys, keyPrefix, write) {
     const isBaseLanguage = (lang == 'en' || lang == 'en-US');
@@ -33,25 +38,30 @@ function convertAndroid(lang, version, keys, keyPrefix, write) {
     }
     output += '</resources>\n';
 
-    let folder = 'res/values';
+    let folder = 'androidMain/res/values';
     if (!isBaseLanguage) {
-        lang += `-${lang}`;
+        folder += `-${lang}`;
     }
 
     let outputPath = path.join(folder, 'w3c_a11y_meta_display_guide_strings.xml');
     write(outputPath, output);
 
-    // Using the "base" language, we will generate a static list of string keys to validate them at compile time.
+    // Using the "base" language, we will generate the static list of string keys (validated at
+    // compile time) and the platform-specific resolution of the localized strings.
     if (isBaseLanguage) {
         writeKotlinExtensions(disclaimer, keys, keyPrefix, write);
     }
 }
 
 /**
- * Generates a static list of string keys to validate them at compile time.
+ * Generates the Kotlin sources for the KMP source sets:
+ *
+ * - `commonMain`: the static list of string keys, to validate them at compile time.
+ * - `androidMain`: the resolution of a key to its `R.string` resources.
+ * - `iosMain`: a lookup table bundling the en-US strings.
  */
 function writeKotlinExtensions(disclaimer, keys, keyPrefix, write) {
-    let keysOutput = `/*
+    const header = `/*
  *  Copyright 2025 Readium Foundation. All rights reserved.
  *  Use of this source code is governed by the BSD-style license
  *  available in the top-level LICENSE file of the project.
@@ -61,18 +71,89 @@ function writeKotlinExtensions(disclaimer, keys, keyPrefix, write) {
 
 package org.readium.r2.shared.accessibility
 
-import org.readium.r2.shared.R
+`;
+    const kotlinDir = 'kotlin/org/readium/r2/shared/accessibility';
 
-`
     let keysList = Object.keys(keys)
         .filter((k) => k.endsWith("-compact"))
         .map((k) => removeSuffix(k, "-compact"));
-    for (const key of keysList) {
-        const stringKey = keyPrefix + key.replace(/-/g, '_');
-        keysOutput += `internal val AccessibilityDisplayString.Companion.${convertKebabToUpperSnakeCase(key)}: AccessibilityDisplayString get() = AccessibilityDisplayString(compactId = R.string.${stringKey}_compact, descriptiveId = R.string.${stringKey}_descriptive)\n`;
-    }
 
-    write("java/org/readium/r2/shared/accessibility/AccessibilityDisplayString.kt", keysOutput);
+    // commonMain: string keys.
+    let commonOutput = header;
+    for (const key of keysList) {
+        const sanitizedKey = key.replace(/-/g, '_');
+        commonOutput += `internal val AccessibilityDisplayString.Companion.${convertKebabToUpperSnakeCase(key)}: AccessibilityDisplayString get() = AccessibilityDisplayString(key = "${sanitizedKey}")\n`;
+    }
+    write(path.join('commonMain', kotlinDir, 'AccessibilityDisplayString.kt'), commonOutput);
+
+    // androidMain: R.string resolution.
+    let androidOutput = header.replace(
+        'package org.readium.r2.shared.accessibility\n',
+        `package org.readium.r2.shared.accessibility
+
+import android.content.Context
+import androidx.annotation.StringRes
+import org.readium.r2.shared.R
+`
+    );
+    androidOutput += `/**
+ * Returns the localized string for this display string.
+ *
+ * @param descriptive When true, will return the long descriptive statement.
+ */
+internal fun AccessibilityDisplayString.localizedString(context: Context, descriptive: Boolean): String =
+    context.getString(resourceId(descriptive)).trim()
+
+@StringRes
+private fun AccessibilityDisplayString.resourceId(descriptive: Boolean): Int =
+    when (key) {
+`;
+    for (const key of keysList) {
+        const sanitizedKey = key.replace(/-/g, '_');
+        androidOutput += `        "${sanitizedKey}" -> if (descriptive) R.string.${keyPrefix}${sanitizedKey}_descriptive else R.string.${keyPrefix}${sanitizedKey}_compact\n`;
+    }
+    androidOutput += `        else -> throw IllegalArgumentException("Unknown accessibility display string: $key")
+    }
+`;
+    write(path.join('androidMain', kotlinDir, 'AccessibilityDisplayString.android.kt'), androidOutput);
+
+    // iosMain: bundled en-US strings.
+    let iosOutput = header;
+    iosOutput += `/**
+ * Returns the localized string for this display string.
+ *
+ * On iOS, only the en-US strings of the W3C display guide are bundled.
+ *
+ * @param descriptive When true, will return the long descriptive statement.
+ */
+internal fun AccessibilityDisplayString.localizedString(descriptive: Boolean): String =
+    requireNotNull(
+        accessibilityDisplayStrings[key + if (descriptive) "_descriptive" else "_compact"]
+    ) { "Unknown accessibility display string: $key" }.trim()
+
+/**
+ * The en-US strings of the W3C accessibility metadata display guide, keyed by resource name
+ * (without the ${'`'}${keyPrefix}${'`'} prefix).
+ */
+internal val accessibilityDisplayStrings: Map<String, String> = mapOf(
+`;
+    for (const [key, value] of Object.entries(keys)) {
+        const sanitizedKey = key.replace(/-/g, '_');
+        iosOutput += `    "${sanitizedKey}" to\n        "${escapeKotlinString(value)}",\n`;
+    }
+    iosOutput += ')\n';
+    write(path.join('iosMain', kotlinDir, 'AccessibilityDisplayString.ios.kt'), iosOutput);
+}
+
+/**
+ * Escapes a raw string for inclusion in a Kotlin string literal.
+ */
+function escapeKotlinString(value) {
+    return value
+        .replace(/\\/g, '\\\\')
+        .replace(/"/g, '\\"')
+        .replace(/\$/g, '\\$')
+        .replace(/\n/g, '\\n');
 }
 
 const converters = {
@@ -80,7 +161,8 @@ const converters = {
 };
 
 if (!inputFolder || !outputFormat || !outputFolder) {
-    console.error('Usage: node convert.js <input-folder> <output-format> <output-folder> [key-prefix]');
+    console.error('Usage: node convert.js <input-folder> <output-format> <src-output-folder> [key-prefix]');
+    console.error('For the android format, the output folder must be the module src directory (e.g. readium/shared/src).');
     process.exit(1);
 }
 

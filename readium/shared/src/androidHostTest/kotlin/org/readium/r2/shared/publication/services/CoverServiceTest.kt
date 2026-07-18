@@ -11,7 +11,6 @@ package org.readium.r2.shared.publication.services
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.util.Size
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
@@ -20,6 +19,8 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.util.AbsoluteUrl
+import org.readium.r2.shared.util.ImageSize
+import org.readium.r2.shared.util.ReadiumImage
 import org.readium.r2.shared.util.file.FileResource
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.resource.SingleResourceContainer
@@ -69,7 +70,7 @@ class CoverServiceTest {
     fun `helper for ServicesBuilder works fine`() {
         val factory = { _: Publication.Service.Context ->
             object : CoverService {
-                override suspend fun cover(): Bitmap? = null
+                override suspend fun cover(): ReadiumImage? = null
             }
         }
         assertEquals(
@@ -80,12 +81,12 @@ class CoverServiceTest {
 
     @Test
     fun `cover helper for Publication works fine`() {
-        assertTrue(coverBitmap.sameAs(runBlocking { publication.cover() }))
+        assertTrue(coverBitmap.sameAs(runBlocking { publication.cover() }!!.bitmap))
     }
 
     @Test
     fun `coverFitting helper for Publication works fine`() {
-        val scaled = runBlocking { publication.coverFitting(Size(300, 400)) }
+        val scaled = runBlocking { publication.coverFitting(ImageSize(300, 400)) }
         assertNotNull(scaled)
         assertEquals(400, scaled.height)
         assertEquals(299, scaled.width)

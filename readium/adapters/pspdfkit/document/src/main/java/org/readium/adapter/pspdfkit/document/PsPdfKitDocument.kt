@@ -7,7 +7,6 @@
 package org.readium.adapter.pspdfkit.document
 
 import android.content.Context
-import android.graphics.Bitmap
 import com.pspdfkit.annotations.actions.GoToAction
 import com.pspdfkit.document.DocumentSource
 import com.pspdfkit.document.OutlineElement
@@ -21,6 +20,7 @@ import kotlin.reflect.KClass
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.publication.ReadingProgression
+import org.readium.r2.shared.util.ReadiumImage
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.data.ReadTry
@@ -40,7 +40,7 @@ public class PsPdfKitDocumentFactory(context: Context) : PdfDocumentFactory<PsPd
             val documentSource = DocumentSource(dataProvider, password)
             try {
                 val innerDocument = PdfDocumentLoader.openDocument(context, documentSource)
-                Try.success(PsPdfKitDocument(innerDocument))
+                Try.success(PsPdfKitDocument(context, innerDocument))
             } catch (e: InvalidPasswordException) {
                 Try.failure(ReadError.Decoding(e))
             } catch (e: InvalidSignatureException) {
@@ -55,8 +55,11 @@ public class PsPdfKitDocumentFactory(context: Context) : PdfDocumentFactory<PsPd
 }
 
 public class PsPdfKitDocument(
+    context: Context,
     public val document: _PsPdfKitDocument,
 ) : PdfDocument {
+
+    private val context: Context = context.applicationContext
 
     // FIXME: Doesn't seem to be exposed by PSPDFKit.
     override val identifier: String?
@@ -71,10 +74,11 @@ public class PsPdfKitDocument(
             PageBinding.RIGHT_EDGE -> ReadingProgression.RTL
         }
 
-    override suspend fun cover(context: Context): Bitmap? = withContext(Dispatchers.IO) {
+    override suspend fun cover(): ReadiumImage? = withContext(Dispatchers.IO) {
         try {
             val size = document.getPageSize(0)
             document.renderPageToBitmap(context, 0, size.width.toInt(), size.height.toInt())
+                .let { ReadiumImage(it) }
         } catch (e: Exception) {
             Timber.e(e)
             null

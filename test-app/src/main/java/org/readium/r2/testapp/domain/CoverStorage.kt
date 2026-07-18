@@ -8,7 +8,7 @@ import java.util.UUID
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.publication.services.cover
+import org.readium.r2.shared.publication.services.coverAsBitmap
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.http.HttpClient
@@ -25,7 +25,7 @@ class CoverStorage(
 
     suspend fun storeCover(publication: Publication, overrideUrl: AbsoluteUrl?): Try<File, Exception> {
         val coverBitmap: Bitmap? = overrideUrl?.fetchBitmap()
-            ?: publication.cover()
+            ?: publication.coverAsBitmap()
         return try {
             Try.success(storeCover(coverBitmap))
         } catch (e: Exception) {

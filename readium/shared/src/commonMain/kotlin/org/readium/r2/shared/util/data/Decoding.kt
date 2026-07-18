@@ -13,8 +13,11 @@ import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.JsonObject
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.OutOfMemoryError
+import org.readium.r2.shared.publication.Manifest
 import org.readium.r2.shared.util.DebugError
 import org.readium.r2.shared.util.Error
+import org.readium.r2.shared.util.ImageSize
+import org.readium.r2.shared.util.ReadiumImage
 import org.readium.r2.shared.util.ThrowableError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.flatMap
@@ -92,6 +95,47 @@ public suspend fun ByteArray.decodeJson(): Try<JsonObject, DecodeError> =
             { DebugError("Content is not valid JSON.", ThrowableError(it)) }
         )
     }
+
+/**
+ * Readium Web Publication Manifest parsed from the content.
+ */
+public suspend fun ByteArray.decodeRwpm(): Try<Manifest, DecodeError> =
+    decodeJson().flatMap { it.decodeRwpm() }
+
+/**
+ * Readium Web Publication Manifest parsed from JSON.
+ */
+public suspend fun JsonObject.decodeRwpm(): Try<Manifest, DecodeError> =
+    decode(
+        {
+            Manifest.fromJSON(this)
+                ?: throw Exception("Manifest.fromJSON returned null")
+        },
+        { DebugError("Content is not a valid RWPM.") }
+    )
+
+/**
+ * Content decoded as a [ReadiumImage].
+ *
+ * When [maxSize] is provided, the decoder may use it to produce a downscaled image fitting the
+ * given box more efficiently (e.g. subsampling on Android, ImageIO thumbnailing on iOS).
+ */
+public suspend fun ByteArray.decodeImage(maxSize: ImageSize? = null): Try<ReadiumImage, DecodeError> =
+    decode(
+        {
+            decodeImageBlocking(it, maxSize)
+                ?: throw Exception("The image decoder returned null.")
+        },
+        { DebugError("Could not decode content as an image.") }
+    )
+
+/**
+ * Decodes [bytes] as a platform image, or returns null when the content is not a valid image.
+ *
+ * When [maxSize] is not null, the returned image fits it (scaled down preserving the aspect
+ * ratio).
+ */
+internal expect fun decodeImageBlocking(bytes: ByteArray, maxSize: ImageSize?): ReadiumImage?
 
 @Suppress("RedundantSuspendModifier")
 @InternalReadiumApi
