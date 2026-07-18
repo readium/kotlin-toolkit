@@ -168,3 +168,33 @@ The classes of the vendored channel package `org.readium.r2.shared.util.zip.jvm`
 ### New common channel layer (internal, no public API change)
 
 `org.readium.r2.shared.util.zip.jvm` is now a Kotlin `commonMain` package containing **internal** suspend-first translations of the channel interfaces (`Channel`, `ReadableByteChannel`, `WritableByteChannel`, `ByteChannel`, `SeekableByteChannel`), their exceptions (based on `okio.IOException`), and `ZipBuffer`, a minimal replacement for `java.nio.ByteBuffer`. The adapters `ReadableChannelAdapter`, `CachingReadableChannel`, `BufferedReadableChannel` (all internal) moved to `commonMain` on these interfaces, and a new internal `FileChannelAdapter` adapts an `okio.FileHandle`. The Android zip containers still run on the legacy blocking stack (via internal `Legacy*` copies of the adapters) until phase 05c swaps them.
+
+## Phase 05b — Commons Compress port to Kotlin common
+
+### Vendored `compress` package renamed in the legacy project (temporary)
+
+Same treatment as the 05a `legacyjvm` rename: the vendored Java package `org.readium.r2.shared.util.zip.compress` in `:readium:readium-shared-zip-legacy` moved to `org.readium.r2.shared.util.zip.legacycompress` (mechanical find-replace, plus the two androidMain call sites `StreamingZipArchiveProvider`/`StreamingZipContainer`), freeing the original FQNs for the Kotlin port. These classes were never meant as public API; the whole legacy project is deleted at the end of phase 05c.
+
+### New common zip stack (internal, no public API change)
+
+The read path of the vendored Commons Compress subset is now Kotlin in shared `commonMain`, same packages (`…util.zip.compress.archivers[.zip]`, `…utils`), everything **internal**:
+
+- `ZipFile`, `ZipArchiveEntry`, `ZipUtil`, extra-field machinery (`ZipExtraField`, `ExtraFieldUtils`, zip64/unicode/resource-alignment fields), encodings, value types (`ZipShort`, `ZipLong`, `ZipEightByteInteger`, `GeneralPurposeBit`), and the bounded/counting/buffered/inflater stream helpers.
+- All I/O is **suspend-first** on the 05a channels; `java.io.InputStream` was replaced by an internal suspending `ZipInputStream` (`compress/utils`), deliberately minimal (`read`/`skip`/`close`). The `ZipFile` constructor became a `suspend operator fun invoke` factory on the companion (same call syntax).
+- `java.util.zip.Inflater` is now `internal expect class Inflater` (`compress/archivers/zip`): the Android actual delegates to `java.util.zip.Inflater`, the iOS actual wraps `platform.zlib` (raw deflate via `inflateInit2` with negative window bits). Covered by a commonTest fixture-inflation suite and an androidHostTest JVM-deflate/common-inflate round trip.
+- `java.util.zip.ZipException` → internal `compress.archivers.zip.ZipException : okio.IOException`. `java.util.zip.CRC32` → internal common `Crc32`. `ZipEightByteInteger` is backed by a plain `Long` instead of `BigInteger` (lossless round-trip; only the textual form of values ≥ 2^63 differs).
+- Encodings: `NioZipEncoding`/`CharsetAccessor` (built on `java.nio.charset`) were replaced by a common encoding table per the 05a decision — zip names are CP437 (validated 256-char table) or UTF-8 (hand-rolled decoder replacing malformed input with `?`, like the original `CodingErrorAction.REPLACE` configuration). The `ZipEncoding` interface kept only `decode`; `encode`/`canEncode` were writer-only.
+
+### Not ported (writer-only, unreachable from the read path)
+
+`ZipArchiveOutputStream`, `StreamCompressor`, `ScatterZipOutputStream`, `ScatterStatistics`, `ZipSplitOutputStream`, `Zip64Mode`, `Zip64RequiredException`, `ZipArchiveEntryRequest`, `ZipArchiveEntryPredicate`, `parallel/*` (3 files), `ArchiveInputStream`, `ArchiveOutputStream`, `BoundedInputStream`, `FileNameUtils`, `CountingInputStream`'s unused overloads, plus `ZipFile.copyRawEntries`/`getUnixSymlink` and the `java.io.File`/`Path` factories of the split channels. The central-directory signature constants formerly on `ZipArchiveOutputStream` moved into `ZipFile`. The Java files remain in the legacy project (they are reachable from the legacy `ZipFile`) and die with it in 05c.
+
+### Behavior restored relative to the vendored Java copy
+
+The vendored `ExtraFieldUtils` registry had been stripped empty, so the legacy `ZipFile` parsed every extra field as `UnrecognizedExtraField` — meaning it **could not read zip64 archives** (it threw "archive contains unparseable zip64 extra field") and never honored InfoZIP Unicode path/comment extra fields. The port hardcodes the kept typed fields (zip64, unicode path/comment, resource alignment) in `ExtraFieldUtils.createExtraField`, restoring upstream Commons Compress behavior; commonTest covers zip64 and unicode-name fixtures. The androidHostTest differential suite (`ZipFileDifferentialTest`) asserts byte-identical output against the legacy implementation on the fixtures the legacy code can read (`epub.epub`, stored/deflated, data descriptors).
+
+Other knowingly accepted deltas: `ZipUtil.dosToJavaTime` is on kotlinx-datetime (lenient rollover like `java.util.Calendar`, current system time zone; DST edge cases may differ by an hour — entry times are unused by Readium), and malformed UTF-8 names decode with one `?` per invalid byte rather than per invalid sequence.
+
+### Test fixtures
+
+`src/commonTest/fixtures/zip/` now holds the zip fixture set used through the `Fixtures` helper: `epub.epub` (copied from `fixtures/resource`), generated `basic.zip` (stored + deflated), `datadescriptor.zip` (streamed, general purpose bit 3), `unicode.zip` (EFS-flagged UTF-8 name + InfoZIP unicode path extra field), a hand-crafted minimal `zip64.zip` (zip64 EOCD + locator + extended information extra field), and a raw-deflate pair (`lorem.deflate`/`lorem.txt`) for the `Inflater` tests.

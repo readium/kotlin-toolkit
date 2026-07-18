@@ -36,8 +36,8 @@ import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.io.CountingInputStream
 import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.shared.util.resource.filename
-import org.readium.r2.shared.util.zip.compress.archivers.zip.ZipArchiveEntry
-import org.readium.r2.shared.util.zip.compress.archivers.zip.ZipFile
+import org.readium.r2.shared.util.zip.legacycompress.archivers.zip.ZipArchiveEntry
+import org.readium.r2.shared.util.zip.legacycompress.archivers.zip.ZipFile
 
 internal class StreamingZipContainer(
     private val zipFile: ZipFile,

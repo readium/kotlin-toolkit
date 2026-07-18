@@ -25,7 +25,7 @@ import org.readium.r2.shared.util.format.Format
 import org.readium.r2.shared.util.format.Specification
 import org.readium.r2.shared.util.resource.Resource
 import org.readium.r2.shared.util.toUrl
-import org.readium.r2.shared.util.zip.compress.archivers.zip.ZipFile
+import org.readium.r2.shared.util.zip.legacycompress.archivers.zip.ZipFile
 import org.readium.r2.shared.util.zip.legacyjvm.FileChannelAdapter
 import org.readium.r2.shared.util.zip.legacyjvm.SeekableByteChannel
 
