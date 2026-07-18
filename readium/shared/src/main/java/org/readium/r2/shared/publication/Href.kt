@@ -4,6 +4,8 @@
  * available in the top-level LICENSE file of the project.
  */
 
+@file:OptIn(ExperimentalReadiumApi::class)
+
 package org.readium.r2.shared.publication
 
 import android.os.Parcelable
@@ -16,6 +18,7 @@ import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
+import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.URITemplate
 import org.readium.r2.shared.util.Url as SharedUrl
 import timber.log.Timber
@@ -149,6 +152,7 @@ public class Href private constructor(private val href: Url) : Parcelable {
     }
 }
 
+@ExperimentalReadiumApi
 public object HrefSerializer : KSerializer<Href> {
     override val descriptor: SerialDescriptor =
         PrimitiveSerialDescriptor("Href", PrimitiveKind.STRING)
