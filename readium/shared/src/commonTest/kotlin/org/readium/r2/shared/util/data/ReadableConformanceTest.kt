@@ -14,7 +14,15 @@ import org.readium.r2.shared.Fixtures
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.checkSuccess
+import org.readium.r2.shared.util.FileExtension
+import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.file.FileResource
+import org.readium.r2.shared.util.format.Format
+import org.readium.r2.shared.util.format.FormatSpecification
+import org.readium.r2.shared.util.format.Specification
+import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.shared.util.zip.FileZipArchiveProvider
+import org.readium.r2.shared.util.zip.StreamingZipArchiveProvider
 import org.readium.r2.shared.util.fromFilePath
 import org.readium.r2.shared.util.resource.BufferingResource
 import org.readium.r2.shared.util.resource.FallbackResource
@@ -36,10 +44,16 @@ import org.readium.r2.shared.util.use
 class ReadableConformanceTest {
 
     private val fileUrl: AbsoluteUrl = requireNotNull(
-        AbsoluteUrl.fromFilePath(Fixtures("resource").path("epub.epub").toString())
+        AbsoluteUrl.fromFilePath(Fixtures("zip").path("epub.epub").toString())
     )
 
     private val bytes = ByteArray(5000) { (it % 251).toByte() }
+
+    // 342 KB, deflated: large enough to require several chunks and to skip the entry cache.
+    private val zipEntryHref = "EPUB/s04.xhtml"
+
+    // 392 bytes: small enough to hit the whole-entry cache branch.
+    private val smallEntryHref = "EPUB/cover.xhtml"
 
     /** Flips every bit, so untransformed bytes are detectable. */
     private fun flip(data: ByteArray): ByteArray =
@@ -47,6 +61,23 @@ class ReadableConformanceTest {
 
     private fun transform(resource: Resource): Resource =
         TransformingResource(resource) { Try.success(flip(it)) }
+
+    // Streaming and file-based ZIP entries, which have the most intricate `stream()` of the set:
+    // forward-seek reuse, a container-wide mutex, and an optional whole-entry cache.
+    private suspend fun zipEntry(streaming: Boolean, href: String): Resource {
+        val container = if (streaming) {
+            StreamingZipArchiveProvider().openFile(fileUrl)
+        } else {
+            requireNotNull(FileZipArchiveProvider().open(epubFormat, fileUrl).getOrNull())
+        }
+        return requireNotNull(container[requireNotNull(Url(href))])
+    }
+
+    private val epubFormat = Format(
+        specification = FormatSpecification(Specification.Zip, Specification.Epub),
+        mediaType = MediaType.EPUB,
+        fileExtension = FileExtension("epub")
+    )
 
     private val subjects: Map<String, () -> Resource> = mapOf(
         "FileResource" to { FileResource(fileUrl) },
@@ -61,6 +92,14 @@ class ReadableConformanceTest {
             transform(BufferingResource(FileResource(fileUrl), bufferSize = 1024))
         },
         "TransformingResource(in-memory)" to { transform(InMemoryResource(bytes)) }
+    )
+
+    // ZIP entries need a suspending factory, so they are exercised separately.
+    private val zipSubjects: Map<String, suspend () -> Resource> = mapOf(
+        "StreamingZipContainer.Entry" to { zipEntry(streaming = true, href = zipEntryHref) },
+        "FileZipContainer.Entry" to { zipEntry(streaming = false, href = zipEntryHref) },
+        // Small enough to exercise the whole-entry cache branch.
+        "StreamingZipContainer.Entry(cached)" to { zipEntry(streaming = true, href = smallEntryHref) }
     )
 
     private val ranges: List<LongRange?> = listOf(
@@ -83,6 +122,22 @@ class ReadableConformanceTest {
     @Test
     fun streamAndReadAgree() = runTest {
         for ((name, factory) in subjects) {
+            for (range in ranges) {
+                val read = factory().use { it.read(range).checkSuccess() }
+                val streamed = factory().use { it.streamed(range) }
+
+                assertContentEquals(
+                    read,
+                    streamed,
+                    "$name disagrees between read() and stream() for range $range"
+                )
+            }
+        }
+    }
+
+    @Test
+    fun zipEntriesAgreeBetweenStreamAndRead() = runTest {
+        for ((name, factory) in zipSubjects) {
             for (range in ranges) {
                 val read = factory().use { it.read(range).checkSuccess() }
                 val streamed = factory().use { it.streamed(range) }

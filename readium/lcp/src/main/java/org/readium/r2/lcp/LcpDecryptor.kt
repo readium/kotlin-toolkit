@@ -21,6 +21,7 @@ import org.readium.r2.shared.util.ThrowableError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.data.ReadError
+import org.readium.r2.shared.util.data.streamWholeBuffer
 import org.readium.r2.shared.util.flatMap
 import org.readium.r2.shared.util.getEquivalent
 import org.readium.r2.shared.util.getOrElse
@@ -174,7 +175,7 @@ internal class CbcLcpResource(
         range: LongRange?,
         consume: (ByteArray) -> Unit,
     ): Try<Unit, ReadError> =
-        read(range).map { consume(it) }
+        streamWholeBuffer(range, consume)
 
     override suspend fun read(range: LongRange?): Try<ByteArray, ReadError> {
         if (range == null) {

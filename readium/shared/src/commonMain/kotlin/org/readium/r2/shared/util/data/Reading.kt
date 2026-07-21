@@ -37,8 +37,15 @@ public interface Readable : Closeable {
      * available length automatically.
      *
      * [consume] is called for each chunk received, in order. Callers are responsible for
-     * accumulating the data if they need it whole. Each chunk is a freshly allocated array owned by
-     * the consumer, so implementations must not hand out a reused buffer.
+     * accumulating the data if they need it whole.
+     *
+     * A chunk **must not be mutated** by the consumer: implementations backed by an in-memory
+     * buffer (e.g. `InMemoryResource`, or a cached ZIP entry) pass that buffer directly, exactly as
+     * [read] does. Implementations must not hand out a buffer they will themselves reuse for a
+     * later chunk; consumers that need to mutate or outlive the call must copy.
+     *
+     * [consume] must not re-enter the same [Readable] or its container: implementations may hold a
+     * lock across the whole drain.
      *
      * This is the primary member: [read] is derived from it. Implementations that transform the
      * bytes (decryption, injection, deobfuscation) **must** override it — delegating with `by`
@@ -65,6 +72,20 @@ public interface Readable : Closeable {
             .map { chunks.join() }
     }
 }
+
+/**
+ * Implements [Readable.stream] by emitting the whole range as a single chunk.
+ *
+ * For implementations that genuinely cannot stream: a transformation runs on the full content
+ * (`TransformingResource`), or the bytes are already in memory (`InMemoryResource`). Callers must
+ * override [Readable.read] too, or this recurses.
+ */
+@InternalReadiumApi
+public suspend fun Readable.streamWholeBuffer(
+    range: LongRange?,
+    consume: (ByteArray) -> Unit,
+): Try<Unit, ReadError> =
+    read(range).map { consume(it) }
 
 /** Chunk size used by [Readable] implementations that drain an underlying stream. */
 @InternalReadiumApi

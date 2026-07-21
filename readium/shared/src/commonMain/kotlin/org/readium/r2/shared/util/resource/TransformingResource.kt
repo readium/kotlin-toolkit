@@ -15,6 +15,7 @@ import org.readium.r2.shared.extensions.requireLengthFitInt
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.data.ReadError
+import org.readium.r2.shared.util.data.streamWholeBuffer
 import org.readium.r2.shared.util.flatMap
 
 /**
@@ -96,7 +97,7 @@ public abstract class TransformingResource(
         range: LongRange?,
         consume: (ByteArray) -> Unit,
     ): Try<Unit, ReadError> =
-        read(range).map { consume(it) }
+        streamWholeBuffer(range, consume)
 
     override suspend fun length(): Try<Long, ReadError> =
         bytes().map { it.size.toLong() }

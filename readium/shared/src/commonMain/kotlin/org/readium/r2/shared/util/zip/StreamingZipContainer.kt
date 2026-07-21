@@ -129,7 +129,11 @@ internal class StreamingZipContainer(
                 }
             }
 
-        private suspend fun streamLocked(range: LongRange?, consume: (ByteArray) -> Unit) {
+        private suspend fun streamLocked(rawRange: LongRange?, consume: (ByteArray) -> Unit) {
+            // Coerce before anything reads `first`: a negative start would otherwise seed
+            // `inputStream()` with a negative offset, making it skip real bytes.
+            val range = rawRange?.coerceFirstNonNegative()
+
             cache?.let { cache ->
                 consume(if (range == null) cache else cache.sliceRange(range))
                 return
@@ -139,6 +143,10 @@ internal class StreamingZipContainer(
                 checkNotNull(zipFile.getInputStream(entry)).use { input ->
                     input.drain(consume)
                 }
+                return
+            }
+
+            if (range.isEmpty()) {
                 return
             }
 
@@ -166,8 +174,10 @@ internal class StreamingZipContainer(
                     cache = readFully()
                     readRange(range)
                 }
-                else ->
-                    inputStream(range.first).readRange(range)
+                else -> {
+                    val coerced = range.coerceFirstNonNegative()
+                    inputStream(coerced.first).readRange(coerced)
+                }
             }
 
         /**

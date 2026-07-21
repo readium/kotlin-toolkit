@@ -15,6 +15,7 @@ import org.readium.r2.shared.extensions.requireLengthFitInt
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.data.ReadError
+import org.readium.r2.shared.util.data.streamWholeBuffer
 
 /** Creates a [Resource] serving a [ByteArray]. */
 public class InMemoryResource(
@@ -43,7 +44,7 @@ public class InMemoryResource(
         range: LongRange?,
         consume: (ByteArray) -> Unit,
     ): Try<Unit, ReadError> =
-        read(range).map { consume(it) }
+        streamWholeBuffer(range, consume)
 
     override suspend fun read(range: LongRange?): Try<ByteArray, ReadError> {
         if (!::_bytes.isInitialized) {
