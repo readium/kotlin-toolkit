@@ -81,7 +81,10 @@ public class HttpResource(
         session = null
     }
 
-    override suspend fun read(range: LongRange?): Try<ByteArray, ReadError> {
+    override suspend fun stream(
+        range: LongRange?,
+        consume: (ByteArray) -> Unit,
+    ): Try<Unit, ReadError> {
         val from = range?.first?.takeUnless { it == 0L }
 
         return acquireSession(from).flatMap { session ->
@@ -90,8 +93,10 @@ public class HttpResource(
                 start until start + (it.last - it.first + 1)
             }
 
-            session.body.read(relativeRange)
-                .onSuccess { session.position += it.size }
+            session.body.stream(relativeRange) { chunk ->
+                session.position += chunk.size
+                consume(chunk)
+            }
         }
     }
 

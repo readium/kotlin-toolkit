@@ -25,6 +25,7 @@ import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.DebugError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.data.ReadError
+import org.readium.r2.shared.util.data.STREAM_CHUNK_SIZE
 import org.readium.r2.shared.util.flatMap
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.io.CountingInputStream
@@ -99,6 +100,26 @@ public class ContentResource(
         }
 
         return readRange(range)
+    }
+
+    override suspend fun stream(
+        range: LongRange?,
+        consume: (ByteArray) -> Unit,
+    ): Try<Unit, ReadError> {
+        @Suppress("NAME_SHADOWING")
+        val range = range
+            ?.coerceFirstNonNegative()
+            ?.requireLengthFitInt()
+
+        if (range?.isEmpty() == true) {
+            return Try.success(Unit)
+        }
+
+        return withStream(fromIndex = range?.first ?: 0) { stream ->
+            withContext(Dispatchers.IO) {
+                stream.drain(range, consume)
+            }
+        }
     }
 
     private suspend fun readFully(): Try<ByteArray, ReadError> =
@@ -179,4 +200,25 @@ public class ContentResource(
 
     override fun toString(): String =
         "${javaClass.simpleName}(${runBlocking { length() } } bytes)"
+}
+
+/**
+ * Emits the given [range] of the stream in chunks, or the whole stream when it is null.
+ *
+ * The stream is assumed to be positioned at the start of the range.
+ */
+private fun CountingInputStream.drain(range: LongRange?, consume: (ByteArray) -> Unit) {
+    var remaining = range?.let { it.last - it.first + 1 } ?: Long.MAX_VALUE
+    val buffer = ByteArray(minOf(remaining, STREAM_CHUNK_SIZE.toLong()).toInt())
+
+    while (remaining > 0) {
+        val count = read(buffer, 0, minOf(remaining, buffer.size.toLong()).toInt())
+        if (count == -1) {
+            return
+        }
+        if (count > 0) {
+            consume(buffer.copyOf(count))
+            remaining -= count
+        }
+    }
 }

@@ -95,14 +95,27 @@ class CachingReadableChannelTest {
     fun aFailedTailFillIsNotServedAsCachedData() = runTest {
         val readable = TrackingReadable(data)
         var failNextRead = true
-        val failingOnce = object : Readable by readable {
-            override suspend fun read(range: LongRange?): Try<ByteArray, ReadError> =
+        // Injects on `stream()`, the primary member, and deliberately does *not* use
+        // `Readable by readable`: delegation would generate a `read()` forwarding straight to
+        // `readable`, so the injected failure would never be seen on the `read()` path.
+        val failingOnce = object : Readable {
+            override suspend fun length(): Try<Long, ReadError> =
+                readable.length()
+
+            override suspend fun stream(
+                range: LongRange?,
+                consume: (ByteArray) -> Unit,
+            ): Try<Unit, ReadError> =
                 if (failNextRead) {
                     failNextRead = false
                     Try.failure(ReadError.Decoding("network blip"))
                 } else {
-                    readable.read(range)
+                    readable.stream(range, consume)
                 }
+
+            override fun close() {
+                readable.close()
+            }
         }
         val channel = CachingReadableChannel(
             ReadableChannelAdapter(failingOnce, ::ReadException),

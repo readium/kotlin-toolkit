@@ -31,13 +31,60 @@ public interface Readable : Closeable {
     public suspend fun length(): Try<Long, ReadError>
 
     /**
+     * Reads the bytes at the given range in a streaming fashion.
+     *
+     * When [range] is null, the whole content is streamed. Out-of-range indexes are clamped to the
+     * available length automatically.
+     *
+     * [consume] is called for each chunk received, in order. Callers are responsible for
+     * accumulating the data if they need it whole. Each chunk is a freshly allocated array owned by
+     * the consumer, so implementations must not hand out a reused buffer.
+     *
+     * This is the primary member: [read] is derived from it. Implementations that transform the
+     * bytes (decryption, injection, deobfuscation) **must** override it — delegating with `by`
+     * would silently serve the wrapped source's untransformed bytes.
+     */
+    public suspend fun stream(
+        range: LongRange? = null,
+        consume: (ByteArray) -> Unit,
+    ): Try<Unit, ReadError>
+
+    /**
      * Reads the bytes at the given range.
      *
      * When [range] is null, the whole content is returned. Out-of-range indexes are clamped to the
      * available length automatically.
+     *
+     * The default accumulates the chunks emitted by [stream]. Override it when the implementation
+     * can produce the whole buffer more cheaply, but then **also** override [stream]: overriding
+     * only one of the pair recurses infinitely.
      */
-    public suspend fun read(range: LongRange? = null): Try<ByteArray, ReadError>
+    public suspend fun read(range: LongRange? = null): Try<ByteArray, ReadError> {
+        val chunks = mutableListOf<ByteArray>()
+        return stream(range) { chunks.add(it) }
+            .map { chunks.join() }
+    }
 }
+
+/** Chunk size used by [Readable] implementations that drain an underlying stream. */
+@InternalReadiumApi
+public const val STREAM_CHUNK_SIZE: Int = 64 * 1024
+
+/** Concatenates [this] into a single array, avoiding a copy when there is nothing to join. */
+internal fun List<ByteArray>.join(): ByteArray =
+    when (size) {
+        0 -> ByteArray(0)
+        1 -> first()
+        else -> {
+            val result = ByteArray(sumOf { it.size })
+            var offset = 0
+            for (chunk in this) {
+                chunk.copyInto(result, offset)
+                offset += chunk.size
+            }
+            result
+        }
+    }
 
 public typealias ReadTry<SuccessT> = Try<SuccessT, ReadError>
 

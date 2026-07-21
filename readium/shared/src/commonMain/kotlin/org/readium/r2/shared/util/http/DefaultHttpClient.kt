@@ -42,6 +42,7 @@ import org.readium.r2.shared.util.Closeable
 import org.readium.r2.shared.util.DebugError
 import org.readium.r2.shared.util.ThrowableError
 import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.data.join
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.file.fileSystem
 import org.readium.r2.shared.util.flatMap
@@ -328,7 +329,9 @@ public class DefaultHttpClient internal constructor(
         if (statusCode >= 400) {
             // Reads the full body, since it might contain an error representation such as
             // JSON Problem Details or OPDS Authentication Document.
-            val body = ktorResponse.bodyAsChannel().readUpTo(Long.MAX_VALUE)
+            val chunks = mutableListOf<ByteArray>()
+            ktorResponse.bodyAsChannel().streamUpTo(Long.MAX_VALUE) { chunks.add(it) }
+            val body = chunks.join()
             return Try.failure(
                 HttpError.ErrorResponse(HttpStatus(statusCode), mediaType, body)
             )

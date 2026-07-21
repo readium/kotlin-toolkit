@@ -57,13 +57,18 @@ class ReadableInputStreamAdapterTest {
         override suspend fun length(): Try<Long, ReadError> =
             Try.failure(ReadError.UnsupportedOperation(DebugError("Length is unknown.")))
 
-        override suspend fun read(range: LongRange?): Try<ByteArray, ReadError> {
+        override suspend fun stream(
+            range: LongRange?,
+            consume: (ByteArray) -> Unit,
+        ): Try<Unit, ReadError> {
             if (range == null) {
-                return Try.success(content)
+                consume(content)
+                return Try.success(Unit)
             }
             val start = range.first.coerceIn(0L, content.size.toLong()).toInt()
             val endExclusive = (range.last + 1).coerceIn(start.toLong(), content.size.toLong()).toInt()
-            return Try.success(content.copyOfRange(start, endExclusive))
+            consume(content.copyOfRange(start, endExclusive))
+            return Try.success(Unit)
         }
 
         override fun close() {}

@@ -76,6 +76,19 @@ internal class ReadableBuffer internal constructor(
         }
     }
 
+    /**
+     * Streaming bypasses the buffer and goes straight to the source: the buffer exists to make
+     * repeated small ranged reads cheap, not bulk transfers.
+     *
+     * Forwarding explicitly rather than through `by source`, so that this stays a deliberate
+     * decision if the interface grows.
+     */
+    override suspend fun stream(
+        range: LongRange?,
+        consume: (ByteArray) -> Unit,
+    ): Try<Unit, ReadError> =
+        source.stream(range, consume)
+
     override suspend fun read(range: LongRange?): Try<ByteArray, ReadError> {
         val length = cachedLength().getOrNull()
         // Reading the whole resource bypasses buffering to keep things simple.

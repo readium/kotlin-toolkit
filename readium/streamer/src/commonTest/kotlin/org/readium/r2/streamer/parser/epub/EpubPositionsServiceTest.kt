@@ -448,8 +448,11 @@ class EpubPositionsServiceTest {
 
                     override suspend fun length() = Try.success(item.length)
 
-                    override suspend fun read(range: LongRange?): ReadTry<ByteArray> =
-                        Try.success(ByteArray(0))
+                    override suspend fun stream(
+                        range: LongRange?,
+                        consume: (ByteArray) -> Unit,
+                    ): ReadTry<Unit> =
+                        Try.success(Unit)
 
                     override fun close() {}
                 }

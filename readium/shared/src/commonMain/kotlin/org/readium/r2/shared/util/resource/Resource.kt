@@ -54,6 +54,10 @@ public class FailureResource(
     override suspend fun properties(): Try<Resource.Properties, ReadError> = Try.failure(error)
     override suspend fun length(): Try<Long, ReadError> = Try.failure(error)
     override suspend fun read(range: LongRange?): Try<ByteArray, ReadError> = Try.failure(error)
+    override suspend fun stream(
+        range: LongRange?,
+        consume: (ByteArray) -> Unit,
+    ): Try<Unit, ReadError> = Try.failure(error)
     override fun close() {}
 
     override fun toString(): String =

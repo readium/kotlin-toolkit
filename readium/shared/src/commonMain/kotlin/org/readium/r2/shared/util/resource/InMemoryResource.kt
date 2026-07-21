@@ -38,6 +38,13 @@ public class InMemoryResource(
     override suspend fun length(): Try<Long, ReadError> =
         read().map { it.size.toLong() }
 
+    /** The bytes are already in memory, so a single chunk is the honest implementation. */
+    override suspend fun stream(
+        range: LongRange?,
+        consume: (ByteArray) -> Unit,
+    ): Try<Unit, ReadError> =
+        read(range).map { consume(it) }
+
     override suspend fun read(range: LongRange?): Try<ByteArray, ReadError> {
         if (!::_bytes.isInitialized) {
             _bytes = bytes()

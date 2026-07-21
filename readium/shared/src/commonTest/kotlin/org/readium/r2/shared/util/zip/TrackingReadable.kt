@@ -26,12 +26,18 @@ class TrackingReadable(
     override suspend fun length(): Try<Long, ReadError> =
         Try.success(data.size.toLong())
 
-    override suspend fun read(range: LongRange?): Try<ByteArray, ReadError> {
+    // Implements `stream()` rather than `read()` so that both paths are recorded: `read()` is
+    // derived from `stream()` by the `Readable` default.
+    override suspend fun stream(
+        range: LongRange?,
+        consume: (ByteArray) -> Unit,
+    ): Try<Unit, ReadError> {
         val start = (range?.first ?: 0L).coerceIn(0L, data.size.toLong())
         val endExclusive = (range?.let { it.last + 1 } ?: data.size.toLong())
             .coerceIn(start, data.size.toLong())
         reads.add(start until endExclusive)
-        return Try.success(data.copyOfRange(start.toInt(), endExclusive.toInt()))
+        consume(data.copyOfRange(start.toInt(), endExclusive.toInt()))
+        return Try.success(Unit)
     }
 
     override fun close() {

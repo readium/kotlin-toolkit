@@ -10,11 +10,37 @@ import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.getEquivalent
 
+/**
+ * Largest prefix kept in memory by [CachingReadable].
+ *
+ * The cache exists to make repeated head reads (format sniffing) cheap, so it only needs to cover
+ * the sniffers' window. Without a cap, a whole-resource read of any size would be retained.
+ */
+private const val MAX_CACHED_PREFIX_SIZE: Int = 16 * 1024
+
 internal class CachingReadable(
     private val source: Readable,
 ) : Readable by source {
 
     private var startCache: ByteArray? = null
+
+    /** Retains [bytes] as the prefix cache, unless it is too large to be worth holding. */
+    private fun cachePrefix(bytes: ByteArray) {
+        startCache = bytes.takeIf { it.size <= MAX_CACHED_PREFIX_SIZE }
+    }
+
+    /**
+     * Streaming bypasses the prefix cache and goes straight to the source: the cache exists to
+     * serve small repeated head reads, not bulk transfers.
+     *
+     * Forwarding explicitly rather than through `by source`, so that this stays a deliberate
+     * decision if the interface grows.
+     */
+    override suspend fun stream(
+        range: LongRange?,
+        consume: (ByteArray) -> Unit,
+    ): Try<Unit, ReadError> =
+        source.stream(range, consume)
 
     private var contentLength: Long? = null
 
@@ -31,7 +57,7 @@ internal class CachingReadable(
                 source.read(range)
                     .onSuccess {
                         if (range == null || range.first == 0L) {
-                            startCache = it
+                            cachePrefix(it)
                         }
                     }
             }
@@ -41,7 +67,7 @@ internal class CachingReadable(
                 } else {
                     source.read()
                         .onSuccess {
-                            startCache = it
+                            cachePrefix(it)
                             contentLength = it.size.toLong()
                         }
                 }
@@ -51,7 +77,7 @@ internal class CachingReadable(
                     Try.success(startCache!!.sliceArray(0..range.last.toInt()))
                 } else {
                     source.read(range)
-                        .onSuccess { startCache = it }
+                        .onSuccess { cachePrefix(it) }
                 }
             }
             else ->

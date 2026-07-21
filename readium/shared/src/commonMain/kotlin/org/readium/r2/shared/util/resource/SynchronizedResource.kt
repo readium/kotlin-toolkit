@@ -34,6 +34,12 @@ public class SynchronizedResource(
     override suspend fun read(range: LongRange?): Try<ByteArray, ReadError> =
         mutex.withLock { resource.read(range) }
 
+    override suspend fun stream(
+        range: LongRange?,
+        consume: (ByteArray) -> Unit,
+    ): Try<Unit, ReadError> =
+        mutex.withLock { resource.stream(range, consume) }
+
     override fun close() {
         resource.close()
     }

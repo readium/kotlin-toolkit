@@ -121,6 +121,25 @@ class BufferingResourceTest {
         }
     }
 
+    // `stream()` bypasses the buffer, so it must agree with `read()` at every buffer size.
+    @Test
+    fun `stream agrees with read across buffer sizes`() = runTest {
+        for (bufferSize in listOf(247, 1024, 8489)) {
+            val sut = sut(bufferSize)
+            for (range in listOf<LongRange?>(null, 0 until 247L, 512 until 1024L, 200 until 4096L)) {
+                testStream(sut, range)
+            }
+        }
+    }
+
+    @Test
+    fun `stream fully by chunks smaller than buffer`() = runTest {
+        val sut = sut(1024)
+        for (start in 0..652L) {
+            testStream(sut, (start * 247) until ((start + 1) * 247))
+        }
+    }
+
     private val fixtures = Fixtures("resource")
     private val fileUrl = assertNotNull(
         AbsoluteUrl.fromFilePath(fixtures.path("epub.epub").toString())
@@ -130,6 +149,14 @@ class BufferingResourceTest {
 
     private fun sut(bufferSize: Int = 1024): BufferingResource =
         BufferingResource(resource, bufferSize = bufferSize)
+
+    private suspend fun testStream(sut: BufferingResource, range: LongRange? = null) {
+        val streamed = sut.streamed(range)
+        val expected = sut.read(range).checkSuccess()
+        if (!streamed.contentEquals(expected)) {
+            fail("stream() and read() disagree for range $range")
+        }
+    }
 
     private suspend fun testRead(sut: BufferingResource, range: LongRange? = null) {
         val res = sut.read(range)
@@ -146,4 +173,18 @@ class BufferingResourceTest {
             }
         }
     }
+}
+
+private suspend fun BufferingResource.streamed(range: LongRange?): ByteArray {
+    val chunks = mutableListOf<ByteArray>()
+    stream(range) { chunks.add(it) }
+    var size = 0
+    for (chunk in chunks) size += chunk.size
+    val result = ByteArray(size)
+    var offset = 0
+    for (chunk in chunks) {
+        chunk.copyInto(result, offset)
+        offset += chunk.size
+    }
+    return result
 }

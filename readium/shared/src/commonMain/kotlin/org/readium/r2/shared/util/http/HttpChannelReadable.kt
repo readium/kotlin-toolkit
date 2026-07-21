@@ -4,6 +4,8 @@
  * available in the top-level LICENSE file of the project.
  */
 
+@file:OptIn(InternalReadiumApi::class)
+
 package org.readium.r2.shared.util.http
 
 import io.ktor.utils.io.ByteReadChannel
@@ -17,11 +19,13 @@ import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import okio.Buffer
+import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.util.DebugError
 import org.readium.r2.shared.util.ThrowableError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.data.Readable
+import org.readium.r2.shared.util.data.STREAM_CHUNK_SIZE
 
 /**
  * A [Readable] streaming an HTTP response body from a Ktor [ByteReadChannel].
@@ -51,7 +55,10 @@ internal class HttpChannelReadable(
                 )
             )
 
-    override suspend fun read(range: LongRange?): Try<ByteArray, ReadError> = mutex.withLock {
+    override suspend fun stream(
+        range: LongRange?,
+        consume: (ByteArray) -> Unit,
+    ): Try<Unit, ReadError> = mutex.withLock {
         if (closed) {
             return Try.failure(
                 ReadError.Access(
@@ -62,14 +69,13 @@ internal class HttpChannelReadable(
 
         try {
             if (range == null) {
-                val bytes = channel.readUpTo(Long.MAX_VALUE)
-                position += bytes.size
-                return Try.success(bytes)
+                position += channel.streamUpTo(Long.MAX_VALUE, consume)
+                return Try.success(Unit)
             }
 
             val start = range.first.coerceAtLeast(0)
             if (range.last < start) {
-                return Try.success(ByteArray(0))
+                return Try.success(Unit)
             }
             // `range.last - start + 1` could overflow for an unbounded range like
             // `0..Long.MAX_VALUE`, so the distance is clamped instead.
@@ -90,13 +96,12 @@ internal class HttpChannelReadable(
                 position += channel.discard(start - position)
                 if (position < start) {
                     // End of the body was reached while skipping.
-                    return Try.success(ByteArray(0))
+                    return Try.success(Unit)
                 }
             }
 
-            val bytes = channel.readUpTo(count)
-            position += bytes.size
-            Try.success(bytes)
+            position += channel.streamUpTo(count, consume)
+            Try.success(Unit)
         } catch (e: CancellationException) {
             // Rethrows only if the caller itself was cancelled; a cancellation of the
             // underlying channel (e.g. because the client was closed) is reported as an error.
@@ -122,12 +127,17 @@ internal class HttpChannelReadable(
 }
 
 /**
- * Reads up to [count] bytes from the channel, stopping at the end of the body.
+ * Streams up to [count] bytes from the channel, stopping at the end of the body.
+ *
+ * Returns the number of bytes emitted.
  */
-internal suspend fun ByteReadChannel.readUpTo(count: Long): ByteArray {
-    val buffer = Buffer()
-    val chunk = ByteArray(8192)
+internal suspend fun ByteReadChannel.streamUpTo(
+    count: Long,
+    consume: (ByteArray) -> Unit,
+): Long {
+    val chunk = ByteArray(STREAM_CHUNK_SIZE)
     var remaining = count
+    var emitted = 0L
 
     while (remaining > 0) {
         val toRead = minOf(remaining, chunk.size.toLong()).toInt()
@@ -136,10 +146,11 @@ internal suspend fun ByteReadChannel.readUpTo(count: Long): ByteArray {
             break
         }
         if (read > 0) {
-            buffer.write(chunk, 0, read)
+            consume(chunk.copyOf(read))
             remaining -= read
+            emitted += read
         }
     }
 
-    return buffer.readByteArray()
+    return emitted
 }

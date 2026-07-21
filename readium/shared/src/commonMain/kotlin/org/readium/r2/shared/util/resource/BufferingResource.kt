@@ -42,6 +42,13 @@ public class BufferingResource(
 
     override suspend fun read(range: LongRange?): Try<ByteArray, ReadError> =
         buffer.read(range)
+
+    /** Streaming bypasses the buffer -- see [ReadableBuffer.stream]. */
+    override suspend fun stream(
+        range: LongRange?,
+        consume: (ByteArray) -> Unit,
+    ): Try<Unit, ReadError> =
+        buffer.stream(range, consume)
 }
 
 /**

@@ -29,6 +29,12 @@ public class FallbackResource(
     override suspend fun read(range: LongRange?): Try<ByteArray, ReadError> =
         withResource { read(range) }
 
+    override suspend fun stream(
+        range: LongRange?,
+        consume: (ByteArray) -> Unit,
+    ): Try<Unit, ReadError> =
+        withResource { stream(range, consume) }
+
     override fun close() {
         if (::_resource.isInitialized) {
             _resource.close()

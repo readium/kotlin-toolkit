@@ -29,6 +29,7 @@ import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.DebugError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.data.ReadError
+import org.readium.r2.shared.util.data.STREAM_CHUNK_SIZE
 import org.readium.r2.shared.util.getOrThrow
 import org.readium.r2.shared.util.io.IoDispatcher
 import org.readium.r2.shared.util.resource.Resource
@@ -92,6 +93,53 @@ public class FileResource(
                 readSync(range)
             }
         }
+
+    override suspend fun stream(
+        range: LongRange?,
+        consume: (ByteArray) -> Unit,
+    ): Try<Unit, ReadError> =
+        withContext(IoDispatcher) {
+            Try.catching {
+                streamSync(range, consume)
+            }
+        }
+
+    private fun streamSync(range: LongRange?, consume: (ByteArray) -> Unit) {
+        val handle = handle.getOrThrow()
+
+        @Suppress("NAME_SHADOWING")
+        val range = (range ?: 0 until Long.MAX_VALUE)
+            .coerceFirstNonNegative()
+
+        var offset = range.first
+        while (offset <= range.last) {
+            val wanted = minOf(
+                STREAM_CHUNK_SIZE.toLong(),
+                range.last - offset + 1
+            ).toInt()
+
+            val buffer = ByteArray(wanted)
+            var read = 0
+            while (read < wanted) {
+                val count = handle.read(
+                    fileOffset = offset + read,
+                    array = buffer,
+                    arrayOffset = read,
+                    byteCount = wanted - read
+                )
+                if (count == -1) {
+                    break
+                }
+                read += count
+            }
+
+            if (read == 0) {
+                return
+            }
+            consume(if (read == wanted) buffer else buffer.copyOf(read))
+            offset += read
+        }
+    }
 
     private fun readSync(range: LongRange?): ByteArray {
         if (range == null) {

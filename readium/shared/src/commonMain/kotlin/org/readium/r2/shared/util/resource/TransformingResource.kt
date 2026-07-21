@@ -84,6 +84,20 @@ public abstract class TransformingResource(
             it.sliceArray(range.map(Long::toInt))
         }
 
+    /**
+     * The documented one-chunk exception: a transformation runs on the full content, so there is
+     * nothing to stream incrementally.
+     *
+     * This override is load-bearing. Without it, `Resource by resource` would forward `stream()` to
+     * the wrapped resource and silently serve **untransformed** bytes -- undecrypted LCP content,
+     * obfuscated fonts, HTML without the injected Readium CSS.
+     */
+    override suspend fun stream(
+        range: LongRange?,
+        consume: (ByteArray) -> Unit,
+    ): Try<Unit, ReadError> =
+        read(range).map { consume(it) }
+
     override suspend fun length(): Try<Long, ReadError> =
         bytes().map { it.size.toLong() }
 }

@@ -161,6 +161,21 @@ internal class CbcLcpResource(
         return Try.success(decryptedBytes.last().toInt())
     }
 
+    /**
+     * Emits the decrypted bytes as a single chunk.
+     *
+     * This override is load-bearing. Without it, `Resource by resource` would forward `stream()` to
+     * the wrapped resource and serve **raw ciphertext as plaintext**.
+     *
+     * CBC is block-based, so a genuinely incremental implementation is possible; it is deliberately
+     * left for later, because correctness here matters more than the streaming win.
+     */
+    override suspend fun stream(
+        range: LongRange?,
+        consume: (ByteArray) -> Unit,
+    ): Try<Unit, ReadError> =
+        read(range).map { consume(it) }
+
     override suspend fun read(range: LongRange?): Try<ByteArray, ReadError> {
         if (range == null) {
             return license.decryptFully(resource.read(), isDeflated = false)
@@ -318,6 +333,18 @@ private class CachingRangeTailResource(
     )
 
     private val cache: Cache = Cache(null, ByteArray(cacheLength))
+
+    /**
+     * Streaming bypasses the tail cache, which exists to make contiguous ranged reads cheap.
+     *
+     * Forwarding explicitly rather than through `by resource`, so that this stays a deliberate
+     * decision if the interface grows.
+     */
+    override suspend fun stream(
+        range: LongRange?,
+        consume: (ByteArray) -> Unit,
+    ): Try<Unit, ReadError> =
+        resource.stream(range, consume)
 
     override suspend fun read(range: LongRange?): Try<ByteArray, ReadError> {
         if (range == null) {
