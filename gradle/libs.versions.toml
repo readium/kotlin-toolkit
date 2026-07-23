@@ -1,7 +1,7 @@
 [versions]
 
 # Keep compatibility with https://kotlinlang.org/docs/multiplatform/multiplatform-compatibility-guide.html#version-compatibility
-kotlin = "2.4.0"
+kotlin = "2.4.10"
 agp = "9.1.1"
 
 desugar_jdk_libs = "2.1.5"
