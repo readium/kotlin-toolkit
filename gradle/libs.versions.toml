@@ -2,7 +2,7 @@
 
 # Keep compatibility with https://kotlinlang.org/docs/multiplatform/multiplatform-compatibility-guide.html#version-compatibility
 kotlin = "2.4.0"
-agp = "9.2.1"
+agp = "9.1.1"
 
 desugar_jdk_libs = "2.1.5"
 gradle-maven-publish-plugin = "0.32.0"
