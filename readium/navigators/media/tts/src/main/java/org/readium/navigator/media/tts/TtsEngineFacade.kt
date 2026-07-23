@@ -7,6 +7,7 @@
 package org.readium.navigator.media.tts
 
 import java.util.*
+import kotlin.uuid.Uuid
 import kotlinx.coroutines.CancellableContinuation
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -37,7 +38,7 @@ internal class TtsEngineFacade<
         suspendCancellableCoroutine { continuation ->
             continuation.invokeOnCancellation { engine.stop() }
             currentTask?.continuation?.cancel()
-            val id = TtsEngine.RequestId(UUID.randomUUID().toString())
+            val id = TtsEngine.RequestId(Uuid.random().toString())
             currentTask = UtteranceTask(id, continuation, onRange)
             engine.speak(id, text, language)
         }

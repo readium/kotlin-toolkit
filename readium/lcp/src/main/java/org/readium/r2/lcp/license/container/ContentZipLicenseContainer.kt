@@ -12,8 +12,8 @@ import android.net.Uri
 import java.io.ByteArrayInputStream
 import java.io.File
 import java.io.FileOutputStream
-import java.util.UUID
 import java.util.zip.ZipFile
+import kotlin.uuid.Uuid
 import org.readium.r2.lcp.LcpError
 import org.readium.r2.lcp.LcpException
 import org.readium.r2.lcp.license.model.LicenseDocument
@@ -39,7 +39,7 @@ internal class ContentZipLicenseContainer(
 
     override fun write(license: LicenseDocument) {
         try {
-            val tmpZip = File(cache, UUID.randomUUID().toString())
+            val tmpZip = File(cache, Uuid.random().toString())
             contentResolver.openInputStream(zipUri)
                 ?.use { it.copyTo(FileOutputStream(tmpZip)) }
                 ?: throw LcpException(LcpError.Container.WriteFailed(pathInZip))

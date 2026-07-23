@@ -7,7 +7,7 @@
 package org.readium.adapter.pspdfkit.document
 
 import com.pspdfkit.document.providers.DataProvider
-import java.util.UUID
+import kotlin.uuid.Uuid
 import kotlinx.coroutines.runBlocking
 import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.getOrElse
@@ -47,7 +47,7 @@ internal class ResourceDataProvider(
      * shorter than 50 chars. This method must be implemented for caching to work properly.
      */
     // FIXME: Check whether we need to use a persistent ID.
-    override fun getUid(): String = UUID.randomUUID().toString().take(50)
+    override fun getUid(): String = Uuid.random().toString().take(50)
 
     override fun read(size: Long, offset: Long): ByteArray = runBlocking {
         val range = offset until (offset + size)
