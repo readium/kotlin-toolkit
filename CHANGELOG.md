@@ -10,7 +10,7 @@ All notable changes to this project will be documented in this file. Take a look
 
 #### Navigator
 
-* Added a `scroll` preference to the PDF navigator (PDFium adapter). When set to `false`, page flings snap to page boundaries for a paginated feel. Defaults to `true` (current continuous-scroll behavior).
+* Added `scroll` and `scrollAxis` preferences to the PDF navigator (PDFium adapter). The navigator now defaults to a horizontal paginated layout (`scroll = false`), snapping to page boundaries. Set `scroll = true` for a continuous-scroll layout, where `scrollAxis` selects the scrolling direction (paginated is always horizontal). Matching `scroll` and `scrollAxis` defaults were added to `PdfiumDefaults` so reading apps can override these.
 
 ### Fixed
 

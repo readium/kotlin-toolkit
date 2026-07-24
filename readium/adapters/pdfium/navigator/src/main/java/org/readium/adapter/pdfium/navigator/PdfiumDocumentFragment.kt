@@ -122,7 +122,7 @@ public class PdfiumDocumentFragment internal constructor(
                         pages(*((pageCount - 1) downTo 0).toList().toIntArray())
                     }
                 }
-                .swipeHorizontal(settings.scrollAxis == Axis.HORIZONTAL)
+                .swipeHorizontal(!settings.scroll || settings.scrollAxis == Axis.HORIZONTAL)
                 .spacing(settings.pageSpacing.roundToInt())
                 .pageSnap(!settings.scroll)
                 .pageFling(!settings.scroll)

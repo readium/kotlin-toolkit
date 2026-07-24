@@ -104,7 +104,7 @@ public class PdfiumPreferencesEditor internal constructor(
         EnumPreferenceDelegate(
             getValue = { preferences.scrollAxis },
             getEffectiveValue = { state.settings.scrollAxis },
-            getIsEffective = { true },
+            getIsEffective = { state.settings.scroll },
             updateValue = { value -> updateValues { it.copy(scrollAxis = value) } },
             supportedValues = listOf(Axis.VERTICAL, Axis.HORIZONTAL)
         )

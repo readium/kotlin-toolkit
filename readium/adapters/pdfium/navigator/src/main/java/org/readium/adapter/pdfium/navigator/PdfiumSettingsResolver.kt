@@ -29,6 +29,7 @@ internal class PdfiumSettingsResolver(
 
         val scrollAxis: Axis =
             preferences.scrollAxis
+                ?: defaults.scrollAxis
                 ?: Axis.VERTICAL
 
         val fit: Fit =
@@ -45,7 +46,7 @@ internal class PdfiumSettingsResolver(
         val scroll: Boolean =
             preferences.scroll
                 ?: defaults.scroll
-                ?: true
+                ?: false
 
         return PdfiumSettings(
             fit = fit,
