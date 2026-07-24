@@ -42,7 +42,6 @@ import org.readium.demo.navigator.util.DropdownMenuButton
 import org.readium.demo.navigator.util.ToggleButtonGroup
 import org.readium.r2.navigator.preferences.Color as ReadiumColor
 import org.readium.r2.navigator.preferences.EnumPreference
-import org.readium.r2.navigator.preferences.OptionalRangePreference
 import org.readium.r2.navigator.preferences.Preference
 import org.readium.r2.navigator.preferences.RangePreference
 import org.readium.r2.navigator.preferences.clear
@@ -135,13 +134,12 @@ fun <T : Comparable<T>> StepperItem(
 fun <T : Comparable<T>> StepperItem(
     title: String,
     preference: OptionalRangePreference<T>,
-    defaultDisplayValue: T,
 ) {
     StepperItem(
         title = title,
         isActive = preference.isEffective,
         value = preference.value ?: preference.effectiveValue,
-        formatValue = { preference.formatValue(it ?: defaultDisplayValue) },
+        formatValue = { preference.formatValue(it ?: preference.defaultValue) },
         onDecrement = { preference.decrement() },
         onIncrement = { preference.increment() },
         onClear = { preference.clear() }
@@ -207,6 +205,25 @@ fun SwitchItem(
     SwitchItem(
         title = title,
         value = preference.value ?: preference.effectiveValue,
+        isActive = preference.isEffective,
+        onCheckedChange = { preference.set(it) },
+        onToggle = { preference.toggle() },
+        onClear = { preference.clear() }
+            .takeIf { preference.value != null }
+    )
+}
+
+/**
+ * Component for an optional boolean [Preference].
+ */
+@Composable
+fun SwitchItem(
+    title: String,
+    preference: OptionalBooleanPreference,
+) {
+    SwitchItem(
+        title = title,
+        value = preference.value ?: preference.effectiveValue ?: preference.defaultValue,
         isActive = preference.isEffective,
         onCheckedChange = { preference.set(it) },
         onToggle = { preference.toggle() },
@@ -431,7 +448,6 @@ private fun Item(
                     Icon(
                         painter = painterResource(id = R.drawable.backspace),
                         contentDescription = "Clear",
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }

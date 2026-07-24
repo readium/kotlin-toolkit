@@ -1,18 +1,28 @@
 package org.readium.navigator.web.fixedlayout
 
+import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Page
+import org.readium.r2.shared.publication.ReadingProgression
 import org.readium.r2.shared.util.AbsoluteUrl
+import org.readium.r2.shared.util.Language
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.data.Container
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.resource.Resource
 
+@OptIn(ExperimentalReadiumApi::class)
 internal class FixedWebPublication(
     val baseUrl: AbsoluteUrl?,
+    val metadata: Metadata,
     val readingOrder: ReadingOrder,
     @Suppress("unused") val otherResources: List<Item>,
     val container: Container<Resource>,
 ) {
+    data class Metadata(
+        val readingProgression: ReadingProgression?,
+        val language: Language?,
+    )
+
     sealed interface Item {
         val href: Url
         val mediaType: MediaType?

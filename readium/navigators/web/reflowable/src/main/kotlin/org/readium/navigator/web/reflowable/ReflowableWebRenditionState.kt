@@ -36,11 +36,11 @@ import org.readium.navigator.common.HtmlId
 import org.readium.navigator.common.NavigationController
 import org.readium.navigator.common.Overflow
 import org.readium.navigator.common.OverflowController
+import org.readium.navigator.common.PreferencesController
 import org.readium.navigator.common.Progression
 import org.readium.navigator.common.RenditionState
 import org.readium.navigator.common.Selection
 import org.readium.navigator.common.SelectionController
-import org.readium.navigator.common.SettingsController
 import org.readium.navigator.common.SimpleOverflow
 import org.readium.navigator.common.TextQuote
 import org.readium.navigator.web.common.FontFamilyDeclaration
@@ -63,7 +63,10 @@ import org.readium.navigator.web.reflowable.css.withSettings
 import org.readium.navigator.web.reflowable.injection.injectHtmlReflowable
 import org.readium.navigator.web.reflowable.layout.LayoutConstants
 import org.readium.navigator.web.reflowable.layout.LayoutResolver
+import org.readium.navigator.web.reflowable.preferences.ReflowableWebDefaults
+import org.readium.navigator.web.reflowable.preferences.ReflowableWebPreferences
 import org.readium.navigator.web.reflowable.preferences.ReflowableWebSettings
+import org.readium.navigator.web.reflowable.preferences.ReflowableWebSettingsResolver
 import org.readium.navigator.web.reflowable.resource.ReflowableResourceLocation
 import org.readium.navigator.web.reflowable.resource.ReflowableResourceState
 import org.readium.navigator.web.reflowable.resource.ReflowableWebViewport
@@ -88,7 +91,7 @@ import org.readium.r2.shared.util.resource.Resource
 public class ReflowableWebRenditionState internal constructor(
     application: Application,
     internal val publication: ReflowableWebPublication,
-    initialSettings: ReflowableWebSettings,
+    initialPreferences: ReflowableWebPreferences,
     initialLocation: ReflowableWebGoLocation,
     configuration: ReflowableWebConfiguration,
     disableSelection: Boolean,
@@ -142,8 +145,10 @@ public class ReflowableWebRenditionState internal constructor(
 
     internal val layoutDelegate: ReflowableLayoutDelegate =
         ReflowableLayoutDelegate(
-            fontFamilyDeclarations,
-            initialSettings
+            fontFamilyDeclarations = fontFamilyDeclarations,
+            publication = publication,
+            initialPreferences = initialPreferences,
+            defaults = configuration.defaults
         )
 
     internal val scrollState: RenditionScrollState =
@@ -275,12 +280,12 @@ public class ReflowableWebRenditionState internal constructor(
 @Stable
 public class ReflowableWebRenditionController internal constructor(
     internal val navigationDelegate: ReflowableNavigationDelegate,
-    layoutDelegate: ReflowableLayoutDelegate,
+    private val layoutDelegate: ReflowableLayoutDelegate,
     decorationDelegate: ReflowableDecorationDelegate,
     selectionDelegate: ReflowableSelectionDelegate,
 ) : NavigationController<ReflowableWebLocation, ReflowableWebGoLocation> by navigationDelegate,
     OverflowController by navigationDelegate,
-    SettingsController<ReflowableWebSettings> by layoutDelegate,
+    PreferencesController<ReflowableWebPreferences, ReflowableWebSettings> by layoutDelegate,
     DecorationController<ReflowableWebDecorationLocation> by decorationDelegate,
     SelectionController<ReflowableWebSelectionLocation> by selectionDelegate {
 
@@ -291,8 +296,10 @@ public class ReflowableWebRenditionController internal constructor(
 @OptIn(ExperimentalReadiumApi::class, InternalReadiumApi::class)
 internal class ReflowableLayoutDelegate(
     fontFamilyDeclarations: List<FontFamilyDeclaration>,
-    initialSettings: ReflowableWebSettings,
-) : SettingsController<ReflowableWebSettings> {
+    publication: ReflowableWebPublication,
+    initialPreferences: ReflowableWebPreferences,
+    defaults: ReflowableWebDefaults,
+) : PreferencesController<ReflowableWebPreferences, ReflowableWebSettings> {
 
     private val layoutResolver =
         LayoutResolver(
@@ -302,13 +309,23 @@ internal class ReflowableLayoutDelegate(
             baseMaxLineLength = LayoutConstants.baseMaxLineLength
         )
 
+    private val settingsResolver =
+        ReflowableWebSettingsResolver(
+            metadata = publication.metadata,
+            defaults = defaults
+        )
+
     internal var viewportSize: DpSize? by mutableStateOf(null)
 
     internal var safeDrawing: AbsolutePaddingValues? by mutableStateOf(null)
 
     internal var fontScale: Float? by mutableStateOf(null)
 
-    override var settings: ReflowableWebSettings by mutableStateOf(initialSettings)
+    override var preferences: ReflowableWebPreferences by mutableStateOf(initialPreferences)
+
+    override val settings: ReflowableWebSettings by derivedStateOf {
+        settingsResolver.settings(preferences)
+    }
 
     internal val overflow: State<Overflow> = derivedStateOf {
         with(settings) {
