@@ -22,17 +22,13 @@ All notable changes to this project will be documented in this file. Take a look
 
 #### Navigator
 
-* Fixed the Pdfium navigator reporting page positions off by one: `currentLocator` was
-  one page ahead of the visible page, the first page was never reported, and the last
-  page never updated `currentLocator` ([#812](https://github.com/readium/kotlin-toolkit/pull/812)).
-    * **You must migrate persisted `Locator` objects created by the Pdfium navigator**
-      (bookmarks, reading progression) — stored positions were one page too high. Use the
-      new `Publication.migrateLegacyPdfiumLocator()` helper in `readium-adapter-pdfium`,
-      and take a look at [the migration guide](docs/migration-guide.md).
-      
+* Fixed the PDFium adapter reporting page positions off by one: `currentLocator` was one page ahead of the visible page, the first page was never reported, and the last page never updated `currentLocator` (contributed by [@huttarl](https://github.com/readium/kotlin-toolkit/pull/812)).
+    * :warning: You must migrate the `Locator` objects created by the PDFium adapter and persisted in your database (e.g. bookmarks, reading progression), as their positions were one page too high. Use the new `Publication.migrateLegacyPdfiumLocator()` helper and take a look at [the migration guide](docs/migration-guide.md).
+
 #### Shared
 
 * EPUB HREFs that are not percent-encoded but carry a fragment or query (e.g. `chapter one.xhtml#section`, with a space in the filename) now keep their `#fragment`/`?query` instead of encoding the separators into the path. This fixes table of contents and Media Overlays links failing to resolve and navigate in poorly-authored EPUBs.
+
 
 ## [3.3.0] - 2026-06-02
 

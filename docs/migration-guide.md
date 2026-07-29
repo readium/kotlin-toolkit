@@ -4,39 +4,32 @@ All migration steps necessary in reading apps to upgrade to major versions of th
 
 ## Unreleased
 
-### Pdfium navigator: page positions were off by one (bookmarks, reading progression)
+### Breaking changes with the PDFium adapter
 
-:warning: This requires a data migration in your application if you persisted `Locator`
-objects created by the Pdfium navigator (`readium-adapter-pdfium`).
+#### Page positions were off by one (bookmarks, reading progression)
 
-In previous versions, the Pdfium navigator reported page positions off by one:
-`currentLocator` carried a `locations.position` one page too high (visible page 1 was
-reported as position 2, and so on), and `locations.totalProgression` was shifted
-accordingly. The first page was never reported, and the last page never updated
-`currentLocator`.
+:warning: This requires a data migration in your application if you persisted `Locator` objects created by the PDFium adapter (`readium-adapter-pdfium`).
 
-The error canceled itself out when a stored locator was restored with the same Pdfium
-navigator — saving added one and restoring subtracted one — which is why it could go
-unnoticed. Now that the navigator is fixed, locators persisted with earlier versions
-will restore one page too far, whether with the Pdfium navigator or any other PDF
-engine.
+In previous versions, the PDFium navigator reported page positions off by one: `currentLocator` carried a `locations.position` one page too high (visible page 1 was reported as position 2, and so on), with the page fragment and the progressions shifted accordingly. The first page was never reported, and the last page never updated `currentLocator`.
 
-To migrate a stored `Locator` for a PDF publication, use the
-`Publication.migrateLegacyPdfiumLocator()` helper provided by `readium-adapter-pdfium`.
-It re-resolves the corrected page from the publication's position list, which also
-fixes `locations.totalProgression`:
+The error canceled itself out when a stored locator was restored with the same PDFium navigator. Now that the navigator is fixed, locators persisted with earlier versions will restore one page too far, whether with the PDFium navigator or any other PDF engine.
+
+To migrate a stored `Locator` for a PDF publication, use the `Publication.migrateLegacyPdfiumLocator()` helper provided by `readium-adapter-pdfium`. It re-resolves the corrected page from the publication's position list, keeping the title, text and any custom locations you attached to the locator:
 
 ```kotlin
 @OptIn(DelicateReadiumApi::class)
-suspend fun migrateStoredLocator(publication: Publication, locator: Locator): Locator =
-    publication.migrateLegacyPdfiumLocator(locator)
+suspend fun migrateBookmarks(publication: Publication) {
+    for (bookmark in bookmarkRepository.bookmarks(publication.id)) {
+        bookmarkRepository.update(
+            bookmark.copy(locator = publication.migrateLegacyPdfiumLocator(bookmark.locator))
+        )
+    }
+}
 ```
 
-Apply the migration once per stored locator, and only to locators created by the Pdfium
-navigator. Locators your app computed itself from `publication.positions()` are
-unaffected.
+Apply the migration once per stored locator, and only to locators created by the PDFium navigator. Locators your app computed itself from `publication.positions()` are unaffected.
 
-### PDF navigator (PDFium adapter)
+#### Layout is now paginated by default
 
 The PDFium adapter now defaults to a horizontal paginated layout, instead of a vertical continuous scroll. If your app relies on the previous behavior, enable the new `scroll` preference by default when creating the `PdfiumEngineProvider`:
 
