@@ -14,8 +14,9 @@ All notable changes to this project will be documented in this file. Take a look
   one page ahead of the visible page, the first page was never reported, and the last
   page never updated `currentLocator` ([#812](https://github.com/readium/kotlin-toolkit/pull/812)).
     * **You must migrate persisted `Locator` objects created by the Pdfium navigator**
-      (bookmarks, reading progression) — stored positions were one page too high. Take a
-      look at [the migration guide](docs/migration-guide.md).
+      (bookmarks, reading progression) — stored positions were one page too high. Use the
+      new `Publication.migrateLegacyPdfiumLocator()` helper in `readium-adapter-pdfium`,
+      and take a look at [the migration guide](docs/migration-guide.md).
       
 #### Shared
 
