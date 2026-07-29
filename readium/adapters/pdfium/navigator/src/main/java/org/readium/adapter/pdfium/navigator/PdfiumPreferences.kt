@@ -18,6 +18,8 @@ import org.readium.r2.navigator.preferences.ReadingProgression
  *  @param fit Indicates how pages should be laid out within the viewport.
  *  @param pageSpacing Space between pages in dp.
  *  @param readingProgression Direction of the horizontal progression across pages.
+ *  @param scroll Indicates whether the pages should scroll continuously. When `false`, page flings
+ *  snap to page boundaries (paginated feel).
  *  @param scrollAxis Indicates the axis along which pages should be laid out in scroll mode.
  */
 @Serializable
@@ -25,6 +27,7 @@ public data class PdfiumPreferences(
     val fit: Fit? = null,
     val pageSpacing: Double? = null,
     val readingProgression: ReadingProgression? = null,
+    val scroll: Boolean? = null,
     val scrollAxis: Axis? = null,
 ) : Configurable.Preferences<PdfiumPreferences> {
 
@@ -38,6 +41,7 @@ public data class PdfiumPreferences(
             fit = other.fit ?: fit,
             pageSpacing = other.pageSpacing ?: pageSpacing,
             readingProgression = other.readingProgression ?: readingProgression,
+            scroll = other.scroll ?: scroll,
             scrollAxis = other.scrollAxis ?: scrollAxis
         )
 }

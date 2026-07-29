@@ -2,7 +2,19 @@
 
 All migration steps necessary in reading apps to upgrade to major versions of the Kotlin Readium toolkit will be documented in this file.
 
-<!-- ## Unreleased -->
+## Unreleased
+
+### PDF navigator (PDFium adapter)
+
+The PDFium adapter now defaults to a horizontal paginated layout, instead of a vertical continuous scroll. If your app relies on the previous behavior, enable the new `scroll` preference by default when creating the `PdfiumEngineProvider`:
+
+```kotlin
+PdfiumEngineProvider(
+    defaults = PdfiumDefaults(scroll = true)
+)
+```
+
+Note that `scrollAxis` is now only effective when `scroll` is enabled, as paginated layouts are always horizontal.
 
 ## 3.0.0
 
