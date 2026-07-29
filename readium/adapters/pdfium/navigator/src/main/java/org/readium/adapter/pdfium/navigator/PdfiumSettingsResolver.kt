@@ -27,13 +27,19 @@ internal class PdfiumSettingsResolver(
                 } ?: defaults.readingProgression
                 ?: ReadingProgression.LTR
 
+        val scroll: Boolean =
+            preferences.scroll
+                ?: defaults.scroll
+                ?: false
+
         val scrollAxis: Axis =
             preferences.scrollAxis
+                ?: defaults.scrollAxis
                 ?: Axis.VERTICAL
 
         val fit: Fit =
-            preferences.fit ?: when (scrollAxis) {
-                Axis.HORIZONTAL -> Fit.CONTAIN
+            preferences.fit ?: when {
+                PdfiumSettings.isHorizontalLayout(scroll, scrollAxis) -> Fit.CONTAIN
                 else -> Fit.WIDTH
             }
 
@@ -46,6 +52,7 @@ internal class PdfiumSettingsResolver(
             fit = fit,
             pageSpacing = pageSpacing,
             readingProgression = readingProgression,
+            scroll = scroll,
             scrollAxis = scrollAxis
         )
     }
