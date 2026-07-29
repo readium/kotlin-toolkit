@@ -10,7 +10,13 @@ All notable changes to this project will be documented in this file. Take a look
 
 #### Navigator
 
-* Added `scroll` and `scrollAxis` preferences to the PDF navigator (PDFium adapter). The navigator now defaults to a horizontal paginated layout (`scroll = false`), snapping to page boundaries. Set `scroll = true` for a continuous-scroll layout, where `scrollAxis` selects the scrolling direction (paginated is always horizontal). Matching `scroll` and `scrollAxis` defaults were added to `PdfiumDefaults` so reading apps can override these.
+* Added a `scroll` preference to the PDFium adapter, to switch between a continuous scroll layout (`true`) and a paginated one (`false`) snapping to page boundaries. The existing `scrollAxis` preference is only effective when `scroll` is enabled, as paginated layouts are always horizontal (contributed by [@ddfreiling](https://github.com/readium/kotlin-toolkit/pull/795)).
+
+### Changed
+
+#### Navigator
+
+* :warning: The PDFium adapter now defaults to a horizontal paginated layout, instead of a vertical continuous scroll. Set `PdfiumDefaults(scroll = true)` to restore the previous behavior. See [the migration guide](docs/migration-guide.md).
 
 ### Fixed
 

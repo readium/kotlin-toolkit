@@ -454,24 +454,14 @@ Some preferences are not available for all languages and layout.
 | `hyphens`         | :white_check_mark: |                    |     |
 | `ligatures`       |                    | :white_check_mark: |     |
 
-### PDF (PSPDFKit)
+### PDF
 
 #### Scroll vs paginated
 
 Some preferences are available only in scroll or paginated mode (`scroll = false`).
 
-| Preference        | Scroll             | Paginated          |
-|-------------------|--------------------|--------------------|
-| `offsetFirstPage` |                    | :white_check_mark: |
-| `spread`          |                    | :white_check_mark: |
-| `scrollAxis`      | :white_check_mark: |                    |
-
-### PDF (PDFium)
-
-#### Scroll vs paginated
-
-The PDFium adapter exposes a `scroll` preference to switch between scroll and paginated behavior. Defaults to `true` (continuous scrolling).
-
-| Preference | Scroll             | Paginated          |
-|------------|--------------------|--------------------|
-| `scroll`   | :white_check_mark: (`true`) | :white_check_mark: (`false`) |
+| Preference                   | Scroll             | Paginated          |
+|------------------------------|--------------------|--------------------|
+| `offsetFirstPage` (PSPDFKit) |                    | :white_check_mark: |
+| `spread` (PSPDFKit)          |                    | :white_check_mark: |
+| `scrollAxis`                 | :white_check_mark: |                    |
