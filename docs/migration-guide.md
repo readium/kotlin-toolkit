@@ -36,6 +36,18 @@ Apply the migration once per stored locator, and only to locators created by the
 navigator. Locators your app computed itself from `publication.positions()` are
 unaffected.
 
+### PDF navigator (PDFium adapter)
+
+The PDFium adapter now defaults to a horizontal paginated layout, instead of a vertical continuous scroll. If your app relies on the previous behavior, enable the new `scroll` preference by default when creating the `PdfiumEngineProvider`:
+
+```kotlin
+PdfiumEngineProvider(
+    defaults = PdfiumDefaults(scroll = true)
+)
+```
+
+Note that `scrollAxis` is now only effective when `scroll` is enabled, as paginated layouts are always horizontal.
+
 ## 3.0.0
 
 :warning: If you synchronize `Locator` objects between iOS and Android, you should wait for the 3.0 release of the Swift toolkit to upgrade your HREFs at the same time.
