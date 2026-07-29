@@ -6,6 +6,7 @@
 
 package org.readium.adapter.pdfium.navigator
 
+import org.readium.r2.navigator.preferences.Axis
 import org.readium.r2.navigator.preferences.ReadingProgression
 
 /**
@@ -18,4 +19,6 @@ import org.readium.r2.navigator.preferences.ReadingProgression
 public data class PdfiumDefaults(
     val pageSpacing: Double? = null,
     val readingProgression: ReadingProgression? = null,
+    val scroll: Boolean? = null,
+    val scrollAxis: Axis? = null,
 )

@@ -62,6 +62,7 @@ public class PdfiumDocumentFragment internal constructor(
             fit = Fit.WIDTH,
             pageSpacing = 0.0,
             readingProgression = ReadingProgression.LTR,
+            scroll = true,
             scrollAxis = Axis.VERTICAL
         ),
         listener = null
@@ -121,8 +122,10 @@ public class PdfiumDocumentFragment internal constructor(
                         pages(*((pageCount - 1) downTo 0).toList().toIntArray())
                     }
                 }
-                .swipeHorizontal(settings.scrollAxis == Axis.HORIZONTAL)
+                .swipeHorizontal(settings.isHorizontal)
                 .spacing(settings.pageSpacing.roundToInt())
+                .pageSnap(!settings.scroll)
+                .pageFling(!settings.scroll)
                 // Customization of [PDFView] is done before setting the listeners,
                 // to avoid overriding them in reading apps, which would break the
                 // navigator.
@@ -185,7 +188,7 @@ public class PdfiumDocumentFragment internal constructor(
      * right-to-left reading progressions.
      */
     private val isPagesOrderReversed: Boolean get() =
-        settings.scrollAxis == Axis.HORIZONTAL && settings.readingProgression == ReadingProgression.RTL
+        settings.isHorizontal && settings.readingProgression == ReadingProgression.RTL
 
     private var settings: PdfiumSettings = initialSettings
 

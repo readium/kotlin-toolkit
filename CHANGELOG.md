@@ -6,11 +6,21 @@ All notable changes to this project will be documented in this file. Take a look
 
 ## [Unreleased]
 
+### Added
+
+#### Navigator
+
+* Added a `scroll` preference to the PDFium adapter, to switch between a continuous scroll layout (`true`) and a paginated one (`false`) snapping to page boundaries. The existing `scrollAxis` preference is only effective when `scroll` is enabled, as paginated layouts are always horizontal (contributed by [@ddfreiling](https://github.com/readium/kotlin-toolkit/pull/795)).
+
 ### Changed
 
 #### LCP
 
-- LCP data models now use `kotlinx.serialization` instead of `org.json`. Some constructor properties have changed or been removed as part of this migration. Deprecated shims have been provided where possible to ease migration.
+* LCP data models now use `kotlinx.serialization` instead of `org.json`. Some constructor properties have changed or been removed as part of this migration. Deprecated shims have been provided where possible to ease migration.
+
+#### Navigator
+
+* :warning: The PDFium adapter now defaults to a horizontal paginated layout, instead of a vertical continuous scroll. Set `PdfiumDefaults(scroll = true)` to restore the previous behavior. See [the migration guide](docs/migration-guide.md).
 
 ### Fixed
 

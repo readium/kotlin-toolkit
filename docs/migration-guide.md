@@ -2,7 +2,7 @@
 
 All migration steps necessary in reading apps to upgrade to major versions of the Kotlin Readium toolkit will be documented in this file.
 
- ## Unreleased 
+## Unreleased
 
 ### LCP Models Serialization Changes
 
@@ -11,6 +11,18 @@ The LCP models (e.g., `LicenseDocument`, `StatusDocument`, `User`, `Link`) have 
 - The `json: JSONObject` properties in data classes (like `User`, `Rights`, etc.) are now deprecated.
 - The `User.encrypted` property type has changed from `MutableList<String>` to `List<String>`.
 - The `LicenseDocument` and `StatusDocument` primary constructors now take `jsonString: String` instead of `org.json.JSONObject`. The `json` properties are still available but return a deprecated `JSONObject`.
+
+### PDF navigator (PDFium adapter)
+
+The PDFium adapter now defaults to a horizontal paginated layout, instead of a vertical continuous scroll. If your app relies on the previous behavior, enable the new `scroll` preference by default when creating the `PdfiumEngineProvider`:
+
+```kotlin
+PdfiumEngineProvider(
+    defaults = PdfiumDefaults(scroll = true)
+)
+```
+
+Note that `scrollAxis` is now only effective when `scroll` is enabled, as paginated layouts are always horizontal.
 
 ## 3.0.0
 
