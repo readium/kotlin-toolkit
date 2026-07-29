@@ -122,7 +122,7 @@ public class PdfiumDocumentFragment internal constructor(
                         pages(*((pageCount - 1) downTo 0).toList().toIntArray())
                     }
                 }
-                .swipeHorizontal(!settings.scroll || settings.scrollAxis == Axis.HORIZONTAL)
+                .swipeHorizontal(settings.isHorizontal)
                 .spacing(settings.pageSpacing.roundToInt())
                 .pageSnap(!settings.scroll)
                 .pageFling(!settings.scroll)
@@ -188,7 +188,7 @@ public class PdfiumDocumentFragment internal constructor(
      * right-to-left reading progressions.
      */
     private val isPagesOrderReversed: Boolean get() =
-        settings.scrollAxis == Axis.HORIZONTAL && settings.readingProgression == ReadingProgression.RTL
+        settings.isHorizontal && settings.readingProgression == ReadingProgression.RTL
 
     private var settings: PdfiumSettings = initialSettings
 
