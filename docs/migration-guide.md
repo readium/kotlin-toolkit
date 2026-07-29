@@ -12,7 +12,32 @@ The LCP models (e.g., `LicenseDocument`, `StatusDocument`, `User`, `Link`) have 
 - The `User.encrypted` property type has changed from `MutableList<String>` to `List<String>`.
 - The `LicenseDocument` and `StatusDocument` primary constructors now take `jsonString: String` instead of `org.json.JSONObject`. The `json` properties are still available but return a deprecated `JSONObject`.
 
-### PDF navigator (PDFium adapter)
+### Breaking changes with the PDFium adapter
+
+#### Page positions were off by one (bookmarks, reading progression)
+
+:warning: This requires a data migration in your application if you persisted `Locator` objects created by the PDFium adapter (`readium-adapter-pdfium`).
+
+In previous versions, the PDFium navigator reported page positions off by one: `currentLocator` carried a `locations.position` one page too high (visible page 1 was reported as position 2, and so on), with the page fragment and the progressions shifted accordingly. The first page was never reported, and the last page never updated `currentLocator`.
+
+The error canceled itself out when a stored locator was restored with the same PDFium navigator. Now that the navigator is fixed, locators persisted with earlier versions will restore one page too far, whether with the PDFium navigator or any other PDF engine.
+
+To migrate a stored `Locator` for a PDF publication, use the `Publication.migrateLegacyPdfiumLocator()` helper provided by `readium-adapter-pdfium`. It re-resolves the corrected page from the publication's position list, keeping the title, text and any custom locations you attached to the locator:
+
+```kotlin
+@OptIn(DelicateReadiumApi::class)
+suspend fun migrateBookmarks(publication: Publication) {
+    for (bookmark in bookmarkRepository.bookmarks(publication.id)) {
+        bookmarkRepository.update(
+            bookmark.copy(locator = publication.migrateLegacyPdfiumLocator(bookmark.locator))
+        )
+    }
+}
+```
+
+Apply the migration once per stored locator, and only to locators created by the PDFium navigator. Locators your app computed itself from `publication.positions()` are unaffected.
+
+#### Layout is now paginated by default
 
 The PDFium adapter now defaults to a horizontal paginated layout, instead of a vertical continuous scroll. If your app relies on the previous behavior, enable the new `scroll` preference by default when creating the `PdfiumEngineProvider`:
 
