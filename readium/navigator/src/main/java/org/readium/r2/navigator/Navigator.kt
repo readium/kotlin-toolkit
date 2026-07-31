@@ -66,5 +66,11 @@ public interface Navigator {
          * continuous and discontinuous moves.
          */
         public fun onJumpToLocator(locator: Locator) {}
+
+        /**
+         * Called when the user attempted to copy content but the publication's Content Protection
+         * forbade it (e.g. copy allowance exhausted).
+         */
+        public fun onCopyForbidden() {}
     }
 }
