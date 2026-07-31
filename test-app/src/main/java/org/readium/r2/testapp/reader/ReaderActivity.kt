@@ -17,6 +17,7 @@ import androidx.fragment.app.FragmentResultListener
 import androidx.fragment.app.commit
 import androidx.fragment.app.commitNow
 import androidx.lifecycle.ViewModelProvider
+import com.google.android.material.snackbar.Snackbar
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.util.toUri
 import org.readium.r2.testapp.Application
@@ -148,6 +149,12 @@ open class ReaderActivity : AppCompatActivity() {
                 launchWebBrowser(this, command.url.toUri())
             is ReaderViewModel.ActivityCommand.ToastError ->
                 command.error.show(this)
+            is ReaderViewModel.ActivityCommand.CopyForbidden ->
+                Snackbar.make(
+                    binding.root,
+                    getString(R.string.copy_forbidden),
+                    Snackbar.LENGTH_SHORT
+                ).show()
         }
     }
 

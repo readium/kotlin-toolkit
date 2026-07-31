@@ -8,6 +8,7 @@
 
 package org.readium.demo.navigator.reader
 
+import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
@@ -46,6 +47,7 @@ import org.readium.demo.navigator.decorations.EditHighlightViewModel
 import org.readium.demo.navigator.persistence.LocatorRepository
 import org.readium.demo.navigator.preferences.UserPreferences
 import org.readium.demo.navigator.util.launchWebBrowser
+import org.readium.navigator.common.CopyListener
 import org.readium.navigator.common.DecorationListener
 import org.readium.navigator.common.DecorationLocation
 import org.readium.navigator.common.ExportableLocation
@@ -229,6 +231,16 @@ fun <L : ExportableLocation, G : GoLocation, S : SelectionLocation, P : Preferen
             )
         }
 
+        val onCopyForbidden = {
+            Toast.makeText(
+                context,
+                "Copying is not allowed for this publication.",
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+
+        val copyListener = remember { CopyListener { onCopyForbidden() } }
+
         val selectionActionMode = remember(controllerNow) {
             controllerNow?.let { controller ->
                 readerState.actionModeFactory.createActionModeCallback(
@@ -240,7 +252,8 @@ fun <L : ExportableLocation, G : GoLocation, S : SelectionLocation, P : Preferen
                     },
                     onAnyHighlightAdded = {
                         controller.clearSelection()
-                    }
+                    },
+                    onCopyForbidden = onCopyForbidden
                 )
             }
         }
@@ -281,6 +294,7 @@ fun <L : ExportableLocation, G : GoLocation, S : SelectionLocation, P : Preferen
                     inputListener = inputListener,
                     hyperlinkListener = hyperlinkListener,
                     decorationListener = decorationsListener,
+                    copyListener = copyListener,
                     textSelectionActionModeCallback = selectionActionMode
                 )
             }
@@ -291,6 +305,7 @@ fun <L : ExportableLocation, G : GoLocation, S : SelectionLocation, P : Preferen
                     inputListener = inputListener,
                     hyperlinkListener = hyperlinkListener,
                     decorationListener = decorationsListener,
+                    copyListener = copyListener,
                     textSelectionActionModeCallback = selectionActionMode
                 )
             }

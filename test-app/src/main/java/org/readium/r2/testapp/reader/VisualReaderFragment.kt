@@ -62,12 +62,14 @@ import org.readium.r2.navigator.Decoration
 import org.readium.r2.navigator.OverflowableNavigator
 import org.readium.r2.navigator.SelectableNavigator
 import org.readium.r2.navigator.VisualNavigator
+import org.readium.r2.navigator.epub.EpubNavigatorFragment
 import org.readium.r2.navigator.input.InputListener
 import org.readium.r2.navigator.input.TapEvent
 import org.readium.r2.navigator.util.BaseActionModeCallback
 import org.readium.r2.navigator.util.DirectionalNavigationAdapter
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Locator
+import org.readium.r2.shared.publication.services.CopyError
 import org.readium.r2.shared.util.Language
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.data.model.Highlight
@@ -394,6 +396,7 @@ abstract class VisualReaderFragment : BaseReaderFragment() {
 
         override fun onActionItemClicked(mode: ActionMode, item: MenuItem): Boolean {
             when (item.itemId) {
+                R.id.copy -> copySelection()
                 R.id.highlight -> showHighlightPopupWithStyle(Highlight.Style.HIGHLIGHT)
                 R.id.underline -> showHighlightPopupWithStyle(Highlight.Style.UNDERLINE)
                 R.id.note -> showAnnotationPopup()
@@ -402,6 +405,24 @@ abstract class VisualReaderFragment : BaseReaderFragment() {
 
             mode.finish()
             return true
+        }
+    }
+
+    /**
+     * Copies the current selection through the navigator, which enforces the copy allowance of a
+     * protected publication. A custom selection ActionMode callback must never write the
+     * clipboard directly.
+     */
+    private fun copySelection() {
+        val navigator = navigator as? EpubNavigatorFragment ?: return
+        viewLifecycleOwner.lifecycleScope.launch {
+            navigator.copySelection()
+                .onFailure { error ->
+                    if (error is CopyError.Forbidden) {
+                        // Same feedback as for copies intercepted by the navigator.
+                        model.onCopyForbidden()
+                    }
+                }
         }
     }
 

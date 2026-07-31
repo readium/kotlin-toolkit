@@ -23,6 +23,7 @@ import org.readium.navigator.common.SelectionController
 import org.readium.navigator.common.SelectionLocation
 import org.readium.r2.navigator.util.BaseActionModeCallback
 import org.readium.r2.shared.ExperimentalReadiumApi
+import org.readium.r2.shared.publication.services.CopyError
 
 class SelectionActionModeFactory(
     private val highlightsManager: HighlightsManager<*, *>,
@@ -33,12 +34,14 @@ class SelectionActionModeFactory(
         coroutineScope: CoroutineScope,
         onNoteAdded: (Long) -> Unit,
         onAnyHighlightAdded: () -> Unit,
+        onCopyForbidden: () -> Unit,
     ): ActionMode.Callback = SelectionActionModeCallback(
         coroutineScope = coroutineScope,
         selectionController = selectionController,
         highlightsManager = highlightsManager,
         onNoteAdded = onNoteAdded,
-        onAnyHighlightAdded = onAnyHighlightAdded
+        onAnyHighlightAdded = onAnyHighlightAdded,
+        onCopyForbidden = onCopyForbidden
     )
 }
 
@@ -48,6 +51,7 @@ private class SelectionActionModeCallback<S : SelectionLocation>(
     private val highlightsManager: HighlightsManager<*, *>,
     private val onAnyHighlightAdded: () -> Unit,
     private val onNoteAdded: (Long) -> Unit,
+    private val onCopyForbidden: () -> Unit,
 ) : BaseActionModeCallback() {
 
     private val defaultTint = Color.rgb(249, 239, 125)
@@ -61,6 +65,22 @@ private class SelectionActionModeCallback<S : SelectionLocation>(
     }
 
     override fun onActionItemClicked(mode: ActionMode, item: MenuItem): Boolean {
+        if (item.itemId == R.id.copy) {
+            coroutineScope.launch {
+                // Copying through the navigator enforces the copy allowance of a protected
+                // publication. A custom selection ActionMode callback must never write the
+                // clipboard directly.
+                selectionController.copySelection()
+                    .onFailure { error ->
+                        if (error is CopyError.Forbidden) {
+                            onCopyForbidden()
+                        }
+                    }
+            }
+            mode.finish()
+            return true
+        }
+
         coroutineScope.launch {
             val selection = selectionController.currentSelection() ?: return@launch
             val locator = selection.location.toLocator()

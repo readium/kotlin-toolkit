@@ -278,6 +278,10 @@ class ReaderViewModel(
         )
     }
 
+    override fun onCopyForbidden() {
+        activityChannel.send(ActivityCommand.CopyForbidden)
+    }
+
     // HyperlinkNavigator.Listener
     override fun onExternalLinkActivated(url: AbsoluteUrl) {
         activityChannel.send(ActivityCommand.OpenExternalLink(url))
@@ -325,6 +329,7 @@ class ReaderViewModel(
         object OpenDrmManagementRequested : ActivityCommand()
         class OpenExternalLink(val url: AbsoluteUrl) : ActivityCommand()
         class ToastError(val error: UserError) : ActivityCommand()
+        object CopyForbidden : ActivityCommand()
     }
 
     sealed class FragmentFeedback {

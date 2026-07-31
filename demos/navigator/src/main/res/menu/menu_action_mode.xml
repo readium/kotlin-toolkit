@@ -5,6 +5,12 @@
     tools:ignore="HardcodedText">
 
     <item
+        android:id="@+id/copy"
+        android:title="Copy"
+        app:showAsAction="ifRoom">
+    </item>
+
+    <item
         android:id="@+id/highlight"
         android:title="Highlight"
         android:visible="false"
