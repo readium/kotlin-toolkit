@@ -260,14 +260,6 @@ public data class Locator(
 }
 
 /**
- * A CSS Selector targeting the element in the resource.
- *
- * https://github.com/readium/architecture/blob/master/models/locators/extensions/html.md
- */
-public val Locator.Locations.cssSelector: String?
-    get() = otherLocations["cssSelector"] as? String
-
-/**
  * Represents a sequential list of `Locator` objects.
  *
  * For example, a search result or a list of positions.
