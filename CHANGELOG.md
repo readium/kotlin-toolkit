@@ -6,11 +6,36 @@ All notable changes to this project will be documented in this file. Take a look
 
 ## [Unreleased]
 
+### Added
+
+#### Navigator
+
+* The navigators now enforce the copy allowance of protected publications (e.g. LCP), instead of disabling text selection entirely ([#221](https://github.com/readium/kotlin-toolkit/issues/221)).
+    * Copying from the system selection menu or with Ctrl+C consumes the Content Protection's copy right; forbidden copies leave the clipboard untouched and trigger the new `Navigator.Listener.onCopyForbidden()` callback (or `CopyListener` with the new Compose renditions).
+    * New `EpubNavigatorFragment.copySelection()` and `SelectionController.copySelection()` APIs perform a counted copy programmatically, for apps using a custom selection ActionMode callback.
+    * The PSPDFKit navigator keeps the Copy item in its text selection toolbar and performs a counted copy; Share is still removed for protected publications.
+
+### Changed
+
+#### Navigator
+
+* **Compliance warning:** protected publications now show the full system selection menu by default, including items which can leak text (e.g. Share, Web Search, Translate). Apps targeting the EDRLab certification MUST remove these items with a custom selection ActionMode callback and route their own Copy item through `copySelection()` — never write the clipboard directly. See the [migration guide](docs/migration-guide.md).
+
+### Deprecated
+
+#### Navigator
+
+* `EpubNavigatorFragment.Configuration.disableSelectionWhenProtected` is deprecated and ignored: the navigator now enforces the copy allowance itself.
+
 ### Fixed
 
 #### Shared
 
 * EPUB HREFs that are not percent-encoded but carry a fragment or query (e.g. `chapter one.xhtml#section`, with a space in the filename) now keep their `#fragment`/`?query` instead of encoding the separators into the path. This fixes table of contents and Media Overlays links failing to resolve and navigate in poorly-authored EPUBs.
+
+#### LCP
+
+* Fixed inverted comparisons in `LcpLicense.canCopy(text)` and `canPrint(pageCount)`, which rejected copies and prints within the allowance.
 
 
 ## [3.3.0] - 2026-06-02

@@ -12,7 +12,7 @@ import org.readium.r2.lcp.persistence.LcpDao
 import org.readium.r2.lcp.persistence.License
 import org.readium.r2.lcp.persistence.Passphrase
 
-internal class FakeLcpDao : LcpDao {
+internal open class FakeLcpDao : LcpDao {
     val addedPassphrases = mutableListOf<Passphrase>()
 
     override suspend fun passphrase(licenseId: String): String? = null

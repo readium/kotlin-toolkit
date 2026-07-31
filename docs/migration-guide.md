@@ -2,7 +2,44 @@
 
 All migration steps necessary in reading apps to upgrade to major versions of the Kotlin Readium toolkit will be documented in this file.
 
-<!-- ## Unreleased -->
+## Unreleased
+
+### Copy protection in the navigators
+
+The navigators now enforce the copy allowance of protected publications (e.g. LCP) themselves, instead of disabling text selection entirely. Text selection is enabled on protected publications, and copies made from the system selection menu or with Ctrl+C consume the Content Protection's copy right. When the copy is forbidden (e.g. the allowance is exhausted), the clipboard is left untouched and `Navigator.Listener.onCopyForbidden()` is called (`CopyListener` with the new Compose renditions).
+
+:warning: **Compliance warning:** protected publications now show the full system selection menu by default, including items which can leak text (e.g. Share, Web Search, Translate). If your app targets the EDRLab certification, you MUST remove these items by providing a custom selection ActionMode callback (`EpubNavigatorFragment.Configuration.selectionActionModeCallback`, or `textSelectionActionModeCallback` with the new renditions).
+
+A custom selection ActionMode callback replaces the whole system menu, including its Copy item. If you provide one, route your own Copy item through the navigator's `copySelection()` API — never write the clipboard directly, which would bypass the copy allowance:
+
+```kotlin
+override fun onActionItemClicked(mode: ActionMode, item: MenuItem): Boolean {
+    when (item.itemId) {
+        R.id.copy -> {
+            lifecycleScope.launch {
+                navigator.copySelection()
+                    .onFailure { error ->
+                        if (error is CopyError.Forbidden) {
+                            // Inform the user, e.g. with a snackbar. You can build a detailed
+                            // message with the LCP-specific remaining budget:
+                            // publication.lcpLicense?.charactersToCopyLeft?.value
+                        }
+                    }
+            }
+        }
+        // ...
+        else -> return false
+    }
+    mode.finish()
+    return true
+}
+```
+
+Note that `copySelection()` copies the cleaned selection text (trimmed, with collapsed whitespace), while a native copy event (e.g. Ctrl+C) keeps the raw text with line breaks. Both consume the allowance for the text actually copied.
+
+To be notified of forbidden copies intercepted by the navigator (system menu Copy, Ctrl+C), implement `onCopyForbidden()` in your `Navigator.Listener`. Programmatic `copySelection()` calls never trigger this callback — they report errors through their return value.
+
+`EpubNavigatorFragment.Configuration.disableSelectionWhenProtected` is deprecated and ignored.
 
 ## 3.0.0
 

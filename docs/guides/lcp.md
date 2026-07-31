@@ -268,12 +268,29 @@ lcpLicense.license.rights.end?.let { endDate ->
     print("The loan expires on $endDate")
 }
 
-lcpLicense.charactersToCopyLeft?.let { copyLeft ->
+lcpLicense.charactersToCopyLeft.value?.let { copyLeft ->
     print("You can copy up to $copyLeft characters remaining.")
 }
 ```
 
 :point_up: If you have already opened a `Publication` with the `PublicationOpener`, you can directly obtain the `LcpLicense` using `publication.lcpLicense`.
+
+## Copy protection
+
+An LCP license can grant a *copy allowance*: a budget of characters the user is allowed to copy to the clipboard. The Readium navigators enforce it automatically: copying a selection consumes the allowance through the publication's Content Protection, and forbidden copies leave the clipboard untouched.
+
+To inform the user when a copy is denied, implement `onCopyForbidden()` in your `Navigator.Listener` (or pass a `CopyListener` to the new Compose renditions). You can build a detailed message with the remaining budget:
+
+```kotlin
+override fun onCopyForbidden() {
+    val copyLeft = publication.lcpLicense?.charactersToCopyLeft?.value
+    // e.g. "Copy limit reached. You can still copy up to $copyLeft characters."
+}
+```
+
+Note that a denied copy consumes nothing, so `charactersToCopyLeft` still reflects the budget the user can spend. This accessor is specific to LCP — the generic `ContentProtectionService.UserRights` API has no query for the remaining amount.
+
+:warning: The system selection menu contains items which can leak text without going through the clipboard (e.g. Share, Web Search, Translate). If your app targets the EDRLab certification, you MUST remove them with a custom selection ActionMode callback and route your own Copy item through the navigator's `copySelection()` API. See the [migration guide](../migration-guide.md) for details.
 
 ## Managing a loan
 
