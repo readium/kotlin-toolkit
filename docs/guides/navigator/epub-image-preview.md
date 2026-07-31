@@ -2,7 +2,8 @@
 
 This guide explains how to detect when a user taps an image in an EPUB publication to present it in a dedicated view, using the experimental `TapEvent.targetElement` API.
 
-:warning: `targetElement` is an experimental API gated behind `@ExperimentalReadiumApi`. You must opt in at the call site and accept that the API may change in a future release.
+> [!IMPORTANT]
+> `targetElement` is an experimental API gated behind `@ExperimentalReadiumApi`. You must opt in at the call site and accept that the API may change in a future release.
 
 ## Detecting image taps
 
@@ -33,11 +34,11 @@ Returning `true` consumes the event, preventing other input listeners from handl
 
 `Content.ImageElement` describes an embedded image (`<img>`, or `<svg>` referencing an external resource) and provides the following properties:
 
-| Property             | Type            | Description                                                                       |
-|----------------------|-----------------|-----------------------------------------------------------------------------------|
-| `embeddedLink`       | `Link`          | Points to the image resource in the publication, ready to load with `publication.get()` |
-| `caption`            | `String?`       | Caption extracted from `alt`, `title`, a surrounding `<figcaption>`, etc.         |
-| `accessibilityLabel` | `String?`       | Accessibility label extracted from the `aria-label` attribute                     |
+| Property             | Type          | Description                                                                             |
+|----------------------|---------------|-----------------------------------------------------------------------------------------|
+| `embeddedLink`       | **`Link`**    | Points to the image resource in the publication, ready to load with `publication.get()` |
+| `caption`            | **`String?`** | Caption extracted from `alt`, `title`, a surrounding `<figcaption>`, etc.               |
+| `accessibilityLabel` | **`String?`** | Accessibility label extracted from the `aria-label` attribute                           |
 
 The `text` property returns the caption when available, otherwise the accessibility label — a convenient fallback when you need a single display string.
 
@@ -51,7 +52,3 @@ val bytes = publication.get(image.embeddedLink)
 
 `Content.SvgElement` follows a similar shape for inline SVG (`<svg>`), but exposes a `svg: String` property holding the raw SVG source instead of `embeddedLink`.
 
-## Known limitations
-
-* Images wrapped in an interactive element, such as a link (`<a><img></a>`), are **not** reported. Those taps are handled as interactive elements (links, footnotes) before reaching the image detection, consistent with the Swift toolkit.
-* Image preview is only available in the EPUB navigator for reflowable publications. Fixed-layout EPUBs rendered by the legacy navigator do not report a `targetElement`.

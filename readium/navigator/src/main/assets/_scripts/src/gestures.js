@@ -146,8 +146,6 @@ function extractTargetElement(element) {
     tag: imageElement.tagName.toLowerCase(),
     html: html,
     src: src,
-    // Multiplied by `devicePixelRatio` to match the tap coordinates, which are
-    // also in device pixels.
     frame: toNativeRect(imageElement.getBoundingClientRect()),
     accessibilityLabel: imageElement.getAttribute("aria-label")?.trim() || null,
     caption: extractCaption(imageElement),

@@ -652,46 +652,6 @@ internal open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebV
     }
 }
 
-/**
- * Metadata about the element under a tap, produced by `extractTargetElement()` in gestures.js.
- *
- * @param tag Lowercased tag name of the image element (e.g. `img`, `svg`).
- * @param html Raw outer HTML, only present for inline SVGs without a resolvable source.
- * @param src Absolute URL of the image source, resolved against the document base URI.
- * @param frame On-screen frame of the element, in device pixels.
- * @param accessibilityLabel Accessibility label extracted from the `aria-label` attribute.
- * @param caption Caption extracted from `alt`, `title`, SVG `<title>`/`<desc>` or `<figcaption>`.
- * @param cssSelector CSS selector targeting the element in the resource.
- */
-internal data class TargetElementData(
-    val tag: String,
-    val html: String?,
-    val src: String?,
-    val frame: RectF,
-    val accessibilityLabel: String?,
-    val caption: String?,
-    val cssSelector: String?,
-) {
-    companion object {
-        fun fromJSONObject(obj: JSONObject?): TargetElementData? {
-            obj ?: return null
-
-            val tag = obj.optNullableString("tag") ?: return null
-            val frame = obj.optRectF("frame") ?: return null
-
-            return TargetElementData(
-                tag = tag,
-                html = obj.optNullableString("html"),
-                src = obj.optNullableString("src"),
-                frame = frame,
-                accessibilityLabel = obj.optNullableString("accessibilityLabel"),
-                caption = obj.optNullableString("caption"),
-                cssSelector = obj.optNullableString("cssSelector")
-            )
-        }
-    }
-}
-
 private fun inputModifiers(json: JSONObject): Set<InputModifier> =
     buildSet {
         if (json.optBoolean("alt")) {
