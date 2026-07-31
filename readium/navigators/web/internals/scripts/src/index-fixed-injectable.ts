@@ -8,16 +8,30 @@
  * Script loaded by fixed layout resources.
  */
 
+import { CopyInterceptor, CopyListenerBridge } from "./common/copy"
 import {
   DecorationActivatedEvent,
   DecorationManager,
 } from "./common/decoration"
 import { GesturesDetector, GesturesListener } from "./common/gestures"
-import { SelectionManager } from "./common/selection"
+import { SelectionManager, SelectionReporter } from "./common/selection"
 import { Size } from "./common/geometry"
 import { IframeMessageSender } from "./fixed/iframe-message"
 import { parseViewportString } from "./util/viewport"
 import { FixedInitializerIframeSide } from "./bridge/all-initialization-bridge"
+
+declare global {
+  interface Window {
+    // Native API injected in every frame with `addJavascriptInterface`.
+    copyListener: CopyListenerBridge
+  }
+}
+
+new CopyInterceptor(window, window.copyListener)
+
+// Feeds the native copy interception gate synchronously. There is no dedicated selection
+// listener bridge in fixed-layout iframes.
+new SelectionReporter(window, window.copyListener)
 
 const initializer = new FixedInitializerIframeSide(window)
 const messageSender = initializer.initAreaManager()

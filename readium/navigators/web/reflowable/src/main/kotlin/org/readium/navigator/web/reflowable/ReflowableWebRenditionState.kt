@@ -4,7 +4,7 @@
  * available in the top-level LICENSE file of the project.
  */
 
-@file:OptIn(ExperimentalReadiumApi::class)
+@file:OptIn(ExperimentalReadiumApi::class, InternalReadiumApi::class)
 
 package org.readium.navigator.web.reflowable
 
@@ -27,7 +27,9 @@ import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.PersistentMap
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.persistentMapOf
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
@@ -74,8 +76,12 @@ import org.readium.r2.navigator.preferences.Axis
 import org.readium.r2.navigator.preferences.FontFamily
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.InternalReadiumApi
+import org.readium.r2.shared.publication.services.ContentProtectionService
+import org.readium.r2.shared.publication.services.CopyError
+import org.readium.r2.shared.publication.services.copyToClipboard
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.RelativeUrl
+import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.resource.Resource
@@ -94,8 +100,16 @@ public class ReflowableWebRenditionState internal constructor(
     initialPreferences: ReflowableWebPreferences,
     initialLocation: ReflowableWebGoLocation,
     configuration: ReflowableWebConfiguration,
-    disableSelection: Boolean,
+    rights: ContentProtectionService.UserRights,
+    internal val isProtected: Boolean,
 ) : RenditionState<ReflowableWebRenditionController> {
+
+    /**
+     * A scope tied to the state instead of the composition, so a configuration change cannot
+     * cancel an in-flight counted copy.
+     */
+    internal val coroutineScope: CoroutineScope =
+        MainScope()
 
     private val controllerState: MutableState<ReflowableWebRenditionController?> =
         mutableStateOf(null)
@@ -160,8 +174,10 @@ public class ReflowableWebRenditionState internal constructor(
 
     internal val selectionDelegate: ReflowableSelectionDelegate =
         ReflowableSelectionDelegate(
+            application = application,
             publication = publication,
-            pagerState = pagerState
+            pagerState = pagerState,
+            rights = rights
         )
 
     internal val decorationDelegate: ReflowableDecorationDelegate =
@@ -176,8 +192,7 @@ public class ReflowableWebRenditionState internal constructor(
                 charset = mediaType.charset,
                 readiumCss = layoutDelegate.readiumCssInjector,
                 injectableScript = RelativeUrl("readium/navigator/web/internals/generated/reflowable-injectable-script.js")!!,
-                assetsBaseHref = assetsBaseHref,
-                disableSelection = disableSelection
+                assetsBaseHref = assetsBaseHref
             )
         }
 
@@ -537,8 +552,10 @@ internal class ReflowableDecorationDelegate(
 }
 
 internal class ReflowableSelectionDelegate(
+    private val application: Application,
     private val publication: ReflowableWebPublication,
     private val pagerState: PagerState,
+    private val rights: ContentProtectionService.UserRights,
 ) : SelectionController<ReflowableWebSelectionLocation> {
 
     val selectionApis: SnapshotStateMap<Int, ReflowableSelectionApi?> =
@@ -574,6 +591,29 @@ internal class ReflowableSelectionDelegate(
             api?.clearSelection()
         }
     }
+
+    override suspend fun copySelection(): Try<Unit, CopyError> {
+        val text = currentSelection()?.text
+            ?.takeIf { it.isNotEmpty() }
+            ?: return Try.failure(CopyError.NoSelection)
+
+        // Nothing was written to the clipboard on this path, so it is left untouched on denial.
+        if (!rights.copyToClipboard(application, text, clearOnDenial = false)) {
+            return Try.failure(CopyError.Forbidden)
+        }
+
+        clearSelection()
+        return Try.success(Unit)
+    }
+
+    /**
+     * Performs a counted copy for text intercepted from a DOM copy event.
+     *
+     * The clipboard is cleared on denial, as a fail-safe for WebView builds which might have
+     * written the selection to the clipboard despite the interception.
+     */
+    internal suspend fun copyInterceptedText(text: String): Boolean =
+        rights.copyToClipboard(application, text, clearOnDenial = true)
 }
 
 private data class IndexedGoLocation(

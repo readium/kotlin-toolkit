@@ -8,6 +8,8 @@ package org.readium.navigator.common
 
 import androidx.compose.ui.unit.DpRect
 import org.readium.r2.shared.ExperimentalReadiumApi
+import org.readium.r2.shared.publication.services.CopyError
+import org.readium.r2.shared.util.Try
 
 /**
  * A controller for selection.
@@ -20,6 +22,19 @@ public interface SelectionController<S : SelectionLocation> {
 
     /** Clears the current selection. */
     public fun clearSelection()
+
+    /**
+     * Copies the current selection to the clipboard, after consuming the publication's copy
+     * allowance if it is protected.
+     *
+     * Use this API to implement the Copy item of a custom selection ActionMode callback, instead
+     * of writing to the clipboard directly. Otherwise, the copy allowance of a protected
+     * publication would be bypassed.
+     *
+     * @return [CopyError.NoSelection] if there is no selection, [CopyError.Forbidden] if the
+     * Content Protection denied the copy. In that case, the clipboard is left untouched.
+     */
+    public suspend fun copySelection(): Try<Unit, CopyError>
 }
 
 /**

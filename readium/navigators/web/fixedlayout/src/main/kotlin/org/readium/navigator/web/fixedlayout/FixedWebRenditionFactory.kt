@@ -21,6 +21,7 @@ import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.page
 import org.readium.r2.shared.publication.services.isProtected
 import org.readium.r2.shared.publication.services.isRestricted
+import org.readium.r2.shared.publication.services.rights
 import org.readium.r2.shared.util.ThrowableError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.getOrElse
@@ -127,7 +128,8 @@ public class FixedWebRenditionFactory private constructor(
                 initialLocation = initialLocation,
                 configuration = configuration,
                 preloadedData = preloads,
-                disableSelection = publication.isProtected,
+                rights = publication.rights,
+                isProtected = publication.isProtected,
             )
 
         return Try.success(state)

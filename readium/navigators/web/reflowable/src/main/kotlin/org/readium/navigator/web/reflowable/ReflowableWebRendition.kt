@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.union
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
@@ -34,9 +35,11 @@ import kotlinx.collections.immutable.toImmutableMap
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import org.readium.navigator.common.CopyListener
 import org.readium.navigator.common.DecorationListener
 import org.readium.navigator.common.HyperlinkListener
 import org.readium.navigator.common.InputListener
+import org.readium.navigator.common.NullCopyListener
 import org.readium.navigator.common.TapContext
 import org.readium.navigator.common.defaultDecorationListener
 import org.readium.navigator.common.defaultHyperlinkListener
@@ -47,6 +50,7 @@ import org.readium.navigator.web.internals.pager.pagingFlingBehavior
 import org.readium.navigator.web.internals.util.AbsolutePaddingValues
 import org.readium.navigator.web.internals.util.HyperlinkProcessor
 import org.readium.navigator.web.internals.util.asAbsolutePaddingValues
+import org.readium.navigator.web.internals.util.getValue
 import org.readium.navigator.web.internals.util.rememberUpdatedRef
 import org.readium.navigator.web.internals.util.symmetric
 import org.readium.navigator.web.internals.util.toLayoutDirection
@@ -73,6 +77,7 @@ public fun ReflowableWebRendition(
     inputListener: InputListener = defaultInputListener(state.controller),
     hyperlinkListener: HyperlinkListener = defaultHyperlinkListener(state.controller),
     decorationListener: DecorationListener<ReflowableWebDecorationLocation> = defaultDecorationListener(state.controller),
+    copyListener: CopyListener = remember { NullCopyListener() },
     textSelectionActionModeCallback: ActionMode.Callback? = null,
 ) {
     val overflowNow = state.layoutDelegate.overflow.value
@@ -101,6 +106,8 @@ public fun ReflowableWebRendition(
             state.layoutDelegate.fontScale = LocalDensity.current.fontScale
 
             val coroutineScope = rememberCoroutineScope()
+
+            val copyListenerRef by rememberUpdatedRef(copyListener)
 
             val resourcePadding = when (overflowNow.scroll) {
                 true ->
@@ -168,6 +175,16 @@ public fun ReflowableWebRendition(
                     decorations = decorations,
                     actionModeCallback = textSelectionActionModeCallback,
                     onSelectionApiChanged = { state.selectionDelegate.selectionApis[index] = it },
+                    interceptCopy = state.isProtected,
+                    onCopyIntercepted = { text ->
+                        // The state-owned scope survives composition, so a rotation cannot cancel
+                        // an in-flight counted copy.
+                        state.coroutineScope.launch {
+                            if (!state.selectionDelegate.copyInterceptedText(text)) {
+                                copyListenerRef.onCopyForbidden()
+                            }
+                        }
+                    },
                     onTap = { tapEvent ->
                         inputListener.onTap(tapEvent, TapContext(viewportSize.value))
                     },

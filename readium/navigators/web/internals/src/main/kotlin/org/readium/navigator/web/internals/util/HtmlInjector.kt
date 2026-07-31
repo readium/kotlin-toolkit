@@ -10,17 +10,6 @@ import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Url
 import timber.log.Timber
 
-// FIXME: This is a hack until proper LCP copy is implemented, see https://github.com/readium/kotlin-toolkit/issues/221
-public const val disableSelectionInjectable: String =
-    """
-        <style>
-        *:not(input):not(textarea) {
-            user-select: none;
-            -webkit-user-select: none;
-        }
-        </style>
-    """
-
 public fun script(src: Url): String =
     """<script type="text/javascript" src="$src"></script>"""
 

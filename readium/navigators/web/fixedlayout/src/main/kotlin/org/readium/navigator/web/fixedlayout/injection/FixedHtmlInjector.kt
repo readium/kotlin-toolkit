@@ -7,7 +7,6 @@
 package org.readium.navigator.web.fixedlayout.injection
 
 import java.nio.charset.Charset
-import org.readium.navigator.web.internals.util.disableSelectionInjectable
 import org.readium.navigator.web.internals.util.inject
 import org.readium.navigator.web.internals.util.script
 import org.readium.r2.shared.util.AbsoluteUrl
@@ -25,16 +24,11 @@ internal fun Resource.injectHtmlFixedLayout(
     charset: Charset?,
     injectableScript: RelativeUrl,
     assetsBaseHref: AbsoluteUrl,
-    disableSelection: Boolean,
 ): Resource =
     TransformingResource(this) { bytes ->
         var content = bytes.toString(charset ?: Charsets.UTF_8).trim()
         val injectables = buildList {
             add(script(assetsBaseHref.resolve(injectableScript)))
-
-            if (disableSelection) {
-                add(disableSelectionInjectable)
-            }
         }
 
         content = content.inject(sourceUrl, injectables)

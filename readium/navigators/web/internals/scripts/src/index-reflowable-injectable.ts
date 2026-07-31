@@ -8,6 +8,8 @@
  * Script loaded by reflowable resources.
  */
 
+import { CopyInterceptor, CopyListenerBridge } from "./common/copy"
+import { SelectionReporter } from "./common/selection"
 import { ReflowableDecorationsBridge } from "./bridge/all-decoration-bridge"
 import {
   GesturesBridge,
@@ -35,8 +37,15 @@ declare global {
     documentState: DocumentStateBridge
     gestures: GesturesBridge
     selectionListener: SelectionListenerBridge
+    copyListener: CopyListenerBridge
   }
 }
+
+new CopyInterceptor(window, window.copyListener)
+
+// Feeds the native copy interception gate synchronously, without the dispatch
+// latency of the selection listener bridge.
+new SelectionReporter(window, window.copyListener)
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 window.addEventListener("load", (event) => {

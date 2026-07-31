@@ -25,6 +25,8 @@ import androidx.compose.runtime.snapshots.SnapshotStateMap
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.PersistentMap
 import kotlinx.collections.immutable.persistentMapOf
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.coroutineScope
 import org.readium.navigator.common.DecorationController
 import org.readium.navigator.common.NavigationController
@@ -65,8 +67,12 @@ import org.readium.r2.navigator.preferences.Axis
 import org.readium.r2.navigator.preferences.Fit
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.InternalReadiumApi
+import org.readium.r2.shared.publication.services.ContentProtectionService
+import org.readium.r2.shared.publication.services.CopyError
+import org.readium.r2.shared.publication.services.copyToClipboard
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.RelativeUrl
+import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.resource.Resource
@@ -82,12 +88,20 @@ import org.readium.r2.shared.util.resource.Resource
 public class FixedWebRenditionState internal constructor(
     application: Application,
     internal val publication: FixedWebPublication,
-    disableSelection: Boolean,
     initialPreferences: FixedWebPreferences,
     initialLocation: FixedWebGoLocation,
     configuration: FixedWebConfiguration,
     internal val preloadedData: FixedWebPreloadedData,
+    rights: ContentProtectionService.UserRights,
+    internal val isProtected: Boolean,
 ) : RenditionState<FixedWebRenditionController> {
+
+    /**
+     * A scope tied to the state instead of the composition, so a configuration change cannot
+     * cancel an in-flight counted copy.
+     */
+    internal val coroutineScope: CoroutineScope =
+        MainScope()
 
     private val controllerState: MutableState<FixedWebRenditionController?> =
         mutableStateOf(null)
@@ -135,8 +149,10 @@ public class FixedWebRenditionState internal constructor(
     internal val selectionDelegate: FixedSelectionDelegate by
         derivedStateOf {
             FixedSelectionDelegate(
+                application,
                 pagerState.value,
-                layoutDelegate.layout.value
+                layoutDelegate.layout.value,
+                rights
             )
         }
 
@@ -151,8 +167,7 @@ public class FixedWebRenditionState internal constructor(
             resource.injectHtmlFixedLayout(
                 charset = mediaType.charset,
                 injectableScript = RelativeUrl("readium/navigator/web/internals/generated/fixed-injectable-script.js")!!,
-                assetsBaseHref = assetsBaseHref,
-                disableSelection = disableSelection
+                assetsBaseHref = assetsBaseHref
             )
         }
 
@@ -342,8 +357,10 @@ internal class FixedDecorationDelegate(
 }
 
 internal class FixedSelectionDelegate(
+    private val application: Application,
     private val pagerState: PagerState,
     private val layout: Layout,
+    private val rights: ContentProtectionService.UserRights,
 ) : SelectionController<FixedWebSelectionLocation> {
 
     val selectionApis: SnapshotStateMap<Int, FixedSelectionApi?> =
@@ -406,6 +423,29 @@ internal class FixedSelectionDelegate(
             }
         }
     }
+
+    override suspend fun copySelection(): Try<Unit, CopyError> {
+        val text = currentSelection()?.text
+            ?.takeIf { it.isNotEmpty() }
+            ?: return Try.failure(CopyError.NoSelection)
+
+        // Nothing was written to the clipboard on this path, so it is left untouched on denial.
+        if (!rights.copyToClipboard(application, text, clearOnDenial = false)) {
+            return Try.failure(CopyError.Forbidden)
+        }
+
+        clearSelection()
+        return Try.success(Unit)
+    }
+
+    /**
+     * Performs a counted copy for text intercepted from a DOM copy event.
+     *
+     * The clipboard is cleared on denial, as a fail-safe for WebView builds which might have
+     * written the selection to the clipboard despite the interception.
+     */
+    internal suspend fun copyInterceptedText(text: String): Boolean =
+        rights.copyToClipboard(application, text, clearOnDenial = true)
 }
 
 internal fun FixedWebDecoration.toWebApiDecoration(

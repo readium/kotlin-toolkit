@@ -9,7 +9,6 @@
 package org.readium.navigator.web.reflowable.injection
 
 import java.nio.charset.Charset
-import org.readium.navigator.web.internals.util.disableSelectionInjectable
 import org.readium.navigator.web.internals.util.inject
 import org.readium.navigator.web.internals.util.script
 import org.readium.navigator.web.reflowable.css.ReadiumCssInjector
@@ -31,7 +30,6 @@ internal fun Resource.injectHtmlReflowable(
     readiumCss: ReadiumCssInjector,
     injectableScript: RelativeUrl,
     assetsBaseHref: AbsoluteUrl,
-    disableSelection: Boolean,
 ): Resource =
     TransformingResource(this) { bytes ->
         var content = bytes.toString(charset ?: Charsets.UTF_8).trim()
@@ -48,11 +46,6 @@ internal fun Resource.injectHtmlReflowable(
                     assetsBaseHref.resolve(injectableScript)
                 )
             )
-
-            // Disable the text selection if the publication is protected.
-            if (disableSelection) {
-                add(disableSelectionInjectable)
-            }
         }
 
         content = content.inject(sourceUrl, injectables)

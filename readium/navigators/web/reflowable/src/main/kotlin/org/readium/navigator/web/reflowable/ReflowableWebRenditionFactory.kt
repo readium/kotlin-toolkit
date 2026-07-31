@@ -16,6 +16,7 @@ import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.services.PositionsService
 import org.readium.r2.shared.publication.services.isProtected
 import org.readium.r2.shared.publication.services.isRestricted
+import org.readium.r2.shared.publication.services.rights
 import org.readium.r2.shared.util.Try
 
 /**
@@ -82,8 +83,6 @@ public class ReflowableWebRenditionFactory private constructor(
         readingOrder: List<Link> = publication.readingOrder,
         positionsService: PositionsService = this.positionsService,
     ): Try<ReflowableWebRenditionState, Error> {
-        // TODO: enable apps not to disable selection when publication is protected
-
         val readingOrderItems = readingOrder.map { link ->
             ReflowableWebPublication.Item(
                 href = link.url(),
@@ -124,7 +123,8 @@ public class ReflowableWebRenditionFactory private constructor(
                 initialPreferences = initialPreferences,
                 initialLocation = initialLocation,
                 configuration = configuration,
-                disableSelection = publication.isProtected
+                rights = publication.rights,
+                isProtected = publication.isProtected
             )
 
         return Try.success(state)

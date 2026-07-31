@@ -45,6 +45,7 @@ import org.readium.navigator.web.internals.util.absolutePadding
 import org.readium.navigator.web.internals.util.getValue
 import org.readium.navigator.web.internals.util.rememberUpdatedRef
 import org.readium.navigator.web.internals.util.shift
+import org.readium.navigator.web.internals.webapi.CopyListenerApi
 import org.readium.navigator.web.internals.webapi.Decoration
 import org.readium.navigator.web.internals.webapi.DelegatingDocumentApiListener
 import org.readium.navigator.web.internals.webapi.DelegatingGesturesListener
@@ -89,6 +90,8 @@ internal fun ReflowableResource(
     decorations: ImmutableMap<String, List<ReflowableWebDecoration>>,
     actionModeCallback: ActionMode.Callback?,
     onSelectionApiChanged: (ReflowableSelectionApi?) -> Unit,
+    interceptCopy: Boolean,
+    onCopyIntercepted: (String) -> Unit,
     onTap: (TapEvent) -> Unit,
     onLinkActivated: (AbsoluteUrl, String) -> Unit,
     onDecorationActivated: (DecorationListener.OnActivatedEvent<ReflowableWebDecorationLocation>) -> Unit,
@@ -115,11 +118,20 @@ internal fun ReflowableResource(
             mutableStateOf<SelectionListenerApi?>(null)
         }
 
+        var copyListenerApi by remember(webViewState.webView) {
+            mutableStateOf<CopyListenerApi?>(null)
+        }
+
+        val onCopyInterceptedRef by rememberUpdatedRef(onCopyIntercepted)
+
         LaunchedEffect(webViewState.webView) {
             webViewState.webView?.let { webView ->
                 gesturesApi = GesturesApi(webView)
                 documentStateApi = DocumentStateApi(webView)
                 selectionListenerApi = SelectionListenerApi(webView)
+                copyListenerApi = CopyListenerApi(webView, interceptEnabled = interceptCopy) {
+                    onCopyInterceptedRef(it)
+                }
             }
         }
 

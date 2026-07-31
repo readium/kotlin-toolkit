@@ -18,6 +18,7 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
@@ -37,6 +38,7 @@ import org.readium.navigator.web.fixedlayout.layout.SingleViewportSpread
 import org.readium.navigator.web.fixedlayout.toWebApiDecoration
 import org.readium.navigator.web.internals.server.WebViewClient
 import org.readium.navigator.web.internals.util.DisplayArea
+import org.readium.navigator.web.internals.webapi.CopyListenerApi
 import org.readium.navigator.web.internals.webapi.DelegatingFixedApiStateListener
 import org.readium.navigator.web.internals.webapi.FixedApiStateApi
 import org.readium.navigator.web.internals.webapi.FixedSingleAreaApi
@@ -60,6 +62,8 @@ internal fun SingleViewportSpread(
     onTap: (TapEvent) -> Unit,
     onLinkActivated: (AbsoluteUrl, String) -> Unit,
     onSelectionApiChanged: (FixedSingleSelectionApi?) -> Unit,
+    interceptCopy: Boolean,
+    onCopyIntercepted: (String) -> Unit,
     actionModeCallback: ActionMode.Callback?,
     state: SingleSpreadState,
     backgroundColor: Color,
@@ -93,8 +97,15 @@ internal fun SingleViewportSpread(
             mutableStateOf<FixedSingleSelectionListener?>(null)
         }
 
+        val onCopyInterceptedState = rememberUpdatedState(onCopyIntercepted)
+
         LaunchedEffect(webViewState.webView) {
             selectionListener = webViewState.webView?.let { FixedSingleSelectionListener(it) }
+            webViewState.webView?.let { webView ->
+                CopyListenerApi(webView, interceptEnabled = interceptCopy) {
+                    onCopyInterceptedState.value(it)
+                }
+            }
         }
 
         var areaApi by remember(webViewState.webView) {

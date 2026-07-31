@@ -33,9 +33,11 @@ import kotlinx.collections.immutable.toImmutableMap
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import org.readium.navigator.common.CopyListener
 import org.readium.navigator.common.DecorationListener
 import org.readium.navigator.common.HyperlinkListener
 import org.readium.navigator.common.InputListener
+import org.readium.navigator.common.NullCopyListener
 import org.readium.navigator.common.Position
 import org.readium.navigator.common.Progression
 import org.readium.navigator.common.TapContext
@@ -82,6 +84,7 @@ public fun FixedWebRendition(
     inputListener: InputListener = defaultInputListener(state.controller),
     hyperlinkListener: HyperlinkListener = defaultHyperlinkListener(state.controller),
     decorationListener: DecorationListener<FixedWebDecorationLocation> = defaultDecorationListener(state.controller),
+    copyListener: CopyListener = remember { NullCopyListener() },
     textSelectionActionModeCallback: ActionMode.Callback? = null,
 ) {
     BoxWithConstraints(
@@ -113,6 +116,18 @@ public fun FixedWebRendition(
         val hyperlinkListenerState = rememberUpdatedState(hyperlinkListener)
 
         val decorationListenerState = rememberUpdatedState(decorationListener)
+
+        val copyListenerState = rememberUpdatedState(copyListener)
+
+        val onCopyIntercepted: (String) -> Unit = { text ->
+            // The state-owned scope survives composition, so a rotation cannot cancel an
+            // in-flight counted copy.
+            state.coroutineScope.launch {
+                if (!selectionDelegateNow.copyInterceptedText(text)) {
+                    copyListenerState.value.onCopyForbidden()
+                }
+            }
+        }
 
         CompositionLocalProvider(LocalLayoutDirection provides layoutDirectionNow) {
             if (state.controller == null) {
@@ -220,6 +235,8 @@ public fun FixedWebRendition(
                             },
                             actionModeCallback = textSelectionActionModeCallback,
                             onSelectionApiChanged = { selectionDelegateNow.selectionApis[index] = it },
+                            interceptCopy = state.isProtected,
+                            onCopyIntercepted = onCopyIntercepted,
                             state = spreadState,
                             scrollState = scrollStates[index],
                             backgroundColor = backgroundColor,
@@ -266,6 +283,8 @@ public fun FixedWebRendition(
                             },
                             actionModeCallback = textSelectionActionModeCallback,
                             onSelectionApiChanged = { selectionDelegateNow.selectionApis[index] = it },
+                            interceptCopy = state.isProtected,
+                            onCopyIntercepted = onCopyIntercepted,
                             state = spreadState,
                             scrollState = scrollStates[index],
                             backgroundColor = backgroundColor,
