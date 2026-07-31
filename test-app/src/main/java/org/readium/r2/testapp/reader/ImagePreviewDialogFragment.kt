@@ -35,6 +35,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.activityViewModels
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.services.content.Content
 import org.readium.r2.shared.util.getOrElse
@@ -84,12 +86,14 @@ class ImagePreviewDialogFragment(
         )
     }
 
-    private suspend fun loadBitmap(): android.graphics.Bitmap? {
-        val resource = viewModel.publication.get(image.embeddedLink) ?: return null
-        val bytes = resource.use { it.read() }
-            .getOrElse { return null }
-        return BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
-    }
+    private suspend fun loadBitmap(): android.graphics.Bitmap? =
+        withContext(Dispatchers.IO) {
+            val resource = viewModel.publication.get(image.embeddedLink)
+                ?: return@withContext null
+            val bytes = resource.use { it.read() }
+                .getOrElse { return@withContext null }
+            BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+        }
 
     companion object {
         const val TAG = "ImagePreviewDialogFragment"

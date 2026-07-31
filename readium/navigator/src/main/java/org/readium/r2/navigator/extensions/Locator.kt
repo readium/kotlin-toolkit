@@ -52,14 +52,6 @@ internal val Locator.Locations.htmlId: String? get() {
 }
 
 /**
- * A CSS Selector targeting the element in the resource.
- *
- * https://github.com/readium/architecture/blob/master/models/locators/extensions/html.md
- */
-public val Locator.Locations.cssSelector: String?
-    get() = otherLocations["cssSelector"] as? String
-
-/**
  * Page fragment identifier, used for example in PDF.
  */
 internal val Locator.Locations.page: Int? get() =

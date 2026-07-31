@@ -30,6 +30,9 @@ navigator.addInputListener(object : InputListener {
 
 Returning `true` consumes the event, preventing other input listeners from handling the same tap. Bind this listener *before* listeners that react to generic taps (such as toggling the navigation bar) so it takes precedence.
 
+> [!NOTE]
+> `targetElement` is not populated for images wrapped in an interactive element, such as `<a><img/></a>`. The navigator treats the tap as an activation of the interactive element (e.g. following the hyperlink) and does not forward it to the input listeners.
+
 ## Working with `Content.ImageElement`
 
 `Content.ImageElement` describes an embedded image (`<img>`, or `<svg>` referencing an external resource) and provides the following properties:
