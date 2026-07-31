@@ -55,7 +55,9 @@ import org.readium.r2.navigator.util.createViewModelFactory
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.publication.services.copyToClipboard
 import org.readium.r2.shared.publication.services.isProtected
+import org.readium.r2.shared.publication.services.rights
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.data.ReadTry
@@ -75,6 +77,7 @@ public class PsPdfKitDocumentFragment internal constructor(
         fun onResourceLoadFailed(href: Url, error: ReadError)
         fun onConfigurePdfView(builder: PdfConfiguration.Builder): PdfConfiguration.Builder
         fun onTap(point: PointF): Boolean
+        fun onCopyForbidden()
     }
 
     private companion object {
@@ -226,10 +229,6 @@ public class PsPdfKitDocumentFragment internal constructor(
             )
             .scrollMode(settings.scroll.scrollMode)
 
-        if (publication.isProtected) {
-            config = config.disableCopyPaste()
-        }
-
         return config.build()
     }
 
@@ -289,13 +288,16 @@ public class PsPdfKitDocumentFragment internal constructor(
             return listener?.onTap(pagePosition) ?: false
         }
 
+        private val copyItemId: Int =
+            com.pspdfkit.R.id.pspdf__text_selection_toolbar_item_copy
+
         private val allowedTextSelectionItems: List<Int> by lazy {
             buildList {
                 add(com.pspdfkit.R.id.pspdf__text_selection_toolbar_item_speak)
+                add(copyItemId)
 
                 if (!publication.isProtected) {
                     add(com.pspdfkit.R.id.pspdf__text_selection_toolbar_item_share)
-                    add(com.pspdfkit.R.id.pspdf__text_selection_toolbar_item_copy)
                 }
             }
         }
@@ -304,6 +306,42 @@ public class PsPdfKitDocumentFragment internal constructor(
             // Makes sure only the menu items in `allowedTextSelectionItems` will be visible.
             toolbar.menuItems = toolbar.menuItems
                 .filter { allowedTextSelectionItems.contains(it.id) }
+
+            if (publication.isProtected) {
+                // Intercepts the built-in Copy item to consume the copy allowance before writing
+                // to the clipboard. Returning true suppresses PSPDFKit's default copy.
+                toolbar.setOnPopupToolbarItemClickedListener { item ->
+                    if (item.id != copyItemId) {
+                        return@setOnPopupToolbarItemClickedListener false
+                    }
+                    performCountedCopy()
+                    toolbar.dismiss()
+                    true
+                }
+            }
+        }
+
+        private fun performCountedCopy() {
+            val fragment = pdfFragment ?: return
+            val text = fragment.textSelection?.text
+                ?.takeIf { it.isNotEmpty() }
+                ?: run {
+                    fragment.exitCurrentlyActiveMode()
+                    return
+                }
+
+            val context = requireContext().applicationContext
+
+            // The helper is a single atomic non-cancellable unit, so launching from the view
+            // lifecycle is safe: it either never starts or fully completes.
+            viewLifecycleOwner.lifecycleScope.launch {
+                // PSPDFKit's default copy was suppressed, so nothing was written to the clipboard
+                // on this path and it is left untouched on denial.
+                if (!publication.rights.copyToClipboard(context, text, clearOnDenial = false)) {
+                    listener?.onCopyForbidden()
+                }
+                pdfFragment?.exitCurrentlyActiveMode()
+            }
         }
 
         override fun onDocumentLoaded(document: PdfDocument) {

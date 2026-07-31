@@ -62,6 +62,10 @@ public class PsPdfKitEngineProvider(
 
                     override fun onTap(point: PointF): Boolean =
                         input.inputListener?.onTap(TapEvent(point)) ?: false
+
+                    override fun onCopyForbidden() {
+                        input.navigatorListener?.onCopyForbidden()
+                    }
                 }
             )
         }
