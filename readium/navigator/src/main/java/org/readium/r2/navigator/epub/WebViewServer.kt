@@ -44,7 +44,6 @@ internal class WebViewServer(
     private val application: Application,
     private val publication: Publication,
     servedAssets: List<String>,
-    private val disableSelectionWhenProtected: Boolean,
     private val onResourceLoadFailed: (Url, ReadError) -> Unit,
 ) {
     companion object {
@@ -186,8 +185,7 @@ internal class WebViewServer(
                         publication,
                         mediaType = it,
                         css,
-                        assetsBaseHref,
-                        disableSelectionWhenProtected
+                        assetsBaseHref
                     )
                 }
         }

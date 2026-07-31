@@ -33,6 +33,8 @@ import org.readium.r2.shared.extensions.mapStateIn
 import org.readium.r2.shared.publication.Layout
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.publication.services.copyToClipboard
+import org.readium.r2.shared.publication.services.rights
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Url
 
@@ -272,6 +274,23 @@ internal class EpubNavigatorViewModel(
 
     // Selection
 
+    /**
+     * Performs a counted copy for text intercepted from a DOM copy event.
+     *
+     * The clipboard is cleared on denial, as a fail-safe for WebView builds which might have
+     * written the selection to the clipboard despite the interception.
+     */
+    suspend fun copyInterceptedText(text: String): Boolean =
+        publication.rights.copyToClipboard(getApplication(), text, clearOnDenial = true)
+
+    /**
+     * Performs a counted copy for a programmatic [EpubNavigatorFragment.copySelection] call.
+     *
+     * Nothing was written to the clipboard on this path, so it is left untouched on denial.
+     */
+    suspend fun copyText(text: String): Boolean =
+        publication.rights.copyToClipboard(getApplication(), text, clearOnDenial = false)
+
     fun clearSelection(): RunScriptCommand =
         RunScriptCommand(
             "window.getSelection().removeAllRanges();",
@@ -375,7 +394,6 @@ internal class EpubNavigatorViewModel(
                     application,
                     publication,
                     servedAssets = config.servedAssets,
-                    disableSelectionWhenProtected = config.disableSelectionWhenProtected,
                     onResourceLoadFailed = { url, error ->
                         listener?.onResourceLoadFailed(url, error)
                     }

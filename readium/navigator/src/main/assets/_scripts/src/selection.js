@@ -36,6 +36,22 @@ window.addEventListener(
   false
 );
 
+// Intercepts the copy event (system menu Copy, Ctrl+C) to let native code
+// enforce the publication's copy allowance. `shouldInterceptCopy()` is the
+// single gate: when it returns true, the default clipboard write is prevented
+// and the raw selected text is forwarded to native code, which performs the
+// counted copy itself.
+document.addEventListener("copy", function (event) {
+  if (!Android.shouldInterceptCopy()) {
+    return;
+  }
+  event.preventDefault();
+  const text = window.getSelection().toString();
+  if (text) {
+    Android.onCopyIntercepted(text);
+  }
+});
+
 export function getCurrentSelection() {
   const text = getCurrentSelectionText();
   if (!text) {

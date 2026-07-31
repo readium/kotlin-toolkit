@@ -30,6 +30,7 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.withStarted
 import androidx.viewpager.widget.ViewPager
 import kotlin.math.ceil
@@ -88,8 +89,11 @@ import org.readium.r2.shared.publication.Layout
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.publication.services.CopyError
+import org.readium.r2.shared.publication.services.isProtected
 import org.readium.r2.shared.publication.services.positionsByReadingOrder
 import org.readium.r2.shared.util.AbsoluteUrl
+import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.resource.Resource
@@ -197,13 +201,20 @@ public class EpubNavigatorFragment internal constructor(
         var shouldApplyInsetsPadding: Boolean?,
 
         /**
-         * Disable user selection if the publication is protected by a DRM (e.g. with LCP).
+         * This option is deprecated and ignored: the navigator now enforces the copy allowance
+         * itself by intercepting copy events and consuming the Content Protection's copy right.
          *
-         * WARNING: If you choose to disable this, you MUST remove the Copy and Share selection
-         * menu items in your app. Otherwise, you will void the EDRLab certification for your
-         * application. If you need help, follow up on:
+         * WARNING: The system selection menu is displayed in full on protected publications,
+         * including items which can leak text (e.g. Share, Web Search, Translate). If your app
+         * targets the EDRLab certification, you MUST remove these items with a custom
+         * [selectionActionModeCallback] and route your own Copy item through
+         * [EpubNavigatorFragment.copySelection]. If you need help, follow up on:
          * https://github.com/readium/kotlin-toolkit/issues/299#issuecomment-1315643577
          */
+        @Deprecated(
+            "The navigator now enforces the copy allowance itself; this option is ignored.",
+            level = DeprecationLevel.WARNING
+        )
         @DelicateReadiumApi
         var disableSelectionWhenProtected: Boolean,
 
@@ -725,6 +736,33 @@ public class EpubNavigatorFragment internal constructor(
         run(viewModel.clearSelection())
     }
 
+    /**
+     * Copies the current selection to the clipboard, after consuming the publication's copy
+     * allowance if it is protected.
+     *
+     * Use this API to implement the Copy item of a custom [Configuration.selectionActionModeCallback],
+     * instead of writing to the clipboard directly. Otherwise, the copy allowance of a protected
+     * publication would be bypassed.
+     *
+     * Note that this copies the cleaned selected text (trimmed, with collapsed whitespace), which
+     * can differ from the raw text a native copy event would yield (line breaks preserved).
+     *
+     * @return [CopyError.NoSelection] if there is no selection, [CopyError.Forbidden] if the
+     * Content Protection denied the copy. In that case, the clipboard is left untouched.
+     */
+    public suspend fun copySelection(): Try<Unit, CopyError> {
+        val text = currentSelection()?.locator?.text?.highlight
+            ?.takeIf { it.isNotEmpty() }
+            ?: return Try.failure(CopyError.NoSelection)
+
+        if (!viewModel.copyText(text)) {
+            return Try.failure(CopyError.Forbidden)
+        }
+
+        clearSelection()
+        return Try.success(Unit)
+    }
+
     private fun PointF.adjustedToViewport(): PointF =
         currentReflowablePageFragment?.paddingTop?.let { top ->
             PointF(x, y + top)
@@ -841,6 +879,21 @@ public class EpubNavigatorFragment internal constructor(
 
         override val selectionActionModeCallback: ActionMode.Callback?
             get() = config.selectionActionModeCallback
+
+        override val shouldInterceptCopy: Boolean
+            get() = publication.isProtected
+
+        override fun onCopyIntercepted(text: String) {
+            // The view model scope survives configuration changes, so a rotation cannot cancel an
+            // in-flight counted copy. Capturing only the view model avoids retaining the fragment
+            // until the copy completes.
+            val viewModel = viewModel
+            viewModel.viewModelScope.launch {
+                if (!viewModel.copyInterceptedText(text)) {
+                    viewModel.listener?.onCopyForbidden()
+                }
+            }
+        }
 
         /**
          * Prevents opening external links in the web view and handles internal links.

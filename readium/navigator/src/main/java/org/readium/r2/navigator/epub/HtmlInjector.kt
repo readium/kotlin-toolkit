@@ -10,7 +10,6 @@ import org.readium.r2.navigator.epub.css.ReadiumCss
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Layout
 import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.publication.services.isProtected
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
@@ -31,7 +30,6 @@ internal fun Resource.injectHtml(
     mediaType: MediaType,
     css: ReadiumCss,
     assetsBaseHref: AbsoluteUrl,
-    disableSelectionWhenProtected: Boolean,
 ): Resource =
     TransformingResource(this) { bytes ->
         if (!mediaType.isHtml) {
@@ -56,21 +54,6 @@ internal fun Resource.injectHtml(
                 script(
                     assetsBaseHref.resolve(Url("readium/scripts/readium-reflowable.js")!!)
                 )
-            )
-        }
-
-        // Disable the text selection if the publication is protected.
-        // FIXME: This is a hack until proper LCP copy is implemented, see https://github.com/readium/kotlin-toolkit/issues/221
-        if (disableSelectionWhenProtected && publication.isProtected) {
-            injectables.add(
-                """
-                <style>
-                *:not(input):not(textarea) {
-                    user-select: none;
-                    -webkit-user-select: none;
-                }
-                </style>
-            """
             )
         }
 

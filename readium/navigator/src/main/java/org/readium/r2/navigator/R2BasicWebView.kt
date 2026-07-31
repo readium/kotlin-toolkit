@@ -79,6 +79,20 @@ internal open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebV
          */
         val selectionActionModeCallback: ActionMode.Callback? get() = null
 
+        /**
+         * Indicates whether the copy events should be intercepted, to enforce the publication's
+         * copy allowance.
+         */
+        val shouldInterceptCopy: Boolean get() = false
+
+        /**
+         * Called when a copy event was intercepted with the given selected [text].
+         *
+         * The default clipboard write was prevented; the receiver is responsible for performing
+         * the counted copy.
+         */
+        fun onCopyIntercepted(text: String) {}
+
         @InternalReadiumApi
         fun javascriptInterfacesForResource(link: Link): Map<String, Any?> = emptyMap()
 
@@ -442,6 +456,20 @@ internal open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebV
     @android.webkit.JavascriptInterface
     fun onSelectionEnd() {
         isSelecting = false
+    }
+
+    /**
+     * The single gate deciding whether the JS layer intercepts copy events: the publication must
+     * be protected and a user selection must be active. Requiring an active selection raises the
+     * bar against arbitrary clipboard writes from publication scripts.
+     */
+    @android.webkit.JavascriptInterface
+    fun shouldInterceptCopy(): Boolean =
+        (listener?.shouldInterceptCopy == true) && isSelecting
+
+    @android.webkit.JavascriptInterface
+    fun onCopyIntercepted(text: String) {
+        listener?.onCopyIntercepted(text)
     }
 
     /** Produced by gestures.js */
