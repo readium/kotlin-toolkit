@@ -3,8 +3,7 @@
  * Use of this source code is governed by the BSD-style license
  * available in the top-level LICENSE file of the project.
  */
-
-@file:OptIn(ExperimentalReadiumApi::class)
+@file:OptIn(ExperimentalReadiumApi::class, InternalReadiumApi::class)
 
 package org.readium.navigator.web.reflowable.resource
 
@@ -70,6 +69,7 @@ import org.readium.navigator.web.reflowable.ReflowableWebDecorationLocation
 import org.readium.navigator.web.reflowable.ReflowableWebDecorationTextQuoteLocation
 import org.readium.navigator.web.reflowable.css.ReadiumCssInjector
 import org.readium.r2.shared.ExperimentalReadiumApi
+import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.util.AbsoluteUrl
 import timber.log.Timber
 

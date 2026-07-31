@@ -26,17 +26,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import org.readium.demo.navigator.reader.LITERATA
 import org.readium.navigator.common.Preferences
-import org.readium.navigator.common.PreferencesEditor
 import org.readium.navigator.common.Settings
-import org.readium.navigator.web.fixedlayout.preferences.FixedWebPreferencesEditor
-import org.readium.navigator.web.reflowable.preferences.ReflowableWebPreferencesEditor
 import org.readium.r2.navigator.preferences.Axis
 import org.readium.r2.navigator.preferences.Color
 import org.readium.r2.navigator.preferences.EnumPreference
 import org.readium.r2.navigator.preferences.Fit
 import org.readium.r2.navigator.preferences.FontFamily
 import org.readium.r2.navigator.preferences.ImageFilter
-import org.readium.r2.navigator.preferences.OptionalRangePreference
 import org.readium.r2.navigator.preferences.Preference
 import org.readium.r2.navigator.preferences.RangePreference
 import org.readium.r2.navigator.preferences.ReadingProgression
@@ -49,8 +45,8 @@ import org.readium.r2.shared.util.Language
  * Stateful user settings component.
  */
 @Composable
-fun <P : Preferences<P>, S : Settings, E : PreferencesEditor<P, S>> UserPreferences(
-    editor: E,
+fun <P : Preferences<P>, S : Settings, V : PreferencesViewModel<P, S>> UserPreferences(
+    viewModel: V,
     title: String,
 ) {
     val scrollState = rememberScrollState()
@@ -76,7 +72,7 @@ fun <P : Preferences<P>, S : Settings, E : PreferencesEditor<P, S>> UserPreferen
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Button(
-                onClick = { editor.clear() }
+                onClick = { viewModel.clear() }
             ) {
                 Text("Reset")
             }
@@ -84,42 +80,42 @@ fun <P : Preferences<P>, S : Settings, E : PreferencesEditor<P, S>> UserPreferen
 
         Divider()
 
-        when (editor) {
-            is FixedWebPreferencesEditor ->
+        when (viewModel) {
+            is FixedPreferencesViewModel ->
                 FixedLayoutUserPreferences(
-                    readingProgression = editor.readingProgression,
-                    fit = editor.fit,
-                    spreads = editor.spreads
+                    readingProgression = viewModel.readingProgression,
+                    fit = viewModel.fit,
+                    spreads = viewModel.spreads
                 )
-            is ReflowableWebPreferencesEditor ->
+            is ReflowablePreferencesViewModel ->
                 ReflowableUserPreferences(
-                    backgroundColor = editor.backgroundColor,
-                    columnCount = editor.columnCount,
-                    fontFamily = editor.fontFamily,
-                    fontSize = editor.fontSize,
-                    fontWeight = editor.fontWeight,
-                    horizontalMargins = editor.minMargins,
-                    hyphens = editor.hyphens,
-                    imageFilter = editor.imageFilter,
-                    language = editor.language,
-                    letterSpacing = editor.letterSpacing,
-                    ligatures = editor.ligatures,
-                    lineHeight = editor.lineHeight,
-                    linkColor = editor.linkColor,
-                    maximalLineLength = editor.maximalLineLength,
-                    minimalLineLength = editor.minimalLineLength,
-                    optimalLineLength = editor.optimalLineLength,
-                    overridePublisherColors = editor.overridePublisherColors,
-                    paragraphIndent = editor.paragraphIndent,
-                    paragraphSpacing = editor.paragraphSpacing,
-                    readingProgression = editor.readingProgression,
-                    scroll = editor.scroll,
-                    textAlign = editor.textAlign,
-                    textColor = editor.textColor,
-                    textNormalization = editor.textNormalization,
-                    verticalText = editor.verticalText,
-                    visitedColor = editor.visitedColor,
-                    wordSpacing = editor.wordSpacing
+                    backgroundColor = viewModel.backgroundColor,
+                    columnCount = viewModel.columnCount,
+                    fontFamily = viewModel.fontFamily,
+                    fontSize = viewModel.fontSize,
+                    fontWeight = viewModel.fontWeight,
+                    horizontalMargins = viewModel.minMargins,
+                    hyphens = viewModel.hyphens,
+                    imageFilter = viewModel.imageFilter,
+                    language = viewModel.language,
+                    letterSpacing = viewModel.letterSpacing,
+                    ligatures = viewModel.ligatures,
+                    lineHeight = viewModel.lineHeight,
+                    linkColor = viewModel.linkColor,
+                    maximalLineLength = viewModel.maximalLineLength,
+                    minimalLineLength = viewModel.minimalLineLength,
+                    optimalLineLength = viewModel.optimalLineLength,
+                    overridePublisherColors = viewModel.overridePublisherColors,
+                    paragraphIndent = viewModel.paragraphIndent,
+                    paragraphSpacing = viewModel.paragraphSpacing,
+                    readingProgression = viewModel.readingProgression,
+                    scroll = viewModel.scroll,
+                    textAlign = viewModel.textAlign,
+                    textColor = viewModel.textColor,
+                    textNormalization = viewModel.textNormalization,
+                    verticalText = viewModel.verticalText,
+                    visitedColor = viewModel.visitedColor,
+                    wordSpacing = viewModel.wordSpacing
                 )
         }
     }
@@ -205,21 +201,21 @@ private fun ReflowableUserPreferences(
     columnCount: Preference<Int?>? = null,
     fontFamily: Preference<FontFamily?>? = null,
     fontSize: RangePreference<Double>? = null,
-    fontWeight: RangePreference<Double>? = null,
+    fontWeight: OptionalRangePreference<Double>? = null,
     horizontalMargins: RangePreference<Double>? = null,
-    hyphens: Preference<Boolean>? = null,
+    hyphens: OptionalBooleanPreference? = null,
     imageFilter: EnumPreference<ImageFilter?>? = null,
     language: Preference<Language?>? = null,
-    letterSpacing: RangePreference<Double>? = null,
-    ligatures: Preference<Boolean>? = null,
-    lineHeight: RangePreference<Double>? = null,
+    letterSpacing: OptionalRangePreference<Double>? = null,
+    ligatures: OptionalBooleanPreference? = null,
+    lineHeight: OptionalRangePreference<Double>? = null,
     linkColor: Preference<Color>? = null,
     maximalLineLength: OptionalRangePreference<Double>? = null,
     minimalLineLength: OptionalRangePreference<Double>? = null,
     optimalLineLength: RangePreference<Double>? = null,
     overridePublisherColors: Preference<Boolean>? = null,
-    paragraphIndent: RangePreference<Double>? = null,
-    paragraphSpacing: RangePreference<Double>? = null,
+    paragraphIndent: OptionalRangePreference<Double>? = null,
+    paragraphSpacing: OptionalRangePreference<Double>? = null,
     readingProgression: EnumPreference<ReadingProgression>? = null,
     scroll: Preference<Boolean>? = null,
     textAlign: EnumPreference<ReadiumTextAlign?>? = null,
@@ -227,7 +223,7 @@ private fun ReflowableUserPreferences(
     textNormalization: Preference<Boolean>? = null,
     verticalText: Preference<Boolean>? = null,
     visitedColor: Preference<Color>? = null,
-    wordSpacing: RangePreference<Double>? = null,
+    wordSpacing: OptionalRangePreference<Double>? = null,
 ) {
     if (language != null || readingProgression != null || verticalText != null) {
         if (language != null) {
@@ -292,7 +288,6 @@ private fun ReflowableUserPreferences(
             StepperItem(
                 title = "Minimal line length",
                 preference = minimalLineLength,
-                defaultDisplayValue = 1.0
             )
         }
 
@@ -300,7 +295,6 @@ private fun ReflowableUserPreferences(
             StepperItem(
                 title = "Maximal line length",
                 preference = maximalLineLength,
-                defaultDisplayValue = 1.0
             )
         }
 
@@ -396,7 +390,7 @@ private fun ReflowableUserPreferences(
         if (fontWeight != null) {
             StepperItem(
                 title = "Font weight",
-                preference = fontWeight
+                preference = fontWeight,
             )
         }
 

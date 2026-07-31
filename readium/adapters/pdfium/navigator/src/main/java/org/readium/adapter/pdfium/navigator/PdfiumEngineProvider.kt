@@ -15,6 +15,7 @@ import org.readium.r2.navigator.SimpleOverflow
 import org.readium.r2.navigator.input.TapEvent
 import org.readium.r2.navigator.pdf.PdfDocumentFragmentInput
 import org.readium.r2.navigator.pdf.PdfEngineProvider
+import org.readium.r2.navigator.preferences.Axis
 import org.readium.r2.navigator.util.SingleFragmentFactory
 import org.readium.r2.navigator.util.createFragmentFactory
 import org.readium.r2.shared.ExperimentalReadiumApi
@@ -74,8 +75,8 @@ public class PdfiumEngineProvider(
     override fun computeOverflow(settings: PdfiumSettings): OverflowableNavigator.Overflow =
         SimpleOverflow(
             readingProgression = settings.readingProgression,
-            scroll = true,
-            axis = settings.scrollAxis
+            scroll = settings.scroll,
+            axis = if (settings.isHorizontal) Axis.HORIZONTAL else Axis.VERTICAL
         )
 
     override fun createPreferenceEditor(

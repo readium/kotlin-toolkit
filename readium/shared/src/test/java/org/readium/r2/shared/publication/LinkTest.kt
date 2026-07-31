@@ -328,4 +328,31 @@ class LinkTest {
             ).indexOfFirstWithHref(Url("href2")!!)
         )
     }
+
+    @Test
+    fun `Find a {Link} in a list ignoring the query and fragment as a fallback`() {
+        val links = listOf(Link(href = Url("l1")!!), Link(href = Url("l2")!!))
+
+        // firstWithHref falls back to ignoring the query and fragment.
+        assertEquals(Link(href = Url("l2")!!), links.firstWithHref(Url("l2#fragment")!!))
+        assertEquals(Link(href = Url("l2")!!), links.firstWithHref(Url("l2?query=1")!!))
+        assertEquals(Link(href = Url("l2")!!), links.firstWithHref(Url("l2?query=1#fragment")!!))
+
+        // indexOfFirstWithHref falls back to ignoring the query and fragment.
+        assertEquals(1, links.indexOfFirstWithHref(Url("l2#fragment")!!))
+        assertEquals(1, links.indexOfFirstWithHref(Url("l2?query=1#fragment")!!))
+    }
+
+    @Test
+    fun `An exact {href} match takes precedence over the query and fragment fallback`() {
+        val links = listOf(Link(href = Url("l2")!!), Link(href = Url("l2?query=1")!!))
+        assertEquals(1, links.indexOfFirstWithHref(Url("l2?query=1")!!))
+    }
+
+    @Test
+    fun `Removing only the fragment takes precedence over removing the query too`() {
+        val links = listOf(Link(href = Url("l2")!!), Link(href = Url("l2?query=1")!!))
+        // The link keeping the query is preferred over the one without it.
+        assertEquals(1, links.indexOfFirstWithHref(Url("l2?query=1#fragment")!!))
+    }
 }

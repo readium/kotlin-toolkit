@@ -19,7 +19,7 @@ import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Properties
 
 // OPDS extensions for link [Properties].
-// https://drafts.opds.io/schema/properties.schema.json
+// https://specs.opds.io/schema/properties.schema.json
 
 /**
  * Provides a hint about the expected number of items returned.

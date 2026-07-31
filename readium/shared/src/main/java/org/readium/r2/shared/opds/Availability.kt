@@ -28,7 +28,7 @@ import org.readium.r2.shared.util.logging.log
 /**
  * Indicated the availability of a given resource.
  *
- * https://drafts.opds.io/schema/properties.schema.json
+ * https://specs.opds.io/schema/properties.schema.json
  *
  * @param since Timestamp for the previous state change.
  * @param until Timestamp for the next state change.

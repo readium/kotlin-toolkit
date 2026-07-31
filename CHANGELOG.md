@@ -14,6 +14,24 @@ All notable changes to this project will be documented in this file. Take a look
     * Downcast `targetElement.content` to `Content.ImageElement` (for `<img>` and `<svg src=...>`) or `Content.SvgElement` (for inline `<svg>`) to access the image metadata.
     * Images wrapped in an interactive element (e.g. `<a><img></a>`) are not reported, consistent with the Swift toolkit.
     * See the [EPUB Image Preview guide](docs/guides/navigator/epub-image-preview.md).
+* Added a `scroll` preference to the PDFium adapter, to switch between a continuous scroll layout (`true`) and a paginated one (`false`) snapping to page boundaries. The existing `scrollAxis` preference is only effective when `scroll` is enabled, as paginated layouts are always horizontal (contributed by [@ddfreiling](https://github.com/readium/kotlin-toolkit/pull/795)).
+
+### Changed
+
+#### Navigator
+
+* :warning: The PDFium adapter now defaults to a horizontal paginated layout, instead of a vertical continuous scroll. Set `PdfiumDefaults(scroll = true)` to restore the previous behavior. See [the migration guide](docs/migration-guide.md).
+
+### Fixed
+
+#### Navigator
+
+* Fixed the PDFium adapter reporting page positions off by one: `currentLocator` was one page ahead of the visible page, the first page was never reported, and the last page never updated `currentLocator` (contributed by [@huttarl](https://github.com/readium/kotlin-toolkit/pull/812)).
+    * :warning: You must migrate the `Locator` objects created by the PDFium adapter and persisted in your database (e.g. bookmarks, reading progression), as their positions were one page too high. Use the new `Publication.migrateLegacyPdfiumLocator()` helper and take a look at [the migration guide](docs/migration-guide.md).
+
+#### Shared
+
+* EPUB HREFs that are not percent-encoded but carry a fragment or query (e.g. `chapter one.xhtml#section`, with a space in the filename) now keep their `#fragment`/`?query` instead of encoding the separators into the path. This fixes table of contents and Media Overlays links failing to resolve and navigate in poorly-authored EPUBs.
 
 
 ## [3.3.0] - 2026-06-02
