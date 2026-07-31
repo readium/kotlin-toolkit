@@ -21,7 +21,6 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.withContext
-import org.readium.r2.lcp.BuildConfig.DEBUG
 import org.readium.r2.lcp.LcpError
 import org.readium.r2.lcp.LcpException
 import org.readium.r2.lcp.LcpLicense
@@ -116,14 +115,14 @@ internal class License private constructor(
         get() = (charactersToCopyLeft.value ?: 1) > 0
 
     override fun canCopy(text: String): Boolean =
-        charactersToCopyLeft.value?.let { it <= text.length }
+        charactersToCopyLeft.value?.let { text.length <= it }
             ?: true
 
     override suspend fun copy(text: String): Boolean {
         return try {
             licenses.tryCopy(text.length, license.id)
         } catch (e: Exception) {
-            if (DEBUG) Timber.e(e)
+            Timber.e(e, "Failed to consume the copy allowance")
             false
         }
     }
@@ -135,14 +134,14 @@ internal class License private constructor(
         get() = (pagesToPrintLeft.value ?: 1) > 0
 
     override fun canPrint(pageCount: Int): Boolean =
-        pagesToPrintLeft.value?.let { it <= pageCount }
+        pagesToPrintLeft.value?.let { pageCount <= it }
             ?: true
 
     override suspend fun print(pageCount: Int): Boolean {
         return try {
             licenses.tryPrint(pageCount, license.id)
         } catch (e: Exception) {
-            if (DEBUG) Timber.e(e)
+            Timber.e(e, "Failed to consume the print allowance")
             false
         }
     }
