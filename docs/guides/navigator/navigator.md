@@ -16,6 +16,9 @@ The Readium toolkit comes with several `Navigator` implementations for different
 | `AudioNavigator`              | `audiobook` profile (Zipped Audio Book, Readium Audiobook, LCP for Audiobooks package) |
 | `TtsNavigator`                | Any publication with a [`ContentService`](../content.md)                               |
 
+> [!NOTE]
+> New Alpha Jetpack Compose-based Web Navigators are also available: `ReflowableWebRendition` and `FixedWebRendition`. [Refer to the New Web Navigators guide for more details](new-web-navigators.md).
+
 To find out which Navigator is compatible with a publication, refer to its [profile](https://readium.org/webpub-manifest/profiles/). Use `publication.conformsTo()` to identify the publication's profile.
 
 ```kotlin
