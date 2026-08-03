@@ -74,6 +74,7 @@ Guides are available to help you make the most of the toolkit.
 * [Configuring the Navigator](docs/guides/navigator/preferences.md) – setup and render Navigator user preferences (font size, colors, etc.)
 * [Font families in the EPUB navigator](docs/guides/navigator/epub-fonts.md) – support custom font families with reflowable EPUB publications
 * [Media Navigator](docs/guides/navigator/media-navigator.md) – use the Media Navigator to read aloud a publication (audiobook, TTS, etc.)
+* [New Web Navigators](docs/guides/navigator/new-web-navigators.md) - a guide to the new alpha Compose-based navigators for EPUB
 
 ### DRM
 

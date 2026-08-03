@@ -10,8 +10,20 @@ Unlike the legacy `EpubNavigatorFragment`, these new navigators are built as Com
 | `FixedWebRendition`      | `FixedWebRenditionState`      | Fixed-layout EPUB      |
 
 > [!WARNING]
-> These new navigators are still experimental and have not been battle tested. The API are subject to change and
-> you may face bugs that didn't exist in the legacy EPUB navigator.
+> These new navigators are still experimental and have not been battle tested. You may face bugs that
+> didn't exist in the legacy EPUB navigator and the APIs are subject to change.
+
+
+## Setup
+
+To use the new web navigators, add the following dependencies to your `build.gradle.kts` file:
+
+```kotlin
+dependencies {
+    implementation("readium:navigators:web:reflowable")
+    implementation("readium:navigators:web:fixedlayout")
+}
+```
 
 
 ## Instantiating a Rendition
