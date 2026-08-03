@@ -20,8 +20,8 @@ To use the new web navigators, add the following dependencies to your `build.gra
 
 ```kotlin
 dependencies {
-    implementation("readium:navigators:web:reflowable")
-    implementation("readium:navigators:web:fixedlayout")
+    implementation("org.readium.kotlin-toolkit:readium-navigator-web-reflowable:$readium_version")
+    implementation("org.readium.kotlin-toolkit:readium-navigator-web-fixedlayout:$readium_version")
 }
 ```
 
