@@ -22,7 +22,9 @@ import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.intOrNull
 import kotlinx.serialization.json.jsonPrimitive
+import kotlinx.serialization.encodeToString
 import org.json.JSONObject
+import org.readium.r2.lcp.license.model.LcpJson
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.extensions.toInstant
 
@@ -35,7 +37,7 @@ public data class Rights(
     val extensions: JsonObject = JsonObject(emptyMap()),
 ) {
     @Deprecated("Use kotlinx.serialization to serialize the object")
-    val json: JSONObject get() = JSONObject()
+    val json: JSONObject get() = JSONObject(LcpJson.encodeToString(this))
 }
 
 internal object RightsSerializer : KSerializer<Rights> {

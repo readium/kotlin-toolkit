@@ -11,7 +11,9 @@ package org.readium.r2.lcp.license.model.components.lsd
 import kotlin.time.Instant
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.encodeToString
 import org.json.JSONObject
+import org.readium.r2.lcp.license.model.LcpJson
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.util.KotlinInstantSerializer
@@ -23,5 +25,5 @@ public data class PotentialRights(
     val end: Instant? = null,
 ) {
     @Deprecated("Use kotlinx.serialization to serialize the object")
-    val json: JSONObject get() = JSONObject()
+    val json: JSONObject get() = JSONObject(LcpJson.encodeToString(this))
 }

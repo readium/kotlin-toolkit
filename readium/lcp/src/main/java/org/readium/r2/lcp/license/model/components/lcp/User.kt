@@ -11,6 +11,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
+import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonDecoder
 import kotlinx.serialization.json.JsonElement
@@ -21,6 +22,7 @@ import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonPrimitive
 import org.json.JSONObject
+import org.readium.r2.lcp.license.model.LcpJson
 
 @Serializable(with = UserSerializer::class)
 public data class User(
@@ -31,7 +33,7 @@ public data class User(
     val extensions: JsonObject = JsonObject(emptyMap()),
 ) {
     @Deprecated("Use kotlinx.serialization to serialize the object")
-    val json: JSONObject get() = JSONObject()
+    val json: JSONObject get() = JSONObject(LcpJson.encodeToString(this))
 }
 
 internal object UserSerializer : KSerializer<User> {
