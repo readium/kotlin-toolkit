@@ -49,7 +49,7 @@ If the `Publish` workflow fails, you may need to publish to Maven Central manual
 1. Make sure you have the secrets in `.envrc` and [direnv](https://direnv.net) installed.
 2. Run:
     ```
-    ./gradlew publishToMavenCentral --no-configuration-cache
+    ./gradlew publishToMavenCentral
     ```
 3. Sign in to https://central.sonatype.com/publishing/deployments
 4. Publish manually the components
