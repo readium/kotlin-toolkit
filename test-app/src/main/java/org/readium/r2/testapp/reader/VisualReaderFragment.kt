@@ -634,7 +634,7 @@ abstract class VisualReaderFragment : BaseReaderFragment() {
 
     @OptIn(ExperimentalReadiumApi::class)
     private fun showImageViewer(image: Content.ImageElement) {
-        ImageViewerDialogFragment(image)
+        ImageViewerDialogFragment.newInstance(image)
             .show(childFragmentManager, ImageViewerDialogFragment.TAG)
     }
 

@@ -7,6 +7,7 @@
 import { handleDecorationClickEvent } from "./decorator";
 import { nearestInteractiveElement } from "./dom";
 import { toNativeRect } from "./rect";
+import { logError } from "./utils";
 import { getCssSelector } from "css-selector-generator";
 
 window.addEventListener("DOMContentLoaded", function () {
@@ -127,6 +128,15 @@ function extractTargetElement(element) {
     return null;
   }
 
+  try {
+    return buildTargetElement(imageElement);
+  } catch (error) {
+    logError(`Failed to extract the tapped target element: ${error}`);
+    return null;
+  }
+}
+
+function buildTargetElement(imageElement) {
   let rawSrc =
     imageElement.getAttribute("src") ||
     imageElement.getAttribute("href") ||
