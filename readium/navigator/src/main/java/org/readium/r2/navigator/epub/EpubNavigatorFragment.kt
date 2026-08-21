@@ -802,7 +802,7 @@ public class EpubNavigatorFragment internal constructor(
             currentReflowablePageFragment?.link?.let { resourceLink ->
                 data.toTargetElement(
                     resourceLink = resourceLink,
-                    adjustFrame = { it.adjustedToViewport() },
+                    adjustRect = { it.adjustedToViewport() },
                     internalLinkForUrl = viewModel::internalLinkFromUrl
                 )
             }

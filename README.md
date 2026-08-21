@@ -73,7 +73,7 @@ Guides are available to help you make the most of the toolkit.
 * [Navigator](docs/guides/navigator/navigator.md) - an overview of the Navigator to render a `Publication`'s content to the user
 * [Configuring the Navigator](docs/guides/navigator/preferences.md) – setup and render Navigator user preferences (font size, colors, etc.)
 * [Font families in the EPUB navigator](docs/guides/navigator/epub-fonts.md) – support custom font families with reflowable EPUB publications
-* [EPUB image preview](docs/guides/navigator/epub-image-preview.md) – detect when a user taps an image to present it in a dedicated view
+* [EPUB image viewer](docs/guides/navigator/epub-image-viewer.md) – detect when a user taps an image to present it full screen
 * [Media Navigator](docs/guides/navigator/media-navigator.md) – use the Media Navigator to read aloud a publication (audiobook, TTS, etc.)
 
 ### DRM

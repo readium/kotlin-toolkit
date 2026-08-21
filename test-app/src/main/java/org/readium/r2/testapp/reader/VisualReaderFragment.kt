@@ -123,14 +123,14 @@ abstract class VisualReaderFragment : BaseReaderFragment() {
         }
 
         (navigator as VisualNavigator).apply {
-            // Present a preview when the user taps an image. Bind it before the toggle-system-UI
-            // listener so it takes precedence.
+            // Present the image full screen when the user taps it. Bind it before the
+            // toggle-system-UI listener so it takes precedence.
             addInputListener(object : InputListener {
                 @OptIn(ExperimentalReadiumApi::class)
                 override fun onTap(event: TapEvent): Boolean {
                     val image = event.targetElement?.content as? Content.ImageElement
                         ?: return false
-                    showImagePreview(image)
+                    showImageViewer(image)
                     return true
                 }
             })
@@ -630,12 +630,12 @@ abstract class VisualReaderFragment : BaseReaderFragment() {
         }
     }
 
-    // Image Preview
+    // Image Viewer
 
     @OptIn(ExperimentalReadiumApi::class)
-    private fun showImagePreview(image: Content.ImageElement) {
-        ImagePreviewDialogFragment(image)
-            .show(childFragmentManager, ImagePreviewDialogFragment.TAG)
+    private fun showImageViewer(image: Content.ImageElement) {
+        ImageViewerDialogFragment(image)
+            .show(childFragmentManager, ImageViewerDialogFragment.TAG)
     }
 
     fun updateSystemUiVisibility() {

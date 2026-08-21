@@ -49,7 +49,7 @@ import org.readium.r2.testapp.utils.compose.AppTheme
  * This demonstrates the experimental [org.readium.r2.navigator.input.TapEvent.targetElement] API.
  */
 @OptIn(ExperimentalReadiumApi::class)
-class ImagePreviewDialogFragment(
+class ImageViewerDialogFragment(
     private val image: Content.ImageElement,
 ) : DialogFragment() {
 
@@ -68,7 +68,7 @@ class ImagePreviewDialogFragment(
         ComposeView(requireContext()).apply {
             setContent {
                 AppTheme {
-                    ImagePreview(
+                    ImageViewer(
                         image = image,
                         loadBitmap = ::loadBitmap,
                         onDismiss = { dismiss() }
@@ -96,13 +96,13 @@ class ImagePreviewDialogFragment(
         }
 
     companion object {
-        const val TAG = "ImagePreviewDialogFragment"
+        const val TAG = "ImageViewerDialogFragment"
     }
 }
 
 @OptIn(ExperimentalReadiumApi::class)
 @Composable
-private fun ImagePreview(
+private fun ImageViewer(
     image: Content.ImageElement,
     loadBitmap: suspend () -> android.graphics.Bitmap?,
     onDismiss: () -> Unit,

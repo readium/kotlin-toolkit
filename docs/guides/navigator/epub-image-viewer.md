@@ -1,4 +1,4 @@
-# EPUB Image Preview
+# EPUB image viewer
 
 This guide explains how to detect when a user taps an image in an EPUB publication to present it in a dedicated view, using the experimental `TapEvent.targetElement` API.
 
@@ -10,7 +10,7 @@ This guide explains how to detect when a user taps an image in an EPUB publicati
 The EPUB navigator populates `TapEvent.targetElement` when it recognizes the content element under the pointer. The `TargetElement` value exposes two properties:
 
 * `content` – the `Content.Element` under the pointer (e.g. `Content.ImageElement`, `Content.SvgElement`)
-* `frame` – the element's on-screen frame (`RectF`) relative to the navigator's view, in device pixels
+* `rect` – the element's on-screen rectangle (`RectF`) relative to the navigator's view, in device pixels
 
 Register an `InputListener` on the navigator and downcast `content` to the specific type you want to handle:
 
@@ -22,7 +22,7 @@ navigator.addInputListener(object : InputListener {
             ?: return false
 
         // The user tapped an image – handle it here.
-        showImagePreview(image)
+        showImageViewer(image)
         return true
     }
 })

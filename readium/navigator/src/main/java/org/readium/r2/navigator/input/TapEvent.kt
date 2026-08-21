@@ -20,13 +20,13 @@ public data class TapEvent(
 )
 
 /**
- * A content element targeted by a pointer event, paired with its on-screen [frame].
+ * A content element targeted by a pointer event, paired with its on-screen [rect].
  *
- * @param frame Frame of the element relative to the navigator's view, in device pixels.
+ * @param rect Frame of the element relative to the navigator's view, in device pixels.
  * @param content The content element under the pointer.
  */
 @ExperimentalReadiumApi
 public data class TargetElement(
-    val frame: RectF,
+    val rect: RectF,
     val content: Content.Element,
 )

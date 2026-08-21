@@ -146,7 +146,7 @@ function extractTargetElement(element) {
     tag: imageElement.tagName.toLowerCase(),
     html: html,
     src: src,
-    frame: toNativeRect(imageElement.getBoundingClientRect()),
+    rect: toNativeRect(imageElement.getBoundingClientRect()),
     accessibilityLabel: imageElement.getAttribute("aria-label")?.trim() || null,
     caption: extractCaption(imageElement),
     cssSelector: getCssSelector(imageElement),

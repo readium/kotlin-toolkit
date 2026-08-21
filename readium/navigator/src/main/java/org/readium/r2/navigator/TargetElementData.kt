@@ -28,7 +28,7 @@ import org.readium.r2.shared.util.mediatype.MediaType
  * @param tag Lowercased tag name of the image element (e.g. `img`, `svg`).
  * @param html Raw outer HTML, only present for inline SVGs without a resolvable source.
  * @param src Absolute URL of the image source, resolved against the document base URI.
- * @param frame On-screen frame of the element, in device pixels.
+ * @param rect On-screen frame of the element, in device pixels.
  * @param accessibilityLabel Accessibility label extracted from the `aria-label` attribute.
  * @param caption Caption extracted from `alt`, `title`, SVG `<title>`/`<desc>` or `<figcaption>`.
  * @param cssSelector CSS selector targeting the element in the resource.
@@ -37,7 +37,7 @@ internal data class TargetElementData(
     val tag: String,
     val html: String?,
     val src: String?,
-    val frame: RectF,
+    val rect: RectF,
     val accessibilityLabel: String?,
     val caption: String?,
     val cssSelector: String?,
@@ -47,13 +47,13 @@ internal data class TargetElementData(
             obj ?: return null
 
             val tag = obj.optNullableString("tag") ?: return null
-            val frame = obj.optRectF("frame") ?: return null
+            val rect = obj.optRectF("rect") ?: return null
 
             return TargetElementData(
                 tag = tag,
                 html = obj.optNullableString("html"),
                 src = obj.optNullableString("src"),
-                frame = frame,
+                rect = rect,
                 accessibilityLabel = obj.optNullableString("accessibilityLabel"),
                 caption = obj.optNullableString("caption"),
                 cssSelector = obj.optNullableString("cssSelector")
@@ -66,12 +66,12 @@ internal data class TargetElementData(
  * Builds the public [TargetElement] from the raw metadata produced by gestures.js.
  *
  * @param resourceLink Link to the resource owning the web view that emitted the tap.
- * @param adjustFrame Adjusts the element frame to the navigator's viewport.
+ * @param adjustRect Adjusts the element frame to the navigator's viewport.
  * @param internalLinkForUrl Resolves a URL to a link in the publication manifest.
  */
 internal fun TargetElementData.toTargetElement(
     resourceLink: Link,
-    adjustFrame: (RectF) -> RectF,
+    adjustRect: (RectF) -> RectF,
     internalLinkForUrl: (AbsoluteUrl) -> Link?,
 ): TargetElement? {
     // Locator pointing to the element inside the resource that contains it.
@@ -88,7 +88,7 @@ internal fun TargetElementData.toTargetElement(
     val content = contentElement(locator, internalLinkForUrl) ?: return null
 
     return TargetElement(
-        frame = adjustFrame(frame),
+        rect = adjustRect(rect),
         content = content
     )
 }

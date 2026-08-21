@@ -11,7 +11,7 @@ All notable changes to this project will be documented in this file. Take a look
 #### Navigator
 
 * Added a `scroll` preference to the PDFium adapter, to switch between a continuous scroll layout (`true`) and a paginated one (`false`) snapping to page boundaries. The existing `scrollAxis` preference is only effective when `scroll` is enabled, as paginated layouts are always horizontal (contributed by [@ddfreiling](https://github.com/readium/kotlin-toolkit/pull/795)).
-* The EPUB navigator now reports the image under a tap through the new experimental `TapEvent.targetElement` property, making it easy to build features such as image previews. See the [EPUB Image Preview guide](docs/guides/navigator/epub-image-preview.md).
+* The EPUB navigator now reports the image under a tap through the new experimental `TapEvent.targetElement` property, making it easy to build features such as a full-screen image viewer. See the [EPUB image viewer guide](docs/guides/navigator/epub-image-viewer.md).
 
 ### Changed
 
