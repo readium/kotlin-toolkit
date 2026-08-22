@@ -1,4 +1,4 @@
-# New Web Navigators
+# Web Navigators
 
 The Readium toolkit offers new navigators based on [Jetpack Compose](https://developer.android.com/jetpack/compose): `ReflowableWebRendition` and `FixedWebRendition`.
 
@@ -16,7 +16,7 @@ Unlike the legacy `EpubNavigatorFragment`, these new navigators are built as Com
 
 ## Setup
 
-To use the new web navigators, add the following dependencies to your `build.gradle.kts` file:
+To use the web navigators, add the following dependencies to your `build.gradle.kts` file:
 
 ```kotlin
 dependencies {
@@ -50,7 +50,9 @@ The `RenditionState` holds the internal state of the navigator and is used by th
 val renditionState = navigatorFactory.createRenditionState(
     initialPreferences = initialPreferences,
     initialLocation = initialLocation
-).getOrThrow()
+).getOrElse {
+    // Handle error cases
+}
 ```
 
 ### 3. Compose the Rendition
@@ -65,7 +67,7 @@ ReflowableWebRendition(
 
 ## Input and Hyperlinks
 
-You can observe user interactions by providing listeners to the rendition Composable.
+You can react to user interactions by providing listeners to the rendition Composable.
 
 ```kotlin
 val inputListener = object : InputListener {
@@ -75,9 +77,12 @@ val inputListener = object : InputListener {
 }
 
 val hyperlinkListener = object : HyperlinkListener {
-    override fun onResourceActivated(url: Url, href: String): Boolean {
-        // Handle link activation
-        return true
+    override fun onReadingOrderLinkActivated(url: Url, context: LinkContext?) {
+        // Handle internal navigation
+    }
+
+    override fun onExternalLinkActivated(url: AbsoluteUrl, context: LinkContext?) {
+        // Handle URL opening
     }
 }
 ```
@@ -129,8 +134,8 @@ controller.preferences = controller.preferences.copy(
 If you need to access the resolved settings (the values actually used by the rendition after merging preferences with defaults and publication metadata), you can use the `controller.settings` property.
 
 ```kotlin
-val currentSettings = controller?.settings
-val actualFontSize = currentSettings?.fontSize
+val currentSettings = controller.settings
+val actualFontSize = currentSettings.fontSize
 ```
 
 ### Preference constraints
@@ -162,7 +167,7 @@ The new navigators support decorations, allowing you to render highlights or oth
 
 ```kotlin
 val highlights = listOf(
-    ReflowableWebDecoration(
+    Decoration(
         id = Decoration.Id("highlight-1"),
         location = location,
         style = Decoration.Style.Highlight(tint = Color.Yellow)

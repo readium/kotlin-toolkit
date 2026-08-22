@@ -17,7 +17,7 @@ The Readium toolkit comes with several `Navigator` implementations for different
 | `TtsNavigator`                | Any publication with a [`ContentService`](../content.md)                               |
 
 > [!NOTE]
-> New alpha Jetpack Compose-based Navigators are also available for EPUB: `ReflowableWebRendition` and `FixedWebRendition`. [Refer to the New Web Navigators guide for more details](new-web-navigators.md).
+> New alpha Jetpack Compose-based Navigators are also available for EPUB: `ReflowableWebRendition` and `FixedWebRendition`. [Refer to the Web Navigators guide for more details](web-navigators.md).
 
 To find out which Navigator is compatible with a publication, refer to its [profile](https://readium.org/webpub-manifest/profiles/). Use `publication.conformsTo()` to identify the publication's profile.
 
