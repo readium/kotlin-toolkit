@@ -68,7 +68,6 @@ Present in both: `backgroundColor`, `columnCount`, `fontFamily`, `fontSize`, `fo
 | Readium CSS injection with RTL / CJK variants | ✅ | ✅ | |
 | Custom font family declarations | ✅ | ✅ | Same builder DSL (`fontFamilyDeclarations`) |
 | Bundled accessibility fonts (OpenDyslexic, AccessibleDfA, iA Writer Duospace) | ✅ | ✅ | |
-| `useReadiumCssFontSize` escape hatch | ✅ | ❌ | Legacy only (`DelicateReadiumApi`) |
 
 ## Decorations
 
