@@ -6,7 +6,25 @@ All notable changes to this project will be documented in this file. Take a look
 
 ## [Unreleased]
 
+### Added
+
+#### Navigator
+
+* Added a `scroll` preference to the PDFium adapter, to switch between a continuous scroll layout (`true`) and a paginated one (`false`) snapping to page boundaries. The existing `scrollAxis` preference is only effective when `scroll` is enabled, as paginated layouts are always horizontal (contributed by [@ddfreiling](https://github.com/readium/kotlin-toolkit/pull/795)).
+* The EPUB navigator now reports the image under a tap through the new experimental `TapEvent.targetElement` property, making it easy to build features such as a full-screen image viewer. See the [EPUB image viewer guide](docs/guides/navigator/epub-image-viewer.md).
+
+### Changed
+
+#### Navigator
+
+* :warning: The PDFium adapter now defaults to a horizontal paginated layout, instead of a vertical continuous scroll. Set `PdfiumDefaults(scroll = true)` to restore the previous behavior. See [the migration guide](docs/migration-guide.md).
+
 ### Fixed
+
+#### Navigator
+
+* Fixed the PDFium adapter reporting page positions off by one: `currentLocator` was one page ahead of the visible page, the first page was never reported, and the last page never updated `currentLocator` (contributed by [@huttarl](https://github.com/readium/kotlin-toolkit/pull/812)).
+    * :warning: You must migrate the `Locator` objects created by the PDFium adapter and persisted in your database (e.g. bookmarks, reading progression), as their positions were one page too high. Use the new `Publication.migrateLegacyPdfiumLocator()` helper and take a look at [the migration guide](docs/migration-guide.md).
 
 #### Shared
 

@@ -88,7 +88,7 @@ internal class R2FXLPageFragment : Fragment() {
             r2FXLLayout.addOnDoubleTapListener(R2FXLOnDoubleTapListener(true))
             r2FXLLayout.addOnTapListener(object : R2FXLLayout.OnTapListener {
                 override fun onTap(view: R2FXLLayout, info: R2FXLLayout.TapInfo): Boolean {
-                    return left.listener?.onTap(PointF(info.x, info.y)) ?: false
+                    return left.listener?.onTap(PointF(info.x, info.y), targetElement = null) ?: false
                 }
             })
 
@@ -112,7 +112,7 @@ internal class R2FXLPageFragment : Fragment() {
             r2FXLLayout.addOnDoubleTapListener(R2FXLOnDoubleTapListener(true))
             r2FXLLayout.addOnTapListener(object : R2FXLLayout.OnTapListener {
                 override fun onTap(view: R2FXLLayout, info: R2FXLLayout.TapInfo): Boolean {
-                    return webview.listener?.onTap(PointF(info.x, info.y)) ?: false
+                    return webview.listener?.onTap(PointF(info.x, info.y), targetElement = null) ?: false
                 }
             })
 

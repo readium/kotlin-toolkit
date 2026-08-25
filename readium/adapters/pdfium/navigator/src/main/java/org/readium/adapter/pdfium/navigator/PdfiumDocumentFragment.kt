@@ -62,6 +62,7 @@ public class PdfiumDocumentFragment internal constructor(
             fit = Fit.WIDTH,
             pageSpacing = 0.0,
             readingProgression = ReadingProgression.LTR,
+            scroll = true,
             scrollAxis = Axis.VERTICAL
         ),
         listener = null
@@ -121,8 +122,10 @@ public class PdfiumDocumentFragment internal constructor(
                         pages(*((pageCount - 1) downTo 0).toList().toIntArray())
                     }
                 }
-                .swipeHorizontal(settings.scrollAxis == Axis.HORIZONTAL)
+                .swipeHorizontal(settings.isHorizontal)
                 .spacing(settings.pageSpacing.roundToInt())
+                .pageSnap(!settings.scroll)
+                .pageFling(!settings.scroll)
                 // Customization of [PDFView] is done before setting the listeners,
                 // to avoid overriding them in reading apps, which would break the
                 // navigator.
@@ -164,28 +167,21 @@ public class PdfiumDocumentFragment internal constructor(
         return validRange.contains(pageIndex)
     }
 
-    private fun convertPageIndexToView(page: Int): Int {
-        var index = (page - 1).coerceAtLeast(0)
-        if (isPagesOrderReversed) {
-            index = (pageCount - 1) - index
-        }
-        return index
-    }
+    // Both indices are 0-based: `pageIndex` is the navigator-facing index into
+    // publication.positions(), while `viewPageIndex` is the PDFView page index. They
+    // differ only when the page order is reversed for right-to-left reading progressions.
+    private fun convertPageIndexToView(pageIndex: Int): Int =
+        if (isPagesOrderReversed) (pageCount - 1) - pageIndex else pageIndex
 
-    private fun convertPageIndexFromView(index: Int): Int {
-        var page = index + 1
-        if (isPagesOrderReversed) {
-            page = (pageCount + 1) - page
-        }
-        return page
-    }
+    private fun convertPageIndexFromView(viewPageIndex: Int): Int =
+        if (isPagesOrderReversed) (pageCount - 1) - viewPageIndex else viewPageIndex
 
     /**
      * Indicates whether the order of the [PDFView] pages is reversed to take into account
      * right-to-left reading progressions.
      */
     private val isPagesOrderReversed: Boolean get() =
-        settings.scrollAxis == Axis.HORIZONTAL && settings.readingProgression == ReadingProgression.RTL
+        settings.isHorizontal && settings.readingProgression == ReadingProgression.RTL
 
     private var settings: PdfiumSettings = initialSettings
 

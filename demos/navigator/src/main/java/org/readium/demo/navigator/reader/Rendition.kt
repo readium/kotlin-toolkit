@@ -276,7 +276,6 @@ fun <L : ExportableLocation, G : GoLocation, S : SelectionLocation, P : Preferen
         when (readerState.renditionState) {
             is FixedWebRenditionState -> {
                 FixedWebRendition(
-                    modifier = Modifier.fillMaxSize(),
                     state = readerState.renditionState,
                     inputListener = inputListener,
                     hyperlinkListener = hyperlinkListener,
@@ -286,7 +285,6 @@ fun <L : ExportableLocation, G : GoLocation, S : SelectionLocation, P : Preferen
             }
             is ReflowableWebRenditionState -> {
                 ReflowableWebRendition(
-                    modifier = Modifier.fillMaxSize(),
                     state = readerState.renditionState,
                     inputListener = inputListener,
                     hyperlinkListener = hyperlinkListener,

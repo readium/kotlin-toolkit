@@ -54,6 +54,7 @@ import org.readium.r2.navigator.R2BasicWebView
 import org.readium.r2.navigator.RestorationNotSupportedException
 import org.readium.r2.navigator.SelectableNavigator
 import org.readium.r2.navigator.Selection
+import org.readium.r2.navigator.TargetElementData
 import org.readium.r2.navigator.databinding.ReadiumNavigatorViewpagerBinding
 import org.readium.r2.navigator.dummyPublication
 import org.readium.r2.navigator.epub.EpubNavigatorViewModel.RunScriptCommand
@@ -71,6 +72,7 @@ import org.readium.r2.navigator.input.InputListener
 import org.readium.r2.navigator.input.KeyEvent
 import org.readium.r2.navigator.input.KeyInterceptorView
 import org.readium.r2.navigator.input.TapEvent
+import org.readium.r2.navigator.input.TargetElement
 import org.readium.r2.navigator.pager.R2EpubPageFragment
 import org.readium.r2.navigator.pager.R2PagerAdapter
 import org.readium.r2.navigator.pager.R2PagerAdapter.PageResource
@@ -78,6 +80,7 @@ import org.readium.r2.navigator.pager.R2ViewPager
 import org.readium.r2.navigator.preferences.Configurable
 import org.readium.r2.navigator.preferences.FontFamily
 import org.readium.r2.navigator.preferences.ReadingProgression
+import org.readium.r2.navigator.toTargetElement
 import org.readium.r2.navigator.util.createFragmentFactory
 import org.readium.r2.shared.DelicateReadiumApi
 import org.readium.r2.shared.ExperimentalReadiumApi
@@ -790,8 +793,19 @@ public class EpubNavigatorFragment internal constructor(
         override fun javascriptInterfacesForResource(link: Link): Map<String, Any?> =
             config.javascriptInterfaces.mapValues { (_, factory) -> factory(link) }
 
-        override fun onTap(point: PointF): Boolean =
-            inputListener.onTap(TapEvent(point))
+        override fun onTap(point: PointF, targetElement: TargetElementData?): Boolean =
+            inputListener.onTap(
+                TapEvent(point, targetElement?.let { buildTargetElement(it) })
+            )
+
+        private fun buildTargetElement(data: TargetElementData): TargetElement? =
+            currentReflowablePageFragment?.link?.let { resourceLink ->
+                data.toTargetElement(
+                    resourceLink = resourceLink,
+                    adjustRect = { it.adjustedToViewport() },
+                    internalLinkForUrl = viewModel::internalLinkFromUrl
+                )
+            }
 
         override fun onDragStart(event: R2BasicWebView.DragEvent): Boolean =
             onDrag(DragEvent.Type.Start, event)
