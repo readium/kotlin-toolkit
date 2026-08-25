@@ -4,21 +4,32 @@
  * available in the top-level LICENSE file of the project.
  */
 
+@file:OptIn(ExperimentalReadiumApi::class)
+
 package org.readium.r2.shared.publication
 
 import android.os.Parcelable
 import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.descriptors.PrimitiveKind
+import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
+import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.URITemplate
 import org.readium.r2.shared.util.Url as SharedUrl
 import timber.log.Timber
 
 /**
- * An hypertext reference points to a resource in a [Publication].
+ * A hypertext reference points to a resource in a [Publication].
  *
  * It is potentially templated, use [resolve] to get the actual URL.
  */
 @Parcelize
+@Serializable(with = HrefSerializer::class)
 public class Href private constructor(private val href: Url) : Parcelable {
 
     /**
@@ -87,9 +98,7 @@ public class Href private constructor(private val href: Url) : Parcelable {
 
         other as Href
 
-        if (href != other.href) return false
-
-        return true
+        return href == other.href
     }
 
     override fun hashCode(): Int =
@@ -140,5 +149,20 @@ public class Href private constructor(private val href: Url) : Parcelable {
         }
 
         override fun toString(): String = template
+    }
+}
+
+@ExperimentalReadiumApi
+public object HrefSerializer : KSerializer<Href> {
+    override val descriptor: SerialDescriptor =
+        PrimitiveSerialDescriptor("Href", PrimitiveKind.STRING)
+
+    override fun deserialize(decoder: Decoder): Href {
+        val string = decoder.decodeString()
+        return Href(string) ?: throw IllegalArgumentException("Invalid Href: $string")
+    }
+
+    override fun serialize(encoder: Encoder, value: Href) {
+        encoder.encodeString(value.toString())
     }
 }

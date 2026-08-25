@@ -7,6 +7,7 @@
 plugins {
     id("readium.library-conventions")
     alias(libs.plugins.ksp)
+    alias(libs.plugins.kotlin.serialization)
 }
 
 android {
@@ -32,6 +33,7 @@ dependencies {
     implementation(libs.timber)
     implementation(libs.androidx.browser)
     implementation(libs.kotlinx.datetime)
+    implementation(libs.kotlinx.serialization.json)
 
     implementation(libs.bundles.room)
     ksp(libs.androidx.room.compiler)

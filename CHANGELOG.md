@@ -15,6 +15,10 @@ All notable changes to this project will be documented in this file. Take a look
 
 ### Changed
 
+#### LCP
+
+* LCP data models now use `kotlinx.serialization` instead of `org.json`. Some constructor properties have changed or been removed as part of this migration. Deprecated shims have been provided where possible to ease migration.
+
 #### Navigator
 
 * :warning: The PDFium adapter now defaults to a horizontal paginated layout, instead of a vertical continuous scroll. Set `PdfiumDefaults(scroll = true)` to restore the previous behavior. See [the migration guide](docs/migration-guide.md).

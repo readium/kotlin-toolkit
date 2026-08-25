@@ -7,12 +7,22 @@
  * LICENSE file present in the project repository where this source code is maintained.
  */
 
+@file:OptIn(ExperimentalReadiumApi::class)
+
 package org.readium.r2.shared.util.mediatype
 
 import android.os.Parcelable
 import java.nio.charset.Charset
 import java.util.Locale
 import kotlinx.parcelize.Parcelize
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.descriptors.PrimitiveKind
+import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
+import org.readium.r2.shared.ExperimentalReadiumApi
 
 /**
  * Represents a document format, identified by a unique RFC 6838 media type.
@@ -32,6 +42,7 @@ import kotlinx.parcelize.Parcelize
  * @param parameters The parameters in the media type, such as `charset=utf-8`.
  */
 @Parcelize
+@Serializable(with = MediaTypeSerializer::class)
 public class MediaType private constructor(
     public val type: String,
     public val subtype: String,
@@ -235,7 +246,7 @@ public class MediaType private constructor(
                     (
                         try {
                             Charset.forName(it).name()
-                        } catch (e: Exception) {
+                        } catch (_: Exception) {
                             it
                         }
                         ).uppercase(Locale.ROOT)
@@ -330,5 +341,20 @@ public class MediaType private constructor(
         public val XML: MediaType = MediaType("application/xml")!!
         public val ZAB: MediaType = MediaType("application/x.readium.zab+zip")!! // non-existent
         public val ZIP: MediaType = MediaType("application/zip")!!
+    }
+}
+
+@ExperimentalReadiumApi
+public object MediaTypeSerializer : KSerializer<MediaType> {
+    override val descriptor: SerialDescriptor =
+        PrimitiveSerialDescriptor("MediaType", PrimitiveKind.STRING)
+
+    override fun deserialize(decoder: Decoder): MediaType {
+        val string = decoder.decodeString()
+        return MediaType(string) ?: throw IllegalArgumentException("Invalid MediaType: $string")
+    }
+
+    override fun serialize(encoder: Encoder, value: MediaType) {
+        encoder.encodeString(value.toString())
     }
 }
