@@ -64,6 +64,7 @@ nav:
       - Extracting the content of a publication: guides/content.md
       - Opening a publication: guides/open-publication.md
       - Navigator: guides/navigator/navigator.md
+      - Web navigators: guides/navigator/web-navigators.md
       - Media navigator: guides/navigator/media-navigator.md
       - Navigator preferences: guides/navigator/preferences.md
       - EPUB font families: guides/navigator/epub-fonts.md
