@@ -64,7 +64,7 @@ internal open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebV
         fun onPageLoaded(webView: R2BasicWebView, link: Link) {}
         fun onPageChanged(pageIndex: Int, totalPages: Int, url: String) {}
         fun onPageEnded(end: Boolean) {}
-        fun onTap(point: PointF): Boolean = false
+        fun onTap(point: PointF, targetElement: TargetElementData?): Boolean = false
         fun onDragStart(event: DragEvent): Boolean = false
         fun onDragMove(event: DragEvent): Boolean = false
         fun onDragEnd(event: DragEvent): Boolean = false
@@ -305,7 +305,9 @@ internal open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebV
             return handleFootnote(event.interactiveElement)
         }
 
-        return runBlocking(uiScope.coroutineContext) { listener?.onTap(event.point) ?: false }
+        return runBlocking(uiScope.coroutineContext) {
+            listener?.onTap(event.point, event.targetElement) ?: false
+        }
     }
 
     /**
@@ -330,7 +332,7 @@ internal open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebV
     private data class TapEvent(
         val defaultPrevented: Boolean,
         val point: PointF,
-        val targetElement: String,
+        val targetElement: TargetElementData?,
         val interactiveElement: String?,
     ) {
         companion object {
@@ -343,7 +345,9 @@ internal open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebV
                 return TapEvent(
                     defaultPrevented = obj.optBoolean("defaultPrevented"),
                     point = PointF(x, y),
-                    targetElement = obj.optString("targetElement"),
+                    targetElement = TargetElementData.fromJSONObject(
+                        obj.optJSONObject("targetElement")
+                    ),
                     interactiveElement = obj.optNullableString("interactiveElement")
                 )
             }
