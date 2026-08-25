@@ -1,3 +1,5 @@
+import java.util.Properties
+
 /*
  * Copyright 2018 Readium Foundation. All rights reserved.
  * Use of this source code is governed by the BSD-style license
@@ -11,6 +13,9 @@ plugins {
 
 android {
     namespace = "org.readium.r2.lcp"
+    defaultConfig {
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
 }
 
 kotlin {
@@ -25,6 +30,20 @@ dependencies {
     implementation(libs.kotlinx.coroutines.android)
 
     api(project(":readium:readium-shared"))
+
+    val lcpDep: String? = System.getenv("LCP_DEPENDENCY") ?: run {
+        val localProperties = Properties()
+        val localPropertiesFile = File(project.rootDir, "local.properties")
+        if (localPropertiesFile.exists()) {
+            localPropertiesFile.inputStream().use { localProperties.load(it) }
+        }
+        localProperties.getProperty("lcp.dependency")
+    }
+    lcpDep?.let {
+        compileOnly(it)
+        testImplementation(it)
+        androidTestImplementation(it)
+    }
 
     implementation(libs.androidx.constraintlayout)
     implementation(libs.androidx.core)
@@ -42,4 +61,9 @@ dependencies {
     testImplementation(libs.mockk)
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.robolectric)
+
+    // Instrumented Tests (requires LCP being enabled)
+    androidTestImplementation(libs.androidx.runner)
+    androidTestImplementation(libs.androidx.junit.ktx)
+    androidTestImplementation(libs.kotlinx.coroutines.test)
 }

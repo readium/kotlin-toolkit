@@ -110,7 +110,9 @@ class CatalogFragment : Fragment() {
                                             href = link.href.toString(),
                                             type = catalog.type
                                         )
-                                        val bundle = bundleOf(CATALOGFEED to catalog1)
+                                        val bundle = Bundle().apply {
+                                            putParcelable(CATALOGFEED, catalog1)
+                                        }
                                         Navigation.findNavController(requireView())
                                             .navigate(R.id.action_navigation_catalog_self, bundle)
                                         true

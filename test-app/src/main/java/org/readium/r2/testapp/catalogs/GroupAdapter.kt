@@ -6,6 +6,7 @@
 
 package org.readium.r2.testapp.catalogs
 
+import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -18,6 +19,7 @@ import androidx.recyclerview.widget.RecyclerView
 import org.readium.r2.shared.opds.Group
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.testapp.R
+import org.readium.r2.testapp.catalogs.CatalogFeedListAdapter.Companion.CATALOGFEED
 import org.readium.r2.testapp.data.model.Catalog
 import org.readium.r2.testapp.databinding.ItemGroupViewBinding
 
@@ -59,7 +61,9 @@ class GroupAdapter(
                         title = group.title,
                         type = type
                     )
-                    val bundle = bundleOf(CatalogFeedListAdapter.CATALOGFEED to catalog1)
+                    val bundle = Bundle().apply {
+                        putParcelable(CATALOGFEED, catalog1)
+                    }
                     Navigation.findNavController(it)
                         .navigate(R.id.action_navigation_catalog_self, bundle)
                 }

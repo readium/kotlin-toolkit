@@ -6,6 +6,7 @@
 
 package org.readium.r2.testapp.catalogs
 
+import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.core.os.bundleOf
@@ -41,7 +42,9 @@ class CatalogFeedListAdapter(private val onLongClick: (Catalog) -> Unit) :
         fun bind(catalog: Catalog) {
             binding.catalogListButton.text = catalog.title
             binding.catalogListButton.setOnClickListener {
-                val bundle = bundleOf(CATALOGFEED to catalog)
+                val bundle = Bundle().apply {
+                    putParcelable(CATALOGFEED, catalog)
+                }
                 Navigation.findNavController(it)
                     .navigate(R.id.action_navigation_catalog_list_to_navigation_catalog, bundle)
             }
