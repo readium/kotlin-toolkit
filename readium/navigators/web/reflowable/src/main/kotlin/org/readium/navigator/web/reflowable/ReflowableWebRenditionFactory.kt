@@ -77,7 +77,7 @@ public class ReflowableWebRenditionFactory private constructor(
     }
 
     public suspend fun createRenditionState(
-        initialPreferences: ReflowableWebPreferences,
+        initialPreferences: ReflowableWebPreferences? = null,
         initialLocation: ReflowableWebGoLocation? = null,
         readingOrder: List<Link> = publication.readingOrder,
         positionsService: PositionsService = this.positionsService,
@@ -116,6 +116,9 @@ public class ReflowableWebRenditionFactory private constructor(
 
         val initialLocation = initialLocation
             ?: ReflowableWebGoLocation(readingOrderItems[0].href)
+
+        val initialPreferences = initialPreferences
+            ?: ReflowableWebPreferences()
 
         val state =
             ReflowableWebRenditionState(

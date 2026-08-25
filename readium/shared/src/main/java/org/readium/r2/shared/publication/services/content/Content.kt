@@ -80,6 +80,26 @@ public interface Content {
     }
 
     /**
+     * An inline SVG image.
+     *
+     * @param svg Raw inline SVG source.
+     * @param caption Short piece of text associated with the image.
+     */
+    public data class SvgElement(
+        override val locator: Locator,
+        val svg: String,
+        val caption: String?,
+        override val attributes: List<Attribute<*>> = emptyList(),
+    ) : TextualElement {
+
+        override val text: String? get() =
+            // The caption might be a better text description than the accessibility label, when
+            // available.
+            caption?.takeIf { it.isNotBlank() }
+                ?: super.text
+    }
+
+    /**
      * A text element.
      *
      * @param role Purpose of this element in the broader context of the document.
