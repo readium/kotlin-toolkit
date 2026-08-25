@@ -18,7 +18,7 @@ Legend:
 |---|:---:|:---:|---|
 | Reflowable EPUB | ✅ | ✅ | |
 | Fixed-layout EPUB | ✅ | ✅ | |
-| Documentation | ✅ | ❌ | No user guide yet for the new navigators |
+| Documentation | ✅ | ✅ | |
 
 ## Navigation
 
