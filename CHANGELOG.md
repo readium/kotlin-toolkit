@@ -30,6 +30,11 @@ All notable changes to this project will be documented in this file. Take a look
 
 * EPUB HREFs that are not percent-encoded but carry a fragment or query (e.g. `chapter one.xhtml#section`, with a space in the filename) now keep their `#fragment`/`?query` instead of encoding the separators into the path. This fixes table of contents and Media Overlays links failing to resolve and navigate in poorly-authored EPUBs.
 
+#### LCP
+
+* [#772](https://github.com/readium/kotlin-toolkit/issues/772) Fixed retrieving an expired LCP license, to be able to renew it. `LcpService.retrieveLicense()` and `publication.lcpLicense` now return the license even when its status is not valid (e.g. expired, returned or revoked), matching the behavior of the Swift toolkit. Decrypting content with such a license still fails with the corresponding `LcpError.LicenseStatus` error.
+    * **Note**: as a result, opening a publication with an expired license no longer reports it as restricted: `ContentProtectionService.isRestricted` is now `false` and `publication.protectionError` is `null`. If you relied on `protectionError` to detect an expired license, check `lcpLicense.status` instead, or handle the `LcpError.LicenseStatus` decryption errors while rendering the publication.
+
 
 ## [3.3.0] - 2026-06-02
 
