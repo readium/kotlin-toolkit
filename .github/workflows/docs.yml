@@ -1,0 +1,56 @@
+name: Documentation
+
+on:
+  workflow_dispatch:
+  # push:
+  #   branches:
+  #     - main
+
+jobs:
+  docs:
+    name: Update documentation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Fetch tags
+        run: git fetch --prune --unshallow
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: 3.13
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install mkdocs mkdocs-material mike
+
+      - uses: actions/setup-java@v5
+        with:
+          java-version: 17
+          distribution: 'adopt'
+
+      - name: Get current Readium version
+        run: echo "READIUM_VERSION=`git describe --tag --match [0-9]* --abbrev=0`" >> $GITHUB_ENV
+
+      - name: Run Dokka
+        run: ./gradlew :dokkaGeneratePublicationHtml
+
+      - name: Copy README.md into docs to replace Dokka index.md
+        run: cp README.md docs/index.md
+
+      - name: Copy Dokka output to docs/api
+        run: |
+          mkdir -p docs/api
+          cp -r build/dokka/html/* docs/api/
+
+      - name: Run MkDocs
+        run: |
+          git config --global user.name "${GITHUB_ACTOR}"
+          git config --global user.email "${GITHUB_ACTOR}@users.noreply.github.com"
+          mike deploy ${{ env.READIUM_VERSION }}
+          mike set-default ${{ env.READIUM_VERSION }}
+          mike deploy --push --update-aliases ${{ env.READIUM_VERSION }} latest

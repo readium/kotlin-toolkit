@@ -1,0 +1,81 @@
+site_name: Readium Kotlin
+
+# Meta tags (placed in header)
+site_description: Readium Mobile is a toolkit for ebooks, audiobooks and comics written in Swift & Kotlin.
+site_author: Readium Foundation
+site_url: https://github.com/readium/kotlin-toolkit
+
+# Repository (add link to repository on each page)
+repo_name: kotlin-toolkit
+repo_url: https://github.com/readium/kotlin-toolkit
+
+# Copyright (shown at the footer)
+copyright: 'Copyright &copy; 2026 Readium Foundation'
+
+# Material theme
+theme:
+  name: 'material'
+  #  favicon: favicon.svg
+  social:
+    - type: 'github'
+      link: 'https://github.com/readium/kotlin-toolkit'
+  features:
+    - navigation.tabs
+    - navigation.path
+
+# Extensions
+markdown_extensions:
+  - admonition
+  - codehilite:
+      guess_lang: false
+  - footnotes
+  - meta
+  - def_list
+  - toc:
+      permalink: true
+  - pymdownx.betterem:
+      smart_enable: all
+  - pymdownx.caret
+  - pymdownx.inlinehilite
+  - pymdownx.magiclink
+  - pymdownx.smartsymbols
+  - pymdownx.superfences
+
+hooks:
+  - docs/scripts/hooks.py
+
+exclude_docs: |
+  /scripts/
+
+validation:
+  links:
+    unrecognized_links: warn
+    absolute_links: warn
+
+# Dev server binding
+#dev_addr: 127.0.0.1:3001
+
+nav:
+  - Home: index.md
+  - Migration Guide: migration-guide.md
+  - API Reference: api/index.html
+  - User Guides:
+      - Getting started: guides/getting-started.md
+      - Extracting the content of a publication: guides/content.md
+      - Opening a publication: guides/open-publication.md
+      - Navigator: guides/navigator/navigator.md
+      - Web navigators: guides/navigator/web-navigators.md
+      - Media navigator: guides/navigator/media-navigator.md
+      - Navigator preferences: guides/navigator/preferences.md
+      - EPUB font families: guides/navigator/epub-fonts.md
+      - PDF support: guides/pdf.md
+      - Text-to-speech: guides/tts.md
+      - Accessibility: guides/accessibility.md
+      - LCP: guide/lcp.md
+
+extra_css:
+  - readium_colors.css
+
+extra:
+  version:
+    provider: mike

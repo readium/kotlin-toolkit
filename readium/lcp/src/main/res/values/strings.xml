@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Copyright 2020 Readium Foundation. All rights reserved.
+  Use of this source code is governed by the BSD-style license
+  available in the top-level LICENSE file of the project.
+-->
+
+<resources>
+
+    <!-- LCP Authentication Dialog -->
+
+    <string name="readium_lcp_dialog_continue">Continue</string>
+    <string name="readium_lcp_dialog_cancel">Cancel</string>
+    <string name="readium_lcp_dialog_reason_passphraseNotFound">Passphrase Required</string>
+    <string name="readium_lcp_dialog_reason_invalidPassphrase">Incorrect Passphrase</string>
+    <string name="readium_lcp_dialog_prompt">This publication is protected by Readium LCP.\n\nIn order to open it, we need to know the passphrase required by: \n\n%1$s.\n\nTo help you remember it, the following hint is available:</string>
+    <string name="readium_lcp_dialog_forgotPassphrase">Forgot your passphrase?</string>
+    <string name="readium_lcp_dialog_help">Need more help?</string>
+    <string name="readium_lcp_dialog_support">Support</string>
+    <string name="readium_lcp_dialog_support_web">Website</string>
+    <string name="readium_lcp_dialog_support_phone">Phone</string>
+    <string name="readium_lcp_dialog_support_mail">Mail</string>
+
+</resources>

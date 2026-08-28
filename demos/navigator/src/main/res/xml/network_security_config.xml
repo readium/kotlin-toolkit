@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="true">developer.android.com</domain>
+        <domain includeSubdomains="true">google.github.io</domain>
+        <domain includeSubdomains="true">android-developers.googleblog.com</domain>
+        <domain includeSubdomains="true">io.google</domain>
+
+    </domain-config>
+</network-security-config>

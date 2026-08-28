@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Copyright 2023 Readium Foundation. All rights reserved.
+  Use of this source code is governed by the BSD-style license
+  available in the top-level LICENSE file of the project.
+-->
+
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+    <uses-permission android:name="android.permission.DOWNLOAD_WITHOUT_NOTIFICATION" />
+
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.TTS_SERVICE" />
+        </intent>
+    </queries>
+
+    <!-- android:networkSecurityConfig is required for r2-lcp-kotlin and r2-navigator-kotlin -->
+    <application
+        android:name=".Application"
+        android:icon="@mipmap/ic_launcher"
+        android:label="Readium"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme"
+        android:networkSecurityConfig="@xml/network_security_config"
+        tools:targetApi="n">
+        <activity android:name=".MainActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".utils.ImportActivity"
+            android:launchMode="singleInstance"
+            android:noHistory="true"
+            android:theme="@android:style/Theme.NoDisplay"
+            android:exported="true">
+
+            <!--
+            WARNING: Matching with intent-filters on media types and file extensions is a mess.
+            This is very sensitive, therefore change these settings with care.
+
+            1. Don't mix the SEND and the VIEW actions in one intent-filter. Because SEND won't
+               work if you put a `android:scheme`, but VIEW requires it.
+
+            2. Matching on file extensions for the SEND action doesn't work.
+
+            3. the documentation about `android:pathPattern` (used for matching file
+               extensions) states:
+
+               > These attributes are meaningful only if the scheme and host attributes are also
+               > specified for the filter.
+
+               But this is wrong, since using `android:scheme` on the SEND action will break the
+               matching. Instead of setting `android:scheme`, you need to set `android:mimeType="*/*"`
+               to match file extensions with SEND.
+
+            4. `android:pathPattern` is case sensitive and is not using a true regex (it's just
+                globbing), so we need to match the uppercase versions of file extensions as well.
+            -->
+
+            <!-- SEND (Share) action -->
+
+            <!-- e.g. Dropbox Export, Gmail Send, Files Share. -->
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <!-- WARNING: Don't set `android:scheme` because it will break the matching. -->
+
+                <!-- Audiobook (Readium) -->
+                <data android:mimeType="application/audiobook+zip" />
+                <data android:mimeType="application/audiobook+json" />
+                <!-- CBZ -->
+                <data android:mimeType="application/vnd.comicbook+zip" />
+                <data android:mimeType="application/x-cbz" />
+                <data android:mimeType="application/x-cbr" />
+                <!-- DiViNa -->
+                <data android:mimeType="application/divina+zip" />
+                <data android:mimeType="application/divina+json" />
+                <!-- EPUB -->
+                <data android:mimeType="application/epub+zip" />
+                <!-- LCP -->
+                <data android:mimeType="application/audiobook+lcp" />
+                <data android:mimeType="application/pdf+lcp" />
+                <data android:mimeType="application/vnd.readium.lcp.license.v1.0+json" />
+                <!-- LPF -->
+                <data android:mimeType="application/lpf+zip" />
+                <!-- PDF -->
+                <data android:mimeType="application/pdf" />
+                <!-- WebPub (Readium) -->
+                <data android:mimeType="application/webpub+zip" />
+                <data android:mimeType="application/webpub+json" />
+            </intent-filter>
+
+            <!-- VIEW (Open with) action -->
+
+            <!-- Works when an app knows the media type of a file, e.g. Gmail or Chrome. -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data android:scheme="app" />
+                <data android:scheme="content" />
+                <data android:scheme="file" />
+                <data android:scheme="http" />
+                <data android:scheme="https" />
+
+                <!-- Audiobook (Readium) -->
+                <data android:mimeType="application/audiobook+zip" />
+                <data android:mimeType="application/audiobook+json" />
+                <!-- CBZ -->
+                <data android:mimeType="application/vnd.comicbook+zip" />
+                <data android:mimeType="application/x-cbz" />
+                <data android:mimeType="application/x-cbr" />
+                <!-- DiViNa -->
+                <data android:mimeType="application/divina+zip" />
+                <data android:mimeType="application/divina+json" />
+                <!-- EPUB -->
+                <data android:mimeType="application/epub+zip" />
+                <!-- LCP -->
+                <data android:mimeType="application/audiobook+lcp" />
+                <data android:mimeType="application/pdf+lcp" />
+                <data android:mimeType="application/vnd.readium.lcp.license.v1.0+json" />
+                <!-- LPF -->
+                <data android:mimeType="application/lpf+zip" />
+                <!-- PDF -->
+                <data android:mimeType="application/pdf" />
+                <!-- WebPub (Readium) -->
+                <data android:mimeType="application/webpub+zip" />
+                <data android:mimeType="application/webpub+json" />
+            </intent-filter>
+
+            <!-- Works when an app doesn't know the media type, e.g. Dropbox -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data android:host="*" />
+
+                <data android:scheme="app" />
+                <data android:scheme="content" />
+                <data android:scheme="file" />
+                <data android:scheme="http" />
+                <data android:scheme="https" />
+
+                <!-- This media type is necessary, otherwise it won't match on the file extension -->
+                <data android:mimeType="*/*" />
+
+                <data android:pathPattern=".*\\.audiobook" />
+                <data android:pathPattern=".*\\.AUDIOBOOK" />
+                <data android:pathPattern=".*\\.cbz" />
+                <data android:pathPattern=".*\\.CBZ" />
+                <data android:pathPattern=".*\\.divina" />
+                <data android:pathPattern=".*\\.DIVINA" />
+                <data android:pathPattern=".*\\.epub" />
+                <data android:pathPattern=".*\\.EPUB" />
+                <data android:pathPattern=".*\\.lcpa" />
+                <data android:pathPattern=".*\\.LCPA" />
+                <data android:pathPattern=".*\\.lcpdf" />
+                <data android:pathPattern=".*\\.LCPDF" />
+                <data android:pathPattern=".*\\.lcpl" />
+                <data android:pathPattern=".*\\.LCPL" />
+                <data android:pathPattern=".*\\.lpf" />
+                <data android:pathPattern=".*\\.LPF" />
+                <data android:pathPattern=".*\\.pdf" />
+                <data android:pathPattern=".*\\.PDF" />
+                <data android:pathPattern=".*\\.webpub" />
+                <data android:pathPattern=".*\\.WEBPUB" />
+                <data android:pathPattern=".*\\.zab" />
+                <data android:pathPattern=".*\\.ZAB" />
+            </intent-filter>
+
+        </activity>
+
+        <activity
+            android:name=".reader.ReaderActivity"
+            android:label="Reader" />
+
+        <service android:name=".reader.MediaService"
+            android:enabled="true"
+            android:exported="true"
+            android:foregroundServiceType="mediaPlayback"
+            tools:ignore="ExportedService">
+
+            <intent-filter>
+                <action android:name="androidx.media3.session.MediaSessionService"/>
+                <action android:name="androidx.media2.session.MediaSessionService"/>
+                <action android:name="android.media.session.MediaSessionService" />
+            </intent-filter>
+        </service>
+
+    </application>
+
+</manifest>

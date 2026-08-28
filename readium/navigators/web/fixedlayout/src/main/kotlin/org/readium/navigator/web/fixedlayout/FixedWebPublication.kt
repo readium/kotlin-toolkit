@@ -1,0 +1,63 @@
+package org.readium.navigator.web.fixedlayout
+
+import org.readium.r2.shared.ExperimentalReadiumApi
+import org.readium.r2.shared.publication.Page
+import org.readium.r2.shared.publication.ReadingProgression
+import org.readium.r2.shared.util.AbsoluteUrl
+import org.readium.r2.shared.util.Language
+import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.data.Container
+import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.shared.util.resource.Resource
+
+@OptIn(ExperimentalReadiumApi::class)
+internal class FixedWebPublication(
+    val baseUrl: AbsoluteUrl?,
+    val metadata: Metadata,
+    val readingOrder: ReadingOrder,
+    @Suppress("unused") val otherResources: List<Item>,
+    val container: Container<Resource>,
+) {
+    data class Metadata(
+        val readingProgression: ReadingProgression?,
+        val language: Language?,
+    )
+
+    sealed interface Item {
+        val href: Url
+        val mediaType: MediaType?
+    }
+
+    data class ReadingOrderItem(
+        override val href: Url,
+        override val mediaType: MediaType?,
+        val page: Page?,
+    ) : Item
+
+    data class OtherItem(
+        override val href: Url,
+        override val mediaType: MediaType?,
+    ) : Item
+
+    internal data class ReadingOrder(
+        val items: List<ReadingOrderItem>,
+    ) {
+        val size: Int get() = items.size
+
+        operator fun get(index: Int): ReadingOrderItem =
+            items[index]
+
+        fun indexOfHref(href: Url): Int? = items
+            .indexOfFirst { it.href == href }
+            .takeUnless { it == -1 }
+    }
+
+    private val allItems = readingOrder.items + otherResources
+
+    val mediaTypes = allItems
+        .mapNotNull { item -> item.mediaType?.let { item.href to it } }
+        .associate { it }
+
+    fun itemWithHref(href: Url): Item? =
+        allItems.firstOrNull { it.href == href }
+}

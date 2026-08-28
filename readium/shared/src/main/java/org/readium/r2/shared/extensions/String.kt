@@ -1,0 +1,105 @@
+/*
+ * Module: r2-shared-kotlin
+ * Developers: Mickaël Menu
+ *
+ * Copyright (c) 2020. Readium Foundation. All rights reserved.
+ * Use of this source code is governed by a BSD-style license which is detailed in the
+ * LICENSE file present in the project repository where this source code is maintained.
+ */
+
+package org.readium.r2.shared.extensions
+
+import android.net.Uri
+import java.security.MessageDigest
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.atStartOfDayIn
+import kotlinx.datetime.toInstant
+import org.json.JSONException
+import org.json.JSONObject
+import org.readium.r2.shared.InternalReadiumApi
+
+/**
+ * If this string starts with the given [prefix], returns this string.
+ * Otherwise, returns a copy of this string after adding the [prefix].
+ */
+@InternalReadiumApi
+public fun String.addPrefix(prefix: CharSequence): String {
+    if (startsWith(prefix)) {
+        return this
+    }
+    return prefix.toString() + this
+}
+
+/**
+ * If this string ends with the given [suffix], returns this string.
+ * Otherwise, returns a copy of this string after adding the [suffix].
+ */
+@InternalReadiumApi
+public fun String.addSuffix(suffix: CharSequence): String {
+    if (endsWith(suffix)) {
+        return this
+    }
+    return this + suffix
+}
+
+@OptIn(InternalReadiumApi::class)
+@InternalReadiumApi
+public fun String.toInstant(): kotlin.time.Instant? =
+    tryOrNull { kotlin.time.Instant.parse(this) }
+        ?: tryOrNull { LocalDateTime.parse(this).toInstant(TimeZone.UTC) }
+        ?: tryOrNull { LocalDate.parse(this).atStartOfDayIn(TimeZone.UTC) }
+
+internal enum class HashAlgorithm(val key: String) {
+    MD5("MD5"),
+    SHA256("SHA-256"),
+}
+
+internal fun String.hash(algorithm: HashAlgorithm): String =
+    MessageDigest
+        .getInstance(algorithm.key)
+        .digest(this.toByteArray())
+        .fold("") { str, it -> str + "%02x".format(it) }
+
+internal fun String.toJsonOrNull(): JSONObject? =
+    try {
+        JSONObject(this)
+    } catch (e: JSONException) {
+        null
+    }
+
+/**
+ * Percent-encodes an URL path section.
+ *
+ * Equivalent to Swift's `string.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed)`
+ */
+internal fun String.percentEncodedPath(): String =
+    Uri.encode(this, "$&+,/:=@")
+
+/**
+ * Percent-encodes an URL query key or value.
+ *
+ * Equivalent to Swift's `string.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)`
+ */
+internal fun String.percentEncodedQuery(): String =
+    Uri.encode(this, "$+,/?:=@")
+
+/**
+ * Percent-encodes the invalid characters of a full URL query or fragment.
+ *
+ * Contrary to [percentEncodedQuery], which encodes an individual query key or value, this preserves
+ * the structural characters of a full query or fragment (such as `&`, `;` and `=`), only encoding
+ * the genuinely invalid ones (e.g. spaces).
+ *
+ * `%` is left untouched so that existing percent escapes (e.g. `%20`) are preserved instead of being
+ * double-encoded into `%2520` when a partially-encoded query/fragment triggers this fallback.
+ */
+internal fun String.percentEncodedQueryOrFragment(): String =
+    Uri.encode(this, "$&+,/:;=?@%")
+
+/**
+ * Returns whether the String receiver contains only printable ASCII characters.
+ */
+internal fun String.isPrintableAscii(): Boolean =
+    all { it.code in 0x20..0x7F }
