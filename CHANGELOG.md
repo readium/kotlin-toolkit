@@ -30,6 +30,12 @@ All notable changes to this project will be documented in this file. Take a look
 
 * EPUB HREFs that are not percent-encoded but carry a fragment or query (e.g. `chapter one.xhtml#section`, with a space in the filename) now keep their `#fragment`/`?query` instead of encoding the separators into the path. This fixes table of contents and Media Overlays links failing to resolve and navigate in poorly-authored EPUBs.
 
+#### Navigator
+
+* [#615](https://github.com/readium/kotlin-toolkit/issues/615) Fixed audio focus handling in the TTS navigator:
+    * The TTS playback now pauses on a transient audio focus loss (e.g. a notification or an assistant speaking) and resumes automatically when focus is regained.
+    * The `handleAudioFocus` parameter of `Player.setAudioAttributes()` is now honored, allowing apps to disable the automatic audio focus handling on the `Player` instance returned by `TtsNavigator.asMedia3Player()`.
+
 
 ## [3.3.0] - 2026-06-02
 
