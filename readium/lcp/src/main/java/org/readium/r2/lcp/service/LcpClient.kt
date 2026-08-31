@@ -6,7 +6,7 @@ import java.lang.reflect.InvocationTargetException
 import org.readium.r2.lcp.LcpError
 import org.readium.r2.lcp.LcpException
 import org.readium.r2.shared.InternalReadiumApi
-import org.readium.r2.shared.extensions.tryOr
+import timber.log.Timber
 
 internal object LcpClient {
 
@@ -47,10 +47,17 @@ internal object LcpClient {
         Class.forName("org.readium.lcp.sdk.Lcp")
     }
 
-    fun isAvailable(): Boolean = tryOr(false) {
-        instance
-        true
-    }
+    fun isAvailable(): Boolean =
+        try {
+            instance
+            true
+        } catch (e: Throwable) {
+            // We catch any Throwable instead of Exception, because loading the liblcp native
+            // library can fail with an UnsatisfiedLinkError, which is an Error.
+            // See https://github.com/readium/kotlin-toolkit/issues/796
+            Timber.e(e, "The Readium LCP library is unavailable")
+            false
+        }
 
     fun createContext(jsonLicense: String, hashedPassphrases: String, pemCrl: String): Context =
         try {
