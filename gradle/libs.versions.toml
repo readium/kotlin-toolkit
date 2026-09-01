@@ -33,8 +33,7 @@ androidx-paging = "3.5.1"
 androidx-recyclerview = "1.4.0"
 androidx-room3 = "3.0.2"
 androidx-viewpager2 = "1.1.0"
-# Do not update until minSdk is 24
-androidx-webkit = "1.15.0"
+androidx-webkit = "1.17.0"
 
 assertj = "3.27.7"
 

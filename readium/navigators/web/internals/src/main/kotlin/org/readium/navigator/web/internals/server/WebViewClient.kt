@@ -6,6 +6,7 @@
 
 package org.readium.navigator.web.internals.server
 
+import android.webkit.RenderProcessGoneDetail
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
@@ -20,5 +21,13 @@ public class WebViewClient(
         request: WebResourceRequest,
     ): WebResourceResponse? {
         return webViewServer.shouldInterceptRequest(request)
+    }
+
+    override fun onRenderProcessGone(
+        view: WebView,
+        detail: RenderProcessGoneDetail,
+    ): Boolean {
+        view.destroy()
+        return true
     }
 }
