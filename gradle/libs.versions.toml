@@ -14,11 +14,11 @@ androidx-browser = "1.10.0"
 androidx-cardview = "1.0.0"
 
 # Keep compatibility with https://kotlinlang.org/docs/multiplatform/compose-compatibility-and-versioning.html#jetpack-compose-artifacts-used
-androidx-compose-animation = "1.11.2"
-androidx-compose-foundation = "1.11.2"
-androidx-compose-material = "1.11.2"
-androidx-compose-runtime = "1.11.2"
-androidx-compose-ui = "1.11.2"
+androidx-compose-animation = "1.12.0"
+androidx-compose-foundation = "1.12.0"
+androidx-compose-material = "1.12.0"
+androidx-compose-runtime = "1.12.0"
+androidx-compose-ui = "1.12.0"
 
 androidx-compose-material3 = "1.4.0"
 androidx-constraintlayout = "2.2.2"
@@ -28,10 +28,10 @@ androidx-fragment-ktx = "1.9.0"
 androidx-legacy = "1.0.0"
 androidx-lifecycle = "2.11.0"
 androidx-media3 = "1.11.0"
-androidx-navigation = "2.9.8"
+androidx-navigation = "2.10.0"
 androidx-paging = "3.5.1"
 androidx-recyclerview = "1.4.0"
-androidx-room3 = "3.0.1"
+androidx-room3 = "3.0.2"
 androidx-viewpager2 = "1.1.0"
 # Do not update until minSdk is 24
 androidx-webkit = "1.15.0"
@@ -42,14 +42,14 @@ dokka = "2.2.0"
 
 google-material = "1.14.0"
 
-jsoup = "1.23.1"
+jsoup = "1.23.2"
 junit = "4.13.2"
 
 kotlinx-coroutines = "1.11.0"
 kotlinx-coroutines-test = "1.11.0"
 kotlinx-datetime = "0.8.0"
 kotlinx-serialization-json = "1.11.0"
-kotlinx-collections-immutable = "0.5.1"
+kotlinx-collections-immutable = "0.5.2"
 
 ksp = "2.3.9"
 
