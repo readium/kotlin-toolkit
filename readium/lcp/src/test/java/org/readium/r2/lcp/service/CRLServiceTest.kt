@@ -4,6 +4,8 @@
  * available in the top-level LICENSE file of the project.
  */
 
+@file:OptIn(ExperimentalCoroutinesApi::class)
+
 package org.readium.r2.lcp.service
 
 import android.content.Context
@@ -13,6 +15,15 @@ import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.days
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.joinAll
+import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -43,6 +54,16 @@ class CRLServiceTest {
 
         private val CRL_BASE64: String =
             android.util.Base64.encodeToString(crlBytes, android.util.Base64.NO_WRAP)
+
+        /**
+         * The same CRL, encoded the way versions of the toolkit running on API level 25 and below
+         * cached it: with line breaks every 76 characters.
+         *
+         * It is a valid CRL which is not equal to [CRL_BASE64], which makes it a convenient stand-in
+         * for a previously cached CRL when checking whether a refresh took place.
+         */
+        private val STALE_CRL_BASE64: String =
+            android.util.Base64.encodeToString(crlBytes, android.util.Base64.DEFAULT)
 
         /**
          * A captive portal login page, as returned with a 200 status by some Wi-Fi networks.
@@ -91,12 +112,34 @@ class CRLServiceTest {
     private fun pem(base64: String): String =
         "-----BEGIN X509 CRL-----$base64-----END X509 CRL-----"
 
+    /**
+     * Parent of the background work started by the service under test.
+     */
+    private val serviceJob = SupervisorJob()
+
+    private fun TestScope.createService(httpClient: HttpClient): CRLService =
+        CRLService(
+            httpClient = httpClient,
+            context = context,
+            coroutineScope = CoroutineScope(serviceJob + StandardTestDispatcher(testScheduler))
+        )
+
+    /**
+     * Waits for the background refreshes started by the service.
+     *
+     * The test scheduler cannot be advanced to them instead, as fetching a response hops onto
+     * [Dispatchers.IO].
+     */
+    private suspend fun awaitBackgroundWork() {
+        serviceJob.children.toList().joinAll()
+    }
+
     @Test
     fun `retrieve returns local CRL if not expired`() = runTest {
         saveLocalCrl(pem(CRL_BASE64), age = 2.days)
 
         val httpClient = TestHttpClient(crlBytes)
-        val service = CRLService(httpClient = httpClient, context = context)
+        val service = createService(httpClient)
 
         val result = service.retrieve()
 
@@ -107,22 +150,71 @@ class CRLServiceTest {
     }
 
     @Test
-    fun `retrieve fetches from network if local CRL is expired`() = runTest {
-        saveLocalCrl(pem(CRL_BASE64), age = 8.days)
+    fun `retrieve returns the expired local CRL and refreshes it in the background`() = runTest {
+        val staleCrl = pem(STALE_CRL_BASE64)
+        saveLocalCrl(staleCrl, age = 8.days)
 
         val httpClient = TestHttpClient(crlBytes)
-        val service = CRLService(httpClient = httpClient, context = context)
+        val service = createService(httpClient)
 
-        service.retrieve()
+        // Opening a publication is not delayed by the fetch.
+        assertEquals(expected = staleCrl, actual = service.retrieve())
+        assertEquals(0, httpClient.streamCallCount)
 
-        // Verify network fetch occurred because the previous one was expired
+        awaitBackgroundWork()
+
+        // The refreshed CRL is cached for the next opening.
         assertEquals(1, httpClient.streamCallCount)
+        assertEquals(pem(CRL_BASE64), preferences.getString(CRLService.CRL_KEY, null))
+        assertEquals(expected = pem(CRL_BASE64), actual = service.retrieve())
+    }
+
+    @Test
+    fun `retrieve keeps the expired local CRL when the background refresh fails`() = runTest {
+        val staleCrl = pem(STALE_CRL_BASE64)
+        saveLocalCrl(staleCrl, age = 8.days)
+
+        val httpClient = TestHttpClient(captivePortalBytes)
+        val service = createService(httpClient)
+
+        assertEquals(expected = staleCrl, actual = service.retrieve())
+        awaitBackgroundWork()
+
+        assertEquals(1, httpClient.streamCallCount)
+        assertEquals(staleCrl, preferences.getString(CRLService.CRL_KEY, null))
+        // The next opening tries again, without failing.
+        assertEquals(expected = staleCrl, actual = service.retrieve())
+    }
+
+    @Test
+    fun `preload caches the CRL`() = runTest {
+        val httpClient = TestHttpClient(crlBytes)
+        val service = createService(httpClient)
+
+        service.preload()
+        awaitBackgroundWork()
+
+        assertEquals(1, httpClient.streamCallCount)
+        assertEquals(pem(CRL_BASE64), preferences.getString(CRLService.CRL_KEY, null))
+    }
+
+    @Test
+    fun `preload does not fetch when the local CRL is not expired`() = runTest {
+        saveLocalCrl(pem(CRL_BASE64), age = 2.days)
+
+        val httpClient = TestHttpClient(crlBytes)
+        val service = createService(httpClient)
+
+        service.preload()
+        awaitBackgroundWork()
+
+        assertEquals(0, httpClient.streamCallCount)
     }
 
     @Test
     fun `retrieve fetches from network if local CRL does not exist`() = runTest {
         val httpClient = TestHttpClient(crlBytes)
-        val service = CRLService(httpClient = httpClient, context = context)
+        val service = createService(httpClient)
 
         val result = service.retrieve()
 
@@ -138,7 +230,7 @@ class CRLServiceTest {
     @Test
     fun `retrieve accepts the CRL served by the EDRLab server`() = runTest {
         val httpClient = TestHttpClient(crlBytes)
-        val service = CRLService(httpClient = httpClient, context = context)
+        val service = createService(httpClient)
 
         val result = service.retrieve()
 
@@ -158,7 +250,7 @@ class CRLServiceTest {
         saveLocalCrl(pem(wrapped), age = 2.days)
 
         val httpClient = TestHttpClient(crlBytes)
-        val service = CRLService(httpClient = httpClient, context = context)
+        val service = createService(httpClient)
 
         assertEquals(expected = pem(wrapped), actual = service.retrieve())
         assertEquals(0, httpClient.streamCallCount)
@@ -167,22 +259,11 @@ class CRLServiceTest {
     @Test
     fun `retrieve rejects a response which is not a CRL`() = runTest {
         val httpClient = TestHttpClient(captivePortalBytes)
-        val service = CRLService(httpClient = httpClient, context = context)
+        val service = createService(httpClient)
 
         assertFailsWith<LcpException> { service.retrieve() }
 
         assertEquals(null, preferences.getString(CRLService.CRL_KEY, null))
-    }
-
-    @Test
-    fun `retrieve keeps the local CRL when the fetched one is not a CRL`() = runTest {
-        saveLocalCrl(pem(CRL_BASE64), age = 8.days)
-
-        val httpClient = TestHttpClient(captivePortalBytes)
-        val service = CRLService(httpClient = httpClient, context = context)
-
-        assertEquals(expected = pem(CRL_BASE64), actual = service.retrieve())
-        assertEquals(pem(CRL_BASE64), preferences.getString(CRLService.CRL_KEY, null))
     }
 
     @Test
@@ -194,7 +275,7 @@ class CRLServiceTest {
         )
 
         val httpClient = TestHttpClient(crlBytes)
-        val service = CRLService(httpClient = httpClient, context = context)
+        val service = createService(httpClient)
 
         service.retrieve()
 

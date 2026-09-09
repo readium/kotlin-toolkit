@@ -19,6 +19,10 @@ All notable changes to this project will be documented in this file. Take a look
 
 * :warning: The PDFium adapter now defaults to a horizontal paginated layout, instead of a vertical continuous scroll. Set `PdfiumDefaults(scroll = true)` to restore the previous behavior. See [the migration guide](docs/migration-guide.md).
 
+#### LCP
+
+* Opening an LCP publication is no longer delayed by the CRL used to validate its license. The CRL is now downloaded when creating the `LcpService`, and an expired one is refreshed in the background instead of making the user wait for the response.
+
 ### Fixed
 
 #### Navigator

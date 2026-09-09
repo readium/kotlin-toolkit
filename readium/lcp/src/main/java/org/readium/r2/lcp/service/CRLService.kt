@@ -14,6 +14,13 @@ import android.content.SharedPreferences
 import androidx.core.content.edit
 import kotlin.time.Clock
 import kotlin.time.Instant
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.daysUntil
 import org.readium.r2.lcp.BuildConfig.DEBUG
@@ -26,12 +33,11 @@ import org.readium.r2.shared.util.http.HttpRequest
 import org.readium.r2.shared.util.http.fetch
 import timber.log.Timber
 
-internal class CRLService(val httpClient: HttpClient, val context: Context) {
-
-    private val preferences: SharedPreferences = context.getSharedPreferences(
-        "org.readium.r2.lcp",
-        Context.MODE_PRIVATE
-    )
+internal class CRLService(
+    private val httpClient: HttpClient,
+    private val context: Context,
+    private val coroutineScope: CoroutineScope,
+) {
 
     companion object {
         const val EXPIRATION = 7
@@ -41,20 +47,74 @@ internal class CRLService(val httpClient: HttpClient, val context: Context) {
         private const val CRL_URL = "http://crl.edrlab.telesec.de/rl/EDRLab_CA.crl"
     }
 
+    private val preferences: SharedPreferences = context.getSharedPreferences(
+        "org.readium.r2.lcp",
+        Context.MODE_PRIVATE
+    )
+
+    /**
+     * Guards [fetchJob], to make sure a single fetch is in flight at any time.
+     */
+    private val fetchMutex = Mutex()
+    private var fetchJob: Deferred<Crl>? = null
+
+    /**
+     * Warms up the cache, so that opening a publication does not have to wait for the CRL.
+     */
+    fun preload() {
+        refreshInBackground()
+    }
+
     suspend fun retrieve(): String {
         val (localCRL, isExpired) = readLocal()
-        if (localCRL != null && !isExpired) {
+
+        if (localCRL != null) {
+            if (isExpired) {
+                // Refreshing in the background instead of waiting for the response, as the expired
+                // CRL is good enough to open a publication right away.
+                refreshInBackground()
+            }
             return localCRL.pem
         }
 
-        return try {
-            fetch()
-                .also { saveLocal(it) }
-                .pem
-        } catch (e: Exception) {
-            if (DEBUG) Timber.e(e)
-            localCRL?.pem ?: throw e
+        // Without any usable cached CRL, there is nothing to fall back on.
+        return fetchAndSave().pem
+    }
+
+    /**
+     * Fetches and caches a fresh CRL in [coroutineScope], if the cached one is missing or expired.
+     *
+     * A failed refresh is not worth reporting, as the cached CRL is used instead and the next call
+     * will try again.
+     */
+    private fun refreshInBackground() {
+        coroutineScope.launch {
+            try {
+                val (localCRL, isExpired) = readLocal()
+                if (localCRL == null || isExpired) {
+                    fetchAndSave()
+                }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                if (DEBUG) Timber.e(e)
+            }
         }
+    }
+
+    /**
+     * Fetches the CRL and caches it.
+     */
+    private suspend fun fetchAndSave(): Crl {
+        val job = fetchMutex.withLock {
+            fetchJob
+                ?.takeIf { it.isActive }
+                ?: coroutineScope
+                    .async { fetch().also { saveLocal(it) } }
+                    .also { fetchJob = it }
+        }
+
+        return job.await()
     }
 
     private suspend fun fetch(): Crl {
@@ -84,7 +144,7 @@ internal class CRLService(val httpClient: HttpClient, val context: Context) {
     }
 
     private fun saveLocal(crl: Crl) {
-        preferences.edit {
+        preferences.edit(commit = true) {
             putString(CRL_KEY, crl.pem)
             putString(DATE_KEY, Clock.System.now().toString())
         }
