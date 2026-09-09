@@ -84,8 +84,10 @@ internal class CRLService(val httpClient: HttpClient, val context: Context) {
     }
 
     private fun saveLocal(crl: Crl) {
-        preferences.edit { putString(CRL_KEY, crl.pem) }
-        preferences.edit { putString(DATE_KEY, Clock.System.now().toString()) }
+        preferences.edit {
+            putString(CRL_KEY, crl.pem)
+            putString(DATE_KEY, Clock.System.now().toString())
+        }
     }
 
     private fun daysSince(date: Instant): Int {

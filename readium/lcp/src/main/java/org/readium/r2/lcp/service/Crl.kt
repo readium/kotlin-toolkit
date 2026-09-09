@@ -31,7 +31,7 @@ internal value class Crl private constructor(val pem: String) {
             if (!isX509Crl(data)) {
                 return null
             }
-            return Crl("$PEM_HEADER${Base64.Default.encode(data)}$PEM_FOOTER")
+            return Crl("$PEM_HEADER${Base64.encode(data)}$PEM_FOOTER")
         }
 
         /**

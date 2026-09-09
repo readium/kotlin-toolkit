@@ -24,6 +24,7 @@ import org.readium.r2.shared.util.http.HttpRequest
 import org.readium.r2.shared.util.http.HttpResponse
 import org.readium.r2.shared.util.http.HttpStatus
 import org.readium.r2.shared.util.http.HttpStreamResponse
+import org.readium.r2.shared.util.http.HttpTry
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
 
@@ -54,13 +55,17 @@ class CRLServiceTest {
         var streamCallCount = 0
             private set
 
-        override suspend fun stream(request: HttpRequest): Try<HttpStreamResponse, org.readium.r2.shared.util.http.HttpError> {
+        var lastRequest: HttpRequest? = null
+            private set
+
+        override suspend fun stream(request: HttpRequest): HttpTry<HttpStreamResponse> {
             streamCallCount++
+            lastRequest = request
             return Try.success(
                 HttpStreamResponse(
                     HttpResponse(
-                        request = HttpRequest(AbsoluteUrl("http://crl.edrlab.telesec.de/rl/EDRLab_CA.crl")!!),
-                        url = AbsoluteUrl("http://crl.edrlab.telesec.de/rl/EDRLab_CA.crl")!!,
+                        request = request,
+                        url = request.url,
                         statusCode = HttpStatus.Success,
                         headers = emptyMap(),
                         mediaType = null
@@ -123,6 +128,11 @@ class CRLServiceTest {
 
         assertEquals(1, httpClient.streamCallCount)
         assertEquals(expected = pem(CRL_BASE64), actual = result)
+        assertEquals(
+            expected = AbsoluteUrl("http://crl.edrlab.telesec.de/rl/EDRLab_CA.crl"),
+            actual = httpClient.lastRequest?.url
+        )
+        assertEquals(HttpRequest.Method.GET, httpClient.lastRequest?.method)
     }
 
     @Test
