@@ -9,11 +9,14 @@ package org.readium.r2.lcp.service
 import android.content.Context
 import java.io.ByteArrayInputStream
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
+import kotlin.test.assertTrue
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.days
 import kotlinx.coroutines.test.runTest
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.readium.r2.lcp.LcpException
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.http.HttpClient
@@ -27,7 +30,27 @@ import org.robolectric.RuntimeEnvironment
 @RunWith(RobolectricTestRunner::class)
 class CRLServiceTest {
 
-    class TestHttpClient : HttpClient {
+    companion object {
+        /**
+         * The actual CRL served by http://crl.edrlab.telesec.de/rl/EDRLab_CA.crl, DER-encoded.
+         *
+         * Its validity dates are not checked when parsing, so this fixture will not expire.
+         */
+        private val crlBytes: ByteArray =
+            CRLServiceTest::class.java.getResourceAsStream("edrlab-ca.crl")!!
+                .use { it.readBytes() }
+
+        private val CRL_BASE64: String =
+            android.util.Base64.encodeToString(crlBytes, android.util.Base64.NO_WRAP)
+
+        /**
+         * A captive portal login page, as returned with a 200 status by some Wi-Fi networks.
+         */
+        private val captivePortalBytes: ByteArray =
+            "<html><body>Please buy some Wi-Fi</body></html>".toByteArray()
+    }
+
+    class TestHttpClient(private val body: ByteArray) : HttpClient {
         var streamCallCount = 0
             private set
 
@@ -42,30 +65,37 @@ class CRLServiceTest {
                         headers = emptyMap(),
                         mediaType = null
                     ),
-                    ByteArrayInputStream(ByteArray(0))
+                    ByteArrayInputStream(body)
                 )
             )
         }
     }
 
+    private val context: Context get() = RuntimeEnvironment.getApplication()
+
+    private val preferences
+        get() = context.getSharedPreferences("org.readium.r2.lcp", Context.MODE_PRIVATE)
+
+    private fun saveLocalCrl(crl: String, age: kotlin.time.Duration = 2.days) {
+        preferences.edit()
+            .putString(CRLService.CRL_KEY, crl)
+            .putString(CRLService.DATE_KEY, (Clock.System.now() - age).toString())
+            .apply()
+    }
+
+    private fun pem(base64: String): String =
+        "-----BEGIN X509 CRL-----$base64-----END X509 CRL-----"
+
     @Test
     fun `retrieve returns local CRL if not expired`() = runTest {
-        val context = RuntimeEnvironment.getApplication()
-        val preferences = context.getSharedPreferences(
-            "org.readium.r2.lcp",
-            Context.MODE_PRIVATE
-        )
+        saveLocalCrl(pem(CRL_BASE64), age = 2.days)
 
-        val activeDate = (Clock.System.now() - 2.days).toString()
-        preferences.edit().putString(CRLService.CRL_KEY, "local_crl").apply()
-        preferences.edit().putString(CRLService.DATE_KEY, activeDate).apply()
-
-        val httpClient = TestHttpClient()
+        val httpClient = TestHttpClient(crlBytes)
         val service = CRLService(httpClient = httpClient, context = context)
 
         val result = service.retrieve()
 
-        assertEquals(expected = "local_crl", actual = result)
+        assertEquals(expected = pem(CRL_BASE64), actual = result)
 
         // Ensure network wasn't called
         assertEquals(0, httpClient.streamCallCount)
@@ -73,17 +103,9 @@ class CRLServiceTest {
 
     @Test
     fun `retrieve fetches from network if local CRL is expired`() = runTest {
-        val context = RuntimeEnvironment.getApplication()
-        val preferences = context.getSharedPreferences(
-            "org.readium.r2.lcp",
-            Context.MODE_PRIVATE
-        )
+        saveLocalCrl(pem(CRL_BASE64), age = 8.days)
 
-        val expiredDate = (Clock.System.now() - 8.days).toString()
-        preferences.edit().putString(CRLService.CRL_KEY, "old_crl").apply()
-        preferences.edit().putString(CRLService.DATE_KEY, expiredDate).apply()
-
-        val httpClient = TestHttpClient()
+        val httpClient = TestHttpClient(crlBytes)
         val service = CRLService(httpClient = httpClient, context = context)
 
         service.retrieve()
@@ -94,12 +116,79 @@ class CRLServiceTest {
 
     @Test
     fun `retrieve fetches from network if local CRL does not exist`() = runTest {
-        val context = RuntimeEnvironment.getApplication()
-        val httpClient = TestHttpClient()
+        val httpClient = TestHttpClient(crlBytes)
+        val service = CRLService(httpClient = httpClient, context = context)
+
+        val result = service.retrieve()
+
+        assertEquals(1, httpClient.streamCallCount)
+        assertEquals(expected = pem(CRL_BASE64), actual = result)
+    }
+
+    @Test
+    fun `retrieve accepts the CRL served by the EDRLab server`() = runTest {
+        val httpClient = TestHttpClient(crlBytes)
+        val service = CRLService(httpClient = httpClient, context = context)
+
+        val result = service.retrieve()
+
+        assertEquals(expected = pem(CRL_BASE64), actual = result)
+        // The fetched CRL is cached, and read back as valid on the next call.
+        assertEquals(pem(CRL_BASE64), preferences.getString(CRLService.CRL_KEY, null))
+        assertEquals(expected = pem(CRL_BASE64), actual = service.retrieve())
+        assertEquals(1, httpClient.streamCallCount)
+    }
+
+    @Test
+    fun `retrieve accepts a cached CRL with line breaks`() = runTest {
+        // Versions of the toolkit running on API level 25 and below wrapped the base64 payload at
+        // 76 characters, so such CRLs must still be readable.
+        val wrapped = android.util.Base64.encodeToString(crlBytes, android.util.Base64.DEFAULT)
+        assertTrue(wrapped.contains("\n"))
+        saveLocalCrl(pem(wrapped), age = 2.days)
+
+        val httpClient = TestHttpClient(crlBytes)
+        val service = CRLService(httpClient = httpClient, context = context)
+
+        assertEquals(expected = pem(wrapped), actual = service.retrieve())
+        assertEquals(0, httpClient.streamCallCount)
+    }
+
+    @Test
+    fun `retrieve rejects a response which is not a CRL`() = runTest {
+        val httpClient = TestHttpClient(captivePortalBytes)
+        val service = CRLService(httpClient = httpClient, context = context)
+
+        assertFailsWith<LcpException> { service.retrieve() }
+
+        assertEquals(null, preferences.getString(CRLService.CRL_KEY, null))
+    }
+
+    @Test
+    fun `retrieve keeps the local CRL when the fetched one is not a CRL`() = runTest {
+        saveLocalCrl(pem(CRL_BASE64), age = 8.days)
+
+        val httpClient = TestHttpClient(captivePortalBytes)
+        val service = CRLService(httpClient = httpClient, context = context)
+
+        assertEquals(expected = pem(CRL_BASE64), actual = service.retrieve())
+        assertEquals(pem(CRL_BASE64), preferences.getString(CRLService.CRL_KEY, null))
+    }
+
+    @Test
+    fun `retrieve ignores a cached CRL which is not a CRL`() = runTest {
+        // Cached by a previous version of the toolkit, before the response was validated.
+        saveLocalCrl(
+            pem(android.util.Base64.encodeToString(captivePortalBytes, android.util.Base64.DEFAULT)),
+            age = 2.days
+        )
+
+        val httpClient = TestHttpClient(crlBytes)
         val service = CRLService(httpClient = httpClient, context = context)
 
         service.retrieve()
 
         assertEquals(1, httpClient.streamCallCount)
+        assertEquals(pem(CRL_BASE64), preferences.getString(CRLService.CRL_KEY, null))
     }
 }

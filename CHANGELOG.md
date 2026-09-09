@@ -26,6 +26,10 @@ All notable changes to this project will be documented in this file. Take a look
 * Fixed the PDFium adapter reporting page positions off by one: `currentLocator` was one page ahead of the visible page, the first page was never reported, and the last page never updated `currentLocator` (contributed by [@huttarl](https://github.com/readium/kotlin-toolkit/pull/812)).
     * :warning: You must migrate the `Locator` objects created by the PDFium adapter and persisted in your database (e.g. bookmarks, reading progression), as their positions were one page too high. Use the new `Publication.migrateLegacyPdfiumLocator()` helper and take a look at [the migration guide](docs/migration-guide.md).
 
+#### LCP
+
+* [#832](https://github.com/readium/kotlin-toolkit/issues/832) The CRL used to validate LCP licenses is now checked to be a genuine X.509 CRL before being cached. Networks with a captive portal (e.g. on a plane) could return their login page with a `200 OK` status, which was then cached for seven days and prevented opening LCP publications. An invalid CRL cached by a previous version is now ignored instead of waiting for its expiration.
+
 #### Shared
 
 * EPUB HREFs that are not percent-encoded but carry a fragment or query (e.g. `chapter one.xhtml#section`, with a space in the filename) now keep their `#fragment`/`?query` instead of encoding the separators into the path. This fixes table of contents and Media Overlays links failing to resolve and navigate in poorly-authored EPUBs.
