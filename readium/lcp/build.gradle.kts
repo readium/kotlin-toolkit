@@ -7,7 +7,6 @@
 plugins {
     id("readium.library-conventions")
     alias(libs.plugins.ksp)
-    alias(libs.plugins.androidx.room3)
 }
 
 android {
@@ -20,10 +19,6 @@ kotlin {
         // See https://github.com/readium/kotlin-toolkit/pull/525#issuecomment-2300084041
         freeCompilerArgs.add("-Xconsistent-data-class-copy-visibility")
     }
-}
-
-room3 {
-    schemaDirectory("$projectDir/schemas")
 }
 
 dependencies {

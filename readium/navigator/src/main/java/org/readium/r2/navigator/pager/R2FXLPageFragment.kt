@@ -22,9 +22,7 @@ import android.webkit.WebView
 import androidx.core.os.BundleCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.webkit.WebSettingsCompat
 import androidx.webkit.WebViewClientCompat
-import androidx.webkit.WebViewFeature
 import org.readium.r2.navigator.R2BasicWebView
 import org.readium.r2.navigator.databinding.ReadiumNavigatorFragmentFxllayoutDoubleBinding
 import org.readium.r2.navigator.databinding.ReadiumNavigatorFragmentFxllayoutSingleBinding
@@ -164,12 +162,6 @@ internal class R2FXLPageFragment : Fragment() {
         // accessibility font size system setting which breaks the layout of some fixed layouts.
         // See https://github.com/readium/kotlin-toolkit/issues/76
         webView.settings.textZoom = 100
-        if (WebViewFeature.isFeatureSupported(WebViewFeature.DOWNLOAD_FAVICONS_ENABLED)) {
-            WebSettingsCompat.setDownloadFaviconsEnabled(
-                webView.settings,
-                false
-            )
-        }
 
         webView.setInitialScale(1)
 

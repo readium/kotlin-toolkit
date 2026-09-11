@@ -25,8 +25,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.webkit.WebSettingsCompat
-import androidx.webkit.WebViewFeature
 
 /**
  * A wrapper around the Android View WebView to provide a basic WebView composable.
@@ -189,12 +187,6 @@ public fun <T : WebView> WebView(
                 this.layoutParams = layoutParams
                 this.webChromeClient = chromeClient
                 this.webViewClient = client
-                if (WebViewFeature.isFeatureSupported(WebViewFeature.DOWNLOAD_FAVICONS_ENABLED)) {
-                    WebSettingsCompat.setDownloadFaviconsEnabled(
-                        this.settings,
-                        false
-                    )
-                }
                 state.webView = this
                 onCreated(this)
             }
