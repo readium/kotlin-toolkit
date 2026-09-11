@@ -1,5 +1,3 @@
-import com.vanniktech.maven.publish.SonatypeHost
-
 plugins {
     // FIXME: For now, we cannot use the versions catalog in precompiled scripts: https://github.com/gradle/gradle/issues/15383
     id("com.android.library")
@@ -47,8 +45,7 @@ kotlin {
     explicitApi()
     
     compilerOptions {
-        freeCompilerArgs.add("-Xannotation-default-target=param-property")
-        languageVersion = org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_2_3
+        languageVersion = org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_2_4
         allWarningsAsErrors = true
     }
 }
@@ -103,6 +100,6 @@ mavenPublishing {
         }
     }
 
-    publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL)
+    publishToMavenCentral()
     signAllPublications()
 }

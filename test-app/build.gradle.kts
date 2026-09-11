@@ -9,6 +9,7 @@ plugins {
     kotlin("plugin.parcelize")
     alias(libs.plugins.ksp)
     alias(libs.plugins.compose.compiler)
+    alias(libs.plugins.androidx.room3)
 }
 
 android {
@@ -61,9 +62,12 @@ android {
 
 kotlin {
     compilerOptions {
-        languageVersion = org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_2_3
-        freeCompilerArgs.add("-Xannotation-default-target=param-property")
+        languageVersion = org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_2_4
     }
+}
+
+room3 {
+    schemaDirectory("$projectDir/schemas")
 }
 
 dependencies {
@@ -112,6 +116,6 @@ dependencies {
     implementation(libs.bundles.media3)
 
     // Room database
-    implementation(libs.bundles.room)
-    ksp(libs.androidx.room.compiler)
+    implementation(libs.androidx.room3)
+    ksp(libs.androidx.room3.compiler)
 }

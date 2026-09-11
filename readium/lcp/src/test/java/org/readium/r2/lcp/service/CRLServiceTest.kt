@@ -38,8 +38,10 @@ import org.readium.r2.shared.util.http.HttpStreamResponse
 import org.readium.r2.shared.util.http.HttpTry
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
+import org.robolectric.annotation.Config
 
 @RunWith(RobolectricTestRunner::class)
+@Config(sdk = [36])
 class CRLServiceTest {
 
     companion object {

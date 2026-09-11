@@ -12,7 +12,7 @@ package org.readium.r2.lcp.service
 import android.content.Context
 import android.os.Build
 import androidx.core.content.edit
-import java.util.UUID
+import kotlin.uuid.Uuid
 import org.readium.r2.lcp.license.model.LicenseDocument
 import org.readium.r2.lcp.license.model.components.Link
 import org.readium.r2.shared.util.AbsoluteUrl
@@ -38,7 +38,7 @@ internal class DeviceService(
         preferences.getString(key, null)
             ?.let { return it }
 
-        val id = UUID.randomUUID().toString()
+        val id = Uuid.random().toString()
         preferences.edit { putString(key, id) }
         return id
     }

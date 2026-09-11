@@ -17,7 +17,6 @@ import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.flow.update
 import org.readium.navigator.common.Decoration
 import org.readium.navigator.common.DecorationLocation
@@ -90,14 +89,14 @@ sealed class HighlightsManager<D : DecorationLocation, G : GoLocation>(
             tint = tint,
             annotation = annotation
         )
-        highlightsMutable.update { it.put(id, highlight) }
+        highlightsMutable.update { it.putting(id, highlight) }
         return id
     }
 
     fun updateHighlightAnnotation(id: Long, annotation: String) {
         val highlight = checkNotNull(highlightsMutable.value[id])
             .copy(annotation = annotation)
-        highlightsMutable.update { it.put(id, highlight) }
+        highlightsMutable.update { it.putting(id, highlight) }
     }
 
     fun updateHighlightStyle(
@@ -108,11 +107,11 @@ sealed class HighlightsManager<D : DecorationLocation, G : GoLocation>(
         val originalHighlight = checkNotNull(highlightsMutable.value[id])
         val highlight = originalHighlight
             .copy(style = style ?: originalHighlight.style, tint = tint ?: originalHighlight.tint)
-        highlightsMutable.update { it.put(id, highlight) }
+        highlightsMutable.update { it.putting(id, highlight) }
     }
 
     fun deleteHighlight(id: Long) {
-        highlightsMutable.update { it.remove(id) }
+        highlightsMutable.update { it.removing(id) }
     }
 }
 
