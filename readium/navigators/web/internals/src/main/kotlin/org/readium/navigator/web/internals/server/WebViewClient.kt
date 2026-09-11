@@ -6,7 +6,6 @@
 
 package org.readium.navigator.web.internals.server
 
-import android.webkit.RenderProcessGoneDetail
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
