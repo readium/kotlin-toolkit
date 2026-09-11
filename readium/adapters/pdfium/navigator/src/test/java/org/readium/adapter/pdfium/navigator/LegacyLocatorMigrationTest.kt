@@ -23,11 +23,9 @@ import org.readium.r2.shared.publication.services.positionsServiceFactory
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.robolectric.RobolectricTestRunner
-import org.robolectric.annotation.Config
 
 @OptIn(DelicateReadiumApi::class)
 @RunWith(RobolectricTestRunner::class)
-@Config(sdk = [36])
 class LegacyLocatorMigrationTest {
 
     private val href = Url("document.pdf")!!
