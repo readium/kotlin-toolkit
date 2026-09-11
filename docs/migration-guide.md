@@ -2,7 +2,9 @@
 
 All migration steps necessary in reading apps to upgrade to major versions of the Kotlin Readium toolkit will be documented in this file.
 
-## Unreleased
+<!-- ## Unreleased -->
+
+## 3.4.0
 
 ### Breaking changes with the PDFium adapter
 
